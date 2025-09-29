@@ -1,1 +1,35 @@
 .env
+pycache/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+Environment files
+
+.env
+.env.secret
+.flake8
+.mypy_cache/
+.pytest_cache/
+Coverage files
+
+.coverage
+.coverage.*
+IDE / Editor Files
+
+.idea/
+*.swp
+*~
+.vscode/
+Docker / Infrastructure
+Ignore volume data that Docker might create locally
+
+minio_data/
+postgres_data/
+redis_data/
+portainer_data/
+pgadmin_data/
+OS-specific files
+
+.DS_Store
+Thumbs.db
