@@ -1,0 +1,175 @@
+# ----------------------------------------------------
+# DOCKER COMPOSE CONFIGURATION
+# ----------------------------------------------------
+# /home/angel/repos/helixnet/docker-compose.yaml
+services:
+  # ----------------------------------------------------
+  # CORE INFRASTRUCTURE SERVICES
+  # ----------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    profiles: ["core"]
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    profiles: ["core"]
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    profiles: ["core"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    profiles: ["core"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: minio server /data --console-address ":9001"
+    ports:
+      - "9090:9000"
+      - "9091:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  # ----------------------------------------------------
+  # APPLICATION SERVICES
+  # ----------------------------------------------------
+  web:
+    build: .
+    container_name: web
+    profiles: ["core"]
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    working_dir: /code
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+    depends_on:
+      - redis
+      - rabbitmq
+      - postgres
+      - minio
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  worker:
+    build: .
+    container_name: worker
+    profiles: ["core"]
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+    working_dir: /code
+    command: celery -A app.tasks.celery_app worker -l INFO
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    networks:
+      - helixnet_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    profiles: ["core"]
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    profiles: ["core"]
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - "9999:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+  beat:
+    build: .
+    container_name: beat
+    profiles: ["core"]
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+    working_dir: /code
+   # command: celery -A app.tasks.celery_app beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - rabbitmq
+      - worker
+    restart: unless-stopped
+    networks:
+      - helixnet_network
+
+
+
+# ----------------------------------------------------
+# NAMED VOLUMES
+# ----------------------------------------------------
+volumes:
+  redis_data:
+  postgres_data:
+  minio_data:
+  portainer_data:
+  pgadmin_data:
+
+# ----------------------------------------------------
+# NETWORK
+# ----------------------------------------------------
+networks:
+  helixnet_network:
+    driver: bridge

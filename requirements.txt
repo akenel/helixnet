@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+pydantic
+celery
+redis
+pyyaml
+aiofiles
+minio
+psycopg2-binary   # For Postgres connection
+python-dotenv     # To load .env secrets
+pika              # For RabbitMQ connection
