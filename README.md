@@ -1,40 +1,141 @@
-HelixNet Platform
+🌟 HelixNet Platform: The Asynchronous Architecture
 
-This repository contains the setup for the HelixNet asynchronous web platform, utilizing FastAPI, Celery, and a full suite of containerized backend services for modern application development.
-🚀 Getting Started
+This repository contains the foundation for the HelixNet asynchronous web platform, utilizing FastAPI, Celery, and a full suite of containerized backend services for high-performance, real-world application development.
+✅ CURRENT STATUS: TECHNICAL SPIKE COMPLETE (MVA)
 
-This project relies entirely on Docker and Docker Compose for a consistent environment.
-Prerequisites
+The core infrastructure connection is verified and working. The local Python environment is successfully communicating with the Dockerized Postgres database.
 
-    Docker
+    Endpoint Verified: GET /health returns 200 OK (Postgres connectivity confirmed).
 
-    make (optional, but highly recommended for command shortcuts)
+    Database Verified: CRUD operations (POST/GET) on the /items endpoint successfully save and retrieve data from the helix_db database.
 
-Startup
+⚙️ Single Source of Truth: Environment Variables
 
-The recommended way to start the entire stack is using the provided Makefile commands.
+All critical credentials and configuration settings are managed via the top-level .env file. These values are consistent across Docker services and local development.
 
-    Stop any existing containers and clean up:
+Variable
+	
 
-    make stop
+Default Value
+	
 
-    Build the application image:
-    (This step is crucial after changing Python dependencies or the Dockerfile.)
+Purpose
 
-    make build
+POSTGRES_USER
+	
 
-    Launch all services:
-    (Since all services now use the core profile, this starts everything.)
+helix_user
+	
 
-    make start
-    # Equivalent to: docker compose up -d --profile core
+Database Login Username
 
-    View Logs:
-    (Keep this running to monitor startup status.)
+POSTGRES_PASSWORD
+	
 
-    make logs
+helix_pass
+	
 
-Accessing Services
+Database Login Password
+
+POSTGRES_DB
+	
+
+helix_db
+	
+
+Database Name
+
+POSTGRES_HOST
+	
+
+postgres
+	
+
+Internal Host (used inside Docker containers)
+
+REDIS_HOST
+	
+
+redis
+	
+
+Redis Cache/Celery Backend Host
+
+RABBITMQ_HOST
+	
+
+rabbitmq
+	
+
+Celery Broker Host
+
+MINIO_BUCKET
+	
+
+helixnet
+	
+
+S3 Object Storage Bucket Name
+
+APP_PORT
+	
+
+8000
+	
+
+FastAPI Web/API Port
+🏗️ Project Structure & Component Naming
+
+We are moving away from the single isolated test file into a clean, scalable architecture. This structure ensures clean imports and separation of concerns.
+
+Folder
+	
+
+Purpose
+	
+
+Key Files
+
+app/db/
+	
+
+Database Core
+	
+
+database.py (Engine/Session/Dependencies), models.py (SQLAlchemy ORM definitions).
+
+app/schemas/
+	
+
+Data Validation
+	
+
+item_schema.py, user_schema.py (Pydantic models for API request/response).
+
+app/api/
+	
+
+FastAPI Routes
+	
+
+item_router.py, user_router.py (FastAPI APIRouter instances).
+
+app/tasks/
+	
+
+Celery & Background
+	
+
+celery_app.py (Celery app setup), tasks.py (Task definitions), db_utils.py (Async DB helper for tasks).
+
+app/
+	
+
+Application Entry
+	
+
+main.py (Initializes FastAPI, includes all routers, handles startup/shutdown events).
+🚀 Service Access & Endpoints
 
 Service
 	
@@ -42,9 +143,15 @@ Service
 Port
 	
 
-Description
+Access URL
+	
 
-Web App (FastAPI)
+Tip for Login/Connection
+
+Web (FastAPI)
+	
+
+8000
 	
 
 http://localhost:8000
@@ -52,69 +159,301 @@ http://localhost:8000
 
 Main application entry point.
 
-RabbitMQ Management
+FastAPI Docs
+	
+
+8000
+	
+
+http://localhost:8000/docs
+	
+
+Interactive Swagger UI.
+
+Health Check
+	
+
+8000
+	
+
+http://localhost:8000/health
+	
+
+Confirms database connectivity.
+
+RabbitMQ Admin
+	
+
+15672
 	
 
 http://localhost:15672
 	
 
-Broker management dashboard.
+Use $RABBITMQ_USER and $RABBITMQ_PASS.
 
-MinIO Console (S3)
+MinIO Console
 	
 
-http://localhost:9001
+9091
 	
 
-Object storage console.
-🏗️ Project Structure
+http://localhost:9091
+	
 
-The structure is set up for a Python package (app/) that is flattened inside the Docker container's working directory (/app) for clean imports.
+Use $MINIO_ROOT_USER and $MINIO_ROOT_PASSWORD.
 
-.
-├── app/
-│   ├── main.py        # FastAPI entrypoint
-│   ├── routes/        # API endpoints
-│   ├── tasks/         # Celery tasks definition and worker setup
-│   ├── static/        # Static assets
-│   └── templates/     # Jinja2 templates
-├── docker-compose.yaml # Defines all 8 services
-├── Dockerfile          # Builds the web/worker images
-└── requirements.txt    # Python dependencies
+PGAdmin
+	
 
-⚙️ Key Configuration Notes
+5050
+	
 
-The stability of this setup relies on a few critical configuration points:
+http://localhost:5050
+	
 
-    Clean Container Paths: We explicitly copy the contents of the local app/ folder into the container's working directory (/app) using COPY app/ /app/ in the Dockerfile. This avoids the problematic app.app nested package name.
+Use $PGADMIN_DEFAULT_EMAIL and $PGADMIN_DEFAULT_PASSWORD.
+🚧 Immediate Roadmap: Refactoring & Unit Verification
 
-    Local Development Volumes: To ensure real-time code updates and to bypass lingering Python import issues during development, the docker-compose.yaml uses volume mounts for the application containers:
+Our next steps are to move the code from the single testing file (app/api/services/check_api.py) into the final, clean structure, verifying the system health (/health endpoint) after each move.
 
-    volumes:
-      - ./app:/app
+Step
+	
 
-    This guarantees that the container always finds the correct main.py and the tasks package, resolving the persistent ModuleNotFoundError issues we previously encountered.
+Focus
+	
 
-    Celery Command: The worker command uses the simplified import path, which works correctly thanks to the volume mount:
+Action
+	
 
-    command: python -m celery -A tasks.celery_app worker --loglevel=info
+Verification
 
-ROADMAP:
+R1
+	
 
-Step	Component	Focus	Why	Priority
-1	Setup & Core Files	requirements.txt, config.yaml (Base), .env (Secrets), Project Structure.	Establishes all dependencies and configuration.	P1: Immediate
-2	Container Infrastructure	docker-compose.yaml (Core Services Profile: Postgres, Redis, RabbitMQ, MinIO).	Spins up all necessary infrastructure components.	P1: Immediate
-3	Data Persistence & Storage	Postgres and MinIO setup, initial health checks.	Ensures data integrity and artifact storage.	P1: Immediate
-4	FastAPI Service	Dockerfile for Python app, app/main.py entry point, basic health check endpoint.	The user-facing application layer.	P2: Critical Dev
-5	Celery Service	Dockerfile for Celery worker, celeryconfig.py, task registration.	The asynchronous job processing layer.	P2: Critical Dev
-6	Network & Initial Test	Service networking verification, first Hello World task via the FastAPI endpoint to Celery.	Validates the entire distributed system chain.	P3: Verification
+Database Core
+	
 
-URLs 
-Service	Host Port	Access URL	Purpose	Login/Credentials
-Web (FastAPI)	8000	http://localhost:8000	Main application endpoint	N/A
-Web Health Check	8000	http://localhost:8000/health	Confirm application is running	N/A
-MinIO Console	9091	http://localhost:9091	Object Storage Web UI	Use $MINIO_ROOT_USER and $MINIO_ROOT_PASSWORD
-MinIO API	9090	http://localhost:9090	API access endpoint	N/A (Tested for reachability)
-RabbitMQ Admin	15672	http://localhost:15672	Message Broker Management UI	Use $RABBITMQ_USER and $RABBITMQ_PASS
-Postgres	(Internal)	N/A	Database access (Internal)	Use $POSTGRES_USER and $POSTGRES_PASSWORD
-Redis	6379	N/A	Caching/Results backend	N/A (Internal use only)
+Move engine, Base, and get_db_session logic into app/db/database.py.
+	
+
+RUN: uvicorn check_api:app --reload. TEST: GET /health must return 200 OK.
+
+R2
+	
+
+ORM Models
+	
+
+Move the Item SQLAlchemy model into app/db/models.py.
+	
+
+RUN: uvicorn check_api:app --reload. TEST: GET /health must return 200 OK.
+
+R3
+	
+
+Pydantic Schemas
+	
+
+Move the Item Pydantic models into app/schemas/item_schema.py.
+	
+
+RUN: uvicorn check_api:app --reload. TEST: GET /health must return 200 OK.
+
+R4
+	
+
+API Router
+	
+
+Move all routes (/health, /items) into a new file: app/api/item_router.py and delete the testing file.
+	
+
+RUN: uvicorn app.main:app --reload (Finally using main.py). TEST: GET /health must return 200 OK.
+
+HelixNet Core API
+
+The Asynchronous Enterprise-Grade Backend for Scalable Job Processing.
+
+This project utilizes a modern microservices-inspired architecture running on Docker Compose, integrating FastAPI, PostgreSQL, Celery, RabbitMQ, Redis, and MinIO.
+🛠️ Development Setup Guide: The Vibe Coder's Ritual
+
+The HelixNet environment is separated into two layers:
+
+    The Infrastructure Layer (Docker): Contains all persistent services (Postgres, RabbitMQ, Redis, MinIO). These run in containers and communicate internally.
+
+    The Application Layer (Local Venv): Contains the actual Python code (main.py, routers, services). We run this outside Docker during development so you can use features like Uvicorn's --reload and use a debugger, but it connects into the Docker network.
+
+The Standard 3-Step Ritual to start local development (REQUIRED):
+1. 🏗️ Create & Activate the Venv (The Local Toolbox)
+
+This command creates and activates your isolated Python environment, ensuring you are using the correct dependencies and versions listed in requirements.txt.
+
+# 1a. Create the venv (if it doesn't exist)
+python3 -m venv venv
+
+# 1b. Activate the venv (do this every time you start a new terminal session)
+source venv/bin/activate
+# You should see: (venv) angel@debian:~/repos/helixnet$
+
+2. 📦 Install Dependencies (Fill the Toolbox)
+
+This installs Uvicorn, FastAPI, SQLAlchemy, and all other necessary libraries into your new, active virtual environment.
+
+(venv) angel@debian:~/repos/helixnet$ pip install -r requirements.txt
+
+3. 🚀 Run the Infrastructure & API
+A. Start the Backend Services (Docker Stack)
+
+Ensure all essential services are running in the background.
+
+docker compose up -d
+
+B. Run the FastAPI Application (Local Development)
+
+This starts your application, enables code reloading, and connects it to the live Docker services.
+
+(venv) angel@debian:~/repos/helixnet$ uvicorn app.main:app --reload
+
+🌐 Access & Monitoring UIs
+
+Once the stack is running, you can access the core development tools:
+
+Tool
+	
+
+Purpose
+	
+
+URL
+
+Swagger UI
+	
+
+Interactive API documentation (Test endpoints here)
+	
+
+http://localhost:8000/docs
+
+Health Check
+	
+
+Deep status check of all services (Postgres, Redis, RabbitMQ, MinIO)
+	
+
+http://localhost:8000/health
+
+Celery Flower
+	
+
+Monitor Celery tasks and worker status
+	
+
+http://localhost:5555
+
+RabbitMQ Mgmt
+	
+
+View queues and broker health
+	
+
+http://localhost:15672
+
+MinIO Console
+	
+
+Object storage browser
+	
+
+http://localhost:9091
+
+Post Enganglement Explained:
+(venv) angel@debian:~/repos/helixnet$ uvicorn app.main:app --reload
+INFO:     Will watch for changes in these directories: ['/home/angel/repos/helixnet']
+ERROR:    [Errno 98] Address already in use
+(venv) angel@debian:~/repos/helixnet$ 
+
+HelixNet Core API
+The Asynchronous Enterprise-Grade Backend for Scalable Job Processing.
+
+This project utilizes a modern microservices-inspired architecture running on Docker Compose, integrating FastAPI, PostgreSQL, Celery, RabbitMQ, Redis, and MinIO.
+
+🛠️ Development Setup Guide: 
+
+The Vibe Coder's Ritual
+
+The HelixNet environment is separated into two layers:
+
+The Infrastructure Layer (Docker): 
+
+Contains all persistent services (Postgres, RabbitMQ, Redis, MinIO). 
+These run in containers and communicate internally.
+
+The Application Layer (Local Venv): 
+Contains the actual Python code (main.py, routers, services).
+ We run this outside Docker during development so you can use features like Uvicorn's --reload and use a debugger, but it connects into the Docker network.
+ 
+ The Standard 3-Step Ritual to start local development (REQUIRED):
+ 
+ 1. 🏗️ Create & Activate the Venv (The Local Toolbox)
+ This command creates and activates your isolated Python environment, ensuring you are using the correct dependencies and versions listed in requirements.txt.
+ # 1a. Create the venv (if it doesn't exist)
+python3 -m venv venv
+
+# 1b. Activate the venv (do this every time you start a new terminal session)
+source venv/bin/activate
+# You should see: (venv) angel@debian:~/repos/helixnet$
+
+2. 📦 Install Dependencies (Fill the Toolbox)This installs Uvicorn, FastAPI, SQLAlchemy, and all other necessary libraries into your new, active virtual environment.
+
+(venv) angel@debian:~/repos/helixnet$ pip install -r requirements.txt
+
+3. 🚀 Run the Infrastructure & API
+
+A. Start the Backend Services (Docker Stack)Ensure all essential services are running in the background.docker compose up -d
+
+B. Run the FastAPI Application (Local Development)This starts your application, enables code reloading, and connects it to the live Docker services.
+
+(venv) angel@debian:~/repos/helixnet$ uvicorn app.main:app --reload
+
+C. Troubleshooting Port Conflicts (Address already in use)
+If you get the [Errno 98] Address already in use error, it means port 8000 is already taken by another process (often a previous failed run or a running Docker container).
+
+ Use these "secret instructions" to fix it:
+ 
+ Find the Process ID (PID):# This command lists the process listening on port 8000
+
+sudo lsof -i :8000
+
+Identify the PID:
+
+ Look in the output for the column labeled PID.
+ 
+ Kill the Process: 
+ 
+ Replace {PID} with the number you found.# This forcefully terminates the conflicting process
+
+sudo kill -9 {PID}
+
+Rerun the app: 
+Go back to Step 3B and run uvicorn app.main:app --reload again.
+
+🌐 Access & Monitoring UIs
+
+Once the stack is running, you can access the core development tools:
+Tool Purpose URL
+Swagger UI  Interactive API documentation (Test endpoints here)
+http://localhost:8000/docs
+
+Health Check Deep status check of all services (Postgres, Redis, RabbitMQ, MinIO)
+http://localhost:8000/health
+
+Celery Flower Monitor Celery tasks and worker status 
+http://localhost:5555
+
+RabbitMQ MgmtView queues and broker health
+http://localhost:15672
+
+MinIO ConsoleObject storage browser
+http://localhost:9091

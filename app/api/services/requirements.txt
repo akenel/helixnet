@@ -1,0 +1,17 @@
+# Core Web Service & Framework
+fastapi>=0.118.0
+uvicorn[standard]>=0.37.0
+pydantic>=2.11.9
+# Pydantic Email Validation (Required for EmailStr)
+email-validator>=2.3.0
+dnspython>=2.8.0
+# Database Access (Postgres)
+sqlalchemy[asyncio]>=2.0.0 # SQLAlchemy 2.0 with async support
+asyncpg>=0.29.0          # The async Postgres driver
+# Background Task Processing
+celery>=5.3.6
+redis>=5.0.0            
+ # Common Celery broker/backend dependency
+# Development/Utility (Optional, but good for local testing)
+python-dotenv>=1.0.0     # For loading .env files
+psycopg2-binary>=2.9.9   # Used by some tools, good to have available

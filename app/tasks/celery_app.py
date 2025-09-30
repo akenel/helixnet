@@ -1,65 +1,67 @@
 # app/tasks/celery_app.py
 """
-Celery configuration for HelixNet 🚀
-------------------------------------
-Handles distributed task execution (workers) and scheduling (beat).
-We use RabbitMQ as broker + Redis as result backend for resilience.
-
-💡 This is production-ready, but simple enough for local dev & Docker Compose.
+Celery Application Instance and Configuration.
+Defines broker, backend, and periodic tasks.
 """
-
 import os
 from celery import Celery
-from dotenv import load_dotenv
+from datetime import timedelta
 
-# --- 0. Load Environment Variables 🌱 ---
-# Local dev: .env file | Docker: passed via docker-compose
-load_dotenv()
+# --- Configuration for Celery ---
+# Broker: RabbitMQ
+# Backend: Redis (for result storage)
+# NOTE: The Celery app name is crucial for the worker command:
+# `celery -A tasks.celery_app` where `tasks` is the folder and 
+# `celery_app` is the module/instance name.
 
-# --- 1. Connection Strings 🔗 ---
+# Get environment variables from the Docker environment
 RABBITMQ_USER = os.getenv("RABBITMQ_USER", "admin")
 RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "admin")
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
+RABBITMQ_PORT = os.getenv("RABBITMQ_PORT", "5672")
+
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_DB = os.getenv("REDIS_DB", "0")
 
-CELERY_BROKER_URL = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:5672//"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/0"
+BROKER_URL = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:{RABBITMQ_PORT}//"
+BACKEND_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
-# --- 2. Celery App Instance ⚙️ ---
+
+# Initialize the Celery application
 celery_app = Celery(
-    "helixnet_celery",
-    broker=CELERY_BROKER_URL,
-    backend=CELERY_RESULT_BACKEND,
-    include=["app.tasks.tasks"],  # Load tasks from app/tasks/tasks.py
+    "helixnet_tasks",
+    broker=BROKER_URL,
+    backend=BACKEND_URL,
+    include=['app.tasks.tasks'] # CRITICAL FIX: Explicitly load the module containing the task definitions
 )
-print(f"🚀 Celery connecting to broker: {CELERY_BROKER_URL}")
 
-# --- 3. Global Celery Configuration 🌍 ---
+# Configure Celery settings
 celery_app.conf.update(
-    task_track_started=True,     # Track "started" state of tasks
-    task_time_limit=300,         # Hard timeout (seconds) ⏳
-    task_soft_time_limit=240,    # Soft timeout (grace period) ⏱️
-    task_acks_late=True,         # Ensure tasks are not lost if worker crashes
-    worker_prefetch_multiplier=1,# Fair task distribution ⚖️
-    timezone="Europe/Zurich",    # Local time zone 🕰️
+    # Timeouts for connection/retries
+    broker_connection_retry_on_startup=True,
+    broker_transport_options={'visibility_timeout': 3600},  # 1 hour
+    task_track_started=True,
+    task_serializer='json',
+    result_serializer='json',
+    accept_content=['json'],
+    timezone='UTC',
     enable_utc=True,
+    
+    # Enable Celery Beat for periodic tasks
+    beat_schedule={
+        'say-hello-every-10-seconds': {
+            'task': 'app.tasks.tasks.say_hello', # Use the fully qualified path
+            'schedule': timedelta(seconds=10),
+            'args': (),
+        },
+        'system-healthcheck-every-60-seconds': {
+            'task': 'app.tasks.tasks.system_healthcheck',
+            'schedule': timedelta(seconds=60),
+            'args': (),
+        },
+    },
 )
 
-# --- 4. Beat Schedule (Periodic Tasks) ⏰ ---
-celery_app.conf.beat_schedule = {
-    "say-hello-every-10s": {
-        "task": "app.tasks.tasks.say_hello",
-        "schedule": 10.0,  # Run every 10 seconds
-    },
-    "system-healthcheck-1m": {
-        "task": "app.tasks.tasks.system_healthcheck",
-        "schedule": 60.0,  # Run every 1 minute
-    },
-}
-
-# --- 5. Example Sanity Task 🧪 ---
-@celery_app.task(name="sanity_check_task")
-def add(x, y):
-    """Quick test task to validate worker/queue connectivity."""
-    print(f"🧮 Task received: Adding {x} and {y}")
-    return x + y
+# Optional sanity check to confirm the app loaded
+print("🚀 Celery Application initialized. Broker:", BROKER_URL)

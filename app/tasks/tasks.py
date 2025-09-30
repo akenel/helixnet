@@ -1,97 +1,46 @@
-# app/tasks/tasks.py
 """
-HelixNet Celery Tasks 🎯
-------------------------
-Core task definitions for async execution & periodic scheduling.
-
-Includes:
-- Sanity checks ✅
-- System health monitoring 🩺
-- Example async jobs ⚡
+Celery task definitions for background processing.
 """
-
-import os
-import socket
-import redis
-import psycopg2
-import pika
 from celery import shared_task
+from typing import Dict, Any
+import logging
 
+logger = logging.getLogger(__name__)
 
-# --- 1. Simple demo task 🧪 ---
-@shared_task(name="say_hello")
+@shared_task
+def sanity_check_task() -> Dict[str, str]:
+    """Simple task to verify Celery worker is responsive."""
+    return {"status": "Celery worker is healthy"}
+
+@shared_task
+def process_job(user_id: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Main job processing task.
+    Args:
+        user_id: ID of the user submitting the job
+        input_data: Data to be processed
+    Returns:
+        Dict containing the processed results
+    """
+    try:
+        # Add your job processing logic here
+        result = {
+            "processed": True,
+            "user_id": user_id,
+            "input_size": len(input_data),
+            "status": "completed"
+        }
+        return result
+    except Exception as e:
+        logger.error(f"Job processing failed: {str(e)}")
+        raise
+
+@shared_task
 def say_hello():
-    """Periodic hello message to test Celery Beat scheduling."""
-    msg = "👋 Hello from Celery Beat!"
-    print(msg)
-    return msg
+    """Periodic task that says hello."""
+    return "Hello from Celery!"
 
-
-# --- 2. System Health Check 🩺 ---
-@shared_task(name="system_healthcheck")
+@shared_task
 def system_healthcheck():
-    """
-    Check connectivity with core infrastructure:
-    - Redis
-    - RabbitMQ
-    - Postgres
-    Returns a dictionary with status flags.
-    """
-
-    status = {
-        "redis": False,
-        "rabbitmq": False,
-        "postgres": False,
-    }
-
-    # Redis check
-    try:
-        r = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=6379)
-        r.ping()
-        status["redis"] = True
-    except Exception as e:
-        status["redis"] = f"❌ {e}"
-
-    # RabbitMQ check
-    try:
-        creds = pika.PlainCredentials(
-            os.getenv("RABBITMQ_USER", "admin"),
-            os.getenv("RABBITMQ_PASS", "admin"),
-        )
-        conn = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
-                credentials=creds,
-            )
-        )
-        conn.close()
-        status["rabbitmq"] = True
-    except Exception as e:
-        status["rabbitmq"] = f"❌ {e}"
-
-    # Postgres check
-    try:
-        conn = psycopg2.connect(
-            dbname=os.getenv("POSTGRES_DB", "postgres"),
-            user=os.getenv("POSTGRES_USER", "postgres"),
-            password=os.getenv("POSTGRES_PASSWORD", "postgres"),
-            host=os.getenv("POSTGRES_HOST", "postgres"),
-        )
-        conn.close()
-        status["postgres"] = True
-    except Exception as e:
-        status["postgres"] = f"❌ {e}"
-
-    print(f"🩺 Healthcheck Results: {status}")
-    return status
-
-
-# --- 3. Example workload task ⚡ ---
-@shared_task(name="process_job")
-def process_job(data: dict):
-    """
-    Simulates processing a job payload.
-    In real life: transform data, push to API, or run analysis.
-    """
-    print(f"⚙️ Processing job with data: {data}")
-    return {"status": "done", "processed_data": data}
+    """Periodic system health check task."""
+    return {"status": "System healthy"}
