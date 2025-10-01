@@ -1,6 +1,8 @@
 import datetime
-from sqlalchemy import Column, String, DateTime, func, JSON
-from app.db.database import Base # <<< UPDATED IMPORT PATH
+import uuid
+from sqlalchemy import Column, String, DateTime, func, JSON, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from app.db.database import Base
 
 class TaskResult(Base):
     """
@@ -8,18 +10,25 @@ class TaskResult(Base):
     This goes beyond the short-lived Celery state in Redis/RabbitMQ.
     """
     __tablename__ = "task_results"
+    
+    __mapper_args__ = {
+        'polymorphic_identity': 'task_result',
+        'polymorphic_on': 'type'
+    }
 
-    # Primary Key
+    # Primary Key using UUID
     id = Column(
-        String, 
-        primary_key=True, 
-        index=True, 
-        # Using a UUID or unique task ID from Celery is better than an auto-increment integer here.
-        # We will use the Celery Task ID as the primary key.
-    ) 
+        PG_UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
-    # Celery Task ID (used as primary key here, but often tracked separately)
-    celery_task_id = Column(String, unique=True, nullable=False)
+    # Celery Task ID (tracked separately)
+    celery_task_id = Column(String(64), unique=True, nullable=False)
+
+    # Type discriminator for polymorphic identity
+    type = Column(String(50), nullable=False)
 
     # Status: PENDING, STARTED, SUCCESS, FAILURE
     status = Column(String, index=True, default="PENDING", nullable=False)

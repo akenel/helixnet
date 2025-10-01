@@ -8,13 +8,6 @@ from celery import Celery
 from datetime import timedelta
 
 # --- Configuration for Celery ---
-# Broker: RabbitMQ
-# Backend: Redis (for result storage)
-# NOTE: The Celery app name is crucial for the worker command:
-# `celery -A tasks.celery_app` where `tasks` is the folder and 
-# `celery_app` is the module/instance name.
-
-# Get environment variables from the Docker environment
 RABBITMQ_USER = os.getenv("RABBITMQ_USER", "admin")
 RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "admin")
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
@@ -24,7 +17,14 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB = os.getenv("REDIS_DB", "0")
 
-BROKER_URL = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:{RABBITMQ_PORT}//"
+# CRITICAL FIX: Use robust string formatting to ensure variables are substituted 
+# and the port is always a string that looks like an integer.
+BROKER_URL = "amqp://{user}:{password}@{host}:{port}//".format(
+    user=RABBITMQ_USER,
+    password=RABBITMQ_PASS,
+    host=RABBITMQ_HOST,
+    port=RABBITMQ_PORT
+)
 BACKEND_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
 
@@ -33,14 +33,15 @@ celery_app = Celery(
     "helixnet_tasks",
     broker=BROKER_URL,
     backend=BACKEND_URL,
-    include=['app.tasks.tasks'] # CRITICAL FIX: Explicitly load the module containing the task definitions
+    # CRITICAL FIX: This line MUST be present to register the tasks.
+    include=['app.tasks.tasks'] 
 )
 
 # Configure Celery settings
 celery_app.conf.update(
     # Timeouts for connection/retries
     broker_connection_retry_on_startup=True,
-    broker_transport_options={'visibility_timeout': 3600},  # 1 hour
+    broker_transport_options={'visibility_timeout': 3600},
     task_track_started=True,
     task_serializer='json',
     result_serializer='json',
@@ -48,7 +49,7 @@ celery_app.conf.update(
     timezone='UTC',
     enable_utc=True,
     
-    # Enable Celery Beat for periodic tasks
+    # Celery Beat schedule - Tasks must be registered via 'include' above to work here.
     beat_schedule={
         'say-hello-every-10-seconds': {
             'task': 'app.tasks.tasks.say_hello', # Use the fully qualified path
@@ -63,5 +64,7 @@ celery_app.conf.update(
     },
 )
 
-# Optional sanity check to confirm the app loaded
 print("🚀 Celery Application initialized. Broker:", BROKER_URL)
+# ----------------------------------------------------
+# End of celery_app.py /home/angel/repos/helixnet/app/tasks/celery_app.py
+# ----------------------------------------------------

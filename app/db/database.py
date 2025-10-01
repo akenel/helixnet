@@ -1,42 +1,24 @@
-import os
-# Import Base/DeclarativeBase for ORM definitions
-from sqlalchemy.orm import DeclarativeBase 
-# Async imports
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+"""
+Database configuration and session management for SQLAlchemy Async.
+"""
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# --- 1. Base Class Definition (Source of Truth) ---
-class Base(DeclarativeBase):
-    """
-    Base class which provides automated table name 
-    and other common features for all models.
-    """
-    pass
+# --- Configuration (Assumed from Docker/Env) ---
+DATABASE_URL = "postgresql+asyncpg://helix_user:helix_pass@postgres:5432/helix_db" 
 
-# --- 2. Environment Configuration ---
-# Constructs the async database URL from environment variables, 
-# defaulting to Docker Compose settings for local development.
-DATABASE_URL = (
-    f"postgresql+asyncpg://"
-    f"{os.environ.get('POSTGRES_USER', 'helix_user')}:"
-    f"{os.environ.get('POSTGRES_PASSWORD', 'helix_pass')}@"
-    f"{os.environ.get('POSTGRES_HOST', 'postgres')}:"
-    f"{os.environ.get('POSTGRES_PORT', '5432')}/"
-    f"{os.environ.get('POSTGRES_DB', 'helix_db')}"
-)
+# --- Base for declarative models ---
+Base = declarative_base()
 
-# 3. Create the asynchronous engine
+# --- Engine Setup ---
 engine = create_async_engine(
-    DATABASE_URL, 
-    echo=False,  # Set to True to see SQL queries for debugging
-    pool_size=20, # Recommended pool size for an async web app
-    max_overflow=0
+    DATABASE_URL,
+    echo=True, # Set to False in production, helpful for debugging
+    future=True
 )
 
-# 4. Define the asynchronous session maker
-# NOTE: Renamed to SessionLocal to FIX the Import Error in db_utils.py.
-# This object is an AsyncSession factory.
-SessionLocal = sessionmaker(
+# --- Session Factory ---
+AsyncSessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine,
@@ -44,13 +26,10 @@ SessionLocal = sessionmaker(
     expire_on_commit=False,
 )
 
-# 5. Dependency for getting an asynchronous session (for FastAPI endpoints)
+# --- Dependency Function for Routes ---
 async def get_db_session():
-    """
-    Dependency that yields an AsyncSession for use in FastAPI route handlers.
-    It automatically handles closing the session after the request is complete.
-    """
-    async with SessionLocal() as session:
+    """Provides a fresh database session for dependency injection."""
+    async with AsyncSessionLocal() as session:
         try:
             yield session
         except Exception:
@@ -58,3 +37,33 @@ async def get_db_session():
             raise
         finally:
             await session.close()
+
+# --- Initialization Function (CRITICAL FIX WITH DIAGNOSTICS) ---
+async def init_db():
+    """
+    Initializes the database by creating all tables defined in the Base metadata.
+    This must be called at application startup.
+    """
+    # CRITICAL FIX: Explicitly import all model CLASSES. This is the most reliable 
+    # way to ensure they are registered with Base.metadata.
+    try:
+        from app.db.models.user import User  # Import the class
+        from app.db.models.job_result import JobResult # Import the class
+        print("✅ Attempted model CLASS imports for User and JobResult.")
+    except ImportError as e:
+        print(f"🚨 CRITICAL ERROR: Could not import models. Check folder structure and class names. Error: {e}")
+        # If imports fail here, there's no way to proceed with table creation.
+        raise # Raise the error to stop the application gracefully.
+
+    # DIAGNOSTIC CHECK: Print which tables Base.metadata has registered
+    registered_tables = list(Base.metadata.tables.keys())
+    print(f"⚙️ SQLAlchemy Metadata check found tables: {registered_tables}")
+
+    if not registered_tables:
+        print("⚠️ WARNING: No tables found in Base.metadata. Check your model definitions and imports.")
+        
+    async with engine.begin() as conn:
+        print("⏳ Running Base.metadata.create_all...")
+        # Run the synchronous table creation within an async context
+        await conn.run_sync(Base.metadata.create_all)
+        print("🚀 Database tables initialized successfully. Proceeding with requests.")

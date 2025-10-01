@@ -1,25 +1,25 @@
-"""
-Pydantic Schemas for the User Model.
-Defines data structures for request bodies and response models.
-"""
-from pydantic import BaseModel, EmailStr
-from uuid import UUID
+from pydantic import BaseModel, ConfigDict, EmailStr
+import uuid
 from datetime import datetime
 
 class UserBase(BaseModel):
-    """Base schema for user data (used for input)."""
     email: EmailStr
-    
+    is_active: bool = True
+
 class UserCreate(UserBase):
-    """Schema for creating a new user (includes password)."""
     password: str
 
-class UserResponse(UserBase):
-    """Schema for user data returned by the API (excludes password hash)."""
-    id: UUID
-    is_active: bool
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    password: str | None = None
+    is_active: bool | None = None
+
+class UserInDB(UserBase):
+    id: uuid.UUID
     created_at: datetime
-    
-    class Config:
-        """Enables ORM mode to read data from SQLAlchemy models."""
-        from_attributes = True
+    updated_at: datetime | None = None
+
+class Config:
+    orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+  #  You'll also need to import `ConfigDict` from `pydantic`.

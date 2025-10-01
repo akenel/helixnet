@@ -38,7 +38,7 @@ def process_job(user_id: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
 @shared_task
 def say_hello():
     """Periodic task that says hello."""
-    return "Hello from Celery!"
+    return "👌️ Hello from Celery!"
 
 @shared_task
 def system_healthcheck():

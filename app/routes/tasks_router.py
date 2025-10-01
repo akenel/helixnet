@@ -14,7 +14,12 @@ from app.tasks.tasks import process_job
 
 # CRITICAL FIX: Import the actual function name exported by database.py
 from app.db.database import get_db_session 
-from app.db.models import JobResult
+# /home/angel/repos/helixnet/app/models/task_model.py
+from app.models.task_model import TaskResult
+from app.db.models.job_result import JobResult
+
+from app.tasks.tasks import sanity_check_task
+
 from app.schemas.tasks import JobSubmission
 
 # The object that is imported by main.py
