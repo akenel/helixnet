@@ -1,3 +1,4 @@
+# app/db/models.py
 """
 SQLAlchemy Models Package
 Import from app.db.models.user and app.db.models.job_result instead.
@@ -53,7 +54,7 @@ class JobResult(Base):
     finished_at: Mapped[Optional[datetime]] = mapped_column(
         nullable=True
     )
-
+    job_input: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
     # Relationship to User
     user: Mapped["User"] = relationship(back_populates="job_results")
 # --- 3. Job Result Model ---

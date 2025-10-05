@@ -5,7 +5,7 @@ uvicorn[standard]==0.29.0
 sqlalchemy==2.0.30
 alembic==1.13.1
 asyncpg==0.29.0
-psycopg[binary]>=3.1.18
+psycopg[binary]
 ## Pydantic & Settings  
 pydantic==2.7.4
 pydantic-settings==2.11.0

@@ -1,3 +1,4 @@
+# app/schemas/user.py
 from pydantic import BaseModel, ConfigDict, EmailStr
 import uuid
 from datetime import datetime
@@ -19,7 +20,5 @@ class UserInDB(UserBase):
     created_at: datetime
     updated_at: datetime | None = None
 
-class Config:
-    orm_mode = True
-    model_config = ConfigDict(from_attributes=True)
-  #  You'll also need to import `ConfigDict` from `pydantic`.
+from pydantic import ConfigDict
+model_config = ConfigDict(from_attributes=True) #  You'll also need to import `ConfigDict` from `pydantic`.

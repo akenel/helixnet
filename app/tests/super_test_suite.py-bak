@@ -150,7 +150,7 @@ def retry(fn: Callable, attempts: int = 3, delay: float = 0.5, backoff: float = 
         except Exception as e:
             last_exc = e
             wait = delay * (backoff ** i)
-            log_event("warning", f"Attempt {i+1}/{attempts} failed: {e!s}. Retrying in {wait:.2f}s ⏳")
+            log_event("warning", f"Attempt {i+1}/{attempts} failed: {e!s}. Retrying in {wait:.2ff}s ⏳")
             time.sleep(wait)
     return False, last_exc
 
@@ -251,6 +251,7 @@ def create_user(email: str, password: Optional[str] = None) -> Dict[str, Any] | 
 
 def list_users() -> List[Dict[str, Any]]:
     log_event("info", "Listing users 🔎")
+    # This call now relies on the SESSION having the Authorization header set by run_smoke_test
     ok, res = retry(lambda: http_get("/users/"), attempts=2)
     if not ok:
         raise RuntimeError(f"Failed to GET /users/: {res}")
@@ -262,6 +263,7 @@ def list_users() -> List[Dict[str, Any]]:
 
 def get_user(user_id: str) -> Dict[str, Any]:
     log_event("info", f"Getting user {user_id} 🧭")
+    # This call now relies on the SESSION having the Authorization header set
     ok, res = retry(lambda: http_get(f"/users/{user_id}"), attempts=2)
     if not ok:
         raise RuntimeError(f"Failed to GET /users/{user_id}: {res}")
@@ -272,6 +274,7 @@ def get_user(user_id: str) -> Dict[str, Any]:
 
 def update_user(user_id: str, patch: Dict[str, Any]) -> Dict[str, Any]:
     log_event("info", f"Patching user {user_id} ✏️  patch={patch}")
+    # This call now relies on the SESSION having the Authorization header set
     ok, res = retry(lambda: http_patch(f"/users/{user_id}", json_payload=patch), attempts=2)
     if not ok:
         raise RuntimeError(f"Failed to PATCH /users/{user_id}: {res}")
@@ -282,6 +285,7 @@ def update_user(user_id: str, patch: Dict[str, Any]) -> Dict[str, Any]:
 
 def delete_user(user_id: str) -> int:
     log_event("info", f"Deleting user {user_id} 🧹")
+    # This call now relies on the SESSION having the Authorization header set
     ok, res = retry(lambda: http_delete(f"/users/{user_id}"), attempts=2)
     if not ok:
         raise RuntimeError(f"Failed to DELETE /users/{user_id}: {res}")
@@ -383,21 +387,26 @@ def run_smoke_test(seed_email: Optional[str] = None) -> Dict[str, Any]:
     """
     Single-run smoke test:
       - create user
-      - list users
-      - get user
-      - patch user
-      - delete user
+      - login user and get token (CRITICAL NEW STEP)
+      - list users (authenticated)
+      - get user (authenticated)
+      - patch user (authenticated)
+      - delete user (authenticated)
       - attempt to GET deleted user (expect 404)
     Returns a structured result dict (good for CI).
     """
     results = {"steps": [], "ok": True}
+    # Store original header to restore later, ensuring test isolation
+    original_auth_header = SESSION.headers.get("Authorization") 
+
     try:
         # FIX: Use a non-reserved TLD like @test.com to pass strict Pydantic validation
         email = seed_email or f"test_{uuid.uuid4().hex[:8]}@test.com"
         
+        # 1. CREATE USER
         created = create_user(email=email)
         
-        # Safely extract ID, handling both Pydantic UserOut object and raw dict
+        # Safely extract ID
         uid = None
         if HAVE_PYDANTIC and isinstance(created, UserOut):
             uid = str(created.id)
@@ -409,6 +418,21 @@ def run_smoke_test(seed_email: Optional[str] = None) -> Dict[str, Any]:
              raise RuntimeError(f"Could not determine user ID from created object: {created}")
 
         results["steps"].append({"name": "create", "email": email, "result": created})
+        
+        # 2. OBTAIN TOKEN AND AUTHENTICATE SESSION (The fix for 401)
+        token_data = obtain_token(email=email, password=cfg.default_password)
+        access_token = token_data.get("access_token")
+        
+        if not access_token:
+            raise RuntimeError("Failed to obtain access token after user creation.")
+            
+        # Set the Authorization header for all subsequent authenticated requests
+        SESSION.headers.update({"Authorization": f"Bearer {access_token}"})
+        log_event("info", f"Session authenticated with token for user {email} 🔑")
+        results["steps"].append({"name": "auth", "status": "success"})
+
+
+        # 3. Authenticated CRUD Operations
         
         # list
         users = list_users()
@@ -429,12 +453,14 @@ def run_smoke_test(seed_email: Optional[str] = None) -> Dict[str, Any]:
         
         # final GET should 404 (we'll try and consider that an expected error)
         try:
-            get_user(uid)
+            # We explicitly want this authenticated GET to fail with 404
+            get_user(uid) 
             # If we get here, delete didn't work
             results["ok"] = False
             results["steps"].append({"name": "post-delete-get", "unexpected": "user still exists"})
             log_event("error", "DELETE appears not to have removed user ❗")
         except Exception as e:
+            # Expected failure
             results["steps"].append({"name": "post-delete-get", "expected_error": str(e)})
             log_event("info", "Confirmed deletion (GET after delete failed as expected). ✅")
             
@@ -442,6 +468,14 @@ def run_smoke_test(seed_email: Optional[str] = None) -> Dict[str, Any]:
         results["ok"] = False
         results["error"] = str(e)
         log_event("error", f"Smoke test failed: {e}")
+    finally:
+        # 4. CLEANUP: Reset the Authorization header on the session
+        if original_auth_header is None:
+            if "Authorization" in SESSION.headers:
+                del SESSION.headers["Authorization"]
+        elif original_auth_header:
+            SESSION.headers["Authorization"] = original_auth_header
+        
     return results
 
 def run_auth_flow(email: str, password: Optional[str] = None) -> Dict[str, Any]:
@@ -567,7 +601,8 @@ def main(argv: Optional[List[str]] = None):
             json.dump(r, fh, indent=2, default=str)
         log_event("info", f"Smoke result written to {out}")
         print(pretty_json(r))
-        return 0
+        # If the smoke test failed, return a non-zero exit code
+        return 0 if r.get("ok") else 1
 
     if args.auth:
         email = args.auth[0]

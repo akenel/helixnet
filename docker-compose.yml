@@ -31,6 +31,8 @@ services:
       - core
     expose:
       - "5540"
+    ports:
+      - "5540:5540"
     networks:
       - helixnet_network
   rabbitmq:
@@ -90,6 +92,8 @@ services:
   # ----------------------------------------------------
   web:
     build: .
+    environment:
+      - PYTHONPATH=/code
     container_name: web
     profiles: ["app"]
     env_file:
@@ -100,7 +104,6 @@ services:
       - .:/code
     working_dir: /code
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
     depends_on:
       - redis
       - rabbitmq

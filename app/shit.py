@@ -52,9 +52,9 @@ async def submit_form_page(request: Request):
 # We also use the tags argument to avoid the ugly, duplicated tags seen in the OpenAPI spec.
 
 # Core API Endpoints (Now consistently prefixed)
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(users_router, prefix="/api/v1")
-app.include_router(jobs_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1", tags=["Authentication"])
+app.include_router(users_router, prefix="/api/v1", tags=["Users"])
+app.include_router(jobs_router, prefix="/api/v1", tags=["Job Processing"])
 
 # Health Check (Typically kept outside the versioned prefix)
 app.include_router(health_router, prefix="/health", tags=["System"])

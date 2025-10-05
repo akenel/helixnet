@@ -1,459 +1,202 @@
-🌟 HelixNet Platform: The Asynchronous Architecture
+🌌 HelixNet Core API: Task & Data Management
+🛠️ Overview
 
-This repository contains the foundation for the HelixNet asynchronous web platform, utilizing FastAPI, Celery, and a full suite of containerized backend services for high-performance, real-world application development.
-✅ CURRENT STATUS: TECHNICAL SPIKE COMPLETE (MVA)
+This is the core service for high-volume data processing and user management, built with FastAPI, PostgreSQL, and Celery for asynchronous job handling.
 
-The core infrastructure connection is verified and working. The local Python environment is successfully communicating with the Dockerized Postgres database.
+This API adheres to the standard versioning prefix /api/v1 for all application routes (Authentication, Users, Jobs), with the exception of the system health check.
+🚀 Getting Started
 
-    Endpoint Verified: GET /health returns 200 OK (Postgres connectivity confirmed).
+The API is fully self-documenting. Once the server is running, you can access the interactive Swagger UI documentation here:
 
-    Database Verified: CRUD operations (POST/GET) on the /items endpoint successfully save and retrieve data from the helix_db database.
+    API Docs (Swagger UI): [Your Host]/docs
 
-⚙️ Single Source of Truth: Environment Variables
+    OpenAPI Specification: [Your Host]/openapi.json
 
-All critical credentials and configuration settings are managed via the top-level .env file. These values are consistent across Docker services and local development.
+🔐 Authentication (OAuth2)
 
-Variable
-	
-
-Default Value
-	
-
-Purpose
-
-POSTGRES_USER
-	
-
-helix_user
-	
-
-Database Login Username
-
-POSTGRES_PASSWORD
-	
-
-helix_pass
-	
-
-Database Login Password
-
-POSTGRES_DB
-	
-
-helix_db
-	
-
-Database Name
-
-POSTGRES_HOST
-	
-
-postgres
-	
-
-Internal Host (used inside Docker containers)
-
-REDIS_HOST
-	
-
-redis
-	
-
-Redis Cache/Celery Backend Host
-
-RABBITMQ_HOST
-	
-
-rabbitmq
-	
-
-Celery Broker Host
-
-MINIO_BUCKET
-	
-
-helixnet
-	
-
-S3 Object Storage Bucket Name
-
-APP_PORT
-	
-
-8000
-	
-
-FastAPI Web/API Port
-🏗️ Project Structure & Component Naming
-
-We are moving away from the single isolated test file into a clean, scalable architecture. This structure ensures clean imports and separation of concerns.
-
-Folder
-	
-
-Purpose
-	
-
-Key Files
-
-app/db/
-	
-
-Database Core
-	
-
-database.py (Engine/Session/Dependencies), models.py (SQLAlchemy ORM definitions).
-
-app/schemas/
-	
-
-Data Validation
-	
-
-item_schema.py, user_schema.py (Pydantic models for API request/response).
+All protected routes require a Bearer Token obtained via the OAuth2 Password flow.
+1. Get an Access Token
 
-app/api/
+Endpoint
 	
 
-FastAPI Routes
+Method
 	
 
-item_router.py, user_router.py (FastAPI APIRouter instances).
+Description
 
-app/tasks/
+/api/v1/token
 	
 
-Celery & Background
+POST
 	
 
-celery_app.py (Celery app setup), tasks.py (Task definitions), db_utils.py (Async DB helper for tasks).
+Exchange username (email) and password for a JWT Access Token.
 
-app/
-	
-
-Application Entry
-	
+Request Example (using curl):
 
-main.py (Initializes FastAPI, includes all routers, handles startup/shutdown events).
-🚀 Service Access & Endpoints
-
-Service
-	
+curl -X POST \
+  "http://localhost:8000/api/v1/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=marcel@helix.net&password=yourpassword"
 
-Port
-	
+2. Use the Token
 
-Access URL
-	
+Use the returned access_token in the Authorization header of all subsequent requests:
+Authorization: Bearer <YOUR_ACCESS_TOKEN>
+👤 User Management (/api/v1/)
 
-Tip for Login/Connection
+The User endpoints handle standard CRUD operations and require an active Bearer Token.
 
-Web (FastAPI)
+Path
 	
 
-8000
+Method
 	
 
-http://localhost:8000
+Description
 	
 
-Main application entry point.
+Requires Auth
 
-FastAPI Docs
+/api/v1/
 	
 
-8000
+POST
 	
 
-http://localhost:8000/docs
+Create User: Register a new user account.
 	
 
-Interactive Swagger UI.
+❌ No
 
-Health Check
+/api/v1/
 	
 
-8000
+GET
 	
 
-http://localhost:8000/health
+Read Users: Retrieve a paginated list of all active users.
 	
 
-Confirms database connectivity.
+✅ Yes
 
-RabbitMQ Admin
+/api/v1/me
 	
 
-15672
+GET
 	
 
-http://localhost:15672
+Get Current User Profile: Retrieve the profile of the authenticated user.
 	
 
-Use $RABBITMQ_USER and $RABBITMQ_PASS.
+✅ Yes
 
-MinIO Console
+/api/v1/{user_id}
 	
 
-9091
+GET
 	
 
-http://localhost:9091
+Read User: Retrieve a specific user by their UUID.
 	
 
-Use $MINIO_ROOT_USER and $MINIO_ROOT_PASSWORD.
-
-PGAdmin
-	
+✅ Yes
 
-5050
+/api/v1/{user_id}
 	
 
-http://localhost:5050
+PATCH
 	
 
-Use $PGADMIN_DEFAULT_EMAIL and $PGADMIN_DEFAULT_PASSWORD.
-🚧 Immediate Roadmap: Refactoring & Unit Verification
-
-Our next steps are to move the code from the single testing file (app/api/services/check_api.py) into the final, clean structure, verifying the system health (/health endpoint) after each move.
-
-Step
+Update User: Modify a user's details (email, password, etc.).
 	
 
-Focus
-	
+✅ Yes
 
-Action
+/api/v1/{user_id}
 	
-
-Verification
 
-R1
+DELETE
 	
 
-Database Core
+Delete User: Soft-delete a user account.
 	
 
-Move engine, Base, and get_db_session logic into app/db/database.py.
-	
+✅ Yes
+🎯 Asynchronous Job Processing (/api/v1/ & /api/v1/{job_id})
 
-RUN: uvicorn check_api:app --reload. TEST: GET /health must return 200 OK.
+Heavy lifting tasks are offloaded to a dedicated Celery worker and tracked persistently in PostgreSQL.
 
-R2
+Path
 	
 
-ORM Models
+Method
 	
 
-Move the Item SQLAlchemy model into app/db/models.py.
+Description
 	
 
-RUN: uvicorn check_api:app --reload. TEST: GET /health must return 200 OK.
+Status Code
 
-R3
+/api/v1/
 	
 
-Pydantic Schemas
+POST
 	
 
-Move the Item Pydantic models into app/schemas/item_schema.py.
+Submit New Job: Submits a JobSubmission payload to the worker queue.
 	
 
-RUN: uvicorn check_api:app --reload. TEST: GET /health must return 200 OK.
+202 Accepted
 
-R4
+/api/v1/{job_id}
 	
 
-API Router
+GET
 	
 
-Move all routes (/health, /items) into a new file: app/api/item_router.py and delete the testing file.
+Retrieve Job Status: Check the status and fetch the final result_data upon success.
 	
-
-RUN: uvicorn app.main:app --reload (Finally using main.py). TEST: GET /health must return 200 OK.
-
-HelixNet Core API
-
-The Asynchronous Enterprise-Grade Backend for Scalable Job Processing.
-
-This project utilizes a modern microservices-inspired architecture running on Docker Compose, integrating FastAPI, PostgreSQL, Celery, RabbitMQ, Redis, and MinIO.
-🛠️ Development Setup Guide: The Vibe Coder's Ritual
-
-The HelixNet environment is separated into two layers:
-
-    The Infrastructure Layer (Docker): Contains all persistent services (Postgres, RabbitMQ, Redis, MinIO). These run in containers and communicate internally.
-
-    The Application Layer (Local Venv): Contains the actual Python code (main.py, routers, services). We run this outside Docker during development so you can use features like Uvicorn's --reload and use a debugger, but it connects into the Docker network.
 
-The Standard 3-Step Ritual to start local development (REQUIRED):
-1. 🏗️ Create & Activate the Venv (The Local Toolbox)
+200 OK
 
-This command creates and activates your isolated Python environment, ensuring you are using the correct dependencies and versions listed in requirements.txt.
+Job Statuses:
 
-# 1a. Create the venv (if it doesn't exist)
-python3 -m venv venv
-
-# 1b. Activate the venv (do this every time you start a new terminal session)
-source venv/bin/activate
-# You should see: (venv) angel@debian:~/repos/helixnet$
-
-2. 📦 Install Dependencies (Fill the Toolbox)
-
-This installs Uvicorn, FastAPI, SQLAlchemy, and all other necessary libraries into your new, active virtual environment.
-
-(venv) angel@debian:~/repos/helixnet$ pip install -r requirements.txt
-
-3. 🚀 Run the Infrastructure & API
-A. Start the Backend Services (Docker Stack)
-
-Ensure all essential services are running in the background.
-
-docker compose up -d
-
-B. Run the FastAPI Application (Local Development)
-
-This starts your application, enables code reloading, and connects it to the live Docker services.
-
-(venv) angel@debian:~/repos/helixnet$ uvicorn app.main:app --reload
-
-🌐 Access & Monitoring UIs
-
-Once the stack is running, you can access the core development tools:
-
-Tool
-	
-
-Purpose
-	
+    PENDING/STARTED: Job is queued or actively running.
 
-URL
+    SUCCESS: Job is complete. The result will be in result_data.
 
-Swagger UI
-	
+    FAILURE: Job failed. Error details will be in the message field.
 
-Interactive API documentation (Test endpoints here)
-	
+💖 System Health Check
 
-http://localhost:8000/docs
+This endpoint performs deep checks on critical dependencies, including PostgreSQL and Celery.
 
-Health Check
+Endpoint
 	
 
-Deep status check of all services (Postgres, Redis, RabbitMQ, MinIO)
+Method
 	
 
-http://localhost:8000/health
-
-Celery Flower
+Description
 	
 
-Monitor Celery tasks and worker status
+Success
 	
 
-http://localhost:5555
+Failure
 
-RabbitMQ Mgmt
+/health/
 	
 
-View queues and broker health
+GET
 	
-
-http://localhost:15672
 
-MinIO Console
+Checks connectivity and readiness of the DB and background worker.
 	
 
-Object storage browser
+200 OK (All services up)
 	
-
-http://localhost:9091
-
-Post Enganglement Explained:
-(venv) angel@debian:~/repos/helixnet$ uvicorn app.main:app --reload
-INFO:     Will watch for changes in these directories: ['/home/angel/repos/helixnet']
-ERROR:    [Errno 98] Address already in use
-(venv) angel@debian:~/repos/helixnet$ 
-
-HelixNet Core API
-The Asynchronous Enterprise-Grade Backend for Scalable Job Processing.
-
-This project utilizes a modern microservices-inspired architecture running on Docker Compose, integrating FastAPI, PostgreSQL, Celery, RabbitMQ, Redis, and MinIO.
-
-🛠️ Development Setup Guide: 
-
-The Vibe Coder's Ritual
-
-The HelixNet environment is separated into two layers:
-
-The Infrastructure Layer (Docker): 
-
-Contains all persistent services (Postgres, RabbitMQ, Redis, MinIO). 
-These run in containers and communicate internally.
-
-The Application Layer (Local Venv): 
-Contains the actual Python code (main.py, routers, services).
- We run this outside Docker during development so you can use features like Uvicorn's --reload and use a debugger, but it connects into the Docker network.
- 
- The Standard 3-Step Ritual to start local development (REQUIRED):
- 
- 1. 🏗️ Create & Activate the Venv (The Local Toolbox)
- This command creates and activates your isolated Python environment, ensuring you are using the correct dependencies and versions listed in requirements.txt.
- # 1a. Create the venv (if it doesn't exist)
-python3 -m venv venv
-
-# 1b. Activate the venv (do this every time you start a new terminal session)
-source venv/bin/activate
-# You should see: (venv) angel@debian:~/repos/helixnet$
-
-2. 📦 Install Dependencies (Fill the Toolbox)This installs Uvicorn, FastAPI, SQLAlchemy, and all other necessary libraries into your new, active virtual environment.
-
-(venv) angel@debian:~/repos/helixnet$ pip install -r requirements.txt
-
-3. 🚀 Run the Infrastructure & API
-
-A. Start the Backend Services (Docker Stack)Ensure all essential services are running in the background.docker compose up -d
-
-B. Run the FastAPI Application (Local Development)This starts your application, enables code reloading, and connects it to the live Docker services.
-
-(venv) angel@debian:~/repos/helixnet$ uvicorn app.main:app --reload
-
-C. Troubleshooting Port Conflicts (Address already in use)
-If you get the [Errno 98] Address already in use error, it means port 8000 is already taken by another process (often a previous failed run or a running Docker container).
-
- Use these "secret instructions" to fix it:
- 
- Find the Process ID (PID):# This command lists the process listening on port 8000
-
-sudo lsof -i :8000
-
-Identify the PID:
-
- Look in the output for the column labeled PID.
- 
- Kill the Process: 
- 
- Replace {PID} with the number you found.# This forcefully terminates the conflicting process
-
-sudo kill -9 {PID}
-
-Rerun the app: 
-Go back to Step 3B and run uvicorn app.main:app --reload again.
-
-🌐 Access & Monitoring UIs
-
-Once the stack is running, you can access the core development tools:
-Tool Purpose URL
-Swagger UI  Interactive API documentation (Test endpoints here)
-http://localhost:8000/docs
-
-Health Check Deep status check of all services (Postgres, Redis, RabbitMQ, MinIO)
-http://localhost:8000/health
-
-Celery Flower Monitor Celery tasks and worker status 
-http://localhost:5555
-
-RabbitMQ MgmtView queues and broker health
-http://localhost:15672
 
-MinIO ConsoleObject storage browser
-http://localhost:9091
+503 Service Unavailable

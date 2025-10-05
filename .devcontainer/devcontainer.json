@@ -1,0 +1,36 @@
+{
+  "name": "HelixNet Dev",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "web",
+  "workspaceFolder": "/code",
+  "shutdownAction": "stopCompose",
+  "updateRemoteUserUID": true,
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.extraPaths": ["/code"],
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "ms-python.black-formatter"
+      ]
+    }
+  },
+  "postCreateCommand": "pip install -r requirements.txt",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "FastAPI / Uvicorn App"
+    }
+  }
+}

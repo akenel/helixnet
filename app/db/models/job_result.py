@@ -1,3 +1,4 @@
+# app/db/models/job_result.py
 """
 SQLAlchemy Model for Persistent Job Results (Phase 2.0)
 
@@ -10,6 +11,8 @@ from sqlalchemy import String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 from typing import TYPE_CHECKING
+from sqlalchemy.dialects.postgresql import JSONB 
+from typing import Dict, Any # Also needs these imports at the top
 
 if TYPE_CHECKING:
     # Deferred import for type hinting to prevent circular dependencies
@@ -39,7 +42,12 @@ class JobResult(Base):
     user: Mapped["User"] = relationship(
         back_populates="job_results"
     )
-
+    # CRITICAL: This column must be present in your local file!
+    job_input: Mapped[Dict[str, Any]] = mapped_column(
+        JSONB, 
+        nullable=False,
+        doc="The JSON input payload provided when the job was submitted."
+    )
     # --- Task Information (FIXED: Converted to Mapped style) ---
     task_id: Mapped[str] = mapped_column(
         String(255), 
