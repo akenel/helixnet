@@ -4,8 +4,33 @@ pycache/
 *$py.class
 venv/
 .venv/
-Environment files
+# 🔑 Environment File
 
+.env
+# 🛡️ Traefik Security/Certs (mkcert)
+# This directory contains the locally generated TLS key and certificate
+
+traefik/certs/
+# 🐍 Python Specific
+
+pycache/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+instance/
+# 🐳 Docker / Build Artifacts
+
+.dockerignore
+!Dockerfile # Don't ignore the main Dockerfile
+!docker-compose.yml # Don't ignore the compose file
+# ⚙️ OS & Editor
+
+.DS_Store
+.vscode/
+.idea/
+*.swp
+# 
 .env
 .env.secret
 .flake8
@@ -30,10 +55,10 @@ redis_data/
 portainer_data/
 pgadmin_data/
 OS-specific files
-
+# 
 .DS_Store
 Thumbs.db
-
+# 
 # Standard Python and Environment Files to Ignore
 # Byte-compiled / optimized / shared objects
 
@@ -43,14 +68,14 @@ pycache/
 venv/
 .venv/
 # Environment files
-
+# 
 .env
 .env.secret
 .flake8
 .mypy_cache/
 .pytest_cache/
 # Coverage files
-
+# 
 .coverage
 .coverage.*
 # IDE / Editor Files

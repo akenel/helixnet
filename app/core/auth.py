@@ -1,46 +1,46 @@
+# app/core/auth.py
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.config import get_settings
 from app.db.database import get_db_session
-from app.models.user_model import User
-from app.schemas.token_schema import TokenData
-from app.services.user_service import get_user_by_email, get_user_by_id
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    SecurityScopes,
+)  # 🛡️ For authentication flows
+from app.db.models import User
+from app.core.security import TokenData
+from app.services.user_service import get_user_by_email
 
 # --- Configuration ---
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 logger = logging.getLogger(__name__)
-
 # 🔑 The scheme instance that powers the Swagger UI 'Authorize' button
 # The tokenUrl must match the actual endpoint where the token is issued.
 # NOTE: The dependency's name in the OpenAPI schema is often derived from the variable name,
 # or set explicitly using scheme_name. We rely on the standard default behavior here.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
 
-# --- Password Hashing Utilities ---
 
-
+##### Password Hashing Utilities ---################################################
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a plain password against a hash."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
+####################################################################################
 def get_password_hash(password: str) -> str:
     """Hashes a password."""
     return pwd_context.hash(password)
 
 
-# --- JWT Encoding/Decoding ---
-
-
+#### JWT Encoding/Decoding ---######################################################
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Creates a JWT access token."""
     to_encode = data.copy()
@@ -58,6 +58,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
+####################################################################################
 def decode_access_token(token: str) -> TokenData:
     """Decodes a JWT access token and returns the payload data."""
     credentials_exception = HTTPException(
@@ -83,30 +84,7 @@ def decode_access_token(token: str) -> TokenData:
         raise credentials_exception
 
 
-# --- FastAPI Dependencies ---
-
-
-async def get_current_user(
-    db: Annotated[AsyncSession, Depends(get_db_session)],
-    token: Annotated[
-        str, Depends(oauth2_scheme)
-    ],  # <--- Dependency on the scheme instance
-) -> User:
-    """
-    Dependency function to get the currently authenticated user based on the JWT token.
-    """
-    token_data = decode_access_token(token)
-    user = await get_user_by_email(db, email=token_data.email)
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
-
-
+######################################################################################
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
@@ -120,6 +98,7 @@ async def get_current_active_user(
     return current_user
 
 
+####################################################################################
 async def get_current_active_admin_user(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> User:

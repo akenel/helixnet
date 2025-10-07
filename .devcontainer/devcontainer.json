@@ -1,22 +1,28 @@
 {
   "name": "HelixNet Dev",
-  "dockerComposeFile": ["../docker-compose.yml"],
-  "service": "web",
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  "service": "helix-web-app",
   "workspaceFolder": "/code",
   "shutdownAction": "stopCompose",
-  "updateRemoteUserUID": true,
   "remoteUser": "root",
+  "runServices": [
+    "helix-web-app",
+    "redis",
+    "postgres",
+    "rabbitmq"
+  ],
+  "overrideCommand": false,
   "customizations": {
     "vscode": {
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.analysis.autoImportCompletions": true,
         "python.analysis.extraPaths": ["/code"],
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "editor.formatOnSave": true,
+        "python.analysis.autoImportCompletions": true,
         "python.formatting.provider": "black",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true
+        "editor.formatOnSave": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
       },
       "extensions": [
         "ms-python.python",
@@ -26,11 +32,24 @@
       ]
     }
   },
-  "postCreateCommand": "pip install -r requirements.txt",
-  "forwardPorts": [8000],
+  "postCreateCommand": "make help",
+  "forwardPorts": [
+    8000,
+    5050,
+    5555
+  ],
   "portsAttributes": {
     "8000": {
-      "label": "FastAPI / Uvicorn App"
+      "label": "FastAPI (Uvicorn)"
+    },
+    "5050": {
+      "label": "PgAdmin"
+    },
+    "5555": {
+      "label": "Flower"
     }
+  },
+  "remoteEnv": {
+    "PYTHONPATH": "/code"
   }
 }

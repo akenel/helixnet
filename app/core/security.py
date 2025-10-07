@@ -1,82 +1,168 @@
 # app/core/security.py
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
+# ====================================================================
+# 📦 EXTERNAL & CORE IMPORTS
+# ====================================================================
+# Standard library
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, Union
+
+# Database
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-# Hashing library
-from passlib.context import CryptContext
-# JWT handling
-from jose import jwt, JWTError
-# FastAPI security
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, HTTPException, status
-# Import from your modules
+
+# Hashing and JWT
+from passlib.context import CryptContext  # 🔑 Hashing library
+from jose import jwt, JWTError  # 🔐 JWT handling
+
+# FastAPI Security & Dependencies
+from fastapi import Depends, HTTPException, status, Security
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    SecurityScopes,
+)  # 🛡️ For authentication flows
+
+# Application Core
+from app.core.config import settings
 from app.db.database import get_db_session
-from app.schemas.user import UserInDB # Pydantic schema for return type
-# 💡 Assuming your User model is here:
-from app.db.models.user import User 
-# --- Configuration ---
+from app.schemas.user import UserInDB
+from app.db.models.user import User  # 💡 Assuming your User model is here
+
+# app/core/security.py
+from pydantic import BaseModel, Field
+from typing import Optional
+
+# ====================================================================
+# ⚙️ CONFIGURATION & CONSTANTS
+# ====================================================================
+# 🔑 Hashing Context: Defines the scheme for password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# 💡 FIX 1: Import only the settings FACTORY
-from app.core.config import get_settings 
-
-# 💡 FIX 2: Instantiate the settings object immediately
-settings = get_settings()
-
-# 💡 FIX 3: Assign global constants using the instantiated settings object.
+# 🔒 JWT Configuration: Loaded from settings
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES 
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-# 💡 FIX 4: Update tokenUrl to use the full, consistent /api/v1 prefix defined in config
-# NOTE: The server is currently registering this path as /api/v1/token, not /api/v1/auth/token.
-# We adjust the tokenUrl to match the registered endpoint.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/token")
+# 🚪 OAuth2 Scheme: Defines the token endpoint and available scopes
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_STR}/token",
+    scopes={
+        "admin": "Admin privileges: full access to sensitive endpoints.",
+        "user": "Standard user privileges: general application access.",
+    },
+)
 
-# --- Password Hashing Functions ---
+
+# 💡 Token Payload Schema (What the token contains)
+class TokenData(BaseModel):
+    """
+    Schema for the data extracted from a decoded JWT payload.
+    It typically contains the 'subject' (sub), which you are mapping to 'email'.
+    """
+
+    email: Optional[str] = Field(
+        None,
+        description="The subject (sub) of the token, typically the user's email or ID.",
+    )
+    # You might also include scopes or user ID here if your token contains them
+    # scopes: list[str] = []
+    # user_id: Optional[int] = None
+
+
+# ====================================================================
+# 🛡️ PASSWORD UTILITIES
+# ====================================================================
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifies a plain password against a hash."""
+    """
+    Checks if the plain password matches the hashed password.
+    """
     return pwd_context.verify(plain_password, hashed_password)
 
+
+# ====================================================================
 def get_password_hash(password: str) -> str:
-    """Generates a hash for a given password."""
+    """
+    Generates a secure hash for a given password.
+    """
     return pwd_context.hash(password)
-# --- JWT Token Functions ---
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """Creates a signed JWT access token."""
-    to_encode = data.copy()
+
+
+# ====================================================================
+# 🔑 JWT UTILITIES (TOKEN CREATION & VALIDATION)
+# ====================================================================
+def create_access_token(
+    subject: Union[str, Any],
+    scopes: list[str],
+    expires_delta: Optional[timedelta] = None,
+) -> str:
+    """
+    Generates a JWT access token for a given user subject and scopes.
+    """
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  
-    # CRITICAL FIX: Use 'id' (from the DB model) as the subject, not 'user_id'
-    to_encode.update({"exp": expire, "sub": str(data["id"])})
-    
+        # ⏳ Default expiry time if not provided
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    # 📝 Data to be encoded in the token payload
+    to_encode: Dict[str, Any] = {
+        "exp": expire,
+        "sub": str(subject),
+        "scopes": scopes,  # Inject scopes directly into the token
+    }
+
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-# --- Dependency for Protected Routes (The Fix for the 401) ---
+
+
+# ====================================================================
 async def get_current_user(
+    security_scopes: SecurityScopes,
+    db: AsyncSession = Depends(get_db_session),
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db_session)
 ) -> UserInDB:
+    """
+    Dependency function to validate the JWT token, fetch the user,
+    and verify the required security scopes.
+    """
+    # ❌ Setup for unauthorized response
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) 
-        user_id_str: str = payload.get("sub") 
-        if user_id_str is None:
-            raise credentials_exception 
-        # Query the database for the user using the UUID string from the token
-        query = select(User).where(User.id == user_id_str)
-        result = await db.execute(query)
-        user = result.scalar_one_or_none()
-        if user is None:
-            raise credentials_exception     
-        # 💡 NOTE: UserInDB needs to be constructed from the SQLAlchemy model instance 'user'
-        # If your User model has a .to_pydantic() or if UserInDB.model_validate(user) works, this is fine.
-        return user 
+        # 🔓 Decode and validate the token signature and expiration
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        # 👤 Extract subject (user ID) and scopes from the payload
+        user_id: str = payload.get("sub")
+        token_scopes: list[str] = payload.get("scopes", [])
+
+        if user_id is None:
+            raise credentials_exception
+
     except JWTError:
+        # 💥 Handle errors like invalid signature or expired token
         raise credentials_exception
+
+    # 💾 Fetch user from the database
+    stmt = select(User).where(User.id == int(user_id))
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        raise credentials_exception
+
+    # 🧐 Scope Check: Ensure the user's token has *all* required scopes
+    for scope in security_scopes.scopes:
+        if scope not in token_scopes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Not enough permissions: Missing required scope '{scope}'",
+            )
+
+    # ✅ Return the user object (converted to the safe Pydantic schema)
+    return UserInDB.model_validate(user)
+
+
+# ====================================================================

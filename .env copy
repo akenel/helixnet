@@ -1,0 +1,41 @@
+# --- Application Metadata ---
+PROJECT_NAME="HelixNet Core API"
+API_V1_STR="/api/v1"
+SECRET_KEY="super-secret-key"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# --- Database Configuration (PostgreSQL) ---
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=helix_db
+POSTGRES_USER=helix_user
+POSTGRES_PASSWORD=helix_pass
+DB_POOL_SIZE=5
+DB_ECHO=False
+
+# --- Message Broker (RabbitMQ for Celery) ---
+RABBITMQ_HOST=rabbitmq
+RABBITMQ_PORT=5672
+RABBITMQ_USER=admin
+RABBITMQ_PASS=admin
+
+# --- Cache / Celery Backend (Redis) ---
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# --- Object Storage (MinIO) ---
+MINIO_HOST=minio
+MINIO_PORT=9000
+MINIO_BUCKET=helixnet
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_SECURE=False
+MINIO_ROOT_USER=minioadmin 
+MINIO_ROOT_PASSWORD=minioadmin
+# --- PostgreSQL Admin (PGAdmin) Credentials ---
+# Note: These variables were in your error output but not explicitly in your Settings class.
+# They are common for docker-compose setups and are included here with standard admin credentials.
+PGADMIN_DEFAULT_EMAIL=admin@helix.net
+PGADMIN_DEFAULT_PASSWORD=admin
+CELERY_BROKER_URL=

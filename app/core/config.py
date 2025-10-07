@@ -72,7 +72,6 @@ class Settings(BaseSettings):
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
             f"{self.POSTGRES_DB}"
         )
-        
     @property
     def CELERY_BROKER_URL(self) -> str:
         """Constructs the Celery broker URL using RabbitMQ (AMQP)."""
