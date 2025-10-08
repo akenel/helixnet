@@ -14,7 +14,7 @@ from app.db.database import get_db_session
 
 # --- Models and Schemas ---
 from app.db.models.job_result import JobResult
-from app.schemas.jobs import JobStatus
+from app.schemas.job import JobStatus
 # --- Celery and Task Dependencies ---
 from app.tasks.celery_app import celery_app
 from app.tasks.tasks import sanity_check_task # Only need sanity check here

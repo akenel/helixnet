@@ -18,16 +18,16 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 # Import your settings and SQLAlchemy components
 from app.core.config import get_settings
-from app.db.database import Base  # Assuming Base is defined here
+from app.db.database import Base # Assuming Base is defined here
 
 # 🔑 CRITICAL FIX FOR TABLE DISCOVERY:
-# The issue is likely that Base.metadata doesn't know about the tables.
 # We must explicitly import the modules that define the SQLAlchemy models
 # to ensure they are registered with Base.metadata.
-# Assuming you have an 'user' model file inside the 'app.db.models' package:
+# Based on the file tree, we import all four model files from the subpackage:
 from app.db.models import user
-
-# Add imports for all other model files (e.g., job, task) here!
+from app.db.models import job
+from app.db.models import job_result
+from app.db.models import task_model
 
 # This is the target for the models (Base.metadata)
 target_metadata = Base.metadata

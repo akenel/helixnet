@@ -76,13 +76,13 @@ logs: ## 📜 Tail logs from all running containers
 .PHONY: migrate
 migrate: ## 🧬 Apply Alembic migrations to latest head
 	$(INFO) "Running Alembic migrations..."
-	docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) run --rm helix-web-app alembic upgrade head
+	docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) $(APP_PROFILES)  run --rm helix-web-app alembic upgrade head
 	$(OK) "Migrations applied successfully! 🎉"
 
 .PHONY: revision
 revision: core-up ## ✍️ Create a new Alembic migration (usage: make revision msg="Your message")
 	$(INFO) "Generating new Alembic revision: $(msg)"
-	docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) run --rm helix-web-app alembic revision --autogenerate -m "$(msg)"
+	docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) $(APP_PROFILES) run --rm helix-web-app alembic revision --autogenerate -m "$(msg)"
 	$(OK) "New revision created. Check 'migrations/versions/'. 🪶"
 
 .PHONY: seed-data
@@ -180,3 +180,29 @@ help: ## 🕵️ Show this help menu
 .PHONY: dev
 dev: ## 🧑‍💻 Open an interactive dev shell inside the running web container
 	docker compose exec helix-web-app bash
+
+
+
+# ==========================================
+# 🚀 APPLICATION LIFECYCLE (New suggested commands)
+# ==========================================
+
+.PHONY: build-app
+build-app: ## 🏗️ Build application images (helix-web-app, worker, beat)
+	$(INFO) "Building application images..."
+	# This ensures your new Python code (jobs.py, new models, etc.) is included in the images
+	docker compose -f $(COMPOSE_FILE) $(APP_PROFILES) build
+	$(OK) "Application images built."
+
+.PHONY: deploy-code
+deploy-code: build-app ## ⬆️ Build new code and restart application services (Essential for 'jobs.py' changes)
+	$(INFO) "Deploying new code and restarting web app, worker, and beat..."
+	# This restarts the services using the newly built images
+	docker compose -f $(COMPOSE_FILE) $(APP_PROFILES) up -d --remove-orphans
+	$(OK) "New code is deployed and application services are running. 🥳"
+
+.PHONY: restart-services
+restart-services: ## 🔄 Quick restart for web app and workers (if images haven't changed)
+	$(INFO) "Quickly restarting helix-web-app, worker, and beat..."
+	docker compose -f $(COMPOSE_FILE) restart helix-web-app worker beat
+	$(OK) "Services restarted. 🔄"

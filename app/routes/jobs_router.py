@@ -1,108 +1,115 @@
-import uuid
-from typing import Annotated
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
+# 🚀 Jobs Router - The Queue Loader
+# This router is the primary interface for initiating and tracking asynchronous tasks.
 
-# --- 🛠️ Dependencies: The Unstoppable Force ---
-from app.db.database import get_db_session 
+import logging
+from uuid import UUID
+from fastapi import APIRouter, Depends, status, HTTPException
+from sqlalchemy.orm import Session
+from typing import Annotated
+
+# --- 🛠️ Core Dependencies ---
+# Assuming this is your synchronous DB session getter
+from app.db.database import get_db_session_sync 
 from app.core.security import get_current_user 
 
-# --- 🥋 Data Schemas & Models ---
-# The User model is here, because even Chuck needs to know who he's fighting for.
-from app.db.models.user import User 
-from app.schemas.jobs import JobSubmission, JobStatus 
-from app.schemas.user import UserInDB 
-from app.services.job_service import submit_job, get_job_by_id
+# --- 🥋 Service & Schema Imports ---
+# JobService (The DB Muscle) and Job Task (The Celery Link)
+from app.services.job_service import JobService
+from app.tasks.tasks import send_processing_task 
+
+# Job Schemas (The Data Contract)
+from app.schemas.job import JobCreate, Job, JobUpdate 
+
+logger = logging.getLogger(__name__)
 
 # --- 🚀 Router Initialization: Starting the Brawl ---
-jobs_router = APIRouter(
-    tags=["🎯 Job Processing: The Roundhouse Kick Router"], # Swagger knows what's up.
-    dependencies=[Depends(get_current_user)] # No access unless authenticated. Chuck said so.
+router = APIRouter(
+    prefix="/jobs",
+    tags=["🎯 Job Processing: The Roundhouse Kick Router"], 
+    # Use synchronous session for the API layer that interacts with the synchronous JobService
+    dependencies=[Depends(get_db_session_sync), Depends(get_current_user)] 
 )
 
-# Example: The kind of status that comes back when Chuck is involved.
-JOB_SUBMISSION_EXAMPLE = {
-    "job_id": "c64b9721-7c4a-4ca8-bdc4-2a9b1a85530a",
-    "status": "PENDING",
-    "message": "🔥 Job successfully submitted. It knows better than to be slow.",
-    "result_data": None
-}
-
 # =========================================================================
-# 🎯 Job Submission Endpoint: The Submission Dominator
+# 🎯 Job Submission Endpoint: POST /jobs
 # =========================================================================
-@jobs_router.post(
-    "/submit",
-    response_model=JobStatus,
+@router.post(
+    "/", 
+    response_model=Job, 
     status_code=status.HTTP_202_ACCEPTED,
     summary="📬 Submit New Asynchronous Job",
     description="""
-    This endpoint doesn't wait. It takes the job data and **sends it to Celery**.
-    
-    * **DB Record:** Persisted immediately.
-    * **Queue:** Offloaded to the RabbitMQ queue.
-    
-    We return **202 Accepted** because the job is now Celery's problem.
-    """,
-    responses={
-        202: {
-            "model": JobStatus,
-            "description": "Job accepted and queued. It will be dealt with.",
-            "content": {"application/json": {"example": JOB_SUBMISSION_EXAMPLE}}
-        }
-    }
+    Creates a new job record in the DB (PENDING) and dispatches the task to the Celery queue.
+    Returns **202 Accepted** immediately.
+    """
 )
-async def submit_process_job(
-    # The JSON data body. It must be present, or Chuck will be unhappy.
-    job_data: JobSubmission, 
-    # This is the authenticated user from the Bearer Token. They paid the price of admission.
-    current_user: Annotated[UserInDB, Depends(get_current_user)], 
-    # The database session. It handles the persistence.
-    db: AsyncSession = Depends(get_db_session)
+def create_new_job(
+    job_data: JobCreate,
+    db: Session = Depends(get_db_session_sync),
+    # 🔐 Security check: We need the user object to assign ownership
+    user: dict = Depends(get_current_user) 
 ):
     """
-    Kicks the job submission into the service layer.
+    1. Records the job in Postgres (JobService.create_job).
+    2. Dispatches the heavy lifting to the Celery worker (send_processing_task.delay).
     """
+    user_id = UUID(user['id'])
     
-    # One line, one execution. That's the way Chuck likes it.
-    job_submission_result = await submit_job(
-        db=db,
-        input_data=job_data, 
-        user_id=current_user.id 
-    )
-    
-    return job_submission_result
+    # 1. Record the job in the database as PENDING
+    try:
+        db_job = JobService.create_job(db, job_data, user_id=user_id)
+    except Exception as e:
+        logger.error(f"Failed to record job in DB for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to record job in database. Check service logs."
+        )
+
+    # 2. Dispatch the Celery task using the newly created job ID
+    try:
+        task = send_processing_task.delay(str(db_job.id))
+        logger.info(f"Celery task sent for Job {db_job.id}. Celery ID: {task.id}")
+        
+        # 3. Update the job record with the Celery Task ID
+        JobService.update_job(db, db_job, JobUpdate(celery_task_id=task.id))
+        
+    except Exception as e:
+        logger.error(f"Failed to dispatch Celery task for job {db_job.id}: {e}")
+        # Note: The DB still has a PENDING record. We raise an error so the user knows.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Asynchronous processing service (Celery/RabbitMQ) is unavailable."
+        )
+
+    # 4. Return the database job object (which is PENDING)
+    return db_job
+
 
 # =========================================================================
-# 🔍 Get Job Status Endpoint: The Accountability Check
+# 🔍 Get Job Status Endpoint: GET /jobs/{job_id}
 # =========================================================================
-@jobs_router.get(
-    "/{job_id}",
-    response_model=JobStatus,
+@router.get(
+    "/{job_id}", 
+    response_model=Job,
     summary="📊 Retrieve Job Status and Final Result",
-    description="""
-    Checks the status of a job. If the job belongs to someone else, you get nothing. 
-    
-    * **PENDING/STARTED:** Still running.
-    * **SUCCESS:** The final result is ready. 💥
-    * **FAILURE:** Something broke. Chuck will investigate.
-    """,
-    response_description="Returns the status object."
+    description="Retrieves the current status and final result URL for a specific job, enforcing user ownership."
 )
-async def get_job_status(
-    # The ID of the job to retrieve. UUID, not some weak integer.
-    job_id: uuid.UUID,
-    # Still need the user to verify ownership. Security first.
-    current_user: Annotated[UserInDB, Depends(get_current_user)],
-    db: AsyncSession = Depends(get_db_session)
+def get_job_status(
+    job_id: UUID,
+    db: Session = Depends(get_db_session_sync),
+    user: dict = Depends(get_current_user)
 ):
-    """Retrieve the status and results of a specific job."""
+    """
+    Retrieves a job by ID, enforcing that the logged-in user owns the job.
+    """
+    user_id = UUID(user['id'])
+    db_job = JobService.get_job_by_id(db, job_id=job_id, user_id=user_id)
     
-    job = await get_job_by_id(db, job_id)
-    
-    # Unauthorized access? That's a 404. Chuck is not amused.
-    if not job or job.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found or not authorized. Don't touch what isn't yours.")
+    if not db_job:
+        # 404 is safer than 403 (Forbidden) as it doesn't leak whether the job ID exists
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found or access denied."
+        )
         
-    return job
+    return db_job

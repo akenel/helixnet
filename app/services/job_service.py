@@ -8,8 +8,17 @@ from sqlalchemy import UUID, select
 # SYNC import for Celery
 from sqlalchemy.orm import Session
 from app.db.models.job_result import JobResult
-from app.schemas.jobs import JobSubmission, JobStatus
+from app.schemas.job import JobSubmission, JobStatus
 
+import logging
+from uuid import UUID
+from sqlalchemy.orm import Session
+
+# Import the model and schemas
+from app.db.models.job import JobModel
+from app.schemas.job import JobCreate, JobUpdate, JobStatus
+
+logger = logging.getLogger(__name__)
 # --- Synchronous Functions (Celery/External Use) ---
 
 def queue_job_task(job_id: uuid.UUID, submission_data: JobSubmission, user_id: uuid.UUID) -> bool:
@@ -187,3 +196,74 @@ async def update_job_status(db: AsyncSession, job_id: uuid.UUID, status_update: 
     await db.refresh(job)
     print(f"✅ Job {job_id} status updated to: {job.status} (Async)")
     return job
+
+
+# 🛡️ Job Service - The Async Ledger Controller
+# This service handles all database interactions for the Job model.
+
+
+class JobService:
+    """
+    Central service layer for managing Job entities in the database.
+    Abstracts all SQLAlchemy interactions, ensuring data integrity.
+    """
+    model = JobModel # Reference to the SQLAlchemy model
+
+    @staticmethod
+    def create_job(db: Session, job_data: JobCreate, user_id: UUID) -> JobModel:
+        """
+        Records a new PENDING job in the database immediately after a user request.
+        The Celery task will reference this entry.
+        """
+        logger.info(f"Creating new job for user {user_id}.")
+        
+        db_job = JobModel(
+            user_id=user_id,
+            input_file_path=job_data.input_file_path,
+            template_name=job_data.template_name,
+            initial_config=job_data.initial_config,
+            # Start job in PENDING state
+            status=JobStatus.PENDING 
+        )
+        
+        db.add(db_job)
+        db.commit()
+        db.refresh(db_job)
+        logger.info(f"Job {db_job.id} created and set to PENDING.")
+        return db_job
+
+    @staticmethod
+    def get_job_by_id(db: Session, job_id: UUID, user_id: UUID = None) -> Optional[JobModel]:
+        """
+        Fetches a job by ID. If user_id is provided, enforces ownership check.
+        """
+        query = db.query(JobModel).filter(JobModel.id == job_id)
+        
+        # Enforce security: only allow the owner (or an admin/internal process) to view the job
+        if user_id:
+            query = query.filter(JobModel.user_id == user_id)
+            
+        return query.first()
+
+    @staticmethod
+    def update_job(db: Session, db_job: JobModel, update_data: JobUpdate) -> JobModel:
+        """
+        Updates the job record, typically called by the Celery worker to change status.
+        """
+        update_dict = update_data.model_dump(exclude_unset=True)
+        
+        for key, value in update_dict.items():
+            setattr(db_job, key, value)
+            
+        db.add(db_job)
+        db.commit()
+        db.refresh(db_job)
+        logger.info(f"Job {db_job.id} updated. New status: {db_job.status.value}")
+        return db_job
+    
+    @staticmethod
+    def get_jobs_by_user(db: Session, user_id: UUID, skip: int = 0, limit: int = 100) -> list[JobModel]:
+        """
+        Retrieves all jobs submitted by a specific user (for the /jobs endpoint).
+        """
+        return db.query(JobModel).filter(JobModel.user_id == user_id).offset(skip).limit(limit).all()
