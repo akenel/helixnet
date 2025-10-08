@@ -27,7 +27,7 @@ API_PREFIX = get_settings().API_V1_STR
 
 # FIX: Import the FastAPI application object for testing
 try:
-    from app.shit import app
+    from app.main import app
 except ImportError:
     logger.error(
         "Could not import 'app' from app.main. Ensure app/main.py exports the FastAPI instance."

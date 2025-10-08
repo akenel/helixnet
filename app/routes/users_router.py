@@ -56,6 +56,38 @@ async def create_user_endpoint(
 # ----------------------------------------------------
 
 @users_router.get(
+        "/me", 
+        response_model=UserInDB,
+        summary="Get Current User Profile"
+                  
+ )
+async def read_users_me(
+    # 💥 THE GATEKEEPER IS APPLIED! This route MUST be defined before /{user_id}
+    current_user: UserInDB = Depends(get_current_user) 
+) -> UserInDB:
+    """Retrieves the currently authenticated user's profile."""
+    # Get user information from the object returned by the dependency
+    return current_user 
+
+@users_router.get("/{user_id}", response_model=UserInDB)
+async def read_user(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db_session),
+    # 💥 THE GATEKEEPER IS APPLIED!
+    current_user: UserInDB = Depends(get_current_user) 
+) -> UserInDB:
+    """Retrieves a user by UUID."""
+    # (Optional: Add logic to check if current_user.id == user_id or is_admin)
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return user
+
+
+@users_router.get(
         "/", 
         response_model=List[UserInDB])
 async def read_users(
@@ -71,35 +103,6 @@ async def read_users(
     logger.debug(f"[USER_ROUTE] Listing users for authenticated user: {current_user.email}")
     # (Optional: Add a check here if only admins can list all users)
     return await get_users(db, skip=skip, limit=limit)
-
-@users_router.get(
-        "/me", 
-        response_model=UserInDB,
-        summary="Get Current User Profile"
-                  
- )
-async def read_users_me(
-    # 💥 THE GATEKEEPER IS APPLIED!
-    current_user: UserInDB = Depends(get_current_user) 
-) -> UserInDB:
-    # Get user information from the object returned by the dependency
-    return current_user 
-
-@users_router.get("/{user_id}", response_model=UserInDB)
-async def read_user(
-    user_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db_session),
-    # 💥 THE GATEKEEPER IS APPLIED!
-    current_user: UserInDB = Depends(get_current_user) 
-) -> UserInDB:
-    # (Optional: Add logic to check if current_user.id == user_id or is_admin)
-    user = await get_user_by_id(db, user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    return user
 
 @users_router.patch("/{user_id}", response_model=UserInDB)
 async def update_user_endpoint(

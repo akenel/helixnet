@@ -1,103 +1,99 @@
-# /code/app/routes/jobs_router.py
-
 import uuid
 from typing import Annotated
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
-# --- ⚙️ Core Dependencies & Database ---
+# --- 🛠️ Dependencies: The Unstoppable Force ---
 from app.db.database import get_db_session 
 from app.core.security import get_current_user 
 
-# --- 📦 Models and Schemas ---
-from app.db.models.user import User # Type hint for ORM model (optional, but clean)
-from app.schemas.jobs import JobSubmission, JobStatus # JobStatus is used for the response
-from app.schemas.user import UserInDB # For dependency type hint
+# --- 🥋 Data Schemas & Models ---
+# The User model is here, because even Chuck needs to know who he's fighting for.
+from app.db.models.user import User 
+from app.schemas.jobs import JobSubmission, JobStatus 
+from app.schemas.user import UserInDB 
 from app.services.job_service import submit_job, get_job_by_id
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from typing import Dict, Any
 
-# --- 🛣️ Router Initialization ---
+# --- 🚀 Router Initialization: Starting the Brawl ---
 jobs_router = APIRouter(
-    tags=["🎯  Job Processing : jobs_router"], # This tag appears in Swagger
-    dependencies=[Depends(get_current_user)] # All job routes require auth
+    tags=["🎯 Job Processing: The Roundhouse Kick Router"], # Swagger knows what's up.
+    dependencies=[Depends(get_current_user)] # No access unless authenticated. Chuck said so.
 )
 
-# Example response object for Swagger documentation
+# Example: The kind of status that comes back when Chuck is involved.
 JOB_SUBMISSION_EXAMPLE = {
     "job_id": "c64b9721-7c4a-4ca8-bdc4-2a9b1a85530a",
     "status": "PENDING",
-    "message": "🌼️ Job successfully submitted and queued for processing.",
+    "message": "🔥 Job successfully submitted. It knows better than to be slow.",
     "result_data": None
 }
-# --------------------------------------------------------------------------
-# 🎯 Job Submission Endpoint: submit_process_job
-# --------------------------------------------------------------------------
+
+# =========================================================================
+# 🎯 Job Submission Endpoint: The Submission Dominator
+# =========================================================================
 @jobs_router.post(
-    "/",
+    "/submit",
     response_model=JobStatus,
     status_code=status.HTTP_202_ACCEPTED,
-    summary="📬 Submit New Asynchronous Job", # Concise summary with emoji
+    summary="📬 Submit New Asynchronous Job",
     description="""
-    Submits a complex data processing job to the background worker (Celery).
+    This endpoint doesn't wait. It takes the job data and **sends it to Celery**.
     
-    1. **DB Record:** A job tracking record is immediately persisted to PostgreSQL.
-    2. **Queue:** The actual heavy lifting is offloaded to the RabbitMQ queue.
+    * **DB Record:** Persisted immediately.
+    * **Queue:** Offloaded to the RabbitMQ queue.
     
-    Returns **202 Accepted** (not 200 OK) because processing is asynchronous.
+    We return **202 Accepted** because the job is now Celery's problem.
     """,
-    response_description="Returns the initial job status and ID for tracking.",
     responses={
         202: {
             "model": JobStatus,
-            "description": "Job accepted and queued.",
-            "content": {
-                "application/json": {
-                    "example": JOB_SUBMISSION_EXAMPLE
-                }
-            }
+            "description": "Job accepted and queued. It will be dealt with.",
+            "content": {"application/json": {"example": JOB_SUBMISSION_EXAMPLE}}
         }
     }
 )
 async def submit_process_job(
-    job_data: JobSubmission,
+    # The JSON data body. It must be present, or Chuck will be unhappy.
+    job_data: JobSubmission, 
+    # This is the authenticated user from the Bearer Token. They paid the price of admission.
     current_user: Annotated[UserInDB, Depends(get_current_user)], 
+    # The database session. It handles the persistence.
     db: AsyncSession = Depends(get_db_session)
 ):
     """
-    Submits the primary data processing job by delegating to the service layer.
-    The service layer handles: 1) DB record creation, and 2) Celery task queuing.
+    Kicks the job submission into the service layer.
     """
     
-    # KIS Solution: Call the unified service function
-    result = await submit_job(
+    # One line, one execution. That's the way Chuck likes it.
+    job_submission_result = await submit_job(
         db=db,
         input_data=job_data, 
         user_id=current_user.id 
     )
     
-    return result
+    return job_submission_result
 
-# --------------------------------------------------------------------------
-# 🔍 Get Job Status Endpoint
-# --------------------------------------------------------------------------
+# =========================================================================
+# 🔍 Get Job Status Endpoint: The Accountability Check
+# =========================================================================
 @jobs_router.get(
     "/{job_id}",
     response_model=JobStatus,
-    summary="📊 Retrieve Job Status and Final Result", # Concise summary with emoji
+    summary="📊 Retrieve Job Status and Final Result",
     description="""
-    Retrieves the persistent job status and final result data from the PostgreSQL database.
+    Checks the status of a job. If the job belongs to someone else, you get nothing. 
     
-    * **PENDING/STARTED:** The job is queued or actively running.
-    * **SUCCESS:** The job completed. `result_data` will contain the final JSON output.
-    * **FAILURE:** The job failed. `message` will contain the error details.
+    * **PENDING/STARTED:** Still running.
+    * **SUCCESS:** The final result is ready. 💥
+    * **FAILURE:** Something broke. Chuck will investigate.
     """,
-    response_description="Returns the current status object, including final results upon success.",
+    response_description="Returns the status object."
 )
 async def get_job_status(
+    # The ID of the job to retrieve. UUID, not some weak integer.
     job_id: uuid.UUID,
+    # Still need the user to verify ownership. Security first.
     current_user: Annotated[UserInDB, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db_session)
 ):
@@ -105,7 +101,8 @@ async def get_job_status(
     
     job = await get_job_by_id(db, job_id)
     
+    # Unauthorized access? That's a 404. Chuck is not amused.
     if not job or job.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found or not authorized.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found or not authorized. Don't touch what isn't yours.")
         
-    return job 
+    return job

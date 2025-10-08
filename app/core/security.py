@@ -26,7 +26,7 @@ from app.core.config import settings
 from app.db.database import get_db_session
 from app.schemas.user import UserInDB
 from app.db.models.user import User  # 💡 Assuming your User model is here
-
+from uuid import UUID
 # app/core/security.py
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -144,9 +144,9 @@ async def get_current_user(
     except JWTError:
         # 💥 Handle errors like invalid signature or expired token
         raise credentials_exception
-
-    # 💾 Fetch user from the database
-    stmt = select(User).where(User.id == int(user_id))
+    # 💾 Fetch user from the database.
+    # In get_current_user function:
+    stmt = select(User).where(User.id == user_id) 
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 

@@ -240,3 +240,25 @@ Checks connectivity and readiness of the DB and background worker.
 	
 
 503 Service Unavailable
+
+📐 API Routing and Prefix Resolution Quagmire (The Job Submission Fix)
+
+This section documents a specific routing conflict encountered when configuring the /api/v1/jobs endpoints in app/main.py.
+The Problem
+
+The goal was to have the job submission endpoint accessible at POST /api/v1/jobs.
+
+    In app/main.py, the jobs_router was included with a prefix: api_v1_router.include_router(jobs_router, prefix="/jobs").
+
+    If the endpoint inside app/routes/jobs_router.py was defined as jobs_router.post("/"), the resulting API path became /api/v1/jobs/ (with a trailing slash).
+
+This caused confusion and failed tests because the client (cURL in the test script) was trying to hit either /api/v1/jobs or /api/v1/jobs/, but neither request matched the expected behavior of the router's internal definition.
+The Resolution
+
+To ensure reliability and clarity, the final solution involved two parts:
+
+    Explicit Internal Route: The job submission endpoint inside app/routes/jobs_router.py must use an explicit, verb-based path, such as jobs_router.post("/submit").
+
+    Explicit Client Call: The test client (test_api.sh) was updated to call the resulting unambiguous path: POST /api/v1/jobs/submit.
+
+This two-step approach eliminates path ambiguity, ensuring that POST /api/v1/jobs/submit is the only accepted method for job creation, thereby resolving the 404 Not Found and 405 Method Not Allowed errors.

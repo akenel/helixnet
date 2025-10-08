@@ -1,5 +1,6 @@
 # app/routes/auth_router.py
 import logging
+from app.db import user
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,9 +76,9 @@ async def login_for_access_token(
 
     # 💡 user_data MUST contain the necessary payload fields (like 'id')
     access_token = create_access_token(
-        data=user_data, expires_delta=access_token_expires
+    subject=user_data["id"], 
+    scopes=["user"]  # Assuming all authenticated users get at least the 'user' scope
     )
-
     # 3. Return the token in the required OAuth2 format
     logger.debug(
         f"[AUTH_ROUTE] ✅ Authentication SUCCESSFUL for {form_data.username}. Generating token."
