@@ -1,5 +1,34 @@
 #  /code/docker-compose.yml
+
 services:
+  # The name of your development service (you may need to change this)
+  # dev_container:
+  #   # Use the image built from the Dockerfile above, or specify your image name
+  #   build:
+  #     context: .
+  # #    dockerfile: .devcontainer/Dockerfile
+    
+  #   environment:
+  #     - PYTHONPATH=/code
+  #   container_name: helix-web-app # Cleaned up container name
+  #   profiles:
+  #     - core
+  #     - app
+  #   env_file:
+  #     - .env
+
+  #   # CRITICAL STEP: Mount the Docker socket from the host into the container
+  #   # This allows the 'docker' CLI inside the container to talk to the host's daemon
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+  #   # If you need to map ports (e.g., for a running app)
+  #   ports:
+  #     - "3000:3000"
+    
+  #   # Keep the container running for development
+  #   command: /bin/sh -c "while sleep 1000; do :; done"
+
   # -----------------------------------------------------
   # 🛡️ TRAEFIK: Edge Router with HTTPS Termination (mkcert)
   # -----------------------------------------------------

@@ -1,4 +1,4 @@
-
+databases
 # `app/tests/requirements-test.txt`£
 #¨httpx if you later convert to async
 httpx>=0.24
@@ -17,6 +17,7 @@ requests>=2.28
 rich>=13.0
 pydantic>=1.10
 python-jose>=3.3
+
 
 anyio
 pytest-asyncio

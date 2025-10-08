@@ -6,19 +6,15 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install system dependencies for compiling packages (asyncpg, psycopg2, etc.)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates curl docker.io build-essential libpq-dev gcc && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy and install dependencies
 COPY requirements.txt /app/
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-
 
 # --- STAGE 2: Runtime / Dev Stage ---
 FROM python:3.11-slim AS final

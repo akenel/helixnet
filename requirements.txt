@@ -1,5 +1,6 @@
 ## Base Dependencies
 fastapi==0.111.0
+databases
 uvicorn[standard]==0.29.0 
 ## Database Stack
 sqlalchemy==2.0.30

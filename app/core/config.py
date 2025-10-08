@@ -1,9 +1,9 @@
 # app/core/config.py
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from functools import  lru_cache # Note: property is the standard Python decorator
+from pydantic import Field
+from functools import lru_cache 
 
-# --- ⚙️ CORE SETTINGS CLASS ---
+# --- ⚙️ CORE SETTINGS CLASS (The Chuck Norris Edition) ---
 class Settings(BaseSettings):
     """
     Configuration settings for the application, loaded from the environment 
@@ -18,11 +18,18 @@ class Settings(BaseSettings):
     # --- FastAPI Application Metadata ---
     PROJECT_NAME: str = "HelixNet Core API"
     API_V1_STR: str = "/api/v1" 
+    VERSION: str = "0.1.0"
+
+    # --- CORS Configuration ---
+    BACKEND_CORS_ORIGINS: list[str] = Field(
+        ["*"], description="Allowed origins for CORS (e.g., ['http://localhost:3000'])"
+    )
     
-    # --- Database Configuration (Values loaded from env) ---
+    # --- Database Configuration (Core Components loaded from env) ---
     POSTGRES_HOST: str = Field('postgres', description="Postgres service hostname.")
     POSTGRES_PORT: int = Field(5432, description="Postgres service port.")
-    POSTGRES_DB: str = Field('helix_db', description="Postgres database name.")
+    POSTGRES_DB: str = Field('helix_db', description="Postgres database name (main app).")
+    POSTGRES_TEST_DB: str = Field('test_db', description="Dedicated database name for testing (used in DSN properties).")
     POSTGRES_USER: str = Field('helix_user', description="Postgres username.")
     POSTGRES_PASSWORD: str = Field('helix_pass', description="Postgres password.")
     # Database connection tuning
@@ -52,10 +59,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = Field("HS256", description="JWT algorithm.")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(30, description="Access token expiry time in minutes.")
     
-    # --- COMPUTED URL PROPERTIES (Standard @property to avoid unpicklable locks) ---
+    # --- COMPUTED URL PROPERTIES (Dynamic construction for security and flexibility) ---
+    
     @property
     def POSTGRES_SYNC_URL(self) -> str:
-        """Constructs the fully formatted synchronous database URL."""
+        """
+        Constructs the fully formatted synchronous database URL (psycopg). 
+        (Uses main DB name, primarily for local shell/admin tools).
+        """
         return (
             f"postgresql+psycopg://"
             f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
@@ -65,13 +76,41 @@ class Settings(BaseSettings):
 
     @property
     def POSTGRES_ASYNC_URL(self) -> str:
-        """Constructs the fully formatted asynchronous database URL (asyncpg)."""
+        """
+        Constructs the fully formatted asynchronous database URL (asyncpg).
+        This is the primary URL used by the main application.
+        """
         return (
             f"postgresql+asyncpg://"
             f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
             f"{self.POSTGRES_DB}"
         )
+        
+    @property
+    def POSTGRES_SYNC_TEST_DSN(self) -> str:
+        """
+        Constructs the dedicated synchronous test DSN used by conftest.py's 
+        setup_database fixture. Uses the TEST_DB name.
+        
+        CRITICAL FIX: Explicitly uses 'postgresql+psycopg' to prevent SQLAlchemy 
+        from incorrectly attempting to load the deprecated 'psycopg2' driver first.
+        """
+        return (
+            f"postgresql+psycopg://" # ✅ FIXED: Added the explicit driver dialect
+            f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
+            f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
+            f"{self.POSTGRES_TEST_DB}"
+        )
+
+
+    @property
+    def DATABASE_URL(self) -> str:
+        """
+        Legacy property expected by some libraries, points to the POSTGRES_ASYNC_URL.
+        """
+        return self.POSTGRES_ASYNC_URL
+        
     @property
     def CELERY_BROKER_URL(self) -> str:
         """Constructs the Celery broker URL using RabbitMQ (AMQP)."""
@@ -96,12 +135,9 @@ class Settings(BaseSettings):
 # INSTANTIATION (Singleton Factory Pattern)
 # ====================================================================
 
-@lru_cache # Ensures the function only runs once and caches the result
+@lru_cache 
 def get_settings() -> Settings:
     """Returns a cached, singleton instance of the Settings object."""
     return Settings()
 
-# 🔑 CRITICAL FIX: The global 'settings' variable is removed!
-# All modules must now import and call get_settings() instead.
-# Instantiate settings globally so modules can do: from app.core.config import settings
 settings = get_settings()

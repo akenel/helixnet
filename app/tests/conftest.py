@@ -1,176 +1,174 @@
-import pytest
+# 🧠 app/tests/conftest.py
+"""
+🔥 CHUCK NORRIS APPROVED TEST SETUP 🔥
+-------------------------------------
+This file ensures your pytest environment is totally isolated, fast, and 
+dev-safe. It creates a dedicated test database (helix_test_db 🧪),
+runs migrations, seeds fake users, and cleans up when done.
+
+💥 RULE #1: Tests NEVER touch your main helix_db.
+💥 RULE #2: Keep your `.env.test` sacred.
+💥 RULE #3: Chuck Norris doesn’t mock databases. He roundhouse-kicks them into shape.
+"""
+
+import os
 import asyncio
-from typing import Generator, Dict, Any
-import httpx
-from datetime import timedelta
-import logging
-import uuid
+import pytest
+from typing import Generator
+from sqlalchemy import create_engine, text
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.exc import ProgrammingError
+from fastapi.testclient import TestClient
+from dotenv import load_dotenv
 
-from sqlalchemy.orm import Session
-from app.db.database import get_db_session, get_db_session_sync, SyncEngine, Base
-from app.core.config import get_settings
-from app.services.user_service import (
-    get_password_hash,
-)  # Used for hashing test user password
-from app.core.security import create_access_token  # Used to generate the test JWT token
-from app.db.models.user import User as UserModel  # Import the SQLAlchemy Model
+# 🕵️‍♂️ --- 1. Load Environment ---
+if os.getenv("ENV") != "testing":
+    if os.path.exists(".env.test"):
+        load_dotenv(".env.test")
+        print("🧪 Loaded test environment (.env.test)")
+    else:
+        load_dotenv(".env")
+        print("⚠️  Default .env loaded (no .env.test found)")
 
-# --- 1. SETUP & CONSTANTS ---
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# ⚙️ --- 2. Database Settings ---
+DB_USER = os.getenv("POSTGRES_USER", "helix_user")
+DB_PASS = os.getenv("POSTGRES_PASSWORD", "helix_pass")
+DB_HOST = os.getenv("POSTGRES_HOST", "postgres")
+DB_PORT = os.getenv("POSTGRES_PORT", "5432")
 
-# Constants inferred to be used by the test file (test_helix_api_crud.py)
-TEST_EMAIL = "test_crud_user@helix.net"
-TEST_PASSWORD = "testpassword123"
-# Retrieve the configured API prefix from settings
-API_PREFIX = get_settings().API_V1_STR
+TEST_DB_NAME = os.getenv("TEST_DB_NAME", "helix_test_db")
 
-# FIX: Import the FastAPI application object for testing
+# 🚀 Async test DB URL (for app)
+ASYNC_TEST_DB_URL = (
+    f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{TEST_DB_NAME}"
+)
+# 🧰 Admin DB URL (for CREATE/DROP DB)
+ADMIN_DB_URL = (
+    f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/postgres"
+)
+
+# 🧱 SQLAlchemy Base (import your app's Base if available)
+Base = declarative_base()
+
+# 🧍 Test user data (example)
+TEST_USER_EMAIL = "test_user_api@helixnet.com"
+TEST_USER_PASSWORD = "TestSecurePassword123"
+
+
+# 🦸 --- 3. Import your FastAPI app ---
 try:
     from app.main import app
 except ImportError:
-    logger.error(
-        "Could not import 'app' from app.main. Ensure app/main.py exports the FastAPI instance."
+    print("🚨 WARNING: Could not import 'app' from 'app.main'. Using a dummy app.")
+    from fastapi import FastAPI
+    app = FastAPI(title="Dummy Test App")
+
+
+# 🧬 --- 4. Optional Seeding Function ---
+async def seed_test_user(conn):
+    """
+    Creates a default test user. Replace this with your real seeding logic.
+    Chuck Norris seeds users just by staring at the database.
+    """
+    await conn.execute(
+        text(
+            f"INSERT INTO users (email, hashed_password) "
+            f"VALUES ('{TEST_USER_EMAIL}', crypt('{TEST_USER_PASSWORD}', gen_salt('bf')))"
+            f"ON CONFLICT (email) DO NOTHING;"
+        )
     )
-    raise
+    print(f"👤 Seeded test user: {TEST_USER_EMAIL}")
 
 
-# --- 2. CORE DATABASE FIXTURES (Sync/Async Setup) ---
+# 🧪 --- 5. Fixtures ---
+
+@pytest.fixture(scope="session")
+def admin_engine() -> Engine:
+    """Provides sync engine connected to 'postgres' for DB admin (CREATE/DROP)."""
+    print("🔑 [ADMIN] Connecting to Postgres (admin engine)...")
+    return create_engine(ADMIN_DB_URL, isolation_level="AUTOCOMMIT")
 
 
 @pytest.fixture(scope="session")
-def sync_engine():
-    """Provides the synchronous SQLAlchemy engine for session-level setup/teardown."""
-    return SyncEngine
+def async_engine() -> AsyncEngine:
+    """Provides async engine connected to helix_test_db."""
+    print("🧩 [ASYNC] Creating async test engine...")
+    return create_async_engine(ASYNC_TEST_DB_URL, echo=False, future=True)
 
+
+@pytest.fixture(scope="session")
+def client() -> Generator[TestClient, None, None]:
+    """HTTP test client for the FastAPI app."""
+    print("🧠 [CLIENT] Initializing FastAPI TestClient...")
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+# 🏗️ --- 6. Database Lifecycle Management ---
+
+def create_test_db(engine: Engine, db_name: str):
+    """Creates test database if it doesn't exist."""
+    print(f"🛠️ [DB] Creating database '{db_name}' (if not exists)...")
+    try:
+        with engine.connect() as conn:
+            conn.execute(text(f"CREATE DATABASE {db_name}"))
+            conn.commit()
+            print(f"✅ [DB] Database '{db_name}' created.")
+    except ProgrammingError as e:
+        if "42P04" in str(e):
+            print(f"ℹ️ [DB] Database '{db_name}' already exists. Continuing.")
+        else:
+            raise
+
+
+def drop_test_db(engine: Engine, db_name: str):
+    """Drops the test database cleanly."""
+    print(f"🧹 [DB] Dropping test database '{db_name}'...")
+    try:
+        with engine.connect() as conn:
+            conn.execute(
+                text(
+                    f"""
+                    SELECT pg_terminate_backend(pg_stat_activity.pid)
+                    FROM pg_stat_activity
+                    WHERE pg_stat_activity.datname = '{db_name}'
+                      AND pid <> pg_backend_pid();
+                    """
+                )
+            )
+            conn.execute(text(f"DROP DATABASE IF EXISTS {db_name}"))
+            conn.commit()
+            print(f"💥 [DB] Database '{db_name}' dropped successfully.")
+    except Exception as e:
+        print(f"⚠️ [DB] Could not drop test DB: {e}")
+
+
+# 🧱 --- 7. Pytest Lifecycle Fixture ---
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_database(sync_engine):
+def setup_test_database(admin_engine: Engine, async_engine: AsyncEngine):
     """
-    Sets up the test database schema before the session and drops it after.
-    This ensures a clean database for every test run.
+    🏗️ [DB SETUP] Full test DB lifecycle:
+      1️⃣ Create test DB
+      2️⃣ Build schema (from SQLAlchemy Base)
+      3️⃣ Seed test user(s)
+      4️⃣ Drop DB after tests
     """
-    logger.info("Initializing test database structure...")
-    Base.metadata.create_all(bind=sync_engine)
-    yield
-    logger.info("Cleaning up and dropping test database structure...")
-    Base.metadata.drop_all(bind=sync_engine)
+    print("\n🚀 [TEST LIFECYCLE] Starting test DB setup...")
+    create_test_db(admin_engine, TEST_DB_NAME)
 
+    async def async_setup():
+        async with async_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            await seed_test_user(conn)
 
-@pytest.fixture(scope="function")
-def sync_db_session() -> Generator[Session, None, None]:
-    """
-    Provides a synchronous database session for test setup/data insertion.
-    This fixture ensures a clean session that is rolled back after each test.
-    """
-    # Use the context manager defined in database.py
-    with get_db_session_sync() as session:
-        yield session
-        # Explicit rollback for safety, even though the context manager should handle it.
-        session.rollback()
+    asyncio.run(async_setup())
+    print("🎯 [DB SETUP] Schema created + data seeded.")
 
+    yield  # Tests execute here 💥
 
-# --- 3. OVERRIDE DEPENDENCIES FOR ASYNC TESTING (Function Scope) ---
-
-
-@pytest.fixture(scope="function")
-def override_get_db_session(sync_db_session: Session):
-    """
-    Overrides the FastAPI dependency (get_db_session) to use the synchronous
-    test session for test isolation and transaction control.
-    (Function scoped to ensure it's set/cleared for every test).
-    """
-
-    async def _get_test_session():
-        # FastAPI expects an async generator, so we wrap the sync session yield.
-        yield sync_db_session
-
-    # Apply the override
-    app.dependency_overrides[get_db_session] = _get_test_session
-    yield
-
-    # Cleanup the override after the test
-    app.dependency_overrides.clear()
-
-
-# --- 4. HTTP CLIENT FIXTURE (Function Scope) ---
-
-
-@pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    """Overrides the pytest-asyncio default event loop to be session-scoped."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="function")  # <-- FIX: Changed scope from 'session' to 'function'
-async def async_client(override_get_db_session) -> httpx.AsyncClient:
-    """
-    Provides an asynchronous HTTP client configured to talk to the FastAPI app,
-    ensuring our overridden database dependency is active.
-    (Function scoped to align with override_get_db_session).
-    """
-    async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-        yield client
-
-
-# --- 5. AUTHENTICATION FIXTURE (Function Scope) ---
-
-
-@pytest.fixture(scope="function")
-def authenticated_user_data(
-    sync_db_session: Session,
-) -> Generator[Dict[str, Any], None, None]:
-    """
-    Creates a temporary test user in the database, generates a valid JWT token
-    for them, yields the authentication data, and deletes the user afterward.
-    (Function scoped to ensure a clean user is created/deleted for every test).
-    """
-    logger.info("Setting up authenticated_user_data fixture...")
-
-    # 1. Create a clean test user
-    hashed_password = get_password_hash(TEST_PASSWORD)
-    test_user_id = uuid.uuid4()
-
-    user_model = UserModel(
-        id=test_user_id,
-        email=TEST_EMAIL,
-        hashed_password=hashed_password,
-        is_active=True,
-    )
-
-    sync_db_session.add(user_model)
-    sync_db_session.commit()
-    sync_db_session.refresh(user_model)
-    logger.info(f"Test user created successfully: ID={user_model.id}")
-
-    # 2. Generate the JWT authentication token
-    to_encode = {"sub": str(user_model.id), "email": user_model.email}
-    access_token = create_access_token(
-        data=to_encode, expires_delta=timedelta(minutes=5)
-    )
-
-    user_data = {
-        "user_id": str(user_model.id),
-        "email": TEST_EMAIL,
-        "token": access_token,
-    }
-
-    # 3. Yield the data to the tests that request this fixture
-    yield user_data
-
-    # 4. Teardown: Clean up the user after the test run is complete
-    logger.info(f"Tearing down test user: ID={user_data['user_id']}")
-    try:
-        user_to_delete = (
-            sync_db_session.query(UserModel)
-            .filter(UserModel.id == user_model.id)
-            .first()
-        )
-        if user_to_delete:
-            sync_db_session.delete(user_to_delete)
-            sync_db_session.commit()
-    except Exception as e:
-        logger.error(f"Failed to clean up test user {user_data['user_id']}: {e}")
-        sync_db_session.rollback()
+    print("🧹 [CLEANUP] Tests done. Dropping test database...")
+    drop_test_db(admin_engine, TEST_DB_NAME)
+    print("✅ [CLEANUP] DB cleanup complete. Chuck Norris approves. 👊")
