@@ -64,6 +64,17 @@ services:
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
       # 3. Mount the mkcert directory for TLS
       - ./traefik/certs:/etc/traefik/certs:ro
+
+
+    # volumes:
+    #   # 1. Traefik Static Config
+    #   - ./traefik.yml:/etc/traefik/traefik.yml:ro
+    #   # 2. Dynamic Config (where certs.yml lives)
+    #   - ./dynamic:/etc/traefik/dynamic:ro
+    #   # 3. Certificates
+    #   - ./certs:/etc/traefik/certs:ro
+
+
     networks:
       - helixnet_network
 

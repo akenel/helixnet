@@ -1,269 +1,194 @@
-# app/services/job_service.py
+# app/services/job_service.py — 🥋 The Job Master Service
+# ====================================================================================
+
+import logging
 import uuid
 from typing import Dict, Any, List, Optional
 from datetime import datetime, UTC
-# ASYNC imports for FastAPI
+
+# --- Core SQLAlchemy & ASYNC Imports ---
+# 🚨 CN QA: Eliminated redundant Session imports and consolidated to AsyncSession
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import UUID, select 
-# SYNC import for Celery
-from sqlalchemy.orm import Session
-from app.db.models.job_result import JobResult
-from app.schemas.job import JobSubmission, JobStatus
+from sqlalchemy import select, UUID
+from sqlalchemy.orm import Session # Keep only if needed for sync functions (Celery)
+from sqlalchemy.future import select # Best practice for select statement in async
 
-import logging
-from uuid import UUID
-from sqlalchemy.orm import Session
+# --- Model & Schema Imports ---
+from app.db.models.job_model import Job
+from app.db.models.user_model import User
+# 🚨 CN QA: Using concrete names for clarity instead of ambiguous aliases (JobStatus, JobUpdate)
+from app.db.models.job_model import Job as JobModel 
 
-# Import the model and schemas
-from app.db.models.job import JobModel
-from app.schemas.job import JobCreate, JobUpdate, JobStatus
+from app.db.models.job_model import Job as JobORM 
+
+from app.schemas.job_schema import (
+    JobSubmission, 
+    JobUpdate  # ⬅️ This is the correct schema name for status/result updates
+)
 
 logger = logging.getLogger(__name__)
-# --- Synchronous Functions (Celery/External Use) ---
 
-def queue_job_task(job_id: uuid.UUID, submission_data: JobSubmission, user_id: uuid.UUID) -> bool:
-    """
-    Mocks queuing a job. 
-    In a real application, this would dispatch the job to a Celery/Redis worker.
-    This remains a standard 'def' function.
-    """
-    print(f"MOCK: Queuing job {job_id} for user {user_id} with data: {submission_data.input_data}")
-    return True
+# ============================================================
+# 🎯 ASYNCHRONOUS FUNCTIONS (FastAPI & Internal Async Use)
+# ============================================================
 
-def update_job_status_sync(db: Session, job_id: uuid.UUID, status_update: JobStatus) -> Optional[JobResult]:
+async def create_job(db: AsyncSession, job_data: JobSubmission, user: User) -> Job:
     """
-    Updates the status and result data of a job. 
-    ***Used by synchronous Celery tasks.***
+    1️⃣ Creates a new Job record in the database.
+    2️⃣ Manages the complex extraction of nested fields required by the ORM.
     """
-    # 1. Retrieve the job using synchronous SQLAlchemy ORM query
-    # NOTE: No 'await', uses synchronous Session methods.
-    job = db.query(JobResult).filter(JobResult.id == job_id).first()
-  
-    if not job:
-        print(f"❌ WARNING: Job ID {job_id} not found for status update (Sync).")
-        return None
+    logger.info(f"Preparing job record for user {user.id}.")
 
-    # 2. Update fields on the ORM object (same logic as async version)
-    job.status = status_update.status
+    # 1. Prepare data and isolate the core payload
+    job_data_dict = job_data.model_dump(exclude_none=True)
+    task_name_value = job_data_dict.pop('task_name', None) 
     
-    if status_update.result_data is not None:
-        job.result_data = status_update.result_data
-    
-    if status_update.status in ["SUCCESS", "FAILED"]:
-        job.finished_at = datetime.now(UTC)
-    
-    if status_update.task_id:
-        job.task_id = str(status_update.task_id) 
+    # The 'input_data' field holds the entire JSON payload submitted by the user.
+    # We treat it as the payload dictionary.
+    input_payload = job_data_dict.get('input_data', {})
 
-    # 3. Commit the changes (synchronous)
-    db.commit()
-    db.refresh(job)
-    print(f"✅ Job {job_id} status updated to: {job.status} (Sync)")
+    # 2. 💥 CN FIX: Extract 'name' from the NESTED input_payload 
+    #    This prevents the IntegrityError and sets the ORM name column correctly.
+    job_name = input_payload.pop('name', None) 
+    
+    # Update the job_data_dict with the cleaned input_payload (without 'name')
+    job_data_dict['input_data'] = input_payload
+    
+    # 3. Instantiate the Job ORM object
+    db_job = Job(
+        **job_data_dict, 
+        celery_task_name=task_name_value,
+        user_id=user.id,
+        name=job_name, # 👈 Assigned to the top-level 'name' column
+    )
+    
+    # 4. Add to DB, commit, and refresh (MUST use await with AsyncSession)
+    db.add(db_job)
+    await db.commit() # 👈 No commit, no glory.
+    await db.refresh(db_job) # 👈 Refresh to populate default fields (like job_id)
+
+    logger.info(f"Job {db_job.job_id} created successfully.")
+    return db_job
+
+
+async def get_job_by_id(db: AsyncSession, job_id: uuid.UUID, user_id: uuid.UUID) -> Optional[Job]:
+    """Retrieve a job by ID, scoped to the user for security."""
+
+    # 💡 ASYNC pattern: execute(select(...))
+    stmt = select(Job).where(Job.id == job_id, Job.user_id == user_id)
+    result = await db.execute(stmt)
+    
+    # Use scalar_one_or_none() for single object retrieval
+    job = result.scalar_one_or_none() 
+
     return job
 
-# --- Asynchronous Functions (FastAPI Use) ---
-# ... update_job_status function (this is imported by the task) ...
-async def create_new_job(
-        # 💡 FIX: Use the correct Pydantic model name from your code: JobSubmission
-        # We also simplify the parameters to what is actually needed for object creation
-        db: AsyncSession, 
-        user_id: uuid.UUID,
-        submission_data: JobSubmission, # <-- Correct name for the Pydantic input!
-        task_name: str
-) -> JobResult:
+async def get_jobs_for_user(db: AsyncSession, user_id: uuid.UUID) -> List[Job]:
+    """Retrieves all jobs for a specific user."""
 
-    """Creates a new JobResult entry with status=PENDING. Used by FastAPI."""
-    
-    new_job = JobResult(
-        user_id=user_id,
-        # 💡 FIX: Access the input data from the correct Pydantic field
-        job_input=submission_data.input_data, 
-        task_name=task_name,
-        status="PENDING",
-        created_at=datetime.now(UTC)
+    # 💡 ASYNC pattern: execute(select(...)).scalars().all()
+    stmt = (
+        select(Job)
+        .where(Job.user_id == user_id)
+        .order_by(Job.created_at.desc())
     )
-
-# 1. Add the job to the session
-    db.add(new_job)
-
-# 2. 💡 CRITICAL FIX: Deferred import using the Standard Task Name
-    from app.tasks.tasks import process_job 
- 
-# 3. CRITICAL: Send the Celery task and capture the result object
-# Note: Celery tasks only accept data types that can be serialized (str, dict, list, etc.), 
-# so we pass str(new_job.id) and the dict/data fields.
-    task_result = process_job.delay(
-        job_id=str(new_job.id), 
-        user_id=str(user_id), 
-        input_data=submission_data.input_data
-    ) 
-
-# 4. CRITICAL FIX: Update the job model with the task ID *before* commit
-    new_job.task_id = task_result.id 
-    
-# 5. Commit the full model, including the newly set task_id
-    await db.commit() 
-    await db.refresh(new_job)
-    return new_job
-# --- Now we fix submit_job to call the fixed create_new_job ---
-# In /code/app/services/job_service.py
-
-async def submit_job(db: AsyncSession, input_data: JobSubmission, user_id: uuid.UUID) -> Dict[str, Any]:
-    """Handles the entire job submission process. Used by FastAPI."""
-    
-    # --- 1. Create the initial DB record ---
-    # This must happen first to get the job_id
-    new_job_record = await create_new_job(
-        db=db, 
-        user_id=user_id, 
-        submission_data=input_data, 
-        task_name="app.tasks.process_job" 
-    )
-    
-    # This prevents the module from trying to import the task at startup.
-    from app.tasks.tasks import process_job 
-    
-    # --- 2. Enqueue the task with ALL REQUIRED PARAMETERS (The Fix!) ---
-    # Convert Pydantic model to dictionary for Celery serialization
-    # Convert UUIDs to strings for Celery serialization
-    celery_result = process_job.delay(
-        str(new_job_record.id),              # required positional argument 1 (job_id)
-        str(user_id),                        # required positional argument 2 (user_id)
-        input_data.model_dump()              # required positional argument 3 (input_data as dict)
-    ) 
-    
-    # NOTE: You should ideally save the celery_result.id (the task ID) to the new_job_record here.
-    
-    # 3. Return the result
-    return {
-        "message": "🌼️ Job successfully submitted and queued.",
-        "job_id": str(new_job_record.id),
-        "status": new_job_record.status,
-    }
-
-
-async def get_job_by_id(db: AsyncSession, job_id: uuid.UUID) -> Optional[JobStatus]:
-    """Retrieve a job from the database by ID. Used by FastAPI."""
-    
-    # 💡 ASYNC pattern: await db.execute(select(...))
-    stmt = select(JobResult).where(JobResult.id == job_id)
     result = await db.execute(stmt)
-    job = result.scalar_one_or_none()
+    # Use .scalars().all() to get a list of ORM objects directly
+    jobs = result.scalars().all() 
 
-    if not job:
-        return None
+    return jobs
 
-    return JobStatus.model_validate(job)
-
-async def get_jobs_for_user(db: AsyncSession, user_id: uuid.UUID) -> List[JobStatus]:
-    """Retrieves all jobs for a specific user. Used by FastAPI."""
+async def update_job_id(db: AsyncSession, db_job: Job, celery_task_id: str) -> None:
+    """Updates the Celery task ID on an existing Job ORM object and commits."""
     
-    # 💡 ASYNC pattern: await db.execute(select(...)).scalars().all()
-    stmt = select(JobResult).where(JobResult.user_id == user_id).order_by(JobResult.created_at.desc())
-    result = await db.execute(stmt)
-    jobs = result.scalars().all()
+    # The 'db_job' object is already attached to the session (from create_job refresh)
+    db_job.celery_task_id = celery_task_id
     
-    return [JobStatus.model_validate(job) for job in jobs]
+    # Commit the update
+    await db.commit()
+    await db.refresh(db_job)
 
-async def update_job_status(db: AsyncSession, job_id: uuid.UUID, status_update: JobStatus) -> Optional[JobResult]:
+async def update_job_status(
+    db: AsyncSession, job_id: uuid.UUID, status_update: JobUpdate
+) -> Optional[Job]:
     """
-    Updates the status and result data of a job. 
-    ***Used by FastAPI/other async internal calls.***
+    Updates the status and result data of a job (Used by FastAPI/other async internal calls).
     """
     # 1. Retrieve the job (Async)
-    stmt = select(JobResult).where(JobResult.id == job_id)
+    stmt = select(Job).where(Job.id == job_id)
     result = await db.execute(stmt)
     job = result.scalar_one_or_none()
-  
+
     if not job:
-        print(f"❌ WARNING: Job ID {job_id} not found for status update (Async).")
+        logger.warning(f"❌ Job ID {job_id} not found for status update (Async).")
         return None
 
-    # 2. Update fields on the ORM object (same logic)
+    # 2. Update fields on the ORM object
     job.status = status_update.status
-    
+
     if status_update.result_data is not None:
         job.result_data = status_update.result_data
-    
+
+    # The updated_at column should handle itself, but we manually set finished_at
     if status_update.status in ["SUCCESS", "FAILED"]:
         job.finished_at = datetime.now(UTC)
-    
+
     if status_update.task_id:
-        job.task_id = str(status_update.task_id) 
+        job.celery_task_id = str(status_update.task_id)
 
     # 3. Commit the changes (Async)
     await db.commit()
     await db.refresh(job)
-    print(f"✅ Job {job_id} status updated to: {job.status} (Async)")
+    logger.info(f"✅ Job {job_id} status updated to: {job.status} (Async)")
     return job
 
 
-# 🛡️ Job Service - The Async Ledger Controller
-# This service handles all database interactions for the Job model.
+# ============================================================
+# 🚧 SYNCHRONOUS FUNCTIONS (Primarily for Celery Task Use)
+# ============================================================
 
+# 🚨 CN QA: We rename 'update_job_status_sync' to clarify its use for Celery.
+# 🚨 CRITICAL FIX: The function must be a standard 'def' as it's called synchronously by Celery.
 
-class JobService:
+def update_job_status_for_celery(
+    db: Session, job_id: uuid.UUID, status_update: dict
+) -> Optional[Job]:
     """
-    Central service layer for managing Job entities in the database.
-    Abstracts all SQLAlchemy interactions, ensuring data integrity.
+    Updates job status/result. MUST use a synchronous Session for Celery/workers.
     """
-    model = JobModel # Reference to the SQLAlchemy model
-
-    @staticmethod
-    def create_job(db: Session, job_data: JobCreate, user_id: UUID) -> JobModel:
-        """
-        Records a new PENDING job in the database immediately after a user request.
-        The Celery task will reference this entry.
-        """
-        logger.info(f"Creating new job for user {user_id}.")
-        
-        db_job = JobModel(
-            user_id=user_id,
-            input_file_path=job_data.input_file_path,
-            template_name=job_data.template_name,
-            initial_config=job_data.initial_config,
-            # Start job in PENDING state
-            status=JobStatus.PENDING 
-        )
-        
-        db.add(db_job)
-        db.commit()
-        db.refresh(db_job)
-        logger.info(f"Job {db_job.id} created and set to PENDING.")
-        return db_job
-
-    @staticmethod
-    def get_job_by_id(db: Session, job_id: UUID, user_id: UUID = None) -> Optional[JobModel]:
-        """
-        Fetches a job by ID. If user_id is provided, enforces ownership check.
-        """
-        query = db.query(JobModel).filter(JobModel.id == job_id)
-        
-        # Enforce security: only allow the owner (or an admin/internal process) to view the job
-        if user_id:
-            query = query.filter(JobModel.user_id == user_id)
-            
-        return query.first()
-
-    @staticmethod
-    def update_job(db: Session, db_job: JobModel, update_data: JobUpdate) -> JobModel:
-        """
-        Updates the job record, typically called by the Celery worker to change status.
-        """
-        update_dict = update_data.model_dump(exclude_unset=True)
-        
-        for key, value in update_dict.items():
-            setattr(db_job, key, value)
-            
-        db.add(db_job)
-        db.commit()
-        db.refresh(db_job)
-        logger.info(f"Job {db_job.id} updated. New status: {db_job.status.value}")
-        return db_job
+    # 1. Retrieve the job using synchronous SQLAlchemy ORM query
+    job = db.query(JobORM).filter(JobORM.job_id == job_id).first()
+    if not job:
+        logger.warning(f"❌ Job ID {job_id} not found for status update (Sync Celery).")
+        return None
     
-    @staticmethod
-    def get_jobs_by_user(db: Session, user_id: UUID, skip: int = 0, limit: int = 100) -> list[JobModel]:
-        """
-        Retrieves all jobs submitted by a specific user (for the /jobs endpoint).
-        """
-        return db.query(JobModel).filter(JobModel.user_id == user_id).offset(skip).limit(limit).all()
+    # 2. Update fields using the dictionary passed from the worker
+    if 'status' in status_update:
+        job.status = status_update['status']
+
+    if 'result_data' in status_update and status_update['result_data'] is not None:
+        job.result_data = status_update['result_data']
+
+    if job.status in ["SUCCESS", "FAILED"]:
+        job.finished_at = datetime.now(UTC)
+
+    if 'task_id' in status_update:
+        job.celery_task_id = status_update['task_id']
+
+    # 3. Commit the changes (synchronous)
+    db.commit() # 👈 No 'await' for sync Session
+    db.refresh(job)
+    logger.info(f"✅ Job {job_id} status updated to: {job.status} (Sync Celery)")
+    return job
+
+# 🚨 CN QA: 'queue_job_task' is a mock and can remain simple.
+def queue_job_task(
+    job_id: uuid.UUID, submission_data: JobSubmission, user_id: uuid.UUID
+) -> bool:
+    """
+    Mocks queuing a job. In a real application, this is internal Celery logic.
+    """
+    logger.info(
+        f"MOCK: Queuing job {job_id} for user {user_id} with data: {submission_data.input_data}"
+    )
+    return True

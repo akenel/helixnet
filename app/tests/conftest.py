@@ -2,7 +2,7 @@
 """
 🔥 CHUCK NORRIS APPROVED TEST SETUP 🔥
 -------------------------------------
-This file ensures your pytest environment is totally isolated, fast, and 
+This file ensures your pytest environment is totally isolated, fast, and
 dev-safe. It creates a dedicated test database (helix_test_db 🧪),
 runs migrations, seeds fake users, and cleans up when done.
 
@@ -45,9 +45,7 @@ ASYNC_TEST_DB_URL = (
     f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{TEST_DB_NAME}"
 )
 # 🧰 Admin DB URL (for CREATE/DROP DB)
-ADMIN_DB_URL = (
-    f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/postgres"
-)
+ADMIN_DB_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/postgres"
 
 # 🧱 SQLAlchemy Base (import your app's Base if available)
 Base = declarative_base()
@@ -63,6 +61,7 @@ try:
 except ImportError:
     print("🚨 WARNING: Could not import 'app' from 'app.main'. Using a dummy app.")
     from fastapi import FastAPI
+
     app = FastAPI(title="Dummy Test App")
 
 
@@ -83,6 +82,7 @@ async def seed_test_user(conn):
 
 
 # 🧪 --- 5. Fixtures ---
+
 
 @pytest.fixture(scope="session")
 def admin_engine() -> Engine:
@@ -107,6 +107,7 @@ def client() -> Generator[TestClient, None, None]:
 
 
 # 🏗️ --- 6. Database Lifecycle Management ---
+
 
 def create_test_db(engine: Engine, db_name: str):
     """Creates test database if it doesn't exist."""
@@ -146,6 +147,7 @@ def drop_test_db(engine: Engine, db_name: str):
 
 
 # 🧱 --- 7. Pytest Lifecycle Fixture ---
+
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database(admin_engine: Engine, async_engine: AsyncEngine):

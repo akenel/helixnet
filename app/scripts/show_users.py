@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from app.db.database import get_db_session
-from app.db.models.user import User
+from app.db.models import User
 from sqlalchemy import select
 
 # Configure logging to be less verbose for cleaner output

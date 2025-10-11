@@ -1,0 +1,7 @@
+# dynamic/certs.yml (New Dynamic Configuration File)
+tls:
+  certificates:
+    # This configuration tells Traefik to look in the mounted /etc/traefik/certs
+    # for the certificate and key files we generated with mkcert.
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem

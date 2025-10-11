@@ -1,115 +1,154 @@
-# 🚀 Jobs Router - The Queue Loader
-# This router is the primary interface for initiating and tracking asynchronous tasks.
+# 🧭 jobs_router.py — "The Queue Commander" (CN PERFECTO VERSION)
+# ============================================================
 
 import logging
 from uuid import UUID
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.orm import Session
-from typing import Annotated
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
+from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession # 🎯 Use AsyncSession everywhere!
 
-# --- 🛠️ Core Dependencies ---
-# Assuming this is your synchronous DB session getter
-from app.db.database import get_db_session_sync 
-from app.core.security import get_current_user 
-
-# --- 🥋 Service & Schema Imports ---
-# JobService (The DB Muscle) and Job Task (The Celery Link)
-from app.services.job_service import JobService
-from app.tasks.tasks import send_processing_task 
-
-# Job Schemas (The Data Contract)
-from app.schemas.job import JobCreate, Job, JobUpdate 
-
+# 🧱 --- Core System Imports ---
+from app.db.database import get_db_session # 🎯 Using the ASYNC session generator
+from app.db.models.user_model import User
+from app.db.models.job_model import Job
+from app.schemas.job_schema import JobSubmission, JobRead
+from app.services import job_service
+from app.services.user_service import get_current_user
+from app.tasks.job_tasks import process_data 
+# 🎛️ --- Initialize Logger & Router ---
 logger = logging.getLogger(__name__)
+jobs_router = APIRouter()
 
-# --- 🚀 Router Initialization: Starting the Brawl ---
-router = APIRouter(
-    prefix="/jobs",
-    tags=["🎯 Job Processing: The Roundhouse Kick Router"], 
-    # Use synchronous session for the API layer that interacts with the synchronous JobService
-    dependencies=[Depends(get_db_session_sync), Depends(get_current_user)] 
-)
 
-# =========================================================================
-# 🎯 Job Submission Endpoint: POST /jobs
-# =========================================================================
-@router.post(
-    "/", 
-    response_model=Job, 
+# ============================================================
+# 🎯 CREATE NEW JOB (POST /jobs)
+# ============================================================
+@jobs_router.post(
+    "/",
+    response_model=JobRead,
     status_code=status.HTTP_202_ACCEPTED,
-    summary="📬 Submit New Asynchronous Job",
+    summary="📬 Submit a new asynchronous job",
     description="""
-    Creates a new job record in the DB (PENDING) and dispatches the task to the Celery queue.
-    Returns **202 Accepted** immediately.
-    """
+    1️⃣ Creates a new job record in Postgres with status **PENDING** 2️⃣ Dispatches the task to the Celery queue
+    3️⃣ Returns the created job immediately (HTTP 202)
+    """,
 )
-def create_new_job(
-    job_data: JobCreate,
-    db: Session = Depends(get_db_session_sync),
-    # 🔐 Security check: We need the user object to assign ownership
-    user: dict = Depends(get_current_user) 
-):
+async def create_job( # 🎯 ROUTER MUST BE ASYNC
+    job_data: JobSubmission,
+    db: AsyncSession = Depends(get_db_session), # 🎯 ASYNC SESSION
+    current_user: User = Depends(get_current_user),
+) -> Job:
     """
-    1. Records the job in Postgres (JobService.create_job).
-    2. Dispatches the heavy lifting to the Celery worker (send_processing_task.delay).
+    🧩 Steps:
+    1. Insert the new Job record into Postgres (status=PENDING)
+    2. Push an async task to Celery for background processing
+    3. Return the Job to the user immediately
     """
-    user_id = UUID(user['id'])
-    
-    # 1. Record the job in the database as PENDING
+
+    user_id = current_user.id
+    logger.info(f"📦 User {user_id} submitting new job...")
+
+    # Step 1️⃣ — Record job in DB
     try:
-        db_job = JobService.create_job(db, job_data, user_id=user_id)
+        # 🎯 MUST AWAIT THE SERVICE CALL
+        db_job = await job_service.create_job(db=db, job_data=job_data, user=current_user)
+        logger.info(
+            f"🪣 Job {db_job.job_id} recorded in DB with status {db_job.status}"
+        )
     except Exception as e:
-        logger.error(f"Failed to record job in DB for user {user_id}: {e}")
+        logger.error(f"💥 Failed to record job in DB for user {user_id}: {e}")
+        # The service layer should ideally handle its own transaction rollback
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to record job in database. Check service logs."
+            detail="Failed to record job in database. Please retry later.",
         )
 
-    # 2. Dispatch the Celery task using the newly created job ID
+    # Step 2️⃣ & 3️⃣ — Send Celery Task and Update ID
     try:
-        task = send_processing_task.delay(str(db_job.id))
-        logger.info(f"Celery task sent for Job {db_job.id}. Celery ID: {task.id}")
-        
-        # 3. Update the job record with the Celery Task ID
-        JobService.update_job(db, db_job, JobUpdate(celery_task_id=task.id))
-        
+        task = process_data.delay(str(db_job.job_id))
+
+        # 🎯 CN FIX: Use a clean, awaited update function call
+        await job_service.update_job_id(
+            db=db,
+            db_job=db_job, # Pass the ORM object
+            celery_task_id=task.id, # Pass the ID directly
+        )
+
+        logger.info(
+            f"🚀 Celery task dispatched for Job {db_job.job_id}. Task ID: {task.id}"
+        )
+
     except Exception as e:
-        logger.error(f"Failed to dispatch Celery task for job {db_job.id}: {e}")
-        # Note: The DB still has a PENDING record. We raise an error so the user knows.
+        logger.error(f"⚠️ Failed to dispatch Celery task for job {db_job.job_id}: {e}")
+        # Only raise 503 if the Celery system is essential and down
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Asynchronous processing service (Celery/RabbitMQ) is unavailable."
+            detail="Asynchronous processing unavailable. Job left in PENDING.",
         )
 
-    # 4. Return the database job object (which is PENDING)
+    logger.info(f"✅ Job {db_job.job_id} accepted for background processing.")
     return db_job
 
 
-# =========================================================================
-# 🔍 Get Job Status Endpoint: GET /jobs/{job_id}
-# =========================================================================
-@router.get(
-    "/{job_id}", 
-    response_model=Job,
-    summary="📊 Retrieve Job Status and Final Result",
-    description="Retrieves the current status and final result URL for a specific job, enforcing user ownership."
+# ============================================================
+# 🔍 GET JOB STATUS (GET /jobs/{job_id})
+# ============================================================
+@jobs_router.get(
+    "/{job_id}",
+    response_model=JobRead,
+    summary="📊 Retrieve Job Status",
+    description="Fetches the job’s current status and result (if available).",
 )
-def get_job_status(
+async def get_job_status( # 🎯 MUST BE ASYNC
     job_id: UUID,
-    db: Session = Depends(get_db_session_sync),
-    user: dict = Depends(get_current_user)
-):
+    db: AsyncSession = Depends(get_db_session), # 🎯 ASYNC SESSION
+    current_user: User = Depends(get_current_user), # User object, not dict
+) -> Job:
     """
-    Retrieves a job by ID, enforcing that the logged-in user owns the job.
+    🧩 Steps:
+    1. Retrieve a specific Job by ID
+    2. Ensure the requesting user owns that job
+    3. Return the job record and its status/result
     """
-    user_id = UUID(user['id'])
-    db_job = JobService.get_job_by_id(db, job_id=job_id, user_id=user_id)
-    
+
+    user_id = current_user.id
+    logger.info(f"🔍 Checking job {job_id} for user {user_id}")
+
+    # 🎯 MUST AWAIT THE SERVICE CALL
+    db_job = await job_service.get_job_by_id(db=db, job_id=job_id, user_id=user_id)
+
     if not db_job:
-        # 404 is safer than 403 (Forbidden) as it doesn't leak whether the job ID exists
+        logger.warning(f"🚫 Job {job_id} not found or access denied for {user_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found or access denied."
+            detail="Job not found or access denied.",
         )
-        
+
+    logger.info(f"📈 Job {job_id} retrieved successfully (status={db_job.status})")
     return db_job
+
+
+# ============================================================
+# 🧹 BONUS: GET ALL JOBS FOR USER (GET /jobs)
+# ============================================================
+@jobs_router.get(
+    "/",
+    response_model=List[JobRead],
+    summary="📜 List All Jobs for Current User",
+)
+async def list_user_jobs( # 🎯 MUST BE ASYNC
+    db: AsyncSession = Depends(get_db_session), # 🎯 ASYNC SESSION
+    current_user: User = Depends(get_current_user), # User object, not dict
+) -> List[Job]:
+    """Returns all jobs belonging to the logged-in user."""
+    user_id = current_user.id
+    logger.info(f"🧾 Listing all jobs for user {user_id}")
+
+    # 🎯 MUST AWAIT THE SERVICE CALL
+    jobs = await job_service.get_jobs_for_user(db=db, user_id=user_id)
+    return jobs

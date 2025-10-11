@@ -51,7 +51,7 @@ rebuild: ## 🔄 Stop, rebuild, and start everything fresh
 	$(OK) "Full rebuild completed! 🧩"
 
 .PHONY: setup
-setup: migrate seed-data ## 💾 Apply migrations and seed initial data
+setup: seed-data ## 💾 Seed initial data (NO Migrations during dev (alembic for ci/cd phase 3 or 5)
 	$(OK) "Application setup complete! Ready to rock. 🚀"
 
 # ==========================================
@@ -206,3 +206,8 @@ restart-services: ## 🔄 Quick restart for web app and workers (if images haven
 	$(INFO) "Quickly restarting helix-web-app, worker, and beat..."
 	docker compose -f $(COMPOSE_FILE) restart helix-web-app worker beat
 	$(OK) "Services restarted. 🔄"
+
+.PHONY: alembic
+alembic:
+	@echo "🧪 Running alembic command: $(args)"
+	docker compose exec helix-web-app alembic $(args)

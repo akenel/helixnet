@@ -5,24 +5,26 @@ Job submission logic has been moved to app/routes/jobs_router.py.
 """
 from fastapi import APIRouter, status, Depends, HTTPException
 from typing import Dict
-from uuid import UUID, UUID as uuid_UUID # Use UUID alias for clarity
+from uuid import UUID, UUID as uuid_UUID  # Use UUID alias for clarity
 
 # --- SQLAlchemy and DB Dependencies ---
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select 
-from app.db.database import get_db_session 
+from sqlalchemy.future import select
+from app.db.database import get_db_session
 
 # --- Models and Schemas ---
-from app.db.models.job_result import JobResult
-from app.schemas.job import JobStatus
+from app.db.models.job_model import JobResult
+
 # --- Celery and Task Dependencies ---
+from app.db.models.job_model import JobStatus
 from app.tasks.celery_app import celery_app
-from app.tasks.tasks import sanity_check_task # Only need sanity check here
+
+# Import the necessary DB utility, Service, and Schemas
+from app.tasks.db_utils import get_db_worker
 
 # The object that is imported by main.py
 tasks_router = APIRouter()
 
-# ❌ REMOVED: Imports for job submission (get_current_user, UserInDB, JobSubmission, submit_job)
 
 # --------------------------------------------------------------------------
 # --- Utility Function ---
@@ -37,61 +39,51 @@ async def get_job_result_from_db(session: AsyncSession, task_id: str) -> JobResu
     result = await session.execute(stmt)
     # Extract the first scalar result (the JobResult object)
     job = result.scalars().first()
-    
+
     if not job:
         # Use HTTP 404 for not found (standard REST practice)
-        raise HTTPException(status_code=404, detail=f"Job result not found for ID: {task_id}")
+        raise HTTPException(
+            status_code=404, detail=f"Job result not found for ID: {task_id}"
+        )
     return job
+
 
 # --------------------------------------------------------------------------
 # --- 1. Sanity Check (Stays) ---
 # --------------------------------------------------------------------------
+
+
 @tasks_router.get(
-    "/sanity-check", 
-    status_code=status.HTTP_202_ACCEPTED, 
-    response_model=Dict[str, str]
+    "/sanity-check", status_code=status.HTTP_202_ACCEPTED, response_model=Dict[str, str]
 )
 def trigger_sanity_check():
     """Submits a quick task to the worker to ensure Celery is responsive."""
-    result = sanity_check_task.delay()
+    result = get_db_worker.delay()
     return {"task_id": result.id, "status": "Task queued successfully."}
-
-
-# --------------------------------------------------------------------------
-# --- 2. Submit Main Job (REMOVED - MOVED TO jobs_router.py) ---
-# --------------------------------------------------------------------------
-# ❌ The entire `submit_process_job` function is DELETED here. 
-# It must reside in app/routes/jobs_router.py.
 
 
 # --------------------------------------------------------------------------
 # --- 3. Check Volatile Status (Celery Backend/Redis) ---
 # --------------------------------------------------------------------------
 @tasks_router.get(
-    "/status/{task_id}", 
-    response_model=Dict[str, str], 
-    tags=["Tasks - Volatile"]
+    "/status/{task_id}", response_model=JobStatus, tags=["Tasks - Volatile"]
 )
 def get_task_status_volatile(task_id: str):
     """
-    Checks the task status using the Celery result backend (Redis). 
+    Checks the task status using the Celery result backend (Redis).
     Status is volatile and may be lost on restart.
     """
     task = celery_app.AsyncResult(task_id)
-    
-    if task.state == 'FAILURE':
-        response = {
-            "task_id": task_id,
-            "status": task.state,
-            "error": str(task.result)
-        }
+
+    if task.state == "FAILURE":
+        response = {"task_id": task_id, "status": task.state, "error": str(task.result)}
     else:
         response = {
             "task_id": task_id,
             "status": task.state,
-            "result_summary": "Check /tasks/persistent-status/{task_id} for final data."
+            "result_summary": "Check /tasks/persistent-status/{task_id} for final data.",
         }
-        
+
     return response
 
 
@@ -99,13 +91,12 @@ def get_task_status_volatile(task_id: str):
 # --- 4. Check Persistent Status (PostgreSQL) ---
 # --------------------------------------------------------------------------
 @tasks_router.get(
-    "/persistent-status/{task_id}", 
-    response_model=Dict, # NOTE: Consider using a specific JobStatus schema here
-    tags=["Tasks - Persistent"]
+    "/persistent-status/{task_id}",
+    response_model=JobStatus,
+    tags=["Tasks - Persistent"],
 )
 async def get_task_status_persistent(
-    task_id: UUID, 
-    session: AsyncSession = Depends(get_db_session)
+    task_id: UUID, session: AsyncSession = Depends(get_db_session)
 ):
     """
     Checks the persistent job result and status from the PostgreSQL database.
@@ -113,14 +104,14 @@ async def get_task_status_persistent(
     """
     # Convert UUID path parameter back to string for the helper function
     job = await get_job_result_from_db(session, str(task_id))
-    
+
     # 💡 Safety check for missing timestamps
     finished_at = job.finished_at.isoformat() if job.finished_at else None
-    
+
     return {
         "task_id": str(job.task_id),
         "status": job.status,
         "created_at": job.created_at.isoformat(),
         "finished_at": finished_at,
-        "result_data": job.result_data
+        "result_data": job.result_data,
     }

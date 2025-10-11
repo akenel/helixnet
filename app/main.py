@@ -1,109 +1,135 @@
-import os
+# /code/app/main.py
+import logging
 from pathlib import Path
-from contextlib import asynccontextmanager # NEW IMPORT
+from contextlib import asynccontextmanager
 
-# Core FastAPI imports
-from fastapi import FastAPI, Request, APIRouter 
+from fastapi import FastAPI, Request, logger
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.cors import CORSMiddleware
 
-# --- 🥋 Router Imports: The Fighting Team ---
-# By importing the routers first, we isolate them for the API builder below.
-from .routes.users_router import users_router
-from .routes.auth_router import auth_router
-from .routes.jobs_router import jobs_router
-from .routes.health_router import health_router 
+# ================================================================
+# 🧠 Core Imports 
+# ================================================================
+from app.core.config import get_settings
+# NOTE: We only import functions from database.py now. 
+from app.db.database import close_async_engine, get_db_session_context, init_db_tables 
+from app.routes import auth_router, jobs_router, users_router
+from app.routes.health_router import health_router as health_check_router 
 
-# --- Database and Configuration Imports ---
-from .core.config import settings
-# CHANGE: We now import the specific functions/objects needed for SQLAlchemy management.
-# The legacy 'database' object is removed from imports.
-from .db.database import close_async_engine 
+from app.services.user_service import create_initial_users
 
-
-# --- Application Lifespan (Startup/Shutdown) ---
+# ================================================================
+# 🧱 CRITICAL FIX: FORCE MODEL REGISTRATION
+# ================================================================
+# When using SQLAlchemy ORM (Base.metadata), the application MUST import
+# all files that define model classes before the engine starts up.
+# This forces the models (User, Job, TaskResult, Artifact) to register 
+# themselves with the Base.metadata registry, solving the "KeyError: 'TaskResult'"
+# and ensuring tables are created during init_db_tables().
+import app.db.models.user_model
+import app.db.models.job_model
+import app.db.models.task_model
+import app.db.models.artifact_model # Assuming this model also exists
+# ================================================================
+# ⚙️ CONFIGURATION INSTANTIATION (MOVE IT HERE!)
+settings = get_settings() # <--- 🥇 MOVE THIS LINE UP HERE! 🥳
+# ================================================================
+# ⚙️ Configuration (Keep the logger setup, but the settings definition moves up)
+# ================================================================
+logger = logging.getLogger("helixnet")
+logger.setLevel(logging.INFO)
+# ================================================================
+# 🌍 Lifespan Manager
+# ================================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Handles application startup and shutdown events using the modern FastAPI lifespan context manager.
-    With SQLAlchemy Async Engine, explicit startup is usually not required (connections are lazy),
-    but clean shutdown (disposing the pool) is critical.
-    """
-    # Startup: Perform any necessary setup before the application starts accepting requests.
-    yield # Application runs (handles requests)
+    """Startup & shutdown lifecycle for HelixNet Core."""
+    logger.info("🚀 Starting up HelixNet Core (Lifespan).")
+
+    # 1. Ensure all DB tables are created (This triggers Step 3/init_db_tables)
+    logger.info("⬇️ Calling init_db_tables...")
+    # NOTE: This call now correctly sees all models (User, Job, TaskResult) 
+    # because they were explicitly imported above.
+    await init_db_tables()
+    logger.info("✅ init_db_tables completed.")
+
+     # 2. Seed initial users once DB is ready
+    logger.info("⬇️ Attempting to seed initial users...")
+
+    # THE FIX from previous turn: use 'async with'
+    async with get_db_session_context() as db: 
+        await create_initial_users(db)
     
-    # Shutdown: Cleanly dispose of the async engine's connection pool.
+    logger.info("✨ Application is RUNNING. Yielding control.")
+    yield 
+
+    # 3. Shutdown
+    logger.info("⬆️ Application shutting down. Calling close_async_engine...")
     await close_async_engine()
-
-
-# --- 🚀 App Initialization: The Final Build ---
+    logger.info("🛑 HelixNet Core shutdown complete.")
+# ================================================================
+# 🌌 FastAPI Application Definition
+# ================================================================
 app = FastAPI(
     title="🌌 HelixNet Core API: Task & Data Management",
     description="## 🛠️ Core Services for High-Volume Data Processing and Task Management.",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
     version=settings.VERSION,
-    lifespan=lifespan, # ADDED: Use the lifespan context manager
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# --- Path Configuration for Static Files and Templates (CWD Fix) ---
-# CRITICAL FIX: Use pathlib to resolve paths relative to this file's location.
-BASE_DIR = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
-
-# --- Static Files and Template Mounting ---
-app.mount(
-    "/static", 
-    StaticFiles(directory=BASE_DIR / "static"), 
-    name="static"
-)
-
-# --- Middleware ---
+# ================================================================
+# 🧱 CORS Middleware
+# ================================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_origins=settings.BACKEND_CORS_ORIGINS or ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- Database Events ---
-# REMOVED: The old @app.on_event("startup") and @app.on_event("shutdown") 
-# handlers were removed and replaced by the 'lifespan' function above.
+# ================================================================
+# 🧩 Routers Registration
+# ================================================================
+# Use settings.API_V1_STR (e.g., "/api/v1") as the single prefix
+app.include_router(auth_router, prefix=settings.API_V1_STR, tags=["🐘️ Authentication: routes/auth_router"])
+app.include_router(users_router, prefix=settings.API_V1_STR, tags=["🥵️ Users: routes/users_router"])
+app.include_router(jobs_router, prefix=settings.API_V1_STR, tags=["🥬️ Jobs : routes/jobs_router"])
+app.include_router(health_check_router, prefix="/health", tags=["🩺️ System: Heartbeat - app/routes/health_router.py"])
 
 
-# --- 🔨 The API Router Builder (Where We Fix the Conflict) ---
-# We use APIRouter here, which is designed to be included in the main FastAPI app.
-api_v1_router = APIRouter()
+# ================================================================
+# 🖼️ Templates & Static Files
+# ================================================================
+BASE_DIR = Path(__file__).resolve().parent
+templates = Jinja2Templates(directory=BASE_DIR / "templates")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-# 1. AUTH Router: Handles /api/v1/token. We apply no prefix here, allowing the token endpoint to be flat.
-api_v1_router.include_router(auth_router, tags=["🔑 Authentication"])
-
-# 2. USERS Router: User endpoints (e.g., GET /api/v1/users/me).
-api_v1_router.include_router(users_router, prefix="/users", tags=["👤 Users"])
-
-# 3. JOB Router: Job submission and retrieval.
-api_v1_router.include_router(jobs_router, prefix="/jobs", tags=["🎯 Job Processing"])
-
-
-# --- 🌐 HTML Endpoints (The Front Door) ---
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
+# ================================================================
+# 🖥️ HTML Views
+# ================================================================
+@app.get("/", tags=["🧠️ Helix-Web-App"], summary="HTML-VIEW: dashboard.html | 💁️ Helix SECURE Dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    """Render the main dashboard page."""
+# Health check endpoint for the root path
+    logger.info(f"🖥️ FastAPI application initialized. Mounting API version: {settings.API_V1_STR}")
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
-@app.get("/login", response_class=HTMLResponse)
+# ================================================================
+
+@app.get("/login", tags=["🧠️ Helix-Web-App"], summary="HTML-VIEW: login.html | 🐘️ Login to control and monitor jobs on your dashborad", response_class=HTMLResponse)
 async def login_page(request: Request):
+    """Render the login page."""
     return templates.TemplateResponse("login.html", {"request": request})
 
-@app.get("/submit-form", response_class=HTMLResponse)
+# ================================================================
+
+@app.get("/submit-form", tags=["🧠️ Helix-Web-App"], summary="HTML-VIEW: submit_form.html | 🕹️ Submit Form Request: async upload", response_class=HTMLResponse)
 async def submit_form_page(request: Request):
+    """Render the form submission page."""
     return templates.TemplateResponse("submit_form.html", {"request": request})
-
-
-# --- 🛡️ API Endpoint Inclusion: The Final Stance ---
-# 1. All versioned endpoints live under /api/v1
-app.include_router(api_v1_router, prefix=settings.API_V1_STR)
-
-# 2. Health Check (Always outside the versioned prefix)
-app.include_router(health_router, prefix="/health", tags=["System: Heartbeat"])

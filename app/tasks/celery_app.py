@@ -27,16 +27,17 @@ BROKER_URL = "amqp://{user}:{password}@{host}:{port}//".format(
 )
 BACKEND_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
-
 # Initialize the Celery application
 celery_app = Celery(
     "helixnet_tasks",
     broker=BROKER_URL,
     backend=BACKEND_URL,
-    # CRITICAL FIX: This line MUST be present to register the tasks.
-    include=['app.tasks.tasks'] 
+    # 💥 CN FIX: This now includes both the utility tasks and the core job tasks.
+    include=[
+        'app.tasks.tasks',     # Existing module (health checks)
+        'app.tasks.job_tasks'  # <-- ADD THIS LINE! (where process_data lives)
+    ]
 )
-
 # Configure Celery settings
 celery_app.conf.update(
     # Timeouts for connection/retries

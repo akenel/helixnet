@@ -1,264 +1,59 @@
 # 🌌 HelixNet Core API: Task & Data Management
 
-This repository contains the core services for HelixNet, designed for high-volume data processing and task management using FastAPI, PostgreSQL, RabbitMQ/Celery, and Redis, all orchestrated via Docker Compose and secured with Traefik.
+## 🥋 PROJECT STATUS: AUTHENTICATION SECURED (MILESTONE V1.0.0)
 
-## 🚀 Deployment & Access
-
-The entire application stack is containerized using Docker Compose. Access to all web services is managed via **Traefik**, utilizing HTTPS and custom hostnames defined in your local `/etc/hosts` file.
-
-### Prerequisites
-
-1.  **Docker & Docker Compose:** Must be installed and running.
-2.  **Hostnames:** You must add the following entries to your local machine's `/etc/hosts` file, mapping them to your Traefik entry point (usually the IP address of the machine running Docker, or `127.0.0.1`):
-
-    ```
-    127.0.0.1  helix.local
-    127.0.0.1  flower.helix.local
-    127.0.0.1  pgadmin.helix.local
-    # ... any other Traefik-routed services
-    ```
-
-### Access Points
-
-Once the stack is running via `docker-compose up -d`, services are available via HTTPS:
-
-| Service | Access URL | Purpose |
-| :--- | :--- | :--- |
-| **Core API (FastAPI)** | `https://helix.local/` | Main application endpoint. |
-| **Swagger Docs** | `https://helix.local/docs` | Interactive API documentation. |
-| **Flower Dashboard** | `https://flower.helix.local/` | Celery task monitoring and worker management. |
-| **PGAdmin** | `https://pgadmin.helix.local/` | PostgreSQL database administration GUI. |
-
-### Database Setup
-
-To prepare the database and seed initial users (required before API testing):
-
-1.  Start the services: `docker-compose up -d`
-2.  Run the setup command: `make setup` (This executes migrations and seeding).
+Congratulations, you've made it through the fire. The core security and authentication system is **clean, centralized, and fully operational**. User login, JWT token generation, and secure dependency injection are battle-tested and ready for the next phase.
 
 ---
 
-🌌 HelixNet Core API: Task & Data Management
-🛠️ Overview
+### 💥 THE HELIXNET MISSION
 
-This is the core service for high-volume data processing and user management, built with FastAPI, PostgreSQL, and Celery for asynchronous job handling.
+HelixNet is a robust, asynchronous task and data management platform built on FastAPI, SQLAlchemy (Async), and Celery. It is engineered to handle high-volume data processing and complex, long-running jobs, providing a secure, scalable backbone for mission-critical operations.
 
-This API adheres to the standard versioning prefix /api/v1 for all application routes (Authentication, Users, Jobs), with the exception of the system health check.
-🚀 Getting Started
+### 🛠️ CORE TECHNOLOGY STACK
 
-The API is fully self-documenting. Once the server is running, you can access the interactive Swagger UI documentation here:
+| Component | Role | Status |
+| :--- | :--- | :--- |
+| **FastAPI** | High-performance API Framework | Operational |
+| **PostgreSQL** | Primary Data Persistence (Async) | Operational |
+| **Celery** | Asynchronous Task Queue / Worker | Ready for Integration |
+| **RabbitMQ/Redis** | Celery Broker / Backend | Configured |
+| **Security** | JWT, OAuth2, Bcrypt Hashing | **CLEAN & SECURED** |
 
-    API Docs (Swagger UI): [Your Host]/docs
+---
 
-    OpenAPI Specification: [Your Host]/openapi.json
+## ⚡️ CHUCK NORRIS JOKE GENERATOR
 
-🔐 Authentication (OAuth2)
+**Status Check:** When the security is this good, Chuck Norris stops looking for you.
 
-All protected routes require a Bearer Token obtained via the OAuth2 Password flow.
-1. Get an Access Token
+> 
 
-Endpoint
-	
+### Today's Wisdom:
+*A dynamic joke will appear here upon render or API call.*
 
-Method
-	
+<div id="chuck-norris-joke">
+  Fetching daily wisdom...
+  </div>
 
-Description
+---
 
-/api/v1/token
-	
+## ⚙️ DEVELOPMENT SETUP (Docker Compose)
 
-POST
-	
+### 1. Prerequisites
 
-Exchange username (email) and password for a JWT Access Token.
+* Docker and Docker Compose
+* `make` utility (for easy command execution)
 
-Request Example (using curl):
+### 2. Quick Start
 
-curl -X POST \
-  "http://localhost:8000/api/v1/token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=marcel@helix.net&password=yourpassword"
+Clone the repository and spin up the stack:
 
-2. Use the Token
+```bash
+git clone <YOUR_REPO_URL> helixnet
+cd helixnet
 
-Use the returned access_token in the Authorization header of all subsequent requests:
-Authorization: Bearer <YOUR_ACCESS_TOKEN>
-👤 User Management (/api/v1/)
+# Build, deploy, and run the entire stack (API, DB, RabbitMQ, Celery Worker, Flower)
+docker compose up --build -d
 
-The User endpoints handle standard CRUD operations and require an active Bearer Token.
-
-Path
-	
-
-Method
-	
-
-Description
-	
-
-Requires Auth
-
-/api/v1/
-	
-
-POST
-	
-
-Create User: Register a new user account.
-	
-
-❌ No
-
-/api/v1/
-	
-
-GET
-	
-
-Read Users: Retrieve a paginated list of all active users.
-	
-
-✅ Yes
-
-/api/v1/me
-	
-
-GET
-	
-
-Get Current User Profile: Retrieve the profile of the authenticated user.
-	
-
-✅ Yes
-
-/api/v1/{user_id}
-	
-
-GET
-	
-
-Read User: Retrieve a specific user by their UUID.
-	
-
-✅ Yes
-
-/api/v1/{user_id}
-	
-
-PATCH
-	
-
-Update User: Modify a user's details (email, password, etc.).
-	
-
-✅ Yes
-
-/api/v1/{user_id}
-	
-
-DELETE
-	
-
-Delete User: Soft-delete a user account.
-	
-
-✅ Yes
-🎯 Asynchronous Job Processing (/api/v1/ & /api/v1/{job_id})
-
-Heavy lifting tasks are offloaded to a dedicated Celery worker and tracked persistently in PostgreSQL.
-
-Path
-	
-
-Method
-	
-
-Description
-	
-
-Status Code
-
-/api/v1/
-	
-
-POST
-	
-
-Submit New Job: Submits a JobSubmission payload to the worker queue.
-	
-
-202 Accepted
-
-/api/v1/{job_id}
-	
-
-GET
-	
-
-Retrieve Job Status: Check the status and fetch the final result_data upon success.
-	
-
-200 OK
-
-Job Statuses:
-
-    PENDING/STARTED: Job is queued or actively running.
-
-    SUCCESS: Job is complete. The result will be in result_data.
-
-    FAILURE: Job failed. Error details will be in the message field.
-
-💖 System Health Check
-
-This endpoint performs deep checks on critical dependencies, including PostgreSQL and Celery.
-
-Endpoint
-	
-
-Method
-	
-
-Description
-	
-
-Success
-	
-
-Failure
-
-/health/
-	
-
-GET
-	
-
-Checks connectivity and readiness of the DB and background worker.
-	
-
-200 OK (All services up)
-	
-
-503 Service Unavailable
-
-📐 API Routing and Prefix Resolution Quagmire (The Job Submission Fix)
-
-This section documents a specific routing conflict encountered when configuring the /api/v1/jobs endpoints in app/main.py.
-The Problem
-
-The goal was to have the job submission endpoint accessible at POST /api/v1/jobs.
-
-    In app/main.py, the jobs_router was included with a prefix: api_v1_router.include_router(jobs_router, prefix="/jobs").
-
-    If the endpoint inside app/routes/jobs_router.py was defined as jobs_router.post("/"), the resulting API path became /api/v1/jobs/ (with a trailing slash).
-
-This caused confusion and failed tests because the client (cURL in the test script) was trying to hit either /api/v1/jobs or /api/v1/jobs/, but neither request matched the expected behavior of the router's internal definition.
-The Resolution
-
-To ensure reliability and clarity, the final solution involved two parts:
-
-    Explicit Internal Route: The job submission endpoint inside app/routes/jobs_router.py must use an explicit, verb-based path, such as jobs_router.post("/submit").
-
-    Explicit Client Call: The test client (test_api.sh) was updated to call the resulting unambiguous path: POST /api/v1/jobs/submit.
-
-This two-step approach eliminates path ambiguity, ensuring that POST /api/v1/jobs/submit is the only accepted method for job creation, thereby resolving the 404 Not Found and 405 Method Not Allowed errors.
+# Create initial users (admin@helix.net:admin) and apply migrations
+make db-init

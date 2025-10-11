@@ -1,187 +1,174 @@
+# app/services/user_service.py 
 """
 Service layer functions for user management (creation, retrieval, hashing, auth).
-This consolidated version uses direct bcrypt for hashing and includes rich logging.
+app/services/user_service.py
+This handles all business logic interaction with the User model and external services (JWT/Bcrypt).
 """
 import uuid
 import logging
-from typing import List, Optional, Dict, Any 
-import traceback # Added for detailed logging
+import traceback
+from typing import List, Optional, Dict, Any
 
+# 🔑 CRITICAL AUTH & TIME IMPORTS
+from datetime import datetime, UTC # Use UTC for database consistency
+from fastapi import Depends, HTTPException, status
+from fastapi.security import SecurityScopes # Used in the dependency function  💡 Added OAuth2PasswordBearer
+
+# 💾 DATABASE AND CORE IMPORTS
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from fastapi import HTTPException, status
+from app.db.database import get_db_session
 
-import bcrypt 
-from datetime import datetime
+# 🔑 CRITICAL AUTH IMPORTS
+from jose import JWTError, jwt # 💡 Added missing 'jwt' import for token decoding
 
-# --- CRITICAL IMPORTS ---
-# We use UserModel consistently for the SQLAlchemy model
-from app import db
-from app.db.models.user import User as UserModel
-from app.schemas.user import UserCreate, UserUpdate
+# 💾 DATABASE AND CORE IMPORTS
+from app.core.security import ALGORITHM, SECRET_KEY, verify_password
+from app.db.models.user_model import User # ⚠️ IMPORTANT: Assumes User model is correct
 
-# --- Setup Logger for Debugging ---
+# 🛡️ DEFINE AUTH SCHEME (Fixes NameError)
+# This handles the extraction of the Bearer token from the request header.
+from app.core.security import oauth2_scheme
+
+# --- 🛠️ Configuration and Setup ---
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO) 
+logger.setLevel(logging.INFO)
 
-# ----------------------------------------------------------------------
-# HASHING AND VERIFICATION UTILITIES (Synchronous)
-# ----------------------------------------------------------------------
+# 🛡️ SECURITY UTILITY IMPORTS (Centralized from core/security.py)
+from app.core.security import (
+    ALGORITHM,          # Used for JWT decoding
+    SECRET_KEY,         # Used for JWT decoding
+    verify_password,    # Used in authenticate_user
+    get_password_hash,  # Used in create_user and create_initial_users
+    oauth2_scheme,      # Used in get_current_user dependency
+)
 
-def get_password_hash(password: str) -> str:
-    """
-    Hashes a password using the bcrypt library directly.
-    """
-    logger.debug("🛡️ [SECURITY] Hashing password with bcrypt.")
-    # Safety: ensure password length is limited before encoding
-    password_bytes = password[:72].encode('utf-8')
-    hashed_bytes = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
-    return hashed_bytes.decode('utf-8')
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verify a plain password against a hash using the bcrypt library directly.
-    """
-    try:
-        plain_bytes = plain_password.encode('utf-8')
-        hashed_bytes = hashed_password.encode('utf-8')
-        return bcrypt.checkpw(plain_bytes, hashed_bytes)
-    except ValueError:
-        # Occurs if the hash is malformed or not a valid bcrypt hash
-        logger.error("🚨 [SECURITY] Failed verification due to malformed hash.")
-        return False
-    except Exception as e:
-        logger.error(f"❌ Error during verify_password: {str(e)}")
-        return False
-
+# ======================================================================
+# 🌱 INITIALIZATION & SEEDING (Business Logic)
+# ======================================================================
 
 async def create_initial_users(db: AsyncSession) -> None:
     """
-    Creates initial users in the database if they don't exist.
-    This function should be called during application startup.
+    🚀 Creates initial users in the database if they don't exist (for development).
     """
     logger.info("🌱 Starting initial user seeding process...")
-    
-    # Define initial users with their roles
     initial_users = [
-        {"email": "admin@helix.net", "password": "admin", "is_active": True},
+        {"email": "admin@helix.net", "password": "admin", "is_active": True, "is_admin": True},
         {"email": "demo@helix.net", "password": "demo", "is_active": True},
         {"email": "test@helix.net", "password": "test", "is_active": True},
-        {"email": "user@helix.net", "password": "user", "is_active": True},
-        {"email": "marcel@helix.net", "password": "marcel", "is_active": True}
     ]
-    
+
     try:
         for user_data in initial_users:
-            # Check if user already exists
             result = await db.execute(
-                select(UserModel).where(UserModel.email == user_data["email"])
+                select(User).where(User.email == user_data["email"])
             )
-            existing_user = result.scalar_one_or_none() 
-            
+            existing_user = result.scalar_one_or_none()
+
             if not existing_user:
-                # Create new user if doesn't exist
+                # 🎯 USES IMPORTED get_password_hash
                 hashed_password = get_password_hash(user_data["password"]) 
-                db_user = UserModel(
+                
+                db_user = User(
                     id=uuid.uuid4(),
                     email=user_data["email"],
                     hashed_password=hashed_password,
-                    is_active=user_data["is_active"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
+                    is_active=user_data.get("is_active", True),
+                    is_admin=user_data.get("is_admin", False),
+                    created_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
                 )
                 db.add(db_user)
                 logger.info(f"✨ Created user: {user_data['email']}")
             else:
                 logger.info(f"👉 User already exists: {user_data['email']}")
-        
-        # Commit the transaction once for all users
-        await db.commit() 
+
+        await db.commit()
         logger.info("✅ Initial user seeding completed successfully!")
-        
+
     except Exception as e:
-        # Catch any database errors, log them, roll back, and raise
         logger.error(f"❌ CRITICAL Error during user seeding: {e}")
         logger.error(f"❌ Full traceback:\n{traceback.format_exc()}")
         await db.rollback()
         raise
 
-
-# ----------------------------------------------------------------------
-# DATABASE SERVICE FUNCTIONS (Asynchronous)
-# ----------------------------------------------------------------------
-
-async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[UserModel]:
+# ======================================================================
+# 💾 DATABASE CRUD OPERATIONS
+# ======================================================================
+async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
     """
     🔍 Get a user by their ID.
     """
     logger.info(f"🔍 [USER_SVC] Retrieving user by ID: {user_id}")
-    stmt = select(UserModel).where(UserModel.id == user_id)
+    # 🐛 FIX: Use User model in select statement
+    stmt = select(User).where(User.id == user_id) 
     result = await db.scalars(stmt)
     user = result.first()
-    if user:
-        logger.info(f"✅ [USER_SVC] User ID {user_id} found.")
-    else:
-        logger.warning(f"❌ [USER_SVC] User ID {user_id} NOT found.")
     return user
 
-
-async def get_user_by_email(db: AsyncSession, email: str) -> Optional[UserModel]:
+# ======================================================================
+# 👤 users by email FOR CURRENT USER
+# ======================================================================
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """
-    🔍 Asynchronously retrieves a user from the database by their email address.
+    📧 Asynchronously retrieves a user from the database by their email address.
     """
     logger.info(f"🔍 [USER_SVC] Attempting to retrieve user by email: '{email}'.")
-    
-    stmt = select(UserModel).where(UserModel.email == email)
+    # 🐛 FIX: Use User model in select statement
+    stmt = select(User).where(User.email == email)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
-    
+
     if user:
-        logger.info(f"✅ [USER_SVC] User FOUND for email: '{email}'. Proceeding to auth/password check.")
+        logger.info(f"✅ [USER_SVC] User FOUND for email: '{email}'.")
     else:
-        logger.warning(f"❌ [USER_SVC] User NOT found for email: '{email}'. Auth will fail.")
-            
+        logger.warning(f"❌ [USER_SVC] User NOT found for email: '{email}'.")
+
     return user
 
 
-async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[UserModel]:
+async def get_users(
+    db: AsyncSession, skip: int = 0, limit: int = 100
+) -> List[User]:
     """
     📚 Get a list of users with pagination.
     """
     logger.info(f"📚 [USER_SVC] Fetching users (skip: {skip}, limit: {limit}).")
-    stmt = (
-        select(UserModel)
-        .order_by(UserModel.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-    )
+    stmt = select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
     result = await db.scalars(stmt)
     return list(result.all())
 
-
-async def create_user_service(db: AsyncSession, user_in: UserCreate) -> UserModel:
+# ======================================================================
+# 💾 DATABASE CRUD OPERATIONS (Business Logic)
+# ======================================================================
+# ... (get_user_by_id, get_user_by_email, get_users - remain unchanged)
+async def create_user(db: AsyncSession, user_in: Any) -> User:
     """
     ✨ Create a new user, checking for existence and hashing the password.
+    Note: user_in should be a Pydantic UserCreate schema.
     """
     logger.info(f"✨ [USER_SVC] Starting creation of new user: '{user_in.email}'.")
 
     existing_user = await get_user_by_email(db, user_in.email)
     if existing_user:
-        logger.error(f"⚠️ [USER_SVC] Creation failed: User already exists for '{user_in.email}'.")
+        logger.error(
+            f"⚠️ [USER_SVC] Creation failed: User already exists for '{user_in.email}'."
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists."
+            detail="User with this email already exists.",
         )
 
-    # Hash the password 
     hashed_password = get_password_hash(user_in.password)
 
-    db_user = UserModel(
+    db_user = User(
         email=user_in.email,
         hashed_password=hashed_password,
-        is_active=user_in.is_active if user_in.is_active is not None else True
+        # Check if attribute exists on user_in (Pydantic schema)
+        is_active=getattr(user_in, 'is_active', True), 
+        is_admin=getattr(user_in, 'is_admin', False),
     )
-    
+
     try:
         db.add(db_user)
         await db.commit()
@@ -190,36 +177,53 @@ async def create_user_service(db: AsyncSession, user_in: UserCreate) -> UserMode
         return db_user
     except Exception as e:
         await db.rollback()
-        logger.error(f"💥 [USER_SVC] Database error during user creation for {user_in.email}: {e}")
+        logger.error(
+            f"💥 [USER_SVC] Database error during user creation for {user_in.email}: {e}"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Database error during user creation: {e}"
+            detail=f"Database error during user creation: {e}",
         )
 
-
-async def update_user_service(db: AsyncSession, user_id: uuid.UUID, user_update: UserUpdate) -> Optional[UserModel]:
+# ======================================================================
+# 👤 Updates  FOR CURRENT USER
+# ======================================================================
+async def update_user(
+    db: AsyncSession, user_id: uuid.UUID, user_update: Any
+) -> Optional[User]:
     """
     ✏️ Update a user's information.
+    Note: user_update should be a Pydantic UserUpdate schema.
     """
     logger.info(f"✏️ [USER_SVC] Starting update for User ID: {user_id}.")
     try:
-        stmt = select(UserModel).where(UserModel.id == user_id).with_for_update()
+        # 🐛 FIX: Use User model for select statement and primary key matching
+        stmt = select(User).where(User.id == user_id).with_for_update()
         result = await db.scalars(stmt)
         db_user = result.first()
-        
+
         if not db_user:
             logger.warning(f"❌ [USER_SVC] Update failed: User ID {user_id} not found.")
             return None
 
-        update_data = user_update.model_dump(exclude_unset=True)
-        
+        # Pydantic utility to get changed fields
+        update_data = user_update.model_dump(exclude_unset=True) 
+
         if "password" in update_data and update_data["password"] is not None:
             logger.info("🔑 [USER_SVC] Password field detected; hashing new password.")
-            setattr(db_user, "hashed_password", get_password_hash(update_data.pop("password")))
-        
+            setattr(
+                db_user,
+                "hashed_password",
+                get_password_hash(update_data.pop("password")),
+            )
+
+        # Apply updates to the ORM object
         for key, value in update_data.items():
             if value is not None:
                 setattr(db_user, key, value)
+        
+        # Ensure updated_at is updated manually if not configured via ORM hook
+        db_user.updated_at = datetime.now(UTC) 
 
         await db.commit()
         await db.refresh(db_user)
@@ -228,64 +232,150 @@ async def update_user_service(db: AsyncSession, user_id: uuid.UUID, user_update:
 
     except Exception as e:
         await db.rollback()
-        logger.error(f"💥 [USER_SVC] Database error during user update for {user_id}: {e}")
+        logger.error(
+            f"💥 [USER_SVC] Database error during user update for {user_id}: {e}"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Database error during user update: {e}"
+            detail=f"Database error during user update: {e}",
         )
 
-
-async def delete_user_service(db: AsyncSession, user_id: uuid.UUID) -> bool:
+# ======================================================================
+# 👤 Delete  FOR CURRENT USER
+# ======================================================================
+async def delete_user(db: AsyncSession, user_id: uuid.UUID) -> bool:
     """
     🗑️ Delete a user by their ID.
     """
     logger.warning(f"🗑️ [USER_SVC] Attempting to DELETE User ID: {user_id}.")
     try:
-        stmt = delete(UserModel).where(UserModel.id == user_id)
+        # 🐛 FIX: Ensure delete statement uses User model and correct WHERE clause
+        stmt = delete(User).where(User.id == user_id) 
         result = await db.execute(stmt)
         await db.commit()
-        
+
         if result.rowcount > 0:
-            logger.info(f"✅ [USER_SVC] Deleted {result.rowcount} user(s) with ID {user_id}.")
+            logger.info(
+                f"✅ [USER_SVC] Deleted {result.rowcount} user(s) with ID {user_id}."
+            )
         else:
-            logger.warning(f"❓ [USER_SVC] Delete attempted but no rows were found for ID {user_id}.")
+            logger.warning(
+                f"❓ [USER_SVC] Delete attempted but no rows were found for ID {user_id}."
+            )
 
         return result.rowcount > 0
     except Exception as e:
         await db.rollback()
-        logger.error(f"💥 [USER_SVC] Database error during user deletion for {user_id}: {e}")
+        logger.error(
+            f"💥 [USER_SVC] Database error during user deletion for {user_id}: {e}"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Database error during user deletion: {e}"
+            detail=f"Database error during user deletion: {e}",
         )
 
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[Dict[str, Any]]:
+# ======================================================================
+# 👤 Authentication FOR CURRENT USER
+# ======================================================================
+async def authenticate_user(
+    db: AsyncSession, email: str, password: str
+) -> Optional[Dict[str, Any]]:
     """
     🔓 Looks up user by email and verifies the password hash for login.
     """
     logger.info(f"🔓 [AUTH_SVC] Starting authentication attempt for email: '{email}'.")
 
-    # 1. Fetch user object/data from the DB
-    user = await get_user_by_email(db, email) 
-    
+    user = await get_user_by_email(db, email)
+
     if not user:
         logger.warning("🚫 [AUTH_SVC] Authentication failed: User not found in DB.")
-        return None 
-
-    # 2. Verify password against the hashed_password stored in the user object
-    if not verify_password(password, user.hashed_password):
-        logger.warning("❌ [AUTH_SVC] Authentication failed: Incorrect password provided.")
-        return None 
-    
-    if not user.is_active:
-        logger.warning(f"🛑 [AUTH_SVC] Authentication denied: User '{email}' is inactive.")
         return None
 
-    # 3. Success! Return the essential data required for JWT creation.
-    logger.info(f"🎉 [AUTH_SVC] Authentication successful for user ID: {user.id}. Returning payload.")
+    if not verify_password(password, user.hashed_password):
+        logger.warning(
+            "❌ [AUTH_SVC] Authentication failed: Incorrect password provided."
+        )
+        return None
+
+    if not user.is_active:
+        logger.warning(
+            f"🛑 [AUTH_SVC] Authentication denied: User '{email}' is inactive."
+        )
+        return None
+
+    # Success! Return the essential data required for JWT creation.
+    logger.info(
+        f"🎉 [AUTH_SVC] Authentication successful for user ID: {user.id}. Returning payload."
+    )
     return {
-        "id": str(user.id), 
+        "sub": str(user.id), # 'sub' is the standard field for the subject/user ID
         "email": user.email,
         "is_active": user.is_active,
-        # Add role/permissions here if needed
+        "scopes": ["read"] + (["admin"] if user.is_admin else [])
     }
+
+# ======================================================================
+# 👤 DEPENDENCY FOR CURRENT USER
+# ======================================================================
+
+async def get_current_user(
+    security_scopes: SecurityScopes,
+    db: AsyncSession = Depends(get_db_session),
+    # ✅ FIX: oauth2_scheme is now defined globally
+    token: str = Depends(oauth2_scheme), 
+) -> User: # 💡 Returning the ORM model for service layer consistency
+    """
+    🔑 Dependency function to validate the JWT token, fetch the user,
+    and verify the required security scopes.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": f"Bearer scope={security_scopes.scope_str}"}, # 💡 Includes scopes
+    )
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        user_id_str: str = payload.get("sub")
+        token_scopes: list[str] = payload.get("scopes", [])
+
+        if user_id_str is None:
+            raise credentials_exception
+        
+        # Convert user_id_str back to UUID for database lookup
+        user_id = uuid.UUID(user_id_str)
+
+    except JWTError:
+        logger.error("💥 [AUTH_DEP] JWT Error: Token invalid or expired.")
+        raise credentials_exception
+    except ValueError:
+        logger.error("💥 [AUTH_DEP] User ID in token is not a valid UUID.")
+        raise credentials_exception
+
+    # 💾 Fetch user from the database.
+    # 🐛 FIX: Use User model for select statement
+    stmt = select(User).where(User.id == user_id) 
+    result = await db.scalars(stmt)
+    user = result.first()
+
+    if user is None:
+        logger.warning(f"🚫 [AUTH_DEP] User ID {user_id} found in token, but not in DB.")
+        raise credentials_exception
+    
+    if not user.is_active:
+        logger.warning(f"🚫 [AUTH_DEP] User ID {user_id} is inactive.")
+        raise credentials_exception
+
+    # 🧐 Scope Check: Ensure the user's token has *all* required scopes
+    for scope in security_scopes.scopes:
+        if scope not in token_scopes:
+            logger.warning(f"🚫 [AUTH_DEP] User {user.email} missing required scope: {scope}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Not enough permissions: Missing required scope '{scope}'",
+            )
+
+    # ✅ Return the ORM user object
+    return user
+############################################################################

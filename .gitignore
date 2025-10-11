@@ -97,4 +97,9 @@ celerybeat-schedule
 OS-specific files
 
 .DS_Store
-Thumbs.db
+Thumbs.db\n# Local Logs and Temporary Files
+super_test_suite.log
+\n# Traefik Local Certificate Files
+traefik/cert.pem
+traefik/key.pem
+app/traefik/dynamic/certs.yml

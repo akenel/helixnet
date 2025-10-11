@@ -1,148 +1,152 @@
 # app/routes/users_router.py
+# ================================================================
+# 🧱 HelixNet User Router — Clean, Secure, Fully Functional
+# ================================================================
 import logging
+from typing import List
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
-import uuid
+from sqlalchemy.future import select
 
-# --- SECURITY ---
-from app.core.security import get_current_user
-from app.schemas.user import UserInDB
-# --- END SECURITY ---
-
-from app.db.database import get_db_session # Dependency is imported correctly
-from app.schemas.user import UserCreate, UserUpdate
+# 🧩 Local Imports
+from app.db.database import get_db_session  # ✅ Correct dependency
+from app.db.models.user_model import User
+from app.schemas.user_schema import UserCreate, UserRead, UserUpdate
 from app.services.user_service import (
-    get_user_by_email,
-    get_users,
+    get_current_user,
     get_user_by_id,
-    create_user_service,
-    update_user_service,
-    delete_user_service
+    get_users,
+    update_user,
+    delete_user,
 )
+from app.core.security import get_password_hash
 
-logger = logging.getLogger(__name__) # Initialize logger
+# ================================================================
+# ⚙️ Router Setup
+# ================================================================
+logger = logging.getLogger(__name__)
+users_router = APIRouter()
 
-users_router = APIRouter(
-    tags=["🥵️ Users : users_router"],
-    responses={404: {"description": "User not found"}}
-)
-
-# ----------------------------------------------------
-# ⚠️ UNSECURED ENDPOINT: CREATE USER
-# ----------------------------------------------------
+# ================================================================
+# 🧩 Public Endpoint — Create New User
+# ================================================================
 @users_router.post(
-        "/", 
-        response_model=UserInDB, 
-        status_code=status.HTTP_201_CREATED
-        )
-async def create_user_endpoint(
-    user: UserCreate,
-    # ✅ CORRECT USAGE: FastAPI resolves Depends(get_db_session) to AsyncSession
-    db: AsyncSession = Depends(get_db_session)
-) -> UserInDB:
-    # Service function receives the actual AsyncSession object (db)
-    db_user = await get_user_by_email(db, user.email)
-    if db_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
-    return await create_user_service(db, user)
+    "/register",  # ✅ FIX: Use a unique path for user creation/registration
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="🧩 Register a new user account"
+)
+
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db_session)):
+    """
+    🧩 Public endpoint: Create a new user.
+    Automatically hashes password before saving.
+    """
+    logger.info(f"Attempting to create user: {user.email}")
+
+    # Check if email already exists
+    result = await db.execute(select(User).where(User.email == user.email))
+    if result.scalar():
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Create and persist user
+    new_user = User(
+        email=user.email,
+        hashed_password=get_password_hash(user.password),
+        is_admin=user.is_admin or False,
+    )
+
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+
+    logger.info(f"✅ User created successfully: {user.email}")
+    return new_user
 
 
-# ----------------------------------------------------
-# ✅ SECURED ENDPOINTS: READ, UPDATE, DELETE (CRUD)
-# ----------------------------------------------------
-
-@users_router.get(
-        "/me", 
-        response_model=UserInDB,
-        summary="Get Current User Profile"
-                  
- )
+# ================================================================
+# 🔒 Authenticated User — Get Profile (/me)
+# ================================================================
+@users_router.get("/me", response_model=UserRead, summary="Get Current User Profile")
 async def read_users_me(
-    # 💥 THE GATEKEEPER IS APPLIED! This route MUST be defined before /{user_id}
-    current_user: UserInDB = Depends(get_current_user) 
-) -> UserInDB:
-    """Retrieves the currently authenticated user's profile."""
-    # Get user information from the object returned by the dependency
-    return current_user 
+    current_user: User = Depends(get_current_user),
+):
+    """Return the authenticated user's profile."""
+    return current_user
 
-@users_router.get("/{user_id}", response_model=UserInDB)
+
+# ================================================================
+# 🔒 Read a Specific User (by UUID)
+# ================================================================
+@users_router.get("/{user_id}", response_model=UserRead, summary="Get User by ID")
 async def read_user(
-    user_id: uuid.UUID,
+    user_id: UUID,
     db: AsyncSession = Depends(get_db_session),
-    # 💥 THE GATEKEEPER IS APPLIED!
-    current_user: UserInDB = Depends(get_current_user) 
-) -> UserInDB:
-    """Retrieves a user by UUID."""
-    # (Optional: Add logic to check if current_user.id == user_id or is_admin)
+    current_user: User = Depends(get_current_user),
+):
+    """Retrieve a user by ID. Admin or owner only."""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     user = await get_user_by_id(db, user_id)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 
-@users_router.get(
-        "/", 
-        response_model=List[UserInDB])
+# ================================================================
+# 🔒 Admin — List All Users
+# ================================================================
+@users_router.get("/", response_model=List[UserRead], summary="List all users (Admin only)")
 async def read_users(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db_session),
-    # 💥 THE GATEKEEPER IS APPLIED!
-    current_user: UserInDB = Depends(get_current_user) 
-) -> List[UserInDB]:
-    """
-    Retrieves a list of all users in the system. Requires authentication.
-    """
-    logger.debug(f"[USER_ROUTE] Listing users for authenticated user: {current_user.email}")
-    # (Optional: Add a check here if only admins can list all users)
+    current_user: User = Depends(get_current_user),
+):
+    """Retrieve all users. Admin access required."""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin privileges required")
     return await get_users(db, skip=skip, limit=limit)
 
-@users_router.patch("/{user_id}", response_model=UserInDB)
+
+# ================================================================
+# 🔒 Update User
+# ================================================================
+@users_router.patch("/{user_id}", response_model=UserRead, summary="Update user details")
 async def update_user_endpoint(
-    user_id: uuid.UUID,
+    user_id: UUID,
     user_update: UserUpdate,
     db: AsyncSession = Depends(get_db_session),
-    # 💥 THE GATEKEEPER IS APPLIED!
-    current_user: UserInDB = Depends(get_current_user) 
-) -> UserInDB:
-    # (CRITICAL: Add authorization check here)
-    # Note: User IDs should be compared as strings or UUID objects consistently
-    if str(current_user.id) != str(user_id) and not current_user.is_admin:
-         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this user"
-        )
-    user = await update_user_service(db, user_id, user_update)
+    current_user: User = Depends(get_current_user),
+):
+    """Update an existing user. Admin or owner only."""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    user = await update_user(db, user_id, user_update)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@users_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+
+# ================================================================
+# 🔒 Delete User
+# ================================================================
+@users_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete user")
 async def delete_user_endpoint(
-    user_id: uuid.UUID,
+    user_id: UUID,
     db: AsyncSession = Depends(get_db_session),
-    # 💥 THE GATEKEEPER IS APPLIED!
-    current_user: UserInDB = Depends(get_current_user) 
+    current_user: User = Depends(get_current_user),
 ):
-    # (CRITICAL: Add authorization check here)
-    if str(current_user.id) != str(user_id) and not current_user.is_admin:
-         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this user"
-        )
-    deleted = await delete_user_service(db, user_id)
+    """Delete a user account. Admin or owner only."""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    deleted = await delete_user(db, user_id)
     if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=404, detail="User not found")
+    return None

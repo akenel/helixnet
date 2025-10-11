@@ -1,180 +1,187 @@
-# cd ~/repos/helixnet/app/test
-# TESTING=True POSTGRES_HOST=127.0.0.1 CELERY_BROKER_URL="redis://127.0.0.1:6379/0" CELERY_RESULT_BACKEND="redis://127.0.0.1:6379/0" pytest test_job_flow.py
+# 1. 📂 app/db/database.py (The Database Core)
 import os
-import contextlib
 import logging
+from contextlib import contextmanager, asynccontextmanager
 from typing import AsyncGenerator
-from contextlib import contextmanager
-# **Crucially, you must also set the `TESTING=True` environment variable when running your tests:**
-# (.venv) angel@debian:~/repos/helixnet/app/tests$ TESTING=True POSTGRES_HOST=127.0.0.1 pytest test_job_flow.py
 
+# 📚 Core SQLAlchemy/Connection Imports
+from requests import session  # ⚠️ NOTE: This import is probably wrong; SQLAlchemy uses its own Session/sessionmaker
 from sqlalchemy import create_engine
-# 💡 NEW: Import NullPool for test environment fix
-from sqlalchemy.pool import NullPool 
+from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-# 🔑 CRITICAL: Import configuration utility
-# Assuming this factory function provides your settings object
-from app.core.config import get_settings 
-# In app/db/database.py
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-# Add this import:
-from sqlalchemy.pool import NullPool # Import to disable pooling
+# ⚙️ Configuration
+from app.core.config import get_settings
 
-# ====================================================================
-# 📝 Configuration & Logging ⚙️
-# ====================================================================
-import os
-import contextlib
-import logging
-from typing import AsyncGenerator
-from contextlib import contextmanager
+settings = get_settings()
+logger = logging.getLogger("db_setup")
+logger.setLevel(logging.INFO)
 
-from sqlalchemy import create_engine
-# 💡 NEW: Import NullPool for test environment fix
-from sqlalchemy.pool import NullPool 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
-
-# 🔑 CRITICAL: Import configuration utility
-# Assuming this factory function provides your settings object
-from app.core.config import get_settings 
-
-# ====================================================================
-# 📝 Configuration & Logging ⚙️
-# ====================================================================
-
-# Set up logging for clarity
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-
-# Load settings object (safe since it's cached/singleton)
-settings = get_settings() 
-
-# Environment check: Determine if we are running in a test environment (for fixes)
-# FIX: Checking for the 'TESTING' variable used in the shell command
-IS_TESTING = os.getenv("TESTING", "False").lower() in ('true', '1', 't')
-if IS_TESTING:
-    logger.warning("Environment detected as TEST. Applying NullPool and pool_pre_ping=False fixes.")
+# 📝 Environment Check
+IS_TESTING = os.getenv("TESTING", "False").lower() in ("true", "1", "t")
+logger.info(f"✨ Script loaded. TESTING mode: {IS_TESTING}")
 
 
 # ====================================================================
-# 🧱 Base Class for Models 🏗️
+# 🧱 Base Class and Model Registration 🏗️
 # ====================================================================
-
+logger.info("📐 Step 1: Defining SQLAlchemy Base Class.")
 class Base(DeclarativeBase):
-    """Base class for all SQLAlchemy declarative models. Models inherit from this."""
+    """Base class for all SQLAlchemy declarative models."""
     pass
+logger.info("✅ Base Class Defined.")
 
 
+# 💥 CRITICAL FIX: Explicitly import all model files to register them to Base.metadata
+logger.info("🔗 Step 2: Forcing Model Imports to Register Tables...")
+try:
+    # These imports force the model files to execute, registering the table metadata.
+    import app.db.models.user_model
+    logger.info("   -> Imported user_model. Table 'users' should be registered.")
+    import app.db.models.job_model
+    logger.info("   -> Imported job_model. Table 'jobs' should be registered.")
+    import app.db.models.artifact_model
+    logger.info("   -> Imported artifact_model. Table 'artifacts' should be registered.")
+    # Add any other missing models here:
+    # import app.db.models.team_model
+    # import app.db.models.task_model
+    
+except ImportError as e:
+    logger.error(f"❌ FATAL IMPORT ERROR: Model path is wrong or missing: {e}")
+    # This will give a clear traceback if the file path (e.g., app.db.models.user_model) is incorrect.
+    raise
+    
+registered_tables = list(Base.metadata.tables.keys())
+logger.info(f"✅ Model Registration Complete. Found Tables: {registered_tables} 🥳")
+if 'users' not in registered_tables:
+    logger.error("🚨 CRITICAL: The 'users' table is still missing after imports! Check user_model.py imports.")
+    
+    
 # ====================================================================
-# A. ASYNCHRONOUS DATABASE SETUP (For FastAPI Routes) 🚀
+# A. ASYNCHRONOUS DATABASE SETUP (FastAPI) 🚀
 # ====================================================================
 
-# Build engine arguments, applying the test fix when necessary
+# 1. Asynchronous Engine Configuration
 async_engine_kwargs = {
     "echo": settings.DB_ECHO,
-    # 💥 CRITICAL FIX 1: Disable connection pooling in tests (set to NullPool)
-    "poolclass": NullPool if IS_TESTING else None,
-    # 💥 CRITICAL FIX 2: Disable pre-ping in tests (still necessary even with NullPool)
-    "pool_pre_ping": False if IS_TESTING else True,
+    "future": True,
 }
+logger.info("🛠️ Configuring Async Engine...")
 
-# FIX: Only include pool_size if we are NOT in testing mode, as NullPool does not accept this argument.
-if not IS_TESTING:
+if IS_TESTING:
+    async_engine_kwargs["poolclass"] = NullPool
+    async_engine_kwargs["pool_pre_ping"] = False
+    logger.warning("   -> TEST CONFIG: Using NullPool.")
+else:
+    async_engine_kwargs["pool_pre_ping"] = True
     async_engine_kwargs["pool_size"] = settings.DB_POOL_SIZE
+    logger.info(f"   -> PROD CONFIG: Pool Size {settings.DB_POOL_SIZE}.")
 
 
-# 1. Asynchronous Engine
-async_engine = create_async_engine( 
+# 2. Asynchronous Engine Creation
+async_engine = create_async_engine(
     settings.POSTGRES_ASYNC_URL,
     **async_engine_kwargs,
-    future=True # SQLAlchemy 2.0 style
 )
-logger.info(f"Async engine created. Pool class: {'NullPool' if IS_TESTING else 'Default'}")
+logger.info(f"✅ Async Engine Created.")
 
 
-# 🔑 LEGACY/COMPATIBILITY FIX: 'database' variable
-# The main application (app/main.py) expects to import 'database'. 
-# This was likely an instance of the 'databases' library. Since we've transitioned
-# to SQLAlchemy async, we define 'database' as the raw engine object for compatibility
-# to prevent the ImportError. The actual usage of 'database' in app.main should be checked.
-database = async_engine 
-# ----------------------------------------------------
-
-
-# 2. Asynchronous Session Factory
+# 3. Asynchronous Session Factory
 AsyncSessionLocal = async_sessionmaker(
     bind=async_engine,
     class_=AsyncSession,
     expire_on_commit=False,
-    future=True # SQLAlchemy 2.0 style
+    future=True,
 )
+logger.info("✅ Async Session Factory (AsyncSessionLocal) Ready.")
 
 
-# 3. Asynchronous Session Context Manager
-@contextlib.asynccontextmanager
-async def get_db_session_context() -> AsyncSession:
-    """Provides an asynchronous database session as a context manager for manual use."""
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            # Log the rollback for debugging
-            logger.error("Async database transaction rolled back.")
-            raise
+# 4. Asynchronous Dependencies for FastAPI
+@asynccontextmanager
+async def get_db_session_context() -> AsyncGenerator[AsyncSession, None]:
+    """Provides an async database session context manager."""
+    logger.info("➡️ Entering get_db_session_context.")
+    session = AsyncSessionLocal()
+    try:
+        yield session
+        await session.commit()
+        logger.info("⬆️ Async transaction committed.")
+    except Exception:
+        await session.rollback()
+        logger.error("❌ Async transaction rolled back.", exc_info=True)
+        raise
+    finally:
+        await session.close()
+        logger.info("⬅️ Async session closed.")
 
-# 4. Asynchronous Dependency for FastAPI
+
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Provides an asynchronous database session for FastAPI dependencies."""
+    """FastAPI dependency that yields an async session."""
+    logger.info("➡️ FastAPI Dependency: Yielding Async Session.")
     async with get_db_session_context() as session:
         yield session
+
+
+# 5. Initialization and Shutdown Helpers
+async def init_db_tables():
+    """Create all tables defined by Base.metadata if they do not exist."""
     
-# 5. Engine Shutdown Helper 🛑
+    current_tables = list(Base.metadata.tables.keys())
+    logger.info(f"📦 Step 3: Running init_db_tables. Tables found: {current_tables}") 
+
+    async with async_engine.begin() as conn:
+        logger.info("🔄 Beginning database connection for creation...")
+        # CRITICAL STEP: Run the synchronous DDL command inside the async connection
+        await conn.run_sync(Base.metadata.create_all) 
+        logger.info("✅ Database table initialization complete (Base.metadata.create_all called).")
+
 async def close_async_engine():
     """Explicitly closes the SQLAlchemy async engine connections."""
-    logger.info("Closing SQLAlchemy Async Engine connections...")
+    logger.info("🛑 Step 4: Closing SQLAlchemy Async Engine connections...")
     await async_engine.dispose()
-    logger.info("SQLAlchemy Async Engine disposed.")
+    logger.info("✅ SQLAlchemy Async Engine disposed.")
 
 
 # ====================================================================
-# B. SYNCHRONOUS DATABASE SETUP (For Scripts/Workers) ⚙️
+# B. SYNCHRONOUS DATABASE SETUP (Celery/Scripts) ⚙️
 # ====================================================================
 
-# 1. Synchronous Engine
-# Synch engines do not suffer the same event loop issues as the async ones in testing.
+# 1. Synchronous Engine Creation
+logger.info("🛠️ Configuring Sync Engine...")
 SyncEngine = create_engine(
     settings.POSTGRES_SYNC_URL,
     echo=settings.DB_ECHO,
     pool_size=settings.DB_POOL_SIZE,
     pool_pre_ping=True,
+    future=True,
 )
-logger.info("Sync engine created.")
-
+logger.info("✅ Sync Engine Created.")
 
 # 2. Synchronous Session Factory
 SyncSessionLocal = sessionmaker(
-    autocommit=False, 
-    autoflush=False, 
+    autocommit=False,
+    autoflush=False,
     bind=SyncEngine,
-    class_=Session
+    class_=Session,
+    future=True,
 )
+logger.info("✅ Sync Session Factory (SyncSessionLocal) Ready.")
 
 # 3. Synchronous Session Context Manager
 @contextmanager
-def get_db_session_sync() -> Session:
-    """Provides a thread-local synchronous session for Celery/Scripts/Tests (via sync engine)."""
+def get_db_session_sync() -> session:
+    """Provides a thread-local synchronous session."""
+    logger.info("➡️ Entering get_db_session_sync.")
     db = SyncSessionLocal()
     try:
         yield db
         db.commit()
+        logger.info("⬆️ Sync transaction committed.")
     except Exception:
         db.rollback()
-        logger.error("Synchronous database transaction rolled rolled back.")
+        logger.error("❌ Synchronous transaction rolled back.", exc_info=True)
         raise
     finally:
         db.close()
+        logger.info("⬅️ Sync session closed.")
