@@ -1,4 +1,93 @@
 # 🌌 HelixNet Distributed Platform: Task & Data Management
+🌌 HelixNet Core API: Task & Data Management (v1.2.1)
+
+Congratulations! The initial platform setup for HelixNet is complete. This document serves as the primary source of truth for configuration, deployment, and getting started.
+🚀 Getting Started
+
+Ensure Docker and Make are installed. The project is built around a multi-service Docker Compose architecture.
+1. Build & Run the Stack
+
+To build all necessary images, spin up all 12 services (including the database, cache, message broker, MinIO storage, and the helix-web-app), and bring the system online:
+
+make rebuild
+
+(This command stops containers, rebuilds images, and starts fresh.)
+2. Initial Data Seeding
+
+After the application starts, it attempts to seed initial users (admin, demo, chuck, marcel, etc.). This ensures you have known accounts for testing and development.
+
+Status Check (as seen in the logs):
+
+    Initial Run: Logs show [helix.auth][INFO] ... ✨ Created new account: ...
+
+    Subsequent Runs (safe): Logs show [helix.auth][INFO] ... 👉 Account already exists: ...
+
+To manually trigger or verify the user list at any time, use these commands:
+
+Command
+	
+
+Description
+
+make seed-data
+	
+
+Runs the user seeding script independently.
+
+make show-users
+	
+
+Queries the Postgres database and displays all existing user emails.
+🔗 Key Local Service Endpoints
+
+The API is served via Traefik.
+
+Service
+	
+
+Endpoint
+	
+
+Purpose
+
+Main API
+	
+
+http://localhost/api/v1
+	
+
+Application entry point.
+
+API Docs (Swagger)
+	
+
+http://localhost/docs
+	
+
+Interactive OpenAPI documentation for immediate testing.
+
+Celery Monitoring
+	
+
+http://localhost:5555
+	
+
+Flower UI for job monitoring.
+
+DB Admin
+	
+
+http://localhost:5050
+	
+
+pgAdmin UI.
+💡 Best Practice: Development Iteration
+
+When making changes to core logic (like in app/services/user_service.py), the file watcher often detects the change and reloads the application. However, for changes in things like background jobs (jobs.py), always use:
+
+make deploy-code
+
+This ensures the web app, worker, and beat services are all running the latest compiled code.
 
 ## 🟢 PROJECT STATUS: CORE PIPELINE ACHIEVED (MILESTONE V0.2.0)
 
@@ -86,3 +175,5 @@ The focus now shifts to completing the MVP by integrating secure file storage (M
 \<div id="chuck-norris-joke"\>
 Fetching daily wisdom...
 \</div\>
+
+

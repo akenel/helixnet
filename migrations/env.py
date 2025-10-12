@@ -28,7 +28,7 @@ def run_migrations_online() -> None:
     # 1. Get the computed URL from the application settings
     settings = get_settings()
     # Use the synchronous URL for Alembic/psycopg
-    connectable_url = settings.POSTGRES_SYNC_URL
+    connectable_url = settings.POSTGRES_SYNC_URI
 
     # 2. Inject the computed URL directly into the Alembic configuration context
     connectable = engine_from_config(

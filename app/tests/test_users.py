@@ -27,7 +27,7 @@ def mock_user_data():
         "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
         "email": "test_user@helix.net",
         "is_active": True,
-        "is_superuser": False,
+        "is_admin": False,
         "created_at": "2023-01-01T00:00:00.000000",
         "updated_at": "2023-01-01T00:00:00.000000",
     }

@@ -1,187 +1,192 @@
-# 1. 📂 app/db/database.py (The Database Core)
-import os
+# app/db/database.py
 import logging
-from contextlib import contextmanager, asynccontextmanager
-from typing import AsyncGenerator
-
-# 📚 Core SQLAlchemy/Connection Imports
-from requests import session  # ⚠️ NOTE: This import is probably wrong; SQLAlchemy uses its own Session/sessionmaker
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Optional
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
-
-# ⚙️ Configuration
-from app.core.config import get_settings
-
-settings = get_settings()
-logger = logging.getLogger("db_setup")
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import sessionmaker, Session as session, DeclarativeBase
+from sqlalchemy.ext.asyncio import (
+    AsyncSession, 
+    create_async_engine, 
+    async_sessionmaker, 
+    AsyncEngine,
+    AsyncConnection
+)
+# ================================================================
+from app.core.config import settings, get_settings
+from app.db.models.base import Base # Assuming Base is imported here
+# ================================================================
+logger = logging.getLogger("helix🛠️db")
 logger.setLevel(logging.INFO)
-
-# 📝 Environment Check
-IS_TESTING = os.getenv("TESTING", "False").lower() in ("true", "1", "t")
-logger.info(f"✨ Script loaded. TESTING mode: {IS_TESTING}")
-
-
-# ====================================================================
-# 🧱 Base Class and Model Registration 🏗️
-# ====================================================================
-logger.info("📐 Step 1: Defining SQLAlchemy Base Class.")
-class Base(DeclarativeBase):
-    """Base class for all SQLAlchemy declarative models."""
-    pass
-logger.info("✅ Base Class Defined.")
-
-
-# 💥 CRITICAL FIX: Explicitly import all model files to register them to Base.metadata
-logger.info("🔗 Step 2: Forcing Model Imports to Register Tables...")
-try:
-    # These imports force the model files to execute, registering the table metadata.
-    import app.db.models.user_model
-    logger.info("   -> Imported user_model. Table 'users' should be registered.")
-    import app.db.models.job_model
-    logger.info("   -> Imported job_model. Table 'jobs' should be registered.")
-    import app.db.models.artifact_model
-    logger.info("   -> Imported artifact_model. Table 'artifacts' should be registered.")
-    # Add any other missing models here:
-    # import app.db.models.team_model
-    # import app.db.models.task_model
-    
-except ImportError as e:
-    logger.error(f"❌ FATAL IMPORT ERROR: Model path is wrong or missing: {e}")
-    # This will give a clear traceback if the file path (e.g., app.db.models.user_model) is incorrect.
-    raise
-    
-registered_tables = list(Base.metadata.tables.keys())
-logger.info(f"✅ Model Registration Complete. Found Tables: {registered_tables} 🥳")
-if 'users' not in registered_tables:
-    logger.error("🚨 CRITICAL: The 'users' table is still missing after imports! Check user_model.py imports.")
-    
-    
-# ====================================================================
-# A. ASYNCHRONOUS DATABASE SETUP (FastAPI) 🚀
-# ====================================================================
-
-# 1. Asynchronous Engine Configuration
-async_engine_kwargs = {
-    "echo": settings.DB_ECHO,
-    "future": True,
-}
-logger.info("🛠️ Configuring Async Engine...")
-
-if IS_TESTING:
-    async_engine_kwargs["poolclass"] = NullPool
-    async_engine_kwargs["pool_pre_ping"] = False
-    logger.warning("   -> TEST CONFIG: Using NullPool.")
-else:
-    async_engine_kwargs["pool_pre_ping"] = True
-    async_engine_kwargs["pool_size"] = settings.DB_POOL_SIZE
-    logger.info(f"   -> PROD CONFIG: Pool Size {settings.DB_POOL_SIZE}.")
-
-
-# 2. Asynchronous Engine Creation
+settings = get_settings()
+# ================================================================
+# --- Engine Definitions ---
+SyncSessionLocal: Optional[sessionmaker] = None
+# ================================================================
+# ⚙️ ASYNC ENGINE & SESSION DEFINITION
+# ================================================================
+# 1. Define the Async Engine
 async_engine = create_async_engine(
-    settings.POSTGRES_ASYNC_URL,
-    **async_engine_kwargs,
+    settings.POSTGRES_ASYNC_URI,
+    echo=settings.DB_ECHO,
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
 )
-logger.info(f"✅ Async Engine Created.")
-
-
-# 3. Asynchronous Session Factory
-AsyncSessionLocal = async_sessionmaker(
-    bind=async_engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    future=True,
+# 2. Define the Async Session Maker
+# FIX: 'bind=async_engine' is the critical piece that resolves the UnboundExecutionError.
+AsyncSessionLocal = sessionmaker(
+    bind=async_engine, 
+    class_=AsyncSession, 
+    expire_on_commit=False, # Essential for using ORM objects outside the session
+    autoflush=False
 )
-logger.info("✅ Async Session Factory (AsyncSessionLocal) Ready.")
+# ================================================================
+# 🔗 DEPENDENCY FUNCTION (For FastAPI Route Injection)
+# ================================================================
 
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Standard FastAPI dependency function for yielding a session in routes.
+    Note: Routes using this must still manually commit/rollback changes if desired.
+    """
+    session = AsyncSessionLocal()
+    try:
+        yield session
+    finally:
+        await session.close()
+# ================================================================
+def create_async_engine_instance() -> AsyncEngine:
+    """Initializes and returns the AsyncEngine instance."""
+    global async_engine
+    if async_engine is None:
+        logger.info("Initializing async database engine...")
+        async_engine = create_async_engine(
+            settings.POSTGRES_ASYNC_URI, # Use the computed URL property
+            echo=settings.DB_ECHO,        # Use DB_ECHO for consistency
+            pool_pre_ping=True, # Ensure connection is alive
+            pool_recycle=3600 # Recycle connections after one hour
+        )
+    return async_engine
+# ================================================================
 
-# 4. Asynchronous Dependencies for FastAPI
+async def close_async_engine() -> None:
+    """Closes the async engine and connection pool."""
+    global async_engine
+    if async_engine:
+        logger.info("Closing async database engine...")
+        await async_engine.dispose()
+        async_engine = None
+# ================================================================
+
+async def init_db_tables() -> None:
+    """
+    Ensures all models are imported (via app.db.__init__.py) and creates 
+    tables in the database if they don't already exist.
+    """
+    engine = create_async_engine_instance()
+
+    # --- ENHANCED LOGGING START ---
+    
+    # 1. Get all registered table names from Base.metadata
+    registered_tables = sorted(Base.metadata.tables.keys())
+    
+    # 2. Log them clearly
+    if registered_tables:
+        logger.info("✅ SUCCESS: Found and registered the following ORM models/tables:")
+        for table_name in registered_tables:
+            logger.info(f"   - {table_name}")
+    else:
+        # This should ONLY happen if app/db/__init__.py fails to import models
+        logger.warning("🚨 WARNING: Base.metadata found NO registered ORM models/tables.")
+    
+    # --- ENHANCED LOGGING END ---
+
+    async with engine.begin() as conn:
+        logger.info("Checking database for missing tables and attempting creation...")
+        # We must import all models (via app.db.__init__.py) BEFORE this call
+        # to ensure Base.metadata has collected them all.
+        await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database table initialization complete.")
+
+# ================================================================
+# --- Session Generators (FastAPI Dependencies) ---
+# ================================================================
+# ================================================================
+# 💉 DEPENDENCY INJECTION CONTEXT MANAGER (For Startup/Lifespan)
+# ================================================================
 @asynccontextmanager
 async def get_db_session_context() -> AsyncGenerator[AsyncSession, None]:
-    """Provides an async database session context manager."""
-    logger.info("➡️ Entering get_db_session_context.")
+    """
+    Provides a transactional AsyncSession within a context manager.
+    Dependency to provide a transactional database session (AsyncSession).
+    Used in lifespan hook for setup/seeding. Automatically handles rollback/commit/close.
+
+    """
+    if AsyncSessionLocal is None or async_engine is None:
+        # Lazy initialization if not already done (useful for scripting)
+        create_async_engine_instance() 
+        AsyncSessionLocal.configure(bind=async_engine)
+        
     session = AsyncSessionLocal()
     try:
         yield session
         await session.commit()
-        logger.info("⬆️ Async transaction committed.")
-    except Exception:
+    except Exception as e:
+        logger.error(f"Database transaction error: {e}")
         await session.rollback()
-        logger.error("❌ Async transaction rolled back.", exc_info=True)
         raise
     finally:
         await session.close()
-        logger.info("⬅️ Async session closed.")
 
+# ================================================================
+# Helper function for synchronous contexts (e.g., Celery Worker)
+# ================================================================
 
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency that yields an async session."""
-    logger.info("➡️ FastAPI Dependency: Yielding Async Session.")
-    async with get_db_session_context() as session:
-        yield session
+def create_sync_engine(url: str = settings.POSTGRES_SYNC_URI) -> Engine: 
+    """Initializes and returns the synchronous Engine instance."""
+    logger.info("Initializing sync database engine...")
+    engine = create_engine(
+        url, 
+        echo=settings.DB_ECHO, 
+        pool_pre_ping=True
+    )
+    return engine
+# ================================================================
 
+def get_db_session_sync() -> AsyncGenerator[session, None]: # FIX: Changed return type to generator
+    """Provides a synchronous database session (e.g., for Celery worker tasks)."""
+    # Note: Celery tasks must use a dedicated synchronous session factory 
+    # to avoid issues with event loops.   
+    # Declare global SyncSessionLocal here before any use/read of the variable
+    global SyncSessionLocal
 
-# 5. Initialization and Shutdown Helpers
-async def init_db_tables():
-    """Create all tables defined by Base.metadata if they do not exist."""
-    
-    current_tables = list(Base.metadata.tables.keys())
-    logger.info(f"📦 Step 3: Running init_db_tables. Tables found: {current_tables}") 
+    if SyncSessionLocal is None:
+        engine = create_sync_engine()
+        # Initialize the synchronous session factory once
+        SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    async with async_engine.begin() as conn:
-        logger.info("🔄 Beginning database connection for creation...")
-        # CRITICAL STEP: Run the synchronous DDL command inside the async connection
-        await conn.run_sync(Base.metadata.create_all) 
-        logger.info("✅ Database table initialization complete (Base.metadata.create_all called).")
-
-async def close_async_engine():
-    """Explicitly closes the SQLAlchemy async engine connections."""
-    logger.info("🛑 Step 4: Closing SQLAlchemy Async Engine connections...")
-    await async_engine.dispose()
-    logger.info("✅ SQLAlchemy Async Engine disposed.")
-
-
-# ====================================================================
-# B. SYNCHRONOUS DATABASE SETUP (Celery/Scripts) ⚙️
-# ====================================================================
-
-# 1. Synchronous Engine Creation
-logger.info("🛠️ Configuring Sync Engine...")
-SyncEngine = create_engine(
-    settings.POSTGRES_SYNC_URL,
-    echo=settings.DB_ECHO,
-    pool_size=settings.DB_POOL_SIZE,
-    pool_pre_ping=True,
-    future=True,
-)
-logger.info("✅ Sync Engine Created.")
-
-# 2. Synchronous Session Factory
-SyncSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=SyncEngine,
-    class_=Session,
-    future=True,
-)
-logger.info("✅ Sync Session Factory (SyncSessionLocal) Ready.")
-
-# 3. Synchronous Session Context Manager
-@contextmanager
-def get_db_session_sync() -> session:
-    """Provides a thread-local synchronous session."""
-    logger.info("➡️ Entering get_db_session_sync.")
     db = SyncSessionLocal()
     try:
-        yield db
-        db.commit()
-        logger.info("⬆️ Sync transaction committed.")
-    except Exception:
-        db.rollback()
-        logger.error("❌ Synchronous transaction rolled back.", exc_info=True)
-        raise
+        # FIX: Should yield the session, not return it directly
+        yield db 
     finally:
         db.close()
-        logger.info("⬅️ Sync session closed.")
+
+# ================================================================
+# 🔨 DATABASE LIFECYCLE FUNCTIONS
+# ================================================================
+async def init_db_tables():
+    """Create all tables in the database."""
+    async with async_engine.begin() as conn:
+        logger.info("Running DDL to create/verify tables...")
+        # Note: 'Base.metadata.create_all' must be run within 'conn.run_sync'
+        await conn.run_sync(Base.metadata.create_all)
+        logger.info("DDL operation complete.")
+
+async def close_async_engine():
+    """Dispose of the async engine on shutdown."""
+    await async_engine.dispose()
+    logger.info("Async engine disposed.")
+

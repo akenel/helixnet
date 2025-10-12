@@ -4,19 +4,19 @@ from datetime import datetime, UTC
 from typing import Optional, Dict, Any, List, TYPE_CHECKING
 
 # 📚 SQLAlchemy Imports
-from sqlalchemy import ForeignKey, Enum, Text, DateTime, String
+from sqlalchemy import ForeignKey, Enum, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Note: Using PostgreSQL specific types for optimized performance
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 # 🔑 CRITICAL: Import the Base class from the database configuration!
-from app.db.database import Base
+from app.db.models.base import Base # ✅ Corrected Base import
 
 # 🔗 Type Checking for Relationships
 if TYPE_CHECKING:
-    from app.db.models.user_model import User
-    from app.db.models.job_model import Job
+    from .user_model import User
+    from .job_model import Job
 
 
 # =========================================================================
@@ -56,20 +56,13 @@ class TaskResult(Base):
     )
 
     # 🔗 Foreign Key to Job (One Job has many TaskResults)
-    job_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey(
-            "jobs.job_id",
-            ondelete="CASCADE",
-        ),
+    job_id: Mapped[uuid.UUID] = mapped_column(ForeignKey( "jobs.job_id", ondelete="CASCADE", ),
         doc="The UUID of the parent Job.",
     )
 
-    # 🔗 CRITICAL FIX: Foreign Key to User (One User initiated this Task/Job)
+    # 🔗 Foreign Key to User (One User initiated this Task/Job)
     user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey(
-            "users.id",
-            ondelete="CASCADE",
-        ),
+        ForeignKey("users.id",ondelete="CASCADE",),
         doc="The UUID of the user who initiated the parent job.",
     )
     
@@ -99,6 +92,14 @@ class TaskResult(Base):
         default=datetime.now(UTC),
         doc="When the task result record was created.",
     )
+    
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=datetime.now(UTC),
+        onupdate=datetime.now(UTC), 
+        doc="When the task was last updated.",
+    )
+    
     finished_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,

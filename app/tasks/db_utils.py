@@ -20,7 +20,7 @@ def get_worker_engine():
     """Initializes and returns the database engine for worker use."""
     try:
         # Celery workers are synchronous, so we MUST use the synchronous URL.
-        SQLALCHEMY_DATABASE_URL = settings.POSTGRES_SYNC_URL
+        SQLALCHEMY_DATABASE_URL = settings.POSTGRES_SYNC_URI
         
         # We use a separate engine for the worker to manage connections independently
         # from the main FastAPI thread pool.
@@ -39,7 +39,6 @@ def get_worker_engine():
         return engine
 
     except AttributeError as e:
-        # This catches if POSTGRES_SYNC_URL isn't set
         logger.error(f"Failed to create worker database engine: {e}")
         raise e
     except Exception as e:

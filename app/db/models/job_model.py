@@ -1,28 +1,17 @@
-# /home/angel/repos/helixnet/app/db/models/job_model.py
 import uuid
 import enum
 from datetime import datetime, UTC
-from typing import Any, Dict, Optional, List, TYPE_CHECKING # Added TYPE_CHECKING
+from typing import Any, Dict, Optional, List, TYPE_CHECKING 
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Enum, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID, JSONB  
-from app.db.database import Base # Assuming Base import location
-
-# In /code/app/db/models/job_model.py
-
-# ... necessary imports (as you noted, they are critical)
-from typing import Optional, List, Dict, Any # Make sure Dict, Any are here
-from sqlalchemy.dialects.postgresql import UUID, JSONB # Make sure JSONB is here
+from app.db.models.base import Base # ✅ Corrected Base import path
 
 # 💡 CRITICAL FIX: The previous fix caused a circular import.
-# To resolve the circular dependency while retaining type hints, we move 
-# these model imports back into the TYPE_CHECKING block. 
-# SQLAlchemy uses the string literals (e.g., "User") at runtime,
-# so the dependency is broken.
 if TYPE_CHECKING:
     from .user_model import User
-    from .task_model import TaskResult # Assuming TaskResult model is in 'task_model.py'
+    from .task_result_model import TaskResult 
     from .artifact_model import Artifact 
 
 class JobStatus(str, enum.Enum):
@@ -45,6 +34,7 @@ class Job(Base):
     """
 
     __tablename__ = "jobs"
+    __allow_unmapped__ = False # Added for consistency
 
     # --- Primary Key & Foreign Keys ---
     
@@ -57,8 +47,7 @@ class Job(Base):
     )
 
     # 🔗 Foreign Key to User (One User has many Jobs)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"),
         doc="The user who initiated this job.",
     )
 
@@ -70,7 +59,7 @@ class Job(Base):
         doc="Current state of the job.",
     )
 
-    # 🎯  Input Data Field
+    # 🎯 Input Data Field
     input_data: Mapped[Dict[str, Any]] = mapped_column(
         JSONB,  # Use PostgreSQL JSONB type for the input dictionary
         doc="The structured input payload for the Celery task.",
@@ -97,7 +86,6 @@ class Job(Base):
     updated_at: Mapped[datetime] = mapped_column(
     DateTime(timezone=True),
     default=datetime.now(UTC),
-    # 🎯 CN FIX: Add the onupdate rule for automatic timestamp management
     onupdate=datetime.now(UTC), 
     doc="When the job was last updated.",
     )

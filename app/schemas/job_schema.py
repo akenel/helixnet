@@ -82,3 +82,5 @@ class JobUpdate(BaseModel):
     # We use Dict[str, Any] here because the actual result is stored in the ORM model as JSONB
     result_data: Optional[Dict[str, Any]] = None
     finished_at: Optional[datetime] = None
+
+

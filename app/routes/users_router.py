@@ -15,14 +15,14 @@ from app.db.database import get_db_session  # ✅ Correct dependency
 from app.db.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserRead, UserUpdate
 from app.services.user_service import (
-    get_current_user,
+  
     get_user_by_id,
     get_users,
     update_user,
     delete_user,
 )
 from app.core.security import get_password_hash
-
+from app.services.user_service import get_current_user
 # ================================================================
 # ⚙️ Router Setup
 # ================================================================
@@ -108,6 +108,7 @@ async def read_users(
     current_user: User = Depends(get_current_user),
 ):
     """Retrieve all users. Admin access required."""
+    print(f"DEBUG: current_user={current_user.email}, is_admin={current_user.is_admin}")
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return await get_users(db, skip=skip, limit=limit)

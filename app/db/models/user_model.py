@@ -1,85 +1,133 @@
-import enum
 import uuid
-from datetime import datetime, UTC
-from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING
+from datetime import datetime, UTC # ✅ Consistent UTC import
 
-# 📚 SQLAlchemy Imports
-from sqlalchemy import ForeignKey, Enum, JSON, Text, Boolean, String, DateTime
+# 💥 The Powerhouse Imports: SQLAlchemy 2.0 Style
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
-# 🧱 Import Base from the definitive location
-from app.db.database import Base # 🎯 ASSUMING Base is defined in database.py
+# 🔑 CRITICAL: Import the Base class from the database configuration!
+from app.db.models.base import Base # ✅ Consistent Base import
 
-
-# =========================================================================
-# 💡 FORWARD REFERENCES (Fixes Circular Imports in Relationships) 💡
-# =========================================================================
-# Use these strings to define relationships without importing the other model files 
-# at the top level, which avoids circular import issues.
-
+# --- Type Checking Imports ---
+# NOTE: Make sure the file team_model.py exists in the same directory
 if TYPE_CHECKING:
-    from .job_model import Job
-    # 💡 FIX 1: Change import from job_result_model to task_model
-    # and change the expected class name from JobResult to TaskResult
-    from .task_model import TaskResult 
+    from .team_model import Team 
+    # 💼 NEW: Add Job model for type hints to resolve 'jobs' property error
+    from .job_model import Job 
+    # 🎯 NEW: Add TaskResult model for type hints to resolve 'task_results' property error
+    from .task_result_model import TaskResult 
+    # 🖼️ NEW: Add Artifact model for type hints to resolve 'artifacts' property error
     from .artifact_model import Artifact
-    
-    
+    # 🔑 NEW: Add RefreshToken model for type hints to resolve 'refresh_tokens' property error
+    from .refresh_token_model import RefreshToken
+
+
 # =========================================================================
-# 🛡️ CORE ORM MODEL: USER 💾
+# 👤 USER ORM MODEL
 # =========================================================================
 class User(Base):
-    """User Model. Chuck says: Don't mess with this table."""
+    """
+    Represents a system user.
+    Converted entirely to modern SQLAlchemy 2.0 Mapped style.
+    """
 
     __tablename__ = "users"
+    __allow_unmapped__ = False
 
-    # --- Columns ---
+    # 🔑 Primary Key
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        PG_UUID(as_uuid=True),
         primary_key=True,
+        index=True,
         default=uuid.uuid4,
         doc="Unique UUID for the user.",
     )
+
+    # 📧 Email (Primary authentication identifier)
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
+        String(255), unique=True, index=True, doc="User's unique email address."
     )
+
+    # 📛 Username (FIX for DB error/User Feature)
+    # 💥 FIX: Reverting to non-nullable as requested. The seeding code will be fixed surgically.
+    username: Mapped[str] = mapped_column(
+        String(100), 
+        unique=True, 
+        index=True, 
+        doc="User's unique human-readable username for identification.",
+    )
+
+    # 🔒 Security
     hashed_password: Mapped[str] = mapped_column(
-        String(255), nullable=False
+        Text, doc="The securely hashed password."
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, doc="If the account is active and usable."
+    )
+    # 💥 FIX: Keep property name 'is_admin' for service compatibility,
+    # but map it to the database column 'is_superuser' (the likely name in the existing schema).
+    is_admin: Mapped[bool] = mapped_column(
+        "is_superuser", # <-- Database column name override
+        Boolean, 
+        default=False, 
+        doc="If the user has administrative privileges (mapped to 'is_superuser' column in DB).",
+    )
+
+    # 🤝 Team Relationship (Foreign Key)
+    team_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("teams.id"),
+        nullable=True,
+        doc="Foreign key pointing to the user's team ID."
+    )
+    team: Mapped[Optional["Team"]] = relationship(
+        "Team",
+        back_populates="users",
+        doc="The team or organization the user belongs to (relationship object)."
     )
     
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.now(UTC)
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.now(UTC), onupdate=datetime.now(UTC)
-    )
-
-    # --- Relationships ---
-    # User owns multiple Jobs
+    # 💼 Jobs Relationship (FIX for missing property 'jobs' error)
     jobs: Mapped[List["Job"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-        # Use string reference to break circular dependencies
-        # This relationship assumes the Job model has a 'user' relationship
+        "Job",
+        back_populates="user", 
+        doc="The list of asynchronous jobs or tasks created or owned by this user.",
     )
-    
-    # User owns multiple TaskResults
-    # 💡 FIX 2: Change model name reference from "JobResult" to "TaskResult"
+
+    # 🎯 Task Results Relationship (FIX for missing property 'task_results' error)
     task_results: Mapped[List["TaskResult"]] = relationship(
         "TaskResult",
-        back_populates="user",
-        cascade="all, delete-orphan",
-        # This relationship assumes the TaskResult model has a 'user' relationship
+        back_populates="user", 
+        doc="The list of results from background tasks (Celery/Job results) associated with this user.",
     )
     
-    # User owns multiple Artifacts via Jobs (or directly if the Artifact model has a user_id foreign key)
-    # The 'Artifact' relationship was removed here, as it's usually via Job. 
-    # If you need it, ensure the Artifact model has a user_id foreign key.
+    # 🖼️ Artifacts Relationship (FIX for missing property 'artifacts' error)
+    artifacts: Mapped[List["Artifact"]] = relationship(
+        "Artifact",
+        back_populates="user", 
+        doc="The list of all artifacts (e.g., reports, files, project docs) created or owned by this user.",
+    )
+    
+    # 🔑 Refresh Tokens Relationship (NEW FIX for missing property 'refresh_tokens' error)
+    # Essential for multi-session authentication and token revocation.
+    refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
+        "RefreshToken",
+        back_populates="user", # Assuming the RefreshToken model has a 'user' property
+        doc="The list of active and pending refresh tokens issued to this user.",
+    )
 
-    # --- Representation ---
-    def __repr__(self) -> str:
-        return f"<User(id='{self.id}', email='{self.email}')>"
+    # ⏰ Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=datetime.now(UTC),
+        doc="Time the user record was created.",
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=datetime.now(UTC),
+        onupdate=datetime.now(UTC),
+        doc="Last time the user record was updated.",
+    )
+
+    def __repr__(self):
+        return f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"

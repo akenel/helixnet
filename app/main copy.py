@@ -1,99 +1,80 @@
+# /code/app/main.py
 import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, logger
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware # Use the middleware specific import
+from starlette.middleware.cors import CORSMiddleware
 
 # ================================================================
 # 🧠 Core Imports 
 # ================================================================
 from app.core.config import get_settings
+# NOTE: We only import functions from database.py now. 
 from app.db.database import close_async_engine, get_db_session_context, init_db_tables 
-from app.services.user_service import create_initial_users
-
-# Router Imports
-from app.routes import auth_router, jobs_router, users_router # Assuming these are defined in app/routes/__init__.py
+from app.routes import auth_router, jobs_router, users_router
 from app.routes.health_router import health_router as health_check_router 
+
+from app.services.user_service import create_initial_users
 
 # ================================================================
 # 🧱 CRITICAL FIX: FORCE MODEL REGISTRATION
 # ================================================================
 # When using SQLAlchemy ORM (Base.metadata), the application MUST import
 # all files that define model classes before the engine starts up.
-# This forces the models (User, Job, TaskResult, Artifact, etc.) to register 
-# themselves with the Base.metadata registry, ensuring all tables are created.
-import app.db.models.artifact_model
-import app.db.models.job_model
-import app.db.models.refresh_token_model
-import app.db.models.task_model
-import app.db.models.team_model
+# This forces the models (User, Job, TaskResult, Artifact) to register 
+# themselves with the Base.metadata registry, solving the "KeyError: 'TaskResult'"
+# and ensuring tables are created during init_db_tables().
 import app.db.models.user_model
-
-
+import app.db.models.job_model
+import app.db.models.task_model
+import app.db.models.artifact_model # Assuming this model also exists
 # ================================================================
-# ⚙️ CONFIGURATION INSTANTIATION (Settings must be available globally)
+# ⚙️ CONFIGURATION INSTANTIATION (MOVE IT HERE!)
+settings = get_settings() # <--- 🥇 MOVE THIS LINE UP HERE! 🥳
 # ================================================================
-settings = get_settings() 
-
-
+# ⚙️ Configuration (Keep the logger setup, but the settings definition moves up)
 # ================================================================
-# 🛠️ Logger Setup
-# ================================================================
-logger = logging.getLogger("helix🛠️net")
+logger = logging.getLogger("helixnet")
 logger.setLevel(logging.INFO)
-
-
 # ================================================================
 # 🌍 Lifespan Manager
 # ================================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Startup & shutdown lifecycle for HelixNet Core.
-    Handles startup (DB init, user seeding) and shutdown (DB cleanup) logic.
-    """
+    """Startup & shutdown lifecycle for HelixNet Core."""
     logger.info("🚀 Starting up HelixNet Core (Lifespan).")
-    
-    # 1. Initialize Database Tables
+
+    # 1. Ensure all DB tables are created (This triggers Step 3/init_db_tables)
     logger.info("⬇️ Calling init_db_tables...")
-    try:
-        await init_db_tables()
-        logger.info("Database tables verified/created successfully.")
-    except Exception as e:
-        logger.error(f"FATAL: Database table initialization failed: {e}", exc_info=True)
-        # Allow running, but log the severe error.
+    # NOTE: This call now correctly sees all models (User, Job, TaskResult) 
+    # because they were explicitly imported above.
+    await init_db_tables()
     logger.info("✅ init_db_tables completed.")
 
-    # 2. Seed Initial Users
+     # 2. Seed initial users once DB is ready
     logger.info("⬇️ Attempting to seed initial users...")
-    try:
-        # FIX: Ensure the AsyncSession is correctly bound via the context manager
-        async with get_db_session_context() as db:
-            await create_initial_users(db)
-        logger.info("🧩 Initial user seeding process complete.")
-    except Exception as e:
-        # If user seeding fails, log the error but allow startup to continue
-        logger.error(f"WARNING: Initial user seeding failed. Error: {e}")
-        
-    yield # Application is ready to handle requests
-    logger.info("✨ Application is RUNNING. Yielding control.") 
+
+    # THE FIX from previous turn: use 'async with'
+    async with get_db_session_context() as db: 
+        await create_initial_users(db)
     
+    logger.info("✨ Application is RUNNING. Yielding control.")
+    yield 
+
     # 3. Shutdown
     logger.info("⬆️ Application shutting down. Calling close_async_engine...")
     await close_async_engine()
-    logger.info("✅ Async database engine closed.")
     logger.info("🛑 HelixNet Core shutdown complete.")
-
-
-# ===============================================================
+# ================================================================
 # 🌌 FastAPI Application Definition
 # ================================================================
 app = FastAPI(
     title="🌌 HelixNet Core API: Task & Data Management",
+    description="## 🛠️ Core Services for High-Volume Data Processing and Task Management.",
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
@@ -101,18 +82,16 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-
 # ================================================================
 # 🧱 CORS Middleware
 # ================================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_origins=settings.BACKEND_CORS_ORIGINS or ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # ================================================================
 # 🧩 Routers Registration
@@ -121,10 +100,8 @@ app.add_middleware(
 app.include_router(auth_router, prefix=settings.API_V1_STR, tags=["🐘️ Authentication: routes/auth_router"])
 app.include_router(users_router, prefix=settings.API_V1_STR, tags=["🥵️ Users: routes/users_router"])
 app.include_router(jobs_router, prefix=settings.API_V1_STR, tags=["🥬️ Jobs : routes/jobs_router"])
-# Health check uses a separate, unversioned prefix
 app.include_router(health_check_router, prefix="/health", tags=["🩺️ System: Heartbeat - app/routes/health_router.py"])
 
-logger.info(f"🖥️ FastAPI application initialized. Mounting API version: {settings.API_V1_STR}")
 
 # ================================================================
 # 🖼️ Templates & Static Files
@@ -134,17 +111,23 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # ================================================================
-# 🖥️ HTML Views (Serving basic web UI pages)
+# 🖥️ HTML Views
 # ================================================================
 @app.get("/", tags=["🧠️ Helix-Web-App"], summary="HTML-VIEW: dashboard.html | 💁️ Helix SECURE Dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Render the main dashboard page."""
+# Health check endpoint for the root path
+    logger.info(f"🖥️ FastAPI application initialized. Mounting API version: {settings.API_V1_STR}")
     return templates.TemplateResponse("dashboard.html", {"request": request})
+
+# ================================================================
 
 @app.get("/login", tags=["🧠️ Helix-Web-App"], summary="HTML-VIEW: login.html | 🐘️ Login to control and monitor jobs on your dashborad", response_class=HTMLResponse)
 async def login_page(request: Request):
     """Render the login page."""
     return templates.TemplateResponse("login.html", {"request": request})
+
+# ================================================================
 
 @app.get("/submit-form", tags=["🧠️ Helix-Web-App"], summary="HTML-VIEW: submit_form.html | 🕹️ Submit Form Request: async upload", response_class=HTMLResponse)
 async def submit_form_page(request: Request):
