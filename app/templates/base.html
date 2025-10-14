@@ -11,10 +11,8 @@
 <body>
     <header>
         <h1>Welcome to My App</h1>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/login">Login</a>
-            <a href="/submit-form">Submit Form</a>
+        <nav id="app-nav">
+            <!-- Navigation links handled by JS -->
         </nav>
     </header>
     <main>
@@ -23,6 +21,49 @@
     <footer>
         <p>&copy; 2023 My App</p>
     </footer>
+    
+    <script>
+        // Client-side logic for dynamic navigation and logout
+        const nav = document.getElementById('app-nav');
+
+        // Function to set up the navigation based on token presence
+        function setupNavigation() {
+            const token = localStorage.getItem('helixnet_token');
+            let navHtml = `
+                <a href="/">Home</a>
+                <a href="/dashboard">Dashboard</a>
+            `;
+
+            if (token) {
+                // User is logged in, show submit form and logout
+                navHtml += `
+                    <a href="/submit-form">Submit Form</a>
+                    <a href="#" id="logout-link">Logout</a>
+                `;
+            } else {
+                // User is logged out, show login link
+                navHtml += `
+                    <a href="/login">Login</a>
+                `;
+            }
+
+            nav.innerHTML = navHtml;
+
+            if (token) {
+                const logoutLink = document.getElementById('logout-link');
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('helixnet_token');
+                    // Redirect to login after logout
+                    window.location.href = '/login'; 
+                });
+            }
+        }
+
+        // Initialize navigation on load
+        setupNavigation();
+    </script>
+    <!-- Include your static script file if needed, but the auth logic lives above -->
     <script src="{{ url_for('static', path='script.js') }}"></script>
 </body>
 

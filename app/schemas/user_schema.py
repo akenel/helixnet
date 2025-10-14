@@ -2,9 +2,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
 from enum import Enum
+from uuid import UUID
 
 from app.schemas.task_schema import TaskRead
 from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
 
 # ----------------------------------------------------------------------
 # 1. ENUM: User Roles
@@ -49,19 +51,21 @@ class UserUpdate(UserBase):
 # 4. OUTPUT SCHEMAS (For GET responses)
 # ----------------------------------------------------------------------
 
-class UserRead(UserBase):
-    """Standard read schema for user data."""
-    # Using 'str' for IDs to be database-agnostic (UUID, Firestore ID, etc.)
-    id: str = Field(..., example="user-12345")
-    is_active: bool = True
-    is_admin: bool = False
-    roles: List[UserRoles]
-    created_at: datetime
-    updated_at: datetime
+class UserRead(BaseModel):
+    id: UUID
+    email: EmailStr
+    username: str
+    fullname: Optional[str] = None
+    is_active: bool
+    is_admin: bool
+    scopes: List[str] = []
+    roles: List[str] = []
 
     class Config:
-        # Pydantic V2 way to allow models to be built from ORM/SQLAlchemy objects
-        from_attributes = True
+        orm_mode = True  # ✅ Allows returning SQLAlchemy objects directly
+        json_encoders = {
+            UUID: lambda v: str(v)  # ✅ Converts UUID → string for FastAPI response
+        }
 
 
 # ----------------------------------------------------------------------

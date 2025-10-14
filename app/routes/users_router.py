@@ -13,9 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 # 🧩 Local Imports
-
 from app.services.user_service import user_service 
-
 from app.db.database import get_db_session  # ✅ Correct dependency
 from app.db.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserRead, UserUpdate
@@ -64,18 +62,12 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db_sessio
     logger.info(f"✅ User created successfully: {user.email}")
     return new_user
 
-
 # ================================================================
 # 🔒 Authenticated User — Get Profile (/me)
 # ================================================================
-@users_router.get("/me", response_model=UserRead, summary="Get Current User Profile")
-async def read_users_me(
-    current_user: User = Depends(get_current_user),
-):
-    """Return the authenticated user's profile."""
+@users_router.get("/me", response_model=UserRead)
+async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
-
-
 # ================================================================
 # 🔒 Read a Specific User (by UUID)
 # ================================================================
@@ -110,8 +102,6 @@ async def read_users(
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return await get_user(db, skip=skip, limit=limit)
-
-
 # ================================================================
 # 🔒 Update User
 # ================================================================
@@ -130,8 +120,6 @@ async def update_user_endpoint(
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
-
 # ================================================================
 # 🔒 Delete User
 # ================================================================
