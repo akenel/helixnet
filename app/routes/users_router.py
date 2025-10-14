@@ -6,28 +6,27 @@ import logging
 from typing import List
 from uuid import UUID
 
+from app.core.scopes import get_current_user
+from app.tests.super_test_suite import delete_user, get_user, update_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 # 🧩 Local Imports
+
+from app.services.user_service import user_service 
+
 from app.db.database import get_db_session  # ✅ Correct dependency
 from app.db.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserRead, UserUpdate
-from app.services.user_service import (
-  
-    get_user_by_id,
-    get_users,
-    update_user,
-    delete_user,
-)
+from app.services import auth_service
 from app.core.security import get_password_hash
-from app.services.user_service import get_current_user
+from app.services.auth_service import get_db_session
 # ================================================================
 # ⚙️ Router Setup
 # ================================================================
 logger = logging.getLogger(__name__)
-users_router = APIRouter()
+users_router = APIRouter(prefix="/users") 
 
 # ================================================================
 # 🧩 Public Endpoint — Create New User
@@ -90,12 +89,11 @@ async def read_user(
     if current_user.id != user_id and not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    user = await get_user_by_id(db, user_id)
+
+    user = await user_service.get_user_by_id(db, user_id) 
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-
     return user
-
 
 # ================================================================
 # 🔒 Admin — List All Users
@@ -111,7 +109,7 @@ async def read_users(
     print(f"DEBUG: current_user={current_user.email}, is_admin={current_user.is_admin}")
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin privileges required")
-    return await get_users(db, skip=skip, limit=limit)
+    return await get_user(db, skip=skip, limit=limit)
 
 
 # ================================================================

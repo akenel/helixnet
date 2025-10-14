@@ -11,9 +11,9 @@ from app.db.models.base import Base # ✅ Corrected Base import path
 # 💡 CRITICAL FIX: The previous fix caused a circular import.
 if TYPE_CHECKING:
     from .user_model import User
-    from .task_result_model import TaskResult 
+    from .job_model import TaskResult 
     from .artifact_model import Artifact 
-
+    from .task_model import TaskResult
 class JobStatus(str, enum.Enum):
     """
     Defines the possible states for a major asynchronous job.

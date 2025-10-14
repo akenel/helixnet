@@ -3,7 +3,7 @@ set -euo pipefail
 
 API_URL="http://localhost:8000"
 echo "🔑 Requesting token..."
-ACCESS_TOKEN=$(curl -s -X POST "${API_URL}/token" \
+ACCESS_TOKEN=$(curl -s -X POST "${API_URL}/auth/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=admin&password=secret" | jq -r '.access_token')
 

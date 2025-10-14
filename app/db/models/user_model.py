@@ -5,22 +5,16 @@ from datetime import datetime, UTC # ✅ Consistent UTC import
 # 💥 The Powerhouse Imports: SQLAlchemy 2.0 Style
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID, ARRAY # 🎯 ADDED ARRAY IMPORT
 
 # 🔑 CRITICAL: Import the Base class from the database configuration!
 from app.db.models.base import Base # ✅ Consistent Base import
 
 # --- Type Checking Imports ---
-# NOTE: Make sure the file team_model.py exists in the same directory
 if TYPE_CHECKING:
     from .team_model import Team 
-    # 💼 NEW: Add Job model for type hints to resolve 'jobs' property error
-    from .job_model import Job 
-    # 🎯 NEW: Add TaskResult model for type hints to resolve 'task_results' property error
-    from .task_result_model import TaskResult 
-    # 🖼️ NEW: Add Artifact model for type hints to resolve 'artifacts' property error
+    from .job_model import Job, TaskResult
     from .artifact_model import Artifact
-    # 🔑 NEW: Add RefreshToken model for type hints to resolve 'refresh_tokens' property error
     from .refresh_token_model import RefreshToken
 
 
@@ -50,13 +44,19 @@ class User(Base):
         String(255), unique=True, index=True, doc="User's unique email address."
     )
 
-    # 📛 Username (FIX for DB error/User Feature)
-    # 💥 FIX: Reverting to non-nullable as requested. The seeding code will be fixed surgically.
+    # 📛 User Name 
     username: Mapped[str] = mapped_column(
         String(100), 
         unique=True, 
         index=True, 
         doc="User's unique human-readable username for identification.",
+    )
+
+    # 📛 Full Name 
+    fullname: Mapped[str] = mapped_column(
+        String(100), 
+        index=True, 
+        doc="User's fullname ",
     )
 
     # 🔒 Security
@@ -66,13 +66,25 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, doc="If the account is active and usable."
     )
-    # 💥 FIX: Keep property name 'is_admin' for service compatibility,
-    # but map it to the database column 'is_superuser' (the likely name in the existing schema).
+
     is_admin: Mapped[bool] = mapped_column(
-        "is_superuser", # <-- Database column name override
+        "is_admin", 
         Boolean, 
         default=False, 
-        doc="If the user has administrative privileges (mapped to 'is_superuser' column in DB).",
+        doc="If the user has administrative privileges (mapped to 'is_admin' column in DB).",
+    )
+    
+    # 🎯 NEW CRITICAL FIELDS: Scopes and Roles for Authentication!
+    # These map directly to the JWT claims and authentication logic.
+    scopes: Mapped[List[str]] = mapped_column(
+        ARRAY(String), 
+        default=["user"], 
+        doc="List of application scopes/permissions the user possesses."
+    )
+    roles: Mapped[List[str]] = mapped_column(
+        ARRAY(String), 
+        default=["basic"], 
+        doc="List of abstract roles the user belongs to (e.g., 'admin', 'editor', 'basic')."
     )
 
     # 🤝 Team Relationship (Foreign Key)
@@ -87,32 +99,31 @@ class User(Base):
         doc="The team or organization the user belongs to (relationship object)."
     )
     
-    # 💼 Jobs Relationship (FIX for missing property 'jobs' error)
+    # 💼 Jobs Relationship 
     jobs: Mapped[List["Job"]] = relationship(
         "Job",
         back_populates="user", 
         doc="The list of asynchronous jobs or tasks created or owned by this user.",
     )
 
-    # 🎯 Task Results Relationship (FIX for missing property 'task_results' error)
+    # 🎯 Task Results Relationship 
     task_results: Mapped[List["TaskResult"]] = relationship(
         "TaskResult",
         back_populates="user", 
         doc="The list of results from background tasks (Celery/Job results) associated with this user.",
     )
     
-    # 🖼️ Artifacts Relationship (FIX for missing property 'artifacts' error)
+    # 🖼️ Artifacts Relationship 
     artifacts: Mapped[List["Artifact"]] = relationship(
         "Artifact",
         back_populates="user", 
         doc="The list of all artifacts (e.g., reports, files, project docs) created or owned by this user.",
     )
     
-    # 🔑 Refresh Tokens Relationship (NEW FIX for missing property 'refresh_tokens' error)
-    # Essential for multi-session authentication and token revocation.
+    # 🔑 Refresh Tokens Relationship 
     refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
         "RefreshToken",
-        back_populates="user", # Assuming the RefreshToken model has a 'user' property
+        back_populates="user",
         doc="The list of active and pending refresh tokens issued to this user.",
     )
 

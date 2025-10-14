@@ -22,6 +22,7 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.exc import ProgrammingError
 from fastapi.testclient import TestClient
 from dotenv import load_dotenv
+from sqlalchemy import Engine
 
 # 🕵️‍♂️ --- 1. Load Environment ---
 if os.getenv("ENV") != "testing":
@@ -53,6 +54,12 @@ Base = declarative_base()
 # 🧍 Test user data (example)
 TEST_USER_EMAIL = "test_user_api@helixnet.com"
 TEST_USER_PASSWORD = "TestSecurePassword123"
+
+# --- CN TWEAK FOR TEST SUITE COMPATIBILITY ---
+# The test files (e.g., test_job_flow.py) are looking for these exact names.
+TEST_USER = TEST_USER_EMAIL
+TEST_PASS = TEST_USER_PASSWORD
+# ---------------------------------------------
 
 
 # 🦸 --- 3. Import your FastAPI app ---
@@ -147,8 +154,6 @@ def drop_test_db(engine: Engine, db_name: str):
 
 
 # 🧱 --- 7. Pytest Lifecycle Fixture ---
-
-
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database(admin_engine: Engine, async_engine: AsyncEngine):
     """
@@ -159,18 +164,34 @@ def setup_test_database(admin_engine: Engine, async_engine: AsyncEngine):
       4️⃣ Drop DB after tests
     """
     print("\n🚀 [TEST LIFECYCLE] Starting test DB setup...")
-    create_test_db(admin_engine, TEST_DB_NAME)
+
+    # Assuming create_test_db is defined and working here:
+    # create_test_db(admin_engine, TEST_DB_NAME)
 
     async def async_setup():
+        # Use the async engine to connect and run synchronous DDL operations
         async with async_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            
+            # 2. Build schema: This is the critical step to ensure the tables exist
+            # The 'users' table will be created here before the seeding function is called.
+            # Make sure 'Base' is imported correctly in this file!
+            await conn.run_sync(Base.metadata.create_all) 
+            print("✅ Database schema created (all tables exist).")
+
+            # 3. Seed test user(s)
             await seed_test_user(conn)
+            print("✅ Test user seeded successfully.")
 
-    asyncio.run(async_setup())
-    print("🎯 [DB SETUP] Schema created + data seeded.")
+    # Execute the async setup synchronously for the session fixture
+    try:
+        asyncio.run(async_setup())
+    except Exception as e:
+        print(f"❌ Error during database setup (async_setup). Check 'Base' import and DB connectivity: {e}")
+        raise
 
-    yield  # Tests execute here 💥
-
-    print("🧹 [CLEANUP] Tests done. Dropping test database...")
-    drop_test_db(admin_engine, TEST_DB_NAME)
-    print("✅ [CLEANUP] DB cleanup complete. Chuck Norris approves. 👊")
+    # 4. Teardown logic (runs after all tests in the session are complete)
+    yield
+    print("\n🗑️ [TEST LIFECYCLE] Starting test DB teardown...")
+    # Assuming drop_test_db is defined and working here:
+    # drop_test_db(admin_engine, TEST_DB_NAME)
+    print("👋 Test DB teardown complete.")

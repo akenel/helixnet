@@ -42,7 +42,7 @@ wait_for_service
 # 1. AUTHENTICATION: Get JWT Token (/api/v1/token)
 LOG_INFO "1. Testing Login and Token Acquisition..."
 
-LOGIN_RESPONSE=$(curl -s -X POST "$API_BASE/token" \
+LOGIN_RESPONSE=$(curl -s -X POST "$API_BASE/auth/token" \
   -F "username=$TEST_USERNAME" \
   -F "password=$TEST_PASSWORD")
 

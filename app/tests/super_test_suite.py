@@ -310,8 +310,6 @@ def obtain_token(email: str, password: Optional[str] = None) -> Dict[str, Any]:
     # 2. Paths under /users/ (since user CRUD is there)
     # 3. Generic paths
     candidates = [
-        {"path": "/token", "type": "form"},
-        {"path": "/auth/token", "type": "form"},
         {"path": "/users/token", "type": "form"}, # <-- NEW highly probable candidate
         {"path": "/users/login", "type": "form"}, # <-- NEW highly probable candidate
         {"path": "/login", "type": "form"},

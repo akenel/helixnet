@@ -1,155 +1,71 @@
-# --------------------------------------------------------------------
-# 📦 CORE IMPORTS - The Single Source of Truth for Security
-# --------------------------------------------------------------------
-import logging
+# /app/core/security.py
 import uuid
-from typing import Optional, Dict, Any, Union
-from datetime import (
-    datetime,
-    timedelta,
-    timezone,
-)  # 💡 Use timezone.utc for time consistency
+import logging
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Union, List, Dict
+
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext  # 🔑 Hashing library
-from jose import jwt, JWTError  # 🔐 JWT handling
+from jose import jwt, JWTError
+from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger("app/core/security.py")
-# ⚙️ APPLICATION CORE IMPORTS
-from app.core.config import settings  # 🌍 Get config settings
+from app.core.config import settings
 
-# 🔑 Hashing Context: Defines the scheme for password hashing # Only define this ONCE.
+logger = logging.getLogger("app/core/security")
+
+# ============================================================
+# PASSWORD HASHING
+# ============================================================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# 🔒 JWT Configuration: Loaded from settings- -- CONFIGURATION & CONSTANTS ---
+
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+# ============================================================
+# TOKEN CONFIG
+# ============================================================
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 
-# 💡 Token Payload Schema (Data decoded from JWT)
-class TokenData(BaseModel):
-    """Token Data (email + scopes) Schema for the data extracted from a decoded JWT payload."""
-
-    email: Optional[str] = Field(
-        None,
-        description="The subject (sub) of the token, typically user's email or ID.",
-    )
-    # 🎯 Include scopes in the expected data structure
-    scopes: list[str] = []
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
-# 🚪 OAuth2 Scheme: Defines the token endpoint and available scopes
-# Only define this ONCE.
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/token",
+    tokenUrl=f"{settings.API_V1_STR}/auth/token",
     scopes={
-        "admin": "Admin privileges: full access to sensitive endpoints | edit_all",
-        "user": "User secure privileges: general application access | edit_all",
-        "dev": "Developer privileges : application access (no sudo) | edit_all",
-        "audit": "Audit privileges: general application | view_only",
-        "test": "Test privileges: general application | view_only",
-        "guest": "Guest privileges: general application | view_only",
+        "admin": "Administrator access",
+        "user": "Regular user access",
+        "test": "Testing role",
+        "audit": "Audit read-only",
+        "guest": "Guest read-only",
     },
 )
 
 
-# ====================================================================
-# 🛡️ PASSWORD UTILITIES (The ONE place for hashing/verification)
-# ====================================================================
-def _now():
-    return datetime.now(timezone.utc)
-
-
-###################################################################################
-
-
-def get_password_hash(password: str) -> str:
-    """
-    🔒 Generates a secure hash for a given password using CryptContext.
-    """
-    return pwd_context.hash(password)
-
-
-###################################################################################
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    ✅ Checks if the plain password matches the hashed password using CryptContext.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-# ====================================================================
-# 🔑 JWT UTILITIES (TOKEN CREATION & VALIDATION)
-# ====================================================================
+# ============================================================
+# TOKEN CREATION
+# ============================================================
 def create_access_token(
-    subject: Union[str, Any],
-    scopes: list[str],
+    *,
+    subject: Union[str, uuid.UUID],
+    scopes: List[str],
     expires_delta: Optional[timedelta] = None,
-) -> str:
-    """
-    Generates a JWT access token for a given user subject and scopes.
-    """
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        # ⏳ Default expiry time if not provided, using UTC
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-        )
-
-    # 📝 Data to be encoded in the token payload
-    to_encode: Dict[str, Any] = {
-        "exp": expire,
-        "sub": str(subject),
-        "scopes": scopes,  # Inject scopes directly into the token
-    }
-
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-###################################################################################
-def decode_access_token(token: str) -> dict[str, Any]:
-    """
-    Decodes a JWT token and returns the payload dictionary.
-    Raises HTTPException on failure.
-    """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        # 🔐 Decode the token using the application's SECRET_KEY and ALGORITHM
-        payload: dict[str, Any] = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        # 🎯 Ensure required fields exist in the payload
-        if payload.get("sub") is None or payload.get("scopes") is None:
-            raise credentials_exception
-
-        return payload
-
-    except JWTError:
-        logger.warning("💥 JWT decoding failed: Token invalid or expired.")
-        raise credentials_exception
-
-
-# ⚠️ NOTE: The dependency functions (get_current_active_user, get_current_active_admin_user,
-# and the actual token extraction/DB lookup logic) should ideally live in your
-# /app/services/user_service.py or /app/dependencies.py, as they tie security
-# (the token) to business logic (the database User model).
-###################################################################################
-
-
-def create_access_token(
-    *, subject: str, scopes: list[str], expires_delta: Optional[timedelta] = None
 ) -> str:
     now = _now()
     expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     payload = {
-        "sub": subject,
+        "sub": str(subject),
         "scopes": scopes,
         "iat": int(now.timestamp()),
         "exp": int(expire.timestamp()),
@@ -159,33 +75,67 @@ def create_access_token(
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-###################################################################################
 def create_refresh_token(
-    *, subject: str, expires_delta: Optional[timedelta] = None
-) -> tuple[str, str, datetime]:
+    *,
+    subject: Union[str, uuid.UUID],
+    scopes: List[str],
+    expires_delta: Optional[timedelta] = None,
+) -> Dict[str, str]:
     """
-    Returns (token, jti, expires_at)
-    jti saved in DB for revocation/rotation.
+    Creates and returns a refresh token + metadata for persistence.
     """
     now = _now()
-    expire = now + (expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS_DEFAULT))
+    expire = now + (expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
     jti = str(uuid.uuid4())
+
     payload = {
-        "sub": subject,
-        "type": "refresh",
+        "sub": str(subject),
+        "scopes": scopes,
         "iat": int(now.timestamp()),
         "exp": int(expire.timestamp()),
+        "type": "refresh",
         "jti": jti,
     }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return token, jti, expire
+
+    encoded = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return {"token": encoded, "jti": jti, "expires_at": expire.isoformat()}
 
 
-###################################################################################
+# ============================================================
+# TOKEN DECODING / VALIDATION
+# ============================================================
 def decode_token(token: str, verify_exp: bool = True) -> dict:
-    options = {"verify_exp": verify_exp}
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options=options)
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+            options={"verify_exp": verify_exp},
+        )
+
+        sub = payload.get("sub")
+        if not sub:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing subject in token.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Validate UUID-ish subject
+        try:
+            uuid.UUID(str(sub))
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid subject UUID in token.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         return payload
-    except JWTError as exc:
-        raise
+    except JWTError as e:
+        logger.error(f"JWT decode error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

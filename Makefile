@@ -23,6 +23,9 @@ ERR  = @echo "🟥 [ERROR]"
 # ==========================================
 # 🚀 MAIN TARGETS
 # ==========================================
+.PHONY: smoke
+smoke:
+	@bash app/scripts/helix-super-smoke.sh
 
 .PHONY: start
 start: ## 🔥 Start all core + app services
@@ -103,7 +106,12 @@ reset-db: ## 💣 Reset database (wipes volumes, runs fresh migrations)
 # ==========================================
 # 🧰 UTILITIES
 # ==========================================
+.PHONY: kill
 
+kill:
+	@echo "Killing Docker containers..."
+	/home/angel/repos/helixnet/reset_docker.sh
+	
 .PHONY: show-tables
 show-tables: ## 🧾 Show all SQLAlchemy table names from Base.metadata
 	$(INFO) "Fetching table names from database..."

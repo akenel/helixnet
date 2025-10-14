@@ -1,6 +1,6 @@
 🥋 The HelixNet Makefile: Chuck's Combat Manual 🥋
 Your Guide to Database Control and Code Deployment
-
+API (FastAPI) >Task Broker> Auth Check​Task Broker >Acceptance>(RabbitMQ)Acceptance​Background Worker (Celery)
 Welcome, Warrior! This manual is your key to mastering the HelixNet development environment. We use make to abstract away the complexity of Docker Compose, database migrations (Alembic), and service restarts.
 
 If you don't know which command to run, refer to the Routines section first. When in doubt, read the source code in the Makefile.

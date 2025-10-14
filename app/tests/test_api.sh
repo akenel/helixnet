@@ -12,7 +12,7 @@ JOBS_BASE_URL="${API_BASE_URL}/jobs"
 
 # --- 1. 🔑 LOGIN TO GET ACCESS TOKEN (The Iron Gate) ---
 echo "--- 1. 🔑 LOGIN TO GET ACCESS TOKEN ---"
-LOGIN_RESPONSE=$(curl -k -s -X POST "${API_BASE_URL}/token" \
+LOGIN_RESPONSE=$(curl -k -s -X POST "${API_BASE_URL}/auth/token" \
   -H "accept: application/json" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=${ADMIN_USER}&password=${ADMIN_PASS}")

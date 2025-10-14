@@ -52,7 +52,7 @@ def authenticated_user_data(client: httpx.Client, setup_database) -> Generator[D
     login_payload = {"username": TEST_EMAIL, "password": TEST_PASSWORD}
     # Use POST /api/v1/token for login (assuming the standard /token endpoint)
     token_response = client.post(
-        "/api/v1/token",
+        "/api/v1/auth/token",
         data=login_payload,
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )

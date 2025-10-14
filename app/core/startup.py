@@ -30,7 +30,7 @@ def create_application() -> FastAPI:
     # --- Startup seeding ---
     @app.on_event("startup")
     async def startup_event():
-        async with async_session() as db:
+        async with AsyncSession() as db:
             await create_initial_users(db)
 
     return app

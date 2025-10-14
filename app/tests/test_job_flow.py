@@ -24,7 +24,7 @@ def get_auth_token():
     
     # We use 'data' for x-www-form-urlencoded format used by the /token endpoint
     response = client.post(
-        "/api/v1/token",
+        "/api/v1/auth/token",
         data=login_data
     )
     

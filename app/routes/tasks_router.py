@@ -1,11 +1,10 @@
-# /code/app/routes/tasks_router.py
 """
 API Endpoints for monitoring Celery background tasks.
 Job submission logic has been moved to app/routes/jobs_router.py.
 """
 from fastapi import APIRouter, status, Depends, HTTPException
 from typing import Dict
-from uuid import UUID, UUID as uuid_UUID  # Use UUID alias for clarity
+from uuid import UUID  # Use UUID alias for clarity
 
 # --- SQLAlchemy and DB Dependencies ---
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +12,8 @@ from sqlalchemy.future import select
 from app.db.database import get_db_session
 
 # --- Models and Schemas ---
-from app.db.models.job_model import JobResult
+from app.db.models.task_model import TaskStatus
+from app.db.models.task_model import TaskResult # Correct model for persistent result
 
 # --- Celery and Task Dependencies ---
 from app.db.models.job_model import JobStatus
@@ -23,27 +23,28 @@ from app.tasks.celery_app import celery_app
 from app.tasks.db_utils import get_db_worker
 
 # The object that is imported by main.py
-tasks_router = APIRouter()
+tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 
 # --------------------------------------------------------------------------
-# --- Utility Function ---
+# --- Utility Function (FIXED: Uses TaskResult) ---
 # --------------------------------------------------------------------------
-async def get_job_result_from_db(session: AsyncSession, task_id: str) -> JobResult:
+async def get_job_result_from_db(session: AsyncSession, task_id: str) -> TaskResult:
     """
     Helper to retrieve job result from the database asynchronously.
     """
     # Use SQLAlchemy 2.0 style to build the async query
-    stmt = select(JobResult).filter(JobResult.task_id == task_id)
+    # FIX: Use TaskResult model for the query
+    stmt = select(TaskResult).filter(TaskResult.task_id == task_id)
     # Execute the query asynchronously
     result = await session.execute(stmt)
-    # Extract the first scalar result (the JobResult object)
+    # Extract the first scalar result (the TaskResult object)
     job = result.scalars().first()
 
     if not job:
         # Use HTTP 404 for not found (standard REST practice)
         raise HTTPException(
-            status_code=404, detail=f"Job result not found for ID: {task_id}"
+            status_code=404, detail=f"Task result not found for ID: {task_id}"
         )
     return job
 
@@ -102,12 +103,13 @@ async def get_task_status_persistent(
     Checks the persistent job result and status from the PostgreSQL database.
     This provides the final, non-volatile result.
     """
-    # Convert UUID path parameter back to string for the helper function
+    # Use the TaskResult UUID to query the database
     job = await get_job_result_from_db(session, str(task_id))
 
     # 💡 Safety check for missing timestamps
     finished_at = job.finished_at.isoformat() if job.finished_at else None
 
+    # Note: JobStatus is likely a Pydantic schema that expects these fields
     return {
         "task_id": str(job.task_id),
         "status": job.status,

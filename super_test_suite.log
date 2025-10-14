@@ -1,0 +1,656 @@
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+User 9a326614-478f-4332-b65d-8824709cfa1e is an admin.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+User 9a326614-478f-4332-b65d-8824709cfa1e is an admin.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+JWT decode error: Signature has expired.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']).
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']).
+🚨 TEMPORARY SHIM ACTIVE: Mocking job creation. Implement real 'create_job_and_enqueue_task' in job_service.
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - DB record created and Celery task enqueued. Job ID: aa2300bc-cfb4-45a6-9842-2879aa5b35ba.
+🥋 Chuck Norris Job Creation: Phase 3 - Job aa2300bc-cfb4-45a6-9842-2879aa5b35ba created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Get Job: User admin@helix.net querying job ID: aa2300bc-cfb4-45a6-9842-2879aa5b35ba.
+Chuck Norris Failure: Job ID aa2300bc-cfb4-45a6-9842-2879aa5b35ba not found or unauthorized for user 9a326614-478f-4332-b65d-8824709cfa1e.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list.
+🌟 Chuck Norris List Job: Retrieved 0 job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: c6823de4-a8cb-4cb7-bbfb-82bc37f4f313.
+🥋 Chuck Norris Job Creation: Phase 3 - Job c6823de4-a8cb-4cb7-bbfb-82bc37f4f313 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 1 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: e19943c7-4d33-4f6a-8003-4145b35f2fa0.
+🥋 Chuck Norris Job Creation: Phase 3 - Job e19943c7-4d33-4f6a-8003-4145b35f2fa0 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: b706e0fb-f9fa-40e8-88eb-7d2651266cb7.
+🥋 Chuck Norris Job Creation: Phase 3 - Job b706e0fb-f9fa-40e8-88eb-7d2651266cb7 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 634e4768-d792-4516-a2c8-07b5d7b4ad22.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 634e4768-d792-4516-a2c8-07b5d7b4ad22 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 4 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 8067a845-f2d6-49e7-b602-aceb87138a2d.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 8067a845-f2d6-49e7-b602-aceb87138a2d created successfully. Sending HTTP 201 Created.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: b1746590-1169-42b8-b41c-cab31f1ce03d.
+🥋 Chuck Norris Job Creation: Phase 3 - Job b1746590-1169-42b8-b41c-cab31f1ce03d created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 49a3736f-5e56-4552-b931-9a7161efda0f.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 49a3736f-5e56-4552-b931-9a7161efda0f created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 6578dd81-6fe6-49c5-987f-1d7316fb3f69.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 6578dd81-6fe6-49c5-987f-1d7316fb3f69 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 0f752a08-df7f-4bdc-8e3a-0d775e4a276e.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 0f752a08-df7f-4bdc-8e3a-0d775e4a276e created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: d61dc089-1e13-42f9-8c89-d4decf532663.
+🥋 Chuck Norris Job Creation: Phase 3 - Job d61dc089-1e13-42f9-8c89-d4decf532663 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 1f34e8b5-fcee-42c4-8c87-5de879ccf33a.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 1f34e8b5-fcee-42c4-8c87-5de879ccf33a created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 6a856bd3-cf20-4215-aaad-1ba4590cf4e8.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 6a856bd3-cf20-4215-aaad-1ba4590cf4e8 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: cd93cfd4-e8d6-456d-b435-d593eaeeeadb.
+🥋 Chuck Norris Job Creation: Phase 3 - Job cd93cfd4-e8d6-456d-b435-d593eaeeeadb created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 92fa4152-ba24-4b1c-b67f-67935c9d2490.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 92fa4152-ba24-4b1c-b67f-67935c9d2490 created successfully. Sending HTTP 201 Created.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: cn@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 2ffb2f73-b005-499d-a78f-feb24ad06ac1.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 2ffb2f73-b005-499d-a78f-feb24ad06ac1 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 16872f02-0dd9-4eda-adca-ca271878e6ba.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 16872f02-0dd9-4eda-adca-ca271878e6ba created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: da8f3d3f-f2ff-4b1e-95e8-6d07f56058bf.
+🥋 Chuck Norris Job Creation: Phase 3 - Job da8f3d3f-f2ff-4b1e-95e8-6d07f56058bf created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 419cf6bc-15e3-4b60-ac99-6b1840ea50d3.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 419cf6bc-15e3-4b60-ac99-6b1840ea50d3 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 4 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 9a326614-478f-4332-b65d-8824709cfa1e. (SHIM MODE)
+Chuck Norris Warning: Job ID 9a326614-478f-4332-b65d-8824709cfa1e not found for deletion.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 16872f02-0dd9-4eda-adca-ca271878e6ba. (SHIM MODE)
+🌟 Chuck Norris Success: Job 16872f02-0dd9-4eda-adca-ca271878e6ba was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 3 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: a51c62ac-1bb1-4195-876d-430349d90ae3.
+🥋 Chuck Norris Job Creation: Phase 3 - Job a51c62ac-1bb1-4195-876d-430349d90ae3 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: a51c62ac-1bb1-4195-876d-430349d90ae3. (SHIM MODE)
+🌟 Chuck Norris Success: Job a51c62ac-1bb1-4195-876d-430349d90ae3 was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 3 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 419cf6bc-15e3-4b60-ac99-6b1840ea50d3. (SHIM MODE)
+🌟 Chuck Norris Success: Job 419cf6bc-15e3-4b60-ac99-6b1840ea50d3 was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 2 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: da8f3d3f-f2ff-4b1e-95e8-6d07f56058bf. (SHIM MODE)
+🌟 Chuck Norris Success: Job da8f3d3f-f2ff-4b1e-95e8-6d07f56058bf was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 1 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 2ffb2f73-b005-499d-a78f-feb24ad06ac1. (SHIM MODE)
+🌟 Chuck Norris Success: Job 2ffb2f73-b005-499d-a78f-feb24ad06ac1 was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 85aa8aa6-8623-4d48-bb96-30240ab1c618.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 85aa8aa6-8623-4d48-bb96-30240ab1c618 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: 0c2dd9f1-9a9f-42ff-ae39-14a5b3ac2ae4.
+🥋 Chuck Norris Job Creation: Phase 3 - Job 0c2dd9f1-9a9f-42ff-ae39-14a5b3ac2ae4 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: 9a326614-478f-4332-b65d-8824709cfa1e) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 2 shim job(s) for user 9a326614-478f-4332-b65d-8824709cfa1e. Sending results.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 85aa8aa6-8623-4d48-bb96-30240ab1c618. (SHIM MODE)
+🌟 Chuck Norris Success: Job 85aa8aa6-8623-4d48-bb96-30240ab1c618 was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 0c2dd9f1-9a9f-42ff-ae39-14a5b3ac2ae4. (SHIM MODE)
+🌟 Chuck Norris Success: Job 0c2dd9f1-9a9f-42ff-ae39-14a5b3ac2ae4 was successfully hit and removed from the SHIM store.
+Token decoded successfully.
+User ID validated: 9a326614-478f-4332-b65d-8824709cfa1e
+🔍 Retrieving user by ID: 9a326614-478f-4332-b65d-8824709cfa1e
+User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Delete Job: User admin@helix.net is attempting to delete job ID: 0c2dd9f1-9a9f-42ff-ae39-14a5b3ac2ae4. (SHIM MODE)
+Chuck Norris Warning: Job ID 0c2dd9f1-9a9f-42ff-ae39-14a5b3ac2ae4 not found for deletion.

@@ -1,136 +1,150 @@
-from datetime import timedelta, datetime, timezone
-from typing import Optional, Any
-from uuid import UUID
+import logging
+from typing import Dict, Any, Optional
+from datetime import datetime, timezone, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, and_
+from sqlalchemy import select, delete
+from fastapi import HTTPException, status, Depends
+from jose import JWTError
 
-from app.core.security import create_access_token, create_refresh_token, decode_token
+from app.db.models import User, RefreshToken
+from app.core import security
+from app.core.config import settings
+from app.db.database import get_db_session
 
-from app.db.models.refresh_token_model import RefreshToken
-from app.db.models.user_model import User
-from app.schemas.user_schema import TokenPairOut # Assuming this Pydantic schema is defined
+logger = logging.getLogger("app/services/auth_service")
 
-# Load the singleton settings object once
-from app.core.config import get_settings, Settings
-settings: Settings = get_settings()
+ACCESS_TOKEN_EXPIRE = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+REFRESH_TOKEN_EXPIRE = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS_DEFAULT)
+# now_utc = datetime.now(timezone.utc)
 
+
+# ---------------------------------------------------------------------
+def utc_now_naive() -> datetime:
+    """Return UTC now as a naive datetime (for DB writes)."""
+    return datetime.utcnow().replace(tzinfo=None)
+
+
+# ---------------------------------------------------------------------
 class AuthService:
-    """
-    Service layer for all core authentication and token management logic,
-    including token creation, persistence, validation, and revocation.
-    """
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
-    async def create_token_pair_for_user(
-        self, 
-        db: AsyncSession, 
-        user: User, 
-        scopes: list[str] = ["user"]
-    ) -> dict[str, Any]:
-        """
-        Creates a new access token and a database-persisted refresh token pair.
-        """
-        # --- 1. ACCESS TOKEN ---
-        access_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            subject=str(user.id), 
-            scopes=scopes, 
-            expires_delta=access_expires
-        )
+    async def authenticate_user(self, email: str, password: str) -> Optional[User]:
+        stmt = select(User).where(User.email == email)
+        result = await self.db.execute(stmt)
+        user = result.scalars().first()
 
-        # --- 2. REFRESH TOKEN LIFETIME ---
-        # Choose refresh lifetime based on user properties (e.g., admin gets PRO life)
-        if user.is_admin:
-            refresh_days = settings.REFRESH_TOKEN_EXPIRE_DAYS_PRO
-        else:
-            refresh_days = settings.REFRESH_TOKEN_EXPIRE_DAYS_DEFAULT
-            
-        refresh_expires = timedelta(days=refresh_days)
-
-        # Create the signed JWT refresh token and get its JTI (ID)
-        refresh_token, jti, expires_at = create_refresh_token(
-            subject=str(user.id), 
-            expires_delta=refresh_expires
-        )
-
-        # --- 3. PERSIST REFRESH TOKEN RECORD (for Revocation) ---
-        db_token = RefreshToken(
-            jti=jti,
-            user_id=user.id,
-            expires_at=expires_at,
-            # is_revoked defaults to False in the model
-        )
-        db.add(db_token)
-        await db.commit()
-        await db.refresh(db_token)
-        
-        # --- 4. RETURN TOKEN PAIR ---
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "refresh_token": refresh_token,
-            "refresh_jti": jti,
-            "refresh_expires_at": expires_at.isoformat(),
-            "access_expires_minutes": settings.ACCESS_TOKEN_EXPIRE_MINUTES,
-        }
-
-    async def revoke_refresh_jti(self, db: AsyncSession, jti: str) -> None:
-        """
-        Revokes a single refresh token record using its JTI.
-        """
-        stmt = update(RefreshToken).where(
-            RefreshToken.jti == jti
-        ).values(
-            is_revoked=True,
-            updated_at=datetime.now(timezone.utc)
-        )
-        await db.execute(stmt)
-        await db.commit()
-
-    async def verify_refresh_token(self, db: AsyncSession, refresh_token: str) -> Optional[User]:
-        """
-        Validates a refresh token by decoding it and checking its status in the database.
-        Returns the associated User object if valid, otherwise None.
-        """
-        # 1. Decode the token to get JTI and User ID (SUB)
-        try:
-            payload = decode_token(refresh_token)
-            jti = payload.get("jti")
-            user_id_str = payload.get("sub")
-            if not jti or not user_id_str:
-                return None
-            user_id = UUID(user_id_str)
-        except Exception:
-            # Token is invalid, expired, or improperly formatted
+        if not user:
+            logger.debug(f"[AUTH] User not found: {email}")
             return None
 
-        # 2. Check the DB record for existence, revocation, and non-expiry
-        stmt = select(RefreshToken).where(
-            and_(
-                RefreshToken.jti == jti,
-                RefreshToken.user_id == user_id,
-                RefreshToken.is_revoked == False, # Must not be revoked
-                RefreshToken.expires_at > datetime.now(timezone.utc) # Must not be past DB expiry
-            )
-        )
-        result = await db.execute(stmt)
-        db_token_record: RefreshToken | None = result.scalar_one_or_none()
-
-        if db_token_record is None:
-            return None # Token is invalid, revoked, or expired in the DB
-
-        # 3. Load the user associated with the token
-        user = await db.get(User, user_id)
-        
-        # Crucial security check: Ensure the user exists and is active
-        if user is None or not user.is_active:
-            if db_token_record:
-                # If user is inactive/deleted, instantly revoke the token record
-                await self.revoke_refresh_jti(db, jti)
+        if not security.verify_password(password, user.hashed_password):
+            logger.debug(f"[AUTH] Invalid password for {email}")
             return None
 
-        # 4. Success: Return the active User object
         return user
 
-# Instantiate the service for use in routers/dependencies
-auth_service = AuthService()
+    async def create_token_pair_for_user(self, user: User) -> Dict[str, Any]:
+        """Creates new access + refresh tokens for a user."""
+        scopes = getattr(user, "scopes", ["user"])
+        now_utc = datetime.now(timezone.utc)
+
+        # --- ACCESS TOKEN ---
+        access_token = security.create_access_token(
+            subject=user.id,
+            scopes=scopes,
+            expires_delta=ACCESS_TOKEN_EXPIRE,
+        )
+
+        # --- REFRESH TOKEN ---
+        refresh_meta = security.create_refresh_token(
+            subject=user.id,
+            scopes=scopes,
+            expires_delta=REFRESH_TOKEN_EXPIRE,
+        )
+
+        # Convert aware -> naive for DB compatibility
+        expires_at_aware = datetime.fromisoformat(refresh_meta["expires_at"])
+        expires_at_naive = expires_at_aware.replace(tzinfo=None)
+
+        # --- SAVE TO DB ---
+        refresh_entry = RefreshToken(
+            jti=refresh_meta["jti"],
+            user_id=user.id,
+            expires_at=expires_at_naive,
+            is_revoked=False,
+        )
+
+        self.db.add(refresh_entry)
+        await self.db.commit()
+
+        logger.info(
+            f"[AUTH] Tokens created for {user.email} | JTI={refresh_meta['jti']}"
+        )
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_meta["token"],
+            "token_type": "bearer",
+        }
+
+    async def verify_and_refresh_token_pair(self, refresh_token: str) -> Dict[str, Any]:
+        """Validates refresh token and rotates it."""
+        try:
+            payload = security.decode_token(refresh_token, verify_exp=True)
+
+            if payload.get("type") != "refresh":
+                raise HTTPException(status_code=401, detail="Invalid token type.")
+
+            jti = payload.get("jti")
+            user_id = payload.get("sub")
+            if not jti or not user_id:
+                raise HTTPException(status_code=401, detail="Invalid token payload.")
+
+            # Find valid token
+            stmt = select(RefreshToken).filter(
+                RefreshToken.jti == jti,
+                RefreshToken.expires_at > utc_now_naive(),
+            )
+            result = await self.db.execute(stmt)
+            db_token = result.scalars().first()
+
+            if not db_token:
+                raise HTTPException(
+                    status_code=401, detail="Refresh token invalid or expired."
+                )
+
+            # One-time use policy: revoke old JTI
+            await self.revoke_refresh_jti(jti)
+
+            # Fetch user
+            stmt_user = select(User).where(User.id == user_id)
+            result_user = await self.db.execute(stmt_user)
+            user = result_user.scalars().first()
+            if not user:
+                raise HTTPException(status_code=401, detail="User not found for token.")
+
+            return await self.create_token_pair_for_user(user)
+
+        except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid refresh token.")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"[AUTH] Refresh failed: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail="Error refreshing token.")
+
+    async def revoke_refresh_jti(self, jti: str):
+        """Deletes refresh token entry by JTI."""
+        try:
+            stmt = delete(RefreshToken).where(RefreshToken.jti == jti)
+            await self.db.execute(stmt)
+            await self.db.commit()
+            logger.debug(f"[AUTH] Revoked JTI {jti}")
+        except Exception as e:
+            logger.error(f"[AUTH] Revoke JTI failed: {e}", exc_info=True)
+
+
+async def get_auth_service(db: AsyncSession = Depends(get_db_session)) -> AuthService:
+    return AuthService(db)

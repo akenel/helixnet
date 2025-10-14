@@ -113,7 +113,7 @@ def test_get_access_token_failure_bad_username(client):
     """
     login_data = {"username": "non_existent@helix.net", "password": "any_password"}
 
-    response = client.post("/api/v1/token", data=login_data)
+    response = client.post("/api/v1/auth/token", data=login_data)
 
     # Failure should result in 400 (Bad Request) or 401 (Unauthorized)
     assert (

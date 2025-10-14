@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
+import asyncio # 📦 NEW: Import for asynchronous sleeping/pausing
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -14,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware # Use the middleware specific
 from app.core.config import get_settings
 from app.db.database import close_async_engine, get_db_session_context, init_db_tables 
 from app.services.user_service import create_initial_users
+from app.services.minio_service import initialize_minio # 📦 NEW: Import MinIO initialization function
 
 # Router Imports
 from app.routes import auth_router, jobs_router, users_router # Assuming these are defined in app/routes/__init__.py
@@ -22,11 +24,10 @@ from app.routes.health_router import health_router as health_check_router
 # ================================================================
 # 🧱 CRITICAL FIX: FORCE MODEL REGISTRATION
 # ================================================================
-# When using SQLAlchemy ORM (Base.metadata), the application MUST import
-# all files that define model classes before the engine starts up.
-# This forces the models (User, Job, TaskResult, Artifact, etc.) to register 
-# themselves with the Base.metadata registry, ensuring all tables are created.
-import app.db.models.artifact_model
+# FIX: Use the central registry in app/db/__init__.py for cleaner model registration.
+# All model files must be imported here so Base.metadata knows about them.
+import app.db # Ensures all models registered in __init__.py are loaded
+import app.db.models.artifact_model # Keep explicit imports just in case
 import app.db.models.job_model
 import app.db.models.refresh_token_model
 import app.db.models.task_model
@@ -54,7 +55,7 @@ logger.setLevel(logging.INFO)
 async def lifespan(app: FastAPI):
     """
     Startup & shutdown lifecycle for HelixNet Core.
-    Handles startup (DB init, user seeding) and shutdown (DB cleanup) logic.
+    Handles startup (DB init, MinIO init, user seeding) and shutdown (DB cleanup) logic.
     """
     logger.info("🚀 Starting up HelixNet Core (Lifespan).")
     
@@ -68,7 +69,25 @@ async def lifespan(app: FastAPI):
         # Allow running, but log the severe error.
     logger.info("✅ init_db_tables completed.")
 
-    # 2. Seed Initial Users
+    # 🛑 CRITICAL FIX: Introduce a short delay to mitigate PostgreSQL race conditions.
+    # This gives the underlying asyncpg connection time to stabilize DDL visibility.
+    logger.info("😴 Waiting 3 seconds for Postgres DDL visibility...")
+    await asyncio.sleep(3) # Wait 3 seconds
+    
+    # 2. Initialize MinIO Bucket (FIX for Race Condition & Service Setup)
+    logger.info("⬇️ Calling initialize_minio...")
+    try:
+        # This synchronous call introduces a slight I/O delay, giving Postgres time to finalize table creation.
+        if initialize_minio():
+            logger.info("🪣 MinIO bucket initialized successfully.")
+        else:
+            logger.error("WARNING: MinIO bucket initialization failed.")
+    except Exception as e:
+        logger.error(f"FATAL: MinIO initialization failed: {e}", exc_info=True)
+        # Allow running, but log the severe error.
+    logger.info("✅ initialize_minio completed.")
+
+    # 3. Seed Initial Users
     logger.info("⬇️ Attempting to seed initial users...")
     try:
         # FIX: Ensure the AsyncSession is correctly bound via the context manager
@@ -76,13 +95,13 @@ async def lifespan(app: FastAPI):
             await create_initial_users(db)
         logger.info("🧩 Initial user seeding process complete.")
     except Exception as e:
-        # If user seeding fails, log the error but allow startup to continue
-        logger.error(f"WARNING: Initial user seeding failed. Error: {e}")
+        # ✅ CRITICAL FIX: Ensure full traceback is shown when seeding fails due to missing table/race condition.
+        logger.error(f"WARNING: Initial user seeding failed. Error: {e}", exc_info=True)
         
     yield # Application is ready to handle requests
     logger.info("✨ Application is RUNNING. Yielding control.") 
     
-    # 3. Shutdown
+    # 4. Shutdown
     logger.info("⬆️ Application shutting down. Calling close_async_engine...")
     await close_async_engine()
     logger.info("✅ Async database engine closed.")
