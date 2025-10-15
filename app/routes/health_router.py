@@ -45,7 +45,7 @@ def check_celery_status() -> Dict[str, Any]:
 
 
 @health_router.get(
-    "/",
+    "/health",
     summary="💖 Robust API Health Check",
     description="""
     Performs deep health checks on all critical, complex backend services: 

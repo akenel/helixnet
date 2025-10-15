@@ -43,10 +43,12 @@ async def create_initial_users(db: AsyncSession) -> None:
     
     initial_users = [
         {"email": "admin@helix.net", "password": "admin", "is_active": True, "is_admin": True, "fullname": "Admin User"},
+        {"email": "cn@helix.net", "password": "cn", "is_active": True, "is_admin": True, "fullname": "Super User"}, 
+        {"email": "marcel@helix.net", "password": "marcel", "is_active": True, "is_admin": True, "fullname": "Admin User"},
+        {"email": "chuck@helix.net", "password": "chuck", "is_active": True, "is_admin": True, "fullname": "Chuck Norris"}, 
         {"email": "demo@helix.net", "password": "demo", "is_active": True, "is_admin": False, "fullname": "Demo User"},
-        # Add 'is_admin' instead of 'is_admin' to match typical ORM model names
-        {"email": "cn@helix.net", "password": "CN", "is_active": True, "is_admin": True, "fullname": "Super CN"}, 
-    ] 
+        {"email": "petar@helix.net", "password": "petar", "is_active": True, "is_admin": False, "fullname": "Petar Levels"},
+   ] 
     try:
         for user_data in initial_users:
             email = user_data["email"]

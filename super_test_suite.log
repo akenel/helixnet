@@ -936,3 +936,321 @@ User 9a326614-478f-4332-b65d-8824709cfa1e authenticated successfully with scopes
 🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: bbca7016-776f-4236-bbbb-e3bc82a45027.
 🥋 Chuck Norris Job Creation: Phase 3 - Job bbca7016-776f-4236-bbbb-e3bc82a45027 created successfully. Sending HTTP 201 Created.
 JWT decode error: Signature verification failed.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+✨ Created new account: marcel@helix.net | Admin: True
+✨ Created new account: chuck@helix.net | Admin: True
+👉 Account already exists: demo@helix.net
+✨ Created new account: petar@helix.net | Admin: False
+❌ CRITICAL Error during user seeding: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_users_fullname"
+DETAIL:  Key (fullname)=(Admin User) already exists.
+[SQL: INSERT INTO users (id, email, username, fullname, hashed_password, is_active, is_admin, scopes, roles, team_id, created_at, updated_at) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::BOOLEAN, $7::BOOLEAN, $8::VARCHAR[], $9::VARCHAR[], $10::UUID, $11::TIMESTAMP WITH TIME ZONE, $12::TIMESTAMP WITH TIME ZONE)]
+[parameters: [(UUID('d1ced290-8313-4878-8bed-c12ad7895f15'), 'marcel@helix.net', 'marcel', 'Admin User', '$2b$12$BFNKqyBlK3gU8fVJJB.QZuLP9zPV1HzVoNw1VmhOKumD.AFQzInLS', True, True, ['user'], ['basic'], None, datetime.datetime(2025, 10, 15, 6, 16, 30, 752555, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 10, 15, 6, 16, 30, 752559, tzinfo=datetime.timezone.utc)), (UUID('526141a1-8b34-4d5c-80ca-d85d13c6bdfd'), 'chuck@helix.net', 'chuck', 'Chuck Norris', '$2b$12$mziKIQ/.zaC7TGaojjUYX.0KBIeaTq7f0MJqxRKCypp4cngQtsKJm', True, True, ['user'], ['basic'], None, datetime.datetime(2025, 10, 15, 6, 16, 30, 956872, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 10, 15, 6, 16, 30, 956876, tzinfo=datetime.timezone.utc)), (UUID('41f655b7-699c-40e0-bff2-3cebc137bb84'), 'petar@helix.net', 'petar', 'Petar Levels', '$2b$12$nkNXikQiCcmv8yn6DtgEfO6u.R2HKA8VVvGdp0MLfVpt8d/rcWa16', True, False, ['user'], ['basic'], None, datetime.datetime(2025, 10, 15, 6, 16, 31, 167493, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 10, 15, 6, 16, 31, 167498, tzinfo=datetime.timezone.utc))]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+❌ Full traceback:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 565, in _executemany
+    return await self._connection.executemany(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/asyncpg/connection.py", line 391, in executemany
+    return await self._executemany(command, args, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/asyncpg/connection.py", line 1911, in _executemany
+    result, _ = await self._do_execute(query, executor, timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/asyncpg/connection.py", line 1945, in _do_execute
+    result = await executor(stmt, None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 267, in bind_execute_many
+asyncpg.exceptions.UniqueViolationError: duplicate key value violates unique constraint "ix_users_fullname"
+DETAIL:  Key (fullname)=(Admin User) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 921, in do_executemany
+    cursor.executemany(statement, parameters)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 577, in executemany
+    return self._adapt_connection.await_(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 569, in _executemany
+    self._handle_exception(error)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_users_fullname"
+DETAIL:  Key (fullname)=(Admin User) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/code/app/services/user_service.py", line 80, in create_initial_users
+    await db.commit()
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/ext/asyncio/session.py", line 1009, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2017, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1302, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1277, in _prepare_impl
+    self.session.flush()
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4341, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4476, in _flush
+    with util.safe_reraise():
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4437, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+             ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2353, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 921, in do_executemany
+    cursor.executemany(statement, parameters)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 577, in executemany
+    return self._adapt_connection.await_(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 569, in _executemany
+    self._handle_exception(error)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_users_fullname"
+DETAIL:  Key (fullname)=(Admin User) already exists.
+[SQL: INSERT INTO users (id, email, username, fullname, hashed_password, is_active, is_admin, scopes, roles, team_id, created_at, updated_at) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::BOOLEAN, $7::BOOLEAN, $8::VARCHAR[], $9::VARCHAR[], $10::UUID, $11::TIMESTAMP WITH TIME ZONE, $12::TIMESTAMP WITH TIME ZONE)]
+[parameters: [(UUID('d1ced290-8313-4878-8bed-c12ad7895f15'), 'marcel@helix.net', 'marcel', 'Admin User', '$2b$12$BFNKqyBlK3gU8fVJJB.QZuLP9zPV1HzVoNw1VmhOKumD.AFQzInLS', True, True, ['user'], ['basic'], None, datetime.datetime(2025, 10, 15, 6, 16, 30, 752555, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 10, 15, 6, 16, 30, 752559, tzinfo=datetime.timezone.utc)), (UUID('526141a1-8b34-4d5c-80ca-d85d13c6bdfd'), 'chuck@helix.net', 'chuck', 'Chuck Norris', '$2b$12$mziKIQ/.zaC7TGaojjUYX.0KBIeaTq7f0MJqxRKCypp4cngQtsKJm', True, True, ['user'], ['basic'], None, datetime.datetime(2025, 10, 15, 6, 16, 30, 956872, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 10, 15, 6, 16, 30, 956876, tzinfo=datetime.timezone.utc)), (UUID('41f655b7-699c-40e0-bff2-3cebc137bb84'), 'petar@helix.net', 'petar', 'Petar Levels', '$2b$12$nkNXikQiCcmv8yn6DtgEfO6u.R2HKA8VVvGdp0MLfVpt8d/rcWa16', True, False, ['user'], ['basic'], None, datetime.datetime(2025, 10, 15, 6, 16, 31, 167493, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 10, 15, 6, 16, 31, 167498, tzinfo=datetime.timezone.utc))]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+✅ MinIO bucket 'helixnet' created successfully.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+✨ Created new account: admin@helix.net | Admin: True
+✨ Created new account: cn@helix.net | Admin: True
+✨ Created new account: marcel@helix.net | Admin: True
+✨ Created new account: chuck@helix.net | Admin: True
+✨ Created new account: demo@helix.net | Admin: False
+✨ Created new account: petar@helix.net | Admin: False
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
