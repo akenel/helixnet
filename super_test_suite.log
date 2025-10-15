@@ -1254,3 +1254,989 @@ MinIO bucket 'helixnet' already exists.
 👉 Account already exists: petar@helix.net
 ✅ Initial user seeding completed successfully!
 🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+📚 Fetching users (skip: 0, limit: 100).
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. Job data received (keys): dict_keys(['title', 'payload']). (SHIM MODE)
+🦵 Chuck Chuck Norris Job Creation: Phase 2 - SHIM record created. Job ID: c95afc8a-43eb-46b8-9d13-feb8d5168a9b.
+🥋 Chuck Norris Job Creation: Phase 3 - Job c95afc8a-43eb-46b8-9d13-feb8d5168a9b created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 1 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+JWT decode error: Signature verification failed.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+JWT decode error: Signature verification failed.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. (SHIM MODE)
+🥋 Chuck Norris Job Creation: Job 1bd5eb6a-5d7b-4627-bdb3-512a025c127e created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+JWT decode error: Signature has expired.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 548bdc7b-696b-4066-957b-83cdf7d1f21f successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 548bdc7b-696b-4066-957b-83cdf7d1f21f created with files.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 531475ff-d8e8-4261-b552-b9c48df4bb00 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 531475ff-d8e8-4261-b552-b9c48df4bb00 created with files.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris Job Creation: Initiating phase 1 for user admin@helix.net. (SHIM MODE)
+🥋 Chuck Norris Job Creation: Job 6bc26aee-bbee-40f0-b2e5-2f4a134a24c2 created successfully. Sending HTTP 201 Created.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 869a6044-6ed5-4696-8f7e-62a94bc37217 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 869a6044-6ed5-4696-8f7e-62a94bc37217 created with files.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+JWT decode error: Signature has expired.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 661cebc7-f5fb-4ecc-b326-a3d6e1feb649 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 661cebc7-f5fb-4ecc-b326-a3d6e1feb649 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 1143b6ba-621a-4fa4-be99-975fcee46041 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 1143b6ba-621a-4fa4-be99-975fcee46041 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job c20e01ff-fece-46bf-87f9-cbc8aa630d19 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job c20e01ff-fece-46bf-87f9-cbc8aa630d19 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 3240f341-fb5c-4787-bd8c-bdb1d030f8a0 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 3240f341-fb5c-4787-bd8c-bdb1d030f8a0 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 560a12eb-5caf-454f-aaf2-0fff2f9d8281 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 560a12eb-5caf-454f-aaf2-0fff2f9d8281 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 5 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 0 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.
+JWT decode error: Signature has expired.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 5cb10324-f0ca-4c40-b300-40292464e15b successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 5cb10324-f0ca-4c40-b300-40292464e15b created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 611e71c0-8807-4c17-9528-934f62f860bb successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 611e71c0-8807-4c17-9528-934f62f860bb created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 7d4021fe-96e0-4008-a163-774ae621f3a5 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 7d4021fe-96e0-4008-a163-774ae621f3a5 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 43c54518-2256-49ca-a813-ce339c2a048b successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 43c54518-2256-49ca-a813-ce339c2a048b created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 6134a71c-2821-48d6-9414-ceb52a396934 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 6134a71c-2821-48d6-9414-ceb52a396934 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 6a1db819-b47b-4322-8527-8f267820e7d2 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 6a1db819-b47b-4322-8527-8f267820e7d2 created with files.
+JWT decode error: Signature has expired.
+JWT decode error: Signature has expired.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+✨ Application is RUNNING. Yielding control.
+⬆️ Application shutting down. Calling close_async_engine...
+Async engine disposed.
+✅ Async database engine closed.
+🛑 HelixNet Core shutdown complete.
+🖥️ FastAPI application initialized. Mounting API version: /api/v1
+🚀 Starting up HelixNet Core (Lifespan).
+⬇️ Calling init_db_tables...
+Running DDL to create/verify tables...
+DDL operation complete.
+Database tables verified/created successfully.
+✅ init_db_tables completed.
+😴 Waiting 3 seconds for Postgres DDL visibility...
+⬇️ Calling initialize_minio...
+MinIO bucket 'helixnet' already exists.
+🪣 MinIO bucket initialized successfully.
+✅ initialize_minio completed.
+⬇️ Attempting to seed initial users...
+🌱 Starting initial user seeding process...
+👉 Account already exists: admin@helix.net
+👉 Account already exists: cn@helix.net
+👉 Account already exists: marcel@helix.net
+👉 Account already exists: chuck@helix.net
+👉 Account already exists: demo@helix.net
+👉 Account already exists: petar@helix.net
+✅ Initial user seeding completed successfully!
+🧩 Initial user seeding process complete.
+Login attempt for user: admin@helix.net
+✅ Successful login and token creation for user: admin@helix.net
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job eca60da4-1bde-489f-b29e-60ca9e5f21ac successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job eca60da4-1bde-489f-b29e-60ca9e5f21ac created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job 08ebb204-d815-4e93-b7b5-915769bfb74e successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job 08ebb204-d815-4e93-b7b5-915769bfb74e created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job fa538e8f-a5a7-4b7b-97ae-919c67f3b72b successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job fa538e8f-a5a7-4b7b-97ae-919c67f3b72b created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job d80a29d7-2daa-4348-b08e-944d4ac3dbb8 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job d80a29d7-2daa-4348-b08e-944d4ac3dbb8 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job c0ab1fbb-6d4f-48ce-b442-acc1e9389126 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job c0ab1fbb-6d4f-48ce-b442-acc1e9389126 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job b9e9fcdd-256b-4a61-a723-e8031883df34 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job b9e9fcdd-256b-4a61-a723-e8031883df34 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job ef9ea738-c358-4943-b21f-efd64e500d4a successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job ef9ea738-c358-4943-b21f-efd64e500d4a created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris File Job: User admin@helix.net initiating file upload.
+Job b0895954-6097-4a12-a150-fcf290379f01 successfully enqueued (simulated).
+🌟 Chuck Norris File Job Success: Job b0895954-6097-4a12-a150-fcf290379f01 created with files.
+Token decoded successfully.
+User ID validated: da23a9dd-0719-496f-804f-5465c3129f03
+🔍 Retrieving user by ID: da23a9dd-0719-496f-804f-5465c3129f03
+User da23a9dd-0719-496f-804f-5465c3129f03 authenticated successfully with scopes: ['basic']
+🥊 Chuck Norris List Job: User admin@helix.net (ID: da23a9dd-0719-496f-804f-5465c3129f03) requesting job list. (SHIM MODE)
+🌟 Chuck Norris List Job: Retrieved 8 shim job(s) for user da23a9dd-0719-496f-804f-5465c3129f03. Sending results.

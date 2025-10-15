@@ -1,0 +1,31 @@
+{
+"title": "Sales Report Data Schema",
+"type": "object",
+"required": ["report_title", "regions"],
+"properties": {
+"report_title": {
+"type": "string",
+"description": "The title of the sales report."
+},
+"author": {
+"type": "string"
+},
+"date_generated": {
+"type": "string",
+"format": "date"
+},
+"regions": {
+"type": "array",
+"items": {
+"type": "object",
+"required": ["name", "sales_usd"],
+"properties": {
+"name": {"type": "string"},
+"sales_usd": {"type": "number"},
+"growth_rate": {"type": "number"},
+"top_product": {"type": "string"}
+}
+}
+}
+}
+}

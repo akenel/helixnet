@@ -1,0 +1,6 @@
+{
+"email_recipient": "reports@company.com",
+"min_sales_threshold": 1000000,
+"output_format": "PDF",
+"priority": "HIGH"
+}

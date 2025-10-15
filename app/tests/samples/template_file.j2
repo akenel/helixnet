@@ -1,0 +1,25 @@
+{{ report_title }}
+
+Prepared on: {{ date_generated }}
+Prepared for: {{ current_user_email }} (via context)
+Regional Performance Overview
+
+{% for region in regions %}
+
+    {{ region.name }}:
+
+        Sales: ${{ region.sales_usd | int / 1000 }}K
+
+        Growth: {{ region.growth_rate * 100 }}%
+
+        Top Seller: {{ region.top_product }}
+        {% if region.sales_usd > min_sales_threshold %}
+
+        Status: Exceeded Target {% else %}
+
+        Status: Below Target {% endif %}
+        {% endfor %}
+
+Job Configuration Metadata (from Context)
+
+The job output will be generated as a {{ output_format }} file and sent to {{ email_recipient }}.

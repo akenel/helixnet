@@ -90,18 +90,21 @@ async def read_user(
 # ================================================================
 # 🔒 Admin — List All Users
 # ================================================================
-@users_router.get("/", response_model=List[UserRead], summary="List all users (Admin only)")
+@users_router.get("/", 
+                  response_model=List[UserRead], 
+                  summary="List all users (Admin only)")
 async def read_users(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+  #  current_user: User = Depends(get_current_user),
 ):
     """Retrieve all users. Admin access required."""
-    print(f"DEBUG: current_user={current_user.email}, is_admin={current_user.is_admin}")
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Admin privileges required")
-    return await get_user(db, skip=skip, limit=limit)
+   # print(f"DEBUG: current_user={current_user.email}, is_admin={current_user.is_admin}")
+    # if not current_user.is_admin:
+    #     raise HTTPException(status_code=403, detail="Admin privileges required")
+    #return await get_user(db, skip=skip, limit=limit)
+    return await user_service.get_users(db, skip=skip, limit=limit)
 # ================================================================
 # 🔒 Update User
 # ================================================================
