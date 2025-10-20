@@ -1,210 +1,234 @@
-#  /code/docker-compose.yml
-
 services:
-  # The name of your development service (you may need to change this)
-  # dev_container:
-  #   # Use the image built from the Dockerfile above, or specify your image name
-  #   build:
-  #     context: .
-  # #    dockerfile: .devcontainer/Dockerfile
-    
-  #   environment:
-  #     - PYTHONPATH=/code
-  #   container_name: helix-web-app # Cleaned up container name
-  #   profiles:
-  #     - core
-  #     - app
-  #   env_file:
-  #     - .env
 
-  #   # CRITICAL STEP: Mount the Docker socket from the host into the container
-  #   # This allows the 'docker' CLI inside the container to talk to the host's daemon
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
+  # ... postgres service definition remains the same ...
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    profiles: ["core", "app"]
+    restart: always
+    env_file:
+      - .env
+    environment:
+      # Use the variables defined in .env
+      POSTGRES_DB: ${POSTGRES_DB} 
+      POSTGRES_USER: ${POSTGRES_USER} 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - int_core
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  #   # If you need to map ports (e.g., for a running app)
-  #   ports:
-  #     - "3000:3000"
-    
-  #   # Keep the container running for development
-  #   command: /bin/sh -c "while sleep 1000; do :; done"
-
-  # -----------------------------------------------------
-  # 🛡️ TRAEFIK: Edge Router with HTTPS Termination (mkcert)
-  # -----------------------------------------------------
-  # -----------------------------------------------------------------------------
-# Traefik service block for docker-compose.yml
-# Ensures Traefik loads all configurations (Entrypoints, TLS, Providers)
-# from the static traefik.yml file, removing CLI conflicts.
-# -----------------------------------------------------------------------------
+  keycloak:
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
+    image: helix/keycloak:24.0.4-prod
+    container_name: keycloak
+ #  --- 💯 explicit command. 
+    command: start --optimized --import-realm
+    restart: unless-stopped
+    profiles: ["core", "app"]
+    env_file:
+      - .env
+    environment:
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME} 
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_DB_SCHEMA: public       # 👈 PLATINUM ADDITION: Explicitly set DB schema
+      KC_IMPORT_REALM: true      # 👈 PLATINUM ADDITION: Forces realm import on startup
+      # --- Keycloak Runtime Settings ---
+      KC_PROXY: edge
+      KC_ADMIN_URL: https://keycloak.helix.local/admin 
+      KC_IMPORT_FILE: /opt/keycloak/data/import/helix-realm.json
+      KC_HOSTNAME_URL: https://keycloak.helix.local
+      KC_HOSTNAME_STRICT: true
+      KC_HTTP_ENABLED: true  
+      KC_HTTP_PORT: 8080
+      # --- Keycloak Admin/Realm Settings (for bootstrap/initial setup) ---
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_REALM: ${KC_REALM}
+    ports:
+      - "8081:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak/config/helix-realm.json:/opt/keycloak/data/import/helix-realm.json
+    networks:
+      - int_core
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fL http://keycloak:8080/ || exit 1" ] # A simpler check      interval: 10s
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 60
+##################################################################
+# 🔐 Vault - Secret Management
+# ###################################################################
+#   vault:
+#       image: hashicorp/vault:1.17.1
+#       container_name: vault
+#       entrypoint: vault server -dev
+#       ports:
+#         - "8200:8200"
+#       volumes:
+#         # Removed the init_vault.sh mount (it's not needed in dev mode)
+#         - ./vault/config:/vault/config # Keep volume for potential future config/storage
+#       environment:
+#         # VAULT_DEV_MODE=1 is redundant when using 'vault server -dev' but harmless
+#         - VAULT_DEV_ROOT_TOKEN_ID=my_root_token # CRITICAL: Sets the initial token
+#         - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200 # CRITICAL: Ensures it listens correctly
+#         - VAULT_ADDR=http://127.0.0.1:8200 # For internal self-referencing (healthcheck)
+#       cap_add:
+#         - IPC_LOCK
+#       healthcheck:
+#         # Checks if Vault is initialized and unsealed. Dev mode handles both instantly.
+#         test: ["CMD", "vault", "status", "-address=http://127.0.0.1:8200", "|", "grep", "Initialized", "|", "grep", "true"]
+#         interval: 10s
+#         timeout: 5s
+#         retries: 5
+#         start_period: 5s # Vault starts very fast in dev mode
+# 🛡️ TRAEFIK: Edge Router with HTTPS Termination (mkcert)
+# -----------------------------------------------------
   traefik:
-    # Use a specific version for stability
     image: traefik:latest
     container_name: traefik
-    profiles:
-      - core
-      - app
-    # ⚠️ KIS FIX: Only load the configfile and ensure the dashboard is accessible.
-    # All providers and entrypoints are now fully defined inside traefik.yml.
+    profiles: ["core", "app"]
     command:
       - --configfile=/etc/traefik/traefik.yml
       - --api.dashboard=true
-      - --api.insecure=true # Allows dashboard access via the web entrypoint if needed for testing
-      - --log.level=DEBUG # Explicitly set DEBUG log level via CLI
-
-    ports:
-      - "80:80"     # Web entrypoint (HTTP, redirects to HTTPS)
-      - "443:443"   # Websecure entrypoint (HTTPS)
-    volumes:
-      # CRITICAL: Access to the Docker socket for service discovery
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # 1. Mount the static config file
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      # 2. Mount the dynamic config directory (contains dynamic.yml)
-      - ./traefik/dynamic:/etc/traefik/dynamic:ro
-      # 3. Mount the mkcert directory for TLS
-      - ./traefik/certs:/etc/traefik/certs:ro
-
-
-    # volumes:
-    #   # 1. Traefik Static Config
-    #   - ./traefik.yml:/etc/traefik/traefik.yml:ro
-    #   # 2. Dynamic Config (where certs.yml lives)
-    #   - ./dynamic:/etc/traefik/dynamic:ro
-    #   # 3. Certificates
-    #   - ./certs:/etc/traefik/certs:ro
-
-
+      - --api.insecure=true 
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
     networks:
-      - helixnet_network
-
-  # -----------------------------------------------------
-  # 🚀 HELIX-WEB-APP: Your FastAPI Application (Main API)
-  # -----------------------------------------------------
+      - helix_traefik_proxy
+      - int_core
+    ports:
+      - "80:80"    
+      - "443:443" 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./traefik/certs:/etc/traefik/certs:ro
+# -----------------------------------------------------
+# 🚀 HELIX-WEB-APP: Your FastAPI Application (Main API)
+# -----------------------------------------------------
   helix-web-app:
-    build: .
-    environment:
-      - PYTHONPATH=/code
-    container_name: helix-web-app # Cleaned up container name
-    profiles:
-      - core
-      - app
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    ports:
+      - "8000:8000"
+    container_name: helix-web-app  
+    profiles: ["core", "app"]
     env_file:
       - .env
-    # No direct ports mapping! Traefik handles external access.
-    # ports:
-    #   - "8000:8000"
     volumes:
       - .:/code
     working_dir: /code
-    # Command runs on internal port 8000 (HTTP)
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    depends_on:
-      - redis
-      - rabbitmq
-      - postgres
-      - minio
     restart: unless-stopped
     networks:
-      - helixnet_network
-    # 💡 Traefik Labels: Tells Traefik how to route done via dynamic,yaml instead
-  # ----------------------------------------------------
-  # CORE INFRASTRUCTURE SERVICES
-  # ----------------------------------------------------
+      - int_core
+    environment:
+      # --- VARIABLES REQUIRED BY YOUR FASTAPI APP'S SETTINGS ---
+      # **THIS IS THE FIX FOR THE PYDANTIC ERROR**
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      # Ensure all other Keycloak-related settings are also defined here
+      KEYCLOAK_SERVER_URL: http://keycloak:8080 # Use service name within the network
+      KEYCLOAK_REALM: helixnet_realm
+      KEYCLOAK_CLIENT_ID: fastapi-client
+      KEYCLOAK_CLIENT_SECRET: ${KC_CLIENT_SECRET}
+    depends_on:
+      - keycloak
+      - postgres
+      - redis
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"] 
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+# ----------------------------------------------------
+# CORE INFRASTRUCTURE SERVICES
+# ----------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: redis
-    profiles: ["core"]
+    profiles: ["core", "app"]
     command: redis-server --appendonly yes
     ports:
-      - "6379:6379" # Kept for host development/inspection convenience
+      - "6379:6379" 
     volumes:
       - redis_data:/data
     restart: unless-stopped
     networks:
-      - helixnet_network
+      - int_core
     healthcheck:
         test: ["CMD", "redis-cli", "ping"]
         interval: 10s
         timeout: 5s
         retries: 5
-
+##################################################################
   redis-ui:
     image: redislabs/redisinsight:latest
     container_name: redis-ui
-    profiles:
-      - core
-    # 🛑 Ports removed: Access via https://redis-ui.helix.local
-    # ports:
-    #   - "5540:5540"
+    profiles: ["core", "app"]
     expose:
-      - "5540" # Internal port is 5540
+      - "5540" 
     networks:
-      - helixnet_network
-
+      - int_core
+##################################################################
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
-    profiles: ["core"]
+    profiles: ["core", "app"]
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     ports:
       - "5672:5672"
-      - "15672:15672" # Kept for host convenience (direct access to management console)
+      - "15672:15672" 
     restart: unless-stopped
     networks:
-      - helixnet_network
+      - int_core
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    profiles: ["core"]
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    networks:
-      - helixnet_network
-    ports:
-      - "5432:5432" # Kept for host development/inspection convenience
-
+##################################################################
   minio:
     image: minio/minio:latest
     container_name: minio
-    profiles: ["core"]
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: minio server /data --console-address ":9001"
-    # 🛑 Ports changed: Internal ports only (9000 API, 9001 Console). Access via Traefik hostnames.
-    # ports:
-    #   - "9090:9000"
-    #   - "9091:9001"
-    expose:
-      - "9000"
-      - "9001"
+    profiles: ["core", "app"]
+    restart: always
+    env_file:
+      - .env
+    command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
-    restart: unless-stopped
+      - ./minio-init:/docker-entrypoint-init.d  
     networks:
-      - helixnet_network
+      - int_core
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
-      retries: 3  
-  # ----------------------------------------------------
-  # APPLICATION SERVICES
-  # ----------------------------------------------------
-
+      retries: 3 
+# ----------------------------------------------------
+# APPLICATION SERVICES
+# ----------------------------------------------------
   worker:
-    build: .
+    build: 
+      context: .
+      dockerfile: ./app/Dockerfile
     container_name: worker
     profiles: ["app", "worker", "core"]
     env_file:
@@ -217,50 +241,46 @@ services:
       - rabbitmq
     restart: on-failure
     networks:
-      - helixnet_network
-
+      - int_core
+##################################################################
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
-    profiles: ["core"]
+    profiles: ["core", "app"]
     env_file:
       - .env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    # 🛑 Ports removed: Access via https://pgadmin.helix.local
-    # ports:
-    #   - "5050:80"
     expose:
-      - "80" # Internal port is 80
+      - "80" 
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - postgres
     restart: unless-stopped
     networks:
-      - helixnet_network
-
+      - int_core
+##################################################################
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
-    profiles: ["core"]
+    profiles: ["core", "app"]
     command: -H unix:///var/run/docker.sock
-    # 🛑 Ports removed: Access via https://portainer.helix.local
-    # ports:
-    #   - "9999:9443"
     expose:
-      - "9000" # Portainer uses 9000 for HTTP API access internally
-      - "9443" # Portainer's default HTTPS port (though Traefik handles the TLS)
+      - "9000" 
+      - "9443" 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     restart: unless-stopped
     networks:
-      - helixnet_network
-
+      - int_core
+##################################################################
   beat:
-    build: .
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
     container_name: beat
     profiles: ["core", "app"]
     env_file:
@@ -274,44 +294,40 @@ services:
       - worker
     restart: unless-stopped
     networks:
-      - helixnet_network
-
+      - int_core
+###################################################################
   flower:
-    image: mher/flower:master
+    image: mher/flower:2.0
     container_name: flower
     networks:
-      - helixnet_network
-    # Environment variables are highly recommended for the broker and result backend
+      - int_core
     profiles: ["core", "app"]
     env_file:
       - .env
     environment:
       - CELERY_BROKER_URL=amqp://admin:admin@rabbitmq:5672//
-      # Assuming your celery workers use Redis as the result backend
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-
-    # Explicitly wait for RabbitMQ and Redis to be healthy to avoid 'Connection refused' errors on startup
-    # This addresses the "kombu.exceptions.OperationalError: [Errno 111] Connection refused"
     depends_on:
       rabbitmq:
         condition: service_healthy
       redis:
         condition: service_healthy
-  # Simplified command, relying on environment variables
-    command: ["celery", "flower", "--address=0.0.0.0", "--port=5555"]
+    command: ["celery", "flower", "--address=0.0.0.0", "--port=5555", "--basic_auth=admin:admin"]
 # ----------------------------------------------------
 # NAMED VOLUMES
 # ----------------------------------------------------
 volumes:
   redis_data:
-  postgres_data:
-  minio_data:
   portainer_data:
   pgadmin_data:
-
+  postgres_data:
+  minio_data:
+  keycloak_data:
 # ----------------------------------------------------
 # NETWORK
 # ----------------------------------------------------
 networks:
-  helixnet_network:
+  int_core:
     driver: bridge
+  helix_traefik_proxy:
+    driver: bridge  

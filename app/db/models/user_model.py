@@ -1,144 +1,111 @@
 import uuid
+from datetime import datetime, UTC
 from typing import Optional, List, TYPE_CHECKING
-from datetime import datetime, UTC # ✅ Consistent UTC import
 
-# 💥 The Powerhouse Imports: SQLAlchemy 2.0 Style
+# The Powerhouse Imports: SQLAlchemy 2.0 Style
+from sqlalchemy import Text, DateTime, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, ARRAY # 🎯 ADDED ARRAY IMPORT
 
-# 🔑 CRITICAL: Import the Base class from the database configuration!
-from app.db.models.base import Base # ✅ Consistent Base import
+# Note: Use UUID from postgresql dialects for best performance
+from sqlalchemy.dialects.postgresql import UUID
 
-# --- Type Checking Imports ---
+# CRITICAL: Import the Base class from the database configuration!
+from app.db.models.base import Base 
+
+# Type Checking for Relationships
 if TYPE_CHECKING:
-    from .team_model import Team 
-    from .job_model import Job, TaskResult
-    from .artifact_model import Artifact
-    from .refresh_token_model import RefreshToken
+    # IMPORTANT: These imports are only for static type checkers (like Mypy)
+    from app.db.models.artifact_model import Artifact
+    from app.db.models.job_model import Job # Assuming a Job model exists
 
 
 # =========================================================================
-# 👤 USER ORM MODEL
+# 🛡️ CORE ORM MODEL: User
 # =========================================================================
 class User(Base):
     """
-    Represents a system user.
-    Converted entirely to modern SQLAlchemy 2.0 Mapped style.
+    Represents a user or system client, linked to Keycloak. 
+    The core identity entity for all transactional data.
     """
-
     __tablename__ = "users"
-    __allow_unmapped__ = False
+    __allow_unmapped__ = False 
 
-    # 🔑 Primary Key
+    # 🥇 Primary Key (UUID) - Internal ID
     id: Mapped[uuid.UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
+        UUID(as_uuid=True),
         primary_key=True,
-        index=True,
         default=uuid.uuid4,
-        doc="Unique UUID for the user.",
+        doc="Internal UUID for the user record.",
     )
+    
+    # 🔑 Keycloak Linkage - The immutable ID from the Identity Provider
+    keycloak_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        unique=True,
+        index=True,
+        nullable=False,
+        doc="The UUID assigned to the user by Keycloak.",
+    )
+    
+    # --- Identification ---
 
-    # 📧 Email (Primary authentication identifier)
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, doc="User's unique email address."
-    )
-
-    # 📛 User Name 
-    username: Mapped[str] = mapped_column(
-        String(100), 
+        String(255), 
         unique=True, 
         index=True, 
-        doc="User's unique human-readable username for identification.",
+        nullable=False,
+        doc="User's primary email address (used for login)."
     )
 
-    # 📛 Full Name 
-    fullname: Mapped[str] = mapped_column(
-        String(100), 
-        index=True, 
-        doc="User's fullname ",
-    )
-
-    # 🔒 Security
-    hashed_password: Mapped[str] = mapped_column(
-        Text, doc="The securely hashed password."
-    )
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, doc="If the account is active and usable."
-    )
-
-    is_admin: Mapped[bool] = mapped_column(
-        "is_admin", 
-        Boolean, 
-        default=False, 
-        doc="If the user has administrative privileges (mapped to 'is_admin' column in DB).",
-    )
-    
-    # 🎯 NEW CRITICAL FIELDS: Scopes and Roles for Authentication!
-    # These map directly to the JWT claims and authentication logic.
-    scopes: Mapped[List[str]] = mapped_column(
-        ARRAY(String), 
-        default=["user"], 
-        doc="List of application scopes/permissions the user possesses."
-    )
-    roles: Mapped[List[str]] = mapped_column(
-        ARRAY(String), 
-        default=["basic"], 
-        doc="List of abstract roles the user belongs to (e.g., 'admin', 'editor', 'basic')."
-    )
-
-    # 🤝 Team Relationship (Foreign Key)
-    team_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        ForeignKey("teams.id"),
+    full_name: Mapped[Optional[str]] = mapped_column(
+        String(255), 
         nullable=True,
-        doc="Foreign key pointing to the user's team ID."
-    )
-    team: Mapped[Optional["Team"]] = relationship(
-        "Team",
-        back_populates="users",
-        doc="The team or organization the user belongs to (relationship object)."
-    )
-    
-    # 💼 Jobs Relationship 
-    jobs: Mapped[List["Job"]] = relationship(
-        "Job",
-        back_populates="user", 
-        doc="The list of asynchronous jobs or tasks created or owned by this user.",
+        doc="User's full name, as provided by the IDP."
     )
 
-    # 🎯 Task Results Relationship 
-    task_results: Mapped[List["TaskResult"]] = relationship(
-        "TaskResult",
-        back_populates="user", 
-        doc="The list of results from background tasks (Celery/Job results) associated with this user.",
+    # --- Permissions and Status ---
+
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, 
+        default=True,
+        doc="Whether the user account is active."
     )
     
-    # 🖼️ Artifacts Relationship 
-    artifacts: Mapped[List["Artifact"]] = relationship(
-        "Artifact",
-        back_populates="user", 
-        doc="The list of all artifacts (e.g., reports, files, project docs) created or owned by this user.",
-    )
-    
-    # 🔑 Refresh Tokens Relationship 
-    refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
-        "RefreshToken",
-        back_populates="user",
-        doc="The list of active and pending refresh tokens issued to this user.",
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, 
+        default=False,
+        doc="Whether the user has full administrative rights."
     )
 
-    # ⏰ Timestamps
+    # --- Timestamps ---
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=datetime.now(UTC),
-        doc="Time the user record was created.",
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
-        doc="Last time the user record was updated.",
+        doc="When the user record was first created.",
     )
 
-    def __repr__(self):
-        return f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
+    # --- Relationships ---
+    
+    # One-to-Many: Artifacts created/owned by this user
+    artifacts: Mapped[List["Artifact"]] = relationship(
+        "Artifact",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        doc="All transactional artifacts owned by this user."
+    )
+    
+    # One-to-Many: Jobs owned by this user
+    jobs: Mapped[List["Job"]] = relationship(
+        "Job",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+        doc="All jobs or job definitions owned by this user."
+    )
+    
+    def __repr__(self) -> str:
+        """A simple, informative representation for logging and debugging."""
+        return (
+            f"<User(email='{self.email}', kc_id='{self.keycloak_id}', "
+            f"superuser={self.is_superuser})>"
+        )

@@ -3,7 +3,10 @@ import logging
 from app.db.database import get_db_session
 from app.db.models import User
 from sqlalchemy import select
-
+import asyncio
+# Changed from absolute 'from app.db.database' to relative '.database' 
+from ..db.database import get_db_session 
+from ..services.user_service import User
 # Configure logging to be less verbose for cleaner output
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

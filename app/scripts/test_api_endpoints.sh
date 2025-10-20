@@ -1,10 +1,6 @@
 #!/bin/bash
 # A simple script to check API health and basic user creation (Integration Test)
 
-API_HOST="https://helix.local"
-API_PREFIX="/api/v1" # Define the versioned API prefix for clarity
-# Note: Using '-k' to bypass local self-signed certificate errors.
-
 # Variables to store test results
 ACCESS_TOKEN=""
 

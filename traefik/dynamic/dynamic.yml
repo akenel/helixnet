@@ -1,5 +1,5 @@
 http:
-# In traefik/dynamic/dynamic.yml c
+# In traefik/dynamic/dynamic.yml 
   middlewares:
     stripprefix:
       stripPrefix:
@@ -12,6 +12,7 @@ http:
       entryPoints:
         - websecure
       tls: {}
+
     redis:
       rule: "Host(`redis.helix.local`)"
       service: redis
@@ -63,10 +64,15 @@ http:
       service: pgadmin
       entryPoints: [websecure]
       tls: {}
-    keycloak:
+    keycloak-router:
+      # Listen on the secure entry point (HTTPS/443)
+      entryPoints:
+        - websecure 
+      # The rule to match the hostname
       rule: "Host(`keycloak.helix.local`)"
-      service: keycloak
-      entryPoints: [websecure]
+      # The service to send the traffic to
+      service: keycloak-service
+      # Enable TLS termination by Traefik
       tls: {}
     vault:
       rule: "Host(`vault.helix.local`)"
@@ -145,10 +151,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://pgadmin:80"
-    keycloak:
+    keycloak-service:
       loadBalancer:
         servers:
-          - url: "http://keycloak:8080"
+          # Use the container name ('keycloak') and the internal listening port (8080)
+          - url: http://keycloak:8080 
     vault:
       loadBalancer:
         servers:
@@ -206,7 +213,6 @@ http:
       loadBalancer:
         servers:
           - url: "http://traefik:8080"
-    # Frontend mappings 🛠️
     helix-web-app:
       loadBalancer:
         servers:

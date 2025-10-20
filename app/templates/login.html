@@ -1,75 +1,199 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelixNet Registration</title>
+    <!-- Load Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
 
-{% set content %}
-<div class="p-6 bg-gray-100 rounded-xl shadow-lg w-full max-w-md mx-auto my-8 text-slate-800">
-    <h2 class="text-3xl font-bold mb-4 text-cn-primary">CN Login Portal</h2>
-    <p class="mb-6 text-cn-secondary">Please acquire an access token to proceed to the secure routes.</p>
-    
-    <div id="login-container" class="space-y-4">
-        <!-- Mock Login button -->
-        <button type="button" id="get-token-button" onclick="loginAndGetToken()"
-                class="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200 shadow-md focus:outline-none focus:ring-4 focus:ring-blue-500 disabled:bg-gray-500 flex items-center justify-center">
-            <span id="button-text">GET ACCESS TOKEN & LOGIN</span>
-        </button>
-        <p id="status-message" class="text-center text-sm text-yellow-600 hidden"></p>
+    <div class="w-full max-w-md">
+        <div class="bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-extrabold text-gray-900">
+                    Create Your HelixNet Account
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Start monitoring your jobs right away.
+                </p>
+            </div>
+
+            <form id="registrationForm" class="space-y-6">
+                <!-- Username Input -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <div class="mt-1">
+                        <input id="username" name="username" type="text" autocomplete="username" required
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               placeholder="janedoe">
+                    </div>
+                </div>
+
+                <!-- Email Input -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                    <div class="mt-1">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               placeholder="jane.doe@helix.net">
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" autocomplete="new-password" required
+                               minlength="8"
+                               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               placeholder="********">
+                    </div>
+                </div>
+
+                <!-- Hidden Input for Roles (Defaulting to BASIC) -->
+                <input type="hidden" name="roles" value="basic">
+                <input type="hidden" name="is_admin" value="false">
+
+                <!-- Message Area -->
+                <div id="messageArea" class="hidden p-3 rounded-lg text-sm transition duration-300"></div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" id="submitButton"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        <span id="buttonText">Register Account</span>
+                        <svg id="loadingSpinner" class="hidden animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Already have an account? Sign In
+                </a>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    // --- Login Logic ---
+    <script>
+        const API_REGISTER_URL = '/api/v1/users/register';
+        const form = document.getElementById('registrationForm');
+        const messageArea = document.getElementById('messageArea');
+        const submitButton = document.getElementById('submitButton');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
 
-    // Function to generate a visually convincing mock JWT
-    const generateMockJwt = (email = 'chuck.norris@helixnet.com') => {
-        // Header: {"alg":"HS256","typ":"JWT"}
-        const header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
-        // Payload: {"sub":"user-uuid-123", "email":"...", "exp": (future timestamp)}
-        const payload = btoa(JSON.stringify({
-            sub: 'cn-user-7d9a8f4b-3c2e-4a1d-8b0f-5e6c7d8a9b0c',
-            email: email,
-            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours from now
-        })).replace(/=/g, ''); // Base64url encoding removes padding
-        // Mock Signature (just random base64 string)
-        const signature = 'G0LDs7m9YtFz5Xp8A_2nJq-WkLhV_RjEwZcTfQ';
-        return `${header}.${payload}.${signature}`;
-    };
+        /**
+         * Utility for displaying messages (success or error).
+         */
+        function displayMessage(type, content) {
+            messageArea.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            if (type === 'error') {
+                messageArea.classList.add('bg-red-100', 'text-red-700');
+            } else if (type === 'success') {
+                messageArea.classList.add('bg-green-100', 'text-green-700');
+            }
+            messageArea.innerHTML = content;
+        }
+        
+        /**
+         * Handles the loading state of the button.
+         */
+        function setLoading(isLoading) {
+            submitButton.disabled = isLoading;
+            if (isLoading) {
+                buttonText.textContent = 'Registering...';
+                loadingSpinner.classList.remove('hidden');
+                submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+            } else {
+                buttonText.textContent = 'Register Account';
+                loadingSpinner.classList.add('hidden');
+                submitButton.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
 
-    // Main login function
-    const loginAndGetToken = () => {
-        const tokenButton = document.getElementById('get-token-button');
-        const buttonText = document.getElementById('button-text');
-        const statusMessage = document.getElementById('status-message');
+        /**
+         * Sends the registration data to the backend API.
+         */
+        async function handleRegistration(event) {
+            event.preventDefault();
+            messageArea.classList.add('hidden');
+            setLoading(true);
 
-        tokenButton.disabled = true;
-        tokenButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-        tokenButton.classList.add('bg-gray-500');
-        buttonText.textContent = 'Authenticating... Please wait.';
-        statusMessage.textContent = 'Simulating secure token exchange...';
-        statusMessage.classList.remove('hidden');
+            const userData = {
+                username: usernameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value,
+                // roles and is_admin are handled by the backend default or hidden inputs
+                roles: ["basic"], // Explicitly set as array for the API payload
+                is_admin: false
+            };
 
-        // Simulate 2 second network latency for login/token exchange
-        setTimeout(() => {
-            const mockToken = generateMockJwt();
+            // Simple retry loop with exponential backoff for robustness
+            const maxRetries = 3;
+            let currentDelay = 1000;
             
-            // 1. SAVE TOKEN to local storage
-            localStorage.setItem('helixnet_token', mockToken);
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(API_REGISTER_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
 
-            tokenButton.classList.remove('bg-gray-500');
-            tokenButton.classList.add('bg-cn-accent', 'hover:bg-emerald-600');
-            buttonText.textContent = 'LOGIN SUCCESSFUL';
-            statusMessage.textContent = 'Token saved. Redirecting to Dashboard...';
-            
-            // 2. REDIRECT to the dashboard
-            // The setupNavigation function in base.html needs to be run again after redirect
-            window.location.href = '/dashboard';
+                    // Success on 2xx status codes (200, 201)
+                    if (response.ok) {
+                        displayMessage('success', '✅ Registration successful! Redirecting to login...');
+                        setLoading(false);
+                        
+                        // In a real app, this is where you'd trigger automatic login or redirect to /login
+                        // For now, we redirect the user to the Login page after a brief delay
+                        setTimeout(() => {
+                            window.location.href = "/login";
+                        }, 2000);
+                        return;
+                    } 
+                    
+                    // Handle API-specific errors (e.g., email already exists)
+                    const errorData = await response.json();
+                    let errorMessage = errorData.detail || `Registration failed with status: ${response.status}`;
+                    
+                    displayMessage('error', `❌ Registration failed: ${errorMessage}`);
+                    setLoading(false);
+                    return;
 
-        }, 2000); 
-    };
+                } catch (error) {
+                    console.error("Fetch error during registration:", error);
+                    
+                    if (i < maxRetries - 1) {
+                        // Wait before retrying
+                        await new Promise(resolve => setTimeout(resolve, currentDelay));
+                        currentDelay *= 2; // Exponential backoff
+                    } else {
+                        // Last attempt failed
+                        displayMessage('error', '⚠️ Network error. Please check your connection and try again.');
+                        setLoading(false);
+                    }
+                }
+            }
+        }
 
-    // Check if user is already logged in on page load
-    if (localStorage.getItem('helixnet_token')) {
-        document.getElementById('status-message').textContent = 'Already logged in. Redirecting...';
-        document.getElementById('status-message').classList.remove('hidden');
-        window.location.href = '/dashboard';
-    }
-</script>
-{% endset %}
+        form.addEventListener('submit', handleRegistration);
+    </script>
+</body>
+</html>

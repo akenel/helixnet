@@ -67,5 +67,5 @@ celery_app.conf.update(
 
 print("🚀 Celery Application initialized. Broker:", BROKER_URL)
 # ----------------------------------------------------
-# End of celery_app.py /home/angel/repos/helixnet/app/tasks/celery_app.py
+# End of celery_app.py /app/tasks/celery_app.py
 # ----------------------------------------------------

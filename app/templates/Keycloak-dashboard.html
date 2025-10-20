@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keycloak Health & Config Validator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind to use Inter font and enable nested selectors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for output box */
+        #output-container {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4f46e5 #e5e7eb;
+        }
+        #output-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        #output-container::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 sm:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl p-6 md:p-10 border border-indigo-100">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-indigo-700">Keycloak Health Validator 🔑</h1>
+            <p class="text-gray-600 mt-2">Validate Core Endpoints and Hostname Configuration for Helix.</p>
+        </header>
+
+        <div class="space-y-6">
+            <!-- Input and Action -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input
+                    type="text"
+                    id="keycloakUrl"
+                    value="http://keycloak.helix.local"
+                    placeholder="Enter Keycloak Base URL (e.g., https://auth.mydomain.com)"
+                    class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150"
+                >
+                <button
+                    id="runChecksBtn"
+                    onclick="runAllChecks()"
+                    class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300 transform hover:scale-[1.01]"
+                >
+                    Run All Health Checks
+                </button>
+            </div>
+
+            <!-- Realm Selection -->
+            <div class="flex items-center gap-4">
+                <label for="realmName" class="text-gray-700 font-medium">Realm:</label>
+                <input
+                    type="text"
+                    id="realmName"
+                    value="helix"
+                    class="p-2 border border-gray-300 rounded-lg w-32 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+                >
+                <div id="statusIndicator" class="text-sm font-medium"></div>
+            </div>
+
+            <!-- Results Output -->
+            <div class="bg-gray-800 text-green-400 p-6 rounded-lg shadow-inner mt-6">
+                <h3 class="text-xl font-mono text-white mb-3 border-b border-gray-700 pb-2">Diagnostic Output:</h3>
+                <pre id="output-container" class="text-xs font-mono"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants for API calls
+        const HEALTH_ENDPOINTS = [
+            "/health/live",
+            "/health/ready"
+        ];
+        const CONFIG_ENDPOINT_SUFFIX = "/.well-known/openid-configuration";
+
+        // Utility function for exponential backoff (for robust fetching)
+        async function fetchWithRetry(url, maxRetries = 3, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        return response;
+                    } else if (i === maxRetries - 1) {
+                        throw new Error(`Failed after ${maxRetries} attempts with status ${response.status}`);
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay * (2 ** i)));
+                }
+            }
+        }
+
+        function log(message, type = 'INFO') {
+            const outputContainer = document.getElementById('output-container');
+            let color = 'text-green-400';
+            if (type === 'ERROR') color = 'text-red-400';
+            if (type === 'WARN') color = 'text-yellow-400';
+            if (type === 'CRITICAL') color = 'text-fuchsia-400';
+            
+            outputContainer.innerHTML += `<span class="${color}">[${type}]</span> ${new Date().toLocaleTimeString()} - ${message}\n`;
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+
+        function setStatus(message, color) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = `text-sm font-bold p-1 rounded ${color}`;
+            indicator.textContent = message;
+        }
+
+        async function runAllChecks() {
+            const baseUrl = document.getElementById('keycloakUrl').value.trim();
+            const realm = document.getElementById('realmName').value.trim();
+            const outputContainer = document.getElementById('output-container');
+            
+            outputContainer.textContent = ''; // Clear previous output
+            setStatus('Running...', 'bg-yellow-200 text-yellow-800');
+            log(`Starting Keycloak Health Check for: ${baseUrl}`, 'INFO');
+
+            let allChecksPassed = true;
+
+            // --- 1. HEALTH CHECK ---
+            log("--- Running Live/Ready Health Checks ---", 'INFO');
+            for (const endpoint of HEALTH_ENDPOINTS) {
+                const url = baseUrl + endpoint;
+                try {
+                    const response = await fetchWithRetry(url);
+                    log(`SUCCESS: ${endpoint} returned ${response.status}`, 'INFO');
+                } catch (error) {
+                    log(`ERROR: ${endpoint} failed. Keycloak service is down or unreachable. Error: ${error.message}`, 'ERROR');
+                    allChecksPassed = false;
+                }
+            }
+
+            // --- 2. CONFIGURATION VALIDATION (.well-known) ---
+            log("\n--- Running OIDC Config Validation Check ---", 'INFO');
+            const configUrl = `${baseUrl}/realms/${realm}${CONFIG_ENDPOINT_SUFFIX}`;
+            log(`Fetching OIDC Config from: ${configUrl}`, 'INFO');
+
+            try {
+                const response = await fetchWithRetry(configUrl);
+                const config = await response.json();
+                
+                log(`SUCCESS: OIDC Configuration fetched successfully.`, 'INFO');
+
+                // Check 2a: Hostname validation
+                const expectedHostname = new URL(baseUrl).host;
+                const actualIssuer = new URL(config.issuer).host;
+
+                if (actualIssuer === expectedHostname) {
+                    log(`CRITICAL PASS: 'issuer' hostname matched expected: ${expectedHostname}`, 'CRITICAL');
+                } else {
+                    log(`CRITICAL FAIL: Hostname mismatch! Expected: ${expectedHostname} | Found: ${actualIssuer}.`, 'CRITICAL');
+                    log(`ACTION: Re-check KC_HOSTNAME and KC_PROXY in docker-compose.yml.`, 'ERROR');
+                    allChecksPassed = false;
+                }
+                
+                // Check 2b: Traefik's HTTPS requirement (if URL is HTTP)
+                if (baseUrl.startsWith('http://') && config.issuer.startsWith('https://')) {
+                    log(`WARN: Base URL is HTTP, but Keycloak is publishing HTTPS issuer: ${config.issuer}. This is expected if Traefik handles SSL.`, 'WARN');
+                }
+
+                // Log key endpoints
+                log(`Issuer URL: ${config.issuer}`, 'INFO');
+                log(`Token Endpoint: ${config.token_endpoint}`, 'INFO');
+                log(`JWKS URL: ${config.jwks_uri}`, 'INFO');
+
+
+            } catch (error) {
+                log(`ERROR: Failed to fetch OIDC configuration. Realm or URL incorrect. Error: ${error.message}`, 'ERROR');
+                allChecksPassed = false;
+            }
+            
+            // --- FINAL STATUS ---
+            log("\n--- END OF DIAGNOSTICS ---", 'INFO');
+            if (allChecksPassed) {
+                setStatus('ALL CHECKS PASSED', 'bg-green-200 text-green-800');
+            } else {
+                setStatus('CHECKS FAILED', 'bg-red-200 text-red-800');
+            }
+        }
+    </script>
+</body>
+</html>

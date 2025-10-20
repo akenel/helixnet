@@ -13,7 +13,7 @@ from app.db.models.job_model import Job
 from app.schemas.job_schema import JobUpdate # Used for type checking update_job_status_for_celery
 # ---app/services/job_processing_service.py  Core Imports for Service ---
 # 🚨 CRITICAL FIX: Assuming a synchronous version of this function exists in job_service.py
-from app.services.job_processing_service import get_job_by_id_sync 
+# from app.services.job_processing_service import get_job_by_id_sync 
 from app.services.minio_service import minio_service # Sync MinIO client
 # NOTE: Removed mock imports and internal status update functions.
 logger = logging.getLogger(__name__)

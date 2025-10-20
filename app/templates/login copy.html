@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% set content %}
+<div class="p-6 bg-gray-100 rounded-xl shadow-lg w-full max-w-md mx-auto my-8 text-slate-800">
+    <h2 class="text-3xl font-bold mb-4 text-cn-primary">CN Login Portal</h2>
+    <p class="mb-6 text-cn-secondary">Please acquire an access token to proceed to the secure routes.</p>
+    
+    <div id="login-container" class="space-y-4">
+        <!-- Mock Login button -->
+        <button type="button" id="get-token-button" onclick="loginAndGetToken()"
+                class="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200 shadow-md focus:outline-none focus:ring-4 focus:ring-blue-500 disabled:bg-gray-500 flex items-center justify-center">
+            <span id="button-text">GET ACCESS TOKEN & LOGIN</span>
+        </button>
+        <p id="status-message" class="text-center text-sm text-yellow-600 hidden"></p>
+    </div>
+</div>
+
+<script>
+    // --- Login Logic ---
+
+    // Function to generate a visually convincing mock JWT
+    const generateMockJwt = (email = 'chuck.norris@helixnet.com') => {
+        // Header: {"alg":"HS256","typ":"JWT"}
+        const header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+        // Payload: {"sub":"user-uuid-123", "email":"...", "exp": (future timestamp)}
+        const payload = btoa(JSON.stringify({
+            sub: 'cn-user-7d9a8f4b-3c2e-4a1d-8b0f-5e6c7d8a9b0c',
+            email: email,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours from now
+        })).replace(/=/g, ''); // Base64url encoding removes padding
+        // Mock Signature (just random base64 string)
+        const signature = 'G0LDs7m9YtFz5Xp8A_2nJq-WkLhV_RjEwZcTfQ';
+        return `${header}.${payload}.${signature}`;
+    };
+
+    // Main login function
+    const loginAndGetToken = () => {
+        const tokenButton = document.getElementById('get-token-button');
+        const buttonText = document.getElementById('button-text');
+        const statusMessage = document.getElementById('status-message');
+
+        tokenButton.disabled = true;
+        tokenButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        tokenButton.classList.add('bg-gray-500');
+        buttonText.textContent = 'Authenticating... Please wait.';
+        statusMessage.textContent = 'Simulating secure token exchange...';
+        statusMessage.classList.remove('hidden');
+
+        // Simulate 2 second network latency for login/token exchange
+        setTimeout(() => {
+            const mockToken = generateMockJwt();
+            
+            // 1. SAVE TOKEN to local storage
+            localStorage.setItem('helixnet_token', mockToken);
+
+            tokenButton.classList.remove('bg-gray-500');
+            tokenButton.classList.add('bg-cn-accent', 'hover:bg-emerald-600');
+            buttonText.textContent = 'LOGIN SUCCESSFUL';
+            statusMessage.textContent = 'Token saved. Redirecting to Dashboard...';
+            
+            // 2. REDIRECT to the dashboard
+            // The setupNavigation function in base.html needs to be run again after redirect
+            window.location.href = '/dashboard';
+
+        }, 2000); 
+    };
+
+    // Check if user is already logged in on page load
+    if (localStorage.getItem('helixnet_token')) {
+        document.getElementById('status-message').textContent = 'Already logged in. Redirecting...';
+        document.getElementById('status-message').classList.remove('hidden');
+        window.location.href = '/dashboard';
+    }
+</script>
+{% endset %}

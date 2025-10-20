@@ -1,141 +1,75 @@
-# /app/core/security.py
-import uuid
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Union, List, Dict
+from typing import Annotated, Dict, Any
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
-from passlib.context import CryptContext
-from pydantic import BaseModel, Field
 
-from app.core.config import settings
+# 🥋 Keycloak Validation Logic lives here 🥋
+# This service fetches the public keys (JWKS) from Keycloak and validates the token.
+from app.services.keycloak_auth_service import KeycloakAuthService 
 
-logger = logging.getLogger("app/core/security")
+logger = logging.getLogger("app/core/security.py")
 
-# ============================================================
-# PASSWORD HASHING
-# ============================================================
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
+# --- TEMPORARY STUB: To Fix Immediate ImportError in user_service.py ---
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-# ============================================================
-# TOKEN CONFIG
-# ============================================================
-SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = settings.ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-REFRESH_TOKEN_EXPIRE_DAYS = 7
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/auth/token",
-    scopes={
-        "admin": "Administrator access",
-        "user": "Regular user access",
-        "test": "Testing role",
-        "audit": "Audit read-only",
-        "guest": "Guest read-only",
-    },
-)
-
-
-# ============================================================
-# TOKEN CREATION
-# ============================================================
-def create_access_token(
-    *,
-    subject: Union[str, uuid.UUID],
-    scopes: List[str],
-    expires_delta: Optional[timedelta] = None,
-) -> str:
-    now = _now()
-    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    payload = {
-        "sub": str(subject),
-        "scopes": scopes,
-        "iat": int(now.timestamp()),
-        "exp": int(expire.timestamp()),
-        "type": "access",
-        "jti": str(uuid.uuid4()),
-    }
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-
-def create_refresh_token(
-    *,
-    subject: Union[str, uuid.UUID],
-    scopes: List[str],
-    expires_delta: Optional[timedelta] = None,
-) -> Dict[str, str]:
     """
-    Creates and returns a refresh token + metadata for persistence.
+    ⚠️ TEMPORARY STUB: This function is required by an old import in user_service.py 
+    that attempts to create initial users.
+    
+    When using Keycloak, your application should **NOT** be hashing passwords locally. 
+    Passwords are managed externally. This function MUST be removed along with its 
+    imports in app/services/user_service.py once that file is refactored.
     """
-    now = _now()
-    expire = now + (expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
-    jti = str(uuid.uuid4())
-
-    payload = {
-        "sub": str(subject),
-        "scopes": scopes,
-        "iat": int(now.timestamp()),
-        "exp": int(expire.timestamp()),
-        "type": "refresh",
-        "jti": jti,
-    }
-
-    encoded = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return {"token": encoded, "jti": jti, "expires_at": expire.isoformat()}
+    logger.warning("⚠️ Using temporary stub for get_password_hash. Refactor user_service.py immediately!")
+    # Return a dummy string to allow user_service to initialize
+    return "KEYCLOAK_MANAGED_HASH_STUB"
+# -------------------------------------------------------------------
 
 
-# ============================================================
-# TOKEN DECODING / VALIDATION
-# ============================================================
-def decode_token(token: str, verify_exp: bool = True) -> dict:
-    try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM],
-            options={"verify_exp": verify_exp},
-        )
+# --- 🥊 KEYCLOAK VALIDATION DEPENDENCY 🥊 ---
 
-        sub = payload.get("sub")
-        if not sub:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Missing subject in token.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+# 1. OAuth2PasswordBearer: Tells FastAPI to look for a 'Bearer <token>' in the Authorization header.
+#    The tokenUrl points to your custom FastAPI endpoint that handles the login/token exchange.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
-        # Validate UUID-ish subject
-        try:
-            uuid.UUID(str(sub))
-        except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid subject UUID in token.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
 
-        return payload
-    except JWTError as e:
-        logger.error(f"JWT decode error: {e}")
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Dict[str, Any]:
+    """
+    FastAPI Dependency: The core of the Keycloak roundhouse kick!
+    It validates the Bearer token signature, expiry, issuer, and audience against
+    Keycloak's public keys (fetched via KEYCLOAK_JWKS_URL defined in settings).
+
+    Returns: The decoded JWT payload (e.g., {'sub': 'user-uuid', 'roles': [...]}).
+    Raises: HTTPException 401/403 if the token is invalid or missing.
+    """
+    if token == "[HTTP-ONLY-COOKIE]":
+        # 🚨 Security Note: Prevents HttpOnly refresh tokens from being used for resource access.
+        logger.warning("Attempted to use Http-Only refresh token for protected resource access.")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token.",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Only access tokens can access secured endpoints."
         )
+
+    try:
+        # Initialize the service (it uses cached Keycloak keys)
+        auth_service = KeycloakAuthService()
+        
+        # Validate the token using the remote public keys
+        payload = auth_service.validate_token(token)
+        
+        logger.debug(f"Token successfully verified for user SUB: {payload.get('sub')}")
+        return payload
+    
+    except HTTPException as e:
+        # Re-raise explicit HTTP exceptions from the validation service (e.g., 401 Unauthorized)
+        raise e
+    except Exception as e:
+        # Catch unexpected errors during dependency execution
+        logger.error(f"Unexpected token dependency failure: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token processing failed due to internal service error."
+        )
+        
+# 🌟 Primary Dependency Alias: Use this in all your protected routes.
+ActiveUserPayload = Annotated[Dict[str, Any], Depends(get_current_user)]

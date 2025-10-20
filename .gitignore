@@ -103,3 +103,70 @@ super_test_suite.log
 traefik/cert.pem
 traefik/key.pem
 app/traefik/dynamic/certs.yml
+--- General Operating System ---
+
+.DS_Store
+*.pyc
+pycache/
+.vscode/
+
+--- Environment Variables ---
+
+Never commit your local secrets/settings
+
+.env
+.env.*
+!*.env.example # Keep the template
+
+--- Virtual Environments ---
+
+venv/
+env/
+/bin/
+/lib/
+include/
+
+--- Python Specific ---
+
+dist/
+build/
+*.egg-info/
+
+--- Logs, Databases, and Test Artifacts ---
+
+*.log
+*.sqlite3
+
+
+helixnet_frontend/
+
+.DS_Store
+*.pyc
+pycache/
+.vscode/
+
+
+
+
+.env
+.env.*
+!*.env.example # Keep the template
+
+-
+
+venv/
+env/
+/bin/
+/lib/
+include/
+
+
+
+dist/
+build/
+*.egg-info/
+
+
+*.log
+*.sqlite3
+

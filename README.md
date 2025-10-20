@@ -363,5 +363,120 @@ With the core processing successfully verified, the next logical step is to impr
         Display the real status (IN_PROGRESS, COMPLETED, FAILED).
 
         Allow a user to click a job ID to see a detail view, including the MinIO result_path and the result_content payload.
+HelixNet Go-to-Market Strategy: Post-Beta Launch
 
-Do you want to run these QA steps and then we can proceed with the version increment and the dashboard enhancements?
+HelixNet, with its secure user management, data storage, and job orchestration capabilities, is positioned as a powerful platform for streamlining complex, compute-intensive internal processes.
+
+1. Ideal First Customers (The "Beachhead")
+
+The primary initial customers for HelixNet should be smaller departments or mid-sized companies that have internal data silos and recurring, scheduled computational tasks currently being run via fragile scripts or manual processes.
+
+Customer Segment
+
+Why They Are a Good Fit
+
+Core Pain Point Solved
+
+Mid-Market Engineering Consulting Firms
+
+They handle projects with recurring data analysis, needing secure separation between client data and high predictability for job execution. They need an audit trail.
+
+Inconsistent Reporting & Compliance Risk: Fragile scripts and lack of centralized logging for client projects.
+
+Internal Data Science / BI Teams (20-50 employees)
+
+They run nightly ETL jobs, training models, and generating business intelligence reports, often hitting resource limits on general cloud compute services.
+
+"Scheduler Sprawl" & Resource Contention: Jobs fail silently, they waste time debugging execution environments, and lack a central management dashboard.
+
+Specialized Biotech/Pharma Research Labs
+
+They run long, multi-step analysis pipelines (e.g., genome sequencing analysis) that must be restartable, auditable, and secure.
+
+Lack of Reproducibility & Security: Manual restarts of failed pipelines lead to errors; highly sensitive IP needs robust authentication (Keycloak).
+
+2. The Core Value Proposition
+
+HelixNet's value isn't just "running jobs"; it's providing trust and efficiency by removing the unpredictability, non-compliance, and maintenance burden of bespoke internal tools.
+
+Feature
+
+Value Statement
+
+Why They Pay More Than Cloud Functions
+
+Keycloak Integration (Security)
+
+Zero-Friction Compliance: Provides enterprise-grade authentication, role-based access control (RBAC), and user auditing out-of-the-box.
+
+Standard serverless often requires complex external IAM/LDAP integration; HelixNet is pre-integrated and hardened.
+
+Robust Job Orchestration
+
+Guaranteed Delivery & Auditability: Tasks are retryable, logged comprehensively, and monitored from a central dashboard, eliminating "silent failures."
+
+Go beyond basic queues (like SQS/Redis). Provide full DAG management, dependency enforcement, and detailed runtime metrics.
+
+Dedicated MinIO/DB Storage
+
+Unified, Secure Data Layer: All job inputs, outputs, and metadata are stored securely and persistently, accessible only via authenticated API endpoints.
+
+No more passing large files between disparate cloud services; data stays local to the compute environment.
+
+3. Pricing Model Recommendation
+
+For a B2B platform like HelixNet, a Value-Based Subscription Model with tiers based on usage limits is the most appropriate and scalable.
+
+Tier
+
+Target Customer
+
+Pricing Structure
+
+Key Limits
+
+Starter (Pilot)
+
+Small Team / Single Department (5-10 users)
+
+$500 - $1,000 / month
+
+Max 10 concurrent jobs; 500 GB MinIO storage; no priority support.
+
+Professional (Standard)
+
+Mid-sized Team / Entire Department (20-50 users)
+
+$3,000 - $5,000 / month
+
+Max 50 concurrent jobs; 2 TB MinIO storage; 4-hour priority support SLA.
+
+Enterprise (Custom)
+
+Large Organization / Mission-Critical Use
+
+Custom Quote ($10k+/month)
+
+Unlimited jobs/storage; dedicated SLA; on-premises/VPC deployment; single sign-on (SSO) integration.
+
+Rationale: The customers are paying for Predictability, Security, and Time Savings, not raw compute time. Pricing by concurrent jobs and data storage aligns with their operational needs and allows the price to scale with the complexity of their business processes.
+
+4. Post-Beta Vision (V2.0 and Beyond)
+
+Once the core HelixNet is stable (Keycloak and job orchestration proven), the focus shifts to ecosystem expansion and integration:
+
+V2.0: Developer Experience & Integrations (The "Ecosystem"):
+
+Focus: Make it trivial for engineers to integrate their code.
+
+Features: Official SDKs for Python/Go, a command-line interface (CLI) for job submission, and native integrations with popular cloud storage services (S3, GCS) for data ingress/egress.
+
+Goal: Move from "Platform for us" to "Platform for Developers."
+
+V3.0: High-Value Analytics (The "Intelligence"):
+
+Focus: Extracting intelligence from the job data HelixNet already collects.
+
+Features: Automated Cost Attribution (which job/team consumed which resources), predictive failure analysis (using job history to forecast where the next failure will occur), and automatic resource scaling recommendations.
+
+Goal: Transition from a pure execution layer to a Cost Management and Optimization Platform.

@@ -1,70 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
-    <title>My App</title>
-</head>
-
-<body>
-    <header>
-        <h1>Welcome to My App</h1>
-        <nav id="app-nav">
-            <!-- Navigation links handled by JS -->
-        </nav>
-    </header>
-    <main>
-        {{ content }}
-    </main>
-    <footer>
-        <p>&copy; 2023 My App</p>
-    </footer>
+    <!-- The title block allows each page to set its own title -->
+    <title>{% block title %}HelixNet Dashboard{% endblock %}</title>
+    <!-- Load Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <script>
-        // Client-side logic for dynamic navigation and logout
-        const nav = document.getElementById('app-nav');
+    <!-- Link to our custom styles.css file via the Jinja static URL helper -->
+    <!-- FIX: Using protocol-relative path or simple relative path for /static to avoid Mixed Content error -->
+    <link rel="stylesheet" href="/static/styles.css">
+    
+</head>
+<body class="min-h-screen">
 
-        // Function to set up the navigation based on token presence
-        function setupNavigation() {
-            const token = localStorage.getItem('helixnet_token');
-            let navHtml = `
-                <a href="/">Home</a>
-                <a href="/dashboard">Dashboard</a>
-            `;
+    <!-- Navigation Bar (Common to all pages) -->
+    <nav class="bg-gray-800 shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo/Title -->
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-white tracking-wider">
+                        🌌 HelixNet <span class="text-indigo-400">Admin</span>
+                    </span>
+                </div>
+                <!-- Navigation Links -->
+                <div class="flex items-center space-x-4">
+                    <a id="dashboardLink" href="/" class="text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Dashboard</a>
+                    <a href="/submit-form" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150">Submit Job</a>
+                    <a href="/users" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150">Users</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-            if (token) {
-                // User is logged in, show submit form and logout
-                navHtml += `
-                    <a href="/submit-form">Submit Form</a>
-                    <a href="#" id="logout-link">Logout</a>
-                `;
-            } else {
-                // User is logged out, show login link
-                navHtml += `
-                    <a href="/login">Login</a>
-                `;
-            }
+    <!-- Main Content Block: This is where page-specific content will be injected -->
+    <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <!-- The core content of the specific page (e.g., dashboard.html) goes here -->
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Scripts Block: Allows pages to add their unique JS at the end of the body -->
+    {% block scripts %}
+        <!-- FIX: Using simple relative path for /static to avoid Mixed Content error -->
+        <script src="/static/dashboard.js"></script>
+    {% endblock %}
 
-            nav.innerHTML = navHtml;
-
-            if (token) {
-                const logoutLink = document.getElementById('logout-link');
-                logoutLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    localStorage.removeItem('helixnet_token');
-                    // Redirect to login after logout
-                    window.location.href = '/login'; 
-                });
-            }
-        }
-
-        // Initialize navigation on load
-        setupNavigation();
-    </script>
-    <!-- Include your static script file if needed, but the auth logic lives above -->
-    <script src="{{ url_for('static', path='script.js') }}"></script>
 </body>
-
 </html>

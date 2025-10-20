@@ -2,7 +2,7 @@
 import uuid
 # Assuming these are available and configured:
 from app.tasks.celery_app import celery_app
-from app.db.database import get_db_worker # Sync DB context manager for worker tasks
+from app.tasks.db_utils import get_db_worker # Sync DB context manager for worker tasks
 from app.db.models.job_model import Job # For Job.Status enum
 # The synchronous DB update utility we just created
 from app.services.job_service import update_job_status_for_celery

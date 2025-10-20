@@ -10,9 +10,7 @@ from sqlalchemy.orm import sessionmaker, Session as session, DeclarativeBase
 from sqlalchemy.ext.asyncio import (
     AsyncSession, 
     create_async_engine, 
-    async_sessionmaker, 
     AsyncEngine,
-    AsyncConnection
 )
 # ================================================================
 from app.core.config import settings, get_settings

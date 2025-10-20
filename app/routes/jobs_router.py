@@ -6,6 +6,9 @@ This version uses real service calls and UUIDs, eliminating all mock data.
 from pathlib import Path
 from typing import List, Dict, Any, Union
 import logging
+
+from app.core.security import get_current_user
+from app.db.database import get_db_session
 from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile # File and UploadFile are correctly imported
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field, ConfigDict
@@ -14,10 +17,7 @@ from uuid import UUID
 
 # Assuming the following service/schema imports exist in your project structure
 from app.schemas.job_schema import JobSubmission # Assuming JobSubmission is defined here
-from app.db.database import get_db_session
 from app.db.models.user_model import User
-from app.core.scopes import get_current_user, get_current_admin
-from app.services import job_service 
 
 # -----------------------------------------------------------------------------
 # 🚀 Router Setup and Logging
@@ -70,9 +70,6 @@ class JobFileResponse(BaseModel):
     job_id: UUID = Field(..., description="Unique ID of the created job.")
     status: str = Field(..., description="Current status of the job.")
     uploaded_files: Dict[str, str] = Field(..., description="A map of the form field names to the original uploaded file names.")
-
-# END MOCK SCHEMA
-
 
 # ================================================================
 # TEMPORARY SHIM FUNCTIONS (MUST BE REMOVED LATER)

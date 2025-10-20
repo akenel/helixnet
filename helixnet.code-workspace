@@ -5,6 +5,6 @@
 		}
 	],
 	"settings": {
-		"editor.fontSize": 24
+		"remote.autoForwardPortsFallback": 0
 	}
 }

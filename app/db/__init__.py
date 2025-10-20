@@ -1,5 +1,5 @@
 """
-app/db/models/__init__.py /home/angel/repos/helixnet/app/db/__init__.py
+app/db/models/__init__.py 
 
 💥 Model registry initializer.
 Ensures all ORM models are imported and registered to Base.metadata

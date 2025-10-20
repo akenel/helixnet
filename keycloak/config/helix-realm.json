@@ -1,0 +1,171 @@
+{
+  "realm": "helixnet",
+  "enabled": true,
+  "displayName": "🔑 HelixNet Development Realm",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "eventsEnabled": true,
+  "smtpServer": {},
+  
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "System and realm administrators." },
+      { "name": "developer", "description": "Team members actively developing the API and services." },
+      { "name": "guest", "description": "Standard read-only user access." },
+      { "name": "default-roles-helixnet", "description": "Automatically created default roles." }
+    ]
+  },
+  
+  "groups": [
+    {
+      "name": "Admins",
+      "realmRoles": ["admin"],
+      "attributes": { "description": ["Full administrative access to the HelixNet platform."] }
+    },
+    {
+      "name": "Developers",
+      "realmRoles": ["developer"],
+      "attributes": { "description": ["Write access to development environments."] }
+    },
+    {
+      "name": "Guests",
+      "realmRoles": ["guest"],
+      "attributes": { "description": ["Standard read access for all services."] }
+    }
+  ],
+  
+  "clients": [
+    {
+      "clientId": "helixnet-api",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:8000/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8000",
+        "http://localhost:3000",
+        "+"
+      ],
+      "standardFlowEnabled": true,
+      "fullScopeAllowed": true,
+      "name": "HelixNet API Gateway Client"
+    },
+    {
+        "clientId": "account",
+        "enabled": true,
+        "protocol": "openid-connect",
+        "publicClient": false,
+        "standardFlowEnabled": true,
+        "implicitFlowEnabled": false,
+        "directAccessGrantsEnabled": false,
+        "serviceAccountsEnabled": false,
+        "redirectUris": ["/*"],
+        "webOrigins": ["+"],
+        "fullScopeAllowed": true,
+        "name": "Keycloak Account Management"
+    }
+  ],
+  
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "email": "admin@helix.net",
+      "firstName": "Helix",
+      "lastName": "Admin",
+      "realmRoles": ["admin", "default-roles-helixnet"],
+      "groups": ["/Admins"]
+    },
+    {
+      "username": "test",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test",
+          "temporary": false
+        }
+      ],
+      "email": "test@helix.net",
+      "firstName": "Test",
+      "lastName": "User",
+      "realmRoles": ["guest"],
+      "groups": ["/Guests"]
+    },
+    {
+      "username": "guest",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "guest",
+          "temporary": false
+        }
+      ],
+      "email": "guest@helix.net",
+      "firstName": "Guest",
+      "lastName": "Viewer",
+      "realmRoles": ["guest"],
+      "groups": ["/Guests"]
+    },
+    {
+      "username": "marcel",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "marcel",
+          "temporary": false
+        }
+      ],
+      "email": "marcel@helix.net",
+      "firstName": "Marcel",
+      "lastName": "Developer",
+      "realmRoles": ["developer"],
+      "groups": ["/Developers"]
+    },
+    {
+      "username": "petar",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "petar",
+          "temporary": false
+        }
+      ],
+      "email": "petar@helix.net",
+      "firstName": "Petar",
+      "lastName": "Developer",
+      "realmRoles": ["developer"],
+      "groups": ["/Developers"]
+    },
+    {
+      "username": "chuck 🚀",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "chuck",
+          "temporary": false
+        }
+      ],
+      "email": "chuck@helix.net",
+      "firstName": "Chuck",
+      "lastName": "The Rocket 🚀",
+      "realmRoles": ["guest"],
+      "groups": ["/Guests"]
+    }
+  ]
+}
