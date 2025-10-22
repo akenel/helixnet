@@ -1,140 +1,80 @@
-import enum
+# File: app/db/models/message_tasks_model.py
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from datetime import datetime, UTC
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from datetime import datetime
+# Use mapped_column for 2.0 style consistency
+from sqlalchemy import String, DateTime, Text, Enum, ForeignKey, Boolean
+from sqlalchemy.orm import relationship, Mapped, mapped_column 
+from .base import Base
 
-# The Powerhouse Imports: SQLAlchemy 2.0 Style
-from sqlalchemy import ForeignKey, Enum, Text, DateTime, String, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+import enum
 
-# Note: Use JSONB and UUID from postgresql dialects for best performance
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+class TaskType(enum.Enum):
+    """Defines the type of task the message relates to."""
+    EXECUTION = "execution"  # e.g., run a job/pipeline
+    NOTIFICATION = "notification" # e.g., send an alert
+    HEALTH_CHECK = "health_check" # e.g., check service status
+    CONFIGURATION = "configuration" # e.g., update settings
+    SCHEDULING = "scheduling" # e.g., set up a cron job
 
-# CRITICAL: Import the Base class from the database configuration!
-from app.db.models.base import Base 
-
-# Type Checking for Relationships
-if TYPE_CHECKING:
-    from app.db.models.artifact_model import Artifact
-
-# =========================================================================
-# 🛡️ Enums for Task Status
-# =========================================================================
-class TaskStatus(str, enum.Enum):
-    """The status of a single execution step (task)."""
+class TaskStatus(enum.Enum):
+    """Defines the status of the background task."""
     PENDING = "pending"
-    RUNNING = "running"
+    PROCESSING = "processing"
     SUCCESS = "success"
-    RETRY_SCHEDULED = "retry_scheduled"
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
-# =========================================================================
-# 🛡️ CORE ORM MODEL: MessageTask
-# =========================================================================
-class MessageTask(Base):
+class MessageTaskModel(Base):
     """
-    Represents a specific execution step (task) performed on a single Artifact. 
-    Used for granular EOIO, history, and retry tracking.
+    Represents a record of a task sent to or handled by a message broker (like Celery/RabbitMQ).
+    This serves as a ledger for background processes initiated by the API.
     """
-    __tablename__ = "message_tasks"
-    __allow_unmapped__ = False 
+    __tablename__ = 'message_tasks'
 
-    # 🥇 Primary Key (UUID)
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        doc="Unique UUID for the task execution record.",
-    )
+    # ----------------------------------------------------
+    # COLUMNS (Use mapped_column for 2.0 style consistency)
+    # ----------------------------------------------------
     
-    # 🔗 Foreign Key: Artifact
-    artifact_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("artifacts.id", ondelete="CASCADE"), 
-        index=True,
-        doc="The UUID of the Artifact being processed.",
-    )
+    # Primary Key
+    id: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     
-    # --- Execution Definition ---
-    
-    task_name: Mapped[str] = mapped_column(
-        String(128), 
-        nullable=False,
-        doc="The specific worker function or logical task executed (e.g., 'Transform_A_to_B')."
-    )
+    # Ownership and Context (Use mapped_column)
+    initiator_user_id: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, comment="User who initiated the task")
 
-    execution_order: Mapped[int] = mapped_column(
-        Integer, 
-        nullable=False,
-        doc="Sequential order of this task within the defined pipeline."
-    )
+    # Core Task Definition (Use mapped_column)
+    task_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True, comment="The function/task name")
+    task_type: Mapped[TaskType] = mapped_column(Enum(TaskType), default=TaskType.EXECUTION, nullable=False)
     
-    # --- State and Retry Management ---
+    # Message Broker IDs (Use mapped_column)
+    broker_task_id: Mapped[str | None]  = mapped_column(String(255), nullable=True, unique=True, index=True, comment="The ID assigned by the message broker")
 
-    status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus),
-        nullable=False,
-        default=TaskStatus.PENDING,
-        index=True,
-        doc="Status of this task execution (PENDING, SUCCESS, FAILED).",
-    )
+    # Status and Results (Use mapped_column)
+    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False, index=True)
+    result_message: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Short message about success/failure")
+    error_details: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Detailed error information")
     
-    retry_count: Mapped[int] = mapped_column(
-        Integer, 
-        default=0, 
-        nullable=False,
-        doc="Number of times this specific task has been attempted for this artifact."
+    # Input/Output Data (Use mapped_column)
+    input_args_json: Mapped[str | None] = mapped_column(Text, nullable=True, comment="JSON string of input arguments")
+    output_result_json: Mapped[str | None] = mapped_column(Text, nullable=True, comment="JSON string of the task's return value")
+
+    # Timestamps (Use mapped_column)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    sent_to_broker_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, comment="When queued")
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, comment="When worker picked up")
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, comment="When completed")
+
+    # ----------------------------------------------------
+    # Relationships
+    # ----------------------------------------------------
+    
+    # FIX: Rename the property to 'owner' to satisfy the missing property error.
+    # The back_populates should now be 'initiated_message_tasks' based on your comment.
+    owner: Mapped["UserModel"] = relationship(
+        "UserModel", 
+        back_populates="initiated_message_tasks",
+        foreign_keys=[initiator_user_id] # Explicitly define the FK for clarity
     )
 
-    # --- Diagnostics ---
-    
-    # Raw traceback or detailed error message
-    error_message: Mapped[Optional[str]] = mapped_column(
-        Text, 
-        nullable=True,
-        doc="Raw system traceback or detailed error message on failure."
-    )
-
-    # CRITICAL: Structured JSON analysis provided by the LLM on failure
-    llm_analysis: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSONB,
-        nullable=True,
-        doc="Structured, actionable diagnosis provided by the LLM (e.g., suggested fix, root cause)."
-    )
-
-    # --- Timestamps ---
-    
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.now(UTC),
-        doc="When the task execution record was created.",
-    )
-
-    started_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-        doc="When the task worker started execution."
-    )
-    
-    finished_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-        doc="When the task worker completed execution (success or fail)."
-    )
-    
-    # --- Relationships ---
-    
-    # Many-to-One: The Artifact this task is operating on
-    artifact: Mapped["Artifact"] = relationship(
-        "Artifact",
-        back_populates="tasks",
-        doc="The parent artifact being processed."
-    )
-
-    def __repr__(self) -> str:
-        """A simple, informative representation for logging and debugging."""
-        return (
-            f"<MessageTask(id='{self.id}', artifact='{self.artifact_id}', "
-            f"name='{self.task_name}', status='{self.status.value}')>"
-        )
+    def __repr__(self):
+        return f"<MessageTaskModel(id='{self.id}', name='{self.task_name}', status='{self.status}')>"

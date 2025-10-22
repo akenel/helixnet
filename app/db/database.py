@@ -1,12 +1,13 @@
 # app/db/database.py
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Optional, Iterator, Generator
+from requests import Session
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, Session as session, DeclarativeBase
+from sqlalchemy.orm import sessionmaker, Session as session
 from sqlalchemy.ext.asyncio import (
     AsyncSession, 
     create_async_engine, 
@@ -16,7 +17,7 @@ from sqlalchemy.ext.asyncio import (
 from app.core.config import settings, get_settings
 from app.db.models.base import Base # Assuming Base is imported here
 # ================================================================
-logger = logging.getLogger("helix🛠️db")
+logger = logging.getLogger("app/db/database.py")
 logger.setLevel(logging.INFO)
 settings = get_settings()
 # ================================================================
@@ -153,7 +154,7 @@ def create_sync_engine(url: str = settings.POSTGRES_SYNC_URI) -> Engine:
     return engine
 # ================================================================
 
-def get_db_session_sync() -> AsyncGenerator[session, None]: # FIX: Changed return type to generator
+def get_db_session_sync() -> Iterator[Session]:
     """Provides a synchronous database session (e.g., for Celery worker tasks)."""
     # Note: Celery tasks must use a dedicated synchronous session factory 
     # to avoid issues with event loops.   

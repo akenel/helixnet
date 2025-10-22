@@ -28,8 +28,8 @@ class KeycloakProxyService:
             self.client = http_client
 
         # Keycloak requires these three parameters for all token requests
-        self.client_id = settings.KEYCLOAK_CLIENT_ID
-        self.token_url = settings.KEYCLOAK_TOKEN_URL
+        self.client_id = settings.KC_CLIENT_ID
+        self.token_url = settings.KC_AUTH_SERVER_URL
         
         # Note on Client Secret: The helixnet-api client is assumed to be a 
         # public client (SPA/FastAPI backend acting as resource server), 

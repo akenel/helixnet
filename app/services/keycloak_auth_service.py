@@ -49,7 +49,7 @@ class KeycloakAuthService:
     def __init__(self):
         self.jwks = get_keycloak_jwks()
         self.issuer = settings.KEYCLOAK_ISSUER_URL
-        self.audience = settings.KEYCLOAK_CLIENT_ID
+        self.audience = settings.KC_CLIENT_ID
         self.algorithm = settings.KEYCLOAK_ALGORITHM # RS256
 
     def validate_token(self, token: str) -> Dict[str, Any]:

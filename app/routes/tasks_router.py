@@ -12,8 +12,7 @@ from sqlalchemy.future import select
 from app.db.database import get_db_session
 
 # --- Models and Schemas ---
-from app.db.models.task_model import TaskStatus
-from app.db.models.task_model import TaskResult # Correct model for persistent result
+from app.db.models.task_model import TaskModel
 
 # --- Celery and Task Dependencies ---
 from app.db.models.job_model import JobStatus
@@ -29,13 +28,13 @@ tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
 # --------------------------------------------------------------------------
 # --- Utility Function (FIXED: Uses TaskResult) ---
 # --------------------------------------------------------------------------
-async def get_job_result_from_db(session: AsyncSession, task_id: str) -> TaskResult:
+async def get_job_result_from_db(session: AsyncSession, task_id: str) -> TaskModel:
     """
     Helper to retrieve job result from the database asynchronously.
     """
     # Use SQLAlchemy 2.0 style to build the async query
     # FIX: Use TaskResult model for the query
-    stmt = select(TaskResult).filter(TaskResult.task_id == task_id)
+    stmt = select(TaskModel).filter(TaskModel.task_id == task_id)
     # Execute the query asynchronously
     result = await session.execute(stmt)
     # Extract the first scalar result (the TaskResult object)

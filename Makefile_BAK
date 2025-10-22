@@ -36,7 +36,7 @@ CLEAN = @echo "🧹 [CLEANUP] "
 .PHONY: up
 up: ## ⬆️  Bring the entire stack up (Use 'make rebuild' for code updates)
 	$(START) "Starting ALL containers in detached mode..."
-	# FIX: Explicitly include both CORE and APP profiles to ensure all services start
+	# 🚨 FIX: Explicitly include both CORE and APP profiles to ensure all services start
 	set -a; . ./.env; set +a; docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) $(APP_PROFILES) up -d --remove-orphans
 	$(DONE) "HelixNet is LIVE! Access links via 'make links'. 🌐"
 
@@ -155,7 +155,7 @@ wait-for-health: ## ⏳ Wait for critical services (postgres, keycloak) to becom
 	$(DONE) "Critical services are Healthy."
 
 .PHONY: kc-token
-kc-token: core-up wait-for-health ## 🔑 Retrieve and test the Keycloak Admin Access Token (for verification)
+kc-token: ## 🔑 Retrieve and test the Keycloak Admin Access Token (for verification)
 	@echo "🔑 [KEYCLOAK] Requesting Admin Token from Keycloak using service script..."
 	@docker compose run --rm $(WEB_SERVICE) python app/scripts/get_admin_token.py
 	$(DONE) "Admin Token script executed."

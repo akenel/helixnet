@@ -7,7 +7,7 @@ from sqlalchemy import select, delete
 from fastapi import HTTPException, status, Depends
 from jose import JWTError
 
-from app.db.models import User, RefreshToken
+from app.db.models import UserModel, RefreshTokenModel
 from app.core import security
 from app.core.config import settings
 from app.db.database import get_db_session
@@ -30,8 +30,8 @@ class AuthService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def authenticate_user(self, email: str, password: str) -> Optional[User]:
-        stmt = select(User).where(User.email == email)
+    async def authenticate_user(self, email: str, password: str) -> Optional[UserModel]:
+        stmt = select(UserModel).where(UserModel.email == email)
         result = await self.db.execute(stmt)
         user = result.scalars().first()
 
@@ -45,7 +45,7 @@ class AuthService:
 
         return user
 
-    async def create_token_pair_for_user(self, user: User) -> Dict[str, Any]:
+    async def create_token_pair_for_user(self, user: UserModel) -> Dict[str, Any]:
         """Creates new access + refresh tokens for a user."""
         scopes = getattr(user, "scopes", ["user"])
         now_utc = datetime.now(timezone.utc)
@@ -69,7 +69,7 @@ class AuthService:
         expires_at_naive = expires_at_aware.replace(tzinfo=None)
 
         # --- SAVE TO DB ---
-        refresh_entry = RefreshToken(
+        refresh_entry = RefreshTokenModel(
             jti=refresh_meta["jti"],
             user_id=user.id,
             expires_at=expires_at_naive,
@@ -103,9 +103,9 @@ class AuthService:
                 raise HTTPException(status_code=401, detail="Invalid token payload.")
 
             # Find valid token
-            stmt = select(RefreshToken).filter(
-                RefreshToken.jti == jti,
-                RefreshToken.expires_at > utc_now_naive(),
+            stmt = select(RefreshTokenModel).filter(
+                RefreshTokenModel.jti == jti,
+                RefreshTokenModel.expires_at > utc_now_naive(),
             )
             result = await self.db.execute(stmt)
             db_token = result.scalars().first()
@@ -119,7 +119,7 @@ class AuthService:
             await self.revoke_refresh_jti(jti)
 
             # Fetch user
-            stmt_user = select(User).where(User.id == user_id)
+            stmt_user = select(UserModel).where(UserModel.id == user_id)
             result_user = await self.db.execute(stmt_user)
             user = result_user.scalars().first()
             if not user:
@@ -138,7 +138,7 @@ class AuthService:
     async def revoke_refresh_jti(self, jti: str):
         """Deletes refresh token entry by JTI."""
         try:
-            stmt = delete(RefreshToken).where(RefreshToken.jti == jti)
+            stmt = delete(RefreshTokenModel).where(RefreshTokenModel.jti == jti)
             await self.db.execute(stmt)
             await self.db.commit()
             logger.debug(f"[AUTH] Revoked JTI {jti}")

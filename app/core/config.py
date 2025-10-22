@@ -48,6 +48,8 @@ class Settings(BaseSettings):
         False, description="Use HTTP-only cookie for refresh token."
     )
     REFRESH_COOKIE_NAME: str = Field("refresh_token", description="Name of the refresh token cookie.")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(3, description="Keycloak Access token expiry default in minutes.")
+    REFRESH_TOKEN_EXPIRE_DAYS_DEFAULT: int = Field(7, description="Keycloak Refresh Access token expiry default in days.")
     # ---------------------------------------------------------------------
     # 3. INITIAL USER SEEDING (The Missing Fields!)
     # ---------------------------------------------------------------------
@@ -63,8 +65,7 @@ class Settings(BaseSettings):
     KC_CLIENT_ID: str = Field("helix-web-app", description="🔑 Keycloak client ID for the web app.")
     KC_CLIENT_SECRET: str = Field("", description="🗝️ Keycloak client secret for token exchange.")
     
-    # URL used by the internal Python app to talk to Keycloak (uses service name)
-    KC_AUTH_SERVER_URL: str = Field("http://keycloak:8080/realms/helixnet", 
+    KC_AUTH_SERVER_URL: str = Field("https://keycloak.helix.local/realms/helixnet/protocol/openid-connect/token", 
                                     description="🕹️ Internal Keycloak OIDC issuer URL.")
     
     # Keycloak Admin Setup (For Docker bootstrap only)

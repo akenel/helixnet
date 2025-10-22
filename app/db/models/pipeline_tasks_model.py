@@ -1,53 +1,47 @@
+# File: app/db/models/pipeline_tasks_model.py - FINAL FIX
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Text, Integer, ForeignKey, JSON
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
-from app.db.models.base import Base # Assuming Base is imported from your shared structure
-from app.db.models.artifact import Artifact # Import Artifact for the relationship
+from sqlalchemy import String, DateTime, ForeignKey, Text, Boolean, Integer
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-class PipelineTask(Base):
-    """
-    Represents a specific step (task) executed on an Artifact within a pipeline. 
-    This is used for granular history, retry tracking, and state management.
-    """
-    __tablename__ = "pipeline_tasks"
+from app.db.models.artifact_model import ArtifactModel
+from app.db.models.job_model import JobModel
 
-    # --- IDENTIFICATION ---
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    
-    # Foreign key link to the Artifact being processed
-    artifact_id = Column(UUID(as_uuid=True), ForeignKey('artifacts.id'), nullable=False, index=True)
-    
-    # Relationship back to the Artifact model
-    artifact = relationship("Artifact", backref="tasks")
+from .base import Base
 
-    # The name of the specific task (e.g., 'Validate_Payload', 'Transform_to_ABAP', 'Send_to_SAP')
-    task_name = Column(String(128), nullable=False) 
+class PipelineTaskModel(Base):
+    __tablename__ = 'pipeline_tasks'
 
-    # --- EXECUTION STATE ---
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+ 
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    initializer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('initializer.id'), nullable=False) 
     
-    # Status of this specific task execution (e.g., PENDING, SUCCESS, FAILED)
-    status = Column(String(50), nullable=False, default="PENDING", index=True) 
+    # ... (Other mapped_columns assumed correct)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    # Sequential order of this task within the pipeline definition
-    execution_order = Column(Integer, nullable=False) 
+    # ----------------------------------------------------
+    # Relationships
+    # ----------------------------------------------------
     
-    # Number of times this specific task has been attempted for this artifact
-    retry_count = Column(Integer, default=0, nullable=False)
+    # 💥 CRITICAL FIX: Rename 'user' to 'owner' to satisfy back_populates="owner" in UserModel.
+    owner: Mapped["UserModel"] = relationship(
+        back_populates="pipeline_tasks",
+        foreign_keys=[user_id] # Explicitly define the FK for clarity
+    )
     
-    # LLM-generated error description or standard traceback on failure
-    error_message = Column(Text, nullable=True) 
-
-    # --- TIMESTAMPS ---
+    # CRITICAL FIX 1: Change to plural 'artifacts' to fix the error.
+    artifacts: Mapped[list["ArtifactModel"]] = relationship(
+        back_populates="pipeline_task", 
+        cascade="all, delete-orphan"
+    ) 
     
-    started_at = Column(DateTime, nullable=True)
-    finished_at = Column(DateTime, nullable=True)
+    initializer: Mapped["InitializerModel"] = relationship(back_populates="pipeline_tasks", foreign_keys=[initializer_id])
     
-    # --- AUDIT ---
+    # CRITICAL FIX 2: Check the 'jobs' relationship. 
+    jobs: Mapped[list["JobModel"]] = relationship(back_populates="pipeline_task_instance", cascade="all, delete-orphan") 
     
-    # A complete log of all attempts, including timestamps and brief error summaries
-    history = Column(JSON, nullable=False, default=lambda: []) 
-
     def __repr__(self):
-        return f"<PipelineTask id={self.id} artifact_id={self.artifact_id} task='{self.task_name}' status='{self.status}'>"
+        return f"<PipelineTaskModel(id='{self.id}', task_name='{self.task_name}', status='{self.status}')>"

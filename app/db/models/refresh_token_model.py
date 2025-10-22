@@ -1,44 +1,35 @@
-import datetime
-import uuid # <-- NEW: Import for UUID generation and typing
-from typing import Optional
-from app.db.models.user_model import User
-from sqlalchemy import Column, String, ForeignKey, DateTime, Boolean
-from sqlalchemy.types import Uuid # <-- NEW: Import for UUID column type
-from sqlalchemy.orm import Mapped, relationship
-from app.db.database import Base # Assuming Base is imported from app.db.database
+# File: app/db/models/refresh_token_model.py - FIX
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+from datetime import datetime
+from sqlalchemy import DateTime, Text, ForeignKey, Boolean
+from sqlalchemy.orm import relationship, Mapped, mapped_column 
+from .base import Base
 
-class RefreshToken(Base):
-    """
-    Database model for managing long-lived refresh tokens.
+class RefreshTokenModel(Base):
+    __tablename__ = 'refresh_tokens'
 
-    Refresh tokens are stored to allow for revocation (user logout) and 
-    to track token issuance for enhanced security.
-    """
-    __tablename__ = "refresh_tokens"
+    # Primary Key (Corrected autoincrement for UUID - UUIDs are typically not autoincrementing)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4) # Removed autoincrement=True
 
-    # Token ID (Primary Key). MUST be UUID to match PostgreSQL users.id.
-    # Setting as_uuid=True makes SQLAlchemy handle the Python <-> SQL type conversion.
-    id: Mapped[uuid.UUID] = Column(Uuid(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    
-    # The actual JWT ID (JTI) from the token payload
-    jti: Mapped[str] = Column(String, unique=True, nullable=False, index=True) 
+    # Token Data
+    token: Mapped[str] = mapped_column(Text, index=True, nullable=False, unique=True, comment="The actual Keycloak Refresh Token string (hashed or encrypted)")
 
-    # Link to the user who owns the token. Changed to Uuid to match users.id.
-    user_id: Mapped[uuid.UUID] = Column(
-        Uuid(as_uuid=True), 
-        ForeignKey("users.id", ondelete="CASCADE"), 
-        nullable=False, 
-        index=True
-    )
+    # Status & Expiry
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, comment="The date and time the token expires (as per Keycloak)")
+    revoked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="If true, the token has been explicitly revoked by the user or system")
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    # Expiration timestamp
-    expires_at: Mapped[datetime.datetime] = Column(DateTime, nullable=False)
-    
-    # Status flag for revocation (logout, security breach, etc.)
-    is_revoked: Mapped[bool] = Column(Boolean, default=False, nullable=False)
+    # Foreign Key to User
+    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
 
-    # Relationship to the User model
-    user: Mapped["User"] = relationship("User", back_populates="refresh_tokens")
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # Relationships
+    owner: Mapped["UserModel"] = relationship(back_populates="refresh_tokens")
 
     def __repr__(self):
-        return f"<RefreshToken jti={self.jti} user_id={self.user_id} revoked={self.is_revoked}>"
+        # CORRECTED: Changed 'user_id' to 'owner_id'
+        return f"<RefreshTokenModel(id='{self.id}', owner_id='{self.owner_id}', expires_at='{self.expires_at}')>"

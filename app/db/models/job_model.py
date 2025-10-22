@@ -1,122 +1,88 @@
+# File: app/db/models/job_model.py - FINAL CLEANUP AND TASKS FIX
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+# Ensure we are using mapped_column and Mapped for all definitions
+from sqlalchemy import String, DateTime, Text, Enum, ForeignKey, JSON
+from sqlalchemy.orm import relationship, Mapped, mapped_column 
 import enum
-from datetime import datetime, UTC
-from typing import Any, Dict, Optional, List, TYPE_CHECKING 
 
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Enum, DateTime, String
-from sqlalchemy.dialects.postgresql import UUID, JSONB  
-from app.db.models.base import Base # ✅ Corrected Base import path
+from app.db.models.artifact_model import ArtifactModel
+from app.db.models.task_model import TaskModel
 
-# 💡 CRITICAL FIX: The previous fix caused a circular import.
-if TYPE_CHECKING:
-    from .user_model import User
-    from .job_model import TaskResult 
-    from .artifact_model import Artifact 
-    from .task_model import TaskResult
-class JobStatus(str, enum.Enum):
+from .base import Base
+class JobStatus(enum.Enum):
+    """Defines the possible states of a Job."""
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+class JobModel(Base):
+    # The 'artifacts' relationship must use the 'job_id' column in the ArtifactModel table.
     """
-    Defines the possible states for a major asynchronous job.
+    Represents a long-running, asynchronous task or a batch process
+    executed by the Celery worker network.
     """
-    PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    CANCELLED = "CANCELLED"
+    __tablename__ = 'jobs'
 
-
-# =========================================================================
-# 📝 JOB ORM MODEL
-# =========================================================================
-class Job(Base):
-    """
-    Model for a main processing job initiated by a user.
-    """
-
-    __tablename__ = "jobs"
-    __allow_unmapped__ = False # Added for consistency
-
-    # --- Primary Key & Foreign Keys ---
+    # ----------------------------------------------------
+    # COLUMNS (Defined first, using mapped_column)
+    # ----------------------------------------------------
+    id: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     
-    # Primary Key
-    job_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        doc="Unique UUID for this job.",
-    )
-
-    # 🔗 Foreign Key to User (One User has many Jobs)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"),
-        doc="The user who initiated this job.",
-    )
-
-    # --- Status and Metadata Fields ---
+    # NOTE: Local FK to the parent PipelineTask
+    pipeline_task_fk: Mapped[uuid.UUID] = mapped_column('pipeline_task_id', UUID(as_uuid=True), ForeignKey('pipeline_tasks.id'), nullable=False)
     
-    status: Mapped[JobStatus] = mapped_column(
-        Enum(JobStatus),
-        default=JobStatus.PENDING,
-        doc="Current state of the job.",
+    # Job Metadata/Status (Use mapped_column)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    job_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[JobStatus] = mapped_column(Enum(JobStatus), default=JobStatus.PENDING, nullable=False)
+    result_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    artifact_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('artifacts.id'), nullable=False)
+
+    artifacts: Mapped[list["ArtifactModel"]] = relationship(
+        back_populates="job", 
+        foreign_keys="job_id", # <--- Use ONLY the column name string
+        cascade="all, delete-orphan"
     )
 
-    # 🎯 Input Data Field
-    input_data: Mapped[Dict[str, Any]] = mapped_column(
-        JSONB,  # Use PostgreSQL JSONB type for the input dictionary
-        doc="The structured input payload for the Celery task.",
-    )
-
-    # 🎯 Task Path/Function Name (e.g., 'app.tasks.process_data')
-    celery_task_name: Mapped[str] = mapped_column( 
-        String(255),
-        doc="The path to the Celery task function to be executed.",
-    )
+    # Foreign Keys (LOCAL to JobModel)
+    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     
-    name: Mapped[str] = mapped_column(
-        String(255),
-        doc="Human-readable name for the job.",
-    )
-
-    # --- Timestamps ---
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.now(UTC),
-        doc="When the job was created.",
-    )
+    # NOTE: This is the FK column linking the Job to its parent PipelineTask
+    pipeline_task_fk: Mapped[uuid.UUID] = mapped_column('job_id', UUID(as_uuid=True), ForeignKey('pipeline_tasks.id'), nullable=False)
     
-    updated_at: Mapped[datetime] = mapped_column(
-    DateTime(timezone=True),
-    default=datetime.now(UTC),
-    onupdate=datetime.now(UTC), 
-    doc="When the job was last updated.",
-    )
-
-    finished_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-        doc="When the job hit a terminal status (COMPLETED/FAILED/CANCELLED).",
-    )
-
-    # --- Relationships ---
-
-    # Link back to the User (Many-to-One)
-    user: Mapped["User"] = relationship(back_populates="jobs")
-
-    # Link to TaskResults (One-to-Many)
-    task_results: Mapped[List["TaskResult"]] = relationship(
-        "TaskResult", 
+    # ----------------------------------------------------
+    # RELATIONSHIPS
+    # ----------------------------------------------------
+    owner: Mapped["UserModel"] = relationship(back_populates="jobs")
+    
+    # One Job -> Many Artifacts (Uses string reference for FK to avoid import)
+    artifacts: Mapped[list["ArtifactModel"]] = relationship(
+        back_populates="job", 
+        foreign_keys="ArtifactModel.job_id", 
+        cascade="all, delete-orphan"
+    ) 
+    
+    # 💥 CRITICAL FIX: Add the missing plural 'tasks' property (One Job -> Many Tasks)
+    tasks: Mapped[list["TaskModel"]] = relationship(
         back_populates="job",
-        cascade="all, delete-orphan",
-        doc="Individual task results associated with this job."
-    )
-    
-    # Link to Artifacts (One-to-Many - assuming Artifact has job_id FK)
-    artifacts: Mapped[List["Artifact"]] = relationship(
-        "Artifact",
-        back_populates="job",
-        cascade="all, delete-orphan",
-        doc="Output files/artifacts generated by this job."
+        cascade="all, delete-orphan"
     )
 
+    # One Job belongs to One PipelineTask (Removed duplicate definition)
+    pipeline_task_instance: Mapped["PipelineTaskModel"] = relationship(
+        back_populates="jobs", 
+        foreign_keys=[pipeline_task_fk]
+    )
 
-    def __repr__(self) -> str:
-        return f"<Job(job_id='{self.job_id}', name='{self.name}', status='{self.status.value}')>"
+    def __repr__(self):
+        return f"<JobModel(id='{self.id}', name='{self.name}', status='{self.status.value}')>"

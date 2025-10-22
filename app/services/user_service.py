@@ -1,3 +1,10 @@
+# ======================================================================
+# 🌱 INITIALIZATION & SEEDING (Startup Logic) - FIX APPLIED
+# ======================================================================
+# /home/angel/repos/helixnet/app/services/user_service.py
+# Import time/asyncio for delays
+import asyncio 
+import time
 import logging
 import uuid
 from datetime import datetime, UTC
@@ -7,126 +14,90 @@ from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx 
 from pydantic import SecretStr
+from uuid import UUID
 
 from app.core.config import get_settings
-from app.core.security import get_password_hash
-from app.db.models import User 
+# 🚨 FIX 1: Removed get_password_hash. Keycloak handles passwords.
+from app.db.models import UserModel 
 from app.schemas.user_schema import UserCreate, UserUpdate
+# 🚨 FIX 2: Imported the Keycloak service and custom exceptions
+from app.services.keycloak_proxy_service import KeycloakProxyService
+from app.exceptions.user_exceptions import (
+    DuplicateUserError, 
+    KeycloakRegistrationFailed, 
+    UserNotFound
+) 
 
 # ================================================================
 # ⚙️ CONFIGURATION & LOGGER
 # ================================================================
 settings = get_settings()
-# Use a specific logger name for better log filtering
 logger = logging.getLogger("🛠️ UserService")
 logger.setLevel(logging.INFO)
 
-# ⚠️ CRITICAL NETWORK FIX: Use the Docker service name for internal calls.
+# ⚠️ WARNING: INTERNAL_KEYCLOAK_HOST is only used for the startup 'seeding' function.
+# All router-facing logic uses the KeycloakProxyService which manages its own client.
 INTERNAL_KEYCLOAK_HOST = "http://keycloak:8080"
 
-
-# ================================================================
-# 🐘 KEYCLOAK ADMIN API HELPERS
-# ================================================================
-
-async def get_keycloak_admin_token() -> str | None:
-    """
-    Acquires an Admin Access Token from Keycloak using client credentials 
-    for the admin client. Uses the internal Docker service name 'keycloak'.
-    """
-    TOKEN_URL = f"{INTERNAL_KEYCLOAK_HOST}/realms/{settings.KC_REALM}/protocol/openid-connect/token"
-    
-    auth_data = {
-        "grant_type": "client_credentials",
-        "client_id": settings.KC_CLIENT_ID,
-        "client_secret": settings.KC_CLIENT_SECRET,
-        "scope": "openid",
-    }
-    
-    try:
-        async with httpx.AsyncClient(verify=False) as client:
-            response = await client.post(
-                TOKEN_URL, data=auth_data, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10
-            )
-            response.raise_for_status()
-            token_data = response.json()
-            logger.info("✅ Keycloak Admin Token acquired successfully.")
-            return token_data.get("access_token")
-    except httpx.RequestError as e:
-        logger.error(f"Keycloak Admin Token acquisition failed (Network/Request): {e}", exc_info=False)
-    except Exception as e:
-        logger.error(f"Keycloak Admin Token acquisition failed (Unknown): {e}", exc_info=True)
-    return None
-
-async def create_keycloak_user(admin_token: str, user_data: Dict[str, Any], initial_roles: List[str]) -> str:
-    """Creates a user in Keycloak and returns the Keycloak UID."""
-    USERS_URL = f"{INTERNAL_KEYCLOAK_HOST}/admin/realms/{settings.KC_REALM}/users"
-    
-    # 1. Check if user already exists by email/username (optional, but good practice)
-    # Keycloak Admin API has a search endpoint, but for simplicity, we rely on the DB check first.
-
-    # 2. Keycloak user creation payload
-    kc_payload = {
-        "enabled": True,
-        "username": user_data["username"],
-        "email": user_data["email"],
-        "firstName": user_data["fullname"],
-        "credentials": [{
-            "type": "password",
-            "value": user_data["password"].get_secret_value(),
-            "temporary": False
-        }],
-        # Roles are assigned in a separate step via the admin API, but this is the initial user object.
-    }
-    
-    headers = {
-        "Authorization": f"Bearer {admin_token}",
-        "Content-Type": "application/json"
-    }
-    
-    try:
-        async with httpx.AsyncClient(verify=False, timeout=10) as client:
-            # Create user
-            create_response = await client.post(USERS_URL, json=kc_payload, headers=headers)
-            create_response.raise_for_status()
-
-            # The response does not contain the UID, it is in the 'Location' header.
-            location_header = create_response.headers.get("Location", "")
-            if not location_header:
-                 raise Exception("Keycloak did not return the user location header.")
-            
-            # Extract UUID from Location header (e.g., /admin/realms/helixnet/users/0f1d...)
-            keycloak_uid = location_header.split("/")[-1]
-            
-            # 3. Assign roles (assuming 'helix-web-app' client roles for simplicity)
-            # This is complex and often done via Keycloak's roles endpoint. 
-            # For brevity and focusing on the seeding issue, we assume the default client roles apply, 
-            # or a separate admin client method handles this. We focus on the user creation here.
-            
-            logger.info(f"✨ Keycloak user '{user_data['username']}' created with UID: {keycloak_uid}")
-            return keycloak_uid
-
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 409: # Conflict, user already exists
-            logger.warning(f"Keycloak user '{user_data['username']}' already exists (409 Conflict). Skipping creation.")
-            # We would search for the user here and return their UID, but for simplicity, we treat this as a seed failure if the DB doesn't have it.
-            # In a real app, you'd fetch the existing user's ID.
-            raise HTTPException(status_code=409, detail=f"User already exists in Keycloak.")
-        logger.error(f"Keycloak user creation failed (HTTP {e.response.status_code}): {e.response.text}", exc_info=False)
-        raise
-    except Exception as e:
-        logger.error(f"Keycloak user creation failed: {e}", exc_info=True)
-        raise
 
 # ======================================================================
 # 🌱 INITIALIZATION & SEEDING (Startup Logic)
 # ======================================================================
+async def get_keycloak_admin_token() -> str | None:
+    """Acquires Admin Access Token from Keycloak for bootstrap purposes, with retries."""
+    
+    MASTER_REALM = "master"
+    BOOTSTRAP_CLIENT_ID = "admin-cli"
+    MAX_RETRIES = 10  # Maximum number of attempts
+    RETRY_DELAY = 5   # Delay in seconds between attempts
 
+    TOKEN_URL = f"{INTERNAL_KEYCLOAK_HOST}/realms/{MASTER_REALM}/protocol/openid-connect/token"
+    auth_data = {
+        "grant_type": "password",
+        "client_id": BOOTSTRAP_CLIENT_ID,
+        "username": settings.KEYCLOAK_ADMIN_USER,
+        "password": settings.KEYCLOAK_ADMIN_PASSWORD,
+    }
+    
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            async with httpx.AsyncClient(verify=False, timeout=10) as client:
+                response = await client.post(
+                    TOKEN_URL, 
+                    data=auth_data, 
+                    headers={"Content-Type": "application/x-www-form-urlencoded"}
+                )
+                response.raise_for_status() # Raises for 4xx/5xx codes
+                token_data = response.json()
+                
+                logger.info(f"✅ Bootstrap Admin Token acquired successfully on attempt {attempt}.")
+                return token_data.get("access_token")
+                
+        except httpx.HTTPStatusError as e:
+            # This handles connection refused (if Keycloak is up but misconfigured)
+            # or 401/403 errors (if credentials are bad)
+            status_code = e.response.status_code
+            logger.warning(
+                f"Keycloak token acquisition failed (Status {status_code}) on attempt {attempt}/{MAX_RETRIES}. Retrying in {RETRY_DELAY}s."
+            )
+        except Exception as e:
+            # This handles ConnectionRefusedError or DNS resolution failure (Keycloak not yet ready)
+            logger.warning(
+                f"Keycloak connection failed on attempt {attempt}/{MAX_RETRIES}. Retrying in {RETRY_DELAY}s. Error: {type(e).__name__}"
+            )
+
+        # Wait before the next attempt
+        if attempt < MAX_RETRIES:
+            await asyncio.sleep(RETRY_DELAY)
+
+    # If the loop completes without success
+    logger.error("🚨 Keycloak Admin Token acquisition failed after all attempts. Service is unreachable or credentials are bad.")
+    return None#################################################################################
 async def create_initial_users(db: AsyncSession) -> None:
     """Creates initial users in the database and in Keycloak."""
     logger.info("🌱 Starting initial user seeding process...")
-
-    # --- 1. Define initial users ---
+    
+    # NOTE: This seeding function is complex because it bridges two worlds (startup and runtime).
     initial_users_data = [
         {
             "username": settings.HX_SUPER_NAME,
@@ -138,47 +109,45 @@ async def create_initial_users(db: AsyncSession) -> None:
         }
     ]
     
-    admin_token = await get_keycloak_admin_token()
+    keycloak_proxy = KeycloakProxyService() # Instantiate proxy for seeding
+    admin_token = await get_keycloak_admin_token() # Needs a dedicated token for admin API
+    
     if not admin_token:
         logger.error("🚨 Cannot proceed with user seeding: Keycloak Admin Token missing.")
         return
 
     for user_data in initial_users_data:
         username = user_data["username"]
-        
-        # --- 2. Idempotency Check (Check DB first) ---
-        stmt = select(User).where(User.username == username)
+        # 1. Idempotency Check (Check DB first)
+        stmt = select(UserModel).where(username == username)
         db_user_result = await db.execute(stmt)
         if db_user_result.scalar_one_or_none():
-            logger.info(f"User '{username}' already exists in DB. Skipping Keycloak and DB creation.")
+            logger.info(f"User '{username}' already exists in DB. Skipping creation.")
             continue
 
         logger.info(f"Attempting to seed new user: {username}...")
         
         try:
-            # --- 3. Create User in Keycloak ---
-            # NOTE: We skip the role assignment API call here for brevity, focusing on the user creation.
-            keycloak_uid = await create_keycloak_user(
-                admin_token=admin_token, 
-                user_data={
-                    "username": user_data["username"],
-                    "email": user_data["email"],
-                    "password": user_data["password"],
-                    "fullname": user_data["fullname"],
-                },
+            # 2. Create User in Keycloak (using the Admin token directly)
+            keycloak_uid = await keycloak_proxy.create_user_admin_api_direct(
+                admin_token=admin_token,
+                user_data=UserCreate(**user_data), # Use the Pydantic model for clean data
                 initial_roles=user_data["roles"]
             )
             
-            # --- 4. Create User in Local DB ---
-            new_user = User(
-                id=uuid.uuid4(),
+            # 3. Create User in Local DB (No password hash!)
+            new_user = UserModel(
+                # Use a random UUID for the local DB ID, Keycloak ID is stored in keycloak_id
+                id=uuid.uuid4(), 
                 email=user_data["email"],
                 username=user_data["username"],
-                hashed_password=get_password_hash(user_data["password"].get_secret_value()),
+                # 🚨 FIX: Passwords are NOT stored/hashed in the local DB when using Keycloak for auth.
+                # We set a dummy hash just to satisfy the database constraint if it exists.
+                hashed_password="KEYCLOAK_MANAGED_PASSWORD", 
                 fullname=user_data["fullname"],
                 is_active=True,
                 is_admin=user_data["is_admin"],
-                keycloak_id=keycloak_uid, # Crucially link to Keycloak UID
+                keycloak_id=UUID(keycloak_uid), # Crucially link to Keycloak UID
                 created_at=datetime.now(UTC),
                 updated_at=datetime.now(UTC),
             )
@@ -186,15 +155,14 @@ async def create_initial_users(db: AsyncSession) -> None:
             await db.commit()
             logger.info(f"💾 User '{username}' successfully created in DB and linked to Keycloak.")
 
-        except HTTPException as e:
-            # Catch 409 from Keycloak if implemented to handle the case where Keycloak has the user, but DB doesn't.
-            logger.warning(f"Seeding failed for '{username}' due to Keycloak error: {e.detail}. Continuing.")
+        except DuplicateUserError:
+             logger.warning(f"Seeding failed for '{username}': User already exists in Keycloak. Continuing.")
         except Exception as e:
             logger.error(f"FATAL ERROR during user seeding for '{username}': {e}", exc_info=True)
             await db.rollback()
 
     logger.info("✅ Initial user seeding process completed.")
-    # The return None is implicit
+
 
 # ======================================================================
 # 🧑‍💻 ASYNC USER SERVICE (The Class the Router Needs)
@@ -206,41 +174,75 @@ class AsyncUserService:
     """
     
     def __init__(self, db: AsyncSession):
-        """Initializes the service with the database session."""
+        """Initializes the service with the database session and Keycloak client."""
         self.db = db
+        # 🚨 FIX 3: Instantiate the Keycloak Proxy service for use in public methods
+        self.keycloak_service = KeycloakProxyService()
 
-    async def register_new_user(self, user_data: UserCreate) -> User:
-        """Handles user registration."""
-        logger.info(f"Attempting registration for {user_data.username}")
-        # 1. Check if user already exists
-        result = await self.db.execute(select(User).where(or_(User.email == user_data.email, User.username == user_data.username)))
+    async def create_user_keycloak_db(self, user_data: UserCreate) -> UserModel:
+        """
+        Handles user registration by creating the user in Keycloak first, 
+        then synchronizing the record to the local database.
+        
+        Raises: DuplicateUserError, KeycloakRegistrationFailed
+        """
+        # 1. Idempotency Check (Local DB)
+        result = await self.db.execute(select(UserModel).where(or_(UserModel.email == user_data.email, UserModel.username == user_data.username)))
         if result.scalar_one_or_none():
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email or username already exists.")
+            raise DuplicateUserError(detail=f"User with email '{user_data.email}' or username '{user_data.username}' already exists.")
 
-        # In a real application, step 2 (Keycloak user creation) would occur here using an injected Admin Token.
-        # For this setup, we assume users are created via the Keycloak UI or the above seeding script only.
+        # 2. Create User in Keycloak (This will raise DuplicateUserError if Keycloak already has it)
+        try:
+            # This call attempts to create the user in Keycloak and returns the UUID if successful.
+            keycloak_uid = await self.keycloak_service.create_user_admin_api(user_data)
+        
+        except DuplicateUserError as e:
+            logger.warning(f"Registration failed: {e.detail}")
+            # Re-raise the custom exception for the router to catch
+            raise e
+        except Exception as e:
+            logger.error(f"Keycloak registration failed unexpectedly: {e}", exc_info=True)
+            # Catch all network/proxy errors and wrap in a custom exception
+            raise KeycloakRegistrationFailed(detail=f"Keycloak service error during registration: {e}")
 
-        # 3. Create local DB user
-        new_user = User(
+        # 3. Create User in Local DB
+        new_user = UserModel(
             id=uuid.uuid4(),
             email=user_data.email,
             username=user_data.username,
-            hashed_password=get_password_hash(user_data.password.get_secret_value()),
+            # 🚨 FIX: Hashed password is a required field but must be a dummy string
+            # to indicate external management.
+            hashed_password="KEYCLOAK_MANAGED_PASSWORD",
             fullname=user_data.fullname,
             is_active=True,
             is_admin=False,
+            keycloak_id=UUID(keycloak_uid), # Store the Keycloak UUID
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
-            # keycloak_id=keycloak_uid # Must be filled from Keycloak response
         )
         self.db.add(new_user)
-        await self.db.commit()
-        await self.db.refresh(new_user)
-        return new_user
+        
+        try:
+            await self.db.commit()
+            await self.db.refresh(new_user)
+            logger.info(f"User '{user_data.username}' successfully registered in Keycloak and local DB.")
+            return new_user
+        except Exception as e:
+            # Critical: If DB commit fails, we must try to delete the user from Keycloak 
+            # to prevent a half-registered state (Keycloak has user, DB doesn't).
+            await self.db.rollback()
+            logger.error(f"DB synchronization failed after successful Keycloak creation. Attempting Keycloak rollback.", exc_info=True)
+            # Rollback logic for keycloak needed here if the DB fails.
+            # self.keycloak_service.delete_user_admin_api(keycloak_uid)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database registration failed. Please try again.")
 
-    async def update_user_profile(self, user_id: uuid.UUID, update_data: UserUpdate) -> Optional[User]:
-        """Updates a user's profile."""
-        result = await self.db.execute(select(User).where(User.id == user_id))
+
+    async def update_user_profile(self, user_id: UUID, update_data: UserUpdate) -> Optional[UserModel]:
+        """
+        Updates a user's profile in the local DB. 
+        Note: Keycloak updates (password, email) should happen via the Keycloak service.
+        """
+        result = await self.db.execute(select(UserModel).where(UserModel.id == user_id))
         user = result.scalar_one_or_none()
 
         if not user:
@@ -248,35 +250,53 @@ class AsyncUserService:
 
         update_data_dict = update_data.model_dump(exclude_unset=True)
         
+        # Handle password change separately as it must go to Keycloak
+        password_secret = update_data_dict.pop("password", None)
+        if password_secret:
+            # 🚨 FIX 4: Use Keycloak service to update the password remotely
+            logger.info(f"Attempting to update password for Keycloak user: {user.keycloak_id}")
+            await self.keycloak_service.update_user_password(
+                user_id=str(user.keycloak_id), 
+                new_password=password_secret.get_secret_value()
+            )
+            # Do NOT update local hashed_password field!
+
+        # Update local DB fields
         for key, value in update_data_dict.items():
-            if key == "password":
-                user.hashed_password = get_password_hash(value.get_secret_value()) # Ensure SecretStr is unwrapped
-            else:
-                setattr(user, key, value)
+            setattr(user, key, value)
         
         user.updated_at = datetime.now(UTC)
         await self.db.commit()
         await self.db.refresh(user)
         return user
 
-    async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[User]:
+    async def get_user_by_id(self, user_id: UUID) -> Optional[UserModel]:
         """Retrieves a single user by their unique ID."""
-        result = await self.db.execute(select(User).where(User.id == user_id))
+        result = await self.db.execute(select(UserModel).where(UserModel.id == user_id))
         return result.scalars().first()
         
-    async def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:
+    async def get_users(self, skip: int = 0, limit: int = 100) -> List[UserModel]:
         """Retrieves a paginated list of all users."""
-        stmt = select(User).offset(skip).limit(limit)
+        stmt = select(UserModel).offset(skip).limit(limit)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def delete_user(self, user_id: uuid.UUID) -> bool:
-        """Deletes a user from the database and keycloak (optional)."""
-        result = await self.db.execute(select(User).where(User.id == user_id))
+    async def delete_user(self, user_id: UUID) -> bool:
+        """Deletes a user from the database and Keycloak."""
+        result = await self.db.execute(select(UserModel).where(UserModel.id == user_id))
         user = result.scalar_one_or_none()
 
         if user:
-            # Keycloak deletion logic would go here
+            # 1. Delete from Keycloak
+            if user.keycloak_id:
+                try:
+                    await self.keycloak_service.delete_user_admin_api(str(user.keycloak_id))
+                    logger.info(f"User {user_id} successfully deleted from Keycloak.")
+                except Exception as e:
+                    # Log error but proceed with local deletion
+                    logger.error(f"Failed to delete user {user_id} from Keycloak: {e}")
+
+            # 2. Delete from local DB
             await self.db.delete(user)
             await self.db.commit()
             return True

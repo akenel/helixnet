@@ -17,7 +17,7 @@ from uuid import UUID
 
 # Assuming the following service/schema imports exist in your project structure
 from app.schemas.job_schema import JobSubmission # Assuming JobSubmission is defined here
-from app.db.models.user_model import User
+from app.db.models.user_model import UserModel
 
 # -----------------------------------------------------------------------------
 # 🚀 Router Setup and Logging
@@ -75,7 +75,7 @@ class JobFileResponse(BaseModel):
 # TEMPORARY SHIM FUNCTIONS (MUST BE REMOVED LATER)
 # ================================================================
 
-async def _create_job_shim(job_data: Dict[str, Any], current_user: User) -> Dict[str, Any]:
+async def _create_job_shim(job_data: Dict[str, Any], current_user: UserModel) -> Dict[str, Any]:
     """TEMPORARY: Replaces the missing job_service.create_job_and_enqueue_task."""
     user_id_key = str(current_user.id)
         
@@ -90,17 +90,17 @@ async def _create_job_shim(job_data: Dict[str, Any], current_user: User) -> Dict
     SHIM_JOB_STORE[user_id_key].append(new_job)
     return new_job
 
-async def _get_jobs_for_user_shim(current_user: User) -> List[Dict[str, Any]]:
+async def _get_jobs_for_user_shim(current_user: UserModel) -> List[Dict[str, Any]]:
     """TEMPORARY: Replaces the missing job_service.get_jobs_for_user."""
     user_id_key = str(current_user.id)
     return SHIM_JOB_STORE.get(user_id_key, [])
 
-async def _get_job_by_id_shim(job_id: UUID, current_user: User) -> Union[Dict[str, Any], None]:
+async def _get_job_by_id_shim(job_id: UUID, current_user: UserModel) -> Union[Dict[str, Any], None]:
     """TEMPORARY: Replaces the missing job_service.get_job_by_id."""
     jobs = await _get_jobs_for_user_shim(current_user)
     return next((j for j in jobs if j["id"] == job_id), None)
 
-async def _delete_job_shim(job_id: UUID, current_user: User) -> None:
+async def _delete_job_shim(job_id: UUID, current_user: UserModel) -> None:
     """TEMPORARY: Replaces the missing job_service.delete_job."""
     user_id_key = str(current_user.id)
     
@@ -114,7 +114,7 @@ async def _delete_job_shim(job_id: UUID, current_user: User) -> None:
         raise ValueError(f"Job ID {job_id} not found.")
 
 # --- Stub for create_job function referenced in the upload endpoint ---
-async def create_job(db: AsyncSession, title: str, job_data: JobSubmission, current_user: User) -> JobRead:
+async def create_job(db: AsyncSession, title: str, job_data: JobSubmission, current_user: UserModel) -> JobRead:
     """
     MOCK implementation for file upload reference.
     Now accepts 'title' as a separate argument.
@@ -138,7 +138,7 @@ async def create_job(db: AsyncSession, title: str, job_data: JobSubmission, curr
 )
 async def list_jobs(
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user)
 ) -> List[JobRead]:
     """
     Retrieves all jobs accessible by the current authenticated user by calling JobService.
@@ -161,7 +161,7 @@ async def list_jobs(
 async def get_job(
     job_id: UUID, 
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user)
 ) -> JobRead:
     """
     Retrieves a single job by its UUID. Must be the owner or an admin.
@@ -189,7 +189,7 @@ async def get_job(
 async def create_job_no_files(
     job_in: JobCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user)
 ) -> JobRead:
     """
     Creates a new, universally unique job instance based on JSON input. 
@@ -209,7 +209,7 @@ async def create_job_no_files(
 async def delete_job(
     job_id: UUID,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: UserModel = Depends(get_current_user),
 ):
     """
     🗑️ Delete a job by ID (only owner or admin can delete).
@@ -234,7 +234,7 @@ async def delete_job(
 # ================================================================
 @jobs_router.post("/upload", status_code=status.HTTP_201_CREATED, response_model=JobFileResponse)
 async def create_job_with_files(
-    current_user: User = Depends(get_current_user),
+    current_user: UserModel = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
     content_file: UploadFile = File(..., description="The main content data file."),
     context_file: UploadFile = File(..., description="The context configuration file."),

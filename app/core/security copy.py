@@ -14,7 +14,7 @@ from passlib.context import CryptContext
 # NOTE: These are crucial and must point to your actual file locations.
 
 # 1. SQLAlchemy Model: Used to fetch the user record from the database.
-from app.db.models.user_model import User 
+from app.db.models.user_model import UserModel 
 # 2. Database Dependency: The function that yields an AsyncSession.
 # We are using get_db_session to match the common project structure and your traceback.
 from app.db.database import get_db_session 
@@ -84,7 +84,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     # 2. Add expiration (exp) and subject (sub) claims
-    access_token_data = {"user_id": str(User.id)}
+    access_token_data = {"user_id": str(UserModel.id)}
     # Sub is usually set to a unique identifier for the user.
     to_encode.update({"exp": expire, "sub": access_token_data})
     
@@ -107,7 +107,7 @@ CREDENTIALS_EXCEPTION = HTTPException(
 async def get_current_user(
     db: AsyncSession = Depends(get_db_session), 
     token: str = Depends(oauth2_scheme)
-) -> User: 
+) -> UserModel: 
     """
     Dependency to decode the JWT, find the user ID, and fetch the User model 
     instance from the database. This does NOT check if the user is active/banned.
@@ -138,7 +138,7 @@ async def get_current_user(
     
     # 3. Fetch User from Database (FIX for TypeError: AsyncSession cannot be called)
     # 🛠️ FIX: We use the session object 'db' with the .get() method.
-    user: Optional[User] = await db.get(User, user_id)
+    user: Optional[UserModel] = await db.get(UserModel, user_id)
 
     if user is None:
         # 🥋 Chuck Norris QA Check: Did the user exist in the DB?
@@ -147,7 +147,7 @@ async def get_current_user(
     return user
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_active_user(current_user: UserModel = Depends(get_current_user)) -> UserModel:
     """
     Dependency that ensures the authenticated user is also active.
     
@@ -164,7 +164,7 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     return current_user
 
 
-async def get_current_admin_user(current_user: User = Depends(get_current_active_user)) -> User:
+async def get_current_admin_user(current_user: UserModel = Depends(get_current_active_user)) -> UserModel:
     """
     Dependency that verifies the currently authenticated, active user 
     is a Superuser (Admin).

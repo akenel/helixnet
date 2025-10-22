@@ -1,111 +1,55 @@
-import uuid
-from datetime import datetime, UTC
-from typing import Optional, List, TYPE_CHECKING
-
-# The Powerhouse Imports: SQLAlchemy 2.0 Style
-from sqlalchemy import Text, DateTime, String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-# Note: Use UUID from postgresql dialects for best performance
+# File: app/db/models/user_model.py
 from sqlalchemy.dialects.postgresql import UUID
+import uuid
+from datetime import datetime
+from sqlalchemy.orm import relationship, Mapped, mapped_column 
+from sqlalchemy import String, DateTime, Boolean, JSON, UniqueConstraint
 
-# CRITICAL: Import the Base class from the database configuration!
-from app.db.models.base import Base 
+from app.db.models.artifact_model import ArtifactModel
+from app.db.models.job_model import JobModel
+from app.db.models.message_tasks_model import MessageTaskModel
+from app.db.models.pipeline_tasks_model import PipelineTaskModel
+from app.db.models.refresh_token_model import RefreshTokenModel
+from app.db.models.task_model import TaskModel
+from .base import Base
 
-# Type Checking for Relationships
-if TYPE_CHECKING:
-    # IMPORTANT: These imports are only for static type checkers (like Mypy)
-    from app.db.models.artifact_model import Artifact
-    from app.db.models.job_model import Job # Assuming a Job model exists
+class UserModel(Base):
+    __tablename__ = 'users'
 
+    # Primary Key (Use mapped_column to apply arguments)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, comment="The UUID from the Identity Provider (Keycloak)")
 
-# =========================================================================
-# 🛡️ CORE ORM MODEL: User
-# =========================================================================
-class User(Base):
-    """
-    Represents a user or system client, linked to Keycloak. 
-    The core identity entity for all transactional data.
-    """
-    __tablename__ = "users"
-    __allow_unmapped__ = False 
+    # Core Identity Fields
+    username: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    # 🥇 Primary Key (UUID) - Internal ID
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        doc="Internal UUID for the user record.",
-    )
+    # Application State and Metadata
+    is_onboarded: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="Flag indicating if the user has completed application onboarding")
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # User Preferences and Custom Data
+    preferences: Mapped[dict | None] = mapped_column(JSON, nullable=True, comment="Arbitrary JSON field for user-specific settings (e.g., theme, layout)")
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # Relationships (Adding 'initializer' to complete the back_populates from InitializerModel)
+    refresh_tokens: Mapped[list["RefreshTokenModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    jobs: Mapped[list["JobModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    tasks: Mapped[list["TaskModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    artifacts: Mapped[list["ArtifactModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     
-    # 🔑 Keycloak Linkage - The immutable ID from the Identity Provider
-    keycloak_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        unique=True,
-        index=True,
-        nullable=False,
-        doc="The UUID assigned to the user by Keycloak.",
-    )
+    # 💥 CRITICAL FIX: Rename to 'initiated_message_tasks' to satisfy MessageTaskModel's back_populates
+    initiated_message_tasks: Mapped[list["MessageTaskModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     
-    # --- Identification ---
+    pipeline_tasks: Mapped[list["PipelineTaskModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    # New relationship to complete the InitializerModel's back_populates
+    initializer: Mapped["InitializerModel"] = relationship(back_populates="admin_user")
 
-    email: Mapped[str] = mapped_column(
-        String(255), 
-        unique=True, 
-        index=True, 
-        nullable=False,
-        doc="User's primary email address (used for login)."
-    )
-
-    full_name: Mapped[Optional[str]] = mapped_column(
-        String(255), 
-        nullable=True,
-        doc="User's full name, as provided by the IDP."
-    )
-
-    # --- Permissions and Status ---
-
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, 
-        default=True,
-        doc="Whether the user account is active."
-    )
-    
-    is_superuser: Mapped[bool] = mapped_column(
-        Boolean, 
-        default=False,
-        doc="Whether the user has full administrative rights."
-    )
-
-    # --- Timestamps ---
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.now(UTC),
-        doc="When the user record was first created.",
-    )
-
-    # --- Relationships ---
-    
-    # One-to-Many: Artifacts created/owned by this user
-    artifacts: Mapped[List["Artifact"]] = relationship(
-        "Artifact",
-        back_populates="user",
-        cascade="all, delete-orphan",
-        doc="All transactional artifacts owned by this user."
-    )
-    
-    # One-to-Many: Jobs owned by this user
-    jobs: Mapped[List["Job"]] = relationship(
-        "Job",
-        back_populates="owner",
-        cascade="all, delete-orphan",
-        doc="All jobs or job definitions owned by this user."
-    )
-    
-    def __repr__(self) -> str:
-        """A simple, informative representation for logging and debugging."""
-        return (
-            f"<User(email='{self.email}', kc_id='{self.keycloak_id}', "
-            f"superuser={self.is_superuser})>"
-        )
+    def __repr__(self):
+        return f"<UserModel(id='{self.id}', username='{self.username}', email='{self.email}')>"
