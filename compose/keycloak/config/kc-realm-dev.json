@@ -1,0 +1,182 @@
+{
+  "realm": "kc-realm-dev",
+  "enabled": true,
+  "displayName": "🔐️ HelixNet 💦️ Development 🥬️ Realm 🐰️ kc-realm-dev 🐘️",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "eventsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@helix.net",
+    "fromDisplayName": "HelixNet DevRealm Mailer",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      { "name": "👑 admin", "description": "System and realm administrators with full control." },
+      { "name": "💻 developer", "description": "Team members actively writing and deploying code." },
+      { "name": "🔎 auditor", "description": "Users with elevated read and reporting access for security and QA." },
+      { "name": "👀 guest", "description": "Standard read-only user access." },
+      { "name": "default-roles-kc-realm-dev", "description": "Automatically created default roles." }
+    ]
+  },
+  "groups": [
+    {
+      "name": "👑 Admins",
+      "realmRoles": ["👑 admin", "default-roles-kc-realm-dev"],
+      "attributes": { "description": ["Users with full administrative control over the platform."] }
+    },
+    {
+      "name": "💻 Developers",
+      "realmRoles": ["💻 developer", "👀 guest"],
+      "attributes": { "description": ["Users with write access to development and API resources."] }
+    },
+    {
+      "name": "🔎 Auditors",
+      "realmRoles": ["🔎 auditor", "👀 guest"],
+      "attributes": { "description": ["Users with elevated read access for quality assurance and compliance."] }
+    },
+    {
+      "name": "👀 Guests",
+      "realmRoles": ["👀 guest"],
+      "attributes": { "description": ["Standard read access for all services."] }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "helix_user",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": [
+        "https://helix.local/*"
+      ],
+      "webOrigins": [
+        "https://helix.local/*",
+        "https://helix.local/*",
+        "http://localhost:8000",
+        "http://localhost:3000",
+        "+"
+      ],
+      "standardFlowEnabled": true,
+      "fullScopeAllowed": true,
+      "name": "Frontend Web Application (Public Client)"
+    },
+    {
+      "clientId": "helix_user_management",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "fullScopeAllowed": true,
+      "name": "Keycloak Account Management"
+    },
+    {
+      "clientId": "admin-cli",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "fullScopeAllowed": true,
+      "name": "Keycloak Admin Command Line Interface"
+    },
+    {
+      "clientId": "helix_service_account",
+      "name": "HelixNet Service Account (FastAPI Core)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "secret": "helix_pass",
+      "bearerOnly": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "attributes": {
+        "description": "🔐 Dedicated Service Account for FastAPI (Helix Core) Admin Tasks."
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "🥋 chuck-norris",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "chuck", "temporary": false }
+      ],
+      "email": "chuck@helix.net",
+      "firstName": "Chuck",
+      "lastName": "Norris",
+      "realmRoles": ["👑 admin", "💻 developer"],
+      "groups": ["/👑 Admins", "/💻 Developers"]
+    },
+    {
+      "username": "👊 bruce-lee",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "bruce", "temporary": false }
+      ],
+      "email": "bruce@helix.net",
+      "firstName": "Bruce",
+      "lastName": "Lee",
+      "realmRoles": ["💻 developer"],
+      "groups": ["/💻 Developers"]
+    },
+    {
+      "username": "🛡️ jane-auditor",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "auditor", "temporary": false }
+      ],
+      "email": "jane.auditor@helix.net",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "realmRoles": ["🔎 auditor"],
+      "groups": ["/🔎 Auditors"]
+    },
+    {
+      "username": "helix_user",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],      
+      "email": "helix_user@helix.net",
+      "firstName": "Helix",
+      "lastName": "Admin",
+      "realmRoles": ["👑 admin", "default-roles-kc-realm-dev"],
+      "groups": ["/👑 Admins"]
+    },
+    {
+      "username": "marcel-dev",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "marcel", "temporary": false }
+      ],
+      "email": "marcel@helix.net",
+      "firstName": "Marcel",
+      "lastName": "Developer",
+      "realmRoles": ["💻 developer"],
+      "groups": ["/💻 Developers"]
+    },
+    {
+      "username": "guest-viewer",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "guest", "temporary": true }
+      ],
+      "email": "guest@helix.net",
+      "firstName": "Guest",
+      "lastName": "Viewer",
+      "realmRoles": ["👀 guest"],
+      "groups": ["/👀 Guests"]
+    }
+  ]
+}

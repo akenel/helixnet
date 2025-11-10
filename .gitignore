@@ -4,6 +4,12 @@ pycache/
 *$py.class
 venv/
 .venv/
+.env
+*.pem
+*.crt
+*.key
+__pycache__/
+
 # 🔑 Environment File
 
 .env
@@ -41,7 +47,7 @@ Coverage files
 .coverage
 .coverage.*
 # IDE / Editor Files
-
+.BAK
 .idea/
 *.swp
 *~

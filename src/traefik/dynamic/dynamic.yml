@@ -1,0 +1,220 @@
+# traefik/dynamic/dynamic.yml (src/traefik/dynamic/dynamic.yml)
+http:
+# In traefik/dynamic/dynamic.yml
+  middlewares:
+    stripprefix:
+      stripPrefix:
+        prefixes:
+          - /
+  routers:
+    traefik_ping:
+      rule: "Host(`helix.local`) && Path(`/ping`)"
+      service: ping@internal
+      entryPoints:
+        - websecure
+      tls: {}
+    helix-app-router:
+      rule: "Host(`helix-app.helix.local`)"
+      service: helix-web-app
+      entryPoints:
+        - websecure
+      tls: {}
+    redis:
+      rule: "Host(`redis.helix.local`)"
+      service: redis
+      entryPoints: [websecure]
+      tls: {}
+    redis-ui:
+      rule: "Host(`redis-ui.helix.local`)"
+      service: redis-ui
+      entryPoints: [websecure]
+      tls: {}
+    rabbitmq:
+      rule: "Host(`rabbitmq.helix.local`)"
+      service: rabbitmq
+      entryPoints: [websecure]
+      tls: {}
+    # Application mappings 🛠️
+      flower:
+        rule: "Host(`flower.helix.local`)"
+        service: flower
+        entryPoints: [websecure]
+        tls: {}
+    ollama:
+      rule: "Host(`ollama.helix.local`)"
+      service: ollama
+      entryPoints: [websecure]
+      tls: {}
+    n8n:
+      rule: "Host(`n8n.helix.local`)"
+      service: n8n
+      entryPoints: [websecure]
+      tls: {}
+    grafana:
+      rule: "Host(`grafana.helix.local`)"
+      service: grafana
+      entryPoints: [websecure]
+      tls: {}
+    prometheus:
+      rule: "Host(`prometheus.helix.local`)"
+      service: prometheus
+      entryPoints: [websecure]
+      tls: {}
+    mailhog:
+      rule: "Host(`mailhog.helix.local`)"
+      service: mailhog
+      entryPoints: [websecure]
+      tls: {}
+    pgadmin:
+      rule: "Host(`pgadmin.helix.local`)"
+      service: pgadmin
+      entryPoints: [websecure]
+      tls: {}
+    keycloak:
+      rule: "Host(`keycloak.helix.local`)"
+      service: keycloak
+      entryPoints: [websecure]
+      tls: {}
+    vault:
+      rule: "Host(`vault.helix.local`)"
+      service: vault
+      entryPoints: [websecure]
+      tls: {}
+    minio-api:
+      rule: "Host(`s3.helix.local`)"
+      service: minio-api
+      entryPoints: [websecure]
+      tls: {}
+    minio-console:
+      rule: "Host(`minio.helix.local`)"
+      service: minio-console
+      entryPoints: [websecure]
+      tls: {}
+    openwebui:
+      rule: "Host(`openwebui.helix.local`)"
+      service: openwebui
+      entryPoints: [websecure]
+      tls: {}
+    filebrowser:
+      rule: "Host(`filebrowser.helix.local`)"
+      service: filebrowser
+      entryPoints: [websecure]
+      tls: {}
+    moodle:
+      rule: "Host(`moodle.helix.local`)"
+      service: moodle
+      entryPoints: [websecure]
+      tls: {}
+    adminer:
+      rule: "Host(`adminer.helix.local`)"
+      service: adminer
+      entryPoints: [websecure]
+      tls: {}
+    medusa:
+      rule: "Host(`medusa.helix.local`)"
+      service: medusa
+      entryPoints: [websecure]
+      tls: {}
+    portainer:
+      rule: "Host(`portainer.helix.local`)"
+      service: portainer
+      entryPoints: [websecure]
+      tls: {}
+# 🔎 Traefik Dashboard
+    traefik_dashboard:
+      rule: "Host(`traefik.helix.local`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+      service: api@internal
+      entryPoints: [websecure]
+      tls: {}
+  services:
+# Backend mappings 🛠️
+    ollama:
+      loadBalancer:
+        servers:
+          - url: "http://ollama:11434"
+    n8n:
+      loadBalancer:
+        servers:
+          - url: "http://n8n:5678"
+    grafana:
+      loadBalancer:
+        servers:
+          - url: "http://grafana:3000"
+    prometheus:
+      loadBalancer:
+        servers:
+          - url: "http://prometheus:9090"
+    mailhog:
+      loadBalancer:
+        servers:
+          - url: "http://mailhog:8025"
+    pgadmin:
+      loadBalancer:
+        servers:
+          - url: "http://pgadmin:80"
+    keycloak:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:8080"
+    vault:
+      loadBalancer:
+        servers:
+          - url: "http://vault:8200"
+    minio-api:
+      loadBalancer:
+        servers:
+          - url: "http://minio:9000"
+    minio-console:
+      loadBalancer:
+        servers:
+          - url: "http://minio:9001"
+    openwebui:
+      loadBalancer:
+        servers:
+          - url: "http://openwebui:8080"
+    filebrowser:
+      loadBalancer:
+        servers:
+          - url: "http://filebrowser:80"
+    moodle:
+      loadBalancer:
+        servers:
+          - url: "http://moodle:80"
+    adminer:
+      loadBalancer:
+        servers:
+          - url: "http://adminer:8080"
+    medusa:
+      loadBalancer:
+        servers:
+          - url: "http://medusa:8081"
+    portainer:
+      loadBalancer:
+        servers:
+          - url: "http://portainer:9000"
+    redis:
+      loadBalancer:
+        servers:
+          - url: "http://redis:6379"
+    redis-ui:
+      loadBalancer:
+        servers:
+          - url: "http://redis-ui:5540"  
+    rabbitmq:
+      loadBalancer:
+        servers:
+          - url: "http://rabbitmq:15672" 
+    flower:
+      loadBalancer:
+        servers:
+          - url: "http://flower:5555"
+# Traefik Dashboard
+    api@internal:
+      loadBalancer:
+        servers:
+          - url: "http://traefik:8080"
+# Frontend mappings 🛠️ 
+    helix-app-service:
+      loadBalancer:
+        servers:
+          - url: "http://helix-app:8000"

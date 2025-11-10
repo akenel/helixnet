@@ -1,0 +1,134 @@
+# ────────────────────────────────
+# 🧩 Helix Unified Stack compose/helix-stack.yml
+# ────────────────────────────────
+services:
+# ────────────────────────────────
+# 🦄 ◾ helix:8000 ◾ Main FastAPI Core https://helix.local/docs 
+# ────────────────────────────────
+  helix:
+    build:
+      context: ..
+      dockerfile: compose/celery/Dockerfile.main
+    container_name: helix
+    env_file: [ ../.env ]
+    restart: always
+    depends_on:
+      beat:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks: [ int_core, edge_public ]
+    volumes:
+      - ../compose/traefik/certs/traefik-default.crt:/usr/local/share/ca-certificates/traefik.crt:ro
+
+    # command: >
+    #   sh -c "echo '✅ Certificates updated via Dockerfile.base USER root. Launching Helix API...' &&
+    #          uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      # Check for a temporary status file written by your startup script
+      # If your start script creates /tmp/app_started, this confirms execution.
+      test: ["CMD", "test", "-f", "/app/main.py"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+# ────────────────────────────────
+# 🥬  ◾ worker:8042 Celery Job Runner https://worker.helix.local 
+# ────────────────────────────────
+  worker:
+    build:
+      context: ..
+      dockerfile: compose/celery/Dockerfile.worker
+    container_name: worker
+    ports:
+      - "8042:8000"
+    env_file: [ ../.env ]
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [ int_core, edge_public ]
+    volumes:
+      - ./../src:/app/src
+    healthcheck:
+      # Use the same check for the worker process
+      test: ["CMD", "test", "-f", "/usr/local/bin/celery"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# ────────────────────────────────
+# 🧩  ◾ beat:8069 Task Scheduler Clock https://beat.helix.local 
+# ──────────────────────────────── 
+  beat:
+    build:
+      context: ..
+      dockerfile: compose/celery/Dockerfile.beat
+    container_name: beat
+    ports:
+      - "8069:8000"
+    env_file: [ ../.env ]
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [ int_core, edge_public ]
+    volumes:
+      - ./../src:/app/src
+      - ./helix/beat-data:/app/beat-data
+    healthcheck:
+      # Check for the main Celery binary that must be present to run the process
+      test: ["CMD", "test", "-f", "/usr/local/bin/celery"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+# ────────────────────────────────
+# 🌼 flower:5555 ◾ Celery Monitor https://flower.helix.local 
+# ────────────────────────────────
+  flower:
+    build:
+      context: ..
+      dockerfile: compose/celery/Dockerfile.flower
+    container_name: flower
+    env_file: [ ../.env ]
+    restart: always
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks: [ int_core, edge_public ]
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./../src:/app/src
+    healthcheck:
+      # Fallback to checking a core file.
+      test: ["CMD", "test", "-f", "/usr/local/lib/python3.11/site-packages/flower/__init__.py"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  edge_public:
+    name: edge_public
+    external: true
+  int_core:
+    name: int_core
+    external: true
+
+volumes:
+  beat_data: {}

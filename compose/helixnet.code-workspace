@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"name": "helixnet",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"editor.fontSize": 20,
+		"remote.autoForwardPortsFallback": 0
+	}
+}

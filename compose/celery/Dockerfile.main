@@ -1,0 +1,25 @@
+
+# ===========================================
+# 🚀 Helix FastAPI Service
+# ===========================================
+FROM helix-base AS fast_api_app
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ===========================================
+# 🟥 compose/celery/Dockerfile.helix
+# ===========================================
+# 🧩 Universal Dockerfile Principles (applied below)
+# All images will:
+# Use the same base image (python:3.11-slim).
+# Use the same working directory (/app).
+# Define PATH before switching users.
+# Always ensure directories exist before chown.
+# Use clear USER names that match their role.
+# Install requirements safely.
+# End with a clear CMD that just work
+# 💥 Why These Will Work Every Time
+# ✅ /app always exists before chown
+# ✅ All users are defined after directory creation
+# ✅ PATH is exported globally before user switch
+# ✅ Celery and Uvicorn will always be found
+# ✅ No ARG or variable dependencies (helix etc.)
+# ✅ KIS and safe for both Compose and Bake setups

@@ -1,0 +1,119 @@
+# ────────────────────────────────
+# compose/core-stack.yml
+# ────────────────────────────────
+services:
+# ----------------------------------------------------
+# 🌍 CORE STACK INFRASTRUCTURE SERVICES
+# ----------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: redis-server --appendonly yes
+    environment:
+      REDIS_DB: ${REDIS_DB}      
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - int_core
+      - edge_public
+    depends_on:
+      postgres:
+        condition: service_healthy    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+# ----------------------------------------------------
+# 🐇️ RABBITMQ # Message Broker for Celery Task Queue
+# ----------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    env_file:
+      - ../.env
+      
+    ports:
+      - "15672:15672" # Management UI
+      - "5672:5672"   # AMQP Protocol
+      
+    # ✅ IMPROVEMENT: Use .env variables for consistency and maintainability
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-helix_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-helix_pass}
+      RABBITMQ_DEFAULT_VHOST: /
+      
+    restart: unless-stopped
+    networks:
+      - int_core
+      - edge_public
+      
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+# ----------------------------------------------------
+# 🥋 minio - S3 Compatible Object Storage
+# ----------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2025-06-13T11-33-47Z
+    container_name: minio
+    
+    environment:
+      # ✅ These variables will fall back to 'helix_user'/'helix_pass' if not set in .env
+      MINIO_ROOT_USER:  helix_user 
+      MINIO_ROOT_PASSWORD:  helix_pass 
+      
+    ports:
+      - "9000:9000" # MinIO API
+      - "9001:9001" # MinIO Console
+      
+    restart: always
+    command: server /data --console-address ":9001"
+    
+    volumes:
+      - minio_data:/data
+      - ./minio-init:/docker-entrypoint-init.d # Volume for bucket initialization scripts
+      
+    networks:
+      - int_core
+      - edge_public
+      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  mc:
+    image: minio/mc
+    depends_on:
+      - minio
+    container_name: minio-mc
+    profiles:
+      - core
+    entrypoint: ["tail", "-f", "/dev/null"] # keep it running for exec      
+# ────────────────────────────────
+# 🗂️ NAMED VOLUMES
+# ────────────────────────────────
+volumes:
+  redis_data:
+  # 💡 NOTE: RabbitMQ uses internal storage. rabbitmq_data is not needed unless persistent data is desired.
+  # rabbitmq_data:
+  minio_data:
+  
+# ────────────────────────────────
+# 🌐 NETWORKS
+# ────────────────────────────────
+networks:
+  edge_public:
+    name: edge_public
+    external: true
+  int_core:
+    name: int_core
+    external: true

@@ -94,10 +94,10 @@ rev: core-up wait-for-health ## ✍️ Create a new Alembic migration (usage: ma
 seed: core-up wait-for-health ## 🥕 Run the initial data seeding script (admin user creation, etc.)
 	$(DB) "Executing initial data seeding script..."
 	# 🌍 KEYCLOAK REALM IMPORT: THE BRUCE LEE PRECISION STRIKE 🐉
-	@echo "🌍 [KEYCLOAK] Attempting realm 'helixnet' import..."
+	@echo "🌍 [KEYCLOAK] Attempting realm 'kc-realm-dev' import..."
 	docker exec keycloak /opt/keycloak/bin/kc.sh import \
-		--file /opt/keycloak/data/import/helix-realm.json \
-		--realm helixnet
+		--file /opt/keycloak/data/import/${HX_KC_JSON_REALM_NAME} \
+		--realm kc-realm-dev
 	@echo "✅ Realm import attempt finished."
 	# 🔑 Next, run the user seeding script
 	docker compose run --rm $(WEB_SERVICE) python app/scripts/seed_users.py

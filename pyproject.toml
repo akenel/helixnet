@@ -1,0 +1,9 @@
+[tool.semantic_release]
+version_variable = "src/__init__.py:__version__"
+upload_to_pypi = false
+commit_assets = false
+branch = "main"
+commit_author = "semantic-release <noreply@github.com>"
+commit_message = "chore(release): version v{version}"
+tag_format = "v{version}"
+commit_args = "--all --allow-empty"

@@ -1,221 +1,232 @@
 # =======================================================
-# 🧠 HelixNet Makefile – The Professional Standard 🧠
-# =======================================================
-# Purpose : Simplified, descriptive orchestration for Docker Compose
-# Author  : Gemini, your development partner and Angel the fixer
-# Updated : 2025-10-20 v1.0.0 (The Bruce Lee Chop)
+# 🧠 HelixNet Makefile – Bruce Lee Ops Edition (v3.0)
 # =======================================================
 .ONESHELL:
 SHELL := /bin/bash
-include .env
-COMPOSE_FILE := docker-compose.yml
-PROJECT_NAME := helixnet
-DB_NAME := postgres
-DB_USER := postgres
+.DEFAULT_GOAL := help
+# -------------------------------------------------------
+# 🧩 Environment Setup
+# -------------------------------------------------------
+ENV_FILE ?= .env
+ENV_SRC  := .env
+ENV_CLEAN := .env.clean
+# Compose profile support check (runs once)
+COMPOSE_HAS_PROFILE := $(shell docker compose --help | grep -q -- "--profile" && echo 1 || echo 0)
+COMPOSE_CMD := $(shell command -v docker-compose 2>/dev/null || command -v "docker compose" 2>/dev/null || echo "docker compose")
+# Allows Make to read variables from .env during its initial parsing phase
+ifneq ("$(wildcard $(ENV_FILE))","")
+include $(ENV_FILE)
+endif
+# -------------------------------------------------------
+# 📦 Compose Files and Profiles
+# -------------------------------------------------------
+COMPOSE_DIR     := compose
+AUTH_COMPOSE    := $(COMPOSE_DIR)/auth-stack.yml
+CORE_COMPOSE    := $(COMPOSE_DIR)/core-stack.yml
+EDGE_COMPOSE    := $(COMPOSE_DIR)/edge-stack.yml
+HELIX_COMPOSE   := $(COMPOSE_DIR)/helix-stack.yml
+COMPOSE         := docker compose
+AUTH_PROFILE    := --profile auth
+CORE_PROFILE    := --profile core
+EDGE_PROFILE    := --profile edge
+HELIX_PROFILE   := --profile helix
+# -------------------------------------------------------
+# 🎨 Formatting & Color
+# -------------------------------------------------------
+RESET   := \033[0m
+BOLD    := \033[1m
+CYAN    := \033[36m
+YELLOW  := \033[33m
+MAGENTA := \033[35m
+GREEN   := \033[32m
+WARN    = @printf "⚠️  %s\n"
+OK      = @printf "✅ %s\n"
+INFO    = @printf "💬 %s\n"
+FAIL    = @printf "💥 %s\n"
+# -------------------------------------------------------
+# ⚙️ MACROS
+# -------------------------------------------------------
+PROJECT_NAME=helixnet
+ENV_FILE=.env
+COMPOSE_CMD := $(shell command -v docker-compose 2>/dev/null || command -v "docker compose" 2>/dev/null || echo "docker compose")
+# Compose profile support check (runs once)
+COMPOSE_HAS_PROFILE := $(shell $(COMPOSE_CMD) --help | grep -q -- "--profile" && echo 1 || echo 0)
+# -------------------------------------------------------
+define HELIX_HEALTH
+		while true; do
+		clear
+		./scripts/helix-status.sh --sort cpu
+		sleep 2
+		done
+endef
 
-# --- Profiles & Variables (KIC KIS) ---
-CORE_PROFILES := --profile core
-APP_PROFILES  := --profile app
-WEB_SERVICE   := helix-web-app
-# --- Emoji Helpers (The Chuck Standard) ---
-# Main States
-START = @echo "🟢 [INIT] Starting up the engines..."
-STOP  = @echo "🔴 [SHUTDOWN] Ceasing operations..."
-DONE  = @echo "✨ [COMPLETE] Task finished successfully."
-WARN  = @echo "⚠️  [ATTENTION] Proceed with caution."
-FAIL  = @echo "❌ [FAILURE] Something went wrong."
-# Actions
-DB    = @echo "💾 [DATABASE] "
-CODE  = @echo "💻 [CODEBASE] "
-TEST  = @echo "🧪 [TESTING] "
-BUILD = @echo "🏗️  [BUILDING] "
-CLEAN = @echo "🧹 [CLEANUP] "
+
+
+
+# endef
+define RUN_COMPOSE
+	@if [ ! -f "$(ENV_FILE)" ]; then echo "💥 Missing $(ENV_FILE)!"; exit 1; fi; \
+	echo "🧩 Loading environment from $(ENV_FILE)"; \
+	set -a; grep -v '^[#[:space:]]' $(ENV_FILE) > /tmp/.env.filtered; source /tmp/.env.filtered; set +a; \
+	if [ "$(COMPOSE_HAS_PROFILE)" = "1" ] && [ -n "$(PROFILE)" ]; then \
+	  echo "▶️ Using Compose profile(s): $(PROFILE)"; \
+	  $(COMPOSE_CMD) -p $${PROJECT_NAME:-HelixNet} \
+	    -f $(AUTH_COMPOSE) -f $(CORE_COMPOSE) -f $(HELIX_COMPOSE) -f $(EDGE_COMPOSE) \
+	    $(foreach p,$(PROFILE),--profile $${p}) $(1); \
+	else \
+	  echo "🚀 Running Compose without profiles"; \
+	  $(COMPOSE_CMD) -p $${PROJECT_NAME:-HelixNet} \
+	    -f $(AUTH_COMPOSE) -f $(CORE_COMPOSE) -f $(HELIX_COMPOSE) -f $(EDGE_COMPOSE) \
+	    $(1); \
+	fi
+endef
+
+# --- Env Loader: Exports variables for the shell recipe ---
+define ENV_EXPORT
+	@if [ ! -f "$(ENV_FILE)" ]; then \
+		echo "💥 Error: $(ENV_FILE) file not found. Cannot load environment variables."; \
+		exit 1; \
+	fi; \
+	set -a; source $(ENV_FILE); set +a
+endef
+# --- Health Check Macro ---
+define wait_for_health
+	@echo "⏳ Waiting for $(1) to become healthy..."
+	@for i in {1..24}; do \
+		CID=$$(docker ps -q -f name=$(1)); \
+		if [ -z "$$CID" ]; then \
+			echo "❌ No running container for $(1). Dumping docker compose ps:"; \
+			$(COMPOSE_CMD) ps; exit 1; \
+		fi; \
+		STATUS=$$(docker inspect -f '{{.State.Health.Status}}' $$CID 2>/dev/null || echo "starting"); \
+		if [ "$$STATUS" = "healthy" ]; then echo "✅ $(1) is healthy!"; break; fi; \
+		if [ $$i -eq 24 ]; then \
+			echo "💥 Timeout waiting for $(1) health! Dumping last 20 logs:"; docker logs $$CID | tail -n 20; exit 1; \
+		fi; \
+		sleep 5; \
+	done
+endef
+
+# --- Traefik Info (Cleaned up shell output) ---
+define traefik_check_and_info
+	@echo "⏳ Checking Traefik status (Assuming up after 5s)..."
+	@sleep 5
+	@CID=$$(docker ps -q -f name=traefik)
+	if [ -z "$$CID" ]; then echo "💥 Traefik container not found!"; exit 1; fi; \
+	STATUS=$$(docker inspect -f '{{.State.Status}}' $$CID); \
+	if [ "$$STATUS" = "running" ]; then \
+		echo "$(OK) Traefik is running!"; \
+		printf "$(CYAN)$(BOLD)####################################################################################$(RESET)\n"; \
+		printf "$(CYAN)$(BOLD)# 🌐 Traefik Dashboard Access Information 🌐                                        #$(RESET)\n"; \
+		printf "$(CYAN)$(BOLD)####################################################################################$(RESET)\n"; \
+		printf "  $(YELLOW)DASHBOARD URL:$(RESET) $(GREEN)https://traefik.helix.local$(RESET)\n"; \
+		printf "  $(YELLOW)Container ID:$(RESET) $$CID\n"; \
+		printf "$(CYAN)$(BOLD)####################################################################################$(RESET)\n"; \
+	else \
+		echo "💥 Traefik container status: $$STATUS"; exit 1; \
+	fi
+endef
+# --- Keycloak Info ---
+define keycloak_info
+	$(call ENV_EXPORT)
+	@printf "$(CYAN)$(BOLD)####################################################################################$(RESET)\n"
+	@printf "$(CYAN)$(BOLD)# 🔐 Keycloak / Auth Stack Access Information 🔐                                   #$(RESET)\n"
+	@printf "$(CYAN)$(BOLD)####################################################################################$(RESET)\n"
+	@printf "  $(YELLOW)Keycloak URL:$(RESET) $(GREEN)https://$(KC_HOSTNAME)/auth$(RESET)\n"
+	@printf "  $(YELLOW)Admin Username:$(RESET) $(GREEN)$(KEYCLOAK_ADMIN_USER)$(RESET)\n"
+	@printf "  $(YELLOW)Admin Password:$(RESET) $(GREEN)$(KEYCLOAK_ADMIN_PASSWORD)$(RESET)\n"
+	@printf "  $(YELLOW)Postgres Host/DB:$(RESET) $(GREEN)$(POSTGRES_HOST)/$(POSTGRES_DB)$(RESET)\n"
+	@printf "$(CYAN)$(BOLD)####################################################################################$(RESET)\n"
+endef
 # =======================================================
-# 🚀 1. LIFECYCLE MANAGEMENT (Full Stack)
+# 🧩 Core Targets
+# =======================================================
+.PHONY: status
+status: ## 🧩 Verify required networks and environment
+	$(INFO) "Running health checks..."
+	$(call HELIX_HEALTH)
+
+.PHONY: doctor
+doctor: ## 🩺 Run diagnostics to verify Docker, Compose, and environment
+	@echo "🩺 Running Helix Doctor..."
+	@if ! command -v docker >/dev/null 2>&1; then echo "💥 Docker not installed!"; exit 1; fi
+	@if ! docker info >/dev/null 2>&1; then echo "💥 Docker daemon not running!"; exit 1; fi
+	@if ! command -v docker compose >/dev/null 2>&1; then echo "💥 Docker Compose plugin missing!"; exit 1; fi
+	@if [ ! -f "$(ENV_FILE)" ]; then echo "💥 Missing $(ENV_FILE)! Copy .env.example → .env"; exit 1; fi
+	@echo "✅ Doctor check passed."
+# =======================================================
+.PHONY: preflight
+preflight: ## 🧩 Verify required networks and environment
+	$(INFO) "Running preflight checks..."
+	$(call ENV_EXPORT)
+	@for net in int_core edge_public; do \
+		if ! docker network inspect $$net >/dev/null 2>&1; then \
+			docker network create $$net && echo "✅ Created network: $$net"; \
+		else \
+			echo "ℹ️ Network $$net exists."; \
+		fi; \
+	done
+	$(OK) "Networks verified."
 # =======================================================
 .PHONY: up
-up: ## ⬆️  Bring the entire stack up (Use 'make rebuild' for code updates)
-	$(START) "Starting ALL containers in detached mode..."
-	# FIX: Explicitly include both CORE and APP profiles to ensure all services start
-	set -a; . ./.env; set +a; docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) $(APP_PROFILES) up -d --remove-orphans
-	$(DONE) "HelixNet is LIVE! Access links via 'make links'. 🌐"
-
+up: preflight ## 🚀 Bring up all stacks (auth, core, helix, edge)
+	$(INFO) "Starting HelixNet stacks..."
+	$(call RUN_COMPOSE, up -d --build)
+	$(call wait_for_health,keycloak)
+	$(call keycloak_info)
+	$(call wait_for_health,helix)
+	$(call traefik_check_and_info)
+	$(OK) "All stacks are up and healthy!"
+# =======================================================
 .PHONY: down
-down: ## ⬇️  Stop and remove all containers gracefully
-	$(STOP) "Stopping HelixNet stack..."
-	docker compose -f $(COMPOSE_FILE) down --remove-orphans
-
-.PHONY: build
-build: ## 🏗️  Build all Docker images from their latest source
-	$(BUILD) "Re-compiling Docker images for Core and App services..."
-	docker compose -f $(COMPOSE_FILE) build
-	$(DONE) "All images built successfully! ✅"
-
-.PHONY: rebuild
-rebuild: down build up ## 🔨 Full clean reset: stop, rebuild images, restart containers
-	$(CODE) "Executing full environment reset and rebuild (down -> build -> up)..."
-	$(DONE) "Full rebuild completed! We are running on fresh code and containers. 🧩"
-
-.PHONY: core-up
-core-up: ## 🧱 Start only core infra (DB, Redis, Keycloak)
-	$(DB) "Starting essential core infrastructure services..."
-	set -a; . ./.env; set +a; \
-	docker compose -f $(COMPOSE_FILE) $(CORE_PROFILES) up -d --remove-orphans
-	@echo "🧱 [CORE UP] Core services started (check health with 'make wait-for-health')."
+down: ## 🛑 Bring down all stacks and remove orphans
+	$(call RUN_COMPOSE, down --remove-orphans)
+	$(OK) "All stacks brought down cleanly."
 # =======================================================
-.PHONY: deploy-code
-deploy-code: build ## 📦 Build new code images and restart web/workers (Fast code update)
-	$(CODE) "Building new application images (Web, Worker, Beat) to grab latest code..."
-	docker compose -f $(COMPOSE_FILE) $(APP_PROFILES) build
-	$(CODE) "Restarting application services using the newly built images..."
-	# Restart using --no-deps to only touch the application containers
-	docker compose -f $(COMPOSE_FILE) $(APP_PROFILES) up -d --no-deps --remove-orphans
-	$(DONE) "New code is deployed and application services are running. 🥳"
+.PHONY: restart
+restart: ## 🔁 Restart a specific service (SERV=name) [PROFILE=edge]
+	@if [ -z "$(SERV)" ]; \
+		then echo "💥 Missing SERV arg. Usage: make restart SERV=keycloak [PROFILE=edge]"; \
+		exit 1; 
+	fi
+	@echo "💬 Restarting service $(SERV)..."
+	$(call RUN_COMPOSE, restart $(SERV))
+	$(call wait_for_health,$(SERV))
+	$(OK) "$(SERV) restarted successfully!"
 # =======================================================
-# 🗄️ 3. DATABASE MANAGEMENT
-# =======================================================
-.PHONY: setup
-setup: core-up wait-for-health migrate seed ## 💾 Complete initial setup (migrate, then seed)
-	$(DB) "Initial application setup complete! Ready to accept requests. 🚀"
-
-.PHONY: migrate
-migrate: core-up wait-for-health ## 🧬 Apply Alembic migrations to the database head
-	$(DB) "Applying new database migrations to the latest head..."
-	docker compose run --rm $(WEB_SERVICE) alembic upgrade head
-	$(DONE) "Migrations applied successfully! Database schema is up-to-date. 🎉"
-
-.PHONY: rev
-rev: core-up wait-for-health ## ✍️ Create a new Alembic migration (usage: make rev msg="Your description")
-	$(DB) "Generating new Alembic revision: $(msg)..."
-	docker compose run --rm $(WEB_SERVICE) alembic revision --autogenerate -m "$(msg)"
-	$(DONE) "New revision created. Check 'migrations/versions/' folder. 🪶"
-
-.PHONY: seed
-seed: core-up wait-for-health ## 🥕 Run the initial data seeding script (admin user creation, etc.)
-	$(DB) "Executing initial data seeding script..."
-	# 🌍 KEYCLOAK REALM IMPORT: THE BRUCE LEE PRECISION STRIKE 🐉
-	@echo "🌍 [KEYCLOAK] Attempting realm 'helixnet' import..."
-	docker exec keycloak /opt/keycloak/bin/kc.sh import \
-		--file /opt/keycloak/data/import/helix-realm.json \
-		--realm helixnet
-	@echo "✅ Realm import attempt finished."
-	# 🔑 Next, run the user seeding script
-	docker compose run --rm $(WEB_SERVICE) python app/scripts/seed_users.py
-	$(DONE) "Data seeding complete! Users and base data are ready. 👤"
-
-.PHONY: db-nuke
-db-nuke: down ## 💥 Nuke DB (Stop, remove volumes, restart core, migrate, seed)
-	$(WARN) "🚨 DANGER ZONE: This will wipe ALL database volumes and data!"
-	$(CLEAN) "Removing all volumes associated with the stack..."
-	# 1. 🧹 CLEAN UP: Remove containers/volumes
-	docker compose -f $(COMPOSE_FILE) down -v --remove-orphans
-	# 2. 💾 START & SETUP
-	$(MAKE) setup
-	$(DONE) "Full db-nuke and setup completed. Ready for development. 🎉"
-# =======================================================
-# 🧰 4. UTILITIES & ACCESS
-# =======================================================
-.PHONY: logs
-logs: ## 📜 Tail logs from all running containers
-	@echo "👁️  [LOGS] Tailing logs... (Ctrl+C to stop)"
-	docker compose -f $(COMPOSE_FILE) logs -f
-
-.PHONY: shell
-shell: ## 🧑‍💻 Open an interactive BASH shell inside the main web container
-	@echo "🦪 [SHELL] Opening BASH inside the $(WEB_SERVICE) container..."
-	docker compose exec $(WEB_SERVICE) bash
-
-.PHONY: python
-python: ## 🐍 Open an interactive PYTHON shell inside the main web container
-	@echo "🐍 [PYTHON] Opening interactive Python environment..."
-	docker compose exec $(WEB_SERVICE) python
-
-.PHONY: users
-users: core-up wait-for-health ## 👤 Query and display all existing user emails
-	$(DB) "Fetching all user emails from the database..."
-	docker compose run --rm $(WEB_SERVICE) python app/scripts/show_users.py
-	$(DONE) "User list retrieved. 👥"
-
-.PHONY: links
-links: ## 🔗 Show quick access links for local services
-	@echo "\n🌐 --- HelixNet Access Links ---"
-	@echo "🎁 GitHub Repo:              https://github.com/akenel/helixnet/tree/main"
-	@echo "💻 WebApp Backend OpenAPI:   http://helix.local/docs"
-	@echo "🐇 Flower UI (Celery):       http://0.0.0.0:5555/"
-	@echo "📨 RabbitMQ Mgmt:            http://localhost:15672/"
-	@echo "🗄️ MinIO Console:            http://0.0.0.0:9091/"
-	@echo "🧠 PgAdmin UI:               http://0.0.0.0:5050/browser/"
-	@echo "-----------------------------------\n"
-
-.PHONY: wait-for-health
-wait-for-health: ## ⏳ Wait for critical services (postgres, keycloak) to become healthy
-	@echo "⏳ [WAITING] Waiting for Postgres and Keycloak to reach 'healthy' state..."
-	# Use 'wait' command for the services tagged as healthy
-	docker compose wait postgres keycloak
-	$(DONE) "Critical services are Healthy."
-
-.PHONY: kc-token
-kc-token: core-up wait-for-health ## 🔑 Retrieve and test the Keycloak Admin Access Token (for verification)
-	@echo "🔑 [KEYCLOAK] Requesting Admin Token from Keycloak using service script..."
-	@docker compose run --rm $(WEB_SERVICE) python app/scripts/get_admin_token.py
-	$(DONE) "Admin Token script executed."
+.PHONY: nuke
+nuke: ## 💣 Full teardown of HelixNet (containers, volumes, networks)
+	@echo "💥 Nuking HelixNet — full reset incoming..."
+	@$(call RUN_COMPOSE,down -v --remove-orphans)
+	@echo "🧹 Removing old networks..."
+	@docker network rm auth_net core_net int_core edge_public 2>/dev/null || true
+	@echo "🧼 Pruning any unused Docker data..."
+	@docker system prune -af --volumes
+	@echo "🌐 Recreating core networks..."
+	@docker network create int_core || true
+	@docker network create edge_public || true
+	@echo "✅ Networks ready:"
+	@docker network ls | grep -E "int_core|edge_public" || true
+	@echo "🚀 Running preflight checks..."
+	@$(MAKE) preflight
+	@echo "🔧 Bringing stacks up cleanly..."
+	@$(MAKE) up
 
 # =======================================================
-# 🧪 5. TESTING SUITE
+.PHONY: env-clean
+env-clean: ## 🧼 Clean and deduplicate .env file
+	@echo "🧼 Cleaning and sorting environment file..."
+	@if [ ! -f $(ENV_SRC) ]; then echo "❌ No $(ENV_SRC) found!"; exit 1; fi
+	@grep -vE '^\s*#' $(ENV_SRC) | grep -vE '^\s*$$' | awk -F= '!seen[$$1]++' | sort > $(ENV_CLEAN)
+	@echo "✅ Clean .env written to $(ENV_CLEAN)"
 # =======================================================
-.PHONY: test-unit
-test-unit: ## 🧪 Run Python unit/integration tests (isolated DB)
-	$(TEST) "Running Python unit tests with isolated test DB (ENV=testing)..."
-	docker compose exec -e ENV=testing $(WEB_SERVICE) bash -c "
-	echo '🥋 Chuck Norris enters the test dojo...' && 
-	cd /code/app/tests && 
-	pytest -vv --color=yes --maxfail=1 --disable-warnings --tb=short && 
-	echo '✅ All tests passed! Chuck Norris approves. 👊' || 
-	( echo '💀 Tests failed. Chuck Norris is displeased. ⚡' && exit 1 )"
-	$(DONE) "Unit test suite completed. 🧠"
-
-.PHONY: test-e2e
-test-e2e: ## 🔑 Run authenticated E2E API tests (login + token validation)
-	$(TEST) "Running authenticated End-to-End API tests (E2E)..."
-	docker compose exec $(WEB_SERVICE) bash /code/app/tests/test_api.sh
-	$(DONE) "E2E API tests completed successfully. 🔐"
-
-.PHONY: test
-test: setup test-unit test-e2e ## 🎯 Full test suite: start, setup, run unit + E2E
-	$(DONE) "The full HelixNet test suite has executed successfully! Everything is green. 🥇"
-
-.PHONY: smoke
-smoke: ## 💨 Run the helix-super-smoke quick health check
-	$(TEST) "Running quick smoke test script..."
-	docker compose exec $(WEB_SERVICE) bash app/scripts/helix-super-smoke.sh
-	$(DONE) "Smoke test successful. Health check passed. 💨"
-
-# =======================================================
-# 🕵️ 6. HELP MENU & INSPECTION
+# 🧭 Help Menu
 # =======================================================
 .PHONY: help
-help: ## ❓ Show this descriptive help menu
-	@clear
-	@echo "🔍 \033[1mAvailable Commands for HelixNet:\033[0m\n"
-	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | \
-	awk 'BEGIN {FS = "##"}; \
-	{ \
-	cmd=$$1; \
-	sub(/^.*Makefile:/, "", cmd); \
-	gsub(/:.*/, "", cmd); \
-	printf "%s\t\033[36m make %-20s\033[0m\n", $$2, cmd \
-	}'
-	@echo "  💡 Example: make rebuild && make setup   🚀"    
-
-.PHONY: show-tables
-show-tables: core-up wait-for-health ## 📊 List all tables in the public schema and their owners
-	@echo "========================================"
-	@echo "📂 DATABASE TABLES (DB: $(DB_NAME))"
-	@echo "========================================"
-	docker compose exec db psql -d $(DB_NAME) -U $(DB_USER) -c '\dt'
-
-.PHONY: show
-show: show-tables users ## 🎯 Consolidated command: Show all DB inspection data (tables + users)
-	@echo "\n========================================"
-	@echo "✅ DB inspection complete."
-	@echo "========================================\n"
+help: ## 📘 Show all available commands
+	@printf "\n${CYAN}${BOLD}HelixNet – Bruce Lee Ops Edition 🥋${RESET}\n"
+	@printf "───────────────────────────────────────────────\n"
+	@grep -E '^[a-zA-Z0-9_-]+:.*##' $(MAKEFILE_LIST) | sort | \
+	awk 'BEGIN {FS = "##"}; {gsub(/^[ \t]+|[ \t]+$$/, "", $$2); printf "  \033[36mmake %-20s\033[0m %s\n", $$1, $$2}'
+	@printf "───────────────────────────────────────────────\n"
+	@printf "💡 Example: make restart SERV=keycloak\n"

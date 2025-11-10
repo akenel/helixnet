@@ -1,55 +1,49 @@
 {
-  "name": "HelixNet Dev",
+  "name": "Helixnet Dev Environment 🧩",
   "dockerComposeFile": [
-    "../docker-compose.yml"
+    "compose/edge-stack.yml",
+    "compose/auth-stack.yml",
+    "compose/core-stack.yml",
+    "compose/helix-stack.yml"
   ],
-  "service": "helix-web-app",
-  "workspaceFolder": "/code",
-  "shutdownAction": "stopCompose",
+  "service": "helix",
+  "workspaceFolder": "/workspaces/helixnet",
+  "forwardPorts": [
+    8000,
+    5555,
+    8025,
+    8080,
+    8200,
+    8888,
+    9000
+  ],
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
   "remoteUser": "root",
-  "runServices": [
-    "helix-web-app",
-    "redis",
-    "postgres",
-    "rabbitmq"
-  ],
-  "overrideCommand": false,
+  "updateRemoteUserUID": false,
+  "postCreateCommand": "echo '🧩 Helixnet Dev Container ready 🚀' ",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" }
+  },
   "customizations": {
     "vscode": {
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.analysis.extraPaths": ["/code"],
-        "python.analysis.autoImportCompletions": true,
-        "python.formatting.provider": "black",
+        "terminal.integrated.defaultProfile.linux": "bash",
         "editor.formatOnSave": true,
-        "terminal.integrated.defaultProfile.linux": "bash"
+        "files.trimTrailingWhitespace": true,
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
       },
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance",
         "ms-azuretools.vscode-docker",
-        "ms-python.black-formatter"
+        "ms-vscode-remote.remote-containers",
+        "github.vscode-github-actions",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml"
       ]
     }
-  },
-  "postCreateCommand": "make help",
-  "forwardPorts": [
-    8000,
-    5050,
-    5555
-  ],
-  "portsAttributes": {
-    "8000": {
-      "label": "FastAPI (Uvicorn)"
-    },
-    "5050": {
-      "label": "PgAdmin"
-    },
-    "5555": {
-      "label": "Flower"
-    }
-  },
-  "remoteEnv": {
-    "PYTHONPATH": "/code"
   }
 }

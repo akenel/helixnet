@@ -10,8 +10,8 @@ from pathlib import Path
 # This points sys.path to the directory above 'alembic'.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 # Import your settings and SQLAlchemy Base
-from app.core.config import get_settings
-from app.db.database import Base
+from src.core.config import get_settings
+from src.db.database import Base
 
 # This is the target for the models (Base.metadata)
 target_metadata = Base.metadata
@@ -53,7 +53,7 @@ def run_migrations_offline() -> None:
     context.configure(
         url=url,
         target_metadata=target_metadata,
-        literal_binds=True,
+        literal_binds=False,
         dialect_opts={"paramstyle": "named"},
     )
     with context.begin_transaction():

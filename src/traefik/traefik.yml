@@ -1,0 +1,51 @@
+# -----------------------------------------------------------------------------
+# Static Configuration (traefik.yml)
+# This file defines entry points and TLS globally.
+# -----------------------------------------------------------------------------
+# traefik/traefik.yml
+ping:
+  entryPoint: websecure
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# 1. API and Dashboard Configuration (Internal)
+api:
+  dashboard: true
+  insecure: true # Allows access via http://traefik:8080 internally, managed by the command line API flags
+
+# 2. Entrypoints (External Ports)
+entryPoints:
+  web:
+    address: ":80"
+    # HTTP to HTTPS Redirection Middleware
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+
+# 3. TLS Configuration (Certificate Loading)
+# Define the certificates that Traefik should use for its entrypoints.
+tls:
+  certificates:
+    # This configuration tells Traefik to look in the mounted /etc/traefik/certs
+    # for the certificate and key files we generated with mkcert.
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem
+  
+# 4. Providers Configuration
+# This tells Traefik where to look for dynamic configuration.
+providers:
+  # Load dynamic configuration from the mounted dynamic directory
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+  # Enable the Docker provider for auto-discovery (used for the traefik container itself)
+  docker:
+    exposedByDefault: false
+    defaultRule: "Host(`{{ normalize .Name }}.helix.local`)"
