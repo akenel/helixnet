@@ -1,0 +1,16 @@
+# compose/helix-llm/Dockerfile.ollama
+# ===================================
+# Thin wrapper around the official Ollama image to inject config + model files.
+# If you prefer to use the official image directly in compose, you can skip this.
+# This image simply copies local config to /config and ensures model mount points exist.
+
+FROM ollama/ollama:latest
+
+# Copy default config (optional). Compose will mount ./config over /config so this is just a fallback.
+COPY compose/helix-llm/config/ollama.yaml /config/ollama.yaml
+
+# Create directories (runtime will use mounted models)
+RUN mkdir -p /data/models /root/.ollama
+
+# Default command: the official image typically provides an entrypoint to run the server.
+# Use the image default (no override) so compose can override env/args as needed.

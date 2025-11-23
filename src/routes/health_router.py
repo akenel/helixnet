@@ -43,10 +43,11 @@ def check_celery_status() -> Dict[str, Any]:
     except Exception as e:
         # Ping failed, meaning the broker (RabbitMQ/Redis) connection failed
         return {"component": "Celery Broker", "status": "FAIL", "detail": f"Connection to Celery broker failed: {type(e).__name__}. Check RabbitMQ/Redis."}
-
-
-
-
+# FAST, SIMPLE endpoint (soft health):for docker compose smoothness with helix-platform
+@health_router.get("/healthz")
+async def healthz():
+    return {"status": "💚️ Helix API 🍏️ Ready 💦️🔐️⛑️🥁️🥬️🧩️ Running 💯️ PrimeTime ✅️ OK"}
+# Full Check
 @health_router.get(
     "/health",
     summary="💖 Robust API Health Check",

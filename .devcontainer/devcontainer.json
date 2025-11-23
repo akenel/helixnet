@@ -1,49 +1,18 @@
 {
-  "name": "Helixnet Dev Environment 🧩",
-  "dockerComposeFile": [
-    "compose/edge-stack.yml",
-    "compose/auth-stack.yml",
-    "compose/core-stack.yml",
-    "compose/helix-stack.yml"
-  ],
-  "service": "helix",
+  "name": "Helix Dev",
+  "dockerFile": "Dockerfile",
+
   "workspaceFolder": "/workspaces/helixnet",
-  "forwardPorts": [
-    8000,
-    5555,
-    8025,
-    8080,
-    8200,
-    8888,
-    9000
-  ],
-  "mounts": [
-    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-  ],
+
+  "postCreateCommand": "poetry install --no-root || true",
+
   "remoteUser": "root",
-  "updateRemoteUserUID": false,
-  "postCreateCommand": "echo '🧩 Helixnet Dev Container ready 🚀' ",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" }
-  },
-  "customizations": {
-    "vscode": {
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "editor.formatOnSave": true,
-        "files.trimTrailingWhitespace": true,
-        "python.defaultInterpreterPath": "/usr/local/bin/python"
-      },
-      "extensions": [
-        "ms-python.python",
-        "ms-azuretools.vscode-docker",
-        "ms-vscode-remote.remote-containers",
-        "github.vscode-github-actions",
-        "tamasfe.even-better-toml",
-        "redhat.vscode-yaml"
-      ]
-    }
-  }
+
+  "runArgs": [
+    "--network=host",
+    "--add-host=host.docker.internal:host-gateway",
+    "-v", "/var/run/docker.sock:/var/run/docker.sock"
+  ],
+
+  "overrideCommand": false
 }

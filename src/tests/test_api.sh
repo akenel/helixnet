@@ -3,7 +3,7 @@
 # Enforcing full RESTful structure to eliminate path conflicts.
 
 # --- Configuration ---
-API_BASE_URL="https://helix.local/api/v1"
+API_BASE_URL="https://helix-platform.local/api/v1"
 ADMIN_USER="marcel@helix.net"    
 ADMIN_PASS="marcel"              
 USERS_URL="${API_BASE_URL}/users" 

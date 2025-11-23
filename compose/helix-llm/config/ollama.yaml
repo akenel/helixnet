@@ -1,0 +1,22 @@
+# app/config.yaml
+
+# 🧠 Default model used for text generation
+default_model: llama3.2
+
+# 🧰 Available models for text generation
+available_text_models:
+  - llama3.2
+
+# 🧪 Execution modes
+modes:
+  simple: "Local CPU, minimal outputs"
+  enriched: "Full artifact generation"
+  premium: "Paid model routing for high fidelity"
+
+# ⚙️ System settings
+max_tokens: 2048
+temperature: 0.7
+
+# 📁 Storage paths
+minio_bucket: helixnet
+default_template: sceneprompt.j2

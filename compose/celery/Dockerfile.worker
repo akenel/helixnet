@@ -1,5 +1,0 @@
-# ===========================================
-# 🎡 Celery Worker
-# ===========================================
-FROM helix-base AS worker
-CMD ["celery", "-A", "src.tasks.celery_app:app", "worker", "-l", "info"]

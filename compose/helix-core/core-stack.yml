@@ -1,0 +1,469 @@
+# =============================================================
+# 🛡 HELIX CORE STACK — Infrastructure Foundation
+# File: compose/helix-core/core-stack.yml
+# -------------------------------------------------------------
+# Services: Traefik | Postgres | Keycloak | Redis | RabbitMQ |
+#           MinIO | Mailhog | Portainer | Monitoring
+# =============================================================
+# -------------------------------------------------------------
+# Stage 1. Core Stack	Infrastructure baseline	
+# Traefik, Redis, Postgres, RabbitMQ, Portainer, Vault, etc.
+# 🛡️ CORE HELIX STACK 💦️ compose/helix-core/core-stack.yml
+# ☕️ Purpose: Isolated, stable core stack for HelixNet
+# -------------------------------------------------------------
+services:
+# -------------------------------------------------------------
+# 🌍 CORE STACK INFRASTRUCTURE SERVICES
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+# 💦️ TRAEFIK Reverse Proxy Edge Router 🛡 TLS API Gateway (MKCERT)
+# 
+### 🌐 EDGE LAYER SERVICES -------------------------------------
+  traefik:
+    image: traefik:v3.5.3
+    container_name: traefik
+    networks:
+      - helixnet_edge
+      - helixnet_core
+    restart: always
+    ports:
+      - "80:80"       
+      # Web (HTTP) - Redirect to HTTPS
+      - "443:443"     
+      # WebSecure (HTTPS) Helix Traefik Dashboard Unique special Port 8888 no conflicts
+      - "8888:8080"   
+      # Traefik Dashboard (External, Insecure API) 
+    volumes:
+      # static config file (must be a FILE on host)
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      # dynamic directory (must be a directory on host)
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      # certificates (dir)
+      - ./traefik/certs:/etc/traefik/certs:ro
+      # mkcert root CA (if you need it inside containers)
+      - ./traefik/ca/rootCA.pem:/usr/local/share/ca-certificates/mkcert-rootCA.pem:ro
+      # docker socket (only if you want Docker provider)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--ping=true"
+      - "--ping.entrypoint=traefik"
+      - --serversTransport.insecureSkipVerify=true
+      # Static Configuration File (only set once)
+      - --configFile=/etc/traefik/traefik.yml
+      # API/Dashboard Configuration
+      - --api.insecure=false
+      # Keep this FALSE in production!
+      - --api.dashboard=true
+      # Providers
+      - --providers.docker=true
+      # Correct: Relying on file providers
+      - --providers.file.directory=/etc/traefik/dynamic
+      # Dynamic files are here
+      - --providers.file.watch=true
+      # Ensure it picks up changes
+      # Entrypoints (Often better defined in traefik.yml, but safe here)
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Health Check / Logging
+      - --log.level=INFO
+    healthcheck:
+      # Check if the internal Traefik API/Management port (often 8080 or 8081) is listening.
+      # You may need to check your Traefik config for the exact internal port (usually 8080/8081).
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 8080"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+# -------------------------------------------------------------
+# 🐘 POSTGRES: Primary Application Database
+# -------------------------------------------------------------
+  postgres:
+    image: postgres:17.6
+    container_name: postgres
+    restart: always
+    env_file:
+      - ../../env/helix.env
+    environment:
+      POSTGRES_USER: helix_user
+      POSTGRES_PASSWORD: helix_pass
+      POSTGRES_DB: helix_db
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_REPLICAS: 2
+    # If you have init scripts, mount the folder (but avoid duplicate mounts).
+    # - ./compose/helix-core/scripts:/docker-entrypoint-initdb.d:ro
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - helixnet_core
+    healthcheck:
+      # Use single $ for env expansion
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+# -------------------------------------------------------------
+# KEYCLOAK (built from local Dockerfile)
+# -------------------------------------------------------------
+  keycloak:
+    build:
+      context: ../../  
+      dockerfile: compose/helix-core/Dockerfile.keycloak
+      target: final
+      args:
+        DOCKER_KEYCLOAK_IMAGE: quay.io/keycloak/keycloak
+        DOCKER_KEYCLOAK_VERSION: 24.0.4
+    image: helix-keycloak-custom:latest
+    container_name: keycloak
+    restart: unless-stopped
+    command: ["start", "--optimized", "--import-realm"] 
+    # Use standard startup command
+    environment:
+      KC_PROXY_HEADERS: xforwarded 
+      KC_PROXY: edge
+      KC_HOSTNAME_URL: https://keycloak.helix.local 
+      KC_LOG_LEVEL: INFO
+      KC_HTTP_ENABLED: "true"  #   Traefik handles SSL termination 
+      KC_HTTP_PORT: 8080       #   Explicitly internal HTTP port
+      KC_HOSTNAME_STRICT_HTTPS: "false"    
+      KC_DB: postgres
+      KC_DB_USERNAME: helix_user
+      KC_DB_PASSWORD: helix_pass
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: helix_db
+      KEYCLOAK_ADMIN: helix_user
+      KEYCLOAK_ADMIN_PASSWORD: helix_pass
+      QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY: "true"
+      # ...
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    networks:
+      - helixnet_core
+      - helixnet_edge
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+# -------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: mailhog
+    expose: [ "1025", "8025" ]
+    ports: [ "8069:8025", "1069:1025" ] # 📬 SMTP & Web UI
+    networks: [ helixnet_core, helixnet_edge ]
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8025"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+# -------------------------------------------------------------
+# 🪣️ minio - S3 Compatible Object Storage
+# -------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ACCESS_KEY: helix_user
+      MINIO_SECRET_KEY: helix_pass
+      # ... (Root user/pass)
+      MINIO_COMPRESS: true
+      MINIO_COMPRESS_EXTENSIONS: ".pdf,.docx,.txt"
+      MINIO_COMPRESS_MIME_TYPES: "text/*,application/json"
+    volumes:
+      - minio_data:/data # 💾 Named volume for S3 object persistence
+    networks: [ helixnet_core, helixnet_edge ]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9001/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+# -------------------------------------------------------------
+# 🥋 minio cli 🪣️ inside the container (S3 Object Storage or use UI)
+# -------------------------------------------------------------
+  # mc:
+  #   image: minio/mc
+  #   depends_on:
+  #     - minio
+  #   container_name: minio-mc
+  #   entrypoint: ["tail", "-f", "/dev/null"] # keep it running for exec
+
+  # loki:
+  #   image: grafana/loki:latest
+  #   ports:
+  #     - "3100:3100"
+# Add to all containers
+    # securityContext:
+    #   readOnlyRootFilesystem: true
+    #   runAsNonRoot: true
+    #   capabilities:
+    #     drop:
+  #   #       - ALL
+  # tempo:
+  #   image: grafana/tempo:latest
+  #   ports:
+  #     - "3200:3200"
+  #     - "4317:4317"  # OTLP gRPC
+  # velero:
+  #   image: velero/velero:v1.11
+  #   command: server
+  #   volumes:
+  #     - ./velero-config:/credentials
+    # environment:
+    #   - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
+    #   - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
+### 🧠 CACHE AND MESSAGE QUEUE ------------------------------------
+
+# -------------------------------------------------------------
+# 🐰️ Redis  
+# -------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "helix_pass"]
+    networks: [ helixnet_core ]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "helix_pass", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+# -------------------------------------------------------------
+# 🐇️ Rabbitmq 
+# -------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: helix_user
+      RABBITMQ_DEFAULT_PASS: helix_pass
+    ports:
+      - "15669:15672" # 📊 Management UI Port
+    networks: [ helixnet_core ]
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+# -------------------------------------------------------------
+# 📈 MONITORING AND DEV TOOLS ----------------------------------
+# -------------------------------------------------------------
+# 🧭 PORTAINER: Docker Management UI
+# # -------------------------------------------------------------
+#   portainer:
+#     image: portainer/portainer-ce:alpine
+#     container_name: portainer
+#     command: -H unix:///var/run/docker.sock
+#     ports: [ "9443:9443" ]
+#     networks: [ helixnet_core, helixnet_edge ]
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#       - portainer_data:/data # 💾 Named volume for configuration
+#     restart: unless-stopped
+#     healthcheck:
+#       # Check for the main Portainer data folder that is created on startup
+#       test: ["CMD", "test", "-d", "/data"] 
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#       start_period: 30s
+# -------------------------------------------------------------
+# 🪵 Dozzle: Live monitoring of your container logs
+# -------------------------------------------------------------
+  dozzle:
+    image: amir20/dozzle
+    container_name: dozzle
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Read Docker socket
+    networks: [ helixnet_core, helixnet_edge ]
+# 🟢 Simple, Never-Fail Health Check 🟢
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"] # Command provided by the Dozzle app itself
+      interval: 10s                           # Check every 10 seconds
+      timeout: 5s                             # Fail if it takes longer than 5 seconds
+      retries: 5                              # Try 5 times before marking unhealthy
+      start_period: 30s
+# -------------------------------------------------------------
+# 🖥️ FILEBROWSER: Lightweight File Manager
+# -------------------------------------------------------------
+  filebrowser:
+    image: filebrowser/filebrowser
+    container_name: filebrowser
+    restart: unless-stopped
+    volumes:
+      - ./data:/srv # 📁 Bind mount for viewing project files
+    networks: [ helixnet_core, helixnet_edge ]
+# -------------------------------------------------------------
+# 🔐 Vault - Secret Management (supports dev-mode via env OR config.hcl)
+# -------------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.21
+    container_name: vault
+    expose:
+      - "8200"
+    networks:
+      - helixnet_core
+      - helixnet_edge
+    environment:
+      # --- Dev mode & API addresses ---
+      VAULT_DEV_ROOT_TOKEN_ID: root-token
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_API_ADDR: "http://vault:8200"
+      VAULT_CLUSTER_ADDR: "https://vault:8201"
+      VAULT_LOG_LEVEL: info
+      VAULT_SKIP_VERIFY: "true" 
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ps -o comm= 1 | grep vault || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+# -------------------------------------------------------------
+# 🥎 ADMINER: Lightweight PostgreSQL Web UI
+# -------------------------------------------------------------
+  adminer:
+    image: adminer:5.4.1-standalone
+    container_name: adminer
+
+    volumes:
+      - adminer_data:/data # 💾 Named volume for adminer persistence
+    ports:
+      - "8083:8080"
+    networks:
+      - helixnet_core
+      - helixnet_edge
+    # Adminer is stateless, so we remove the unnecessary volume but keep
+    healthcheck:
+      # Check for the main index file that is served
+      test: ["CMD", "test", "-f", "/var/www/html/index.php"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+# -------------------------------------------------------------
+# 🧾 PROMETHEUS: Metrics Collector
+# -------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    container_name: prometheus
+    user: "0:0"
+    ports:
+      - "9090:9090"
+    volumes:
+      # - ./prometheus/config:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - helixnet_core
+      - helixnet_edge
+    healthcheck:
+      # Check for the mounted Prometheus config file
+      test: ["CMD", "test", "-f", "/etc/prometheus/prometheus.yml"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+# -------------------------------------------------------------
+# 💹 GRAFANA: Dashboards and Visualizations
+# -------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:main 
+    container_name: grafana
+    user: "0:0"
+    expose:
+      - "3000"
+    volumes:
+      # Use only the named volume for persistence, using the default path
+      - grafana_data:/var/lib/grafana
+    networks:
+      - helixnet_core
+      - helixnet_edge
+    healthcheck:
+      # Check for Grafana's core configuration file
+      test: ["CMD", "test", "-f", "/etc/grafana/grafana.ini"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    env_file:
+      - ../../env/helix.env
+    environment:
+      # - N8N_RUNNERS_ENABLED=${N8N_RUNNERS_ENABLED}
+      # - N8N_BLOCK_ENV_ACCESS_IN_NODE=${N8N_BLOCK_ENV_ACCESS_IN_NODE}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=helix_user
+      - DB_POSTGRESDB_PASSWORD=helix_pass
+      - DB_POSTGRESDB_DATABASE=helix_db
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - helixnet_core
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://n8n:5678/healthz"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 60s
+# -------------------------------------------------------------
+# 💾 NAMED VOLUMES 
+# -------------------------------------------------------------
+# Docker manages the lifecycle of these volumes for persistence
+volumes:
+  postgres_data:
+  keycloak_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  portainer_data:
+  vault_data:
+  adminer_data:
+  volumes:
+  n8n_data:
+# -------------------------------------------------------------
+# 🪐️ Networks
+# -------------------------------------------------------------
+# 🕸 EXTERNAL NETWORKS -----------------------------------------
+# Assumes these networks are created externally (e.g., by a setup script)
+networks:
+  helixnet_core:
+    external: true
+  helixnet_edge:
+    external: true

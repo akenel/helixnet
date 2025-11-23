@@ -6,7 +6,7 @@
 # ======================================================================
 
 # --- ⚙️ Configuration ---
-BASE_URL="https://helix.local/api/v1"
+BASE_URL="https://helix-platform.local/api/v1"
 JOB_ENDPOINT="${BASE_URL}/job"
 
 # Placeholder for your real token (Please ensure this token is fresh!)

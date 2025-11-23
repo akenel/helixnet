@@ -1,4 +1,5 @@
 import logging
+import time
 from src.tasks.celery_app import celery_app # Assuming celery app is defined here
 
 logger = logging.getLogger(__name__)
@@ -15,8 +16,8 @@ def run_heavy_computation(job_id: str) -> dict:
     logger.info(f"Starting heavy computation for Job ID: {job_id}")
     
     # Simulate work being done
-    import time
-    time.sleep(1) 
+ 
+    time.sleep(3) 
     
     logger.info(f"Finished computation for Job ID: {job_id}")
     

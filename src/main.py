@@ -33,7 +33,7 @@ from src.routes.health_router import health_router
 # 🌍 Global Configuration
 # ================================================================
 settings = get_settings()
-
+API_V1_STR = settings.API_V1_STR
 # ================================================================
 # 🪵 Logger Setup
 # ================================================================

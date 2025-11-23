@@ -1,0 +1,86 @@
+angel@debian:~/repos/helixnet$ docker ps -a --format '{{.Names}}' 
+openwebui
+ollama
+keycloak
+grafana
+adminer
+minio-mc
+redis
+filebrowser
+vault
+traefik
+rabbitmq
+postgres
+my-minio-please
+portainer
+mailhog
+prometheus
+dozzle
+angel@debian:~/repos/helixnet$ DRY_RUN=true make down
+--- 🛑 Stopping all Helix containers ---
+🛑 Stopping Helix stacks...
+➡️  Stopping stack: /home/angel/repos/helixnet/compose/helix-llm/llm-stack.yml
+➡️  Stopping stack: /home/angel/repos/helixnet/compose/helix-main/main-stack.yml
+➡️  Stopping stack: /home/angel/repos/helixnet/compose/helix-core/core-stack.yml
+🔍 Removing stray containers...
+📦 Cleaning Helix networks ONLY...
+helixnet_core
+helixnet_edge
+🧹 Basic prune (no volumes removed)...
+✅ Helix shutdown complete.
+angel@debian:~/repos/helixnet$ docker ps -a --format '{{.Names}}' 
+angel@debian:~/repos/helixnet$ make up
+🚀 Booting Full Helix Stack...
+🔹 🚀 Helix Boot (Minimal Restart-Safe Edition)
+🔹 Checking required networks...
+🔹 Creating network: helixnet_core
+🔹 Creating network: helixnet_edge
+🔹 🅰 Starting Core stack...
+[+] Building 1.9s (14/14) FINISHED                                                                                   
+ => [internal] load local bake definitions                                                                      0.0s
+ => => reading from stdin 575B                                                                                  0.0s
+ => [internal] load build definition from Dockerfile.keycloak                                                   0.0s
+ => => transferring dockerfile: 2.83kB                                                                          0.0s
+ => [internal] load metadata for docker.io/keycloak/keycloak:24.0.4                                             0.8s
+ => [internal] load metadata for registry.access.redhat.com/ubi9/ubi:9.4                                        1.8s
+ => [internal] load .dockerignore                                                                               0.0s
+ => => transferring context: 2B                                                                                 0.0s
+ => [final 1/5] FROM docker.io/keycloak/keycloak:24.0.4@sha256:ff02c932f0249c58f32b8ff1b188a48cc90809779a3a059  0.0s
+ => [ubi-tools 1/2] FROM registry.access.redhat.com/ubi9/ubi:9.4@sha256:ee0b908e958a1822afc57e5d386d1ea128eebe  0.0s
+ => CACHED [ubi-tools 2/2] RUN set -eux &&     dnf -y update &&     dnf -y install bind-utils net-tools &&      0.0s
+ => CACHED [final 2/5] COPY --from=ubi-tools /usr/bin/curl /usr/bin/                                            0.0s
+ => CACHED [final 3/5] COPY --from=ubi-tools /usr/bin/hostname /usr/bin/                                        0.0s
+ => CACHED [final 4/5] COPY --from=ubi-tools /usr/sbin/ip /usr/bin/                                             0.0s
+ => CACHED [final 5/5] COPY --from=ubi-tools /usr/bin/ps /usr/bin/                                              0.0s
+ => exporting to image                                                                                          0.0s
+ => => exporting layers                                                                                         0.0s
+ => => writing image sha256:d655c40da7563ee0980414d257068f279dfd14475a739a9eca28aebe68d42792                    0.0s
+ => => naming to docker.io/library/helix-keycloak:24.0.4-stable                                                 0.0s
+ => resolving provenance for metadata file                                                                      0.0s
+[+] Running 17/17
+ ✔ helix-keycloak:24.0.4-stable  Built                                                                          0.0s 
+ ✔ Network helix-core_default    Created                                                                        0.0s 
+ ✔ Container my-minio-please     Started                                                                        0.6s 
+ ✔ Container mailhog             Healthy                                                                        6.2s 
+ ✔ Container portainer           Started                                                                        0.7s 
+ ✔ Container rabbitmq            Started                                                                        0.7s 
+ ✔ Container dozzle              Started                                                                        0.6s 
+ ✔ Container prometheus          Started                                                                        0.5s 
+ ✔ Container postgres            Healthy                                                                        5.7s 
+ ✔ Container filebrowser         Started                                                                        6.3s 
+ ✔ Container vault               Started                                                                        6.6s 
+ ✔ Container keycloak            Started                                                                        7.0s 
+ ✔ Container minio-mc            Started                                                                        0.7s 
+ ✔ Container grafana             Started                                                                        6.6s 
+ ✔ Container traefik             Started                                                                        6.6s 
+ ✔ Container redis               Started                                                                        6.2s 
+ ✔ Container adminer             Started                                                                        6.3s 
+🔹 🅱 Starting Main stack...
+service "helix-platform" depends on undefined service "rabbitmq": invalid compose project
+⚠️  Main stack had issues.
+🔹 🦜 Starting LLM stack...
+[+] Running 2/3
+ ✔ Network helix-llm_default  Created                                                                           0.1s 
+ ⠧ Container ollama           Waiting                                                                           5.7s 
+ ✔ Container openwebui        Created                                                                           0.0s 
+

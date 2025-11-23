@@ -1,0 +1,6 @@
+FROM helix-platform:latest
+
+WORKDIR /app
+COPY src /app/src
+
+CMD ["python", "-m", "flower", "--port=5555", "--broker=amqp://helix_user:helix_pass@rabbitmq:5672//"]

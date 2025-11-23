@@ -1,5 +1,4 @@
 # src/tasks/celery.py
-
 from venv import logger
 from celery import Celery
 
@@ -11,27 +10,28 @@ app = Celery(
 
 app.conf.beat_schedule = {
     # Unique identifier for the schedule entry
-    'heartbeat-check-30-seconds': {
-        'task': 'src.tasks.celery_app.echo_beat_heartbeat', 
-        'schedule': 60.0,
-        'args': ('Scheduled by Celery Beat!',)
+    'heartbeat-check-600-seconds': {
+        'task': 'src.tasks.app.echo_beat_heartbeat', 
+        'schedule': 60,
+        'args': ('🥬 Scheduled by Celery Beat! ▶️ task ⏰️ src.tasks.app.echo_beat_heartbeat ❤️‍🩹️  scheduled every ⏰️ 60 seconds.',)
     },
     # ... any other periodic tasks ...
 
-    'double-check-30-seconds': {
-        'task': 'src.tasks.celery_app.example_task', 
-        'schedule': 30.0,
-        'args': ('🏗️ 🌼 🚢 🥬 💦 Example Scheduled by Celery Beat! 🧩',)
+    'double-checker': {
+        'task': 'src.tasks.app.example_task', 
+        'schedule': 10,
+        'args': ('🥬 Example of a Scheduled Task by Celery Beat! 🧩',)
     },
-
-
 }
 
 # Optional: Ensure the timezone is set for consistent scheduling
 app.conf.timezone = 'UTC' # Or your local timezone like 'Europe/Zurich'
 # Define your tasks here
 @app.task
-def example_task(message="💦 Example Task ran with Message: 🏗️ Celery Beat is alive and scheduling."):
+def example_task(message="💦 Task with Message 🏗️ Celery Beat is alive and scheduling."):
+    """
+    example simple task to be run periodically by Celery Beat to confirm it's working.
+    """
     logger.info(f"💦 Example Task: {message} 🏗️  ◾ 🚢 ◾ 💦")
     print(f"Example task ran without any 🏗️ Issues as Example Logic 🚢 FYI message: {message}")
     return message

@@ -1,4 +1,13 @@
-et’s tackle each cleanly and in order so Helix can use Keycloak as the IdP and the Swagger UI + realm screens work.
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+sudo apt update
+ 
+ sudo apt install gum
+
+
+
+Let’s tackle each cleanly and in order so Helix can use Keycloak as the IdP and the Swagger UI + realm screens work.
 
 I’ll give you (A) quick explanations, (B) checks to run now, and (C) exact commands / script fixes you can paste. No waiting — do them now and paste back any logs/errors you still see.
 

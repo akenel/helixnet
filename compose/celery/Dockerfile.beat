@@ -1,9 +1,0 @@
-# ===========================================
-# ⏰ Celery Beat Scheduler
-# ===========================================
-FROM helix-base AS beat
-
-RUN mkdir -p /app/beat-data && chown -R 1003:1003 /app/beat-data
-VOLUME ["/app/beat-data"]
-
-CMD ["celery", "-A", "src.tasks.celery_app:app", "beat", "--loglevel=info", "--schedule=/app/beat-data/celerybeat-schedule"]

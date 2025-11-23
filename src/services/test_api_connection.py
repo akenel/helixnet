@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render
 
 # Read the API URL from the environment variable
-HELIX_API_URL = os.getenv("HELIX_API_URL", "https://helix.local") 
+HELIX_API_URL = os.getenv("HELIX_API_URL", "https://helix-platform.local") 
 
 def test_fastapi_connection(request):
     """

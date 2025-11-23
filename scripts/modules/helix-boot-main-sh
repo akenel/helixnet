@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# scripts/helix-boot-main.sh  -- build helix-base and bring up helix-main stack
+set -euo pipefail
+IFS=$'\n\t'
+
+source "$(dirname "$0")/tools/helix-utils.sh"
+banner_show
+
+echo "🩺 Checking required networks..."
+create_network_if_not_exists "helixnet_core"
+create_network_if_not_exists "helixnet_edge"
+
+echo "🔊 Stage 3: helix-main (build app images + run helix app + celery)"
+# find compose file for main
+COMPOSE_FILE=$(find_compose_file "helix-main" || true)
+if [[ -z "$COMPOSE_FILE" ]]; then
+  COMPOSE_FILE=$(find compose -maxdepth 2 -type f -iname '*helix*.yml' -print -quit || true)
+fi
+
+# Build helix-base first (if Dockerfile present)
+BASE_DOCKERFILE="compose/celery/Dockerfile.base"
+if [[ -f "$BASE_DOCKERFILE" ]]; then
+  echo "🛠️  Building helix-base image from $BASE_DOCKERFILE"
+  # make sure API_VERSION exists for labels; fallback to 0.0.0
+  API_VERSION="${API_VERSION:-0.0.0}"
+  docker image rm local/helix-base:latest >/dev/null 2>&1 || true
+  # use buildkit-friendly command
+  DOCKER_BUILDKIT=1 docker build --no-cache -t local/helix-base:latest -f "$BASE_DOCKERFILE" .
+else
+  echo "⚠️  No base Dockerfile found at $BASE_DOCKERFILE — skipping base build"
+fi
+
+if [[ -z "$COMPOSE_FILE" ]]; then
+  echo "⚠️  No helix-main compose file found, skipping main stage"
+  exit 0
+fi
+
+echo "🗂️  Using compose file: $COMPOSE_FILE"
+# gum_spin_safe 2 "Building helix-main images..."
+(unset BOLD RED GREEN YELLOW BLUE CYAN; gum_spin_safe 2 "Building helix-main images...")
+
+# Build images (no-cache recommended for initial run; CI can opt caching)
+docker compose -f "$COMPOSE_FILE" build --no-cache --pull
+
+echo "🔼 Bringing up helix-main stack"
+docker compose -f "$COMPOSE_FILE" up -d --remove-orphans --wait
+
+# Quick healthcheck for the main app and celery components
+for svc in helix worker beat flower; do
+  if docker compose -f "$COMPOSE_FILE" ps --format '{{.Service}}' | grep -q "^${svc}$"; then
+    echo -n "⏳ Waiting for ${svc}..."
+    if ! wait_for_service_healthy "$svc" 40; then
+      echo "❗ ${svc} failed to become healthy - inspect logs: docker compose -f $COMPOSE_FILE logs --tail=60 $svc"
+      # if critical fail (helix), return non-zero
+      if [[ "$svc" == "helix" ]]; then
+        echo "❌ main app not healthy, aborting"
+        exit 2
+      fi
+    fi
+  fi
+done
+
+echo "✅ helix-main stage complete"

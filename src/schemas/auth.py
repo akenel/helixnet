@@ -12,8 +12,8 @@ class TokenRequest(BaseModel):
         "from_attributes": True,
         "json_schema_extra": {
             "example": {
-                "username": "user@helix.net",
-                "password": "strongpassword123"
+                "username": "user_name@helix.net",
+                "password": "user_pass"
             }
         }
     }

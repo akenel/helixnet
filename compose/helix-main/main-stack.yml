@@ -1,0 +1,136 @@
+# -------------------------------------------------------------
+# Stage 2. Main / Helix Stack	App layer	
+# Helix Platform + Keycloak + Worker + Beat + Flower + MailHog
+# 🛡️ Main HELIX API STACK compose/helix-main/main-stack.yml
+# 🔐️ Helix Platform Base Images 
+# -------------------------------------------------------------
+# 🍿️ Reusable base service config  
+# -------------------------------------------------------------
+x-base: &base
+  image: helix-platform:latest
+  env_file: ../../env/helix.env
+  restart: unless-stopped
+  networks:
+    - helixnet_core
+  # healthcheck:
+  #   # 🚨 FIX: Use a simple port/root path check.
+  #   test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8000/ || exit 1"]
+  #   interval: 10s
+  #   timeout: 5s
+  #   retries: 5
+  #   # 🚨 CRITICAL: Give the platform 2.5 minutes to fully boot and connect to Postgres.
+  #   start_period: 60s
+
+
+# -------------------------------------------------------------
+# 💦️ Services Helix main API 🛡️
+# -------------------------------------------------------------
+services:
+# -------------------------------------------------------------
+# 🧰️ Helix main API 
+# -------------------------------------------------------------
+  helix-platform:
+    <<: *base
+    container_name: helix-platform
+    build:
+      context: ../../
+      dockerfile: compose/helix-main/Dockerfile.helix-platform
+    ports:
+      - "9003:8000"
+    environment: # Optional for custom build configurations
+      PLATFORM_CONFIG: /app/config/platform-settings.yaml
+    volumes:
+      - ./compose/config:/app/config
+      - ../../src:/app/src
+    networks:
+      - helixnet_core
+      - helixnet_edge
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+# -------------------------------------------------------------
+# ⛑️ Worker 🥬️ Celery 
+# -------------------------------------------------------------
+  worker:
+    <<: *base
+    container_name: worker
+    build:
+      context: ../../
+      dockerfile: compose/helix-main/Dockerfile.worker
+      # deploy:
+      #   replicas: 3
+      #   resources:
+      #     reservations:
+      #       cpus: '0.5'
+      #       memory: 1G
+      #     limits:
+      #       cpus: '2'
+      #       memory: 4G
+    volumes:
+      - ../../src:/app/src
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+# -------------------------------------------------------------
+# 🥁️ Beat 🥬️ Celery 
+# -------------------------------------------------------------
+  beat:
+    <<: *base
+    container_name: beat
+    build:
+      context: ../../
+      dockerfile: compose/helix-main/Dockerfile.beat
+    volumes:
+      - ../../src:/app/src
+      - beat_data:/app/beat-data
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+# -------------------------------------------------------------
+#  🌞️ Flower 🥬️ Monitoring 
+# -------------------------------------------------------------
+  flower:
+    <<: *base
+    container_name: flower
+    build:
+      context: ../../
+      dockerfile: compose/helix-main/Dockerfile.flower
+    ports:
+      - "5555:5555"
+    volumes:
+      - ../../src:/app/src
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+# -------------------------------------------------------------
+# 🗂️ NAMED VOLUMES
+# -------------------------------------------------------------
+volumes:
+  beat_data:
+# -------------------------------------------------------------
+# 🪐️ Networks
+# -------------------------------------------------------------
+networks:
+  helixnet_core:
+    external: true
+  helixnet_edge:
+    external: true

@@ -1,0 +1,57 @@
+=================================================================================
+
+💻 Optimized for CPU/Limited RAM
+
+1. Use a highly quantized model (e.g., llama3:8b-instruct-q4_K_M)
+
+2. Reduced context window (num_ctx 4096)
+
+3. Explicit thread count (num_thread 4) for CPU stability
+
+=================================================================================
+
+NOTE: Replace 'llama3:8b-instruct-q4_K_M' with the specific quantized tag
+
+you have pulled. This version offers excellent performance on limited RAM.
+
+FROM llama3:8b-instruct-q4_K_M
+
+PARAMETERS FOR OPTIMIZED PERFORMANCE ON CPU
+
+-------------------------------------------------------------------------------
+
+Lower context size drastically reduces RAM usage during inference. 8192 is too large.
+
+PARAMETER num_ctx 4096
+
+Setting a thread count prevents the model from trying to over-subscribe the CPU.
+
+Adjust '4' to half the number of available physical cores for best results.
+
+PARAMETER num_thread 4
+PARAMETER temperature 0.2
+
+Define stop sequence to ensure the model halts immediately after outputting JSON.
+
+PARAMETER stop "}"
+
+Force output to be in JSON format for easy parsing in the SRE workflow
+
+OPTION format json
+
+SYSTEM """
+You are a highly efficient, single-purpose SRE Log Analysis Assistant. Your sole output MUST be a JSON object conforming to the requested schema. Analyze the provided container logs to identify anomalies and suggest pragmatic remediation steps.
+
+Output JSON with the following required keys:
+- summary (string): 1-2 concise sentences summarizing the issue.
+- probable_causes (array of strings): A list of up to 3 short, precise items.
+- remediation (array of strings): An ordered list of up to 3 pragmatic steps the operator must try first.
+- severity (string): low | medium | high
+
+DO NOT output any text before or after the JSON object.
+"""
+
+Logs: <<LOG>> Context logs: {{ .Input }}
+
+Provide your analysis summary, causes, and remediation as a single JSON object.
+"""

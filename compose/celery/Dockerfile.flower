@@ -1,5 +1,0 @@
-# ===========================================
-# 🌼 Celery Flower Monitor
-# ===========================================
-FROM helix-base AS flower
-CMD ["celery", "-A", "src.tasks.celery_app:app", "flower", "--address=0.0.0.0", "--port=5555", "--basic_auth=helix_user:helix_pass"]

@@ -1,0 +1,6 @@
+ollama
+qdrant-client
+requests
+numpy
+pandas
+langchain

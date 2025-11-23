@@ -1,0 +1,42 @@
+# ---------------------------
+# Helix Platform Base Image
+# ---------------------------
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    PATH="/app/venv/bin:${PATH}" \
+    PYTHONPATH="/app:${PYTHONPATH}"
+
+# networking defaults
+ENV POSTGRES_HOST=postgres
+ENV POSTGRES_PORT=5432
+ENV REDIS_HOST=redis
+ENV REDIS_PORT=6379
+
+# Celery / Broker
+ENV CELERY_BROKER_URL=amqp://helix_user:helix_pass@rabbitmq:5672//
+ENV DATABASE_URL=postgres://helix_user:helix_pass@${POSTGRES_HOST}:${POSTGRES_PORT}/helix_db
+
+# install dependencies
+COPY compose/helix-main/helix-platform-requirements.txt /app/requirements.txt
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      netcat-openbsd \
+      build-essential \
+      libpq-dev \
+    && python -m venv /app/venv \
+    && /app/venv/bin/pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && /app/venv/bin/pip install --no-cache-dir -r /app/requirements.txt \
+    && rm -rf /var/lib/apt/lists/*
+
+# copy source
+COPY src /app/src
+COPY compose/helix-main/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -13,60 +13,64 @@ logger.setLevel(logging.INFO)
 # ----------------------------------------------------------------------
 # SETTINGS CLASS
 # ----------------------------------------------------------------------
-
 class Settings(BaseSettings):
     """
     Application configuration focused on resolving the authentication issues.
     """
+    API_VERSION: str
+    OPENAPI_URL: str 
+    DOCS_URL: str 
+    FASTAPI_BASE_URL: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",
         case_sensitive=True,
     )
 # 🧠 Key essentails   
-    API_VERSION: str = "helix_v0.0.1"
-    OPENAPI_URL: str = "/api/v1/openapi.json" # Standard FastAPI settings
-    DOCS_URL: str = "/docs"
-    KEYCLOAK_HELIX_REALM_INTERNAL_URL: str = "http://keycloak:8080/realms/kc-realm-dev"
-    KEYCLOAK_BASE_URL: str = "https://keycloak.helix.local"
-    FASTAPI_BASE_URL: str = "https://helix.local"
+
 # Keycloak
-    # FIX: Set the default to the correct internal Docker network URL (http://service:port)
-    KEYCLOAK_SERVER_URL: str = "http://keycloak:8080"
-    KEYCLOAK_REALM: str = "kc-realm-dev"
+    # Set the default to the correct internal Docker network URL (http://service:port)
+    KEYCLOAK_HELIX_REALM_INTERNAL_URL: str 
+    KEYCLOAK_BASE_URL: str 
+    KEYCLOAK_SERVER_URL: str
+    KEYCLOAK_MASTER_REALM: str
+    HX_SUPER_NAME: str
+    HX_SUPER_PASSWORD: str
+    KEYCLOAK_EXTERNAL_URL: str
+    KEYCLOAK_DEV_REALM: str
+    KEYCLOAK_REALM: str 
     KEYCLOAK_MASTER_REALM: str = "master"
-    KC_HOSTNAME: str = "keycloak.helix.local"
-    KC_HTTP_PORT: int = 8080
+# Seeder superuser
+    HX_SUPER_NAME:  str = "helix_user"
+    HX_SUPER_EMAIL: EmailStr 
+    HX_SUPER_PASSWORD:  str 
+
+    KC_HOSTNAME: str 
+    KC_HTTP_PORT: int
 # Clients & service account
     KEYCLOAK_CLIENT_ID: str = "helix_user"
     # KEYCLOAK_CLIENT_SECRET: SecretStr
-
     KEYCLOAK_SERVICE_CLIENT_ID:  str = "helix_user"
-    KC_HOSTNAME_ADMIN_URL: str = "https://keycloak.helix.local"
+    KC_HOSTNAME_ADMIN_URL: str 
 
-    KEYCLOAK_CLIENT_SECRET: str = "b0iGaUc9EIC7dw5KzJL1JveNWfTMxjGB"
-    KEYCLOAK_SERVICE_CLIENT_SECRET: str = "b0iGaUc9EIC7dw5KzJL1JveNWfTMxjGB"
+    KEYCLOAK_CLIENT_SECRET: str 
+    KEYCLOAK_SERVICE_CLIENT_SECRET: str 
 
-
-
-# Seeder superuser
-    HX_SUPER_NAME:  str = "helix_user"
-    HX_SUPER_EMAIL: EmailStr = "helix_user@helix.net"
-    HX_SUPER_PASSWORD:  str = "helix_pass"
 # --- App Metadata ---
-    KC_EXTERNAL_URL: str = "https://keycloak.helix.local/realms/kc-realm-dev"
-    HX_ENVIRONMENT: str = "dev"  # e.g., development, staging, production match .env
-    PROJECT_NAME: str = "HelixNet Core API"
-    PROJECT_APP_VERSION: str = "0.0.1"  # expect values from .env to replace this values
-    API_V1_STR: str = "/api/v1"
-    APP_HOST: str = "0.0.1"
-    APP_PORT: int = 8000
+    KC_EXTERNAL_URL: str 
+    HX_ENVIRONMENT: str 
+    PROJECT_NAME: str 
+    PROJECT_APP_VERSION: str
+    API_V1_STR: str 
+    APP_HOST: str 
+    APP_PORT: int 
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
 # --- Security ---
-    VAULT_DEV_ROOT_TOKEN_ID: str = "myroot"
-    VAULT_ADDR: str = "http://127.0.0.1:8200"
+    VAULT_DEV_ROOT_TOKEN_ID: str 
+    VAULT_ADDR: str 
     VAULT_TOKEN: SecretStr
-    VAULT_DEV_LISTEN_ADDRESS: str = "0.0.0.0:8200"
+    VAULT_DEV_LISTEN_ADDRESS: str
 #  SECURITY Keys / Tokens
     SECRET_KEY: str
     KEYCLOAK_ALGORITHM: str = "RS256"
@@ -77,24 +81,24 @@ class Settings(BaseSettings):
 # Database
     POSTGRES_HOST: str = "postgres"
     POSTGRES_PORT: int = 5432
-    POSTGRES_DB: str = "helix_db"
-    POSTGRES_TEST_DB: str = "test_db"
-    POSTGRES_USER: str = "helix_user"
+    POSTGRES_DB: str 
+    POSTGRES_TEST_DB: str 
+    POSTGRES_USER: str
     POSTGRES_PASSWORD: SecretStr
     DB_POOL_SIZE: int = 5
     DB_ECHO: bool = False
     DB_MAX_OVERFLOW: int = 10
 # RabbitMQ / Redis
-    RABBITMQ_HOST: str = "rabbitmq"
-    RABBITMQ_PORT: int = 5672
-    RABBITMQ_USER: str = "helix_user"
+    RABBITMQ_HOST: str 
+    RABBITMQ_PORT: int
+    RABBITMQ_USER: str 
     RABBITMQ_PASS: SecretStr
-    REDIS_HOST: str = "redis"
-    REDIS_PORT: int = 6379
+    REDIS_HOST: str
+    REDIS_PORT: int 
 # MinIO
-    MINIO_HOST: str = "minio"
-    MINIO_PORT: int = 9000
-    MINIO_BUCKET: str = "kc-realm-dev" 
+    MINIO_HOST: str 
+    MINIO_PORT: int 
+    MINIO_BUCKET: str 
     MINIO_ACCESS_KEY: str = SecretStr
     MINIO_SECRET_KEY: str = SecretStr
     MINIO_SECURE: bool = False
@@ -221,6 +225,7 @@ async def get_keycloak_admin_token(max_retries: int = 10, retry_delay: int = 5) 
     import httpx  # lazy import
     s = get_settings()
     # token_url now correctly uses the fixed KEYCLOAK_SERVER_URL
+    token_url = f"{s.KEYCLOAK_SERVER_URL}/realms/{s.KEYCLOAK_MASTER_REALM}/protocol/openid-connect/token"
     token_url = f"{s.KEYCLOAK_SERVER_URL}/realms/{s.KEYCLOAK_MASTER_REALM}/protocol/openid-connect/token"
 
     auth_data = {

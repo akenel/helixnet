@@ -1,0 +1,75 @@
+# --------------------------------------------------------------------
+# 🌌 HelixNet Core Dependencies: KIC KIS Certified (Keep It Clean, Keep It Simple)
+# --------------------------------------------------------------------
+# --- 1. APPLICATION FRAMEWORK & SERVER (The Core Engine) ---
+# a.k.a. celery-redis-scheduler 2025 #  redbeat Correct package name on PyPI
+docker
+boto3
+ollama
+qdrant-client
+# --------------------------------------------------------------------
+celery-redbeat==2.3.3
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+databases
+aiohttp             # For async HTTP client needs
+aiofiles            # For async file operations
+python-multipart    # For handling form data
+requests            # For general HTTP client needs
+jinja2              # For template rendering (if used)
+
+# --- 2. DATA MODELS & CONFIGURATION (The Data Blueprint) ---
+
+pydantic==2.7.4
+pydantic-settings==2.11.0
+pydantic[email]     # Pydantic utility for email validation
+jsonschema==4.20.0  # Ensures critical config validation works
+python-dotenv
+pyyaml
+
+# --- 3. DATABASE STACK (SQLAlchemy & Drivers) ---
+
+sqlalchemy==2.0.30
+sqlalchemy-utils==0.41.2
+alembic==1.13.1
+asyncpg==0.29.0     # Async PostgreSQL driver (for FastAPI)
+psycopg[binary]     # Sync PostgreSQL driver (used by Alembic)
+psycopg2-binary     # Used by Celery worker for sync DB tasks
+# 
+# --- 4. SECURITY & AUTHENTICATION (The Chuck Norris Security Core) ---
+
+bcrypt>=4.0.1,<4.1
+cryptography==41.0.4
+passlib[bcrypt]
+python-jose[cryptography] # Includes cryptography for JWT signing (deduplicated)
+fastapi-cors
+
+# --- 5. ASYNCHRONOUS TASK QUEUE (Celery & Scheduling) ---
+
+celery==5.4.0
+
+flower==2.0.1       # Monitoring dashboard
+pika==1.3.2         # RabbitMQ/AMQP library (latest version used)
+redis==5.0.4        # Redis for Celery backend/cache
+
+# --- 6. UTILITIES & STORAGE (General Services) ---
+
+minio==7.1.3        # For S3/MinIO object storage
+loguru==0.7.0       # Structured logging
+sentry-sdk==1.28.0  # Error tracking
+
+# --------------------------------------------------------------------
+# 🛠️ DEVELOPMENT & TESTING (QA, Linting, & Debugging)
+# These dependencies are for development, linting, and QA environments.
+# --------------------------------------------------------------------
+
+black
+flake8
+httpx==0.24.1
+ipython
+isort
+mypy
+pre-commit
+pytest==7.4.2
+pytest-asyncio==0.22.0
+pytest-cov==4.1.0

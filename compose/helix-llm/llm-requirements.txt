@@ -1,0 +1,9 @@
+# --------------------------------------------------------------------
+# 🌌 HelixNet Core Dependencies: KIC KIS Certified (Keep It Clean, Keep It Simple)
+# --------------------------------------------------------------------
+# --- 1. APPLICATION FRAMEWORK & SERVER (The Core Engine) ---
+# a.k.a. celery-redis-scheduler 2025 #  redbeat Correct package name on PyPI
+docker
+boto3
+ollama
+qdrant-client

@@ -1,10 +1,41 @@
+env
 .env
 pycache/
 *.py[cod]
 *$py.class
 venv/
 .venv/
+### DO NOT TRACK VOLUMES / CACHES ###
+compose/**/postgres-data/
+compose/**/cache/
+compose/**/data/
+compose/**/models/
+compose/**/minio/
+compose/**/qdrant/
+data/
+cache/
+models/
+minio/.data/
+
+### SSH keys
+**/id_ed25519
+**/id_ed25519.pub
+
+### Python & build junk
+__pycache__/
+*.pyc
+
+### VSCode
+.vscode/
+.code-workspace
+*.code-workspace
+
+### Docker
+*.log
 .env
+.env.*
+helix.logs
+
 *.pem
 *.crt
 *.key
