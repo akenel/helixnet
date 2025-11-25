@@ -1,8 +1,4 @@
-Perfect — **Option C** is absolutely the right choice for your setup and workflow.
-
-### 🧠 WHAT OPTION C GIVES YOU
-
-You get **one unified VSCode DevContainer** where you:
+**one unified VSCode DevContainer**:
 ✔ Run and debug the Python API (helix-platform)
 ✔ Run CLI tasks
 ✔ Seed Keycloak via scripts
@@ -214,11 +210,3 @@ All stack containers continue running normally.
 ✔ Preconfigured bash tools
 ✔ Auto-start helix-platform on container open
 ✔ Debugger configs (`launch.json`)
-
-Just say **“Sherlock add bonus tools”** and I’ll extend the devcontainer.
-
----
-
-# Ready to generate the final folder for you?
-
-If yes, I’ll dump the complete `.devcontainer` folder exactly as you need.

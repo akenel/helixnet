@@ -1,209 +1,79 @@
-env
+# ====================================================================
+# 🔒 CRITICAL SECURITY & ENVIRONMENT (MUST BE IGNORED)
+# ====================================================================
 .env
-pycache/
-*.py[cod]
-*$py.class
+.env.*
+!*.env.example # Keep the template file if it exists
+
+# SSH Keys (Avoid accidental commit from any directory)
+**/id_ed25519
+**/id_ed25519.pub
+
+# Keycloak/Traefik Local Certificates (from mkcert)
+*.pem
+*.crt
+*.key
+# If using a specific directory for generated certs, ignore it:
+traefik/certs/
+app/traefik/dynamic/certs.yml
+
+
+# ====================================================================
+# ⚙️ VOLUMES, CACHES, ARTIFACTS, AND LARGE DATA (TARGETED IGNORES)
+# ====================================================================
+# Python Virtual Environments
 venv/
 .venv/
-### DO NOT TRACK VOLUMES / CACHES ###
+env/
+# Specific Python Caches and Builds
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.flake8
+.coverage*
+instance/ # Flask/Django instance folder if used
+
+# Docker Volume Data (Critical to ignore massive binary data)
 compose/**/postgres-data/
 compose/**/cache/
 compose/**/data/
 compose/**/models/
 compose/**/minio/
 compose/**/qdrant/
+compose/**/vector_db/
+minio_data/
+postgres_data/
+redis_data/
+portainer_data/
+pgadmin_data/
+celerybeat-schedule
+
+# Local Data/Cache Directories (Non-containerized data)
 data/
 cache/
 models/
-minio/.data/
 
-### SSH keys
-**/id_ed25519
-**/id_ed25519.pub
-
-### Python & build junk
-__pycache__/
-*.pyc
-
-### VSCode
-.vscode/
-.code-workspace
-*.code-workspace
-
-### Docker
-*.log
-.env
-.env.*
-helix.logs
-
-*.pem
-*.crt
-*.key
-__pycache__/
-
-# 🔑 Environment File
-
-.env
-# 🛡️ Traefik Security/Certs (mkcert)
-# This directory contains the locally generated TLS key and certificate
-
-traefik/certs/
-# 🐍 Python Specific
-
-pycache/
-*.pyc
-.pytest_cache/
-.venv/
-venv/
-instance/
-# 🐳 Docker / Build Artifacts
-
-.dockerignore
-!Dockerfile # Don't ignore the main Dockerfile
-!docker-compose.yml # Don't ignore the compose file
-# ⚙️ OS & Editor
-
-.DS_Store
-.vscode/
-.idea/
-*.swp
-# 
-.env
-.env.secret
-.flake8
-.mypy_cache/
-.pytest_cache/
-Coverage files
-
-.coverage
-.coverage.*
-# IDE / Editor Files
-.BAK
-.idea/
-*.swp
-*~
-.vscode/
-# Docker / Infrastructure
-# Ignore volume data that Docker might create locally
-
-minio_data/
-postgres_data/
-redis_data/
-portainer_data/
-pgadmin_data/
-OS-specific files
-# 
+# ====================================================================
+# 💻 IDE, OS, AND LOGS
+# ====================================================================
+# macOS/Windows/General OS Files
 .DS_Store
 Thumbs.db
-# 
-# Standard Python and Environment Files to Ignore
-# Byte-compiled / optimized / shared objects
 
-pycache/
-*.py[cod]
-*$py.class
-venv/
-.venv/
-# Environment files
-# 
-.env
-.env.secret
-.flake8
-.mypy_cache/
-.pytest_cache/
-# Coverage files
-# 
-.coverage
-.coverage.*
-# IDE / Editor Files
-
+# VS Code & Editor Files
+.vscode/
 .idea/
 *.swp
 *~
-.vscode/
-*.code-workspace # <-- Added: Ignore VS Code/other IDE workspace files
-# Docker / Infrastructure
-# Ignore volume data that Docker might create locally
+*.code-workspace
 
-minio_data/
-postgres_data/
-redis_data/
-portainer_data/
-pgadmin_data/
-celerybeat-schedule 
-OS-specific files
-
-.DS_Store
-Thumbs.db\n# Local Logs and Temporary Files
+# Local Logs and Temporary Files
+*.log
+helix.logs
 super_test_suite.log
-\n# Traefik Local Certificate Files
-traefik/cert.pem
-traefik/key.pem
-app/traefik/dynamic/certs.yml
---- General Operating System ---
-
-.DS_Store
-*.pyc
-pycache/
-.vscode/
-
---- Environment Variables ---
-
-Never commit your local secrets/settings
-
-.env
-.env.*
-!*.env.example # Keep the template
-
---- Virtual Environments ---
-
-venv/
-env/
-/bin/
-/lib/
-include/
-
---- Python Specific ---
-
-dist/
-build/
-*.egg-info/
-
---- Logs, Databases, and Test Artifacts ---
-
-*.log
-*.sqlite3
-
-
-helixnet_frontend/
-
-.DS_Store
-*.pyc
-pycache/
-.vscode/
-
-
-
-
-.env
-.env.*
-!*.env.example # Keep the template
-
--
-
-venv/
-env/
-/bin/
-/lib/
-include/
-
-
-
-dist/
-build/
-*.egg-info/
-
-
-*.log
-*.sqlite3
-

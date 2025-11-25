@@ -103,11 +103,11 @@ app = FastAPI(
 oauth2_scheme = OAuth2(
     flows=OAuthFlowsModel(
         password=OAuthFlowPassword(
-            tokenUrl="https://keycloak.helix.local/realms/master/protocol/openid-connect/token",
+            tokenUrl="https://keycloak.helix.local/realms/kc-realm-dev/protocol/openid-connect/token",
             scopes={"openid": "Access Helix API"}
         )
     ),
-    description="OAuth2 Password flow via Keycloak"
+    description="OAuth2 Password flow via Keycloak (kc-realm-dev)"
 )
 
 

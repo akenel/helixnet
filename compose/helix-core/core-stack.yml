@@ -116,8 +116,8 @@ services:
     image: helix-keycloak-custom:latest
     container_name: keycloak
     restart: unless-stopped
-    command: ["start", "--optimized", "--import-realm"] 
-    # Use standard startup command
+    command: ["start", "--optimized"]
+    # Removed --import-realm to prevent duplicate key errors after initial import
     environment:
       KC_PROXY_HEADERS: xforwarded 
       KC_PROXY: edge
@@ -144,11 +144,11 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "true"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 30s
+      timeout: 10s
       retries: 10
-      start_period: 40s
+      start_period: 60s
 # -------------------------------------------------------------
   mailhog:
     image: mailhog/mailhog:v1.0.1
@@ -176,7 +176,7 @@ services:
       MINIO_ACCESS_KEY: helix_user
       MINIO_SECRET_KEY: helix_pass
       # ... (Root user/pass)
-      MINIO_COMPRESS: true
+      MINIO_COMPRESS: "true"
       MINIO_COMPRESS_EXTENSIONS: ".pdf,.docx,.txt"
       MINIO_COMPRESS_MIME_TYPES: "text/*,application/json"
     volumes:

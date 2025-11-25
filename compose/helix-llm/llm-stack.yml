@@ -14,23 +14,6 @@ services:
     networks: [ helixnet_core ]
     ports:
       - "11434:11434"
-    # environment:
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '4'
-    #       memory: 16G
-    # devices:
-    #   - driver: nvidia
-    #     count: 1
-    #     capabilities: [gpu]
-      # OLLAMA_HOST: "0.0.0.0"
-      # OLLAMA_KEEP_ALIVE: "5m"
-      # OLLAMA_MODELS: "/data/models"
-      # OLLAMA_CONFIG: "/config/ollama.yaml"
-      # OLLAMA_NUM_THREADS: "4"
-      # OLLAMA_NUM_PARALLEL: "1"
-      # OLLAMA_NO_CUDA: "1"
     volumes:
       - ollama_data:/app/ollama-data     # FIX: Paths made relative to the project root (../../)
       - ../../data/ollama/config:/config
@@ -68,7 +51,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 40s
-
 # -------------------------------------------------------------
 # 🐿️ Vector Db qdrant
 # # # -------------------------------------------------------------

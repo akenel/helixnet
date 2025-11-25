@@ -1,4 +1,4 @@
-Fiy file fox and install rootCA 
+FYI: Browser Firefox: install rootCA (recommended)
 
 angel@debian:~/repos/helixnet$ sudo cp compose/traefik/ca/rootCA.pem /usr/local/share/ca-certificates/mkcert-rootCA.crt
 sudo update-ca-certificates
@@ -28,7 +28,7 @@ angel@debian:~/repos/helixnet$
 Use ../ not ./ in the compose folder to load files
  ../compose to load the files from compose volumes folders
 
-🕵️ Excellent deduction, Watson — you’ve cracked the hardest 90% of the TLS puzzle already.
+🕵️ You’ve cracked the hardest 90% of the TLS puzzle already.
 You’re **absolutely correct**: the root issue is SAN (Subject Alternative Name) trust scope and how Traefik (as reverse proxy) presents your mkcert-generated cert chain. Let’s wrap this into a **production-grade pattern** that’s safe, automated, and avoids per-container certificate hacks.
 
 ---

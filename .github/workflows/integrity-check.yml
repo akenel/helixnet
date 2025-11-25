@@ -1,0 +1,47 @@
+name: Check .gitignore Integrity
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  check_ignores:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for Critical Ignores
+        id: check_ignores
+        run: |
+          # Define the list of critical patterns that MUST be in .gitignore
+          CRITICAL_IGNORES=(
+            ".env"
+            "postgres-data/"
+            "models/"
+            "*.pem"
+            "*.key"
+          )
+          
+          # Initialize a list for missing patterns
+          MISSING_PATTERNS=""
+          
+          # Check if each critical pattern is present in the .gitignore file
+          for pattern in "${CRITICAL_IGNORES[@]}"; do
+            if ! grep -q "^${pattern}\$" .gitignore; then
+              MISSING_PATTERNS+="${pattern}\n"
+            fi
+          done
+
+          # Fail the job if any critical pattern is missing
+          if [ -n "$MISSING_PATTERNS" ]; then
+            echo "::error file=.gitignore::CRITICAL IGNORE PATTERNS MISSING"
+            echo "The following critical patterns are MISSING from .gitignore:"
+            echo -e "$MISSING_PATTERNS"
+            exit 1
+          else
+            echo "✅ .gitignore integrity check passed. All critical patterns are present."
+          fi

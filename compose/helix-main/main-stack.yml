@@ -20,8 +20,6 @@ x-base: &base
   #   retries: 5
   #   # 🚨 CRITICAL: Give the platform 2.5 minutes to fully boot and connect to Postgres.
   #   start_period: 60s
-
-
 # -------------------------------------------------------------
 # 💦️ Services Helix main API 🛡️
 # -------------------------------------------------------------
@@ -46,11 +44,11 @@ services:
       - helixnet_core
       - helixnet_edge
     healthcheck:
-      test: ["CMD", "true"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 # -------------------------------------------------------------
 # ⛑️ Worker 🥬️ Celery 
 # -------------------------------------------------------------
@@ -69,16 +67,18 @@ services:
       #     limits:
       #       cpus: '2'
       #       memory: 4G
+    environment:
+      SERVICE_TYPE: worker
     volumes:
       - ../../src:/app/src
     depends_on:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "true"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "celery", "-A", "src.tasks.celery_app:app", "inspect", "ping", "-t", "3"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
       start_period: 40s
 # -------------------------------------------------------------
 # 🥁️ Beat 🥬️ Celery 
@@ -89,6 +89,8 @@ services:
     build:
       context: ../../
       dockerfile: compose/helix-main/Dockerfile.beat
+    environment:
+      SERVICE_TYPE: beat
     volumes:
       - ../../src:/app/src
       - beat_data:/app/beat-data
@@ -96,10 +98,10 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "true"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "celery", "-A", "src.tasks.celery_app:app", "inspect", "scheduled", "-t", "3"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
       start_period: 40s
 # -------------------------------------------------------------
 #  🌞️ Flower 🥬️ Monitoring 
@@ -110,17 +112,18 @@ services:
     build:
       context: ../../
       dockerfile: compose/helix-main/Dockerfile.flower
+    environment:
+      SERVICE_TYPE: flower
     ports:
       - "5555:5555"
     volumes:
       - ../../src:/app/src
     healthcheck:
-      test: ["CMD", "true"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "curl", "-f", "http://localhost:5555/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
       start_period: 40s
-
 # -------------------------------------------------------------
 # 🗂️ NAMED VOLUMES
 # -------------------------------------------------------------

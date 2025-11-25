@@ -1,6 +1,7 @@
 🥋 /api/v1/jobs - The Chuck Norris Asynchronous Job System
 
 This section details the Job Router, the critical backbone for handling all long-running, asynchronous tasks within the system. Every action here requires authentication (a valid JWT) and enforces strict ownership—you can only manage jobs you yourself initiated.
+
 🚀 Key Enterprise Features
 
     Asynchronous Processing: All job creation (POST) immediately returns a 201 Created status while the heavy lifting is dispatched to a background worker (currently simulated by the "SHIM MODE").
@@ -12,6 +13,7 @@ This section details the Job Router, the critical backbone for handling all long
     Logging Proof: The logs confirm the system is running: User [ID] authenticated successfully and 🌟 Chuck Norris Success: Job [ID] was successfully hit and removed....
 
 🛡️ Endpoints: The Roundhouse Kick List
+
 1. Create & Enqueue a New Job (POST /jobs)
 
 Method
@@ -74,6 +76,7 @@ Lists all jobs created by the current authenticated user.
 Required
 
 Notes: The shim fix ensured consistent retrieval of all jobs: 🌟 Chuck Norris List Job: Retrieved X shim job(s) for user...
+
 3. Retrieve a Specific Job (GET /jobs/{job_id})
 
 Method
@@ -99,6 +102,7 @@ Retrieves status and details for one specific job.
 Required
 
 Path Parameter: job_id (UUID)
+
 4. Delete a Job (DELETE /jobs/{job_id})
 
 Method

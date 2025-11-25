@@ -5,8 +5,7 @@ from typing import Dict, Any, List
 
 # Assuming these imports exist in your project structure
 from src.db.database import get_db_session
-from src.tasks import celery_app
-from src.tasks.celery_app import app
+from src.tasks.celery_app import app as celery_app
 
 # The router is instantiated without prefix/tags here, they are applied in app/main.py
 health_router = APIRouter() 
@@ -25,7 +24,7 @@ def check_celery_status() -> Dict[str, Any]:
     """Pings the Celery worker(s) and broker to check their availability."""
     try:
         # control.ping() is non-blocking and the fastest way to check workers
-        celery_response: List[Dict[str, str]] = celery_app.control.ping(timeout=0.5)
+        celery_response: List[Dict[str, str]] = celery_app.control.ping(timeout=1.0)
         
         if celery_response:
             # If at least one worker responds, Celery is healthy
