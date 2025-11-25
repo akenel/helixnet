@@ -1,15 +1,17 @@
+## Swagger UI  AuthN + AuthZ | Trouble-Shooting Guide: 
+### OpenID Authentication Authoriztion
+
+Tackle each issue cleanly and in order so Helix can use Keycloak as the IdP and the Swagger UI + realm screens work.
+
+Below are examples for gum tips, scripting, network and other common issues:
+(A) quick explanations, (B) checks to run now, and (C) exact commands / script fixes you can copy/paste into OpenWebUi. 
+
 sudo mkdir -p /etc/apt/keyrings
 curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
 echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
 sudo apt update
  
  sudo apt install gum
-
-
-
-Let’s tackle each cleanly and in order so Helix can use Keycloak as the IdP and the Swagger UI + realm screens work.
-
-I’ll give you (A) quick explanations, (B) checks to run now, and (C) exact commands / script fixes you can paste. No waiting — do them now and paste back any logs/errors you still see.
 
 ---
 
@@ -396,11 +398,9 @@ That way your **nuke script** actually disables rogue system services before try
 
 ## 🧩 TL;DR
 
-💥 **Yes** — it’s *definitely possible* and *highly likely* you have a rogue system service binding to 443 (and sometimes 80).
-💡 Your Docker cleanup is fine; this is an OS-level process (Apache, Nginx, Snap proxy, or similar).
-⚙️ Run `sudo ss -ltnp | grep 443` and `ps -fp 61555` and show me the output — we’ll know *exactly* who’s squatting on your ports.
+💥 It’s *definitely possible* and *highly likely* you have a rogue system service binding to 443 (and sometimes 80).
+💡 Your Docker cleanup should be fine; this is an OS-level process (Apache, Nginx, Snap proxy, or similar).
+⚙️ Run `sudo ss -ltnp | grep 443` and `ps -fp 61555` and show the output — you’ll know *exactly* who’s squatting on your ports.
 
 ---
-
-Would you like me to add that *auto-detect-and-disable offending systemd service* logic into the nuke script so it permanently handles these port hijackers?
 

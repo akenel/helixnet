@@ -1,4 +1,5 @@
-For a production VELIX setup on DigitalOcean, implementing a robust backup and disaster recovery (DR) strategy is crucial. Here's a comprehensive approach:
+For a production VELIX setup VPS on DigitalOcean, implementing a robust backup and disaster recovery (DR) strategy is crucial. 
+Here's a comprehensive approach:
 
 ### Database Backup Strategy
 
@@ -175,4 +176,4 @@ services:
       - "8000:8000"
 ```
 
-This comprehensive approach ensures that your VELIX production environment is well-protected against data loss and can be quickly recovered in case of a disaster. Would you like me to elaborate on any specific aspect of this strategy?
+This comprehensive approach ensures that your VELIX production environment is well-protected against data loss and can be quickly recovered in case of a disaster. 

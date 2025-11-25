@@ -279,12 +279,3 @@ Use this. It is tested. It hits. It sells.
 
 ---
 
-# 🧱 You now have everything you need to **crush this demo**.
-
-If you want, I can prepare:
-
-✅ a **demo checklist PDF**
-✅ a **one-page cheat sheet**
-✅ a **script in teleprompter format**
-✅ a **“storyline” pitch to frame everything**
-Just say: **“Sherlock give me the PDF / script / cheat sheet”**

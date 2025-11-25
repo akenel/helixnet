@@ -1,5 +1,4 @@
-HelixNet Core Startup Analysis: Race Conditions and Dependencies
-time must be in sync
+HelixNet Core Startup Analysis: Race Conditions and Dependencies (time must be in sync)
 
 ----
 timedatectl

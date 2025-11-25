@@ -24,5 +24,24 @@ for i in {1..60}; do
   sleep 1
 done
 
-echo "🚀 Starting Helix Platform..."
-exec uvicorn src.main:app --host 0.0.0.0 --port 8000
+echo "🚀 Starting Helix Service (type: ${SERVICE_TYPE:-platform})..."
+
+# Detect which service to start based on SERVICE_TYPE environment variable
+case "${SERVICE_TYPE:-platform}" in
+  "worker")
+    echo "🥬 Starting Celery Worker..."
+    exec celery -A src.tasks.celery_app:app worker --loglevel=INFO
+    ;;
+  "beat")
+    echo "🥁 Starting Celery Beat..."
+    exec celery -A src.tasks.celery_app:app beat --loglevel=INFO
+    ;;
+  "flower")
+    echo "🌼 Starting Flower..."
+    exec celery -A src.tasks.celery_app:app flower --port=5555
+    ;;
+  "platform"|*)
+    echo "🦄 Starting FastAPI Platform..."
+    exec uvicorn src.main:app --host 0.0.0.0 --port 8000
+    ;;
+esac

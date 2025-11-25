@@ -3,6 +3,7 @@ Goal
 
 To transition HelixNet from an authenticated framework into a functioning asynchronous job processing and secure data management platform.
 Phase 5 Focus Areas
+
 1. Core Job Submission and Execution (Job Service)
 
 This is where the application starts doing work. We need to expose endpoints for authenticated users to submit jobs and track their status.
@@ -136,6 +137,4 @@ Conclusion
 
 Successfully executing this plan will move HelixNet past the foundational stage and establish the complete lifecycle of a job: Authentication → Job Submission → Asynchronous Processing (Worker) → Secure Data Storage (MinIO) → User Retrieval.
 
-We should start with Focus Area 1 (Core Job Service), as this proves the entire Celery/FastAPI/PostgreSQL flow is working end-to-end.
-
-Which area looks like the most exciting and logical starting point for you, Chuck and Petar? Are we ready to jump into creating the core Job Submission and Execution logic?
+Start with Focus Area 1 (Core Job Service), as this proves the entire Celery/FastAPI/PostgreSQL flow is working end-to-end.
