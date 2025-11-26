@@ -33,6 +33,72 @@ CONCEPT: for 12 year old learning tool to spin-up an enterprise middleware platf
 
   This is EXACTLY what HelixNet was built for.
 
+---
+
+## 🛒 Production POS System (Sprint 3: RBAC Complete)
+
+**Status:** ✅ Production-Ready with Keycloak RBAC
+
+HelixNet now includes a **fully functional Point-of-Sale (POS) system** with enterprise-grade authentication and role-based access control.
+
+### 🔐 Features
+
+* **Real Keycloak Authentication** - JWT token validation with RS256 signatures
+* **5-Role RBAC System**:
+  * 💰️ **pos-cashier** - Create transactions, scan products, process checkout (10% discount limit)
+  * 👔️ **pos-manager** - Full POS access including product management, unlimited discounts, reports
+  * 🛠️ **pos-developer** - Create products for testing, limited production access
+  * 📊️ **pos-auditor** - Read-only access to all transactions, products, reports (compliance)
+  * 👑️ **pos-admin** - Full system control over POS realm and configuration
+* **Automated Realm Import** - Infrastructure as Code (no manual Keycloak setup)
+* **Startup Health Checks** - Realm status matrix showing users/clients count
+* **Pre-seeded Test Users** - 6 users ready for testing (Pam, Ralph, Michael, Felix, pos-developer, pos-auditor)
+* **Multi-Environment Ready** - Identical configs for DEV/UAT/PROD
+
+### 🚀 Quick Test
+
+```bash
+# 1. Login as Pam (Cashier)
+curl -k -X POST "https://keycloak.helix.local/realms/kc-pos-realm-dev/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=helix_pos_web" \
+  -d "username=pam" \
+  -d "password=helix_pass" \
+  -d "grant_type=password" | jq -r '.access_token'
+
+# 2. Use token to access POS API
+curl -k "https://helix-platform.local/api/v1/pos/products" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 📚 Documentation
+
+* **Full Setup Guide**: See `docs/KEYCLOAK_SETUP.md`
+* **Realm Config**: `helix-pos-realm-dev.json` (auto-imported on startup)
+* **Test Users**: All passwords are `helix_pass` (demo only)
+
+### 🧪 Test Users & Roles
+
+| Username | Password | Role | Can Create Products? | Can View Reports? |
+|----------|----------|------|---------------------|-------------------|
+| pam | helix_pass | 💰️ Cashier | ❌ No | ❌ No |
+| ralph | helix_pass | 👔️ Manager | ✅ Yes | ✅ Yes |
+| michael | helix_pass | 🛠️ Developer | ✅ Yes | ❌ No |
+| felix | helix_pass | 👑️ Admin | ✅ Yes | ✅ Yes |
+| pos-auditor | helix_pass | 📊️ Auditor | ❌ No | ✅ Yes (read-only) |
+
+### 🔧 API Endpoints
+
+* `GET /api/v1/pos/products` - List products (any POS role)
+* `POST /api/v1/pos/products` - Create product (manager/developer/admin only)
+* `PUT /api/v1/pos/products/{id}` - Update product (manager/admin only)
+* `DELETE /api/v1/pos/products/{id}` - Delete product (manager/admin only)
+* `POST /api/v1/pos/transactions` - Create transaction (cashier/manager/admin)
+* `POST /api/v1/pos/checkout` - Process checkout (cashier/manager/admin)
+* `GET /api/v1/pos/reports/daily-summary` - Daily sales report (manager/auditor/admin)
+
+All endpoints enforce RBAC via JWT token validation.
+
 > ⚠️ **Warning:**
 > This is not a beginner project. Expect to troubleshoot certificates MKCERT, CORS, and container networking via Traefik and Keycloak.
 > Proceed only if you have **grit, coffee, and curiosity**.

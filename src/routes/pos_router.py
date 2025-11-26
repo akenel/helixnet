@@ -35,10 +35,15 @@ from src.schemas.pos_schema import (
     CheckoutRequest,
     DailySummary,
 )
-# TEMPORARY: Using mock auth to bypass Keycloak issues
-# TODO: Switch back to real auth once Keycloak is fixed
-# from src.core.local_auth_service import get_current_user
-from src.core.mock_auth import get_mock_user as get_current_user
+# Real Keycloak authentication with RBAC
+from src.core.keycloak_auth import (
+    require_roles,
+    require_any_pos_role,
+    require_admin,
+    require_manager_or_admin,
+)
+# REFERENCE ONLY: Mock auth kept for comparison
+# from src.core.mock_auth import get_mock_user as get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -53,17 +58,16 @@ router = APIRouter(prefix="/api/v1/pos", tags=["POS"])
 async def create_product(
     product: ProductCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
 ):
-    """Create a new product in the catalog (manager/admin only)"""
-    # TODO: Add role-based auth check for manager/admin
+    """Create a new product in the catalog (manager/developer/admin only)"""
 
     new_product = ProductModel(**product.model_dump())
     db.add(new_product)
     await db.commit()
     await db.refresh(new_product)
 
-    logger.info(f"Product created: {new_product.sku} by user {current_user.username}")
+    logger.info(f"Product created: {new_product.sku} by user {current_user['username']}")
     return new_product
 
 
@@ -74,9 +78,9 @@ async def list_products(
     active_only: bool = True,
     category: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
-    """List all products in catalog"""
+    """List all products in catalog (any POS role)"""
     query = select(ProductModel)
 
     if active_only:
@@ -96,9 +100,9 @@ async def list_products(
 async def get_product(
     product_id: UUID,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Get product by ID"""
+    """Get product by ID (any POS role)"""
     result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
     product = result.scalar_one_or_none()
 
@@ -112,7 +116,7 @@ async def get_product(
 async def get_product_by_barcode(
     barcode: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
     """Get product by barcode (for scanning)"""
     result = await db.execute(select(ProductModel).where(ProductModel.barcode == barcode))
@@ -132,10 +136,9 @@ async def update_product(
     product_id: UUID,
     product_update: ProductUpdate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_manager_or_admin()),
 ):
     """Update product details (manager/admin only)"""
-    # TODO: Add role-based auth check
 
     result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
     product = result.scalar_one_or_none()
@@ -152,7 +155,7 @@ async def update_product(
     await db.commit()
     await db.refresh(product)
 
-    logger.info(f"Product updated: {product.sku} by user {current_user.username}")
+    logger.info(f"Product updated: {product.sku} by user {current_user['username']}")
     return product
 
 
@@ -160,10 +163,9 @@ async def update_product(
 async def delete_product(
     product_id: UUID,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_manager_or_admin()),
 ):
-    """Soft delete product (set inactive)"""
-    # TODO: Add role-based auth check
+    """Soft delete product (set inactive - manager/admin only)"""
 
     result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
     product = result.scalar_one_or_none()
@@ -175,7 +177,7 @@ async def delete_product(
     product.updated_at = datetime.now(timezone.utc)
     await db.commit()
 
-    logger.info(f"Product deactivated: {product.sku} by user {current_user.username}")
+    logger.info(f"Product deactivated: {product.sku} by user {current_user['username']}")
 
 
 # ================================================================
@@ -186,9 +188,9 @@ async def delete_product(
 async def create_transaction(
     transaction: TransactionCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(["💰️ pos-cashier", "👔️ pos-manager", "👑️ pos-admin"])),
 ):
-    """Create new transaction (open cart) - cashier starts a sale"""
+    """Create new transaction (open cart) - cashier/manager/admin only"""
     # Generate transaction number (simple sequential for demo)
     today = date.today().strftime("%Y%m%d")
     # TODO: Make this atomic with proper sequence
@@ -213,7 +215,7 @@ async def create_transaction(
     await db.commit()
     await db.refresh(new_transaction)
 
-    logger.info(f"Transaction created: {transaction_number} by cashier {current_user.username}")
+    logger.info(f"Transaction created: {transaction_number} by cashier {current_user['username']}")
     return new_transaction
 
 
@@ -221,7 +223,7 @@ async def create_transaction(
 async def get_transaction(
     transaction_id: UUID,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
     """Get transaction details with line items"""
     result = await db.execute(
@@ -281,9 +283,9 @@ async def add_item_to_transaction(
     transaction_id: UUID,
     item: LineItemCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(["💰️ pos-cashier", "👔️ pos-manager", "👑️ pos-admin"])),
 ):
-    """Add item to transaction cart"""
+    """Add item to transaction cart (cashier/manager/admin only)"""
     # Verify transaction exists and is open
     trans_result = await db.execute(
         select(TransactionModel).where(TransactionModel.id == transaction_id)
@@ -346,9 +348,9 @@ async def scan_barcode(
     transaction_id: UUID,
     scan: BarcodeScanRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(["💰️ pos-cashier", "👔️ pos-manager", "👑️ pos-admin"])),
 ):
-    """Scan barcode and add to transaction (convenience endpoint)"""
+    """Scan barcode and add to transaction (cashier/manager/admin only)"""
     # Find product by barcode
     prod_result = await db.execute(
         select(ProductModel).where(ProductModel.barcode == scan.barcode)
@@ -395,9 +397,9 @@ async def checkout_transaction(
     transaction_id: UUID,
     checkout: CheckoutRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(["💰️ pos-cashier", "👔️ pos-manager", "👑️ pos-admin"])),
 ):
-    """Process checkout and complete transaction"""
+    """Process checkout and complete transaction (cashier/manager/admin only)"""
     trans_result = await db.execute(
         select(TransactionModel).where(TransactionModel.id == transaction_id)
     )
@@ -444,9 +446,9 @@ async def checkout_transaction(
 async def get_daily_summary(
     report_date: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
-    current_user: UserModel = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "📊️ pos-auditor", "👑️ pos-admin"])),
 ):
-    """Get daily sales summary for Banana export"""
+    """Get daily sales summary for Banana export (manager/auditor/admin only)"""
     # Default to today
     if not report_date:
         target_date = date.today()
