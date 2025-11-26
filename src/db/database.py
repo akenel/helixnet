@@ -7,6 +7,22 @@ from sqlalchemy import create_engine
 from src.db.models.base import Base
 from src.core.config import get_settings
 
+# Import all models so they register with Base.metadata for Alembic
+from src.db.models import (  # noqa: F401
+    UserModel,
+    TeamModel,
+    RefreshTokenModel,
+    JobModel,
+    TaskModel,
+    ArtifactModel,
+    MessageTaskModel,
+    PipelineTaskModel,
+    InitializerModel,
+    ProductModel,
+    TransactionModel,
+    LineItemModel,
+)
+
 logger = logging.getLogger("app/db/database.py 🪵️")
 logger.setLevel(logging.INFO)
 settings = get_settings()

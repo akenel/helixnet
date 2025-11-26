@@ -7,10 +7,16 @@ from .job_model import JobModel
 from .artifact_model import ArtifactModel
 from .message_tasks_model import MessageTaskModel
 from .initializer_model import InitializerModel
-from .pipeline_tasks_model import PipelineTaskModel 
+from .pipeline_tasks_model import PipelineTaskModel
 from .task_model import TaskModel
 from .refresh_token_model import RefreshTokenModel
 from .user_model import UserModel
+
+# POS Models (Felix's Artemis Store)
+from .product_model import ProductModel
+from .transaction_model import TransactionModel, TransactionStatus, PaymentMethod
+from .line_item_model import LineItemModel
+
 __all__ = [
     "Base",
     "UserModel",
@@ -22,4 +28,10 @@ __all__ = [
     "MessageTaskModel",
     "PipelineTaskModel",
     "InitializerModel",
+    # POS Models
+    "ProductModel",
+    "TransactionModel",
+    "TransactionStatus",
+    "PaymentMethod",
+    "LineItemModel",
 ]

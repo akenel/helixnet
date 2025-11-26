@@ -25,9 +25,12 @@ from fastapi.security import OAuth2AuthorizationCodeBearer
 from src.core.config import get_settings
 from src.db.database import init_db_tables, close_async_engine, get_db_session_context
 from src.services.user_service import create_initial_users
+from src.services.artemis_user_seeding import seed_artemis_staff
+from src.services.pos_seeding_service import seed_artemis_products
 from src.services.minio_service import initialize_minio
 from src.routes import auth_router, jobs_router, users_router
 from src.routes.health_router import health_router
+from src.routes.pos_router import router as pos_router
 
 # ================================================================
 # 🌍 Global Configuration
@@ -74,6 +77,24 @@ async def lifespan(app: FastAPI):
         logger.info("✅ User seeding completed successfully.")
     except Exception as e:
         logger.warning(f"⚠️ User seeding encountered an issue: {e}", exc_info=True)
+
+    # --- Seed Artemis Staff (Pam, Ralph, Michael, Felix) ---
+    try:
+        logger.info("👔 Seeding Artemis store staff...")
+        async with get_db_session_context() as db:
+            await seed_artemis_staff(db)
+        logger.info("✅ Artemis staff seeding completed successfully.")
+    except Exception as e:
+        logger.warning(f"⚠️ Artemis staff seeding encountered an issue: {e}", exc_info=True)
+
+    # --- Seed POS Products (Felix's Artemis Store) ---
+    try:
+        logger.info("🛒 Seeding POS demo products...")
+        async with get_db_session_context() as db:
+            await seed_artemis_products(db)
+        logger.info("✅ POS product seeding completed successfully.")
+    except Exception as e:
+        logger.warning(f"⚠️ POS product seeding encountered an issue: {e}", exc_info=True)
 
     logger.info("✨ HelixNet Core READY to serve requests.")
     yield
@@ -133,6 +154,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix=settings.API_V1_STR, tags=["🔑 Authentication"])
 app.include_router(users_router, prefix=settings.API_V1_STR, tags=["👤 Users"])
 app.include_router(jobs_router, prefix=settings.API_V1_STR, tags=["⚙️ Jobs"])
+app.include_router(pos_router, tags=["🛒 POS - Felix's Artemis Store"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")

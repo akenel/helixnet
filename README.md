@@ -22,8 +22,19 @@ HelixNet is a **production-grade FastAPI stack** featuring:
 This project demonstrates a *real-world secure microservice environment* that mirrors modern SaaS architecture.
 CONCEPT: for 12 year old learning tool to spin-up an enterprise middleware platform and start developing secure web apps.
 
+## ⚙️ Overview example: Point-of-Sale PoS System:
+   Here's the architecture:
+   - FastAPI backend - POS endpoints (scan, checkout, reports)
+   - Keycloak - Staff logins with roles (cashier, manager)
+   - Postgres - Products, transactions, daily totals
+   - MinIO - Store receipts/invoices as PDFs
+   - Simple HTML frontend - No React, just FastAPI templates + HTMX
+   - Traefik - HTTPS for in-store tablet
+
+  This is EXACTLY what HelixNet was built for.
+
 > ⚠️ **Warning:**
-> This is not a beginner project. Expect to troubleshoot certificates, CORS, and container networking.
+> This is not a beginner project. Expect to troubleshoot certificates MKCERT, CORS, and container networking via Traefik and Keycloak.
 > Proceed only if you have **grit, coffee, and curiosity**.
 
 ---

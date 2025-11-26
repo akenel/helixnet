@@ -57,13 +57,25 @@ class UserModel(Base):
     jobs: Mapped[list["JobModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     tasks: Mapped[list["TaskModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     artifacts: Mapped[list["ArtifactModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
-    
+
     # 💥 CRITICAL FIX: Rename to 'initiated_message_tasks' to satisfy MessageTaskModel's back_populates
     initiated_message_tasks: Mapped[list["MessageTaskModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
-    
+
     pipeline_tasks: Mapped[list["PipelineTaskModel"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     # New relationship to complete the InitializerModel's back_populates
     initializer: Mapped["InitializerModel"] = relationship(back_populates="admin_user")
+
+    # POS Relationships (Felix's Artemis Store)
+    cashier_transactions: Mapped[list["TransactionModel"]] = relationship(
+        foreign_keys="TransactionModel.cashier_id",
+        back_populates="cashier",
+        cascade="all, delete-orphan"
+    )
+    customer_transactions: Mapped[list["TransactionModel"]] = relationship(
+        foreign_keys="TransactionModel.customer_id",
+        back_populates="customer",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<UserModel(id='{self.id}', username='{self.username}', email='{self.email}')>"
