@@ -1,0 +1,191 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Checkout - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="checkoutData()">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="card">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">💳 Checkout</h1>
+
+            <!-- Order Summary -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+                <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <template x-for="(item, index) in cartData.cart" :key="index">
+                        <div class="flex justify-between">
+                            <span x-text="`${item.quantity}x ${item.name}`"></span>
+                            <span x-text="formatPrice(item.price * item.quantity)"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="bg-indigo-50 rounded-lg p-6 mb-6 space-y-3">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span x-text="formatPrice(cartData.totals.subtotal)"></span>
+                </div>
+                <div x-show="cartData.discount > 0" class="flex justify-between text-green-600">
+                    <span>Discount (<span x-text="cartData.discount"></span>%):</span>
+                    <span x-text="'-' + formatPrice(cartData.totals.discountAmount)"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span>VAT (7.7%):</span>
+                    <span x-text="formatPrice(cartData.totals.vat)"></span>
+                </div>
+                <div class="border-t pt-3 flex justify-between text-xl font-bold">
+                    <span>TOTAL:</span>
+                    <span class="text-indigo-600" x-text="formatPrice(cartData.totals.total)"></span>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Payment Method</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <button
+                        @click="paymentMethod = 'cash'"
+                        :class="paymentMethod === 'cash' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
+                        class="card py-8 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-5xl mb-2 block">💵</span>
+                        <p class="font-semibold">Cash</p>
+                    </button>
+                    <button
+                        @click="paymentMethod = 'card'"
+                        :class="paymentMethod === 'card' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
+                        class="card py-8 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-5xl mb-2 block">💳</span>
+                        <p class="font-semibold">Card</p>
+                    </button>
+                    <button
+                        @click="paymentMethod = 'mobile'"
+                        :class="paymentMethod === 'mobile' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
+                        class="card py-8 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-5xl mb-2 block">📱</span>
+                        <p class="font-semibold">Mobile</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dry Run Preview -->
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
+                <h2 class="text-lg font-semibold text-yellow-800 mb-3">⚠️ Dry Run Preview</h2>
+                <div class="space-y-2 text-sm text-yellow-900">
+                    <p>• Cash drawer: <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : 'CHF 0.00 (card/mobile)'"></span></p>
+                    <p>• Inventory: <span x-text="inventoryPreview()"></span></p>
+                    <p>• Receipt: Will print to POS printer</p>
+                    <p>• Daily total: +<span x-text="formatPrice(cartData.totals.total)"></span></p>
+                </div>
+            </div>
+
+            <!-- Confirmation -->
+            <div class="mb-6 text-center">
+                <p class="text-lg text-gray-700">❓ Does everything look correct?</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-3 gap-4">
+                <button @click="goBack()" class="btn-secondary">
+                    ❌ Cancel
+                </button>
+                <button @click="goBack()" class="btn-secondary">
+                    ✏️ Edit Cart
+                </button>
+                <button @click="completeTransaction()" :disabled="processing" class="btn-success">
+                    <span x-show="!processing">✅ Confirm & Complete</span>
+                    <span x-show="processing">Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function checkoutData() {
+        return {
+            cartData: {cart: [], totals: {}, discount: 0, transactionId: ''},
+            paymentMethod: 'card',
+            processing: false,
+
+            init() {
+                const stored = sessionStorage.getItem('pos_cart');
+                if (!stored) {
+                    showToast('No cart data found', 'warning');
+                    setTimeout(() => window.location.href = '/pos/scan', 1000);
+                    return;
+                }
+
+                this.cartData = JSON.parse(stored);
+            },
+
+            inventoryPreview() {
+                const counts = {};
+                this.cartData.cart.forEach(item => {
+                    if (!item.isCatalogItem) {
+                        counts[item.name] = (counts[item.name] || 0) + item.quantity;
+                    }
+                });
+                return Object.entries(counts).map(([name, qty]) => `-${qty} ${name}`).join(', ') || 'No inventory changes';
+            },
+
+            async completeTransaction() {
+                if (!this.paymentMethod) {
+                    showToast('Please select a payment method', 'warning');
+                    return;
+                }
+
+                if (!confirm(`Complete transaction for ${formatPrice(this.cartData.totals.total)}?`)) {
+                    return;
+                }
+
+                this.processing = true;
+
+                try {
+                    // Create transaction
+                    const transaction = await API.post('/api/v1/pos/transactions', {});
+
+                    // Add line items
+                    for (const item of this.cartData.cart) {
+                        await API.post(`/api/v1/pos/transactions/${transaction.id}/items`, {
+                            product_id: item.id.toString().startsWith('catalog') ? null : item.id,
+                            quantity: item.quantity,
+                            unit_price: item.price.toString(),
+                            discount_percent: this.cartData.discount.toString()
+                        });
+                    }
+
+                    // Checkout
+                    await API.post(`/api/v1/pos/transactions/${transaction.id}/checkout`, {
+                        payment_method: this.paymentMethod
+                    });
+
+                    // Clear cart
+                    sessionStorage.removeItem('pos_cart');
+
+                    showToast('Transaction completed!', 'success');
+
+                    // Show success page
+                    setTimeout(() => {
+                        alert(`✅ Transaction Completed!\n\nID: ${transaction.id}\nTotal: ${formatPrice(this.cartData.totals.total)}\nPayment: ${this.paymentMethod}\n\n Receipt printing...`);
+                        window.location.href = '/pos/dashboard';
+                    }, 500);
+
+                } catch (error) {
+                    showToast('Error: ' + error.message, 'error');
+                    this.processing = false;
+                }
+            },
+
+            goBack() {
+                window.location.href = '/pos/scan';
+            },
+
+            formatPrice(amount) {
+                return formatPrice(amount);
+            }
+        }
+    }
+</script>
+{% endblock %}

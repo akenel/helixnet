@@ -1,0 +1,239 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Close Shift - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="closeoutData()">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="card">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">⏰ Close Shift</h1>
+
+            <!-- Shift Summary (Auto-calculated) -->
+            <div class="bg-indigo-50 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-semibold text-indigo-900 mb-4">📊 Shift Summary</h2>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-gray-600">Cashier:</p>
+                        <p class="font-semibold" x-text="user.username"></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Shift Time:</p>
+                        <p class="font-semibold">8:00 AM - <span x-text="currentTime()"></span></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Transactions:</p>
+                        <p class="font-semibold text-2xl" x-text="summary.transactionCount"></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Total Sales:</p>
+                        <p class="font-semibold text-2xl text-green-600" x-text="formatPrice(summary.totalSales)"></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Cash:</p>
+                        <p class="font-semibold" x-text="formatPrice(summary.cashSales)"></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Card/Mobile:</p>
+                        <p class="font-semibold" x-text="formatPrice(summary.cardSales)"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Drawer Count -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Cash Drawer Count</h2>
+                <div class="bg-gray-50 rounded-lg p-6 space-y-3">
+                    <p class="text-sm text-gray-600 mb-4">Enter the amount of cash in the drawer:</p>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm text-gray-600">Notes (CHF)</label>
+                            <input type="number" step="0.10" x-model="cashCount.notes" @input="updateCashTotal()" class="input-field">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Coins (CHF)</label>
+                            <input type="number" step="0.10" x-model="cashCount.coins" @input="updateCashTotal()" class="input-field">
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4 mt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Total Counted:</span>
+                            <span class="text-2xl font-bold" x-text="formatPrice(cashCount.total)"></span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Expected:</span>
+                            <span class="text-2xl font-bold" x-text="formatPrice(summary.cashSales)"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold">Difference:</span>
+                            <span
+                                class="text-2xl font-bold"
+                                :class="cashDifference() === 0 ? 'text-green-600' : 'text-red-600'"
+                                x-text="formatPrice(cashDifference())"></span>
+                        </div>
+
+                        <div x-show="cashDifference() === 0" class="mt-4 bg-green-100 text-green-800 rounded-lg p-3 text-center font-semibold">
+                            ✅ Cash drawer matches! Perfect!
+                        </div>
+
+                        <div x-show="cashDifference() !== 0" class="mt-4 bg-yellow-100 text-yellow-800 rounded-lg p-3">
+                            ⚠️ Cash difference detected. Please recount or request manager approval.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adjustments Needed? -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">❓ Need Adjustments?</h2>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                        <input type="radio" x-model="needsAdjustment" value="no" class="w-5 h-5">
+                        <span>No, close shift now</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                        <input type="radio" x-model="needsAdjustment" value="yes" class="w-5 h-5">
+                        <span>Yes, let me add a note</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                        <input type="radio" x-model="needsAdjustment" value="manager" class="w-5 h-5">
+                        <span>Request manager approval (Felix/Ralph)</span>
+                    </label>
+                </div>
+
+                <div x-show="needsAdjustment === 'yes'" class="mt-4">
+                    <textarea
+                        x-model="adjustmentNote"
+                        class="input-field h-24"
+                        placeholder="Describe what needs fixing..."></textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-4">
+                <button @click="goBack()" class="btn-secondary">
+                    ❌ Cancel
+                </button>
+                <button @click="closeShift()" :disabled="processing" class="btn-success">
+                    <span x-show="!processing">✅ Close Shift</span>
+                    <span x-show="processing">Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function closeoutData() {
+        return {
+            user: {},
+            summary: {
+                transactionCount: 0,
+                totalSales: 0,
+                cashSales: 0,
+                cardSales: 0
+            },
+            cashCount: {
+                notes: 0,
+                coins: 0,
+                total: 0
+            },
+            needsAdjustment: 'no',
+            adjustmentNote: '',
+            processing: false,
+
+            async init() {
+                const userInfo = AuthHelper.getUserInfo();
+                if (!userInfo) {
+                    window.location.href = '/pos';
+                    return;
+                }
+                this.user = userInfo;
+
+                // Load today's summary
+                try {
+                    const data = await API.get('/api/v1/pos/reports/daily-summary');
+                    this.summary = {
+                        transactionCount: data.transaction_count || 0,
+                        totalSales: parseFloat(data.total_sales || 0),
+                        cashSales: parseFloat(data.cash_sales || 0),
+                        cardSales: parseFloat(data.card_sales || 0)
+                    };
+                } catch (error) {
+                    console.error('Failed to load summary:', error);
+                    // Continue with zeros
+                }
+            },
+
+            updateCashTotal() {
+                this.cashCount.total = parseFloat(this.cashCount.notes || 0) + parseFloat(this.cashCount.coins || 0);
+            },
+
+            cashDifference() {
+                return this.cashCount.total - this.summary.cashSales;
+            },
+
+            currentTime() {
+                return new Date().toLocaleTimeString('de-CH', {hour: '2-digit', minute: '2-digit'});
+            },
+
+            async closeShift() {
+                if (this.needsAdjustment === 'yes' && !this.adjustmentNote.trim()) {
+                    showToast('Please enter a note for the adjustment', 'warning');
+                    return;
+                }
+
+                const message = this.needsAdjustment === 'manager'
+                    ? 'Send close shift request to manager for approval?'
+                    : `Close shift with ${formatPrice(this.summary.totalSales)} in sales?`;
+
+                if (!confirm(message)) {
+                    return;
+                }
+
+                this.processing = true;
+
+                try {
+                    // In a real system, this would create a close-out record
+                    // For now, just show success
+                    showToast('Shift closed successfully!', 'success');
+
+                    setTimeout(() => {
+                        const summary = `
+Shift Closed Successfully!
+
+Cashier: ${this.user.username}
+Transactions: ${this.summary.transactionCount}
+Total Sales: ${formatPrice(this.summary.totalSales)}
+Cash: ${formatPrice(this.summary.cashSales)}
+Card/Mobile: ${formatPrice(this.summary.cardSales)}
+
+Cash Count: ${formatPrice(this.cashCount.total)}
+Difference: ${formatPrice(this.cashDifference())}
+
+${this.adjustmentNote ? 'Note: ' + this.adjustmentNote : ''}
+
+Thank you for a great shift!
+                        `;
+                        alert(summary);
+                        window.location.href = '/pos/dashboard';
+                    }, 500);
+
+                } catch (error) {
+                    showToast('Error: ' + error.message, 'error');
+                    this.processing = false;
+                }
+            },
+
+            goBack() {
+                window.location.href = '/pos/dashboard';
+            },
+
+            formatPrice(amount) {
+                return formatPrice(amount);
+            }
+        }
+    }
+</script>
+{% endblock %}

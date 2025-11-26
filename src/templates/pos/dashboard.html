@@ -1,0 +1,247 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Dashboard - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="dashboardData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-3xl">🛒</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">HelixPOS</h1>
+                        <p class="text-xs text-gray-500">Artemis Store</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <!-- User info -->
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-gray-900" x-text="user.username"></p>
+                        <p class="text-xs text-gray-500" x-text="roleDisplay()"></p>
+                    </div>
+
+                    <!-- Logout button -->
+                    <button
+                        @click="logout()"
+                        class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                        🔓 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Banner -->
+        <div class="card mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+            <h2 class="text-3xl font-bold mb-2" x-text="`Welcome, ${user.username}! 👋`"></h2>
+            <p class="text-lg opacity-90">What would you like to do today?</p>
+        </div>
+
+        <!-- Stats Cards (if cashier or manager) -->
+        <div x-show="user.isCashier" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Today's Sales</p>
+                        <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(stats.todaySales)"></p>
+                    </div>
+                    <span class="text-4xl">💰</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Transactions</p>
+                        <p class="text-2xl font-bold text-gray-900" x-text="stats.transactionCount"></p>
+                    </div>
+                    <span class="text-4xl">🧾</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Shift Time</p>
+                        <p class="text-2xl font-bold text-gray-900" x-text="shiftTime"></p>
+                    </div>
+                    <span class="text-4xl">⏰</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- CASHIER ACTIONS -->
+            <template x-if="user.isCashier">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/scan'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">🏪</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">New Sale</h3>
+                        <p class="text-gray-600">Start scanning products</p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="user.isCashier">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/products'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">📦</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Product Catalog</h3>
+                        <p class="text-gray-600">Browse all items</p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="user.isCashier">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/closeout'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">⏰</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Close Shift</h3>
+                        <p class="text-gray-600">End your day & count cash</p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- MANAGER ACTIONS -->
+            <template x-if="user.isManager">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/reports'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">📊</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Sales Reports</h3>
+                        <p class="text-gray-600">View analytics & trends</p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="user.isManager">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/transactions'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">💳</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">All Transactions</h3>
+                        <p class="text-gray-600">View all sales</p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ADMIN ACTIONS -->
+            <template x-if="user.isAdmin">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/admin'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">👥</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">User Management</h3>
+                        <p class="text-gray-600">Manage staff & roles</p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="user.isAdmin">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/settings'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">⚙️</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Settings</h3>
+                        <p class="text-gray-600">Configure POS system</p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+</div>
+
+<script>
+    function dashboardData() {
+        return {
+            user: {
+                username: '',
+                roles: [],
+                posRoles: [],
+                isAdmin: false,
+                isManager: false,
+                isCashier: false
+            },
+            stats: {
+                todaySales: 0,
+                transactionCount: 0,
+                shiftStart: new Date()
+            },
+            shiftTime: '0h 0m',
+
+            init() {
+                // Check authentication
+                const token = AuthHelper.getToken();
+                if (!token) {
+                    window.location.href = '/pos';
+                    return;
+                }
+
+                // Get user info from token
+                const userInfo = AuthHelper.getUserInfo();
+                if (!userInfo || userInfo.posRoles.length === 0) {
+                    showToast('No POS access. Please contact admin.', 'error');
+                    setTimeout(() => {
+                        AuthHelper.logout();
+                    }, 2000);
+                    return;
+                }
+
+                this.user = {
+                    ...userInfo,
+                    isAdmin: AuthHelper.isAdmin(),
+                    isManager: AuthHelper.isManager(),
+                    isCashier: AuthHelper.isCashier()
+                };
+
+                // Load stats
+                this.loadStats();
+
+                // Update shift time every minute
+                setInterval(() => this.updateShiftTime(), 60000);
+                this.updateShiftTime();
+            },
+
+            async loadStats() {
+                try {
+                    // Get today's summary
+                    const summary = await API.get('/api/v1/pos/reports/daily-summary');
+                    this.stats.todaySales = parseFloat(summary.total_sales || 0);
+                    this.stats.transactionCount = summary.transaction_count || 0;
+                } catch (error) {
+                    console.error('Failed to load stats:', error);
+                    // Don't show error toast, stats are optional
+                }
+            },
+
+            updateShiftTime() {
+                const now = new Date();
+                const diff = now - this.stats.shiftStart;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                this.shiftTime = `${hours}h ${minutes}m`;
+            },
+
+            roleDisplay() {
+                return this.user.posRoles.join(', ');
+            },
+
+            formatPrice(amount) {
+                return formatPrice(amount);
+            },
+
+            logout() {
+                if (confirm('Are you sure you want to logout?')) {
+                    showToast('Logging out...', 'info');
+                    setTimeout(() => {
+                        AuthHelper.logout();
+                    }, 500);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HelixPOS{% endblock %} - Artemis Store</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js for reactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            font-family: 'Inter', sans-serif;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Big button focus for Pam */
+        .btn-primary {
+            @apply bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105;
+        }
+
+        .btn-secondary {
+            @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-4 px-6 rounded-lg shadow transition-all duration-200;
+        }
+
+        .btn-danger {
+            @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg transition-all duration-200;
+        }
+
+        .btn-success {
+            @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg transition-all duration-200;
+        }
+
+        /* Card styling */
+        .card {
+            @apply bg-white rounded-xl shadow-lg p-6;
+        }
+
+        /* Input styling - BIG for Pam */
+        .input-field {
+            @apply w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all;
+        }
+
+        /* Price display - VERY visible */
+        .price-display {
+            @apply text-3xl font-bold text-indigo-600;
+        }
+
+        .price-display-large {
+            @apply text-5xl font-extrabold text-indigo-600;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    {% block content %}{% endblock %}
+
+    <!-- Global JavaScript utilities -->
+    <script>
+        // JWT token management
+        const AuthHelper = {
+            getToken() {
+                return sessionStorage.getItem('pos_token');
+            },
+
+            setToken(token) {
+                sessionStorage.setItem('pos_token', token);
+            },
+
+            clearToken() {
+                sessionStorage.removeItem('pos_token');
+                sessionStorage.removeItem('pos_user');
+            },
+
+            decodeToken(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch (e) {
+                    console.error('Failed to decode token:', e);
+                    return null;
+                }
+            },
+
+            getUserInfo() {
+                const token = this.getToken();
+                if (!token) return null;
+
+                const payload = this.decodeToken(token);
+                if (!payload) return null;
+
+                return {
+                    username: payload.preferred_username || 'Unknown',
+                    email: payload.email || '',
+                    roles: payload.realm_access?.roles || [],
+                    posRoles: (payload.realm_access?.roles || []).filter(r =>
+                        r.includes('pos-') || ['💰️ pos-cashier', '👔️ pos-manager', '🛠️ pos-developer', '📊️ pos-auditor', '👑️ pos-admin'].includes(r)
+                    )
+                };
+            },
+
+            hasRole(role) {
+                const user = this.getUserInfo();
+                return user && user.posRoles.includes(role);
+            },
+
+            isAdmin() {
+                return this.hasRole('👑️ pos-admin');
+            },
+
+            isManager() {
+                return this.hasRole('👔️ pos-manager') || this.isAdmin();
+            },
+
+            isCashier() {
+                return this.hasRole('💰️ pos-cashier') || this.isManager();
+            },
+
+            logout() {
+                this.clearToken();
+                window.location.href = '/pos';
+            }
+        };
+
+        // API helper with automatic auth
+        const API = {
+            async call(endpoint, options = {}) {
+                const token = AuthHelper.getToken();
+
+                const defaultHeaders = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                };
+
+                if (token) {
+                    defaultHeaders['Authorization'] = `Bearer ${token}`;
+                }
+
+                const config = {
+                    ...options,
+                    headers: {
+                        ...defaultHeaders,
+                        ...options.headers
+                    }
+                };
+
+                try {
+                    const response = await fetch(endpoint, config);
+
+                    // Handle 401 - token expired
+                    if (response.status === 401) {
+                        AuthHelper.logout();
+                        throw new Error('Session expired. Please login again.');
+                    }
+
+                    // Handle other errors
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.detail || `Request failed with status ${response.status}`);
+                    }
+
+                    // Handle 204 No Content
+                    if (response.status === 204) {
+                        return null;
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('API call failed:', error);
+                    throw error;
+                }
+            },
+
+            get(endpoint) {
+                return this.call(endpoint, { method: 'GET' });
+            },
+
+            post(endpoint, data) {
+                return this.call(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            },
+
+            put(endpoint, data) {
+                return this.call(endpoint, {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+            },
+
+            delete(endpoint) {
+                return this.call(endpoint, { method: 'DELETE' });
+            }
+        };
+
+        // Price formatting helper (Swiss francs)
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('de-CH', {
+                style: 'currency',
+                currency: 'CHF'
+            }).format(amount);
+        }
+
+        // Calculate VAT (Swiss 7.7%)
+        function calculateVAT(subtotal) {
+            return subtotal * 0.077;
+        }
+
+        // Calculate total with discount and VAT
+        function calculateTotal(subtotal, discountPercent = 0) {
+            const discountAmount = subtotal * (discountPercent / 100);
+            const afterDiscount = subtotal - discountAmount;
+            const vat = calculateVAT(afterDiscount);
+            return {
+                subtotal,
+                discountPercent,
+                discountAmount,
+                afterDiscount,
+                vat,
+                total: afterDiscount + vat
+            };
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            toast.textContent = message;
+            toast.style.transform = 'translateX(400px)';
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 10);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateX(400px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

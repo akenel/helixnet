@@ -31,7 +31,7 @@ from src.services.minio_service import initialize_minio
 from src.services.keycloak_health_service import check_keycloak_realms
 from src.routes import auth_router, jobs_router, users_router
 from src.routes.health_router import health_router
-from src.routes.pos_router import router as pos_router
+from src.routes.pos_router import router as pos_router, html_router as pos_html_router
 from src.routes.admin_router import router as admin_router
 
 # ================================================================
@@ -167,6 +167,7 @@ app.include_router(auth_router, prefix=settings.API_V1_STR, tags=["🔑 Authenti
 app.include_router(users_router, prefix=settings.API_V1_STR, tags=["👤 Users"])
 app.include_router(jobs_router, prefix=settings.API_V1_STR, tags=["⚙️ Jobs"])
 app.include_router(pos_router, tags=["🛒 POS - Felix's Artemis Store"])
+app.include_router(pos_html_router, tags=["🖥️ POS Web UI - Pam's Interface"])
 app.include_router(admin_router, prefix=settings.API_V1_STR, tags=["👑 Admin - Role Management"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
 

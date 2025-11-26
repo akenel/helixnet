@@ -1,0 +1,455 @@
+{% extends "pos/base.html" %}
+
+{% block title %}New Sale - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="scanData()">
+    <!--Top Bar -->
+    <div class="bg-white shadow-md border-b-4 border-indigo-600">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="goBack()" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">🛍️ New Sale</h1>
+                    <p class="text-sm text-gray-600">Transaction <span x-text="transactionId"></span></p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-600">Cashier</p>
+                <p class="font-semibold" x-text="user.username"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- LEFT: Product Search & Add -->
+            <div class="space-y-6">
+                <!-- Search Methods -->
+                <div class="card">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Find Product</h2>
+
+                    <!-- Mode Selector -->
+                    <div class="flex space-x-2 mb-4">
+                        <button
+                            @click="searchMode = 'barcode'"
+                            :class="searchMode === 'barcode' ? 'btn-primary' : 'btn-secondary'"
+                            class="flex-1 py-3">
+                            📊 Barcode
+                        </button>
+                        <button
+                            @click="searchMode = 'search'"
+                            :class="searchMode === 'search' ? 'btn-primary' : 'btn-secondary'"
+                            class="flex-1 py-3">
+                            🔍 Search
+                        </button>
+                        <button
+                            @click="searchMode = 'catalog'"
+                            :class="searchMode === 'catalog' ? 'btn-primary' : 'btn-secondary'"
+                            class="flex-1 py-3">
+                            📖 Catalog
+                        </button>
+                    </div>
+
+                    <!-- Barcode Mode -->
+                    <div x-show="searchMode === 'barcode'" class="space-y-3">
+                        <input
+                            type="text"
+                            x-model="barcodeInput"
+                            @keyup.enter="searchByBarcode()"
+                            placeholder="Scan or type barcode..."
+                            class="input-field"
+                            autofocus>
+                        <button @click="searchByBarcode()" class="btn-success w-full">
+                            📊 Find by Barcode
+                        </button>
+                    </div>
+
+                    <!-- Search Mode -->
+                    <div x-show="searchMode === 'search'" class="space-y-3">
+                        <input
+                            type="text"
+                            x-model="searchInput"
+                            @input="searchProducts()"
+                            placeholder="Type product name..."
+                            class="input-field">
+                        <p class="text-sm text-gray-600">Found <span x-text="searchResults.length"></span> products</p>
+                    </div>
+
+                    <!-- Catalog Mode (for items without barcodes) -->
+                    <div x-show="searchMode === 'catalog'" class="space-y-4">
+                        <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
+                            <p class="text-sm font-semibold text-yellow-800 mb-2">📖 Catalog Mode</p>
+                            <p class="text-sm text-yellow-700">
+                                For items without barcodes: Scan the catalog page code, then enter the price manually.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Category Code</label>
+                            <select x-model="catalogCategory" class="input-field">
+                                <option value="">Select category...</option>
+                                <option value="growing-a">🌱 Growing Supplies - A Items (>CHF 250)</option>
+                                <option value="growing-b">🌱 Growing Supplies - B Items (CHF 21-50)</option>
+                                <option value="growing-c">🌱 Growing Supplies - C Items (<CHF 20)</option>
+                                <option value="decoration-a">🎨 Decorations - A Items (>CHF 250)</option>
+                                <option value="decoration-b">🎨 Decorations - B Items (CHF 21-50)</option>
+                                <option value="decoration-c">🎨 Decorations - C Items (<CHF 20)</option>
+                                <option value="misc-under-75">🔧 Miscellaneous - Under CHF 75</option>
+                                <option value="misc-over-75">🔧 Miscellaneous - Over CHF 75 (A Item)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
+                            <input
+                                type="text"
+                                x-model="catalogDescription"
+                                placeholder="Enter product name..."
+                                class="input-field">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price (CHF)</label>
+                            <input
+                                type="number"
+                                step="0.10"
+                                x-model="catalogPrice"
+                                placeholder="0.00"
+                                class="input-field text-2xl font-bold">
+                        </div>
+
+                        <button @click="addCatalogItem()" class="btn-success w-full">
+                            ➕ Add Catalog Item to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Results (for search mode) -->
+                <div x-show="searchMode === 'search' && searchResults.length > 0" class="card max-h-96 overflow-y-auto">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">Products</h3>
+                    <div class="space-y-2">
+                        <template x-for="product in searchResults" :key="product.id">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900" x-text="product.name"></p>
+                                    <p class="text-sm text-gray-600">
+                                        SKU: <span x-text="product.sku"></span>
+                                        <span x-show="product.barcode"> | Barcode: <span x-text="product.barcode"></span></span>
+                                    </p>
+                                    <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(product.price)"></p>
+                                </div>
+                                <button
+                                    @click="addToCart(product)"
+                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">
+                                    ➕ Add
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Shopping Cart -->
+            <div class="space-y-6">
+                <div class="card">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">
+                        🛒 Cart (<span x-text="cart.length"></span> items)
+                    </h2>
+
+                    <!-- Empty cart message -->
+                    <div x-show="cart.length === 0" class="text-center py-8 text-gray-500">
+                        <span class="text-6xl block mb-3">🛒</span>
+                        <p>Cart is empty. Start scanning!</p>
+                    </div>
+
+                    <!-- Cart items -->
+                    <div x-show="cart.length > 0" class="space-y-3 mb-4">
+                        <template x-for="(item, index) in cart" :key="index">
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-900" x-text="item.name"></p>
+                                        <p class="text-sm text-gray-600">
+                                            <span x-text="formatPrice(item.price)"></span> × <span x-text="item.quantity"></span>
+                                        </p>
+                                    </div>
+                                    <button @click="removeFromCart(index)" class="text-red-600 hover:text-red-800">
+                                        ❌
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <button @click="decreaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">-</button>
+                                        <span class="font-semibold" x-text="item.quantity"></span>
+                                        <button @click="increaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">+</button>
+                                    </div>
+                                    <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(item.price * item.quantity)"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Discount -->
+                    <div x-show="cart.length > 0" class="border-t pt-4 space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Discount %
+                                <span x-show="user.isCashier && !user.isManager" class="text-yellow-600">(Max 10%)</span>
+                            </label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                :max="maxDiscount"
+                                x-model="discount"
+                                @input="validateDiscount()"
+                                class="input-field"
+                                placeholder="0">
+                            <p x-show="discountError" class="text-sm text-red-600 mt-1" x-text="discountError"></p>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="bg-indigo-50 rounded-lg p-4 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Subtotal:</span>
+                                <span class="font-semibold" x-text="formatPrice(totals.subtotal)"></span>
+                            </div>
+                            <div x-show="discount > 0" class="flex justify-between text-sm text-green-600">
+                                <span>Discount (<span x-text="discount"></span>%):</span>
+                                <span class="font-semibold" x-text="'-' + formatPrice(totals.discountAmount)"></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>VAT (7.7%):</span>
+                                <span class="font-semibold" x-text="formatPrice(totals.vat)"></span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between">
+                                <span class="text-lg font-bold">TOTAL:</span>
+                                <span class="text-2xl font-extrabold text-indigo-600" x-text="formatPrice(totals.total)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <button @click="clearCart()" class="btn-danger">
+                                🗑️ Clear
+                            </button>
+                            <button @click="goToCheckout()" class="btn-success">
+                                💵 Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function scanData() {
+        return {
+            user: {},
+            transactionId: '#' + Math.floor(Math.random() * 100000),
+            searchMode: 'barcode', // 'barcode', 'search', or 'catalog'
+
+            // Barcode mode
+            barcodeInput: '',
+
+            // Search mode
+            searchInput: '',
+            searchResults: [],
+
+            // Catalog mode
+            catalogCategory: '',
+            catalogDescription: '',
+            catalogPrice: '',
+
+            // Cart
+            cart: [],
+            discount: 0,
+            discountError: '',
+            maxDiscount: 100,
+
+            init() {
+                const userInfo = AuthHelper.getUserInfo();
+                if (!userInfo) {
+                    window.location.href = '/pos';
+                    return;
+                }
+
+                this.user = {
+                    ...userInfo,
+                    isAdmin: AuthHelper.isAdmin(),
+                    isManager: AuthHelper.isManager(),
+                    isCashier: AuthHelper.isCashier()
+                };
+
+                // Set max discount based on role
+                if (this.user.isCashier && !this.user.isManager) {
+                    this.maxDiscount = 10; // Cashiers max 10%
+                }
+            },
+
+            async searchByBarcode() {
+                if (!this.barcodeInput.trim()) {
+                    showToast('Please enter a barcode', 'warning');
+                    return;
+                }
+
+                try {
+                    const products = await API.get(`/api/v1/pos/products?barcode=${this.barcodeInput}&limit=1`);
+
+                    if (products.length === 0) {
+                        showToast('Product not found. Try catalog mode.', 'warning');
+                        this.searchMode = 'catalog';
+                        return;
+                    }
+
+                    this.addToCart(products[0]);
+                    this.barcodeInput = '';
+                    showToast('Product added!', 'success');
+
+                } catch (error) {
+                    showToast('Error: ' + error.message, 'error');
+                }
+            },
+
+            async searchProducts() {
+                if (this.searchInput.length < 2) {
+                    this.searchResults = [];
+                    return;
+                }
+
+                try {
+                    const products = await API.get(`/api/v1/pos/products?name=${this.searchInput}&limit=20`);
+                    this.searchResults = products;
+                } catch (error) {
+                    console.error('Search error:', error);
+                    this.searchResults = [];
+                }
+            },
+
+            addCatalogItem() {
+                if (!this.catalogCategory) {
+                    showToast('Please select a category', 'warning');
+                    return;
+                }
+                if (!this.catalogDescription.trim()) {
+                    showToast('Please enter a description', 'warning');
+                    return;
+                }
+                if (!this.catalogPrice || parseFloat(this.catalogPrice) <= 0) {
+                    showToast('Please enter a valid price', 'warning');
+                    return;
+                }
+
+                // Create catalog item
+                const catalogItem = {
+                    id: 'catalog-' + Date.now(),
+                    name: `[CATALOG] ${this.catalogDescription}`,
+                    category: this.catalogCategory,
+                    price: parseFloat(this.catalogPrice),
+                    quantity: 1,
+                    isCatalogItem: true
+                };
+
+                this.cart.push(catalogItem);
+                showToast('Catalog item added!', 'success');
+
+                // Clear form
+                this.catalogDescription = '';
+                this.catalogPrice = '';
+            },
+
+            addToCart(product) {
+                const existing = this.cart.find(item => item.id === product.id);
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    this.cart.push({
+                        ...product,
+                        quantity: 1
+                    });
+                }
+            },
+
+            removeFromCart(index) {
+                this.cart.splice(index, 1);
+            },
+
+            increaseQuantity(index) {
+                this.cart[index].quantity++;
+            },
+
+            decreaseQuantity(index) {
+                if (this.cart[index].quantity > 1) {
+                    this.cart[index].quantity--;
+                } else {
+                    this.removeFromCart(index);
+                }
+            },
+
+            validateDiscount() {
+                this.discountError = '';
+
+                if (this.discount > this.maxDiscount) {
+                    this.discountError = `Maximum discount is ${this.maxDiscount}%. Ask manager for approval.`;
+                    this.discount = this.maxDiscount;
+                }
+
+                if (this.discount < 0) {
+                    this.discount = 0;
+                }
+            },
+
+            get totals() {
+                const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                return calculateTotal(subtotal, this.discount);
+            },
+
+            clearCart() {
+                if (confirm('Clear entire cart?')) {
+                    this.cart = [];
+                    this.discount = 0;
+                    showToast('Cart cleared', 'info');
+                }
+            },
+
+            goToCheckout() {
+                if (this.cart.length === 0) {
+                    showToast('Cart is empty', 'warning');
+                    return;
+                }
+
+                // Store cart in sessionStorage
+                sessionStorage.setItem('pos_cart', JSON.stringify({
+                    cart: this.cart,
+                    discount: this.discount,
+                    totals: this.totals,
+                    transactionId: this.transactionId
+                }));
+
+                window.location.href = '/pos/checkout';
+            },
+
+            goBack() {
+                if (this.cart.length > 0) {
+                    if (confirm('Abandon current transaction?')) {
+                        window.location.href = '/pos/dashboard';
+                    }
+                } else {
+                    window.location.href = '/pos/dashboard';
+                }
+            },
+
+            formatPrice(amount) {
+                return formatPrice(amount);
+            }
+        }
+    }
+</script>
+{% endblock %}

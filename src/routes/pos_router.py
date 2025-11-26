@@ -2,15 +2,20 @@
 """
 POS (Point of Sale) API Router for Felix's Artemis Store.
 Handles products, transactions, scanning, and checkout.
+
+Sprint 4: Added HTML interface routes for Pam's POS system.
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from datetime import datetime, timezone, date
 from decimal import Decimal
 from uuid import UUID
 from typing import Optional
+from pathlib import Path
 
 from src.db.database import get_db_session
 from src.db.models import (
@@ -47,7 +52,15 @@ from src.core.keycloak_auth import (
 
 logger = logging.getLogger(__name__)
 
+# API Router (JSON endpoints)
 router = APIRouter(prefix="/api/v1/pos", tags=["POS"])
+
+# HTML Router (Web UI pages for Pam)
+html_router = APIRouter(tags=["🖥️ POS Web UI"])
+
+# Setup Jinja2 templates
+templates_dir = Path(__file__).parent.parent / "templates"
+templates = Jinja2Templates(directory=str(templates_dir))
 
 
 # ================================================================
@@ -490,3 +503,252 @@ async def get_daily_summary(
         crypto_total=Decimal(str(crypto_total)),
         other_total=Decimal(str(other_total)),
     )
+
+
+# ================================================================
+# HTML WEB UI ROUTES (Sprint 4 - Pam's Interface)
+# ================================================================
+
+@html_router.get("/pos", response_class=HTMLResponse, name="pos_login")
+async def pos_login(request: Request):
+    """
+    POS Login Page - Entry point for POS system
+
+    Uses Keycloak OAuth2 Authorization Code Flow:
+    1. Redirects to Keycloak for authentication
+    2. User enters credentials (pam/helix_pass, felix/helix_pass, etc.)
+    3. Keycloak redirects back with authorization code
+    4. Frontend exchanges code for JWT token
+    5. Token stored in sessionStorage
+    6. Redirects to dashboard
+
+    No authentication required (this is the login page)
+    """
+    return templates.TemplateResponse("pos/login.html", {"request": request})
+
+
+@html_router.get("/pos/dashboard", response_class=HTMLResponse, name="pos_dashboard")
+async def pos_dashboard(request: Request):
+    """
+    POS Dashboard - Role-based landing page
+
+    Shows different actions based on user's POS roles:
+    - Cashiers (Pam): New Sale, Product Catalog, Close Shift
+    - Managers (Ralph/Felix): + Sales Reports, All Transactions
+    - Admins (Felix): + User Management, Settings
+
+    Real-time stats (fetched via API):
+    - Today's sales total
+    - Transaction count
+    - Current shift time
+
+    Authentication: Client-side JWT validation (token in sessionStorage)
+    """
+    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+
+
+@html_router.get("/pos/scan", response_class=HTMLResponse, name="pos_scan")
+async def pos_scan(request: Request):
+    """
+    Product Scan & Cart Management - Primary sales interface
+
+    Solves Pam's workflow problem:
+    - 3000 products in catalog
+    - Most items don't have barcodes
+    - Can't remember all codes
+    - Needs simple, foolproof workflow
+
+    Three input modes:
+
+    1. BARCODE MODE (default):
+       - Auto-focus input field
+       - Enter to scan and add
+       - For items with barcodes
+
+    2. SEARCH MODE:
+       - Fuzzy search by name/description
+       - Handles typos
+       - For quick lookups
+
+    3. CATALOG MODE (items WITHOUT barcodes):
+       Category-based classification:
+       - Growing Supplies: A (>CHF 250), B (CHF 21-50), C (<CHF 20)
+       - Decorations: A (>CHF 250), B (CHF 21-50), C (<CHF 20)
+       - Miscellaneous: A (>CHF 250), B (CHF 21-50), C (<CHF 20)
+
+       Pam workflow:
+       1. Customer asks "how much is this?"
+       2. Item has no barcode
+       3. Pam selects category (e.g., "Growing - B Items")
+       4. Enters price (e.g., CHF 35.00)
+       5. Optional description
+       6. Item added to cart
+       7. Felix reviews catalog items later and adds barcodes
+
+    Features:
+    - Live cart with quantity adjustment
+    - Remove items
+    - Discount validation (Cashiers max 10%, Managers unlimited)
+    - Swiss VAT calculation (7.7%)
+    - Real-time totals
+    """
+    return templates.TemplateResponse("pos/scan.html", {"request": request})
+
+
+@html_router.get("/pos/checkout", response_class=HTMLResponse, name="pos_checkout")
+async def pos_checkout(request: Request):
+    """
+    Checkout & Payment - Final transaction confirmation
+
+    Displays:
+    - Order summary (all cart items)
+    - Price breakdown:
+      * Subtotal
+      * Discount (if applied)
+      * VAT (7.7%)
+      * Total
+
+    Payment method selection:
+    - Cash (adds to cash drawer)
+    - Card (terminal payment - Visa/Mastercard)
+    - Mobile (TWINT/Apple Pay/etc)
+
+    Dry-run preview shows what will happen:
+    - Cash drawer: +CHF amount (or 0 for card/mobile)
+    - Inventory: List of deductions
+    - Receipt: Will print
+    - Daily total: +CHF amount
+
+    Actions:
+    - Cancel: Return to scan
+    - Edit Cart: Return to scan
+    - Confirm & Complete: Process transaction
+
+    API workflow:
+    1. POST /api/v1/pos/transactions (create empty transaction)
+    2. POST /api/v1/pos/transactions/{id}/items (add each item)
+    3. POST /api/v1/pos/transactions/{id}/checkout (finalize with payment)
+    """
+    return templates.TemplateResponse("pos/checkout.html", {"request": request})
+
+
+@html_router.get("/pos/closeout", response_class=HTMLResponse, name="pos_closeout")
+async def pos_closeout(request: Request):
+    """
+    Close Shift / End of Day - Pam's shift closure
+
+    Problem: Pam takes 90 minutes to close shift (paper-based)
+    Solution: Automated calculations, visual guidance
+
+    Auto-calculated shift summary:
+    - Cashier name (from JWT token)
+    - Shift time (start - current)
+    - Total transactions
+    - Total sales (CHF)
+    - Cash sales breakdown
+    - Card/Mobile sales breakdown
+
+    Cash drawer count workflow:
+    1. Enter notes amount (CHF)
+    2. Enter coins amount (CHF)
+    3. System calculates total
+    4. Shows difference vs expected
+    5. Visual feedback:
+       - Green check: Perfect match
+       - Yellow warning: Difference detected
+
+    Adjustment options:
+    - No adjustment: Close immediately
+    - Add note: Explain discrepancy (e.g., "Customer returned item")
+    - Request manager approval: Escalate to Felix/Ralph
+
+    Goal: Reduce Pam's 90-minute close to <10 minutes
+
+    API call:
+    - GET /api/v1/pos/reports/daily-summary (fetch today's stats)
+    """
+    return templates.TemplateResponse("pos/closeout.html", {"request": request})
+
+
+@html_router.get("/pos/products", response_class=HTMLResponse, name="pos_products")
+async def pos_products(request: Request):
+    """
+    Product Catalog Browser - Browse all products
+
+    Future features:
+    - Category filters
+    - Search bar
+    - Sort by name/price/category
+    - Quick add to cart
+
+    For now: Redirects to scan page
+    """
+    return templates.TemplateResponse("pos/scan.html", {"request": request})
+
+
+@html_router.get("/pos/reports", response_class=HTMLResponse, name="pos_reports")
+async def pos_reports(request: Request):
+    """
+    Sales Reports - Manager/Admin analytics
+
+    Future features:
+    - Daily/Weekly/Monthly charts
+    - Top products
+    - Cashier performance
+    - Payment method breakdown
+    - Category analysis
+
+    For now: Placeholder
+    """
+    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+
+
+@html_router.get("/pos/transactions", response_class=HTMLResponse, name="pos_transactions")
+async def pos_transactions(request: Request):
+    """
+    Transaction History - Manager/Admin view
+
+    Future features:
+    - Filter by date range
+    - Filter by cashier
+    - Filter by payment method
+    - Search by transaction ID
+    - View/print receipt
+    - Void transaction (with authorization)
+
+    For now: Placeholder
+    """
+    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+
+
+@html_router.get("/pos/admin", response_class=HTMLResponse, name="pos_admin")
+async def pos_admin(request: Request):
+    """
+    User Management - Admin role management
+
+    Future features:
+    - List all users
+    - Assign/remove POS roles
+    - View user activity
+    - Enable/disable users
+
+    For now: Placeholder
+    """
+    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+
+
+@html_router.get("/pos/settings", response_class=HTMLResponse, name="pos_settings")
+async def pos_settings(request: Request):
+    """
+    POS System Settings - Admin configuration
+
+    Future features:
+    - Tax rate settings
+    - Receipt header/footer
+    - Printer configuration
+    - Discount limits
+    - Category management
+
+    For now: Placeholder
+    """
+    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
