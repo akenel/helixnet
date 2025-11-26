@@ -200,12 +200,12 @@
       "firstName": "Ralph",
       "lastName": "Wiggum",
       "attributes": {
-        "employee_id": ["POS-002"],
+        "employee_id": ["MGR-002"],
         "store_location": ["Luzern"],
         "hire_date": ["2024-02-01"]
       },
-      "realmRoles": ["💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
-      "groups": ["/💰️ Cashiers"]
+      "realmRoles": ["👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/👔️ Managers", "/💰️ Cashiers"]
     },
     {
       "id": "00000000-0000-0000-0000-000000000003",
@@ -223,13 +223,13 @@
       "firstName": "Michael",
       "lastName": "Scott",
       "attributes": {
-        "employee_id": ["MGR-001"],
+        "employee_id": ["DEV-001"],
         "store_location": ["Luzern"],
-        "title": ["Assistant Regional Manager"],
+        "title": ["POS Developer"],
         "hire_date": ["2023-06-01"]
       },
-      "realmRoles": ["👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
-      "groups": ["/👔️ Managers", "/💰️ Cashiers"]
+      "realmRoles": ["🛠️ pos-developer", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/🛠️ Developers"]
     },
     {
       "id": "00000000-0000-0000-0000-000000000004",
