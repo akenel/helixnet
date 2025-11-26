@@ -1,0 +1,361 @@
+{
+  "realm": "kc-pos-realm-dev",
+  "enabled": true,
+  "displayName": "🛒️ HelixPOS 💳️ Development 🏪️ Realm 📦️ kc-pos-realm-dev 💰️",
+  "displayNameHtml": "<div class='kc-logo-text'><span>🛒️ HelixPOS 💳️</span></div>",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@artemis-store.local",
+    "fromDisplayName": "Felix's Artemis Store POS",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "💰️ pos-cashier",
+        "description": "Cashier role - Create transactions, scan products, process checkout. Limited to 10% discount threshold."
+      },
+      {
+        "name": "👔️ pos-manager",
+        "description": "Manager role - Full POS access including product management, unlimited discounts, and reporting."
+      },
+      {
+        "name": "🛠️ pos-developer",
+        "description": "Developer role - Create products for testing, limited access to production data."
+      },
+      {
+        "name": "📊️ pos-auditor",
+        "description": "Auditor role - Read-only access to all transactions, products, and reports for compliance."
+      },
+      {
+        "name": "👑️ pos-admin",
+        "description": "System administrator - Full control over POS realm and configuration."
+      },
+      {
+        "name": "default-roles-kc-pos-realm-dev",
+        "description": "Default roles for kc-pos-realm-dev",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "💰️ Cashiers",
+      "realmRoles": ["💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "attributes": {
+        "description": ["Front-line staff with POS transaction capabilities. Can scan, checkout, apply discounts up to 10%."]
+      }
+    },
+    {
+      "name": "👔️ Managers",
+      "realmRoles": ["👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "attributes": {
+        "description": ["Store managers with full POS access, product management, and reporting capabilities."]
+      }
+    },
+    {
+      "name": "🛠️ Developers",
+      "realmRoles": ["🛠️ pos-developer", "default-roles-kc-pos-realm-dev"],
+      "attributes": {
+        "description": ["Developers with ability to create test products and access development endpoints."]
+      }
+    },
+    {
+      "name": "📊️ Auditors",
+      "realmRoles": ["📊️ pos-auditor", "default-roles-kc-pos-realm-dev"],
+      "attributes": {
+        "description": ["Compliance and audit staff with read-only access to all POS data."]
+      }
+    },
+    {
+      "name": "👑️ Admins",
+      "realmRoles": ["👑️ pos-admin", "👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "attributes": {
+        "description": ["System administrators with full realm control."]
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "helix_pos_web",
+      "name": "🛒️ HelixPOS Web Application (Public)",
+      "description": "Frontend web application for POS terminals",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://helix-platform.local/*",
+        "https://pos.artemis-store.local/*",
+        "http://localhost:8000/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "https://helix-platform.local",
+        "https://pos.artemis-store.local",
+        "http://localhost:8000",
+        "http://localhost:3000",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "helix_pos_service",
+      "name": "🔐️ HelixPOS Service Account (Backend API)",
+      "description": "Service account for HelixPOS backend operations",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "secret": "helix_pass",
+      "bearerOnly": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false"
+      }
+    },
+    {
+      "clientId": "helix_pos_mobile",
+      "name": "📱️ HelixPOS Mobile App",
+      "description": "Mobile POS application for tablets and smartphones",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "helixpos://oauth/callback",
+        "http://localhost:*"
+      ],
+      "webOrigins": ["+"],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins", "offline_access"]
+    },
+    {
+      "clientId": "admin-cli",
+      "name": "Keycloak Admin CLI",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "username": "pam",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "pam.beesly@artemis-store.local",
+      "firstName": "Pam",
+      "lastName": "Beesly",
+      "attributes": {
+        "employee_id": ["POS-001"],
+        "store_location": ["Luzern"],
+        "hire_date": ["2024-01-15"]
+      },
+      "realmRoles": ["💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/💰️ Cashiers"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "username": "ralph",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "ralph.wiggum@artemis-store.local",
+      "firstName": "Ralph",
+      "lastName": "Wiggum",
+      "attributes": {
+        "employee_id": ["POS-002"],
+        "store_location": ["Luzern"],
+        "hire_date": ["2024-02-01"]
+      },
+      "realmRoles": ["💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/💰️ Cashiers"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000003",
+      "username": "michael",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "michael.scott@artemis-store.local",
+      "firstName": "Michael",
+      "lastName": "Scott",
+      "attributes": {
+        "employee_id": ["MGR-001"],
+        "store_location": ["Luzern"],
+        "title": ["Assistant Regional Manager"],
+        "hire_date": ["2023-06-01"]
+      },
+      "realmRoles": ["👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/👔️ Managers", "/💰️ Cashiers"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000004",
+      "username": "felix",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "felix@artemis-store.local",
+      "firstName": "Felix",
+      "lastName": "Manager",
+      "attributes": {
+        "employee_id": ["OWNER-001"],
+        "store_location": ["Luzern"],
+        "title": ["Owner & Regional Manager"],
+        "hire_date": ["2022-01-01"]
+      },
+      "realmRoles": ["👑️ pos-admin", "👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/👑️ Admins", "/👔️ Managers", "/💰️ Cashiers"]
+    },
+    {
+      "username": "pos-developer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "developer@artemis-store.local",
+      "firstName": "POS",
+      "lastName": "Developer",
+      "attributes": {
+        "role": ["Development"],
+        "access_level": ["Test Environment Only"]
+      },
+      "realmRoles": ["🛠️ pos-developer", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/🛠️ Developers"]
+    },
+    {
+      "username": "pos-auditor",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "auditor@artemis-store.local",
+      "firstName": "Compliance",
+      "lastName": "Auditor",
+      "attributes": {
+        "role": ["Audit & Compliance"],
+        "access_level": ["Read-Only"]
+      },
+      "realmRoles": ["📊️ pos-auditor", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/📊️ Auditors"]
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "requiredCredentials": ["password"],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "webAuthnPolicyRpEntityName": "keycloak",
+  "webAuthnPolicySignatureAlgorithms": ["ES256"],
+  "webAuthnPolicyRpId": "",
+  "webAuthnPolicyAttestationConveyancePreference": "not specified",
+  "webAuthnPolicyAuthenticatorAttachment": "not specified",
+  "webAuthnPolicyRequireResidentKey": "not specified",
+  "webAuthnPolicyUserVerificationRequirement": "not specified",
+  "webAuthnPolicyCreateTimeout": 0,
+  "webAuthnPolicyAvoidSameAuthenticatorRegister": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de", "fr", "it"],
+  "defaultLocale": "en",
+  "attributes": {
+    "frontendUrl": "https://keycloak.helix.local",
+    "adminUrl": "https://keycloak.helix.local",
+    "cibaBackchannelTokenDeliveryMode": "poll",
+    "cibaExpiresIn": "120",
+    "cibaAuthRequestedUserHint": "login_hint",
+    "cibaInterval": "5",
+    "parRequestUriLifespan": "60",
+    "clientOfflineSessionIdleTimeout": "0",
+    "clientOfflineSessionMaxLifespan": "0",
+    "clientSessionIdleTimeout": "0",
+    "clientSessionMaxLifespan": "0"
+  }
+}

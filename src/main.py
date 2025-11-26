@@ -28,6 +28,7 @@ from src.services.user_service import create_initial_users
 from src.services.artemis_user_seeding import seed_artemis_staff
 from src.services.pos_seeding_service import seed_artemis_products
 from src.services.minio_service import initialize_minio
+from src.services.keycloak_health_service import check_keycloak_realms
 from src.routes import auth_router, jobs_router, users_router
 from src.routes.health_router import health_router
 from src.routes.pos_router import router as pos_router
@@ -95,6 +96,16 @@ async def lifespan(app: FastAPI):
         logger.info("✅ POS product seeding completed successfully.")
     except Exception as e:
         logger.warning(f"⚠️ POS product seeding encountered an issue: {e}", exc_info=True)
+
+    # --- Keycloak Realm Health Check ---
+    try:
+        realm_status = await check_keycloak_realms()
+        if realm_status["status"] == "success":
+            logger.info(f"✅ Keycloak connected - {realm_status['realm_count']} realm(s) found")
+        else:
+            logger.warning(f"⚠️ Keycloak health check failed: {realm_status.get('message', 'Unknown error')}")
+    except Exception as e:
+        logger.warning(f"⚠️ Keycloak health check encountered an issue: {e}", exc_info=True)
 
     logger.info("✨ HelixNet Core READY to serve requests.")
     yield

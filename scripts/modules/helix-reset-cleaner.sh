@@ -46,16 +46,16 @@ printf "%b\n" "${GREEN}${BOLD} ⏲️  ◾️ $(date)        on ◾️  $(hostna
 echo""
 echo "  🧹 Starting Safe Cleanup Commands..." 
 # 1. Shut down Core Services (Postgres, Keycloak, Minio, etc.)
-echo "   🫧️  Shutting down helix-core" 
-docker compose -f compose/helix-core/core-stack.yml down --remove-orphans
+echo "   🫧️  Shutting down helix-core"
+docker compose -f compose/helix-core/core-stack.yml down --volumes --remove-orphans || true
 # 2. Shut down Main Application Services (API, Worker, Beat)
 echo "    🚿️ Washing down helix-main"
 # FIX: Changed path from compose/helix-main.yml to compose/helix-main/main-stack.yml
-docker compose -f compose/helix-main/main-stack.yml down --remove-orphans
+docker compose -f compose/helix-main/main-stack.yml down --volumes --remove-orphans || true
 # 3. Shut down LLM/AI Services (Ollama, WebUI)
 echo "      🍀️ Refreshing helix-llm"
 # FIX: Changed path from compose/helix-llm.yml to compose/helix-llm/llm-stack.yml
-docker compose -f compose/helix-llm/llm-stack.yml down --remove-orphans
+docker compose -f compose/helix-llm/llm-stack.yml down --volumes --remove-orphans || true
 # 4. Flush unused images, networks, and volumes
 echo "       🚽️ Pruning volumes"
 docker system prune --volumes --force
