@@ -18,21 +18,23 @@ jobs:
         id: check_ignores
         run: |
           # Define the list of critical patterns that MUST be in .gitignore
-          CRITICAL_IGNORES=(
+          CRITICAL_PATTERNS=(
             ".env"
-            "postgres-data/"
+            "postgres-data"
             "models/"
             "*.pem"
             "*.key"
+            "*.crt"
+            "__pycache__"
           )
-          
+
           # Initialize a list for missing patterns
           MISSING_PATTERNS=""
-          
-          # Check if each critical pattern is present in the .gitignore file
-          for pattern in "${CRITICAL_IGNORES[@]}"; do
-            if ! grep -q "^${pattern}\$" .gitignore; then
-              MISSING_PATTERNS+="${pattern}\n"
+
+          # Check if each critical pattern is present in the .gitignore file (flexible matching)
+          for pattern in "${CRITICAL_PATTERNS[@]}"; do
+            if ! grep -q "$pattern" .gitignore; then
+              MISSING_PATTERNS+="  - ${pattern}\n"
             fi
           done
 
