@@ -16,6 +16,7 @@ from .user_model import UserModel
 from .product_model import ProductModel
 from .transaction_model import TransactionModel, TransactionStatus, PaymentMethod
 from .line_item_model import LineItemModel
+from .store_settings_model import StoreSettingsModel
 
 __all__ = [
     "Base",
@@ -34,4 +35,5 @@ __all__ = [
     "TransactionStatus",
     "PaymentMethod",
     "LineItemModel",
+    "StoreSettingsModel",
 ]

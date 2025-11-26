@@ -27,6 +27,7 @@ from src.db.database import init_db_tables, close_async_engine, get_db_session_c
 from src.services.user_service import create_initial_users
 from src.services.artemis_user_seeding import seed_artemis_staff
 from src.services.pos_seeding_service import seed_artemis_products
+from src.services.store_settings_seeding import seed_store_settings
 from src.services.minio_service import initialize_minio
 from src.services.keycloak_health_service import check_keycloak_realms
 from src.routes import auth_router, jobs_router, users_router
@@ -97,6 +98,15 @@ async def lifespan(app: FastAPI):
         logger.info("✅ POS product seeding completed successfully.")
     except Exception as e:
         logger.warning(f"⚠️ POS product seeding encountered an issue: {e}", exc_info=True)
+
+    # --- Seed Store Settings (Felix's Artemis Store Config) ---
+    try:
+        logger.info("⚙️ Seeding store settings...")
+        async with get_db_session_context() as db:
+            await seed_store_settings(db)
+        logger.info("✅ Store settings seeding completed successfully.")
+    except Exception as e:
+        logger.warning(f"⚠️ Store settings seeding encountered an issue: {e}", exc_info=True)
 
     # --- Keycloak Realm Health Check ---
     try:

@@ -23,6 +23,7 @@ from src.db.models import (
     TransactionModel,
     LineItemModel,
     UserModel,
+    StoreSettingsModel,
     TransactionStatus,
     PaymentMethod,
 )
@@ -39,6 +40,8 @@ from src.schemas.pos_schema import (
     BarcodeScanResponse,
     CheckoutRequest,
     DailySummary,
+    StoreSettingsRead,
+    StoreSettingsUpdate,
 )
 # Real Keycloak authentication with RBAC
 from src.core.keycloak_auth import (
@@ -503,6 +506,74 @@ async def get_daily_summary(
         crypto_total=Decimal(str(crypto_total)),
         other_total=Decimal(str(other_total)),
     )
+
+
+# ================================================================
+# STORE SETTINGS ENDPOINTS
+# ================================================================
+
+@router.get("/settings/{store_number}", response_model=StoreSettingsRead)
+async def get_store_settings(
+    store_number: int = 1,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """
+    Get store settings for a specific store number (any POS role).
+
+    Used by frontend to:
+    - Get current VAT rate
+    - Display company info
+    - Load discount limits
+    - Show customer loyalty tiers
+    """
+    result = await db.execute(
+        select(StoreSettingsModel).where(StoreSettingsModel.store_number == store_number)
+    )
+    settings = result.scalar_one_or_none()
+
+    if not settings:
+        raise HTTPException(status_code=404, detail=f"Store #{store_number} not found")
+
+    return settings
+
+
+@router.put("/settings/{store_number}", response_model=StoreSettingsRead)
+async def update_store_settings(
+    store_number: int,
+    settings_update: StoreSettingsUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_admin()),
+):
+    """
+    Update store settings (admin only).
+
+    Felix can update:
+    - VAT rate (changes yearly in Switzerland)
+    - Company information
+    - Receipt header/footer
+    - Discount limits
+    - Customer loyalty tiers
+    """
+    result = await db.execute(
+        select(StoreSettingsModel).where(StoreSettingsModel.store_number == store_number)
+    )
+    settings = result.scalar_one_or_none()
+
+    if not settings:
+        raise HTTPException(status_code=404, detail=f"Store #{store_number} not found")
+
+    # Update only provided fields
+    update_data = settings_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(settings, field, value)
+
+    settings.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(settings)
+
+    logger.info(f"Store #{store_number} settings updated by {current_user['username']}")
+    return settings
 
 
 # ================================================================
