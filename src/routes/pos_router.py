@@ -741,6 +741,45 @@ async def pos_closeout(request: Request):
     return templates.TemplateResponse("pos/closeout.html", {"request": request})
 
 
+@html_router.get("/pos/receipt/{transaction_id}", response_class=HTMLResponse, name="pos_receipt")
+async def pos_receipt(request: Request, transaction_id: UUID):
+    """
+    Receipt View & Print - Display completed transaction receipt
+
+    A4-optimized printable receipt for customer.
+    Auto-loads transaction data and store settings.
+
+    Features:
+    - Company header (logo, name, address, VAT number)
+    - Transaction details (date, time, cashier, receipt#)
+    - Line items table
+    - Totals breakdown (subtotal, discount, VAT, total)
+    - Payment method
+    - PAID watermark
+    - Print button (window.print())
+    - Reprint anytime
+
+    Used for:
+    - Auto-display after checkout
+    - Reprint from transaction history
+    - Closeout review (Pam checks all receipts)
+    - Customer requests copy
+
+    Pam's workflow:
+    1. Complete transaction → receipt auto-displays
+    2. Click Print → browser print dialog
+    3. Customer gets receipt
+    4. Receipt saved in history for reprint
+
+    Felix's workflow (at closeout):
+    1. Review all receipts
+    2. Spot errors (e.g., CHF 25 should be CHF 250)
+    3. Call Pam for explanation
+    4. Note for Banana journal entry
+    """
+    return templates.TemplateResponse("pos/receipt.html", {"request": request})
+
+
 @html_router.get("/pos/products", response_class=HTMLResponse, name="pos_products")
 async def pos_products(request: Request):
     """
@@ -777,19 +816,35 @@ async def pos_reports(request: Request):
 @html_router.get("/pos/transactions", response_class=HTMLResponse, name="pos_transactions")
 async def pos_transactions(request: Request):
     """
-    Transaction History - Manager/Admin view
+    Transaction History - View all sales transactions
 
-    Future features:
-    - Filter by date range
+    Critical for Pam's closeout workflow:
+    - Review all today's transactions
+    - Click to view receipt
+    - Reprint any receipt
+    - Spot errors (e.g., CHF 25 should be CHF 250)
+
+    Features:
+    - Filter by date (default: today)
+    - Filter by status (completed, open, voided)
+    - Filter by payment method (cash, card, mobile)
+    - Summary stats (count, total sales, cash vs card)
+    - Click transaction to view receipt
+    - Reprint button (opens in new tab)
+
+    Manager features:
+    - View all cashiers' transactions
     - Filter by cashier
-    - Filter by payment method
-    - Search by transaction ID
-    - View/print receipt
-    - Void transaction (with authorization)
+    - Void transaction (with approval)
 
-    For now: Placeholder
+    Pam's workflow at closeout:
+    1. Click "Transaction History" from dashboard
+    2. Review all today's receipts
+    3. Spot mistake: "That CHF 25 should be CHF 250!"
+    4. Call Felix: "Hey boss, line 15 is wrong"
+    5. Felix: "OK, note it for Banana adjustment"
     """
-    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+    return templates.TemplateResponse("pos/transactions.html", {"request": request})
 
 
 @html_router.get("/pos/admin", response_class=HTMLResponse, name="pos_admin")

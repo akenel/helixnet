@@ -1,0 +1,305 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Receipt - HelixPOS - Artemis Store{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 print:bg-white" x-data="receiptData()">
+    <!-- Print Button Bar (hidden when printing) -->
+    <div class="no-print bg-white shadow-md sticky top-0 z-10 px-4 py-3 flex justify-between items-center">
+        <button @click="goBack()" class="btn-secondary">
+            ← Back
+        </button>
+        <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
+        <button @click="printReceipt()" class="btn-primary">
+            🖨️ Print Receipt
+        </button>
+    </div>
+
+    <!-- A4 Receipt Container -->
+    <div class="max-w-4xl mx-auto p-8 print:p-0">
+        <!-- Receipt Paper (A4 optimized) -->
+        <div class="bg-white shadow-2xl print:shadow-none receipt-page" style="min-height: 297mm;">
+            <!-- Watermark -->
+            <div class="watermark" x-show="transaction.status === 'completed'" x-text="`PAID by ${transaction.payment_method?.toUpperCase() || 'CARD'}`"></div>
+
+            <!-- Company Header -->
+            <div class="text-center border-b-2 border-gray-300 pb-6 mb-6">
+                <div x-show="storeSettings.receipt_logo_url" class="mb-4">
+                    <img :src="storeSettings.receipt_logo_url" alt="Store Logo" class="mx-auto h-20">
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900" x-text="storeSettings.store_name || 'Artemis Store'"></h1>
+                <p class="text-lg text-gray-700 mt-2" x-text="storeSettings.legal_name || 'Artemis Growing Supplies GmbH'"></p>
+                <p class="text-sm text-gray-600 mt-2" x-text="formatAddress()"></p>
+                <p class="text-sm text-gray-600" x-show="storeSettings.phone">Phone: <span x-text="storeSettings.phone"></span></p>
+                <p class="text-sm text-gray-600" x-show="storeSettings.email">Email: <span x-text="storeSettings.email"></span></p>
+                <p class="text-sm text-gray-600" x-show="storeSettings.website" x-text="storeSettings.website"></p>
+                <p class="text-sm font-semibold text-gray-700 mt-2" x-show="storeSettings.vat_number">VAT: <span x-text="storeSettings.vat_number"></span></p>
+            </div>
+
+            <!-- Receipt Header Text -->
+            <div x-show="storeSettings.receipt_header" class="text-center text-gray-600 mb-6 italic" x-text="storeSettings.receipt_header"></div>
+
+            <!-- Transaction Info -->
+            <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+                <div>
+                    <p class="text-gray-600">Receipt #:</p>
+                    <p class="font-semibold" x-text="transaction.receipt_number || transaction.transaction_number"></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-600">Date:</p>
+                    <p class="font-semibold" x-text="formatDate(transaction.completed_at || transaction.created_at)"></p>
+                </div>
+                <div>
+                    <p class="text-gray-600">Cashier:</p>
+                    <p class="font-semibold" x-text="cashierName"></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-600">Time:</p>
+                    <p class="font-semibold" x-text="formatTime(transaction.completed_at || transaction.created_at)"></p>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <table class="w-full mb-6">
+                <thead>
+                    <tr class="border-b-2 border-gray-300">
+                        <th class="text-left py-2">Item</th>
+                        <th class="text-center py-2">Qty</th>
+                        <th class="text-right py-2">Price</th>
+                        <th class="text-right py-2">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="(item, index) in transaction.line_items" :key="index">
+                        <tr class="border-b border-gray-200">
+                            <td class="py-3">
+                                <p class="font-semibold" x-text="item.product_name || 'Product'"></p>
+                                <p x-show="item.notes" class="text-xs text-gray-500 italic" x-text="item.notes"></p>
+                            </td>
+                            <td class="text-center" x-text="item.quantity"></td>
+                            <td class="text-right" x-text="formatPrice(item.unit_price)"></td>
+                            <td class="text-right font-semibold" x-text="formatPrice(item.line_total)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+            <!-- Totals -->
+            <div class="border-t-2 border-gray-300 pt-4 space-y-2">
+                <div class="flex justify-between text-lg">
+                    <span>Subtotal:</span>
+                    <span x-text="formatPrice(transaction.subtotal)"></span>
+                </div>
+                <div x-show="parseFloat(transaction.discount_amount) > 0" class="flex justify-between text-lg text-green-600">
+                    <span>Discount:</span>
+                    <span x-text="'-' + formatPrice(transaction.discount_amount)"></span>
+                </div>
+                <div class="flex justify-between text-lg">
+                    <span>VAT (<span x-text="storeSettings.vat_rate || '8.1'"></span>%):</span>
+                    <span x-text="formatPrice(transaction.tax_amount)"></span>
+                </div>
+                <div class="flex justify-between text-2xl font-bold border-t-2 border-gray-800 pt-2 mt-2">
+                    <span>TOTAL:</span>
+                    <span x-text="formatPrice(transaction.total)"></span>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="mt-6 p-4 bg-gray-50 print:bg-gray-100 rounded-lg">
+                <div class="flex justify-between text-lg font-semibold">
+                    <span>Payment Method:</span>
+                    <span x-text="(transaction.payment_method || 'CARD').toUpperCase()"></span>
+                </div>
+                <div x-show="transaction.payment_method === 'cash'" class="mt-2 space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span>Amount Tendered:</span>
+                        <span x-text="formatPrice(transaction.amount_tendered)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Change Given:</span>
+                        <span x-text="formatPrice(transaction.change_given)"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Footer Text -->
+            <div x-show="storeSettings.receipt_footer" class="text-center text-gray-600 mt-8 italic border-t pt-6" x-text="storeSettings.receipt_footer"></div>
+
+            <!-- Thank You -->
+            <div class="text-center mt-8 text-xl font-semibold text-gray-700">
+                Thank You for Your Purchase!
+            </div>
+
+            <!-- QR Code / Barcode Placeholder -->
+            <div class="text-center mt-6 mb-8">
+                <svg class="mx-auto" width="200" height="60">
+                    <!-- Simple barcode representation -->
+                    <rect x="10" y="10" width="2" height="40" fill="black"/>
+                    <rect x="15" y="10" width="4" height="40" fill="black"/>
+                    <rect x="22" y="10" width="2" height="40" fill="black"/>
+                    <rect x="27" y="10" width="6" height="40" fill="black"/>
+                    <rect x="36" y="10" width="2" height="40" fill="black"/>
+                    <rect x="41" y="10" width="4" height="40" fill="black"/>
+                    <rect x="48" y="10" width="2" height="40" fill="black"/>
+                    <rect x="53" y="10" width="6" height="40" fill="black"/>
+                </svg>
+                <p class="text-xs text-gray-500 mt-2" x-text="transaction.transaction_number"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Print-specific styles */
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .receipt-page {
+            box-shadow: none !important;
+            margin: 0;
+            padding: 20mm;
+            page-break-after: always;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    }
+
+    /* Watermark */
+    .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 120px;
+        font-weight: 900;
+        color: rgba(34, 197, 94, 0.1);
+        pointer-events: none;
+        z-index: 0;
+        white-space: nowrap;
+    }
+
+    .receipt-page {
+        position: relative;
+        z-index: 1;
+    }
+</style>
+
+<script>
+    function receiptData() {
+        return {
+            transaction: {
+                transaction_number: '',
+                receipt_number: '',
+                status: '',
+                payment_method: '',
+                subtotal: 0,
+                discount_amount: 0,
+                tax_amount: 0,
+                total: 0,
+                amount_tendered: 0,
+                change_given: 0,
+                line_items: [],
+                created_at: '',
+                completed_at: ''
+            },
+            storeSettings: {
+                store_name: '',
+                legal_name: '',
+                address_line1: '',
+                address_line2: '',
+                city: '',
+                postal_code: '',
+                country: '',
+                phone: '',
+                email: '',
+                website: '',
+                vat_number: '',
+                vat_rate: '8.1',
+                receipt_header: '',
+                receipt_footer: '',
+                receipt_logo_url: ''
+            },
+            cashierName: 'Cashier',
+
+            async init() {
+                // Get transaction ID from URL
+                const pathParts = window.location.pathname.split('/');
+                const transactionId = pathParts[pathParts.length - 1];
+
+                if (!transactionId || transactionId === 'receipt') {
+                    showToast('Invalid receipt URL', 'error');
+                    return;
+                }
+
+                try {
+                    // Load transaction data
+                    this.transaction = await API.get(`/api/v1/pos/transactions/${transactionId}`);
+
+                    // Load store settings
+                    const settings = await API.get('/api/v1/pos/settings/1');
+                    this.storeSettings = settings;
+
+                    // Get cashier name (optional - would need user endpoint)
+                    this.cashierName = 'Cashier'; // TODO: Fetch from user API
+
+                } catch (error) {
+                    console.error('Failed to load receipt:', error);
+                    showToast('Failed to load receipt: ' + error.message, 'error');
+                }
+            },
+
+            formatAddress() {
+                const parts = [
+                    this.storeSettings.address_line1,
+                    this.storeSettings.address_line2,
+                    `${this.storeSettings.postal_code} ${this.storeSettings.city}`,
+                    this.storeSettings.country
+                ].filter(p => p && p.trim());
+                return parts.join(', ');
+            },
+
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('de-CH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            },
+
+            formatTime(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleTimeString('de-CH', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            },
+
+            formatPrice(amount) {
+                return formatPrice(amount);
+            },
+
+            printReceipt() {
+                window.print();
+            },
+
+            goBack() {
+                window.history.back();
+            }
+        }
+    }
+</script>
+{% endblock %}

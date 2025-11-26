@@ -164,12 +164,11 @@
                     // Clear cart
                     sessionStorage.removeItem('pos_cart');
 
-                    showToast('Transaction completed!', 'success');
+                    showToast('Transaction completed! Displaying receipt...', 'success');
 
-                    // Show success page
+                    // Redirect to receipt page
                     setTimeout(() => {
-                        alert(`✅ Transaction Completed!\n\nID: ${transaction.id}\nTotal: ${formatPrice(this.cartData.totals.total)}\nPayment: ${this.paymentMethod}\n\n Receipt printing...`);
-                        window.location.href = '/pos/dashboard';
+                        window.location.href = `/pos/receipt/${transaction.id}`;
                     }, 500);
 
                 } catch (error) {
