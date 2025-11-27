@@ -44,18 +44,26 @@ echo "🪣️  Latest Image: ${LATEST_HELIX_IMAGE} 🤓️ SHA: ${SHA}"
 echo "Build Time: 🤖 ${BUILD_TIME}"
 printf "%b\n" "${GREEN}${BOLD} ⏲️  ◾️ $(date)        on ◾️  $(hostname)${NC}"
 echo""
-echo "  🧹 Starting Safe Cleanup Commands..." 
+echo "  🧹 Starting Safe Cleanup Commands..."
+
+# Temporarily disable ERR trap for cleanup (these commands may fail gracefully)
+trap - ERR
+
 # 1. Shut down Core Services (Postgres, Keycloak, Minio, etc.)
 echo "   🫧️  Shutting down helix-core"
-docker compose -f compose/helix-core/core-stack.yml down --volumes --remove-orphans || true
+docker compose -f compose/helix-core/core-stack.yml down --volumes --remove-orphans 2>/dev/null || true
+
 # 2. Shut down Main Application Services (API, Worker, Beat)
 echo "    🚿️ Washing down helix-main"
-# FIX: Changed path from compose/helix-main.yml to compose/helix-main/main-stack.yml
-docker compose -f compose/helix-main/main-stack.yml down --volumes --remove-orphans || true
+docker compose -f compose/helix-main/main-stack.yml down --volumes --remove-orphans 2>/dev/null || true
+
 # 3. Shut down LLM/AI Services (Ollama, WebUI)
 echo "      🍀️ Refreshing helix-llm"
-# FIX: Changed path from compose/helix-llm.yml to compose/helix-llm/llm-stack.yml
-docker compose -f compose/helix-llm/llm-stack.yml down --volumes --remove-orphans || true
+docker compose -f compose/helix-llm/llm-stack.yml down --volumes --remove-orphans 2>/dev/null || true
+
+# Re-enable ERR trap
+trap 'echo "🚨 CRASH ALERT! The Builder (🤴) tripped on line $LINENO in script $0!"' ERR
+
 # 4. Flush unused images, networks, and volumes
 echo "       🚽️ Pruning volumes"
 docker system prune --volumes --force
