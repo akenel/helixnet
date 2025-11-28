@@ -292,6 +292,22 @@
                 if (this.user.isCashier && !this.user.isManager) {
                     this.maxDiscount = 10; // Cashiers max 10%
                 }
+
+                // Restore cart from sessionStorage if coming back from checkout (Edit Cart)
+                const storedCart = sessionStorage.getItem('pos_cart');
+                if (storedCart) {
+                    try {
+                        const cartData = JSON.parse(storedCart);
+                        this.cart = cartData.cart || [];
+                        this.discount = cartData.discount || 0;
+                        this.transactionId = cartData.transactionId || this.transactionId;
+                        if (this.cart.length > 0) {
+                            showToast(`Cart restored: ${this.cart.length} items`, 'info');
+                        }
+                    } catch (e) {
+                        console.error('Failed to restore cart:', e);
+                    }
+                }
             },
 
             async searchByBarcode() {

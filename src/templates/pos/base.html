@@ -150,7 +150,16 @@
 
             logout() {
                 this.clearToken();
-                window.location.href = '/pos';
+                // Also clear cart
+                sessionStorage.removeItem('pos_cart');
+
+                // Logout from Keycloak to end SSO session
+                const keycloakUrl = 'https://keycloak.helix.local';
+                const realm = 'kc-pos-realm-dev';
+                const redirectUri = encodeURIComponent(window.location.origin + '/pos');
+
+                // Redirect to Keycloak logout endpoint
+                window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?post_logout_redirect_uri=${redirectUri}&client_id=helix_pos_web`;
             }
         };
 
