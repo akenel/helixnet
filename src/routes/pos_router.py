@@ -39,6 +39,7 @@ from src.schemas.pos_schema import (
     BarcodeScanRequest,
     BarcodeScanResponse,
     CheckoutRequest,
+    RefundRequest,
     DailySummary,
     StoreSettingsRead,
     StoreSettingsUpdate,
@@ -218,7 +219,7 @@ async def create_transaction(
 
     new_transaction = TransactionModel(
         transaction_number=transaction_number,
-        cashier_id=current_user.id,
+        cashier_id=current_user.get('sub', current_user.get('preferred_username', 'unknown')),
         status=TransactionStatus.OPEN,
         notes=transaction.notes,
         subtotal=Decimal("0.00"),
@@ -451,6 +452,71 @@ async def checkout_transaction(
     await db.refresh(transaction)
 
     logger.info(f"Transaction completed: {transaction.transaction_number} - Total: {transaction.total} CHF")
+    return transaction
+
+
+@router.post("/transactions/{transaction_id}/refund", response_model=TransactionRead)
+async def refund_transaction(
+    transaction_id: UUID,
+    refund: RefundRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """
+    Process a refund for a completed transaction.
+
+    Only managers and admins can process refunds.
+    Customer always gets cash back (even if they paid with card).
+    This is common in Swiss retail - simpler for accounting.
+
+    Args:
+        transaction_id: UUID of completed transaction to refund
+        refund: RefundRequest with reason and optional partial amount
+
+    Returns:
+        Updated transaction with REFUNDED status
+    """
+    # Get transaction
+    trans_result = await db.execute(
+        select(TransactionModel).where(TransactionModel.id == transaction_id)
+    )
+    transaction = trans_result.scalar_one_or_none()
+
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if transaction.status != TransactionStatus.COMPLETED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Can only refund completed transactions. Current status: {transaction.status.value}"
+        )
+
+    # Calculate refund amount
+    refund_amount = refund.partial_amount if refund.partial_amount else transaction.total
+
+    if refund_amount > transaction.total:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Refund amount ({refund_amount}) cannot exceed transaction total ({transaction.total})"
+        )
+
+    # Update transaction
+    transaction.status = TransactionStatus.REFUNDED
+    transaction.updated_at = datetime.now(timezone.utc)
+
+    # Add refund note with cashier info
+    cashier_name = current_user.get('preferred_username', 'Unknown')
+    refund_note = f"REFUNDED: CHF {refund_amount} cash back | Reason: {refund.reason} | Processed by: {cashier_name} | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
+
+    if transaction.notes:
+        transaction.notes = f"{transaction.notes}\n{refund_note}"
+    else:
+        transaction.notes = refund_note
+
+    await db.commit()
+    await db.refresh(transaction)
+
+    logger.info(f"Refund processed: {transaction.transaction_number} - CHF {refund_amount} by {cashier_name}")
     return transaction
 
 

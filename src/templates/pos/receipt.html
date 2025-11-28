@@ -9,10 +9,57 @@
         <button @click="goBack()" class="btn-secondary">
             ← Back
         </button>
-        <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
-        <button @click="printReceipt()" class="btn-primary">
-            🖨️ Print Receipt
-        </button>
+        <div class="flex items-center space-x-2">
+            <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
+            <span x-show="transaction.status === 'refunded'" class="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-semibold">REFUNDED</span>
+        </div>
+        <div class="flex space-x-2">
+            <button x-show="transaction.status === 'completed' && canRefund" @click="showRefundModal()" class="btn-danger">
+                ↩️ Refund
+            </button>
+            <button @click="printReceipt()" class="btn-primary">
+                🖨️ Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Refund Modal -->
+    <div x-show="refundModalOpen" class="no-print fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">↩️ Process Refund</h2>
+
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-4">
+                <p class="text-sm text-yellow-800">
+                    <strong>⚠️ Cash Back:</strong> Customer will receive <span class="font-bold" x-text="formatPrice(transaction.total)"></span> in cash (regardless of original payment method).
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Reason for Refund *</label>
+                <select x-model="refundReason" class="input-field">
+                    <option value="">Select reason...</option>
+                    <option value="Broken/defective item">Broken/defective item</option>
+                    <option value="Wrong product">Wrong product</option>
+                    <option value="Customer changed mind">Customer changed mind</option>
+                    <option value="Price dispute">Price dispute</option>
+                    <option value="Other">Other (specify below)</option>
+                </select>
+            </div>
+
+            <div class="mb-4" x-show="refundReason === 'Other'">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Specify Reason</label>
+                <input type="text" x-model="refundReasonOther" class="input-field" placeholder="Enter reason...">
+            </div>
+
+            <div class="flex space-x-3">
+                <button @click="refundModalOpen = false" class="btn-secondary flex-1">
+                    Cancel
+                </button>
+                <button @click="processRefund()" :disabled="!refundReason || (refundReason === 'Other' && !refundReasonOther)" class="btn-danger flex-1">
+                    ✅ Confirm Refund
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- A4 Receipt Container -->
@@ -230,6 +277,10 @@
                 receipt_logo_url: ''
             },
             cashierName: 'Cashier',
+            canRefund: false,
+            refundModalOpen: false,
+            refundReason: '',
+            refundReasonOther: '',
 
             async init() {
                 // Get transaction ID from URL
@@ -251,6 +302,12 @@
 
                     // Get cashier name (optional - would need user endpoint)
                     this.cashierName = 'Cashier'; // TODO: Fetch from user API
+
+                    // Check if user can process refunds (manager or admin only)
+                    const userInfo = AuthHelper.getUserInfo();
+                    if (userInfo) {
+                        this.canRefund = AuthHelper.isManager() || AuthHelper.isAdmin();
+                    }
 
                 } catch (error) {
                     console.error('Failed to load receipt:', error);
@@ -294,6 +351,45 @@
 
             printReceipt() {
                 window.print();
+            },
+
+            showRefundModal() {
+                this.refundReason = '';
+                this.refundReasonOther = '';
+                this.refundModalOpen = true;
+            },
+
+            async processRefund() {
+                const reason = this.refundReason === 'Other' ? this.refundReasonOther : this.refundReason;
+
+                if (!reason || reason.length < 3) {
+                    showToast('Please provide a reason for the refund', 'warning');
+                    return;
+                }
+
+                if (!confirm(`Process refund of ${this.formatPrice(this.transaction.total)} cash back?\n\nReason: ${reason}`)) {
+                    return;
+                }
+
+                try {
+                    const pathParts = window.location.pathname.split('/');
+                    const transactionId = pathParts[pathParts.length - 1];
+
+                    await API.post(`/api/v1/pos/transactions/${transactionId}/refund`, {
+                        reason: reason,
+                        refund_method: 'cash'
+                    });
+
+                    showToast('Refund processed! Give customer ' + this.formatPrice(this.transaction.total) + ' cash.', 'success');
+                    this.refundModalOpen = false;
+
+                    // Reload to show updated status
+                    setTimeout(() => window.location.reload(), 1500);
+
+                } catch (error) {
+                    console.error('Refund failed:', error);
+                    showToast('Refund failed: ' + error.message, 'error');
+                }
             },
 
             goBack() {

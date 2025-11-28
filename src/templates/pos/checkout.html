@@ -21,15 +21,28 @@
                 </div>
             </div>
 
+            <!-- 🏷️ Quick Discount (Pam's Rounding) -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ Discount</h2>
+                <div class="grid grid-cols-5 gap-2">
+                    <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3">None</button>
+                    <button @click="applyDiscount(5)" :class="discount === 5 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">5%</button>
+                    <button @click="applyDiscount(10)" :class="discount === 10 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">10%</button>
+                    <button @click="applyDiscount(15)" :class="discount === 15 ? 'bg-yellow-300' : 'bg-yellow-100'" class="btn-secondary py-3">15%</button>
+                    <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100">Custom</button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">💡 Cashiers: max 10% | Managers: max 25% | Admin: unlimited</p>
+            </div>
+
             <!-- Price Breakdown -->
             <div class="bg-indigo-50 rounded-lg p-6 mb-6 space-y-3">
                 <div class="flex justify-between">
                     <span>Subtotal:</span>
                     <span x-text="formatPrice(cartData.totals.subtotal)"></span>
                 </div>
-                <div x-show="cartData.discount > 0" class="flex justify-between text-green-600">
-                    <span>Discount (<span x-text="cartData.discount"></span>%):</span>
-                    <span x-text="'-' + formatPrice(cartData.totals.discountAmount)"></span>
+                <div x-show="discount > 0" class="flex justify-between text-green-600">
+                    <span>Discount (<span x-text="discount"></span>%):</span>
+                    <span x-text="'-' + formatPrice(discountAmount)"></span>
                 </div>
                 <div class="flex justify-between">
                     <span>VAT (7.7%):</span>
@@ -44,27 +57,34 @@
             <!-- Payment Method -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Payment Method</h2>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <button
                         @click="paymentMethod = 'cash'"
                         :class="paymentMethod === 'cash' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
-                        class="card py-8 text-center cursor-pointer hover:shadow-lg transition">
-                        <span class="text-5xl mb-2 block">💵</span>
+                        class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-4xl mb-2 block">💵</span>
                         <p class="font-semibold">Cash</p>
                     </button>
                     <button
-                        @click="paymentMethod = 'card'"
-                        :class="paymentMethod === 'card' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
-                        class="card py-8 text-center cursor-pointer hover:shadow-lg transition">
-                        <span class="text-5xl mb-2 block">💳</span>
-                        <p class="font-semibold">Card</p>
+                        @click="paymentMethod = 'visa'"
+                        :class="paymentMethod === 'visa' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
+                        class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-4xl mb-2 block">💳</span>
+                        <p class="font-semibold">Visa/MC</p>
                     </button>
                     <button
-                        @click="paymentMethod = 'mobile'"
-                        :class="paymentMethod === 'mobile' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
-                        class="card py-8 text-center cursor-pointer hover:shadow-lg transition">
-                        <span class="text-5xl mb-2 block">📱</span>
-                        <p class="font-semibold">Mobile</p>
+                        @click="paymentMethod = 'debit'"
+                        :class="paymentMethod === 'debit' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
+                        class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-4xl mb-2 block">🏦</span>
+                        <p class="font-semibold">Debit</p>
+                    </button>
+                    <button
+                        @click="paymentMethod = 'twint'"
+                        :class="paymentMethod === 'twint' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
+                        class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-4xl mb-2 block">📱</span>
+                        <p class="font-semibold">TWINT</p>
                     </button>
                 </div>
             </div>
@@ -73,7 +93,7 @@
             <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
                 <h2 class="text-lg font-semibold text-yellow-800 mb-3">⚠️ Dry Run Preview</h2>
                 <div class="space-y-2 text-sm text-yellow-900">
-                    <p>• Cash drawer: <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : 'CHF 0.00 (card/mobile)'"></span></p>
+                    <p>• Cash drawer: <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : 'CHF 0.00 (electronic)'"></span></p>
                     <p>• Inventory: <span x-text="inventoryPreview()"></span></p>
                     <p>• Receipt: Will print to POS printer</p>
                     <p>• Daily total: +<span x-text="formatPrice(cartData.totals.total)"></span></p>
@@ -106,8 +126,10 @@
     function checkoutData() {
         return {
             cartData: {cart: [], totals: {}, discount: 0, transactionId: ''},
-            paymentMethod: 'card',
+            paymentMethod: 'visa',
             processing: false,
+            discount: 0,
+            discountAmount: 0,
 
             init() {
                 const stored = sessionStorage.getItem('pos_cart');
@@ -118,6 +140,36 @@
                 }
 
                 this.cartData = JSON.parse(stored);
+                this.discount = this.cartData.discount || 0;
+                this.recalculateTotals();
+            },
+
+            applyDiscount(percent) {
+                // TODO: Check user role for max discount
+                this.discount = percent;
+                this.cartData.discount = percent;
+                this.recalculateTotals();
+                sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
+                showToast(`${percent}% discount applied`, 'success');
+            },
+
+            customDiscount() {
+                const custom = prompt('Enter discount percentage (0-25):');
+                if (custom !== null) {
+                    const percent = Math.min(25, Math.max(0, parseInt(custom) || 0));
+                    this.applyDiscount(percent);
+                }
+            },
+
+            recalculateTotals() {
+                const subtotal = this.cartData.totals.subtotal || 0;
+                this.discountAmount = subtotal * (this.discount / 100);
+                const afterDiscount = subtotal - this.discountAmount;
+                // VAT calculated AFTER discount (Swiss compliant)
+                const vat = afterDiscount * 0.077;
+                this.cartData.totals.discountAmount = this.discountAmount;
+                this.cartData.totals.vat = vat;
+                this.cartData.totals.total = afterDiscount + vat;
             },
 
             inventoryPreview() {
@@ -156,10 +208,20 @@
                         });
                     }
 
-                    // Checkout
-                    await API.post(`/api/v1/pos/transactions/${transaction.id}/checkout`, {
+                    // Checkout - cash payments need amount_tendered
+                    const checkoutData = {
                         payment_method: this.paymentMethod
-                    });
+                    };
+                    if (this.paymentMethod === 'cash') {
+                        // For cash, prompt for amount tendered or assume exact amount
+                        const amountTendered = prompt(`Amount tendered (Total: CHF ${this.cartData.totals.total.toFixed(2)}):`);
+                        if (amountTendered === null) {
+                            this.processing = false;
+                            return; // User cancelled
+                        }
+                        checkoutData.amount_tendered = amountTendered || this.cartData.totals.total.toFixed(2);
+                    }
+                    await API.post(`/api/v1/pos/transactions/${transaction.id}/checkout`, checkoutData);
 
                     // Clear cart
                     sessionStorage.removeItem('pos_cart');

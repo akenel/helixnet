@@ -105,7 +105,7 @@ services:
 # -------------------------------------------------------------
 # KEYCLOAK (built from local Dockerfile)
 # -------------------------------------------------------------
-  keycloak:
+  keycloak :
     build:
       context: ../../  
       dockerfile: compose/helix-core/Dockerfile.keycloak
@@ -117,7 +117,7 @@ services:
     container_name: keycloak
     restart: unless-stopped
     command: ["start", "--optimized"]
-    # Removed --import-realm to prevent duplicate key errors after initial import
+    # NOTE: --import-realm removed after successful import (2025-11-28). Realms now in DB.
     environment:
       KC_PROXY_HEADERS: xforwarded 
       KC_PROXY: edge

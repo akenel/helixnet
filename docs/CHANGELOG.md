@@ -7,6 +7,34 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [v2.3.0] - 2025-11-28 - "Pam's POS Polish"
+
+### Added
+- **Refund/Returns Flow**: Managers can process refunds with cash back (even for card payments)
+- **Quick Discount Buttons**: 5%, 10%, 15%, Custom discount options on checkout
+- **Swiss Payment Methods**: Cash, Visa/MC, Debit, TWINT (API-compliant enums)
+- **Cash Payment Flow**: Prompts for amount tendered, calculates change automatically
+- **POS Realm Import**: `kc-pos-realm-dev` with Pam (cashier), Ralph (manager), Felix (admin)
+- **Keycloak Retry Logic**: Exponential backoff for startup race conditions
+- **KB Notes**: 6 knowledge base articles for DebLLM system
+
+### Fixed
+- Transaction creation 500 error (`current_user.id` → `current_user.get('sub')`)
+- Payment method enum mismatch (`card` → `visa`, `mobile` → `twint`)
+- Realm import duplicate client ID bug (`helix_user` → `helix_account`)
+- VAT calculation now Swiss-compliant (calculated AFTER discount)
+
+### Security
+- Refunds restricted to managers/admins only (RBAC enforced)
+- Cashiers limited to 10% max discount
+
+### Demo Ready
+- Full E2E flow: Login → Scan → Cart → Discount → Checkout → Receipt → Refund
+- 17 products seeded for Artemis store
+- Receipt page with print support and refund modal
+
+---
+
 ## [Unreleased]
 ### 🚧 Work in Progress
 - Setting up API orchestration layer (FastAPI)

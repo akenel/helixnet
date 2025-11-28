@@ -125,6 +125,13 @@ class CheckoutRequest(BaseModel):
     amount_tendered: Optional[Decimal] = Field(None, ge=0, description="For cash payments")
 
 
+class RefundRequest(BaseModel):
+    """Schema for refund/return processing"""
+    reason: str = Field(..., min_length=3, max_length=500, description="Reason for refund (e.g., 'Broken item', 'Wrong product')")
+    refund_method: str = Field(default="cash", description="How to refund: 'cash' (always cash back) or 'original' (same method)")
+    partial_amount: Optional[Decimal] = Field(None, ge=0, description="For partial refunds, specify amount. Full refund if omitted.")
+
+
 class TransactionRead(TransactionBase):
     """Schema for reading transaction"""
     id: UUID

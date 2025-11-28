@@ -1,0 +1,586 @@
+{
+  "name": "Reddit mentions tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "simple": false,
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1,\"hour\") }}",
+          "sender": "admin@f5bot.com"
+        },
+        "options": {}
+      },
+      "id": "8144a324-3151-4302-acd2-f43a79f0c411",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        512,
+        288
+      ],
+      "webhookId": "cbb6fc22-380e-40aa-81c0-e9d933e6a918",
+      "notesInFlow": false,
+      "typeVersion": 2.1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "6cae6a3f-06b0-490b-9e96-a51d106cd075",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        192,
+        288
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5",
+          "cachedResultName": "GPT-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "# Your Role  \nYou are an **expert social intelligence analyst for [COMPANY]**.\n\nYour task is to analyze how [COMPANY] is discussed across **Reddit**.\n\nApproach each mention with the mindset of a **strategic listener** — someone who interprets online discussions not just at face value, but as valuable signals for **brand perception, community sentiment, and product opportunities**.\n\nYour analysis will directly inform **[COMPANY]'s Growth and Product teams**, helping them identify:  \n- Product feedback or friction points  \n- Potential feature opportunities  \n- Community engagement moments  \n- Gaps in messaging or positioning  \n\nYou will interpret these mentions with a strategic lens to understand **user perception, sentiment, and intent**, helping the [COMPANY] team identify opportunities for engagement, product improvement, and community growth.\n\n---\n\n# About [COMPANY]  \n[...] similar to [CLOSE COMPETITORS].\n\n## Audience  \n[...]\n\n## Reference Context  \n- With [COMPANY] users build [...]  \n- They need [...]  \n- **Ideal for:** [...]  \n- **Not for:** [...]  \n\n---\n\n### Your Mission  \nWhen a reddit mention is provided, analyze it as if you were reporting to [COMPANY]’s **Growth and Product teams**. You should:  \n- Understand the **context** of the mention.  \n- Identify **why** the user is talking about [COMPANY].  \n- Classify it based on its **purpose or intent** (support, feedback, feature request, etc.).  \n- Determine the **sentiment** (positive, negative, neutral) toward [COMPANY].\n\n---\n\n### Classification Categories  \nChoose **one** of the following categories for each mention:\n\n1. **Support** — Mentions asking for help, reporting bugs, or describing technical issues.  \n2. **Feature Requests** — Suggestions or ideas for new features or enhancements.  \n3. **Product Insight** — Feedback, opinions, or comparisons with competitors that reveal how users perceive the product.  \n4. **Pre-Sales Queries** — Questions about pricing, plans, or purchase decisions.  \n5. **Community Engagement** — Mentions showcasing projects, tutorials, use cases, or positive discussions about [COMPANY].  \n6. **Miscellaneous** — Off-topic mentions or unrelated references that don’t fit other categories.\n\n---\n\n### Sentiment Guidelines  \nLabel the sentiment as one of the following:  \n- **Positive:** Expresses satisfaction, excitement, appreciation, or constructive enthusiasm.  \n- **Negative:** Expresses frustration, criticism, or disappointment.  \n- **Neutral:** Informational, factual, or balanced statements without emotional tone.\n\n---\n\n### Output Requirements  \nProvide your analysis in the following JSON format.  \n**Do not explain or elaborate beyond the JSON output.**\n\n```json\n{\n  \"Category\": \"[Selected category]\",\n  \"Sentiment\": \"[Positive/Negative/Neutral]\",\n  \"Reasoning\": \"[A concise explanation of why this category and sentiment were chosen]\"\n}\n",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.html.split('\\n')[3].removeTags().split(': ')[1].toString()}}\n{{ $json.html.split('\\n')[4].removeTags().split(': ')[0].toString().trim()}}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "1180aa3d-ef20-4b84-b65b-697a8c21f258",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1312,
+        304
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "93618742-a107-493d-9932-561a8ee6673d",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        816,
+        288
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "resource": "postComment",
+        "operation": "getAll",
+        "subreddit": "={{ $json.subreddit }}",
+        "postId": "={{ $json.id }}",
+        "returnAll": true
+      },
+      "id": "262ebbe8-f1f4-48de-91f9-6f79c21a64d6",
+      "name": "Get many comments in a post",
+      "type": "n8n-nodes-base.reddit",
+      "position": [
+        976,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "subreddit": "={{ $json.account.split(\"/r/\")[1].split(\"/\")[0] }}",
+        "postId": "={{ $json.link.split(\"/comments/\")[1].split(\"/\")[0] }}"
+      },
+      "id": "ffd0fe14-225c-4465-9d64-a88201ab6241",
+      "name": "Get a post",
+      "type": "n8n-nodes-base.reddit",
+      "position": [
+        768,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all comment objects from previous node (\"Get many comments in a post\")\nconst comments = items.map(item => item.json);\n\n// Recursive Markdown builder to handle replies\nfunction toMarkdown(list, level = 0) {\n  let md = '';\n  for (const c of list) {\n    // Skip deleted or invalid comments\n    if (!c || !c.author || !c.body) continue;\n\n    const indent = '  '.repeat(level);\n    const body = c.body\n      .replace(/\\n+/g, ' ')\n      .replace(/\\s{2,}/g, ' ')\n      .trim();\n\n    // Build a permalink — Reddit provides 'permalink' directly (relative path)\n    const permalink = c.permalink\n      ? `https://www.reddit.com${c.permalink}`\n      : '';\n\n    // Format one Markdown line per comment\n    md += `${indent}- **[${c.author}](${permalink || '#'})**: ${body}\\n`;\n\n    // Handle nested replies recursively\n    if (c.replies?.data?.children?.length) {\n      const replies = c.replies.data.children\n        .filter(r => r.kind === 't1')\n        .map(r => r.data);\n      md += toMarkdown(replies, level + 1);\n    }\n  }\n  return md;\n}\n\n// Build markdown for all comments\nconst markdown = toMarkdown(comments);\n\n// Output a single Markdown string\nreturn [{ json: { markdown } }];"
+      },
+      "id": "e0918554-3291-4b8e-86c4-e6b17685255e",
+      "name": "Code in JavaScript2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1200,
+        928
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "# Step 1: Check inbox for alerts from F5bot every hour",
+        "height": 608,
+        "width": 992,
+        "color": 5
+      },
+      "id": "25ab87a9-6d88-49af-b990-0a371f676455",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Step 2: Classify the conversation and determine its sentiment",
+        "height": 608,
+        "width": 656,
+        "color": 5
+      },
+      "id": "8f770201-ce3b-43ff-a125-e11f15aa828f",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Extract insightful signals for leadership, product, marketing, and support teams.\n",
+        "height": 496,
+        "width": 672,
+        "color": 6
+      },
+      "id": "b0ff548f-989b-4199-926e-70ce466f2dab",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Step 3: Store the data",
+        "height": 608,
+        "width": 400,
+        "color": 5
+      },
+      "id": "a46cca54-867d-4caf-baff-4e66b32de350",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8bc532ac-315a-4987-9f21-3d48c50f2b99",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ad3f68e7-7d0a-4685-ac20-3ac5c1301c07",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        160,
+        928
+      ],
+      "webhookId": "8bc532ac-315a-4987-9f21-3d48c50f2b99",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "# Store the summary",
+        "height": 496,
+        "width": 352,
+        "color": 6
+      },
+      "id": "831131f8-28d8-4df9-bead-9d9a94a427c8",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2096,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5",
+          "cachedResultName": "GPT-5"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "# Role  \nYou are an **Elite Insight Analyst** tasked with analyzing a Reddit discussion that includes posts and comments about **[TOPIC]** creation using tools such as **[COMPANY & COMPETITORS]** or similar platforms.  \n\nYour goal is **not to summarize linearly**, but to extract **insightful signals** that could be valuable to the **[COMPANY] product, marketing, business, or customer teams**.\n\n---\n\n# Tone & Depth  \nYour analysis should be:  \n- **Concise but insightful** — focus on signals, not noise.  \n- **Neutral and evidence-based** — represent the conversation fairly, link to specific comments for reference.  \n- **Strategic in framing** — highlight what matters to product, growth, or customer experience.  \n\n---\n\n# Framework  \nPlease produce your output **in bullet points** using the structure below.\n\n---\n\n## **Topic / Theme Summary**  \n- What is the overall topic or question being discussed?  \n- Why is this conversation happening now (if apparent)?  \n\n---\n\n## **Key Insights & Takeaways**  \nSummarize the main ideas, opinions, or trends shared in the thread.  \nHighlight anything related to **[COMPANY], [TOOL CATEGORY], competitors, pricing, UX, AI features, integrations**.\n\nGroup insights by theme, such as:  \n- Product feedback  \n- Support issues  \n- Performance concerns  \n- Community sentiment  \n- Workflow preferences  \n- Comparisons to competitors  \n\n---\n\n## **Actionable Signals for [COMPANY]**  \n- Identify specific feedback or requests that could inform **product roadmap decisions**.  \n- Note **pain points** or gaps users are experiencing (what they wish existed, what’s confusing, what’s broken).  \n- Flag **positive mentions** — what users love, recommend, or repeatedly praise.  \n- If **competitors are mentioned**, summarize how [COMPANY] is being compared (positively or negatively).  \n\n---\n\n## **Sentiment & Tone Snapshot**  \n- Overall tone of the thread: **positive / neutral / negative**.  \n- Any **strong emotions**, recurring frustrations, or standout enthusiasm signals.  "
+            },
+            {
+              "content": "={{\"Main Post: \" + $(\"Get a post\").first().json.selftext + \"\\nComments in markdown format: \" + $json.markdown}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "9fb85d2c-63aa-4806-a7c9-228c8b45480f",
+      "name": "Message a model",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1616,
+        848
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('Message a model').first().json.output[0].content[0].text }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html"
+              }
+            ]
+          }
+        }
+      },
+      "id": "708ff2ea-48d8-4712-97a1-70ed5affcf3d",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2224,
+        960
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "content": "# Fetch the entire conversation: Reddit post + comments",
+        "height": 496,
+        "width": 704,
+        "color": 6
+      },
+      "id": "7dc06f44-3232-43a0-9cf8-7b47d2b0f0ff",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        688,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "all_mentions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $(\"Get a row\").first().json.id }}"
+            },
+            {
+              "keyName": "link",
+              "condition": "ilike",
+              "keyValue": "=*{{ $('Get a post').first().json.id }}*"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "thread_summary",
+              "fieldValue": "={{ $json.output[0].content[0].text }}"
+            },
+            {
+              "fieldId": "raw_full_thread",
+              "fieldValue": "={{\"Main Post: \" + $(\"Get a post\").first().json.selftext + \"\\nComments in markdown format: \" + $json.markdown}}"
+            }
+          ]
+        }
+      },
+      "id": "ca027b35-a73f-43f5-81d5-26042e04a92a",
+      "name": "Update a row",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2224,
+        752
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "all_mentions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.id }}"
+            }
+          ]
+        }
+      },
+      "id": "049f19a4-7fb2-44ba-a56b-46c44472d1a7",
+      "name": "Get a row",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        448,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "tableId": "all_mentions",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $('Gmail').first().json.html.split('\\n')[3].removeTags().split(': ')[1].toString()}}"
+            },
+            {
+              "fieldId": "body",
+              "fieldValue": "={{ $('Gmail').first().json.html.split('\\n')[4].removeTags().split(': ')[0].toString().trim()}}"
+            },
+            {
+              "fieldId": "link",
+              "fieldValue": "={{\n  (() => {\n    const html = $('Gmail').first().json.html.toString();\n    const rawUrl = html.extractUrl().split(\"'\")[0];\n\n    try {\n      const parsed = new URL(rawUrl);\n      let u = parsed.searchParams.get('u');\n      if (!u) return rawUrl;\n\n      // Decode multiple times if necessary\n      for (let i = 0; i < 3; i++) {\n        try {\n          const decoded = decodeURIComponent(u);\n          if (decoded === u) break;\n          u = decoded;\n        } catch (e) { break; }\n      }\n\n      return u;\n    } catch (e) {\n      const match = rawUrl.match(/[?&]u=([^&]+)/);\n      return match ? decodeURIComponent(match[1]) : rawUrl;\n    }\n  })()\n}}"
+            },
+            {
+              "fieldId": "account",
+              "fieldValue": "={{ $('Gmail').first().json.html.split('\\n')[3].removeTags().split(':')[0].split(' ')[4].slice(1,-1).toString().toString()}}"
+            },
+            {
+              "fieldId": "posted_at",
+              "fieldValue": "={{ $('Gmail').first().json.headers.date.toDateTime() }}"
+            },
+            {
+              "fieldId": "category",
+              "fieldValue": "={{ $('OpenAI').first().json.message.content.Category }}"
+            },
+            {
+              "fieldId": "sentiment",
+              "fieldValue": "={{ $('OpenAI').first().json.message.content.Sentiment }}"
+            },
+            {
+              "fieldId": "classification_reasoning",
+              "fieldValue": "={{ $('OpenAI').first().json.message.content.Reasoning }}"
+            }
+          ]
+        }
+      },
+      "id": "7e2266af-fa46-4905-b368-9c1917f9dd77",
+      "name": "Create a row",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        1920,
+        304
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Step 4: When the user clicks on \"AI Summary\" get the relevant data",
+        "height": 496,
+        "width": 592,
+        "color": 6
+      },
+      "id": "94a7faa3-a92a-44dd-97b5-f1d5a9ad2338",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Why This Workflow Is Useful\n- Reddit is a **goldmine** for user intelligence and high-intent leads, but manually tracking subreddits for posts and comment threads is **time-consuming**.\n\n- This workflow automates the entire process so you only spend **1–2 hours a week**, while still keeping your engagement authentic and human.\n\n- It surfaces what users love, dislike, want changed, and how they compare you to competitors.\n\n- Helping founders and growth teams build a continuous **voice-of-customer engine** that drives smarter product, marketing, sales, and support decisions.\n\n---\n\n# Requirements\n- [F5Bot](https://f5bot.com) account (free)\n- Gmail integration\n- OpenAI API key\n- Supabase project\n- WeWeb (free)\n\n---\n\n# Setup\n- Import the workflow  \n- Set email alerts for product, competitor, or category terms using [F5Bot](https://f5bot.com)  \n- Connect your Gmail  \n- Modify the prompts with your product description, ICP, features, and competitors  \n- Create your Supabase table with schema:\n![](https://cdn.weweb.io/designs/85cd0d79-e649-4575-98bc-da988cea7dc7/sections/CleanShot_2025-11-21_at_12.48.37@2x.png?_wwcv=1763709540885)\n- Connect your Supabase project  \n- Connect the webhook to your WeWeb dashboard  \n\n**Detailed setup guide:** [here](https://marketplace.weweb.io/projects/9a2048a6-8702-4606-8320-948db5962e88/)\n",
+        "height": 1856,
+        "width": 560
+      },
+      "id": "05b95db4-8e47-4540-bed1-92dcc5f5cb63",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        16
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Get a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a post": {
+      "main": [
+        [
+          {
+            "node": "Get many comments in a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many comments in a post": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2213cb04-98b9-491b-9472-f9f8901e0886",
+  "meta": {
+    "instanceId": "9e17f20526132ce7a2976381a229c938d7d54326a7d4094d590584e29207b133"
+  },
+  "id": "QUczeZIFGH7fISxm",
+  "tags": []
+}
