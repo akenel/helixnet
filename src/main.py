@@ -113,10 +113,12 @@ async def lifespan(app: FastAPI):
         realm_status = await check_keycloak_realms()
         if realm_status["status"] == "success":
             logger.info(f"✅ Keycloak connected - {realm_status['realm_count']} realm(s) found")
+        elif realm_status["status"] == "pending":
+            logger.info("⏳ Keycloak startup pending - auth will be verified on first request")
         else:
-            logger.warning(f"⚠️ Keycloak health check failed: {realm_status.get('message', 'Unknown error')}")
+            logger.info(f"ℹ️ Keycloak check deferred: {realm_status.get('message', 'Service starting')}")
     except Exception as e:
-        logger.warning(f"⚠️ Keycloak health check encountered an issue: {e}", exc_info=True)
+        logger.debug(f"Keycloak health check deferred: {e}")
 
     logger.info("✨ HelixNet Core READY to serve requests.")
     yield

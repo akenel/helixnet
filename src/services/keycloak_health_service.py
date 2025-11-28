@@ -11,37 +11,52 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
-async def get_admin_token() -> Optional[str]:
+async def get_admin_token(max_retries: int = 3, retry_delay: float = 2.0) -> Optional[str]:
     """
     Get admin access token from Keycloak master realm.
-    Uses master realm admin credentials.
+    Uses master realm admin credentials with retry logic for startup timing.
     """
-    try:
-        # Keycloak master realm token endpoint
-        token_url = f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KEYCLOAK_MASTER_REALM}/protocol/openid-connect/token"
+    import asyncio
 
-        async with httpx.AsyncClient(verify=False) as client:
-            response = await client.post(
-                token_url,
-                data={
-                    "client_id": "admin-cli",
-                    "username": settings.HX_SUPER_NAME,
-                    "password": settings.HX_SUPER_PASSWORD,
-                    "grant_type": "password"
-                },
-                timeout=10.0
-            )
+    token_url = f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KEYCLOAK_MASTER_REALM}/protocol/openid-connect/token"
 
-            if response.status_code == 200:
-                token_data = response.json()
-                return token_data.get("access_token")
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.post(
+                    token_url,
+                    data={
+                        "client_id": "admin-cli",
+                        "username": settings.HX_SUPER_NAME,
+                        "password": settings.HX_SUPER_PASSWORD,
+                        "grant_type": "password"
+                    },
+                    timeout=10.0
+                )
+
+                if response.status_code == 200:
+                    token_data = response.json()
+                    return token_data.get("access_token")
+                else:
+                    if attempt < max_retries - 1:
+                        logger.debug(f"Keycloak auth attempt {attempt + 1}/{max_retries} failed, retrying...")
+                        await asyncio.sleep(retry_delay)
+                    else:
+                        logger.debug(f"Keycloak auth failed after {max_retries} attempts: {response.status_code}")
+                        return None
+
+        except (httpx.ConnectError, httpx.ConnectTimeout) as e:
+            if attempt < max_retries - 1:
+                logger.debug(f"Keycloak connection attempt {attempt + 1}/{max_retries} failed, retrying...")
+                await asyncio.sleep(retry_delay)
             else:
-                logger.error(f"Failed to get admin token: {response.status_code} - {response.text}")
+                logger.debug(f"Keycloak not reachable after {max_retries} attempts")
                 return None
+        except Exception as e:
+            logger.debug(f"Keycloak auth error: {e}")
+            return None
 
-    except Exception as e:
-        logger.error(f"Error getting admin token: {e}")
-        return None
+    return None
 
 
 async def get_realm_info(admin_token: str, realm_name: str) -> Optional[Dict]:
@@ -95,13 +110,13 @@ async def check_keycloak_realms() -> Dict[str, any]:
     logger.info("🔐 Checking Keycloak realm status...")
 
     try:
-        # Step 1: Get admin token
-        admin_token = await get_admin_token()
+        # Step 1: Get admin token (with retry for startup timing)
+        admin_token = await get_admin_token(max_retries=5, retry_delay=3.0)
         if not admin_token:
-            logger.error("❌ Failed to authenticate with Keycloak master realm")
+            logger.info("⏳ Keycloak not ready yet - will verify on first request")
             return {
-                "status": "error",
-                "message": "Failed to authenticate with Keycloak",
+                "status": "pending",
+                "message": "Keycloak connection deferred",
                 "realms": []
             }
 

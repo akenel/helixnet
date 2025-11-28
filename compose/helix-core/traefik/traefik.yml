@@ -25,7 +25,7 @@ entryPoints:
         # No certResolver here since we’re using static certs
 
 providers:
-  docker: {}
+  # docker: {}  # Disabled - using file provider only (avoids Docker API version mismatch)
   file:
     directory: /etc/traefik/dynamic
     watch: true

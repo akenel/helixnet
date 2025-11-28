@@ -1,114 +1,143 @@
 # ===================================================================
-# 🌊 HelixNet Core Makefile - Bruce Lee Edition (Lazydocker Integrated)
-# Provides simple, TUI, and full CLI targets for Docker-Compose ops.
+# HelixNet Core Makefile - Bruce Lee Edition
+# "Be water, my friend" - Simple, Fast, No Bloat
 # ===================================================================
-# Use bash for better script compatibility
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help up core-up main-up llm-up down status lazy clean nuke logs links
+.PHONY: help up core-up main-up llm-up down status lazy clean nuke nuke-all logs links
 
 # --- Environment Configuration ---
 SCRIPTS_DIR := scripts
 MODULES_DIR := $(SCRIPTS_DIR)/modules
+COMPOSE_CORE := compose/helix-core/core-stack.yml
+COMPOSE_MAIN := compose/helix-main/main-stack.yml
+COMPOSE_LLM := compose/helix-llm/llm-stack.yml
 
 # --- Default Target ---
 help:
 	@echo ""
 	@echo "===================================================================="
-	@echo " 🥋 HelixNet Makefile - Core Operations (Bruce Lee Style) 🥋"
+	@echo " HelixNet Makefile - Bruce Lee Edition"
 	@echo "===================================================================="
-	@echo "  Use flags like 'DRY_RUN=true make up' to test commands."
 	@echo ""
-	@echo " 🚀 Boot/Start Operations:"
-	@echo "  make up          | Boots the Full Stack (Core -> Main -> LLM)"
-	@echo "  make core-up     | Boots Stage 🅰: Postgres, Traefik, Redis, etc."
-	@echo "  make main-up     | Boots Stage 🅱: Helix API, Workers, Beat (Requires Core)"
-	@echo "  make llm-up      | Boots Stage 🦜: Ollama, OpenWebUI (Requires Core)"
+	@echo " Boot Operations:"
+	@echo "  make up          | Full Stack (Core + Main + LLM)"
+	@echo "  make core-up     | Stage A: Postgres, Traefik, Redis, Keycloak"
+	@echo "  make main-up     | Stage B: Helix API, Workers, Beat"
+	@echo "  make llm-up      | Stage C: Ollama, OpenWebUI"
 	@echo ""
-	@echo " 🩺 Utility & Dashboards:"
-	@echo "  make status      | Runs the custom 📊 Helix TUI Status Dashboard"
-	@echo "  make lazy        | Runs 🖥️  Lazydocker (Full terminal-based Docker UI)"
-	@echo "  make links       | Shows quick access URLs (e.g., Traefik, Grafana)"
-	@echo "  make logs        | Streams logs for the main 'helix' API container"
+	@echo " Utilities:"
+	@echo "  make status      | TUI Status Dashboard"
+	@echo "  make lazy        | Lazydocker UI"
+	@echo "  make logs        | Stream helix-platform logs"
+	@echo "  make links       | Show access URLs"
 	@echo ""
-	@echo " 💥 Teardown & Cleanup:"
-	@echo "  make down        | Gracefully stops all running Helix containers"
-	@echo "  make clean       | Soft cleanup: stops all, removes dangling resources"
-	@echo "  make nuke        | Deep cleanup: stops all, prunes volumes, and removes images (DANGEROUS)"
+	@echo " Cleanup:"
+	@echo "  make down        | Stop all containers"
+	@echo "  make clean       | Stop + prune dangling"
+	@echo "  make nuke        | Safe reset (keeps DB, models, certs)"
+	@echo "  make nuke-all    | DESTROY EVERYTHING (fresh start)"
 	@echo ""
 
-prune:
-	@echo "--- 🦜 Starting Helix PRUNE ---"
-	docker system prune -a --volumes
+# ===================================================================
+# BOOT OPERATIONS
+# ===================================================================
 
-# --- Boot Flow ---
-
-llm-up:
-	@echo "--- 🦜 Starting Helix LLM Stack ---"
-	@NO_GUM=true bash $(MODULES_DIR)/helix-ollama.sh up
-# --- Boot Flow ---
 up:
-	@echo "🚀 Booting Full Helix Stack..."
-	# 🚩 FIX: This now executes the new script that merges Core and Main
-	@bash scripts/helix-boot.sh 
+	@echo "Booting Full Helix Stack..."
+	@bash scripts/helix-boot.sh
 
-# OLD TARGETS (These are now redundant or need to be rewritten to use the new logic if you still need them):
 core-up:
-	@echo "--- 🅰 Starting Helix Core Stack ---"
- 	   @NO_GUM=true bash -x $(MODULES_DIR)/helix-boot-core.sh # This likely calls the old, separate logic
-	# You should probably replace the content of helix-boot-core.sh to only run Core services.
+	@echo "Starting Core Stack (Postgres, Traefik, Redis, Keycloak)..."
+	@docker compose -f $(COMPOSE_CORE) up -d --build
 
 main-up:
-	@echo "--- 🅱 Starting Helix Main Stack ---"
-	@NO_GUM=true bash $(MODULES_DIR)/helix-boot-main.sh # This will FAIL unless rewritten
-# -------------------------------------------------------------------
-# --- Utility & Status ---
-# -------------------------------------------------------------------
+	@echo "Starting Main Stack (API, Workers, Beat)..."
+	@docker compose -f $(COMPOSE_CORE) -f $(COMPOSE_MAIN) up -d --build
 
-dr-demo:
-	@echo "# Show normal operation"
-	@echo "# Add to your .bashrc for DEMO MODE terminal"
-	export PS1="\e[41mDEMO MODE\e[0m \u@\h:\w\$ "
-	./scripts/modules/tools/helix-backup-demo.sh
-	@echo "# Simulate disaster"
-	./scripts/modules/tools/helix-disaster-demo.sh
-	@echo "# Demonstrate "recovery" from USB"
-	cd /mnt/usb/velix-demo/latest
-	./restore-demo.sh
+llm-up:
+	@echo "Starting LLM Stack (Ollama, OpenWebUI)..."
+	@docker compose -f $(COMPOSE_LLM) up -d
+
+# ===================================================================
+# UTILITIES
+# ===================================================================
 
 status:
-	@echo "--- 📊 Running Custom Helix TUI Status Check ---"
-	./scripts/modules/helix-status-v3.0.1.sh
+	@./scripts/modules/helix-status-v3.0.1.sh
 
 lazy:
-	@echo "--- 🖥️ Launching Lazydocker UI ---"
-	@command -v lazydocker >/dev/null 2>&1 || { echo >&2 "Error: lazydocker is not installed. Please install it to use this target."; exit 1; }
-	lazydocker
-
-links:
-	@echo "--- 🔗 Quick Access Links ---"
-	@echo "API Docs:    https://helix-platform.local/docs"
-	@echo "Traefik:     https://traefik.helix.local/dashboard/"
-	@echo "Grafana:     https://grafana.helix.local"
-	@echo "OpenWebUI:   http://openwebui.helix.local"
-	@echo "Dozzle Logs: https://dozzle.helix.local"
+	@command -v lazydocker >/dev/null 2>&1 || { echo "Error: lazydocker not installed"; exit 1; }
+	@lazydocker
 
 logs:
-	@echo "--- 📜 Streaming Helix API Logs (CTRL+C to exit) ---"
-	@docker logs helix -f || echo "Container 'helix' is not running."
+	@docker logs helix-platform -f 2>/dev/null || echo "Container 'helix-platform' not running"
 
-# -------------------------------------------------------------------
-# --- Teardown & Cleanup ---
-# -------------------------------------------------------------------
+links:
+	@echo ""
+	@echo "=== HelixNet Access URLs ==="
+	@echo "POS:         https://helix-platform.local/pos"
+	@echo "API Docs:    https://helix-platform.local/docs"
+	@echo "Keycloak:    https://keycloak.helix.local"
+	@echo "Traefik:     https://traefik.helix.local"
+	@echo "Dozzle:      https://dozzle.helix.local"
+	@echo "MailHog:     https://mailhog.helix.local"
+	@echo "Flower:      https://flower.helix.local"
+	@echo ""
+
+# ===================================================================
+# CLEANUP OPERATIONS
+# ===================================================================
 
 down:
-	@echo "--- 🛑 Stopping all Helix containers ---"
-	@bash $(MODULES_DIR)/helix-down.sh
+	@echo "Stopping all Helix containers..."
+	@docker compose -f $(COMPOSE_CORE) -f $(COMPOSE_MAIN) down 2>/dev/null || true
+	@docker compose -f $(COMPOSE_LLM) down 2>/dev/null || true
 
 clean:
-	@echo "--- 🧹 Soft Cleanup (Stop + Prune dangling resources) ---"
-	@bash $(MODULES_DIR)/reset_docker.sh -d
+	@echo "Soft cleanup (stop + prune dangling)..."
+	@$(MAKE) down
+	@docker system prune -f
 
+# Safe nuke - keeps persistent data (DB, Ollama models, certs)
 nuke:
-	@echo "--- 💥 DANGER: Deep Cleanup (Stop, Prune Volumes, Remove Images) ---"
-	@bash $(MODULES_DIR)/helix-reset-cleaner.sh
+	@echo ""
+	@echo "=== SAFE NUKE: Resetting runtime (keeping DB, models, certs) ==="
+	@echo ""
+	@docker compose -f $(COMPOSE_CORE) -f $(COMPOSE_MAIN) down --remove-orphans 2>/dev/null || true
+	@docker compose -f $(COMPOSE_LLM) down --remove-orphans 2>/dev/null || true
+	@docker system prune -f
+	@echo ""
+	@echo "Safe nuke complete. Persistent data preserved."
+	@echo "Run 'make up' to restart."
+	@echo ""
+
+# Full destruction - removes EVERYTHING for fresh wizard install
+nuke-all:
+	@echo ""
+	@echo "============================================================"
+	@echo " FULL DESTRUCTION MODE"
+	@echo " This will DELETE:"
+	@echo "   - All containers and volumes"
+	@echo "   - Postgres data, Keycloak realms"
+	@echo "   - All helix images"
+	@echo "============================================================"
+	@echo ""
+	@read -p "Type 'DESTROY' to confirm: " confirm && [ "$$confirm" = "DESTROY" ] || { echo "Aborted."; exit 1; }
+	@echo ""
+	@echo "Stopping all containers..."
+	@docker compose -f $(COMPOSE_CORE) -f $(COMPOSE_MAIN) down --volumes --remove-orphans 2>/dev/null || true
+	@docker compose -f $(COMPOSE_LLM) down --volumes --remove-orphans 2>/dev/null || true
+	@echo "Removing helix images..."
+	@docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^helix' | xargs -r docker rmi -f 2>/dev/null || true
+	@echo "Pruning system..."
+	@docker system prune --volumes -f
+	@echo "Recreating networks..."
+	@docker network create helixnet_core 2>/dev/null || true
+	@docker network create helixnet_edge 2>/dev/null || true
+	@echo ""
+	@echo "============================================================"
+	@echo " DESTRUCTION COMPLETE"
+	@echo " Run 'make up' for fresh install (realms auto-import)"
+	@echo "============================================================"
+	@echo ""

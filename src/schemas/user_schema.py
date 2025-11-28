@@ -58,9 +58,9 @@ class UserCreate(BaseModel):
     last_name: str = Field(..., example="Norris")
     password: str = Field(..., example="roundhouseKick42!")
 
-    class Config:
-        model_config = SettingsConfigDict(from_attributes=True)
-        schema_extra = {
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
             "example": {
                 "username": "bruce.lee",
                 "email": "bruce@dojo.com",
@@ -69,6 +69,7 @@ class UserCreate(BaseModel):
                 "password": "enterTheDragon",
             }
         }
+    }
 
 
 class UserUpdate(UserBase):
@@ -108,14 +109,11 @@ class UserRead(UserBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        # Pydantic V2 setting for ORM/SQLAlchemy compatibility (replaces 'orm_mode=True')
-        from_attributes = True 
-        
-        # Ensures UUIDs are cleanly serialized as strings in JSON output
-        json_encoders = {
-            UUID: lambda v: str(v) 
-        }
+    model_config = {
+        "from_attributes": True,
+    }
+
+    # Note: In Pydantic V2, UUIDs are serialized as strings by default
 class UserClaimsRead(UserRead):
     """Extends the UserRead model with raw JWT claims for debugging."""
     auth_context: Dict[str, Any] = Field(..., description="Raw decoded JWT claims payload.")
@@ -153,5 +151,4 @@ class TokenPairOut(BaseModel):
     refresh_jti: Optional[str] = Field(None, description="Unique JWT ID for the refresh token (used for revocation).")
     refresh_expires_at: Optional[str] = Field(None, description="ISO timestamp when the refresh token expires.")
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}

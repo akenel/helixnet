@@ -34,8 +34,14 @@ RUN mkdir -p /opt/keycloak/data/import
 # Copy realms into import directory
 COPY compose/helix-core/keycloak/realms/ /opt/keycloak/data/import/
 
+# Copy smart entrypoint script
+COPY compose/helix-core/scripts/kc-entrypoint.sh /opt/keycloak/bin/kc-entrypoint.sh
+
 # Fix permissions
 RUN chown -R 1000:0 /opt/keycloak \
- && chmod -R a+r /opt/keycloak/data/import
+ && chmod -R a+r /opt/keycloak/data/import \
+ && chmod +x /opt/keycloak/bin/kc-entrypoint.sh
 
 USER 1000
+
+ENTRYPOINT ["/opt/keycloak/bin/kc-entrypoint.sh"]
