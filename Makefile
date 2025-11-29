@@ -32,6 +32,13 @@ help:
 	@echo "  make logs        | Stream helix-platform logs"
 	@echo "  make links       | Show access URLs"
 	@echo ""
+	@echo " Backup & Restore:"
+	@echo "  make backup           | Full backup (postgres, keycloak, minio)"
+	@echo "  make backup-postgres  | Backup PostgreSQL only"
+	@echo "  make backup-list      | List available backups"
+	@echo "  make backup-config    | Show backup configuration"
+	@echo "  make restore BACKUP=X | Restore from backup ID (or 'latest')"
+	@echo ""
 	@echo " Cleanup:"
 	@echo "  make down        | Stop all containers"
 	@echo "  make clean       | Stop + prune dangling"
@@ -84,6 +91,50 @@ links:
 	@echo "MailHog:     https://mailhog.helix.local"
 	@echo "Flower:      https://flower.helix.local"
 	@echo ""
+
+# ===================================================================
+# BACKUP & RESTORE OPERATIONS
+# ===================================================================
+
+backup:
+	@bash scripts/modules/tools/helix-backup.sh all
+
+backup-postgres:
+	@bash scripts/modules/tools/helix-backup.sh postgres
+
+backup-keycloak:
+	@bash scripts/modules/tools/helix-backup.sh keycloak
+
+backup-minio:
+	@bash scripts/modules/tools/helix-backup.sh minio
+
+backup-all:
+	@bash scripts/modules/tools/helix-backup.sh all
+
+backup-list:
+	@bash scripts/modules/tools/helix-backup.sh list
+
+backup-config:
+	@bash scripts/modules/tools/helix-backup.sh config
+
+restore:
+	@if [ -z "$(BACKUP)" ]; then \
+		echo "Usage: make restore BACKUP=<backup_id>"; \
+		echo "       make restore BACKUP=latest"; \
+		bash scripts/modules/tools/helix-restore.sh list; \
+	else \
+		bash scripts/modules/tools/helix-restore.sh $(BACKUP); \
+	fi
+
+restore-postgres:
+	@if [ -z "$(BACKUP)" ]; then \
+		echo "Usage: make restore-postgres BACKUP=<backup_id>"; \
+	else \
+		bash scripts/modules/tools/helix-restore.sh $(BACKUP) postgres; \
+	fi
+
+restore-verify:
+	@bash scripts/modules/tools/helix-restore.sh verify $(BACKUP)
 
 # ===================================================================
 # CLEANUP OPERATIONS
