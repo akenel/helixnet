@@ -278,7 +278,7 @@
          @click.self="selectedProduct = null"
          @keydown.escape.window="selectedProduct = null">
 
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
              x-show="selectedProduct"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
@@ -286,10 +286,12 @@
 
             <template x-if="selectedProduct">
                 <div>
-                    <!-- Image -->
-                    <div class="h-48 bg-gray-100 flex items-center justify-center">
+                    <!-- Image - larger container with proper aspect ratio -->
+                    <div class="h-72 bg-gray-100 flex items-center justify-center p-4">
                         <template x-if="selectedProduct.image_url">
-                            <img :src="selectedProduct.image_url" class="w-full h-full object-cover">
+                            <img :src="selectedProduct.image_url"
+                                 class="max-w-full max-h-full object-contain rounded-lg"
+                                 :alt="selectedProduct.name">
                         </template>
                         <div x-show="!selectedProduct.image_url" class="text-8xl text-gray-300">
                             <span x-text="getCategoryEmoji(selectedProduct.category)"></span>
