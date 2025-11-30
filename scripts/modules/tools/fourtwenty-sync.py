@@ -26,8 +26,8 @@ FEEDS = {
     'specifications': 'https://fourtwenty.ch/Dropship/Data/dropship_specificationfeed_v1.csv'
 }
 
-# Output directory
-OUTPUT_DIR = '/home/angel/repos/helixnet/data/fourtwenty'
+# Output directory (in debllm for user-writable location)
+OUTPUT_DIR = '/home/angel/repos/helixnet/debllm/feeds/fourtwenty'
 
 
 def fetch_csv(url: str, timeout: int = 30) -> list[dict]:

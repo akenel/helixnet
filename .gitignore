@@ -77,3 +77,5 @@ Thumbs.db
 *.log
 helix.logs
 super_test_suite.log
+# FourTwenty feed downloads (fetched daily, not tracked)
+debllm/feeds/
