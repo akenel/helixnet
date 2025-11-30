@@ -198,6 +198,113 @@ async def delete_product(
 
 
 # ================================================================
+# FAST SEARCH ENDPOINTS (PostgreSQL Full-Text + Trigram)
+# ================================================================
+
+@router.get("/search")
+async def search_products_fast(
+    q: str = "",
+    category: Optional[str] = None,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Fast product search using PostgreSQL full-text search and trigram similarity.
+
+    - Instant barcode lookup (exact match, <5ms)
+    - Fuzzy name search (trigram similarity)
+    - Full-text search (German language)
+    - Category filtering
+
+    No auth required for search (public catalog).
+    """
+    from sqlalchemy import text
+
+    if not q and not category:
+        # Return empty if no search term
+        return []
+
+    # Use the PostgreSQL search_products function
+    query = text("""
+        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url, relevance
+        FROM search_products(:search_term, :category_filter, :limit_rows)
+    """)
+
+    result = await db.execute(query, {
+        "search_term": q if q else None,
+        "category_filter": category,
+        "limit_rows": limit
+    })
+
+    rows = result.fetchall()
+
+    return [
+        {
+            "id": str(row.id),
+            "sku": row.sku,
+            "barcode": row.barcode,
+            "name": row.name,
+            "category": row.category,
+            "price": float(row.price) if row.price else 0,
+            "stock_quantity": row.stock_quantity or 0,
+            "image_url": row.image_url,
+            "relevance": float(row.relevance) if row.relevance else 0
+        }
+        for row in rows
+    ]
+
+
+@router.get("/search/categories")
+async def get_product_categories(
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Get all product categories with counts."""
+    from sqlalchemy import text
+
+    query = text("""
+        SELECT category as name, product_count as count, avg_price
+        FROM product_categories
+        WHERE category IS NOT NULL AND category != ''
+        ORDER BY product_count DESC
+    """)
+
+    result = await db.execute(query)
+    rows = result.fetchall()
+
+    return [
+        {
+            "name": row.name,
+            "count": row.count,
+            "avg_price": float(row.avg_price) if row.avg_price else 0
+        }
+        for row in rows
+    ]
+
+
+@router.get("/search/stats")
+async def get_product_stats(
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Get product catalog statistics."""
+    from sqlalchemy import text
+
+    query = text("SELECT * FROM product_stats")
+    result = await db.execute(query)
+    row = result.fetchone()
+
+    if row:
+        return {
+            "total": row.total_products,
+            "categories": row.categories,
+            "with_barcode": row.with_barcode,
+            "in_stock": row.in_stock,
+            "avg_price": float(row.avg_price) if row.avg_price else 0
+        }
+
+    return {"total": 0, "categories": 0, "with_barcode": 0, "in_stock": 0, "avg_price": 0}
+
+
+# ================================================================
 # TRANSACTION ENDPOINTS (Cart/Checkout)
 # ================================================================
 
@@ -860,6 +967,29 @@ async def pos_products(request: Request):
     For now: Redirects to scan page
     """
     return templates.TemplateResponse("pos/scan.html", {"request": request})
+
+
+@html_router.get("/pos/search", response_class=HTMLResponse, name="pos_search")
+async def pos_search(request: Request):
+    """
+    Fast Product Search - Instant search with 7,442+ products
+
+    Features:
+    - Fuzzy name search (trigram similarity)
+    - Instant barcode lookup (<5ms)
+    - Category filtering
+    - Full-text search (German language)
+    - Product images
+    - Add to cart functionality
+
+    Barcode Scanner Support:
+    - Auto-detects fast sequential input
+    - Instant product lookup on scan
+    - Auto-adds to cart on exact match
+
+    URL: https://helix-platform.local/pos/search
+    """
+    return templates.TemplateResponse("pos/search.html", {"request": request})
 
 
 @html_router.get("/pos/reports", response_class=HTMLResponse, name="pos_reports")
