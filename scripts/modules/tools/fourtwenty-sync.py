@@ -4,275 +4,401 @@ FourTwenty CSV Feed Sync Tool
 KB-038: Daily product/stock/specification sync from fourtwenty.ch
 
 Usage:
-    python3 fourtwenty-sync.py --test          # Test connectivity and show sample data
-    python3 fourtwenty-sync.py --download      # Download all feeds to local files
-    python3 fourtwenty-sync.py --analyze       # Analyze feeds and show statistics
-    python3 fourtwenty-sync.py --sync          # Full sync to database (future)
+    python3 fourtwenty-sync.py --test          # Test connectivity
+    python3 fourtwenty-sync.py --download      # Download feeds locally
+    python3 fourtwenty-sync.py --analyze       # Analyze feed statistics
+    python3 fourtwenty-sync.py --sync          # Sync Headshop products to DB
+    python3 fourtwenty-sync.py --alerts        # Show price change history
 """
 
 import csv
 import io
+import os
 import sys
+import json
 import argparse
 from datetime import datetime
 from urllib.request import urlopen
 from urllib.error import URLError
 from collections import defaultdict
+from decimal import Decimal, InvalidOperation
 
-# FourTwenty Feed URLs
+# Database connection (optional - only needed for --sync)
+try:
+    import psycopg2
+    HAS_PSYCOPG2 = True
+except ImportError:
+    HAS_PSYCOPG2 = False
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
 FEEDS = {
     'products': 'https://fourtwenty.ch/Dropship/Data/dropship_productfeed_v2.csv',
     'stock': 'https://fourtwenty.ch/Dropship/Data/dropship_stockfeed_v1.csv',
     'specifications': 'https://fourtwenty.ch/Dropship/Data/dropship_specificationfeed_v1.csv'
 }
 
-# Output directory (in debllm for user-writable location)
 OUTPUT_DIR = '/home/angel/repos/helixnet/debllm/feeds/fourtwenty'
 
+# Category mapping (FourTwenty → HelixNet)
+CATEGORY_MAP = {
+    'Headshop': 'Accessories',
+    'Vape': 'Vaporizers',
+    'Vape Shop': 'Vaporizers',
+    'CBD': 'CBD',
+    'Liquids Vape ': 'E-Liquids',
+    'Themen': 'Themed',
+    'Punkteartikel': 'Promotions',
+    'Weekly Promotion': 'Promotions',
+    'Indoorgrowing': None,  # Skip
+}
 
-def fetch_csv(url: str, timeout: int = 30) -> list[dict]:
+# Categories to sync (Headshop focus)
+HEADSHOP_CATEGORIES = {'Headshop', 'Vape', 'Vape Shop', 'CBD', 'Liquids Vape ', 'Themen', 'Punkteartikel'}
+
+# Default markup
+MARKUP = Decimal('1.30')  # 30%
+
+# =============================================================================
+# UTILITIES
+# =============================================================================
+
+def fetch_csv(url: str, timeout: int = 60) -> list[dict]:
     """Fetch and parse CSV from URL. Auto-detects delimiter."""
-    print(f"  Fetching: {url}")
+    print(f"  Fetching: {url.split('/')[-1]}")
     try:
         with urlopen(url, timeout=timeout) as response:
             content = response.read().decode('utf-8')
-
-            # Auto-detect delimiter by checking first line
             first_line = content.split('\n')[0]
-            delimiter = ';' if ';' in first_line and first_line.count(';') > first_line.count(',') else ','
-
+            delimiter = ';' if first_line.count(';') > first_line.count(',') else ','
             reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
             rows = list(reader)
-            print(f"  ✓ {len(rows):,} rows fetched (delimiter: '{delimiter}')")
+            print(f"  ✓ {len(rows):,} rows (delimiter: '{delimiter}')")
             return rows
     except URLError as e:
         print(f"  ✗ Error: {e}")
         return []
 
 
+def get_db_connection():
+    """Get database connection."""
+    if not HAS_PSYCOPG2:
+        raise RuntimeError("psycopg2 not installed. Run: pip install psycopg2-binary")
+
+    for host in ['postgres', 'localhost', '127.0.0.1']:
+        try:
+            conn = psycopg2.connect(
+                host=host, port=5432, database='helix_db',
+                user='helix_user', password='helix_pass',
+                connect_timeout=5
+            )
+            print(f"  ✓ Connected to DB at {host}")
+            return conn
+        except psycopg2.OperationalError:
+            continue
+    raise RuntimeError("Could not connect to database")
+
+
+def safe_decimal(value: str, default: Decimal = Decimal('0')) -> Decimal:
+    """Safely parse decimal from string."""
+    try:
+        return Decimal(str(value).replace(',', '.').strip())
+    except (InvalidOperation, ValueError):
+        return default
+
+
+# =============================================================================
+# COMMANDS
+# =============================================================================
+
 def test_connectivity():
-    """Test connectivity to all feeds and show sample data."""
-    print("\n" + "="*70)
-    print("FOURTWENTY CSV FEED CONNECTIVITY TEST")
-    print("="*70)
+    """Test feed connectivity."""
+    print("\n" + "="*60)
+    print("FOURTWENTY FEED TEST")
+    print("="*60)
 
     results = {}
-
-    for feed_name, url in FEEDS.items():
-        print(f"\n[{feed_name.upper()}]")
+    for name, url in FEEDS.items():
+        print(f"\n[{name.upper()}]")
         rows = fetch_csv(url)
-        results[feed_name] = len(rows)
-
+        results[name] = len(rows)
         if rows:
-            # Filter out None keys
-            columns = [k for k in rows[0].keys() if k is not None]
-            print(f"  Columns: {', '.join(columns[:10])}{'...' if len(columns) > 10 else ''}")
-            print(f"  Sample (first row):")
-            for key, value in list(rows[0].items())[:5]:
-                if key is not None:
-                    val_str = str(value) if value else ''
-                    print(f"    {key}: {val_str[:50]}{'...' if len(val_str) > 50 else ''}")
+            cols = [k for k in rows[0].keys() if k][:5]
+            print(f"  Columns: {', '.join(cols)}...")
 
-    print("\n" + "-"*70)
-    print("SUMMARY")
-    print("-"*70)
-    for feed_name, count in results.items():
-        status = "✓" if count > 0 else "✗"
-        print(f"  {status} {feed_name}: {count:,} records")
-
-    return all(count > 0 for count in results.values())
+    print("\n" + "-"*60)
+    all_ok = all(c > 0 for c in results.values())
+    for name, count in results.items():
+        print(f"  {'✓' if count > 0 else '✗'} {name}: {count:,}")
+    return all_ok
 
 
 def download_feeds():
-    """Download all feeds to local CSV files."""
-    import os
+    """Download feeds to local files."""
+    print("\n" + "="*60)
+    print("DOWNLOADING FEEDS")
+    print("="*60)
 
-    print("\n" + "="*70)
-    print("DOWNLOADING FOURTWENTY FEEDS")
-    print("="*70)
-
-    # Create output directory
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    for feed_name, url in FEEDS.items():
-        print(f"\n[{feed_name.upper()}]")
+    for name, url in FEEDS.items():
+        print(f"\n[{name.upper()}]")
         try:
-            with urlopen(url, timeout=60) as response:
-                content = response.read()
-
-                # Save with timestamp
-                filename = f"{feed_name}_{timestamp}.csv"
-                filepath = os.path.join(OUTPUT_DIR, filename)
-                with open(filepath, 'wb') as f:
+            with urlopen(url, timeout=60) as r:
+                content = r.read()
+                # Timestamped
+                path = os.path.join(OUTPUT_DIR, f"{name}_{ts}.csv")
+                with open(path, 'wb') as f:
                     f.write(content)
-                print(f"  ✓ Saved: {filepath}")
-                print(f"    Size: {len(content):,} bytes")
-
-                # Also save as 'latest'
-                latest_path = os.path.join(OUTPUT_DIR, f"{feed_name}_latest.csv")
-                with open(latest_path, 'wb') as f:
+                # Latest
+                latest = os.path.join(OUTPUT_DIR, f"{name}_latest.csv")
+                with open(latest, 'wb') as f:
                     f.write(content)
-                print(f"  ✓ Updated: {latest_path}")
-
+                print(f"  ✓ {len(content):,} bytes → {name}_latest.csv")
         except URLError as e:
-            print(f"  ✗ Error: {e}")
-
-    print(f"\n✓ All feeds saved to: {OUTPUT_DIR}")
+            print(f"  ✗ {e}")
 
 
 def analyze_feeds():
-    """Analyze feeds and show detailed statistics."""
-    print("\n" + "="*70)
-    print("FOURTWENTY FEED ANALYSIS")
-    print(f"Timestamp: {datetime.now().isoformat()}")
-    print("="*70)
+    """Analyze feed statistics."""
+    print("\n" + "="*60)
+    print("FEED ANALYSIS")
+    print("="*60)
 
-    # Fetch all feeds
     products = fetch_csv(FEEDS['products'])
     stock = fetch_csv(FEEDS['stock'])
     specs = fetch_csv(FEEDS['specifications'])
 
     if not products:
-        print("\n✗ Could not fetch product feed. Aborting analysis.")
         return
 
-    # Product Analysis
-    print("\n" + "-"*70)
-    print("PRODUCT CATALOG ANALYSIS")
-    print("-"*70)
-
     # Categories
-    categories = defaultdict(int)
-    brands = defaultdict(int)
-    price_ranges = {'0-10': 0, '10-25': 0, '25-50': 0, '50-100': 0, '100+': 0}
-
+    cats = defaultdict(int)
     for p in products:
-        cat = p.get('categorygroup_1', 'Unknown')
-        categories[cat] += 1
-
-        brand = p.get('brandname', 'Unknown')
-        brands[brand] += 1
-
-        try:
-            price = float(p.get('salespriceinclvat', 0))
-            if price < 10:
-                price_ranges['0-10'] += 1
-            elif price < 25:
-                price_ranges['10-25'] += 1
-            elif price < 50:
-                price_ranges['25-50'] += 1
-            elif price < 100:
-                price_ranges['50-100'] += 1
-            else:
-                price_ranges['100+'] += 1
-        except ValueError:
-            pass
+        cats[p.get('categorygroup_1', 'Unknown')] += 1
 
     print(f"\nTotal Products: {len(products):,}")
-
     print("\nBy Category:")
-    for cat, count in sorted(categories.items(), key=lambda x: -x[1])[:10]:
-        print(f"  {cat}: {count:,}")
+    for cat, count in sorted(cats.items(), key=lambda x: -x[1])[:10]:
+        marker = "✓" if cat in HEADSHOP_CATEGORIES else "○"
+        print(f"  {marker} {cat}: {count:,}")
 
-    print(f"\nUnique Brands: {len(brands)}")
-    print("Top 10 Brands:")
-    for brand, count in sorted(brands.items(), key=lambda x: -x[1])[:10]:
-        print(f"  {brand}: {count:,}")
-
-    print("\nPrice Distribution (CHF incl. VAT):")
-    for range_name, count in price_ranges.items():
-        pct = (count / len(products)) * 100 if products else 0
-        bar = "█" * int(pct / 2)
-        print(f"  {range_name:>6}: {count:>5,} ({pct:5.1f}%) {bar}")
-
-    # Stock Analysis
+    # Stock
     if stock:
-        print("\n" + "-"*70)
-        print("STOCK ANALYSIS")
-        print("-"*70)
-
         in_stock = sum(1 for s in stock if s.get('is_available', '').upper() == 'TRUE')
-        out_of_stock = len(stock) - in_stock
+        print(f"\nStock: {in_stock:,}/{len(stock):,} in stock ({in_stock/len(stock)*100:.0f}%)")
 
-        total_qty = 0
-        for s in stock:
-            try:
-                total_qty += int(s.get('qty', 0))
-            except ValueError:
-                pass
+    # Headshop filter
+    headshop_count = sum(1 for p in products if p.get('categorygroup_1', '') in HEADSHOP_CATEGORIES)
+    print(f"\nHeadshop Products (to sync): {headshop_count:,}")
 
-        print(f"\nTotal SKUs: {len(stock):,}")
-        print(f"In Stock: {in_stock:,} ({(in_stock/len(stock)*100):.1f}%)")
-        print(f"Out of Stock: {out_of_stock:,} ({(out_of_stock/len(stock)*100):.1f}%)")
-        print(f"Total Units: {total_qty:,}")
 
-    # Specification Analysis
-    if specs:
-        print("\n" + "-"*70)
-        print("SPECIFICATION ANALYSIS")
-        print("-"*70)
+def sync_to_database(dry_run: bool = False):
+    """Sync FourTwenty products to HelixNet database."""
+    print("\n" + "="*60)
+    print(f"SYNC TO DATABASE {'(DRY RUN)' if dry_run else ''}")
+    print("="*60)
 
-        spec_types = defaultdict(int)
-        for s in specs:
-            spec_key = s.get('SpecificationKey', 'Unknown')
-            spec_types[spec_key] += 1
+    # Fetch feeds
+    print("\n[1] Fetching feeds...")
+    products = fetch_csv(FEEDS['products'])
+    stock = fetch_csv(FEEDS['stock'])
+    specs = fetch_csv(FEEDS['specifications'])
 
-        print(f"\nTotal Specifications: {len(specs):,}")
-        print(f"Unique Spec Types: {len(spec_types)}")
-        print("\nTop 15 Specification Types:")
-        for spec, count in sorted(spec_types.items(), key=lambda x: -x[1])[:15]:
-            print(f"  {spec}: {count:,}")
+    if not products:
+        print("✗ No products fetched")
+        return False
 
-    # Cross-reference check
-    print("\n" + "-"*70)
-    print("DATA INTEGRITY CHECK")
-    print("-"*70)
+    # Build lookups
+    print("\n[2] Building lookups...")
+    stock_lookup = {s.get('sku'): s for s in stock}
+    age_restricted = {s.get('ProviderKey') for s in specs if s.get('SpecificationKey') == 'age_verification'}
+    print(f"  Stock entries: {len(stock_lookup):,}")
+    print(f"  Age-restricted: {len(age_restricted):,}")
 
-    product_skus = {p.get('sku') for p in products}
-    stock_skus = {s.get('sku') for s in stock}
-    spec_skus = {s.get('ProviderKey') for s in specs}
+    # Filter to Headshop categories
+    print("\n[3] Filtering products...")
+    filtered = [p for p in products if p.get('categorygroup_1', '') in HEADSHOP_CATEGORIES]
+    print(f"  Headshop products: {len(filtered):,}")
 
-    products_without_stock = product_skus - stock_skus
-    stock_without_products = stock_skus - product_skus
+    if dry_run:
+        print("\n[DRY RUN] Would sync these products. Use --sync without --dry-run to execute.")
+        return True
 
-    print(f"\nProducts in catalog: {len(product_skus):,}")
-    print(f"SKUs in stock feed: {len(stock_skus):,}")
-    print(f"SKUs in spec feed: {len(spec_skus):,}")
-    print(f"\n⚠ Products without stock info: {len(products_without_stock)}")
-    print(f"⚠ Stock entries without products: {len(stock_without_products)}")
+    # Database sync
+    print("\n[4] Syncing to database...")
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
 
-    if products_without_stock and len(products_without_stock) <= 10:
-        print(f"  Missing: {', '.join(list(products_without_stock)[:10])}")
+        # Get existing supplier products
+        cur.execute("SELECT supplier_sku, id, supplier_price FROM products WHERE supplier_name = 'FourTwenty'")
+        existing = {row[0]: {'id': row[1], 'price': row[2]} for row in cur.fetchall()}
+        print(f"  Existing FourTwenty products: {len(existing):,}")
 
+        # Track used barcodes to avoid duplicates
+        cur.execute("SELECT barcode FROM products WHERE barcode IS NOT NULL")
+        used_barcodes = {row[0] for row in cur.fetchall()}
+
+        stats = {'new': 0, 'updated': 0, 'skipped': 0, 'price_changes': []}
+        now = datetime.now()
+
+        for p in filtered:
+            supplier_sku = p.get('sku', '').strip()
+            if not supplier_sku:
+                stats['skipped'] += 1
+                continue
+
+            # Parse data
+            supplier_price = safe_decimal(p.get('salespriceinclvat', '0'))
+            retail_price = supplier_price * MARKUP
+            name = (p.get('producttitle_de', '') or '')[:255]
+            barcode = (p.get('gtin', '') or '')[:100] or None
+            category = CATEGORY_MAP.get(p.get('categorygroup_1', ''), 'Other')
+            image_url = (p.get('mainimageurl', '') or '')[:500] or None
+            is_age_restricted = supplier_sku in age_restricted
+
+            # Skip duplicate barcodes
+            if barcode and barcode in used_barcodes:
+                barcode = None
+
+            if supplier_sku in existing:
+                # Update existing
+                ex = existing[supplier_sku]
+                if ex['price'] and supplier_price != ex['price']:
+                    change_pct = float((supplier_price - ex['price']) / ex['price'] * 100)
+                    stats['price_changes'].append({
+                        'sku': supplier_sku,
+                        'name': name[:40],
+                        'old': float(ex['price']),
+                        'new': float(supplier_price),
+                        'pct': change_pct
+                    })
+
+                cur.execute("""
+                    UPDATE products SET
+                        supplier_price = %s, last_sync_at = %s, updated_at = %s,
+                        image_url = COALESCE(image_url, %s)
+                    WHERE id = %s AND (sync_override IS NULL OR sync_override = FALSE)
+                """, (supplier_price, now, now, image_url, ex['id']))
+                stats['updated'] += 1
+            else:
+                # Insert new
+                internal_sku = f"FT-{supplier_sku}"
+                cur.execute("""
+                    INSERT INTO products (
+                        id, sku, barcode, name, price, cost, category,
+                        supplier_sku, supplier_name, supplier_price, last_sync_at,
+                        image_url, is_age_restricted, is_active, stock_quantity,
+                        vending_compatible, sync_override, created_at, updated_at
+                    ) VALUES (
+                        gen_random_uuid(), %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    )
+                    ON CONFLICT (sku) DO NOTHING
+                """, (
+                    internal_sku, barcode, name, retail_price, supplier_price, category,
+                    supplier_sku, 'FourTwenty', supplier_price, now,
+                    image_url, is_age_restricted, True, 0,
+                    False, False, now, now
+                ))
+                stats['new'] += 1
+                if barcode:
+                    used_barcodes.add(barcode)
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # Results
+        print("\n" + "-"*60)
+        print("RESULTS")
+        print("-"*60)
+        print(f"  ✓ New products: {stats['new']:,}")
+        print(f"  ✓ Updated: {stats['updated']:,}")
+        print(f"  ○ Skipped: {stats['skipped']:,}")
+
+        if stats['price_changes']:
+            print(f"\n  📊 Price changes: {len(stats['price_changes'])}")
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            changes_file = os.path.join(OUTPUT_DIR, f"price_changes_{now.strftime('%Y%m%d_%H%M%S')}.json")
+            with open(changes_file, 'w') as f:
+                json.dump(stats['price_changes'], f, indent=2)
+            print(f"  Saved: {changes_file}")
+
+            # Show significant changes
+            significant = [c for c in stats['price_changes'] if abs(c['pct']) > 5]
+            if significant:
+                print("\n  Significant (>5%):")
+                for c in significant[:5]:
+                    d = "↑" if c['pct'] > 0 else "↓"
+                    print(f"    {d} {c['sku']}: {c['old']:.2f} → {c['new']:.2f} ({c['pct']:+.1f}%)")
+
+        return True
+
+    except Exception as e:
+        print(f"\n✗ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def show_alerts():
+    """Show price change history."""
+    print("\n" + "="*60)
+    print("PRICE CHANGE ALERTS")
+    print("="*60)
+
+    if not os.path.exists(OUTPUT_DIR):
+        print("  No history found.")
+        return
+
+    files = sorted([f for f in os.listdir(OUTPUT_DIR) if f.startswith('price_changes_')], reverse=True)
+    if not files:
+        print("  No price changes recorded yet.")
+        return
+
+    for f in files[:5]:
+        with open(os.path.join(OUTPUT_DIR, f)) as fp:
+            changes = json.load(fp)
+        date = f.replace('price_changes_', '').replace('.json', '')
+        print(f"\n[{date}] {len(changes)} changes")
+        for c in sorted(changes, key=lambda x: abs(x['pct']), reverse=True)[:3]:
+            d = "↑" if c['pct'] > 0 else "↓"
+            print(f"  {d} {c['sku']}: CHF {c['old']:.2f} → {c['new']:.2f} ({c['pct']:+.1f}%)")
+
+
+# =============================================================================
+# MAIN
+# =============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description='FourTwenty CSV Feed Sync Tool')
-    parser.add_argument('--test', action='store_true', help='Test connectivity')
-    parser.add_argument('--download', action='store_true', help='Download feeds to local files')
-    parser.add_argument('--analyze', action='store_true', help='Analyze feed contents')
-    parser.add_argument('--sync', action='store_true', help='Sync to database (not yet implemented)')
+    parser = argparse.ArgumentParser(description='FourTwenty CSV Sync Tool')
+    parser.add_argument('--test', action='store_true', help='Test feed connectivity')
+    parser.add_argument('--download', action='store_true', help='Download feeds locally')
+    parser.add_argument('--analyze', action='store_true', help='Analyze feeds')
+    parser.add_argument('--sync', action='store_true', help='Sync to database')
+    parser.add_argument('--dry-run', action='store_true', help='Preview sync')
+    parser.add_argument('--alerts', action='store_true', help='Show price alerts')
 
     args = parser.parse_args()
 
-    if not any([args.test, args.download, args.analyze, args.sync]):
-        # Default: run test
+    if not any([args.test, args.download, args.analyze, args.sync, args.alerts]):
         args.test = True
 
     if args.test:
-        success = test_connectivity()
-        sys.exit(0 if success else 1)
-
+        sys.exit(0 if test_connectivity() else 1)
     if args.download:
         download_feeds()
-
     if args.analyze:
         analyze_feeds()
-
     if args.sync:
-        print("\n⚠ Database sync not yet implemented.")
-        print("  This will map FourTwenty products to HelixNet products table.")
-        print("  See KB-038 for mapping specification.")
+        sys.exit(0 if sync_to_database(dry_run=args.dry_run) else 1)
+    if args.alerts:
+        show_alerts()
 
 
 if __name__ == '__main__':
