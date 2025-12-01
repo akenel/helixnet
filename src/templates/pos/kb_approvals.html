@@ -185,68 +185,47 @@
             approvedToday: 5,
             totalCreditsAwarded: 1250,
 
-            // Demo data
-            pendingKBs: [
-                {
-                    id: 'kb-1',
-                    title: 'CBD Tanning Butter - Coconut Extract Method',
-                    summary: 'How to distill 2ml of coconut extracts for the perfect CBD tanning butter. Lab tested formula.',
-                    author_handle: 'Poppie',
-                    author_crack_level: 'sprout',
-                    category: 'recipe',
-                    status: 'submitted',
-                    submitted_at: '2025-11-30T14:30:00',
-                    has_images: true,
-                    has_video: false,
-                    has_bom: true,
-                    has_lab_report: true,
-                    jh_reference: 'JH-Chapter-8',
-                    potential_credits: 300, // 100 base + 25 images + 75 BOM + 100 lab
-                    reviews: [],
-                    average_rating: 0
-                },
-                {
-                    id: 'kb-2',
-                    title: 'Purple Power Sleep Protocol',
-                    summary: 'Evening routine using Purple Power CBD oil for optimal sleep. Dosing guide included.',
-                    author_handle: 'ChuckB',
-                    author_crack_level: 'rooted',
-                    category: 'protocol',
-                    status: 'in_review',
-                    submitted_at: '2025-11-29T10:15:00',
-                    has_images: true,
-                    has_video: true,
-                    has_bom: false,
-                    has_lab_report: false,
-                    jh_reference: 'JH-Chapter-10',
-                    potential_credits: 175, // 100 + 25 images + 50 video
-                    reviews: [
-                        { reviewer: 'Poppie', recommend: true, rating: 5 },
-                        { reviewer: 'GreenQueen', recommend: true, rating: 4 }
-                    ],
-                    average_rating: 4.5
-                },
-                {
-                    id: 'kb-3',
-                    title: 'Grinder Maintenance 101',
-                    summary: 'Keep your grinder clean and efficient. Weekly maintenance routine.',
-                    author_handle: 'SmokeKing',
-                    author_crack_level: 'seedling',
-                    category: 'guide',
-                    status: 'submitted',
-                    submitted_at: '2025-12-01T09:00:00',
-                    has_images: true,
-                    has_video: false,
-                    has_bom: false,
-                    has_lab_report: false,
-                    jh_reference: null,
-                    potential_credits: 125,
-                    reviews: [],
-                    average_rating: 0
-                }
-            ],
+            pendingKBs: [],
             inReviewKBs: [],
             approvedKBs: [],
+
+            async init() {
+                await this.loadKBs();
+            },
+
+            async loadKBs() {
+                try {
+                    const token = sessionStorage.getItem('access_token');
+                    if (!token) {
+                        showToast('Please log in', 'warning');
+                        return;
+                    }
+
+                    // Load all pending KBs
+                    const response = await fetch('/api/v1/kb/pending?status_filter=all', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 403) {
+                            showToast('Manager access required', 'warning');
+                            return;
+                        }
+                        throw new Error('Failed to load KBs');
+                    }
+
+                    const kbs = await response.json();
+                    this.pendingKBs = kbs.map(kb => ({
+                        ...kb,
+                        reviews: [],
+                        average_rating: kb.rating_average || 0
+                    }));
+
+                } catch (error) {
+                    console.error('Load KBs error:', error);
+                    showToast('Failed to load KBs', 'error');
+                }
+            },
 
             get filteredKBs() {
                 if (this.filter === 'pending') return this.pendingKBs.filter(kb => kb.status === 'submitted');
@@ -275,40 +254,92 @@
                 const count = this.selectedKBs.length;
                 if (!confirm(`Approve ${count} KB(s)? Credits will be awarded to authors.`)) return;
 
-                // TODO: API call
-                let totalCredits = 0;
-                this.selectedKBs.forEach(id => {
-                    const kb = this.pendingKBs.find(k => k.id === id);
-                    if (kb) totalCredits += kb.potential_credits;
-                });
+                try {
+                    const token = sessionStorage.getItem('access_token');
+                    const response = await fetch('/api/v1/kb/approve-batch', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this.selectedKBs)
+                    });
 
-                showToast(`Approved ${count} KBs! ${totalCredits} credits awarded.`, 'success');
+                    if (response.ok) {
+                        const result = await response.json();
+                        showToast(result.message, 'success');
 
-                // Move to approved
-                this.pendingKBs = this.pendingKBs.filter(kb => !this.selectedKBs.includes(kb.id));
-                this.approvedToday += count;
-                this.totalCreditsAwarded += totalCredits;
-                this.selectedKBs = [];
+                        // Move to approved
+                        this.pendingKBs = this.pendingKBs.filter(kb => !this.selectedKBs.includes(kb.id));
+                        this.approvedToday += result.approved_count;
+                        this.totalCreditsAwarded += result.total_credits_awarded;
+                        this.selectedKBs = [];
+                    } else {
+                        throw new Error('Batch approve failed');
+                    }
+                } catch (error) {
+                    showToast('Failed to approve: ' + error.message, 'error');
+                }
             },
 
             async approveOne(kb) {
-                // TODO: API call
-                showToast(`Approved "${kb.title}"! ${kb.potential_credits} credits to ${kb.author_handle}`, 'success');
-                this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
-                this.approvedToday++;
-                this.totalCreditsAwarded += kb.potential_credits;
+                try {
+                    const token = sessionStorage.getItem('access_token');
+                    const response = await fetch(`/api/v1/kb/${kb.id}/approve`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        showToast(result.message, 'success');
+                        this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
+                        this.approvedToday++;
+                        this.totalCreditsAwarded += result.credits_awarded;
+                    } else {
+                        throw new Error('Approve failed');
+                    }
+                } catch (error) {
+                    showToast('Failed to approve: ' + error.message, 'error');
+                }
             },
 
             async sendForReview(kb) {
-                kb.status = 'in_review';
-                showToast(`Sent to CRACKs for review`, 'info');
+                try {
+                    const token = sessionStorage.getItem('access_token');
+                    const response = await fetch(`/api/v1/kb/${kb.id}/send-for-review`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        kb.status = 'in_review';
+                        showToast('Sent to CRACKs for review', 'info');
+                    }
+                } catch (error) {
+                    showToast('Failed: ' + error.message, 'error');
+                }
             },
 
             async rejectKB(kb) {
                 const reason = prompt('Reason for rejection (will be sent to author):');
-                if (reason) {
-                    showToast(`Rejected with feedback sent to ${kb.author_handle}`, 'warning');
-                    this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
+                if (reason && reason.length >= 10) {
+                    try {
+                        const token = sessionStorage.getItem('access_token');
+                        const response = await fetch(`/api/v1/kb/${kb.id}/reject?reason=${encodeURIComponent(reason)}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        if (response.ok) {
+                            showToast(`Rejected with feedback sent to ${kb.author_handle}`, 'warning');
+                            this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
+                        }
+                    } catch (error) {
+                        showToast('Failed: ' + error.message, 'error');
+                    }
+                } else if (reason) {
+                    showToast('Please provide at least 10 characters of feedback', 'warning');
                 }
             },
 

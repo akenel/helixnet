@@ -21,6 +21,10 @@ from src.db.models import (  # noqa: F401
     ProductModel,
     TransactionModel,
     LineItemModel,
+    # CRACK Loyalty Models
+    CustomerModel,
+    KBContributionModel,
+    CreditTransactionModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

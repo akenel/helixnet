@@ -221,13 +221,30 @@
                 'CBD Sleep Gummies (asked about sleep)',
                 '15% off Papers bundle'
             ],
-            recentCustomers: [
-                // Demo data - would come from API
-                { id: '1', handle: 'Poppie', instagram: '@poppie_420', loyalty_tier: 'gold', credits: 247 },
-                { id: '2', handle: 'ChuckB', instagram: '@chuck_bern', loyalty_tier: 'silver', credits: 89 },
-                { id: '3', handle: 'SmokeKing', instagram: '@smoke_king_zh', loyalty_tier: 'platinum', credits: 512 },
-                { id: '4', handle: 'GreenQueen', instagram: '@green_queen', loyalty_tier: 'bronze', credits: 34 }
-            ],
+            recentCustomers: [],
+
+            async init() {
+                // Load recent customers from API
+                try {
+                    const token = sessionStorage.getItem('access_token');
+                    if (!token) return;
+
+                    const response = await fetch('/api/v1/customers/recent/visitors?limit=8', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.recentCustomers = data.map(c => ({
+                            ...c,
+                            instagram: c.instagram ? '@' + c.instagram : null,
+                            credits: c.credits_balance
+                        }));
+                    }
+                } catch (error) {
+                    console.log('Could not load recent customers:', error);
+                }
+            },
 
             async searchCustomer() {
                 this.searched = true;
@@ -237,37 +254,44 @@
                 }
 
                 try {
-                    // TODO: API call
-                    // const response = await API.get(`/api/v1/pos/customers/search?q=${this.searchQuery}`);
-                    // this.customer = response;
+                    // Search via API
+                    const token = sessionStorage.getItem('access_token');
+                    const response = await fetch(`/api/v1/customers/search?q=${encodeURIComponent(this.searchQuery)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
 
-                    // Demo data
-                    if (this.searchQuery.toLowerCase().includes('poppie')) {
-                        this.customer = {
-                            id: 'demo-1',
-                            handle: 'Poppie',
-                            real_name: 'Larry',
-                            instagram: '@poppie_420',
-                            email: 'larry@example.ch',
-                            telegram: null,
-                            loyalty_tier: 'gold',
-                            tier_discount_percent: 15,
-                            credits_balance: 247,
-                            lifetime_spend: 847.50,
-                            crack_level: 'sprout',
-                            crack_team: 'Pink Punch Squad',
-                            kbs_written: 3,
-                            visit_count: 47,
-                            favorite_products: ['CBD Oil 10%', 'Rolling Papers OCB', 'Grinder Silver'],
-                            notes: 'Likes CBD oils, ask about sleep. Friend of Mosey.',
-                            birthday_soon: true,
-                            tier_upgrade_close: true,
-                            spend_to_next_tier: 152.50
-                        };
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            showToast('Please log in again', 'warning');
+                            return;
+                        }
+                        throw new Error('Search failed');
+                    }
+
+                    const results = await response.json();
+
+                    if (results.length > 0) {
+                        // Get full profile for first match
+                        const checkoutResp = await fetch(`/api/v1/customers/checkout/${results[0].id}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        if (checkoutResp.ok) {
+                            const checkout = await checkoutResp.json();
+                            this.customer = {
+                                ...results[0],
+                                ...checkout,
+                                instagram: checkout.instagram ? '@' + checkout.instagram : null,
+                            };
+                        } else {
+                            // Use basic search result
+                            this.customer = results[0];
+                        }
                     } else {
                         this.customer = null;
                     }
                 } catch (error) {
+                    console.error('Search error:', error);
                     showToast('Search failed: ' + error.message, 'error');
                 }
             },
@@ -284,24 +308,37 @@
                 }
 
                 try {
-                    // TODO: API call
-                    // const response = await API.post('/api/v1/pos/customers', this.newCustomer);
+                    const token = sessionStorage.getItem('access_token');
+                    const response = await fetch('/api/v1/customers', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this.newCustomer)
+                    });
 
-                    showToast(`Created profile for ${this.newCustomer.handle}!`, 'success');
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to create');
+                    }
+
+                    const result = await response.json();
+                    showToast(result.message, 'success');
                     this.showNewCustomerForm = false;
 
-                    // Set as current customer
-                    this.customer = {
-                        ...this.newCustomer,
-                        id: 'new-' + Date.now(),
-                        loyalty_tier: 'bronze',
-                        tier_discount_percent: 5,
-                        credits_balance: 20, // First profile bonus
-                        lifetime_spend: 0,
-                        crack_level: 'seedling',
-                        kbs_written: 0,
-                        visit_count: 0,
-                        favorite_products: []
+                    // Search for the newly created customer
+                    this.searchQuery = this.newCustomer.handle;
+                    await this.searchCustomer();
+
+                    // Reset form
+                    this.newCustomer = {
+                        handle: '',
+                        real_name: '',
+                        email: '',
+                        phone: '',
+                        instagram: '',
+                        telegram: ''
                     };
 
                 } catch (error) {

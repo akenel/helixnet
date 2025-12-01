@@ -18,6 +18,11 @@ from .transaction_model import TransactionModel, TransactionStatus, PaymentMetho
 from .line_item_model import LineItemModel
 from .store_settings_model import StoreSettingsModel
 
+# CRACK Loyalty Models (Customer + KB Gamification)
+from .customer_model import CustomerModel, CrackLevel, LoyaltyTier, PreferredContact
+from .kb_contribution_model import KBContributionModel, KBStatus, KBCategory
+from .credit_transaction_model import CreditTransactionModel, CreditTransactionType
+
 __all__ = [
     "Base",
     "UserModel",
@@ -36,4 +41,14 @@ __all__ = [
     "PaymentMethod",
     "LineItemModel",
     "StoreSettingsModel",
+    # CRACK Loyalty Models
+    "CustomerModel",
+    "CrackLevel",
+    "LoyaltyTier",
+    "PreferredContact",
+    "KBContributionModel",
+    "KBStatus",
+    "KBCategory",
+    "CreditTransactionModel",
+    "CreditTransactionType",
 ]
