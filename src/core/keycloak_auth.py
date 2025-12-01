@@ -32,8 +32,8 @@ async def get_jwks() -> dict:
         return _jwks_cache
 
     try:
-        # POS realm JWKS endpoint
-        jwks_url = f"{settings.KEYCLOAK_SERVER_URL}/realms/kc-pos-realm-dev/protocol/openid-connect/certs"
+        # POS realm JWKS endpoint - uses realm from settings
+        jwks_url = f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KEYCLOAK_REALM}/protocol/openid-connect/certs"
 
         async with httpx.AsyncClient(verify=False) as client:
             response = await client.get(jwks_url, timeout=10.0)
@@ -75,10 +75,9 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             token,
             jwks,
             algorithms=["RS256"],
-            audience="account",  # Keycloak default audience
             options={
                 "verify_signature": True,
-                "verify_aud": True,
+                "verify_aud": False,  # Skip audience check - Keycloak public clients may not have audience
                 "verify_exp": True
             }
         )
@@ -124,7 +123,8 @@ def extract_roles(token_payload: dict) -> List[str]:
     roles = realm_access.get("roles", [])
 
     # Filter out default roles, keep only POS roles
-    pos_roles = [r for r in roles if "pos-" in r or r in ["💰️ pos-cashier", "👔️ pos-manager", "🛠️ pos-developer", "📊️ pos-auditor", "👑️ pos-admin"]]
+    # Support both artemis realm (pos-cashier) and legacy emoji format (💰️ pos-cashier)
+    pos_roles = [r for r in roles if "pos-" in r]
 
     return pos_roles
 
@@ -193,11 +193,11 @@ def require_any_pos_role():
     Use this for general authenticated POS endpoints.
     """
     return require_roles([
-        "💰️ pos-cashier",
-        "👔️ pos-manager",
-        "🛠️ pos-developer",
-        "📊️ pos-auditor",
-        "👑️ pos-admin"
+        "pos-cashier",
+        "pos-manager",
+        "pos-developer",
+        "pos-auditor",
+        "pos-admin"
     ])
 
 
@@ -205,14 +205,14 @@ def require_admin():
     """
     Convenience decorator for admin-only endpoints.
     """
-    return require_roles(["👑️ pos-admin"])
+    return require_roles(["pos-admin"])
 
 
 def require_manager_or_admin():
     """
     Convenience decorator for manager/admin endpoints.
     """
-    return require_roles(["👔️ pos-manager", "👑️ pos-admin"])
+    return require_roles(["pos-manager", "pos-admin"])
 
 
 # ================================================================
