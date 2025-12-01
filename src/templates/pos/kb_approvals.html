@@ -1,0 +1,355 @@
+{% extends "pos/base.html" %}
+
+{% block title %}KB Approvals - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="kbApprovalData()">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="card">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">📚 KB Approvals</h1>
+                    <p class="text-gray-600">Review and approve CRACK knowledge contributions</p>
+                </div>
+                <div class="flex gap-2">
+                    <button @click="selectAll()"
+                            class="btn-secondary px-4 py-2"
+                            :disabled="pendingKBs.length === 0">
+                        ☑️ Select All
+                    </button>
+                    <button @click="approveSelected()"
+                            class="btn-success px-4 py-2"
+                            :disabled="selectedKBs.length === 0">
+                        ✅ Approve (<span x-text="selectedKBs.length"></span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-yellow-600" x-text="pendingKBs.length"></div>
+                    <div class="text-sm text-yellow-700">Pending Review</div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-600" x-text="inReviewKBs.length"></div>
+                    <div class="text-sm text-blue-700">In Review</div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-green-600" x-text="approvedToday"></div>
+                    <div class="text-sm text-green-700">Approved Today</div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-600" x-text="totalCreditsAwarded"></div>
+                    <div class="text-sm text-purple-700">Credits Awarded</div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="flex gap-2 mb-6 border-b">
+                <button @click="filter = 'pending'"
+                        :class="filter === 'pending' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500'"
+                        class="px-4 py-2 font-medium">
+                    📥 Pending (<span x-text="pendingKBs.length"></span>)
+                </button>
+                <button @click="filter = 'in_review'"
+                        :class="filter === 'in_review' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500'"
+                        class="px-4 py-2 font-medium">
+                    👀 In Review (<span x-text="inReviewKBs.length"></span>)
+                </button>
+                <button @click="filter = 'approved'"
+                        :class="filter === 'approved' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500'"
+                        class="px-4 py-2 font-medium">
+                    ✅ Recently Approved
+                </button>
+            </div>
+
+            <!-- KB List -->
+            <div class="space-y-4">
+                <template x-for="kb in filteredKBs" :key="kb.id">
+                    <div class="border-2 rounded-lg p-4 transition"
+                         :class="selectedKBs.includes(kb.id) ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-indigo-300'">
+
+                        <!-- Header -->
+                        <div class="flex items-start gap-4">
+                            <!-- Checkbox -->
+                            <input type="checkbox"
+                                   :checked="selectedKBs.includes(kb.id)"
+                                   @change="toggleSelect(kb.id)"
+                                   class="mt-1 w-5 h-5 rounded">
+
+                            <!-- Content -->
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900" x-text="kb.title"></h3>
+                                        <p class="text-sm text-gray-500">
+                                            by <span class="font-medium" x-text="kb.author_handle"></span>
+                                            <span x-text="crackEmoji(kb.author_crack_level)"></span>
+                                            • <span x-text="kb.category"></span>
+                                            • <span x-text="formatDate(kb.submitted_at)"></span>
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="inline-block px-2 py-1 rounded text-xs font-medium"
+                                              :class="statusClass(kb.status)"
+                                              x-text="kb.status"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Summary -->
+                                <p class="mt-2 text-gray-600" x-text="kb.summary"></p>
+
+                                <!-- Quality Badges -->
+                                <div class="flex gap-2 mt-3">
+                                    <span x-show="kb.has_images" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">📷 Images</span>
+                                    <span x-show="kb.has_video" class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">🎬 Video</span>
+                                    <span x-show="kb.has_bom" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">📋 BOM/Recipe</span>
+                                    <span x-show="kb.has_lab_report" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">🔬 Lab Report</span>
+                                    <span x-show="kb.jh_reference" class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs" x-text="'📖 ' + kb.jh_reference"></span>
+                                </div>
+
+                                <!-- Credits Preview -->
+                                <div class="mt-3 flex items-center gap-4 text-sm">
+                                    <span class="text-gray-500">Credits if approved:</span>
+                                    <span class="font-bold text-green-600" x-text="kb.potential_credits + ' credits'"></span>
+                                    <span class="text-gray-400" x-text="'(base: 100 + bonuses: ' + (kb.potential_credits - 100) + ')'"></span>
+                                </div>
+
+                                <!-- Review Summary -->
+                                <div x-show="kb.reviews && kb.reviews.length > 0" class="mt-3 p-3 bg-gray-50 rounded">
+                                    <div class="text-sm font-medium text-gray-700 mb-2">CRACK Reviews:</div>
+                                    <div class="flex gap-4">
+                                        <span class="text-green-600">👍 <span x-text="kb.reviews.filter(r => r.recommend).length"></span> recommend</span>
+                                        <span class="text-red-600">👎 <span x-text="kb.reviews.filter(r => !r.recommend).length"></span> concerns</span>
+                                        <span class="text-yellow-600">⭐ <span x-text="kb.average_rating.toFixed(1)"></span>/5 avg</span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="mt-4 flex gap-2">
+                                    <button @click="previewKB(kb)" class="btn-secondary text-sm px-3 py-1">
+                                        👁️ Preview
+                                    </button>
+                                    <button @click="sendForReview(kb)" x-show="kb.status === 'submitted'" class="btn-secondary text-sm px-3 py-1">
+                                        📤 Send to CRACKs
+                                    </button>
+                                    <button @click="approveOne(kb)" class="btn-success text-sm px-3 py-1">
+                                        ✅ Approve
+                                    </button>
+                                    <button @click="rejectKB(kb)" class="text-sm px-3 py-1 text-red-600 hover:bg-red-50 rounded">
+                                        ❌ Reject
+                                    </button>
+                                    <button @click="featureKB(kb)" x-show="kb.status === 'approved'" class="text-sm px-3 py-1 text-yellow-600 hover:bg-yellow-50 rounded">
+                                        ⭐ Feature
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty State -->
+                <div x-show="filteredKBs.length === 0" class="text-center py-12 text-gray-500">
+                    <div class="text-6xl mb-4">📭</div>
+                    <p>No KBs in this category</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div x-show="previewingKB" x-transition class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto m-4">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 class="text-2xl font-bold" x-text="previewingKB?.title"></h2>
+                    <button @click="previewingKB = null" class="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+                <div class="prose max-w-none" x-html="previewingKB?.content || 'Loading...'"></div>
+                <div class="mt-6 flex gap-2 justify-end">
+                    <button @click="previewingKB = null" class="btn-secondary">Close</button>
+                    <button @click="approveOne(previewingKB); previewingKB = null" class="btn-success">✅ Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function kbApprovalData() {
+        return {
+            filter: 'pending',
+            selectedKBs: [],
+            previewingKB: null,
+            approvedToday: 5,
+            totalCreditsAwarded: 1250,
+
+            // Demo data
+            pendingKBs: [
+                {
+                    id: 'kb-1',
+                    title: 'CBD Tanning Butter - Coconut Extract Method',
+                    summary: 'How to distill 2ml of coconut extracts for the perfect CBD tanning butter. Lab tested formula.',
+                    author_handle: 'Poppie',
+                    author_crack_level: 'sprout',
+                    category: 'recipe',
+                    status: 'submitted',
+                    submitted_at: '2025-11-30T14:30:00',
+                    has_images: true,
+                    has_video: false,
+                    has_bom: true,
+                    has_lab_report: true,
+                    jh_reference: 'JH-Chapter-8',
+                    potential_credits: 300, // 100 base + 25 images + 75 BOM + 100 lab
+                    reviews: [],
+                    average_rating: 0
+                },
+                {
+                    id: 'kb-2',
+                    title: 'Purple Power Sleep Protocol',
+                    summary: 'Evening routine using Purple Power CBD oil for optimal sleep. Dosing guide included.',
+                    author_handle: 'ChuckB',
+                    author_crack_level: 'rooted',
+                    category: 'protocol',
+                    status: 'in_review',
+                    submitted_at: '2025-11-29T10:15:00',
+                    has_images: true,
+                    has_video: true,
+                    has_bom: false,
+                    has_lab_report: false,
+                    jh_reference: 'JH-Chapter-10',
+                    potential_credits: 175, // 100 + 25 images + 50 video
+                    reviews: [
+                        { reviewer: 'Poppie', recommend: true, rating: 5 },
+                        { reviewer: 'GreenQueen', recommend: true, rating: 4 }
+                    ],
+                    average_rating: 4.5
+                },
+                {
+                    id: 'kb-3',
+                    title: 'Grinder Maintenance 101',
+                    summary: 'Keep your grinder clean and efficient. Weekly maintenance routine.',
+                    author_handle: 'SmokeKing',
+                    author_crack_level: 'seedling',
+                    category: 'guide',
+                    status: 'submitted',
+                    submitted_at: '2025-12-01T09:00:00',
+                    has_images: true,
+                    has_video: false,
+                    has_bom: false,
+                    has_lab_report: false,
+                    jh_reference: null,
+                    potential_credits: 125,
+                    reviews: [],
+                    average_rating: 0
+                }
+            ],
+            inReviewKBs: [],
+            approvedKBs: [],
+
+            get filteredKBs() {
+                if (this.filter === 'pending') return this.pendingKBs.filter(kb => kb.status === 'submitted');
+                if (this.filter === 'in_review') return this.pendingKBs.filter(kb => kb.status === 'in_review');
+                if (this.filter === 'approved') return this.approvedKBs;
+                return [];
+            },
+
+            selectAll() {
+                if (this.selectedKBs.length === this.filteredKBs.length) {
+                    this.selectedKBs = [];
+                } else {
+                    this.selectedKBs = this.filteredKBs.map(kb => kb.id);
+                }
+            },
+
+            toggleSelect(id) {
+                if (this.selectedKBs.includes(id)) {
+                    this.selectedKBs = this.selectedKBs.filter(x => x !== id);
+                } else {
+                    this.selectedKBs.push(id);
+                }
+            },
+
+            async approveSelected() {
+                const count = this.selectedKBs.length;
+                if (!confirm(`Approve ${count} KB(s)? Credits will be awarded to authors.`)) return;
+
+                // TODO: API call
+                let totalCredits = 0;
+                this.selectedKBs.forEach(id => {
+                    const kb = this.pendingKBs.find(k => k.id === id);
+                    if (kb) totalCredits += kb.potential_credits;
+                });
+
+                showToast(`Approved ${count} KBs! ${totalCredits} credits awarded.`, 'success');
+
+                // Move to approved
+                this.pendingKBs = this.pendingKBs.filter(kb => !this.selectedKBs.includes(kb.id));
+                this.approvedToday += count;
+                this.totalCreditsAwarded += totalCredits;
+                this.selectedKBs = [];
+            },
+
+            async approveOne(kb) {
+                // TODO: API call
+                showToast(`Approved "${kb.title}"! ${kb.potential_credits} credits to ${kb.author_handle}`, 'success');
+                this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
+                this.approvedToday++;
+                this.totalCreditsAwarded += kb.potential_credits;
+            },
+
+            async sendForReview(kb) {
+                kb.status = 'in_review';
+                showToast(`Sent to CRACKs for review`, 'info');
+            },
+
+            async rejectKB(kb) {
+                const reason = prompt('Reason for rejection (will be sent to author):');
+                if (reason) {
+                    showToast(`Rejected with feedback sent to ${kb.author_handle}`, 'warning');
+                    this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
+                }
+            },
+
+            async featureKB(kb) {
+                showToast(`"${kb.title}" is now featured! +250 bonus credits to ${kb.author_handle}`, 'success');
+            },
+
+            previewKB(kb) {
+                this.previewingKB = kb;
+                // TODO: Load full content
+                this.previewingKB.content = `<h2>${kb.title}</h2><p>${kb.summary}</p><p><em>Full content would load here from the markdown file...</em></p>`;
+            },
+
+            formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('de-CH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+            },
+
+            statusClass(status) {
+                const classes = {
+                    'submitted': 'bg-yellow-100 text-yellow-700',
+                    'in_review': 'bg-blue-100 text-blue-700',
+                    'approved': 'bg-green-100 text-green-700',
+                    'published': 'bg-purple-100 text-purple-700',
+                    'rejected': 'bg-red-100 text-red-700'
+                };
+                return classes[status] || '';
+            },
+
+            crackEmoji(level) {
+                const emojis = {
+                    'seedling': '🌱',
+                    'sprout': '🌿',
+                    'rooted': '🪴',
+                    'growing': '🌳',
+                    'blazing': '💨',
+                    'oracle': '👑'
+                };
+                return emojis[level] || '🌱';
+            }
+        }
+    }
+</script>
+{% endblock %}

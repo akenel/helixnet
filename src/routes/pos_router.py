@@ -970,6 +970,81 @@ async def pos_cash_count(request: Request):
     return templates.TemplateResponse("pos/cash_count.html", {"request": request})
 
 
+@html_router.get("/pos/customer-lookup", response_class=HTMLResponse, name="pos_customer_lookup")
+async def pos_customer_lookup(request: Request):
+    """
+    Customer Lookup - Find CRACK profiles for checkout recognition
+
+    The "Larry/Poppie" problem solved:
+    - Customer walks in, says "I'm Poppie"
+    - Cashier searches by handle, Instagram, email, or phone
+    - Profile loads with tier discount, credits, CRACK level
+    - Apply to checkout for personalized pricing
+
+    Features:
+    - Search by handle, @instagram, email, phone
+    - Profile card with loyalty tier (Bronze→Diamond)
+    - CRACK level display (Seedling→Oracle)
+    - Credits balance and redeemable vouchers
+    - Favorites and suggestions
+    - Birthday/tier alerts
+    - Quick-add new customer form
+    - Recent customers grid
+
+    Workflow:
+    1. Search "poppie" or "@poppie_420"
+    2. See Larry's profile (Gold tier, 247 credits)
+    3. Click "Use for Checkout"
+    4. Redirect to scan with 15% discount applied
+
+    URL: https://helix.local/pos/customer-lookup
+    """
+    return templates.TemplateResponse("pos/customer_lookup.html", {"request": request})
+
+
+@html_router.get("/pos/kb-approvals", response_class=HTMLResponse, name="pos_kb_approvals")
+async def pos_kb_approvals(request: Request):
+    """
+    KB Approvals - Owner's knowledge contribution review
+
+    "Knowledge is the gold" - KB-001
+
+    CRACKs write KBs (Knowledge Base articles) about:
+    - Recipes (CBD tanning butter, coconut extract method)
+    - Protocols (Purple Power Sleep Protocol)
+    - Guides (Grinder Maintenance 101)
+    - Lab reports (tested formulas)
+
+    Owner Approval Workflow:
+    1. CRACK submits KB
+    2. Owner sends to other CRACKs for review
+    3. CRACKs rate and recommend (or flag concerns)
+    4. Owner sees review summary
+    5. 1-click approve or batch "Select All"
+    6. Credits awarded to author
+
+    Credit Calculation:
+    - Base: 100 credits
+    - With images: +25
+    - With video: +50
+    - With BOM/Recipe: +75
+    - With lab report: +100
+    - Featured bonus: +250
+
+    Features:
+    - Pending/In Review/Approved tabs
+    - Quality badges (images, video, BOM, lab)
+    - JH chapter reference display
+    - CRACK review summary
+    - Batch select and approve
+    - Preview modal with full content
+    - Feature KB button (+250 bonus)
+
+    URL: https://helix.local/pos/kb-approvals
+    """
+    return templates.TemplateResponse("pos/kb_approvals.html", {"request": request})
+
+
 @html_router.get("/pos/receipt/{transaction_id}", response_class=HTMLResponse, name="pos_receipt")
 async def pos_receipt(request: Request, transaction_id: UUID):
     """

@@ -1,0 +1,365 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Customer Lookup - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="customerLookupData()">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="card">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">👤 Customer Lookup</h1>
+            <p class="text-gray-600 mb-6">Find CRACK profile for checkout recognition</p>
+
+            <!-- Search -->
+            <div class="mb-6">
+                <div class="flex gap-2">
+                    <input type="text" x-model="searchQuery"
+                           @keyup.enter="searchCustomer()"
+                           class="flex-1 px-4 py-3 border-2 rounded-lg text-lg"
+                           placeholder="Handle, Instagram, email, or phone...">
+                    <button @click="searchCustomer()"
+                            class="btn-primary px-6">
+                        🔍 Search
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">Try: "poppie", "@poppie_420", "larry@..."</p>
+            </div>
+
+            <!-- Quick Add (if not found) -->
+            <div x-show="!customer && searched" class="mb-6">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p class="text-yellow-800 mb-3">Customer not found. Create new profile?</p>
+                    <button @click="showNewCustomerForm = true" class="btn-secondary">
+                        ➕ Add New CRACK
+                    </button>
+                </div>
+            </div>
+
+            <!-- New Customer Form -->
+            <div x-show="showNewCustomerForm" x-transition class="mb-6 bg-blue-50 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-blue-800 mb-4">New CRACK Profile</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Handle *</label>
+                        <input type="text" x-model="newCustomer.handle"
+                               class="w-full px-3 py-2 border rounded-lg"
+                               placeholder="Poppie">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Real Name</label>
+                        <input type="text" x-model="newCustomer.real_name"
+                               class="w-full px-3 py-2 border rounded-lg"
+                               placeholder="Larry (private)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                        <input type="text" x-model="newCustomer.instagram"
+                               class="w-full px-3 py-2 border rounded-lg"
+                               placeholder="@poppie_420">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" x-model="newCustomer.email"
+                               class="w-full px-3 py-2 border rounded-lg"
+                               placeholder="larry@example.ch">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telegram</label>
+                        <input type="text" x-model="newCustomer.telegram"
+                               class="w-full px-3 py-2 border rounded-lg"
+                               placeholder="@poppie">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <input type="tel" x-model="newCustomer.phone"
+                               class="w-full px-3 py-2 border rounded-lg"
+                               placeholder="+41 79 123 4567">
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button @click="createCustomer()" class="btn-success">✅ Create Profile</button>
+                    <button @click="showNewCustomerForm = false" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Customer Profile Card -->
+            <div x-show="customer" x-transition class="mb-6">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-6 text-white">
+                    <!-- Header -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold" x-text="customer.handle"></h2>
+                            <p class="text-indigo-200" x-text="customer.instagram || customer.email"></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-sm font-bold"
+                                  :class="tierClass(customer.loyalty_tier)"
+                                  x-text="customer.loyalty_tier.toUpperCase()"></span>
+                            <p class="text-xl font-bold mt-1" x-text="customer.tier_discount_percent + '% OFF'"></p>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" x-text="customer.credits_balance"></div>
+                            <div class="text-xs text-indigo-200">Credits</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" x-text="customer.kbs_written"></div>
+                            <div class="text-xs text-indigo-200">KBs Written</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" x-text="customer.visit_count"></div>
+                            <div class="text-xs text-indigo-200">Visits</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" x-text="'CHF ' + customer.lifetime_spend"></div>
+                            <div class="text-xs text-indigo-200">Lifetime</div>
+                        </div>
+                    </div>
+
+                    <!-- CRACK Level -->
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-2xl" x-text="crackEmoji(customer.crack_level)"></span>
+                        <span class="font-semibold" x-text="customer.crack_level.toUpperCase()"></span>
+                        <span class="text-indigo-200" x-show="customer.crack_team" x-text="'• ' + customer.crack_team"></span>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div class="space-y-2">
+                        <div x-show="customer.birthday_soon" class="bg-yellow-400 text-yellow-900 px-3 py-2 rounded-lg text-sm">
+                            🎂 Birthday coming up! 2x points available
+                        </div>
+                        <div x-show="customer.tier_upgrade_close" class="bg-green-400 text-green-900 px-3 py-2 rounded-lg text-sm">
+                            ⬆️ Only <span x-text="customer.spend_to_next_tier"></span> CHF to next tier!
+                        </div>
+                        <div x-show="customer.credits_balance >= 100" class="bg-blue-400 text-blue-900 px-3 py-2 rounded-lg text-sm">
+                            🎁 Has <span x-text="Math.floor(customer.credits_balance / 100) * 5"></span> CHF in redeemable vouchers!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Favorites & Suggestions -->
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-700 mb-2">❤️ Favorites</h3>
+                        <div class="space-y-1">
+                            <template x-for="product in customer.favorite_products.slice(0,5)" :key="product">
+                                <div class="text-sm text-gray-600" x-text="product"></div>
+                            </template>
+                            <div x-show="!customer.favorite_products.length" class="text-sm text-gray-400">No favorites yet</div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-green-700 mb-2">💡 Suggestions</h3>
+                        <div class="space-y-1">
+                            <template x-for="suggestion in suggestions" :key="suggestion">
+                                <div class="text-sm text-green-600" x-text="suggestion"></div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Notes -->
+                <div x-show="customer.notes" class="mt-4 bg-yellow-50 rounded-lg p-4">
+                    <h3 class="font-semibold text-yellow-700 mb-1">📝 Staff Notes</h3>
+                    <p class="text-sm text-yellow-800" x-text="customer.notes"></p>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-4 grid grid-cols-3 gap-2">
+                    <button @click="applyToCheckout()" class="btn-success py-3">
+                        ✅ Use for Checkout
+                    </button>
+                    <button @click="editCustomer()" class="btn-secondary py-3">
+                        ✏️ Edit Profile
+                    </button>
+                    <button @click="viewHistory()" class="btn-secondary py-3">
+                        📜 View History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Customers (Quick Select) -->
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">⏱️ Recent Customers</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <template x-for="recent in recentCustomers" :key="recent.id">
+                        <button @click="selectCustomer(recent)"
+                                class="bg-white border-2 rounded-lg p-3 text-left hover:border-indigo-500 transition">
+                            <div class="font-semibold" x-text="recent.handle"></div>
+                            <div class="text-xs text-gray-500" x-text="recent.instagram || recent.email"></div>
+                            <div class="text-xs mt-1">
+                                <span :class="tierBadgeClass(recent.loyalty_tier)"
+                                      x-text="recent.loyalty_tier"></span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function customerLookupData() {
+        return {
+            searchQuery: '',
+            searched: false,
+            customer: null,
+            showNewCustomerForm: false,
+            newCustomer: {
+                handle: '',
+                real_name: '',
+                email: '',
+                phone: '',
+                instagram: '',
+                telegram: ''
+            },
+            suggestions: [
+                'New Purple Power Oil (matches taste)',
+                'CBD Sleep Gummies (asked about sleep)',
+                '15% off Papers bundle'
+            ],
+            recentCustomers: [
+                // Demo data - would come from API
+                { id: '1', handle: 'Poppie', instagram: '@poppie_420', loyalty_tier: 'gold', credits: 247 },
+                { id: '2', handle: 'ChuckB', instagram: '@chuck_bern', loyalty_tier: 'silver', credits: 89 },
+                { id: '3', handle: 'SmokeKing', instagram: '@smoke_king_zh', loyalty_tier: 'platinum', credits: 512 },
+                { id: '4', handle: 'GreenQueen', instagram: '@green_queen', loyalty_tier: 'bronze', credits: 34 }
+            ],
+
+            async searchCustomer() {
+                this.searched = true;
+                if (!this.searchQuery) {
+                    this.customer = null;
+                    return;
+                }
+
+                try {
+                    // TODO: API call
+                    // const response = await API.get(`/api/v1/pos/customers/search?q=${this.searchQuery}`);
+                    // this.customer = response;
+
+                    // Demo data
+                    if (this.searchQuery.toLowerCase().includes('poppie')) {
+                        this.customer = {
+                            id: 'demo-1',
+                            handle: 'Poppie',
+                            real_name: 'Larry',
+                            instagram: '@poppie_420',
+                            email: 'larry@example.ch',
+                            telegram: null,
+                            loyalty_tier: 'gold',
+                            tier_discount_percent: 15,
+                            credits_balance: 247,
+                            lifetime_spend: 847.50,
+                            crack_level: 'sprout',
+                            crack_team: 'Pink Punch Squad',
+                            kbs_written: 3,
+                            visit_count: 47,
+                            favorite_products: ['CBD Oil 10%', 'Rolling Papers OCB', 'Grinder Silver'],
+                            notes: 'Likes CBD oils, ask about sleep. Friend of Mosey.',
+                            birthday_soon: true,
+                            tier_upgrade_close: true,
+                            spend_to_next_tier: 152.50
+                        };
+                    } else {
+                        this.customer = null;
+                    }
+                } catch (error) {
+                    showToast('Search failed: ' + error.message, 'error');
+                }
+            },
+
+            selectCustomer(recent) {
+                this.searchQuery = recent.handle;
+                this.searchCustomer();
+            },
+
+            async createCustomer() {
+                if (!this.newCustomer.handle) {
+                    showToast('Handle is required', 'warning');
+                    return;
+                }
+
+                try {
+                    // TODO: API call
+                    // const response = await API.post('/api/v1/pos/customers', this.newCustomer);
+
+                    showToast(`Created profile for ${this.newCustomer.handle}!`, 'success');
+                    this.showNewCustomerForm = false;
+
+                    // Set as current customer
+                    this.customer = {
+                        ...this.newCustomer,
+                        id: 'new-' + Date.now(),
+                        loyalty_tier: 'bronze',
+                        tier_discount_percent: 5,
+                        credits_balance: 20, // First profile bonus
+                        lifetime_spend: 0,
+                        crack_level: 'seedling',
+                        kbs_written: 0,
+                        visit_count: 0,
+                        favorite_products: []
+                    };
+
+                } catch (error) {
+                    showToast('Failed to create: ' + error.message, 'error');
+                }
+            },
+
+            applyToCheckout() {
+                // Store customer for checkout
+                sessionStorage.setItem('checkout_customer', JSON.stringify(this.customer));
+                showToast(`${this.customer.handle} applied - ${this.customer.tier_discount_percent}% discount!`, 'success');
+                window.location.href = '/pos/scan';
+            },
+
+            editCustomer() {
+                // TODO: Open edit modal or navigate
+                showToast('Edit feature coming soon', 'info');
+            },
+
+            viewHistory() {
+                // TODO: Navigate to history
+                showToast('History feature coming soon', 'info');
+            },
+
+            tierClass(tier) {
+                const classes = {
+                    'bronze': 'bg-orange-200 text-orange-800',
+                    'silver': 'bg-gray-200 text-gray-800',
+                    'gold': 'bg-yellow-200 text-yellow-800',
+                    'platinum': 'bg-purple-200 text-purple-800',
+                    'diamond': 'bg-blue-200 text-blue-800'
+                };
+                return classes[tier] || classes['bronze'];
+            },
+
+            tierBadgeClass(tier) {
+                const classes = {
+                    'bronze': 'text-orange-600',
+                    'silver': 'text-gray-600',
+                    'gold': 'text-yellow-600',
+                    'platinum': 'text-purple-600',
+                    'diamond': 'text-blue-600'
+                };
+                return classes[tier] || '';
+            },
+
+            crackEmoji(level) {
+                const emojis = {
+                    'seedling': '🌱',
+                    'sprout': '🌿',
+                    'rooted': '🪴',
+                    'growing': '🌳',
+                    'blazing': '💨',
+                    'oracle': '👑'
+                };
+                return emojis[level] || '🌱';
+            }
+        }
+    }
+</script>
+{% endblock %}
