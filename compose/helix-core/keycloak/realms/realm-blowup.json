@@ -1,0 +1,127 @@
+{
+  "realm": "blowup",
+  "enabled": true,
+  "displayName": "💨 BlowUp Littau - Headshop & Cafe",
+  "displayNameHtml": "<div class='kc-logo-text'><span>💨 BlowUp Littau</span></div>",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@blowup-littau.local",
+    "fromDisplayName": "BlowUp Littau POS",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "pos-staff",
+        "description": "Staff - Basic POS operations"
+      },
+      {
+        "name": "pos-owner",
+        "description": "Owner - Full access, everything"
+      },
+      {
+        "name": "default-roles-blowup",
+        "description": "Default roles",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "Staff",
+      "realmRoles": ["pos-staff", "default-roles-blowup"]
+    },
+    {
+      "name": "Owners",
+      "realmRoles": ["pos-owner", "pos-staff", "default-roles-blowup"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "blowup_pos",
+      "name": "BlowUp POS Terminal",
+      "description": "Point of Sale for BlowUp Littau - Solo Operator Edition",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://helix.local/*",
+        "http://helix.local/*",
+        "http://localhost:9003/*",
+        "http://127.0.0.1:9003/*"
+      ],
+      "webOrigins": [
+        "https://helix.local",
+        "http://helix.local",
+        "http://localhost:9003",
+        "http://127.0.0.1:9003",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"]
+    }
+  ],
+  "users": [
+    {
+      "username": "andy",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "andy@blowup-littau.ch",
+      "firstName": "Andy",
+      "lastName": "Warhol",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["BlowUp Littau"],
+        "title": ["Owner - Headshop Side"],
+        "notes": ["Angel wings tattoo, white husky guard dog, Irish, German A1"],
+        "brand": ["BLQ - Bruce Lee Quality"],
+        "products": ["Pink Punch CBD, Orange Tang"]
+      },
+      "realmRoles": ["pos-owner", "pos-staff", "default-roles-blowup"],
+      "groups": ["/Owners"]
+    },
+    {
+      "username": "aleena",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "aleena@blowup-littau.ch",
+      "firstName": "Aleena",
+      "lastName": "Manager",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["BlowUp Littau"],
+        "title": ["Manager - Cafe Side"],
+        "notes": ["Girl Friday, friend of Leandra, indoor smoking cafe"],
+        "schedule": ["Tag teams with Andy"]
+      },
+      "realmRoles": ["pos-owner", "pos-staff", "default-roles-blowup"],
+      "groups": ["/Owners"]
+    }
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de"],
+  "defaultLocale": "de",
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "attributes": {
+    "frontendUrl": "https://keycloak.helix.local"
+  }
+}

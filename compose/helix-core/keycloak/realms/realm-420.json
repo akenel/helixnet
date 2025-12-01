@@ -1,0 +1,166 @@
+{
+  "realm": "fourtwenty",
+  "enabled": true,
+  "displayName": "🌿 420 Wholesale - Mosey Network",
+  "displayNameHtml": "<div class='kc-logo-text'><span>🌿 420 Wholesale Network</span></div>",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@420-wholesale.local",
+    "fromDisplayName": "420 Wholesale Network",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "pos-buyer",
+        "description": "Buyer - Browse catalog, place orders"
+      },
+      {
+        "name": "pos-seller",
+        "description": "Seller - Manage products, process orders"
+      },
+      {
+        "name": "pos-network-boss",
+        "description": "Network Boss - Full wholesale access, pricing"
+      },
+      {
+        "name": "default-roles-fourtwenty",
+        "description": "Default roles",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "Buyers",
+      "realmRoles": ["pos-buyer", "default-roles-fourtwenty"]
+    },
+    {
+      "name": "Sellers",
+      "realmRoles": ["pos-seller", "pos-buyer", "default-roles-fourtwenty"]
+    },
+    {
+      "name": "Network",
+      "realmRoles": ["pos-network-boss", "pos-seller", "pos-buyer", "default-roles-fourtwenty"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "fourtwenty_pos",
+      "name": "420 Wholesale Terminal",
+      "description": "Wholesale catalog and ordering system - 8000+ products",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://helix.local/*",
+        "http://helix.local/*",
+        "http://localhost:9003/*",
+        "http://127.0.0.1:9003/*"
+      ],
+      "webOrigins": [
+        "https://helix.local",
+        "http://helix.local",
+        "http://localhost:9003",
+        "http://127.0.0.1:9003",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"]
+    }
+  ],
+  "users": [
+    {
+      "username": "mosey",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "mosey@420-network.ch",
+      "firstName": "Mosey",
+      "lastName": "Oracle",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["420 Network HQ"],
+        "title": ["The Oracle - Network Boss"],
+        "notes": ["Truth bombs, Magento expert, 8000+ products"],
+        "wisdom": ["100m from train station = money maker"]
+      },
+      "realmRoles": ["pos-network-boss", "pos-seller", "pos-buyer", "default-roles-fourtwenty"],
+      "groups": ["/Network"]
+    },
+    {
+      "username": "supplier",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "supplier@420-network.ch",
+      "firstName": "FourTwenty",
+      "lastName": "Supplier",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["420 Wholesale"],
+        "title": ["CSV Feed Manager"],
+        "products": ["7000+ items in catalog"],
+        "feed": ["fourtwenty.ch/products.csv"]
+      },
+      "realmRoles": ["pos-seller", "pos-buyer", "default-roles-fourtwenty"],
+      "groups": ["/Sellers"]
+    },
+    {
+      "username": "chuck",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "chuck@bern-store.ch",
+      "firstName": "Chuck",
+      "lastName": "Bern",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["Bern Headshop"],
+        "title": ["Network Member - Buyer"],
+        "location": ["Bern"]
+      },
+      "realmRoles": ["pos-buyer", "default-roles-fourtwenty"],
+      "groups": ["/Buyers"]
+    },
+    {
+      "username": "demo",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "demo@420-network.ch",
+      "firstName": "Demo",
+      "lastName": "User",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["Demo Store"],
+        "title": ["Demo Account"],
+        "notes": ["For testing and demos"]
+      },
+      "realmRoles": ["pos-buyer", "default-roles-fourtwenty"],
+      "groups": ["/Buyers"]
+    }
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de", "fr"],
+  "defaultLocale": "de",
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "attributes": {
+    "frontendUrl": "https://keycloak.helix.local"
+  }
+}

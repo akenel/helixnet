@@ -100,18 +100,26 @@
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": true,
       "redirectUris": [
+        "https://helix.local/*",
+        "http://helix.local/*",
         "https://helix-platform.local/*",
         "https://pos.artemis-store.local/*",
+        "https://pos.blowup-littau.local/*",
         "http://localhost:8000/*",
         "http://localhost:3000/*",
-        "http://localhost:9003/*"
+        "http://localhost:9003/*",
+        "http://127.0.0.1:9003/*"
       ],
       "webOrigins": [
+        "https://helix.local",
+        "http://helix.local",
         "https://helix-platform.local",
         "https://pos.artemis-store.local",
+        "https://pos.blowup-littau.local",
         "http://localhost:8000",
         "http://localhost:3000",
         "http://localhost:9003",
+        "http://127.0.0.1:9003",
         "+"
       ],
       "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
@@ -298,6 +306,81 @@
       },
       "realmRoles": ["📊️ pos-auditor", "default-roles-kc-pos-realm-dev"],
       "groups": ["/📊️ Auditors"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000010",
+      "username": "andy",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "andy@blowup-littau.local",
+      "firstName": "Andy",
+      "lastName": "Warhol",
+      "attributes": {
+        "employee_id": ["BLQ-MGR-001"],
+        "store_location": ["BlowUp Littau"],
+        "title": ["Store Manager - Headshop Side"],
+        "hire_date": ["2025-11-01"],
+        "notes": ["Angel wings tattoo, white husky guard dog, Irish, learning German A1"]
+      },
+      "realmRoles": ["👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/👔️ Managers", "/💰️ Cashiers"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000011",
+      "username": "aleena",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "aleena@blowup-littau.local",
+      "firstName": "Aleena",
+      "lastName": "Manager",
+      "attributes": {
+        "employee_id": ["BLQ-MGR-002"],
+        "store_location": ["BlowUp Littau"],
+        "title": ["Store Manager - Cafe Side"],
+        "hire_date": ["2025-01-15"],
+        "notes": ["Girl Friday, friend of Leandra, manages cafe with indoor smoking, tag teams with Andy"]
+      },
+      "realmRoles": ["👔️ pos-manager", "💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/👔️ Managers", "/💰️ Cashiers"]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000012",
+      "username": "leandra",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "leandra@artemis-store.local",
+      "firstName": "Leandra",
+      "lastName": "Designer",
+      "attributes": {
+        "employee_id": ["ART-DES-001"],
+        "store_location": ["Artemis Luzern"],
+        "title": ["Designer - Box & Packaging"],
+        "hire_date": ["2025-11-15"],
+        "notes": ["Young and smart, works with Pam on vending machine box designs, got the pink CARAN pen"]
+      },
+      "realmRoles": ["💰️ pos-cashier", "default-roles-kc-pos-realm-dev"],
+      "groups": ["/💰️ Cashiers"]
     }
   ],
   "browserSecurityHeaders": {

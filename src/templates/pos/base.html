@@ -235,17 +235,53 @@
             }
         };
 
+        // POS Configuration (loaded from backend, updated annually)
+        const POSConfig = {
+            vat_rate: 8.1,      // Default: 2025 Swiss VAT rate
+            vat_decimal: 0.081, // For calculations
+            vat_year: 2025,
+            currency: 'CHF',
+            locale: 'de-CH',
+            loaded: false,
+
+            async load() {
+                try {
+                    const response = await fetch('/api/v1/pos/config');
+                    if (response.ok) {
+                        const config = await response.json();
+                        this.vat_rate = config.vat_rate;
+                        this.vat_decimal = config.vat_decimal;
+                        this.vat_year = config.vat_year;
+                        this.currency = config.currency;
+                        this.locale = config.locale;
+                        this.loaded = true;
+                        console.log(`POS Config loaded: VAT ${this.vat_rate}% (${this.vat_year})`);
+                    }
+                } catch (e) {
+                    console.warn('Using default POS config:', e);
+                }
+            }
+        };
+
+        // Load POS config on page load
+        POSConfig.load();
+
         // Price formatting helper (Swiss francs)
         function formatPrice(amount) {
-            return new Intl.NumberFormat('de-CH', {
+            return new Intl.NumberFormat(POSConfig.locale, {
                 style: 'currency',
-                currency: 'CHF'
+                currency: POSConfig.currency
             }).format(amount);
         }
 
-        // Calculate VAT (Swiss 7.7%)
+        // Calculate VAT (Swiss rate from config)
         function calculateVAT(subtotal) {
-            return subtotal * 0.077;
+            return subtotal * POSConfig.vat_decimal;
+        }
+
+        // Get current VAT rate for display
+        function getVATRate() {
+            return POSConfig.vat_rate;
         }
 
         // Calculate total with discount and VAT
@@ -259,6 +295,7 @@
                 discountAmount,
                 afterDiscount,
                 vat,
+                vatRate: POSConfig.vat_rate,
                 total: afterDiscount + vat
             };
         }

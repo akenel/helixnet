@@ -196,7 +196,24 @@
 
                     <!-- Discount -->
                     <div x-show="cart.length > 0" class="border-t pt-4 space-y-3">
-                        <div>
+                        <!-- Discount Mode Toggle -->
+                        <div class="flex rounded-lg bg-gray-100 p-1">
+                            <button
+                                @click="discountMode = 'percent'; targetTotal = ''; discountError = ''"
+                                :class="discountMode === 'percent' ? 'bg-white shadow' : ''"
+                                class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all">
+                                % Discount
+                            </button>
+                            <button
+                                @click="discountMode = 'target'; discount = 0; discountError = ''"
+                                :class="discountMode === 'target' ? 'bg-white shadow' : ''"
+                                class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all">
+                                Target Total
+                            </button>
+                        </div>
+
+                        <!-- Percent Mode -->
+                        <div x-show="discountMode === 'percent'">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Discount %
                                 <span x-show="user.isCashier && !user.isManager" class="text-yellow-600">(Max 10%)</span>
@@ -207,9 +224,31 @@
                                 min="0"
                                 :max="maxDiscount"
                                 x-model="discount"
-                                @input="validateDiscount()"
+                                @input="validateDiscount(); targetTotal = ''"
                                 class="input-field"
                                 placeholder="0">
+                            <p x-show="discountError" class="text-sm text-red-600 mt-1" x-text="discountError"></p>
+                        </div>
+
+                        <!-- Target Total Mode -->
+                        <div x-show="discountMode === 'target'">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Agreed Final Total (CHF)
+                                <span class="text-gray-500 font-normal">
+                                    (Full: <span x-text="formatPrice(totals.subtotal * (1 + POSConfig.vat_decimal))"></span>)
+                                </span>
+                            </label>
+                            <input
+                                type="number"
+                                step="0.05"
+                                min="0"
+                                x-model="targetTotal"
+                                @input="calculateDiscountFromTarget()"
+                                class="input-field text-xl font-bold"
+                                :placeholder="'Max ' + formatPrice(totals.subtotal * (1 + POSConfig.vat_decimal))">
+                            <p x-show="targetTotal && discount > 0" class="text-sm text-green-600 mt-1">
+                                = <span x-text="discount.toFixed(2)"></span>% discount applied
+                            </p>
                             <p x-show="discountError" class="text-sm text-red-600 mt-1" x-text="discountError"></p>
                         </div>
 
@@ -224,7 +263,7 @@
                                 <span class="font-semibold" x-text="'-' + formatPrice(totals.discountAmount)"></span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span>VAT (7.7%):</span>
+                                <span>VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
                                 <span class="font-semibold" x-text="formatPrice(totals.vat)"></span>
                             </div>
                             <div class="border-t pt-2 flex justify-between">
@@ -273,6 +312,8 @@
             discount: 0,
             discountError: '',
             maxDiscount: 100,
+            discountMode: 'percent', // 'percent' or 'target'
+            targetTotal: '',
 
             init() {
                 const userInfo = AuthHelper.getUserInfo();
@@ -420,6 +461,64 @@
                 if (this.discount < 0) {
                     this.discount = 0;
                 }
+            },
+
+            calculateDiscountFromTarget() {
+                this.discountError = '';
+
+                // Get subtotal from cart
+                const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                if (subtotal <= 0) {
+                    this.discount = 0;
+                    return;
+                }
+
+                const target = parseFloat(this.targetTotal);
+
+                if (isNaN(target) || target <= 0) {
+                    this.discount = 0;
+                    return;
+                }
+
+                // VAT rate from config (e.g., 0.081 for 8.1%)
+                const VAT_RATE = POSConfig.vat_decimal;
+
+                // Full price with VAT (no discount)
+                const fullPriceWithVAT = subtotal * (1 + VAT_RATE);
+
+                // If target is higher than full price, no discount needed
+                if (target >= fullPriceWithVAT) {
+                    this.discount = 0;
+                    this.discountError = target > fullPriceWithVAT
+                        ? `Target exceeds full price (${formatPrice(fullPriceWithVAT)})`
+                        : '';
+                    return;
+                }
+
+                // Calculate the required discount percentage
+                // Formula: target = subtotal * (1 - discount/100) * (1 + VAT)
+                // Solving for discount: discount = (1 - target / (subtotal * (1 + VAT))) * 100
+                const requiredDiscount = (1 - target / fullPriceWithVAT) * 100;
+
+                // Round to 2 decimal places
+                const roundedDiscount = Math.round(requiredDiscount * 100) / 100;
+
+                // Validate against max allowed discount
+                if (roundedDiscount > this.maxDiscount) {
+                    this.discountError = `Requires ${roundedDiscount.toFixed(2)}% discount. Your max is ${this.maxDiscount}%. Ask manager.`;
+                    this.discount = this.maxDiscount;
+                    return;
+                }
+
+                // Check for unreasonably high discount (>100% would be paying customer)
+                if (roundedDiscount >= 100) {
+                    this.discountError = 'Target total is too low';
+                    this.discount = 0;
+                    return;
+                }
+
+                this.discount = roundedDiscount;
             },
 
             get totals() {

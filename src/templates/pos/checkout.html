@@ -45,7 +45,7 @@
                     <span x-text="'-' + formatPrice(discountAmount)"></span>
                 </div>
                 <div class="flex justify-between">
-                    <span>VAT (7.7%):</span>
+                    <span>VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
                     <span x-text="formatPrice(cartData.totals.vat)"></span>
                 </div>
                 <div class="border-t pt-3 flex justify-between text-xl font-bold">
@@ -59,33 +59,107 @@
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Payment Method</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <button
-                        @click="paymentMethod = 'cash'"
+                        @click="selectPayment('cash')"
                         :class="paymentMethod === 'cash' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
                         class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-4xl mb-2 block">💵</span>
                         <p class="font-semibold">Cash</p>
                     </button>
                     <button
-                        @click="paymentMethod = 'visa'"
+                        @click="selectPayment('visa')"
                         :class="paymentMethod === 'visa' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
                         class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-4xl mb-2 block">💳</span>
                         <p class="font-semibold">Visa/MC</p>
                     </button>
                     <button
-                        @click="paymentMethod = 'debit'"
+                        @click="selectPayment('debit')"
                         :class="paymentMethod === 'debit' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
                         class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-4xl mb-2 block">🏦</span>
                         <p class="font-semibold">Debit</p>
                     </button>
                     <button
-                        @click="paymentMethod = 'twint'"
+                        @click="selectPayment('twint')"
                         :class="paymentMethod === 'twint' ? 'border-4 border-green-500' : 'border-2 border-gray-300'"
                         class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-4xl mb-2 block">📱</span>
                         <p class="font-semibold">TWINT</p>
                     </button>
+                </div>
+            </div>
+
+            <!-- 💵 CASH QUICK ROUND (Only shows for CASH payments) -->
+            <div x-show="paymentMethod === 'cash'" x-transition class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">💵 Cash Received</h2>
+
+                <!-- Quick Amount Buttons -->
+                <div class="grid grid-cols-5 gap-2 mb-4">
+                    <button @click="setCashReceived(10)"
+                        :class="cashReceived === 10 ? 'bg-green-500 text-white' : 'bg-green-100'"
+                        class="btn-secondary py-3 font-bold">10</button>
+                    <button @click="setCashReceived(20)"
+                        :class="cashReceived === 20 ? 'bg-green-500 text-white' : 'bg-green-100'"
+                        class="btn-secondary py-3 font-bold">20</button>
+                    <button @click="setCashReceived(50)"
+                        :class="cashReceived === 50 ? 'bg-green-500 text-white' : 'bg-green-100'"
+                        class="btn-secondary py-3 font-bold">50</button>
+                    <button @click="setCashReceived(100)"
+                        :class="cashReceived === 100 ? 'bg-green-500 text-white' : 'bg-green-100'"
+                        class="btn-secondary py-3 font-bold">100</button>
+                    <button @click="setCashReceived(cartData.totals.total)"
+                        :class="cashReceived === cartData.totals.total ? 'bg-blue-500 text-white' : 'bg-blue-100'"
+                        class="btn-secondary py-3 font-bold">EXACT</button>
+                </div>
+
+                <!-- Cash Received Display -->
+                <div x-show="cashReceived > 0" class="bg-green-50 rounded-lg p-4 mb-4">
+                    <div class="flex justify-between text-lg">
+                        <span>Cash Received:</span>
+                        <span class="font-bold text-green-700" x-text="'CHF ' + cashReceived.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between text-lg">
+                        <span>Total Due:</span>
+                        <span x-text="formatPrice(cartData.totals.total)"></span>
+                    </div>
+                    <div class="flex justify-between text-lg border-t pt-2 mt-2">
+                        <span>Change:</span>
+                        <span class="font-bold" :class="changeAmount >= 0 ? 'text-green-700' : 'text-red-600'"
+                              x-text="'CHF ' + changeAmount.toFixed(2)"></span>
+                    </div>
+                </div>
+
+                <!-- Quick Round Options (when there's a small gap) -->
+                <div x-show="cashReceived > 0 && changeGap > 0 && changeGap <= 2" class="mb-4">
+                    <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 Quick Round Options</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="applyQuickRound()"
+                            class="bg-yellow-100 hover:bg-yellow-200 p-3 rounded-lg text-left">
+                            <span class="block font-bold text-yellow-800">Round to <span x-text="'CHF ' + cashReceived.toFixed(2)"></span></span>
+                            <span class="text-sm text-yellow-600">Give back CHF <span x-text="Math.floor(changeAmount).toFixed(2)"></span> (clean notes)</span>
+                        </button>
+                        <button @click="showChangeProducts = !showChangeProducts"
+                            class="bg-pink-100 hover:bg-pink-200 p-3 rounded-lg text-left">
+                            <span class="block font-bold text-pink-800">🍭 Add Small Item</span>
+                            <span class="text-sm text-pink-600">Keep the change, give a treat!</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product-as-Change (Pink Punch Model) -->
+                <div x-show="showChangeProducts && changeGap > 0" x-transition class="bg-pink-50 rounded-lg p-4 mb-4">
+                    <h3 class="text-md font-semibold text-pink-800 mb-3">🍭 Change Products (under CHF <span x-text="changeGap.toFixed(2)"></span>)</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <template x-for="product in changeProducts" :key="product.name">
+                            <button @click="addChangeProduct(product)"
+                                class="bg-white hover:bg-pink-100 p-2 rounded border text-center">
+                                <span class="block text-2xl" x-text="product.emoji"></span>
+                                <span class="block text-sm font-semibold" x-text="product.name"></span>
+                                <span class="block text-xs text-gray-500" x-text="'CHF ' + product.price.toFixed(2)"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <p class="text-xs text-pink-600 mt-2">Customer gets a treat, you keep cleaner change!</p>
                 </div>
             </div>
 
@@ -131,6 +205,23 @@
             discount: 0,
             discountAmount: 0,
 
+            // Cash Quick Round
+            cashReceived: 0,
+            changeAmount: 0,
+            changeGap: 0,
+            showChangeProducts: false,
+            quickRoundApplied: false,
+
+            // Product-as-Change defaults (configurable per store)
+            changeProducts: [
+                { name: 'Lollipop', emoji: '🍭', price: 0.50 },
+                { name: 'CBD Gummy', emoji: '🍬', price: 0.45 },
+                { name: 'Papers', emoji: '📄', price: 0.60 },
+                { name: 'Sticker', emoji: '✨', price: 0.30 },
+                { name: 'Lighter', emoji: '🔥', price: 1.50 },
+                { name: 'Grinder Card', emoji: '🃏', price: 1.80 }
+            ],
+
             init() {
                 const stored = sessionStorage.getItem('pos_cart');
                 if (!stored) {
@@ -144,11 +235,85 @@
                 this.recalculateTotals();
             },
 
+            selectPayment(method) {
+                this.paymentMethod = method;
+                // Reset cash fields when switching payment method
+                if (method !== 'cash') {
+                    this.cashReceived = 0;
+                    this.changeAmount = 0;
+                    this.changeGap = 0;
+                    this.showChangeProducts = false;
+                    this.quickRoundApplied = false;
+                }
+            },
+
+            setCashReceived(amount) {
+                this.cashReceived = amount;
+                this.calculateChange();
+            },
+
+            calculateChange() {
+                const total = this.cartData.totals.total;
+                this.changeAmount = this.cashReceived - total;
+                // Gap is the cents part that could be rounded
+                this.changeGap = this.changeAmount > 0 ? (this.changeAmount % 1) : Math.abs(this.changeAmount);
+
+                // Filter change products to only show affordable ones
+                if (this.changeGap > 0) {
+                    this.changeProducts = this.changeProducts.filter(p => p.price <= this.changeGap + 0.50);
+                }
+            },
+
+            applyQuickRound() {
+                // Round total UP to match cash received (customer gets clean change)
+                const total = this.cartData.totals.total;
+                const roundedTotal = this.cashReceived - Math.floor(this.changeAmount);
+
+                // Calculate the discount needed to reach rounded total
+                // Reverse engineer: new_total = (subtotal - discount) * (1 + vat_rate)
+                // So: subtotal - discount = new_total / (1 + vat_rate)
+                const vatMultiplier = 1 + (POSConfig.vat_rate / 100);
+                const netAfterRound = roundedTotal / vatMultiplier;
+                const subtotal = this.cartData.totals.subtotal;
+                const roundDiscount = subtotal - netAfterRound;
+
+                // Apply as a discount amount (not percentage)
+                this.cartData.totals.roundDiscount = roundDiscount;
+                this.cartData.totals.total = roundedTotal;
+                this.cartData.totals.vat = roundedTotal - netAfterRound;
+
+                this.quickRoundApplied = true;
+                this.calculateChange();
+                sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
+                showToast(`Rounded to CHF ${roundedTotal.toFixed(2)} - clean change!`, 'success');
+            },
+
+            addChangeProduct(product) {
+                // Add product to cart as "change product"
+                this.cartData.cart.push({
+                    id: 'change_' + Date.now(),
+                    name: product.name + ' (Change)',
+                    price: product.price,
+                    quantity: 1,
+                    isChangeProduct: true
+                });
+
+                // Recalculate totals with the new item
+                this.cartData.totals.subtotal += product.price;
+                this.recalculateTotals();
+                this.calculateChange();
+                this.showChangeProducts = false;
+
+                sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
+                showToast(`Added ${product.emoji} ${product.name} - customer gets a treat!`, 'success');
+            },
+
             applyDiscount(percent) {
                 // TODO: Check user role for max discount
                 this.discount = percent;
                 this.cartData.discount = percent;
                 this.recalculateTotals();
+                this.calculateChange(); // Recalculate change after discount
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
                 showToast(`${percent}% discount applied`, 'success');
             },
@@ -166,7 +331,7 @@
                 this.discountAmount = subtotal * (this.discount / 100);
                 const afterDiscount = subtotal - this.discountAmount;
                 // VAT calculated AFTER discount (Swiss compliant)
-                const vat = afterDiscount * 0.077;
+                const vat = afterDiscount * POSConfig.vat_decimal;
                 this.cartData.totals.discountAmount = this.discountAmount;
                 this.cartData.totals.vat = vat;
                 this.cartData.totals.total = afterDiscount + vat;
@@ -188,7 +353,19 @@
                     return;
                 }
 
-                if (!confirm(`Complete transaction for ${formatPrice(this.cartData.totals.total)}?`)) {
+                // For cash payments, require cash received amount
+                if (this.paymentMethod === 'cash' && this.cashReceived <= 0) {
+                    showToast('Please select cash amount received', 'warning');
+                    return;
+                }
+
+                // For cash, show change in confirmation
+                let confirmMsg = `Complete transaction for ${formatPrice(this.cartData.totals.total)}?`;
+                if (this.paymentMethod === 'cash' && this.changeAmount > 0) {
+                    confirmMsg += `\n\nCash received: CHF ${this.cashReceived.toFixed(2)}\nChange to give: CHF ${this.changeAmount.toFixed(2)}`;
+                }
+
+                if (!confirm(confirmMsg)) {
                     return;
                 }
 
@@ -201,25 +378,20 @@
                     // Add line items
                     for (const item of this.cartData.cart) {
                         await API.post(`/api/v1/pos/transactions/${transaction.id}/items`, {
-                            product_id: item.id.toString().startsWith('catalog') ? null : item.id,
+                            product_id: item.id.toString().startsWith('catalog') || item.id.toString().startsWith('change_') ? null : item.id,
                             quantity: item.quantity,
                             unit_price: item.price.toString(),
                             discount_percent: this.cartData.discount.toString()
                         });
                     }
 
-                    // Checkout - cash payments need amount_tendered
+                    // Checkout - cash payments use the pre-selected amount
                     const checkoutData = {
                         payment_method: this.paymentMethod
                     };
                     if (this.paymentMethod === 'cash') {
-                        // For cash, prompt for amount tendered or assume exact amount
-                        const amountTendered = prompt(`Amount tendered (Total: CHF ${this.cartData.totals.total.toFixed(2)}):`);
-                        if (amountTendered === null) {
-                            this.processing = false;
-                            return; // User cancelled
-                        }
-                        checkoutData.amount_tendered = amountTendered || this.cartData.totals.total.toFixed(2);
+                        // Use the cash received from Quick Round buttons
+                        checkoutData.amount_tendered = this.cashReceived.toFixed(2);
                     }
                     await API.post(`/api/v1/pos/transactions/${transaction.id}/checkout`, checkoutData);
 

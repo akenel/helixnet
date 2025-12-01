@@ -51,6 +51,7 @@ from src.core.keycloak_auth import (
     require_admin,
     require_manager_or_admin,
 )
+from src.core.config import get_settings
 # REFERENCE ONLY: Mock auth kept for comparison
 # from src.core.mock_auth import get_mock_user as get_current_user
 
@@ -65,6 +66,30 @@ html_router = APIRouter(tags=["🖥️ POS Web UI"])
 # Setup Jinja2 templates
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+
+
+# ================================================================
+# POS CONFIGURATION ENDPOINT
+# ================================================================
+
+@router.get("/config")
+async def get_pos_config():
+    """
+    Get POS configuration including VAT rate, currency, locale.
+    This is public (no auth required) so the UI can load it on init.
+
+    VAT rates are updated annually:
+    - 2024: 7.7%
+    - 2025: 8.1%
+    """
+    settings = get_settings()
+    return {
+        "vat_rate": settings.POS_VAT_RATE,
+        "vat_year": settings.POS_VAT_YEAR,
+        "currency": settings.POS_CURRENCY,
+        "locale": settings.POS_LOCALE,
+        "vat_decimal": settings.POS_VAT_RATE / 100,  # 0.081 for calculations
+    }
 
 
 # ================================================================
@@ -912,6 +937,37 @@ async def pos_closeout(request: Request):
     - GET /api/v1/pos/reports/daily-summary (fetch today's stats)
     """
     return templates.TemplateResponse("pos/closeout.html", {"request": request})
+
+
+@html_router.get("/pos/cash-count", response_class=HTMLResponse, name="pos_cash_count")
+async def pos_cash_count(request: Request):
+    """
+    Cash Drawer Count - End of Day Reconciliation
+
+    Felix's daily ritual: Count the drawer, verify against POS totals.
+    Features denomination-by-denomination counting (Swiss Francs).
+
+    Swiss Franc Denominations:
+    - Notes: 200, 100, 50, 20, 10 CHF
+    - Coins: 5, 2, 1 CHF, 50/20/10/5 Rappen
+
+    Workflow:
+    1. Enter cashier name
+    2. Count each denomination
+    3. System calculates total
+    4. Compare against expected (from POS)
+    5. Route variance (bonus/slush/review)
+    6. Submit and print summary
+
+    Variance Rules:
+    - Perfect (0): +1 bonus point for cashier
+    - Small over (<0.50): Goes to cashier bonus pool
+    - Small under (<0.50): Goes to slush fund
+    - Large variance: Manager review required
+
+    URL: https://helix.local/pos/cash-count
+    """
+    return templates.TemplateResponse("pos/cash_count.html", {"request": request})
 
 
 @html_router.get("/pos/receipt/{transaction_id}", response_class=HTMLResponse, name="pos_receipt")

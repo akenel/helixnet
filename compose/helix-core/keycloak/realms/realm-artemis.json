@@ -1,0 +1,162 @@
+{
+  "realm": "artemis",
+  "enabled": true,
+  "displayName": "🏛️ Artemis Headshop - Luzern",
+  "displayNameHtml": "<div class='kc-logo-text'><span>🏛️ Artemis Headshop</span></div>",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@artemis-store.local",
+    "fromDisplayName": "Artemis Headshop POS",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "pos-cashier",
+        "description": "Cashier - Ring up sales, max 10% discount"
+      },
+      {
+        "name": "pos-manager",
+        "description": "Manager - Full POS access, refunds, reports"
+      },
+      {
+        "name": "pos-admin",
+        "description": "Admin - System configuration, user management"
+      },
+      {
+        "name": "default-roles-artemis",
+        "description": "Default roles",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "Cashiers",
+      "realmRoles": ["pos-cashier", "default-roles-artemis"]
+    },
+    {
+      "name": "Managers",
+      "realmRoles": ["pos-manager", "pos-cashier", "default-roles-artemis"]
+    },
+    {
+      "name": "Admins",
+      "realmRoles": ["pos-admin", "pos-manager", "pos-cashier", "default-roles-artemis"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "artemis_pos",
+      "name": "Artemis POS Terminal",
+      "description": "Point of Sale for Artemis Headshop",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://helix.local/*",
+        "http://helix.local/*",
+        "http://localhost:9003/*",
+        "http://127.0.0.1:9003/*"
+      ],
+      "webOrigins": [
+        "https://helix.local",
+        "http://helix.local",
+        "http://localhost:9003",
+        "http://127.0.0.1:9003",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"]
+    }
+  ],
+  "users": [
+    {
+      "username": "felix",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "felix@artemis.ch",
+      "firstName": "Felix",
+      "lastName": "Owner",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["Artemis Luzern"],
+        "title": ["Owner - 25 years in business"]
+      },
+      "realmRoles": ["pos-admin", "pos-manager", "pos-cashier", "default-roles-artemis"],
+      "groups": ["/Admins"]
+    },
+    {
+      "username": "ralph",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "ralph@artemis.ch",
+      "firstName": "Ralph",
+      "lastName": "Manager",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["Artemis Luzern"],
+        "title": ["Store Manager"]
+      },
+      "realmRoles": ["pos-manager", "pos-cashier", "default-roles-artemis"],
+      "groups": ["/Managers"]
+    },
+    {
+      "username": "pam",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "pam@artemis.ch",
+      "firstName": "Pam",
+      "lastName": "Cashier",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["Artemis Luzern"],
+        "title": ["Senior Cashier"],
+        "specialty": ["Pam Cappo coffee maker"]
+      },
+      "realmRoles": ["pos-cashier", "default-roles-artemis"],
+      "groups": ["/Cashiers"]
+    },
+    {
+      "username": "leandra",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "leandra@artemis.ch",
+      "firstName": "Leandra",
+      "lastName": "Designer",
+      "credentials": [{"type": "password", "value": "helix_pass", "temporary": false}],
+      "attributes": {
+        "store": ["Artemis Luzern"],
+        "title": ["Designer - Box & Packaging"],
+        "notes": ["Young & smart, pink CARAN pen"]
+      },
+      "realmRoles": ["pos-cashier", "default-roles-artemis"],
+      "groups": ["/Cashiers"]
+    }
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de", "fr"],
+  "defaultLocale": "de",
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "attributes": {
+    "frontendUrl": "https://keycloak.helix.local"
+  }
+}

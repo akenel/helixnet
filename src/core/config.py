@@ -102,6 +102,13 @@ class Settings(BaseSettings):
     MINIO_ACCESS_KEY: str = SecretStr
     MINIO_SECRET_KEY: str = SecretStr
     MINIO_SECURE: bool = False
+
+# POS Configuration (HelixPOS)
+    POS_VAT_RATE: float = 8.1  # Swiss VAT rate (2025: 8.1%, 2024: 7.7%)
+    POS_VAT_YEAR: int = 2025
+    POS_CURRENCY: str = "CHF"
+    POS_LOCALE: str = "de-CH"
+
 # Computed properties
     @property
     def KEYCLOAK_ISSUER_URL(self) -> str:

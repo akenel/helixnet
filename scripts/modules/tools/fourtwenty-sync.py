@@ -59,7 +59,7 @@ CATEGORY_MAP = {
 HEADSHOP_CATEGORIES = {'Headshop', 'Vape', 'Vape Shop', 'CBD', 'Liquids Vape ', 'Themen', 'Punkteartikel'}
 
 # Default markup
-MARKUP = Decimal('1.30')  # 30%
+MARKUP = Decimal('1.50')  # 50%
 
 # =============================================================================
 # UTILITIES
@@ -280,10 +280,11 @@ def sync_to_database(dry_run: bool = False):
 
                 cur.execute("""
                     UPDATE products SET
-                        supplier_price = %s, last_sync_at = %s, updated_at = %s,
+                        supplier_price = %s, price = %s, cost = %s,
+                        last_sync_at = %s, updated_at = %s,
                         image_url = COALESCE(image_url, %s)
                     WHERE id = %s AND (sync_override IS NULL OR sync_override = FALSE)
-                """, (supplier_price, now, now, image_url, ex['id']))
+                """, (supplier_price, retail_price, supplier_price, now, now, image_url, ex['id']))
                 stats['updated'] += 1
             else:
                 # Insert new

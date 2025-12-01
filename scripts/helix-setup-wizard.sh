@@ -244,6 +244,58 @@ else
 fi
 
 # ================================================================
+# FourTwenty Supplier Catalog (Optional)
+# ================================================================
+
+print_header "Supplier Product Catalog"
+
+echo ""
+echo "Load FourTwenty.ch supplier catalog?"
+echo "  - 7,000+ headshop products (bongs, vapes, CBD, accessories)"
+echo "  - Daily price/stock updates"
+echo "  - 30% markup pre-configured"
+echo ""
+echo "1. Yes - Load full catalog (recommended for production)"
+echo "2. No - Use only sandbox products (20 items)"
+echo ""
+
+FOURTWENTY_CHOICE=$(ask_question "Load FourTwenty catalog?" "1")
+
+if [[ "$FOURTWENTY_CHOICE" == "1" ]]; then
+    INCLUDE_FOURTWENTY="yes"
+
+    # Show default feed URLs
+    echo ""
+    echo -e "${BOLD}FourTwenty Feed URLs (defaults):${NC}"
+    echo "  Products:       https://fourtwenty.ch/Dropship/Data/dropship_productfeed_v2.csv"
+    echo "  Stock:          https://fourtwenty.ch/Dropship/Data/dropship_stockfeed_v1.csv"
+    echo "  Specifications: https://fourtwenty.ch/Dropship/Data/dropship_specificationfeed_v1.csv"
+    echo ""
+
+    USE_DEFAULT_FEEDS=$(ask_question "Use default feed URLs?" "yes")
+
+    if [[ "$USE_DEFAULT_FEEDS" != "yes" ]]; then
+        echo ""
+        read -p "Products feed URL: " FOURTWENTY_PRODUCTS_URL
+        read -p "Stock feed URL: " FOURTWENTY_STOCK_URL
+        read -p "Specifications feed URL: " FOURTWENTY_SPECS_URL
+    else
+        FOURTWENTY_PRODUCTS_URL="https://fourtwenty.ch/Dropship/Data/dropship_productfeed_v2.csv"
+        FOURTWENTY_STOCK_URL="https://fourtwenty.ch/Dropship/Data/dropship_stockfeed_v1.csv"
+        FOURTWENTY_SPECS_URL="https://fourtwenty.ch/Dropship/Data/dropship_specificationfeed_v1.csv"
+    fi
+
+    # Markup configuration
+    DEFAULT_MARKUP="1.30"
+    FOURTWENTY_MARKUP=$(ask_question "Markup multiplier (1.30 = 30% margin):" "$DEFAULT_MARKUP")
+
+    print_step "FourTwenty catalog will be loaded (~7,000 products)"
+else
+    INCLUDE_FOURTWENTY="no"
+    print_step "Using sandbox products only"
+fi
+
+# ================================================================
 # Keycloak Admin
 # ================================================================
 
@@ -348,6 +400,11 @@ MvP Sandbox:
   Employees:     $INCLUDE_EMPLOYEES (5 demo users)
   KB:            $INCLUDE_KB (Felix's expertise)
 
+FourTwenty Supplier:
+  Enabled:       $INCLUDE_FOURTWENTY
+  $(if [[ "$INCLUDE_FOURTWENTY" == "yes" ]]; then echo "Products:      ~7,000 items from fourtwenty.ch"; fi)
+  $(if [[ "$INCLUDE_FOURTWENTY" == "yes" ]]; then echo "Markup:        ${FOURTWENTY_MARKUP}x ($(echo "scale=0; (${FOURTWENTY_MARKUP} - 1) * 100" | bc)% margin)"; fi)
+
 Keycloak:
   Admin:         $ADMIN_USER
   Password:      $(if [[ "$ADMIN_PASSWORD" == "$DEFAULT_ADMIN_PASSWORD" ]]; then echo "helix_pass (default)"; else echo "****** (custom)"; fi)
@@ -418,6 +475,16 @@ INCLUDE_PRODUCTS="$INCLUDE_PRODUCTS"
 INCLUDE_EMPLOYEES="$INCLUDE_EMPLOYEES"
 INCLUDE_KB="$INCLUDE_KB"
 
+# FourTwenty Supplier
+INCLUDE_FOURTWENTY="$INCLUDE_FOURTWENTY"
+$(if [[ "$INCLUDE_FOURTWENTY" == "yes" ]]; then cat << FTEOF
+FOURTWENTY_PRODUCTS_URL="$FOURTWENTY_PRODUCTS_URL"
+FOURTWENTY_STOCK_URL="$FOURTWENTY_STOCK_URL"
+FOURTWENTY_SPECS_URL="$FOURTWENTY_SPECS_URL"
+FOURTWENTY_MARKUP="$FOURTWENTY_MARKUP"
+FTEOF
+fi)
+
 # KB Mode
 KB_MODE="$KB_MODE"
 $(if [[ "$KB_MODE" == "premium" ]]; then echo "KB_IMPORT_URL=\"$KB_IMPORT_URL\""; fi)
@@ -442,6 +509,27 @@ if [[ "$INCLUDE_PRODUCTS" == "yes" ]]; then
     print_step "Seeding 20 headshop products..."
     sleep 5  # Wait for database
     PYTHONPATH=/home/angel/repos/helixnet python3 src/services/artemis_product_seeding.py || true
+fi
+
+# Sync FourTwenty catalog (if enabled)
+if [[ "$INCLUDE_FOURTWENTY" == "yes" ]]; then
+    echo ""
+    print_step "Syncing FourTwenty supplier catalog (~7,000 products)..."
+    print_step "This may take 1-2 minutes..."
+
+    # Wait for FastAPI to be ready
+    sleep 10
+
+    # Run the sync script
+    PYTHONPATH=/home/angel/repos/helixnet python3 scripts/modules/tools/fourtwenty-sync.py --sync 2>&1 | while read line; do
+        echo "  $line"
+    done
+
+    if [[ $? -eq 0 ]]; then
+        print_step "FourTwenty catalog synced successfully!"
+    else
+        print_warn "FourTwenty sync completed with warnings (check logs)"
+    fi
 fi
 
 # Seed KB (if default mode)
