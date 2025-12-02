@@ -25,6 +25,11 @@ from src.db.models import (  # noqa: F401
     CustomerModel,
     KBContributionModel,
     CreditTransactionModel,
+    # HR/Payroll Models (BLQ Module)
+    EmployeeModel,
+    TimeEntryModel,
+    PayrollRunModel,
+    PaySlipModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

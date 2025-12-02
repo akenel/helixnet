@@ -57,7 +57,8 @@ celerybeat-schedule
 # Local Data/Cache Directories (Non-containerized data)
 data/
 cache/
-models/
+# ML models directory (not db models)
+/models/
 
 # ====================================================================
 # 💻 IDE, OS, AND LOGS

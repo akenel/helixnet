@@ -29,6 +29,7 @@ from src.services.artemis_user_seeding import seed_artemis_staff
 from src.services.pos_seeding_service import seed_artemis_products
 from src.services.store_settings_seeding import seed_store_settings
 from src.services.sourcing_seeding_service import seed_sourcing_system
+from src.services.hr_seeding_service import seed_all_hr_data
 from src.services.minio_service import initialize_minio
 from src.services.keycloak_health_service import check_keycloak_realms
 from src.routes import auth_router, jobs_router, users_router
@@ -37,6 +38,7 @@ from src.routes.pos_router import router as pos_router, html_router as pos_html_
 from src.routes.customer_router import router as customer_router
 from src.routes.kb_router import router as kb_router
 from src.routes.admin_router import router as admin_router
+from src.routes.hr_router import router as hr_router
 
 # ================================================================
 # 🌍 Global Configuration
@@ -120,6 +122,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ Sourcing system seeding encountered an issue: {e}", exc_info=True)
 
+    # --- Seed HR Data (Employees + Time Entries) ---
+    try:
+        logger.info("👔 Seeding HR data (employees + time entries)...")
+        async with get_db_session_context() as db:
+            results = await seed_all_hr_data(db)
+        logger.info(f"✅ HR seeding completed: {results}")
+    except Exception as e:
+        logger.warning(f"⚠️ HR seeding encountered an issue: {e}", exc_info=True)
+
     # --- Keycloak Realm Health Check ---
     try:
         realm_status = await check_keycloak_realms()
@@ -195,6 +206,7 @@ app.include_router(pos_html_router, tags=["🖥️ POS Web UI - Pam's Interface"
 app.include_router(customer_router, tags=["🎮 CRACK Loyalty - Customer Profiles"])
 app.include_router(kb_router, tags=["📚 KB Contributions - Knowledge is Gold"])
 app.include_router(admin_router, prefix=settings.API_V1_STR, tags=["👑 Admin - Role Management"])
+app.include_router(hr_router, tags=["HR - Time & Payroll (BLQ Module)"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")

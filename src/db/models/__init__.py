@@ -27,6 +27,12 @@ from .credit_transaction_model import CreditTransactionModel, CreditTransactionT
 from .supplier_model import SupplierModel
 from .sourcing_request_model import SourcingRequestModel, SourcingNoteModel
 
+# HR/Payroll Models (BLQ Module)
+from .employee_model import EmployeeModel, ContractType, EmployeeStatus
+from .time_entry_model import TimeEntryModel, EntryType, EntryStatus
+from .payroll_run_model import PayrollRunModel, PayrollRunStatus
+from .payslip_model import PaySlipModel
+
 __all__ = [
     "Base",
     "UserModel",
@@ -59,4 +65,14 @@ __all__ = [
     "SupplierModel",
     "SourcingRequestModel",
     "SourcingNoteModel",
+    # HR/Payroll Models
+    "EmployeeModel",
+    "ContractType",
+    "EmployeeStatus",
+    "TimeEntryModel",
+    "EntryType",
+    "EntryStatus",
+    "PayrollRunModel",
+    "PayrollRunStatus",
+    "PaySlipModel",
 ]
