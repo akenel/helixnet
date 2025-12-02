@@ -1,0 +1,29 @@
+{
+  "sourcing_request": {
+    "code": "SR-2025-12-01-BLQ",
+    "date": "2025-12-01",
+    "requested_by": "Pam",
+    "customer_handle": "BruceBLQ",
+    "status": "new",
+    "priority": "normal"
+  },
+  "product": {
+    "type": "pipe",
+    "material": "316 Stainless Steel",
+    "style": "Compact, easy clean, indestructible",
+    "custom_branding": true,
+    "brand": "BLQ",
+    "notes": "Match grinder finish. Logo-ready. 'Flows like water' style."
+  },
+  "supplier": {
+    "primary": "Sylvken",
+    "type": "custom_engraving",
+    "lead_time_estimate": "2-3 weeks"
+  },
+  "shipping": {
+    "destination": "Lee-Ville",
+    "method": "TBD (UPS or DHL)",
+    "notification": "text when ready"
+  },
+  "pam_notes": "Customer has sharp eye. Chose SS over glass for durability and branding. Very interested in quality. Wife (Cynthia) also shopping. VIP treatment."
+}

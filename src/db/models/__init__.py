@@ -23,6 +23,10 @@ from .customer_model import CustomerModel, CrackLevel, LoyaltyTier, PreferredCon
 from .kb_contribution_model import KBContributionModel, KBStatus, KBCategory
 from .credit_transaction_model import CreditTransactionModel, CreditTransactionType
 
+# Sourcing System Models (Bestellungen)
+from .supplier_model import SupplierModel
+from .sourcing_request_model import SourcingRequestModel, SourcingNoteModel
+
 __all__ = [
     "Base",
     "UserModel",
@@ -51,4 +55,8 @@ __all__ = [
     "KBCategory",
     "CreditTransactionModel",
     "CreditTransactionType",
+    # Sourcing System Models
+    "SupplierModel",
+    "SourcingRequestModel",
+    "SourcingNoteModel",
 ]

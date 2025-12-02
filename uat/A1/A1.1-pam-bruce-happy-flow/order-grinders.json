@@ -1,0 +1,33 @@
+{
+  "order": {
+    "id": "ORD-2025-12-01-001",
+    "date": "2025-12-01",
+    "customer_handle": "BruceBLQ",
+    "served_by": "Pam",
+    "status": "completed"
+  },
+  "items": [
+    {
+      "product": "4-Piece Metal Grinder",
+      "sku": "GRD-SS316-001",
+      "material": "316 Stainless Steel",
+      "quantity": 2,
+      "unit_price": 25.00,
+      "currency": "EUR",
+      "notes": "Customer wants BLQ logo on both sides (custom job)"
+    }
+  ],
+  "payment": {
+    "method": "cash",
+    "currency": "EUR",
+    "exchange_rate": "1:1 (tourist friendly)",
+    "total": 50.00,
+    "change_preference": "EUR or CHF coins for parking"
+  },
+  "custom_work": {
+    "requested": true,
+    "type": "BLQ logo engraving both sides",
+    "vendor": "Sylvken",
+    "status": "pending_quote"
+  }
+}

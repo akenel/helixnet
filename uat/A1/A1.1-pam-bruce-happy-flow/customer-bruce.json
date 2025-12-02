@@ -1,0 +1,30 @@
+{
+  "customer": {
+    "handle": "BruceBLQ",
+    "real_name": "Bruce Lee",
+    "origin": "Lee-Ville",
+    "type": "tourist",
+    "preferred_contact": "telegram",
+    "language": "en",
+    "notes": "Sharp eye for quality. Interested in BLQ branding. Wife: Cynthia (Ms. Lee)."
+  },
+  "visit": {
+    "date": "2025-12-01",
+    "time": "~17:00 CET",
+    "served_by": "Pam",
+    "felix_present": false,
+    "felix_card_given": true
+  },
+  "interests": [
+    "SS 316 grinders",
+    "Custom BLQ branding",
+    "Metal pipes (not glass)",
+    "Quality over price"
+  ],
+  "crack_points": {
+    "signup_bonus": 500,
+    "first_purchase": 0,
+    "kb_contribution": 0,
+    "photo_upload": 0
+  }
+}
