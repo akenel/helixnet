@@ -11,9 +11,12 @@
 ### Felix — "The Master"
 - **Role:** Owner, decision maker
 - **Traits:** BLQ platinum standard, precise, careful driver
+- **Morning:** Yoga every morning — "my way for fresh ideas"
 - **Schedule:** Back office in mornings, errands midday, returns ~4:30pm
 - **Vehicle:** Parks on corner via Gasse Weg shortcut
-- **Quirk:** Always thinks he recognizes people
+- **Quirk:** Always thinks he recognizes people, leaves wallet at office
+- **Quality Filter:** Only BLQ genes/genres recommended by CRACKs he KNOWS
+- **Ventures:** Artemis, Vape Vending (with Vera), CBD supply chain
 
 ### Ralph — "The Manager"
 - **Role:** Manager, backorders, approvals
@@ -135,6 +138,20 @@
 - **Role:** Restaurant owner, around the corner
 - **Cuisine:** Argentinian, burgers, veggies
 - **Scenario:** Dinner reservations for Felix + Lees
+
+### Vera — "The Lab Queen"
+- **Handle:** @vera_lab
+- **Role:** Lab Operations / CBD Quality Control
+- **Location:** The Lab (Swiss Mountain region)
+- **Business:** Vape vending machine venture with Felix
+- **Farm:** Swiss Mountain Goat Farm
+  - CBD cultivation, spring → late October
+  - ~50,000 seeds per season
+  - Temp specs per seed variety
+- **Quality Gate:** Filters BS from BLQ genes
+- **Connection:** Felix's trusted supply chain
+- **Expertise:** Seed genetics, quality testing, vape formulation
+- **Philosophy:** "Many seeds are BS. Felix only wants BLQ genes recommended by CRACKs he knows."
 
 ---
 
