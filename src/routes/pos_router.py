@@ -310,6 +310,97 @@ async def get_product_categories(
     ]
 
 
+@router.post("/assist/vouch")
+async def vouch_for_customer(
+    customer_handle: str,
+    voucher_handle: str,
+    amount: float,
+    item_description: str,
+    fallback_contact: str = "pam",
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """
+    Forgot My Card — Trust network deferred payment.
+
+    BLQ Scene: Coolie forgot his card.
+    Sylvie: "I'll take care of it. You met Pam already.
+             We're all connected here."
+
+    Creates a vouch record:
+    - Who vouched (Sylvie)
+    - For whom (Coolie)
+    - Amount (the torch lighter)
+    - Fallback contact (Pam has details)
+
+    Payment settled later through the network.
+    """
+    from datetime import datetime, timezone
+
+    vouch_record = {
+        "vouch_id": f"VOUCH-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+        "customer": customer_handle,
+        "vouched_by": voucher_handle,
+        "amount_chf": amount,
+        "item": item_description,
+        "fallback_contact": fallback_contact,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "network_message": f"{voucher_handle} vouches for {customer_handle}. "
+                          f"Fallback: ask {fallback_contact} for contact details.",
+        "trust_chain": [voucher_handle, fallback_contact, "felix"]
+    }
+
+    logger.info(f"VOUCH: {voucher_handle} vouches for {customer_handle} - CHF {amount}")
+
+    return {
+        "success": True,
+        "vouch": vouch_record,
+        "message": f"I'll take care of it. You met {fallback_contact} already. We're all connected.",
+        "contact_script": f"If you have issues, call me on Telegram or ask {fallback_contact} — she has all my details."
+    }
+
+
+@router.get("/assist/decide")
+async def assist_decision(
+    product_a: str,
+    product_b: str,
+    customer_context: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Seal the Deal — Help customer decide between two options.
+
+    BLQ Scene: Coolie can't decide blue or black torch.
+    Sylvie steps in: "The blue. It matches your bag."
+
+    Staff uses this when customer is stuck.
+    Returns: recommendation + reason + upsell.
+    """
+    # Simple decision helper - in real life could use AI
+    recommendations = {
+        "blue": "Stands out, matches most bags, popular choice",
+        "black": "Classic, professional, never goes out of style",
+        "gold": "Premium feel, gift-worthy, collector's item",
+        "silver": "Sleek, modern, easy to spot in a drawer",
+    }
+
+    # Pick one (simple logic - could be smarter)
+    choice = product_a.lower()
+    reason = recommendations.get(choice, "Quality choice, can't go wrong")
+
+    if customer_context and "bag" in customer_context.lower():
+        reason = f"Matches the bag. {reason}"
+
+    return {
+        "recommendation": product_a,
+        "reason": reason,
+        "closer_script": f"The {product_a}. {reason}. I'll take care of it.",
+        "upsell": "Need a case for that?",
+        "seal_it": True
+    }
+
+
 @router.get("/search/picture")
 async def search_from_picture(
     description: str,
