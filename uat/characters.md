@@ -102,11 +102,23 @@
 - **Skill:** Can pull off ASAP orders
 - **Scenario:** Emergency stock orders, earns CRACK points for clutch delivery
 
-### Sylvken (Sylvie)
-- **Role:** Custom branding vendor
-- **Skills:** Logo engraving, special projects
+### Sylvken (Sylvie) — "The Designer"
+- **Role:** Custom branding vendor / Leather designer
+- **Skills:** Logo engraving, special projects, pattern making
 - **Lead Time:** 2-3 weeks
 - **Status:** "In-house secret weapon" with Mosey and Felix
+- **Side Project:** SNAKE SKINS leather business with Brother Mike
+- **Specialty:** Saddle bags, custom leather goods
+
+### Brother Mike — "The Craftsman"
+- **Handle:** @brother_mike
+- **Role:** Leather craftsman, Felix's brother
+- **Business:** SNAKE SKINS — Custom Leather
+- **Skills:** Leatherwork, cabinet making, craftsmanship
+- **Years:** Been working on this for years
+- **Partner:** Sylvie (design), Snake (muse)
+- **Quote:** "Could be the biggest thing for the club"
+- **Workshop:** Heat-controlled, Snake-friendly environment
 
 ### Andy
 - **Role:** Works at BlowUp with Aleena
@@ -150,3 +162,37 @@
 - Luxury hotel/spa up the hill
 - Trails behind where Gessler/Burt/Fabio camp
 - Funicular access (free ride if timed right at night)
+
+---
+
+## The Companions (Pets)
+
+### Snake — "The Whisperer"
+- **Owner:** Brother Mike
+- **Species:** [TBD — Mike's pet snake]
+- **Role:** Companion, muse, night whisperer
+- **Housing:** Heated cabinet (leather-wrapped, custom Mike build)
+- **Quirk:** Whispers in Mike's ear at night — they kinda talk
+- **Status:** YAGNI is his pet (You Ain't Gonna Need It)
+
+### Frankly — "The Parrot"
+- **Owner:** The Manager (Key Maker)
+- **Species:** Parrot
+- **Role:** Companion, listener, truth-teller
+- **Quirk:** Named Frankly — speaks frankly
+- **Philosophy:** "Who am I to judge? To each their own."
+
+### Tasha
+- **Owner:** Andy (BlowUp)
+- **Species:** Husky
+- **Age:** 15 years old, no grey hair
+- **Status:** Legendary good genes
+
+---
+
+## Philosophy
+
+> "Some like burgers, some like hot dogs.
+> Mike has Snake, Manager has Frankly.
+> To each their own.
+> No judgment. Be water."
