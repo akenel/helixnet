@@ -32,6 +32,10 @@ help:
 	@echo "  make logs        | Stream helix-platform logs"
 	@echo "  make links       | Show access URLs"
 	@echo ""
+	@echo " 🦁 LEO (Watch the Lion Work):"
+	@echo "  make leo         | Real-time git monitor (2s refresh)"
+	@echo "  make watch-leo   | Same as 'make leo'"
+	@echo ""
 	@echo " Backup & Restore:"
 	@echo "  make backup           | Full backup (postgres, keycloak, minio)"
 	@echo "  make backup-postgres  | Backup PostgreSQL only"
@@ -91,6 +95,44 @@ links:
 	@echo "MailHog:     https://mailhog.helix.local"
 	@echo "Flower:      https://flower.helix.local"
 	@echo ""
+
+# ===================================================================
+# LEO WATCH - Watch the Lion Work (Real-time Git Monitor)
+# "Addicted to Love" - Robert Palmer
+# ===================================================================
+
+.PHONY: leo watch-leo
+
+leo:
+	@echo ""
+	@echo "🦁 LEO IS WATCHING... (Ctrl+C to stop)"
+	@echo "═══════════════════════════════════════════════════════"
+	@while true; do \
+		clear; \
+		echo ""; \
+		echo "🦁 LEO THE LION — $(shell date '+%H:%M:%S')"; \
+		echo "═══════════════════════════════════════════════════════"; \
+		echo ""; \
+		echo "📍 BRANCH: $$(git branch --show-current)"; \
+		echo ""; \
+		echo "📊 STATUS:"; \
+		git status --short || echo "  (clean)"; \
+		echo ""; \
+		echo "📝 LAST 5 COMMITS:"; \
+		git log --oneline -5 --pretty=format:"  %C(yellow)%h%C(reset) %s" 2>/dev/null || echo "  (no commits)"; \
+		echo ""; \
+		echo ""; \
+		echo "📈 TODAY'S STATS:"; \
+		echo "  Commits today: $$(git log --oneline --since='midnight' | wc -l | tr -d ' ')"; \
+		echo "  Files changed: $$(git diff --stat HEAD~1 2>/dev/null | tail -1 || echo '0')"; \
+		echo ""; \
+		echo "═══════════════════════════════════════════════════════"; \
+		echo "  ❤️  Heartbeat: ALIVE | 🥏 Frisbee: READY"; \
+		echo "═══════════════════════════════════════════════════════"; \
+		sleep 2; \
+	done
+
+watch-leo: leo
 
 # ===================================================================
 # BACKUP & RESTORE OPERATIONS
