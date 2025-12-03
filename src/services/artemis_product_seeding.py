@@ -421,6 +421,133 @@ def get_artemis_product_seed_data() -> List[Dict]:
         },
 
         # ========================================
+        # LIGHTERS & TORCHES (George Clooney Edition)
+        # ========================================
+
+        {
+            "sku": "ZIPPO-CLASSIC-BLK",
+            "name": "Zippo Classic Black Matte",
+            "description_de": "Original Zippo Feuerzeug, schwarze Mattlackierung, Made in USA",
+            "description_en": "Original Zippo lighter, black matte finish, Made in USA",
+            "category": "lighters",
+            "subcategory": "zippo",
+            "brand": "Zippo",
+            "price_gross": Decimal("35.00"),
+            "vat_rate": VAT_STANDARD,
+            "cost": Decimal("18.00"),  # Margin: ~49%
+            "stock": 8,
+            "min_stock": 3,
+            "supplier": "Zippo Europe",
+            "age_restricted": False,
+            "requires_id": False,
+            "thc_limit": None,
+            "warranty_years": None,  # Lifetime
+            "active": True,
+            "tags": ["zippo", "premium", "lifetime-warranty", "bestseller"]
+        },
+        {
+            "sku": "ZIPPO-CLASSIC-BROWN",
+            "name": "Zippo Classic Brown/Black Two-Tone",
+            "description_de": "Original Zippo Feuerzeug, Braun-Schwarz Zwei-Ton Design, Sammleredition",
+            "description_en": "Original Zippo lighter, brown/black two-tone design, collector edition",
+            "category": "lighters",
+            "subcategory": "zippo",
+            "brand": "Zippo",
+            "price_gross": Decimal("45.00"),
+            "vat_rate": VAT_STANDARD,
+            "cost": Decimal("24.00"),  # Margin: ~47%
+            "stock": 4,
+            "min_stock": 2,
+            "supplier": "Zippo Europe",
+            "age_restricted": False,
+            "requires_id": False,
+            "thc_limit": None,
+            "warranty_years": None,  # Lifetime
+            "active": True,
+            "tags": ["zippo", "premium", "collector", "two-tone"]
+        },
+        {
+            "sku": "ZIPPO-FLINT-6PK",
+            "name": "Zippo Flints 6-Pack",
+            "description_de": "Original Zippo Feuersteine, 6 Stück, universell passend",
+            "description_en": "Original Zippo flints, 6-pack, universal fit",
+            "category": "lighters",
+            "subcategory": "accessories",
+            "brand": "Zippo",
+            "price_gross": Decimal("3.00"),
+            "vat_rate": VAT_STANDARD,
+            "cost": Decimal("1.20"),  # Margin: ~60%
+            "stock": 50,
+            "min_stock": 20,
+            "supplier": "Zippo Europe",
+            "age_restricted": False,
+            "requires_id": False,
+            "thc_limit": None,
+            "active": True,
+            "tags": ["zippo", "consumable", "flints", "essential"]
+        },
+        {
+            "sku": "ZIPPO-WICK-1PK",
+            "name": "Zippo Replacement Wick",
+            "description_de": "Original Zippo Ersatzdocht, 100mm Länge",
+            "description_en": "Original Zippo replacement wick, 100mm length",
+            "category": "lighters",
+            "subcategory": "accessories",
+            "brand": "Zippo",
+            "price_gross": Decimal("2.50"),
+            "vat_rate": VAT_STANDARD,
+            "cost": Decimal("0.90"),  # Margin: ~64%
+            "stock": 40,
+            "min_stock": 15,
+            "supplier": "Zippo Europe",
+            "age_restricted": False,
+            "requires_id": False,
+            "thc_limit": None,
+            "active": True,
+            "tags": ["zippo", "consumable", "wick", "essential"]
+        },
+        {
+            "sku": "ZIPPO-SERVICE-KIT",
+            "name": "Zippo Service Kit (Flints + Wick + Benzin 125ml)",
+            "description_de": "Komplettes Wartungsset: 6 Feuersteine, 1 Docht, 125ml Benzin",
+            "description_en": "Complete service kit: 6 flints, 1 wick, 125ml lighter fluid",
+            "category": "lighters",
+            "subcategory": "accessories",
+            "brand": "Zippo",
+            "price_gross": Decimal("12.00"),
+            "vat_rate": VAT_STANDARD,
+            "cost": Decimal("6.50"),  # Margin: ~46%
+            "stock": 15,
+            "min_stock": 5,
+            "supplier": "Zippo Europe",
+            "age_restricted": False,
+            "requires_id": False,
+            "thc_limit": None,
+            "active": True,
+            "tags": ["zippo", "maintenance", "kit", "value-pack"]
+        },
+        {
+            "sku": "ZIPPO-BENZIN-125",
+            "name": "Zippo Lighter Fluid 125ml",
+            "description_de": "Premium Zippo Benzin, 125ml, saubere Verbrennung",
+            "description_en": "Premium Zippo lighter fluid, 125ml, clean burn",
+            "category": "lighters",
+            "subcategory": "accessories",
+            "brand": "Zippo",
+            "price_gross": Decimal("6.00"),
+            "vat_rate": VAT_STANDARD,
+            "cost": Decimal("2.80"),  # Margin: ~53%
+            "stock": 30,
+            "min_stock": 10,
+            "supplier": "Zippo Europe",
+            "age_restricted": False,
+            "requires_id": False,
+            "thc_limit": None,
+            "active": True,
+            "tags": ["zippo", "consumable", "fuel", "essential"]
+        },
+
+        # ========================================
         # MISCELLANEOUS (5% of sales)
         # ========================================
 
