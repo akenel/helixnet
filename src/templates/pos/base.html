@@ -75,6 +75,58 @@
         .price-display-large {
             @apply text-5xl font-extrabold text-indigo-600;
         }
+
+        /* Status Footer - Minimal pulse check for Felix */
+        .helix-status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: linear-gradient(to right, #1e293b, #334155);
+            color: #94a3b8;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 9999;
+            border-top: 1px solid #475569;
+        }
+        .helix-status-bar .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse-glow 2s infinite;
+        }
+        .helix-status-bar .pulse.ok { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .helix-status-bar .pulse.warn { background: #eab308; box-shadow: 0 0 6px #eab308; }
+        .helix-status-bar .pulse.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .helix-status-bar .status-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .helix-status-bar .divider {
+            color: #475569;
+        }
+        .helix-status-bar a {
+            color: #94a3b8;
+            text-decoration: none;
+        }
+        .helix-status-bar a:hover {
+            color: #e2e8f0;
+        }
+        /* Adjust body padding to not overlap footer */
+        body {
+            padding-bottom: 32px;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -328,5 +380,73 @@
     </script>
 
     {% block extra_scripts %}{% endblock %}
+
+    <!-- Helix Status Bar - Minimal pulse check -->
+    <footer class="helix-status-bar" id="helix-status">
+        <div class="status-section">
+            <span class="pulse ok" id="status-pulse"></span>
+            <span id="status-text">System OK</span>
+            <span class="divider">│</span>
+            <span id="status-time">--:--</span>
+            <span class="divider">│</span>
+            <span id="status-version">v3.2.0</span>
+            <span style="color: #64748b;">({{ git_sha[:7] if git_sha else 'cf2794e' }})</span>
+        </div>
+        <div class="status-section">
+            <span id="status-screen">{% block page_name %}POS{% endblock %}</span>
+            <span class="divider">│</span>
+            <span id="status-user">--</span>
+            <span class="divider">│</span>
+            <a href="/health/dashboard" target="_blank" title="Full Health Dashboard">📊</a>
+        </div>
+    </footer>
+
+    <script>
+        // Status bar auto-update
+        (function() {
+            function updateStatusBar() {
+                // Update time
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                document.getElementById('status-time').textContent = timeStr;
+
+                // Update user from auth
+                const user = AuthHelper.getUserInfo();
+                if (user) {
+                    document.getElementById('status-user').textContent = user.username;
+                }
+            }
+
+            // Health check every 30 seconds
+            async function checkHealth() {
+                try {
+                    const response = await fetch('/health/healthz', { timeout: 5000 });
+                    const pulse = document.getElementById('status-pulse');
+                    const statusText = document.getElementById('status-text');
+
+                    if (response.ok) {
+                        pulse.className = 'pulse ok';
+                        statusText.textContent = 'System OK';
+                    } else {
+                        pulse.className = 'pulse warn';
+                        statusText.textContent = 'Degraded';
+                    }
+                } catch (e) {
+                    document.getElementById('status-pulse').className = 'pulse error';
+                    document.getElementById('status-text').textContent = 'Offline';
+                }
+            }
+
+            // Initial update
+            updateStatusBar();
+            checkHealth();
+
+            // Update time every second
+            setInterval(updateStatusBar, 1000);
+
+            // Health check every 30 seconds
+            setInterval(checkHealth, 30000);
+        })();
+    </script>
 </body>
 </html>
