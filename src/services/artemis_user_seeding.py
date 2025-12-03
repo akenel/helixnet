@@ -29,7 +29,7 @@ async def seed_artemis_staff(db: AsyncSession) -> None:
     staff_members = [
         {
             "id": UUID("00000000-0000-0000-0000-000000000001"),
-            "keycloak_id": UUID("10000000-0000-0000-0000-000000000001"),
+            "keycloak_id": UUID("63b279e7-9062-4065-831d-167fcdc48eab"),  # Real Keycloak sub
             "username": "pam",
             "email": "pam@artemis-luzern.ch",
             "first_name": "Pam",
@@ -45,7 +45,7 @@ async def seed_artemis_staff(db: AsyncSession) -> None:
         },
         {
             "id": UUID("00000000-0000-0000-0000-000000000002"),
-            "keycloak_id": UUID("10000000-0000-0000-0000-000000000002"),
+            "keycloak_id": UUID("bbe1529e-fb43-4a38-a949-77755d919226"),  # Real Keycloak sub
             "username": "ralph",
             "email": "ralph@artemis-luzern.ch",
             "first_name": "Ralph",
@@ -77,7 +77,7 @@ async def seed_artemis_staff(db: AsyncSession) -> None:
         },
         {
             "id": UUID("00000000-0000-0000-0000-000000000004"),
-            "keycloak_id": UUID("10000000-0000-0000-0000-000000000004"),
+            "keycloak_id": UUID("729aec8c-ab47-44d2-9467-25e4d897f036"),  # Real Keycloak sub
             "username": "felix",
             "email": "felix@artemis-luzern.ch",
             "first_name": "Felix",

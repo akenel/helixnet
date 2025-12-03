@@ -1,0 +1,1 @@
+- add and make full pro level SAP KPMG ACE CAse study of HelixNet the OSS flunky soltion and Why or some Way of Working this into our daily busines can 't go for another 5 years before hey get the AI laude to fix everything i dont want to do too much more python torcj and Jupter tutorials

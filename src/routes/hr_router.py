@@ -53,14 +53,17 @@ async def get_employee_from_token(
 ) -> Optional[EmployeeModel]:
     """
     Find employee record linked to the authenticated user.
-    Uses Keycloak 'sub' (user UUID) to match employee.user_id.
+    Lookup: Keycloak sub → users.keycloak_id → users.id → employees.user_id
     """
-    user_id = token_payload.get("sub")
-    if not user_id:
+    keycloak_sub = token_payload.get("sub")
+    if not keycloak_sub:
         return None
 
+    # Join employees → users via keycloak_id match
     result = await db.execute(
-        select(EmployeeModel).where(EmployeeModel.user_id == UUID(user_id))
+        select(EmployeeModel)
+        .join(UserModel, EmployeeModel.user_id == UserModel.id)
+        .where(UserModel.keycloak_id == UUID(keycloak_sub))
     )
     return result.scalar_one_or_none()
 
@@ -123,12 +126,12 @@ async def get_my_time_entries(
             {
                 "id": str(e.id),
                 "entry_date": e.entry_date.isoformat(),
-                "entry_type": e.entry_type.value,
+                "entry_type": e.entry_type,
                 "hours": float(e.hours),
                 "start_time": e.start_time,
                 "end_time": e.end_time,
                 "break_minutes": e.break_minutes,
-                "status": e.status.value,
+                "status": e.status,
                 "description": e.description,
                 "submitted_at": e.submitted_at.isoformat() if e.submitted_at else None,
                 "approved_at": e.approved_at.isoformat() if e.approved_at else None,
@@ -170,7 +173,7 @@ async def create_time_entry(
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=400,
-            detail=f"Entry already exists for {entry.entry_date} with type {entry.entry_type.value}"
+            detail=f"Entry already exists for {entry.entry_date} with type {entry.entry_type}"
         )
 
     # Create entry
@@ -183,7 +186,7 @@ async def create_time_entry(
         end_time=entry.end_time,
         break_minutes=entry.break_minutes,
         description=entry.description,
-        status=EntryStatus.DRAFT,
+        status="draft",
         kb_contribution_id=entry.kb_contribution_id,
     )
 
@@ -196,9 +199,9 @@ async def create_time_entry(
     return {
         "id": str(new_entry.id),
         "entry_date": new_entry.entry_date.isoformat(),
-        "entry_type": new_entry.entry_type.value,
+        "entry_type": new_entry.entry_type,
         "hours": float(new_entry.hours),
-        "status": new_entry.status.value,
+        "status": new_entry.status,
         "message": f"Entry created for {entry.entry_date}",
     }
 
@@ -232,10 +235,10 @@ async def update_time_entry(
         raise HTTPException(status_code=403, detail="Cannot edit another employee's entry")
 
     # Only draft entries can be edited
-    if entry.status != EntryStatus.DRAFT:
+    if entry.status != "draft":
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot edit entry with status '{entry.status.value}'. Only draft entries can be modified."
+            detail=f"Cannot edit entry with status '{entry.status}'. Only draft entries can be modified."
         )
 
     # Apply updates
@@ -249,7 +252,7 @@ async def update_time_entry(
     return {
         "id": str(entry.id),
         "entry_date": entry.entry_date.isoformat(),
-        "status": entry.status.value,
+        "status": entry.status,
         "message": "Entry updated successfully",
     }
 
@@ -279,10 +282,10 @@ async def delete_time_entry(
     if entry.employee_id != employee.id:
         raise HTTPException(status_code=403, detail="Cannot delete another employee's entry")
 
-    if entry.status != EntryStatus.DRAFT:
+    if entry.status != "draft":
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot delete entry with status '{entry.status.value}'"
+            detail=f"Cannot delete entry with status '{entry.status}'"
         )
 
     await db.delete(entry)
@@ -322,11 +325,11 @@ async def submit_time_entries(
             errors.append(f"{entry_id}: not your entry")
             continue
 
-        if entry.status != EntryStatus.DRAFT:
+        if entry.status != "draft":
             errors.append(f"{entry_id}: not in draft status")
             continue
 
-        entry.status = EntryStatus.SUBMITTED
+        entry.status = "submitted"
         entry.submitted_at = datetime.now(timezone.utc)
         submitted_count += 1
 
@@ -359,7 +362,7 @@ async def get_pending_approvals(
     query = (
         select(TimeEntryModel, EmployeeModel)
         .join(EmployeeModel, TimeEntryModel.employee_id == EmployeeModel.id)
-        .where(TimeEntryModel.status == EntryStatus.SUBMITTED)
+        .where(TimeEntryModel.status == "submitted")
     )
 
     if employee_id:
@@ -379,7 +382,7 @@ async def get_pending_approvals(
                 "employee_name": f"{emp.first_name} {emp.last_name}",
                 "employee_number": emp.employee_number,
                 "entry_date": entry.entry_date.isoformat(),
-                "entry_type": entry.entry_type.value,
+                "entry_type": entry.entry_type,
                 "hours": float(entry.hours),
                 "start_time": entry.start_time,
                 "end_time": entry.end_time,
@@ -401,7 +404,13 @@ async def approve_time_entries(
     Approve or reject submitted time entries.
     Manager/Admin only.
     """
-    approver_id = UUID(current_user.get("sub"))
+    # Lookup local user ID from keycloak sub
+    keycloak_sub = UUID(current_user.get("sub"))
+    user_result = await db.execute(
+        select(UserModel.id).where(UserModel.keycloak_id == keycloak_sub)
+    )
+    approver_id = user_result.scalar_one_or_none()
+
     approved_count = 0
     rejected_count = 0
     errors = []
@@ -416,18 +425,18 @@ async def approve_time_entries(
             errors.append(f"{entry_id}: not found")
             continue
 
-        if entry.status != EntryStatus.SUBMITTED:
+        if entry.status != "submitted":
             errors.append(f"{entry_id}: not in submitted status")
             continue
 
         if approval.action == "approve":
-            entry.status = EntryStatus.APPROVED
+            entry.status = "approved"
             entry.approved_by_id = approver_id
             entry.approved_at = datetime.now(timezone.utc)
             entry.rejection_reason = None
             approved_count += 1
         else:  # reject
-            entry.status = EntryStatus.REJECTED
+            entry.status = "rejected"
             entry.rejection_reason = approval.rejection_reason
             rejected_count += 1
 
@@ -478,9 +487,9 @@ async def get_weekly_timesheet(
     entries = result.scalars().all()
 
     # Calculate totals
-    total_hours = sum(e.hours for e in entries if e.status != EntryStatus.REJECTED)
-    pending_count = sum(1 for e in entries if e.status == EntryStatus.SUBMITTED)
-    draft_count = sum(1 for e in entries if e.status == EntryStatus.DRAFT)
+    total_hours = sum(e.hours for e in entries if e.status != "rejected")
+    pending_count = sum(1 for e in entries if e.status == "submitted")
+    draft_count = sum(1 for e in entries if e.status == "draft")
 
     # Target hours for the week (based on contract)
     target_hours = employee.hours_per_week
@@ -495,9 +504,9 @@ async def get_weekly_timesheet(
                 "id": str(e.id),
                 "day": e.entry_date.strftime("%A"),
                 "entry_date": e.entry_date.isoformat(),
-                "entry_type": e.entry_type.value,
+                "entry_type": e.entry_type,
                 "hours": float(e.hours),
-                "status": e.status.value,
+                "status": e.status,
                 "description": e.description,
             }
             for e in entries
@@ -538,8 +547,8 @@ async def get_my_hr_profile(
         "first_name": employee.first_name,
         "last_name": employee.last_name,
         "email": employee.email,
-        "status": employee.status.value,
-        "contract_type": employee.contract_type.value,
+        "status": employee.status,
+        "contract_type": employee.contract_type,
         "hours_per_week": float(employee.hours_per_week),
         "hourly_rate": float(employee.hourly_rate),
         "start_date": employee.start_date.isoformat(),
@@ -591,16 +600,16 @@ async def get_my_month_stats(
     # Calculate by status
     by_status = {s.value: [] for s in EntryStatus}
     for e in entries:
-        by_status[e.status.value].append(e)
+        by_status[e.status].append(e)
 
     # Calculate by type
     by_type = {}
     for e in entries:
-        if e.status != EntryStatus.REJECTED:
-            t = e.entry_type.value
+        if e.status != "rejected":
+            t = e.entry_type
             by_type[t] = by_type.get(t, Decimal("0")) + e.hours
 
-    total_hours = sum(e.hours for e in entries if e.status not in [EntryStatus.REJECTED, EntryStatus.DRAFT])
+    total_hours = sum(e.hours for e in entries if e.status not in ["rejected", "draft"])
     target_hours = employee.hours_per_week * Decimal("4.33")  # Standard Swiss month
 
     return {
@@ -629,6 +638,14 @@ async def get_my_month_stats(
 # PAYROLL - Manager/Admin Only
 # ================================================================
 
+async def get_local_user_id(db: AsyncSession, keycloak_sub: str) -> Optional[UUID]:
+    """Lookup local user ID from Keycloak sub."""
+    result = await db.execute(
+        select(UserModel.id).where(UserModel.keycloak_id == UUID(keycloak_sub))
+    )
+    return result.scalar_one_or_none()
+
+
 @router.post("/payroll/run")
 async def create_payroll_run(
     year: int = Query(..., ge=2024, le=2100, description="Payroll year"),
@@ -645,13 +662,13 @@ async def create_payroll_run(
 
     try:
         calculator = PayrollCalculator(db)
-        creator_id = UUID(current_user.get("sub"))
+        creator_id = await get_local_user_id(db, current_user.get("sub"))
         payroll_run = await calculator.create_payroll_run(year, month, creator_id, notes)
 
         return {
             "id": str(payroll_run.id),
             "period": payroll_run.period_name,
-            "status": payroll_run.status.value,
+            "status": payroll_run.status,
             "message": f"Payroll run created for {payroll_run.period_name}",
         }
     except ValueError as e:
@@ -693,13 +710,13 @@ async def approve_payroll(
 
     try:
         calculator = PayrollCalculator(db)
-        approver_id = UUID(current_user.get("sub"))
+        approver_id = await get_local_user_id(db, current_user.get("sub"))
         payroll_run = await calculator.approve_payroll_run(payroll_run_id, approver_id)
 
         return {
             "id": str(payroll_run.id),
             "period": payroll_run.period_name,
-            "status": payroll_run.status.value,
+            "status": payroll_run.status,
             "approved_at": payroll_run.approved_at.isoformat(),
             "message": f"Payroll {payroll_run.period_name} approved",
         }
@@ -726,7 +743,7 @@ async def mark_payroll_paid(
         return {
             "id": str(payroll_run.id),
             "period": payroll_run.period_name,
-            "status": payroll_run.status.value,
+            "status": payroll_run.status,
             "paid_at": payroll_run.paid_at.isoformat(),
             "message": f"Payroll {payroll_run.period_name} marked as paid",
         }
@@ -788,7 +805,7 @@ async def list_payroll_runs(
                 "year": r.year,
                 "month": r.month,
                 "period": r.period_name,
-                "status": r.status.value,
+                "status": r.status,
                 "total_employees": r.total_employees,
                 "total_gross": r.total_gross,
                 "total_net": r.total_net,

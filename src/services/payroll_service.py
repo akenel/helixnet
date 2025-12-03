@@ -113,7 +113,7 @@ class PayrollCalculator:
                 and_(
                     PayrollRunModel.year == year,
                     PayrollRunModel.month == month,
-                    PayrollRunModel.status != PayrollRunStatus.CLOSED
+                    PayrollRunModel.status != "closed"
                 )
             )
         )
@@ -128,7 +128,7 @@ class PayrollCalculator:
             year=year,
             month=month,
             period_name=f"{months_de[month]} {year}",
-            status=PayrollRunStatus.DRAFT,
+            status="draft",
             created_by_id=created_by_id,
             notes=notes,
         )
@@ -159,21 +159,17 @@ class PayrollCalculator:
         if not payroll_run:
             raise ValueError("Payroll run not found")
 
-        if payroll_run.status not in [PayrollRunStatus.DRAFT, PayrollRunStatus.PENDING_REVIEW]:
-            raise ValueError(f"Cannot calculate payroll with status {payroll_run.status.value}")
+        if payroll_run.status not in ["draft", "pending_review"]:
+            raise ValueError(f"Cannot calculate payroll with status {payroll_run.status}")
 
         # Update status
-        payroll_run.status = PayrollRunStatus.CALCULATING
+        payroll_run.status = "calculating"
         await self.db.commit()
 
         # Get active employees
         result = await self.db.execute(
             select(EmployeeModel).where(
-                EmployeeModel.status.in_([
-                    EmployeeStatus.PROBATION,
-                    EmployeeStatus.ACTIVE,
-                    EmployeeStatus.NOTICE
-                ])
+                EmployeeModel.status.in_(["probation", "active", "notice"])
             )
         )
         employees = result.scalars().all()
@@ -207,7 +203,7 @@ class PayrollCalculator:
         payroll_run.total_gross = str(total_gross)
         payroll_run.total_net = str(total_net)
         payroll_run.total_employer_cost = str(total_employer_cost)
-        payroll_run.status = PayrollRunStatus.PENDING_REVIEW
+        payroll_run.status = "pending_review"
         payroll_run.calculated_at = datetime.now(timezone.utc)
 
         await self.db.commit()
@@ -249,7 +245,7 @@ class PayrollCalculator:
                     TimeEntryModel.employee_id == employee.id,
                     TimeEntryModel.entry_date >= month_start,
                     TimeEntryModel.entry_date < month_end,
-                    TimeEntryModel.status == EntryStatus.APPROVED
+                    TimeEntryModel.status == "approved"
                 )
             )
         )
@@ -362,7 +358,7 @@ class PayrollCalculator:
 
         # Mark time entries as paid
         for entry in entries:
-            entry.status = EntryStatus.PAID
+            entry.status = "paid"
             entry.payslip_id = payslip.id
 
         await self.db.commit()
@@ -386,7 +382,7 @@ class PayrollCalculator:
         }
 
         for entry in entries:
-            entry_type = entry.entry_type.value
+            entry_type = entry.entry_type
             if entry_type in hours:
                 hours[entry_type] += entry.hours
             else:
@@ -517,10 +513,10 @@ class PayrollCalculator:
         if not payroll_run:
             raise ValueError("Payroll run not found")
 
-        if payroll_run.status != PayrollRunStatus.PENDING_REVIEW:
-            raise ValueError(f"Cannot approve payroll with status {payroll_run.status.value}")
+        if payroll_run.status != "pending_review":
+            raise ValueError(f"Cannot approve payroll with status {payroll_run.status}")
 
-        payroll_run.status = PayrollRunStatus.APPROVED
+        payroll_run.status = "approved"
         payroll_run.approved_by_id = approved_by_id
         payroll_run.approved_at = datetime.now(timezone.utc)
 
@@ -545,10 +541,10 @@ class PayrollCalculator:
         if not payroll_run:
             raise ValueError("Payroll run not found")
 
-        if payroll_run.status != PayrollRunStatus.APPROVED:
-            raise ValueError(f"Cannot mark as paid with status {payroll_run.status.value}")
+        if payroll_run.status != "approved":
+            raise ValueError(f"Cannot mark as paid with status {payroll_run.status}")
 
-        payroll_run.status = PayrollRunStatus.PAID
+        payroll_run.status = "paid"
         payroll_run.paid_at = datetime.now(timezone.utc)
 
         await self.db.commit()
@@ -579,7 +575,7 @@ class PayrollCalculator:
             "payroll_run": {
                 "id": str(payroll_run.id),
                 "period": payroll_run.period_name,
-                "status": payroll_run.status.value,
+                "status": payroll_run.status,
                 "total_employees": payroll_run.total_employees,
                 "total_gross": payroll_run.total_gross,
                 "total_net": payroll_run.total_net,

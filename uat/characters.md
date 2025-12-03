@@ -77,6 +77,21 @@
 - **Type:** "Fake friend" from Littau
 - **Location:** Camps behind Gutsch Castle trails
 - **Role:** Part of Gessler's crew
+- **Status:** Owes KB to Felix (grinder incident)
+
+### Dirk — "Deep Dive" / "Dig Deeper" / "Dirty DD"
+- **Type:** Dumpster diver, recycling entrepreneur
+- **Schedule:** 4am alley runs — "all you hear is Dig Deeper"
+- **Skills:** Deep dive excavation, treasure hunting, recycling logistics
+- **Special Talent:** Secret stash can construction
+  - Uses 2 empty dog food cans
+  - Gessler's Swiss pocket knife collection required
+  - Creates hidden compartments (great for border crossing)
+  - Method is TOP SECRET — Gessler won't share without free coffee
+- **Associates:** Gessler (knows the method), Burt, Fabio
+- **Dream:** Recycling empire
+- **Sound:** *clang clang* at 4am in the back alleys
+- **Motto:** "One man's trash is another man's stash"
 
 ---
 
