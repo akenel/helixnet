@@ -310,6 +310,86 @@ async def get_product_categories(
     ]
 
 
+@router.get("/search/picture")
+async def search_from_picture(
+    description: str,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Product lookup from picture/description.
+
+    BLQ Scene: Joey shows Ralph a picture on his phone.
+    "Ever seen these before?" - Jack Herer papers.
+
+    Ralph types what he sees: "jack herer rolling papers gold"
+    System searches products + returns suggestions.
+
+    No image AI needed - just good description search.
+    YAGNI: Phone works. Type what you see.
+    """
+    from sqlalchemy import text
+
+    if not description or len(description) < 2:
+        return {
+            "success": False,
+            "message": "Describe what you see in the picture",
+            "products": [],
+            "suggestions": []
+        }
+
+    # Search products by description
+    query = text("""
+        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url, relevance
+        FROM search_products(:search_term, NULL, 20)
+    """)
+
+    result = await db.execute(query, {"search_term": description})
+    rows = result.fetchall()
+
+    products = [
+        {
+            "id": str(row.id),
+            "sku": row.sku,
+            "name": row.name,
+            "category": row.category,
+            "price": float(row.price) if row.price else 0,
+            "in_stock": (row.stock_quantity or 0) > 0,
+            "relevance": float(row.relevance) if row.relevance else 0
+        }
+        for row in rows
+    ]
+
+    # Build helpful response
+    if products:
+        top = products[0]
+        return {
+            "success": True,
+            "message": f"Found {len(products)} matches. Best: {top['name']}",
+            "products": products,
+            "suggestions": [
+                "Check stock in back room",
+                "Ask if customer wants to order",
+                "Note for Felix: sourcing request"
+            ] if not top['in_stock'] else [
+                f"In stock! {top['name']}",
+                "Show customer the product",
+                "Add to transaction"
+            ]
+        }
+
+    return {
+        "success": False,
+        "message": "No matches found. Try different words from the picture.",
+        "products": [],
+        "suggestions": [
+            "Create sourcing request for Felix",
+            "Take photo for KB",
+            "Ask customer for more details",
+            "Check supplier catalogs"
+        ]
+    }
+
+
 @router.get("/search/stats")
 async def get_product_stats(
     db: AsyncSession = Depends(get_db_session),
