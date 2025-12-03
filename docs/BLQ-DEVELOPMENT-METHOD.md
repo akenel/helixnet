@@ -217,9 +217,6 @@ Each location should be documented:
 
 ## Next Scene
 - [What this sets up]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ---
@@ -267,24 +264,24 @@ Six months later:
 ## Anti-Patterns to Avoid
 
 ### 1. Scope Creep via Character
-❌ "George also mentions he needs a website built"
-✅ Stay in the scene's domain. Note it for a future scene.
+- "George also mentions he needs a website built"
+- Stay in the scene's domain. Note it for a future scene.
 
 ### 2. Character Bloat
-❌ 15 characters in one scene, losing focus
-✅ Max 3-4 active characters per scene
+- 15 characters in one scene, losing focus
+- Max 3-4 active characters per scene
 
 ### 3. Skipping Commits
-❌ "I'll commit after I finish all these features"
-✅ Commit after EVERY scene resolution
+- "I'll commit after I finish all these features"
+- Commit after EVERY scene resolution
 
 ### 4. Forgetting the Gap List
-❌ Build what's asked, miss what's revealed
-✅ Track every "wait, we don't have that" moment
+- Build what's asked, miss what's revealed
+- Track every "wait, we don't have that" moment
 
 ### 5. Over-Engineering for Future Scenes
-❌ "George might want X later, let's build it now"
-✅ YAGNI - only what THIS scene needs
+- "George might want X later, let's build it now"
+- YAGNI - only what THIS scene needs
 
 ---
 
@@ -319,31 +316,6 @@ Six months later:
 - Pre-commit: Validate scene card exists for changes
 - Post-commit: Update scene backlog
 - CI/CD: Run E2E tests named after scenes
-
-### Future: Scene Replay
-Convert narrative scenes to automated tests:
-```python
-def test_george_zippo_flint_jam():
-    """
-    SCENE: George Clooney walks in with stuck Zippo
-    TIME PRESSURE: Train in 30 minutes
-    """
-    # Setup
-    george = create_customer(handle="Coolie", tier="BRONZE")
-
-    # Conflict
-    results = product_search("zippo flint")
-    assert len(results) > 0, "Pam must find flints!"
-
-    # Resolution
-    transaction = create_sale(
-        customer=george,
-        items=["ZIPPO-FLINT-6PK"],
-        payment="TWINT"
-    )
-    assert transaction.status == "COMPLETED"
-    assert george.credits_balance > 40  # Welcome bonus + purchase
-```
 
 ---
 

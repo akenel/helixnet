@@ -24,6 +24,7 @@ from src.db.models import (
     LineItemModel,
     UserModel,
     StoreSettingsModel,
+    CustomerModel,
     TransactionStatus,
     PaymentMethod,
 )
@@ -44,6 +45,7 @@ from src.schemas.pos_schema import (
     StoreSettingsRead,
     StoreSettingsUpdate,
 )
+from src.schemas.customer_schema import CustomerQRScanResponse
 # Real Keycloak authentication with RBAC
 from src.core.keycloak_auth import (
     require_roles,
@@ -327,6 +329,102 @@ async def get_product_stats(
         }
 
     return {"total": 0, "categories": 0, "with_barcode": 0, "in_stock": 0, "avg_price": 0}
+
+
+# ================================================================
+# CUSTOMER QR SCAN (BLQ: Rapid Checkout)
+# ================================================================
+
+@router.get("/customer/scan", response_model=CustomerQRScanResponse)
+async def scan_customer_qr(
+    code: str,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Rapid customer lookup via QR code scan.
+
+    BLQ Scene: Coolie shows QR on phone → Pam scans → Instant recognition
+
+    The code format is: HLX-XXXXXXXX (8 hex chars after prefix)
+
+    Returns customer info for checkout:
+    - Handle, tier, discount
+    - Credits balance
+    - VIP status
+
+    No auth required - scan is public (code is the secret).
+    """
+    if not code:
+        return CustomerQRScanResponse(
+            success=False,
+            message="No QR code provided"
+        )
+
+    # Look up by QR code
+    result = await db.execute(
+        select(CustomerModel).where(CustomerModel.qr_code == code)
+    )
+    customer = result.scalar_one_or_none()
+
+    if not customer:
+        return CustomerQRScanResponse(
+            success=False,
+            message=f"Customer not found for code: {code}"
+        )
+
+    if not customer.is_active:
+        return CustomerQRScanResponse(
+            success=False,
+            message="Customer account is inactive"
+        )
+
+    logger.info(f"QR scan: Customer '{customer.handle}' recognized via {code}")
+
+    return CustomerQRScanResponse(
+        success=True,
+        message=f"Welcome back, {customer.handle}!",
+        customer_id=customer.id,
+        handle=customer.handle,
+        qr_code=customer.qr_code,
+        loyalty_tier=customer.loyalty_tier.value,
+        tier_discount_percent=customer.tier_discount_percent,
+        credits_balance=customer.credits_balance,
+        crack_level=customer.crack_level.value,
+        is_vip=customer.is_vip,
+    )
+
+
+@router.post("/customer/{customer_id}/generate-qr")
+async def generate_customer_qr(
+    customer_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """
+    Generate a new QR code for a customer (manager/admin only).
+
+    Returns the new QR code value that should be encoded in a QR image.
+    """
+    result = await db.execute(
+        select(CustomerModel).where(CustomerModel.id == customer_id)
+    )
+    customer = result.scalar_one_or_none()
+
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Generate new QR code
+    new_code = customer.generate_qr_code()
+    await db.commit()
+
+    logger.info(f"QR code generated for '{customer.handle}': {new_code}")
+
+    return {
+        "customer_id": str(customer.id),
+        "handle": customer.handle,
+        "qr_code": new_code,
+        "message": f"QR code generated: {new_code}"
+    }
 
 
 # ================================================================

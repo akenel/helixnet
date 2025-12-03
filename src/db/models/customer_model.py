@@ -88,6 +88,17 @@ class CustomerModel(Base):
     )
 
     # ================================================================
+    # QR CODE - Rapid Checkout (BLQ Scene: Coolie shows QR, Pam scans)
+    # ================================================================
+    qr_code: Mapped[str | None] = mapped_column(
+        String(32),
+        unique=True,
+        index=True,
+        nullable=True,
+        comment="Unique QR code for rapid customer lookup (HLX-XXXXXXXX)"
+    )
+
+    # ================================================================
     # CONTACT - Multiple channels, one preference
     # ================================================================
     email: Mapped[str | None] = mapped_column(
@@ -394,6 +405,13 @@ class CustomerModel(Base):
             self.crack_level = CrackLevel.SPROUT
         else:
             self.crack_level = CrackLevel.SEEDLING
+
+    def generate_qr_code(self) -> str:
+        """Generate unique QR code for rapid checkout: HLX-XXXXXXXX"""
+        import secrets
+        code = f"HLX-{secrets.token_hex(4).upper()}"
+        self.qr_code = code
+        return code
 
     def __repr__(self):
         return f"<CustomerModel(handle='{self.handle}', tier={self.loyalty_tier.value}, crack={self.crack_level.value})>"

@@ -122,6 +122,7 @@ class CustomerBase(BaseModel):
     # Identity
     handle: str = Field(..., max_length=50, description="Public handle (Poppie)")
     real_name: Optional[str] = Field(None, max_length=100, description="Private (Larry)")
+    qr_code: Optional[str] = Field(None, max_length=32, description="HLX-XXXXXXXX for rapid scan")
 
     # Contact
     email: Optional[str] = Field(None, max_length=255)
@@ -443,6 +444,40 @@ class CustomerCheckoutView(BaseModel):
     # Upsell suggestions
     suggested_products: List[str] = Field(default_factory=list)
     suggested_message: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# QR SCAN SCHEMAS (BLQ: Rapid Checkout)
+# ================================================================
+
+class CustomerQRScanResponse(BaseModel):
+    """
+    Response when Pam scans a customer's QR code.
+
+    BLQ Scene: Coolie shows QR → Pam scans → Instant recognition
+    """
+    success: bool = Field(..., description="Was customer found?")
+    message: str = Field(..., description="Welcome back, Coolie!")
+
+    # Customer quick view (if found)
+    customer_id: Optional[UUID] = None
+    handle: Optional[str] = None
+    qr_code: Optional[str] = None
+
+    # Tier & Discount (what matters at checkout)
+    loyalty_tier: Optional[LoyaltyTier] = None
+    tier_discount_percent: Optional[int] = None
+
+    # Credits
+    credits_balance: Optional[int] = None
+
+    # CRACK level
+    crack_level: Optional[CrackLevel] = None
+
+    # VIP flag
+    is_vip: Optional[bool] = None
 
     model_config = ConfigDict(from_attributes=True)
 
