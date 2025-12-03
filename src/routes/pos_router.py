@@ -25,6 +25,8 @@ from src.db.models import (
     UserModel,
     StoreSettingsModel,
     CustomerModel,
+    ShiftSessionModel,
+    SessionStatus,
     TransactionStatus,
     PaymentMethod,
 )
@@ -424,6 +426,258 @@ async def generate_customer_qr(
         "handle": customer.handle,
         "qr_code": new_code,
         "message": f"QR code generated: {new_code}"
+    }
+
+
+# ================================================================
+# SHIFT SESSION WIZARD (BLQ: Pam forgot logout, Ralph needs POS)
+# ================================================================
+
+@router.post("/shift/start")
+async def start_shift_session(
+    request: Request,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """
+    Start a new POS shift session.
+
+    BLQ Scene: Ralph arrives, logs in, starts his shift.
+
+    Creates a session record for:
+    - Tracking who's on the register
+    - Cash drawer accountability
+    - Shift handoff chain
+    """
+    user_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
+    username = current_user.get('preferred_username', current_user.get('name', 'Unknown'))
+
+    # Check for existing active session for this user
+    existing = await db.execute(
+        select(ShiftSessionModel).where(
+            ShiftSessionModel.user_id == user_id,
+            ShiftSessionModel.status == SessionStatus.ACTIVE
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail=f"User {username} already has an active session. End it first."
+        )
+
+    # Create new session
+    session = ShiftSessionModel(
+        user_id=user_id,
+        username=username,
+        store_number=1,  # Default store
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent", "")[:500],
+    )
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+    logger.info(f"Shift started: {username} at store {session.store_number}")
+
+    return {
+        "session_id": str(session.id),
+        "username": session.username,
+        "store_number": session.store_number,
+        "started_at": session.started_at.isoformat(),
+        "message": f"Shift started for {username}"
+    }
+
+
+@router.post("/shift/end")
+async def end_shift_session(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """
+    End current user's shift session (normal logout).
+    """
+    user_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
+    username = current_user.get('preferred_username', 'Unknown')
+
+    result = await db.execute(
+        select(ShiftSessionModel).where(
+            ShiftSessionModel.user_id == user_id,
+            ShiftSessionModel.status == SessionStatus.ACTIVE
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="No active session found")
+
+    session.end_session(ended_by=user_id, reason="Normal logout")
+    await db.commit()
+
+    logger.info(f"Shift ended: {username}")
+
+    return {
+        "session_id": str(session.id),
+        "username": session.username,
+        "ended_at": session.ended_at.isoformat(),
+        "transaction_count": session.transaction_count,
+        "message": f"Shift ended for {username}"
+    }
+
+
+@router.get("/shift/active")
+async def get_active_sessions(
+    store_number: int = 1,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """
+    Get all active sessions at a store.
+
+    BLQ Scene: Ralph arrives, sees Pam is still logged in.
+    """
+    result = await db.execute(
+        select(ShiftSessionModel).where(
+            ShiftSessionModel.store_number == store_number,
+            ShiftSessionModel.status == SessionStatus.ACTIVE
+        ).order_by(ShiftSessionModel.started_at.desc())
+    )
+    sessions = result.scalars().all()
+
+    return {
+        "store_number": store_number,
+        "active_sessions": [
+            {
+                "session_id": str(s.id),
+                "username": s.username,
+                "started_at": s.started_at.isoformat(),
+                "last_activity": s.last_activity.isoformat(),
+                "transaction_count": s.transaction_count,
+                "drawer_opened": s.drawer_opened,
+            }
+            for s in sessions
+        ],
+        "count": len(sessions)
+    }
+
+
+@router.post("/shift/force-end/{session_id}")
+async def force_end_session(
+    session_id: UUID,
+    reason: str = "Manager override",
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """
+    Force end another user's session (manager/admin only).
+
+    BLQ Scene: Felix on the road, gets call from Ralph.
+    Felix force-ends Pam's session so Ralph can start his shift.
+    """
+    manager_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
+    manager_name = current_user.get('preferred_username', 'Manager')
+
+    result = await db.execute(
+        select(ShiftSessionModel).where(ShiftSessionModel.id == session_id)
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if session.status != SessionStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail="Session is not active")
+
+    session.force_end(manager_id=manager_id, reason=reason)
+    await db.commit()
+
+    logger.warning(f"Session FORCE ENDED: {session.username} by {manager_name} - {reason}")
+
+    return {
+        "session_id": str(session.id),
+        "username": session.username,
+        "ended_by": manager_name,
+        "reason": reason,
+        "message": f"Session force-ended for {session.username}"
+    }
+
+
+@router.post("/shift/handoff/{session_id}")
+async def handoff_shift(
+    session_id: UUID,
+    next_user: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """
+    Handoff shift to next user (manager/admin only).
+
+    BLQ Scene: Shift change - Pam → Ralph with manager approval.
+    Creates audit trail of who handed off to whom.
+    """
+    manager_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
+    manager_name = current_user.get('preferred_username', 'Manager')
+
+    result = await db.execute(
+        select(ShiftSessionModel).where(ShiftSessionModel.id == session_id)
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if session.status != SessionStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail="Session is not active")
+
+    old_user = session.username
+    session.handoff_to(next_user=next_user, manager_id=manager_id)
+    await db.commit()
+
+    logger.info(f"Shift HANDOFF: {old_user} → {next_user} (approved by {manager_name})")
+
+    return {
+        "session_id": str(session.id),
+        "from_user": old_user,
+        "to_user": next_user,
+        "approved_by": manager_name,
+        "message": f"Shift handed off from {old_user} to {next_user}"
+    }
+
+
+@router.get("/shift/my-session")
+async def get_my_session(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """
+    Get current user's active session (if any).
+
+    Used by UI to show session status in header.
+    """
+    user_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
+
+    result = await db.execute(
+        select(ShiftSessionModel).where(
+            ShiftSessionModel.user_id == user_id,
+            ShiftSessionModel.status == SessionStatus.ACTIVE
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session:
+        return {"active": False, "message": "No active session"}
+
+    # Update activity
+    session.update_activity()
+    await db.commit()
+
+    return {
+        "active": True,
+        "session_id": str(session.id),
+        "username": session.username,
+        "store_number": session.store_number,
+        "started_at": session.started_at.isoformat(),
+        "transaction_count": session.transaction_count,
+        "drawer_opened": session.drawer_opened,
     }
 
 

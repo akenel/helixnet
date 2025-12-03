@@ -33,6 +33,9 @@ from .time_entry_model import TimeEntryModel, EntryType, EntryStatus
 from .payroll_run_model import PayrollRunModel, PayrollRunStatus
 from .payslip_model import PaySlipModel
 
+# Shift & Session Management (BLQ: Handoff WIZARD)
+from .shift_session_model import ShiftSessionModel, SessionStatus
+
 __all__ = [
     "Base",
     "UserModel",
@@ -75,4 +78,7 @@ __all__ = [
     "PayrollRunModel",
     "PayrollRunStatus",
     "PaySlipModel",
+    # Shift & Session
+    "ShiftSessionModel",
+    "SessionStatus",
 ]
