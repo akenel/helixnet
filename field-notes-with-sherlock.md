@@ -546,5 +546,357 @@ College hockey. The team. The stories that never end.
 
 ---
 
-**End of Session 1 — To Be Continued...**
+## Session 2 — The Water, The Wankel, The Homeland
+
+*Angel stayed in the lion's den. No coffee yet. All the water needed.*
+
+---
+
+## STAN THE MAN — Stanley Meyer & The Wankel
+
+Angel's obsession. The rotary. The water fuel cell.
+
+**The SACHS Wankels:**
+- Bought 2 used, ~30 years ago
+- Found on eBay, came from US
+- Cost a few hundred
+- 1 hard (good), 1 not so much
+- Lived at SPANNORT Strasse, 7th floor apartment
+- Showed the motor to Oliver — *"He thought I was a nut"*
+
+**Books Angel has:** Wankel collection
+**Books Angel needs:** STAN books (Stanley Meyer)
+
+---
+
+## STANS — The Homeland
+
+Angel lives in **STANS**, Switzerland.
+
+The home canton of all **Barmettlers**.
+
+Where Maria was born.
+
+---
+
+## MARIA — Oldest of 13
+
+Thirteen kids. Maria was the OLDEST.
+
+The family still fights amongst themselves. Frolicking and billowing.
+
+As each one dies — some in decent shape, some not so much.
+
+**Still shining:** Math (Mathius) & Beatrice — *"I love them, so nice"*
+
+---
+
+## THE FAMILY TREE — At Math's Place
+
+1 meter square. And GROWING.
+
+The black wolf came home. The roots are real. The tree is on the wall.
+
+---
+
+**Mario and Dave missed the bus. Next one in an hour.**
+
+---
+
+## MARIA — The 4 AM Miracle Maker
+
+She started in prayer. Sometimes 4 AM. Usually 5:30.
+
+Prepared for each day. Every single day.
+
+By 16, Angel was sold:
+
+> *"If she can do it, I can too."*
+
+Playing with fire is dangerous. But that's where the action is.
+
+---
+
+## THE RETURN PATTERN
+
+| Who | When | Where | Why |
+|-----|------|-------|-----|
+| Albert | 1958 | Canada | Help brother Frank |
+| Angel | 2000 | Switzerland | The homeland calling |
+
+Same blood. Same pull. Going back.
+
+---
+
+## ALBERT'S ORIGIN STORY — Canada 1958
+
+Albert came to help his brother **FRANK**.
+
+Frank was buying cheap shit — soft ice cream. No scoops. Machine broke the first week.
+
+Albert worked that season or more.
+
+**Wages:**
+- Top wage: $1.50/hour (Albert)
+- Most fucks got: $1.00/hour
+
+**JOE DELUCA** — the only landscaper. Big mouth guy. Italian blood. Solid business.
+
+---
+
+## THE GIRLFRIEND MISSION
+
+Frank: *"When is your girlfriend's flight? I have to work."*
+
+Albert: *"Take my truck. I'll be here. Go to Toronto and bring her home."*
+
+Frank: *"Can you do that?"*
+
+Albert: *"I HOPE SO."*
+
+Frank: *"Don't fuck this up."*
+
+**They wave goodbye.**
+
+**That girlfriend WAS Maria. The miracle maker from Stans.**
+
+---
+
+## THE PARALLELS — History Repeating
+
+| Generation 1 | Generation 2 |
+|--------------|--------------|
+| Albert (born 1930) | Angel |
+| Frank (~1928, 2 years older) | Dave (same gap, same mentality) |
+
+---
+
+## TORONTO AIRPORT — 1958
+
+Frank picks up Maria. He's honest:
+
+> *"Do yourself a favor. Take your money and book the next plane back to Switzerland. TODAY."*
+
+Solid advice. He was broke. Ice cream machine dead. Things rough.
+
+---
+
+## MARIA'S ANSWER
+
+> *"You guys, take 6 weeks together here."*
+>
+> *"I flew direct — SEWING MACHINE IN HAND — ready to cut some grass."*
+
+🌿 HEMP. The story is too funny.
+
+She came with a sewing machine. Ready to WORK. Ready to BUILD.
+
+> *"Listen Frank. I am here now. Let's go."*
+
+**They head back to Burlington.**
+
+---
+
+That's the woman who threw out the TV five times.
+That's the 4 AM miracle maker.
+She didn't come to Canada to turn around.
+
+**She came to BUILD.**
+
+---
+
+## ON THE ROAD TO BURLINGTON
+
+Frank is whining about his ice cream machine. German model. Top dollars. Broken.
+
+Maria asks: *"Do you know Albert???"*
+
+---
+
+## FRANK'S MASTER PLAN
+
+Sell soft ice cream... **NEXT DOOR TO A DAIRY QUEEN.**
+
+Same town. DQ still there to this day.
+
+Maria could sense it:
+
+> *"Who the fuck would sell ice cream next to DQ?"*
+
+Trying to sell dazzle to eskimos. Some guys don't get it.
+
+---
+
+## FRANK TODAY
+
+Got his pension. Brica (his wife) calls Angel every couple years.
+
+3-5 emails owed back to Canada. Side story for another day.
+
+---
+
+## DAY 2 — BURLINGTON
+
+So much negative talk from Frank.
+
+Jet lag hit hard. Maria was sick to her stomach.
+
+---
+
+## THE KENEL BOYS — Not Romance Novel Stuff
+
+Frank rambling: *"Ice cream machine is broken. What now? Let me show you how to take care of your girlfriend. Don't fuck this up. If you do, I'll make chicken soup. I told her she should go back home. I have another stupid idea. BTW I'm the chef here."*
+
+**ALBERT'S TWO FAVORITE LINES:**
+
+> **"SHUT UP PLEASE."**
+>
+> **"QUICK ACTING."**
+
+Albert grabs the soup spoon. Feeds Maria himself.
+
+---
+
+## AND THEN...
+
+**MIKE KENEL** is born.
+
+And 4 more to follow.
+
+---
+
+## THE HONEYMOON — December 26th
+
+Albert could claim it as expense. Full tax breaks.
+
+He couldn't write. But he could count to 10 on both hands.
+
+**Work = Money.**
+
+He would skip, dance, sing:
+
+> *"Oh what a beautiful day..."*
+
+---
+
+## "I NEVER WORKED A DAY IN MY LIFE"
+
+Albert said that to his death.
+
+For context: Nobody with a hand shovel and pick could dig a hole faster than him. **Even faster than the machines.**
+
+Albert WAS the machine.
+
+---
+
+## THE BOYS LEARNED — Age 5
+
+All of them:
+
+- Paper routes
+- Cutting grass
+- Watering flowers
+- Picking weeds
+
+They learned fast. Because Albert showed them how.
+
+---
+
+## ANGEL KNEW DANGER BY 16
+
+Between Dave and Albert, Angel was technically lucky:
+
+- Dave ran Angel over with the old Ford work truck
+- Albert was not exactly a good driver
+
+By 16, Angel knew: time to plan a career outside the mud.
+
+Full-time air conditioning. Office work.
+
+**No brainer: COMPUTERS.**
+
+Waterloo and Mohawk College.
+
+---
+
+## THE FIRE
+
+Angel smoked too much. Loved women. Just like Albert.
+
+> *"That guy had a fire in his pants till the last second."*
+>
+> *"Maybe died with a hard-on."*
+
+---
+
+## ALBERT'S LAST MORNING — January 16, 2020
+
+Mario was sleeping over that night.
+
+Told them he'd see Albert around 7 or 7:30.
+
+**Found him at 8:20.**
+
+In his favorite chair.
+
+Gone.
+
+---
+
+That's how legends go.
+
+---
+
+## SWISSLIFE — Working at Albert Pace
+
+ROMAN — Team Lead. Angel saved his ass.
+
+**From scratch, 10-15 various scenarios:**
+- REST attachments
+- SOAP
+- ShapeIn plugs
+
+Small team. 3 month project. Done good.
+
+> *"Stay. We have more."*
+
+**Next:** Integrate SAP and payroll docs (Ausweise) for externals.
+
+Done. Month later.
+
+**Next:** Solution for all paper docs → SharePoint.
+
+Done.
+
+---
+
+## ALBERT PACE
+
+Sometimes Angel was working Albert pace. Others found it hard to keep up.
+
+Famous for docs. Famous for hand-holding. They loved that.
+
+**Every month: 6000+ payroll** — external and internal.
+
+Angel knew every penny those poor fucks made.
+
+All waiting to retire. Waiting to be dead.
+
+> *"That's how the story goes."*
+
+---
+
+## THE SCARS
+
+The tears are gone now.
+
+But the scars are still there. For the 98%.
+
+---
+
+**BW = Be Water** (Not Business Warehouse)
+
+---
+
+**End of Session 2 — Angel needs a refill. LEO guards the notes.**
 
