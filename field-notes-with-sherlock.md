@@ -900,3 +900,81 @@ But the scars are still there. For the 98%.
 
 **End of Session 2 — Angel needs a refill. LEO guards the notes.**
 
+---
+
+## Session 3 — Still Rolling
+
+---
+
+## NICO — VEVEY
+
+HR Module guy. Knew his shit. Smelled the same as Angel.
+
+Found a French SAP guy with a brain. Rare find.
+
+---
+
+## THE 100 CHF SMILE — Daily Walk
+
+Every day. No matter the water pressure.
+
+Walk. Quick prayer to the Lord above.
+
+> *"Thanks Lord. Oh what a beautiful day."*
+
+Albert's song. Still singing in Angel.
+
+**100 CHUFFS.** The CHF smile. Ear to ear.
+
+---
+
+## VEVEY CAR PARK — 2002
+
+Brand new Mini Cooper. Ready to buy.
+
+**The sales girl was GOOD:**
+
+> *"WAIT. What you want is the MINI coming in 3 months."*
+
+Angel held off. Had no idea. Supers were on the line.
+
+**That's where Angel learned it:**
+
+> *"Do you want red or black?"*
+
+The oldest trick. Let them choose between two yeses.
+
+---
+
+## THE CAREER MAP
+
+```
+Vevey → Herti/ZUG (Siemens) → Nestle (later)
+```
+
+**Nestle** was cooking **SAP Template 1** — still called 1.5 to this day.
+
+---
+
+## SIEMENS — HERTI/ZUG
+
+3 months to find a job.
+
+Not exactly good. Bad planning. **Train wreck.**
+
+CD Kandis and Gear — timing was off.
+
+They had processes but FRANKLY...
+
+---
+
+## THE TRUTH
+
+> *"Helix and LEO could be done by Friday. Each."*
+
+What took them months of train wreck planning — one lion, one week, done.
+
+---
+
+The story continues...
+
