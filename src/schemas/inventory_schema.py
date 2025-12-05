@@ -354,3 +354,146 @@ class CapsuleOrder(BaseModel):
     other_types: Optional[dict[str, int]] = None
     rush_order: bool = False
     notes: Optional[str] = None
+
+
+# ================================================================
+# DELIVERY CHECK-IN — Felix's Freedom (Like Honey)
+# No more 30-minute email searches. No more midnight.
+# ================================================================
+
+class DeliveryLineStatusEnum(str, Enum):
+    """Status of each line item in delivery"""
+    PENDING = "pending"        # Not yet checked
+    OK = "ok"                  # Received as ordered
+    SHORT = "short"            # Received less than ordered
+    OVER = "over"              # Received more than ordered
+    WRONG = "wrong"            # Wrong item received
+    DAMAGED = "damaged"        # Item damaged
+    MISSING = "missing"        # Item not in delivery at all
+
+
+class DeliveryStatusEnum(str, Enum):
+    """Overall delivery status"""
+    EXPECTED = "expected"      # Order placed, waiting
+    ARRIVED = "arrived"        # Box is here, not checked
+    CHECKING = "checking"      # Felix is checking
+    COMPLETE = "complete"      # All items verified
+    DISPUTED = "disputed"      # Mahnung time - issues found
+    CLOSED = "closed"          # Done and dusted
+
+
+class DeliveryLineItemCreate(BaseModel):
+    """One line in the delivery - what was ordered"""
+    item_id: UUID
+    sku: Optional[str] = Field(None, max_length=50)
+    item_name: str = Field(..., max_length=200)
+    quantity_ordered: int = Field(..., ge=1)
+    unit_cost: Optional[float] = Field(None, ge=0)
+
+
+class DeliveryLineItemCheck(BaseModel):
+    """Felix checking one line - what actually arrived"""
+    line_id: UUID
+    quantity_received: int = Field(..., ge=0)
+    status: DeliveryLineStatusEnum = DeliveryLineStatusEnum.OK
+    notes: Optional[str] = None
+
+
+class DeliveryLineItemRead(BaseModel):
+    """Full line item with check results"""
+    id: UUID
+    item_id: UUID
+    sku: Optional[str] = None
+    item_name: str
+    quantity_ordered: int
+    quantity_received: int
+    status: DeliveryLineStatusEnum
+    unit_cost: Optional[float] = None
+    line_total: Optional[float] = None
+    notes: Optional[str] = None
+    checked_at: Optional[datetime] = None
+    checked_by: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DeliveryCreate(BaseModel):
+    """Create a new expected delivery - from purchase order"""
+    supplier_id: UUID
+    supplier_name: str = Field(..., max_length=200)
+    order_reference: str = Field(..., max_length=100)  # PO number or email ref
+    expected_date: Optional[datetime] = None
+    items: list[DeliveryLineItemCreate]
+    notes: Optional[str] = None
+
+
+class DeliveryQuickCreate(BaseModel):
+    """Quick delivery from email/paper - Felix's reality"""
+    supplier_name: str = Field(..., max_length=200)
+    order_reference: Optional[str] = Field(None, max_length=100)
+    line_items_text: str  # Paste from email: "5x Ristretto, 3x Lungo"
+    notes: Optional[str] = None
+
+
+class DeliveryRead(BaseModel):
+    """Full delivery with all lines"""
+    id: UUID
+    supplier_id: Optional[UUID] = None
+    supplier_name: str
+    order_reference: Optional[str] = None
+    status: DeliveryStatusEnum
+    expected_date: Optional[datetime] = None
+    arrived_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    total_lines: int
+    lines_checked: int
+    lines_ok: int
+    lines_with_issues: int
+    items: list[DeliveryLineItemRead]
+    notes: Optional[str] = None
+    checked_by: Optional[str] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DeliveryCheckInStart(BaseModel):
+    """Felix starts checking - box arrived"""
+    delivery_id: UUID
+    arrived_at: datetime = Field(default_factory=datetime.utcnow)
+    checked_by: str = Field(default="Felix", max_length=100)
+
+
+class DeliveryCheckInComplete(BaseModel):
+    """Felix done checking - ready to accept or dispute"""
+    delivery_id: UUID
+    accept_all: bool = False  # True = update inventory and close
+    dispute_reason: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class DeliveryDashboard(BaseModel):
+    """Felix's delivery dashboard - no more email search"""
+    expected_today: int
+    expected_this_week: int
+    arrived_unchecked: int
+    checking_in_progress: int
+    disputed: int
+    recent_deliveries: list[DeliveryRead]
+    pending_actions: list[str]  # "Check delivery from 420", "Dispute with Near Dark"
+
+
+class DeliverySummary(BaseModel):
+    """Quick summary for Felix - one glance"""
+    delivery_id: UUID
+    supplier_name: str
+    order_reference: Optional[str]
+    status: DeliveryStatusEnum
+    total_items: int
+    items_ok: int
+    items_short: int
+    items_missing: int
+    items_wrong: int
+    needs_mahnung: bool  # True if any issues
+    total_value_ordered: Optional[float] = None
+    total_value_received: Optional[float] = None
