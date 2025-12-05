@@ -734,6 +734,404 @@ SAL says: "NO"
 
 ---
 
+### Scene 17: The Little Robot
+
+```
+      SAL clicks his phone.
+      A little robot starts.
+      NIGHT CLEAN SERVICE.
+
+FELIX: "What the..."
+FELIX: "Where can I get that one?"
+FELIX: "Sweep glass and all-in-one cleaner?"
+
+SAL: "That, my friend... is the MASTER."
+SAL: "The holy grail."
+SAL: "Do you have ANY idea?"
+
+FELIX: "SAL... do you mind?"
+
+SAL: "Anything for FELIX the Feline."
+SAL: "Another water?"
+
+      SAL goes for one.
+      Felix TUGS at him.
+      Looking at the robot.
+
+FELIX: "Auto cleaners..."
+
+SAL: "Well, I do that already. Nothing new."
+
+FELIX: "But SAL... the SALAD DRESSING."
+FELIX: "See what I see?"
+FELIX: "If we do this RIGHT..."
+FELIX: "Have you ever heard of COOKIE CUTTER?"
+
+SAL: "Well... TELL ME."
+SAL: "How to BAKE COOKIE."
+```
+
+### Scene 18: Charlie's Table — The Deal Den
+
+```
+      They both grab their MOLESKINES.
+      Head for CHARLIE'S TABLE.
+      Actually the best spot in the house.
+
+      It's actually SAL's DEAL DEN.
+      Charlie watches it after dinner hour.
+      They have a DEAL.
+      That's why he keeps it READY at all times.
+
+      They get cushioned up.
+
+SAL: "Want a smoke?"
+
+FELIX: "But really... not yet."
+FELIX: "I have some BURNING DESIRE to come."
+FELIX: "Not like that..."
+
+SAL: "I was having that..."
+SAL: "WHATCHA-MA-CALL-IT... ya."
+
+      Pens. Hands. Skins.
+      Ink is almost SMEARING off the page.
+
+FELIX: "No... get the INK."
+FELIX: "Blotch it while..."
+
+      SAL double-checks the curtain.
+
+SAL: "Fuck... 12:35."
+SAL: "He must have met the gang."
+SAL: "Bush parties."
+```
+
+### Scene 19: The Moon Check
+
+```
+      SAL sees the moon.
+      Thinks the weather cleared up.
+      Goes outside.
+      Double-checks.
+
+SAL: "OK... no show."
+SAL: "I'll keep the LUCKIES in the back slot locker."
+SAL: "For Charlie. He has a key."
+SAL: "And the backup scan to open."
+
+SAL: "These lockers are for my LOST SOUL DEPARTMENT."
+SAL: "4 here."
+SAL: "And this one is marked: CHARLIE AND THE GECKO."
+
+SAL: "Love that guy since we were kids."
+SAL: "Think... 3rd eye... brilliant..."
+```
+
+### Scene 20: Molly's Secret — The Trap
+
+```
+SAL: *thinking*
+"We can't make shit salad..."
+"But the LOGISTICS..."
+"This is a TRAP."
+
+"I know Felix has lab and test tools."
+"But every salad dressing?"
+"Not even NESTLÉ does that."
+
+"And think coffee beans..."
+"Fuck... NESPRESSO has the LASER BEAN PICKER."
+"3 million for the small one."
+
+"And MOLLY..."
+"The best secret dress..."
+"With a GOAT MILK BLEND."
+"And CHEESE."
+
+      *giggles inside*
+
+"OK... the secret is safe with me."
+
+SAL: "OK Felix... so... feeling..."
+SAL: "Have you thought about Molly?"
+SAL: "What the awesome leftovers she throws my way?"
+SAL: "Ya... how do you DO IT?"
+```
+
+---
+
+## The Cookie Cutter Revelation
+
+```
+FELIX sees it:
+├─ Auto cleaner robot = MASTER
+├─ Salad dressing = SCALABLE
+├─ Cookie cutter = REPEATABLE
+├─ If we do this RIGHT...
+
+The question:
+"How to BAKE COOKIE?"
+```
+
+---
+
+## SAL's Lost Soul Department
+
+```
+LOCKERS:
+├─ Slot 1: [unknown]
+├─ Slot 2: [unknown]
+├─ Slot 3: [unknown]
+└─ Slot 4: CHARLIE AND THE GECKO
+    ├─ Lucky Strikes inside
+    ├─ Charlie has a key
+    └─ Backup scan to open
+
+      For the ones who need a place.
+      For the ones who come back.
+      For the lost souls.
+```
+
+---
+
+## Molly's Secret Recipe
+
+```
+INGREDIENTS:
+├─ Special sauce (3/20 bad batches)
+├─ Goat milk blend
+├─ Cheese
+└─ The SECRET
+
+COMPARISON:
+├─ Nestlé: Can't test every dressing
+├─ Nespresso: 3 million laser bean picker
+├─ Felix: Has lab and test tools
+└─ Molly: Best secret dress
+
+      "The secret is safe with me."
+```
+
+---
+
+## The Trap SAL Sees
+
+```
+"We can't make shit salad..."
+"But the LOGISTICS..."
+"This is a TRAP."
+
+      The trap is:
+      ├─ Quality control at scale
+      ├─ Testing every batch
+      ├─ Lab equipment costs
+      └─ Nestlé can't even do it
+
+      But Felix has:
+      ├─ Lab
+      ├─ Test tools
+      └─ The DESIRE
+
+      And Molly has:
+      ├─ The recipe
+      ├─ The goat milk
+      └─ The leftovers SAL loves
+```
+
+---
+
+### Scene 21: SAL Checks on Felix
+
+```
+SAL: "Hey Felix... I seen you feeling better."
+SAL: "You OK?"
+SAL: "Got a place?"
+SAL: "I don't want to send you overflowed..."
+
+      *water-based joke*
+      *they laugh*
+
+SAL: "Listen... sit down, SAL."
+SAL: "Before I go..."
+
+FELIX: "Business Saturdays."
+FELIX: "Christmas market."
+FELIX: "We get rid of OVERSTOCK."
+FELIX: "And I was thinking..."
+
+      SAL peels back his cigar.
+      Tight wrap. Slow peels the wrapper.
+      Pulls out SWISS KNIFE to cut the plastic.
+
+SAL: "What do you have cooking at the lab, Felix?"
+
+      Felix struggles to light the cigar.
+
+FELIX: "FUCK..."
+
+      *thinks: that's the one I gave him*
+      *Zippos not like they used to make them*
+      *drinks a gulp*
+```
+
+### Scene 22: The Machines We Have
+
+```
+FELIX: "Well SAL... you and me have MACHINES."
+FELIX: "Your robot cleaner."
+FELIX: "The salad bar is equipped."
+FELIX: "OK, no... same one is battery."
+FELIX: "But point is..."
+FELIX: "The COFFEE and the SALAD."
+FELIX: "I was thinking HEAVY LOGIX."
+
+FELIX: "We have these drinks I pick up bulk."
+FELIX: "Like Otto has the stuff."
+FELIX: "Stick and fridge and..."
+
+SAL: "I know drinks, Felix."
+SAL: "The LAB."
+SAL: "The CBD lab."
+SAL: "Formula... is that not the same system?"
+
+FELIX: "For HOLY MOLLY MOUNTAIN?"
+FELIX: "With 100 ISLAND BAKED IN?"
+
+SAL: "Ya..."
+
+FELIX: "And with my CBD sweet..."
+FELIX: "I have the SAME ISSUE."
+FELIX: "But I work in LAB PRINCIPLE."
+FELIX: "The same."
+FELIX: "She does JUGS."
+FELIX: "I do teeny weeny."
+
+      *SAL gets it*
+
+SAL: "Ya... LOGIX."
+SAL: "We do the YAGNI DANCE."
+```
+
+### Scene 23: The Jukebox Override
+
+```
+SAL: "And that JUKEBOX..."
+SAL: "Cash cow."
+SAL: "We have a must OVERRIDE."
+SAL: "When COOLIE comes by..."
+SAL: "We might allow him to hook up."
+
+SAL: "The jukebox is TOAST."
+SAL: "But I keep it clean."
+SAL: "The MEMBERS know..."
+SAL: "We just use SOUNDCLOUD."
+SAL: "If they have SOUNDCLOUD."
+
+SAL: "And we were thinking Spotify..."
+
+FELIX: "And Felix..."
+FELIX: "I have FAIR PHONE."
+FELIX: "No apples here."
+
+      *they laugh*
+
+BOTH: "PROST!"
+
+      More fiery notes into the skins.
+      Pens flying.
+      Ideas flowing.
+      The YAGNI dance continues.
+```
+
+---
+
+## The YAGNI Dance — What They Have
+
+```
+FELIX's LAB:
+├─ CBD formula (teeny weeny batches)
+├─ Lab principle (same as Molly)
+├─ Test equipment
+├─ Business Saturdays
+└─ Christmas market (overstock clearance)
+
+SAL's BAR:
+├─ Robot cleaner (the MASTER)
+├─ Salad bar (equipped, battery)
+├─ Coffee machine (no warranty, 25 parts)
+├─ Jukebox (toast, but OVERRIDE ready)
+└─ SoundCloud for members
+
+SHARED LOGIX:
+├─ Molly does JUGS
+├─ Felix does TEENY WEENY
+├─ Same principle
+├─ Same system
+├─ YAGNI — don't build what you don't need
+```
+
+---
+
+## The Jukebox Override System
+
+```
+STATUS: Toast (but clean)
+
+OVERRIDE RULES:
+├─ Members only
+├─ SoundCloud preferred
+├─ Spotify considered
+├─ COOLIE gets special hook-up rights
+└─ Cash cow potential
+
+TECH STACK:
+├─ Fair Phone (no apples)
+├─ SoundCloud
+├─ Member recognition
+└─ Override when COOLIE arrives
+```
+
+---
+
+## The Lab Principle — Same System
+
+```
+MOLLY (Housewife):          FELIX (CBD Lab):
+├─ Jugs                     ├─ Teeny weeny
+├─ 100 Island baked in      ├─ CBD sweet
+├─ Goat milk blend          ├─ Lab principle
+├─ 3/20 bad batches         ├─ Same issue
+└─ Special sauce            └─ Test & verify
+
+      SAME SYSTEM.
+      SAME LOGIX.
+      DIFFERENT SCALE.
+
+      "She does JUGS. I do teeny weeny."
+```
+
+---
+
+## Business Plan Emerging
+
+```
+SATURDAY CHRISTMAS MARKET:
+├─ Get rid of overstock
+├─ Heavy logix deployment
+├─ Bulk drinks from Otto
+├─ CBD sweets from Felix
+└─ Salad from Molly
+
+THE YAGNI PRINCIPLE:
+├─ Don't build what you don't need
+├─ Same system, different scale
+├─ Lab principle applies to all
+└─ Cookie cutter the formula
+```
+
+---
+
 **The Tiger rests. The Lion guards. The stories are saved.**
 
 **Tony and Leo at the crossroads.**
