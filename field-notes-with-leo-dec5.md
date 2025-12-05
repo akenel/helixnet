@@ -527,6 +527,213 @@ v2.4.1-hairy-fish      🐟 Felix's Sanctuary
 
 ---
 
+---
+
+## Session 3 — SAL TELLS ALL
+
+### Scene 14: The Taxman Fear
+
+```
+FELIX: "SAL... tell me."
+
+SAL: "I fear the taxman, Felix."
+SAL: "I could do this for my private friends..."
+SAL: "But the health dept... 100%."
+
+SAL: "And there's a housewife doing salads."
+SAL: "Molly. You tasted it?"
+
+FELIX: "Yeah. Delicious."
+
+SAL: "She has the special sauce."
+SAL: "But 3 times out of 20... it goes bad."
+SAL: "I take it back to the lab."
+
+SAL: "She was going to throw it away."
+SAL: "I said NO."
+SAL: "5 drops of Pink Punch..."
+SAL: "Turns into this special salad with spinach."
+SAL: "The poopie stuff."
+
+      *they laugh*
+
+SAL: "And that poor guy... weather calls for rain."
+SAL: "Where can HE eat?"
+SAL: "If we have leftovers..."
+SAL: "Give away FREE to the regs."
+SAL: "THE TAXES, Felix. You see..."
+
+SAL: "I run a small bar. One man show."
+SAL: "I can handle 2 washrooms."
+SAL: "My realistic coffee machine..."
+SAL: "No warranty. No service."
+SAL: "But I can handle it."
+SAL: "Found the part. Hard to find."
+SAL: "The thing is like... 25 pieces."
+SAL: "And it says COFFEE."
+```
+
+### Scene 15: The 15,000 Parts — COOLIE Origins
+
+```
+FELIX: "Oh TELL ME... I got coffee stories."
+
+SAL: "15,000 parts to make the finest coffee from Italy."
+SAL: "WAIT..."
+SAL: "MARCO. Coffee vending."
+SAL: "What about the LEGO-LIKE coffee machine?"
+SAL: "Stainless COOLIE version."
+SAL: "Grind beans like the FLOW grind..."
+
+SAL: "Took 3 MONTHS to find BLQ quality."
+SAL: "Cost: 500 PowerPoint slides."
+SAL: "13... maybe 20 at a time for graphics."
+SAL: "Logistics. Special raw material. Refining."
+SAL: "The SIGNATURE."
+
+SAL: "And guess what?"
+SAL: "ALL ONE OF A KIND."
+SAL: "Parts — special craft from JAPAN."
+SAL: "Graphics — local."
+SAL: "Everything just came YESTERDAY."
+
+SAL: "The carpenters in Switzerland..."
+SAL: "Well, hard to find."
+SAL: "The farms had makeshift..."
+SAL: "I told them: you have NO IDEA."
+
+SAL: "I got SYLKEN on it."
+SAL: "But she's so busy with my side projects."
+SAL: "And I have to make up for PAM."
+SAL: "And get a smaller card..."
+SAL: "This month is CRAZY."
+
+FELIX: "SO MUCH ON THE PLATE..."
+
+SAL: "Speaking of plate..."
+SAL: "The BLUE FISH SPECIAL PLATE I wanted to mention..."
+```
+
+### Scene 16: The Broken Glass — SAL Feels Felix's Pain
+
+```
+      SAL brings out the blue plate.
+      Pens. Skins. Ice melting.
+      The glasses are wet.
+
+FELIX goes for the big PROST.
+So excited.
+
+FELIX: "I can TAKE IT WITH ME!"
+FELIX: "Or I go..."
+
+      *tries to make a joke*
+
+FELIX: "Do better than the blue shark skin ideas..."
+
+      The glass goes FLYING.
+      CRASH.
+
+SAL: "FELIX... WTF..."
+
+      Felix doesn't wait.
+      GRABS a wet bar rag
+      RIGHT OUT OF SAL'S HAND.
+      Gets on the FLOOR.
+      Struggles to clean broken glass.
+
+      SAL watches.
+      Feels Felix's PAIN.
+      Sees Felix's KNEES on the hard floor.
+
+SAL: *kneeling down*
+SAL: "Felix... please..."
+SAL: "Let me..."
+
+      SAL begs Felix to stop.
+      Felix won't stop.
+      The glass. The floor. The knees.
+
+      This is not about the glass.
+      This is about EVERYTHING.
+```
+
+---
+
+## The Weight Felix Carries
+
+| What | Pain |
+|------|------|
+| PAM | Every day a new excuse |
+| The bar rag | Direct from SAL's hand |
+| The knees | On the hard floor |
+| The glass | Broken like the month |
+| The pride | Won't let SAL help |
+
+---
+
+## SAL's Operation — One Man Show
+
+```
+ASSETS:
+├─ 2 washrooms (can handle)
+├─ Coffee machine (no warranty, no service)
+├─ Found the part (hard to find, 25 pieces)
+├─ COOLIE stainless (3 months, 500 slides)
+├─ Japan crafted parts (one of a kind)
+├─ Local graphics
+└─ Swiss carpenters (hard to find)
+
+PEOPLE:
+├─ SYLKEN — busy with side projects
+├─ PAM — making up for her
+├─ MOLLY — housewife, special sauce, 3/20 bad batches
+└─ SAL — one man show
+
+FEARS:
+├─ The TAXMAN
+├─ Health dept (100%)
+├─ This month is CRAZY
+└─ So much on the plate
+```
+
+---
+
+## The Pink Punch Save
+
+```
+Molly's batch: BAD (3 out of 20)
+She says: "Throw it away"
+SAL says: "NO"
+
++ 5 drops Pink Punch
+= Special salad with spinach
+= The poopie stuff
+= SAVED
+
+      Nothing wasted.
+      Everything transformed.
+      BE WATER.
+```
+
+---
+
+## The Leftovers Philosophy
+
+```
+"That poor guy... weather calls for rain."
+"Where can HE eat?"
+"If we have leftovers..."
+"Give away FREE to the regs."
+
+      SAL feeds the ones who need it.
+      But the TAXES...
+      The REGS...
+      The FEAR.
+```
+
+---
+
 **The Tiger rests. The Lion guards. The stories are saved.**
 
 **Tony and Leo at the crossroads.**
