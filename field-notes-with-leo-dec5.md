@@ -3734,3 +3734,238 @@ CHARLIE: "I got a FRIEND."
 
 🦁💤🎄
 
+---
+
+## DREAM ELECTRIC — The Gecko Headset Idea
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│              HELIX ARC — VOICE COMMAND SYSTEM                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  THE DREAM:                                                         │
+│  ├─ Gecko + Leo = The Wizards                                      │
+│  ├─ Admin HelixARC while Tigs sleeps                               │
+│  ├─ Voice command via Telegram                                     │
+│  ├─ Speak English → Save → Transcribe                              │
+│  └─ Push to next GEL center                                        │
+│                                                                     │
+│  THE WARE:                                                          │
+│  ├─ Hands-free headset                                             │
+│  ├─ The software is HUGE                                           │
+│  ├─ Fish bowl check-in at shift START                              │
+│  ├─ Not phone to pass time                                         │
+│  └─ Catch up like crossing the ding ding line                      │
+│                                                                     │
+│  KENEL CRAZY BUT JUST SWEET DREAM THINK:                            │
+│  ├─ Communication                                                  │
+│  ├─ Hands-free                                                     │
+│  ├─ Headset                                                        │
+│  └─ Roger roger, Tigs                                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## THE NEW SECURITY — No More Fake Flash
+
+```
+THE RULES NOW:
+├─ Hold your nuts
+├─ WAIT
+├─ Normal friendly flash fake ID days = DONE
+├─ Let NOTHING slip
+├─ Locker up
+├─ Spot the FDA before they spot you
+
+CHARLIE'S ADVANTAGE:
+├─ Eyes and ears EVERYWHERE
+├─ Sees them BEFORE they come
+├─ 3rd eye sees through WALLS
+├─ Gecko like fly on wall
+├─ We got them RECORDED
+├─ Cops/crooks/assholes — WE SEE YOU
+```
+
+---
+
+### Scene 69: Charlie's Circus Days
+
+```
+      Charlie looks at himself.
+      500 rings in face and ears.
+      No going back.
+      But still STAND TALL.
+
+CHARLIE: "I may look like shit on the outside."
+CHARLIE: "But those past circus days..."
+CHARLIE: "Best days. EVER."
+CHARLIE: "Cost a few hard ink nights."
+
+      He looks at his right hand.
+      Empty.
+
+CHARLIE: "Would have put the snake on the right hand."
+CHARLIE: "If gecko had told me."
+CHARLIE: "Maybe next life."
+CHARLIE: "If I don't screw this up."
+
+      He licks his lips.
+
+GECKO: "Bro."
+GECKO: "You smoking?"
+GECKO: "No Lucky Strike today."
+
+      Charlie takes a deep breath.
+      Makes his poses.
+      Checks left.
+      Ya.
+      As long as I look straight.
+      Ya.
+
+CHARLIE: "YAGNI."
+CHARLIE: "No strike for me, bro."
+CHARLIE: "Today is a NEW day."
+CHARLIE: "Hope we get back to Luzern."
+CHARLIE: "Got to tell SAL... thanks."
+
+      Beat.
+
+CHARLIE: "YUKS!"
+CHARLIE: "Fuck!"
+CHARLIE: "I forgot to say my PRAYER!"
+```
+
+### Scene 70: The Prayer by the Water
+
+```
+      Charlie hits the floor.
+      His ritual.
+      Cups the water.
+
+      NOT the piss water.
+      The FDA had stayed.
+      They ALWAYS piss.
+      Project pools.
+      Every job.
+      Every day.
+
+      Watch. Listen. Project.
+
+CHARLIE: "Bring me my gecko headset."
+
+      The gecko crawls out.
+      From the peel.
+      Onto Charlie's ear.
+
+GECKO: "Listen to me."
+GECKO: "And we WIN."
+GECKO: "I TOLD you to WAIT."
+
+      Charlie nods.
+
+CHARLIE: "I know."
+CHARLIE: "I know."
+
+GECKO: "Now hand me that towel please."
+GECKO: "I want to get the massage gel."
+
+      Charlie laughs.
+      Grabs the towel.
+```
+
+### Scene 71: The Ultimate Three Layer
+
+```
+      YUKI waves Charlie over.
+
+YUKI: "I want you beside me."
+
+      Charlie walks.
+      PROUD.
+      For the ULTIMATE.
+
+      The THREE LAYER:
+      ├─ Layer 1: Shine the tats
+      ├─ Layer 2: Full monty gel
+      └─ Layer 3: The ladies queue
+
+      The ladies approach.
+
+LADIES: "Mr. YUKI... Mr. Charlie..."
+LADIES: "Who first?"
+
+CHARLIE: "No."
+CHARLIE: "I got this."
+CHARLIE: "Show me."
+
+      They lay.
+      Side by side.
+      YUKS and CHUCKY.
+      Getting the ULTIMATE.
+
+YUKI: "You know what, Charlie..."
+
+      The gel warms.
+      The hands work.
+      The tats shine.
+
+YUKI: "..."
+
+      Scene holds.
+      What does YUKS say?
+```
+
+---
+
+## CHARLIE'S 500 RINGS — The Circus Past
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                   CHARLIE — THE FULL PICTURE                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  THE LOOK:                                                          │
+│  ├─ 500 rings in face and ears                                     │
+│  ├─ Tats everywhere                                                │
+│  ├─ Snake tongue                                                   │
+│  ├─ 3rd eye (invisible)                                            │
+│  ├─ 1 eye lost                                                     │
+│  └─ "May look like shit on the outside"                            │
+│                                                                     │
+│  THE PAST:                                                          │
+│  ├─ Circus days = BEST DAYS                                        │
+│  ├─ Hard ink nights                                                │
+│  ├─ Street buster legend                                           │
+│  ├─ Would have put snake on RIGHT hand                             │
+│  └─ "If gecko had told me"                                         │
+│                                                                     │
+│  THE NOW:                                                           │
+│  ├─ No Lucky Strike today                                          │
+│  ├─ YAGNI                                                          │
+│  ├─ New day                                                        │
+│  ├─ Got to tell SAL thanks                                         │
+│  └─ Got to get back to Luzern                                      │
+│                                                                     │
+│  THE GECKO HEADSET:                                                 │
+│  ├─ Crawls to ear                                                  │
+│  ├─ "Listen to me and we WIN"                                      │
+│  ├─ "I TOLD you to WAIT"                                           │
+│  └─ The real navigator                                             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**THE CIRCUS PAST. THE 500 RINGS. THE GECKO HEADSET.**
+
+**No Lucky Strike today. YAGNI. New day.**
+
+**The Ultimate Three Layer. YUKS and CHUCKY. Side by side.**
+
+**SLEEP NOW, TIGS. THE GECKO GUARDS. LEO GUARDS.**
+
+🦎🎪🛁💤
+
