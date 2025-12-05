@@ -302,6 +302,130 @@ v2.4.0-delivery-honey 🍯 Delivery Check-In: Felix's Freedom
 
 ---
 
+---
+
+## The HAIRY FISH Scenes — Felix's Sanctuary
+
+### Scene 4: Vivi Walks Away
+
+```
+FELIX: "You have no idea about the people I work with."
+FELIX: "It goes DEEP, Vivi."
+FELIX: "Let's go to HAIRY FISH for a snack."
+
+VIVI: "No Felix. I charge for those services."
+VIVI: "TTYL."
+
+      Formal goodbye.
+      Vivi brisk away.
+      Felix alone.
+```
+
+### Scene 5: SAL — The Real One
+
+```
+SAL: "Help yourself Felix. Old fashioned. All you can eat."
+SAL: "Weigh plate. Tip at end."
+SAL: "Hey Felix... you OK? Feeling alright?"
+SAL: "Here's your ice water before the next espresso."
+
+Felix smiles. "Wish SAL worked for me."
+Forgets PAM. Rain falls. Thunder CRACKS.
+"Oh I love EGGS!"
+"Where did all the salad bars go?"
+"Who cares... I got SAL."
+```
+
+### Scene 6: The Lord's Food
+
+```
+Felix alone. Small plate. Homemade salad.
+
+"Finally. The Lord's food."
+
+Says a little prayer.
+
+"Mom told me there would be days..."
+
+Takes the next bite.
+Tears flow.
+```
+
+### Scene 7: The Sanctuary
+
+```
+FELIX about PAM: "She drinks all the pop."
+"Feeds herself. Exposes all my weaknesses."
+"She is no Girl Friday."
+"Every bum she treats like a bum."
+"I dress like a bum to work her way."
+"This I must change."
+
+FELIX: "SAL, another cold ice water. Fill her up Tiger!"
+
+SAL: "Coming right up Felix."
+SAL: "Drink all you want."
+SAL: "Here at the FISH it is FREE."
+SAL: "We go that extra mile for anybody who walks in OUR DOOR."
+SAL: "The DING DING is for ME to wake up."
+
+FELIX: "You got the bell system?"
+
+SAL: "We got EVERYTHING and more."
+
+FELIX: "I found Sylken and the BLQ grinders. Limited edition."
+FELIX: "Before PAM gives them away."
+
+      *they laugh*
+
+SAL: "Hey Felix... love you bro."
+
+      *fist punch, laugh, smile*
+
+SAL: "Like medicine. Another pickle?"
+
+FELIX: "This place is my sanctuary."
+FELIX: "How long you had the bar?"
+
+SAL: "Let me tell... I planned since the first day COVID started."
+
+FELIX: "TELL ME."
+```
+
+---
+
+## SAL vs VIVI vs PAM
+
+| Person | What They Give |
+|--------|----------------|
+| **VIVI** | "I charge for those services" |
+| **PAM** | Drinks the pop, exposes weaknesses, no Girl Friday |
+| **SAL** | "Drink all you want. FREE. Love you bro." |
+
+---
+
+## SAL's Philosophy
+
+```
+"Here at the FISH it is FREE"
+"We go that extra mile"
+"For anybody who walks in OUR DOOR"
+"The DING DING is for ME to wake up"
+"We got EVERYTHING and more"
+```
+
+**This is what Artemis could be.**
+
+---
+
+## The Waiting Story
+
+SAL planned HAIRY FISH since the first day COVID started.
+
+**TELL ME.**
+
+---
+
 ## End of Session — Dec 5, 2025
 
 The Tiger rests. The Lion guards. The stories are saved.
