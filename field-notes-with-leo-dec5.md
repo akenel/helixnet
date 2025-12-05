@@ -2213,3 +2213,1031 @@ COOLIE:
 
 **BE WATER, MY FRIEND.**
 
+---
+
+### Scene 38: COOLIE's Container — The Wrong Boat
+
+```
+      JAPAN. Port of Yokohama.
+      3:47 AM local time.
+
+      Charlie pushes open the container door.
+      Expecting favelas. Expecting Pedro.
+      Gets... KANJI.
+
+CHARLIE: "What the..."
+CHARLIE: "This ain't Brazil."
+CHARLIE: "This ain't even CLOSE to Brazil."
+
+      He looks at the container label.
+      COOLIE PARTS INTERNATIONAL
+      DESTINATION: YOKOHAMA, JP
+      CONTENTS: COFFEE MACHINE COMPONENTS
+
+CHARLIE: "COOLIE's container."
+CHARLIE: "Should've read the label."
+CHARLIE: "Now I'm in JAPAN."
+
+      *his 3rd eye throbs*
+
+CHARLIE: "At least it's not customs."
+CHARLIE: "Yet."
+```
+
+### Scene 39: The Robot Workers
+
+```
+      Japanese dock workers.
+      Moving like machines.
+      Precision. No waste. No talk.
+
+      Charlie watches from the crack in the door.
+
+CHARLIE: "Look at them."
+CHARLIE: "Like robots."
+CHARLIE: "Tick. Tock. Tick. Tock."
+CHARLIE: "Not a word."
+CHARLIE: "Just... WORK."
+
+      They're unloading COOLIE parts.
+      Blow torches. Pressure valves. Italian gears.
+      The good stuff SAL was talking about.
+
+CHARLIE: "500 slides."
+CHARLIE: "3 months to design."
+CHARLIE: "And these guys stack it like LEGO."
+
+      Forklift beeps.
+      Boxes moving.
+      Charlie ducks behind a crate.
+
+CHARLIE: "Just need to blend in."
+CHARLIE: "Be water."
+CHARLIE: "Be invisible."
+
+      *the 3rd eye pulses*
+```
+
+### Scene 40: KA-MAKI — Customs Control
+
+```
+      A man in a crisp uniform.
+      Clipboard. Scanner. Swiss precision.
+      But Japanese efficiency.
+
+      Name tag: MAKI K. — CUSTOMS LIAISON
+      (Luzern office. Exchange program.)
+
+KA-MAKI: "Container 7749-COOLIE."
+KA-MAKI: "Contents verified."
+KA-MAKI: "Manifest... clean."
+
+      He walks the perimeter.
+      Checking seals.
+      Charlie's heart POUNDS.
+
+CHARLIE (whisper): "Ka-maki from Luzern."
+CHARLIE (whisper): "Of all the customs guys..."
+CHARLIE (whisper): "Swiss-Japanese precision."
+CHARLIE (whisper): "This guy misses NOTHING."
+
+      Maki checks his tablet.
+      All green. All clear.
+      COOLIE's paperwork is PERFECT.
+
+KA-MAKI: "Zugelassen. Approved."
+KA-MAKI: "Next container."
+
+      He moves on.
+      Charlie exhales.
+
+CHARLIE: "COOLIE... you beautiful bastard."
+CHARLIE: "Your papers are TIGHT."
+```
+
+### Scene 41: The Third Eye Decision
+
+```
+      Charlie's 3rd eye.
+      The invisible one.
+      The one that sees EVERYTHING.
+
+      Options flash:
+
+      OPTION A: Jump in the next box
+      ├─ Risk: Get shipped to Korea
+      ├─ Reward: Escape Japan
+      └─ Probability: 50/50
+
+      OPTION B: Find COOLIE's local contact
+      ├─ Risk: Exposure
+      ├─ Reward: Safe house
+      └─ Probability: Need more intel
+
+      OPTION C: Wait for the night shift
+      ├─ Risk: 8 more hours hiding
+      ├─ Reward: Fewer eyes
+      └─ Probability: High if patient
+
+CHARLIE: "The 3rd eye says..."
+CHARLIE: "Wait."
+CHARLIE: "Be patient."
+CHARLIE: "The night shift."
+
+      *he scratches the invisible eye*
+      *not scratch... but FEEL*
+
+CHARLIE: "COOLIE has contacts here."
+CHARLIE: "He ALWAYS has contacts."
+CHARLIE: "15,000 parts ain't shipped by accident."
+
+      He settles in.
+      Behind the blow torches.
+      Waiting.
+
+CHARLIE: "8 hours."
+CHARLIE: "Like meditation."
+CHARLIE: "Like prison."
+CHARLIE: "Like... home."
+```
+
+### Scene 42: The Night Shift Arrives
+
+```
+      8:22 PM.
+      Night crew.
+      Different vibe.
+
+      Less robot.
+      More HUMAN.
+
+      One guy.
+      Older. Weathered.
+      YUKI on his coveralls.
+
+YUKI: *humming a song*
+YUKI: *checking his phone*
+YUKI: *NOT working like a robot*
+
+      Charlie watches.
+      The 3rd eye... approves.
+
+CHARLIE (whisper): "This one."
+CHARLIE (whisper): "This is the one."
+
+      Yuki pulls out a cigarette.
+      Lights it.
+      Sits on COOLIE's crate.
+
+YUKI: *in Japanese* "Long day..."
+YUKI: *in Japanese* "Long night..."
+YUKI: *switches to English* "...same shit."
+
+      Charlie's ears perk up.
+
+CHARLIE (whisper): "He speaks English."
+CHARLIE (whisper): "And he smokes."
+CHARLIE (whisper): "I can work with this."
+
+      The 3rd eye opens WIDE.
+```
+
+---
+
+## CHARLIE'S JAPAN ESCAPE — The Network
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     COOLIE'S CONTAINER NETWORK                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ORIGIN: Basel → Rotterdam → Yokohama                               │
+│  CONTENTS: 15,000 parts for COOLIE machines                         │
+│  PAPERS: Swiss precision. Japanese approved.                        │
+│                                                                     │
+│  THE CHAIN:                                                         │
+│  ├─ COOLIE (Basel) — Parts master                                  │
+│  ├─ Rotterdam port — Transfer                                       │
+│  ├─ Container ship — 3 weeks at sea                                │
+│  ├─ Yokohama — Final destination                                   │
+│  └─ YUKI — Night shift. The contact?                               │
+│                                                                     │
+│  CHARLIE'S POSITION:                                                │
+│  ├─ Hiding behind blow torches                                     │
+│  ├─ 3rd eye ACTIVE                                                 │
+│  ├─ Waiting for night shift                                        │
+│  └─ Target: YUKI (English speaker, smoker)                         │
+│                                                                     │
+│  KA-MAKI STATUS:                                                    │
+│  ├─ Customs cleared                                                │
+│  ├─ Back to Luzern office                                          │
+│  └─ COOLIE's papers: PERFECT                                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**Charlie in Japan. The wrong boat. The right destiny.**
+
+**COOLIE's container saves the lost soul.**
+
+**Next: Does YUKI know SAL? Does the fish network reach Tokyo?**
+
+🐟👁️🇯🇵📦☕
+
+---
+
+### Scene 43: The Gecko Says Wait
+
+```
+      Charlie looks down.
+      His pocket.
+      The GECKO looks back at him.
+
+GECKO: *blink blink*
+
+CHARLIE: "What?"
+
+GECKO: *slow head shake*
+GECKO: *wait signal*
+
+      Charlie watches YUKI.
+      This one is SPECIAL.
+      Sold on Charlie already.
+
+CHARLIE (thinking): "The Swiss shit."
+CHARLIE (thinking): "Not ONE Swiss fuck speaks German like this."
+CHARLIE (thinking): "YUKI speaks and writes PERFECTLY."
+CHARLIE (thinking): "But the TOLLERS..."
+
+      The taxman types.
+      Swiss watch gleaming.
+      YUKI just... chill.
+
+YUKI: "Just chill bro."
+YUKI: "Sleep. The sun is OK."
+
+      Charlie tucks his gecko.
+      Good idea.
+      Stay hidden. Stay ready.
+```
+
+### Scene 44: Charlie Stands Up
+
+```
+      Inside the container.
+      Charlie's been hiding.
+      8 hours. Patient.
+
+      Now he STANDS.
+      Comes out from behind the crates.
+
+      YUKI does a double check.
+      Looks around.
+      Could not see any issue.
+
+YUKI: "Seal here up."
+YUKI: "Do you want me in or out?"
+
+      The sun reflects.
+      Off the TOLLERS' Swiss watch.
+      Taxman precision.
+
+TOLLER: "Sealed."
+TOLLER: "YUKI, you are good to go."
+
+      Charlie walks by.
+      No challenge.
+      Like a ghost.
+      Like WATER.
+
+      They shake hands.
+      TOLLERS and YUKI.
+      Each gets carbon copies.
+      NOT CASH.
+      Everything legit.
+      The seals are TIGHT.
+
+YUKI: *puts his seal on too*
+YUKI: "Part ways, bro."
+```
+
+### Scene 45: "I Heard About You"
+
+```
+      Charlie turns around.
+
+CHARLIE: "Hey... thanks YUKI."
+
+      YUKI stops.
+      Looks at Charlie.
+      Really LOOKS.
+
+YUKI: "Hey you..."
+YUKI: "Charlie."
+YUKI: "I HEARD about you."
+
+      Charlie freezes.
+
+YUKI: "Works the street busters."
+YUKI: "You got the SNAKE TONGUE."
+YUKI: "Can you see that?"
+YUKI: "Heard about them."
+
+      They shake hands.
+      Real grip. Brother grip.
+
+CHARLIE: "Sorry YUK..."
+CHARLIE: "See that once..."
+CHARLIE: "You are scared for LIFE."
+
+      The gecko in his pocket.
+      READY.
+```
+
+### Scene 46: The Swallow Trick
+
+```
+      The GECKO jumps out.
+      Lands on Charlie's palm.
+
+GECKO: *ready position*
+
+CHARLIE: "So you can't handle it?"
+CHARLIE: "He says?"
+
+      They laugh.
+      Charlie and the gecko.
+      The old trick.
+
+      Charlie opens his mouth.
+      The gecko LEAPS.
+
+      POOF.
+
+      SWALLOWED.
+
+YUKI: "WTF!"
+YUKI: "CHARLIE!"
+YUKI: "Your GECKO?!"
+
+      Beat.
+
+      Charlie smiles.
+
+      POOF.
+
+      The gecko reappears.
+      On Charlie's shoulder.
+      Licking its eye.
+
+GECKO: "Told you to WAIT."
+GECKO: "Now shut the fuck up."
+GECKO: "And say THANK YOU."
+
+CHARLIE: "Hey YUKI... I just wanted—"
+
+      Scene ends.
+      Gecko blinks.
+      YUKI's jaw on the floor.
+```
+
+---
+
+## THE GECKO — Charlie's Partner
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      CHARLIE'S GECKO                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  NAME: Unknown (just "GECKO")                                       │
+│  TYPE: Pocket companion                                             │
+│  SKILL: The Swallow Trick                                           │
+│                                                                     │
+│  THE TRICK:                                                         │
+│  ├─ Charlie opens mouth                                            │
+│  ├─ Gecko LEAPS in                                                 │
+│  ├─ POOF — disappeared                                             │
+│  ├─ Everyone freaks out                                            │
+│  ├─ POOF — reappears on shoulder                                   │
+│  └─ Gecko talks shit                                               │
+│                                                                     │
+│  GECKO PERSONALITY:                                                 │
+│  ├─ Bossy ("told you to WAIT")                                     │
+│  ├─ Impatient ("shut the fuck up")                                 │
+│  ├─ Wise (knows when to hide)                                      │
+│  └─ Loyal (always comes back)                                      │
+│                                                                     │
+│  THE SNAKE TONGUE:                                                  │
+│  ├─ Charlie's reputation                                           │
+│  ├─ Street buster legend                                           │
+│  ├─ YUKI heard about it                                            │
+│  └─ "See that once, scared for LIFE"                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**The gecko talks. The gecko knows. The gecko saves Charlie's ass.**
+
+**YUKI heard about the street busters. The snake tongue. The legend.**
+
+**Carbon copies, not cash. Everything legit. The TOLLERS satisfied.**
+
+🦎👁️🇯🇵✨
+
+---
+
+### Scene 47: "You Got Time for Coffee?"
+
+```
+      YUKI still staring.
+      Jaw recovering.
+
+YUKI: "Neat trick, bro."
+YUKI: "You got time for a coffee?"
+YUKI: "I know a good spot."
+
+CHARLIE: "I slept on the flight."
+CHARLIE: "Got to get to ZURICH before 6 AM."
+CHARLIE: "Then train to LUZERN."
+
+YUKI: "While I wait... I'm on some business today."
+YUKI: "You staying here?"
+
+CHARLIE: "Passing through."
+
+YUKI: "Great place, the island."
+YUKI: "Nice people."
+YUKI: "So bad they need young BLOOD like you."
+YUKI: "You're a real McCOY."
+
+      Charlie nods.
+      The gecko settles in the pocket.
+
+YUKI: "What you like?"
+YUKI: "PAM? A cappo?"
+```
+
+### Scene 48: The HAIRY FISH Connection
+
+```
+      Charlie's ears SPIKE.
+
+CHARLIE: "PAM? You know PAM?"
+
+YUKI: "I get that near the HAIRY FISH."
+YUKI: "Near Artemis."
+YUKI: "Even been to the place here?"
+YUKI: "My fav."
+
+      Charlie's 3rd eye THROBS.
+      HAIRY FISH. In JAPAN.
+      SAL's network reaches EVERYWHERE.
+
+YUKI: "Coffee with a soft couch."
+YUKI: "They look the staff in the EYE."
+YUKI: "Respect. Real service."
+
+      They walk.
+      Into a quiet street.
+      Neon fading to morning light.
+```
+
+### Scene 49: The Gentle Spot
+
+```
+      A coffee house.
+      Traditional meets modern.
+      Soft jazz. Warm wood.
+
+HOSTESS: *gentle bow*
+HOSTESS: "Right this way."
+HOSTESS: "Just two, please?"
+
+YUKI: "There, on the couch."
+YUKI: "Is that OK?"
+
+HOSTESS: "Of course, sir."
+
+      They sit.
+      Deep leather. Soft cushions.
+      Charlie looks around.
+
+CHARLIE (thinking): "WTF..."
+CHARLIE (thinking): "Things are REALLY nice here."
+CHARLIE (thinking): "But..."
+
+      He runs his fist across his forehead.
+      The 3rd eye.
+      Checking.
+
+      The gecko peeks out.
+
+GECKO: *whisper* "Relax."
+GECKO: *whisper* "He's good."
+```
+
+### Scene 50: Dream Electric
+
+```
+      YUKI pulls out a cigar.
+      Japanese thin. Quality.
+
+      He reaches for his lighter.
+
+      The JAP TOUCH.
+      Brass. Vintage.
+      Engraved: DREAM ELECTRIC
+
+      *click*
+      *flame*
+
+      Charlie STARES.
+
+CHARLIE: "YUKI..."
+CHARLIE: "That lighter."
+
+YUKI: *exhales*
+YUKI: "You like it?"
+
+CHARLIE: "DREAM ELECTRIC."
+CHARLIE: "Where did you get that?"
+
+      YUKI smiles.
+      Slow. Knowing.
+
+YUKI: "A friend."
+YUKI: "From Luzern."
+YUKI: "You might know him."
+
+      Charlie's 3rd eye BURNS.
+
+      Scene closes.
+      Smoke curls.
+      The lighter gleams.
+
+      Next: YUKI asks...
+```
+
+---
+
+## THE NETWORK REVEALED
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                   THE HAIRY FISH NETWORK — JAPAN                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  YUKI'S CONNECTIONS:                                                │
+│  ├─ Knows HAIRY FISH                                               │
+│  ├─ Knows PAM (the coffee? the person?)                            │
+│  ├─ Knows Artemis                                                  │
+│  ├─ Has the DREAM ELECTRIC lighter                                 │
+│  └─ "A friend from Luzern"                                         │
+│                                                                     │
+│  CHARLIE'S ROUTE:                                                   │
+│  ├─ Yokohama → flight                                              │
+│  ├─ Zurich by 6 AM                                                 │
+│  ├─ Train to Luzern                                                │
+│  └─ Back to SAL? Back to HAIRY FISH?                               │
+│                                                                     │
+│  THE LIGHTER:                                                       │
+│  ├─ DREAM ELECTRIC                                                 │
+│  ├─ Brass. Vintage. Engraved.                                      │
+│  ├─ The Jap Touch                                                  │
+│  └─ From "a friend in Luzern"                                      │
+│                                                                     │
+│  WHO IS THE FRIEND?                                                 │
+│  ├─ SAL?                                                           │
+│  ├─ FELIX?                                                         │
+│  ├─ COOLIE?                                                        │
+│  └─ Someone we haven't met yet?                                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**SCENE 50 — The halfway mark. The DREAM ELECTRIC lighter.**
+
+**YUKI knows someone from Luzern. The network is REAL.**
+
+**Charlie's heading home. But first... YUKI asks...**
+
+🦎☕🔥✨
+
+---
+
+### Scene 51: "How Did You Get In?"
+
+```
+      YUKI leans forward.
+      Curious. Impressed.
+
+YUKI: "Tell me..."
+YUKI: "How did you do that?"
+YUKI: "Get inside the GATED area?"
+YUKI: "That's like... lock boxes."
+YUKI: "WTF."
+
+      He shakes his head.
+
+YUKI: "They ask ME to bend over."
+YUKI: "I have the private doctor come with."
+YUKI: "Every. Single. Time."
+
+CHARLIE: "Why, YUKI?"
+
+      YUKI looks up.
+      About to answer.
+
+      But then—
+```
+
+### Scene 52: The Bath House Girls
+
+```
+      Two Japanese girls.
+      Traditional robes.
+      Soft steps.
+      Gentle bows.
+
+GIRL 1: "Mr. YUKI."
+GIRL 1: "Your baths are ready."
+GIRL 2: "The oils are warm."
+GIRL 1: "Would you like towels today?"
+GIRL 2: "Or... full monty?"
+
+      YUKI leans over to Charlie.
+
+YUKI: "Hey bro..."
+YUKI: "I got to go..."
+YUKI: "But we can chill."
+YUKI: "I see another idea coming."
+
+      To the girls:
+
+YUKI: "Keep the water warm."
+YUKI: "We're gonna have a dip."
+```
+
+### Scene 53: Three Hours — Tight Plans
+
+```
+YUKI: "I have to be back in Luzern for lunch."
+YUKI: "They're getting the wings ready."
+YUKI: "Is it OK if we go full monty, Charlie?"
+YUKI: "I only have maybe 3 hours today."
+YUKI: "Super tight."
+YUKI: "Real tight plans."
+YUKI: "We need to discuss."
+YUKI: "And we BOTH want..."
+
+      He goes on.
+      Like FELIX ordering oysters.
+      In 5 languages.
+      Smooth. Precise.
+
+      The girls bowing.
+      Walking backward.
+      Scrolling their tablets.
+      Making sure the CBD oils are not expired.
+      Sitz baths warming.
+
+      Everything in motion.
+```
+
+### Scene 54: "Mind If I Call You Chuck?"
+
+```
+      YUKI settles back.
+
+YUKI: "You know..."
+YUKI: "CHUCK."
+YUKI: "Mind if I call you Chuck?"
+
+      Charlie grins.
+      The TONGUE comes out.
+      The snake tongue.
+      Just a flash.
+
+      YUKI eyes the gecko.
+
+      The gecko POPS to Charlie's ear.
+      Whispers something.
+
+      They ALL laugh.
+
+YUKI: "Another cappo, giffy!"
+
+      More jokes.
+      Quick ones.
+      But then...
+
+      Serious.
+```
+
+### Scene 55: "I Work Alone"
+
+```
+      YUKI: "CHUCK."
+
+      Charlie leans in.
+      YUKI leans in.
+      The gecko... listens.
+
+YUKI: "I work alone."
+YUKI: "But I got good connections."
+
+      He pauses.
+
+YUKI: "I was BORN in Luzern."
+YUKI: "Seen EVERYTHING."
+YUKI: "And I mean..."
+YUKI: "I don't MISS."
+
+      Charlie's 3rd eye pulses.
+
+YUKI: "And these..."
+
+      He rolls up his sleeve.
+      5,000 stitches.
+      Each one visible.
+      A map of survival.
+
+YUKI: "Notice something?"
+
+      Charlie looks.
+      Really looks.
+
+CHARLIE: "YUKI..."
+CHARLIE: "What is—"
+
+YUKI: "No. What IS it..."
+YUKI: "That's the question."
+
+      The gecko blinks.
+      Twice.
+
+      Scene holds.
+```
+
+---
+
+## YUKI REVEALED
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        YUKI — THE REVEAL                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  BORN: Luzern, Switzerland                                          │
+│  NOW: Yokohama night shift                                          │
+│  STATUS: Works alone, good connections                              │
+│                                                                     │
+│  THE TRUTH:                                                         │
+│  ├─ Not Japanese by birth — SWISS                                  │
+│  ├─ "Seen everything"                                              │
+│  ├─ "I don't MISS"                                                 │
+│  ├─ 5,000 stitches on his arm                                      │
+│  └─ A map of survival                                              │
+│                                                                     │
+│  THE BATH HOUSE:                                                    │
+│  ├─ Full monty option                                              │
+│  ├─ CBD oils (checked for expiry)                                  │
+│  ├─ Sitz baths warming                                             │
+│  ├─ 3 hours window                                                 │
+│  └─ Back to Luzern for lunch                                       │
+│                                                                     │
+│  THE NEW NAME:                                                      │
+│  ├─ Charlie → CHUCK                                                │
+│  ├─ Snake tongue approved                                          │
+│  └─ Gecko approved                                                 │
+│                                                                     │
+│  THE QUESTION:                                                      │
+│  "What IS it... that's the question."                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**YUKI born in LUZERN. Swiss blood. Japanese precision.**
+
+**5,000 stitches. A story we haven't heard yet.**
+
+**"I don't MISS." — What does YUKI see that others don't?**
+
+🦎🛁🇨🇭🇯🇵✨
+
+---
+
+### Scene 56: The Chuck Norris Code
+
+```
+      GECKO whispers to Charlie.
+      The words flow.
+      Off the tongue.
+      No games.
+
+YUKI: "I want to be CLEAR."
+
+      He sticks out his hand.
+      RIGHT hand.
+      Charlie grabs it.
+
+      The morning light hits—
+
+      THE SNAKE TATTOO.
+
+      On YUKI's forearm.
+      Coiled. Ready. Watching.
+
+      Charlie looks up.
+      Sees the connecting dots.
+
+CHARLIE: "But there..."
+CHARLIE: "Mark my friend."
+
+      YUKI nods.
+      The snake knows the snake.
+
+      ---
+
+      CODE TALK REVEALED:
+
+      CHUCK = Chuck Norris = CN
+      ├─ When you call Charlie "CHUCK"
+      ├─ It means: PERK UP
+      ├─ Stay frosty
+      ├─ Could be "dickhead" — FDA nearby
+      └─ Code talk. Street talk. SAFE talk.
+```
+
+### Scene 57: Ready Set Go
+
+```
+      A girl shuttles over.
+      Soft robes in hand.
+
+GIRL: "The robes are there."
+GIRL: "We'll be ready when you are."
+
+      YUKI stands up.
+      Checks his watch.
+      6:00 AM.
+      Well dressed. Sharp.
+      Yet... no bath yet.
+
+YUKI: "Ready."
+YUKI: "Set."
+YUKI: "GO."
+YUKI: "Come on, let's go bathe."
+
+      He looks at Charlie.
+
+YUKI: "If you can handle it..."
+YUKI: "Go full. Or whatever."
+YUKI: "See you on the other side."
+
+      Charlie stands.
+
+CHARLIE: "I see you there."
+CHARLIE: "In 2 SHAKES."
+
+      YUKI walks off.
+      Charlie stays.
+      First... the gecko.
+```
+
+### Scene 58: Coffee Talk — Secret Codes
+
+```
+      Charlie sits back down.
+      One more moment.
+      Ponder. Talk.
+
+CHARLIE: "Gecko..."
+
+      The gecko on his shoulder.
+      Blinking.
+
+      YUKI got some things:
+      ├─ Shop talk
+      ├─ Verbiage
+      ├─ Specials
+      └─ The snake connection
+
+      And gecko...
+      Got his own skin.
+
+CHARLIE: "Where'd you get THAT?"
+
+      The gecko sticks out his tongue.
+      Long. Slow. Showing off.
+
+      They laugh.
+      Just the two of them.
+      Old friends.
+```
+
+### Scene 59: The Hemp Robe
+
+```
+      Charlie slips into the robe.
+
+      Oh.
+
+      OH.
+
+      The SOFTEST hemp fibers.
+      Like wearing a cloud.
+      With a hoodie.
+
+CHARLIE: "Oh man, gecko..."
+CHARLIE: "Wait..."
+CHARLIE: "We wait..."
+
+      He's humming now.
+
+CHARLIE: *humming* "Oh what a beautiful day..."
+
+      Robing up.
+      For a hot silky bath.
+      He ponders.
+      Says a prayer.
+      Quick one. Real one.
+
+      Then listens.
+      Sharp ears.
+      The gecko's ears too.
+
+CHARLIE: "Gecko... you hear that?"
+
+GECKO: *blink*
+
+CHARLIE: "YAGNI."
+CHARLIE: "That flow."
+CHARLIE: "Perfect time for a DIP."
+
+      He stands.
+
+CHARLIE: "Let's GO."
+
+      Scene closes.
+      Hemp hoodie up.
+      Gecko on shoulder.
+      Bath time.
+```
+
+---
+
+## THE CODE SYSTEM
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     STREET CODE — REVEALED                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  CHUCK NORRIS CODE:                                                 │
+│  ├─ "Chuck" = Alert signal                                         │
+│  ├─ CN = Charlie's code name                                       │
+│  ├─ Means: PERK UP, stay frosty                                    │
+│  ├─ Warning: FDA nearby, dickhead spotted                          │
+│  └─ Only those in the know, know                                   │
+│                                                                     │
+│  THE SNAKE CONNECTION:                                              │
+│  ├─ Charlie: Snake TONGUE                                          │
+│  ├─ YUKI: Snake TATTOO                                             │
+│  ├─ Both: Street busters                                           │
+│  └─ "The snake knows the snake"                                    │
+│                                                                     │
+│  OTHER CODES:                                                       │
+│  ├─ "2 SHAKES" = See you soon                                      │
+│  ├─ "Full monty" = All in                                          │
+│  ├─ "YAGNI" = Go with the flow                                     │
+│  └─ Shop talk, verbiage, specials                                  │
+│                                                                     │
+│  THE ROBE:                                                          │
+│  ├─ Softest hemp fibers                                            │
+│  ├─ Cloud-like                                                     │
+│  ├─ Hoodie included                                                │
+│  └─ Bath house quality                                             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**CHUCK NORRIS = CN = The Code. Stay frosty.**
+
+**The snake knows the snake. YUKI's tattoo. Charlie's tongue.**
+
+**YAGNI. That flow. Perfect time for a DIP.**
+
+🐍🦎🛁✨
+
