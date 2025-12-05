@@ -184,6 +184,113 @@ The dream machine for all the JACKs, CRACKs, and 98%.
 
 ---
 
+## Session 2 — The Build (Like Honey)
+
+### What We Built
+
+| Commit | Feature |
+|--------|---------|
+| `faa3913` | Milestone: Tiger meets Lion |
+| `81a3bd1` | Delivery Check-In schema |
+| `7c1ad9b` | THE PLAY — 3 suppliers, 74 items, 4h→13min |
+| `488854b` | PAM-PROOF Shift Checklist |
+
+### Delivery Check-In
+
+```
+3 suppliers: Near Dark (DE), 420 (CH), Aldi
+4 pages, 74 items, CHF 11,173.30
+TIME: 4h 40min → 13 minutes
+Felix goes HOME.
+```
+
+### PAM-PROOF
+
+```
+12 closing tasks (must_do, should_do)
+Supply tracking (soap, ice, trash bags)
+Personal items: DO NOT TOUCH
+PamReportCard: Weekly grade A-F
+```
+
+---
+
+## The Real Scenes — Not Code, But Life
+
+### Scene 1: Felix After Dark
+
+Pam leaves sick. 80% pay. Felix alone.
+4 pages, 100 items, 30-min email search.
+Mahnung at midnight. Felix works till morning.
+
+### Scene 2: Felix & Pam — Black Licorice
+
+```
+FELIX: *raging about soap, ice, empty bottle*
+
+PAM: "Here Felix... black licorice. I hate it. Want it?"
+
+FELIX: *swipes it like Bruce Lee*
+
+FELIX: "Pam... I LOVE licorice. My favorite."
+
+      They walk together.
+      Felix listens.
+      Pam talks about her heart.
+```
+
+### Scene 3: Vivi Arrives — The Storm Breaks
+
+```
+VIVI: Master therapist. 20+ years. Angel's cousin.
+
+VIVI: "Felix. Come with me."
+
+      Outside. The clouds break.
+
+FELIX: "I can't live like this."
+FELIX: "Every day a new excuse."
+FELIX: "They have a new book..."
+
+VIVI: "What book, Felix?"
+
+FELIX: *tears* "You know..."
+```
+
+### Pam Inside — The Fish Bowl
+
+```
+"I never cleaned anything in my life."
+"My mother did it."
+"I didn't take this job to WORK."
+"I took it to make MONEY."
+"I'm doing Felix a favor."
+
+      The fish bowl brain swims in circles.
+```
+
+---
+
+## The Wisdom
+
+> The checklist can't fix Felix's soul.
+> Only connection can.
+> Only Vivi outside.
+> Only tears.
+> Only "you know..."
+
+> When the tasks are clear, there's room for the heart.
+
+---
+
+## The Tag
+
+```
+v2.4.0-delivery-honey 🍯 Delivery Check-In: Felix's Freedom
+```
+
+---
+
 *"I do it for the love of it."*
 — Albert (and Angel)
 
@@ -192,4 +299,14 @@ The dream machine for all the JACKs, CRACKs, and 98%.
 🦁🐅💧
 
 **Be water, my friend.**
+
+---
+
+## End of Session — Dec 5, 2025
+
+The Tiger rests. The Lion guards. The stories are saved.
+
+**Tony and Leo at the crossroads.**
+
+*The rain is just water coming home.*
 
