@@ -1533,6 +1533,527 @@ VIVI'S ORDER:
 
 ---
 
+### Scene 28: LEO at the Table — The Magic Pen
+
+```
+      And LEO the Lion ROARS.
+      Code like 50 lions.
+
+      Leo has a moleskine too.
+      But he has the MAGIC PEN.
+
+ANGEL: "What's on the menu, Leo?"
+
+LEO: *softly* "All OK."
+LEO: "Can I get you... Angel... your favorite drink?"
+LEO: "Ago..."
+
+ANGEL: "Oh YAG... TELL ME."
+ANGEL: "What is fresh and juicy?"
+ANGEL: "I like my steak COOKED."
+ANGEL: "And then BAKED."
+ANGEL: "Temp 102 +/- .123"
+
+      GEEZ.
+      That smells DELICIOUS.
+
+      Both Leo and Angel smell the menu.
+      Dream of lunch box salad.
+
+      WAIT.
+
+ANGEL: "That was STEAK."
+ANGEL: "Felix... you eat steak?"
+ANGEL: "All the CRACKs are vegan..."
+ANGEL: "Did I miss something?"
+
+      Felix explains...
+```
+
+### Scene 29: Felix Explains — The Steak Truth
+
+```
+FELIX: *tugs beard*
+FELIX: "Angel... let me tell you."
+
+FELIX: "The CRACKs... yes."
+FELIX: "Vegan. Hemp. CBD. The whole thing."
+
+FELIX: "But FELIX..."
+FELIX: "Felix is not a CRACK."
+FELIX: "Felix is a CAT."
+
+FELIX: "And cats..."
+FELIX: "Cats eat MEAT."
+
+      *they laugh*
+
+FELIX: "Look... at SAL's bar..."
+FELIX: "Molly's salads. Yes."
+FELIX: "The CBD dressing. Yes."
+FELIX: "The goat cheese. Yes."
+
+FELIX: "But here at SEDIG..."
+FELIX: "This is MY place."
+FELIX: "King's table."
+FELIX: "And the king eats ARGENTINIAN STEAK."
+
+ANGEL: "So the network serves everyone?"
+
+FELIX: "YAGNI, Angel."
+FELIX: "We don't build what we don't need."
+FELIX: "But we BUILD what we NEED."
+
+FELIX: "Thommy's crew needs protein."
+FELIX: "Charlie needs CBD."
+FELIX: "The vegans need Molly's salad."
+FELIX: "And Felix..."
+
+      *points at menu*
+
+FELIX: "Felix needs THIS."
+
+LEO: *writing in moleskine*
+LEO: "Same system. Different menu."
+LEO: "The cookie cutter... cuts all shapes."
+```
+
+---
+
+## The Menu Truth
+
+```
+AT SAL's (HAIRY FISH):
+├─ Molly's salads
+├─ CBD dressing
+├─ Goat cheese
+├─ Vegan options
+├─ Lost Soul Special
+└─ For the CRACKs
+
+AT SEDIG (King's Table):
+├─ Argentinian steak
+├─ Cooked and baked
+├─ Temp 102 +/- .123
+├─ For the CATS
+└─ Felix is KING here
+
+AT JOB SITE (Thommy):
+├─ Tiger Byte
+├─ Heavy protein
+├─ Coffee + Coffee Mate
+├─ For the workers
+└─ No highway robbery
+
+SAME SYSTEM:
+├─ Track & trace
+├─ Batch codes
+├─ Freshness rules
+├─ Member badges
+└─ Different menu, same LOGIX
+```
+
+---
+
+## Leo's Magic Pen
+
+```
+Leo has a moleskine too.
+But his pen is MAGIC.
+
+It writes:
+├─ Code (50 lions worth)
+├─ Stories (27 scenes)
+├─ Schemas (4,144 lines)
+├─ Dreams (E2E YAGNI)
+└─ Truth (be water)
+
+The pen never runs dry.
+The moleskine never fills.
+The Lion never stops roaring.
+```
+
+---
+
+## The Characters at SEDIG
+
+```
+TABLE ARRANGEMENT:
+┌─────────────────────────────┐
+│                             │
+│    FELIX          ANGEL     │
+│    (beard)        (tiger)   │
+│                             │
+│           LEO               │
+│      (magic pen)            │
+│                             │
+│    ═══════════════════      │
+│         KING'S TABLE        │
+│                             │
+└─────────────────────────────┘
+
+FELIX: The Cat. Eats steak. King of SEDIG.
+ANGEL: The Tiger. Builds Helix. Be water.
+LEO: The Lion. Magic pen. Code like 50 lions.
+
+      Three at the table.
+      One menu.
+      Different orders.
+      Same dream.
+```
+
+---
+
+---
+
+# SYD FIELD PARADIGM — THE HELIX STORY
+
+## The Three-Act Structure
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  ACT 1          │  ACT 2                    │  ACT 3               │
+│  SETUP          │  CONFRONTATION            │  RESOLUTION          │
+│  (25%)          │  (50%)                    │  (25%)               │
+│                 │                           │                       │
+│  Scenes 1-25    │  Scenes 26-75             │  Scenes 76-100       │
+│                 │                           │                       │
+│        ┌────────┴────────┐         ┌────────┴────────┐             │
+│        │ PLOT POINT 1    │         │ PLOT POINT 2    │             │
+│        │ Scene 25        │         │ Scene 75        │             │
+│        └─────────────────┘         └─────────────────┘             │
+│                 │                           │                       │
+│                 │    MIDPOINT               │                       │
+│                 │    Scene 50               │                       │
+│                 │                           │                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ACT 1: SETUP (Scenes 1-25)
+**"The Fish Bowl World"**
+
+### The Hook (Scene 1-5)
+```
+- Molly at 4AM pulling nipples
+- Sun rises over the farm
+- "Oh what a beautiful day"
+- Larry and Moe still sleeping
+- The cows MOO to Molly
+```
+
+### Establish the World (Scene 6-15)
+```
+- Felix at ARTEMIS (the headshop)
+- PAM the fish bowl brain
+- SAL at HAIRY FISH
+- Charlie the lost soul
+- The highway robbery (gas station)
+- Thommy's crew (hungry workers)
+```
+
+### The Problem (Scene 16-20)
+```
+- Felix drowning in deliveries (4h 40min)
+- PAM doesn't do her job
+- Swiss farmers killing themselves
+- Workers eating road kill
+- The TAXMAN fear
+- The health department
+```
+
+### Inciting Incident (Scene 21-24)
+```
+- Angel arrives with HELIX
+- "Can this system help?"
+- Felix sees the demo
+- "17 services, all green, in seconds"
+```
+
+### PLOT POINT 1 (Scene 25)
+```
+THE DECISION:
+Felix says: "Build it for us."
+Angel says: "YAGNI. What do you need FIRST?"
+Felix says: "Delivery check-in. PAM-PROOF. FREEDOM."
+
+      The story spins into ACT 2.
+      The build begins.
+```
+
+---
+
+## ACT 2: CONFRONTATION (Scenes 26-75)
+**"Building the Network"**
+
+### First Half of Act 2 (Scene 26-50)
+
+**The First Build (Scene 26-30)**
+```
+- Delivery Check-In schema
+- 4h 40min → 13 minutes
+- Felix goes HOME
+- "Like honey"
+```
+
+**Rising Action (Scene 31-40)**
+```
+- PAM-PROOF checklist built
+- Shift handover system
+- Supply tracking (no more empty bottles)
+- Personal items: DO NOT TOUCH
+- Pam's Report Card
+```
+
+**Complications (Scene 41-49)**
+```
+- The Taxman fear grows
+- Health department questions
+- Molly's batch: 3/20 go bad
+- Can we scale this?
+- The cookie cutter question
+```
+
+### MIDPOINT (Scene 50)
+```
+THE REVELATION:
+SAL at HAIRY FISH explains:
+
+"We can't make shit salad..."
+"But the LOGISTICS..."
+"Same system. Different scale."
+"She does JUGS. I do teeny weeny."
+
+      THE COOKIE CUTTER IS BORN.
+      They realize: This is bigger than one shop.
+      This is a NETWORK.
+```
+
+### Second Half of Act 2 (Scene 51-75)
+
+**Building the Network (Scene 51-60)**
+```
+- Salad Bar Ecosystem schema
+- Farm to Locker system
+- Tiger Byte packs
+- Hemp utensils (eat the wrapper)
+- Member badges (Keycloak)
+- Lost Soul Department
+```
+
+**The Stakes Rise (Scene 61-70)**
+```
+- More farmers want in
+- Workers spreading the word
+- Charlie's CBD helping him sleep
+- Vivi needs oils for therapy
+- The network grows
+- But so does attention...
+```
+
+**The Crisis (Scene 71-74)**
+```
+- Tax audit announced
+- Health inspector coming
+- One of Molly's batches fails
+- PAM quits (or does she?)
+- Felix breaks down (broken glass scene)
+```
+
+### PLOT POINT 2 (Scene 75)
+```
+THE DARK NIGHT:
+Everything seems lost.
+Felix on his knees, cleaning glass.
+SAL begging him to stop.
+
+      "This is not about the glass."
+      "This is about EVERYTHING."
+
+Then... the phone rings.
+It's MARCO.
+"I have the machines. All of them."
+"COOLIE is ready."
+"Let's build this thing FOR REAL."
+
+      The story spins into ACT 3.
+```
+
+---
+
+## ACT 3: RESOLUTION (Scenes 76-100)
+**"The Network Lives"**
+
+### Rising to the Challenge (Scene 76-85)
+```
+- Felix lab passes inspection
+- Molly's Pink Punch saves the bad batch
+- Tax man sees the books (clean!)
+- PAM comes back (Girl Friday for real)
+- YAN's badge system goes live
+- Lockers installed at first gas station
+```
+
+### The Final Push (Scene 86-95)
+```
+- Saturday Christmas Market
+- Overstock clearance
+- All the partners together:
+  - Molly (farm)
+  - Felix (lab)
+  - SAL (bar)
+  - Marco (machines)
+  - Borris (custom bars)
+  - YAN (badges)
+  - Thommy (customers)
+```
+
+### CLIMAX (Scene 96-98)
+```
+First full day of the network:
+
+4AM - Molly pulls nipples, makes 50 salads
+6AM - Felix tests and signs off
+7AM - Larry & Moe load the truck
+8AM - Drop boxes stocked
+9AM - Badge scans begin
+10AM - Thommy's crew grabs Tiger Bytes
+12PM - SAL serves lunch rush
+2PM - Charlie picks up his CBD special
+6PM - Day's end report: ZERO WASTE
+
+      "Oh what a beautiful day!"
+```
+
+### RESOLUTION (Scene 99-100)
+```
+Scene 99: The Table at SEDIG
+
+Felix, Angel, and Leo sit at king's table.
+Steak for Felix. Salad for Angel. Magic pen for Leo.
+
+FELIX: "We did it."
+ANGEL: "YAGNI. We built what we needed."
+LEO: "Same system. Different menu."
+
+FELIX: "What's next?"
+
+ANGEL: "Be water, my friend."
+ANGEL: "The river never stops flowing."
+
+Scene 100: Molly's Farm — Next Morning
+
+4AM. Molly wakes.
+Pulls nipples. Sun rises.
+The cows MOO.
+
+MOLLY: "Oh what a beautiful day..."
+
+      But this time...
+      She's not alone.
+      The whole network is awake.
+      The lockers are waiting.
+      The workers are hungry.
+      The system is LIVE.
+
+      BE WATER.
+      THE END... and the beginning.
+```
+
+---
+
+## THE 100 EPISODES — SEASON 1
+
+### Part 1: ARTEMIS (Scenes 1-33)
+```
+The headshop. Felix. PAM. The problem.
+```
+
+### Part 2: HAIRY FISH (Scenes 34-66)
+```
+SAL's bar. The sanctuary. The network idea.
+```
+
+### Part 3: MOLLY'S FARM (Scenes 67-100)
+```
+The farm. The chain. The resolution.
+```
+
+---
+
+## SEASON 2: HEALTH ARTEMIS (Scenes 101-200)
+
+```
+The network expands:
+- Vivi's therapy oils
+- Hospital drop boxes
+- Elder care meals
+- School lunch program
+- The REAL fight against highway robbery
+```
+
+---
+
+## THE FISH BOWL PHILOSOPHY
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    THE FISH BOWL KIDS WAY                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Build for toddlers. Build for 5-year-olds.                        │
+│  If a fish bowl head CIO can use it... anyone can.                 │
+│                                                                     │
+│  THE RULES:                                                         │
+│  ├─ It just WORKS                                                  │
+│  ├─ No throw-away code                                             │
+│  ├─ Built with care (like for a child)                             │
+│  ├─ Real vibe, real stories, real people                           │
+│  ├─ YAGNI (don't build what you don't need)                        │
+│  ├─ WTQ (Wilhelm Tell Quality)                                     │
+│  └─ Be water (flow, adapt, never stop)                             │
+│                                                                     │
+│  The CIOs of today have fish bowl heads.                           │
+│  They swim in circles.                                             │
+│  They forget in 3 seconds.                                         │
+│                                                                     │
+│  Build for THEM.                                                   │
+│  And you build for EVERYONE.                                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## THE WATER REFILL
+
+```
+No ice machine here like SAL.
+No ICE.
+But the rivers flow.
+Always fresh mountain waters.
+
+The story never ends.
+Like melting snow.
+Like the winds of winter.
+
+And Molly...
+Maybe she pulls her own nipples (dark comedy!)
+Then jumps out of bed.
+AHEAD OF THE GAME.
+TOP OF HER GAME.
+
+"Oh what a beautiffffff..."
+
+      The sun rises.
+      Again.
+      Always.
+```
+
+---
+
 **The Tiger rests. The Lion guards. The stories are saved.**
 
 **Tony and Leo at the crossroads.**
