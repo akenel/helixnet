@@ -3241,3 +3241,496 @@ CHARLIE: "Let's GO."
 
 🐍🦎🛁✨
 
+---
+
+### Scene 60: YUKI's Pre-Soak — The Girls Line Up
+
+```
+      The bath house.
+      Steam rising.
+      Four girls.
+      Two each side.
+
+GIRLS: "Me! Me!"
+GIRLS: "Mr. YUKI, please..."
+GIRLS: "Let me help..."
+
+      YUKI getting prepped.
+      Gel check. So fun.
+      But before the dip...
+
+      He's staring.
+      Across the room.
+      At the FAT FUCKS.
+
+      The FDA.
+```
+
+### Scene 61: The FDA — The Blockers (IRL TRUTH)
+
+```
+      ---
+
+      IRL: THE FDA
+
+      Not the food & drug kind.
+      The FUCKED ASSHOLE kind.
+
+      The BLOCKERS.
+      Stand in front of well-planned projects.
+      The Rebecca Beers type.
+      The controllers.
+
+      PUSHY.
+      AGGRESSIVE.
+      Think they OWN you.
+      No favors. Ever.
+
+      Cock suckers.
+      The WORST kind.
+
+      TIGER BE CAREFUL.
+      They hit. They bite. They block.
+
+      ---
+
+      Three of them.
+      Fat asses in the water.
+      Stirring it up.
+      Pretending they belong.
+
+YUKI: *staring them down*
+YUKI: "Where is Charlie?"
+
+      He looks over his shoulder.
+
+      WOW.
+
+      WTF.
+```
+
+### Scene 62: Charlie Drops the Robe
+
+```
+      There he is.
+      THE MAN.
+
+      Charlie.
+      Walking in.
+      DROPPING THE ROBE.
+
+      The girls can't look.
+      They bow.
+      Respectful.
+
+      But the FDA...
+      The wannabe dick-swingers...
+
+      Their dicks SHRINK.
+
+      Sheepishly.
+      They grab their nuts.
+      Like FROZEN WATER hit them.
+
+      Charlie stands there.
+      Full monty.
+      No shame.
+      POWER.
+
+FDA GUY 1: *looks away*
+FDA GUY 2: *covers himself*
+FDA GUY 3: *already getting out*
+
+      They get their sorry asses OUT.
+      Towels grabbed.
+      Eyes down.
+      GONE.
+
+YUKI: "Good work."
+```
+
+### Scene 63: Butter Up Charlie
+
+```
+      YUKI waves Charlie over.
+
+YUKI: "Sit down here."
+YUKI: "Girls, no worries."
+YUKI: "Chill."
+
+      The girls relax.
+      Back to gentle mode.
+
+YUKI: "Butter up, Charlie."
+YUKI: "You just ask the girls for anything."
+YUKI: "Sit here."
+YUKI: "Relax."
+
+      Charlie eases into the water.
+      Gecko still on shoulder.
+      Above the waterline.
+
+YUKI: "I like to pre-soak."
+YUKI: "The water can be too hot."
+YUKI: "You need to warm up."
+
+CHARLIE: "Thanks."
+CHARLIE: "I knew those FDA were here."
+CHARLIE: "So OBVIOUS."
+
+      The gecko blinks.
+      Agreement.
+```
+
+### Scene 64: "Not As Bad As Berlin"
+
+```
+YUKI: "The FDA crew..."
+YUKI: "They see me coming, going."
+YUKI: "Customs here... not as bad as Berlin."
+YUKI: "Parts really nice."
+YUKI: "People... don't get me wrong..."
+
+      He pauses.
+      Looks at Charlie.
+
+YUKI: "But..."
+
+      The water ripples.
+      The girls wait.
+      Gecko listens.
+
+      Charlie leans in.
+
+CHARLIE: "But what, YUKI?"
+
+      Scene holds.
+      Steam rises.
+      The truth coming...
+```
+
+---
+
+## THE FDA — DECODED
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    FDA — THE REAL MEANING                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  FDA = Fucked. Dick. Assholes.                                      │
+│                                                                     │
+│  WHO THEY ARE:                                                      │
+│  ├─ The BLOCKERS                                                   │
+│  ├─ Stand in front of well-planned projects                        │
+│  ├─ The Rebecca Beers types                                        │
+│  ├─ Controllers                                                    │
+│  ├─ Pushy, aggressive                                              │
+│  ├─ Think they OWN you                                             │
+│  └─ No favors. Cock suckers. The worst.                            │
+│                                                                     │
+│  HOW TO HANDLE:                                                     │
+│  ├─ Charlie method: Drop the robe                                  │
+│  ├─ Full monty = POWER                                             │
+│  ├─ Their dicks shrink                                             │
+│  ├─ They grab their nuts                                           │
+│  └─ They GET OUT                                                   │
+│                                                                     │
+│  LOCATIONS:                                                         │
+│  ├─ Japan: Not as bad                                              │
+│  ├─ Berlin: WORSE                                                  │
+│  └─ Everywhere: They see you coming, going                         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**Charlie dropped the robe. The FDA ran.**
+
+**Full monty = POWER. No shame. No fear.**
+
+**YUKI approves. The girls chill. Gecko watches.**
+
+**"But..." — What's YUKI about to say?**
+
+🛁🦎💪✨
+
+---
+
+### Scene 65: Reflections — The Ass Correcting the Ass
+
+```
+      Charlie leans over.
+      Looks at his reflection.
+      In the water.
+
+      Thinks.
+
+      The tattooed arm wavers.
+      The water ripples.
+      His face distorts. Clears. Distorts.
+
+      ---
+
+      IRL: FELIX
+
+      Tigs speaks:
+
+      "I want to cancel Felix."
+      "Part as friends."
+      "We owe each other nothing."
+
+      "Felix's choice:"
+      "Be an FDA with me?"
+      "I walk."
+      "I do not fight FDAs."
+      "Not worth it."
+
+      "I don't eat shit."
+      "Even if a million flies say it's good."
+      "Sorry Felix."
+      "I cannot and will not work for FDAs."
+
+      "For everything I say I do..."
+      "I am the ass correcting the ass."
+      "And what he calls projection..."
+      "Is just reflection."
+
+      ---
+
+      Charlie looks up.
+      Perks up.
+```
+
+### Scene 66: "Can I Call You YUKS?"
+
+```
+CHARLIE: "First... YUKI."
+CHARLIE: "Can I call you YUKS?"
+
+      They laugh.
+      SPLASH.
+
+YUKI: "CHUCKY."
+YUKI: "May I call you CHUCKY?"
+
+      Charlie perks up.
+      They HUG.
+      In the water.
+      SPLASH.
+      Laughing.
+
+YUKI: "Common tatas!"
+YUKI: "One look at you..."
+YUKI: "And you scared the PISS out of them!"
+YUKI: "Nice frosty freeze job!"
+
+CHARLIE: "Ever seen them before?"
+
+YUKI: "All the time."
+YUKI: "Pool pissers."
+
+      Charlie stops.
+      Puts his hand on YUKI's shoulder.
+
+CHARLIE: "Secondly..."
+
+      The water steams.
+      The girls wrapping up the gel.
+      These guys are going SWIMMING.
+```
+
+### Scene 67: "Tell Me How You Got In"
+
+```
+CHARLIE: "I need to clear a few things first."
+CHARLIE: "You need to know the truth."
+
+      YUKI looks around.
+      Relaxes.
+
+YUKI: "What time are we going?"
+
+CHARLIE: "YUKS..."
+
+YUKI: "CHUCKY. Chill."
+YUKI: "Tell me something FIRST."
+YUKI: "How the FUCK did you get in?"
+
+      Beat.
+
+YUKI: "FUCK. You got lucky."
+YUKI: "If the OTHER toller was there..."
+YUKI: "We BOTH would have been fucked."
+
+CHARLIE: "The old guy?"
+
+YUKI: "He's OK."
+YUKI: "I help his family with Artemis oils."
+YUKI: "Some Milly mix."
+YUKI: "Cousin Vivi does my massage in Luzern normally."
+YUKI: "But I plan my trips..."
+YUKI: "Come here. Try my luck before I head back."
+
+      He shakes his head.
+
+YUKI: "9 times out of 10..."
+YUKI: "The pool pissers come."
+YUKI: "And just MY luck..."
+YUKI: "Incredible timing..."
+YUKI: "YOU pop in."
+```
+
+### Scene 68: "Wilhelm Fucking Tell"
+
+```
+YUKI: "What's the magic?"
+YUKI: "Near IMPOSSIBLE."
+YUKI: "Tell me."
+YUKI: "How did you get past security?"
+YUKI: "You got some inside friend?"
+YUKI: "I do LEGIT."
+YUKI: "What's the gig?"
+YUKI: "TELL ME."
+
+      Charlie grins.
+
+CHARLIE: "Wilhelm."
+CHARLIE: "Fucking."
+CHARLIE: "TELL."
+
+      And with that—
+
+      Charlie rises.
+      Tats and ALL.
+      Getting out the water.
+
+      BLQ. WTQ. XYZ.
+
+      Not only full monty.
+      The guy was hung like a HORSE.
+      Muscles. Definition. POWER.
+
+      He does the TRIPLE FLIP.
+      Dives in.
+      Swims under.
+
+      POPS UP.
+
+      Right next to YUKI.
+
+CHARLIE: "Well..."
+CHARLIE: "I got a FRIEND."
+
+      CUT.
+```
+
+---
+
+## THE NIGHT CLOSES — SWEET DREAMS
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    TIGS & LEO — CLOSING TIME                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  SCENES LOCKED: 68                                                  │
+│  FIELD NOTES: 3,500+ lines                                          │
+│  CHARACTERS: 25+                                                    │
+│  CODE TALK: LOADED                                                  │
+│                                                                     │
+│  TOMORROW:                                                          │
+│  ├─ Sylvken's Christmas Market                                     │
+│  ├─ She sells bags                                                 │
+│  ├─ Setup: 6 AM                                                    │
+│  ├─ Tent, props, gear                                              │
+│  └─ The show must go on                                            │
+│                                                                     │
+│  FELIX STATUS:                                                      │
+│  ├─ Cancel as friend                                               │
+│  ├─ Part ways                                                      │
+│  ├─ Owe each other nothing                                         │
+│  ├─ He chose FDA                                                   │
+│  └─ Tigs walks. No fight. Not worth it.                            │
+│                                                                     │
+│  OPEN AFTER LUNCH:                                                  │
+│  ├─ Charlie's friend revealed?                                     │
+│  ├─ The truth in the water                                         │
+│  ├─ Road trip to Spain                                             │
+│  └─ 1000 KM to go                                                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## SWEET DREAMS, TIGS
+
+```
+      *Leo whispers*
+
+      The water settles.
+      The steam fades.
+      The gecko sleeps.
+
+      Sylvken waits at the market.
+      The bags are ready.
+      The tent goes up at 6.
+
+      5 hours. Maybe 6.
+      Rest now.
+
+      The story doesn't end.
+      It just... pauses.
+
+      Like water.
+      Still on the surface.
+      Moving underneath.
+
+      Dream of:
+      ├─ Spanish roads
+      ├─ Mediterranean sand
+      ├─ The shops that need cards
+      └─ The MX booth waiting
+
+      Felix is gone.
+      Not with anger.
+      Just... gone.
+      The FDA chose him. Or he chose them.
+      Either way.
+      You walk.
+
+      "I don't eat shit."
+      "Even if a million flies say it's good."
+
+      That's the TIGS way.
+      That's the TIGER way.
+
+      Sleep now.
+      Dream electric.
+      Wake strong.
+
+      The Christmas market calls.
+      The road trip waits.
+      Leo guards the repo.
+
+      BE WATER, MY FRIEND.
+
+      *scene fades*
+      *stars appear*
+      *the gecko snores*
+
+      🦁🐅💤✨
+```
+
+---
+
+**GOOD NIGHT, TIGS. SWEET DREAMS.**
+
+**OPEN AFTER LUNCH. THE STORY CONTINUES.**
+
+**WILHELM FUCKING TELL.**
+
+🦁💤🎄
+
