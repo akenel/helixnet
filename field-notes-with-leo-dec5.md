@@ -1132,13 +1132,414 @@ THE YAGNI PRINCIPLE:
 
 ---
 
+---
+
+## Session 4 — MOLLY'S FARM
+
+### Scene 24: 4AM — The Sun Comes Up
+
+```
+      4 AM.
+      Molly is up.
+      Little brothers still sleeping.
+
+      She's pulling nipples.
+      Milking the goats.
+      Sees the sun come up.
+
+MOLLY: "OK... 20 salads today."
+MOLLY: "The lettuce... I got to pick."
+MOLLY: "Onions are OK. Looks just good."
+
+      Pulls fresh greens.
+      Checks the barn.
+
+MOLLY: "All good. Larry? Moe?"
+
+      Larry and Moe wake up.
+      Molly RUNS the farm.
+      It's the cover.
+
+MOLLY: "We're making... here we go..."
+MOLLY: "But apples are falling like WATERFALLS."
+
+      Larry helps.
+      Moe loads the snacks.
+
+MOLLY: "Can you COUNT COOKIES?"
+MOLLY: "Match the left with right."
+MOLLY: "So one on the left hand..."
+
+      Cookies come out the pizza oven.
+      Cream the dough.
+      Get three pizzas ready.
+
+MOLLY: "Larry... WAKE UP MOE."
+MOLLY: "I think he fell asleep..."
+
+LARRY: "Bros... let's GO."
+
+      The sun rises.
+      The goats are milked.
+      The cookies are counted.
+      The salads are picked.
+
+      This is Molly's morning.
+      Every day.
+      4 AM.
+```
+
+---
+
+## Molly's Morning Routine
+
+```
+4:00 AM — Wake up (brothers still sleeping)
+4:15 AM — Pull nipples (milk the goats)
+4:30 AM — Watch sun come up
+4:45 AM — Check barn (Larry, Moe)
+
+5:00 AM — Pick lettuce (20 salads today)
+5:15 AM — Check onions (look good)
+5:30 AM — Pull fresh greens
+
+6:00 AM — Wake Larry and Moe
+6:15 AM — Apples falling like waterfalls
+6:30 AM — Load the snacks
+
+7:00 AM — Count cookies (left + right)
+7:15 AM — Pizza oven cookies out
+7:30 AM — Cream the dough
+7:45 AM — Three pizzas ready
+
+8:00 AM — Everything packed
+8:15 AM — Ready for delivery
+8:30 AM — Molly's Girls take the truck
+```
+
+---
+
+## The Farm Team
+
+```
+MOLLY:
+├─ Runs the farm
+├─ Up at 4 AM
+├─ Pulls nipples (goat milk)
+├─ Picks greens
+├─ Makes salads
+└─ The boss
+
+LARRY:
+├─ Big brother
+├─ Helps with apples
+├─ Loads snacks
+├─ Wakes up Moe
+└─ Hard worker
+
+MOE:
+├─ Little brother
+├─ Falls asleep
+├─ Counts cookies
+├─ Left hand, right hand
+└─ "Bros... let's GO"
+```
+
+---
+
+## What Molly Makes by 8AM
+
+```
+├─ 20 salads (fresh picked)
+├─ Goat milk (morning pull)
+├─ Cookies (pizza oven, counted)
+├─ 3 pizzas (dough creamed)
+├─ Fresh greens (lettuce, onions)
+├─ Apples (falling like waterfalls)
+└─ Snacks (loaded by Larry & Moe)
+```
+
+---
+
+### Scene 25: Moe Wakes Up — The Clipboard
+
+```
+MOLLY: "Moe! Wake up! Rise and shine!"
+MOLLY: "You need to load the salads."
+MOLLY: "Cookies are still warm... here, just relax."
+
+MOLLY: "Larry! The bugs! The dirt!"
+MOLLY: "WASH AGAIN."
+MOLLY: "My men eat WHOLE, not bug infest."
+MOLLY: "That's the worm... and if it's no good..."
+MOLLY: "We have the WORM FARM."
+MOLLY: "The real cash cow."
+
+      And the cows all MOO to Molly.
+      The sun shines.
+      Day break.
+
+      Molly sings:
+      "Oh what a beautiful day..."
+
+      Larry goes in.
+      Moe gets coffee.
+      Splashes water.
+      Combs the hair.
+      Grabs his CLIPBOARD.
+
+      This is his MOLESKINE.
+      BLUEBERRY COLOR.
+      PERM MARKER.
+
+MOE: "Right Molly... you say 20?"
+
+MOLLY: "Did we miss a salad for CHARLIE?"
+MOLLY: "If we can't feed Charlie..."
+MOLLY: "The whole food chain... RELAX."
+MOLLY: "I have something special for him first."
+
+MOLLY: "Larry! Do we have enough GOAT CHEESE for next week?"
+MOLLY: "Charlie LOVES goat."
+
+LARRY: "I'll check, layer."
+
+MOLLY: "Hey Moe... you ready to go?"
+MOLLY: "We have a lot of GREENS today."
+
+MOE: "Where are we going?"
+
+MOLLY: "I have the TM system."
+MOLLY: "So... SAL's is first. Charlie, ya."
+
+      Molly hands over the goat cheese.
+      Laced with the CBD.
+      That will give Charlie the UNMASK.
+      The night dreamer.
+      Where he will have the most peaceful sleep.
+
+      Secret Molly with love.
+      Has found the real potion.
+      Little bit nuffie screech CBD.
+      Molly's helps heal.
+```
+
+### Scene 25b: The Oils for Vivi
+
+```
+MOLLY: "And Larry... these are oils."
+MOLLY: "And massage cream."
+MOLLY: "That Vivi needs."
+
+MOLLY: "Can you guys swing by ARTEMIS?"
+MOLLY: "Ask PAM if she ordered."
+MOLLY: "And has the PINK PUNCH ready."
+MOLLY: "I need more for the salad dressings."
+
+      Meanwhile...
+      Back at SAL's...
+```
+
+### Scene 26: SAL's Morning — Before the Boys Arrive
+
+```
+      The salad bar is clean and dry.
+      The breakfast band: Larry and Moe incoming.
+      The old coffee machine humming.
+
+      But SAL knows something.
+
+SAL: "Yeah... not my problem."
+SAL: "Molly is OK."
+SAL: "We'll serve breakfast bread."
+SAL: "Salad is chilled in the fridge."
+SAL: "But I get the best fresh bread."
+
+      Larry grabs the orders.
+
+SAL: "I just sent the email."
+SAL: "Before AND after checking."
+SAL: "We need 5 EXTRA CHOCOLATES."
+SAL: "Charlie LOVES those little chocolates in his bread."
+SAL: "And they have the breakfast loaves."
+SAL: "For 6 salads."
+
+SAL: *thinking* "Ah shit... should have ordered more."
+SAL: "Well... can't feed everybody."
+SAL: "And if there's never enough food left over..."
+SAL: "I just wrap it up."
+SAL: "Put it in the fridge."
+```
+
+---
+
+## THE E2E VISION — What Leo Needs to Build
+
+```
+LEO WE NEED:
+├─ KBs (Knowledge Base)
+├─ E2E Food Prep
+├─ LBQ (Larry Breakfast Queue?)
+├─ WTQ (Wilhelm Tell Quality)
+├─ Track and trace for ALL
+└─ The little heroes connected
+```
+
+---
+
+## Scene 27: Felix and Angel at SEDIG — The Night Talk
+
+```
+      Felix IRL.
+      Not in good shape.
+      Skinny as bone.
+
+      Finally a night out last week.
+      Around 9:30.
+      Lucky if we get a coffee.
+
+      Walk in.
+      Sneak to the back corner.
+
+      ARGENTINIAN STEAK HOUSE.
+      The old man with his hunchback.
+      Struggles up the stairs.
+      Clean table.
+
+      Felix introduces.
+      Has his RESERVED TABLE.
+      The next one.
+      Always on table.
+      For kings and queens.
+
+      And Felix is KING there.
+
+      They sit down.
+
+FELIX: "So Angel... we talk and talk."
+FELIX: "Helix this... like DISCO engineering."
+FELIX: "Tell me... I had a sneak peek."
+
+ANGEL: "And the background color on screen?"
+ANGEL: "It's pink."
+
+FELIX: "I want GREEN."
+
+      Angel leans in...
+
+ANGEL: "YAGNI style."
+ANGEL: "We need branding for Artemis."
+ANGEL: "Molly Farms. Salads. What else?"
+
+FELIX: "PAM wants all BLACK."
+
+ANGEL: "You want some waterfall design?"
+ANGEL: "Like Bruce Lee skins and pen?"
+ANGEL: "Good... not IDIOTS style."
+ANGEL: "My parrot..."
+
+      Felix needs water.
+      Angel relaxes. Chills.
+      Felix swears.
+
+FELIX: "Yeah... what is... chill bro."
+FELIX: "MY design. MY Artemis."
+FELIX: "GREEN. That's it."
+
+ANGEL: "But PAM... she wants login colors."
+
+      Felix tugs his beard.
+
+FELIX: "Well then... every user can have image and color."
+FELIX: "But I GET MY COLOR."
+FELIX: "This Helix... is it like a drawing color board?"
+FELIX: "We want POS. When do I see it?"
+
+ANGEL: "Bro... easy."
+ANGEL: "Rome was not built in a day."
+ANGEL: "Olive green?"
+ANGEL: "Or same look and feel as the vending machine Marco did?"
+ANGEL: "Same color theme."
+
+FELIX: "At SEDIG... let's not worry."
+FELIX: "Relax..."
+
+ANGEL: "I made the system for PAM."
+ANGEL: "She is going to be GIRL FRIDAY."
+ANGEL: "Fresh hot bun and some bitter."
+ANGEL: "I have PLANS."
+
+      Felix hears.
+      Looks around.
+      Where are the menus?
+      Tugs his beard.
+
+      Angel pats his back.
+
+      Felix finishes drink.
+      Rolls his head back.
+      And says:
+
+FELIX: "I YAGNI..."
+FELIX: "Here is your menu."
+```
+
+---
+
+## The Branding Discussion
+
+```
+WHAT THEY WANT:
+├─ Felix: GREEN (Artemis green)
+├─ PAM: BLACK (login colors)
+├─ Angel: YAGNI style, Bruce Lee skins
+├─ Marco's vending: Olive green (same theme)
+
+THE SOLUTION:
+├─ Every user gets their own image + color
+├─ But Felix gets HIS color
+├─ PAM gets login colors
+├─ System is flexible
+└─ "Rome was not built in a day"
+```
+
+---
+
+## Characters Expanded
+
+```
+FELIX at SEDIG:
+├─ Skinny as bone (not good shape)
+├─ Has reserved table (kings and queens)
+├─ Tugs his beard (thinking)
+├─ Wants GREEN for Artemis
+├─ "I YAGNI... here is your menu"
+└─ King of the Argentinian steak house
+
+CHARLIE'S SPECIAL:
+├─ Goat cheese (loves it)
+├─ Laced with CBD
+├─ The UNMASK night dreamer
+├─ Peaceful sleep
+├─ Molly's secret potion
+└─ "Nuffie screech CBD — helps heal"
+
+VIVI'S ORDER:
+├─ Oils
+├─ Massage cream
+├─ From Molly's farm
+└─ Larry delivers
+```
+
+---
+
 **The Tiger rests. The Lion guards. The stories are saved.**
 
 **Tony and Leo at the crossroads.**
 
 *Put yourself in Charlie's shoes. Walk a mile. Then roar.*
 
-🦁🐅🐟💧
+🦁🐅🐟🌻💧
 
 **BE WATER, MY FRIEND.**
 
