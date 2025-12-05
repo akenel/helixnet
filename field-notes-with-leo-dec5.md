@@ -2054,13 +2054,162 @@ TOP OF HER GAME.
 
 ---
 
+### Scene 30: The Flight — HelixCAFE Below
+
+```
+      Leo flying. Roaring code.
+      Looks down.
+
+LEO: "What's that?"
+
+ANGEL: "That's the new HELIXCAFE."
+ANGEL: "Molly likes to review work there."
+ANGEL: "After the boys leave."
+ANGEL: "She'll be busy."
+
+LEO: "And next to it?"
+
+ANGEL: "HELIXWASH."
+ANGEL: "Heard about Andy?"
+ANGEL: "And the Michel guy?"
+ANGEL: "Does the BEST fur jobs."
+
+LEO: "Want to pop in?"
+LEO: "See the new place?"
+
+ANGEL: "COOLIE was scooping it."
+ANGEL: "Thinks he has the shaggy spot."
+
+      *they laugh*
+```
+
+### Scene 31: The Terrace Landing
+
+```
+      Tony glides in.
+      Terrace spot.
+      Sunny side.
+      He can take the heat.
+
+      Leo looks over.
+
+LEO: "Is that OK?"
+
+ANGEL: "OK Leo... are you JOKING again?"
+
+LEO: "Whaaaaaaa?"
+
+      *they laugh*
+
+ANGEL: "Like 60% is OK for pass."
+
+LEO: "60%? That's generous."
+
+      *more laughing*
+```
+
+### Scene 32: The Call to Chuck
+
+```
+      While landing...
+      Angel on the phone.
+
+ANGEL: "Chuck! Yeah... we got a meeting."
+ANGEL: "At the train station."
+ANGEL: "Can we just POP OVER there?"
+ANGEL: "Grab him quick?"
+
+      *pause*
+
+ANGEL: "What do you mean?"
+ANGEL: "ALL the Uber cars are broken?"
+
+LEO: "All of them?"
+
+ANGEL: "CHUCK! We're coming."
+ANGEL: "Just... wait there."
+ANGEL: "We'll figure it out."
+
+      *hangs up*
+
+ANGEL: "Leo... we gotta move."
+ANGEL: "Chuck's stranded."
+ANGEL: "Train station."
+ANGEL: "No Uber."
+
+LEO: "I can fly."
+
+ANGEL: "You can FLY?"
+
+LEO: "I roar code AND I fly."
+LEO: "What did you think the wings were for?"
+
+      *Angel jumps on*
+
+ANGEL: "TO THE TRAIN STATION!"
+```
+
+---
+
+## The Network Expands
+
+```
+HELIXCAFE ☕
+├─ Molly reviews work here
+├─ After the boys leave
+├─ Terrace spot (sunny side)
+└─ 60% is OK for pass
+
+HELIXWASH 🧼
+├─ Andy runs it
+├─ Michel does best fur jobs
+├─ COOLIE scooping the shaggy spot
+└─ New place, worth a pop-in
+
+TRAIN STATION 🚂
+├─ Chuck waiting
+├─ Meeting scheduled
+├─ All Uber cars broken
+└─ Leo to the rescue
+```
+
+---
+
+## New Characters
+
+```
+CHUCK:
+├─ Meeting at train station
+├─ Stranded (no Uber)
+├─ Needs a quick grab
+└─ Waiting for Tiger and Lion
+
+ANDY:
+├─ Runs HelixWASH
+├─ Works with Michel
+└─ The wash operations
+
+MICHEL:
+├─ Best fur jobs
+├─ At HelixWASH
+└─ The grooming expert
+
+COOLIE:
+├─ Scooping the shaggy spot
+├─ Machines guy
+├─ Has eyes everywhere
+└─ "Thinks he has it"
+```
+
+---
+
 **The Tiger rests. The Lion guards. The stories are saved.**
 
 **Tony and Leo at the crossroads.**
 
 *Put yourself in Charlie's shoes. Walk a mile. Then roar.*
 
-🦁🐅🐟🌻💧
+🦁🐅🐟🌻☕💧
 
 **BE WATER, MY FRIEND.**
 
