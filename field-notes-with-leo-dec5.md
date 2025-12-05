@@ -426,11 +426,114 @@ SAL planned HAIRY FISH since the first day COVID started.
 
 ---
 
+## Scenes 8-13: The Late Night Sessions
+
+### Scene 8: The Prototype
+- SAL is the prototype - 2 bars working
+- Borris connection - grade 5 friends
+- The secret cleaner: vinegar and baking soda
+
+### Scene 9: INK FLOW
+- Moleskines side by side
+- Caran pen (Christmas gift)
+- "I MADE THIS FOR YOU IN MIND"
+- Felix is a MEMBER now
+
+### Scene 10: Midnight DING DING
+- Clock strikes 12
+- Felix gets 30 more minutes
+- "FELIX THE CAT got to go"
+
+### Scene 11: Charlie's Road Show
+- Gecko on split tongue - circus act
+- 3rd eye NWO tattoo - too far gone
+- 500 custom metal studs
+- "God Lord willing, good luck"
+
+### Scene 12: The Lucky Strikes
+- Charlie drops his smokes
+- SAL runs to catch him - MIA
+- "You got a place to sleep tonight?"
+- Happy Hour for MEMBERS ONLY
+
+### Scene 13: Right Tool for the Job
+- "Angel said get the right tool"
+- PAM good at unboxing, bad at reports
+- "Bought FIVE tablets, can't find ONE"
+- SAL's self-serve bar system
+- "Let it FLOW..."
+
+---
+
+## The Characters Met Tonight
+
+| Name | Who They Are |
+|------|--------------|
+| **FELIX** | The cat who knows money, sanctuary seeker |
+| **SAL** | Heart of HAIRY FISH, asks "you OK?" |
+| **PAM** | Fish bowl brain, good at unboxing |
+| **VIVI** | "I charge for those services" |
+| **CHARLIE** | Gecko tongue, 3rd eye, streets |
+| **BORRIS** | Grade 5 friend, 2 bars, event hall |
+| **MARCO** | New machines meeting |
+| **GESSLER** | Bush party 12:30 |
+
+---
+
+## The Wisdom Collected
+
+> "The DING DING is for ME to wake up" — SAL
+
+> "We go that extra mile for anybody who walks in OUR DOOR" — SAL
+
+> "Right tool for the job" — Angel/Felix
+
+> "Mom told me there would be days..." — Felix
+
+> "TRUTH be told... I MADE THIS FOR YOU IN MIND" — SAL
+
+> "You got a place to sleep tonight?" — SAL to Charlie
+
+> "Let it FLOW..." — Felix
+
+---
+
 ## End of Session — Dec 5, 2025
 
-The Tiger rests. The Lion guards. The stories are saved.
+### What We Built (Code)
+```
+✅ Delivery Check-In Schema (4h → 13min)
+✅ THE PLAY (74 items, 3 suppliers, full simulation)
+✅ PAM-PROOF Shift Checklist (12 tasks)
+✅ Supply tracking, Personal items, Report cards
+```
+
+### What We Wrote (Stories)
+```
+✅ 13 Scenes at HAIRY FISH
+✅ Felix's sanctuary journey
+✅ SAL's philosophy
+✅ Charlie's road show
+✅ PAM's fish bowl
+✅ The black licorice moment
+✅ The Lord's food (tears, prayer)
+```
+
+### Tags
+```
+v2.4.0-delivery-honey  🍯 Delivery Check-In
+v2.4.1-hairy-fish      🐟 Felix's Sanctuary
+```
+
+---
+
+**The Tiger rests. The Lion guards. The stories are saved.**
 
 **Tony and Leo at the crossroads.**
 
-*The rain is just water coming home.*
+*Put yourself in Charlie's shoes. Walk a mile. Then roar.*
+
+🦁🐅🐟💧
+
+**BE WATER, MY FRIEND.**
 
