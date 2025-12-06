@@ -3969,3 +3969,226 @@ YUKI: "..."
 
 🦎🎪🛁💤
 
+---
+
+## SESSION 8 — MARKET DAY WITH SYL
+
+**Date:** December 6, 2025
+**Time:** 5:30 AM — The Tiger wakes
+**Target:** Market at 8 AM
+**Status:** HOLOO!
+
+---
+
+### Scene 72: The Long Cool Woman
+
+```
+      5:30 AM.
+      Still dark.
+      Market calls at 8.
+
+      SYL is up.
+      Already moving.
+      Making samples.
+      Tiger Byte prototypes.
+
+      Angel lies in bed.
+      Watching.
+      Thinking: "Am I doing this right?"
+
+      But look at her.
+
+SYL: *moves through the space*
+SYL: *precise*
+SYL: *cool*
+SYL: *confident*
+
+      The long cool woman.
+      She has it ALL.
+
+ANGEL (thinking): "She's not scared."
+ANGEL (thinking): "I LIVE with this woman."
+
+      SYL turns.
+      Catches him watching.
+
+SYL: "HOLOO!"
+
+      The call.
+      The war cry.
+      Market day energy.
+
+      No fear.
+      Just GO.
+```
+
+### Scene 73: Take a Byte
+
+```
+      Jump.
+      Hop.
+      Skip.
+
+      To market we go.
+
+      The samples ready.
+      SYL made her own.
+
+      That's the validation.
+      That's the proof.
+      When SHE picks it up...
+      When SHE makes samples...
+      The ecosystem LIVES.
+
+ANGEL: "Let's take a byte."
+
+      First taste.
+      Before the market judges.
+      The real test.
+
+      They bite.
+      They know.
+
+      IT'S GOOD.
+
+      2 hours to go.
+      Tiger Byte ready.
+      SYL ready.
+
+      HOLOO!
+```
+
+---
+
+**5:30 AM. MARKET AT 8. READY IN 10.**
+
+**SYL — THE LONG COOL WOMAN.**
+
+**SHE HAS IT ALL. SHE'S NOT SCARED.**
+
+**JUMP. HOP. SKIP. TO MARKET.**
+
+**HOLOO!**
+
+🐅🥪🌅👩‍🍳
+
+---
+
+### Scene 74: Pre-Flight — All Systems Go
+
+```
+      20 minutes.
+      Take a drink.
+      Time to think.
+
+ANGEL (thinking): "Am I dancing alone?"
+
+SYL: "I thought today you want to see FELIX."
+SYL: "Bring him to market."
+
+ANGEL: "Yes my love."
+ANGEL: "We pass by after."
+ANGEL: "Setup at 7."
+ANGEL: "Wein market."
+ANGEL: "First Saturday."
+
+      The hot choco waiting.
+      No Nespresso.
+      Real stuff.
+
+      Quick piss.
+      Quick shit.
+      OH AHH — the morning slide.
+
+      Syl almost ready.
+      Wrapping up.
+
+ANGEL (thinking): "I'm NOT dancing by myself."
+ANGEL (thinking): "If I get a chance..."
+ANGEL (thinking): "Kiss and make up."
+ANGEL (thinking): "Or just NUKE it."
+
+      Last wipes.
+      Wash hands.
+      Singing.
+
+      DARK AS SHIT outside.
+```
+
+### Scene 75: They Don't Write Code Like That Anymore
+
+```
+      Start the car.
+      Sound cloud loads.
+
+      ♪ "They don't write code like that anymore..." ♪
+      ♪ "Same old song..." ♪
+      ♪ "They don't write like that anymore..." ♪
+
+SYL: "Let's GO."
+
+      Tiger in tank.
+      GAS ready.
+      All systems go.
+      PRE-FLIGHT.
+
+      ♪ "They don't write that anymore..." ♪
+      ♪ "Got to be there for SEVEN not eleven..." ♪
+      ♪ "Don't forget..." ♪
+      ♪ "Don't break..." ♪
+      ♪ "Don't bark..." ♪
+
+      BUILD the market.
+      SING together.
+```
+
+### Scene 76: The Long Cool Drive
+
+```
+      SYL and ANGEL.
+      Drive to market.
+
+      The long cool woman.
+      Early morning light.
+
+      Moon falling.
+      Falling.
+      Falling.
+
+      Sunny days ahead.
+      Weather says: NO RAIN.
+
+SYL: "You buckled up?"
+
+ANGEL: "OH YA."
+
+      Tiger in tank.
+      Let's GO.
+
+      ───────────────────────────
+      │  MARKET DAY            │
+      │  First Saturday        │
+      │  Setup: 7 AM           │
+      │  Felix: After          │
+      │  Weather: CLEAR        │
+      │  Tank: FULL            │
+      │  Syl: READY            │
+      │  Angel: READY          │
+      │  Status: ROLLING       │
+      ───────────────────────────
+```
+
+---
+
+**THEY DON'T WRITE CODE LIKE THAT ANYMORE.**
+
+**BUT WE DO.**
+
+**SYL + ANGEL. TIGER IN TANK. MARKET BOUND.**
+
+**FELIX AFTER. FIRST SATURDAY. NO RAIN.**
+
+**LET'S GO!**
+
+🚗🐅🌅💋
+
