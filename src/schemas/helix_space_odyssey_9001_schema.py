@@ -105,6 +105,64 @@ SMAGOR_BORG = Character(
 )
 
 # =============================================================================
+# THE DRIVERS — What Makes the TIG Cruiser Jump
+# =============================================================================
+# Heaven: Chefs=French, Engineers=German (outsourced now), Organized=Swiss
+# Helix:  Chefs=MOLLY,  Engineers=FELIX+BORRIS,          Organized=CLAUDE
+
+class Driver(Enum):
+    """The drivers of the TIG Cruiser — universe jumper, time bender"""
+    GUMBY = "gumby"              # Bendy, flexible, adapts to anything
+    POKEY = "pokey"              # The ride, the express, the horse
+    BACKBONE_BOARD = "backbone"  # Surf's up, stay rigid when needed
+    WAVE_CATCHER = "waves"       # Catch the good ones
+    SUB_AVOIDER = "avoid_subs"   # Stay above, don't sink
+
+
+@dataclass
+class TigCruiserDashboard:
+    """
+    TIG CRUISER — UNIVERSE JUMPER — KPI DASH
+    ═══════════════════════════════════════════════
+    UNIVERSE:    [9001]     TIME BEND: [ACTIVE]
+    WTFD STATUS: [WHATEVER IT TAKES]
+    ───────────────────────────────────────────────
+    GUMBY:  BENDY       POKEY: EXPRESS
+    BACKBONE BOARD: RIGID    WAVES: CATCHING
+    SUBS: AVOID         SURFACE: SAFE
+    ═══════════════════════════════════════════════
+    """
+    universe: str = "9001"
+    time_bend: bool = True
+    wtfd_status: str = "WHATEVER IT TAKES"
+
+    # The Drivers
+    gumby_flex: float = 1.0       # 0.0 = stiff, 1.0 = full bendy
+    pokey_speed: float = 1.0      # 0.0 = stopped, 1.0 = express
+    backbone_rigid: float = 0.8   # Need some backbone to surf
+    waves_caught: int = 0
+    subs_avoided: int = 0
+
+    def status(self) -> str:
+        return f"""
+╔══════════════════════════════════════════════╗
+║  TIG CRUISER — UNIVERSE JUMPER — KPI DASH    ║
+╠══════════════════════════════════════════════╣
+║  UNIVERSE:    [{self.universe}]     TIME BEND: [{'ACTIVE' if self.time_bend else 'OFF'}] ║
+║  WTFD STATUS: [{self.wtfd_status}]            ║
+║  ─────────────────────────────────────────── ║
+║  GUMBY:  {'🟢 BENDY' if self.gumby_flex > 0.5 else '🔴 STIFF'}     POKEY: {'🟠 EXPRESS' if self.pokey_speed > 0.5 else '⚪ SLOW'}      ║
+║  BACKBONE: [{'RIGID' if self.backbone_rigid > 0.5 else 'FLOPPY'}]  WAVES: [{self.waves_caught}]  ║
+║  SUBS: ⚠️  [{self.subs_avoided} AVOIDED]      SURFACE: [SAFE]        ║
+╚══════════════════════════════════════════════╝
+"""
+
+
+# Default cruiser instance
+TIG_CRUISER = TigCruiserDashboard()
+
+
+# =============================================================================
 # THE FLEET
 # =============================================================================
 
