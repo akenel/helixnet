@@ -59,11 +59,13 @@
             }
         }
 
-        // Check for token in URL (callback from Keycloak)
+        // Check for error in URL params (callback error from server)
         const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        if (code) {
-            exchangeCodeForToken(code);
+        const error = urlParams.get('error');
+        if (error) {
+            showToast('Login failed: ' + error, 'error');
+            // Clear URL params
+            window.history.replaceState({}, document.title, '/pos');
         }
     });
 
@@ -72,7 +74,8 @@
         const keycloakUrl = 'https://keycloak.helix.local';
         const realm = 'kc-pos-realm-dev';
         const clientId = 'helix_pos_web';
-        const redirectUri = window.location.origin + '/pos';
+        // Use server-side callback to avoid CORS issues
+        const redirectUri = window.location.origin + '/pos/callback';
 
         // Build authorization URL
         const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?` +
@@ -83,65 +86,6 @@
 
         // Redirect to Keycloak
         window.location.href = authUrl;
-    }
-
-    async function exchangeCodeForToken(code) {
-        try {
-            showToast('Logging in...', 'info');
-
-            // Exchange authorization code for token
-            const keycloakUrl = 'https://keycloak.helix.local';
-            const realm = 'kc-pos-realm-dev';
-            const clientId = 'helix_pos_web';
-            const redirectUri = window.location.origin + '/pos';
-
-            const tokenEndpoint = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`;
-
-            const response = await fetch(tokenEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    grant_type: 'authorization_code',
-                    client_id: clientId,
-                    code: code,
-                    redirect_uri: redirectUri
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to exchange code for token');
-            }
-
-            const data = await response.json();
-
-            // Store token
-            AuthHelper.setToken(data.access_token);
-
-            // Get user info
-            const user = AuthHelper.getUserInfo();
-
-            if (!user || user.posRoles.length === 0) {
-                throw new Error('No POS roles assigned to this user');
-            }
-
-            showToast(`Welcome ${user.username}!`, 'success');
-
-            // Redirect to dashboard
-            setTimeout(() => {
-                window.location.href = '/pos/dashboard';
-            }, 500);
-
-        } catch (error) {
-            console.error('Login error:', error);
-            showToast('Login failed: ' + error.message, 'error');
-
-            // Clear URL params and try again
-            setTimeout(() => {
-                window.location.href = '/pos';
-            }, 2000);
-        }
     }
 </script>
 {% endblock %}

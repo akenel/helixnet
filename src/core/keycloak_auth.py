@@ -21,29 +21,41 @@ security = HTTPBearer()
 _jwks_cache: Optional[dict] = None
 
 
-async def get_jwks() -> dict:
+# Cache for multiple realms
+_jwks_cache_by_realm: dict = {}
+
+# POS realm - hardcoded because POS frontend uses this specific realm
+POS_REALM = "kc-pos-realm-dev"
+
+
+async def get_jwks(realm: str = None) -> dict:
     """
     Fetch JWKS (public keys) from Keycloak for token verification.
-    Caches the result to avoid repeated calls.
-    """
-    global _jwks_cache
+    Caches the result per realm to avoid repeated calls.
 
-    if _jwks_cache:
-        return _jwks_cache
+    Args:
+        realm: The realm to fetch JWKS from. Defaults to POS_REALM for POS routes.
+    """
+    global _jwks_cache_by_realm
+
+    realm = realm or POS_REALM
+
+    if realm in _jwks_cache_by_realm:
+        return _jwks_cache_by_realm[realm]
 
     try:
-        # POS realm JWKS endpoint - uses realm from settings
-        jwks_url = f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KEYCLOAK_REALM}/protocol/openid-connect/certs"
+        # Fetch JWKS from the specified realm
+        jwks_url = f"{settings.KEYCLOAK_SERVER_URL}/realms/{realm}/protocol/openid-connect/certs"
 
         async with httpx.AsyncClient(verify=False) as client:
             response = await client.get(jwks_url, timeout=10.0)
             response.raise_for_status()
-            _jwks_cache = response.json()
-            logger.info("✅ JWKS fetched and cached from Keycloak")
-            return _jwks_cache
+            _jwks_cache_by_realm[realm] = response.json()
+            logger.info(f"✅ JWKS fetched and cached from Keycloak realm: {realm}")
+            return _jwks_cache_by_realm[realm]
 
     except Exception as e:
-        logger.error(f"Failed to fetch JWKS from Keycloak: {e}")
+        logger.error(f"Failed to fetch JWKS from Keycloak realm {realm}: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentication service unavailable"
@@ -164,7 +176,26 @@ def require_roles(allowed_roles: List[str]):
         username = token_payload.get("preferred_username", "unknown")
 
         # Check if user has ANY of the allowed roles
-        has_permission = any(role in user_roles for role in allowed_roles)
+        # Handles both emoji-prefixed roles ("💰️ pos-cashier") and plain roles ("pos-cashier")
+        # by checking if the allowed_role string is contained in any user_role
+        def role_matches(allowed_role: str, user_role: str) -> bool:
+            """Check if allowed_role matches user_role (handles emoji prefixes)"""
+            # Exact match
+            if allowed_role == user_role:
+                return True
+            # allowed_role is substring of user_role (e.g., "pos-admin" in "👑️ pos-admin")
+            if allowed_role in user_role:
+                return True
+            # user_role is substring of allowed_role (e.g., "👑️ pos-admin" contains "pos-admin")
+            if user_role in allowed_role:
+                return True
+            return False
+
+        has_permission = any(
+            role_matches(allowed_role, user_role)
+            for allowed_role in allowed_roles
+            for user_role in user_roles
+        )
 
         if not has_permission:
             logger.warning(

@@ -1319,6 +1319,87 @@ async def pos_login(request: Request):
     return templates.TemplateResponse("pos/login.html", {"request": request})
 
 
+@html_router.get("/pos/callback")
+async def pos_oauth_callback(request: Request, code: str = None, error: str = None):
+    """
+    OAuth2 Callback - Server-side token exchange (avoids CORS issues)
+
+    Flow:
+    1. Keycloak redirects here with ?code=...
+    2. Server exchanges code for token (no CORS - server-to-server)
+    3. Redirects to dashboard with token in URL fragment
+    4. Frontend picks up token and stores it
+
+    This solves the CORS issue where browser can't POST to Keycloak directly.
+    """
+    import httpx
+    from fastapi.responses import RedirectResponse
+
+    if error:
+        logger.error(f"OAuth callback error: {error}")
+        return RedirectResponse(url="/pos?error=" + error)
+
+    if not code:
+        logger.warning("OAuth callback without code")
+        return RedirectResponse(url="/pos?error=no_code")
+
+    # Keycloak config
+    # IMPORTANT: Use internal Docker URL for server-to-server calls
+    keycloak_internal_url = "http://keycloak:8080"
+    realm = "kc-pos-realm-dev"
+    client_id = "helix_pos_web"
+
+    # Build redirect_uri - MUST match EXACTLY what browser sent to Keycloak
+    # request.base_url gives internal URL, but browser used external https URL
+    # So we need to reconstruct it from the request headers
+
+    # Get the original host from X-Forwarded headers (set by Traefik)
+    forwarded_proto = request.headers.get("x-forwarded-proto", "https")
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host", "helix.local")
+
+    # Build the exact redirect_uri that the browser sent to Keycloak
+    redirect_uri = f"{forwarded_proto}://{forwarded_host}/pos/callback"
+
+    logger.info(f"Token exchange redirect_uri: {redirect_uri}")
+
+    # Use internal URL for the actual HTTP call (no DNS issues inside Docker)
+    token_endpoint = f"{keycloak_internal_url}/realms/{realm}/protocol/openid-connect/token"
+
+    try:
+        # Server-to-server token exchange (no CORS issues)
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            response = await client.post(
+                token_endpoint,
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": client_id,
+                    "code": code,
+                    "redirect_uri": redirect_uri
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+
+            if response.status_code != 200:
+                logger.error(f"Token exchange failed: {response.status_code} - {response.text}")
+                return RedirectResponse(url="/pos?error=token_exchange_failed")
+
+            tokens = response.json()
+            access_token = tokens.get("access_token")
+
+            if not access_token:
+                logger.error("No access_token in response")
+                return RedirectResponse(url="/pos?error=no_token")
+
+            # Redirect to dashboard with token in URL fragment
+            # Frontend will pick it up and store in sessionStorage
+            logger.info(f"OAuth callback successful, redirecting to dashboard")
+            return RedirectResponse(url=f"/pos/dashboard#token={access_token}")
+
+    except Exception as e:
+        logger.error(f"Token exchange exception: {e}")
+        return RedirectResponse(url="/pos?error=token_exchange_error")
+
+
 @html_router.get("/pos/dashboard", response_class=HTMLResponse, name="pos_dashboard")
 async def pos_dashboard(request: Request):
     """

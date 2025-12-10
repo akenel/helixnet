@@ -101,14 +101,23 @@
       "fullScopeAllowed": true,
       "redirectUris": [
         "https://helix.local/*",
+        "https://helix.local/pos/callback",
         "http://helix.local/*",
+        "http://helix.local/pos/callback",
         "https://helix-platform.local/*",
+        "https://helix-platform.local/pos/callback",
         "https://pos.artemis-store.local/*",
+        "https://pos.artemis-store.local/pos/callback",
         "https://pos.blowup-littau.local/*",
+        "https://pos.blowup-littau.local/pos/callback",
         "http://localhost:8000/*",
+        "http://localhost:8000/pos/callback",
         "http://localhost:3000/*",
+        "http://localhost:3000/pos/callback",
         "http://localhost:9003/*",
-        "http://127.0.0.1:9003/*"
+        "http://localhost:9003/pos/callback",
+        "http://127.0.0.1:9003/*",
+        "http://127.0.0.1:9003/pos/callback"
       ],
       "webOrigins": [
         "https://helix.local",

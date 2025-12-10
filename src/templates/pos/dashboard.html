@@ -173,6 +173,18 @@
             shiftTime: '0h 0m',
 
             init() {
+                // Check for token in URL fragment (from OAuth callback)
+                const hash = window.location.hash;
+                if (hash && hash.includes('token=')) {
+                    const tokenFromUrl = hash.split('token=')[1];
+                    if (tokenFromUrl) {
+                        AuthHelper.setToken(tokenFromUrl);
+                        // Clear the hash from URL for cleaner display
+                        window.history.replaceState({}, document.title, '/pos/dashboard');
+                        showToast('Login successful!', 'success');
+                    }
+                }
+
                 // Check authentication
                 const token = AuthHelper.getToken();
                 if (!token) {

@@ -101,10 +101,15 @@
       "fullScopeAllowed": true,
       "redirectUris": [
         "https://helix-platform.local/*",
+        "https://helix-platform.local/pos/callback",
         "https://pos.artemis-store.local/*",
+        "https://pos.artemis-store.local/pos/callback",
         "http://localhost:8000/*",
+        "http://localhost:8000/pos/callback",
         "http://localhost:3000/*",
-        "http://localhost:9003/*"
+        "http://localhost:3000/pos/callback",
+        "http://localhost:9003/*",
+        "http://localhost:9003/pos/callback"
       ],
       "webOrigins": [
         "https://helix-platform.local",
