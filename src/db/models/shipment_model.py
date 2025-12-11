@@ -248,7 +248,10 @@ class ShipmentModel(Base):
 
     # Relationships
     purchase_orders: Mapped["PurchaseOrderModel"] = relationship(back_populates="shipments")
-    customs_clearance: Mapped["CustomsClearanceModel"] = relationship(back_populates="shipment")
+    customs_clearance: Mapped["CustomsClearanceModel"] = relationship(
+        back_populates="shipments",
+        foreign_keys="[ShipmentModel.customs_clearance_id]"
+    )
 
     def __repr__(self):
         return f"<ShipmentModel(num='{self.shipment_number}', type={self.shipment_type}, status={self.status})>"

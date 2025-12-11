@@ -50,6 +50,7 @@ from .purchase_order_model import PurchaseOrderModel, POStatus
 from .shipment_model import ShipmentModel, ShipmentType, ShipmentStatus
 from .customs_clearance_model import CustomsClearanceModel, CustomsStatus
 from .maintenance_event_model import MaintenanceEventModel, MaintenanceType, MaintenanceStatus
+from .equipment_acquisition_model import EquipmentAcquisitionModel, AcquisitionType, AcquisitionStatus, UrgencyLevel
 
 __all__ = [
     "Base",
@@ -126,4 +127,9 @@ __all__ = [
     "MaintenanceEventModel",
     "MaintenanceType",
     "MaintenanceStatus",
+    # Equipment Acquisition (BUY vs LEASE vs RENT)
+    "EquipmentAcquisitionModel",
+    "AcquisitionType",
+    "AcquisitionStatus",
+    "UrgencyLevel",
 ]

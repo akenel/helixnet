@@ -224,7 +224,7 @@ class LabTestModel(Base):
     )
 
     # Relationships
-    batch: Mapped["BatchModel"] = relationship(back_populates="lab_test")
+    batch: Mapped["BatchModel"] = relationship(back_populates="lab_tests")
 
     def __repr__(self):
         return f"<LabTestModel(batch='{self.batch_code}', status={self.status}, grade={self.quality_grade})>"

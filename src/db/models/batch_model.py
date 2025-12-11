@@ -149,12 +149,8 @@ class BatchModel(Base):
         nullable=False
     )
 
-    # Lab Testing
-    lab_test_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey('lab_tests.id'),
-        nullable=True
-    )
+    # Lab Testing (lab_test_id removed - use lab_tests relationship instead)
+    # LabTestModel has batch_id FK pointing here
     lab_approved: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
@@ -234,7 +230,7 @@ class BatchModel(Base):
 
     # Relationships
     farm: Mapped["FarmModel"] = relationship(back_populates="batches")
-    lab_test: Mapped["LabTestModel"] = relationship(back_populates="batch")
+    lab_tests: Mapped[list["LabTestModel"]] = relationship(back_populates="batch")
     traceable_items: Mapped[list["TraceableItemModel"]] = relationship(
         back_populates="batch",
         cascade="all, delete-orphan"

@@ -186,7 +186,12 @@ class CustomsClearanceModel(Base):
     )
 
     # Relationships
-    shipment: Mapped["ShipmentModel"] = relationship(back_populates="customs_clearance")
+    # Note: Shipment.customs_clearance_id is the owning FK
+    # CustomsClearanceModel.shipment_id kept for denormalization/queries
+    shipments: Mapped[list["ShipmentModel"]] = relationship(
+        back_populates="customs_clearance",
+        foreign_keys="[ShipmentModel.customs_clearance_id]"
+    )
 
     def __repr__(self):
         return f"<CustomsClearanceModel(num='{self.clearance_number}', status={self.status}, agent='{self.customs_agent}')>"
