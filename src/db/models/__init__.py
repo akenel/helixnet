@@ -36,6 +36,21 @@ from .payslip_model import PaySlipModel
 # Shift & Session Management (BLQ: Handoff WIZARD)
 from .shift_session_model import ShiftSessionModel, SessionStatus
 
+# E2E Track & Trace Models (THE SPINE)
+from .farm_model import FarmModel, FarmType
+from .batch_model import BatchModel, BatchStatus, FreshnessRule
+from .lab_test_model import LabTestModel, LabTestStatus, QualityGrade
+from .traceable_item_model import TraceableItemModel, LifecycleStage, LocationType
+from .trace_event_model import TraceEventModel, ActorType
+
+# Equipment Supply Chain Models (YUKI & CHARLIE's Domain)
+from .equipment_supplier_model import EquipmentSupplierModel, SupplierType
+from .equipment_model import EquipmentModel, EquipmentType, EquipmentStatus
+from .purchase_order_model import PurchaseOrderModel, POStatus
+from .shipment_model import ShipmentModel, ShipmentType, ShipmentStatus
+from .customs_clearance_model import CustomsClearanceModel, CustomsStatus
+from .maintenance_event_model import MaintenanceEventModel, MaintenanceType, MaintenanceStatus
+
 __all__ = [
     "Base",
     "UserModel",
@@ -81,4 +96,34 @@ __all__ = [
     # Shift & Session
     "ShiftSessionModel",
     "SessionStatus",
+    # E2E Track & Trace Models (THE SPINE)
+    "FarmModel",
+    "FarmType",
+    "BatchModel",
+    "BatchStatus",
+    "FreshnessRule",
+    "LabTestModel",
+    "LabTestStatus",
+    "QualityGrade",
+    "TraceableItemModel",
+    "LifecycleStage",
+    "LocationType",
+    "TraceEventModel",
+    "ActorType",
+    # Equipment Supply Chain Models (YUKI & CHARLIE)
+    "EquipmentSupplierModel",
+    "SupplierType",
+    "EquipmentModel",
+    "EquipmentType",
+    "EquipmentStatus",
+    "PurchaseOrderModel",
+    "POStatus",
+    "ShipmentModel",
+    "ShipmentType",
+    "ShipmentStatus",
+    "CustomsClearanceModel",
+    "CustomsStatus",
+    "MaintenanceEventModel",
+    "MaintenanceType",
+    "MaintenanceStatus",
 ]
