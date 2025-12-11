@@ -19,15 +19,29 @@ from .traceable_item_model import LifecycleStage, LocationType
 
 
 class ActorType(str, enum.Enum):
-    """Who touched it"""
-    FARMER = "farmer"
-    PROCESSOR = "processor"
-    LAB_TECH = "lab_tech"
-    DRIVER = "driver"
-    BAR_STAFF = "bar_staff"
-    MACHINE = "machine"
-    CUSTOMER = "customer"
-    SYSTEM = "system"
+    """Who touched it - The Cast"""
+    # Farm & Production
+    FARMER = "farmer"              # MOLLY, Brothers
+    PROCESSOR = "processor"        # Kitchen staff
+    LAB_TECH = "lab_tech"          # FELIX and team
+
+    # Logistics & Freight (YUKI's domain)
+    FREIGHT_COORDINATOR = "freight_coordinator"  # YUKI - The Boss
+    FREIGHT_SECURITY = "freight_security"        # CHARLIE - Eyes & Ears
+    PORT_AUTHORITY = "port_authority"            # HANK - The Stamp
+    PORT_WORKER = "port_worker"                  # DIRK - The Hands
+    CUSTOMS_AGENT = "customs_agent"              # Ka-MAKI - The Papers
+    DRIVER = "driver"                            # Transport
+
+    # Equipment & Build
+    EQUIPMENT_TECH = "equipment_tech"            # MARCO - The Builder
+    SUPPLIER = "supplier"                        # External suppliers
+
+    # Service & Sales
+    BAR_STAFF = "bar_staff"        # SAL and team
+    MACHINE = "machine"            # COOLIE, scanners
+    CUSTOMER = "customer"          # End users
+    SYSTEM = "system"              # Automated events
 
 
 class TraceEventModel(Base):

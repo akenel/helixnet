@@ -4192,3 +4192,455 @@ ANGEL: "OH YA."
 
 🚗🐅🌅💋
 
+---
+
+## SESSION 8: The Freight Team — Rotterdam + Bath House
+
+*December 11, 2025 — Late night coding session*
+*The supply chain cast comes together.*
+
+---
+
+### SCENE 43: ROTTERDAM PORT — NIGHT
+
+```screenplay
+INT. ROTTERDAM PORT - CONTAINER TERMINAL - NIGHT
+
+3:47 AM. Fog rolls off the water. Cranes move like sleeping giants.
+Orange lights everywhere. The hum of generators.
+
+HANK "THE HANKSTER" (60s, barrel-chested, night shift controller)
+sits in the elevated control booth. Monitors showing container positions.
+Coffee. Always coffee.
+
+DIRK "DIRTY DIRK" (40s, weathered hands, forklift keys on belt)
+radios in from the yard.
+
+                    DIRK (V.O.)
+          Container MSCU-7749 spotted. Bay 17.
+          Japanese origin. The special one.
+
+                    HANK
+              (into radio)
+          The COOLIE. Yeah. YUKI's shipment.
+          Ka-MAKI already cleared papers.
+          Bring it to inspection area.
+
+The container moves. Crane swings. DIRK operates.
+
+---
+
+EXT. INSPECTION AREA - CONTINUOUS
+
+YUKI stands with clipboard. Professional. Watching.
+The container touches down.
+
+                    YUKI
+          CHARLIE.
+
+A figure emerges from behind the stacked containers.
+CHARLIE. Dusty. Tired. But alert.
+
+                    CHARLIE
+          45 days. I rode the whole way.
+          Nobody touched it.
+
+                    YUKI
+          That's why I trust you.
+
+CHARLIE approaches the container. Examines the seal.
+Pulls out a flashlight. Checks the edges.
+
+                    CHARLIE
+          Seal intact. Number matches.
+              (checks manifest)
+          JURA-COOLIE-7749. The beautiful bastard.
+
+DIRK walks over. Keys jangling.
+
+                    DIRK
+          You the one who was INSIDE?
+
+                    CHARLIE
+          Someone has to be.
+
+                    DIRK
+          Crazy bastard.
+              (respectful nod)
+          My kind of crazy.
+
+HANK descends from the booth. Papers in hand.
+Ka-MAKI's customs clearance. Green stamp.
+
+                    HANK
+          Papers are TIGHT.
+          Ka-MAKI outdid himself.
+              (pulls out stamp)
+          CLEARED FOR RELEASE.
+
+The stamp comes down. THUNK.
+
+                    HANK (CONT'D)
+          She's all yours, YUKI.
+          Last mile to Zurich.
+          MARCO's waiting.
+
+YUKI nods. Professional. But there's something in the eyes.
+Trust. Earned. Not given.
+
+                    YUKI
+          CHARLIE. Ride with her to the end.
+
+                    CHARLIE
+          Always.
+
+The container gets loaded onto a truck.
+CHARLIE climbs in the cab with the driver.
+YUKI watches them go.
+
+DIRK and HANK return to their posts.
+The night continues. Containers move.
+This is Rotterdam. 24/7. The machine never stops.
+
+But tonight, something special passed through.
+And the right people handled it.
+
+                                        CUT TO:
+```
+
+---
+
+### SCENE 44: BATH HOUSE — THE PARTNERSHIP
+
+```screenplay
+INT. JAPANESE BATH HOUSE - ZURICH - NIGHT
+
+Steam. Wood paneling. Traditional.
+Two figures in the hot water. YUKI and CHARLIE.
+The shipment delivered. COOLIE safe at HAIRY FISH.
+
+                    YUKI
+          You know why I asked you here?
+
+                    CHARLIE
+          Not for the water.
+
+                    YUKI
+              (small laugh)
+          No. Not for the water.
+
+Beat. Steam rises.
+
+                    YUKI (CONT'D)
+          Rotterdam. You saw the seal was off.
+          2 millimeters. Nobody else noticed.
+
+                    CHARLIE
+          I notice everything.
+          That's why I was in that container.
+
+                    YUKI
+          The manifest had a typo.
+          Weight listed wrong.
+          You caught it before customs did.
+
+                    CHARLIE
+          Ka-MAKI would have caught it.
+          But I caught it first.
+
+                    YUKI
+          That's the difference.
+          FIRST.
+
+FLASHBACK: Rotterdam port. Night. Rain.
+CHARLIE's eyes scanning. The seal. The manifest.
+A conversation with DIRK about container weight.
+The correction made. Papers fixed.
+Ka-MAKI never knew there was almost a problem.
+
+BACK TO BATH HOUSE:
+
+                    YUKI
+          You see what others miss.
+
+                    CHARLIE
+          And you know who to trust.
+
+                    YUKI
+          I want you full time.
+          Not just the Japan runs.
+          Every shipment. Every container.
+          Eyes and ears.
+
+                    CHARLIE
+          What's the title?
+
+                    YUKI
+          Freight Security Specialist.
+              (beat)
+          But the real job?
+          You're my second pair of eyes.
+          The first line. Before anything goes wrong.
+
+                    CHARLIE
+          And HANK? DIRK?
+
+                    YUKI
+          They're Rotterdam.
+          Good people. They move the iron.
+          But they don't see like you see.
+
+                    CHARLIE
+          Nobody does.
+              (not arrogant, just true)
+          That's not ego. That's just... how I'm built.
+
+                    YUKI
+              (extends hand through water)
+          Partners. Not employee.
+          We build this together.
+
+CHARLIE looks at the hand.
+Thinks of 45 days in a container.
+Thinks of every shipment that almost went wrong.
+Thinks of YUKI — the one who trusted.
+
+                    CHARLIE
+          "We ride WITH the equipment."
+
+                    YUKI
+          Every time.
+
+They shake. In the steam. In the heat.
+No contract. No lawyers. No HR.
+
+Just trust.
+
+                    CHARLIE
+          What's next?
+
+                    YUKI
+          BORRIS has a custom order.
+          Salad bar with CBD dispensers.
+          Ships from Luzern to London.
+
+                    CHARLIE
+          Domestic?
+
+                    YUKI
+          Starts domestic. But BORRIS...
+              (smiles)
+          BORRIS always finds a way to
+          make it complicated.
+
+                    CHARLIE
+          When?
+
+                    YUKI
+          Three weeks.
+
+                    CHARLIE
+          I'll be ready.
+
+They sit in the steam. Partners.
+The supply chain has its crew.
+YUKI. CHARLIE. HANK. DIRK. Ka-MAKI.
+MARCO waiting at the other end.
+BORRIS building the impossible.
+
+The machine works because the people work.
+Trust built one shipment at a time.
+
+                    YUKI
+          One more thing.
+
+                    CHARLIE
+          Yeah?
+
+                    YUKI
+          SAL wants to meet you.
+
+                    CHARLIE
+          The bar guy? HAIRY FISH?
+
+                    YUKI
+          THE bar guy. The center of everything.
+          He wants to thank you personally.
+          For the COOLIE.
+
+                    CHARLIE
+          I just rode in a container.
+
+                    YUKI
+          You brought his baby home safe.
+              (beat)
+          SAL doesn't forget.
+
+                    CHARLIE
+          When?
+
+                    YUKI
+          Tomorrow. HAIRY FISH. 7 AM.
+          Before the doors open.
+          He'll make you coffee.
+
+                    CHARLIE
+              (pause)
+          The COOLIE?
+
+                    YUKI
+          The COOLIE.
+
+CHARLIE nods. Something shifts.
+This isn't just a job anymore.
+This is family.
+
+                                        FADE OUT.
+```
+
+---
+
+### THE SUPPLY CHAIN CAST
+
+| CODE | NAME | ROLE | MOTTO |
+|------|------|------|-------|
+| YUKI | YUKI | Freight Coordinator | "We ride WITH the equipment." |
+| CHARLIE | CHARLIE | Freight Security | "I see what others miss." |
+| HANK | HANK "The Hankster" | Port Authority Rotterdam | "No stamp, no move." |
+| DIRK | DIRK "Dirty Dirk" | Port Operations | "These hands move mountains." |
+| KA_MAKI | Ka-MAKI | Customs Clearance | "Papers are TIGHT." |
+| MARCO | MARCO | Equipment Assembly | "Build it right, build it once." |
+| BORRIS | BORRIS | Custom Fabrication | "I build what nobody else can." |
+
+---
+
+### THE SIGN-OFF CHAIN
+
+```
+PURCHASE ORDER
+  └─> YUKI ─> SAL
+
+SHIPMENT DEPARTURE
+  └─> YUKI
+
+PHYSICAL INSPECTION
+  └─> CHARLIE
+
+PORT RELEASE
+  └─> HANK
+
+CUSTOMS CLEARANCE
+  └─> Ka-MAKI
+
+CONTAINER MOVED
+  └─> DIRK
+
+DELIVERY RECEIVED
+  └─> MARCO
+
+INSTALLATION COMPLETE
+  └─> MARCO
+
+FINAL ACCEPTANCE
+  └─> SAL
+```
+
+---
+
+### THE COOLIE JOURNEY (Code Version)
+
+```python
+# THE COOLIE JOURNEY - From Code to Coffee
+
+COOLIE_TRACE = [
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="sourced",
+        action="purchase_order_created",
+        actor_type="freight_coordinator",
+        actor_name="YUKI",
+        location="HELIX HQ",
+        notes="PO to JURA via MOSEY-JP"
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="in_transit",
+        action="container_sealed",
+        actor_type="freight_security",
+        actor_name="CHARLIE",
+        location="Yokohama Port",
+        notes="CHARLIE rides WITH the container"
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="in_transit",
+        action="customs_cleared",
+        actor_type="customs_agent",
+        actor_name="Ka-MAKI",
+        location="Rotterdam Port",
+        notes="Papers are TIGHT"
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="in_transit",
+        action="port_released",
+        actor_type="port_authority",
+        actor_name="HANK",
+        location="Rotterdam Port",
+        notes="THE STAMP. No stamp, no move."
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="in_transit",
+        action="container_moved",
+        actor_type="port_worker",
+        actor_name="DIRK",
+        location="Rotterdam Port",
+        notes="These hands move mountains."
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="delivered",
+        action="received",
+        actor_type="equipment_tech",
+        actor_name="MARCO",
+        location="HAIRY FISH",
+        notes="The baby is home."
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="operational",
+        action="installed",
+        actor_type="equipment_tech",
+        actor_name="MARCO",
+        location="HAIRY FISH - Coffee Station Alpha",
+        notes="3 months, 500 slides, Japan craft."
+    ),
+    TraceEvent(
+        item_code="COOLIE-001",
+        stage="operational",
+        action="first_coffee",
+        actor_type="bar_staff",
+        actor_name="SAL",
+        location="HAIRY FISH",
+        notes="Good morning, SAL."
+    ),
+]
+```
+
+---
+
+**THE CAST IS SET.**
+**THE CHAIN IS BUILT.**
+**COOLIE IS HOME.**
+
+**YUKI, CHARLIE, HANK, DIRK, Ka-MAKI, MARCO, BORRIS.**
+**This is how equipment travels.**
+**This is how trust is built.**
+
+**Scene by scene. Stamp by stamp. Seal by seal.**
+
+🚢📦✈️🏭☕
+
+---
+
