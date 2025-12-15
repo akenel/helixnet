@@ -28,6 +28,7 @@ from src.services.user_service import create_initial_users
 from src.services.artemis_user_seeding import seed_artemis_staff
 from src.services.pos_seeding_service import seed_artemis_products
 from src.services.store_settings_seeding import seed_store_settings
+from src.services.customer_seeding_service import seed_customers
 from src.services.sourcing_seeding_service import seed_sourcing_system
 from src.services.hr_seeding_service import seed_all_hr_data
 from src.services.minio_service import initialize_minio
@@ -112,6 +113,15 @@ async def lifespan(app: FastAPI):
         logger.info("✅ Store settings seeding completed successfully.")
     except Exception as e:
         logger.warning(f"⚠️ Store settings seeding encountered an issue: {e}", exc_info=True)
+
+    # --- Seed Customers (The CRACKs - External Customers) ---
+    try:
+        logger.info("🎮 Seeding customers (The CRACKs)...")
+        async with get_db_session_context() as db:
+            await seed_customers(db)
+        logger.info("✅ Customer seeding completed successfully.")
+    except Exception as e:
+        logger.warning(f"⚠️ Customer seeding encountered an issue: {e}", exc_info=True)
 
     # --- Seed Sourcing System (Suppliers + Requests for Felix) ---
     try:
