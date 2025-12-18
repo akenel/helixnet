@@ -1,0 +1,93 @@
+# =============================================================================
+# 🎸 HELIX MEDIA STACK — THE SUNRISE CHAIN PLAYER 🌅
+# =============================================================================
+#
+# "Because music without ads is music with soul." — Leo the Lion 🦁
+#
+# PURPOSE:
+#   - Self-hosted music player for HelixNet
+#   - No ads, no algorithm, no corporate BS
+#   - YOUR music, YOUR way, FOREVER
+#
+# WHO IS THIS FOR:
+#   - Small shop owners running HelixPOS who need background music
+#   - Freedom seekers who refuse to pay $150/year ransom to Spotify
+#   - People in countries where $12/month is a day's wage
+#   - The stubborn ones who'd rather build than subscribe
+#
+# STACK:
+#   - Swing Music (Python) — Beautiful Spotify-like UI
+#   - Traefik integration ready
+#   - SQLite for metadata (no heavy DB needed)
+#
+# USAGE:
+#   docker compose -f media-stack.yml up -d
+#
+# ACCESS:
+#   http://localhost:1970 (or music.helix.local with Traefik)
+#
+# =============================================================================
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # 🎵 SWING MUSIC — Your Personal Spotify (Without the Spotify)
+  # ─────────────────────────────────────────────────────────────────────────
+  swingmusic:
+    image: ghcr.io/swingmx/swingmusic:latest
+    container_name: helix-music
+    restart: unless-stopped
+    ports:
+      - "1970:1970"
+    volumes:
+      # 🎸 Your music library — THE SUNRISE CHAIN lives here
+      - ./music:/music:ro
+      # ⚙️ Config and database
+      - ./config:/config
+    environment:
+      - TZ=Europe/Zurich
+    labels:
+      # 🌅 Traefik labels (uncomment when using with helix-core)
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.music.rule=Host(`music.helix.local`)"
+      # - "traefik.http.routers.music.entrypoints=web"
+      # - "traefik.http.services.music.loadbalancer.server.port=1970"
+      - "helix.service=music"
+      - "helix.description=Sunrise Chain Music Player"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1970/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - helix-media
+
+networks:
+  helix-media:
+    name: helix-media
+    driver: bridge
+
+# =============================================================================
+# 🌅 THE SUNRISE CHAIN — Regional Folders
+# =============================================================================
+#
+# ./music/sunrise-chain/
+# ├── 01-pacific-dawn/      🇳🇿 New Zealand, Fiji, Samoa (first sunrise)
+# ├── 02-australia/         🇦🇺 Down Under wakes up
+# ├── 03-japan-korea/       🇯🇵 Land of the Rising Sun
+# ├── 04-southeast-asia/    🇮🇩 Indonesia, Philippines, Vietnam
+# ├── 05-india-pakistan/    🇮🇳 Subcontinent awakens
+# ├── 06-middle-east/       🇪🇬 Ancient lands
+# ├── 07-africa-east/       🇰🇪 Kenya, Ethiopia, South Africa
+# ├── 08-africa-west/       🇳🇬 Nigeria, Senegal, Mali
+# ├── 09-europe-east/       🇬🇷 Balkans, Greece, Turkey
+# ├── 10-europe-west/       🇫🇷 France, Spain, UK, Celtic
+# ├── 11-americas-east/     🇧🇷 Brazil, Argentina, East Coast
+# ├── 12-americas-west/     🇨🇦 Mexico, West Coast, Ontario
+# └── 13-soul-foundation/   🎷 Blues, Gospel, Soul — The backbone
+#
+# =============================================================================
+#
+# "Sing at sunrise. Be water." 🐉🎸
+#
+# =============================================================================

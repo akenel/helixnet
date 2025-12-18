@@ -1,0 +1,13 @@
+# 🎵 Music files — too big for git, download fresh with grab-tunes.sh
+*.mp3
+*.webm
+*.m4a
+*.flac
+*.wav
+*.ogg
+
+# Swing Music config/cache
+config/
+
+# Keep the folder structure
+!.gitkeep
