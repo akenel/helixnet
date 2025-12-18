@@ -61,11 +61,14 @@ services:
       start_period: 10s
     networks:
       - helix-media
+      - helixnet_core
 
 networks:
   helix-media:
     name: helix-media
     driver: bridge
+  helixnet_core:
+    external: true
 
 # =============================================================================
 # 🌅 THE SUNRISE CHAIN — Regional Folders

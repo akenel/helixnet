@@ -139,6 +139,11 @@ http:
       service: dozzle
       entryPoints: [websecure]
       tls: {}
+    music:
+      rule: "Host(`music.helix.local`)"
+      service: music
+      entryPoints: [websecure]
+      tls: {}
 # 🔎 Traefik Dashboard
     traefik_dashboard:
       rule: "Host(`traefik.helix.local`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
@@ -237,6 +242,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://dozzle:8080"
+    music:
+      loadBalancer:
+        servers:
+          - url: "http://helix-music:1970"
     # Traefik Dashboard
     api@internal:
       loadBalancer:
