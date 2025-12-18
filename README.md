@@ -105,6 +105,59 @@ All endpoints enforce RBAC via JWT token validation.
 
 ---
 
+## 🎵 Helix Media Player — THE SUNRISE CHAIN
+
+**Status:** Live & Roaring 🐅
+
+Because Spotify has ads. Because YouTube has algorithms. Because SoundCloud disappeared our account. So we built our own.
+
+### Philosophy
+
+> "No ads. No algorithm. No monthly ransom. Just music."
+> — Electric Jungle
+
+### What It Is
+
+A self-hosted music player (Swing Music) with a curated collection organized by **timezone** — following the sunrise around the Earth.
+
+```
+🌅 THE SUNRISE CHAIN — 66 tracks across 13 regions
+
+PACIFIC DAWN     → AUSTRALIA      → JAPAN-KOREA    → SOUTHEAST ASIA
+INDIA-PAKISTAN   → MIDDLE EAST    → AFRICA EAST    → AFRICA WEST
+EUROPE EAST      → EUROPE WEST    → AMERICAS EAST  → AMERICAS WEST
+                      ↓
+              SOUL FOUNDATION (the bedrock)
+```
+
+### Quick Start
+
+```bash
+cd compose/helix-media
+docker compose -f media-stack.yml up -d
+
+# Visit http://localhost:1970
+# Or add to /etc/hosts: 127.0.0.1 music.helix.local
+```
+
+### Features
+
+- **Self-hosted** — Your music, your server, your rules
+- **Synced lyrics** (.lrc files for sing-along)
+- **MANIFEST.md** — The story behind every track
+- **WISDOM.md** — Philosopher quotes for between songs
+- **yt-dlp integration** — Grab any track from YouTube
+
+### The Legends Inside
+
+Sam Cooke, Bob Dylan, Aretha Franklin, Pink Floyd, Queen, Led Zeppelin, The Beatles, Jimi Hendrix, Bob Marley, Nirvana, The Cult, Rolling Stones, AC/DC, and 50+ more icons from every corner of the globe.
+
+> "Be water, my friend." — Bruce Lee
+
+📁 **Location:** `compose/helix-media/`
+
+---
+
 ## 🧰 Components
 
 | Service              | Purpose                     | URL                                  |
