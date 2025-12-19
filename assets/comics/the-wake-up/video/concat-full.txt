@@ -1,0 +1,8 @@
+file 'title-card.mp4'
+file 'act1-title.mp4'
+file 'act1-static.mp4'
+file 'act2-title.mp4'
+file 'act2-static.mp4'
+file 'act3-title.mp4'
+file 'act3-static.mp4'
+file 'end-credits.mp4'
