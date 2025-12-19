@@ -1,0 +1,46 @@
+{
+  "name": "Blockhead Scene Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "trigger-001",
+      "name": "Generate New Scene"
+    },
+    {
+      "parameters": {
+        "command": "echo 'You are a comedy writer for HELIX COMICS - a Far Side style comic strip about corporate absurdity. The characters are blockhead LEGO-style figures. Write a NEW single-panel Far Side comic about a CTO who tries to use AI to solve a problem that has an obvious simple solution. Include: 1) THE SETUP (one paragraph), 2) THE PANEL description (what we see), 3) THE CAPTION (devastating one-liner). Keep it short, dark comedy, Banksy-meets-Peanuts style. The kid always knows the simple answer.' | /home/angel/.local/bin/claude --print"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [280, 0],
+      "id": "ssh-claude-001",
+      "name": "Claude Writes Scene",
+      "credentials": {
+        "sshPassword": {
+          "id": "hm3qt1f928o2UbP1",
+          "name": "SSH Password account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Generate New Scene": {
+      "main": [
+        [
+          {
+            "node": "Claude Writes Scene",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

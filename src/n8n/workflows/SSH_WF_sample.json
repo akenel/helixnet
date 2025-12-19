@@ -1,0 +1,67 @@
+{
+  "name": "SSH_WF_sample",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b19c687d-60f5-47e3-b4db-9d68e7dc576c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "command": "echo \"Hello n8n! Tell me a one-liner joke about CTOs and toasters\" |                /home/angel/.local/bin/claude --print "
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1bb58933-ad02-45ae-8c10-1b672238dfb5",
+      "name": "Execute a command",
+      "credentials": {
+        "sshPassword": {
+          "id": "hm3qt1f928o2UbP1",
+          "name": "SSH Password account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Execute a command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "02b878bb-2875-42c8-9891-c965c1838a19",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6ee37a07d8cb81430e49f773046a992c2d40489c58074f54fcb09c1053e531d5"
+  },
+  "id": "7kf2jLtWD8a5oQpF",
+  "tags": [
+    {
+      "name": "PoC",
+      "id": "ojKIzw4DENHcocD4",
+      "updatedAt": "2025-12-19T09:06:53.471Z",
+      "createdAt": "2025-12-19T09:06:53.471Z"
+    }
+  ]
+}
