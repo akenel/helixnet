@@ -307,103 +307,103 @@ class HelixNode:
 DASHBOARD_HTML = """<!DOCTYPE html>
 <html>
 <head>
-    <title>🌀 HELIX DASHBOARD</title>
+    <title>HELIX DASHBOARD</title>
     <meta charset="utf-8">
     <meta http-equiv="refresh" content="5">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
             font-family: 'Courier New', monospace;
             background: #0a0a0f;
             color: #00ff88;
             padding: 20px;
             min-height: 100vh;
-        }
-        h1 {
+        }}
+        h1 {{
             text-align: center;
             font-size: 2em;
             margin-bottom: 20px;
             text-shadow: 0 0 10px #00ff88;
-        }
-        .stats {
+        }}
+        .stats {{
             display: flex;
             justify-content: center;
             gap: 40px;
             margin-bottom: 30px;
-        }
-        .stat {
+        }}
+        .stat {{
             text-align: center;
             padding: 20px;
             border: 1px solid #00ff88;
             border-radius: 10px;
             min-width: 150px;
-        }
-        .stat-value {
+        }}
+        .stat-value {{
             font-size: 2em;
             font-weight: bold;
-        }
-        .stat-label {
+        }}
+        .stat-label {{
             font-size: 0.8em;
             opacity: 0.7;
-        }
-        .nodes {
+        }}
+        .nodes {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
-        }
-        .node {
+        }}
+        .node {{
             background: #111;
             border: 1px solid #00ff88;
             border-radius: 10px;
             padding: 20px;
-        }
-        .node-name {
+        }}
+        .node-name {{
             font-size: 1.2em;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .node-alive { color: #00ff88; }
-        .node-dead { color: #ff4444; }
-        .node-stats {
+        }}
+        .node-alive {{ color: #00ff88; }}
+        .node-dead {{ color: #ff4444; }}
+        .node-stats {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             font-size: 0.9em;
-        }
-        .leaderboard {
+        }}
+        .leaderboard {{
             max-width: 600px;
             margin: 30px auto;
             border: 1px solid #ffaa00;
             border-radius: 10px;
             padding: 20px;
-        }
-        .leaderboard h2 {
+        }}
+        .leaderboard h2 {{
             color: #ffaa00;
             text-align: center;
             margin-bottom: 15px;
-        }
-        .leader {
+        }}
+        .leader {{
             display: flex;
             justify-content: space-between;
             padding: 10px;
             border-bottom: 1px solid #333;
-        }
-        .leader:last-child { border-bottom: none; }
-        .rank { color: #ffaa00; font-weight: bold; }
-        footer {
+        }}
+        .leader:last-child {{ border-bottom: none; }}
+        .rank {{ color: #ffaa00; font-weight: bold; }}
+        footer {{
             text-align: center;
             margin-top: 40px;
             opacity: 0.5;
             font-size: 0.8em;
-        }
+        }}
     </style>
 </head>
 <body>
-    <h1>🌀 HELIX NETWORK</h1>
+    <h1>HELIX NETWORK</h1>
 
     <div class="stats">
         <div class="stat">
@@ -421,7 +421,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     </div>
 
     <div class="leaderboard">
-        <h2>🏆 TOP GIVERS</h2>
+        <h2>TOP GIVERS</h2>
         {leaderboard}
     </div>
 
@@ -430,8 +430,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     </div>
 
     <footer>
-        🐅 HELIX — No money. No Altman. Just JAM.<br>
-        Built by Angel & Tig | Be water, my friend.
+        HELIX - No money. No Altman. Just JAM.<br>
+        Built by Angel and Tig | Be water, my friend.
     </footer>
 </body>
 </html>
