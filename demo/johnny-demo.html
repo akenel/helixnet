@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Johnny's Dream Machine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 20px 0;
+            color: #ff6b6b;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        /* Scene cards */
+        .scene {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.5s ease;
+        }
+
+        .scene.active {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+        }
+
+        .scene-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .scene-icon {
+            font-size: 3em;
+        }
+
+        .scene-title {
+            font-size: 1.5em;
+            color: #4ecdc4;
+        }
+
+        .scene-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Credits display */
+        .credits-box {
+            background: linear-gradient(135deg, #2d3436 0%, #1e272e 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .credits-label {
+            color: #888;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .credits-value {
+            font-size: 4em;
+            font-weight: bold;
+            color: #f39c12;
+            text-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+        }
+
+        .credits-unit {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        /* Breathing animation */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .breathing {
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        /* Laptop visual */
+        .laptop {
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(145deg, #2d3436, #636e72);
+            border-radius: 5px 5px 0 0;
+            margin: 20px auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .laptop::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -20px;
+            right: -20px;
+            height: 10px;
+            background: linear-gradient(145deg, #636e72, #2d3436);
+            border-radius: 0 0 5px 5px;
+        }
+
+        .laptop-screen {
+            width: 100px;
+            height: 60px;
+            background: #000;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .laptop-screen.on {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        /* Dream prompt */
+        .dream-input {
+            background: #2d3436;
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 1.2em;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .dream-result {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .dream-result img {
+            max-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Control buttons */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn.night { background: linear-gradient(135deg, #2d3436, #636e72); }
+        .btn.morning { background: linear-gradient(135deg, #f39c12, #e74c3c); }
+        .btn.dream { background: linear-gradient(135deg, #e84393, #fd79a8); }
+
+        /* Progress bar */
+        .progress-container {
+            background: #2d3436;
+            border-radius: 10px;
+            height: 20px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44bd32);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        /* Message */
+        .message {
+            text-align: center;
+            font-size: 1.3em;
+            padding: 20px;
+            color: #4ecdc4;
+            min-height: 60px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .footer .heart { color: #e74c3c; }
+
+        /* The key message */
+        .key-message {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(108, 92, 231, 0.2));
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin: 30px 0;
+            border: 2px dashed #4ecdc4;
+        }
+
+        .key-message h3 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .comparison {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .vs-box {
+            padding: 15px 25px;
+            border-radius: 10px;
+            min-width: 150px;
+        }
+
+        .vs-box.old {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+        }
+
+        .vs-box.new {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid #2ecc71;
+        }
+
+        .vs-box .label { font-size: 0.8em; color: #888; }
+        .vs-box .value { font-size: 1.8em; font-weight: bold; }
+        .vs-box.old .value { color: #e74c3c; }
+        .vs-box.new .value { color: #2ecc71; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Johnny's Dream Machine</h1>
+        <p class="subtitle">A bedtime story about sharing and creating</p>
+
+        <div class="controls">
+            <button class="btn night" onclick="startNight()">1. Bedtime</button>
+            <button class="btn" onclick="startEarning()">2. Night (Earning)</button>
+            <button class="btn morning" onclick="wakeUp()">3. Wake Up!</button>
+            <button class="btn dream" onclick="makeDream()">4. Make Art!</button>
+        </div>
+
+        <div class="message" id="message">Click "Bedtime" to start Johnny's story...</div>
+
+        <!-- Scene 1: Bedtime -->
+        <div class="scene" id="scene1">
+            <div class="scene-header">
+                <span class="scene-icon">😴</span>
+                <div>
+                    <div class="scene-title">Johnny Goes to Sleep</div>
+                    <div class="scene-time">9:00 PM</div>
+                </div>
+            </div>
+
+            <div class="laptop">
+                <div class="laptop-screen" id="laptop1">💤</div>
+            </div>
+
+            <div class="credits-box">
+                <div class="credits-label">Johnny's Credits</div>
+                <div class="credits-value" id="credits">0</div>
+                <div class="credits-unit">credits</div>
+            </div>
+
+            <p style="text-align: center; color: #888;">
+                Johnny has no credits. His laptop sits idle.<br>
+                But tonight, something magical happens...
+            </p>
+        </div>
+
+        <!-- Scene 2: Night Earning -->
+        <div class="scene" id="scene2" style="display: none;">
+            <div class="scene-header">
+                <span class="scene-icon">🌙</span>
+                <div>
+                    <div class="scene-title">The Laptop Works While Johnny Sleeps</div>
+                    <div class="scene-time">Through the night...</div>
+                </div>
+            </div>
+
+            <div class="laptop">
+                <div class="laptop-screen on" id="laptop2">🌀</div>
+            </div>
+
+            <div class="credits-box">
+                <div class="credits-label">Credits Earned</div>
+                <div class="credits-value breathing" id="nightCredits">0</div>
+                <div class="credits-unit">credits</div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <p style="text-align: center; color: #888;">
+                Johnny's laptop joins the network.<br>
+                It helps others with small tasks.<br>
+                Each task = more credits earned.
+            </p>
+        </div>
+
+        <!-- Scene 3: Morning -->
+        <div class="scene" id="scene3" style="display: none;">
+            <div class="scene-header">
+                <span class="scene-icon">🌅</span>
+                <div>
+                    <div class="scene-title">Good Morning, Johnny!</div>
+                    <div class="scene-time">7:00 AM</div>
+                </div>
+            </div>
+
+            <div class="credits-box" style="background: linear-gradient(135deg, #f39c12, #e74c3c);">
+                <div class="credits-label" style="color: #fff;">You Earned While Sleeping!</div>
+                <div class="credits-value" id="morningCredits" style="color: #fff; font-size: 5em;">50</div>
+                <div class="credits-unit" style="color: #ffe;">credits</div>
+            </div>
+
+            <p style="text-align: center; color: #4ecdc4; font-size: 1.3em;">
+                Johnny did nothing. Johnny slept.<br>
+                But his laptop WORKED for him.
+            </p>
+        </div>
+
+        <!-- Scene 4: Make Art -->
+        <div class="scene" id="scene4" style="display: none;">
+            <div class="scene-header">
+                <span class="scene-icon">🎨</span>
+                <div>
+                    <div class="scene-title">Johnny Makes Art!</div>
+                    <div class="scene-time">Time to dream...</div>
+                </div>
+            </div>
+
+            <input type="text" class="dream-input" id="dreamInput"
+                   value="dragon riding a skateboard"
+                   placeholder="Type your dream...">
+
+            <div class="dream-result" id="dreamResult" style="display: none;">
+                <p style="font-size: 1.5em; margin-bottom: 15px;">Your Dream:</p>
+                <div style="font-size: 4em; margin: 20px 0;">🐉🛹</div>
+                <p id="dreamText" style="font-size: 1.2em;"></p>
+                <p style="margin-top: 15px; color: rgba(255,255,255,0.7);">
+                    Cost: <strong>10 credits</strong><br>
+                    Remaining: <strong id="remainingCredits">40</strong> credits
+                </p>
+            </div>
+
+            <p style="text-align: center; color: #888; margin-top: 20px;">
+                Someone's GPU in Brazil made this image.<br>
+                They earned 10 credits. Johnny paid 10 credits.<br>
+                <strong>No money moved. Just sharing.</strong>
+            </p>
+        </div>
+
+        <!-- Key Message -->
+        <div class="key-message">
+            <h3>The Big Idea</h3>
+            <p>Millions of computers sit idle every night.<br>
+            What if they could HELP each other?</p>
+
+            <div class="comparison">
+                <div class="vs-box old">
+                    <div class="label">The Old Way</div>
+                    <div class="value">$80/mo</div>
+                    <div class="label">AI Art subscription</div>
+                </div>
+                <div class="vs-box new">
+                    <div class="label">The Helix Way</div>
+                    <div class="value">$0</div>
+                    <div class="label">Share to create</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Made with <span class="heart">♥</span> for little Johnny<br>
+            <small>HelixNet — December 2025</small>
+        </div>
+    </div>
+
+    <script>
+        let credits = 0;
+        let earning = false;
+
+        function showScene(num) {
+            for (let i = 1; i <= 4; i++) {
+                const scene = document.getElementById('scene' + i);
+                scene.style.display = i === num ? 'block' : 'none';
+                scene.classList.remove('active');
+            }
+            document.getElementById('scene' + num).classList.add('active');
+        }
+
+        function setMessage(msg) {
+            document.getElementById('message').innerHTML = msg;
+        }
+
+        function startNight() {
+            credits = 0;
+            document.getElementById('credits').textContent = '0';
+            showScene(1);
+            setMessage("Johnny goes to bed. His laptop has 0 credits. 😴");
+        }
+
+        function startEarning() {
+            showScene(2);
+            setMessage("The laptop joins the network and starts earning... 🌀");
+            earning = true;
+            credits = 0;
+
+            const interval = setInterval(() => {
+                if (!earning || credits >= 50) {
+                    clearInterval(interval);
+                    return;
+                }
+                credits += 1;
+                document.getElementById('nightCredits').textContent = credits;
+                document.getElementById('progressBar').style.width = (credits * 2) + '%';
+            }, 100);
+        }
+
+        function wakeUp() {
+            earning = false;
+            credits = 50;
+            showScene(3);
+            setMessage("Johnny wakes up with 50 CREDITS! Time to create! 🌟");
+        }
+
+        function makeDream() {
+            showScene(4);
+            const dream = document.getElementById('dreamInput').value || 'dragon riding a skateboard';
+            document.getElementById('dreamResult').style.display = 'block';
+            document.getElementById('dreamText').textContent = '"' + dream + '"';
+            document.getElementById('remainingCredits').textContent = '40';
+            setMessage("Johnny made art! A GPU in Brazil helped. Both are happy! 🐉🛹💙");
+        }
+    </script>
+</body>
+</html>
