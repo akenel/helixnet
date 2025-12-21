@@ -100,6 +100,10 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
             html_path = story.export_html()
             print(f"   🌐 HTML: {html_path}")
 
+            # Auto-open the coloring book!
+            import subprocess
+            subprocess.Popen(['xdg-open', str(html_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
             # Prepare response with image data
             images = []
             for scene in story.scenes:
