@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Johnny's Story Builder</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .step.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question {
+            font-size: 1.8em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .option {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 4px solid transparent;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .option:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .option.selected {
+            border-color: #11998e;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .option.selected .emoji {
+            transform: scale(1.2);
+        }
+        .option.selected .label {
+            color: white;
+        }
+        .emoji {
+            font-size: 4em;
+            display: block;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+        .label {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: bold;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button.back {
+            background: #ccc;
+        }
+        .progress {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .progress-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: background 0.3s;
+        }
+        .progress-dot.done {
+            background: #11998e;
+        }
+        .progress-dot.current {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+        /* Summary page */
+        .summary {
+            text-align: center;
+        }
+        .summary h2 {
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+        .story-preview {
+            background: #f5f7fa;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .story-preview p {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin: 15px 0;
+        }
+        .story-preview .scene-emoji {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+        .make-book {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            font-size: 1.5em;
+            padding: 20px 60px;
+        }
+        /* Output */
+        #output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .author-input {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .author-input input {
+            font-size: 1.5em;
+            padding: 15px 30px;
+            border: 3px solid #667eea;
+            border-radius: 20px;
+            text-align: center;
+            font-family: inherit;
+            width: 80%;
+            max-width: 400px;
+        }
+        .author-input input:focus {
+            outline: none;
+            border-color: #11998e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Johnny's Story Builder</h1>
+        <p class="subtitle">Click pictures to make YOUR story!</p>
+
+        <div class="progress" id="progress"></div>
+
+        <!-- Step 0: Author name -->
+        <div class="step active" data-step="0">
+            <div class="question">What's YOUR name?</div>
+            <div class="author-input">
+                <input type="text" id="authorName" placeholder="Type your name!" value="Johnny">
+            </div>
+            <div class="nav-buttons">
+                <div></div>
+                <button onclick="nextStep()">Let's Go!</button>
+            </div>
+        </div>
+
+        <!-- Step 1: Pick your hero -->
+        <div class="step" data-step="1">
+            <div class="question">Who is your HERO?</div>
+            <div class="options" data-category="hero">
+                <div class="option" data-value="a friendly dragon" data-keyword="dragon">
+                    <span class="emoji">🐉</span>
+                    <span class="label">Dragon</span>
+                </div>
+                <div class="option" data-value="a brave robot" data-keyword="robot">
+                    <span class="emoji">🤖</span>
+                    <span class="label">Robot</span>
+                </div>
+                <div class="option" data-value="a magical unicorn" data-keyword="unicorn">
+                    <span class="emoji">🦄</span>
+                    <span class="label">Unicorn</span>
+                </div>
+                <div class="option" data-value="a super cat" data-keyword="cat">
+                    <span class="emoji">🐱</span>
+                    <span class="label">Super Cat</span>
+                </div>
+                <div class="option" data-value="a heroic dog" data-keyword="dog">
+                    <span class="emoji">🐕</span>
+                    <span class="label">Hero Dog</span>
+                </div>
+                <div class="option" data-value="a little superhero kid" data-keyword="superhero">
+                    <span class="emoji">🦸</span>
+                    <span class="label">Superhero</span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="back" onclick="prevStep()">Back</button>
+                <button onclick="nextStep()" id="next1" disabled>Next</button>
+            </div>
+        </div>
+
+        <!-- Step 2: What do they want? -->
+        <div class="step" data-step="2">
+            <div class="question">What do they WANT?</div>
+            <div class="options" data-category="want">
+                <div class="option" data-value="save Princess Holly from the tower">
+                    <span class="emoji">👸</span>
+                    <span class="label">Save the Princess</span>
+                </div>
+                <div class="option" data-value="find the hidden treasure">
+                    <span class="emoji">💎</span>
+                    <span class="label">Find Treasure</span>
+                </div>
+                <div class="option" data-value="win the big race">
+                    <span class="emoji">🏆</span>
+                    <span class="label">Win the Race</span>
+                </div>
+                <div class="option" data-value="get back home safely">
+                    <span class="emoji">🏠</span>
+                    <span class="label">Get Home</span>
+                </div>
+                <div class="option" data-value="make a new friend">
+                    <span class="emoji">🤝</span>
+                    <span class="label">Make a Friend</span>
+                </div>
+                <div class="option" data-value="learn to fly">
+                    <span class="emoji">✈️</span>
+                    <span class="label">Learn to Fly</span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="back" onclick="prevStep()">Back</button>
+                <button onclick="nextStep()" id="next2" disabled>Next</button>
+            </div>
+        </div>
+
+        <!-- Step 3: What's stopping them? -->
+        <div class="step" data-step="3">
+            <div class="question">What's STOPPING them?</div>
+            <div class="options" data-category="obstacle">
+                <div class="option" data-value="a grumpy giant" data-keyword="giant">
+                    <span class="emoji">👹</span>
+                    <span class="label">Grumpy Giant</span>
+                </div>
+                <div class="option" data-value="a scary monster" data-keyword="monster">
+                    <span class="emoji">👾</span>
+                    <span class="label">Monster</span>
+                </div>
+                <div class="option" data-value="a huge mountain" data-keyword="mountain">
+                    <span class="emoji">🏔️</span>
+                    <span class="label">Big Mountain</span>
+                </div>
+                <div class="option" data-value="a locked magic door" data-keyword="door">
+                    <span class="emoji">🚪</span>
+                    <span class="label">Locked Door</span>
+                </div>
+                <div class="option" data-value="a wild storm" data-keyword="storm">
+                    <span class="emoji">🌪️</span>
+                    <span class="label">Wild Storm</span>
+                </div>
+                <div class="option" data-value="a deep dark forest" data-keyword="forest">
+                    <span class="emoji">🌲</span>
+                    <span class="label">Dark Forest</span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="back" onclick="prevStep()">Back</button>
+                <button onclick="nextStep()" id="next3" disabled>Next</button>
+            </div>
+        </div>
+
+        <!-- Step 4: How do they win? -->
+        <div class="step" data-step="4">
+            <div class="question">How do they WIN?</div>
+            <div class="options" data-category="solution">
+                <div class="option" data-value="super speed powers">
+                    <span class="emoji">⚡</span>
+                    <span class="label">Super Speed</span>
+                </div>
+                <div class="option" data-value="a helpful friend">
+                    <span class="emoji">🤗</span>
+                    <span class="label">Friend Helps</span>
+                </div>
+                <div class="option" data-value="a clever trick">
+                    <span class="emoji">🧠</span>
+                    <span class="label">Clever Trick</span>
+                </div>
+                <div class="option" data-value="magic powers">
+                    <span class="emoji">✨</span>
+                    <span class="label">Magic!</span>
+                </div>
+                <div class="option" data-value="being super brave">
+                    <span class="emoji">💪</span>
+                    <span class="label">Bravery</span>
+                </div>
+                <div class="option" data-value="kindness and love">
+                    <span class="emoji">❤️</span>
+                    <span class="label">Kindness</span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="back" onclick="prevStep()">Back</button>
+                <button onclick="nextStep()" id="next4" disabled>Next</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Happy ending -->
+        <div class="step" data-step="5">
+            <div class="question">THE END looks like...</div>
+            <div class="options" data-category="ending">
+                <div class="option" data-value="everyone dancing at a big party">
+                    <span class="emoji">🎉</span>
+                    <span class="label">Big Party!</span>
+                </div>
+                <div class="option" data-value="flying into the sunset together">
+                    <span class="emoji">🌅</span>
+                    <span class="label">Sunset Flight</span>
+                </div>
+                <div class="option" data-value="living in a beautiful castle">
+                    <span class="emoji">🏰</span>
+                    <span class="label">Castle Home</span>
+                </div>
+                <div class="option" data-value="all friends hugging and laughing">
+                    <span class="emoji">🤗</span>
+                    <span class="label">Friends Forever</span>
+                </div>
+                <div class="option" data-value="eating cake and ice cream">
+                    <span class="emoji">🎂</span>
+                    <span class="label">Cake Time!</span>
+                </div>
+                <div class="option" data-value="getting a golden medal">
+                    <span class="emoji">🥇</span>
+                    <span class="label">Winner!</span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="back" onclick="prevStep()">Back</button>
+                <button onclick="nextStep()" id="next5" disabled>See My Story!</button>
+            </div>
+        </div>
+
+        <!-- Step 6: Summary -->
+        <div class="step" data-step="6">
+            <div class="summary">
+                <h2>Your Story is Ready!</h2>
+                <div class="story-preview" id="storyPreview"></div>
+                <button class="make-book" onclick="makeBook()">Make My Coloring Book!</button>
+                <div id="output"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="back" onclick="prevStep()">Change Something</button>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const totalSteps = 6;
+        const story = {
+            author: 'Johnny',
+            hero: '',
+            want: '',
+            obstacle: '',
+            solution: '',
+            ending: ''
+        };
+
+        // Initialize progress dots
+        function initProgress() {
+            const progress = document.getElementById('progress');
+            progress.innerHTML = '';
+            for (let i = 0; i <= totalSteps; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                if (i < currentStep) dot.classList.add('done');
+                if (i === currentStep) dot.classList.add('current');
+                progress.appendChild(dot);
+            }
+        }
+
+        // Show current step
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelector(`[data-step="${step}"]`).classList.add('active');
+            initProgress();
+
+            if (step === 6) {
+                showSummary();
+            }
+        }
+
+        // Next step
+        function nextStep() {
+            if (currentStep === 0) {
+                story.author = document.getElementById('authorName').value || 'Johnny';
+            }
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+
+        // Previous step
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        // Handle option selection
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function() {
+                const category = this.parentElement.dataset.category;
+                const value = this.dataset.value;
+
+                // Deselect siblings
+                this.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                // Select this one
+                this.classList.add('selected');
+
+                // Store value
+                story[category] = value;
+
+                // Enable next button
+                const nextBtn = document.getElementById(`next${currentStep}`);
+                if (nextBtn) nextBtn.disabled = false;
+            });
+        });
+
+        // Show story summary
+        function showSummary() {
+            const preview = document.getElementById('storyPreview');
+            preview.innerHTML = `
+                <p><span class="scene-emoji">📖</span><strong>${story.author}'s Story</strong></p>
+                <p><span class="scene-emoji">🦸</span>Once upon a time, there was <strong>${story.hero}</strong>.</p>
+                <p><span class="scene-emoji">💫</span>They wanted to <strong>${story.want}</strong>!</p>
+                <p><span class="scene-emoji">😱</span>But oh no! There was <strong>${story.obstacle}</strong> in the way!</p>
+                <p><span class="scene-emoji">💡</span>Using <strong>${story.solution}</strong>, they saved the day!</p>
+                <p><span class="scene-emoji">🎉</span>THE END: <strong>${story.ending}</strong>!</p>
+            `;
+        }
+
+        // Generate the coloring book
+        async function makeBook() {
+            const output = document.getElementById('output');
+            const btn = document.querySelector('.make-book');
+
+            output.style.display = 'block';
+            output.innerHTML = '<div style="text-align:center;font-size:2em;">🎨 Creating your coloring book...</div>';
+            btn.disabled = true;
+            btn.textContent = 'Making...';
+
+            // Build JSON for the story
+            const storyData = {
+                title: `${story.author}'s Adventure`,
+                author: story.author,
+                answers: {
+                    hero: story.hero,
+                    want: story.want,
+                    obstacle: story.obstacle,
+                    solution: story.solution,
+                    ending: story.ending
+                }
+            };
+
+            try {
+                // Try to call the server
+                const response = await fetch('http://localhost:7791/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(storyData)
+                });
+
+                const result = await response.json();
+
+                if (result.ok) {
+                    // Show success and images!
+                    let html = `<div style="text-align:center;">
+                        <h2 style="color:#11998e;">🎉 Your Coloring Book is Ready!</h2>
+                        <p>${result.message}</p>
+                        <p><a href="${result.html_path}" target="_blank" style="color:#667eea;font-size:1.2em;">📖 Open Full Book</a></p>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:20px;">`;
+
+                    for (const img of result.images) {
+                        html += `<div style="text-align:center;">
+                            <img src="data:image/png;base64,${img.image}" style="max-width:100%;border:2px solid #333;border-radius:10px;">
+                            <p style="margin-top:10px;font-weight:bold;">${img.title}</p>
+                        </div>`;
+                    }
+                    html += '</div>';
+                    output.innerHTML = html;
+                    btn.textContent = 'Done!';
+                    btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+
+            } catch (err) {
+                // Server not running - show manual instructions
+                output.innerHTML = `<div style="text-align:center;color:#e74c3c;">
+                    <h3>⚠️ Server not running!</h3>
+                    <p>Start the server first:</p>
+                    <code style="background:#333;color:#fff;padding:10px 20px;border-radius:10px;display:inline-block;margin:10px 0;">
+                        python3 helix-pod/johnny-server.py
+                    </code>
+                    <p>Then click the button again!</p>
+                </div>
+                <hr style="margin:20px 0;">
+                <details>
+                    <summary>Or generate manually (for parents)</summary>
+                    <pre style="background:#f5f5f5;padding:15px;border-radius:10px;overflow-x:auto;margin-top:10px;">
+Story data:
+${JSON.stringify(storyData, null, 2)}
+
+Save to file and run:
+echo '${JSON.stringify(storyData)}' > /tmp/johnny-story.json
+python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode coloring
+                    </pre>
+                </details>`;
+                btn.disabled = false;
+                btn.textContent = 'Try Again';
+            }
+
+            // Save to localStorage
+            localStorage.setItem('johnny-story', JSON.stringify(storyData));
+        }
+
+        // Initialize
+        initProgress();
+    </script>
+</body>
+</html>
