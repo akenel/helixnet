@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🎨 ART PROVIDERS — Three Tiers of Free Image Generation
-========================================================
+🎨 ART PROVIDERS — Four Tiers of Free Image Generation
+=======================================================
 Johnny grows with the system:
 
 Tier 1: COLORING BOOK (default)
@@ -14,7 +14,12 @@ Tier 2: POLLINATIONS.AI
     - No account, no email, no token
     - Just works via HTTP GET
 
-Tier 3: HUGGING FACE
+Tier 3: AI-COLORING (NEW!)
+    - Pollinations AI art → Edge detection → Outlines
+    - Beautiful AI compositions as coloring pages!
+    - Best of both worlds
+
+Tier 4: HUGGING FACE
     - Free with account (rate limited)
     - Needs email + token
     - Better quality, learns about APIs
@@ -43,13 +48,15 @@ CONFIG_DIR = Path.home() / ".helix"
 CONFIG_FILE = CONFIG_DIR / "johnny-config.yaml"
 
 DEFAULT_CONFIG = {
-    "art_mode": "coloring",  # coloring | pollinations | huggingface
+    "art_mode": "coloring",  # coloring | pollinations | ai-coloring | huggingface
 
     "pollinations": {
         "enabled": True,
         "url": "https://image.pollinations.ai/prompt/",
         "width": 512,
         "height": 512,
+        "delay_between_requests": 8,  # Seconds to wait between requests (avoid rate limit)
+        "max_retries": 2,  # Retry on failure
     },
 
     "huggingface": {
@@ -63,6 +70,14 @@ DEFAULT_CONFIG = {
         "line_width": 4,
         "background": "white",
         "line_color": "black",
+    },
+
+    "ai_coloring": {
+        "edge_method": "canny",  # canny | sobel | contour
+        "line_thickness": 2,
+        "threshold_low": 50,
+        "threshold_high": 150,
+        "invert": True,  # White background, black lines
     },
 
     # Child-safe defaults
@@ -114,7 +129,7 @@ def get_art_mode() -> str:
 
 def set_art_mode(mode: str) -> bool:
     """Set art mode in config."""
-    if mode not in ["coloring", "pollinations", "huggingface"]:
+    if mode not in ["coloring", "pollinations", "ai-coloring", "huggingface", "auto"]:
         return False
     config = load_config()
     config["art_mode"] = mode
@@ -471,6 +486,100 @@ def generate_huggingface(prompt: str, timeout: int = 120) -> Optional[bytes]:
 
 
 # =============================================================================
+# TIER 3: AI-COLORING (Pollinations + Edge Detection)
+# =============================================================================
+
+def convert_to_coloring_page(image_data: bytes) -> Optional[bytes]:
+    """
+    Convert a color image to black-and-white line art.
+    Uses edge detection to create outlines Johnny can color!
+
+    AI art → Edge detection → Coloring page
+    Best of both worlds!
+    """
+    try:
+        from PIL import Image, ImageFilter, ImageOps
+        import io
+
+        config = load_config()
+        ai_cfg = config.get("ai_coloring", {})
+
+        # Load the image
+        img = Image.open(io.BytesIO(image_data))
+
+        # Convert to grayscale
+        gray = img.convert("L")
+
+        # Apply edge detection based on method
+        method = ai_cfg.get("edge_method", "canny")
+
+        if method == "contour":
+            # Simple contour detection
+            edges = gray.filter(ImageFilter.CONTOUR)
+        elif method == "sobel":
+            # Sobel edge detection (approximation using PIL)
+            edges = gray.filter(ImageFilter.FIND_EDGES)
+            edges = edges.filter(ImageFilter.SMOOTH)
+        else:
+            # Default: Enhanced edge detection for coloring
+            # Apply multiple filters for clean lines
+            edges = gray.filter(ImageFilter.FIND_EDGES)
+            edges = edges.filter(ImageFilter.MaxFilter(3))
+            edges = ImageOps.autocontrast(edges)
+
+        # Invert if needed (white background, black lines)
+        if ai_cfg.get("invert", True):
+            edges = ImageOps.invert(edges)
+
+        # Increase contrast for cleaner lines
+        edges = ImageOps.autocontrast(edges, cutoff=10)
+
+        # Convert back to RGB (for PNG)
+        edges = edges.convert("RGB")
+
+        # Save to bytes
+        buf = io.BytesIO()
+        edges.save(buf, format="PNG")
+        return buf.getvalue()
+
+    except ImportError:
+        print("   ⚠️  Pillow not installed for edge detection")
+        return None
+    except Exception as e:
+        print(f"   ⚠️  Edge detection error: {e}")
+        return None
+
+
+def generate_ai_coloring(prompt: str, title: str = "", width: int = 512, height: int = 512) -> Optional[bytes]:
+    """
+    Generate AI art and convert to coloring page outlines.
+
+    1. Get beautiful AI art from Pollinations
+    2. Convert to black-and-white outlines
+    3. Johnny gets Pixar-quality scenes to color!
+    """
+    print("   🎨 AI-COLORING: Getting AI art → Converting to outlines...")
+
+    # First get the AI art
+    ai_art = generate_pollinations(prompt, width, height)
+
+    if not ai_art:
+        print("   ⚠️  Couldn't get AI art, falling back to basic coloring")
+        return generate_coloring_page(prompt, title)
+
+    # Convert to coloring page
+    print("   🖍️  Converting to coloring page outlines...")
+    coloring_page = convert_to_coloring_page(ai_art)
+
+    if coloring_page:
+        print("   ✅ AI coloring page ready!")
+        return coloring_page
+    else:
+        print("   ⚠️  Conversion failed, returning color art")
+        return ai_art
+
+
+# =============================================================================
 # UNIFIED GENERATOR — Pick the Right Tier
 # =============================================================================
 
@@ -481,6 +590,7 @@ def generate_art(prompt: str, title: str = "", mode: str = None) -> Optional[byt
     Modes:
         - coloring: Local line art (no network)
         - pollinations: Free AI art (no account)
+        - ai-coloring: AI art converted to outlines (NEW!)
         - huggingface: Free AI art (needs token)
         - auto: Try best available
     """
@@ -497,6 +607,14 @@ def generate_art(prompt: str, title: str = "", mode: str = None) -> Optional[byt
         if result:
             return result
         print("   ↩️  Falling back to coloring mode...")
+        return generate_coloring_page(prompt, title)
+
+    elif mode == "ai-coloring":
+        # AI art converted to coloring page outlines!
+        result = generate_ai_coloring(prompt, title)
+        if result:
+            return result
+        print("   ↩️  Falling back to basic coloring mode...")
         return generate_coloring_page(prompt, title)
 
     elif mode == "huggingface":

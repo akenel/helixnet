@@ -397,7 +397,7 @@
                 <h2>Your Story is Ready!</h2>
                 <div class="story-preview" id="storyPreview"></div>
 
-                <!-- Art Mode Selector — Simple: Coloring or AI Art -->
+                <!-- Art Mode Selector — Three Options for Johnny -->
                 <div class="art-mode-selector">
                     <p style="font-size:1.2em; margin-bottom:15px;">🎨 Pick your art style:</p>
                     <div class="options" data-category="artMode" style="margin-bottom:20px;">
@@ -409,8 +409,12 @@
                             <span class="emoji">🌸</span>
                             <span class="label">AI Art</span>
                         </div>
+                        <div class="option" data-value="ai-coloring">
+                            <span class="emoji">🎨</span>
+                            <span class="label">AI Coloring</span>
+                        </div>
                     </div>
-                    <p style="font-size:0.9em; color:#666;">Both FREE! No account needed!</p>
+                    <p style="font-size:0.9em; color:#666;">All FREE! No account needed! AI Coloring = best of both!</p>
                 </div>
 
                 <button class="make-book" onclick="makeBook()">Make My Book!</button>
@@ -519,15 +523,51 @@
 
             const modeMessages = {
                 'coloring': '🖍️ Creating your coloring book...',
-                'pollinations': '🌸 AI is drawing your story...',
+                'pollinations': '🌸 AI is drawing your story... (takes ~1 min)',
+                'ai-coloring': '🎨 AI is drawing + making outlines... (takes ~2 min)',
                 'huggingface': '🤗 Hugging Face is creating art...',
                 'auto': '🔄 Finding best art generator...'
             };
 
             output.style.display = 'block';
-            output.innerHTML = `<div style="text-align:center;font-size:2em;">${modeMessages[story.artMode] || modeMessages.coloring}</div>`;
+
+            // Estimate time based on mode
+            const timeEstimates = {
+                'coloring': 5,
+                'pollinations': 60,
+                'ai-coloring': 120,
+                'huggingface': 90,
+                'auto': 60
+            };
+            const estimatedTime = timeEstimates[story.artMode] || 30;
+
+            output.innerHTML = `
+                <div style="text-align:center;">
+                    <div style="font-size:2em;margin-bottom:20px;">${modeMessages[story.artMode] || modeMessages.coloring}</div>
+                    <div style="background:#ddd;border-radius:20px;height:30px;width:100%;max-width:400px;margin:0 auto;overflow:hidden;">
+                        <div id="progressBar" style="background:linear-gradient(90deg,#667eea,#764ba2,#11998e);height:100%;width:0%;transition:width 0.5s ease;border-radius:20px;"></div>
+                    </div>
+                    <p id="progressText" style="margin-top:15px;font-size:1.2em;color:#666;">Starting... (~${Math.ceil(estimatedTime/60)} min)</p>
+                    <p style="font-size:3em;margin-top:20px;" id="loadingEmoji">🎨</p>
+                </div>`;
             btn.disabled = true;
             btn.textContent = 'Making...';
+
+            // Animate the progress bar
+            let progress = 0;
+            const emojis = ['🎨', '✨', '🖌️', '🌟', '🎭', '🖍️', '💫', '🌈'];
+            let emojiIndex = 0;
+            const progressInterval = setInterval(() => {
+                // Slowly fill progress bar (fake progress for UX)
+                if (progress < 90) {
+                    progress += (90 - progress) * 0.02;
+                    document.getElementById('progressBar').style.width = progress + '%';
+                }
+                // Cycle emojis
+                emojiIndex = (emojiIndex + 1) % emojis.length;
+                const emojiEl = document.getElementById('loadingEmoji');
+                if (emojiEl) emojiEl.textContent = emojis[emojiIndex];
+            }, 500);
 
             // Build JSON for the story (including art mode!)
             const storyData = {
@@ -555,11 +595,14 @@
 
                 const result = await response.json();
 
+                clearInterval(progressInterval);
+
                 if (result.ok) {
                     // Show success and images!
                     const modeLabels = {
                         'coloring': 'Coloring Book',
                         'pollinations': 'AI Art Book',
+                        'ai-coloring': 'AI Coloring Book',
                         'huggingface': 'HF Art Book',
                         'auto': 'Art Book'
                     };
@@ -586,6 +629,7 @@
                 }
 
             } catch (err) {
+                clearInterval(progressInterval);
                 // Server not running - show manual instructions
                 output.innerHTML = `<div style="text-align:center;color:#e74c3c;">
                     <h3>⚠️ Server not running!</h3>

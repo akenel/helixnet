@@ -131,6 +131,7 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
             mode_names = {
                 'coloring': 'coloring pages',
                 'pollinations': 'AI art images',
+                'ai-coloring': 'AI coloring pages',
                 'huggingface': 'HF AI art images',
                 'auto': 'art images'
             }
@@ -185,7 +186,7 @@ def main():
     )
     parser.add_argument('--port', type=int, default=7791, help='Port to run on')
     parser.add_argument('--mode', type=str, default='coloring',
-                       choices=['coloring', 'pollinations', 'huggingface', 'auto'],
+                       choices=['coloring', 'pollinations', 'ai-coloring', 'huggingface', 'auto'],
                        help='Default art mode (default: coloring)')
     parser.add_argument('--no-browser', action='store_true', help="Don't open browser")
     args = parser.parse_args()
@@ -196,6 +197,7 @@ def main():
     mode_descriptions = {
         'coloring': '🖍️  COLORING BOOK (line art for crayons)',
         'pollinations': '🌸 POLLINATIONS.AI (AI art, no account)',
+        'ai-coloring': '🎨 AI-COLORING (AI art → outlines, best of both!)',
         'huggingface': '🤗 HUGGING FACE (AI art, needs token)',
         'auto': '🔄 AUTO (best available)'
     }

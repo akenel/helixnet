@@ -352,24 +352,43 @@ class Story:
             "images": self.images,
         }
 
-    def generate_all_art(self, mode="coloring"):
+    def generate_all_art(self, mode="coloring", progress_callback=None):
         """Generate art for all scenes.
 
-        THREE TIERS OF FREE ART:
+        FOUR TIERS OF FREE ART:
             - coloring: Simple line art for Johnny to color (default, FREE, OFFLINE)
             - pollinations: AI art via Pollinations.ai (FREE, NO ACCOUNT)
+            - ai-coloring: AI art converted to outlines (BEST OF BOTH!)
             - huggingface: AI art via HF (FREE WITH ACCOUNT, rate limited)
             - auto: Try best available, fall back gracefully
+
+        progress_callback: Optional function(scene_num, total, message, time_remaining)
         """
-        print(f"\n🎨 GENERATING ART FOR {len(self.scenes)} SCENES...")
+        import time as time_module
+
+        total_scenes = len(self.scenes)
+        print(f"\n🎨 GENERATING ART FOR {total_scenes} SCENES...")
 
         mode_descriptions = {
             "coloring": "COLORING BOOK (line art for crayons!) - FREE, OFFLINE",
             "pollinations": "POLLINATIONS.AI (AI art) - FREE, NO ACCOUNT",
+            "ai-coloring": "AI-COLORING (AI art → outlines) - BEST OF BOTH!",
             "huggingface": "HUGGING FACE (AI art) - FREE WITH ACCOUNT",
             "auto": "AUTO (best available)",
         }
         print(f"   Mode: {mode_descriptions.get(mode, mode)}\n")
+
+        # Determine if we need delays (network modes)
+        needs_delay = mode in ["pollinations", "ai-coloring", "huggingface", "auto"]
+        delay_seconds = 8 if needs_delay else 0
+
+        # Estimate time
+        time_per_scene = 15 if needs_delay else 1  # seconds
+        total_time_estimate = total_scenes * time_per_scene
+
+        if needs_delay:
+            print(f"   ⏱️  Estimated time: ~{total_time_estimate // 60}m {total_time_estimate % 60}s")
+            print(f"   💡 Using {delay_seconds}s delays to avoid rate limits\n")
 
         # Create images directory for this story
         safe_title = "".join(c if c.isalnum() or c in " -_" else "" for c in self.title)
@@ -378,14 +397,39 @@ class Story:
         images_dir.mkdir(parents=True, exist_ok=True)
 
         self.images = {}
+        start_time = time_module.time()
 
-        for scene in self.scenes:
+        for i, scene in enumerate(self.scenes):
             scene_num = scene["number"]
             prompt = scene["art_prompt"]
             title = scene["title"]
 
-            print(f"📍 Scene {scene_num}: {title}")
-            print(f"   Prompt: {prompt[:60]}...")
+            # Calculate progress and time remaining
+            elapsed = time_module.time() - start_time
+            scenes_done = i
+            if scenes_done > 0:
+                avg_time_per_scene = elapsed / scenes_done
+                remaining_scenes = total_scenes - scenes_done
+                time_remaining = int(avg_time_per_scene * remaining_scenes)
+            else:
+                time_remaining = total_time_estimate
+
+            # Progress info
+            progress_pct = int((i / total_scenes) * 100)
+            remaining_str = f"{time_remaining // 60}m {time_remaining % 60}s" if time_remaining > 60 else f"{time_remaining}s"
+
+            print(f"📍 Scene {scene_num}/{total_scenes}: {title}")
+            print(f"   Progress: {progress_pct}% | ~{remaining_str} remaining")
+            print(f"   Prompt: {prompt[:50]}...")
+
+            # Call progress callback if provided
+            if progress_callback:
+                progress_callback(scene_num, total_scenes, title, time_remaining)
+
+            # Add delay between scenes (except first one)
+            if needs_delay and i > 0:
+                print(f"   ⏳ Waiting {delay_seconds}s to avoid rate limit...")
+                time_module.sleep(delay_seconds)
 
             # Generate using the unified art provider
             if HAS_ART_PROVIDERS:
@@ -411,7 +455,9 @@ class Story:
 
             print()
 
+        total_elapsed = int(time_module.time() - start_time)
         print(f"🎉 Art generation complete!")
+        print(f"   Total time: {total_elapsed // 60}m {total_elapsed % 60}s")
         print(f"   Images saved to: {images_dir}")
         return self.images
 
@@ -732,20 +778,23 @@ def run_scaffold(title=None):
     # Ask about art generation
     print("\n" + "═" * 50)
     print("🎨 ART OPTIONS — ALL FREE, NO CREDIT CARD!")
-    print("   1. 🖍️  Coloring book (line art for crayons) [OFFLINE]")
-    print("   2. 🌸 Pollinations.ai (AI art, NO account needed)")
-    print("   3. 🤗 Hugging Face (AI art, needs free account)")
-    print("   4. 🔄 Auto (try best available)")
-    print("   5. ❌ No art (just the story)")
-    art_choice = input("   Pick 1-5 > ").strip()
+    print("   1. 🖍️  Coloring book (basic shapes) [OFFLINE]")
+    print("   2. 🌸 AI Art (Pollinations, full color)")
+    print("   3. 🎨 AI Coloring (AI art → outlines!) [BEST!]")
+    print("   4. 🤗 Hugging Face (needs free account)")
+    print("   5. 🔄 Auto (try best available)")
+    print("   6. ❌ No art (just the story)")
+    art_choice = input("   Pick 1-6 > ").strip()
 
     if art_choice == "1":
         story.generate_all_art(mode="coloring")
     elif art_choice == "2":
         story.generate_all_art(mode="pollinations")
     elif art_choice == "3":
-        story.generate_all_art(mode="huggingface")
+        story.generate_all_art(mode="ai-coloring")
     elif art_choice == "4":
+        story.generate_all_art(mode="huggingface")
+    elif art_choice == "5":
         story.generate_all_art(mode="auto")
 
     # Save it
@@ -783,7 +832,7 @@ def main():
     parser.add_argument("--list", action="store_true", help="List saved stories")
     parser.add_argument("--art", action="store_true", help="Generate art for loaded story")
     parser.add_argument("--mode", type=str, default="coloring",
-                       choices=["coloring", "pollinations", "huggingface", "auto"],
+                       choices=["coloring", "pollinations", "ai-coloring", "huggingface", "auto"],
                        help="Art mode (default: coloring)")
     parser.add_argument("--set-hf-token", type=str, metavar="TOKEN",
                        help="Set Hugging Face token for AI art")
