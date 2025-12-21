@@ -75,6 +75,199 @@ def generate_art(prompt, sd_url=SD_BRIDGE_URL, timeout=180):
         print(f"   ⚠️  Error generating art: {e}")
         return None
 
+
+# =============================================================================
+# COLORING BOOK MODE — No AI, Just Shapes
+# =============================================================================
+
+def generate_coloring_page(prompt, title=""):
+    """Generate a coloring book page using simple shapes."""
+    try:
+        # Import here to avoid dependency if not using coloring mode
+        from PIL import Image, ImageDraw, ImageFont
+        import math
+        import random
+
+        WIDTH, HEIGHT = 512, 512
+        LINE_WIDTH = 4
+        LINE_COLOR = "black"
+
+        img = Image.new("RGB", (WIDTH, HEIGHT), "white")
+        draw = ImageDraw.Draw(img)
+
+        # Parse keywords
+        prompt_lower = prompt.lower()
+        has_dragon = "dragon" in prompt_lower
+        has_skateboard = "skateboard" in prompt_lower
+        has_princess = "princess" in prompt_lower or "holly" in prompt_lower
+        has_giant = "giant" in prompt_lower
+        has_tower = "tower" in prompt_lower
+        has_dream = "dream" in prompt_lower or "thought" in prompt_lower
+        has_happy = "happy" in prompt_lower or "celebrat" in prompt_lower
+        has_flying = "flying" in prompt_lower
+        has_action = "action" in prompt_lower or "dynamic" in prompt_lower
+        has_sun = "sun" in prompt_lower or "sunshine" in prompt_lower
+        has_stars = "star" in prompt_lower
+
+        # Draw border
+        draw.rectangle([10, 10, WIDTH - 10, HEIGHT - 10], outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Title
+        if title:
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+            except:
+                font = ImageFont.load_default()
+            draw.text((WIDTH//2, 30), title, fill=LINE_COLOR, font=font, anchor="mm")
+
+        center_x, center_y = WIDTH // 2, HEIGHT // 2 + 30
+
+        # Background elements
+        if has_sun or has_happy:
+            # Sun
+            sx, sy, sr = WIDTH - 60, 80, 30
+            draw.ellipse([sx-sr, sy-sr, sx+sr, sy+sr], outline=LINE_COLOR, width=LINE_WIDTH)
+            for i in range(8):
+                angle = i * math.pi / 4
+                x1 = sx + (sr + 10) * math.cos(angle)
+                y1 = sy + (sr + 10) * math.sin(angle)
+                x2 = sx + (sr + 30) * math.cos(angle)
+                y2 = sy + (sr + 30) * math.sin(angle)
+                draw.line([(x1, y1), (x2, y2)], fill=LINE_COLOR, width=LINE_WIDTH)
+
+        if has_stars:
+            for _ in range(5):
+                sx = random.randint(50, WIDTH - 50)
+                sy = random.randint(50, 150)
+                # Simple star
+                points = []
+                for i in range(10):
+                    angle = math.pi/2 + (i * math.pi / 5)
+                    r = 15 if i % 2 == 0 else 7
+                    points.append((sx + r * math.cos(angle), sy - r * math.sin(angle)))
+                draw.polygon(points, outline=LINE_COLOR, width=LINE_WIDTH)
+
+        if has_tower:
+            # Tower
+            tx, tw, th = WIDTH - 80, 80, 200
+            draw.rectangle([tx - tw//2, HEIGHT - 50 - th, tx + tw//2, HEIGHT - 50], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Roof
+            draw.polygon([(tx - tw//2 - 10, HEIGHT - 50 - th), (tx, HEIGHT - 50 - th - 50), (tx + tw//2 + 10, HEIGHT - 50 - th)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Window
+            draw.arc([tx - 15, HEIGHT - 50 - th + 20, tx + 15, HEIGHT - 50 - th + 50], 0, 180, fill=LINE_COLOR, width=LINE_WIDTH)
+            draw.rectangle([tx - 15, HEIGHT - 50 - th + 35, tx + 15, HEIGHT - 50 - th + 65], outline=LINE_COLOR, width=LINE_WIDTH)
+            center_x = WIDTH // 3
+
+        if has_dream:
+            # Thought bubble
+            for offset in [-25, 0, 25]:
+                draw.ellipse([center_x + 50 + offset - 30, center_y - 130, center_x + 50 + offset + 30, center_y - 70], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.ellipse([center_x + 20, center_y - 50, center_x + 40, center_y - 30], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.ellipse([center_x + 5, center_y - 25, center_x + 17, center_y - 13], outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Dragon
+        if has_dragon:
+            dx = center_x
+            dy = center_y + 50 if not has_flying else center_y - 50
+            size = 100
+
+            # Body
+            draw.ellipse([dx - size//2, dy - size//3, dx + size//2, dy + size//3], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Head
+            hx, hy = dx + size//2, dy - size//4
+            draw.ellipse([hx - size//4, hy - size//4, hx + size//4, hy + size//4], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Eyes
+            draw.ellipse([hx - 13, hy - 10, hx - 3, hy], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.ellipse([hx + 3, hy - 10, hx + 13, hy], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Smile
+            draw.arc([hx - 12, hy, hx + 12, hy + 15], 0, 180, fill=LINE_COLOR, width=LINE_WIDTH)
+            # Horns
+            draw.polygon([(hx - 20, hy - size//4), (hx - 15, hy - size//4 - 20), (hx - 10, hy - size//4)], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.polygon([(hx + 10, hy - size//4), (hx + 15, hy - size//4 - 20), (hx + 20, hy - size//4)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Wings
+            draw.polygon([(dx - size//4, dy), (dx - size//4, dy - size//2), (dx, dy - size//4)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Tail
+            draw.line([(dx - size//2, dy), (dx - size//2 - 20, dy + 20), (dx - size//2 - 40, dy + 10), (dx - size//2 - 60, dy + 30)], fill=LINE_COLOR, width=LINE_WIDTH)
+            # Legs
+            draw.ellipse([dx - size//4 - 12, dy + size//3 - 10, dx - size//4 + 12, dy + size//3 + 30], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.ellipse([dx + size//4 - 12, dy + size//3 - 10, dx + size//4 + 12, dy + size//3 + 30], outline=LINE_COLOR, width=LINE_WIDTH)
+
+            # Skateboard
+            if has_skateboard:
+                sy = dy + size//3 + 35
+                draw.rounded_rectangle([dx - 50, sy, dx + 50, sy + 12], radius=6, outline=LINE_COLOR, width=LINE_WIDTH)
+                draw.ellipse([dx - 43, sy + 12, dx - 27, sy + 28], outline=LINE_COLOR, width=LINE_WIDTH)
+                draw.ellipse([dx + 27, sy + 12, dx + 43, sy + 28], outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Princess
+        if has_princess:
+            if has_tower:
+                px, py = WIDTH - 80, HEIGHT - 200
+                psize = 50
+            elif has_dragon and has_flying:
+                px, py = center_x + 30, center_y - 80
+                psize = 50
+            else:
+                px, py = center_x + 100, center_y + 50
+                psize = 70
+
+            # Dress
+            draw.polygon([(px, py), (px - psize//2, py + psize), (px + psize//2, py + psize)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Head
+            draw.ellipse([px - psize//5, py - psize//2 - psize//5, px + psize//5, py - psize//2 + psize//5], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Crown
+            cw, ch = 30, 25
+            draw.rectangle([px - cw//2, py - psize//2 - psize//5 - ch//3, px + cw//2, py - psize//2 - psize//5], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.line([(px - cw//2, py - psize//2 - psize//5 - ch//3), (px - cw//3, py - psize//2 - psize//5 - ch), (px, py - psize//2 - psize//5 - ch//2), (px + cw//3, py - psize//2 - psize//5 - ch), (px + cw//2, py - psize//2 - psize//5 - ch//3)], fill=LINE_COLOR, width=LINE_WIDTH)
+
+        # Giant
+        if has_giant:
+            gx, gy, gsize = WIDTH - 120, center_y + 30, 120
+            # Body
+            draw.rectangle([gx - gsize//3, gy - gsize//4, gx + gsize//3, gy + gsize//2], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Head
+            draw.ellipse([gx - gsize//4, gy - gsize//2 - gsize//4, gx + gsize//4, gy - gsize//4], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Grumpy eyebrows
+            draw.line([(gx - 20, gy - gsize//2 + 10), (gx - 5, gy - gsize//2 + 20)], fill=LINE_COLOR, width=LINE_WIDTH)
+            draw.line([(gx + 20, gy - gsize//2 + 10), (gx + 5, gy - gsize//2 + 20)], fill=LINE_COLOR, width=LINE_WIDTH)
+            # Frown
+            draw.arc([gx - 15, gy - gsize//2 + 35, gx + 15, gy - gsize//2 + 55], 180, 360, fill=LINE_COLOR, width=LINE_WIDTH)
+            # Arms & legs
+            draw.rectangle([gx - gsize//2 - 15, gy - gsize//6, gx - gsize//3, gy + gsize//3], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.rectangle([gx + gsize//3, gy - gsize//6, gx + gsize//2 + 15, gy + gsize//3], outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Action lines
+        if has_action:
+            for i in range(5):
+                y = center_y - 30 + i * 15
+                draw.line([(30, y), (80, y)], fill=LINE_COLOR, width=2)
+
+        # Celebration stars
+        if has_happy:
+            for _ in range(8):
+                cx = random.randint(50, WIDTH - 50)
+                cy = random.randint(50, HEIGHT - 100)
+                points = []
+                for i in range(10):
+                    angle = math.pi/2 + (i * math.pi / 5)
+                    r = 8 if i % 2 == 0 else 4
+                    points.append((cx + r * math.cos(angle), cy - r * math.sin(angle)))
+                draw.polygon(points, outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Convert to bytes
+        import io
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        return buf.getvalue()
+
+    except ImportError:
+        print("   ⚠️  Pillow not installed. Run: pip install Pillow")
+        return None
+    except Exception as e:
+        print(f"   ⚠️  Error generating coloring page: {e}")
+        return None
+
+
 # =============================================================================
 # THE SCAFFOLD — 5 QUESTIONS
 # =============================================================================
@@ -139,10 +332,18 @@ class Story:
             "images": self.images,
         }
 
-    def generate_all_art(self, sd_url=SD_BRIDGE_URL):
-        """Generate art for all scenes using the SD bridge."""
+    def generate_all_art(self, sd_url=SD_BRIDGE_URL, mode="coloring"):
+        """Generate art for all scenes.
+
+        Modes:
+            - coloring: Simple line art for Johnny to color (default, FREE)
+            - sd_bridge: Use SD bridge for AI-generated art
+        """
         print(f"\n🎨 GENERATING ART FOR {len(self.scenes)} SCENES...")
-        print(f"   Using SD bridge at: {sd_url}\n")
+        if mode == "coloring":
+            print(f"   Mode: COLORING BOOK (line art for crayons!)\n")
+        else:
+            print(f"   Mode: SD Bridge at {sd_url}\n")
 
         # Create images directory for this story
         safe_title = "".join(c if c.isalnum() or c in " -_" else "" for c in self.title)
@@ -155,11 +356,18 @@ class Story:
         for scene in self.scenes:
             scene_num = scene["number"]
             prompt = scene["art_prompt"]
+            title = scene["title"]
 
-            print(f"📍 Scene {scene_num}: {scene['title']}")
+            print(f"📍 Scene {scene_num}: {title}")
             print(f"   Prompt: {prompt[:60]}...")
 
-            image_data = generate_art(prompt, sd_url)
+            # Generate based on mode
+            if mode == "coloring":
+                print(f"   🖍️  Drawing coloring page...")
+                image_data = generate_coloring_page(prompt, f"Scene {scene_num}: {title}")
+            else:
+                print(f"   🎨 Generating art...")
+                image_data = generate_art(prompt, sd_url)
 
             if image_data:
                 # Save the image
@@ -498,9 +706,16 @@ def run_scaffold(title=None):
 
     # Ask about art generation
     print("\n" + "═" * 50)
-    make_art = input("🎨 Want to generate art for your story? (y/n) > ").strip().lower()
-    if make_art in ('y', 'yes'):
-        story.generate_all_art()
+    print("🎨 ART OPTIONS:")
+    print("   1. 🖍️  Coloring book (line art for crayons!) [FREE]")
+    print("   2. 🎨 SD Bridge (AI-generated art)")
+    print("   3. ❌ No art (just the story)")
+    art_choice = input("   Pick 1, 2, or 3 > ").strip()
+
+    if art_choice == "1":
+        story.generate_all_art(mode="coloring")
+    elif art_choice == "2":
+        story.generate_all_art(mode="sd_bridge")
 
     # Save it
     saved_path = story.save()
@@ -530,6 +745,9 @@ def main():
     parser.add_argument("--load", type=str, help="Load existing story JSON")
     parser.add_argument("--list", action="store_true", help="List saved stories")
     parser.add_argument("--art", action="store_true", help="Generate art for loaded story")
+    parser.add_argument("--mode", type=str, default="coloring",
+                       choices=["coloring", "sd_bridge"],
+                       help="Art mode: coloring (line art, FREE) or sd_bridge (AI art)")
     parser.add_argument("--sd-url", type=str, default=SD_BRIDGE_URL, help="SD bridge URL")
 
     args = parser.parse_args()
@@ -549,7 +767,7 @@ def main():
         story = Story.load(args.load)
         if args.art:
             # Generate art for this story
-            story.generate_all_art(args.sd_url)
+            story.generate_all_art(args.sd_url, mode=args.mode)
             # Re-save with images
             story.save(Path(args.load).name)
             # Re-export HTML
