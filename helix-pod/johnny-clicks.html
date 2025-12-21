@@ -396,7 +396,28 @@
             <div class="summary">
                 <h2>Your Story is Ready!</h2>
                 <div class="story-preview" id="storyPreview"></div>
-                <button class="make-book" onclick="makeBook()">Make My Coloring Book!</button>
+
+                <!-- Art Mode Selector -->
+                <div class="art-mode-selector">
+                    <p style="font-size:1.2em; margin-bottom:15px;">🎨 Pick your art style:</p>
+                    <div class="options" data-category="artMode" style="margin-bottom:20px;">
+                        <div class="option selected" data-value="coloring">
+                            <span class="emoji">🖍️</span>
+                            <span class="label">Coloring Book</span>
+                        </div>
+                        <div class="option" data-value="pollinations">
+                            <span class="emoji">🌸</span>
+                            <span class="label">AI Art</span>
+                        </div>
+                        <div class="option" data-value="auto">
+                            <span class="emoji">🔄</span>
+                            <span class="label">Best Available</span>
+                        </div>
+                    </div>
+                    <p style="font-size:0.9em; color:#666;">All options are FREE! No credit card needed.</p>
+                </div>
+
+                <button class="make-book" onclick="makeBook()">Make My Book!</button>
                 <div id="output"></div>
             </div>
             <div class="nav-buttons">
@@ -415,7 +436,8 @@
             want: '',
             obstacle: '',
             solution: '',
-            ending: ''
+            ending: '',
+            artMode: 'coloring'  // Default art mode
         };
 
         // Initialize progress dots
@@ -494,20 +516,28 @@
             `;
         }
 
-        // Generate the coloring book
+        // Generate the art book
         async function makeBook() {
             const output = document.getElementById('output');
             const btn = document.querySelector('.make-book');
 
+            const modeMessages = {
+                'coloring': '🖍️ Creating your coloring book...',
+                'pollinations': '🌸 AI is drawing your story...',
+                'huggingface': '🤗 Hugging Face is creating art...',
+                'auto': '🔄 Finding best art generator...'
+            };
+
             output.style.display = 'block';
-            output.innerHTML = '<div style="text-align:center;font-size:2em;">🎨 Creating your coloring book...</div>';
+            output.innerHTML = `<div style="text-align:center;font-size:2em;">${modeMessages[story.artMode] || modeMessages.coloring}</div>`;
             btn.disabled = true;
             btn.textContent = 'Making...';
 
-            // Build JSON for the story
+            // Build JSON for the story (including art mode!)
             const storyData = {
                 title: `${story.author}'s Adventure`,
                 author: story.author,
+                art_mode: story.artMode,  // Send the selected art mode!
                 answers: {
                     hero: story.hero,
                     want: story.want,
@@ -529,8 +559,14 @@
 
                 if (result.ok) {
                     // Show success and images!
+                    const modeLabels = {
+                        'coloring': 'Coloring Book',
+                        'pollinations': 'AI Art Book',
+                        'huggingface': 'HF Art Book',
+                        'auto': 'Art Book'
+                    };
                     let html = `<div style="text-align:center;">
-                        <h2 style="color:#11998e;">🎉 Your Coloring Book is Ready!</h2>
+                        <h2 style="color:#11998e;">🎉 Your ${modeLabels[result.art_mode] || 'Book'} is Ready!</h2>
                         <p>${result.message}</p>
                         <p style="color:#667eea;font-weight:bold;">📖 Opening in new window...</p>
                         <p style="font-size:0.9em;color:#666;">Saved to: ${result.html_path}</p>

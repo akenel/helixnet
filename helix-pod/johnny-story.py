@@ -8,12 +8,20 @@ Then he paints the answers.
 
 Syd Field + Campbell + Gene, simplified for Johnny.
 
+THREE TIERS OF FREE ART:
+    1. COLORING BOOK - No network, just shapes (default)
+    2. POLLINATIONS.AI - Free AI art, no account needed
+    3. HUGGING FACE - Free AI art with account (rate limited)
+
+ALL FREE. NO CREDIT CARD. EVER.
+
 Usage:
     python johnny-story.py                    # Interactive mode
     python johnny-story.py --title "My Story" # Start with a title
     python johnny-story.py --load story.json  # Continue a story
+    python johnny-story.py --mode pollinations # Use AI art
 
-Authors: Angel & Tig
+Authors: Angel & Leo
 December 2025 — For Johnny, for Holly, for the castle in the sky
 """
 
@@ -23,8 +31,20 @@ import argparse
 import base64
 from datetime import datetime
 from pathlib import Path
-from urllib.request import urlopen, Request
-from urllib.error import URLError
+
+# Import the tiered art providers
+try:
+    from art_providers import (
+        generate_art as generate_art_unified,
+        generate_coloring_page,
+        get_art_mode,
+        set_art_mode,
+        load_config,
+    )
+    HAS_ART_PROVIDERS = True
+except ImportError:
+    HAS_ART_PROVIDERS = False
+    print("⚠️  art_providers not found, using built-in coloring only")
 
 # =============================================================================
 # CONFIGURATION
@@ -332,18 +352,24 @@ class Story:
             "images": self.images,
         }
 
-    def generate_all_art(self, sd_url=SD_BRIDGE_URL, mode="coloring"):
+    def generate_all_art(self, mode="coloring"):
         """Generate art for all scenes.
 
-        Modes:
-            - coloring: Simple line art for Johnny to color (default, FREE)
-            - sd_bridge: Use SD bridge for AI-generated art
+        THREE TIERS OF FREE ART:
+            - coloring: Simple line art for Johnny to color (default, FREE, OFFLINE)
+            - pollinations: AI art via Pollinations.ai (FREE, NO ACCOUNT)
+            - huggingface: AI art via HF (FREE WITH ACCOUNT, rate limited)
+            - auto: Try best available, fall back gracefully
         """
         print(f"\n🎨 GENERATING ART FOR {len(self.scenes)} SCENES...")
-        if mode == "coloring":
-            print(f"   Mode: COLORING BOOK (line art for crayons!)\n")
-        else:
-            print(f"   Mode: SD Bridge at {sd_url}\n")
+
+        mode_descriptions = {
+            "coloring": "COLORING BOOK (line art for crayons!) - FREE, OFFLINE",
+            "pollinations": "POLLINATIONS.AI (AI art) - FREE, NO ACCOUNT",
+            "huggingface": "HUGGING FACE (AI art) - FREE WITH ACCOUNT",
+            "auto": "AUTO (best available)",
+        }
+        print(f"   Mode: {mode_descriptions.get(mode, mode)}\n")
 
         # Create images directory for this story
         safe_title = "".join(c if c.isalnum() or c in " -_" else "" for c in self.title)
@@ -361,13 +387,12 @@ class Story:
             print(f"📍 Scene {scene_num}: {title}")
             print(f"   Prompt: {prompt[:60]}...")
 
-            # Generate based on mode
-            if mode == "coloring":
-                print(f"   🖍️  Drawing coloring page...")
-                image_data = generate_coloring_page(prompt, f"Scene {scene_num}: {title}")
+            # Generate using the unified art provider
+            if HAS_ART_PROVIDERS:
+                image_data = generate_art_unified(prompt, f"Scene {scene_num}: {title}", mode=mode)
             else:
-                print(f"   🎨 Generating art...")
-                image_data = generate_art(prompt, sd_url)
+                # Fallback to built-in coloring
+                image_data = generate_coloring_page(prompt, f"Scene {scene_num}: {title}")
 
             if image_data:
                 # Save the image
@@ -706,16 +731,22 @@ def run_scaffold(title=None):
 
     # Ask about art generation
     print("\n" + "═" * 50)
-    print("🎨 ART OPTIONS:")
-    print("   1. 🖍️  Coloring book (line art for crayons!) [FREE]")
-    print("   2. 🎨 SD Bridge (AI-generated art)")
-    print("   3. ❌ No art (just the story)")
-    art_choice = input("   Pick 1, 2, or 3 > ").strip()
+    print("🎨 ART OPTIONS — ALL FREE, NO CREDIT CARD!")
+    print("   1. 🖍️  Coloring book (line art for crayons) [OFFLINE]")
+    print("   2. 🌸 Pollinations.ai (AI art, NO account needed)")
+    print("   3. 🤗 Hugging Face (AI art, needs free account)")
+    print("   4. 🔄 Auto (try best available)")
+    print("   5. ❌ No art (just the story)")
+    art_choice = input("   Pick 1-5 > ").strip()
 
     if art_choice == "1":
         story.generate_all_art(mode="coloring")
     elif art_choice == "2":
-        story.generate_all_art(mode="sd_bridge")
+        story.generate_all_art(mode="pollinations")
+    elif art_choice == "3":
+        story.generate_all_art(mode="huggingface")
+    elif art_choice == "4":
+        story.generate_all_art(mode="auto")
 
     # Save it
     saved_path = story.save()
@@ -739,18 +770,36 @@ def run_scaffold(title=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="📖 JOHNNY'S STORY SCAFFOLD — Dream It, Build It, Ship It"
+        description="📖 JOHNNY'S STORY SCAFFOLD — Dream It, Build It, Ship It\n\n"
+                    "THREE TIERS OF FREE ART:\n"
+                    "  coloring     - Line art for crayons (offline, default)\n"
+                    "  pollinations - AI art via Pollinations.ai (free, no account)\n"
+                    "  huggingface  - AI art via HF (free with account)\n"
+                    "  auto         - Try best available",
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--title", type=str, help="Story title")
     parser.add_argument("--load", type=str, help="Load existing story JSON")
     parser.add_argument("--list", action="store_true", help="List saved stories")
     parser.add_argument("--art", action="store_true", help="Generate art for loaded story")
     parser.add_argument("--mode", type=str, default="coloring",
-                       choices=["coloring", "sd_bridge"],
-                       help="Art mode: coloring (line art, FREE) or sd_bridge (AI art)")
-    parser.add_argument("--sd-url", type=str, default=SD_BRIDGE_URL, help="SD bridge URL")
+                       choices=["coloring", "pollinations", "huggingface", "auto"],
+                       help="Art mode (default: coloring)")
+    parser.add_argument("--set-hf-token", type=str, metavar="TOKEN",
+                       help="Set Hugging Face token for AI art")
 
     args = parser.parse_args()
+
+    # Handle HF token setup
+    if args.set_hf_token:
+        if HAS_ART_PROVIDERS:
+            from art_providers import set_hf_token
+            set_hf_token(args.set_hf_token)
+            print("✅ Hugging Face token saved!")
+            print("   Art mode automatically set to: huggingface")
+        else:
+            print("⚠️  art_providers module not available")
+        return
 
     if args.list:
         print("\n📚 JOHNNY'S LIBRARY\n")
@@ -761,13 +810,19 @@ def main():
         else:
             print("   (No stories yet! Let's make one!)")
         print(f"\n   Stories live in: {STORIES_DIR}\n")
+
+        # Show current art mode
+        if HAS_ART_PROVIDERS:
+            current_mode = get_art_mode()
+            print(f"   🎨 Current art mode: {current_mode}")
+            print(f"   💡 Change with: --mode pollinations")
         return
 
     if args.load:
         story = Story.load(args.load)
         if args.art:
             # Generate art for this story
-            story.generate_all_art(args.sd_url, mode=args.mode)
+            story.generate_all_art(mode=args.mode)
             # Re-save with images
             story.save(Path(args.load).name)
             # Re-export HTML
