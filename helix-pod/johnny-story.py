@@ -20,8 +20,11 @@ December 2025 — For Johnny, for Holly, for the castle in the sky
 import os
 import json
 import argparse
+import base64
 from datetime import datetime
 from pathlib import Path
+from urllib.request import urlopen, Request
+from urllib.error import URLError
 
 # =============================================================================
 # CONFIGURATION
@@ -29,6 +32,48 @@ from pathlib import Path
 
 STORIES_DIR = Path.home() / ".helix" / "stories"
 STORIES_DIR.mkdir(parents=True, exist_ok=True)
+
+# SD Bridge settings
+SD_BRIDGE_URL = os.environ.get("SD_BRIDGE_URL", "http://localhost:7790")
+
+
+# =============================================================================
+# SD BRIDGE CONNECTION
+# =============================================================================
+
+def generate_art(prompt, sd_url=SD_BRIDGE_URL, timeout=180):
+    """Call the SD bridge to generate art for a scene."""
+    try:
+        payload = {
+            "prompt": prompt,
+            "negative_prompt": "blurry, bad quality, scary, dark, violent",
+            "steps": 25,
+            "width": 512,
+            "height": 512,
+        }
+        data = json.dumps(payload).encode()
+        req = Request(
+            f"{sd_url}/generate",
+            data=data,
+            headers={"Content-Type": "application/json"}
+        )
+
+        print(f"   🎨 Generating art...")
+        resp = urlopen(req, timeout=timeout)
+        result = json.loads(resp.read().decode())
+
+        if result.get("ok") and result.get("image_base64"):
+            return base64.b64decode(result["image_base64"])
+        else:
+            print(f"   ⚠️  Art generation failed: {result.get('error', 'Unknown error')}")
+            return None
+
+    except URLError as e:
+        print(f"   ⚠️  Cannot reach SD bridge at {sd_url}: {e}")
+        return None
+    except Exception as e:
+        print(f"   ⚠️  Error generating art: {e}")
+        return None
 
 # =============================================================================
 # THE SCAFFOLD — 5 QUESTIONS
@@ -81,6 +126,7 @@ class Story:
         self.answers = {}
         self.scenes = []
         self.status = "drafting"
+        self.images = {}
 
     def to_dict(self):
         return {
@@ -90,7 +136,51 @@ class Story:
             "answers": self.answers,
             "scenes": self.scenes,
             "status": self.status,
+            "images": self.images,
         }
+
+    def generate_all_art(self, sd_url=SD_BRIDGE_URL):
+        """Generate art for all scenes using the SD bridge."""
+        print(f"\n🎨 GENERATING ART FOR {len(self.scenes)} SCENES...")
+        print(f"   Using SD bridge at: {sd_url}\n")
+
+        # Create images directory for this story
+        safe_title = "".join(c if c.isalnum() or c in " -_" else "" for c in self.title)
+        safe_title = safe_title.replace(" ", "-").lower()[:30]
+        images_dir = STORIES_DIR / f"{safe_title}-images"
+        images_dir.mkdir(parents=True, exist_ok=True)
+
+        self.images = {}
+
+        for scene in self.scenes:
+            scene_num = scene["number"]
+            prompt = scene["art_prompt"]
+
+            print(f"📍 Scene {scene_num}: {scene['title']}")
+            print(f"   Prompt: {prompt[:60]}...")
+
+            image_data = generate_art(prompt, sd_url)
+
+            if image_data:
+                # Save the image
+                image_path = images_dir / f"scene-{scene_num}.png"
+                with open(image_path, "wb") as f:
+                    f.write(image_data)
+                print(f"   ✅ Saved: {image_path}")
+                self.images[str(scene_num)] = str(image_path)
+                scene["image_path"] = str(image_path)
+                scene["image_base64"] = base64.b64encode(image_data).decode()
+            else:
+                print(f"   ⚠️  No image generated (will use placeholder)")
+                self.images[str(scene_num)] = None
+                scene["image_path"] = None
+                scene["image_base64"] = None
+
+            print()
+
+        print(f"🎉 Art generation complete!")
+        print(f"   Images saved to: {images_dir}")
+        return self.images
 
     @classmethod
     def from_dict(cls, data):
@@ -100,6 +190,7 @@ class Story:
         story.answers = data.get("answers", {})
         story.scenes = data.get("scenes", [])
         story.status = data.get("status", "drafting")
+        story.images = data.get("images", {})
         return story
 
     def save(self, filename=None):
@@ -280,6 +371,27 @@ class Story:
         .art-prompt::before {{
             content: "🎨 ";
         }}
+        .scene-image {{
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .no-image {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            color: white;
+            font-size: 3em;
+        }}
         .the-end {{
             text-align: center;
             padding: 60px 40px;
@@ -303,10 +415,18 @@ class Story:
         </div>
 """
         for scene in self.scenes:
+            # Check if we have an image for this scene
+            img_b64 = scene.get('image_base64')
+            if img_b64:
+                image_html = f'<img class="scene-image" src="data:image/png;base64,{img_b64}" alt="Scene {scene["number"]}">'
+            else:
+                image_html = '<div class="no-image">🎨</div>'
+
             html += f"""
         <div class="scene">
             <div class="scene-number">{scene['number']}</div>
             <h2>{scene['title']}</h2>
+            {image_html}
             <p>{scene['description']}</p>
             <div class="art-prompt">{scene['art_prompt']}</div>
         </div>
@@ -376,11 +496,17 @@ def run_scaffold(title=None):
     story.generate_scenes()
     story.status = "complete"
 
+    # Ask about art generation
+    print("\n" + "═" * 50)
+    make_art = input("🎨 Want to generate art for your story? (y/n) > ").strip().lower()
+    if make_art in ('y', 'yes'):
+        story.generate_all_art()
+
     # Save it
     saved_path = story.save()
     print(f"💾 Story saved to: {saved_path}")
 
-    # Export HTML
+    # Export HTML (will include images if we generated them)
     html_path = story.export_html()
     print(f"🌐 HTML exported to: {html_path}")
 
@@ -403,6 +529,8 @@ def main():
     parser.add_argument("--title", type=str, help="Story title")
     parser.add_argument("--load", type=str, help="Load existing story JSON")
     parser.add_argument("--list", action="store_true", help="List saved stories")
+    parser.add_argument("--art", action="store_true", help="Generate art for loaded story")
+    parser.add_argument("--sd-url", type=str, default=SD_BRIDGE_URL, help="SD bridge URL")
 
     args = parser.parse_args()
 
@@ -419,6 +547,14 @@ def main():
 
     if args.load:
         story = Story.load(args.load)
+        if args.art:
+            # Generate art for this story
+            story.generate_all_art(args.sd_url)
+            # Re-save with images
+            story.save(Path(args.load).name)
+            # Re-export HTML
+            html_path = story.export_html()
+            print(f"🌐 HTML with art exported to: {html_path}")
         story.print_story()
         return
 
