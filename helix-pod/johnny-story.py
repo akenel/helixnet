@@ -684,6 +684,26 @@ class Story:
         .the-end p {{
             font-size: 1.2em;
         }}
+        .print-btn {{
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }}
+        .print-btn:hover {{
+            transform: scale(1.05);
+        }}
+        @media print {{
+            .print-btn {{ display: none; }}
+            body {{ background: white; padding: 0; }}
+            .book {{ box-shadow: none; }}
+        }}
     </style>
 </head>
 <body>
@@ -691,6 +711,7 @@ class Story:
         <div class="cover">
             <h1>📖 {self.title}</h1>
             <p class="author">Written by {self.author}</p>
+            <button class="print-btn" onclick="window.print()">🖨️ Print My Book!</button>
         </div>
 """
         for scene in self.scenes:
