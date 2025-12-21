@@ -397,24 +397,20 @@
                 <h2>Your Story is Ready!</h2>
                 <div class="story-preview" id="storyPreview"></div>
 
-                <!-- Art Mode Selector -->
+                <!-- Art Mode Selector — Simple: Coloring or AI Art -->
                 <div class="art-mode-selector">
                     <p style="font-size:1.2em; margin-bottom:15px;">🎨 Pick your art style:</p>
                     <div class="options" data-category="artMode" style="margin-bottom:20px;">
-                        <div class="option selected" data-value="coloring">
+                        <div class="option" data-value="coloring">
                             <span class="emoji">🖍️</span>
                             <span class="label">Coloring Book</span>
                         </div>
-                        <div class="option" data-value="pollinations">
+                        <div class="option selected" data-value="pollinations">
                             <span class="emoji">🌸</span>
                             <span class="label">AI Art</span>
                         </div>
-                        <div class="option" data-value="auto">
-                            <span class="emoji">🔄</span>
-                            <span class="label">Best Available</span>
-                        </div>
                     </div>
-                    <p style="font-size:0.9em; color:#666;">All options are FREE! No credit card needed.</p>
+                    <p style="font-size:0.9em; color:#666;">Both FREE! No account needed!</p>
                 </div>
 
                 <button class="make-book" onclick="makeBook()">Make My Book!</button>
@@ -437,7 +433,7 @@
             obstacle: '',
             solution: '',
             ending: '',
-            artMode: 'coloring'  // Default art mode
+            artMode: 'pollinations'  // Default: AI Art (free, no account!)
         };
 
         // Initialize progress dots
@@ -549,7 +545,9 @@
 
             try {
                 // Try to call the server
-                const response = await fetch('http://localhost:7791/generate', {
+                // Use same host/port as current page (works on any port!)
+                const serverUrl = window.location.origin + '/generate';
+                const response = await fetch(serverUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(storyData)
