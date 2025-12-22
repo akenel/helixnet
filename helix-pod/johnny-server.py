@@ -56,9 +56,50 @@ def load_johnny_story():
 class JohnnyHandler(SimpleHTTPRequestHandler):
     """Handle requests for Johnny's story builder."""
 
+    # Allowed files for security (Swiss safe mode)
+    ALLOWED_FILES = {
+        '/johnny-clicks.html',
+        '/health',
+        '/',
+    }
+    ALLOWED_PREFIXES = (
+        '/stories/',  # Generated story books
+        '/generate',  # API endpoint
+    )
+
     def __init__(self, *args, **kwargs):
         # Serve from the helix-pod directory
         super().__init__(*args, directory=str(Path(__file__).parent), **kwargs)
+
+    def do_GET(self):
+        """Handle GET requests with routing."""
+        # Health check endpoint
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            health = {
+                'status': 'healthy',
+                'service': 'helix-teller',
+                'mode': DEFAULT_ART_MODE,
+                'version': '1.0.0'
+            }
+            self.wfile.write(json.dumps(health).encode())
+            return
+
+        # Redirect root to johnny-clicks.html
+        if self.path == '/' or self.path == '':
+            self.send_response(302)
+            self.send_header('Location', '/johnny-clicks.html')
+            self.end_headers()
+            return
+
+        # Security: Only serve allowed files/paths
+        if self.path in self.ALLOWED_FILES or any(self.path.startswith(p) for p in self.ALLOWED_PREFIXES):
+            super().do_GET()
+        else:
+            self.send_error(403, 'Forbidden - Swiss Safe Mode')
 
     def do_OPTIONS(self):
         """Handle CORS preflight."""
@@ -168,8 +209,9 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         """Quieter logging."""
-        if 'POST' in args[0] or 'error' in format.lower():
-            print(f"   {args[0]}")
+        if args and isinstance(args[0], str):
+            if 'POST' in args[0] or 'error' in format.lower():
+                print(f"   {args[0]}")
 
 
 def main():
@@ -223,7 +265,7 @@ def main():
         webbrowser.open(f'http://localhost:{args.port}/johnny-clicks.html')
 
     # Start server
-    server = HTTPServer(('localhost', args.port), JohnnyHandler)
+    server = HTTPServer(('0.0.0.0', args.port), JohnnyHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -1,0 +1,21 @@
+services:
+  helix-teller:
+    build:
+      context: ../..
+      dockerfile: compose/helix-pod/Dockerfile
+    container_name: helix-teller
+    restart: unless-stopped
+    ports:
+      - "7791:7791"
+    networks:
+      - helixnet_core
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.teller.rule=Host(`teller.helix.local`)"
+      - "traefik.http.routers.teller.entrypoints=websecure"
+      - "traefik.http.routers.teller.tls=true"
+      - "traefik.http.services.teller.loadbalancer.server.port=7791"
+
+networks:
+  helixnet_core:
+    external: true

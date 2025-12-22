@@ -144,6 +144,11 @@ http:
       service: music
       entryPoints: [websecure]
       tls: {}
+    teller:
+      rule: "Host(`teller.helix.local`)"
+      service: teller
+      entryPoints: [websecure]
+      tls: {}
 # 🔎 Traefik Dashboard
     traefik_dashboard:
       rule: "Host(`traefik.helix.local`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
@@ -246,6 +251,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://helix-music:1970"
+    teller:
+      loadBalancer:
+        servers:
+          - url: "http://helix-teller:7791"
     # Traefik Dashboard
     api@internal:
       loadBalancer:
