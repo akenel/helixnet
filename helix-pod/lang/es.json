@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "language": "Español",
+    "code": "es",
+    "flag": "🇪🇸",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Cuentos Mágicos",
+    "subtitle": "¡Haz clic en las imágenes para crear TU cuento!",
+    "makeBook": "¡Hacer Mi Libro!",
+    "tryAgain": "Intentar de Nuevo",
+    "done": "¡Listo!",
+    "serverReady": "Servidor listo",
+    "serverConnecting": "Conectando...",
+    "serverNotRunning": "¡Servidor no funciona!",
+    "startServerFirst": "Primero inicia el servidor:",
+    "thenClickAgain": "¡Luego haz clic otra vez!",
+    "generating": "Creando tu libro...",
+    "yourBookReady": "¡Tu Libro Está Listo!",
+    "openingNewWindow": "Abriendo en nueva ventana...",
+    "savedTo": "Guardado en:",
+    "pickArtStyle": "Elige tu estilo de arte:",
+    "allFree": "¡Todo GRATIS! ¡Sin cuenta necesaria!"
+  },
+  "steps": {
+    "hero": "¿Quién es el héroe?",
+    "want": "¿Qué quieren?",
+    "obstacle": "¡Pero oh no! ¿Qué hay en el camino?",
+    "solution": "¿Cómo ganan?",
+    "ending": "EL FIN se ve como..."
+  },
+  "story": {
+    "onceUponATime": "Había una vez",
+    "theyWanted": "Querían",
+    "butOhNo": "¡Pero oh no! Había",
+    "inTheWay": "¡en el camino!",
+    "using": "Usando",
+    "theySavedTheDay": "¡salvaron el día!",
+    "theEnd": "FIN:"
+  },
+  "heroes": {
+    "dragon": { "label": "Dragón", "value": "un dragón amigable" },
+    "robot": { "label": "Robot", "value": "un robot valiente" },
+    "unicorn": { "label": "Unicornio", "value": "un unicornio mágico" },
+    "cat": { "label": "Gato", "value": "un súper gato" },
+    "dog": { "label": "Perro", "value": "un perro heroico" },
+    "superhero": { "label": "Superhéroe", "value": "un niño superhéroe" },
+    "tiger": { "label": "Tigre", "value": "un tigre poderoso" },
+    "space": { "label": "Explorador", "value": "un explorador espacial" }
+  },
+  "wants": {
+    "princess": { "label": "Salvar Princesa", "value": "salvar a la Princesa de la torre" },
+    "treasure": { "label": "Buscar Tesoro", "value": "encontrar el tesoro escondido" },
+    "race": { "label": "Ganar Carrera", "value": "ganar la gran carrera" },
+    "home": { "label": "Volver a Casa", "value": "volver a casa sano y salvo" },
+    "friend": { "label": "Hacer Amigo", "value": "hacer un nuevo amigo" },
+    "fly": { "label": "Aprender a Volar", "value": "aprender a volar" },
+    "wizard": { "label": "Ser Mago", "value": "convertirse en mago" },
+    "ocean": { "label": "Explorar Océano", "value": "explorar el océano" }
+  },
+  "obstacles": {
+    "giant": { "label": "Gigante", "value": "un gigante gruñón" },
+    "monster": { "label": "Monstruo", "value": "un monstruo aterrador" },
+    "mountain": { "label": "Montaña", "value": "una montaña enorme" },
+    "door": { "label": "Puerta Mágica", "value": "una puerta mágica cerrada" },
+    "storm": { "label": "Tormenta", "value": "una tormenta salvaje" },
+    "forest": { "label": "Bosque", "value": "un bosque oscuro y profundo" },
+    "wizard": { "label": "Mago", "value": "un mago astuto" },
+    "maze": { "label": "Laberinto", "value": "un laberinto confuso" }
+  },
+  "solutions": {
+    "speed": { "label": "Velocidad", "value": "súper poderes de velocidad" },
+    "friend": { "label": "Amigo", "value": "un amigo servicial" },
+    "trick": { "label": "Truco", "value": "un truco inteligente" },
+    "magic": { "label": "Magia", "value": "poderes mágicos" },
+    "brave": { "label": "Valiente", "value": "siendo muy valiente" },
+    "kindness": { "label": "Bondad", "value": "bondad y amor" },
+    "teamwork": { "label": "Trabajo en Equipo", "value": "trabajo en equipo con todos" },
+    "nevergiveup": { "label": "No Rendirse", "value": "nunca rendirse" }
+  },
+  "endings": {
+    "party": { "label": "Fiesta", "value": "todos bailando en una gran fiesta" },
+    "sunset": { "label": "Atardecer", "value": "volando juntos hacia el atardecer" },
+    "castle": { "label": "Castillo", "value": "viviendo en un hermoso castillo" },
+    "hugging": { "label": "Abrazos", "value": "todos los amigos abrazándose y riendo" },
+    "cake": { "label": "Pastel", "value": "comiendo pastel y helado" },
+    "medal": { "label": "Medalla", "value": "recibiendo una medalla de oro" },
+    "adventure": { "label": "Aventura", "value": "yendo a una nueva aventura" },
+    "sleep": { "label": "Dormir", "value": "durmiendo en una cama acogedora" }
+  },
+  "artModes": {
+    "coloring": "Libro para Colorear",
+    "pollinations": "Arte IA",
+    "ai-coloring": "Colorear IA"
+  }
+}

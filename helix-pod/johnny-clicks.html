@@ -252,12 +252,36 @@
             font-size: 1.2em;
             padding: 40px;
         }
+        .lang-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .lang-btn {
+            font-size: 1.5em;
+            background: none;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover { transform: scale(1.2); }
+        .lang-btn.active { border-color: #11998e; background: rgba(17,153,142,0.2); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Helix Story Teller</h1>
-        <p class="subtitle">Click pictures to make YOUR story!</p>
+    <div class="container" style="position:relative;">
+        <div class="lang-selector">
+            <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
+            <button class="lang-btn" data-lang="th" title="ภาษาไทย">🇹🇭</button>
+            <button class="lang-btn" data-lang="hi" title="हिन्दी">🇮🇳</button>
+            <button class="lang-btn" data-lang="es" title="Español">🇪🇸</button>
+        </div>
+        <h1 data-i18n="ui.title">Helix Story Teller</h1>
+        <p class="subtitle" data-i18n="ui.subtitle">Click pictures to make YOUR story!</p>
 
         <div class="progress" id="progress"></div>
 
@@ -332,35 +356,35 @@
         <div class="step" data-step="2">
             <div class="question">What do they WANT?</div>
             <div class="options" data-category="want">
-                <div class="option" data-value="save Princess Holly from the tower">
+                <div class="option" data-value="save Princess Holly from the tower" data-keyword="princess">
                     <span class="emoji">👸</span>
                     <span class="label">Save the Princess</span>
                 </div>
-                <div class="option" data-value="find the hidden treasure">
+                <div class="option" data-value="find the hidden treasure" data-keyword="treasure">
                     <span class="emoji">💎</span>
                     <span class="label">Find Treasure</span>
                 </div>
-                <div class="option" data-value="win the big race">
+                <div class="option" data-value="win the big race" data-keyword="race">
                     <span class="emoji">🏆</span>
                     <span class="label">Win the Race</span>
                 </div>
-                <div class="option" data-value="get back home safely">
+                <div class="option" data-value="get back home safely" data-keyword="home">
                     <span class="emoji">🏠</span>
                     <span class="label">Get Home</span>
                 </div>
-                <div class="option" data-value="make a new friend">
+                <div class="option" data-value="make a new friend" data-keyword="friend">
                     <span class="emoji">🤝</span>
                     <span class="label">Make a Friend</span>
                 </div>
-                <div class="option" data-value="learn to fly">
+                <div class="option" data-value="learn to fly" data-keyword="fly">
                     <span class="emoji">✈️</span>
                     <span class="label">Learn to Fly</span>
                 </div>
-                <div class="option" data-value="become a wizard">
+                <div class="option" data-value="become a wizard" data-keyword="wizard">
                     <span class="emoji">🧙</span>
                     <span class="label">Be a Wizard</span>
                 </div>
-                <div class="option" data-value="explore the ocean">
+                <div class="option" data-value="explore the ocean" data-keyword="ocean">
                     <span class="emoji">🐠</span>
                     <span class="label">Explore Ocean</span>
                 </div>
@@ -418,35 +442,35 @@
         <div class="step" data-step="4">
             <div class="question">How do they WIN?</div>
             <div class="options" data-category="solution">
-                <div class="option" data-value="super speed powers">
+                <div class="option" data-value="super speed powers" data-keyword="speed">
                     <span class="emoji">⚡</span>
                     <span class="label">Super Speed</span>
                 </div>
-                <div class="option" data-value="a helpful friend">
+                <div class="option" data-value="a helpful friend" data-keyword="friend">
                     <span class="emoji">🤗</span>
                     <span class="label">Friend Helps</span>
                 </div>
-                <div class="option" data-value="a clever trick">
+                <div class="option" data-value="a clever trick" data-keyword="trick">
                     <span class="emoji">🧠</span>
                     <span class="label">Clever Trick</span>
                 </div>
-                <div class="option" data-value="magic powers">
+                <div class="option" data-value="magic powers" data-keyword="magic">
                     <span class="emoji">✨</span>
                     <span class="label">Magic!</span>
                 </div>
-                <div class="option" data-value="being super brave">
+                <div class="option" data-value="being super brave" data-keyword="brave">
                     <span class="emoji">💪</span>
                     <span class="label">Bravery</span>
                 </div>
-                <div class="option" data-value="kindness and love">
+                <div class="option" data-value="kindness and love" data-keyword="kindness">
                     <span class="emoji">❤️</span>
                     <span class="label">Kindness</span>
                 </div>
-                <div class="option" data-value="teamwork with everyone">
+                <div class="option" data-value="teamwork with everyone" data-keyword="teamwork">
                     <span class="emoji">👥</span>
                     <span class="label">Teamwork</span>
                 </div>
-                <div class="option" data-value="never giving up">
+                <div class="option" data-value="never giving up" data-keyword="nevergiveup">
                     <span class="emoji">🌟</span>
                     <span class="label">Never Give Up</span>
                 </div>
@@ -461,35 +485,35 @@
         <div class="step" data-step="5">
             <div class="question">THE END looks like...</div>
             <div class="options" data-category="ending">
-                <div class="option" data-value="everyone dancing at a big party">
+                <div class="option" data-value="everyone dancing at a big party" data-keyword="party">
                     <span class="emoji">🎉</span>
                     <span class="label">Big Party!</span>
                 </div>
-                <div class="option" data-value="flying into the sunset together">
+                <div class="option" data-value="flying into the sunset together" data-keyword="sunset">
                     <span class="emoji">🌅</span>
                     <span class="label">Sunset Flight</span>
                 </div>
-                <div class="option" data-value="living in a beautiful castle">
+                <div class="option" data-value="living in a beautiful castle" data-keyword="castle">
                     <span class="emoji">🏰</span>
                     <span class="label">Castle Home</span>
                 </div>
-                <div class="option" data-value="all friends hugging and laughing">
+                <div class="option" data-value="all friends hugging and laughing" data-keyword="hugging">
                     <span class="emoji">🤗</span>
                     <span class="label">Friends Forever</span>
                 </div>
-                <div class="option" data-value="eating cake and ice cream">
+                <div class="option" data-value="eating cake and ice cream" data-keyword="cake">
                     <span class="emoji">🎂</span>
                     <span class="label">Cake Time!</span>
                 </div>
-                <div class="option" data-value="getting a golden medal">
+                <div class="option" data-value="getting a golden medal" data-keyword="medal">
                     <span class="emoji">🥇</span>
                     <span class="label">Winner!</span>
                 </div>
-                <div class="option" data-value="going on a new adventure">
+                <div class="option" data-value="going on a new adventure" data-keyword="adventure">
                     <span class="emoji">🗺️</span>
                     <span class="label">New Adventure!</span>
                 </div>
-                <div class="option" data-value="sleeping in a cozy bed">
+                <div class="option" data-value="sleeping in a cozy bed" data-keyword="sleep">
                     <span class="emoji">🛏️</span>
                     <span class="label">Cozy Sleep</span>
                 </div>
@@ -527,6 +551,7 @@
                 </div>
 
                 <button class="make-book" onclick="makeBook()">Make My Book!</button>
+                <div id="server-status" style="text-align:center;margin:10px 0;font-size:0.9em;"></div>
                 <div id="output"></div>
             </div>
             <div class="nav-buttons">
@@ -872,8 +897,140 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
 
         }
 
+        // Health check on page load
+        let serverHealthy = false;
+        async function checkServerHealth() {
+            const statusEl = document.getElementById('server-status');
+            try {
+                const healthUrl = window.location.origin + '/health';
+                const response = await fetch(healthUrl, { method: 'GET', cache: 'no-store' });
+                if (response.ok) {
+                    const data = await response.json();
+                    serverHealthy = true;
+                    statusEl.innerHTML = `<span style="color:#11998e;">✅ Server ready (${data.mode} mode)</span>`;
+                    return true;
+                }
+            } catch (err) {
+                // Server not reachable
+            }
+            serverHealthy = false;
+            statusEl.innerHTML = `<span style="color:#e74c3c;">⚠️ Server connecting...</span>`;
+            // Retry in 3 seconds
+            setTimeout(checkServerHealth, 3000);
+            return false;
+        }
+
+        // ============================================
+        // 🌍 INTERNATIONALIZATION (i18n)
+        // ============================================
+        let currentLang = 'en';
+        let i18n = {};
+
+        async function loadLanguage(langCode) {
+            try {
+                const response = await fetch(`/lang/${langCode}.json`);
+                if (response.ok) {
+                    i18n = await response.json();
+                    currentLang = langCode;
+                    localStorage.setItem('teller-lang', langCode);
+                    applyTranslations();
+                    updateLangButtons();
+                    return true;
+                }
+            } catch (err) {
+                console.log(`Language ${langCode} not found, falling back to en`);
+            }
+            if (langCode !== 'en') return loadLanguage('en');
+            return false;
+        }
+
+        function applyTranslations() {
+            if (!i18n.ui) return;
+
+            // Update title and subtitle
+            document.querySelector('h1[data-i18n]').textContent = i18n.ui.title;
+            document.querySelector('.subtitle[data-i18n]').textContent = i18n.ui.subtitle;
+
+            // Update questions
+            const questions = {
+                'hero': i18n.steps.hero,
+                'want': i18n.steps.want,
+                'obstacle': i18n.steps.obstacle,
+                'solution': i18n.steps.solution,
+                'ending': i18n.steps.ending
+            };
+            document.querySelectorAll('.options[data-category]').forEach(opts => {
+                const cat = opts.dataset.category;
+                const questionEl = opts.previousElementSibling;
+                if (questionEl && questions[cat]) {
+                    questionEl.textContent = questions[cat];
+                }
+            });
+
+            // Update option labels and values
+            const categories = {
+                'hero': i18n.heroes,
+                'want': i18n.wants,
+                'obstacle': i18n.obstacles,
+                'solution': i18n.solutions,
+                'ending': i18n.endings
+            };
+            document.querySelectorAll('.options[data-category]').forEach(opts => {
+                const cat = opts.dataset.category;
+                const catData = categories[cat];
+                if (!catData) return;
+
+                opts.querySelectorAll('.option[data-keyword]').forEach(opt => {
+                    const key = opt.dataset.keyword;
+                    if (catData[key]) {
+                        opt.querySelector('.label').textContent = catData[key].label;
+                        opt.dataset.value = catData[key].value;
+                    }
+                });
+            });
+
+            // Update Make My Book button
+            const makeBookBtn = document.querySelector('.make-book');
+            if (makeBookBtn) makeBookBtn.textContent = i18n.ui.makeBook;
+
+            // Update art mode labels
+            if (i18n.artModes) {
+                document.querySelectorAll('.options[data-category="artMode"] .option').forEach(opt => {
+                    const mode = opt.dataset.value;
+                    if (i18n.artModes[mode]) {
+                        opt.querySelector('.label').textContent = i18n.artModes[mode];
+                    }
+                });
+            }
+
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLang;
+        }
+
+        function updateLangButtons() {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+        }
+
+        function detectBrowserLanguage() {
+            const saved = localStorage.getItem('teller-lang');
+            if (saved) return saved;
+
+            const browserLang = navigator.language.split('-')[0];
+            const supported = ['en', 'th', 'hi', 'es'];
+            return supported.includes(browserLang) ? browserLang : 'en';
+        }
+
+        // Language button click handlers
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => loadLanguage(btn.dataset.lang));
+        });
+
         // Initialize
         initProgress();
+        checkServerHealth();
+        loadLanguage(detectBrowserLanguage());
     </script>
 </body>
 </html>

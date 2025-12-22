@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "language": "English",
+    "code": "en",
+    "flag": "🇬🇧",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Helix Story Teller",
+    "subtitle": "Click pictures to make YOUR story!",
+    "makeBook": "Make My Book!",
+    "tryAgain": "Try Again",
+    "done": "Done!",
+    "serverReady": "Server ready",
+    "serverConnecting": "Server connecting...",
+    "serverNotRunning": "Server not running!",
+    "startServerFirst": "Start the server first:",
+    "thenClickAgain": "Then click the button again!",
+    "generating": "Making your book...",
+    "yourBookReady": "Your Book is Ready!",
+    "openingNewWindow": "Opening in new window...",
+    "savedTo": "Saved to:",
+    "pickArtStyle": "Pick your art style:",
+    "allFree": "All FREE! No account needed!"
+  },
+  "steps": {
+    "hero": "Who is the hero?",
+    "want": "What do they want?",
+    "obstacle": "But oh no! What's in the way?",
+    "solution": "How do they win?",
+    "ending": "THE END looks like..."
+  },
+  "story": {
+    "onceUponATime": "Once upon a time, there was",
+    "theyWanted": "They wanted to",
+    "butOhNo": "But oh no! There was",
+    "inTheWay": "in the way!",
+    "using": "Using",
+    "theySavedTheDay": "they saved the day!",
+    "theEnd": "THE END:"
+  },
+  "heroes": {
+    "dragon": { "label": "Dragon", "value": "a friendly dragon" },
+    "robot": { "label": "Robot", "value": "a brave robot" },
+    "unicorn": { "label": "Unicorn", "value": "a magical unicorn" },
+    "cat": { "label": "Cat", "value": "a super cat" },
+    "dog": { "label": "Dog", "value": "a heroic dog" },
+    "superhero": { "label": "Superhero", "value": "a little superhero kid" },
+    "tiger": { "label": "Tiger", "value": "a mighty tiger" },
+    "space": { "label": "Explorer", "value": "a space explorer" }
+  },
+  "wants": {
+    "princess": { "label": "Save Princess", "value": "save Princess Holly from the tower" },
+    "treasure": { "label": "Find Treasure", "value": "find the hidden treasure" },
+    "race": { "label": "Win Race", "value": "win the big race" },
+    "home": { "label": "Get Home", "value": "get back home safely" },
+    "friend": { "label": "Make Friend", "value": "make a new friend" },
+    "fly": { "label": "Learn to Fly", "value": "learn to fly" },
+    "wizard": { "label": "Be Wizard", "value": "become a wizard" },
+    "ocean": { "label": "Explore Ocean", "value": "explore the ocean" }
+  },
+  "obstacles": {
+    "giant": { "label": "Giant", "value": "a grumpy giant" },
+    "monster": { "label": "Monster", "value": "a scary monster" },
+    "mountain": { "label": "Mountain", "value": "a huge mountain" },
+    "door": { "label": "Magic Door", "value": "a locked magic door" },
+    "storm": { "label": "Storm", "value": "a wild storm" },
+    "forest": { "label": "Forest", "value": "a deep dark forest" },
+    "wizard": { "label": "Wizard", "value": "a sneaky wizard" },
+    "maze": { "label": "Maze", "value": "a maze of confusion" }
+  },
+  "solutions": {
+    "speed": { "label": "Speed", "value": "super speed powers" },
+    "friend": { "label": "Friend", "value": "a helpful friend" },
+    "trick": { "label": "Trick", "value": "a clever trick" },
+    "magic": { "label": "Magic", "value": "magic powers" },
+    "brave": { "label": "Brave", "value": "being super brave" },
+    "kindness": { "label": "Kindness", "value": "kindness and love" },
+    "teamwork": { "label": "Teamwork", "value": "teamwork with everyone" },
+    "nevergiveup": { "label": "Never Give Up", "value": "never giving up" }
+  },
+  "endings": {
+    "party": { "label": "Party", "value": "everyone dancing at a big party" },
+    "sunset": { "label": "Sunset", "value": "flying into the sunset together" },
+    "castle": { "label": "Castle", "value": "living in a beautiful castle" },
+    "hugging": { "label": "Hugging", "value": "all friends hugging and laughing" },
+    "cake": { "label": "Cake", "value": "eating cake and ice cream" },
+    "medal": { "label": "Medal", "value": "getting a golden medal" },
+    "adventure": { "label": "Adventure", "value": "going on a new adventure" },
+    "sleep": { "label": "Sleep", "value": "sleeping in a cozy bed" }
+  },
+  "artModes": {
+    "coloring": "Coloring Book",
+    "pollinations": "AI Art",
+    "ai-coloring": "AI Coloring"
+  }
+}

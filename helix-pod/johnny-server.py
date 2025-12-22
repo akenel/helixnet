@@ -65,6 +65,7 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
     ALLOWED_PREFIXES = (
         '/stories/',  # Generated story books
         '/generate',  # API endpoint
+        '/lang/',     # i18n language files
     )
 
     def __init__(self, *args, **kwargs):
@@ -155,9 +156,12 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
             html_path = story.export_html()
             print(f"   🌐 HTML: {html_path}")
 
-            # Auto-open the coloring book!
-            import subprocess
-            subprocess.Popen(['xdg-open', str(html_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # Auto-open the coloring book (only works on desktop, skip in containers)
+            try:
+                import subprocess
+                subprocess.Popen(['xdg-open', str(html_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass  # No desktop in Docker, that's fine
 
             # Prepare response with image data
             images = []
