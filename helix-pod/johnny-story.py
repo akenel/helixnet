@@ -497,8 +497,19 @@ class Story:
 
         Uses English (answers) for AI art prompts.
         Uses translated (answers_display) for story text shown to kids.
+        Loads scene templates from lang/{lang}.json
         """
         self.scenes = []
+
+        # Load language file for scene templates
+        lang_file = Path(__file__).parent / "lang" / f"{self.lang}.json"
+        templates = {}
+        try:
+            with open(lang_file, encoding='utf-8') as f:
+                lang_data = json.load(f)
+            templates = lang_data.get("scenes", {})
+        except Exception as e:
+            print(f"Could not load lang file {lang_file}: {e}")
 
         # English values for AI image generation
         hero_en = self.answers.get("hero", "the hero")
@@ -514,45 +525,55 @@ class Story:
         solution = self.answers_display.get("solution", solution_en)
         ending = self.answers_display.get("ending", ending_en)
 
+        # Helper to fill template placeholders
+        def t(key, default, **kwargs):
+            text = templates.get(key, default)
+            for k, v in kwargs.items():
+                text = text.replace("{" + k + "}", str(v))
+            return text
+
         # Scene 1: Meet the hero
         self.scenes.append({
             "number": 1,
-            "title": f"Meet {hero.title()}",
-            "description": f"This is {hero}. {hero.title()} is our hero!",
+            "title": t("meetTitle", "Meet {hero}", hero=hero.title()),
+            "description": t("meetDesc", "This is {hero}. {hero} is our hero!", hero=hero),
             "art_prompt": f"{hero_en}, character design, hero pose, friendly, children's book illustration, colorful",
         })
 
         # Scene 2: The dream
         self.scenes.append({
             "number": 2,
-            "title": "The Dream",
-            "description": f"{hero.title()} wants to {want}. More than anything!",
+            "title": t("dreamTitle", "The Dream"),
+            "description": t("dreamDesc", "{hero} wants to {want}. More than anything!", hero=hero.title(), want=want),
             "art_prompt": f"{hero_en} dreaming about {want_en}, thought bubble, stars, children's book illustration",
         })
 
         # Scene 3: The problem
         self.scenes.append({
             "number": 3,
-            "title": "Oh No!",
-            "description": f"But there's a problem! {obstacle.title()} is in the way!",
+            "title": t("problemTitle", "Oh No!"),
+            "description": t("problemDesc", "But there's a problem! {obstacle} is in the way!", obstacle=obstacle.title()),
             "art_prompt": f"{hero_en} facing {obstacle_en}, dramatic, children's book illustration, tense moment",
         })
 
         # Scene 4: The solution
         self.scenes.append({
             "number": 4,
-            "title": "The Clever Plan",
-            "description": f"{hero.title()} has an idea! Using {solution}!",
+            "title": t("planTitle", "The Clever Plan"),
+            "description": t("planDesc", "{hero} has an idea! Using {solution}!", hero=hero.title(), solution=solution),
             "art_prompt": f"{hero_en} using {solution_en} to overcome {obstacle_en}, action, dynamic, children's book illustration",
         })
 
         # Scene 5: Happy ending
         self.scenes.append({
             "number": 5,
-            "title": "THE END",
-            "description": f"And they all lived happily! {ending.title()}!",
+            "title": t("endTitle", "THE END"),
+            "description": t("endDesc", "And they all lived happily! {ending}!", ending=ending.title()),
             "art_prompt": f"{hero_en} celebrating, {ending_en}, happy, sunshine, children's book illustration, joyful",
         })
+
+        # Store madeWith for HTML generation
+        self.made_with = t("madeWith", "Made with ❤️ by {author}", author=self.author)
 
         return self.scenes
 
@@ -812,10 +833,12 @@ class Story:
             <div class="art-prompt">{scene['art_prompt']}</div>
         </div>
 """
+        # Use translated "Made with" or fallback
+        made_with = getattr(self, 'made_with', f"Made with ❤️ by {self.author}")
         html += f"""
         <div class="the-end">
             <h2>THE END</h2>
-            <p>Made with ❤️ by {self.author}</p>
+            <p>{made_with}</p>
         </div>
     </div>
 </body>

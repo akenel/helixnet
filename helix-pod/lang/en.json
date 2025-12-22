@@ -43,6 +43,19 @@
     "theySavedTheDay": "they saved the day!",
     "theEnd": "THE END:"
   },
+  "scenes": {
+    "meetTitle": "Meet {hero}",
+    "meetDesc": "This is {hero}. {hero} is our hero!",
+    "dreamTitle": "The Dream",
+    "dreamDesc": "{hero} wants to {want}. More than anything!",
+    "problemTitle": "Oh No!",
+    "problemDesc": "But there's a problem! {obstacle} is in the way!",
+    "planTitle": "The Clever Plan",
+    "planDesc": "{hero} has an idea! Using {solution}!",
+    "endTitle": "THE END",
+    "endDesc": "And they all lived happily! {ending}!",
+    "madeWith": "Made with ❤️ by {author}"
+  },
   "heroes": {
     "dragon": { "label": "Dragon", "value": "a friendly dragon" },
     "robot": { "label": "Robot", "value": "a brave robot" },
