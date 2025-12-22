@@ -790,15 +790,17 @@
         document.querySelectorAll('.option').forEach(option => {
             option.addEventListener('click', function() {
                 const category = this.parentElement.dataset.category;
-                const value = this.dataset.value;
+                const englishValue = this.dataset.value;  // Original English for AI
+                const displayValue = this.dataset.displayValue || englishValue;  // Translated for preview
 
                 // Deselect siblings
                 this.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
                 // Select this one
                 this.classList.add('selected');
 
-                // Store value
-                story[category] = value;
+                // Store both values: English for AI, translated for display
+                story[category] = englishValue;
+                story[category + 'Display'] = displayValue;
 
                 // Enable next button
                 const nextBtn = document.getElementById(`next${currentStep}`);
@@ -810,13 +812,20 @@
         function showSummary() {
             const preview = document.getElementById('storyPreview');
             const s = i18n.story || {};
+            // Use Display values (translated) for preview, fall back to English
+            const heroDisplay = story.heroDisplay || story.hero;
+            const wantDisplay = story.wantDisplay || story.want;
+            const obstacleDisplay = story.obstacleDisplay || story.obstacle;
+            const solutionDisplay = story.solutionDisplay || story.solution;
+            const endingDisplay = story.endingDisplay || story.ending;
+
             preview.innerHTML = `
                 <p><span class="scene-emoji">📖</span><strong>${story.author}</strong></p>
-                <p><span class="scene-emoji">🦸</span>${s.onceUponATime || 'Once upon a time,'} <strong>${story.hero}</strong>.</p>
-                <p><span class="scene-emoji">💫</span>${s.theyWanted || 'They wanted'} <strong>${story.want}</strong>!</p>
-                <p><span class="scene-emoji">😱</span>${s.butOhNo || 'But oh no!'} <strong>${story.obstacle}</strong> ${s.inTheWay || 'was in the way!'}</p>
-                <p><span class="scene-emoji">💡</span>${s.using || 'Using'} <strong>${story.solution}</strong>, ${s.theySavedTheDay || 'they saved the day!'}</p>
-                <p><span class="scene-emoji">🎉</span>${s.theEnd || 'THE END:'} <strong>${story.ending}</strong>!</p>
+                <p><span class="scene-emoji">🦸</span>${s.onceUponATime || 'Once upon a time,'} <strong>${heroDisplay}</strong>.</p>
+                <p><span class="scene-emoji">💫</span>${s.theyWanted || 'They wanted'} <strong>${wantDisplay}</strong>!</p>
+                <p><span class="scene-emoji">😱</span>${s.butOhNo || 'But oh no!'} <strong>${obstacleDisplay}</strong> ${s.inTheWay || 'was in the way!'}</p>
+                <p><span class="scene-emoji">💡</span>${s.using || 'Using'} <strong>${solutionDisplay}</strong>, ${s.theySavedTheDay || 'they saved the day!'}</p>
+                <p><span class="scene-emoji">🎉</span>${s.theEnd || 'THE END:'} <strong>${endingDisplay}</strong>!</p>
             `;
         }
 
@@ -905,6 +914,12 @@
                     // Save to localStorage for My Stories dashboard!
                     saveStory(storyData, result);
 
+                    // Try to open the book in a new window
+                    const bookUrl = result.html_path;  // Server returns proper URL now
+                    if (bookUrl) {
+                        window.open(bookUrl, '_blank');
+                    }
+
                     // Show success and images!
                     const modeLabels = {
                         'coloring': 'Coloring Book',
@@ -914,10 +929,9 @@
                         'auto': 'Art Book'
                     };
                     let html = `<div style="text-align:center;">
-                        <h2 style="color:#11998e;">🎉 Your ${modeLabels[result.art_mode] || 'Book'} is Ready!</h2>
+                        <h2 style="color:#11998e;">🎉 ${i18n.ui?.yourBookReady || 'Your Book is Ready!'}</h2>
                         <p>${result.message}</p>
-                        <p style="color:#667eea;font-weight:bold;">📖 Opening in new window...</p>
-                        <p style="font-size:0.9em;color:#666;">Saved to: ${result.html_path}</p>
+                        ${bookUrl ? `<a href="${bookUrl}" target="_blank" style="display:inline-block;background:#667eea;color:white;padding:15px 30px;border-radius:20px;text-decoration:none;font-size:1.2em;margin:10px 0;">📖 Open My Book!</a>` : ''}
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:20px;">`;
 
@@ -929,7 +943,7 @@
                     }
                     html += '</div>';
                     output.innerHTML = html;
-                    btn.textContent = 'Done!';
+                    btn.textContent = i18n.ui?.done || 'Done!';
                     btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
                 } else {
                     throw new Error(result.error || 'Unknown error');
@@ -1105,7 +1119,9 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
                     const key = opt.dataset.keyword;
                     if (catData[key]) {
                         opt.querySelector('.label').textContent = catData[key].label;
-                        opt.dataset.value = catData[key].value;
+                        // Store translated value for display, keep English for AI prompts
+                        opt.dataset.displayValue = catData[key].value;
+                        // DON'T overwrite data-value - keep English for AI image generation!
                     }
                 });
             });

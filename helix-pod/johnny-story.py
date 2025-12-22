@@ -50,8 +50,10 @@ except ImportError:
 # CONFIGURATION
 # =============================================================================
 
-STORIES_DIR = Path.home() / ".helix" / "stories"
-STORIES_DIR.mkdir(parents=True, exist_ok=True)
+# Use /app/stories in Docker, ~/.helix/stories locally
+STORIES_DIR = Path(__file__).parent / "stories"
+if not STORIES_DIR.exists():
+    STORIES_DIR.mkdir(parents=True, exist_ok=True)
 
 # SD Bridge settings
 SD_BRIDGE_URL = os.environ.get("SD_BRIDGE_URL", "http://localhost:7790")

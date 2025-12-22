@@ -180,12 +180,16 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
                 'huggingface': 'HF AI art images',
                 'auto': 'art images'
             }
+            # Build web-accessible URL (relative to server root)
+            html_filename = Path(html_path).name
+            web_url = f"/stories/{html_filename}"
+
             response = {
                 'ok': True,
                 'title': story.title,
                 'author': story.author,
                 'art_mode': art_mode,
-                'html_path': str(html_path),
+                'html_path': web_url,  # Web URL, not filesystem path
                 'saved_path': str(saved_path),
                 'images': images,
                 'message': f"Created {len(images)} {mode_names.get(art_mode, 'images')}!"
