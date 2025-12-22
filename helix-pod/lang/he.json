@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "עברית",
+    "code": "he",
+    "flag": "🇮🇱",
+    "direction": "rtl"
+  },
+  "ui": {
+    "title": "מפעל הסיפורים",
+    "subtitle": "לחצו על תמונות כדי ליצור את הסיפור שלכם!",
+    "makeBook": "צור את הספר שלי!",
+    "tryAgain": "נסה שוב",
+    "done": "סיימתי!",
+    "serverReady": "השרת מוכן",
+    "serverConnecting": "מתחבר...",
+    "serverNotRunning": "השרת לא פועל!",
+    "startServerFirst": "קודם הפעל את השרת:",
+    "thenClickAgain": "ואז לחץ על הכפתור שוב!",
+    "generating": "יוצר את הספר שלך...",
+    "yourBookReady": "הספר שלך מוכן!",
+    "openingNewWindow": "פותח בחלון חדש...",
+    "savedTo": "נשמר ב:",
+    "pickArtStyle": "בחר סגנון ציור:",
+    "allFree": "הכל בחינם! לא צריך חשבון!",
+    "whatsYourName": "מה השם שלך?",
+    "letsGo": "יאללה!",
+    "myStories": "הסיפורים שלי",
+    "seeMyStory": "צפה בסיפור שלי!"
+  },
+  "steps": {
+    "hero": "מי הגיבור?",
+    "want": "מה הם רוצים?",
+    "obstacle": "אוי לא! מה בדרך?",
+    "solution": "איך הם מנצחים?",
+    "ending": "הסוף נראה ככה..."
+  },
+  "story": {
+    "onceUponATime": "היה היה פעם",
+    "theyWanted": "הם רצו",
+    "butOhNo": "אבל אוי לא! היה",
+    "inTheWay": "בדרך!",
+    "using": "בעזרת",
+    "theySavedTheDay": "הם הצילו את היום!",
+    "theEnd": "סוף:"
+  },
+  "heroes": {
+    "dragon": { "label": "דרקון", "value": "דרקון ידידותי" },
+    "robot": { "label": "רובוט", "value": "רובוט אמיץ" },
+    "unicorn": { "label": "חד קרן", "value": "חד קרן קסום" },
+    "cat": { "label": "חתול", "value": "סופר חתול" },
+    "dog": { "label": "כלב", "value": "כלב גיבור" },
+    "superhero": { "label": "גיבור על", "value": "ילד גיבור על קטן" },
+    "tiger": { "label": "טיגריס", "value": "טיגריס חזק" },
+    "space": { "label": "אסטרונאוט", "value": "חוקר חלל" }
+  },
+  "wants": {
+    "princess": { "label": "להציל נסיכה", "value": "להציל את הנסיכה מהמגדל" },
+    "treasure": { "label": "למצוא אוצר", "value": "למצוא את האוצר הנסתר" },
+    "race": { "label": "לנצח במרוץ", "value": "לנצח במרוץ הגדול" },
+    "home": { "label": "לחזור הביתה", "value": "לחזור הביתה בשלום" },
+    "friend": { "label": "למצוא חבר", "value": "למצוא חבר חדש" },
+    "fly": { "label": "ללמוד לעוף", "value": "ללמוד לעוף" },
+    "wizard": { "label": "להיות קוסם", "value": "להיות קוסם" },
+    "ocean": { "label": "לחקור את הים", "value": "לחקור את האוקיינוס" }
+  },
+  "obstacles": {
+    "giant": { "label": "ענק", "value": "ענק רגזן" },
+    "monster": { "label": "מפלצת", "value": "מפלצת מפחידה" },
+    "mountain": { "label": "הר", "value": "הר ענק" },
+    "door": { "label": "דלת קסומה", "value": "דלת קסומה נעולה" },
+    "storm": { "label": "סערה", "value": "סערה פרועה" },
+    "forest": { "label": "יער", "value": "יער חשוך ועמוק" },
+    "wizard": { "label": "קוסם", "value": "קוסם ערמומי" },
+    "maze": { "label": "מבוך", "value": "מבוך מבלבל" }
+  },
+  "solutions": {
+    "speed": { "label": "מהירות", "value": "כוחות סופר מהירות" },
+    "friend": { "label": "חבר", "value": "חבר מועיל" },
+    "trick": { "label": "תעלול", "value": "תעלול חכם" },
+    "magic": { "label": "קסם", "value": "כוחות קסם" },
+    "brave": { "label": "אומץ", "value": "להיות סופר אמיץ" },
+    "kindness": { "label": "חסד", "value": "חסד ואהבה" },
+    "teamwork": { "label": "עבודת צוות", "value": "עבודת צוות עם כולם" },
+    "nevergiveup": { "label": "לא לוותר", "value": "לעולם לא לוותר" }
+  },
+  "endings": {
+    "party": { "label": "מסיבה", "value": "כולם רוקדים במסיבה גדולה" },
+    "sunset": { "label": "שקיעה", "value": "עפים יחד לעבר השקיעה" },
+    "castle": { "label": "טירה", "value": "גרים בטירה יפה" },
+    "hugging": { "label": "חיבוקים", "value": "כל החברים מתחבקים וצוחקים" },
+    "cake": { "label": "עוגה", "value": "אוכלים עוגה וגלידה" },
+    "medal": { "label": "מדליה", "value": "מקבלים מדליית זהב" },
+    "adventure": { "label": "הרפתקה", "value": "יוצאים להרפתקה חדשה" },
+    "sleep": { "label": "שינה", "value": "ישנים במיטה נעימה" }
+  },
+  "artModes": {
+    "coloring": "ספר צביעה",
+    "pollinations": "אמנות AI",
+    "ai-coloring": "צביעה AI"
+  }
+}

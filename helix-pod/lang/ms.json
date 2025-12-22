@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Bahasa Melayu",
+    "code": "ms",
+    "flag": "🇲🇾",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Kilang Cerita Ajaib",
+    "subtitle": "Klik gambar untuk buat cerita KAMU!",
+    "makeBook": "Buat Buku Saya!",
+    "tryAgain": "Cuba Lagi",
+    "done": "Siap!",
+    "serverReady": "Pelayan sedia",
+    "serverConnecting": "Menyambung...",
+    "serverNotRunning": "Pelayan tidak berjalan!",
+    "startServerFirst": "Mulakan pelayan dahulu:",
+    "thenClickAgain": "Kemudian klik butang lagi!",
+    "generating": "Membuat buku kamu...",
+    "yourBookReady": "Buku Kamu Sudah Siap!",
+    "openingNewWindow": "Membuka tetingkap baru...",
+    "savedTo": "Disimpan di:",
+    "pickArtStyle": "Pilih gaya seni kamu:",
+    "allFree": "Semua PERCUMA! Tak perlu akaun!",
+    "whatsYourName": "Siapa nama kamu?",
+    "letsGo": "Jom mula!",
+    "myStories": "Cerita Saya",
+    "seeMyStory": "Lihat Cerita Saya!"
+  },
+  "steps": {
+    "hero": "Siapa wira?",
+    "want": "Apa yang mereka mahu?",
+    "obstacle": "Oh tidak! Apa yang menghalang?",
+    "solution": "Macam mana mereka menang?",
+    "ending": "TAMAT macam ni..."
+  },
+  "story": {
+    "onceUponATime": "Pada suatu masa dahulu, ada",
+    "theyWanted": "Mereka mahu",
+    "butOhNo": "Tapi oh tidak! Ada",
+    "inTheWay": "menghalang jalan!",
+    "using": "Dengan menggunakan",
+    "theySavedTheDay": "mereka menyelamatkan hari itu!",
+    "theEnd": "TAMAT:"
+  },
+  "heroes": {
+    "dragon": { "label": "Naga", "value": "seekor naga yang mesra" },
+    "robot": { "label": "Robot", "value": "seekor robot yang berani" },
+    "unicorn": { "label": "Unicorn", "value": "seekor unicorn ajaib" },
+    "cat": { "label": "Kucing", "value": "seekor kucing super" },
+    "dog": { "label": "Anjing", "value": "seekor anjing wira" },
+    "superhero": { "label": "Superhero", "value": "seorang kanak-kanak superhero" },
+    "tiger": { "label": "Harimau", "value": "seekor harimau yang kuat" },
+    "space": { "label": "Angkasawan", "value": "seorang penjelajah angkasa" }
+  },
+  "wants": {
+    "princess": { "label": "Selamatkan Puteri", "value": "menyelamatkan Puteri dari menara" },
+    "treasure": { "label": "Cari Harta", "value": "mencari harta karun tersembunyi" },
+    "race": { "label": "Menang Perlumbaan", "value": "menang perlumbaan besar" },
+    "home": { "label": "Pulang", "value": "pulang dengan selamat" },
+    "friend": { "label": "Cari Kawan", "value": "mencari kawan baru" },
+    "fly": { "label": "Belajar Terbang", "value": "belajar terbang" },
+    "wizard": { "label": "Jadi Ahli Sihir", "value": "menjadi ahli sihir" },
+    "ocean": { "label": "Teroka Lautan", "value": "meneroka lautan" }
+  },
+  "obstacles": {
+    "giant": { "label": "Gergasi", "value": "seekor gergasi yang pemarah" },
+    "monster": { "label": "Raksasa", "value": "seekor raksasa yang menakutkan" },
+    "mountain": { "label": "Gunung", "value": "sebuah gunung yang besar" },
+    "door": { "label": "Pintu Ajaib", "value": "sebuah pintu ajaib yang terkunci" },
+    "storm": { "label": "Ribut", "value": "ribut yang dahsyat" },
+    "forest": { "label": "Hutan", "value": "hutan gelap yang dalam" },
+    "wizard": { "label": "Ahli Sihir", "value": "seorang ahli sihir yang licik" },
+    "maze": { "label": "Labirin", "value": "labirin yang mengelirukan" }
+  },
+  "solutions": {
+    "speed": { "label": "Kepantasan", "value": "kuasa super laju" },
+    "friend": { "label": "Kawan", "value": "seorang kawan yang membantu" },
+    "trick": { "label": "Helah", "value": "helah yang bijak" },
+    "magic": { "label": "Sihir", "value": "kuasa sihir" },
+    "brave": { "label": "Keberanian", "value": "menjadi sangat berani" },
+    "kindness": { "label": "Kebaikan", "value": "kebaikan dan kasih sayang" },
+    "teamwork": { "label": "Kerja Berpasukan", "value": "kerja berpasukan dengan semua" },
+    "nevergiveup": { "label": "Jangan Putus Asa", "value": "tidak pernah berputus asa" }
+  },
+  "endings": {
+    "party": { "label": "Parti", "value": "semua menari di parti besar" },
+    "sunset": { "label": "Matahari Terbenam", "value": "terbang bersama ke arah matahari terbenam" },
+    "castle": { "label": "Istana", "value": "tinggal di istana yang cantik" },
+    "hugging": { "label": "Pelukan", "value": "semua kawan berpelukan dan ketawa" },
+    "cake": { "label": "Kek", "value": "makan kek dan ais krim" },
+    "medal": { "label": "Pingat", "value": "dapat pingat emas" },
+    "adventure": { "label": "Pengembaraan", "value": "pergi pengembaraan baru" },
+    "sleep": { "label": "Tidur", "value": "tidur di katil yang selesa" }
+  },
+  "artModes": {
+    "coloring": "Buku Mewarna",
+    "pollinations": "Seni AI",
+    "ai-coloring": "Mewarna AI"
+  }
+}

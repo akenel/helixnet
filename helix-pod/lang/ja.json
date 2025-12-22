@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "日本語",
+    "code": "ja",
+    "flag": "🇯🇵",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "おはなしメーカー",
+    "subtitle": "絵をクリックして、きみのおはなしをつくろう！",
+    "makeBook": "えほんをつくる！",
+    "tryAgain": "もういちど",
+    "done": "できた！",
+    "serverReady": "サーバーじゅんび完了",
+    "serverConnecting": "せつぞく中...",
+    "serverNotRunning": "サーバーがうごいていません！",
+    "startServerFirst": "さきにサーバーをはじめてね：",
+    "thenClickAgain": "それからボタンをおしてね！",
+    "generating": "えほんをつくっているよ...",
+    "yourBookReady": "えほんができたよ！",
+    "openingNewWindow": "あたらしいまどをひらくよ...",
+    "savedTo": "ほぞんしました：",
+    "pickArtStyle": "えのスタイルをえらんでね：",
+    "allFree": "ぜんぶ無料！アカウントいらないよ！",
+    "whatsYourName": "きみのなまえは？",
+    "letsGo": "はじめよう！",
+    "myStories": "わたしのおはなし",
+    "seeMyStory": "おはなしをみる！"
+  },
+  "steps": {
+    "hero": "だれがヒーロー？",
+    "want": "なにがしたい？",
+    "obstacle": "たいへん！なにがじゃま？",
+    "solution": "どうやってかつ？",
+    "ending": "おしまいは..."
+  },
+  "story": {
+    "onceUponATime": "むかしむかし",
+    "theyWanted": "〜したかったの",
+    "butOhNo": "でもたいへん！",
+    "inTheWay": "がじゃまをした！",
+    "using": "〜をつかって",
+    "theySavedTheDay": "みんなをすくったよ！",
+    "theEnd": "おしまい："
+  },
+  "heroes": {
+    "dragon": { "label": "ドラゴン", "value": "やさしいドラゴン" },
+    "robot": { "label": "ロボット", "value": "ゆうかんなロボット" },
+    "unicorn": { "label": "ユニコーン", "value": "まほうのユニコーン" },
+    "cat": { "label": "ねこ", "value": "スーパーねこ" },
+    "dog": { "label": "いぬ", "value": "ヒーローいぬ" },
+    "superhero": { "label": "スーパーヒーロー", "value": "ちいさなスーパーヒーロー" },
+    "tiger": { "label": "トラ", "value": "つよいトラ" },
+    "space": { "label": "うちゅうひこうし", "value": "うちゅうたんけんか" }
+  },
+  "wants": {
+    "princess": { "label": "おひめさまをたすける", "value": "とうからおひめさまをたすける" },
+    "treasure": { "label": "たからさがし", "value": "かくれたたからをみつける" },
+    "race": { "label": "レースにかつ", "value": "おおきなレースにかつ" },
+    "home": { "label": "おうちにかえる", "value": "ぶじにおうちにかえる" },
+    "friend": { "label": "ともだちをつくる", "value": "あたらしいともだちをつくる" },
+    "fly": { "label": "とべるようになる", "value": "とぶことをおぼえる" },
+    "wizard": { "label": "まほうつかいになる", "value": "まほうつかいになる" },
+    "ocean": { "label": "うみをたんけん", "value": "うみをたんけんする" }
+  },
+  "obstacles": {
+    "giant": { "label": "きょじん", "value": "おこりんぼうのきょじん" },
+    "monster": { "label": "かいじゅう", "value": "こわいかいじゅう" },
+    "mountain": { "label": "やま", "value": "おおきなやま" },
+    "door": { "label": "まほうのドア", "value": "かぎのかかったまほうのドア" },
+    "storm": { "label": "あらし", "value": "はげしいあらし" },
+    "forest": { "label": "もり", "value": "くらいふかいもり" },
+    "wizard": { "label": "まほうつかい", "value": "ずるいまほうつかい" },
+    "maze": { "label": "めいろ", "value": "まよってしまうめいろ" }
+  },
+  "solutions": {
+    "speed": { "label": "スピード", "value": "スーパースピードパワー" },
+    "friend": { "label": "ともだち", "value": "たすけてくれるともだち" },
+    "trick": { "label": "トリック", "value": "かしこいトリック" },
+    "magic": { "label": "まほう", "value": "まほうのちから" },
+    "brave": { "label": "ゆうき", "value": "とってもゆうかんになって" },
+    "kindness": { "label": "やさしさ", "value": "やさしさとあい" },
+    "teamwork": { "label": "チームワーク", "value": "みんなでちからをあわせて" },
+    "nevergiveup": { "label": "あきらめない", "value": "ぜったいあきらめない" }
+  },
+  "endings": {
+    "party": { "label": "パーティー", "value": "みんなでおおきなパーティーでおどる" },
+    "sunset": { "label": "ゆうやけ", "value": "いっしょにゆうやけにむかってとぶ" },
+    "castle": { "label": "おしろ", "value": "きれいなおしろにすむ" },
+    "hugging": { "label": "ハグ", "value": "ともだちみんなでハグしてわらう" },
+    "cake": { "label": "ケーキ", "value": "ケーキとアイスをたべる" },
+    "medal": { "label": "メダル", "value": "きんメダルをもらう" },
+    "adventure": { "label": "ぼうけん", "value": "あたらしいぼうけんにでかける" },
+    "sleep": { "label": "ねんね", "value": "あたたかいベッドでねる" }
+  },
+  "artModes": {
+    "coloring": "ぬりえ",
+    "pollinations": "AIアート",
+    "ai-coloring": "AIぬりえ"
+  }
+}

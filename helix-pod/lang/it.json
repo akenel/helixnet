@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Italiano",
+    "code": "it",
+    "flag": "🇮🇹",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Fabbrica di Storie",
+    "subtitle": "Clicca le immagini per creare la TUA storia!",
+    "makeBook": "Fai Il Mio Libro!",
+    "tryAgain": "Riprova",
+    "done": "Fatto!",
+    "serverReady": "Server pronto",
+    "serverConnecting": "Connessione...",
+    "serverNotRunning": "Server non attivo!",
+    "startServerFirst": "Prima avvia il server:",
+    "thenClickAgain": "Poi clicca di nuovo il pulsante!",
+    "generating": "Creo il tuo libro...",
+    "yourBookReady": "Il Tuo Libro È Pronto!",
+    "openingNewWindow": "Apro in una nuova finestra...",
+    "savedTo": "Salvato in:",
+    "pickArtStyle": "Scegli il tuo stile artistico:",
+    "allFree": "Tutto GRATIS! Nessun account necessario!",
+    "whatsYourName": "Come ti chiami?",
+    "letsGo": "Andiamo!",
+    "myStories": "Le Mie Storie",
+    "seeMyStory": "Vedi La Mia Storia!"
+  },
+  "steps": {
+    "hero": "Chi è l'eroe?",
+    "want": "Cosa vogliono?",
+    "obstacle": "Oh no! Cosa c'è di mezzo?",
+    "solution": "Come vincono?",
+    "ending": "LA FINE sembra..."
+  },
+  "story": {
+    "onceUponATime": "C'era una volta",
+    "theyWanted": "Volevano",
+    "butOhNo": "Ma oh no! C'era",
+    "inTheWay": "sulla strada!",
+    "using": "Usando",
+    "theySavedTheDay": "hanno salvato la giornata!",
+    "theEnd": "FINE:"
+  },
+  "heroes": {
+    "dragon": { "label": "Drago", "value": "un drago amichevole" },
+    "robot": { "label": "Robot", "value": "un robot coraggioso" },
+    "unicorn": { "label": "Unicorno", "value": "un unicorno magico" },
+    "cat": { "label": "Gatto", "value": "un super gatto" },
+    "dog": { "label": "Cane", "value": "un cane eroico" },
+    "superhero": { "label": "Supereroe", "value": "un piccolo supereroe" },
+    "tiger": { "label": "Tigre", "value": "una tigre possente" },
+    "space": { "label": "Astronauta", "value": "un esploratore spaziale" }
+  },
+  "wants": {
+    "princess": { "label": "Salvare Principessa", "value": "salvare la Principessa dalla torre" },
+    "treasure": { "label": "Trovare Tesoro", "value": "trovare il tesoro nascosto" },
+    "race": { "label": "Vincere Gara", "value": "vincere la grande gara" },
+    "home": { "label": "Tornare Casa", "value": "tornare a casa sani e salvi" },
+    "friend": { "label": "Fare Amico", "value": "fare un nuovo amico" },
+    "fly": { "label": "Imparare Volare", "value": "imparare a volare" },
+    "wizard": { "label": "Diventare Mago", "value": "diventare un mago" },
+    "ocean": { "label": "Esplorare Oceano", "value": "esplorare l'oceano" }
+  },
+  "obstacles": {
+    "giant": { "label": "Gigante", "value": "un gigante scontroso" },
+    "monster": { "label": "Mostro", "value": "un mostro spaventoso" },
+    "mountain": { "label": "Montagna", "value": "un'enorme montagna" },
+    "door": { "label": "Porta Magica", "value": "una porta magica chiusa" },
+    "storm": { "label": "Tempesta", "value": "una tempesta selvaggia" },
+    "forest": { "label": "Foresta", "value": "una foresta buia e profonda" },
+    "wizard": { "label": "Mago", "value": "un mago subdolo" },
+    "maze": { "label": "Labirinto", "value": "un labirinto confuso" }
+  },
+  "solutions": {
+    "speed": { "label": "Velocità", "value": "super poteri di velocità" },
+    "friend": { "label": "Amico", "value": "un amico premuroso" },
+    "trick": { "label": "Trucco", "value": "un trucco intelligente" },
+    "magic": { "label": "Magia", "value": "poteri magici" },
+    "brave": { "label": "Coraggio", "value": "essere super coraggiosi" },
+    "kindness": { "label": "Gentilezza", "value": "gentilezza e amore" },
+    "teamwork": { "label": "Lavoro di Squadra", "value": "lavoro di squadra con tutti" },
+    "nevergiveup": { "label": "Mai Arrendersi", "value": "non arrendersi mai" }
+  },
+  "endings": {
+    "party": { "label": "Festa", "value": "tutti ballano a una grande festa" },
+    "sunset": { "label": "Tramonto", "value": "volando insieme verso il tramonto" },
+    "castle": { "label": "Castello", "value": "vivendo in un bellissimo castello" },
+    "hugging": { "label": "Abbracci", "value": "tutti gli amici si abbracciano e ridono" },
+    "cake": { "label": "Torta", "value": "mangiando torta e gelato" },
+    "medal": { "label": "Medaglia", "value": "ricevendo una medaglia d'oro" },
+    "adventure": { "label": "Avventura", "value": "partendo per una nuova avventura" },
+    "sleep": { "label": "Dormire", "value": "dormendo in un letto accogliente" }
+  },
+  "artModes": {
+    "coloring": "Libro da Colorare",
+    "pollinations": "Arte IA",
+    "ai-coloring": "Colorare IA"
+  }
+}

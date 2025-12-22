@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Kiswahili",
+    "code": "sw",
+    "flag": "🇰🇪",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Kiwanda cha Hadithi",
+    "subtitle": "Bonyeza picha kutengeneza hadithi YAKO!",
+    "makeBook": "Tengeneza Kitabu Changu!",
+    "tryAgain": "Jaribu Tena",
+    "done": "Imekwisha!",
+    "serverReady": "Seva iko tayari",
+    "serverConnecting": "Inaunganisha...",
+    "serverNotRunning": "Seva haifanyi kazi!",
+    "startServerFirst": "Anza seva kwanza:",
+    "thenClickAgain": "Kisha bonyeza kitufe tena!",
+    "generating": "Inatengeneza kitabu chako...",
+    "yourBookReady": "Kitabu Chako Kiko Tayari!",
+    "openingNewWindow": "Inafungua dirisha jipya...",
+    "savedTo": "Imehifadhiwa:",
+    "pickArtStyle": "Chagua mtindo wa sanaa:",
+    "allFree": "Yote BURE! Hakuna akaunti inayohitajika!",
+    "whatsYourName": "Jina lako ni nani?",
+    "letsGo": "Twende!",
+    "myStories": "Hadithi Zangu",
+    "seeMyStory": "Ona Hadithi Yangu!"
+  },
+  "steps": {
+    "hero": "Shujaa ni nani?",
+    "want": "Wanataka nini?",
+    "obstacle": "Lo! Kuna nini njiani?",
+    "solution": "Wanashindaje?",
+    "ending": "MWISHO unaonekana kama..."
+  },
+  "story": {
+    "onceUponATime": "Hapo zamani za kale, kulikuwa na",
+    "theyWanted": "Walitaka",
+    "butOhNo": "Lakini lo! Kulikuwa na",
+    "inTheWay": "njiani!",
+    "using": "Kwa kutumia",
+    "theySavedTheDay": "waliokoa siku!",
+    "theEnd": "MWISHO:"
+  },
+  "heroes": {
+    "dragon": { "label": "Joka", "value": "joka la kirafiki" },
+    "robot": { "label": "Roboti", "value": "roboti shujaa" },
+    "unicorn": { "label": "Nyati", "value": "nyati wa kichawi" },
+    "cat": { "label": "Paka", "value": "paka hodari" },
+    "dog": { "label": "Mbwa", "value": "mbwa shujaa" },
+    "superhero": { "label": "Shujaa Mkuu", "value": "mtoto shujaa mkuu" },
+    "tiger": { "label": "Simba Mwitu", "value": "simba mwitu mwenye nguvu" },
+    "space": { "label": "Mwanaanga", "value": "mtafiti wa anga" }
+  },
+  "wants": {
+    "princess": { "label": "Okoa Malkia", "value": "kuokoa Malkia kutoka mnara" },
+    "treasure": { "label": "Tafuta Hazina", "value": "kupata hazina iliyofichwa" },
+    "race": { "label": "Shinda Mbio", "value": "kushinda mbio kubwa" },
+    "home": { "label": "Rudi Nyumbani", "value": "kurudi nyumbani salama" },
+    "friend": { "label": "Pata Rafiki", "value": "kupata rafiki mpya" },
+    "fly": { "label": "Jifunze Kuruka", "value": "kujifunza kuruka" },
+    "wizard": { "label": "Kuwa Mchawi", "value": "kuwa mchawi" },
+    "ocean": { "label": "Chunguza Bahari", "value": "kuchunguza bahari" }
+  },
+  "obstacles": {
+    "giant": { "label": "Jitu", "value": "jitu lenye hasira" },
+    "monster": { "label": "Zimwi", "value": "zimwi la kutisha" },
+    "mountain": { "label": "Mlima", "value": "mlima mkubwa sana" },
+    "door": { "label": "Mlango wa Kichawi", "value": "mlango wa kichawi uliofungwa" },
+    "storm": { "label": "Dhoruba", "value": "dhoruba kali" },
+    "forest": { "label": "Msitu", "value": "msitu wenye giza" },
+    "wizard": { "label": "Mchawi", "value": "mchawi mjanja" },
+    "maze": { "label": "Mkanganyiko", "value": "mkanganyiko wa kutatanisha" }
+  },
+  "solutions": {
+    "speed": { "label": "Kasi", "value": "nguvu za kasi kubwa" },
+    "friend": { "label": "Rafiki", "value": "rafiki msaidizi" },
+    "trick": { "label": "Hila", "value": "hila ya busara" },
+    "magic": { "label": "Uchawi", "value": "nguvu za kichawi" },
+    "brave": { "label": "Ujasiri", "value": "kuwa jasiri sana" },
+    "kindness": { "label": "Wema", "value": "wema na upendo" },
+    "teamwork": { "label": "Ushirikiano", "value": "kufanya kazi pamoja na wote" },
+    "nevergiveup": { "label": "Usikate Tamaa", "value": "kutokate tamaa kamwe" }
+  },
+  "endings": {
+    "party": { "label": "Sherehe", "value": "wote wanacheza kwenye sherehe kubwa" },
+    "sunset": { "label": "Machweo", "value": "wanaruka pamoja kuelekea machweo" },
+    "castle": { "label": "Kasri", "value": "wanaishi katika kasri nzuri" },
+    "hugging": { "label": "Kukumbatiana", "value": "marafiki wote wanakumbatiana na kucheka" },
+    "cake": { "label": "Keki", "value": "wanakula keki na aiskrimu" },
+    "medal": { "label": "Medali", "value": "wanapata medali ya dhahabu" },
+    "adventure": { "label": "Safari", "value": "wanaenda safari mpya" },
+    "sleep": { "label": "Kulala", "value": "wanalala kitandani pazuri" }
+  },
+  "artModes": {
+    "coloring": "Kitabu cha Kupaka Rangi",
+    "pollinations": "Sanaa ya AI",
+    "ai-coloring": "Kupaka Rangi AI"
+  }
+}

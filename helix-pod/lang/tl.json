@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Filipino",
+    "code": "tl",
+    "flag": "🇵🇭",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Gumawa ng Kwento",
+    "subtitle": "I-click ang mga larawan para gumawa ng IYONG kwento!",
+    "makeBook": "Gumawa ng Libro Ko!",
+    "tryAgain": "Subukan Ulit",
+    "done": "Tapos na!",
+    "serverReady": "Server ay handa na",
+    "serverConnecting": "Kumokonekta...",
+    "serverNotRunning": "Hindi tumatakbo ang server!",
+    "startServerFirst": "Simulan muna ang server:",
+    "thenClickAgain": "Tapos i-click ulit ang button!",
+    "generating": "Ginagawa ang libro mo...",
+    "yourBookReady": "Handa na ang Libro Mo!",
+    "openingNewWindow": "Binubuksan sa bagong window...",
+    "savedTo": "Nai-save sa:",
+    "pickArtStyle": "Piliin ang iyong art style:",
+    "allFree": "Lahat LIBRE! Hindi kailangan ng account!",
+    "whatsYourName": "Ano ang pangalan mo?",
+    "letsGo": "Tara na!",
+    "myStories": "Mga Kwento Ko",
+    "seeMyStory": "Tingnan ang Kwento Ko!"
+  },
+  "steps": {
+    "hero": "Sino ang bayani?",
+    "want": "Ano ang gusto nila?",
+    "obstacle": "Ay naku! Ano ang nakaharang?",
+    "solution": "Paano sila mananalo?",
+    "ending": "Ang WAKAS ay ganito..."
+  },
+  "story": {
+    "onceUponATime": "Noong unang panahon, may isang",
+    "theyWanted": "Gusto nilang",
+    "butOhNo": "Pero ay naku! May",
+    "inTheWay": "na nakaharang!",
+    "using": "Gamit ang",
+    "theySavedTheDay": "nailigtas nila ang araw!",
+    "theEnd": "WAKAS:"
+  },
+  "heroes": {
+    "dragon": { "label": "Dragon", "value": "mabait na dragon" },
+    "robot": { "label": "Robot", "value": "matapang na robot" },
+    "unicorn": { "label": "Unicorn", "value": "mahiwagang unicorn" },
+    "cat": { "label": "Pusa", "value": "super pusa" },
+    "dog": { "label": "Aso", "value": "bayaning aso" },
+    "superhero": { "label": "Superhero", "value": "maliit na superhero" },
+    "tiger": { "label": "Tigre", "value": "malakas na tigre" },
+    "space": { "label": "Astronaut", "value": "space explorer" }
+  },
+  "wants": {
+    "princess": { "label": "Iligtas Prinsesa", "value": "iligtas ang Prinsesa sa tore" },
+    "treasure": { "label": "Hanapin Yaman", "value": "hanapin ang nakatagong yaman" },
+    "race": { "label": "Manalo sa Karera", "value": "manalo sa malaking karera" },
+    "home": { "label": "Umuwi", "value": "makauwi ng ligtas" },
+    "friend": { "label": "Magkaibigan", "value": "magkaroon ng bagong kaibigan" },
+    "fly": { "label": "Matutong Lumipad", "value": "matutong lumipad" },
+    "wizard": { "label": "Maging Wizard", "value": "maging wizard" },
+    "ocean": { "label": "Libutin Dagat", "value": "libutin ang dagat" }
+  },
+  "obstacles": {
+    "giant": { "label": "Higante", "value": "masungit na higante" },
+    "monster": { "label": "Halimaw", "value": "nakakatakot na halimaw" },
+    "mountain": { "label": "Bundok", "value": "malaking bundok" },
+    "door": { "label": "Magic Door", "value": "nakakandadong magic door" },
+    "storm": { "label": "Bagyo", "value": "malakas na bagyo" },
+    "forest": { "label": "Kagubatan", "value": "madilim at malalim na kagubatan" },
+    "wizard": { "label": "Wizard", "value": "tuso na wizard" },
+    "maze": { "label": "Palaisipan", "value": "nakakalitong palaisipan" }
+  },
+  "solutions": {
+    "speed": { "label": "Bilis", "value": "super speed powers" },
+    "friend": { "label": "Kaibigan", "value": "matulunging kaibigan" },
+    "trick": { "label": "Trik", "value": "matalinong trik" },
+    "magic": { "label": "Mahika", "value": "magic powers" },
+    "brave": { "label": "Tapang", "value": "pagiging super matapang" },
+    "kindness": { "label": "Kabaitan", "value": "kabaitan at pagmamahal" },
+    "teamwork": { "label": "Teamwork", "value": "teamwork kasama ang lahat" },
+    "nevergiveup": { "label": "Huwag Susuko", "value": "hindi pagsuko kailanman" }
+  },
+  "endings": {
+    "party": { "label": "Party", "value": "lahat sumasayaw sa malaking party" },
+    "sunset": { "label": "Sunset", "value": "lumilipad papunta sa sunset" },
+    "castle": { "label": "Kastilyo", "value": "nakatira sa magandang kastilyo" },
+    "hugging": { "label": "Yakap", "value": "lahat ng kaibigan nagyayakap at tumatawa" },
+    "cake": { "label": "Cake", "value": "kumakain ng cake at ice cream" },
+    "medal": { "label": "Medal", "value": "nakakuha ng gold medal" },
+    "adventure": { "label": "Adventure", "value": "pumunta sa bagong adventure" },
+    "sleep": { "label": "Tulog", "value": "natutulog sa comfy na kama" }
+  },
+  "artModes": {
+    "coloring": "Coloring Book",
+    "pollinations": "AI Art",
+    "ai-coloring": "AI Coloring"
+  }
+}

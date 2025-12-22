@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Deutsch",
+    "code": "de",
+    "flag": "🇩🇪",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Geschichten-Zauberer",
+    "subtitle": "Klicke auf Bilder um DEINE Geschichte zu machen!",
+    "makeBook": "Mein Buch Machen!",
+    "tryAgain": "Nochmal Versuchen",
+    "done": "Fertig!",
+    "serverReady": "Server bereit",
+    "serverConnecting": "Verbinde...",
+    "serverNotRunning": "Server läuft nicht!",
+    "startServerFirst": "Starte zuerst den Server:",
+    "thenClickAgain": "Dann klicke nochmal auf den Button!",
+    "generating": "Dein Buch wird erstellt...",
+    "yourBookReady": "Dein Buch Ist Fertig!",
+    "openingNewWindow": "Öffne in neuem Fenster...",
+    "savedTo": "Gespeichert in:",
+    "pickArtStyle": "Wähle deinen Kunststil:",
+    "allFree": "Alles KOSTENLOS! Kein Konto nötig!",
+    "whatsYourName": "Wie heißt DU?",
+    "letsGo": "Los geht's!",
+    "myStories": "Meine Geschichten",
+    "seeMyStory": "Meine Geschichte Sehen!"
+  },
+  "steps": {
+    "hero": "Wer ist der Held?",
+    "want": "Was wollen sie?",
+    "obstacle": "Oh nein! Was ist im Weg?",
+    "solution": "Wie gewinnen sie?",
+    "ending": "DAS ENDE sieht aus wie..."
+  },
+  "story": {
+    "onceUponATime": "Es war einmal",
+    "theyWanted": "Sie wollten",
+    "butOhNo": "Aber oh nein! Da war",
+    "inTheWay": "im Weg!",
+    "using": "Mit",
+    "theySavedTheDay": "retteten sie den Tag!",
+    "theEnd": "ENDE:"
+  },
+  "heroes": {
+    "dragon": { "label": "Drache", "value": "ein freundlicher Drache" },
+    "robot": { "label": "Roboter", "value": "ein mutiger Roboter" },
+    "unicorn": { "label": "Einhorn", "value": "ein magisches Einhorn" },
+    "cat": { "label": "Katze", "value": "eine Superkatze" },
+    "dog": { "label": "Hund", "value": "ein heldenhafter Hund" },
+    "superhero": { "label": "Superheld", "value": "ein kleiner Superheld" },
+    "tiger": { "label": "Tiger", "value": "ein mächtiger Tiger" },
+    "space": { "label": "Astronaut", "value": "ein Weltraumforscher" }
+  },
+  "wants": {
+    "princess": { "label": "Prinzessin Retten", "value": "die Prinzessin aus dem Turm retten" },
+    "treasure": { "label": "Schatz Finden", "value": "den versteckten Schatz finden" },
+    "race": { "label": "Rennen Gewinnen", "value": "das große Rennen gewinnen" },
+    "home": { "label": "Nach Hause", "value": "sicher nach Hause kommen" },
+    "friend": { "label": "Freund Finden", "value": "einen neuen Freund finden" },
+    "fly": { "label": "Fliegen Lernen", "value": "fliegen lernen" },
+    "wizard": { "label": "Zauberer Werden", "value": "ein Zauberer werden" },
+    "ocean": { "label": "Ozean Erkunden", "value": "den Ozean erkunden" }
+  },
+  "obstacles": {
+    "giant": { "label": "Riese", "value": "ein mürrischer Riese" },
+    "monster": { "label": "Monster", "value": "ein gruseliges Monster" },
+    "mountain": { "label": "Berg", "value": "ein riesiger Berg" },
+    "door": { "label": "Magische Tür", "value": "eine verschlossene magische Tür" },
+    "storm": { "label": "Sturm", "value": "ein wilder Sturm" },
+    "forest": { "label": "Wald", "value": "ein tiefer dunkler Wald" },
+    "wizard": { "label": "Zauberer", "value": "ein hinterlistiger Zauberer" },
+    "maze": { "label": "Labyrinth", "value": "ein verwirrendes Labyrinth" }
+  },
+  "solutions": {
+    "speed": { "label": "Geschwindigkeit", "value": "Super-Geschwindigkeitskräfte" },
+    "friend": { "label": "Freund", "value": "ein hilfreicher Freund" },
+    "trick": { "label": "Trick", "value": "ein cleverer Trick" },
+    "magic": { "label": "Magie", "value": "magische Kräfte" },
+    "brave": { "label": "Mut", "value": "super mutig sein" },
+    "kindness": { "label": "Freundlichkeit", "value": "Freundlichkeit und Liebe" },
+    "teamwork": { "label": "Teamarbeit", "value": "Teamarbeit mit allen" },
+    "nevergiveup": { "label": "Niemals Aufgeben", "value": "niemals aufgeben" }
+  },
+  "endings": {
+    "party": { "label": "Party", "value": "alle tanzen auf einer großen Party" },
+    "sunset": { "label": "Sonnenuntergang", "value": "zusammen in den Sonnenuntergang fliegen" },
+    "castle": { "label": "Schloss", "value": "in einem schönen Schloss leben" },
+    "hugging": { "label": "Umarmung", "value": "alle Freunde umarmen sich und lachen" },
+    "cake": { "label": "Kuchen", "value": "Kuchen und Eis essen" },
+    "medal": { "label": "Medaille", "value": "eine Goldmedaille bekommen" },
+    "adventure": { "label": "Abenteuer", "value": "auf ein neues Abenteuer gehen" },
+    "sleep": { "label": "Schlafen", "value": "in einem gemütlichen Bett schlafen" }
+  },
+  "artModes": {
+    "coloring": "Malbuch",
+    "pollinations": "KI-Kunst",
+    "ai-coloring": "KI-Malen"
+  }
+}

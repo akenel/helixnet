@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Polski",
+    "code": "pl",
+    "flag": "🇵🇱",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Fabryka Bajek",
+    "subtitle": "Klikaj obrazki i twórz SWOJĄ historię!",
+    "makeBook": "Zrób Moją Książkę!",
+    "tryAgain": "Spróbuj Ponownie",
+    "done": "Gotowe!",
+    "serverReady": "Serwer gotowy",
+    "serverConnecting": "Łączenie...",
+    "serverNotRunning": "Serwer nie działa!",
+    "startServerFirst": "Najpierw uruchom serwer:",
+    "thenClickAgain": "Potem kliknij przycisk ponownie!",
+    "generating": "Tworzę twoją książkę...",
+    "yourBookReady": "Twoja Książka Jest Gotowa!",
+    "openingNewWindow": "Otwieram w nowym oknie...",
+    "savedTo": "Zapisano w:",
+    "pickArtStyle": "Wybierz styl grafiki:",
+    "allFree": "Wszystko ZA DARMO! Nie trzeba konta!",
+    "whatsYourName": "Jak masz na imię?",
+    "letsGo": "Zaczynamy!",
+    "myStories": "Moje Historie",
+    "seeMyStory": "Zobacz Moją Historię!"
+  },
+  "steps": {
+    "hero": "Kto jest bohaterem?",
+    "want": "Czego chcą?",
+    "obstacle": "O nie! Co stoi na drodze?",
+    "solution": "Jak wygrywają?",
+    "ending": "KONIEC wygląda tak..."
+  },
+  "story": {
+    "onceUponATime": "Dawno, dawno temu żył sobie",
+    "theyWanted": "Chcieli",
+    "butOhNo": "Ale o nie! Był tam",
+    "inTheWay": "na drodze!",
+    "using": "Używając",
+    "theySavedTheDay": "uratowali dzień!",
+    "theEnd": "KONIEC:"
+  },
+  "heroes": {
+    "dragon": { "label": "Smok", "value": "przyjazny smok" },
+    "robot": { "label": "Robot", "value": "dzielny robot" },
+    "unicorn": { "label": "Jednorożec", "value": "magiczny jednorożec" },
+    "cat": { "label": "Kot", "value": "super kot" },
+    "dog": { "label": "Pies", "value": "pies bohater" },
+    "superhero": { "label": "Superbohater", "value": "mały superbohater" },
+    "tiger": { "label": "Tygrys", "value": "potężny tygrys" },
+    "space": { "label": "Astronauta", "value": "odkrywca kosmosu" }
+  },
+  "wants": {
+    "princess": { "label": "Uratować Księżniczkę", "value": "uratować Księżniczkę z wieży" },
+    "treasure": { "label": "Znaleźć Skarb", "value": "znaleźć ukryty skarb" },
+    "race": { "label": "Wygrać Wyścig", "value": "wygrać wielki wyścig" },
+    "home": { "label": "Wrócić Do Domu", "value": "bezpiecznie wrócić do domu" },
+    "friend": { "label": "Znaleźć Przyjaciela", "value": "znaleźć nowego przyjaciela" },
+    "fly": { "label": "Nauczyć Się Latać", "value": "nauczyć się latać" },
+    "wizard": { "label": "Zostać Czarodziejem", "value": "zostać czarodziejem" },
+    "ocean": { "label": "Zbadać Ocean", "value": "zbadać ocean" }
+  },
+  "obstacles": {
+    "giant": { "label": "Olbrzym", "value": "zrzędliwy olbrzym" },
+    "monster": { "label": "Potwór", "value": "straszny potwór" },
+    "mountain": { "label": "Góra", "value": "ogromna góra" },
+    "door": { "label": "Magiczne Drzwi", "value": "zamknięte magiczne drzwi" },
+    "storm": { "label": "Burza", "value": "dzika burza" },
+    "forest": { "label": "Las", "value": "ciemny głęboki las" },
+    "wizard": { "label": "Czarodziej", "value": "przebiegły czarodziej" },
+    "maze": { "label": "Labirynt", "value": "mylący labirynt" }
+  },
+  "solutions": {
+    "speed": { "label": "Szybkość", "value": "super szybkie moce" },
+    "friend": { "label": "Przyjaciel", "value": "pomocny przyjaciel" },
+    "trick": { "label": "Sztuczka", "value": "sprytna sztuczka" },
+    "magic": { "label": "Magia", "value": "magiczne moce" },
+    "brave": { "label": "Odwaga", "value": "bycie super odważnym" },
+    "kindness": { "label": "Dobroć", "value": "dobroć i miłość" },
+    "teamwork": { "label": "Praca Zespołowa", "value": "praca zespołowa ze wszystkimi" },
+    "nevergiveup": { "label": "Nigdy Się Nie Poddawaj", "value": "nigdy się nie poddawać" }
+  },
+  "endings": {
+    "party": { "label": "Impreza", "value": "wszyscy tańczą na wielkiej imprezie" },
+    "sunset": { "label": "Zachód Słońca", "value": "lecą razem w zachód słońca" },
+    "castle": { "label": "Zamek", "value": "mieszkają w pięknym zamku" },
+    "hugging": { "label": "Przytulanie", "value": "wszyscy przyjaciele się przytulają i śmieją" },
+    "cake": { "label": "Tort", "value": "jedzą tort i lody" },
+    "medal": { "label": "Medal", "value": "dostają złoty medal" },
+    "adventure": { "label": "Przygoda", "value": "wyruszają na nową przygodę" },
+    "sleep": { "label": "Sen", "value": "śpią w przytulnym łóżku" }
+  },
+  "artModes": {
+    "coloring": "Kolorowanka",
+    "pollinations": "Sztuka AI",
+    "ai-coloring": "Kolorowanie AI"
+  }
+}

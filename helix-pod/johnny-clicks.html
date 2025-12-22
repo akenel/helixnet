@@ -270,15 +270,81 @@
         }
         .lang-btn:hover { transform: scale(1.2); }
         .lang-btn.active { border-color: #11998e; background: rgba(17,153,142,0.2); }
+        /* Arrow navigation buttons - bigger for Holly! */
+        .nav-arrow {
+            font-size: 2em;
+            padding: 10px 30px;
+            min-width: 80px;
+        }
+        .nav-arrow:disabled {
+            opacity: 0.3;
+        }
+        /* Language picker modal */
+        .lang-picker-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .lang-picker-overlay.show { display: flex; }
+        .lang-picker {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .lang-picker h2 { text-align: center; margin-bottom: 20px; }
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+        }
+        .lang-grid button {
+            font-size: 2em;
+            padding: 10px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-grid button:hover { transform: scale(1.1); background: #e0e0e0; }
+        .lang-grid button.active { border-color: #11998e; background: #e0fff0; }
+        /* More languages button */
+        .more-langs {
+            font-size: 1.2em;
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .more-langs:hover { background: #e0e0e0; }
     </style>
 </head>
 <body>
+    <!-- Language picker modal (50 languages!) -->
+    <div class="lang-picker-overlay" id="langPicker" onclick="if(event.target===this)this.classList.remove('show')">
+        <div class="lang-picker">
+            <h2>🌍 Pick Your Language</h2>
+            <div class="lang-grid" id="langGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
     <div class="container" style="position:relative;">
         <div class="lang-selector">
             <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
             <button class="lang-btn" data-lang="th" title="ภาษาไทย">🇹🇭</button>
-            <button class="lang-btn" data-lang="hi" title="हिन्दी">🇮🇳</button>
+            <button class="lang-btn" data-lang="zh" title="中文">🇨🇳</button>
             <button class="lang-btn" data-lang="es" title="Español">🇪🇸</button>
+            <button class="more-langs" onclick="document.getElementById('langPicker').classList.add('show')" title="More languages">🌐</button>
         </div>
         <h1 data-i18n="ui.title">Helix Story Teller</h1>
         <p class="subtitle" data-i18n="ui.subtitle">Click pictures to make YOUR story!</p>
@@ -287,31 +353,31 @@
 
         <!-- Step 0: Author name -->
         <div class="step active" data-step="0">
-            <div class="question">What's YOUR name?</div>
+            <div class="question" data-i18n="ui.whatsYourName">What's YOUR name?</div>
             <div class="author-input">
                 <input type="text" id="authorName" placeholder="Type your name!" value="Johnny">
             </div>
             <div class="nav-buttons">
-                <button class="dashboard-btn" onclick="showDashboard()">📚 My Stories</button>
-                <button onclick="nextStep()">Let's Go! ➡️</button>
+                <button class="dashboard-btn" onclick="showDashboard()">📚 <span data-i18n="ui.myStories">My Stories</span></button>
+                <button class="nav-arrow" onclick="nextStep()">🚀</button>
             </div>
         </div>
 
         <!-- Dashboard: My Stories -->
         <div class="step" data-step="dashboard">
-            <div class="question">📚 My Stories</div>
+            <div class="question">📚 <span data-i18n="ui.myStories">My Stories</span></div>
             <div id="storiesGrid" class="stories-grid">
                 <!-- Stories will be loaded here -->
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="hideDashboard()">⬅️ Back</button>
-                <button onclick="hideDashboard(); nextStep();">✨ New Story!</button>
+                <button class="back nav-arrow" onclick="hideDashboard()">⬅️</button>
+                <button class="nav-arrow" onclick="hideDashboard(); nextStep();">✨</button>
             </div>
         </div>
 
         <!-- Step 1: Pick your hero -->
         <div class="step" data-step="1">
-            <div class="question">Who is your HERO?</div>
+            <div class="question" data-i18n="steps.hero">Who is your HERO?</div>
             <div class="options" data-category="hero">
                 <div class="option" data-value="a friendly dragon" data-keyword="dragon">
                     <span class="emoji">🐉</span>
@@ -347,14 +413,14 @@
                 </div>
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="prevStep()">Back</button>
-                <button onclick="nextStep()" id="next1" disabled>Next</button>
+                <button class="back nav-arrow" onclick="prevStep()">⬅️</button>
+                <button class="nav-arrow" onclick="nextStep()" id="next1" disabled>➡️</button>
             </div>
         </div>
 
         <!-- Step 2: What do they want? -->
         <div class="step" data-step="2">
-            <div class="question">What do they WANT?</div>
+            <div class="question" data-i18n="steps.want">What do they WANT?</div>
             <div class="options" data-category="want">
                 <div class="option" data-value="save Princess Holly from the tower" data-keyword="princess">
                     <span class="emoji">👸</span>
@@ -390,14 +456,14 @@
                 </div>
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="prevStep()">Back</button>
-                <button onclick="nextStep()" id="next2" disabled>Next</button>
+                <button class="back nav-arrow" onclick="prevStep()">⬅️</button>
+                <button class="nav-arrow" onclick="nextStep()" id="next2" disabled>➡️</button>
             </div>
         </div>
 
         <!-- Step 3: What's stopping them? -->
         <div class="step" data-step="3">
-            <div class="question">What's STOPPING them?</div>
+            <div class="question" data-i18n="steps.obstacle">What's STOPPING them?</div>
             <div class="options" data-category="obstacle">
                 <div class="option" data-value="a grumpy giant" data-keyword="giant">
                     <span class="emoji">👹</span>
@@ -433,14 +499,14 @@
                 </div>
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="prevStep()">Back</button>
-                <button onclick="nextStep()" id="next3" disabled>Next</button>
+                <button class="back nav-arrow" onclick="prevStep()">⬅️</button>
+                <button class="nav-arrow" onclick="nextStep()" id="next3" disabled>➡️</button>
             </div>
         </div>
 
         <!-- Step 4: How do they win? -->
         <div class="step" data-step="4">
-            <div class="question">How do they WIN?</div>
+            <div class="question" data-i18n="steps.solution">How do they WIN?</div>
             <div class="options" data-category="solution">
                 <div class="option" data-value="super speed powers" data-keyword="speed">
                     <span class="emoji">⚡</span>
@@ -476,14 +542,14 @@
                 </div>
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="prevStep()">Back</button>
-                <button onclick="nextStep()" id="next4" disabled>Next</button>
+                <button class="back nav-arrow" onclick="prevStep()">⬅️</button>
+                <button class="nav-arrow" onclick="nextStep()" id="next4" disabled>➡️</button>
             </div>
         </div>
 
         <!-- Step 5: Happy ending -->
         <div class="step" data-step="5">
-            <div class="question">THE END looks like...</div>
+            <div class="question" data-i18n="steps.ending">THE END looks like...</div>
             <div class="options" data-category="ending">
                 <div class="option" data-value="everyone dancing at a big party" data-keyword="party">
                     <span class="emoji">🎉</span>
@@ -519,8 +585,8 @@
                 </div>
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="prevStep()">Back</button>
-                <button onclick="nextStep()" id="next5" disabled>See My Story!</button>
+                <button class="back nav-arrow" onclick="prevStep()">⬅️</button>
+                <button class="nav-arrow" onclick="nextStep()" id="next5" disabled>📖 ➡️</button>
             </div>
         </div>
 
@@ -555,7 +621,7 @@
                 <div id="output"></div>
             </div>
             <div class="nav-buttons">
-                <button class="back" onclick="prevStep()">Change Something</button>
+                <button class="back nav-arrow" onclick="prevStep()">⬅️ ✏️</button>
                 <div></div>
             </div>
         </div>
@@ -921,10 +987,52 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
         }
 
         // ============================================
-        // 🌍 INTERNATIONALIZATION (i18n)
+        // 🌍 INTERNATIONALIZATION (i18n) - 50 Languages!
         // ============================================
         let currentLang = 'en';
         let i18n = {};
+
+        // All 50 supported languages with flags
+        const LANGUAGES = {
+            // Top picks (shown in quick bar)
+            en: '🇬🇧', th: '🇹🇭', zh: '🇨🇳', es: '🇪🇸',
+            // South Asian
+            hi: '🇮🇳', bn: '🇧🇩', ta: '🇮🇳', te: '🇮🇳', mr: '🇮🇳',
+            pa: '🇮🇳', gu: '🇮🇳', kn: '🇮🇳', ml: '🇮🇳',
+            ne: '🇳🇵', my: '🇲🇲',
+            // Southeast Asian
+            vi: '🇻🇳', id: '🇮🇩', ms: '🇲🇾', tl: '🇵🇭', km: '🇰🇭', lo: '🇱🇦',
+            // East Asian
+            ja: '🇯🇵', ko: '🇰🇷',
+            // European
+            fr: '🇫🇷', de: '🇩🇪', it: '🇮🇹', pt: '🇧🇷', nl: '🇳🇱',
+            pl: '🇵🇱', uk: '🇺🇦', ru: '🇷🇺', el: '🇬🇷', tr: '🇹🇷',
+            sv: '🇸🇪', da: '🇩🇰', no: '🇳🇴', fi: '🇫🇮',
+            cs: '🇨🇿', hu: '🇭🇺', ro: '🇷🇴', bg: '🇧🇬',
+            hr: '🇭🇷', sk: '🇸🇰', sr: '🇷🇸', sl: '🇸🇮',
+            // RTL
+            ar: '🇸🇦', he: '🇮🇱', ur: '🇵🇰',
+            // African
+            sw: '🇰🇪', am: '🇪🇹'
+        };
+
+        // Build language picker grid
+        function buildLangGrid() {
+            const grid = document.getElementById('langGrid');
+            grid.innerHTML = '';
+            for (const [code, flag] of Object.entries(LANGUAGES)) {
+                const btn = document.createElement('button');
+                btn.textContent = flag;
+                btn.dataset.lang = code;
+                btn.title = code.toUpperCase();
+                btn.onclick = () => {
+                    loadLanguage(code);
+                    document.getElementById('langPicker').classList.remove('show');
+                };
+                if (code === currentLang) btn.classList.add('active');
+                grid.appendChild(btn);
+            }
+        }
 
         async function loadLanguage(langCode) {
             try {
@@ -935,6 +1043,9 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
                     localStorage.setItem('teller-lang', langCode);
                     applyTranslations();
                     updateLangButtons();
+                    buildLangGrid();
+                    // Apply RTL if needed
+                    document.documentElement.dir = i18n.meta?.direction || 'ltr';
                     return true;
                 }
             } catch (err) {
@@ -1015,11 +1126,10 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
 
         function detectBrowserLanguage() {
             const saved = localStorage.getItem('teller-lang');
-            if (saved) return saved;
+            if (saved && LANGUAGES[saved]) return saved;
 
             const browserLang = navigator.language.split('-')[0];
-            const supported = ['en', 'th', 'hi', 'es'];
-            return supported.includes(browserLang) ? browserLang : 'en';
+            return LANGUAGES[browserLang] ? browserLang : 'en';
         }
 
         // Language button click handlers
@@ -1030,6 +1140,7 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
         // Initialize
         initProgress();
         checkServerHealth();
+        buildLangGrid();
         loadLanguage(detectBrowserLanguage());
     </script>
 </body>

@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Nederlands",
+    "code": "nl",
+    "flag": "🇳🇱",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Verhalenfabriek",
+    "subtitle": "Klik op plaatjes om JOUW verhaal te maken!",
+    "makeBook": "Maak Mijn Boek!",
+    "tryAgain": "Probeer Opnieuw",
+    "done": "Klaar!",
+    "serverReady": "Server gereed",
+    "serverConnecting": "Verbinden...",
+    "serverNotRunning": "Server draait niet!",
+    "startServerFirst": "Start eerst de server:",
+    "thenClickAgain": "Klik dan opnieuw op de knop!",
+    "generating": "Je boek wordt gemaakt...",
+    "yourBookReady": "Je Boek Is Klaar!",
+    "openingNewWindow": "Openen in nieuw venster...",
+    "savedTo": "Opgeslagen in:",
+    "pickArtStyle": "Kies je kunststijl:",
+    "allFree": "Alles GRATIS! Geen account nodig!",
+    "whatsYourName": "Hoe heet jij?",
+    "letsGo": "Laten we gaan!",
+    "myStories": "Mijn Verhalen",
+    "seeMyStory": "Bekijk Mijn Verhaal!"
+  },
+  "steps": {
+    "hero": "Wie is de held?",
+    "want": "Wat willen ze?",
+    "obstacle": "Oh nee! Wat staat er in de weg?",
+    "solution": "Hoe winnen ze?",
+    "ending": "HET EINDE ziet er zo uit..."
+  },
+  "story": {
+    "onceUponATime": "Er was eens",
+    "theyWanted": "Ze wilden",
+    "butOhNo": "Maar oh nee! Er was",
+    "inTheWay": "in de weg!",
+    "using": "Met behulp van",
+    "theySavedTheDay": "redden ze de dag!",
+    "theEnd": "EINDE:"
+  },
+  "heroes": {
+    "dragon": { "label": "Draak", "value": "een vriendelijke draak" },
+    "robot": { "label": "Robot", "value": "een dappere robot" },
+    "unicorn": { "label": "Eenhoorn", "value": "een magische eenhoorn" },
+    "cat": { "label": "Kat", "value": "een superkat" },
+    "dog": { "label": "Hond", "value": "een heldenhond" },
+    "superhero": { "label": "Superheld", "value": "een kleine superheld" },
+    "tiger": { "label": "Tijger", "value": "een machtige tijger" },
+    "space": { "label": "Astronaut", "value": "een ruimteverkenner" }
+  },
+  "wants": {
+    "princess": { "label": "Red Prinses", "value": "de Prinses redden uit de toren" },
+    "treasure": { "label": "Vind Schat", "value": "de verborgen schat vinden" },
+    "race": { "label": "Win Race", "value": "de grote race winnen" },
+    "home": { "label": "Naar Huis", "value": "veilig thuiskomen" },
+    "friend": { "label": "Maak Vriend", "value": "een nieuwe vriend maken" },
+    "fly": { "label": "Leer Vliegen", "value": "leren vliegen" },
+    "wizard": { "label": "Word Tovenaar", "value": "een tovenaar worden" },
+    "ocean": { "label": "Verken Oceaan", "value": "de oceaan verkennen" }
+  },
+  "obstacles": {
+    "giant": { "label": "Reus", "value": "een knorrige reus" },
+    "monster": { "label": "Monster", "value": "een eng monster" },
+    "mountain": { "label": "Berg", "value": "een enorme berg" },
+    "door": { "label": "Magische Deur", "value": "een gesloten magische deur" },
+    "storm": { "label": "Storm", "value": "een wilde storm" },
+    "forest": { "label": "Bos", "value": "een donker diep bos" },
+    "wizard": { "label": "Tovenaar", "value": "een sluwe tovenaar" },
+    "maze": { "label": "Doolhof", "value": "een verwarrend doolhof" }
+  },
+  "solutions": {
+    "speed": { "label": "Snelheid", "value": "supersnelheidskrachten" },
+    "friend": { "label": "Vriend", "value": "een behulpzame vriend" },
+    "trick": { "label": "Trucje", "value": "een slimme truc" },
+    "magic": { "label": "Magie", "value": "magische krachten" },
+    "brave": { "label": "Moed", "value": "super dapper zijn" },
+    "kindness": { "label": "Vriendelijkheid", "value": "vriendelijkheid en liefde" },
+    "teamwork": { "label": "Teamwork", "value": "samenwerken met iedereen" },
+    "nevergiveup": { "label": "Nooit Opgeven", "value": "nooit opgeven" }
+  },
+  "endings": {
+    "party": { "label": "Feest", "value": "iedereen danst op een groot feest" },
+    "sunset": { "label": "Zonsondergang", "value": "samen naar de zonsondergang vliegen" },
+    "castle": { "label": "Kasteel", "value": "wonen in een mooi kasteel" },
+    "hugging": { "label": "Knuffelen", "value": "alle vrienden knuffelen en lachen" },
+    "cake": { "label": "Taart", "value": "taart en ijs eten" },
+    "medal": { "label": "Medaille", "value": "een gouden medaille krijgen" },
+    "adventure": { "label": "Avontuur", "value": "op een nieuw avontuur gaan" },
+    "sleep": { "label": "Slapen", "value": "slapen in een gezellig bed" }
+  },
+  "artModes": {
+    "coloring": "Kleurboek",
+    "pollinations": "AI-Kunst",
+    "ai-coloring": "AI-Kleuren"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Türkçe",
+    "code": "tr",
+    "flag": "🇹🇷",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Hikaye Fabrikası",
+    "subtitle": "Resimlere tıkla ve SENİN hikayeni yarat!",
+    "makeBook": "Kitabımı Yap!",
+    "tryAgain": "Tekrar Dene",
+    "done": "Tamam!",
+    "serverReady": "Sunucu hazır",
+    "serverConnecting": "Bağlanıyor...",
+    "serverNotRunning": "Sunucu çalışmıyor!",
+    "startServerFirst": "Önce sunucuyu başlat:",
+    "thenClickAgain": "Sonra düğmeye tekrar tıkla!",
+    "generating": "Kitabın hazırlanıyor...",
+    "yourBookReady": "Kitabın Hazır!",
+    "openingNewWindow": "Yeni pencere açılıyor...",
+    "savedTo": "Kaydedildi:",
+    "pickArtStyle": "Sanat stilini seç:",
+    "allFree": "Hepsi ÜCRETSİZ! Hesap gerekmez!",
+    "whatsYourName": "Senin adın ne?",
+    "letsGo": "Hadi başlayalım!",
+    "myStories": "Hikayelerim",
+    "seeMyStory": "Hikayemi Gör!"
+  },
+  "steps": {
+    "hero": "Kahraman kim?",
+    "want": "Ne istiyorlar?",
+    "obstacle": "Hay aksi! Yolda ne var?",
+    "solution": "Nasıl kazanıyorlar?",
+    "ending": "SON şöyle görünüyor..."
+  },
+  "story": {
+    "onceUponATime": "Bir varmış bir yokmuş",
+    "theyWanted": "İstiyorlarmış",
+    "butOhNo": "Ama hay aksi! Varmış",
+    "inTheWay": "yolda!",
+    "using": "Kullanarak",
+    "theySavedTheDay": "günü kurtardılar!",
+    "theEnd": "SON:"
+  },
+  "heroes": {
+    "dragon": { "label": "Ejderha", "value": "dost canlısı bir ejderha" },
+    "robot": { "label": "Robot", "value": "cesur bir robot" },
+    "unicorn": { "label": "Tek Boynuzlu At", "value": "sihirli bir tek boynuzlu at" },
+    "cat": { "label": "Kedi", "value": "süper bir kedi" },
+    "dog": { "label": "Köpek", "value": "kahraman bir köpek" },
+    "superhero": { "label": "Süper Kahraman", "value": "küçük bir süper kahraman" },
+    "tiger": { "label": "Kaplan", "value": "güçlü bir kaplan" },
+    "space": { "label": "Astronot", "value": "bir uzay kaşifi" }
+  },
+  "wants": {
+    "princess": { "label": "Prensesi Kurtar", "value": "Prensesi kuleden kurtarmak" },
+    "treasure": { "label": "Hazine Bul", "value": "gizli hazineyi bulmak" },
+    "race": { "label": "Yarışı Kazan", "value": "büyük yarışı kazanmak" },
+    "home": { "label": "Eve Dön", "value": "güvenle eve dönmek" },
+    "friend": { "label": "Arkadaş Edin", "value": "yeni bir arkadaş edinmek" },
+    "fly": { "label": "Uçmayı Öğren", "value": "uçmayı öğrenmek" },
+    "wizard": { "label": "Büyücü Ol", "value": "büyücü olmak" },
+    "ocean": { "label": "Okyanusu Keşfet", "value": "okyanusu keşfetmek" }
+  },
+  "obstacles": {
+    "giant": { "label": "Dev", "value": "huysuz bir dev" },
+    "monster": { "label": "Canavar", "value": "korkunç bir canavar" },
+    "mountain": { "label": "Dağ", "value": "kocaman bir dağ" },
+    "door": { "label": "Sihirli Kapı", "value": "kilitli sihirli bir kapı" },
+    "storm": { "label": "Fırtına", "value": "vahşi bir fırtına" },
+    "forest": { "label": "Orman", "value": "karanlık derin bir orman" },
+    "wizard": { "label": "Büyücü", "value": "kurnaz bir büyücü" },
+    "maze": { "label": "Labirent", "value": "kafa karıştıran bir labirent" }
+  },
+  "solutions": {
+    "speed": { "label": "Hız", "value": "süper hız güçleri" },
+    "friend": { "label": "Arkadaş", "value": "yardımsever bir arkadaş" },
+    "trick": { "label": "Hile", "value": "akıllıca bir hile" },
+    "magic": { "label": "Sihir", "value": "sihirli güçler" },
+    "brave": { "label": "Cesaret", "value": "süper cesur olmak" },
+    "kindness": { "label": "İyilik", "value": "iyilik ve sevgi" },
+    "teamwork": { "label": "Takım Çalışması", "value": "herkesle takım çalışması" },
+    "nevergiveup": { "label": "Asla Vazgeçme", "value": "asla vazgeçmemek" }
+  },
+  "endings": {
+    "party": { "label": "Parti", "value": "herkes büyük partide dans ediyor" },
+    "sunset": { "label": "Gün Batımı", "value": "birlikte gün batımına uçuyorlar" },
+    "castle": { "label": "Şato", "value": "güzel bir şatoda yaşıyorlar" },
+    "hugging": { "label": "Sarılma", "value": "tüm arkadaşlar sarılıp gülüyor" },
+    "cake": { "label": "Pasta", "value": "pasta ve dondurma yiyorlar" },
+    "medal": { "label": "Madalya", "value": "altın madalya kazanıyorlar" },
+    "adventure": { "label": "Macera", "value": "yeni bir maceraya çıkıyorlar" },
+    "sleep": { "label": "Uyku", "value": "rahat bir yatakta uyuyorlar" }
+  },
+  "artModes": {
+    "coloring": "Boyama Kitabı",
+    "pollinations": "AI Sanatı",
+    "ai-coloring": "AI Boyama"
+  }
+}

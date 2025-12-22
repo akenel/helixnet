@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "language": "Tiếng Việt",
+    "code": "vi",
+    "flag": "🇻🇳",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "Xưởng Truyện Cổ Tích",
+    "subtitle": "Nhấn vào hình để tạo câu chuyện của BẠN!",
+    "makeBook": "Làm Sách Của Tôi!",
+    "tryAgain": "Thử Lại",
+    "done": "Xong!",
+    "serverReady": "Máy chủ sẵn sàng",
+    "serverConnecting": "Đang kết nối...",
+    "serverNotRunning": "Máy chủ chưa chạy!",
+    "startServerFirst": "Khởi động máy chủ trước:",
+    "thenClickAgain": "Rồi nhấn nút lần nữa!",
+    "generating": "Đang tạo sách của bạn...",
+    "yourBookReady": "Sách Của Bạn Đã Sẵn Sàng!",
+    "openingNewWindow": "Đang mở cửa sổ mới...",
+    "savedTo": "Đã lưu tại:",
+    "pickArtStyle": "Chọn kiểu tranh:",
+    "allFree": "Hoàn toàn MIỄN PHÍ! Không cần tài khoản!",
+    "whatsYourName": "Bạn tên gì?",
+    "letsGo": "Bắt đầu nào!",
+    "myStories": "Truyện Của Tôi",
+    "seeMyStory": "Xem Truyện Của Tôi!"
+  },
+  "steps": {
+    "hero": "Ai là anh hùng?",
+    "want": "Họ muốn gì?",
+    "obstacle": "Ôi không! Có gì cản đường?",
+    "solution": "Họ thắng bằng cách nào?",
+    "ending": "KẾT THÚC trông như thế này..."
+  },
+  "story": {
+    "onceUponATime": "Ngày xửa ngày xưa, có",
+    "theyWanted": "Họ muốn",
+    "butOhNo": "Nhưng ôi không! Có",
+    "inTheWay": "cản đường!",
+    "using": "Bằng cách dùng",
+    "theySavedTheDay": "họ đã cứu được mọi người!",
+    "theEnd": "HẾT:"
+  },
+  "heroes": {
+    "dragon": { "label": "Rồng", "value": "một con rồng thân thiện" },
+    "robot": { "label": "Robot", "value": "một robot dũng cảm" },
+    "unicorn": { "label": "Kỳ Lân", "value": "một kỳ lân ma thuật" },
+    "cat": { "label": "Mèo", "value": "một chú mèo siêu đẳng" },
+    "dog": { "label": "Chó", "value": "một chú chó anh hùng" },
+    "superhero": { "label": "Siêu Anh Hùng", "value": "một em bé siêu anh hùng" },
+    "tiger": { "label": "Hổ", "value": "một con hổ mạnh mẽ" },
+    "space": { "label": "Phi Hành Gia", "value": "một nhà thám hiểm vũ trụ" }
+  },
+  "wants": {
+    "princess": { "label": "Cứu Công Chúa", "value": "cứu Công Chúa khỏi tháp" },
+    "treasure": { "label": "Tìm Kho Báu", "value": "tìm kho báu ẩn giấu" },
+    "race": { "label": "Thắng Cuộc Đua", "value": "thắng cuộc đua lớn" },
+    "home": { "label": "Về Nhà", "value": "về nhà an toàn" },
+    "friend": { "label": "Kết Bạn", "value": "kết bạn mới" },
+    "fly": { "label": "Học Bay", "value": "học bay" },
+    "wizard": { "label": "Thành Phù Thủy", "value": "trở thành phù thủy" },
+    "ocean": { "label": "Khám Phá Đại Dương", "value": "khám phá đại dương" }
+  },
+  "obstacles": {
+    "giant": { "label": "Người Khổng Lồ", "value": "một người khổng lồ cáu kỉnh" },
+    "monster": { "label": "Quái Vật", "value": "một quái vật đáng sợ" },
+    "mountain": { "label": "Núi", "value": "một ngọn núi khổng lồ" },
+    "door": { "label": "Cửa Ma Thuật", "value": "một cánh cửa ma thuật bị khóa" },
+    "storm": { "label": "Bão", "value": "một cơn bão dữ dội" },
+    "forest": { "label": "Rừng", "value": "một khu rừng tối tăm sâu thẳm" },
+    "wizard": { "label": "Phù Thủy", "value": "một phù thủy xảo quyệt" },
+    "maze": { "label": "Mê Cung", "value": "một mê cung rối rắm" }
+  },
+  "solutions": {
+    "speed": { "label": "Tốc Độ", "value": "siêu năng lực tốc độ" },
+    "friend": { "label": "Bạn Bè", "value": "một người bạn tốt bụng" },
+    "trick": { "label": "Mẹo", "value": "một mẹo thông minh" },
+    "magic": { "label": "Ma Thuật", "value": "sức mạnh ma thuật" },
+    "brave": { "label": "Dũng Cảm", "value": "sự dũng cảm phi thường" },
+    "kindness": { "label": "Tử Tế", "value": "lòng tốt và tình yêu" },
+    "teamwork": { "label": "Làm Việc Nhóm", "value": "làm việc nhóm với mọi người" },
+    "nevergiveup": { "label": "Không Bỏ Cuộc", "value": "không bao giờ bỏ cuộc" }
+  },
+  "endings": {
+    "party": { "label": "Tiệc", "value": "mọi người nhảy múa trong bữa tiệc lớn" },
+    "sunset": { "label": "Hoàng Hôn", "value": "cùng bay về phía hoàng hôn" },
+    "castle": { "label": "Lâu Đài", "value": "sống trong một lâu đài xinh đẹp" },
+    "hugging": { "label": "Ôm Nhau", "value": "tất cả bạn bè ôm nhau và cười" },
+    "cake": { "label": "Bánh", "value": "ăn bánh và kem" },
+    "medal": { "label": "Huy Chương", "value": "nhận huy chương vàng" },
+    "adventure": { "label": "Phiêu Lưu", "value": "lên đường phiêu lưu mới" },
+    "sleep": { "label": "Ngủ", "value": "ngủ trong chiếc giường ấm áp" }
+  },
+  "artModes": {
+    "coloring": "Sách Tô Màu",
+    "pollinations": "Tranh AI",
+    "ai-coloring": "Tô Màu AI"
+  }
+}
