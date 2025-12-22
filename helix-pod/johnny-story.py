@@ -699,10 +699,75 @@ class Story:
         .print-btn:hover {{
             transform: scale(1.05);
         }}
+        /* Print styles — Holly wants CLEAN pages */
+        @page {{
+            size: portrait;
+            margin: 0.5cm;  /* Minimal margins, no browser headers/footers */
+        }}
         @media print {{
-            .print-btn {{ display: none; }}
-            body {{ background: white; padding: 0; }}
-            .book {{ box-shadow: none; }}
+            /* Hide UI elements */
+            .print-btn {{ display: none !important; }}
+            .art-prompt {{ display: none !important; }}
+
+            /* Clean background */
+            html, body {{
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }}
+
+            /* Remove shadows and borders */
+            .book {{
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+            }}
+
+            /* Cover gets its own page */
+            .cover {{
+                page-break-after: always;
+                break-after: page;
+                min-height: 90vh;
+                border-radius: 0 !important;
+            }}
+
+            /* Each scene on its own page */
+            .scene {{
+                page-break-after: always;
+                break-after: page;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 20px !important;
+                border: none !important;
+                min-height: 90vh;
+            }}
+
+            /* Make images BIG for coloring */
+            .scene-image {{
+                max-width: 90% !important;
+                width: 90% !important;
+                height: auto !important;
+                margin: 20px auto !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: 2px solid #333 !important;
+            }}
+
+            /* THE END - last page, no break after */
+            .the-end {{
+                page-break-after: avoid;
+                break-after: avoid;
+                min-height: 50vh;
+                border-radius: 0 !important;
+            }}
+
+            /* Ensure colors print */
+            .cover, .the-end {{
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }}
         }}
     </style>
 </head>

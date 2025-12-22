@@ -355,18 +355,22 @@ def generate_coloring_page(prompt: str, title: str = "") -> Optional[bytes]:
 # TIER 2: POLLINATIONS.AI (Free, No Account)
 # =============================================================================
 
-def generate_pollinations(prompt: str, width: int = 512, height: int = 512, timeout: int = 60) -> Optional[bytes]:
+def generate_pollinations(prompt: str, width: int = 512, height: int = 512, timeout: int = 90) -> Optional[bytes]:
     """
     Generate AI art using Pollinations.ai.
     FREE. No account. No token. No credit card.
 
     Just HTTP GET with URL-encoded prompt.
+    Includes retry logic for when the service is slow or busy.
     """
+    import socket
+
     config = load_config()
     poll_cfg = config.get("pollinations", {})
     safety = config.get("safety", {})
 
     base_url = poll_cfg.get("url", "https://image.pollinations.ai/prompt/")
+    max_retries = poll_cfg.get("max_retries", 2)
 
     # Add child-safe suffix
     safe_prompt = prompt + safety.get("style_suffix", "")
@@ -377,31 +381,73 @@ def generate_pollinations(prompt: str, width: int = 512, height: int = 512, time
     # Build URL with parameters
     url = f"{base_url}{encoded_prompt}?width={width}&height={height}&nologo=true"
 
-    try:
-        print(f"   🌸 Pollinations.ai generating...")
-        print(f"   📡 URL: {url[:80]}...")
+    last_error = None
 
-        req = urllib.request.Request(url, headers={
-            "User-Agent": "JohnnyStoryMaker/1.0 (Educational; Children's Book)"
-        })
+    for attempt in range(max_retries + 1):
+        try:
+            if attempt > 0:
+                wait_time = 5 * attempt  # 5s, 10s, 15s backoff
+                print(f"   🔄 Retry {attempt}/{max_retries} in {wait_time}s...")
+                time.sleep(wait_time)
 
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            image_data = response.read()
+            print(f"   🌸 Pollinations.ai generating...")
+            if attempt == 0:
+                print(f"   📡 URL: {url[:80]}...")
 
-            # Verify we got an image (not an error page)
-            if len(image_data) < 1000:
-                print(f"   ⚠️  Response too small, might be an error")
-                return None
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "JohnnyStoryMaker/1.0 (Educational; Children's Book)"
+            })
 
-            print(f"   ✅ Got {len(image_data)} bytes")
-            return image_data
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                image_data = response.read()
 
-    except urllib.error.URLError as e:
-        print(f"   ⚠️  Network error: {e}")
-        return None
-    except Exception as e:
-        print(f"   ⚠️  Pollinations error: {e}")
-        return None
+                # Verify we got an image (not an error page)
+                if len(image_data) < 1000:
+                    print(f"   ⚠️  Response too small ({len(image_data)} bytes), might be an error")
+                    last_error = "Response too small"
+                    continue  # Retry
+
+                print(f"   ✅ Got {len(image_data)} bytes")
+                return image_data
+
+        except socket.timeout:
+            print(f"   ⏱️  Timeout after {timeout}s (server is slow)")
+            last_error = "Timeout"
+            continue  # Retry
+
+        except urllib.error.HTTPError as e:
+            if e.code == 502:
+                print(f"   🔧 Server busy (502) — will retry")
+                last_error = "502 Bad Gateway"
+                continue  # Retry
+            elif e.code == 503:
+                print(f"   🔧 Server overloaded (503) — will retry")
+                last_error = "503 Service Unavailable"
+                continue  # Retry
+            elif e.code == 429:
+                print(f"   ⚠️  Rate limited (429) — waiting longer...")
+                last_error = "429 Rate Limited"
+                time.sleep(15)  # Extra wait for rate limit
+                continue  # Retry
+            else:
+                print(f"   ❌ HTTP error {e.code}: {e.reason}")
+                last_error = f"HTTP {e.code}"
+                break  # Don't retry other HTTP errors
+
+        except urllib.error.URLError as e:
+            print(f"   ⚠️  Network error: {e.reason}")
+            last_error = str(e.reason)
+            continue  # Retry network errors
+
+        except Exception as e:
+            print(f"   ⚠️  Pollinations error: {e}")
+            last_error = str(e)
+            break  # Don't retry unknown errors
+
+    # All retries exhausted
+    print(f"   ❌ Failed after {max_retries + 1} attempts. Last error: {last_error}")
+    print(f"   💡 Tip: Pollinations might be busy. Try again in a few minutes.")
+    return None
 
 
 # =============================================================================
