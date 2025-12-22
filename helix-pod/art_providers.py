@@ -193,6 +193,8 @@ def generate_coloring_page(prompt: str, title: str = "") -> Optional[bytes]:
         has_monster = "monster" in prompt_lower
         has_treasure = "treasure" in prompt_lower
         has_castle = "castle" in prompt_lower
+        has_tiger = "tiger" in prompt_lower
+        has_space = "space" in prompt_lower or "rocket" in prompt_lower
 
         # Draw border
         draw.rectangle([10, 10, WIDTH - 10, HEIGHT - 10], outline=LINE_COLOR, width=LINE_WIDTH)
@@ -336,6 +338,54 @@ def generate_coloring_page(prompt: str, title: str = "") -> Optional[bytes]:
                     r = 8 if i % 2 == 0 else 4
                     points.append((cx + r * math.cos(angle), cy - r * math.sin(angle)))
                 draw.polygon(points, outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Tiger — big cat with stripes
+        if has_tiger:
+            tx, ty = center_x, center_y + 30
+            # Body
+            draw.ellipse([tx - 60, ty - 30, tx + 60, ty + 40], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Head
+            draw.ellipse([tx + 40, ty - 50, tx + 100, ty + 10], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Ears
+            draw.polygon([(tx + 50, ty - 50), (tx + 55, ty - 75), (tx + 65, ty - 50)], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.polygon([(tx + 85, ty - 50), (tx + 90, ty - 75), (tx + 95, ty - 50)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Eyes
+            draw.ellipse([tx + 55, ty - 35, tx + 65, ty - 25], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.ellipse([tx + 80, ty - 35, tx + 90, ty - 25], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Nose
+            draw.polygon([(tx + 70, ty - 15), (tx + 65, ty - 5), (tx + 75, ty - 5)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Stripes on body
+            for i in range(4):
+                sx = tx - 40 + i * 25
+                draw.line([(sx, ty - 20), (sx + 5, ty + 20)], fill=LINE_COLOR, width=LINE_WIDTH)
+            # Tail
+            draw.arc([tx - 100, ty - 20, tx - 40, ty + 60], 90, 270, fill=LINE_COLOR, width=LINE_WIDTH)
+            # Legs
+            draw.ellipse([tx - 45, ty + 30, tx - 25, ty + 70], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.ellipse([tx + 25, ty + 30, tx + 45, ty + 70], outline=LINE_COLOR, width=LINE_WIDTH)
+
+        # Space explorer — astronaut with rocket
+        if has_space:
+            sx, sy = center_x, center_y + 20
+            # Helmet (circle)
+            draw.ellipse([sx - 35, sy - 60, sx + 35, sy + 10], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Visor
+            draw.ellipse([sx - 25, sy - 45, sx + 25, sy - 5], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Body (spacesuit)
+            draw.rectangle([sx - 40, sy + 10, sx + 40, sy + 80], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Arms
+            draw.rectangle([sx - 60, sy + 15, sx - 40, sy + 55], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.rectangle([sx + 40, sy + 15, sx + 60, sy + 55], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Legs
+            draw.rectangle([sx - 30, sy + 80, sx - 10, sy + 120], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.rectangle([sx + 10, sy + 80, sx + 30, sy + 120], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Rocket in background
+            rx, ry = WIDTH - 100, center_y
+            draw.polygon([(rx, ry - 80), (rx - 25, ry + 40), (rx + 25, ry + 40)], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.polygon([(rx - 25, ry + 40), (rx - 40, ry + 70), (rx - 10, ry + 40)], outline=LINE_COLOR, width=LINE_WIDTH)
+            draw.polygon([(rx + 25, ry + 40), (rx + 40, ry + 70), (rx + 10, ry + 40)], outline=LINE_COLOR, width=LINE_WIDTH)
+            # Flame
+            draw.polygon([(rx - 15, ry + 40), (rx, ry + 80), (rx + 15, ry + 40)], outline=LINE_COLOR, width=LINE_WIDTH)
 
         # Convert to bytes
         import io
