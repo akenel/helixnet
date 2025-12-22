@@ -593,12 +593,12 @@
         <!-- Step 6: Summary -->
         <div class="step" data-step="6">
             <div class="summary">
-                <h2>Your Story is Ready!</h2>
+                <h2 data-i18n="ui.yourBookReady">Your Story is Ready!</h2>
                 <div class="story-preview" id="storyPreview"></div>
 
                 <!-- Art Mode Selector — Three Options for Johnny -->
                 <div class="art-mode-selector">
-                    <p style="font-size:1.2em; margin-bottom:15px;">🎨 Pick your art style:</p>
+                    <p style="font-size:1.2em; margin-bottom:15px;">🎨 <span data-i18n="ui.pickArtStyle">Pick your art style:</span></p>
                     <div class="options" data-category="artMode" style="margin-bottom:20px;">
                         <div class="option" data-value="coloring">
                             <span class="emoji">🖍️</span>
@@ -613,7 +613,7 @@
                             <span class="label">AI Coloring</span>
                         </div>
                     </div>
-                    <p style="font-size:0.9em; color:#666;">All FREE! No account needed! AI Coloring = best of both!</p>
+                    <p style="font-size:0.9em; color:#666;" data-i18n="ui.allFree">All FREE! No account needed!</p>
                 </div>
 
                 <button class="make-book" onclick="makeBook()">Make My Book!</button>
@@ -806,16 +806,17 @@
             });
         });
 
-        // Show story summary
+        // Show story summary (i18n aware)
         function showSummary() {
             const preview = document.getElementById('storyPreview');
+            const s = i18n.story || {};
             preview.innerHTML = `
-                <p><span class="scene-emoji">📖</span><strong>${story.author}'s Story</strong></p>
-                <p><span class="scene-emoji">🦸</span>Once upon a time, there was <strong>${story.hero}</strong>.</p>
-                <p><span class="scene-emoji">💫</span>They wanted to <strong>${story.want}</strong>!</p>
-                <p><span class="scene-emoji">😱</span>But oh no! There was <strong>${story.obstacle}</strong> in the way!</p>
-                <p><span class="scene-emoji">💡</span>Using <strong>${story.solution}</strong>, they saved the day!</p>
-                <p><span class="scene-emoji">🎉</span>THE END: <strong>${story.ending}</strong>!</p>
+                <p><span class="scene-emoji">📖</span><strong>${story.author}</strong></p>
+                <p><span class="scene-emoji">🦸</span>${s.onceUponATime || 'Once upon a time,'} <strong>${story.hero}</strong>.</p>
+                <p><span class="scene-emoji">💫</span>${s.theyWanted || 'They wanted'} <strong>${story.want}</strong>!</p>
+                <p><span class="scene-emoji">😱</span>${s.butOhNo || 'But oh no!'} <strong>${story.obstacle}</strong> ${s.inTheWay || 'was in the way!'}</p>
+                <p><span class="scene-emoji">💡</span>${s.using || 'Using'} <strong>${story.solution}</strong>, ${s.theySavedTheDay || 'they saved the day!'}</p>
+                <p><span class="scene-emoji">🎉</span>${s.theEnd || 'THE END:'} <strong>${story.ending}</strong>!</p>
             `;
         }
 
@@ -1058,17 +1059,26 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
         function applyTranslations() {
             if (!i18n.ui) return;
 
-            // Update title and subtitle
-            document.querySelector('h1[data-i18n]').textContent = i18n.ui.title;
-            document.querySelector('.subtitle[data-i18n]').textContent = i18n.ui.subtitle;
+            // Generic data-i18n handler (e.g. data-i18n="ui.title" → i18n.ui.title)
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const path = el.dataset.i18n.split('.');
+                let val = i18n;
+                for (const key of path) {
+                    val = val?.[key];
+                }
+                if (val) el.textContent = val;
+            });
 
-            // Update questions
+            // Update page title
+            document.title = i18n.ui.title || 'Story Maker';
+
+            // Update questions (step headers)
             const questions = {
-                'hero': i18n.steps.hero,
-                'want': i18n.steps.want,
-                'obstacle': i18n.steps.obstacle,
-                'solution': i18n.steps.solution,
-                'ending': i18n.steps.ending
+                'hero': i18n.steps?.hero,
+                'want': i18n.steps?.want,
+                'obstacle': i18n.steps?.obstacle,
+                'solution': i18n.steps?.solution,
+                'ending': i18n.steps?.ending
             };
             document.querySelectorAll('.options[data-category]').forEach(opts => {
                 const cat = opts.dataset.category;

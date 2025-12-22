@@ -21,7 +21,11 @@
     "openingNewWindow": "Opening in new window...",
     "savedTo": "Saved to:",
     "pickArtStyle": "Pick your art style:",
-    "allFree": "All FREE! No account needed!"
+    "allFree": "All FREE! No account needed!",
+    "whatsYourName": "What's YOUR name?",
+    "letsGo": "Let's Go!",
+    "myStories": "My Stories",
+    "seeMyStory": "See My Story!"
   },
   "steps": {
     "hero": "Who is the hero?",

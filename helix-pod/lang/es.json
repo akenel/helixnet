@@ -21,7 +21,11 @@
     "openingNewWindow": "Abriendo en nueva ventana...",
     "savedTo": "Guardado en:",
     "pickArtStyle": "Elige tu estilo de arte:",
-    "allFree": "¡Todo GRATIS! ¡Sin cuenta necesaria!"
+    "allFree": "¡Todo GRATIS! ¡Sin cuenta necesaria!",
+    "whatsYourName": "¿Cómo te llamas?",
+    "letsGo": "¡Vamos!",
+    "myStories": "Mis Cuentos",
+    "seeMyStory": "¡Ver Mi Cuento!"
   },
   "steps": {
     "hero": "¿Quién es el héroe?",
