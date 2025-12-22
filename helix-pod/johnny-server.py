@@ -139,7 +139,9 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
             # Create story object
             story = js.Story(data.get('title', "Johnny's Adventure"))
             story.author = data.get('author', 'Johnny')
-            story.answers = data.get('answers', {})
+            story.answers = data.get('answers', {})  # English for AI
+            story.answers_display = data.get('answersDisplay', {})  # Translated for display
+            story.lang = data.get('lang', 'en')
 
             # Generate scenes
             story.generate_scenes()

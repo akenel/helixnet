@@ -887,12 +887,20 @@
                 title: `${story.author}'s Adventure`,
                 author: story.author,
                 art_mode: story.artMode,  // Send the selected art mode!
-                answers: {
+                lang: currentLang,  // Current language code
+                answers: {  // English values for AI image prompts
                     hero: story.hero,
                     want: story.want,
                     obstacle: story.obstacle,
                     solution: story.solution,
                     ending: story.ending
+                },
+                answersDisplay: {  // Translated values for story text
+                    hero: story.heroDisplay || story.hero,
+                    want: story.wantDisplay || story.want,
+                    obstacle: story.obstacleDisplay || story.obstacle,
+                    solution: story.solutionDisplay || story.solution,
+                    ending: story.endingDisplay || story.ending
                 }
             };
 

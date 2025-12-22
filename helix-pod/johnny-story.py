@@ -338,7 +338,9 @@ class Story:
         self.title = title
         self.author = "Johnny"
         self.created = datetime.now().isoformat()
-        self.answers = {}
+        self.answers = {}  # English values for AI prompts
+        self.answers_display = {}  # Translated values for story text
+        self.lang = "en"  # Language code
         self.scenes = []
         self.status = "drafting"
         self.images = {}
@@ -491,21 +493,33 @@ class Story:
             return cls.from_dict(json.load(f))
 
     def generate_scenes(self):
-        """Generate scene descriptions from answers."""
+        """Generate scene descriptions from answers.
+
+        Uses English (answers) for AI art prompts.
+        Uses translated (answers_display) for story text shown to kids.
+        """
         self.scenes = []
 
-        hero = self.answers.get("hero", "the hero")
-        want = self.answers.get("want", "something")
-        obstacle = self.answers.get("obstacle", "something")
-        solution = self.answers.get("solution", "something")
-        ending = self.answers.get("ending", "happiness")
+        # English values for AI image generation
+        hero_en = self.answers.get("hero", "the hero")
+        want_en = self.answers.get("want", "something")
+        obstacle_en = self.answers.get("obstacle", "something")
+        solution_en = self.answers.get("solution", "something")
+        ending_en = self.answers.get("ending", "happiness")
+
+        # Translated values for story text (fallback to English)
+        hero = self.answers_display.get("hero", hero_en)
+        want = self.answers_display.get("want", want_en)
+        obstacle = self.answers_display.get("obstacle", obstacle_en)
+        solution = self.answers_display.get("solution", solution_en)
+        ending = self.answers_display.get("ending", ending_en)
 
         # Scene 1: Meet the hero
         self.scenes.append({
             "number": 1,
             "title": f"Meet {hero.title()}",
             "description": f"This is {hero}. {hero.title()} is our hero!",
-            "art_prompt": f"{hero}, character design, hero pose, friendly, children's book illustration, colorful",
+            "art_prompt": f"{hero_en}, character design, hero pose, friendly, children's book illustration, colorful",
         })
 
         # Scene 2: The dream
@@ -513,7 +527,7 @@ class Story:
             "number": 2,
             "title": "The Dream",
             "description": f"{hero.title()} wants to {want}. More than anything!",
-            "art_prompt": f"{hero} dreaming about {want}, thought bubble, stars, children's book illustration",
+            "art_prompt": f"{hero_en} dreaming about {want_en}, thought bubble, stars, children's book illustration",
         })
 
         # Scene 3: The problem
@@ -521,7 +535,7 @@ class Story:
             "number": 3,
             "title": "Oh No!",
             "description": f"But there's a problem! {obstacle.title()} is in the way!",
-            "art_prompt": f"{hero} facing {obstacle}, dramatic, children's book illustration, tense moment",
+            "art_prompt": f"{hero_en} facing {obstacle_en}, dramatic, children's book illustration, tense moment",
         })
 
         # Scene 4: The solution
@@ -529,7 +543,7 @@ class Story:
             "number": 4,
             "title": "The Clever Plan",
             "description": f"{hero.title()} has an idea! Using {solution}!",
-            "art_prompt": f"{hero} using {solution} to overcome {obstacle}, action, dynamic, children's book illustration",
+            "art_prompt": f"{hero_en} using {solution_en} to overcome {obstacle_en}, action, dynamic, children's book illustration",
         })
 
         # Scene 5: Happy ending
@@ -537,7 +551,7 @@ class Story:
             "number": 5,
             "title": "THE END",
             "description": f"And they all lived happily! {ending.title()}!",
-            "art_prompt": f"{hero} celebrating, {ending}, happy, sunshine, children's book illustration, joyful",
+            "art_prompt": f"{hero_en} celebrating, {ending_en}, happy, sunshine, children's book illustration, joyful",
         })
 
         return self.scenes
