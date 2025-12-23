@@ -110,5 +110,41 @@
     "coloring": "Malbuch",
     "pollinations": "KI-Kunst",
     "ai-coloring": "KI-Malen"
+  },
+  "alphabet": {
+    "title": "Das Deutsche Alphabet",
+    "instructions": "Klicke einen Buchstaben!",
+    "letters": {
+      "A": { "word": "Apfel", "emoji": "🍎", "phrase": "A wie Apfel" },
+      "B": { "word": "Ball", "emoji": "⚽", "phrase": "B wie Ball" },
+      "C": { "word": "Clown", "emoji": "🤡", "phrase": "C wie Clown" },
+      "D": { "word": "Drache", "emoji": "🐉", "phrase": "D wie Drache" },
+      "E": { "word": "Elefant", "emoji": "🐘", "phrase": "E wie Elefant" },
+      "F": { "word": "Fisch", "emoji": "🐟", "phrase": "F wie Fisch" },
+      "G": { "word": "Giraffe", "emoji": "🦒", "phrase": "G wie Giraffe" },
+      "H": { "word": "Haus", "emoji": "🏠", "phrase": "H wie Haus" },
+      "I": { "word": "Igel", "emoji": "🦔", "phrase": "I wie Igel" },
+      "J": { "word": "Jaguar", "emoji": "🐆", "phrase": "J wie Jaguar" },
+      "K": { "word": "Katze", "emoji": "🐱", "phrase": "K wie Katze" },
+      "L": { "word": "Löwe", "emoji": "🦁", "phrase": "L wie Löwe" },
+      "M": { "word": "Maus", "emoji": "🐭", "phrase": "M wie Maus" },
+      "N": { "word": "Nashorn", "emoji": "🦏", "phrase": "N wie Nashorn" },
+      "O": { "word": "Orange", "emoji": "🍊", "phrase": "O wie Orange" },
+      "P": { "word": "Papagei", "emoji": "🦜", "phrase": "P wie Papagei" },
+      "Q": { "word": "Qualle", "emoji": "🪼", "phrase": "Q wie Qualle" },
+      "R": { "word": "Rakete", "emoji": "🚀", "phrase": "R wie Rakete" },
+      "S": { "word": "Sonne", "emoji": "☀️", "phrase": "S wie Sonne" },
+      "T": { "word": "Tiger", "emoji": "🐯", "phrase": "T wie Tiger" },
+      "U": { "word": "Uhr", "emoji": "⏰", "phrase": "U wie Uhr" },
+      "V": { "word": "Vogel", "emoji": "🐦", "phrase": "V wie Vogel" },
+      "W": { "word": "Wal", "emoji": "🐋", "phrase": "W wie Wal" },
+      "X": { "word": "Xylophon", "emoji": "🎵", "phrase": "X wie Xylophon" },
+      "Y": { "word": "Yak", "emoji": "🦬", "phrase": "Y wie Yak" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z wie Zebra" },
+      "Ä": { "word": "Ärzte", "emoji": "👨‍⚕️", "phrase": "Ä wie Ärzte" },
+      "Ö": { "word": "Österreich", "emoji": "🇦🇹", "phrase": "Ö wie Österreich" },
+      "Ü": { "word": "Überraschung", "emoji": "🎁", "phrase": "Ü wie Überraschung" },
+      "ß": { "word": "Straße", "emoji": "🛣️", "phrase": "ß wie Straße" }
+    }
   }
 }

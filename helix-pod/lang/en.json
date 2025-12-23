@@ -110,5 +110,37 @@
     "coloring": "Coloring Book",
     "pollinations": "AI Art",
     "ai-coloring": "AI Coloring"
+  },
+  "alphabet": {
+    "title": "The English Alphabet",
+    "instructions": "Click a letter!",
+    "letters": {
+      "A": { "word": "Apple", "emoji": "🍎", "phrase": "A is for Apple" },
+      "B": { "word": "Ball", "emoji": "⚽", "phrase": "B is for Ball" },
+      "C": { "word": "Cat", "emoji": "🐱", "phrase": "C is for Cat" },
+      "D": { "word": "Dragon", "emoji": "🐉", "phrase": "D is for Dragon" },
+      "E": { "word": "Elephant", "emoji": "🐘", "phrase": "E is for Elephant" },
+      "F": { "word": "Fish", "emoji": "🐟", "phrase": "F is for Fish" },
+      "G": { "word": "Giraffe", "emoji": "🦒", "phrase": "G is for Giraffe" },
+      "H": { "word": "House", "emoji": "🏠", "phrase": "H is for House" },
+      "I": { "word": "Ice Cream", "emoji": "🍦", "phrase": "I is for Ice Cream" },
+      "J": { "word": "Jaguar", "emoji": "🐆", "phrase": "J is for Jaguar" },
+      "K": { "word": "Kite", "emoji": "🪁", "phrase": "K is for Kite" },
+      "L": { "word": "Lion", "emoji": "🦁", "phrase": "L is for Lion" },
+      "M": { "word": "Mouse", "emoji": "🐭", "phrase": "M is for Mouse" },
+      "N": { "word": "Nest", "emoji": "🪺", "phrase": "N is for Nest" },
+      "O": { "word": "Orange", "emoji": "🍊", "phrase": "O is for Orange" },
+      "P": { "word": "Parrot", "emoji": "🦜", "phrase": "P is for Parrot" },
+      "Q": { "word": "Queen", "emoji": "👑", "phrase": "Q is for Queen" },
+      "R": { "word": "Rocket", "emoji": "🚀", "phrase": "R is for Rocket" },
+      "S": { "word": "Sun", "emoji": "☀️", "phrase": "S is for Sun" },
+      "T": { "word": "Tiger", "emoji": "🐯", "phrase": "T is for Tiger" },
+      "U": { "word": "Umbrella", "emoji": "☂️", "phrase": "U is for Umbrella" },
+      "V": { "word": "Violin", "emoji": "🎻", "phrase": "V is for Violin" },
+      "W": { "word": "Whale", "emoji": "🐋", "phrase": "W is for Whale" },
+      "X": { "word": "X-ray", "emoji": "🩻", "phrase": "X is for X-ray" },
+      "Y": { "word": "Yak", "emoji": "🦬", "phrase": "Y is for Yak" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z is for Zebra" }
+    }
   }
 }
