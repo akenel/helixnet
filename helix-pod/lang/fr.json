@@ -110,5 +110,37 @@
     "coloring": "Livre de Coloriage",
     "pollinations": "Art IA",
     "ai-coloring": "Coloriage IA"
+  },
+  "alphabet": {
+    "title": "L'Alphabet Français",
+    "instructions": "Clique une lettre!",
+    "letters": {
+      "A": { "word": "Avion", "emoji": "✈️", "phrase": "A comme Avion" },
+      "B": { "word": "Ballon", "emoji": "🎈", "phrase": "B comme Ballon" },
+      "C": { "word": "Chat", "emoji": "🐱", "phrase": "C comme Chat" },
+      "D": { "word": "Dragon", "emoji": "🐉", "phrase": "D comme Dragon" },
+      "E": { "word": "Éléphant", "emoji": "🐘", "phrase": "E comme Éléphant" },
+      "F": { "word": "Fleur", "emoji": "🌸", "phrase": "F comme Fleur" },
+      "G": { "word": "Girafe", "emoji": "🦒", "phrase": "G comme Girafe" },
+      "H": { "word": "Hibou", "emoji": "🦉", "phrase": "H comme Hibou" },
+      "I": { "word": "Igloo", "emoji": "🏠", "phrase": "I comme Igloo" },
+      "J": { "word": "Jaguar", "emoji": "🐆", "phrase": "J comme Jaguar" },
+      "K": { "word": "Koala", "emoji": "🐨", "phrase": "K comme Koala" },
+      "L": { "word": "Lion", "emoji": "🦁", "phrase": "L comme Lion" },
+      "M": { "word": "Maison", "emoji": "🏠", "phrase": "M comme Maison" },
+      "N": { "word": "Nuage", "emoji": "☁️", "phrase": "N comme Nuage" },
+      "O": { "word": "Orange", "emoji": "🍊", "phrase": "O comme Orange" },
+      "P": { "word": "Papillon", "emoji": "🦋", "phrase": "P comme Papillon" },
+      "Q": { "word": "Quatre", "emoji": "4️⃣", "phrase": "Q comme Quatre" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R comme Robot" },
+      "S": { "word": "Soleil", "emoji": "☀️", "phrase": "S comme Soleil" },
+      "T": { "word": "Tigre", "emoji": "🐯", "phrase": "T comme Tigre" },
+      "U": { "word": "Univers", "emoji": "🌌", "phrase": "U comme Univers" },
+      "V": { "word": "Voiture", "emoji": "🚗", "phrase": "V comme Voiture" },
+      "W": { "word": "Wagon", "emoji": "🚃", "phrase": "W comme Wagon" },
+      "X": { "word": "Xylophone", "emoji": "🎵", "phrase": "X comme Xylophone" },
+      "Y": { "word": "Yacht", "emoji": "🛥️", "phrase": "Y comme Yacht" },
+      "Z": { "word": "Zèbre", "emoji": "🦓", "phrase": "Z comme Zèbre" }
+    }
   }
 }

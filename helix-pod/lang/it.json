@@ -110,5 +110,32 @@
     "coloring": "Libro da Colorare",
     "pollinations": "Arte IA",
     "ai-coloring": "Colorare IA"
+  },
+  "alphabet": {
+    "title": "L'Alfabeto Italiano",
+    "instructions": "Clicca una lettera!",
+    "letters": {
+      "A": { "word": "Aereo", "emoji": "✈️", "phrase": "A come Aereo" },
+      "B": { "word": "Barca", "emoji": "⛵", "phrase": "B come Barca" },
+      "C": { "word": "Cane", "emoji": "🐕", "phrase": "C come Cane" },
+      "D": { "word": "Drago", "emoji": "🐉", "phrase": "D come Drago" },
+      "E": { "word": "Elefante", "emoji": "🐘", "phrase": "E come Elefante" },
+      "F": { "word": "Fiore", "emoji": "🌸", "phrase": "F come Fiore" },
+      "G": { "word": "Gatto", "emoji": "🐱", "phrase": "G come Gatto" },
+      "H": { "word": "Hotel", "emoji": "🏨", "phrase": "H come Hotel" },
+      "I": { "word": "Isola", "emoji": "🏝️", "phrase": "I come Isola" },
+      "L": { "word": "Leone", "emoji": "🦁", "phrase": "L come Leone" },
+      "M": { "word": "Mela", "emoji": "🍎", "phrase": "M come Mela" },
+      "N": { "word": "Nuvola", "emoji": "☁️", "phrase": "N come Nuvola" },
+      "O": { "word": "Orso", "emoji": "🐻", "phrase": "O come Orso" },
+      "P": { "word": "Palla", "emoji": "⚽", "phrase": "P come Palla" },
+      "Q": { "word": "Quadro", "emoji": "🖼️", "phrase": "Q come Quadro" },
+      "R": { "word": "Rosa", "emoji": "🌹", "phrase": "R come Rosa" },
+      "S": { "word": "Sole", "emoji": "☀️", "phrase": "S come Sole" },
+      "T": { "word": "Tigre", "emoji": "🐯", "phrase": "T come Tigre" },
+      "U": { "word": "Uva", "emoji": "🍇", "phrase": "U come Uva" },
+      "V": { "word": "Vulcano", "emoji": "🌋", "phrase": "V come Vulcano" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z come Zebra" }
+    }
   }
 }
