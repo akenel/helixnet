@@ -721,6 +721,34 @@ class Story:
         .the-end p {{
             font-size: 1.2em;
         }}
+        .hear-story {{
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }}
+        .hear-story h3 {{
+            font-size: 2em;
+            margin-bottom: 15px;
+        }}
+        .voice-btn {{
+            background: white;
+            color: #764ba2;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }}
+        .voice-btn:hover {{
+            transform: scale(1.1);
+        }}
+        #audio-status {{
+            margin-top: 15px;
+            font-size: 1.1em;
+        }}
         .print-btn {{
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
@@ -835,12 +863,72 @@ class Story:
 """
         # Use translated "Made with" or fallback
         made_with = getattr(self, 'made_with', f"Made with ❤️ by {self.author}")
+
+        # Collect story text for TTS
+        story_text_parts = []
+        for scene in self.scenes:
+            story_text_parts.append(scene.get('title', ''))
+            story_text_parts.append(scene.get('description', ''))
+        story_text = '. '.join(story_text_parts)
+        # Escape for JavaScript
+        story_text_js = story_text.replace('\\', '\\\\').replace("'", "\\'").replace('\n', ' ')
+
         html += f"""
         <div class="the-end">
             <h2>THE END</h2>
             <p>{made_with}</p>
         </div>
+
+        <div class="hear-story">
+            <h3>🎤 Hear My Story!</h3>
+            <p>Pick a voice:</p>
+            <button class="voice-btn grandma" onclick="generateAudio('grandma')">👵 Grandma</button>
+            <button class="voice-btn grandpa" onclick="generateAudio('grandpa')">👴 Grandpa</button>
+            <div id="audio-player" style="display:none; margin-top:20px;">
+                <audio id="story-audio" controls style="width:100%;"></audio>
+            </div>
+            <div id="audio-status"></div>
+        </div>
     </div>
+
+    <script>
+        const storyText = '{story_text_js}';
+        const storyLang = '{self.lang}';
+
+        async function generateAudio(voiceType) {{
+            const statusEl = document.getElementById('audio-status');
+            const playerEl = document.getElementById('audio-player');
+            const audioEl = document.getElementById('story-audio');
+
+            statusEl.innerHTML = '<p>🎤 Generating audio... please wait...</p>';
+            playerEl.style.display = 'none';
+
+            try {{
+                const response = await fetch('/tts', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{
+                        text: storyText,
+                        lang: storyLang,
+                        voice: voiceType
+                    }})
+                }});
+
+                const result = await response.json();
+
+                if (result.ok) {{
+                    audioEl.src = result.audio_url;
+                    playerEl.style.display = 'block';
+                    statusEl.innerHTML = '<p>✅ Ready! Press play to listen.</p>';
+                    audioEl.play();
+                }} else {{
+                    statusEl.innerHTML = '<p>❌ ' + result.error + '</p>';
+                }}
+            }} catch (err) {{
+                statusEl.innerHTML = '<p>❌ Could not generate audio: ' + err + '</p>';
+            }}
+        }}
+    </script>
 </body>
 </html>
 """
