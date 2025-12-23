@@ -198,12 +198,9 @@
         <h1 id="title">123 Numbers</h1>
         <p class="subtitle" id="instructions">Click a number!</p>
 
-        <!-- Language selector -->
-        <div class="lang-selector">
-            <button class="lang-btn active" data-lang="en">English</button>
-            <button class="lang-btn" data-lang="de">Deutsch</button>
-            <button class="lang-btn" data-lang="fr">Francais</button>
-            <button class="lang-btn" data-lang="it">Italiano</button>
+        <!-- Smart language flags: Local + English + Adventure -->
+        <div class="lang-selector" id="smartLangSelector">
+            <!-- Populated by JS -->
         </div>
 
         <!-- Number grid -->
@@ -230,6 +227,80 @@
         let numbersData = null;
         let langData = null;
 
+        // Supported languages (subset that have numbers data)
+        const LANGUAGES = {
+            en: '🇬🇧', de: '🇩🇪', fr: '🇫🇷', it: '🇮🇹'
+        };
+
+        // Smart language functions (shared with story page)
+        function detectBrowserLanguage() {
+            const browserLang = navigator.language.split('-')[0];
+            return LANGUAGES[browserLang] ? browserLang : 'en';
+        }
+
+        function getLocalLang() { return detectBrowserLanguage(); }
+        function getAdventureLang() { return localStorage.getItem('teller-adventure-lang') || null; }
+        function getSavedLang() {
+            const saved = localStorage.getItem('teller-lang');
+            return (saved && LANGUAGES[saved]) ? saved : null;
+        }
+
+        function setAdventureLang(lang) {
+            const local = getLocalLang();
+            if (lang !== local && lang !== 'en') {
+                localStorage.setItem('teller-adventure-lang', lang);
+            }
+        }
+
+        function buildSmartLangSelector() {
+            const container = document.getElementById('smartLangSelector');
+            container.innerHTML = '';
+
+            const local = getLocalLang();
+            const adventure = getAdventureLang();
+            const toShow = new Set();
+
+            toShow.add(local);
+            toShow.add('en');
+            if (adventure && LANGUAGES[adventure] && adventure !== local && adventure !== 'en') {
+                toShow.add(adventure);
+            }
+
+            for (const lang of toShow) {
+                const btn = document.createElement('button');
+                btn.className = 'lang-btn' + (lang === currentLang ? ' active' : '');
+                btn.dataset.lang = lang;
+                btn.textContent = LANGUAGES[lang];
+                btn.onclick = () => {
+                    loadLanguage(lang);
+                    setAdventureLang(lang);
+                };
+                container.appendChild(btn);
+            }
+
+            // "More" button if there are more languages
+            if (Object.keys(LANGUAGES).length > toShow.size) {
+                const moreBtn = document.createElement('button');
+                moreBtn.className = 'lang-btn';
+                moreBtn.textContent = '🌐';
+                moreBtn.title = 'More';
+                moreBtn.onclick = () => {
+                    container.innerHTML = '';
+                    for (const [code, flag] of Object.entries(LANGUAGES)) {
+                        const btn = document.createElement('button');
+                        btn.className = 'lang-btn' + (code === currentLang ? ' active' : '');
+                        btn.textContent = flag;
+                        btn.onclick = () => {
+                            loadLanguage(code);
+                            setAdventureLang(code);
+                        };
+                        container.appendChild(btn);
+                    }
+                };
+                container.appendChild(moreBtn);
+            }
+        }
+
         // Load language data
         async function loadLanguage(langCode) {
             try {
@@ -238,17 +309,14 @@
                     langData = await response.json();
                     numbersData = langData.numbers;
                     currentLang = langCode;
+                    localStorage.setItem('teller-lang', langCode);
 
                     // Update UI
                     document.getElementById('title').textContent = '123 ' + (numbersData?.title || 'Numbers');
                     document.getElementById('instructions').textContent = numbersData?.instructions || 'Click a number!';
 
-                    // Update active button
-                    document.querySelectorAll('.lang-btn').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.lang === langCode);
-                    });
-
-                    // Rebuild number grid
+                    // Rebuild smart selector and number grid
+                    buildSmartLangSelector();
                     buildNumberGrid();
 
                     // Reset display
@@ -256,10 +324,13 @@
                         <div class="waiting-emoji">🔢</div>
                         <p class="waiting">Pick a number above!</p>
                     `;
+                    return true;
                 }
             } catch (err) {
                 console.error('Failed to load language:', err);
             }
+            if (langCode !== 'en') return loadLanguage('en');
+            return false;
         }
 
         // Build the number grid
@@ -347,13 +418,9 @@
             }
         }
 
-        // Language button handlers
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => loadLanguage(btn.dataset.lang));
-        });
-
-        // Initialize
-        loadLanguage('en');
+        // Initialize with smart language detection
+        buildSmartLangSelector();
+        loadLanguage(getSavedLang() || getLocalLang());
     </script>
 </body>
 </html>

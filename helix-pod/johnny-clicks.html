@@ -339,12 +339,9 @@
     </div>
 
     <div class="container" style="position:relative;">
-        <div class="lang-selector">
-            <button class="lang-btn" data-lang="en" title="English">🇬🇧</button>
-            <button class="lang-btn" data-lang="th" title="ภาษาไทย">🇹🇭</button>
-            <button class="lang-btn" data-lang="zh" title="中文">🇨🇳</button>
-            <button class="lang-btn" data-lang="es" title="Español">🇪🇸</button>
-            <button class="more-langs" onclick="document.getElementById('langPicker').classList.add('show')" title="More languages">🌐</button>
+        <!-- Smart language flags: Local + English + Adventure -->
+        <div class="lang-selector" id="smartLangSelector">
+            <!-- Populated by JS: shows only relevant languages for Holly -->
         </div>
         <h1 data-i18n="ui.title">Helix Story Teller</h1>
         <p class="subtitle" data-i18n="ui.subtitle">Click pictures to make YOUR story!</p>
@@ -1159,23 +1156,95 @@ python3 helix-pod/johnny-story.py --load /tmp/johnny-story.json --art --mode col
         }
 
         function detectBrowserLanguage() {
-            const saved = localStorage.getItem('teller-lang');
-            if (saved && LANGUAGES[saved]) return saved;
-
             const browserLang = navigator.language.split('-')[0];
             return LANGUAGES[browserLang] ? browserLang : 'en';
         }
 
-        // Language button click handlers
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => loadLanguage(btn.dataset.lang));
-        });
+        function getLocalLang() {
+            return detectBrowserLanguage();
+        }
+
+        function getAdventureLang() {
+            return localStorage.getItem('teller-adventure-lang') || null;
+        }
+
+        function setAdventureLang(lang) {
+            const local = getLocalLang();
+            // Only save as adventure if it's not local and not English
+            if (lang !== local && lang !== 'en') {
+                localStorage.setItem('teller-adventure-lang', lang);
+            }
+        }
+
+        function getSavedLang() {
+            const saved = localStorage.getItem('teller-lang');
+            return (saved && LANGUAGES[saved]) ? saved : null;
+        }
+
+        // Build smart language selector: Local + English + Adventure
+        function buildSmartLangSelector() {
+            const container = document.getElementById('smartLangSelector');
+            container.innerHTML = '';
+
+            const local = getLocalLang();
+            const adventure = getAdventureLang();
+
+            // Languages to show (max 3 + more button)
+            const toShow = new Set();
+
+            // 1. Always add local language
+            toShow.add(local);
+
+            // 2. Always add English (the passport)
+            toShow.add('en');
+
+            // 3. Add adventure language if exists and different
+            if (adventure && adventure !== local && adventure !== 'en') {
+                toShow.add(adventure);
+            }
+
+            // Create buttons
+            for (const lang of toShow) {
+                const btn = document.createElement('button');
+                btn.className = 'lang-btn';
+                btn.dataset.lang = lang;
+                btn.textContent = LANGUAGES[lang];
+                btn.title = lang.toUpperCase();
+                btn.onclick = () => {
+                    loadLanguage(lang);
+                    setAdventureLang(lang);
+                    buildSmartLangSelector();
+                };
+                if (lang === currentLang) btn.classList.add('active');
+                container.appendChild(btn);
+            }
+
+            // Add "more" button
+            const moreBtn = document.createElement('button');
+            moreBtn.className = 'more-langs';
+            moreBtn.textContent = '🌐';
+            moreBtn.title = 'More languages';
+            moreBtn.onclick = () => document.getElementById('langPicker').classList.add('show');
+            container.appendChild(moreBtn);
+        }
+
+        // Override loadLanguage to update smart selector
+        const originalLoadLanguage = loadLanguage;
+        loadLanguage = async function(langCode) {
+            const result = await originalLoadLanguage(langCode);
+            if (result) {
+                setAdventureLang(langCode);
+                buildSmartLangSelector();
+            }
+            return result;
+        };
 
         // Initialize
         initProgress();
         checkServerHealth();
         buildLangGrid();
-        loadLanguage(detectBrowserLanguage());
+        buildSmartLangSelector();
+        loadLanguage(getSavedLang() || getLocalLang());
     </script>
 </body>
 </html>
