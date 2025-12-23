@@ -215,6 +215,55 @@
             color: #ccc;
         }
 
+        /* Badges Section */
+        .badges-section {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .badges-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .badge {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            background: #e0e0e0;
+            opacity: 0.4;
+            transition: all 0.3s;
+            position: relative;
+            cursor: help;
+        }
+        .badge.earned {
+            opacity: 1;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            box-shadow: 0 5px 20px rgba(255, 170, 0, 0.4);
+            animation: badgePop 0.5s ease;
+        }
+        .badge-name {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.35em;
+            white-space: nowrap;
+            color: #666;
+        }
+        @keyframes badgePop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
         /* Navigation */
         .nav-links {
             text-align: center;
@@ -252,6 +301,14 @@
             <!-- Filled by JS -->
         </div>
 
+        <!-- Badges Section -->
+        <div class="badges-section">
+            <div class="section-title">🎖️ My Badges</div>
+            <div class="badges-grid" id="badgesGrid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
         <!-- Stories Section -->
         <div class="section-card">
             <div class="section-title">📚 My Stories</div>
@@ -285,15 +342,78 @@
     </div>
 
     <script>
-        // Language data
+        // Language data (top languages - we support 65 total!)
         const LANGUAGES = {
-            en: { flag: '🇬🇧', name: 'English', letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('') },
-            de: { flag: '🇩🇪', name: 'Deutsch', letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split('').concat(['ß']) },
-            fr: { flag: '🇫🇷', name: 'Français', letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('') },
-            it: { flag: '🇮🇹', name: 'Italiano', letters: 'ABCDEFGHILMNOPQRSTUVZ'.split('') }
+            en: { flag: '🇬🇧', name: 'English', letters: 26 },
+            de: { flag: '🇩🇪', name: 'Deutsch', letters: 30 },
+            fr: { flag: '🇫🇷', name: 'Français', letters: 26 },
+            it: { flag: '🇮🇹', name: 'Italiano', letters: 21 },
+            es: { flag: '🇪🇸', name: 'Español', letters: 27 },
+            pt: { flag: '🇵🇹', name: 'Português', letters: 26 },
+            nl: { flag: '🇳🇱', name: 'Nederlands', letters: 26 },
+            sv: { flag: '🇸🇪', name: 'Svenska', letters: 29 },
+            da: { flag: '🇩🇰', name: 'Dansk', letters: 29 },
+            no: { flag: '🇳🇴', name: 'Norsk', letters: 29 },
+            fi: { flag: '🇫🇮', name: 'Suomi', letters: 29 },
+            pl: { flag: '🇵🇱', name: 'Polski', letters: 32 },
+            cs: { flag: '🇨🇿', name: 'Čeština', letters: 34 },
+            ro: { flag: '🇷🇴', name: 'Română', letters: 31 },
+            hr: { flag: '🇭🇷', name: 'Hrvatski', letters: 30 },
+            hu: { flag: '🇭🇺', name: 'Magyar', letters: 40 },
+            sk: { flag: '🇸🇰', name: 'Slovenčina', letters: 36 },
+            sl: { flag: '🇸🇮', name: 'Slovenščina', letters: 25 },
+            tr: { flag: '🇹🇷', name: 'Türkçe', letters: 29 },
+            id: { flag: '🇮🇩', name: 'Bahasa Indonesia', letters: 26 },
+            ms: { flag: '🇲🇾', name: 'Bahasa Melayu', letters: 26 },
+            sw: { flag: '🇹🇿', name: 'Kiswahili', letters: 24 },
+            tl: { flag: '🇵🇭', name: 'Tagalog', letters: 28 },
+            vi: { flag: '🇻🇳', name: 'Tiếng Việt', letters: 29 },
+            ru: { flag: '🇷🇺', name: 'Русский', letters: 33 },
+            uk: { flag: '🇺🇦', name: 'Українська', letters: 33 },
+            bg: { flag: '🇧🇬', name: 'Български', letters: 30 },
+            sr: { flag: '🇷🇸', name: 'Српски', letters: 30 },
+            el: { flag: '🇬🇷', name: 'Ελληνικά', letters: 24 },
+            hi: { flag: '🇮🇳', name: 'हिन्दी', letters: 46 },
+            bn: { flag: '🇧🇩', name: 'বাংলা', letters: 50 },
+            ta: { flag: '🇮🇳', name: 'தமிழ்', letters: 18 },
+            te: { flag: '🇮🇳', name: 'తెలుగు', letters: 18 },
+            gu: { flag: '🇮🇳', name: 'ગુજરાતી', letters: 34 },
+            ar: { flag: '🇸🇦', name: 'العربية', letters: 28 },
+            he: { flag: '🇮🇱', name: 'עברית', letters: 22 },
+            ja: { flag: '🇯🇵', name: '日本語', letters: 46 },
+            ko: { flag: '🇰🇷', name: '한국어', letters: 24 },
+            th: { flag: '🇹🇭', name: 'ไทย', letters: 44 },
+            zh: { flag: '🇨🇳', name: '中文', letters: 26 },
+            fa: { flag: '🇮🇷', name: 'فارسی', letters: 32 },
+            ur: { flag: '🇵🇰', name: 'اردو', letters: 39 },
+            ka: { flag: '🇬🇪', name: 'ქართული', letters: 33 },
+            hy: { flag: '🇦🇲', name: 'Հայերdelays', letters: 38 },
+            am: { flag: '🇪🇹', name: 'አማርኛ', letters: 31 },
+            ha: { flag: '🇳🇬', name: 'Hausa', letters: 25 },
+            yo: { flag: '🇳🇬', name: 'Yorùbá', letters: 25 },
+            ig: { flag: '🇳🇬', name: 'Igbo', letters: 36 },
+            zu: { flag: '🇿🇦', name: 'isiZulu', letters: 26 },
+            si: { flag: '🇱🇰', name: 'සිංහල', letters: 27 },
+            km: { flag: '🇰🇭', name: 'ភាសាខ្មែរ', letters: 32 }
         };
 
         const AVATAR_EMOJIS = ['👧', '👦', '🧒', '👶', '🦸', '🧙', '🐯', '🦄', '🐉', '🤖'];
+
+        // Badge definitions
+        const BADGES = [
+            { id: 'first_story', emoji: '📖', name: 'First Story', check: (s) => s.stories >= 1 },
+            { id: 'storyteller', emoji: '📚', name: 'Storyteller', check: (s) => s.stories >= 5 },
+            { id: 'author', emoji: '✍️', name: 'Author', check: (s) => s.stories >= 10 },
+            { id: 'abc_start', emoji: '🅰️', name: 'ABC Start', check: (s) => s.letters >= 1 },
+            { id: 'abc_10', emoji: '🔤', name: 'Letter Fan', check: (s) => s.letters >= 10 },
+            { id: 'abc_master', emoji: '🏅', name: 'ABC Master', check: (s) => s.letters >= 26 },
+            { id: 'num_start', emoji: '1️⃣', name: 'Counter', check: (s) => s.numbers >= 1 },
+            { id: 'num_5', emoji: '🔢', name: 'Math Kid', check: (s) => s.numbers >= 5 },
+            { id: 'num_10', emoji: '🎯', name: 'Number Pro', check: (s) => s.numbers >= 10 },
+            { id: 'polyglot', emoji: '🌍', name: 'Polyglot', check: (s) => s.languages >= 3 },
+            { id: 'explorer', emoji: '🗺️', name: 'Explorer', check: (s) => s.languages >= 5 },
+            { id: 'champion', emoji: '🏆', name: 'Champion', check: (s) => s.stories >= 5 && s.letters >= 20 && s.numbers >= 10 }
+        ];
 
         // localStorage helpers
         function getProfile() {
@@ -338,7 +458,8 @@
             Object.keys(alphaProgress).forEach(l => langs.add(l));
             Object.keys(numProgress).forEach(l => langs.add(l));
 
-            return Array.from(langs).filter(l => LANGUAGES[l]);
+            // Return all languages (even if not in LANGUAGES list - we support 65!)
+            return Array.from(langs);
         }
 
         // Render profile
@@ -482,23 +603,21 @@
             let html = '';
             for (const lang of exploredLangs) {
                 const langData = LANGUAGES[lang];
-                if (!langData) continue;
-
                 const learned = progress[lang] || [];
+                const learnedCount = Array.isArray(learned) ? learned.length : 0;
+                const totalLetters = langData ? langData.letters : 26;
+                const flag = langData ? langData.flag : '🌍';
+                const name = langData ? langData.name : lang.toUpperCase();
 
                 html += `
                     <div class="progress-lang">
                         <div class="progress-lang-header">
-                            <span>${langData.flag}</span>
-                            <span>${langData.name}</span>
-                            <span style="color:#11998e;">(${learned.length}/${langData.letters.length})</span>
+                            <span>${flag}</span>
+                            <span>${name}</span>
+                            <span style="color:#11998e;">(${learnedCount}/${totalLetters})</span>
                         </div>
-                        <div class="letter-grid">
-                            ${langData.letters.map(letter => `
-                                <div class="letter-box ${learned.includes(letter) ? 'learned' : 'not-learned'}">
-                                    ${letter}
-                                </div>
-                            `).join('')}
+                        <div style="background:#eee;border-radius:10px;height:20px;overflow:hidden;">
+                            <div style="background:linear-gradient(90deg,#11998e,#38ef7d);height:100%;width:${Math.min(100, (learnedCount/totalLetters)*100)}%;transition:width 0.5s;"></div>
                         </div>
                     </div>
                 `;
@@ -522,16 +641,17 @@
             let html = '';
             for (const lang of exploredLangs) {
                 const langData = LANGUAGES[lang];
-                if (!langData) continue;
-
                 const learned = progress[lang] || [];
+                const learnedCount = Array.isArray(learned) ? learned.length : 0;
+                const flag = langData ? langData.flag : '🌍';
+                const name = langData ? langData.name : lang.toUpperCase();
 
                 html += `
                     <div class="progress-lang">
                         <div class="progress-lang-header">
-                            <span>${langData.flag}</span>
-                            <span>${langData.name}</span>
-                            <span style="color:#f5576c;">(${learned.length}/10)</span>
+                            <span>${flag}</span>
+                            <span>${name}</span>
+                            <span style="color:#f5576c;">(${learnedCount}/10)</span>
                         </div>
                         <div class="number-grid">
                             ${numbers.map(num => `
@@ -547,9 +667,46 @@
             container.innerHTML = html || `<p style="color:#999;">No numbers progress yet.</p>`;
         }
 
+        // Render badges
+        function renderBadges() {
+            const container = document.getElementById('badgesGrid');
+            const stories = getStories();
+            const alphaProgress = getAlphabetProgress();
+            const numProgress = getNumbersProgress();
+            const exploredLangs = getExploredLanguages();
+
+            // Calculate totals
+            let totalLetters = 0;
+            let totalNumbers = 0;
+            Object.values(alphaProgress).forEach(arr => {
+                if (Array.isArray(arr)) totalLetters += arr.length;
+            });
+            Object.values(numProgress).forEach(arr => {
+                if (Array.isArray(arr)) totalNumbers += arr.length;
+            });
+
+            const stats = {
+                stories: stories.length,
+                letters: totalLetters,
+                numbers: totalNumbers,
+                languages: exploredLangs.length
+            };
+
+            container.innerHTML = BADGES.map(badge => {
+                const earned = badge.check(stats);
+                return `
+                    <div class="badge ${earned ? 'earned' : ''}" title="${badge.name}">
+                        ${badge.emoji}
+                        <span class="badge-name">${badge.name}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // Initialize
         renderProfile();
         renderStats();
+        renderBadges();
         renderStories();
         renderAlphabetProgress();
         renderNumbersProgress();
