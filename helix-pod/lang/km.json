@@ -8,5 +8,72 @@
   "obstacles": { "giant": { "label": "យក្ស", "value": "យក្សខឹង" }, "monster": { "label": "បិសាច", "value": "បិសាចគួរឱ្យខ្លាច" }, "mountain": { "label": "ភ្នំ", "value": "ភ្នំធំ" }, "door": { "label": "ទ្វារវេទមន្ត", "value": "ទ្វារវេទមន្តចាក់សោ" }, "storm": { "label": "ព្យុះ", "value": "ព្យុះកាចៗ" }, "forest": { "label": "ព្រៃ", "value": "ព្រៃងងឹតជ្រៅ" }, "wizard": { "label": "អ្នកវេទមន្ត", "value": "អ្នកវេទមន្តឆ្លាត" }, "maze": { "label": "ផ្លូវច្រើន", "value": "ផ្លូវច្រើនច្រឡំ" } },
   "solutions": { "speed": { "label": "ល្បឿន", "value": "អំណាចល្បឿនស៊ុបភើ" }, "friend": { "label": "មិត្តភក្តិ", "value": "មិត្តភក្តិជួយ" }, "trick": { "label": "ល្បិច", "value": "ល្បិចឆ្លាត" }, "magic": { "label": "វេទមន្ត", "value": "អំណាចវេទមន្ត" }, "brave": { "label": "ក្លាហាន", "value": "ក្លាហានខ្លាំង" }, "kindness": { "label": "សេចក្តីល្អ", "value": "សេចក្តីល្អនិងស្នេហា" }, "teamwork": { "label": "ការងារជាក្រុម", "value": "ការងារជាក្រុមជាមួយគ្រប់គ្នា" }, "nevergiveup": { "label": "កុំបោះបង់", "value": "កុំបោះបង់ជាដាច់ខាត" } },
   "endings": { "party": { "label": "ពិធីជប់លៀង", "value": "គ្រប់គ្នារាំក្នុងពិធីជប់លៀងធំ" }, "sunset": { "label": "ព្រះអាទិត្យលិច", "value": "ហោះទៅព្រះអាទិត្យលិចជាមួយគ្នា" }, "castle": { "label": "វាំង", "value": "រស់នៅក្នុងវាំងស្រស់ស្អាត" }, "hugging": { "label": "ឱបគ្នា", "value": "មិត្តភក្តិទាំងអស់ឱបគ្នានិងសើច" }, "cake": { "label": "នំ", "value": "ញ៉ាំនំនិងការ៉េម" }, "medal": { "label": "មេដាយ", "value": "ទទួលមេដាយមាស" }, "adventure": { "label": "ផ្សងព្រេង", "value": "ទៅផ្សងព្រេងថ្មី" }, "sleep": { "label": "ដេក", "value": "ដេកលើគ្រែស្រួល" } },
-  "artModes": { "coloring": "សៀវភៅផាត់ពណ៌", "pollinations": "សិល្បៈ AI", "ai-coloring": "ផាត់ពណ៌ AI" }
+  "artModes": { "coloring": "សៀវភៅផាត់ពណ៌", "pollinations": "សិល្បៈ AI", "ai-coloring": "ផាត់ពណ៌ AI" },
+  "scenes": {
+    "meetTitle": "ជួប {hero}",
+    "meetDesc": "នេះគឺ {hero}។ {hero} គឺជាវីរបុរសរបស់យើង!",
+    "dreamTitle": "សុបិន",
+    "dreamDesc": "{hero} ចង់បាន {want}។ ច្រើនជាងគេ!",
+    "problemTitle": "អូ!",
+    "problemDesc": "ប៉ុន្តែមានបញ្ហា! {obstacle} នៅក្នុងផ្លូវ!",
+    "planTitle": "គម្រោងឆ្លាត",
+    "planDesc": "{hero} មានគំនិត! ដោយប្រើ {solution}!",
+    "endTitle": "ចប់",
+    "endDesc": "ហើយគេរស់នៅដោយសប្បាយ! {ending}!",
+    "madeWith": "បង្កើតដោយ {author} ជាមួយ ❤️"
+  },
+  "alphabet": {
+    "title": "អក្សរខ្មែរ",
+    "instructions": "ចុចលើអក្សរ!",
+    "letters": {
+      "ក": { "word": "កង់", "emoji": "🛞", "phrase": "ក កង់" },
+      "ខ": { "word": "ខ្លា", "emoji": "🐯", "phrase": "ខ ខ្លា" },
+      "គ": { "word": "គោ", "emoji": "🐄", "phrase": "គ គោ" },
+      "ឃ": { "word": "ឃ្មុំ", "emoji": "🐝", "phrase": "ឃ ឃ្មុំ" },
+      "ង": { "word": "ងាវ", "emoji": "🐍", "phrase": "ង ងាវ" },
+      "ច": { "word": "ចាន", "emoji": "🍽️", "phrase": "ច ចាន" },
+      "ឆ": { "word": "ឆ្កែ", "emoji": "🐕", "phrase": "ឆ ឆ្កែ" },
+      "ជ": { "word": "ជ្រូក", "emoji": "🐷", "phrase": "ជ ជ្រូក" },
+      "ឈ": { "word": "ឈូក", "emoji": "🪷", "phrase": "ឈ ឈូក" },
+      "ញ": { "word": "ញ៉ាំ", "emoji": "😋", "phrase": "ញ ញ៉ាំ" },
+      "ដ": { "word": "ដំរី", "emoji": "🐘", "phrase": "ដ ដំរី" },
+      "ឋ": { "word": "ឋាន", "emoji": "🏛️", "phrase": "ឋ ឋាន" },
+      "ឌ": { "word": "ឌុប", "emoji": "🔔", "phrase": "ឌ ឌុប" },
+      "ឍ": { "word": "ឍើរ", "emoji": "🚶", "phrase": "ឍ ឍើរ" },
+      "ណ": { "word": "ណា", "emoji": "📍", "phrase": "ណ ណា" },
+      "ត": { "word": "តារា", "emoji": "⭐", "phrase": "ត តារា" },
+      "ថ": { "word": "ថ្ម", "emoji": "🪨", "phrase": "ថ ថ្ម" },
+      "ទ": { "word": "ទឹក", "emoji": "💧", "phrase": "ទ ទឹក" },
+      "ធ": { "word": "ធំ", "emoji": "🐘", "phrase": "ធ ធំ" },
+      "ន": { "word": "នំ", "emoji": "🍰", "phrase": "ន នំ" },
+      "ប": { "word": "បក្សី", "emoji": "🐦", "phrase": "ប បក្សី" },
+      "ផ": { "word": "ផ្កា", "emoji": "🌸", "phrase": "ផ ផ្កា" },
+      "ព": { "word": "ពពក", "emoji": "☁️", "phrase": "ព ពពក" },
+      "ភ": { "word": "ភ្នំ", "emoji": "⛰️", "phrase": "ភ ភ្នំ" },
+      "ម": { "word": "មាន់", "emoji": "🐓", "phrase": "ម មាន់" },
+      "យ": { "word": "យន្តហោះ", "emoji": "✈️", "phrase": "យ យន្តហោះ" },
+      "រ": { "word": "រថយន្ត", "emoji": "🚗", "phrase": "រ រថយន្ត" },
+      "ល": { "word": "ល្អ", "emoji": "👍", "phrase": "ល ល្អ" },
+      "វ": { "word": "វារី", "emoji": "🌊", "phrase": "វ វារី" },
+      "ស": { "word": "សេះ", "emoji": "🐴", "phrase": "ស សេះ" },
+      "ហ": { "word": "ហង្ស", "emoji": "🦢", "phrase": "ហ ហង្ស" },
+      "អ": { "word": "អារ្យ", "emoji": "😊", "phrase": "អ អារ្យ" }
+    }
+  },
+  "numbers": {
+    "title": "លេខ",
+    "instructions": "ចុចលើលេខ!",
+    "items": {
+      "1": { "word": "មួយ", "emoji": "⭐", "phrase": "ផ្កាយមួយ" },
+      "2": { "word": "ពីរ", "emoji": "⭐⭐", "phrase": "ផ្កាយពីរ" },
+      "3": { "word": "បី", "emoji": "⭐⭐⭐", "phrase": "ផ្កាយបី" },
+      "4": { "word": "បួន", "emoji": "🐉🐉🐉🐉", "phrase": "នាគបួន" },
+      "5": { "word": "ប្រាំ", "emoji": "🖐️", "phrase": "ម្រាមដៃប្រាំ" },
+      "6": { "word": "ប្រាំមួយ", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "ប៉ោមប្រាំមួយ" },
+      "7": { "word": "ប្រាំពីរ", "emoji": "🌈", "phrase": "ពណ៌ប្រាំពីរ" },
+      "8": { "word": "ប្រាំបី", "emoji": "🐙", "phrase": "ជើងប្រាំបី" },
+      "9": { "word": "ប្រាំបួន", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "បាឡុងប្រាំបួន" },
+      "10": { "word": "ដប់", "emoji": "🖐️🖐️", "phrase": "ម្រាមដៃដប់" }
+    }
+  }
 }
