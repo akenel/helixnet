@@ -66,6 +66,8 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
         '/stories/',  # Generated story books
         '/generate',  # API endpoint
         '/lang/',     # i18n language files
+        '/tts',       # Text-to-speech endpoint
+        '/audio/',    # Generated audio files
     )
 
     def __init__(self, *args, **kwargs):
@@ -114,6 +116,8 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
         """Handle story generation request."""
         if self.path == '/generate':
             self.handle_generate()
+        elif self.path == '/tts':
+            self.handle_tts()
         else:
             self.send_error(404, 'Not Found')
 
@@ -208,6 +212,67 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
 
         except Exception as e:
             print(f"   ❌ Error: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'ok': False,
+                'error': str(e)
+            }).encode())
+
+    def handle_tts(self):
+        """Generate audio from story text."""
+        try:
+            # Read the request body
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode())
+
+            text = data.get('text', '')
+            lang = data.get('lang', 'en')
+            voice_type = data.get('voice', 'grandma')  # grandma or grandpa
+
+            print(f"\n🎤 Generating audio: {lang} ({voice_type})")
+            print(f"   Text: {text[:50]}...")
+
+            # Import TTS module
+            from tts_voices import generate_audio
+
+            # Generate audio file
+            audio_dir = Path(__file__).parent / "audio"
+            audio_dir.mkdir(exist_ok=True)
+
+            # Create unique filename
+            import hashlib
+            text_hash = hashlib.md5(text.encode()).hexdigest()[:8]
+            filename = f"story-{lang}-{voice_type}-{text_hash}.mp3"
+            output_path = audio_dir / filename
+
+            # Generate if not cached
+            if not output_path.exists():
+                generate_audio(text, lang=lang, voice_type=voice_type, output_path=str(output_path))
+
+            # Return URL to audio file
+            audio_url = f"/audio/{filename}"
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'ok': True,
+                'audio_url': audio_url,
+                'lang': lang,
+                'voice': voice_type
+            }).encode())
+
+            print(f"   ✅ Audio ready: {audio_url}\n")
+
+        except Exception as e:
+            print(f"   ❌ TTS Error: {e}")
+            import traceback
+            traceback.print_exc()
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
