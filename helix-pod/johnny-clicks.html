@@ -937,7 +937,12 @@
                     let html = `<div style="text-align:center;">
                         <h2 style="color:#11998e;">🎉 ${i18n.ui?.yourBookReady || 'Your Book is Ready!'}</h2>
                         <p>${result.message}</p>
-                        ${bookUrl ? `<a href="${bookUrl}" target="_blank" style="display:inline-block;background:#667eea;color:white;padding:15px 30px;border-radius:20px;text-decoration:none;font-size:1.2em;margin:10px 0;">📖 Open My Book!</a>` : ''}
+                        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin:20px 0;">
+                            ${bookUrl ? `<a href="${bookUrl}" target="_blank" style="display:inline-block;background:#667eea;color:white;padding:15px 30px;border-radius:20px;text-decoration:none;font-size:1.2em;">📖 Open My Book!</a>` : ''}
+                            <button onclick="showDashboard()" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);color:white;padding:15px 30px;border-radius:20px;border:none;font-size:1.2em;cursor:pointer;">📚 My Stories</button>
+                            <a href="/team-board.html" style="display:inline-block;background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);color:white;padding:15px 30px;border-radius:20px;text-decoration:none;font-size:1.2em;">🏆 My Progress</a>
+                        </div>
+                        <p style="margin-top:15px;font-size:0.9em;color:#888;">💚 Powered by <a href="https://pollinations.ai" target="_blank" style="color:#11998e;">Pollinations.ai</a> - free AI art for everyone!</p>
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:20px;">`;
 
