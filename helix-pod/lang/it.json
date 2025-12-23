@@ -43,6 +43,19 @@
     "theySavedTheDay": "hanno salvato la giornata!",
     "theEnd": "FINE:"
   },
+  "scenes": {
+    "meetTitle": "Ecco {hero}",
+    "meetDesc": "Questo è {hero}. {hero} è il nostro eroe!",
+    "dreamTitle": "Il Sogno",
+    "dreamDesc": "{hero} vuole {want}. Più di tutto!",
+    "problemTitle": "Oh No!",
+    "problemDesc": "Ma c'è un problema! {obstacle} blocca la strada!",
+    "planTitle": "Il Piano Furbo",
+    "planDesc": "{hero} ha un'idea! Usando {solution}!",
+    "endTitle": "LA FINE",
+    "endDesc": "E vissero tutti felici! {ending}!",
+    "madeWith": "Fatto con ❤️ da {author}"
+  },
   "heroes": {
     "dragon": { "label": "Drago", "value": "un drago amichevole" },
     "robot": { "label": "Robot", "value": "un robot coraggioso" },

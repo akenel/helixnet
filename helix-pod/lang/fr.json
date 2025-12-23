@@ -43,6 +43,19 @@
     "theySavedTheDay": "ils ont sauvé la journée!",
     "theEnd": "FIN:"
   },
+  "scenes": {
+    "meetTitle": "Voici {hero}",
+    "meetDesc": "C'est {hero}. {hero} est notre héros!",
+    "dreamTitle": "Le Rêve",
+    "dreamDesc": "{hero} veut {want}. Plus que tout!",
+    "problemTitle": "Oh Non!",
+    "problemDesc": "Mais il y a un problème! {obstacle} bloque le chemin!",
+    "planTitle": "Le Plan Malin",
+    "planDesc": "{hero} a une idée! En utilisant {solution}!",
+    "endTitle": "LA FIN",
+    "endDesc": "Et ils vécurent heureux! {ending}!",
+    "madeWith": "Fait avec ❤️ par {author}"
+  },
   "heroes": {
     "dragon": { "label": "Dragon", "value": "un dragon gentil" },
     "robot": { "label": "Robot", "value": "un robot courageux" },
