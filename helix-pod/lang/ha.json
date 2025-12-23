@@ -1,0 +1,72 @@
+{
+  "meta": { "language": "Hausa", "code": "ha", "flag": "🇳🇬", "direction": "ltr" },
+  "ui": { "title": "Sihirin Labari", "subtitle": "Danna hotuna don ƙirƙirar labarinku!", "makeBook": "Yi littafina!", "tryAgain": "Sake gwadawa", "done": "An gama!", "serverReady": "Sabar tana shirye", "serverConnecting": "Ana haɗawa...", "serverNotRunning": "Sabar ba ta aiki!", "startServerFirst": "Fara sabar da farko:", "thenClickAgain": "Sa'an nan sake danna maɓallin!", "generating": "Ana yin littafinku...", "yourBookReady": "Littafinku ya shirya!", "openingNewWindow": "Ana buɗe sabon taga...", "savedTo": "An ajiye:", "pickArtStyle": "Zaɓi salon zane:", "allFree": "Duk kyauta! Ba a buƙatar asusu!", "whatsYourName": "Menene sunanka?", "letsGo": "Mu tafi!", "myStories": "Labaraina", "seeMyStory": "Duba labarina!" },
+  "steps": { "hero": "Wanene jarumi?", "want": "Me suke so?", "obstacle": "To! Me ke hanyar?", "solution": "Yaya suka ci nasara?", "ending": "Ƙarshe kamar haka..." },
+  "story": { "onceUponATime": "A da da dauri", "theyWanted": "Suna so", "butOhNo": "Amma to!", "inTheWay": "yana cikin hanya!", "using": "ta amfani da", "theySavedTheDay": "Sun ceci ranar!", "theEnd": "Ƙarshe:" },
+  "heroes": { "dragon": { "label": "Dodanniya", "value": "Dodanniya mai kyau" }, "robot": { "label": "Mutum-mutumi", "value": "Mutum-mutumi mai jaruntaka" }, "unicorn": { "label": "Doki mai ƙaho", "value": "Doki mai sihiri" }, "cat": { "label": "Kyanwa", "value": "Babbar kyanwa" }, "dog": { "label": "Kare", "value": "Kare jarumi" }, "superhero": { "label": "Babban jarumi", "value": "Ƙaramin babban jarumi" }, "tiger": { "label": "Damisa", "value": "Damisa mai ƙarfi" }, "space": { "label": "Mai binciken sararin samaniya", "value": "Mai binciken sararin samaniya" } },
+  "wants": { "princess": { "label": "Ceci gimbiya", "value": "Ceci gimbiya daga hasumiya" }, "treasure": { "label": "Nemi dukiya", "value": "Nemo dukiya ɓoyayye" }, "race": { "label": "Ci tsere", "value": "Ci babban tsere" }, "home": { "label": "Koma gida", "value": "Koma gida lafiya" }, "friend": { "label": "Sami aboki", "value": "Sami sabon aboki" }, "fly": { "label": "Koyi tashi", "value": "Koyi tashi sama" }, "wizard": { "label": "Zama mai sihiri", "value": "Zama mai sihiri" }, "ocean": { "label": "Binciki teku", "value": "Binciki teku" } },
+  "obstacles": { "giant": { "label": "Kato", "value": "Kato mai fushi" }, "monster": { "label": "Dodo", "value": "Dodo mai ban tsoro" }, "mountain": { "label": "Dutse", "value": "Babban dutse" }, "door": { "label": "Ƙofar sihiri", "value": "Ƙofar sihiri da aka kulle" }, "storm": { "label": "Hadari", "value": "Hadari mai tsanani" }, "forest": { "label": "Daji", "value": "Daji mai duhu" }, "wizard": { "label": "Mai sihiri", "value": "Mai sihiri mai wayo" }, "maze": { "label": "Hanyar rikitarwa", "value": "Hanyar rikitarwa" } },
+  "solutions": { "speed": { "label": "Sauri", "value": "Ƙarfin sauri" }, "friend": { "label": "Aboki", "value": "Aboki mai taimako" }, "trick": { "label": "Dabara", "value": "Dabara mai wayo" }, "magic": { "label": "Sihiri", "value": "Ƙarfin sihiri" }, "brave": { "label": "Jaruntaka", "value": "Zama mai jaruntaka" }, "kindness": { "label": "Alheri", "value": "Alheri da ƙauna" }, "teamwork": { "label": "Aikin ƙungiya", "value": "Aikin ƙungiya tare da kowa" }, "nevergiveup": { "label": "Kada ka daina", "value": "Kada ka taɓa dainawa" } },
+  "endings": { "party": { "label": "Biki", "value": "Kowa yana rawa a babban biki" }, "sunset": { "label": "Faɗuwar rana", "value": "Suna tashi zuwa faɗuwar rana tare" }, "castle": { "label": "Fada", "value": "Suna zama a kyakkyawan fada" }, "hugging": { "label": "Runguma", "value": "Duk abokai suna runguma suna dariya" }, "cake": { "label": "Kek", "value": "Suna cin kek da ice cream" }, "medal": { "label": "Lambar yabo", "value": "Suna samun lambar zinari" }, "adventure": { "label": "Kasada", "value": "Suna zuwa sabuwar kasada" }, "sleep": { "label": "Barci", "value": "Suna barci a gado mai daɗi" } },
+  "artModes": { "coloring": "Littafin zane", "pollinations": "Zanen AI", "ai-coloring": "Zane na AI" },
+  "scenes": {
+    "meetTitle": "Haɗu da {hero}",
+    "meetDesc": "Wannan shi ne {hero}. {hero} jaruminmu ne!",
+    "dreamTitle": "Mafarki",
+    "dreamDesc": "{hero} yana so {want}. Fiye da kome!",
+    "problemTitle": "To!",
+    "problemDesc": "Amma akwai matsala! {obstacle} yana cikin hanya!",
+    "planTitle": "Shiri mai wayo",
+    "planDesc": "{hero} yana da ra'ayi! Ta amfani da {solution}!",
+    "endTitle": "Ƙarshe",
+    "endDesc": "Kuma suka rayu cikin farin ciki! {ending}!",
+    "madeWith": "{author} ya yi shi da ❤️"
+  },
+  "alphabet": {
+    "title": "Haruffan Hausa",
+    "instructions": "Danna harafi!",
+    "letters": {
+      "A": { "word": "Akuya", "emoji": "🐐", "phrase": "A Akuya" },
+      "B": { "word": "Biri", "emoji": "🐒", "phrase": "B Biri" },
+      "Ɓ": { "word": "Ɓera", "emoji": "🐭", "phrase": "Ɓ Ɓera" },
+      "C": { "word": "Ciki", "emoji": "🤰", "phrase": "C Ciki" },
+      "D": { "word": "Doki", "emoji": "🐴", "phrase": "D Doki" },
+      "Ɗ": { "word": "Ɗan Adam", "emoji": "👤", "phrase": "Ɗ Ɗan Adam" },
+      "E": { "word": "Emu", "emoji": "🦃", "phrase": "E Emu" },
+      "F": { "word": "Fari", "emoji": "⚪", "phrase": "F Fari" },
+      "G": { "word": "Gida", "emoji": "🏠", "phrase": "G Gida" },
+      "H": { "word": "Hula", "emoji": "🧢", "phrase": "H Hula" },
+      "I": { "word": "Itace", "emoji": "🌳", "phrase": "I Itace" },
+      "J": { "word": "Jaki", "emoji": "🫏", "phrase": "J Jaki" },
+      "K": { "word": "Kare", "emoji": "🐕", "phrase": "K Kare" },
+      "Ƙ": { "word": "Ƙaho", "emoji": "📯", "phrase": "Ƙ Ƙaho" },
+      "L": { "word": "Lemo", "emoji": "🍋", "phrase": "L Lemo" },
+      "M": { "word": "Maciji", "emoji": "🐍", "phrase": "M Maciji" },
+      "N": { "word": "Nama", "emoji": "🥩", "phrase": "N Nama" },
+      "O": { "word": "Oranye", "emoji": "🍊", "phrase": "O Oranye" },
+      "R": { "word": "Rana", "emoji": "☀️", "phrase": "R Rana" },
+      "S": { "word": "Sama", "emoji": "🌤️", "phrase": "S Sama" },
+      "T": { "word": "Tauraro", "emoji": "⭐", "phrase": "T Tauraro" },
+      "U": { "word": "Uba", "emoji": "👨", "phrase": "U Uba" },
+      "W": { "word": "Wata", "emoji": "🌙", "phrase": "W Wata" },
+      "Y": { "word": "Yaro", "emoji": "👦", "phrase": "Y Yaro" },
+      "Z": { "word": "Zomo", "emoji": "🐰", "phrase": "Z Zomo" }
+    }
+  },
+  "numbers": {
+    "title": "Lambobi",
+    "instructions": "Danna lamba!",
+    "items": {
+      "1": { "word": "Ɗaya", "emoji": "⭐", "phrase": "Tauraro ɗaya" },
+      "2": { "word": "Biyu", "emoji": "⭐⭐", "phrase": "Taurari biyu" },
+      "3": { "word": "Uku", "emoji": "⭐⭐⭐", "phrase": "Taurari uku" },
+      "4": { "word": "Huɗu", "emoji": "🐉🐉🐉🐉", "phrase": "Dodanniya huɗu" },
+      "5": { "word": "Biyar", "emoji": "🖐️", "phrase": "Yatsu biyar" },
+      "6": { "word": "Shida", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Tuffa shida" },
+      "7": { "word": "Bakwai", "emoji": "🌈", "phrase": "Launuka bakwai" },
+      "8": { "word": "Takwas", "emoji": "🐙", "phrase": "Ƙafafu takwas" },
+      "9": { "word": "Tara", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Balloon tara" },
+      "10": { "word": "Goma", "emoji": "🖐️🖐️", "phrase": "Yatsu goma" }
+    }
+  }
+}

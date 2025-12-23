@@ -1,0 +1,72 @@
+{
+  "meta": { "language": "Yorùbá", "code": "yo", "flag": "🇳🇬", "direction": "ltr" },
+  "ui": { "title": "Ìdán Ìtàn", "subtitle": "Tẹ àwọn àwòrán láti ṣẹ̀dá ìtàn rẹ!", "makeBook": "Ṣe ìwé mi!", "tryAgain": "Gbìyànjú lẹ́ẹ̀kan sí", "done": "Ó parí!", "serverReady": "Ẹ̀rọ ti ṣetán", "serverConnecting": "Ń sopọ̀...", "serverNotRunning": "Ẹ̀rọ kò ń ṣiṣẹ́!", "startServerFirst": "Bẹ̀rẹ̀ ẹ̀rọ ná kọ́kọ́:", "thenClickAgain": "Lẹ́yìn náà tẹ bọ́tìnì náà lẹ́ẹ̀kan sí!", "generating": "Ìwé rẹ ń wà ní ṣíṣe...", "yourBookReady": "Ìwé rẹ ti ṣetán!", "openingNewWindow": "Ń ṣí fèrèsé tuntun...", "savedTo": "Ti pamọ́:", "pickArtStyle": "Yan àṣà iṣẹ́ ọnà rẹ:", "allFree": "Gbogbo rẹ̀ lọ́fẹ̀ẹ́! Kò nílò àkọọ́lẹ̀!", "whatsYourName": "Kí ni orúkọ rẹ?", "letsGo": "Jẹ́ ká lọ!", "myStories": "Àwọn ìtàn mi", "seeMyStory": "Wo ìtàn mi!" },
+  "steps": { "hero": "Ta ni akọni?", "want": "Kí ni wọ́n fẹ́?", "obstacle": "Hà! Kí ni ó wà lọ́nà?", "solution": "Báwo ni wọ́n ṣe ṣẹ́gun?", "ending": "Òpin rí bẹ́ẹ̀..." },
+  "story": { "onceUponATime": "Ní ìgbà kan rí", "theyWanted": "Wọ́n fẹ́", "butOhNo": "Ṣùgbọ́n hà!", "inTheWay": "wà lọ́nà!", "using": "nípa lílo", "theySavedTheDay": "Wọ́n gbà ọjọ́ náà là!", "theEnd": "Òpin:" },
+  "heroes": { "dragon": { "label": "Dragọ́nì", "value": "Dragọ́nì onífẹ̀ẹ́" }, "robot": { "label": "Rọ́bọ́tì", "value": "Rọ́bọ́tì akíkanjú" }, "unicorn": { "label": "Ẹṣin alágbára", "value": "Ẹṣin aláìdán" }, "cat": { "label": "Ológbò", "value": "Ológbò aláṣẹ" }, "dog": { "label": "Ajá", "value": "Ajá akọni" }, "superhero": { "label": "Akọni ńlá", "value": "Akọni kékeré" }, "tiger": { "label": "Ẹkùn", "value": "Ẹkùn alágbára" }, "space": { "label": "Aṣàwákiri òfuurufú", "value": "Aṣàwákiri òfuurufú" } },
+  "wants": { "princess": { "label": "Gba ọmọbìnrin ọba", "value": "Gba ọmọbìnrin ọba là kúrò nínú ilé gíga" }, "treasure": { "label": "Wá ọrọ̀", "value": "Wá ọrọ̀ tí a fi pamọ́" }, "race": { "label": "Ṣẹ́gun eré", "value": "Ṣẹ́gun eré ńlá" }, "home": { "label": "Padà sílé", "value": "Padà sílé láìléwu" }, "friend": { "label": "Ní ọ̀rẹ́", "value": "Ní ọ̀rẹ́ tuntun" }, "fly": { "label": "Kọ́ láti fò", "value": "Kọ́ láti fò" }, "wizard": { "label": "Di oníṣègùn", "value": "Di oníṣègùn" }, "ocean": { "label": "Ṣàwárí òkun", "value": "Ṣàwárí òkun" } },
+  "obstacles": { "giant": { "label": "Ọ̀mìrán", "value": "Ọ̀mìrán tí ó bínú" }, "monster": { "label": "Ẹ̀mí búburú", "value": "Ẹ̀mí búburú tí ó ń dẹ́rùba" }, "mountain": { "label": "Òkè", "value": "Òkè ńlá" }, "door": { "label": "Ilẹ̀kun ìdán", "value": "Ilẹ̀kun ìdán tí a ti tì" }, "storm": { "label": "Ìjì", "value": "Ìjì líle" }, "forest": { "label": "Igbó", "value": "Igbó dúdú jíjìn" }, "wizard": { "label": "Oníṣègùn", "value": "Oníṣègùn aláàárẹ̀" }, "maze": { "label": "Ọ̀nà ìdàrúdàpọ̀", "value": "Ọ̀nà ìdàrúdàpọ̀" } },
+  "solutions": { "speed": { "label": "Ìyára", "value": "Agbára ìyára" }, "friend": { "label": "Ọ̀rẹ́", "value": "Ọ̀rẹ́ tí ó ń ran lọ́wọ́" }, "trick": { "label": "Ètò", "value": "Ètò ọlọ́gbọ́n" }, "magic": { "label": "Ìdán", "value": "Agbára ìdán" }, "brave": { "label": "Ìgboyà", "value": "Jíjẹ́ akíkanjú" }, "kindness": { "label": "Ìnúrere", "value": "Ìnúrere àti ìfẹ́" }, "teamwork": { "label": "Iṣẹ́ ẹgbẹ́", "value": "Iṣẹ́ ẹgbẹ́ pẹ̀lú gbogbo ènìyàn" }, "nevergiveup": { "label": "Má juwọ́ sílẹ̀", "value": "Má ṣe juwọ́ sílẹ̀ láé" } },
+  "endings": { "party": { "label": "Ayẹyẹ", "value": "Gbogbo ènìyàn ń jó ní ayẹyẹ ńlá" }, "sunset": { "label": "Ìwọ̀ oòrùn", "value": "Wọ́n fò papọ̀ sí ìwọ̀ oòrùn" }, "castle": { "label": "Ilé ńlá", "value": "Wọ́n ń gbé nínú ilé ńlá ẹlẹ́wà" }, "hugging": { "label": "Ìdìmọ́ra", "value": "Gbogbo ọ̀rẹ́ ń dìmọ́ra tí wọ́n sì ń rẹ́rìn" }, "cake": { "label": "Àkàrà oyìnbó", "value": "Wọ́n ń jẹ àkàrà oyìnbó àti yinyin" }, "medal": { "label": "Àmì ẹ̀yẹ", "value": "Wọ́n gba àmì wúrà" }, "adventure": { "label": "Ìrìnàjò ìgboyà", "value": "Wọ́n lọ sí ìrìnàjò ìgboyà tuntun" }, "sleep": { "label": "Orun", "value": "Wọ́n sùn lórí ibùsùn ìtùnú" } },
+  "artModes": { "coloring": "Ìwé àwọ̀", "pollinations": "Iṣẹ́ ọnà AI", "ai-coloring": "Àwọ̀ AI" },
+  "scenes": {
+    "meetTitle": "Pàdé {hero}",
+    "meetDesc": "Èyí ni {hero}. {hero} ni akọni wa!",
+    "dreamTitle": "Àlá",
+    "dreamDesc": "{hero} fẹ́ {want}. Ju gbogbo rẹ̀ lọ!",
+    "problemTitle": "Hà!",
+    "problemDesc": "Ṣùgbọ́n wàhálà wà! {obstacle} wà lọ́nà!",
+    "planTitle": "Ètò ọlọ́gbọ́n",
+    "planDesc": "{hero} ní èrò kan! Nípa lílo {solution}!",
+    "endTitle": "Òpin",
+    "endDesc": "Wọ́n sì gbé ní àyọ̀ títí láé! {ending}!",
+    "madeWith": "{author} ṣe pẹ̀lú ❤️"
+  },
+  "alphabet": {
+    "title": "Álífábẹ́ẹ̀tì Yorùbá",
+    "instructions": "Tẹ lẹ́tà kan!",
+    "letters": {
+      "A": { "word": "Ajá", "emoji": "🐕", "phrase": "A Ajá" },
+      "B": { "word": "Bàtà", "emoji": "👟", "phrase": "B Bàtà" },
+      "D": { "word": "Dòdò", "emoji": "🍌", "phrase": "D Dòdò" },
+      "E": { "word": "Ewúrẹ́", "emoji": "🐐", "phrase": "E Ewúrẹ́" },
+      "Ẹ": { "word": "Ẹja", "emoji": "🐟", "phrase": "Ẹ Ẹja" },
+      "F": { "word": "Fìlà", "emoji": "🧢", "phrase": "F Fìlà" },
+      "G": { "word": "Gèésì", "emoji": "🦢", "phrase": "G Gèésì" },
+      "GB": { "word": "Gbọ̀ngan", "emoji": "🏠", "phrase": "GB Gbọ̀ngan" },
+      "H": { "word": "Hórò", "emoji": "🕳️", "phrase": "H Hórò" },
+      "I": { "word": "Ilé", "emoji": "🏠", "phrase": "I Ilé" },
+      "J": { "word": "Jíjí", "emoji": "😊", "phrase": "J Jíjí" },
+      "K": { "word": "Kìnnìún", "emoji": "🦁", "phrase": "K Kìnnìún" },
+      "L": { "word": "Láńpà", "emoji": "💡", "phrase": "L Láńpà" },
+      "M": { "word": "Màlúù", "emoji": "🐄", "phrase": "M Màlúù" },
+      "N": { "word": "Nọ́ńbà", "emoji": "🔢", "phrase": "N Nọ́ńbà" },
+      "O": { "word": "Odò", "emoji": "🌊", "phrase": "O Odò" },
+      "Ọ": { "word": "Ọ̀pọ̀lọ́", "emoji": "🐸", "phrase": "Ọ Ọ̀pọ̀lọ́" },
+      "P": { "word": "Pákó", "emoji": "🪵", "phrase": "P Pákó" },
+      "R": { "word": "Rédíò", "emoji": "📻", "phrase": "R Rédíò" },
+      "S": { "word": "Sánmọ̀", "emoji": "☀️", "phrase": "S Sánmọ̀" },
+      "Ṣ": { "word": "Ṣẹ́kẹ́rẹ́", "emoji": "🎵", "phrase": "Ṣ Ṣẹ́kẹ́rẹ́" },
+      "T": { "word": "Tábìlì", "emoji": "🪑", "phrase": "T Tábìlì" },
+      "U": { "word": "Ùkù", "emoji": "🎸", "phrase": "U Ùkù" },
+      "W": { "word": "Wàrà", "emoji": "🥛", "phrase": "W Wàrà" },
+      "Y": { "word": "Yìnyín", "emoji": "🧊", "phrase": "Y Yìnyín" }
+    }
+  },
+  "numbers": {
+    "title": "Nọ́ńbà",
+    "instructions": "Tẹ nọ́ńbà kan!",
+    "items": {
+      "1": { "word": "Ọ̀kan", "emoji": "⭐", "phrase": "Ìràwọ̀ ọ̀kan" },
+      "2": { "word": "Èjì", "emoji": "⭐⭐", "phrase": "Ìràwọ̀ méjì" },
+      "3": { "word": "Ẹ̀ta", "emoji": "⭐⭐⭐", "phrase": "Ìràwọ̀ mẹ́ta" },
+      "4": { "word": "Ẹ̀rin", "emoji": "🐉🐉🐉🐉", "phrase": "Dragọ́nì mẹ́rin" },
+      "5": { "word": "Àrún", "emoji": "🖐️", "phrase": "Ìka márùn-ún" },
+      "6": { "word": "Ẹ̀fà", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Ápù mẹ́fà" },
+      "7": { "word": "Èje", "emoji": "🌈", "phrase": "Àwọ̀ méje" },
+      "8": { "word": "Ẹ̀jọ", "emoji": "🐙", "phrase": "Ẹsẹ̀ mẹ́jọ" },
+      "9": { "word": "Ẹ̀sán", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Balúùnù mẹ́sàn-án" },
+      "10": { "word": "Ẹ̀wá", "emoji": "🖐️🖐️", "phrase": "Ìka mẹ́wàá" }
+    }
+  }
+}
