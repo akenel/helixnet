@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Learning Board</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .profile-emoji {
+            font-size: 5em;
+            margin-bottom: 10px;
+        }
+        .profile-name {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .profile-subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .profile-flags {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        .profile-setup {
+            margin-top: 20px;
+        }
+        .profile-setup input {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            border: 3px solid #11998e;
+            border-radius: 15px;
+            text-align: center;
+            width: 200px;
+            margin-right: 10px;
+        }
+        .emoji-picker {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .emoji-btn {
+            font-size: 2em;
+            background: #f5f5f5;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .emoji-btn:hover { transform: scale(1.1); }
+        .emoji-btn.selected { border-color: #11998e; background: #e0fff0; }
+        .save-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .save-btn:hover { transform: scale(1.05); }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 3em;
+            color: #11998e;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Story Gallery */
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .story-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .story-card:hover { transform: scale(1.05); }
+        .story-card .emoji { font-size: 2.5em; }
+        .story-card .title { font-size: 0.9em; margin-top: 8px; }
+        .story-card .date { font-size: 0.7em; opacity: 0.8; }
+        .no-stories {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 1.1em;
+        }
+
+        /* Alphabet/Numbers Progress */
+        .progress-grid {
+            margin-bottom: 15px;
+        }
+        .progress-lang {
+            margin-bottom: 15px;
+        }
+        .progress-lang-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .letter-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .letter-box {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1em;
+        }
+        .letter-box.learned {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .letter-box.not-learned {
+            background: #eee;
+            color: #ccc;
+        }
+        .number-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .number-box {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        .number-box.learned {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .number-box.not-learned {
+            background: #eee;
+            color: #ccc;
+        }
+
+        /* Navigation */
+        .nav-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .nav-links a {
+            display: inline-block;
+            background: white;
+            color: #11998e;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            margin: 5px;
+            font-size: 1em;
+            transition: transform 0.2s;
+        }
+        .nav-links a:hover { transform: scale(1.05); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .profile-name { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile Card -->
+        <div class="profile-card" id="profileCard">
+            <!-- Filled by JS -->
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid">
+            <!-- Filled by JS -->
+        </div>
+
+        <!-- Stories Section -->
+        <div class="section-card">
+            <div class="section-title">📚 My Stories</div>
+            <div class="story-grid" id="storyGrid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Alphabet Progress -->
+        <div class="section-card">
+            <div class="section-title">🔤 Alphabet Progress</div>
+            <div class="progress-grid" id="alphabetProgress">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Numbers Progress -->
+        <div class="section-card">
+            <div class="section-title">🔢 Numbers Progress</div>
+            <div class="progress-grid" id="numbersProgress">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="/johnny-clicks.html">📖 Make a Story</a>
+            <a href="/alphabet-clicks.html">🔤 Learn Alphabet</a>
+            <a href="/numbers-clicks.html">🔢 Learn Numbers</a>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const LANGUAGES = {
+            en: { flag: '🇬🇧', name: 'English', letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('') },
+            de: { flag: '🇩🇪', name: 'Deutsch', letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split('').concat(['ß']) },
+            fr: { flag: '🇫🇷', name: 'Français', letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('') },
+            it: { flag: '🇮🇹', name: 'Italiano', letters: 'ABCDEFGHILMNOPQRSTUVZ'.split('') }
+        };
+
+        const AVATAR_EMOJIS = ['👧', '👦', '🧒', '👶', '🦸', '🧙', '🐯', '🦄', '🐉', '🤖'];
+
+        // localStorage helpers
+        function getProfile() {
+            try {
+                return JSON.parse(localStorage.getItem('holly-profile')) || null;
+            } catch { return null; }
+        }
+
+        function saveProfile(profile) {
+            localStorage.setItem('holly-profile', JSON.stringify(profile));
+        }
+
+        function getStories() {
+            try {
+                return JSON.parse(localStorage.getItem('holly-stories')) || [];
+            } catch { return []; }
+        }
+
+        function getAlphabetProgress() {
+            try {
+                return JSON.parse(localStorage.getItem('holly-alphabet-progress')) || {};
+            } catch { return {}; }
+        }
+
+        function getNumbersProgress() {
+            try {
+                return JSON.parse(localStorage.getItem('holly-numbers-progress')) || {};
+            } catch { return {}; }
+        }
+
+        // Get all explored languages
+        function getExploredLanguages() {
+            const langs = new Set();
+            const savedLang = localStorage.getItem('teller-lang');
+            const adventureLang = localStorage.getItem('teller-adventure-lang');
+            if (savedLang) langs.add(savedLang);
+            if (adventureLang) langs.add(adventureLang);
+
+            // Also check progress data
+            const alphaProgress = getAlphabetProgress();
+            const numProgress = getNumbersProgress();
+            Object.keys(alphaProgress).forEach(l => langs.add(l));
+            Object.keys(numProgress).forEach(l => langs.add(l));
+
+            return Array.from(langs).filter(l => LANGUAGES[l]);
+        }
+
+        // Render profile
+        function renderProfile() {
+            const container = document.getElementById('profileCard');
+            const profile = getProfile();
+            const exploredLangs = getExploredLanguages();
+
+            if (!profile) {
+                // Setup mode
+                container.innerHTML = `
+                    <div class="profile-emoji">🌟</div>
+                    <div class="profile-name">Welcome!</div>
+                    <div class="profile-subtitle">Let's set up your learning board</div>
+                    <div class="profile-setup">
+                        <input type="text" id="nameInput" placeholder="Your name" value="">
+                        <div class="emoji-picker" id="emojiPicker">
+                            ${AVATAR_EMOJIS.map((e, i) =>
+                                `<button class="emoji-btn ${i === 0 ? 'selected' : ''}" data-emoji="${e}">${e}</button>`
+                            ).join('')}
+                        </div>
+                        <button class="save-btn" onclick="saveNewProfile()">Start My Board!</button>
+                    </div>
+                `;
+
+                // Emoji picker handlers
+                document.querySelectorAll('.emoji-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                    };
+                });
+            } else {
+                // Display mode
+                const flags = exploredLangs.map(l => LANGUAGES[l]?.flag || '').join(' ');
+                const memberSince = new Date(profile.createdAt).toLocaleDateString();
+
+                container.innerHTML = `
+                    <div class="profile-emoji">${profile.emoji}</div>
+                    <div class="profile-name">${profile.name}'s Learning Board</div>
+                    <div class="profile-subtitle">Learning since ${memberSince}</div>
+                    <div class="profile-flags">${flags || '🌍 Start exploring languages!'}</div>
+                `;
+            }
+        }
+
+        function saveNewProfile() {
+            const name = document.getElementById('nameInput').value.trim() || 'Learner';
+            const selectedEmoji = document.querySelector('.emoji-btn.selected');
+            const emoji = selectedEmoji ? selectedEmoji.dataset.emoji : '🌟';
+
+            const profile = {
+                name: name,
+                emoji: emoji,
+                createdAt: Date.now()
+            };
+
+            saveProfile(profile);
+            renderProfile();
+            renderStats();
+        }
+
+        // Render stats
+        function renderStats() {
+            const container = document.getElementById('statsGrid');
+            const stories = getStories();
+            const alphaProgress = getAlphabetProgress();
+            const numProgress = getNumbersProgress();
+            const exploredLangs = getExploredLanguages();
+
+            // Count total letters learned
+            let totalLetters = 0;
+            Object.values(alphaProgress).forEach(arr => {
+                if (Array.isArray(arr)) totalLetters += arr.length;
+            });
+
+            // Count total numbers learned
+            let totalNumbers = 0;
+            Object.values(numProgress).forEach(arr => {
+                if (Array.isArray(arr)) totalNumbers += arr.length;
+            });
+
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stories.length}</div>
+                    <div class="stat-label">Stories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalLetters}</div>
+                    <div class="stat-label">Letters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalNumbers}</div>
+                    <div class="stat-label">Numbers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${exploredLangs.length}</div>
+                    <div class="stat-label">Languages</div>
+                </div>
+            `;
+        }
+
+        // Render stories
+        function renderStories() {
+            const container = document.getElementById('storyGrid');
+            const stories = getStories();
+
+            if (stories.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stories">
+                        No stories yet! <a href="/johnny-clicks.html">Make your first story!</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = stories.map(s => `
+                <div class="story-card" onclick="viewStory('${s.htmlPath}')">
+                    <div class="emoji">${s.emoji || '📖'}</div>
+                    <div class="title">${s.title || 'My Story'}</div>
+                    <div class="date">${s.date || ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function viewStory(path) {
+            if (path) window.open(path, '_blank');
+        }
+
+        // Render alphabet progress
+        function renderAlphabetProgress() {
+            const container = document.getElementById('alphabetProgress');
+            const progress = getAlphabetProgress();
+            const exploredLangs = getExploredLanguages();
+
+            if (exploredLangs.length === 0) {
+                container.innerHTML = `<p style="color:#999;">Start learning alphabets to see your progress!</p>`;
+                return;
+            }
+
+            let html = '';
+            for (const lang of exploredLangs) {
+                const langData = LANGUAGES[lang];
+                if (!langData) continue;
+
+                const learned = progress[lang] || [];
+
+                html += `
+                    <div class="progress-lang">
+                        <div class="progress-lang-header">
+                            <span>${langData.flag}</span>
+                            <span>${langData.name}</span>
+                            <span style="color:#11998e;">(${learned.length}/${langData.letters.length})</span>
+                        </div>
+                        <div class="letter-grid">
+                            ${langData.letters.map(letter => `
+                                <div class="letter-box ${learned.includes(letter) ? 'learned' : 'not-learned'}">
+                                    ${letter}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html || `<p style="color:#999;">No alphabet progress yet.</p>`;
+        }
+
+        // Render numbers progress
+        function renderNumbersProgress() {
+            const container = document.getElementById('numbersProgress');
+            const progress = getNumbersProgress();
+            const exploredLangs = getExploredLanguages();
+            const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+            if (exploredLangs.length === 0) {
+                container.innerHTML = `<p style="color:#999;">Start learning numbers to see your progress!</p>`;
+                return;
+            }
+
+            let html = '';
+            for (const lang of exploredLangs) {
+                const langData = LANGUAGES[lang];
+                if (!langData) continue;
+
+                const learned = progress[lang] || [];
+
+                html += `
+                    <div class="progress-lang">
+                        <div class="progress-lang-header">
+                            <span>${langData.flag}</span>
+                            <span>${langData.name}</span>
+                            <span style="color:#f5576c;">(${learned.length}/10)</span>
+                        </div>
+                        <div class="number-grid">
+                            ${numbers.map(num => `
+                                <div class="number-box ${learned.includes(num) ? 'learned' : 'not-learned'}">
+                                    ${num}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html || `<p style="color:#999;">No numbers progress yet.</p>`;
+        }
+
+        // Initialize
+        renderProfile();
+        renderStats();
+        renderStories();
+        renderAlphabetProgress();
+        renderNumbersProgress();
+    </script>
+</body>
+</html>

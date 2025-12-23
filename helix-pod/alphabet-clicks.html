@@ -178,9 +178,9 @@
 
         <!-- Navigation -->
         <div class="nav-links">
+            <a href="/team-board.html">🏆 My Board</a>
             <a href="/numbers-clicks.html">🔢 Numbers</a>
-            <a href="/johnny-clicks.html">📖 Make a Story</a>
-            <a href="#" onclick="speakAll()">🔊 Hear All</a>
+            <a href="/johnny-clicks.html">📖 Stories</a>
         </div>
     </div>
 
@@ -210,6 +210,22 @@
             const local = getLocalLang();
             if (lang !== local && lang !== 'en') {
                 localStorage.setItem('teller-adventure-lang', lang);
+            }
+        }
+
+        // Progress tracking for Team Board
+        function getAlphabetProgress() {
+            try {
+                return JSON.parse(localStorage.getItem('holly-alphabet-progress')) || {};
+            } catch { return {}; }
+        }
+
+        function trackLetterLearned(letter) {
+            const progress = getAlphabetProgress();
+            if (!progress[currentLang]) progress[currentLang] = [];
+            if (!progress[currentLang].includes(letter)) {
+                progress[currentLang].push(letter);
+                localStorage.setItem('holly-alphabet-progress', JSON.stringify(progress));
             }
         }
 
@@ -312,6 +328,9 @@
         function showLetter(letter) {
             const data = alphabetData?.letters?.[letter];
             if (!data) return;
+
+            // Track progress for Team Board
+            trackLetterLearned(letter);
 
             // Update active state
             document.querySelectorAll('.letter-btn').forEach(btn => {

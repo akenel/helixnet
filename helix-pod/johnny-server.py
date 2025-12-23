@@ -61,6 +61,7 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
         '/johnny-clicks.html',
         '/alphabet-clicks.html',
         '/numbers-clicks.html',
+        '/team-board.html',
         '/health',
         '/',
     }
