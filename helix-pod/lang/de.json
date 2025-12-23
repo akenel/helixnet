@@ -146,5 +146,21 @@
       "Ü": { "word": "Überraschung", "emoji": "🎁", "phrase": "Ü wie Überraschung" },
       "ß": { "word": "Straße", "emoji": "🛣️", "phrase": "ß wie Straße" }
     }
+  },
+  "numbers": {
+    "title": "Zahlen",
+    "instructions": "Klicke eine Zahl!",
+    "items": {
+      "1": { "word": "Eins", "emoji": "⭐", "phrase": "Eins Stern" },
+      "2": { "word": "Zwei", "emoji": "⭐⭐", "phrase": "Zwei Sterne" },
+      "3": { "word": "Drei", "emoji": "⭐⭐⭐", "phrase": "Drei Sterne" },
+      "4": { "word": "Vier", "emoji": "🐉🐉🐉🐉", "phrase": "Vier Drachen" },
+      "5": { "word": "Fünf", "emoji": "🖐️", "phrase": "Fünf Finger" },
+      "6": { "word": "Sechs", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Sechs Äpfel" },
+      "7": { "word": "Sieben", "emoji": "🌈", "phrase": "Sieben Farben" },
+      "8": { "word": "Acht", "emoji": "🐙", "phrase": "Acht Arme" },
+      "9": { "word": "Neun", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Neun Ballons" },
+      "10": { "word": "Zehn", "emoji": "🖐️🖐️", "phrase": "Zehn Finger" }
+    }
   }
 }

@@ -142,5 +142,21 @@
       "Y": { "word": "Yak", "emoji": "🦬", "phrase": "Y is for Yak" },
       "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z is for Zebra" }
     }
+  },
+  "numbers": {
+    "title": "Numbers",
+    "instructions": "Click a number!",
+    "items": {
+      "1": { "word": "One", "emoji": "⭐", "phrase": "One star" },
+      "2": { "word": "Two", "emoji": "⭐⭐", "phrase": "Two stars" },
+      "3": { "word": "Three", "emoji": "⭐⭐⭐", "phrase": "Three stars" },
+      "4": { "word": "Four", "emoji": "🐉🐉🐉🐉", "phrase": "Four dragons" },
+      "5": { "word": "Five", "emoji": "🖐️", "phrase": "Five fingers" },
+      "6": { "word": "Six", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Six apples" },
+      "7": { "word": "Seven", "emoji": "🌈", "phrase": "Seven colors" },
+      "8": { "word": "Eight", "emoji": "🐙", "phrase": "Eight arms" },
+      "9": { "word": "Nine", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Nine balloons" },
+      "10": { "word": "Ten", "emoji": "🖐️🖐️", "phrase": "Ten fingers" }
+    }
   }
 }

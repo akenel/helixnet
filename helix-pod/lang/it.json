@@ -137,5 +137,21 @@
       "V": { "word": "Vulcano", "emoji": "🌋", "phrase": "V come Vulcano" },
       "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z come Zebra" }
     }
+  },
+  "numbers": {
+    "title": "I Numeri",
+    "instructions": "Clicca un numero!",
+    "items": {
+      "1": { "word": "Uno", "emoji": "⭐", "phrase": "Una stella" },
+      "2": { "word": "Due", "emoji": "⭐⭐", "phrase": "Due stelle" },
+      "3": { "word": "Tre", "emoji": "⭐⭐⭐", "phrase": "Tre stelle" },
+      "4": { "word": "Quattro", "emoji": "🐉🐉🐉🐉", "phrase": "Quattro draghi" },
+      "5": { "word": "Cinque", "emoji": "🖐️", "phrase": "Cinque dita" },
+      "6": { "word": "Sei", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Sei mele" },
+      "7": { "word": "Sette", "emoji": "🌈", "phrase": "Sette colori" },
+      "8": { "word": "Otto", "emoji": "🐙", "phrase": "Otto braccia" },
+      "9": { "word": "Nove", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Nove palloncini" },
+      "10": { "word": "Dieci", "emoji": "🖐️🖐️", "phrase": "Dieci dita" }
+    }
   }
 }

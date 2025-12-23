@@ -142,5 +142,21 @@
       "Y": { "word": "Yacht", "emoji": "🛥️", "phrase": "Y comme Yacht" },
       "Z": { "word": "Zèbre", "emoji": "🦓", "phrase": "Z comme Zèbre" }
     }
+  },
+  "numbers": {
+    "title": "Les Nombres",
+    "instructions": "Clique un nombre!",
+    "items": {
+      "1": { "word": "Un", "emoji": "⭐", "phrase": "Une étoile" },
+      "2": { "word": "Deux", "emoji": "⭐⭐", "phrase": "Deux étoiles" },
+      "3": { "word": "Trois", "emoji": "⭐⭐⭐", "phrase": "Trois étoiles" },
+      "4": { "word": "Quatre", "emoji": "🐉🐉🐉🐉", "phrase": "Quatre dragons" },
+      "5": { "word": "Cinq", "emoji": "🖐️", "phrase": "Cinq doigts" },
+      "6": { "word": "Six", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Six pommes" },
+      "7": { "word": "Sept", "emoji": "🌈", "phrase": "Sept couleurs" },
+      "8": { "word": "Huit", "emoji": "🐙", "phrase": "Huit bras" },
+      "9": { "word": "Neuf", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Neuf ballons" },
+      "10": { "word": "Dix", "emoji": "🖐️🖐️", "phrase": "Dix doigts" }
+    }
   }
 }
