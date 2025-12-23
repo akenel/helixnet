@@ -1,0 +1,69 @@
+{
+  "meta": { "language": "Basa Sunda", "code": "su", "flag": "🇮🇩", "direction": "ltr" },
+  "ui": { "title": "Sihir Carita", "subtitle": "Klik gambar pikeun nyieun carita anjeun!", "makeBook": "Jieun buku kuring!", "tryAgain": "Coba deui", "done": "Geus bérés!", "serverReady": "Server geus siap", "serverConnecting": "Keur nyambung...", "serverNotRunning": "Server teu jalan!", "startServerFirst": "Mimitian server heula:", "thenClickAgain": "Tuluy klik tombol deui!", "generating": "Buku anjeun keur dijieun...", "yourBookReady": "Buku anjeun geus siap!", "openingNewWindow": "Keur muka jandéla anyar...", "savedTo": "Geus disimpen:", "pickArtStyle": "Pilih gaya seni anjeun:", "allFree": "Kabéh haratis! Teu perlu akun!", "whatsYourName": "Nami anjeun saha?", "letsGo": "Hayu!", "myStories": "Carita-carita kuring", "seeMyStory": "Tingali carita kuring!" },
+  "steps": { "hero": "Saha pahlawanna?", "want": "Naon anu dipikahoyong?", "obstacle": "Aduh! Naon anu ngahalangan?", "solution": "Kumaha carana meunang?", "ending": "Pamungkasna kieu..." },
+  "story": { "onceUponATime": "Baheula aya", "theyWanted": "Maranéhna hayang", "butOhNo": "Tapi aduh!", "inTheWay": "ngahalangan jalan!", "using": "ngagunakeun", "theySavedTheDay": "Maranéhna nyalametkeun poé!", "theEnd": "Tamat:" },
+  "heroes": { "dragon": { "label": "Naga", "value": "Naga anu hadé" }, "robot": { "label": "Robot", "value": "Robot anu wani" }, "unicorn": { "label": "Unicorn", "value": "Unicorn ajaib" }, "cat": { "label": "Ucing", "value": "Ucing super" }, "dog": { "label": "Anjing", "value": "Anjing pahlawan" }, "superhero": { "label": "Pahlawan super", "value": "Pahlawan super leutik" }, "tiger": { "label": "Maung", "value": "Maung anu kuat" }, "space": { "label": "Astronot", "value": "Panjelajah antariksa" } },
+  "wants": { "princess": { "label": "Nyalametkeun putri", "value": "Nyalametkeun putri ti munara" }, "treasure": { "label": "Néangan harta", "value": "Manggihan harta anu disumputkeun" }, "race": { "label": "Meunang balap", "value": "Meunang balap gedé" }, "home": { "label": "Balik ka imah", "value": "Balik ka imah kalawan salamet" }, "friend": { "label": "Néangan babaturan", "value": "Néangan babaturan anyar" }, "fly": { "label": "Diajar ngapung", "value": "Diajar ngapung" }, "wizard": { "label": "Jadi tukang sihir", "value": "Jadi tukang sihir" }, "ocean": { "label": "Jelajah lautan", "value": "Jelajah lautan" } },
+  "obstacles": { "giant": { "label": "Raksasa", "value": "Raksasa anu ambek" }, "monster": { "label": "Monster", "value": "Monster anu pikasieuneun" }, "mountain": { "label": "Gunung", "value": "Gunung gedé" }, "door": { "label": "Panto ajaib", "value": "Panto ajaib anu dikonci" }, "storm": { "label": "Badai", "value": "Badai gedé" }, "forest": { "label": "Leuweung", "value": "Leuweung poék" }, "wizard": { "label": "Tukang sihir", "value": "Tukang sihir licik" }, "maze": { "label": "Labirin", "value": "Labirin ngabingungkeun" } },
+  "solutions": { "speed": { "label": "Laju", "value": "Kakuatan super gancang" }, "friend": { "label": "Babaturan", "value": "Babaturan anu nulungan" }, "trick": { "label": "Trik", "value": "Trik pinter" }, "magic": { "label": "Sihir", "value": "Kakuatan sihir" }, "brave": { "label": "Wani", "value": "Jadi wani pisan" }, "kindness": { "label": "Kahadéan", "value": "Kahadéan jeung kanyaah" }, "teamwork": { "label": "Gawé babarengan", "value": "Gawé babarengan jeung sadayana" }, "nevergiveup": { "label": "Ulah nyerah", "value": "Ulah pernah nyerah" } },
+  "endings": { "party": { "label": "Pésta", "value": "Sadayana ngibing di pésta gedé" }, "sunset": { "label": "Surup", "value": "Ngapung babarengan ka surup" }, "castle": { "label": "Karaton", "value": "Hirup di karaton éndah" }, "hugging": { "label": "Rangkulan", "value": "Sadaya babaturan rangkulan bari seuri" }, "cake": { "label": "Kué", "value": "Dahar kué jeung és krim" }, "medal": { "label": "Médali", "value": "Meunang médali emas" }, "adventure": { "label": "Petualangan", "value": "Indit ka petualangan anyar" }, "sleep": { "label": "Saré", "value": "Saré di kasur anu ngeunah" } },
+  "artModes": { "coloring": "Buku mewarnai", "pollinations": "Seni AI", "ai-coloring": "Pewarnaan AI" },
+  "scenes": {
+    "meetTitle": "Tepung {hero}",
+    "meetDesc": "Ieu {hero}. {hero} pahlawan urang!",
+    "dreamTitle": "Impian",
+    "dreamDesc": "{hero} hayang {want}. Leuwih ti naon waé!",
+    "problemTitle": "Aduh!",
+    "problemDesc": "Tapi aya masalah! {obstacle} ngahalangan jalan!",
+    "planTitle": "Rencana pinter",
+    "planDesc": "{hero} boga idé! Ngagunakeun {solution}!",
+    "endTitle": "Tamat",
+    "endDesc": "Jeung maranéhna hirup bagja salilana! {ending}!",
+    "madeWith": "Dijieun ku {author} kalawan ❤️"
+  },
+  "alphabet": {
+    "title": "Aksara Sunda",
+    "instructions": "Klik aksara!",
+    "letters": {
+      "A": { "word": "Anjing", "emoji": "🐕", "phrase": "A Anjing" },
+      "B": { "word": "Bebek", "emoji": "🦆", "phrase": "B Bebek" },
+      "C": { "word": "Cai", "emoji": "💧", "phrase": "C Cai" },
+      "D": { "word": "Domba", "emoji": "🐑", "phrase": "D Domba" },
+      "E": { "word": "Embe", "emoji": "🐐", "phrase": "E Embe" },
+      "F": { "word": "Foto", "emoji": "📷", "phrase": "F Foto" },
+      "G": { "word": "Gajah", "emoji": "🐘", "phrase": "G Gajah" },
+      "H": { "word": "Hayam", "emoji": "🐓", "phrase": "H Hayam" },
+      "I": { "word": "Ikan", "emoji": "🐟", "phrase": "I Ikan" },
+      "J": { "word": "Jambu", "emoji": "🍎", "phrase": "J Jambu" },
+      "K": { "word": "Kuya", "emoji": "🐢", "phrase": "K Kuya" },
+      "L": { "word": "Lauk", "emoji": "🐟", "phrase": "L Lauk" },
+      "M": { "word": "Maung", "emoji": "🐯", "phrase": "M Maung" },
+      "N": { "word": "Naga", "emoji": "🐉", "phrase": "N Naga" },
+      "O": { "word": "Oray", "emoji": "🐍", "phrase": "O Oray" },
+      "P": { "word": "Paré", "emoji": "🌾", "phrase": "P Paré" },
+      "R": { "word": "Rosa", "emoji": "🌹", "phrase": "R Rosa" },
+      "S": { "word": "Sapi", "emoji": "🐄", "phrase": "S Sapi" },
+      "T": { "word": "Tikus", "emoji": "🐭", "phrase": "T Tikus" },
+      "U": { "word": "Ucing", "emoji": "🐱", "phrase": "U Ucing" },
+      "W": { "word": "Wayang", "emoji": "🎭", "phrase": "W Wayang" },
+      "Y": { "word": "Yén", "emoji": "💴", "phrase": "Y Yén" }
+    }
+  },
+  "numbers": {
+    "title": "Angka",
+    "instructions": "Klik angka!",
+    "items": {
+      "1": { "word": "Hiji", "emoji": "⭐", "phrase": "Béntang hiji" },
+      "2": { "word": "Dua", "emoji": "⭐⭐", "phrase": "Béntang dua" },
+      "3": { "word": "Tilu", "emoji": "⭐⭐⭐", "phrase": "Béntang tilu" },
+      "4": { "word": "Opat", "emoji": "🐉🐉🐉🐉", "phrase": "Naga opat" },
+      "5": { "word": "Lima", "emoji": "🖐️", "phrase": "Ramo lima" },
+      "6": { "word": "Genep", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Apel genep" },
+      "7": { "word": "Tujuh", "emoji": "🌈", "phrase": "Warna tujuh" },
+      "8": { "word": "Dalapan", "emoji": "🐙", "phrase": "Suku dalapan" },
+      "9": { "word": "Salapan", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Balon salapan" },
+      "10": { "word": "Sapuluh", "emoji": "🖐️🖐️", "phrase": "Ramo sapuluh" }
+    }
+  }
+}

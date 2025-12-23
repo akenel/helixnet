@@ -1,0 +1,73 @@
+{
+  "meta": { "language": "isiZulu", "code": "zu", "flag": "🇿🇦", "direction": "ltr" },
+  "ui": { "title": "Umlingo Wendaba", "subtitle": "Chofoza izithombe wakhe indaba yakho!", "makeBook": "Yenza incwadi yami!", "tryAgain": "Zama futhi", "done": "Kuqediwe!", "serverReady": "Iseva ilungile", "serverConnecting": "Iyaxhuma...", "serverNotRunning": "Iseva ayisebenzi!", "startServerFirst": "Qala iseva kuqala:", "thenClickAgain": "Bese uchofoza inkinobho futhi!", "generating": "Incwadi yakho iyakhiwa...", "yourBookReady": "Incwadi yakho ilungile!", "openingNewWindow": "Kuvulwa iwindi elisha...", "savedTo": "Kulondoloziwe:", "pickArtStyle": "Khetha isitayela sobuciko:", "allFree": "Konke mahhala! Akudingeki i-akhawunti!", "whatsYourName": "Ubani igama lakho?", "letsGo": "Masihambe!", "myStories": "Izindaba zami", "seeMyStory": "Buka indaba yami!" },
+  "steps": { "hero": "Ubani iqhawe?", "want": "Bafunani?", "obstacle": "Hawu! Yini endleleni?", "solution": "Banqoba kanjani?", "ending": "Isiphetho sibukeka kanje..." },
+  "story": { "onceUponATime": "Kwasukasukela", "theyWanted": "Babefuna", "butOhNo": "Kodwa hawu!", "inTheWay": "kwakusendleleni!", "using": "besebenzisa", "theySavedTheDay": "Basindisa usuku!", "theEnd": "Isiphetho:" },
+  "heroes": { "dragon": { "label": "Udrako", "value": "Udrako onobungane" }, "robot": { "label": "Irobhothi", "value": "Irobhothi elinamandla" }, "unicorn": { "label": "I-unicorn", "value": "I-unicorn enomqhele" }, "cat": { "label": "Ikati", "value": "Ikati elikhulu" }, "dog": { "label": "Inja", "value": "Inja eqhawe" }, "superhero": { "label": "Iqhawe", "value": "Iqhawe elincane" }, "tiger": { "label": "Ingwe", "value": "Ingwe enamandla" }, "space": { "label": "Isicabha", "value": "Umhloli wemkhathi" } },
+  "wants": { "princess": { "label": "Sindisa inkosazana", "value": "Sindisa inkosazana embhoshongweni" }, "treasure": { "label": "Thola ingcebo", "value": "Thola ingcebo efihliwe" }, "race": { "label": "Nqoba umncintiswano", "value": "Nqoba umncintiswano omkhulu" }, "home": { "label": "Goduka", "value": "Finyelela ekhaya ngokuphepha" }, "friend": { "label": "Thola umngane", "value": "Thola umngane omusha" }, "fly": { "label": "Funda ukundiza", "value": "Funda ukundiza" }, "wizard": { "label": "Yiba ngumthakathi", "value": "Yiba ngumthakathi" }, "ocean": { "label": "Hlola ulwandle", "value": "Hlola ulwandle" } },
+  "obstacles": { "giant": { "label": "Isikhulumi", "value": "Isikhulumi esithukuthele" }, "monster": { "label": "Isilwane", "value": "Isilwane esisabisayo" }, "mountain": { "label": "Intaba", "value": "Intaba enkulu" }, "door": { "label": "Umnyango womlingo", "value": "Umnyango womlingo okhiyiwe" }, "storm": { "label": "Isiphepho", "value": "Isiphepho esikhulu" }, "forest": { "label": "Ihlathi", "value": "Ihlathi elimnyama elijulile" }, "wizard": { "label": "Umthakathi", "value": "Umthakathi okhohlisayo" }, "maze": { "label": "Imaze", "value": "Imaze edidayo" } },
+  "solutions": { "speed": { "label": "Isivinini", "value": "Amandla esivinini" }, "friend": { "label": "Umngane", "value": "Umngane osizayo" }, "trick": { "label": "Iqhinga", "value": "Iqhinga eliciko" }, "magic": { "label": "Umlingo", "value": "Amandla omlingo" }, "brave": { "label": "Isibindi", "value": "Ukuba nesibindi kakhulu" }, "kindness": { "label": "Umusa", "value": "Umusa nothando" }, "teamwork": { "label": "Umsebenzi weqembu", "value": "Umsebenzi weqembu nawo wonke umuntu" }, "nevergiveup": { "label": "Ungapheli amandla", "value": "Ungalokothi uphele amandla" } },
+  "endings": { "party": { "label": "Umcimbi", "value": "Wonke umuntu udansa emcimbini omkhulu" }, "sunset": { "label": "Ukushona kwelanga", "value": "Bandizela ekushoneneni kwelanga ndawonye" }, "castle": { "label": "Inqaba", "value": "Bahlala enqabeni enhle" }, "hugging": { "label": "Ukugonana", "value": "Bonke abangane bagonana behleka" }, "cake": { "label": "Ikhekhe", "value": "Badla ikhekhe ne-ayisikhrimu" }, "medal": { "label": "Indondo", "value": "Bathola indondo yegolide" }, "adventure": { "label": "Uhambo", "value": "Baya ohlambeni olusha" }, "sleep": { "label": "Ukulala", "value": "Balala embhedeni omnandi" } },
+  "artModes": { "coloring": "Incwadi yokucwesha", "pollinations": "Ubuciko be-AI", "ai-coloring": "Ukucwesha nge-AI" },
+  "scenes": {
+    "meetTitle": "Hlangana no-{hero}",
+    "meetDesc": "Nangu u-{hero}. U-{hero} uyiqhawe lethu!",
+    "dreamTitle": "Iphupho",
+    "dreamDesc": "U-{hero} ufuna ukuthi {want}. Ngaphezu kwakho konke!",
+    "problemTitle": "Hawu!",
+    "problemDesc": "Kodwa kunenkinga! {obstacle} usendleleni!",
+    "planTitle": "Uhlelo oluhlakaniphile",
+    "planDesc": "U-{hero} unombono! Esebenzisa {solution}!",
+    "endTitle": "Isiphetho",
+    "endDesc": "Baphila ngokujabula phakade! {ending}!",
+    "madeWith": "Kwakhiwe ngu-{author} ngothando ❤️"
+  },
+  "alphabet": {
+    "title": "Izinhlamvu ZesiZulu",
+    "instructions": "Chofoza uhlamvu!",
+    "letters": {
+      "A": { "word": "Amanzi", "emoji": "💧", "phrase": "A Amanzi" },
+      "B": { "word": "Ibhola", "emoji": "⚽", "phrase": "B Ibhola" },
+      "C": { "word": "Icici", "emoji": "💎", "phrase": "C Icici" },
+      "D": { "word": "Idada", "emoji": "🦆", "phrase": "D Idada" },
+      "E": { "word": "Iembe", "emoji": "🪓", "phrase": "E Iembe" },
+      "F": { "word": "Ifoni", "emoji": "📱", "phrase": "F Ifoni" },
+      "G": { "word": "Igundane", "emoji": "🐭", "phrase": "G Igundane" },
+      "H": { "word": "Ihashi", "emoji": "🐴", "phrase": "H Ihashi" },
+      "I": { "word": "Inja", "emoji": "🐕", "phrase": "I Inja" },
+      "J": { "word": "Ijuba", "emoji": "🕊️", "phrase": "J Ijuba" },
+      "K": { "word": "Ikati", "emoji": "🐱", "phrase": "K Ikati" },
+      "L": { "word": "Ilanga", "emoji": "☀️", "phrase": "L Ilanga" },
+      "M": { "word": "Imvu", "emoji": "🐑", "phrase": "M Imvu" },
+      "N": { "word": "Inyoka", "emoji": "🐍", "phrase": "N Inyoka" },
+      "O": { "word": "Okhozi", "emoji": "🦅", "phrase": "O Okhozi" },
+      "P": { "word": "Iphepha", "emoji": "📄", "phrase": "P Iphepha" },
+      "Q": { "word": "Iqanda", "emoji": "🥚", "phrase": "Q Iqanda" },
+      "R": { "word": "Irediyo", "emoji": "📻", "phrase": "R Irediyo" },
+      "S": { "word": "Isikole", "emoji": "🏫", "phrase": "S Isikole" },
+      "T": { "word": "Itshezi", "emoji": "🧀", "phrase": "T Itshezi" },
+      "U": { "word": "Ubisi", "emoji": "🥛", "phrase": "U Ubisi" },
+      "V": { "word": "Ividiyo", "emoji": "📹", "phrase": "V Ividiyo" },
+      "W": { "word": "Iwashi", "emoji": "⌚", "phrase": "W Iwashi" },
+      "X": { "word": "Ixoxo", "emoji": "🐸", "phrase": "X Ixoxo" },
+      "Y": { "word": "Iyeza", "emoji": "💊", "phrase": "Y Iyeza" },
+      "Z": { "word": "Izulu", "emoji": "⛈️", "phrase": "Z Izulu" }
+    }
+  },
+  "numbers": {
+    "title": "Izinombolo",
+    "instructions": "Chofoza inombolo!",
+    "items": {
+      "1": { "word": "Kunye", "emoji": "⭐", "phrase": "Inkanyezi eyodwa" },
+      "2": { "word": "Kubili", "emoji": "⭐⭐", "phrase": "Izinkanyezi ezimbili" },
+      "3": { "word": "Kuthathu", "emoji": "⭐⭐⭐", "phrase": "Izinkanyezi ezintathu" },
+      "4": { "word": "Kune", "emoji": "🐉🐉🐉🐉", "phrase": "Odrako abane" },
+      "5": { "word": "Kuhlanu", "emoji": "🖐️", "phrase": "Iminwe emihlanu" },
+      "6": { "word": "Isithupha", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Ama-apula ayisithupha" },
+      "7": { "word": "Isikhombisa", "emoji": "🌈", "phrase": "Imibala eyisikhombisa" },
+      "8": { "word": "Isishiyagalombili", "emoji": "🐙", "phrase": "Imilenze eyisishiyagalombili" },
+      "9": { "word": "Isishiyagalolunye", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Amabhalonsi ayisishiyagalolunye" },
+      "10": { "word": "Ishumi", "emoji": "🖐️🖐️", "phrase": "Iminwe eyishumi" }
+    }
+  }
+}

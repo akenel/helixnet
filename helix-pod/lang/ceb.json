@@ -1,0 +1,69 @@
+{
+  "meta": { "language": "Cebuano", "code": "ceb", "flag": "🇵🇭", "direction": "ltr" },
+  "ui": { "title": "Salamangka sa Sugilanon", "subtitle": "I-klik ang mga hulagway ug himoa ang imong sugilanon!", "makeBook": "Himoa ang akong libro!", "tryAgain": "Sulayi pag-usab", "done": "Nahuman na!", "serverReady": "Andam na ang server", "serverConnecting": "Nagkonektar...", "serverNotRunning": "Wala nagdagan ang server!", "startServerFirst": "Pagsugod una sa server:", "thenClickAgain": "Dayon i-klik ang buton pag-usab!", "generating": "Gihimo ang imong libro...", "yourBookReady": "Andam na ang imong libro!", "openingNewWindow": "Nagbukas sa bag-ong bintana...", "savedTo": "Na-save sa:", "pickArtStyle": "Pagpili og estilo sa arte:", "allFree": "Tanan libre! Walay account kinahanglan!", "whatsYourName": "Unsa ang imong ngalan?", "letsGo": "Tara na!", "myStories": "Akong mga sugilanon", "seeMyStory": "Tan-awa ang akong sugilanon!" },
+  "steps": { "hero": "Kinsa ang bayani?", "want": "Unsa ang ilang gusto?", "obstacle": "Uy! Unsa ang nakabalda?", "solution": "Giunsa nila pagdaog?", "ending": "Ang katapusan ingon ani..." },
+  "story": { "onceUponATime": "Kaniadto", "theyWanted": "Gusto nila", "butOhNo": "Apan uy!", "inTheWay": "nakabalda sa dalan!", "using": "gamit ang", "theySavedTheDay": "Giluwas nila ang adlaw!", "theEnd": "Katapusan:" },
+  "heroes": { "dragon": { "label": "Dragon", "value": "Mahigalaon nga dragon" }, "robot": { "label": "Robot", "value": "Maisugon nga robot" }, "unicorn": { "label": "Unicorn", "value": "Salamangkero nga unicorn" }, "cat": { "label": "Iring", "value": "Super iring" }, "dog": { "label": "Iro", "value": "Bayaning iro" }, "superhero": { "label": "Superhero", "value": "Gamay nga superhero" }, "tiger": { "label": "Tigre", "value": "Kusgan nga tigre" }, "space": { "label": "Astronaut", "value": "Space explorer" } },
+  "wants": { "princess": { "label": "Luwasa ang prinsesa", "value": "Luwasa ang prinsesa gikan sa torre" }, "treasure": { "label": "Pangitaa ang bahandi", "value": "Pangitaa ang gitago nga bahandi" }, "race": { "label": "Daogi ang lumba", "value": "Daogi ang dakong lumba" }, "home": { "label": "Pauli sa balay", "value": "Luwas nga makapauli" }, "friend": { "label": "Pangitaa og higala", "value": "Pangitaa og bag-ong higala" }, "fly": { "label": "Pagkat-on sa paglupad", "value": "Pagkat-on sa paglupad" }, "wizard": { "label": "Mahimong salamangkero", "value": "Mahimong salamangkero" }, "ocean": { "label": "Eksplorar ang dagat", "value": "Eksplorar ang dagat" } },
+  "obstacles": { "giant": { "label": "Higante", "value": "Nasuko nga higante" }, "monster": { "label": "Mananap", "value": "Makalilisang nga mananap" }, "mountain": { "label": "Bukid", "value": "Dako nga bukid" }, "door": { "label": "Salamangkang pultahan", "value": "Sinirahan nga salamangkang pultahan" }, "storm": { "label": "Bagyo", "value": "Kusog nga bagyo" }, "forest": { "label": "Kalasangan", "value": "Ngitngit nga lawom nga kalasangan" }, "wizard": { "label": "Salamangkero", "value": "Limbongan nga salamangkero" }, "maze": { "label": "Labyrint", "value": "Makalibog nga labyrint" } },
+  "solutions": { "speed": { "label": "Katulin", "value": "Super paspas nga gahum" }, "friend": { "label": "Higala", "value": "Makatabang nga higala" }, "trick": { "label": "Limbong", "value": "Maalamon nga limbong" }, "magic": { "label": "Salamangka", "value": "Salamangkang gahum" }, "brave": { "label": "Kaisog", "value": "Pagkamaisugon kaayo" }, "kindness": { "label": "Kaayo", "value": "Kaayo ug gugma" }, "teamwork": { "label": "Pagtinabangay", "value": "Pagtinabangay sa tanan" }, "nevergiveup": { "label": "Ayaw pagsuko", "value": "Ayaw gyud pagsuko" } },
+  "endings": { "party": { "label": "Party", "value": "Tanan nagsayaw sa dakong party" }, "sunset": { "label": "Pagsalop", "value": "Naglupad nga magkauban paingon sa pagsalop" }, "castle": { "label": "Kastilyo", "value": "Nagpuyo sa nindot nga kastilyo" }, "hugging": { "label": "Paghakop", "value": "Tanang higala naghakop ug nagkatawa" }, "cake": { "label": "Cake", "value": "Nagkaon og cake ug ice cream" }, "medal": { "label": "Medalya", "value": "Nakadawat og bulawan nga medalya" }, "adventure": { "label": "Pakigbiag", "value": "Niadto sa bag-ong pakigbiag" }, "sleep": { "label": "Katulog", "value": "Nakatulog sa humok nga katre" } },
+  "artModes": { "coloring": "Coloring book", "pollinations": "AI Art", "ai-coloring": "AI Coloring" },
+  "scenes": {
+    "meetTitle": "Hibaloi si {hero}",
+    "meetDesc": "Mao kini si {hero}. Si {hero} ang atong bayani!",
+    "dreamTitle": "Ang Damgo",
+    "dreamDesc": "Gusto ni {hero} nga {want}. Labaw sa tanan!",
+    "problemTitle": "Uy!",
+    "problemDesc": "Apan adunay problema! {obstacle} nakabalda sa dalan!",
+    "planTitle": "Ang Maalamon nga Plano",
+    "planDesc": "Adunay ideya si {hero}! Gamit ang {solution}!",
+    "endTitle": "Katapusan",
+    "endDesc": "Ug nagpuyo sila nga malipayon hangtod sa hangtod! {ending}!",
+    "madeWith": "Gihimo ni {author} uban ang ❤️"
+  },
+  "alphabet": {
+    "title": "Alpabeto sa Cebuano",
+    "instructions": "I-klik ang letra!",
+    "letters": {
+      "A": { "word": "Aso", "emoji": "🐕", "phrase": "A Aso" },
+      "B": { "word": "Baboy", "emoji": "🐷", "phrase": "B Baboy" },
+      "C": { "word": "Cake", "emoji": "🎂", "phrase": "C Cake" },
+      "D": { "word": "Dagat", "emoji": "🌊", "phrase": "D Dagat" },
+      "E": { "word": "Elefante", "emoji": "🐘", "phrase": "E Elefante" },
+      "F": { "word": "Flores", "emoji": "🌸", "phrase": "F Flores" },
+      "G": { "word": "Gatas", "emoji": "🥛", "phrase": "G Gatas" },
+      "H": { "word": "Hayop", "emoji": "🦁", "phrase": "H Hayop" },
+      "I": { "word": "Isda", "emoji": "🐟", "phrase": "I Isda" },
+      "J": { "word": "Jirafa", "emoji": "🦒", "phrase": "J Jirafa" },
+      "K": { "word": "Kahoy", "emoji": "🌳", "phrase": "K Kahoy" },
+      "L": { "word": "Leon", "emoji": "🦁", "phrase": "L Leon" },
+      "M": { "word": "Manok", "emoji": "🐓", "phrase": "M Manok" },
+      "N": { "word": "Nipa", "emoji": "🏠", "phrase": "N Nipa" },
+      "O": { "word": "Oras", "emoji": "🕐", "phrase": "O Oras" },
+      "P": { "word": "Pusa", "emoji": "🐱", "phrase": "P Pusa" },
+      "R": { "word": "Rosas", "emoji": "🌹", "phrase": "R Rosas" },
+      "S": { "word": "Saging", "emoji": "🍌", "phrase": "S Saging" },
+      "T": { "word": "Tigre", "emoji": "🐯", "phrase": "T Tigre" },
+      "U": { "word": "Ulan", "emoji": "🌧️", "phrase": "U Ulan" },
+      "W": { "word": "Walo", "emoji": "8️⃣", "phrase": "W Walo" },
+      "Y": { "word": "Yelo", "emoji": "🧊", "phrase": "Y Yelo" }
+    }
+  },
+  "numbers": {
+    "title": "Mga Numero",
+    "instructions": "I-klik ang numero!",
+    "items": {
+      "1": { "word": "Usa", "emoji": "⭐", "phrase": "Usa ka bituon" },
+      "2": { "word": "Duha", "emoji": "⭐⭐", "phrase": "Duha ka bituon" },
+      "3": { "word": "Tulo", "emoji": "⭐⭐⭐", "phrase": "Tulo ka bituon" },
+      "4": { "word": "Upat", "emoji": "🐉🐉🐉🐉", "phrase": "Upat ka dragon" },
+      "5": { "word": "Lima", "emoji": "🖐️", "phrase": "Lima ka tudlo" },
+      "6": { "word": "Unom", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Unom ka mansanas" },
+      "7": { "word": "Pito", "emoji": "🌈", "phrase": "Pito ka kolor" },
+      "8": { "word": "Walo", "emoji": "🐙", "phrase": "Walo ka tiil" },
+      "9": { "word": "Siyam", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Siyam ka balloon" },
+      "10": { "word": "Napulo", "emoji": "🖐️🖐️", "phrase": "Napulo ka tudlo" }
+    }
+  }
+}
