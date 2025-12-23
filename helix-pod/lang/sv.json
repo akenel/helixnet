@@ -8,5 +8,69 @@
   "obstacles": { "giant": { "label": "Jätte", "value": "en sur jätte" }, "monster": { "label": "Monster", "value": "ett läskigt monster" }, "mountain": { "label": "Berg", "value": "ett enormt berg" }, "door": { "label": "Magisk Dörr", "value": "en låst magisk dörr" }, "storm": { "label": "Storm", "value": "en vild storm" }, "forest": { "label": "Skog", "value": "en mörk djup skog" }, "wizard": { "label": "Trollkarl", "value": "en slug trollkarl" }, "maze": { "label": "Labyrint", "value": "en förvirrande labyrint" } },
   "solutions": { "speed": { "label": "Snabbhet", "value": "supersnabba krafter" }, "friend": { "label": "Vän", "value": "en hjälpsam vän" }, "trick": { "label": "Trick", "value": "ett smart trick" }, "magic": { "label": "Magi", "value": "magiska krafter" }, "brave": { "label": "Mod", "value": "att vara supermodig" }, "kindness": { "label": "Vänlighet", "value": "vänlighet och kärlek" }, "teamwork": { "label": "Lagarbete", "value": "lagarbete med alla" }, "nevergiveup": { "label": "Ge Aldrig Upp", "value": "att aldrig ge upp" } },
   "endings": { "party": { "label": "Fest", "value": "alla dansar på en stor fest" }, "sunset": { "label": "Solnedgång", "value": "flyger tillsammans mot solnedgången" }, "castle": { "label": "Slott", "value": "bor i ett vackert slott" }, "hugging": { "label": "Kramar", "value": "alla vänner kramar och skrattar" }, "cake": { "label": "Tårta", "value": "äter tårta och glass" }, "medal": { "label": "Medalj", "value": "får en guldmedalj" }, "adventure": { "label": "Äventyr", "value": "ger sig ut på ett nytt äventyr" }, "sleep": { "label": "Sova", "value": "sover i en mysig säng" } },
-  "artModes": { "coloring": "Målarbok", "pollinations": "AI-Konst", "ai-coloring": "AI-Målning" }
+  "artModes": { "coloring": "Målarbok", "pollinations": "AI-Konst", "ai-coloring": "AI-Målning" },
+  "scenes": {
+    "meetTitle": "Möt {hero}",
+    "meetDesc": "Det här är {hero}. {hero} är vår hjälte!",
+    "dreamTitle": "Drömmen",
+    "dreamDesc": "{hero} vill {want}. Mer än något annat!",
+    "problemTitle": "Åh Nej!",
+    "problemDesc": "Men det finns ett problem! {obstacle} är i vägen!",
+    "planTitle": "Den Smarta Planen",
+    "planDesc": "{hero} har en idé! Med {solution}!",
+    "endTitle": "SLUT",
+    "endDesc": "Och de levde lyckliga i alla sina dagar! {ending}!",
+    "madeWith": "Gjord med ❤️ av {author}"
+  },
+  "alphabet": {
+    "title": "Det Svenska Alfabetet",
+    "instructions": "Klicka på en bokstav!",
+    "letters": {
+      "A": { "word": "Anka", "emoji": "🦆", "phrase": "A som i Anka" },
+      "B": { "word": "Björn", "emoji": "🐻", "phrase": "B som i Björn" },
+      "C": { "word": "Citron", "emoji": "🍋", "phrase": "C som i Citron" },
+      "D": { "word": "Drake", "emoji": "🐉", "phrase": "D som i Drake" },
+      "E": { "word": "Elefant", "emoji": "🐘", "phrase": "E som i Elefant" },
+      "F": { "word": "Fjäril", "emoji": "🦋", "phrase": "F som i Fjäril" },
+      "G": { "word": "Giraff", "emoji": "🦒", "phrase": "G som i Giraff" },
+      "H": { "word": "Hund", "emoji": "🐕", "phrase": "H som i Hund" },
+      "I": { "word": "Igelkott", "emoji": "🦔", "phrase": "I som i Igelkott" },
+      "J": { "word": "Jordgubbe", "emoji": "🍓", "phrase": "J som i Jordgubbe" },
+      "K": { "word": "Katt", "emoji": "🐱", "phrase": "K som i Katt" },
+      "L": { "word": "Lejon", "emoji": "🦁", "phrase": "L som i Lejon" },
+      "M": { "word": "Mus", "emoji": "🐭", "phrase": "M som i Mus" },
+      "N": { "word": "Nyckelpiga", "emoji": "🐞", "phrase": "N som i Nyckelpiga" },
+      "O": { "word": "Orm", "emoji": "🐍", "phrase": "O som i Orm" },
+      "P": { "word": "Pingvin", "emoji": "🐧", "phrase": "P som i Pingvin" },
+      "Q": { "word": "Quiz", "emoji": "❓", "phrase": "Q som i Quiz" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R som i Robot" },
+      "S": { "word": "Sol", "emoji": "☀️", "phrase": "S som i Sol" },
+      "T": { "word": "Tiger", "emoji": "🐯", "phrase": "T som i Tiger" },
+      "U": { "word": "Uggla", "emoji": "🦉", "phrase": "U som i Uggla" },
+      "V": { "word": "Val", "emoji": "🐋", "phrase": "V som i Val" },
+      "W": { "word": "Waffle", "emoji": "🧇", "phrase": "W som i Waffle" },
+      "X": { "word": "Xylofon", "emoji": "🎵", "phrase": "X som i Xylofon" },
+      "Y": { "word": "Yxa", "emoji": "🪓", "phrase": "Y som i Yxa" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z som i Zebra" },
+      "Å": { "word": "Åsna", "emoji": "🫏", "phrase": "Å som i Åsna" },
+      "Ä": { "word": "Äpple", "emoji": "🍎", "phrase": "Ä som i Äpple" },
+      "Ö": { "word": "Örn", "emoji": "🦅", "phrase": "Ö som i Örn" }
+    }
+  },
+  "numbers": {
+    "title": "Siffrorna",
+    "instructions": "Klicka på en siffra!",
+    "items": {
+      "1": { "word": "Ett", "emoji": "⭐", "phrase": "En stjärna" },
+      "2": { "word": "Två", "emoji": "⭐⭐", "phrase": "Två stjärnor" },
+      "3": { "word": "Tre", "emoji": "⭐⭐⭐", "phrase": "Tre stjärnor" },
+      "4": { "word": "Fyra", "emoji": "🐉🐉🐉🐉", "phrase": "Fyra drakar" },
+      "5": { "word": "Fem", "emoji": "🖐️", "phrase": "Fem fingrar" },
+      "6": { "word": "Sex", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Sex äpplen" },
+      "7": { "word": "Sju", "emoji": "🌈", "phrase": "Sju färger" },
+      "8": { "word": "Åtta", "emoji": "🐙", "phrase": "Åtta armar" },
+      "9": { "word": "Nio", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Nio ballonger" },
+      "10": { "word": "Tio", "emoji": "🖐️🖐️", "phrase": "Tio fingrar" }
+    }
+  }
 }

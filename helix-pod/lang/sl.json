@@ -8,5 +8,65 @@
   "obstacles": { "giant": { "label": "Velikan", "value": "sitni velikan" }, "monster": { "label": "Pošast", "value": "strašljiva pošast" }, "mountain": { "label": "Gora", "value": "ogromna gora" }, "door": { "label": "Čarobna Vrata", "value": "zaklenjena čarobna vrata" }, "storm": { "label": "Nevihta", "value": "divja nevihta" }, "forest": { "label": "Gozd", "value": "temen globok gozd" }, "wizard": { "label": "Čarovnik", "value": "zvit čarovnik" }, "maze": { "label": "Labirint", "value": "zmeden labirint" } },
   "solutions": { "speed": { "label": "Hitrost", "value": "super hitre moči" }, "friend": { "label": "Prijatelj", "value": "prijatelj ki pomaga" }, "trick": { "label": "Trik", "value": "pameten trik" }, "magic": { "label": "Čarovnija", "value": "čarobne moči" }, "brave": { "label": "Pogum", "value": "biti super pogumen" }, "kindness": { "label": "Prijaznost", "value": "prijaznost in ljubezen" }, "teamwork": { "label": "Timsko Delo", "value": "timsko delo z vsemi" }, "nevergiveup": { "label": "Nikoli Ne Odnehaj", "value": "nikoli ne odnehati" } },
   "endings": { "party": { "label": "Zabava", "value": "vsi plešejo na veliki zabavi" }, "sunset": { "label": "Sončni Zahod", "value": "letijo skupaj v sončni zahod" }, "castle": { "label": "Grad", "value": "živijo v lepem gradu" }, "hugging": { "label": "Objemi", "value": "vsi prijatelji se objemajo in smejijo" }, "cake": { "label": "Torta", "value": "jedo torto in sladoled" }, "medal": { "label": "Medalja", "value": "dobijo zlato medaljo" }, "adventure": { "label": "Pustolovščina", "value": "gredo na novo pustolovščino" }, "sleep": { "label": "Spanje", "value": "spijo v udobni postelji" } },
-  "artModes": { "coloring": "Pobarvanke", "pollinations": "AI Umetnost", "ai-coloring": "AI Barvanje" }
+  "artModes": { "coloring": "Pobarvanke", "pollinations": "AI Umetnost", "ai-coloring": "AI Barvanje" },
+  "scenes": {
+    "meetTitle": "Spoznaj {hero}",
+    "meetDesc": "To je {hero}. {hero} je naš junak!",
+    "dreamTitle": "Sanje",
+    "dreamDesc": "{hero} hoče {want}. Bolj kot karkoli drugega!",
+    "problemTitle": "O Ne!",
+    "problemDesc": "Ampak je problem! {obstacle} je na poti!",
+    "planTitle": "Pameten Načrt",
+    "planDesc": "{hero} ima idejo! Z {solution}!",
+    "endTitle": "KONEC",
+    "endDesc": "In živeli so srečno do konca svojih dni! {ending}!",
+    "madeWith": "Narejeno z ❤️ od {author}"
+  },
+  "alphabet": {
+    "title": "Slovenska Abeceda",
+    "instructions": "Klikni na črko!",
+    "letters": {
+      "A": { "word": "Avto", "emoji": "🚗", "phrase": "A kot Avto" },
+      "B": { "word": "Banana", "emoji": "🍌", "phrase": "B kot Banana" },
+      "C": { "word": "Cvet", "emoji": "🌸", "phrase": "C kot Cvet" },
+      "Č": { "word": "Čokolada", "emoji": "🍫", "phrase": "Č kot Čokolada" },
+      "D": { "word": "Dinozaver", "emoji": "🦕", "phrase": "D kot Dinozaver" },
+      "E": { "word": "Elefant", "emoji": "🐘", "phrase": "E kot Elefant" },
+      "F": { "word": "Flamingo", "emoji": "🦩", "phrase": "F kot Flamingo" },
+      "G": { "word": "Gorila", "emoji": "🦍", "phrase": "G kot Gorila" },
+      "H": { "word": "Hiša", "emoji": "🏠", "phrase": "H kot Hiša" },
+      "I": { "word": "Iglu", "emoji": "🏠", "phrase": "I kot Iglu" },
+      "J": { "word": "Jagoda", "emoji": "🍓", "phrase": "J kot Jagoda" },
+      "K": { "word": "Konj", "emoji": "🐴", "phrase": "K kot Konj" },
+      "L": { "word": "Lev", "emoji": "🦁", "phrase": "L kot Lev" },
+      "M": { "word": "Miš", "emoji": "🐭", "phrase": "M kot Miš" },
+      "N": { "word": "Nosorog", "emoji": "🦏", "phrase": "N kot Nosorog" },
+      "O": { "word": "Orel", "emoji": "🦅", "phrase": "O kot Orel" },
+      "P": { "word": "Pes", "emoji": "🐕", "phrase": "P kot Pes" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R kot Robot" },
+      "S": { "word": "Sonce", "emoji": "☀️", "phrase": "S kot Sonce" },
+      "Š": { "word": "Šola", "emoji": "🏫", "phrase": "Š kot Šola" },
+      "T": { "word": "Tiger", "emoji": "🐯", "phrase": "T kot Tiger" },
+      "U": { "word": "Ura", "emoji": "⏰", "phrase": "U kot Ura" },
+      "V": { "word": "Voda", "emoji": "💧", "phrase": "V kot Voda" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z kot Zebra" },
+      "Ž": { "word": "Žaba", "emoji": "🐸", "phrase": "Ž kot Žaba" }
+    }
+  },
+  "numbers": {
+    "title": "Števila",
+    "instructions": "Klikni na število!",
+    "items": {
+      "1": { "word": "Ena", "emoji": "⭐", "phrase": "Ena zvezda" },
+      "2": { "word": "Dva", "emoji": "⭐⭐", "phrase": "Dve zvezdi" },
+      "3": { "word": "Tri", "emoji": "⭐⭐⭐", "phrase": "Tri zvezde" },
+      "4": { "word": "Štiri", "emoji": "🐉🐉🐉🐉", "phrase": "Štiri zmaji" },
+      "5": { "word": "Pet", "emoji": "🖐️", "phrase": "Pet prstov" },
+      "6": { "word": "Šest", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Šest jabolk" },
+      "7": { "word": "Sedem", "emoji": "🌈", "phrase": "Sedem barv" },
+      "8": { "word": "Osem", "emoji": "🐙", "phrase": "Osem rok" },
+      "9": { "word": "Devet", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Devet balonov" },
+      "10": { "word": "Deset", "emoji": "🖐️🖐️", "phrase": "Deset prstov" }
+    }
+  }
 }

@@ -97,5 +97,66 @@
     "coloring": "Kitabu cha Kupaka Rangi",
     "pollinations": "Sanaa ya AI",
     "ai-coloring": "Kupaka Rangi AI"
+  },
+  "scenes": {
+    "meetTitle": "Kutana na {hero}",
+    "meetDesc": "Huyu ni {hero}. {hero} ndiye shujaa wetu!",
+    "dreamTitle": "Ndoto",
+    "dreamDesc": "{hero} anataka {want}. Zaidi ya chochote!",
+    "problemTitle": "Lo!",
+    "problemDesc": "Lakini kuna tatizo! {obstacle} iko njiani!",
+    "planTitle": "Mpango wa Busara",
+    "planDesc": "{hero} ana wazo! Kwa kutumia {solution}!",
+    "endTitle": "MWISHO",
+    "endDesc": "Na waliishi kwa furaha milele! {ending}!",
+    "madeWith": "Ilitengenezwa kwa ❤️ na {author}"
+  },
+  "alphabet": {
+    "title": "Alfabeti ya Kiswahili",
+    "instructions": "Bonyeza herufi!",
+    "letters": {
+      "A": { "word": "Asali", "emoji": "🍯", "phrase": "A kama Asali" },
+      "B": { "word": "Bata", "emoji": "🦆", "phrase": "B kama Bata" },
+      "C": { "word": "Chui", "emoji": "🐆", "phrase": "C kama Chui" },
+      "D": { "word": "Duma", "emoji": "🐆", "phrase": "D kama Duma" },
+      "E": { "word": "Embe", "emoji": "🥭", "phrase": "E kama Embe" },
+      "F": { "word": "Farasi", "emoji": "🐴", "phrase": "F kama Farasi" },
+      "G": { "word": "Gari", "emoji": "🚗", "phrase": "G kama Gari" },
+      "H": { "word": "Helikopta", "emoji": "🚁", "phrase": "H kama Helikopta" },
+      "I": { "word": "Inzi", "emoji": "🪰", "phrase": "I kama Inzi" },
+      "J": { "word": "Jua", "emoji": "☀️", "phrase": "J kama Jua" },
+      "K": { "word": "Kuku", "emoji": "🐔", "phrase": "K kama Kuku" },
+      "L": { "word": "Simba", "emoji": "🦁", "phrase": "L kama Simba" },
+      "M": { "word": "Mbuzi", "emoji": "🐐", "phrase": "M kama Mbuzi" },
+      "N": { "word": "Ndizi", "emoji": "🍌", "phrase": "N kama Ndizi" },
+      "O": { "word": "Omena", "emoji": "🐟", "phrase": "O kama Omena" },
+      "P": { "word": "Paka", "emoji": "🐱", "phrase": "P kama Paka" },
+      "Q": { "word": "Quran", "emoji": "📖", "phrase": "Q kama Quran" },
+      "R": { "word": "Roboti", "emoji": "🤖", "phrase": "R kama Roboti" },
+      "S": { "word": "Samaki", "emoji": "🐠", "phrase": "S kama Samaki" },
+      "T": { "word": "Tembo", "emoji": "🐘", "phrase": "T kama Tembo" },
+      "U": { "word": "Ua", "emoji": "🌸", "phrase": "U kama Ua" },
+      "V": { "word": "Vipepeo", "emoji": "🦋", "phrase": "V kama Vipepeo" },
+      "W": { "word": "Wingu", "emoji": "☁️", "phrase": "W kama Wingu" },
+      "X": { "word": "Xilofoni", "emoji": "🎵", "phrase": "X kama Xilofoni" },
+      "Y": { "word": "Yai", "emoji": "🥚", "phrase": "Y kama Yai" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z kama Zebra" }
+    }
+  },
+  "numbers": {
+    "title": "Nambari",
+    "instructions": "Bonyeza nambari!",
+    "items": {
+      "1": { "word": "Moja", "emoji": "⭐", "phrase": "Nyota moja" },
+      "2": { "word": "Mbili", "emoji": "⭐⭐", "phrase": "Nyota mbili" },
+      "3": { "word": "Tatu", "emoji": "⭐⭐⭐", "phrase": "Nyota tatu" },
+      "4": { "word": "Nne", "emoji": "🐉🐉🐉🐉", "phrase": "Majoka manne" },
+      "5": { "word": "Tano", "emoji": "🖐️", "phrase": "Vidole vitano" },
+      "6": { "word": "Sita", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Tufaha sita" },
+      "7": { "word": "Saba", "emoji": "🌈", "phrase": "Rangi saba" },
+      "8": { "word": "Nane", "emoji": "🐙", "phrase": "Mikono minane" },
+      "9": { "word": "Tisa", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Puto tisa" },
+      "10": { "word": "Kumi", "emoji": "🖐️🖐️", "phrase": "Vidole kumi" }
+    }
   }
 }

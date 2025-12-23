@@ -8,5 +8,69 @@
   "obstacles": { "giant": { "label": "Jättiläinen", "value": "äreä jättiläinen" }, "monster": { "label": "Hirviö", "value": "pelottava hirviö" }, "mountain": { "label": "Vuori", "value": "valtava vuori" }, "door": { "label": "Taikaovi", "value": "lukittu taikaovi" }, "storm": { "label": "Myrsky", "value": "villi myrsky" }, "forest": { "label": "Metsä", "value": "pimeä syvä metsä" }, "wizard": { "label": "Velho", "value": "ovela velho" }, "maze": { "label": "Sokkelo", "value": "hämmentävä sokkelo" } },
   "solutions": { "speed": { "label": "Nopeus", "value": "supernopeat voimat" }, "friend": { "label": "Ystävä", "value": "avulias ystävä" }, "trick": { "label": "Temppu", "value": "älykäs temppu" }, "magic": { "label": "Taika", "value": "taikavoimat" }, "brave": { "label": "Rohkeus", "value": "olla superrohkea" }, "kindness": { "label": "Ystävällisyys", "value": "ystävällisyys ja rakkaus" }, "teamwork": { "label": "Tiimityö", "value": "tiimityö kaikkien kanssa" }, "nevergiveup": { "label": "Älä Luovuta", "value": "ei koskaan luovuta" } },
   "endings": { "party": { "label": "Juhlat", "value": "kaikki tanssivat suurissa juhlissa" }, "sunset": { "label": "Auringonlasku", "value": "lentävät yhdessä auringonlaskuun" }, "castle": { "label": "Linna", "value": "asuvat kauniissa linnassa" }, "hugging": { "label": "Halaukset", "value": "kaikki ystävät halaavat ja nauravat" }, "cake": { "label": "Kakku", "value": "syövät kakkua ja jäätelöä" }, "medal": { "label": "Mitali", "value": "saavat kultamitalin" }, "adventure": { "label": "Seikkailu", "value": "lähtevät uuteen seikkailuun" }, "sleep": { "label": "Nukkua", "value": "nukkuvat mukavassa sängyssä" } },
-  "artModes": { "coloring": "Värityskirja", "pollinations": "AI-Taide", "ai-coloring": "AI-Väritys" }
+  "artModes": { "coloring": "Värityskirja", "pollinations": "AI-Taide", "ai-coloring": "AI-Väritys" },
+  "scenes": {
+    "meetTitle": "Tapaa {hero}",
+    "meetDesc": "Tässä on {hero}. {hero} on sankarimme!",
+    "dreamTitle": "Unelma",
+    "dreamDesc": "{hero} haluaa {want}. Enemmän kuin mitään muuta!",
+    "problemTitle": "Voi Ei!",
+    "problemDesc": "Mutta on ongelma! {obstacle} on tiellä!",
+    "planTitle": "Fiksu Suunnitelma",
+    "planDesc": "{hero}lla on idea! Käyttämällä {solution}!",
+    "endTitle": "LOPPU",
+    "endDesc": "Ja he elivät onnellisina elämänsä loppuun! {ending}!",
+    "madeWith": "Tehty ❤️lla, tekijä {author}"
+  },
+  "alphabet": {
+    "title": "Suomen Aakkoset",
+    "instructions": "Klikkaa kirjainta!",
+    "letters": {
+      "A": { "word": "Ankka", "emoji": "🦆", "phrase": "A niin kuin Ankka" },
+      "B": { "word": "Banaani", "emoji": "🍌", "phrase": "B niin kuin Banaani" },
+      "C": { "word": "Citrus", "emoji": "🍊", "phrase": "C niin kuin Citrus" },
+      "D": { "word": "Dinosaurus", "emoji": "🦕", "phrase": "D niin kuin Dinosaurus" },
+      "E": { "word": "Elefantti", "emoji": "🐘", "phrase": "E niin kuin Elefantti" },
+      "F": { "word": "Flamingo", "emoji": "🦩", "phrase": "F niin kuin Flamingo" },
+      "G": { "word": "Gorilla", "emoji": "🦍", "phrase": "G niin kuin Gorilla" },
+      "H": { "word": "Hiiri", "emoji": "🐭", "phrase": "H niin kuin Hiiri" },
+      "I": { "word": "Iglu", "emoji": "🏠", "phrase": "I niin kuin Iglu" },
+      "J": { "word": "Jäätelö", "emoji": "🍦", "phrase": "J niin kuin Jäätelö" },
+      "K": { "word": "Kissa", "emoji": "🐱", "phrase": "K niin kuin Kissa" },
+      "L": { "word": "Leijona", "emoji": "🦁", "phrase": "L niin kuin Leijona" },
+      "M": { "word": "Mansikka", "emoji": "🍓", "phrase": "M niin kuin Mansikka" },
+      "N": { "word": "Norsu", "emoji": "🐘", "phrase": "N niin kuin Norsu" },
+      "O": { "word": "Omena", "emoji": "🍎", "phrase": "O niin kuin Omena" },
+      "P": { "word": "Pingviini", "emoji": "🐧", "phrase": "P niin kuin Pingviini" },
+      "Q": { "word": "Quiz", "emoji": "❓", "phrase": "Q niin kuin Quiz" },
+      "R": { "word": "Robotti", "emoji": "🤖", "phrase": "R niin kuin Robotti" },
+      "S": { "word": "Siili", "emoji": "🦔", "phrase": "S niin kuin Siili" },
+      "T": { "word": "Tiikeri", "emoji": "🐯", "phrase": "T niin kuin Tiikeri" },
+      "U": { "word": "Unikko", "emoji": "🌺", "phrase": "U niin kuin Unikko" },
+      "V": { "word": "Varis", "emoji": "🐦", "phrase": "V niin kuin Varis" },
+      "W": { "word": "Waffle", "emoji": "🧇", "phrase": "W niin kuin Waffle" },
+      "X": { "word": "Xylofooni", "emoji": "🎵", "phrase": "X niin kuin Xylofooni" },
+      "Y": { "word": "Yö", "emoji": "🌙", "phrase": "Y niin kuin Yö" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z niin kuin Zebra" },
+      "Å": { "word": "Åland", "emoji": "🏝️", "phrase": "Å niin kuin Åland" },
+      "Ä": { "word": "Äiti", "emoji": "👩", "phrase": "Ä niin kuin Äiti" },
+      "Ö": { "word": "Öljy", "emoji": "🛢️", "phrase": "Ö niin kuin Öljy" }
+    }
+  },
+  "numbers": {
+    "title": "Numerot",
+    "instructions": "Klikkaa numeroa!",
+    "items": {
+      "1": { "word": "Yksi", "emoji": "⭐", "phrase": "Yksi tähti" },
+      "2": { "word": "Kaksi", "emoji": "⭐⭐", "phrase": "Kaksi tähteä" },
+      "3": { "word": "Kolme", "emoji": "⭐⭐⭐", "phrase": "Kolme tähteä" },
+      "4": { "word": "Neljä", "emoji": "🐉🐉🐉🐉", "phrase": "Neljä lohikäärmettä" },
+      "5": { "word": "Viisi", "emoji": "🖐️", "phrase": "Viisi sormea" },
+      "6": { "word": "Kuusi", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Kuusi omenaa" },
+      "7": { "word": "Seitsemän", "emoji": "🌈", "phrase": "Seitsemän väriä" },
+      "8": { "word": "Kahdeksan", "emoji": "🐙", "phrase": "Kahdeksan käsivartta" },
+      "9": { "word": "Yhdeksän", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Yhdeksän palloa" },
+      "10": { "word": "Kymmenen", "emoji": "🖐️🖐️", "phrase": "Kymmenen sormea" }
+    }
+  }
 }

@@ -97,5 +97,66 @@
     "coloring": "Buku Mewarna",
     "pollinations": "Seni AI",
     "ai-coloring": "Mewarna AI"
+  },
+  "scenes": {
+    "meetTitle": "Jumpa {hero}",
+    "meetDesc": "Ini {hero}. {hero} adalah wira kita!",
+    "dreamTitle": "Impian",
+    "dreamDesc": "{hero} mahu {want}. Lebih dari segala-galanya!",
+    "problemTitle": "Oh Tidak!",
+    "problemDesc": "Tapi ada masalah! {obstacle} menghalang jalan!",
+    "planTitle": "Rancangan Bijak",
+    "planDesc": "{hero} ada idea! Dengan menggunakan {solution}!",
+    "endTitle": "TAMAT",
+    "endDesc": "Dan mereka hidup bahagia selama-lamanya! {ending}!",
+    "madeWith": "Dibuat dengan ❤️ oleh {author}"
+  },
+  "alphabet": {
+    "title": "Abjad Melayu",
+    "instructions": "Klik pada huruf!",
+    "letters": {
+      "A": { "word": "Ayam", "emoji": "🐔", "phrase": "A untuk Ayam" },
+      "B": { "word": "Bola", "emoji": "⚽", "phrase": "B untuk Bola" },
+      "C": { "word": "Cawan", "emoji": "☕", "phrase": "C untuk Cawan" },
+      "D": { "word": "Durian", "emoji": "🍈", "phrase": "D untuk Durian" },
+      "E": { "word": "Epal", "emoji": "🍎", "phrase": "E untuk Epal" },
+      "F": { "word": "Flamingo", "emoji": "🦩", "phrase": "F untuk Flamingo" },
+      "G": { "word": "Gajah", "emoji": "🐘", "phrase": "G untuk Gajah" },
+      "H": { "word": "Harimau", "emoji": "🐯", "phrase": "H untuk Harimau" },
+      "I": { "word": "Ikan", "emoji": "🐟", "phrase": "I untuk Ikan" },
+      "J": { "word": "Jambu", "emoji": "🍐", "phrase": "J untuk Jambu" },
+      "K": { "word": "Kucing", "emoji": "🐱", "phrase": "K untuk Kucing" },
+      "L": { "word": "Lebah", "emoji": "🐝", "phrase": "L untuk Lebah" },
+      "M": { "word": "Monyet", "emoji": "🐵", "phrase": "M untuk Monyet" },
+      "N": { "word": "Naga", "emoji": "🐉", "phrase": "N untuk Naga" },
+      "O": { "word": "Oren", "emoji": "🍊", "phrase": "O untuk Oren" },
+      "P": { "word": "Pisang", "emoji": "🍌", "phrase": "P untuk Pisang" },
+      "Q": { "word": "Quran", "emoji": "📖", "phrase": "Q untuk Quran" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R untuk Robot" },
+      "S": { "word": "Singa", "emoji": "🦁", "phrase": "S untuk Singa" },
+      "T": { "word": "Tikus", "emoji": "🐭", "phrase": "T untuk Tikus" },
+      "U": { "word": "Ular", "emoji": "🐍", "phrase": "U untuk Ular" },
+      "V": { "word": "Van", "emoji": "🚐", "phrase": "V untuk Van" },
+      "W": { "word": "Wau", "emoji": "🪁", "phrase": "W untuk Wau" },
+      "X": { "word": "Xilofon", "emoji": "🎵", "phrase": "X untuk Xilofon" },
+      "Y": { "word": "Yak", "emoji": "🦬", "phrase": "Y untuk Yak" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z untuk Zebra" }
+    }
+  },
+  "numbers": {
+    "title": "Nombor",
+    "instructions": "Klik pada nombor!",
+    "items": {
+      "1": { "word": "Satu", "emoji": "⭐", "phrase": "Satu bintang" },
+      "2": { "word": "Dua", "emoji": "⭐⭐", "phrase": "Dua bintang" },
+      "3": { "word": "Tiga", "emoji": "⭐⭐⭐", "phrase": "Tiga bintang" },
+      "4": { "word": "Empat", "emoji": "🐉🐉🐉🐉", "phrase": "Empat naga" },
+      "5": { "word": "Lima", "emoji": "🖐️", "phrase": "Lima jari" },
+      "6": { "word": "Enam", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Enam epal" },
+      "7": { "word": "Tujuh", "emoji": "🌈", "phrase": "Tujuh warna" },
+      "8": { "word": "Lapan", "emoji": "🐙", "phrase": "Lapan tentakel" },
+      "9": { "word": "Sembilan", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Sembilan belon" },
+      "10": { "word": "Sepuluh", "emoji": "🖐️🖐️", "phrase": "Sepuluh jari" }
+    }
   }
 }

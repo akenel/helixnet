@@ -97,5 +97,68 @@
     "coloring": "Coloring Book",
     "pollinations": "AI Art",
     "ai-coloring": "AI Coloring"
+  },
+  "scenes": {
+    "meetTitle": "Kilalanin si {hero}",
+    "meetDesc": "Ito si {hero}. Si {hero} ang ating bayani!",
+    "dreamTitle": "Ang Pangarap",
+    "dreamDesc": "Gusto ni {hero} na {want}. Higit sa lahat!",
+    "problemTitle": "Ay Naku!",
+    "problemDesc": "Pero may problema! {obstacle} ang nakaharang!",
+    "planTitle": "Ang Matalinong Plano",
+    "planDesc": "May ideya si {hero}! Gamit ang {solution}!",
+    "endTitle": "WAKAS",
+    "endDesc": "At nabuhay silang masaya magpakailanman! {ending}!",
+    "madeWith": "Ginawa nang may ❤️ ni {author}"
+  },
+  "alphabet": {
+    "title": "Alpabetong Filipino",
+    "instructions": "I-click ang titik!",
+    "letters": {
+      "A": { "word": "Aso", "emoji": "🐕", "phrase": "A sa Aso" },
+      "B": { "word": "Bola", "emoji": "⚽", "phrase": "B sa Bola" },
+      "C": { "word": "Cake", "emoji": "🎂", "phrase": "C sa Cake" },
+      "D": { "word": "Dragon", "emoji": "🐉", "phrase": "D sa Dragon" },
+      "E": { "word": "Elefante", "emoji": "🐘", "phrase": "E sa Elefante" },
+      "F": { "word": "Flower", "emoji": "🌸", "phrase": "F sa Flower" },
+      "G": { "word": "Gatas", "emoji": "🥛", "phrase": "G sa Gatas" },
+      "H": { "word": "Hari", "emoji": "👑", "phrase": "H sa Hari" },
+      "I": { "word": "Isda", "emoji": "🐟", "phrase": "I sa Isda" },
+      "J": { "word": "Juice", "emoji": "🧃", "phrase": "J sa Juice" },
+      "K": { "word": "Kuting", "emoji": "🐱", "phrase": "K sa Kuting" },
+      "L": { "word": "Leon", "emoji": "🦁", "phrase": "L sa Leon" },
+      "M": { "word": "Mansanas", "emoji": "🍎", "phrase": "M sa Mansanas" },
+      "N": { "word": "Niyog", "emoji": "🥥", "phrase": "N sa Niyog" },
+      "Ñ": { "word": "Piña", "emoji": "🍍", "phrase": "Ñ sa Piña" },
+      "NG": { "word": "Ngiti", "emoji": "😊", "phrase": "NG sa Ngiti" },
+      "O": { "word": "Oso", "emoji": "🐻", "phrase": "O sa Oso" },
+      "P": { "word": "Pusa", "emoji": "🐈", "phrase": "P sa Pusa" },
+      "Q": { "word": "Queen", "emoji": "👸", "phrase": "Q sa Queen" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R sa Robot" },
+      "S": { "word": "Saging", "emoji": "🍌", "phrase": "S sa Saging" },
+      "T": { "word": "Tuta", "emoji": "🐕", "phrase": "T sa Tuta" },
+      "U": { "word": "Ulan", "emoji": "🌧️", "phrase": "U sa Ulan" },
+      "V": { "word": "Violin", "emoji": "🎻", "phrase": "V sa Violin" },
+      "W": { "word": "Watawat", "emoji": "🇵🇭", "phrase": "W sa Watawat" },
+      "X": { "word": "Xylophone", "emoji": "🎵", "phrase": "X sa Xylophone" },
+      "Y": { "word": "Yelo", "emoji": "🧊", "phrase": "Y sa Yelo" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z sa Zebra" }
+    }
+  },
+  "numbers": {
+    "title": "Mga Numero",
+    "instructions": "I-click ang numero!",
+    "items": {
+      "1": { "word": "Isa", "emoji": "⭐", "phrase": "Isang bituin" },
+      "2": { "word": "Dalawa", "emoji": "⭐⭐", "phrase": "Dalawang bituin" },
+      "3": { "word": "Tatlo", "emoji": "⭐⭐⭐", "phrase": "Tatlong bituin" },
+      "4": { "word": "Apat", "emoji": "🐉🐉🐉🐉", "phrase": "Apat na dragon" },
+      "5": { "word": "Lima", "emoji": "🖐️", "phrase": "Limang daliri" },
+      "6": { "word": "Anim", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Anim na mansanas" },
+      "7": { "word": "Pito", "emoji": "🌈", "phrase": "Pitong kulay" },
+      "8": { "word": "Walo", "emoji": "🐙", "phrase": "Walong braso" },
+      "9": { "word": "Siyam", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Siyam na lobo" },
+      "10": { "word": "Sampu", "emoji": "🖐️🖐️", "phrase": "Sampung daliri" }
+    }
   }
 }

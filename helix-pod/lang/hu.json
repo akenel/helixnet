@@ -8,5 +8,71 @@
   "obstacles": { "giant": { "label": "Óriás", "value": "egy mogorva óriás" }, "monster": { "label": "Szörny", "value": "egy ijesztő szörny" }, "mountain": { "label": "Hegy", "value": "egy hatalmas hegy" }, "door": { "label": "Varázslatos Ajtó", "value": "egy zárt varázslatos ajtó" }, "storm": { "label": "Vihar", "value": "egy vad vihar" }, "forest": { "label": "Erdő", "value": "egy sötét mély erdő" }, "wizard": { "label": "Varázsló", "value": "egy ravasz varázsló" }, "maze": { "label": "Labirintus", "value": "egy zavaros labirintus" } },
   "solutions": { "speed": { "label": "Sebesség", "value": "szuper gyors erők" }, "friend": { "label": "Barát", "value": "egy segítőkész barát" }, "trick": { "label": "Trükk", "value": "egy okos trükk" }, "magic": { "label": "Varázslat", "value": "varázslatos erők" }, "brave": { "label": "Bátorság", "value": "szuper bátor lenni" }, "kindness": { "label": "Kedvesség", "value": "kedvesség és szeretet" }, "teamwork": { "label": "Csapatmunka", "value": "csapatmunka mindenkivel" }, "nevergiveup": { "label": "Soha Ne Add Fel", "value": "soha nem feladni" } },
   "endings": { "party": { "label": "Buli", "value": "mindenki táncol egy nagy bulin" }, "sunset": { "label": "Naplemente", "value": "együtt repülnek a naplementébe" }, "castle": { "label": "Kastély", "value": "egy gyönyörű kastélyban élnek" }, "hugging": { "label": "Ölelés", "value": "minden barát ölelkezik és nevet" }, "cake": { "label": "Torta", "value": "tortát és fagylaltot esznek" }, "medal": { "label": "Érem", "value": "aranyérmet kapnak" }, "adventure": { "label": "Kaland", "value": "új kalandra indulnak" }, "sleep": { "label": "Alvás", "value": "kényelmes ágyban alszanak" } },
-  "artModes": { "coloring": "Színezőkönyv", "pollinations": "AI Művészet", "ai-coloring": "AI Színezés" }
+  "artModes": { "coloring": "Színezőkönyv", "pollinations": "AI Művészet", "ai-coloring": "AI Színezés" },
+  "scenes": {
+    "meetTitle": "Ismerd meg {hero}",
+    "meetDesc": "Ez {hero}. {hero} a mi hősünk!",
+    "dreamTitle": "Az Álom",
+    "dreamDesc": "{hero} szeretne {want}. Mindennél jobban!",
+    "problemTitle": "Jaj Ne!",
+    "problemDesc": "De van egy probléma! {obstacle} az útban áll!",
+    "planTitle": "Az Okos Terv",
+    "planDesc": "{hero}nak van egy ötlete! {solution} használatával!",
+    "endTitle": "VÉGE",
+    "endDesc": "És boldogan éltek, amíg meg nem haltak! {ending}!",
+    "madeWith": "Készítette ❤️-vel {author}"
+  },
+  "alphabet": {
+    "title": "A Magyar Ábécé",
+    "instructions": "Kattints egy betűre!",
+    "letters": {
+      "A": { "word": "Alma", "emoji": "🍎", "phrase": "A mint Alma" },
+      "Á": { "word": "Ács", "emoji": "🪓", "phrase": "Á mint Ács" },
+      "B": { "word": "Banán", "emoji": "🍌", "phrase": "B mint Banán" },
+      "C": { "word": "Citrom", "emoji": "🍋", "phrase": "C mint Citrom" },
+      "D": { "word": "Dinoszaurusz", "emoji": "🦕", "phrase": "D mint Dinoszaurusz" },
+      "E": { "word": "Elefánt", "emoji": "🐘", "phrase": "E mint Elefánt" },
+      "É": { "word": "Ég", "emoji": "🌌", "phrase": "É mint Ég" },
+      "F": { "word": "Hal", "emoji": "🐟", "phrase": "F mint Hal" },
+      "G": { "word": "Gorilla", "emoji": "🦍", "phrase": "G mint Gorilla" },
+      "H": { "word": "Ház", "emoji": "🏠", "phrase": "H mint Ház" },
+      "I": { "word": "Iglu", "emoji": "🏠", "phrase": "I mint Iglu" },
+      "Í": { "word": "Íj", "emoji": "🏹", "phrase": "Í mint Íj" },
+      "J": { "word": "Játék", "emoji": "🧸", "phrase": "J mint Játék" },
+      "K": { "word": "Kutya", "emoji": "🐕", "phrase": "K mint Kutya" },
+      "L": { "word": "Oroszlán", "emoji": "🦁", "phrase": "L mint Oroszlán" },
+      "M": { "word": "Macska", "emoji": "🐱", "phrase": "M mint Macska" },
+      "N": { "word": "Nap", "emoji": "☀️", "phrase": "N mint Nap" },
+      "O": { "word": "Orr", "emoji": "👃", "phrase": "O mint Orr" },
+      "Ó": { "word": "Óra", "emoji": "⏰", "phrase": "Ó mint Óra" },
+      "Ö": { "word": "Ökör", "emoji": "🐂", "phrase": "Ö mint Ökör" },
+      "Ő": { "word": "Őz", "emoji": "🦌", "phrase": "Ő mint Őz" },
+      "P": { "word": "Pingvin", "emoji": "🐧", "phrase": "P mint Pingvin" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R mint Robot" },
+      "S": { "word": "Süni", "emoji": "🦔", "phrase": "S mint Süni" },
+      "T": { "word": "Tigris", "emoji": "🐯", "phrase": "T mint Tigris" },
+      "U": { "word": "Ufo", "emoji": "🛸", "phrase": "U mint Ufo" },
+      "Ú": { "word": "Út", "emoji": "🛤️", "phrase": "Ú mint Út" },
+      "Ü": { "word": "Üveg", "emoji": "🥛", "phrase": "Ü mint Üveg" },
+      "Ű": { "word": "Űr", "emoji": "🚀", "phrase": "Ű mint Űr" },
+      "V": { "word": "Víz", "emoji": "💧", "phrase": "V mint Víz" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z mint Zebra" }
+    }
+  },
+  "numbers": {
+    "title": "A Számok",
+    "instructions": "Kattints egy számra!",
+    "items": {
+      "1": { "word": "Egy", "emoji": "⭐", "phrase": "Egy csillag" },
+      "2": { "word": "Kettő", "emoji": "⭐⭐", "phrase": "Két csillag" },
+      "3": { "word": "Három", "emoji": "⭐⭐⭐", "phrase": "Három csillag" },
+      "4": { "word": "Négy", "emoji": "🐉🐉🐉🐉", "phrase": "Négy sárkány" },
+      "5": { "word": "Öt", "emoji": "🖐️", "phrase": "Öt ujj" },
+      "6": { "word": "Hat", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Hat alma" },
+      "7": { "word": "Hét", "emoji": "🌈", "phrase": "Hét szín" },
+      "8": { "word": "Nyolc", "emoji": "🐙", "phrase": "Nyolc kar" },
+      "9": { "word": "Kilenc", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Kilenc lufi" },
+      "10": { "word": "Tíz", "emoji": "🖐️🖐️", "phrase": "Tíz ujj" }
+    }
+  }
 }

@@ -97,5 +97,66 @@
     "coloring": "Kleurboek",
     "pollinations": "AI-Kunst",
     "ai-coloring": "AI-Kleuren"
+  },
+  "scenes": {
+    "meetTitle": "Ontmoet {hero}",
+    "meetDesc": "Dit is {hero}. {hero} is onze held!",
+    "dreamTitle": "De Droom",
+    "dreamDesc": "{hero} wil {want}. Meer dan alles!",
+    "problemTitle": "Oh Nee!",
+    "problemDesc": "Maar er is een probleem! {obstacle} staat in de weg!",
+    "planTitle": "Het Slimme Plan",
+    "planDesc": "{hero} heeft een idee! Met {solution}!",
+    "endTitle": "EINDE",
+    "endDesc": "En ze leefden nog lang en gelukkig! {ending}!",
+    "madeWith": "Gemaakt met ❤️ door {author}"
+  },
+  "alphabet": {
+    "title": "Het Nederlandse Alfabet",
+    "instructions": "Klik op een letter!",
+    "letters": {
+      "A": { "word": "Appel", "emoji": "🍎", "phrase": "A van Appel" },
+      "B": { "word": "Beer", "emoji": "🐻", "phrase": "B van Beer" },
+      "C": { "word": "Clown", "emoji": "🤡", "phrase": "C van Clown" },
+      "D": { "word": "Draak", "emoji": "🐉", "phrase": "D van Draak" },
+      "E": { "word": "Eend", "emoji": "🦆", "phrase": "E van Eend" },
+      "F": { "word": "Fiets", "emoji": "🚲", "phrase": "F van Fiets" },
+      "G": { "word": "Giraffe", "emoji": "🦒", "phrase": "G van Giraffe" },
+      "H": { "word": "Hond", "emoji": "🐕", "phrase": "H van Hond" },
+      "I": { "word": "IJsje", "emoji": "🍦", "phrase": "I van IJsje" },
+      "J": { "word": "Jager", "emoji": "🏹", "phrase": "J van Jager" },
+      "K": { "word": "Kat", "emoji": "🐱", "phrase": "K van Kat" },
+      "L": { "word": "Leeuw", "emoji": "🦁", "phrase": "L van Leeuw" },
+      "M": { "word": "Muis", "emoji": "🐭", "phrase": "M van Muis" },
+      "N": { "word": "Nijlpaard", "emoji": "🦛", "phrase": "N van Nijlpaard" },
+      "O": { "word": "Olifant", "emoji": "🐘", "phrase": "O van Olifant" },
+      "P": { "word": "Paard", "emoji": "🐴", "phrase": "P van Paard" },
+      "Q": { "word": "Quiz", "emoji": "❓", "phrase": "Q van Quiz" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R van Robot" },
+      "S": { "word": "Slang", "emoji": "🐍", "phrase": "S van Slang" },
+      "T": { "word": "Tijger", "emoji": "🐯", "phrase": "T van Tijger" },
+      "U": { "word": "Uil", "emoji": "🦉", "phrase": "U van Uil" },
+      "V": { "word": "Vlinder", "emoji": "🦋", "phrase": "V van Vlinder" },
+      "W": { "word": "Walvis", "emoji": "🐋", "phrase": "W van Walvis" },
+      "X": { "word": "Xylofoon", "emoji": "🎵", "phrase": "X van Xylofoon" },
+      "Y": { "word": "Yak", "emoji": "🦬", "phrase": "Y van Yak" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z van Zebra" }
+    }
+  },
+  "numbers": {
+    "title": "De Getallen",
+    "instructions": "Klik op een getal!",
+    "items": {
+      "1": { "word": "Een", "emoji": "⭐", "phrase": "Eén ster" },
+      "2": { "word": "Twee", "emoji": "⭐⭐", "phrase": "Twee sterren" },
+      "3": { "word": "Drie", "emoji": "⭐⭐⭐", "phrase": "Drie sterren" },
+      "4": { "word": "Vier", "emoji": "🐉🐉🐉🐉", "phrase": "Vier draken" },
+      "5": { "word": "Vijf", "emoji": "🖐️", "phrase": "Vijf vingers" },
+      "6": { "word": "Zes", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Zes appels" },
+      "7": { "word": "Zeven", "emoji": "🌈", "phrase": "Zeven kleuren" },
+      "8": { "word": "Acht", "emoji": "🐙", "phrase": "Acht armen" },
+      "9": { "word": "Negen", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Negen ballonnen" },
+      "10": { "word": "Tien", "emoji": "🖐️🖐️", "phrase": "Tien vingers" }
+    }
   }
 }

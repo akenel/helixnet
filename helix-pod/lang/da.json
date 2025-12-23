@@ -8,5 +8,69 @@
   "obstacles": { "giant": { "label": "Kæmpe", "value": "en gnaven kæmpe" }, "monster": { "label": "Monster", "value": "et uhyggeligt monster" }, "mountain": { "label": "Bjerg", "value": "et kæmpe bjerg" }, "door": { "label": "Magisk Dør", "value": "en låst magisk dør" }, "storm": { "label": "Storm", "value": "en vild storm" }, "forest": { "label": "Skov", "value": "en mørk dyb skov" }, "wizard": { "label": "Troldmand", "value": "en snedig troldmand" }, "maze": { "label": "Labyrint", "value": "en forvirrende labyrint" } },
   "solutions": { "speed": { "label": "Fart", "value": "super hurtige kræfter" }, "friend": { "label": "Ven", "value": "en hjælpsom ven" }, "trick": { "label": "Trick", "value": "et smart trick" }, "magic": { "label": "Magi", "value": "magiske kræfter" }, "brave": { "label": "Mod", "value": "at være super modig" }, "kindness": { "label": "Venlighed", "value": "venlighed og kærlighed" }, "teamwork": { "label": "Teamwork", "value": "teamwork med alle" }, "nevergiveup": { "label": "Giv Aldrig Op", "value": "aldrig at give op" } },
   "endings": { "party": { "label": "Fest", "value": "alle danser til en stor fest" }, "sunset": { "label": "Solnedgang", "value": "flyver sammen mod solnedgangen" }, "castle": { "label": "Slot", "value": "bor i et smukt slot" }, "hugging": { "label": "Kram", "value": "alle venner krammer og griner" }, "cake": { "label": "Kage", "value": "spiser kage og is" }, "medal": { "label": "Medalje", "value": "får en guldmedalje" }, "adventure": { "label": "Eventyr", "value": "tager på et nyt eventyr" }, "sleep": { "label": "Sove", "value": "sover i en hyggelig seng" } },
-  "artModes": { "coloring": "Malebog", "pollinations": "AI-Kunst", "ai-coloring": "AI-Maling" }
+  "artModes": { "coloring": "Malebog", "pollinations": "AI-Kunst", "ai-coloring": "AI-Maling" },
+  "scenes": {
+    "meetTitle": "Mød {hero}",
+    "meetDesc": "Her er {hero}. {hero} er vores helt!",
+    "dreamTitle": "Drømmen",
+    "dreamDesc": "{hero} vil {want}. Mere end noget andet!",
+    "problemTitle": "Åh Nej!",
+    "problemDesc": "Men der er et problem! {obstacle} er i vejen!",
+    "planTitle": "Den Smarte Plan",
+    "planDesc": "{hero} har en idé! Med {solution}!",
+    "endTitle": "SLUT",
+    "endDesc": "Og de levede lykkeligt til deres dages ende! {ending}!",
+    "madeWith": "Lavet med ❤️ af {author}"
+  },
+  "alphabet": {
+    "title": "Det Danske Alfabet",
+    "instructions": "Klik på et bogstav!",
+    "letters": {
+      "A": { "word": "And", "emoji": "🦆", "phrase": "A som i And" },
+      "B": { "word": "Bjørn", "emoji": "🐻", "phrase": "B som i Bjørn" },
+      "C": { "word": "Citron", "emoji": "🍋", "phrase": "C som i Citron" },
+      "D": { "word": "Drage", "emoji": "🐉", "phrase": "D som i Drage" },
+      "E": { "word": "Elefant", "emoji": "🐘", "phrase": "E som i Elefant" },
+      "F": { "word": "Fisk", "emoji": "🐟", "phrase": "F som i Fisk" },
+      "G": { "word": "Giraf", "emoji": "🦒", "phrase": "G som i Giraf" },
+      "H": { "word": "Hund", "emoji": "🐕", "phrase": "H som i Hund" },
+      "I": { "word": "Is", "emoji": "🍦", "phrase": "I som i Is" },
+      "J": { "word": "Jordbær", "emoji": "🍓", "phrase": "J som i Jordbær" },
+      "K": { "word": "Kat", "emoji": "🐱", "phrase": "K som i Kat" },
+      "L": { "word": "Løve", "emoji": "🦁", "phrase": "L som i Løve" },
+      "M": { "word": "Mus", "emoji": "🐭", "phrase": "M som i Mus" },
+      "N": { "word": "Næsehorn", "emoji": "🦏", "phrase": "N som i Næsehorn" },
+      "O": { "word": "Orm", "emoji": "🐛", "phrase": "O som i Orm" },
+      "P": { "word": "Pingvin", "emoji": "🐧", "phrase": "P som i Pingvin" },
+      "Q": { "word": "Quiz", "emoji": "❓", "phrase": "Q som i Quiz" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R som i Robot" },
+      "S": { "word": "Sol", "emoji": "☀️", "phrase": "S som i Sol" },
+      "T": { "word": "Tiger", "emoji": "🐯", "phrase": "T som i Tiger" },
+      "U": { "word": "Ugle", "emoji": "🦉", "phrase": "U som i Ugle" },
+      "V": { "word": "Vand", "emoji": "💧", "phrase": "V som i Vand" },
+      "W": { "word": "Waffle", "emoji": "🧇", "phrase": "W som i Waffle" },
+      "X": { "word": "Xylofon", "emoji": "🎵", "phrase": "X som i Xylofon" },
+      "Y": { "word": "Yoghurt", "emoji": "🥛", "phrase": "Y som i Yoghurt" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z som i Zebra" },
+      "Æ": { "word": "Æble", "emoji": "🍎", "phrase": "Æ som i Æble" },
+      "Ø": { "word": "Øje", "emoji": "👁️", "phrase": "Ø som i Øje" },
+      "Å": { "word": "Ånd", "emoji": "👻", "phrase": "Å som i Ånd" }
+    }
+  },
+  "numbers": {
+    "title": "Tallene",
+    "instructions": "Klik på et tal!",
+    "items": {
+      "1": { "word": "En", "emoji": "⭐", "phrase": "En stjerne" },
+      "2": { "word": "To", "emoji": "⭐⭐", "phrase": "To stjerner" },
+      "3": { "word": "Tre", "emoji": "⭐⭐⭐", "phrase": "Tre stjerner" },
+      "4": { "word": "Fire", "emoji": "🐉🐉🐉🐉", "phrase": "Fire drager" },
+      "5": { "word": "Fem", "emoji": "🖐️", "phrase": "Fem fingre" },
+      "6": { "word": "Seks", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Seks æbler" },
+      "7": { "word": "Syv", "emoji": "🌈", "phrase": "Syv farver" },
+      "8": { "word": "Otte", "emoji": "🐙", "phrase": "Otte arme" },
+      "9": { "word": "Ni", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Ni balloner" },
+      "10": { "word": "Ti", "emoji": "🖐️🖐️", "phrase": "Ti fingre" }
+    }
+  }
 }

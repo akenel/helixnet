@@ -8,5 +8,71 @@
   "obstacles": { "giant": { "label": "Uriaș", "value": "un uriaș morocănos" }, "monster": { "label": "Monstru", "value": "un monstru înfricoșător" }, "mountain": { "label": "Munte", "value": "un munte uriaș" }, "door": { "label": "Ușă Magică", "value": "o ușă magică încuiată" }, "storm": { "label": "Furtună", "value": "o furtună sălbatică" }, "forest": { "label": "Pădure", "value": "o pădure întunecată și adâncă" }, "wizard": { "label": "Vrăjitor", "value": "un vrăjitor viclean" }, "maze": { "label": "Labirint", "value": "un labirint încurcat" } },
   "solutions": { "speed": { "label": "Viteză", "value": "super puteri de viteză" }, "friend": { "label": "Prieten", "value": "un prieten de ajutor" }, "trick": { "label": "Truc", "value": "un truc inteligent" }, "magic": { "label": "Magie", "value": "puteri magice" }, "brave": { "label": "Curaj", "value": "fiind super curajos" }, "kindness": { "label": "Bunătate", "value": "bunătate și dragoste" }, "teamwork": { "label": "Lucru în Echipă", "value": "lucru în echipă cu toții" }, "nevergiveup": { "label": "Nu Renunța", "value": "să nu renunțe niciodată" } },
   "endings": { "party": { "label": "Petrecere", "value": "toți dansează la o petrecere mare" }, "sunset": { "label": "Apus", "value": "zboară împreună spre apus" }, "castle": { "label": "Castel", "value": "locuiesc într-un castel frumos" }, "hugging": { "label": "Îmbrățișări", "value": "toți prietenii se îmbrățișează și râd" }, "cake": { "label": "Tort", "value": "mănâncă tort și înghețată" }, "medal": { "label": "Medalie", "value": "primesc o medalie de aur" }, "adventure": { "label": "Aventură", "value": "pleacă într-o nouă aventură" }, "sleep": { "label": "Somn", "value": "dorm într-un pat confortabil" } },
-  "artModes": { "coloring": "Carte de Colorat", "pollinations": "Artă AI", "ai-coloring": "Colorat AI" }
+  "artModes": { "coloring": "Carte de Colorat", "pollinations": "Artă AI", "ai-coloring": "Colorat AI" },
+  "scenes": {
+    "meetTitle": "Cunoaște-l pe {hero}",
+    "meetDesc": "Acesta este {hero}. {hero} e eroul nostru!",
+    "dreamTitle": "Visul",
+    "dreamDesc": "{hero} vrea {want}. Mai mult decât orice!",
+    "problemTitle": "O Nu!",
+    "problemDesc": "Dar e o problemă! {obstacle} e în cale!",
+    "planTitle": "Planul Deștept",
+    "planDesc": "{hero} are o idee! Folosind {solution}!",
+    "endTitle": "SFÂRȘIT",
+    "endDesc": "Și au trăit fericiți până la adânci bătrâneți! {ending}!",
+    "madeWith": "Făcut cu ❤️ de {author}"
+  },
+  "alphabet": {
+    "title": "Alfabetul Românesc",
+    "instructions": "Apasă pe o literă!",
+    "letters": {
+      "A": { "word": "Arici", "emoji": "🦔", "phrase": "A de la Arici" },
+      "Ă": { "word": "Măr", "emoji": "🍎", "phrase": "Ă de la Măr" },
+      "Â": { "word": "Câine", "emoji": "🐕", "phrase": "Â de la Câine" },
+      "B": { "word": "Barcă", "emoji": "⛵", "phrase": "B de la Barcă" },
+      "C": { "word": "Cățel", "emoji": "🐶", "phrase": "C de la Cățel" },
+      "D": { "word": "Dragon", "emoji": "🐉", "phrase": "D de la Dragon" },
+      "E": { "word": "Elefant", "emoji": "🐘", "phrase": "E de la Elefant" },
+      "F": { "word": "Floare", "emoji": "🌸", "phrase": "F de la Floare" },
+      "G": { "word": "Girafă", "emoji": "🦒", "phrase": "G de la Girafă" },
+      "H": { "word": "Hipopotam", "emoji": "🦛", "phrase": "H de la Hipopotam" },
+      "I": { "word": "Iepure", "emoji": "🐰", "phrase": "I de la Iepure" },
+      "Î": { "word": "Înger", "emoji": "👼", "phrase": "Î de la Înger" },
+      "J": { "word": "Jucărie", "emoji": "🧸", "phrase": "J de la Jucărie" },
+      "K": { "word": "Koala", "emoji": "🐨", "phrase": "K de la Koala" },
+      "L": { "word": "Leu", "emoji": "🦁", "phrase": "L de la Leu" },
+      "M": { "word": "Maimuță", "emoji": "🐵", "phrase": "M de la Maimuță" },
+      "N": { "word": "Nor", "emoji": "☁️", "phrase": "N de la Nor" },
+      "O": { "word": "Ochi", "emoji": "👁️", "phrase": "O de la Ochi" },
+      "P": { "word": "Pinguin", "emoji": "🐧", "phrase": "P de la Pinguin" },
+      "Q": { "word": "Quiz", "emoji": "❓", "phrase": "Q de la Quiz" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R de la Robot" },
+      "S": { "word": "Soare", "emoji": "☀️", "phrase": "S de la Soare" },
+      "Ș": { "word": "Șarpe", "emoji": "🐍", "phrase": "Ș de la Șarpe" },
+      "T": { "word": "Tigru", "emoji": "🐯", "phrase": "T de la Tigru" },
+      "Ț": { "word": "Țestoasă", "emoji": "🐢", "phrase": "Ț de la Țestoasă" },
+      "U": { "word": "Urs", "emoji": "🐻", "phrase": "U de la Urs" },
+      "V": { "word": "Vulpe", "emoji": "🦊", "phrase": "V de la Vulpe" },
+      "W": { "word": "Waffle", "emoji": "🧇", "phrase": "W de la Waffle" },
+      "X": { "word": "Xilofon", "emoji": "🎵", "phrase": "X de la Xilofon" },
+      "Y": { "word": "Yoga", "emoji": "🧘", "phrase": "Y de la Yoga" },
+      "Z": { "word": "Zebră", "emoji": "🦓", "phrase": "Z de la Zebră" }
+    }
+  },
+  "numbers": {
+    "title": "Numerele",
+    "instructions": "Apasă pe un număr!",
+    "items": {
+      "1": { "word": "Unu", "emoji": "⭐", "phrase": "O stea" },
+      "2": { "word": "Doi", "emoji": "⭐⭐", "phrase": "Două stele" },
+      "3": { "word": "Trei", "emoji": "⭐⭐⭐", "phrase": "Trei stele" },
+      "4": { "word": "Patru", "emoji": "🐉🐉🐉🐉", "phrase": "Patru dragoni" },
+      "5": { "word": "Cinci", "emoji": "🖐️", "phrase": "Cinci degete" },
+      "6": { "word": "Șase", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Șase mere" },
+      "7": { "word": "Șapte", "emoji": "🌈", "phrase": "Șapte culori" },
+      "8": { "word": "Opt", "emoji": "🐙", "phrase": "Opt brațe" },
+      "9": { "word": "Nouă", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Nouă baloane" },
+      "10": { "word": "Zece", "emoji": "🖐️🖐️", "phrase": "Zece degete" }
+    }
+  }
 }

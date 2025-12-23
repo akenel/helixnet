@@ -97,5 +97,72 @@
     "coloring": "Kolorowanka",
     "pollinations": "Sztuka AI",
     "ai-coloring": "Kolorowanie AI"
+  },
+  "scenes": {
+    "meetTitle": "Poznaj {hero}",
+    "meetDesc": "Oto {hero}. {hero} to nasz bohater!",
+    "dreamTitle": "Marzenie",
+    "dreamDesc": "{hero} chce {want}. Bardziej niż cokolwiek!",
+    "problemTitle": "O Nie!",
+    "problemDesc": "Ale jest problem! {obstacle} stoi na drodze!",
+    "planTitle": "Sprytny Plan",
+    "planDesc": "{hero} ma pomysł! Używając {solution}!",
+    "endTitle": "KONIEC",
+    "endDesc": "I żyli długo i szczęśliwie! {ending}!",
+    "madeWith": "Zrobione z ❤️ przez {author}"
+  },
+  "alphabet": {
+    "title": "Polski Alfabet",
+    "instructions": "Kliknij literę!",
+    "letters": {
+      "A": { "word": "Ananas", "emoji": "🍍", "phrase": "A jak Ananas" },
+      "Ą": { "word": "Żołądź", "emoji": "🌰", "phrase": "Ą jak Żołądź" },
+      "B": { "word": "Banan", "emoji": "🍌", "phrase": "B jak Banan" },
+      "C": { "word": "Cytryna", "emoji": "🍋", "phrase": "C jak Cytryna" },
+      "Ć": { "word": "Ćma", "emoji": "🦋", "phrase": "Ć jak Ćma" },
+      "D": { "word": "Dinozaur", "emoji": "🦕", "phrase": "D jak Dinozaur" },
+      "E": { "word": "Elefant", "emoji": "🐘", "phrase": "E jak Elefant" },
+      "Ę": { "word": "Węgorz", "emoji": "🐍", "phrase": "Ę jak Węgorz" },
+      "F": { "word": "Flaming", "emoji": "🦩", "phrase": "F jak Flaming" },
+      "G": { "word": "Goryl", "emoji": "🦍", "phrase": "G jak Goryl" },
+      "H": { "word": "Hipopotam", "emoji": "🦛", "phrase": "H jak Hipopotam" },
+      "I": { "word": "Igloo", "emoji": "🏠", "phrase": "I jak Igloo" },
+      "J": { "word": "Jabłko", "emoji": "🍎", "phrase": "J jak Jabłko" },
+      "K": { "word": "Kot", "emoji": "🐱", "phrase": "K jak Kot" },
+      "L": { "word": "Lew", "emoji": "🦁", "phrase": "L jak Lew" },
+      "Ł": { "word": "Łódka", "emoji": "⛵", "phrase": "Ł jak Łódka" },
+      "M": { "word": "Małpa", "emoji": "🐵", "phrase": "M jak Małpa" },
+      "N": { "word": "Nosorożec", "emoji": "🦏", "phrase": "N jak Nosorożec" },
+      "Ń": { "word": "Koń", "emoji": "🐴", "phrase": "Ń jak Koń" },
+      "O": { "word": "Ośmiornica", "emoji": "🐙", "phrase": "O jak Ośmiornica" },
+      "Ó": { "word": "Królik", "emoji": "🐰", "phrase": "Ó jak Królik" },
+      "P": { "word": "Pingwin", "emoji": "🐧", "phrase": "P jak Pingwin" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R jak Robot" },
+      "S": { "word": "Słońce", "emoji": "☀️", "phrase": "S jak Słońce" },
+      "Ś": { "word": "Świnia", "emoji": "🐷", "phrase": "Ś jak Świnia" },
+      "T": { "word": "Tygrys", "emoji": "🐯", "phrase": "T jak Tygrys" },
+      "U": { "word": "Ufo", "emoji": "🛸", "phrase": "U jak Ufo" },
+      "W": { "word": "Wieloryb", "emoji": "🐋", "phrase": "W jak Wieloryb" },
+      "Y": { "word": "Yak", "emoji": "🦬", "phrase": "Y jak Yak" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z jak Zebra" },
+      "Ź": { "word": "Źrebak", "emoji": "🐎", "phrase": "Ź jak Źrebak" },
+      "Ż": { "word": "Żyrafa", "emoji": "🦒", "phrase": "Ż jak Żyrafa" }
+    }
+  },
+  "numbers": {
+    "title": "Liczby",
+    "instructions": "Kliknij liczbę!",
+    "items": {
+      "1": { "word": "Jeden", "emoji": "⭐", "phrase": "Jedna gwiazdka" },
+      "2": { "word": "Dwa", "emoji": "⭐⭐", "phrase": "Dwie gwiazdki" },
+      "3": { "word": "Trzy", "emoji": "⭐⭐⭐", "phrase": "Trzy gwiazdki" },
+      "4": { "word": "Cztery", "emoji": "🐉🐉🐉🐉", "phrase": "Cztery smoki" },
+      "5": { "word": "Pięć", "emoji": "🖐️", "phrase": "Pięć palców" },
+      "6": { "word": "Sześć", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Sześć jabłek" },
+      "7": { "word": "Siedem", "emoji": "🌈", "phrase": "Siedem kolorów" },
+      "8": { "word": "Osiem", "emoji": "🐙", "phrase": "Osiem ramion" },
+      "9": { "word": "Dziewięć", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Dziewięć balonów" },
+      "10": { "word": "Dziesięć", "emoji": "🖐️🖐️", "phrase": "Dziesięć palców" }
+    }
   }
 }

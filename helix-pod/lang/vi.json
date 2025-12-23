@@ -97,5 +97,69 @@
     "coloring": "Sách Tô Màu",
     "pollinations": "Tranh AI",
     "ai-coloring": "Tô Màu AI"
+  },
+  "scenes": {
+    "meetTitle": "Gặp {hero}",
+    "meetDesc": "Đây là {hero}. {hero} là anh hùng của chúng ta!",
+    "dreamTitle": "Giấc Mơ",
+    "dreamDesc": "{hero} muốn {want}. Hơn tất cả mọi thứ!",
+    "problemTitle": "Ôi Không!",
+    "problemDesc": "Nhưng có vấn đề! {obstacle} đang cản đường!",
+    "planTitle": "Kế Hoạch Thông Minh",
+    "planDesc": "{hero} có ý tưởng! Bằng cách dùng {solution}!",
+    "endTitle": "HẾT",
+    "endDesc": "Và họ sống hạnh phúc mãi mãi! {ending}!",
+    "madeWith": "Được tạo với ❤️ bởi {author}"
+  },
+  "alphabet": {
+    "title": "Bảng Chữ Cái Tiếng Việt",
+    "instructions": "Nhấn vào chữ cái!",
+    "letters": {
+      "A": { "word": "Ăn", "emoji": "🍜", "phrase": "A như Ăn" },
+      "Ă": { "word": "Ăn", "emoji": "🍚", "phrase": "Ă như Ăn" },
+      "Â": { "word": "Ấm", "emoji": "☕", "phrase": "Â như Ấm" },
+      "B": { "word": "Bò", "emoji": "🐄", "phrase": "B như Bò" },
+      "C": { "word": "Cá", "emoji": "🐟", "phrase": "C như Cá" },
+      "D": { "word": "Dưa", "emoji": "🍉", "phrase": "D như Dưa" },
+      "Đ": { "word": "Đèn", "emoji": "💡", "phrase": "Đ như Đèn" },
+      "E": { "word": "Em bé", "emoji": "👶", "phrase": "E như Em bé" },
+      "Ê": { "word": "Ếch", "emoji": "🐸", "phrase": "Ê như Ếch" },
+      "G": { "word": "Gà", "emoji": "🐔", "phrase": "G như Gà" },
+      "H": { "word": "Hoa", "emoji": "🌸", "phrase": "H như Hoa" },
+      "I": { "word": "Ong", "emoji": "🐝", "phrase": "I như Ong" },
+      "K": { "word": "Khỉ", "emoji": "🐵", "phrase": "K như Khỉ" },
+      "L": { "word": "Lợn", "emoji": "🐷", "phrase": "L như Lợn" },
+      "M": { "word": "Mèo", "emoji": "🐱", "phrase": "M như Mèo" },
+      "N": { "word": "Nai", "emoji": "🦌", "phrase": "N như Nai" },
+      "O": { "word": "Ô tô", "emoji": "🚗", "phrase": "O như Ô tô" },
+      "Ô": { "word": "Ông", "emoji": "👴", "phrase": "Ô như Ông" },
+      "Ơ": { "word": "Ớt", "emoji": "🌶️", "phrase": "Ơ như Ớt" },
+      "P": { "word": "Pin", "emoji": "🔋", "phrase": "P như Pin" },
+      "Q": { "word": "Quả", "emoji": "🍎", "phrase": "Q như Quả" },
+      "R": { "word": "Rồng", "emoji": "🐉", "phrase": "R như Rồng" },
+      "S": { "word": "Sư tử", "emoji": "🦁", "phrase": "S như Sư tử" },
+      "T": { "word": "Thỏ", "emoji": "🐰", "phrase": "T như Thỏ" },
+      "U": { "word": "Ủng", "emoji": "🥾", "phrase": "U như Ủng" },
+      "Ư": { "word": "Ươi", "emoji": "🦧", "phrase": "Ư như Ươi" },
+      "V": { "word": "Voi", "emoji": "🐘", "phrase": "V như Voi" },
+      "X": { "word": "Xe", "emoji": "🚲", "phrase": "X như Xe" },
+      "Y": { "word": "Yến", "emoji": "🐦", "phrase": "Y như Yến" }
+    }
+  },
+  "numbers": {
+    "title": "Số Đếm",
+    "instructions": "Nhấn vào số!",
+    "items": {
+      "1": { "word": "Một", "emoji": "⭐", "phrase": "Một ngôi sao" },
+      "2": { "word": "Hai", "emoji": "⭐⭐", "phrase": "Hai ngôi sao" },
+      "3": { "word": "Ba", "emoji": "⭐⭐⭐", "phrase": "Ba ngôi sao" },
+      "4": { "word": "Bốn", "emoji": "🐉🐉🐉🐉", "phrase": "Bốn con rồng" },
+      "5": { "word": "Năm", "emoji": "🖐️", "phrase": "Năm ngón tay" },
+      "6": { "word": "Sáu", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Sáu quả táo" },
+      "7": { "word": "Bảy", "emoji": "🌈", "phrase": "Bảy màu sắc" },
+      "8": { "word": "Tám", "emoji": "🐙", "phrase": "Tám cánh tay" },
+      "9": { "word": "Chín", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Chín quả bóng" },
+      "10": { "word": "Mười", "emoji": "🖐️🖐️", "phrase": "Mười ngón tay" }
+    }
   }
 }

@@ -97,5 +97,69 @@
     "coloring": "Boyama Kitabı",
     "pollinations": "AI Sanatı",
     "ai-coloring": "AI Boyama"
+  },
+  "scenes": {
+    "meetTitle": "{hero} ile Tanış",
+    "meetDesc": "Bu {hero}. {hero} bizim kahramanımız!",
+    "dreamTitle": "Hayal",
+    "dreamDesc": "{hero} {want} istiyor. Her şeyden çok!",
+    "problemTitle": "Hay Aksi!",
+    "problemDesc": "Ama bir sorun var! {obstacle} yolda!",
+    "planTitle": "Akıllı Plan",
+    "planDesc": "{hero}'nın bir fikri var! {solution} kullanarak!",
+    "endTitle": "SON",
+    "endDesc": "Ve sonsuza dek mutlu yaşadılar! {ending}!",
+    "madeWith": "❤️ ile yapıldı, yapan {author}"
+  },
+  "alphabet": {
+    "title": "Türk Alfabesi",
+    "instructions": "Bir harfe tıkla!",
+    "letters": {
+      "A": { "word": "Arı", "emoji": "🐝", "phrase": "A Arı'daki gibi" },
+      "B": { "word": "Balık", "emoji": "🐟", "phrase": "B Balık'taki gibi" },
+      "C": { "word": "Ceylan", "emoji": "🦌", "phrase": "C Ceylan'daki gibi" },
+      "Ç": { "word": "Çiçek", "emoji": "🌸", "phrase": "Ç Çiçek'teki gibi" },
+      "D": { "word": "Deniz", "emoji": "🌊", "phrase": "D Deniz'deki gibi" },
+      "E": { "word": "Elma", "emoji": "🍎", "phrase": "E Elma'daki gibi" },
+      "F": { "word": "Fil", "emoji": "🐘", "phrase": "F Fil'deki gibi" },
+      "G": { "word": "Güneş", "emoji": "☀️", "phrase": "G Güneş'teki gibi" },
+      "Ğ": { "word": "Dağ", "emoji": "⛰️", "phrase": "Ğ Dağ'daki gibi" },
+      "H": { "word": "Havuç", "emoji": "🥕", "phrase": "H Havuç'taki gibi" },
+      "I": { "word": "Irmak", "emoji": "🏞️", "phrase": "I Irmak'taki gibi" },
+      "İ": { "word": "İnek", "emoji": "🐄", "phrase": "İ İnek'teki gibi" },
+      "J": { "word": "Jilet", "emoji": "🪒", "phrase": "J Jilet'teki gibi" },
+      "K": { "word": "Kedi", "emoji": "🐱", "phrase": "K Kedi'deki gibi" },
+      "L": { "word": "Limon", "emoji": "🍋", "phrase": "L Limon'daki gibi" },
+      "M": { "word": "Maymun", "emoji": "🐵", "phrase": "M Maymun'daki gibi" },
+      "N": { "word": "Nar", "emoji": "🍎", "phrase": "N Nar'daki gibi" },
+      "O": { "word": "Oyuncak", "emoji": "🧸", "phrase": "O Oyuncak'taki gibi" },
+      "Ö": { "word": "Ördek", "emoji": "🦆", "phrase": "Ö Ördek'teki gibi" },
+      "P": { "word": "Penguen", "emoji": "🐧", "phrase": "P Penguen'deki gibi" },
+      "R": { "word": "Robot", "emoji": "🤖", "phrase": "R Robot'taki gibi" },
+      "S": { "word": "Su", "emoji": "💧", "phrase": "S Su'daki gibi" },
+      "Ş": { "word": "Şeker", "emoji": "🍬", "phrase": "Ş Şeker'deki gibi" },
+      "T": { "word": "Tavşan", "emoji": "🐰", "phrase": "T Tavşan'daki gibi" },
+      "U": { "word": "Uçak", "emoji": "✈️", "phrase": "U Uçak'taki gibi" },
+      "Ü": { "word": "Üzüm", "emoji": "🍇", "phrase": "Ü Üzüm'deki gibi" },
+      "V": { "word": "Vapur", "emoji": "🚢", "phrase": "V Vapur'daki gibi" },
+      "Y": { "word": "Yıldız", "emoji": "⭐", "phrase": "Y Yıldız'daki gibi" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z Zebra'daki gibi" }
+    }
+  },
+  "numbers": {
+    "title": "Sayılar",
+    "instructions": "Bir sayıya tıkla!",
+    "items": {
+      "1": { "word": "Bir", "emoji": "⭐", "phrase": "Bir yıldız" },
+      "2": { "word": "İki", "emoji": "⭐⭐", "phrase": "İki yıldız" },
+      "3": { "word": "Üç", "emoji": "⭐⭐⭐", "phrase": "Üç yıldız" },
+      "4": { "word": "Dört", "emoji": "🐉🐉🐉🐉", "phrase": "Dört ejderha" },
+      "5": { "word": "Beş", "emoji": "🖐️", "phrase": "Beş parmak" },
+      "6": { "word": "Altı", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Altı elma" },
+      "7": { "word": "Yedi", "emoji": "🌈", "phrase": "Yedi renk" },
+      "8": { "word": "Sekiz", "emoji": "🐙", "phrase": "Sekiz kol" },
+      "9": { "word": "Dokuz", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Dokuz balon" },
+      "10": { "word": "On", "emoji": "🖐️🖐️", "phrase": "On parmak" }
+    }
   }
 }

@@ -97,5 +97,66 @@
     "coloring": "Livro de Colorir",
     "pollinations": "Arte IA",
     "ai-coloring": "Colorir IA"
+  },
+  "scenes": {
+    "meetTitle": "Conheça {hero}",
+    "meetDesc": "Este é {hero}. {hero} é nosso herói!",
+    "dreamTitle": "O Sonho",
+    "dreamDesc": "{hero} quer {want}. Mais que tudo!",
+    "problemTitle": "Oh Não!",
+    "problemDesc": "Mas tem um problema! {obstacle} está no caminho!",
+    "planTitle": "O Plano Esperto",
+    "planDesc": "{hero} tem uma ideia! Usando {solution}!",
+    "endTitle": "FIM",
+    "endDesc": "E todos viveram felizes! {ending}!",
+    "madeWith": "Feito com ❤️ por {author}"
+  },
+  "alphabet": {
+    "title": "O Alfabeto Português",
+    "instructions": "Clique numa letra!",
+    "letters": {
+      "A": { "word": "Avião", "emoji": "✈️", "phrase": "A de Avião" },
+      "B": { "word": "Bola", "emoji": "⚽", "phrase": "B de Bola" },
+      "C": { "word": "Casa", "emoji": "🏠", "phrase": "C de Casa" },
+      "D": { "word": "Dragão", "emoji": "🐉", "phrase": "D de Dragão" },
+      "E": { "word": "Elefante", "emoji": "🐘", "phrase": "E de Elefante" },
+      "F": { "word": "Flor", "emoji": "🌸", "phrase": "F de Flor" },
+      "G": { "word": "Gato", "emoji": "🐱", "phrase": "G de Gato" },
+      "H": { "word": "Hipopótamo", "emoji": "🦛", "phrase": "H de Hipopótamo" },
+      "I": { "word": "Ilha", "emoji": "🏝️", "phrase": "I de Ilha" },
+      "J": { "word": "Jacaré", "emoji": "🐊", "phrase": "J de Jacaré" },
+      "K": { "word": "Koala", "emoji": "🐨", "phrase": "K de Koala" },
+      "L": { "word": "Leão", "emoji": "🦁", "phrase": "L de Leão" },
+      "M": { "word": "Macaco", "emoji": "🐵", "phrase": "M de Macaco" },
+      "N": { "word": "Nuvem", "emoji": "☁️", "phrase": "N de Nuvem" },
+      "O": { "word": "Ovo", "emoji": "🥚", "phrase": "O de Ovo" },
+      "P": { "word": "Peixe", "emoji": "🐟", "phrase": "P de Peixe" },
+      "Q": { "word": "Queijo", "emoji": "🧀", "phrase": "Q de Queijo" },
+      "R": { "word": "Rato", "emoji": "🐭", "phrase": "R de Rato" },
+      "S": { "word": "Sol", "emoji": "☀️", "phrase": "S de Sol" },
+      "T": { "word": "Tigre", "emoji": "🐯", "phrase": "T de Tigre" },
+      "U": { "word": "Uva", "emoji": "🍇", "phrase": "U de Uva" },
+      "V": { "word": "Vaca", "emoji": "🐄", "phrase": "V de Vaca" },
+      "W": { "word": "Waffle", "emoji": "🧇", "phrase": "W de Waffle" },
+      "X": { "word": "Xícara", "emoji": "☕", "phrase": "X de Xícara" },
+      "Y": { "word": "Yoga", "emoji": "🧘", "phrase": "Y de Yoga" },
+      "Z": { "word": "Zebra", "emoji": "🦓", "phrase": "Z de Zebra" }
+    }
+  },
+  "numbers": {
+    "title": "Os Números",
+    "instructions": "Clique num número!",
+    "items": {
+      "1": { "word": "Um", "emoji": "⭐", "phrase": "Uma estrela" },
+      "2": { "word": "Dois", "emoji": "⭐⭐", "phrase": "Duas estrelas" },
+      "3": { "word": "Três", "emoji": "⭐⭐⭐", "phrase": "Três estrelas" },
+      "4": { "word": "Quatro", "emoji": "🐉🐉🐉🐉", "phrase": "Quatro dragões" },
+      "5": { "word": "Cinco", "emoji": "🖐️", "phrase": "Cinco dedos" },
+      "6": { "word": "Seis", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "Seis maçãs" },
+      "7": { "word": "Sete", "emoji": "🌈", "phrase": "Sete cores" },
+      "8": { "word": "Oito", "emoji": "🐙", "phrase": "Oito braços" },
+      "9": { "word": "Nove", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "Nove balões" },
+      "10": { "word": "Dez", "emoji": "🖐️🖐️", "phrase": "Dez dedos" }
+    }
   }
 }
