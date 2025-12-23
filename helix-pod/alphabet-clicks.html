@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Learning</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Language selector */
+        .lang-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .lang-btn {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border: 3px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        .lang-btn.active {
+            border-color: #11998e;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        /* Letter grid */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .letter-btn {
+            aspect-ratio: 1;
+            font-size: 2em;
+            font-weight: bold;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .letter-btn:hover {
+            transform: scale(1.1);
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .letter-btn.active {
+            border-color: #11998e;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        /* Display area */
+        .display-area {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            border-radius: 25px;
+            min-height: 200px;
+        }
+        .display-emoji {
+            font-size: 6em;
+            margin-bottom: 15px;
+        }
+        .display-letter {
+            font-size: 4em;
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+        .display-word {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .display-phrase {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Speak button */
+        .speak-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .speak-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Navigation */
+        .nav-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 1.1em;
+            margin: 0 15px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Waiting state */
+        .waiting {
+            color: #999;
+            font-size: 1.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">🔤 Alphabet</h1>
+        <p class="subtitle" id="instructions">Click a letter!</p>
+
+        <!-- Language selector -->
+        <div class="lang-selector">
+            <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
+            <button class="lang-btn" data-lang="de">🇩🇪 Deutsch</button>
+            <button class="lang-btn" data-lang="fr">🇫🇷 Français</button>
+            <button class="lang-btn" data-lang="it">🇮🇹 Italiano</button>
+        </div>
+
+        <!-- Letter grid -->
+        <div class="letter-grid" id="letterGrid">
+            <!-- Letters will be populated by JavaScript -->
+        </div>
+
+        <!-- Display area -->
+        <div class="display-area" id="displayArea">
+            <p class="waiting">👆 Pick a letter above!</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="/johnny-clicks.html">📖 Make a Story</a>
+            <a href="#" onclick="speakAll()">🔊 Hear All Letters</a>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'en';
+        let alphabetData = null;
+
+        // Load language data
+        async function loadLanguage(langCode) {
+            try {
+                const response = await fetch(`/lang/${langCode}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    alphabetData = data.alphabet;
+                    currentLang = langCode;
+
+                    // Update UI
+                    document.getElementById('title').textContent = '🔤 ' + (alphabetData?.title || 'Alphabet');
+                    document.getElementById('instructions').textContent = alphabetData?.instructions || 'Click a letter!';
+
+                    // Update active button
+                    document.querySelectorAll('.lang-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.lang === langCode);
+                    });
+
+                    // Rebuild letter grid
+                    buildLetterGrid();
+
+                    // Reset display
+                    document.getElementById('displayArea').innerHTML = '<p class="waiting">👆 Pick a letter above!</p>';
+                }
+            } catch (err) {
+                console.error('Failed to load language:', err);
+            }
+        }
+
+        // Build the letter grid
+        function buildLetterGrid() {
+            const grid = document.getElementById('letterGrid');
+            grid.innerHTML = '';
+
+            if (!alphabetData?.letters) return;
+
+            for (const letter of Object.keys(alphabetData.letters)) {
+                const btn = document.createElement('button');
+                btn.className = 'letter-btn';
+                btn.textContent = letter;
+                btn.onclick = () => showLetter(letter);
+                grid.appendChild(btn);
+            }
+        }
+
+        // Show letter details
+        function showLetter(letter) {
+            const data = alphabetData?.letters?.[letter];
+            if (!data) return;
+
+            // Update active state
+            document.querySelectorAll('.letter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === letter);
+            });
+
+            // Show in display area
+            document.getElementById('displayArea').innerHTML = `
+                <div class="display-emoji">${data.emoji}</div>
+                <div class="display-letter">${letter}</div>
+                <div class="display-word">${data.word}</div>
+                <div class="display-phrase">${data.phrase}</div>
+                <button class="speak-btn" onclick="speak('${data.phrase.replace(/'/g, "\\'")}')">
+                    🔊 Hear It!
+                </button>
+            `;
+
+            // Auto-speak
+            speak(data.phrase);
+        }
+
+        // Speak text using TTS endpoint
+        async function speak(text) {
+            try {
+                const response = await fetch('/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        lang: currentLang,
+                        voice: 'grandma'
+                    })
+                });
+
+                const result = await response.json();
+                if (result.ok) {
+                    const audio = new Audio(result.audio_url);
+                    audio.play();
+                }
+            } catch (err) {
+                console.error('TTS error:', err);
+                // Fallback to browser speech
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = currentLang;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+        }
+
+        // Speak all letters (fun feature)
+        async function speakAll() {
+            if (!alphabetData?.letters) return;
+
+            const letters = Object.keys(alphabetData.letters);
+            for (const letter of letters) {
+                showLetter(letter);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+
+        // Language button handlers
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => loadLanguage(btn.dataset.lang));
+        });
+
+        // Initialize
+        loadLanguage('en');
+    </script>
+</body>
+</html>

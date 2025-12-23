@@ -59,6 +59,7 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
     # Allowed files for security (Swiss safe mode)
     ALLOWED_FILES = {
         '/johnny-clicks.html',
+        '/alphabet-clicks.html',
         '/health',
         '/',
     }
