@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numbers Learning</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #f5576c;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Language selector */
+        .lang-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .lang-btn {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border: 3px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover {
+            border-color: #f093fb;
+            transform: scale(1.05);
+        }
+        .lang-btn.active {
+            border-color: #f5576c;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        /* Number grid - bigger buttons for little fingers */
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .number-btn {
+            aspect-ratio: 1;
+            font-size: 2.5em;
+            font-weight: bold;
+            border: 4px solid #ddd;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fff6b7 0%, #f6416c 100%);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .number-btn:hover {
+            transform: scale(1.15) rotate(5deg);
+            border-color: #f5576c;
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.5);
+        }
+        .number-btn.active {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            transform: scale(1.1);
+        }
+
+        /* Display area */
+        .display-area {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #fff9c4 0%, #ffe0b2 100%);
+            border-radius: 25px;
+            min-height: 250px;
+        }
+        .display-emoji {
+            font-size: 5em;
+            margin-bottom: 15px;
+            animation: bounce 0.5s ease;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        .display-number {
+            font-size: 5em;
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .display-word {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .display-phrase {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Speak button */
+        .speak-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .speak-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Count all button */
+        .count-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        .count-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Navigation */
+        .nav-links {
+            text-align: center;
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: #f5576c;
+            text-decoration: none;
+            font-size: 1.1em;
+            padding: 8px 16px;
+            border-radius: 15px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background: #fff0f3;
+        }
+
+        /* Waiting state */
+        .waiting {
+            color: #999;
+            font-size: 1.5em;
+        }
+        .waiting-emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">123 Numbers</h1>
+        <p class="subtitle" id="instructions">Click a number!</p>
+
+        <!-- Language selector -->
+        <div class="lang-selector">
+            <button class="lang-btn active" data-lang="en">English</button>
+            <button class="lang-btn" data-lang="de">Deutsch</button>
+            <button class="lang-btn" data-lang="fr">Francais</button>
+            <button class="lang-btn" data-lang="it">Italiano</button>
+        </div>
+
+        <!-- Number grid -->
+        <div class="number-grid" id="numberGrid">
+            <!-- Numbers will be populated by JavaScript -->
+        </div>
+
+        <!-- Display area -->
+        <div class="display-area" id="displayArea">
+            <div class="waiting-emoji">🔢</div>
+            <p class="waiting">Pick a number above!</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="/alphabet-clicks.html">ABC Alphabet</a>
+            <a href="/johnny-clicks.html">Make a Story</a>
+            <a href="#" onclick="countAll(); return false;">Count 1-10!</a>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'en';
+        let numbersData = null;
+        let langData = null;
+
+        // Load language data
+        async function loadLanguage(langCode) {
+            try {
+                const response = await fetch(`/lang/${langCode}.json`);
+                if (response.ok) {
+                    langData = await response.json();
+                    numbersData = langData.numbers;
+                    currentLang = langCode;
+
+                    // Update UI
+                    document.getElementById('title').textContent = '123 ' + (numbersData?.title || 'Numbers');
+                    document.getElementById('instructions').textContent = numbersData?.instructions || 'Click a number!';
+
+                    // Update active button
+                    document.querySelectorAll('.lang-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.lang === langCode);
+                    });
+
+                    // Rebuild number grid
+                    buildNumberGrid();
+
+                    // Reset display
+                    document.getElementById('displayArea').innerHTML = `
+                        <div class="waiting-emoji">🔢</div>
+                        <p class="waiting">Pick a number above!</p>
+                    `;
+                }
+            } catch (err) {
+                console.error('Failed to load language:', err);
+            }
+        }
+
+        // Build the number grid
+        function buildNumberGrid() {
+            const grid = document.getElementById('numberGrid');
+            grid.innerHTML = '';
+
+            if (!numbersData?.items) return;
+
+            // Sort numbers numerically
+            const numbers = Object.keys(numbersData.items).sort((a, b) => parseInt(a) - parseInt(b));
+
+            for (const num of numbers) {
+                const btn = document.createElement('button');
+                btn.className = 'number-btn';
+                btn.textContent = num;
+                btn.onclick = () => showNumber(num);
+                grid.appendChild(btn);
+            }
+        }
+
+        // Show number details
+        function showNumber(num) {
+            const data = numbersData?.items?.[num];
+            if (!data) return;
+
+            // Update active state
+            document.querySelectorAll('.number-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === num);
+            });
+
+            // Show in display area with animation
+            const displayArea = document.getElementById('displayArea');
+            displayArea.innerHTML = `
+                <div class="display-emoji">${data.emoji}</div>
+                <div class="display-number">${num}</div>
+                <div class="display-word">${data.word}</div>
+                <div class="display-phrase">${data.phrase}</div>
+                <button class="speak-btn" onclick="speak('${data.phrase.replace(/'/g, "\\'")}')">
+                    Hear It!
+                </button>
+            `;
+
+            // Auto-speak
+            speak(data.phrase);
+        }
+
+        // Speak text using TTS endpoint
+        async function speak(text) {
+            try {
+                const response = await fetch('/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        lang: currentLang,
+                        voice: 'grandma'
+                    })
+                });
+
+                const result = await response.json();
+                if (result.ok) {
+                    const audio = new Audio(result.audio_url);
+                    audio.play();
+                }
+            } catch (err) {
+                console.error('TTS error:', err);
+                // Fallback to browser speech
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = currentLang;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+        }
+
+        // Count all numbers (fun feature!)
+        async function countAll() {
+            if (!numbersData?.items) return;
+
+            const numbers = Object.keys(numbersData.items).sort((a, b) => parseInt(a) - parseInt(b));
+            for (const num of numbers) {
+                showNumber(num);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+
+        // Language button handlers
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => loadLanguage(btn.dataset.lang));
+        });
+
+        // Initialize
+        loadLanguage('en');
+    </script>
+</body>
+</html>

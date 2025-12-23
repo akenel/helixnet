@@ -60,6 +60,7 @@ class JohnnyHandler(SimpleHTTPRequestHandler):
     ALLOWED_FILES = {
         '/johnny-clicks.html',
         '/alphabet-clicks.html',
+        '/numbers-clicks.html',
         '/health',
         '/',
     }
