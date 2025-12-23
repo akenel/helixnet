@@ -97,5 +97,69 @@
     "coloring": "หนังสือระบายสี",
     "pollinations": "ภาพ AI",
     "ai-coloring": "ระบายสี AI"
+  },
+  "scenes": {
+    "meetTitle": "พบกับ {hero}",
+    "meetDesc": "นี่คือ {hero} {hero} เป็นฮีโร่ของเรา!",
+    "dreamTitle": "ความฝัน",
+    "dreamDesc": "{hero} อยากจะ {want} มากที่สุด!",
+    "problemTitle": "โอ้โห!",
+    "problemDesc": "แต่มีปัญหา! {obstacle} ขวางทางอยู่!",
+    "planTitle": "แผนอันชาญฉลาด",
+    "planDesc": "{hero} มีไอเดีย! ใช้ {solution}!",
+    "endTitle": "จบ",
+    "endDesc": "แล้วทุกคนก็มีความสุขตลอดไป! {ending}!",
+    "madeWith": "สร้างด้วย ❤️ โดย {author}"
+  },
+  "alphabet": {
+    "title": "ก-ฮ ภาษาไทย",
+    "instructions": "คลิกที่ตัวอักษร!",
+    "letters": {
+      "ก": { "word": "กา", "emoji": "🐦‍⬛", "phrase": "ก ไก่" },
+      "ข": { "word": "ไข่", "emoji": "🥚", "phrase": "ข ไข่" },
+      "ค": { "word": "ควาย", "emoji": "🐃", "phrase": "ค ควาย" },
+      "ง": { "word": "งู", "emoji": "🐍", "phrase": "ง งู" },
+      "จ": { "word": "จาน", "emoji": "🍽️", "phrase": "จ จาน" },
+      "ฉ": { "word": "ฉิ่ง", "emoji": "🔔", "phrase": "ฉ ฉิ่ง" },
+      "ช": { "word": "ช้าง", "emoji": "🐘", "phrase": "ช ช้าง" },
+      "ซ": { "word": "โซ่", "emoji": "⛓️", "phrase": "ซ โซ่" },
+      "ญ": { "word": "หญิง", "emoji": "👩", "phrase": "ญ หญิง" },
+      "ด": { "word": "เด็ก", "emoji": "👶", "phrase": "ด เด็ก" },
+      "ต": { "word": "เต่า", "emoji": "🐢", "phrase": "ต เต่า" },
+      "ถ": { "word": "ถุง", "emoji": "🛍️", "phrase": "ถ ถุง" },
+      "ท": { "word": "ทหาร", "emoji": "💂", "phrase": "ท ทหาร" },
+      "น": { "word": "หนู", "emoji": "🐭", "phrase": "น หนู" },
+      "บ": { "word": "ใบไม้", "emoji": "🍃", "phrase": "บ ใบไม้" },
+      "ป": { "word": "ปลา", "emoji": "🐟", "phrase": "ป ปลา" },
+      "ผ": { "word": "ผึ้ง", "emoji": "🐝", "phrase": "ผ ผึ้ง" },
+      "ฝ": { "word": "ฝน", "emoji": "🌧️", "phrase": "ฝ ฝน" },
+      "พ": { "word": "พาน", "emoji": "🥣", "phrase": "พ พาน" },
+      "ฟ": { "word": "ฟัน", "emoji": "🦷", "phrase": "ฟ ฟัน" },
+      "ม": { "word": "ม้า", "emoji": "🐴", "phrase": "ม ม้า" },
+      "ย": { "word": "ยักษ์", "emoji": "👹", "phrase": "ย ยักษ์" },
+      "ร": { "word": "เรือ", "emoji": "⛵", "phrase": "ร เรือ" },
+      "ล": { "word": "ลิง", "emoji": "🐵", "phrase": "ล ลิง" },
+      "ว": { "word": "แหวน", "emoji": "💍", "phrase": "ว แหวน" },
+      "ส": { "word": "เสือ", "emoji": "🐯", "phrase": "ส เสือ" },
+      "ห": { "word": "หีบ", "emoji": "📦", "phrase": "ห หีบ" },
+      "อ": { "word": "อ่าง", "emoji": "🛁", "phrase": "อ อ่าง" },
+      "ฮ": { "word": "นกฮูก", "emoji": "🦉", "phrase": "ฮ นกฮูก" }
+    }
+  },
+  "numbers": {
+    "title": "ตัวเลข",
+    "instructions": "คลิกที่ตัวเลข!",
+    "items": {
+      "1": { "word": "หนึ่ง", "emoji": "⭐", "phrase": "ดาวหนึ่งดวง" },
+      "2": { "word": "สอง", "emoji": "⭐⭐", "phrase": "ดาวสองดวง" },
+      "3": { "word": "สาม", "emoji": "⭐⭐⭐", "phrase": "ดาวสามดวง" },
+      "4": { "word": "สี่", "emoji": "🐉🐉🐉🐉", "phrase": "มังกรสี่ตัว" },
+      "5": { "word": "ห้า", "emoji": "🖐️", "phrase": "นิ้วห้านิ้ว" },
+      "6": { "word": "หก", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "แอปเปิ้ลหกลูก" },
+      "7": { "word": "เจ็ด", "emoji": "🌈", "phrase": "สีเจ็ดสี" },
+      "8": { "word": "แปด", "emoji": "🐙", "phrase": "ขาแปดขา" },
+      "9": { "word": "เก้า", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "ลูกโป่งเก้าลูก" },
+      "10": { "word": "สิบ", "emoji": "🖐️🖐️", "phrase": "นิ้วสิบนิ้ว" }
+    }
   }
 }
