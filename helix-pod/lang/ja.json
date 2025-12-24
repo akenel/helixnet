@@ -44,54 +44,174 @@
     "theEnd": "おしまい："
   },
   "heroes": {
-    "dragon": { "label": "ドラゴン", "value": "やさしいドラゴン" },
-    "robot": { "label": "ロボット", "value": "ゆうかんなロボット" },
-    "unicorn": { "label": "ユニコーン", "value": "まほうのユニコーン" },
-    "cat": { "label": "ねこ", "value": "スーパーねこ" },
-    "dog": { "label": "いぬ", "value": "ヒーローいぬ" },
-    "superhero": { "label": "スーパーヒーロー", "value": "ちいさなスーパーヒーロー" },
-    "tiger": { "label": "トラ", "value": "つよいトラ" },
-    "space": { "label": "うちゅうひこうし", "value": "うちゅうたんけんか" }
+    "dragon": {
+      "label": "ドラゴン",
+      "value": "やさしいドラゴン"
+    },
+    "robot": {
+      "label": "ロボット",
+      "value": "ゆうかんなロボット"
+    },
+    "unicorn": {
+      "label": "ユニコーン",
+      "value": "まほうのユニコーン"
+    },
+    "cat": {
+      "label": "ねこ",
+      "value": "スーパーねこ"
+    },
+    "dog": {
+      "label": "いぬ",
+      "value": "ヒーローいぬ"
+    },
+    "superhero": {
+      "label": "スーパーヒーロー",
+      "value": "ちいさなスーパーヒーロー"
+    },
+    "tiger": {
+      "label": "トラ",
+      "value": "つよいトラ"
+    },
+    "space": {
+      "label": "うちゅうひこうし",
+      "value": "うちゅうたんけんか"
+    }
   },
   "wants": {
-    "princess": { "label": "おひめさまをたすける", "value": "とうからおひめさまをたすける" },
-    "treasure": { "label": "たからさがし", "value": "かくれたたからをみつける" },
-    "race": { "label": "レースにかつ", "value": "おおきなレースにかつ" },
-    "home": { "label": "おうちにかえる", "value": "ぶじにおうちにかえる" },
-    "friend": { "label": "ともだちをつくる", "value": "あたらしいともだちをつくる" },
-    "fly": { "label": "とべるようになる", "value": "とぶことをおぼえる" },
-    "wizard": { "label": "まほうつかいになる", "value": "まほうつかいになる" },
-    "ocean": { "label": "うみをたんけん", "value": "うみをたんけんする" }
+    "princess": {
+      "label": "おひめさまをたすける",
+      "value": "とうからおひめさまをたすける"
+    },
+    "treasure": {
+      "label": "たからさがし",
+      "value": "かくれたたからをみつける"
+    },
+    "race": {
+      "label": "レースにかつ",
+      "value": "おおきなレースにかつ"
+    },
+    "home": {
+      "label": "おうちにかえる",
+      "value": "ぶじにおうちにかえる"
+    },
+    "friend": {
+      "label": "ともだちをつくる",
+      "value": "あたらしいともだちをつくる"
+    },
+    "fly": {
+      "label": "とべるようになる",
+      "value": "とぶことをおぼえる"
+    },
+    "wizard": {
+      "label": "まほうつかいになる",
+      "value": "まほうつかいになる"
+    },
+    "ocean": {
+      "label": "うみをたんけん",
+      "value": "うみをたんけんする"
+    }
   },
   "obstacles": {
-    "giant": { "label": "きょじん", "value": "おこりんぼうのきょじん" },
-    "monster": { "label": "かいじゅう", "value": "こわいかいじゅう" },
-    "mountain": { "label": "やま", "value": "おおきなやま" },
-    "door": { "label": "まほうのドア", "value": "かぎのかかったまほうのドア" },
-    "storm": { "label": "あらし", "value": "はげしいあらし" },
-    "forest": { "label": "もり", "value": "くらいふかいもり" },
-    "wizard": { "label": "まほうつかい", "value": "ずるいまほうつかい" },
-    "maze": { "label": "めいろ", "value": "まよってしまうめいろ" }
+    "giant": {
+      "label": "きょじん",
+      "value": "おこりんぼうのきょじん"
+    },
+    "monster": {
+      "label": "かいじゅう",
+      "value": "こわいかいじゅう"
+    },
+    "mountain": {
+      "label": "やま",
+      "value": "おおきなやま"
+    },
+    "door": {
+      "label": "まほうのドア",
+      "value": "かぎのかかったまほうのドア"
+    },
+    "storm": {
+      "label": "あらし",
+      "value": "はげしいあらし"
+    },
+    "forest": {
+      "label": "もり",
+      "value": "くらいふかいもり"
+    },
+    "wizard": {
+      "label": "まほうつかい",
+      "value": "ずるいまほうつかい"
+    },
+    "maze": {
+      "label": "めいろ",
+      "value": "まよってしまうめいろ"
+    }
   },
   "solutions": {
-    "speed": { "label": "スピード", "value": "スーパースピードパワー" },
-    "friend": { "label": "ともだち", "value": "たすけてくれるともだち" },
-    "trick": { "label": "トリック", "value": "かしこいトリック" },
-    "magic": { "label": "まほう", "value": "まほうのちから" },
-    "brave": { "label": "ゆうき", "value": "とってもゆうかんになって" },
-    "kindness": { "label": "やさしさ", "value": "やさしさとあい" },
-    "teamwork": { "label": "チームワーク", "value": "みんなでちからをあわせて" },
-    "nevergiveup": { "label": "あきらめない", "value": "ぜったいあきらめない" }
+    "speed": {
+      "label": "スピード",
+      "value": "スーパースピードパワー"
+    },
+    "friend": {
+      "label": "ともだち",
+      "value": "たすけてくれるともだち"
+    },
+    "trick": {
+      "label": "トリック",
+      "value": "かしこいトリック"
+    },
+    "magic": {
+      "label": "まほう",
+      "value": "まほうのちから"
+    },
+    "brave": {
+      "label": "ゆうき",
+      "value": "とってもゆうかんになって"
+    },
+    "kindness": {
+      "label": "やさしさ",
+      "value": "やさしさとあい"
+    },
+    "teamwork": {
+      "label": "チームワーク",
+      "value": "みんなでちからをあわせて"
+    },
+    "nevergiveup": {
+      "label": "あきらめない",
+      "value": "ぜったいあきらめない"
+    }
   },
   "endings": {
-    "party": { "label": "パーティー", "value": "みんなでおおきなパーティーでおどる" },
-    "sunset": { "label": "ゆうやけ", "value": "いっしょにゆうやけにむかってとぶ" },
-    "castle": { "label": "おしろ", "value": "きれいなおしろにすむ" },
-    "hugging": { "label": "ハグ", "value": "ともだちみんなでハグしてわらう" },
-    "cake": { "label": "ケーキ", "value": "ケーキとアイスをたべる" },
-    "medal": { "label": "メダル", "value": "きんメダルをもらう" },
-    "adventure": { "label": "ぼうけん", "value": "あたらしいぼうけんにでかける" },
-    "sleep": { "label": "ねんね", "value": "あたたかいベッドでねる" }
+    "party": {
+      "label": "パーティー",
+      "value": "みんなでおおきなパーティーでおどる"
+    },
+    "sunset": {
+      "label": "ゆうやけ",
+      "value": "いっしょにゆうやけにむかってとぶ"
+    },
+    "castle": {
+      "label": "おしろ",
+      "value": "きれいなおしろにすむ"
+    },
+    "hugging": {
+      "label": "ハグ",
+      "value": "ともだちみんなでハグしてわらう"
+    },
+    "cake": {
+      "label": "ケーキ",
+      "value": "ケーキとアイスをたべる"
+    },
+    "medal": {
+      "label": "メダル",
+      "value": "きんメダルをもらう"
+    },
+    "adventure": {
+      "label": "ぼうけん",
+      "value": "あたらしいぼうけんにでかける"
+    },
+    "sleep": {
+      "label": "ねんね",
+      "value": "あたたかいベッドでねる"
+    }
   },
   "artModes": {
     "coloring": "ぬりえ",
@@ -115,68 +235,348 @@
     "title": "ひらがな",
     "instructions": "もじをクリック！",
     "letters": {
-      "あ": { "word": "あり", "emoji": "🐜", "phrase": "あ あり" },
-      "い": { "word": "いぬ", "emoji": "🐕", "phrase": "い いぬ" },
-      "う": { "word": "うし", "emoji": "🐄", "phrase": "う うし" },
-      "え": { "word": "えび", "emoji": "🦐", "phrase": "え えび" },
-      "お": { "word": "おに", "emoji": "👹", "phrase": "お おに" },
-      "か": { "word": "かめ", "emoji": "🐢", "phrase": "か かめ" },
-      "き": { "word": "きつね", "emoji": "🦊", "phrase": "き きつね" },
-      "く": { "word": "くま", "emoji": "🐻", "phrase": "く くま" },
-      "け": { "word": "けーき", "emoji": "🎂", "phrase": "け けーき" },
-      "こ": { "word": "こあら", "emoji": "🐨", "phrase": "こ こあら" },
-      "さ": { "word": "さる", "emoji": "🐵", "phrase": "さ さる" },
-      "し": { "word": "しか", "emoji": "🦌", "phrase": "し しか" },
-      "す": { "word": "すいか", "emoji": "🍉", "phrase": "す すいか" },
-      "せ": { "word": "せみ", "emoji": "🦗", "phrase": "せ せみ" },
-      "そ": { "word": "そら", "emoji": "🌤️", "phrase": "そ そら" },
-      "た": { "word": "たこ", "emoji": "🐙", "phrase": "た たこ" },
-      "ち": { "word": "ちょう", "emoji": "🦋", "phrase": "ち ちょう" },
-      "つ": { "word": "つき", "emoji": "🌙", "phrase": "つ つき" },
-      "て": { "word": "てんし", "emoji": "👼", "phrase": "て てんし" },
-      "と": { "word": "とら", "emoji": "🐯", "phrase": "と とら" },
-      "な": { "word": "なす", "emoji": "🍆", "phrase": "な なす" },
-      "に": { "word": "にじ", "emoji": "🌈", "phrase": "に にじ" },
-      "ぬ": { "word": "ぬいぐるみ", "emoji": "🧸", "phrase": "ぬ ぬいぐるみ" },
-      "ね": { "word": "ねこ", "emoji": "🐱", "phrase": "ね ねこ" },
-      "の": { "word": "のり", "emoji": "🍙", "phrase": "の のり" },
-      "は": { "word": "はな", "emoji": "🌸", "phrase": "は はな" },
-      "ひ": { "word": "ひよこ", "emoji": "🐤", "phrase": "ひ ひよこ" },
-      "ふ": { "word": "ふね", "emoji": "⛵", "phrase": "ふ ふね" },
-      "へ": { "word": "へび", "emoji": "🐍", "phrase": "へ へび" },
-      "ほ": { "word": "ほし", "emoji": "⭐", "phrase": "ほ ほし" },
-      "ま": { "word": "まめ", "emoji": "🫘", "phrase": "ま まめ" },
-      "み": { "word": "みかん", "emoji": "🍊", "phrase": "み みかん" },
-      "む": { "word": "むし", "emoji": "🐛", "phrase": "む むし" },
-      "め": { "word": "めだか", "emoji": "🐟", "phrase": "め めだか" },
-      "も": { "word": "もも", "emoji": "🍑", "phrase": "も もも" },
-      "や": { "word": "やま", "emoji": "⛰️", "phrase": "や やま" },
-      "ゆ": { "word": "ゆき", "emoji": "❄️", "phrase": "ゆ ゆき" },
-      "よ": { "word": "よる", "emoji": "🌙", "phrase": "よ よる" },
-      "ら": { "word": "らいおん", "emoji": "🦁", "phrase": "ら らいおん" },
-      "り": { "word": "りんご", "emoji": "🍎", "phrase": "り りんご" },
-      "る": { "word": "るびー", "emoji": "💎", "phrase": "る るびー" },
-      "れ": { "word": "れもん", "emoji": "🍋", "phrase": "れ れもん" },
-      "ろ": { "word": "ろぼっと", "emoji": "🤖", "phrase": "ろ ろぼっと" },
-      "わ": { "word": "わに", "emoji": "🐊", "phrase": "わ わに" },
-      "を": { "word": "を", "emoji": "📝", "phrase": "を" },
-      "ん": { "word": "ん", "emoji": "🔚", "phrase": "ん" }
+      "あ": {
+        "word": "あり",
+        "emoji": "🐜",
+        "phrase": "あ あり",
+        "romanization": "a"
+      },
+      "い": {
+        "word": "いぬ",
+        "emoji": "🐕",
+        "phrase": "い いぬ",
+        "romanization": "i"
+      },
+      "う": {
+        "word": "うし",
+        "emoji": "🐄",
+        "phrase": "う うし",
+        "romanization": "u"
+      },
+      "え": {
+        "word": "えび",
+        "emoji": "🦐",
+        "phrase": "え えび",
+        "romanization": "e"
+      },
+      "お": {
+        "word": "おに",
+        "emoji": "👹",
+        "phrase": "お おに",
+        "romanization": "o"
+      },
+      "か": {
+        "word": "かめ",
+        "emoji": "🐢",
+        "phrase": "か かめ",
+        "romanization": "ka"
+      },
+      "き": {
+        "word": "きつね",
+        "emoji": "🦊",
+        "phrase": "き きつね",
+        "romanization": "ki"
+      },
+      "く": {
+        "word": "くま",
+        "emoji": "🐻",
+        "phrase": "く くま",
+        "romanization": "ku"
+      },
+      "け": {
+        "word": "けーき",
+        "emoji": "🎂",
+        "phrase": "け けーき",
+        "romanization": "ke"
+      },
+      "こ": {
+        "word": "こあら",
+        "emoji": "🐨",
+        "phrase": "こ こあら",
+        "romanization": "ko"
+      },
+      "さ": {
+        "word": "さる",
+        "emoji": "🐵",
+        "phrase": "さ さる",
+        "romanization": "sa"
+      },
+      "し": {
+        "word": "しか",
+        "emoji": "🦌",
+        "phrase": "し しか",
+        "romanization": "shi"
+      },
+      "す": {
+        "word": "すいか",
+        "emoji": "🍉",
+        "phrase": "す すいか",
+        "romanization": "su"
+      },
+      "せ": {
+        "word": "せみ",
+        "emoji": "🦗",
+        "phrase": "せ せみ",
+        "romanization": "se"
+      },
+      "そ": {
+        "word": "そら",
+        "emoji": "🌤️",
+        "phrase": "そ そら",
+        "romanization": "so"
+      },
+      "た": {
+        "word": "たこ",
+        "emoji": "🐙",
+        "phrase": "た たこ",
+        "romanization": "ta"
+      },
+      "ち": {
+        "word": "ちょう",
+        "emoji": "🦋",
+        "phrase": "ち ちょう",
+        "romanization": "chi"
+      },
+      "つ": {
+        "word": "つき",
+        "emoji": "🌙",
+        "phrase": "つ つき",
+        "romanization": "tsu"
+      },
+      "て": {
+        "word": "てんし",
+        "emoji": "👼",
+        "phrase": "て てんし",
+        "romanization": "te"
+      },
+      "と": {
+        "word": "とら",
+        "emoji": "🐯",
+        "phrase": "と とら",
+        "romanization": "to"
+      },
+      "な": {
+        "word": "なす",
+        "emoji": "🍆",
+        "phrase": "な なす",
+        "romanization": "na"
+      },
+      "に": {
+        "word": "にじ",
+        "emoji": "🌈",
+        "phrase": "に にじ",
+        "romanization": "ni"
+      },
+      "ぬ": {
+        "word": "ぬいぐるみ",
+        "emoji": "🧸",
+        "phrase": "ぬ ぬいぐるみ",
+        "romanization": "nu"
+      },
+      "ね": {
+        "word": "ねこ",
+        "emoji": "🐱",
+        "phrase": "ね ねこ",
+        "romanization": "ne"
+      },
+      "の": {
+        "word": "のり",
+        "emoji": "🍙",
+        "phrase": "の のり",
+        "romanization": "no"
+      },
+      "は": {
+        "word": "はな",
+        "emoji": "🌸",
+        "phrase": "は はな",
+        "romanization": "ha"
+      },
+      "ひ": {
+        "word": "ひよこ",
+        "emoji": "🐤",
+        "phrase": "ひ ひよこ",
+        "romanization": "hi"
+      },
+      "ふ": {
+        "word": "ふね",
+        "emoji": "⛵",
+        "phrase": "ふ ふね",
+        "romanization": "fu"
+      },
+      "へ": {
+        "word": "へび",
+        "emoji": "🐍",
+        "phrase": "へ へび",
+        "romanization": "he"
+      },
+      "ほ": {
+        "word": "ほし",
+        "emoji": "⭐",
+        "phrase": "ほ ほし",
+        "romanization": "ho"
+      },
+      "ま": {
+        "word": "まめ",
+        "emoji": "🫘",
+        "phrase": "ま まめ",
+        "romanization": "ma"
+      },
+      "み": {
+        "word": "みかん",
+        "emoji": "🍊",
+        "phrase": "み みかん",
+        "romanization": "mi"
+      },
+      "む": {
+        "word": "むし",
+        "emoji": "🐛",
+        "phrase": "む むし",
+        "romanization": "mu"
+      },
+      "め": {
+        "word": "めだか",
+        "emoji": "🐟",
+        "phrase": "め めだか",
+        "romanization": "me"
+      },
+      "も": {
+        "word": "もも",
+        "emoji": "🍑",
+        "phrase": "も もも",
+        "romanization": "mo"
+      },
+      "や": {
+        "word": "やま",
+        "emoji": "⛰️",
+        "phrase": "や やま",
+        "romanization": "ya"
+      },
+      "ゆ": {
+        "word": "ゆき",
+        "emoji": "❄️",
+        "phrase": "ゆ ゆき",
+        "romanization": "yu"
+      },
+      "よ": {
+        "word": "よる",
+        "emoji": "🌙",
+        "phrase": "よ よる",
+        "romanization": "yo"
+      },
+      "ら": {
+        "word": "らいおん",
+        "emoji": "🦁",
+        "phrase": "ら らいおん",
+        "romanization": "ra"
+      },
+      "り": {
+        "word": "りんご",
+        "emoji": "🍎",
+        "phrase": "り りんご",
+        "romanization": "ri"
+      },
+      "る": {
+        "word": "るびー",
+        "emoji": "💎",
+        "phrase": "る るびー",
+        "romanization": "ru"
+      },
+      "れ": {
+        "word": "れもん",
+        "emoji": "🍋",
+        "phrase": "れ れもん",
+        "romanization": "re"
+      },
+      "ろ": {
+        "word": "ろぼっと",
+        "emoji": "🤖",
+        "phrase": "ろ ろぼっと",
+        "romanization": "ro"
+      },
+      "わ": {
+        "word": "わに",
+        "emoji": "🐊",
+        "phrase": "わ わに",
+        "romanization": "wa"
+      },
+      "を": {
+        "word": "を",
+        "emoji": "📝",
+        "phrase": "を",
+        "romanization": "wo"
+      },
+      "ん": {
+        "word": "ん",
+        "emoji": "🔚",
+        "phrase": "ん",
+        "romanization": "n"
+      }
     }
   },
   "numbers": {
     "title": "かず",
     "instructions": "かずをクリック！",
     "items": {
-      "1": { "word": "いち", "emoji": "⭐", "phrase": "ほしひとつ" },
-      "2": { "word": "に", "emoji": "⭐⭐", "phrase": "ほしふたつ" },
-      "3": { "word": "さん", "emoji": "⭐⭐⭐", "phrase": "ほしみっつ" },
-      "4": { "word": "よん", "emoji": "🐉🐉🐉🐉", "phrase": "ドラゴンよんひき" },
-      "5": { "word": "ご", "emoji": "🖐️", "phrase": "ゆびごほん" },
-      "6": { "word": "ろく", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "りんごろっこ" },
-      "7": { "word": "なな", "emoji": "🌈", "phrase": "にじのいろななつ" },
-      "8": { "word": "はち", "emoji": "🐙", "phrase": "たこのあしはっぽん" },
-      "9": { "word": "きゅう", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "ふうせんきゅうこ" },
-      "10": { "word": "じゅう", "emoji": "🖐️🖐️", "phrase": "ゆびじゅっぽん" }
+      "1": {
+        "word": "いち",
+        "emoji": "⭐",
+        "phrase": "ほしひとつ",
+        "romanization": "ichi (1)"
+      },
+      "2": {
+        "word": "に",
+        "emoji": "⭐⭐",
+        "phrase": "ほしふたつ",
+        "romanization": "ni (2)"
+      },
+      "3": {
+        "word": "さん",
+        "emoji": "⭐⭐⭐",
+        "phrase": "ほしみっつ",
+        "romanization": "san (3)"
+      },
+      "4": {
+        "word": "よん",
+        "emoji": "🐉🐉🐉🐉",
+        "phrase": "ドラゴンよんひき",
+        "romanization": "yon (4)"
+      },
+      "5": {
+        "word": "ご",
+        "emoji": "🖐️",
+        "phrase": "ゆびごほん",
+        "romanization": "go (5)"
+      },
+      "6": {
+        "word": "ろく",
+        "emoji": "🍎🍎🍎🍎🍎🍎",
+        "phrase": "りんごろっこ",
+        "romanization": "roku (6)"
+      },
+      "7": {
+        "word": "なな",
+        "emoji": "🌈",
+        "phrase": "にじのいろななつ",
+        "romanization": "nana (7)"
+      },
+      "8": {
+        "word": "はち",
+        "emoji": "🐙",
+        "phrase": "たこのあしはっぽん",
+        "romanization": "hachi (8)"
+      },
+      "9": {
+        "word": "きゅう",
+        "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈",
+        "phrase": "ふうせんきゅうこ",
+        "romanization": "kyū (9)"
+      },
+      "10": {
+        "word": "じゅう",
+        "emoji": "🖐️🖐️",
+        "phrase": "ゆびじゅっぽん",
+        "romanization": "jū (10)"
+      }
     }
   }
 }

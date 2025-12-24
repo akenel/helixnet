@@ -44,54 +44,174 @@
     "theEnd": "סוף:"
   },
   "heroes": {
-    "dragon": { "label": "דרקון", "value": "דרקון ידידותי" },
-    "robot": { "label": "רובוט", "value": "רובוט אמיץ" },
-    "unicorn": { "label": "חד קרן", "value": "חד קרן קסום" },
-    "cat": { "label": "חתול", "value": "סופר חתול" },
-    "dog": { "label": "כלב", "value": "כלב גיבור" },
-    "superhero": { "label": "גיבור על", "value": "ילד גיבור על קטן" },
-    "tiger": { "label": "טיגריס", "value": "טיגריס חזק" },
-    "space": { "label": "אסטרונאוט", "value": "חוקר חלל" }
+    "dragon": {
+      "label": "דרקון",
+      "value": "דרקון ידידותי"
+    },
+    "robot": {
+      "label": "רובוט",
+      "value": "רובוט אמיץ"
+    },
+    "unicorn": {
+      "label": "חד קרן",
+      "value": "חד קרן קסום"
+    },
+    "cat": {
+      "label": "חתול",
+      "value": "סופר חתול"
+    },
+    "dog": {
+      "label": "כלב",
+      "value": "כלב גיבור"
+    },
+    "superhero": {
+      "label": "גיבור על",
+      "value": "ילד גיבור על קטן"
+    },
+    "tiger": {
+      "label": "טיגריס",
+      "value": "טיגריס חזק"
+    },
+    "space": {
+      "label": "אסטרונאוט",
+      "value": "חוקר חלל"
+    }
   },
   "wants": {
-    "princess": { "label": "להציל נסיכה", "value": "להציל את הנסיכה מהמגדל" },
-    "treasure": { "label": "למצוא אוצר", "value": "למצוא את האוצר הנסתר" },
-    "race": { "label": "לנצח במרוץ", "value": "לנצח במרוץ הגדול" },
-    "home": { "label": "לחזור הביתה", "value": "לחזור הביתה בשלום" },
-    "friend": { "label": "למצוא חבר", "value": "למצוא חבר חדש" },
-    "fly": { "label": "ללמוד לעוף", "value": "ללמוד לעוף" },
-    "wizard": { "label": "להיות קוסם", "value": "להיות קוסם" },
-    "ocean": { "label": "לחקור את הים", "value": "לחקור את האוקיינוס" }
+    "princess": {
+      "label": "להציל נסיכה",
+      "value": "להציל את הנסיכה מהמגדל"
+    },
+    "treasure": {
+      "label": "למצוא אוצר",
+      "value": "למצוא את האוצר הנסתר"
+    },
+    "race": {
+      "label": "לנצח במרוץ",
+      "value": "לנצח במרוץ הגדול"
+    },
+    "home": {
+      "label": "לחזור הביתה",
+      "value": "לחזור הביתה בשלום"
+    },
+    "friend": {
+      "label": "למצוא חבר",
+      "value": "למצוא חבר חדש"
+    },
+    "fly": {
+      "label": "ללמוד לעוף",
+      "value": "ללמוד לעוף"
+    },
+    "wizard": {
+      "label": "להיות קוסם",
+      "value": "להיות קוסם"
+    },
+    "ocean": {
+      "label": "לחקור את הים",
+      "value": "לחקור את האוקיינוס"
+    }
   },
   "obstacles": {
-    "giant": { "label": "ענק", "value": "ענק רגזן" },
-    "monster": { "label": "מפלצת", "value": "מפלצת מפחידה" },
-    "mountain": { "label": "הר", "value": "הר ענק" },
-    "door": { "label": "דלת קסומה", "value": "דלת קסומה נעולה" },
-    "storm": { "label": "סערה", "value": "סערה פרועה" },
-    "forest": { "label": "יער", "value": "יער חשוך ועמוק" },
-    "wizard": { "label": "קוסם", "value": "קוסם ערמומי" },
-    "maze": { "label": "מבוך", "value": "מבוך מבלבל" }
+    "giant": {
+      "label": "ענק",
+      "value": "ענק רגזן"
+    },
+    "monster": {
+      "label": "מפלצת",
+      "value": "מפלצת מפחידה"
+    },
+    "mountain": {
+      "label": "הר",
+      "value": "הר ענק"
+    },
+    "door": {
+      "label": "דלת קסומה",
+      "value": "דלת קסומה נעולה"
+    },
+    "storm": {
+      "label": "סערה",
+      "value": "סערה פרועה"
+    },
+    "forest": {
+      "label": "יער",
+      "value": "יער חשוך ועמוק"
+    },
+    "wizard": {
+      "label": "קוסם",
+      "value": "קוסם ערמומי"
+    },
+    "maze": {
+      "label": "מבוך",
+      "value": "מבוך מבלבל"
+    }
   },
   "solutions": {
-    "speed": { "label": "מהירות", "value": "כוחות סופר מהירות" },
-    "friend": { "label": "חבר", "value": "חבר מועיל" },
-    "trick": { "label": "תעלול", "value": "תעלול חכם" },
-    "magic": { "label": "קסם", "value": "כוחות קסם" },
-    "brave": { "label": "אומץ", "value": "להיות סופר אמיץ" },
-    "kindness": { "label": "חסד", "value": "חסד ואהבה" },
-    "teamwork": { "label": "עבודת צוות", "value": "עבודת צוות עם כולם" },
-    "nevergiveup": { "label": "לא לוותר", "value": "לעולם לא לוותר" }
+    "speed": {
+      "label": "מהירות",
+      "value": "כוחות סופר מהירות"
+    },
+    "friend": {
+      "label": "חבר",
+      "value": "חבר מועיל"
+    },
+    "trick": {
+      "label": "תעלול",
+      "value": "תעלול חכם"
+    },
+    "magic": {
+      "label": "קסם",
+      "value": "כוחות קסם"
+    },
+    "brave": {
+      "label": "אומץ",
+      "value": "להיות סופר אמיץ"
+    },
+    "kindness": {
+      "label": "חסד",
+      "value": "חסד ואהבה"
+    },
+    "teamwork": {
+      "label": "עבודת צוות",
+      "value": "עבודת צוות עם כולם"
+    },
+    "nevergiveup": {
+      "label": "לא לוותר",
+      "value": "לעולם לא לוותר"
+    }
   },
   "endings": {
-    "party": { "label": "מסיבה", "value": "כולם רוקדים במסיבה גדולה" },
-    "sunset": { "label": "שקיעה", "value": "עפים יחד לעבר השקיעה" },
-    "castle": { "label": "טירה", "value": "גרים בטירה יפה" },
-    "hugging": { "label": "חיבוקים", "value": "כל החברים מתחבקים וצוחקים" },
-    "cake": { "label": "עוגה", "value": "אוכלים עוגה וגלידה" },
-    "medal": { "label": "מדליה", "value": "מקבלים מדליית זהב" },
-    "adventure": { "label": "הרפתקה", "value": "יוצאים להרפתקה חדשה" },
-    "sleep": { "label": "שינה", "value": "ישנים במיטה נעימה" }
+    "party": {
+      "label": "מסיבה",
+      "value": "כולם רוקדים במסיבה גדולה"
+    },
+    "sunset": {
+      "label": "שקיעה",
+      "value": "עפים יחד לעבר השקיעה"
+    },
+    "castle": {
+      "label": "טירה",
+      "value": "גרים בטירה יפה"
+    },
+    "hugging": {
+      "label": "חיבוקים",
+      "value": "כל החברים מתחבקים וצוחקים"
+    },
+    "cake": {
+      "label": "עוגה",
+      "value": "אוכלים עוגה וגלידה"
+    },
+    "medal": {
+      "label": "מדליה",
+      "value": "מקבלים מדליית זהב"
+    },
+    "adventure": {
+      "label": "הרפתקה",
+      "value": "יוצאים להרפתקה חדשה"
+    },
+    "sleep": {
+      "label": "שינה",
+      "value": "ישנים במיטה נעימה"
+    }
   },
   "artModes": {
     "coloring": "ספר צביעה",
@@ -115,44 +235,204 @@
     "title": "האלף-בית העברי",
     "instructions": "לחץ על אות!",
     "letters": {
-      "א": { "word": "אריה", "emoji": "🦁", "phrase": "א׳ אריה" },
-      "ב": { "word": "בננה", "emoji": "🍌", "phrase": "ב׳ בננה" },
-      "ג": { "word": "גמל", "emoji": "🐪", "phrase": "ג׳ גמל" },
-      "ד": { "word": "דג", "emoji": "🐟", "phrase": "ד׳ דג" },
-      "ה": { "word": "הר", "emoji": "⛰️", "phrase": "ה׳ הר" },
-      "ו": { "word": "ורד", "emoji": "🌹", "phrase": "ו׳ ורד" },
-      "ז": { "word": "זברה", "emoji": "🦓", "phrase": "ז׳ זברה" },
-      "ח": { "word": "חתול", "emoji": "🐱", "phrase": "ח׳ חתול" },
-      "ט": { "word": "טווס", "emoji": "🦚", "phrase": "ט׳ טווס" },
-      "י": { "word": "ירח", "emoji": "🌙", "phrase": "י׳ ירח" },
-      "כ": { "word": "כלב", "emoji": "🐕", "phrase": "כ׳ כלב" },
-      "ל": { "word": "לב", "emoji": "❤️", "phrase": "ל׳ לב" },
-      "מ": { "word": "מטריה", "emoji": "☂️", "phrase": "מ׳ מטריה" },
-      "נ": { "word": "נמר", "emoji": "🐯", "phrase": "נ׳ נמר" },
-      "ס": { "word": "סוס", "emoji": "🐴", "phrase": "ס׳ סוס" },
-      "ע": { "word": "עכביש", "emoji": "🕷️", "phrase": "ע׳ עכביש" },
-      "פ": { "word": "פרפר", "emoji": "🦋", "phrase": "פ׳ פרפר" },
-      "צ": { "word": "צב", "emoji": "🐢", "phrase": "צ׳ צב" },
-      "ק": { "word": "קוף", "emoji": "🐵", "phrase": "ק׳ קוף" },
-      "ר": { "word": "רובוט", "emoji": "🤖", "phrase": "ר׳ רובוט" },
-      "ש": { "word": "שמש", "emoji": "☀️", "phrase": "ש׳ שמש" },
-      "ת": { "word": "תפוח", "emoji": "🍎", "phrase": "ת׳ תפוח" }
+      "א": {
+        "word": "אריה",
+        "emoji": "🦁",
+        "phrase": "א׳ אריה",
+        "romanization": "alef (silent/a)"
+      },
+      "ב": {
+        "word": "בננה",
+        "emoji": "🍌",
+        "phrase": "ב׳ בננה",
+        "romanization": "bet (b/v)"
+      },
+      "ג": {
+        "word": "גמל",
+        "emoji": "🐪",
+        "phrase": "ג׳ גמל",
+        "romanization": "gimel (g)"
+      },
+      "ד": {
+        "word": "דג",
+        "emoji": "🐟",
+        "phrase": "ד׳ דג",
+        "romanization": "dalet (d)"
+      },
+      "ה": {
+        "word": "הר",
+        "emoji": "⛰️",
+        "phrase": "ה׳ הר",
+        "romanization": "he (h)"
+      },
+      "ו": {
+        "word": "ורד",
+        "emoji": "🌹",
+        "phrase": "ו׳ ורד",
+        "romanization": "vav (v/o/u)"
+      },
+      "ז": {
+        "word": "זברה",
+        "emoji": "🦓",
+        "phrase": "ז׳ זברה",
+        "romanization": "zayin (z)"
+      },
+      "ח": {
+        "word": "חתול",
+        "emoji": "🐱",
+        "phrase": "ח׳ חתול",
+        "romanization": "chet (ch)"
+      },
+      "ט": {
+        "word": "טווס",
+        "emoji": "🦚",
+        "phrase": "ט׳ טווס",
+        "romanization": "tet (t)"
+      },
+      "י": {
+        "word": "ירח",
+        "emoji": "🌙",
+        "phrase": "י׳ ירח",
+        "romanization": "yod (y/i)"
+      },
+      "כ": {
+        "word": "כלב",
+        "emoji": "🐕",
+        "phrase": "כ׳ כלב",
+        "romanization": "kaf (k/kh)"
+      },
+      "ל": {
+        "word": "לב",
+        "emoji": "❤️",
+        "phrase": "ל׳ לב",
+        "romanization": "lamed (l)"
+      },
+      "מ": {
+        "word": "מטריה",
+        "emoji": "☂️",
+        "phrase": "מ׳ מטריה",
+        "romanization": "mem (m)"
+      },
+      "נ": {
+        "word": "נמר",
+        "emoji": "🐯",
+        "phrase": "נ׳ נמר",
+        "romanization": "nun (n)"
+      },
+      "ס": {
+        "word": "סוס",
+        "emoji": "🐴",
+        "phrase": "ס׳ סוס",
+        "romanization": "samech (s)"
+      },
+      "ע": {
+        "word": "עכביש",
+        "emoji": "🕷️",
+        "phrase": "ע׳ עכביש",
+        "romanization": "ayin (silent)"
+      },
+      "פ": {
+        "word": "פרפר",
+        "emoji": "🦋",
+        "phrase": "פ׳ פרפר",
+        "romanization": "pe (p/f)"
+      },
+      "צ": {
+        "word": "צב",
+        "emoji": "🐢",
+        "phrase": "צ׳ צב",
+        "romanization": "tsadi (ts)"
+      },
+      "ק": {
+        "word": "קוף",
+        "emoji": "🐵",
+        "phrase": "ק׳ קוף",
+        "romanization": "qof (k)"
+      },
+      "ר": {
+        "word": "רובוט",
+        "emoji": "🤖",
+        "phrase": "ר׳ רובוט",
+        "romanization": "resh (r)"
+      },
+      "ש": {
+        "word": "שמש",
+        "emoji": "☀️",
+        "phrase": "ש׳ שמש",
+        "romanization": "shin (sh/s)"
+      },
+      "ת": {
+        "word": "תפוח",
+        "emoji": "🍎",
+        "phrase": "ת׳ תפוח",
+        "romanization": "tav (t)"
+      }
     }
   },
   "numbers": {
     "title": "מספרים",
     "instructions": "לחץ על מספר!",
     "items": {
-      "1": { "word": "אחת", "emoji": "⭐", "phrase": "כוכב אחד" },
-      "2": { "word": "שתיים", "emoji": "⭐⭐", "phrase": "שני כוכבים" },
-      "3": { "word": "שלוש", "emoji": "⭐⭐⭐", "phrase": "שלושה כוכבים" },
-      "4": { "word": "ארבע", "emoji": "🐉🐉🐉🐉", "phrase": "ארבעה דרקונים" },
-      "5": { "word": "חמש", "emoji": "🖐️", "phrase": "חמש אצבעות" },
-      "6": { "word": "שש", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "שישה תפוחים" },
-      "7": { "word": "שבע", "emoji": "🌈", "phrase": "שבעה צבעים" },
-      "8": { "word": "שמונה", "emoji": "🐙", "phrase": "שמונה זרועות" },
-      "9": { "word": "תשע", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "תשעה בלונים" },
-      "10": { "word": "עשר", "emoji": "🖐️🖐️", "phrase": "עשר אצבעות" }
+      "1": {
+        "word": "אחת",
+        "emoji": "⭐",
+        "phrase": "כוכב אחד",
+        "romanization": "achat"
+      },
+      "2": {
+        "word": "שתיים",
+        "emoji": "⭐⭐",
+        "phrase": "שני כוכבים",
+        "romanization": "shtayim"
+      },
+      "3": {
+        "word": "שלוש",
+        "emoji": "⭐⭐⭐",
+        "phrase": "שלושה כוכבים",
+        "romanization": "shalosh"
+      },
+      "4": {
+        "word": "ארבע",
+        "emoji": "🐉🐉🐉🐉",
+        "phrase": "ארבעה דרקונים",
+        "romanization": "arba"
+      },
+      "5": {
+        "word": "חמש",
+        "emoji": "🖐️",
+        "phrase": "חמש אצבעות",
+        "romanization": "chamesh"
+      },
+      "6": {
+        "word": "שש",
+        "emoji": "🍎🍎🍎🍎🍎🍎",
+        "phrase": "שישה תפוחים",
+        "romanization": "shesh"
+      },
+      "7": {
+        "word": "שבע",
+        "emoji": "🌈",
+        "phrase": "שבעה צבעים",
+        "romanization": "sheva"
+      },
+      "8": {
+        "word": "שמונה",
+        "emoji": "🐙",
+        "phrase": "שמונה זרועות",
+        "romanization": "shmoneh"
+      },
+      "9": {
+        "word": "תשע",
+        "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈",
+        "phrase": "תשעה בלונים",
+        "romanization": "tesha"
+      },
+      "10": {
+        "word": "עשר",
+        "emoji": "🖐️🖐️",
+        "phrase": "עשר אצבעות",
+        "romanization": "eser"
+      }
     }
   }
 }

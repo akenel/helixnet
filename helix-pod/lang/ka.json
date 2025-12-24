@@ -1,14 +1,223 @@
 {
-  "meta": { "language": "ქართული", "code": "ka", "flag": "🇬🇪", "direction": "ltr" },
-  "ui": { "title": "მოთხრობის მაგია", "subtitle": "დააწკაპუნეთ სურათებზე და შექმენით თქვენი მოთხრობა!", "makeBook": "გააკეთე ჩემი წიგნი!", "tryAgain": "ხელახლა ცდა", "done": "დასრულდა!", "serverReady": "სერვერი მზადაა", "serverConnecting": "იკავშირებს...", "serverNotRunning": "სერვერი არ მუშაობს!", "startServerFirst": "ჯერ გაუშვით სერვერი:", "thenClickAgain": "შემდეგ კვლავ დააწკაპუნეთ ღილაკს!", "generating": "თქვენი წიგნი მზადდება...", "yourBookReady": "თქვენი წიგნი მზადაა!", "openingNewWindow": "იხსნება ახალ ფანჯარაში...", "savedTo": "შენახულია:", "pickArtStyle": "აირჩიეთ ხელოვნების სტილი:", "allFree": "ყველაფერი უფასოა! ანგარიში არ არის საჭირო!", "whatsYourName": "რა გქვია?", "letsGo": "წავედით!", "myStories": "ჩემი მოთხრობები", "seeMyStory": "ნახე ჩემი მოთხრობა!" },
-  "steps": { "hero": "ვინ არის გმირი?", "want": "რა სურთ მათ?", "obstacle": "ოჰ! რა არის გზაზე?", "solution": "როგორ იმარჯვებენ?", "ending": "დასასრული ასე გამოიყურება..." },
-  "story": { "onceUponATime": "იყო და არა იყო რა", "theyWanted": "მათ სურდათ", "butOhNo": "მაგრამ ოჰ!", "inTheWay": "გზაზე იყო!", "using": "გამოყენებით", "theySavedTheDay": "მათ გადაარჩინეს დღე!", "theEnd": "დასასრული:" },
-  "heroes": { "dragon": { "label": "დრაკონი", "value": "მეგობრული დრაკონი" }, "robot": { "label": "რობოტი", "value": "მამაცი რობოტი" }, "unicorn": { "label": "ერთრქა", "value": "ჯადოსნური ერთრქა" }, "cat": { "label": "კატა", "value": "სუპერ კატა" }, "dog": { "label": "ძაღლი", "value": "გმირი ძაღლი" }, "superhero": { "label": "სუპერგმირი", "value": "პატარა სუპერგმირი" }, "tiger": { "label": "ვეფხვი", "value": "ძლიერი ვეფხვი" }, "space": { "label": "კოსმონავტი", "value": "კოსმოსის მკვლევარი" } },
-  "wants": { "princess": { "label": "გადაარჩინე პრინცესა", "value": "გადაარჩინე პრინცესა კოშკიდან" }, "treasure": { "label": "იპოვე განძი", "value": "იპოვე დამალული განძი" }, "race": { "label": "მოიგე რბოლა", "value": "მოიგე დიდი რბოლა" }, "home": { "label": "სახლში წასვლა", "value": "უსაფრთხოდ სახლში მისვლა" }, "friend": { "label": "იპოვე მეგობარი", "value": "იპოვე ახალი მეგობარი" }, "fly": { "label": "ფრენის სწავლა", "value": "ფრენის სწავლა" }, "wizard": { "label": "გახდი ჯადოქარი", "value": "გახდი ჯადოქარი" }, "ocean": { "label": "ოკეანის გამოკვლევა", "value": "ოკეანის გამოკვლევა" } },
-  "obstacles": { "giant": { "label": "გოლიათი", "value": "გაბრაზებული გოლიათი" }, "monster": { "label": "მონსტრი", "value": "საშინელი მონსტრი" }, "mountain": { "label": "მთა", "value": "უზარმაზარი მთა" }, "door": { "label": "ჯადოსნური კარი", "value": "ჩაკეტილი ჯადოსნური კარი" }, "storm": { "label": "ქარიშხალი", "value": "ძლიერი ქარიშხალი" }, "forest": { "label": "ტყე", "value": "ბნელი ღრმა ტყე" }, "wizard": { "label": "ჯადოქარი", "value": "მზაკვარი ჯადოქარი" }, "maze": { "label": "ლაბირინთი", "value": "დამაბნეველი ლაბირინთი" } },
-  "solutions": { "speed": { "label": "სისწრაფე", "value": "სუპერ სწრაფი ძალა" }, "friend": { "label": "მეგობარი", "value": "დამხმარე მეგობარი" }, "trick": { "label": "ხრიკი", "value": "ჭკვიანი ხრიკი" }, "magic": { "label": "მაგია", "value": "ჯადოსნური ძალა" }, "brave": { "label": "სიმამაცე", "value": "ძალიან მამაცი ყოფნა" }, "kindness": { "label": "სიკეთე", "value": "სიკეთე და სიყვარული" }, "teamwork": { "label": "გუნდური მუშაობა", "value": "გუნდური მუშაობა ყველასთან" }, "nevergiveup": { "label": "არ დანებდე", "value": "არასოდეს დანებდე" } },
-  "endings": { "party": { "label": "წვეულება", "value": "ყველა ცეკვავს დიდ წვეულებაზე" }, "sunset": { "label": "მზის ჩასვლა", "value": "ერთად მიფრინავენ მზის ჩასვლისკენ" }, "castle": { "label": "ციხესიმაგრე", "value": "ცხოვრობენ ლამაზ ციხესიმაგრეში" }, "hugging": { "label": "ჩახუტება", "value": "ყველა მეგობარი ეხუტება და იცინის" }, "cake": { "label": "ტორტი", "value": "ჭამენ ტორტს და ნაყინს" }, "medal": { "label": "მედალი", "value": "იღებენ ოქროს მედალს" }, "adventure": { "label": "თავგადასავალი", "value": "მიდიან ახალ თავგადასავალში" }, "sleep": { "label": "ძილი", "value": "იძინებენ რბილ საწოლში" } },
-  "artModes": { "coloring": "საღებავების წიგნი", "pollinations": "AI ხელოვნება", "ai-coloring": "AI ფერწერა" },
+  "meta": {
+    "language": "ქართული",
+    "code": "ka",
+    "flag": "🇬🇪",
+    "direction": "ltr"
+  },
+  "ui": {
+    "title": "მოთხრობის მაგია",
+    "subtitle": "დააწკაპუნეთ სურათებზე და შექმენით თქვენი მოთხრობა!",
+    "makeBook": "გააკეთე ჩემი წიგნი!",
+    "tryAgain": "ხელახლა ცდა",
+    "done": "დასრულდა!",
+    "serverReady": "სერვერი მზადაა",
+    "serverConnecting": "იკავშირებს...",
+    "serverNotRunning": "სერვერი არ მუშაობს!",
+    "startServerFirst": "ჯერ გაუშვით სერვერი:",
+    "thenClickAgain": "შემდეგ კვლავ დააწკაპუნეთ ღილაკს!",
+    "generating": "თქვენი წიგნი მზადდება...",
+    "yourBookReady": "თქვენი წიგნი მზადაა!",
+    "openingNewWindow": "იხსნება ახალ ფანჯარაში...",
+    "savedTo": "შენახულია:",
+    "pickArtStyle": "აირჩიეთ ხელოვნების სტილი:",
+    "allFree": "ყველაფერი უფასოა! ანგარიში არ არის საჭირო!",
+    "whatsYourName": "რა გქვია?",
+    "letsGo": "წავედით!",
+    "myStories": "ჩემი მოთხრობები",
+    "seeMyStory": "ნახე ჩემი მოთხრობა!"
+  },
+  "steps": {
+    "hero": "ვინ არის გმირი?",
+    "want": "რა სურთ მათ?",
+    "obstacle": "ოჰ! რა არის გზაზე?",
+    "solution": "როგორ იმარჯვებენ?",
+    "ending": "დასასრული ასე გამოიყურება..."
+  },
+  "story": {
+    "onceUponATime": "იყო და არა იყო რა",
+    "theyWanted": "მათ სურდათ",
+    "butOhNo": "მაგრამ ოჰ!",
+    "inTheWay": "გზაზე იყო!",
+    "using": "გამოყენებით",
+    "theySavedTheDay": "მათ გადაარჩინეს დღე!",
+    "theEnd": "დასასრული:"
+  },
+  "heroes": {
+    "dragon": {
+      "label": "დრაკონი",
+      "value": "მეგობრული დრაკონი"
+    },
+    "robot": {
+      "label": "რობოტი",
+      "value": "მამაცი რობოტი"
+    },
+    "unicorn": {
+      "label": "ერთრქა",
+      "value": "ჯადოსნური ერთრქა"
+    },
+    "cat": {
+      "label": "კატა",
+      "value": "სუპერ კატა"
+    },
+    "dog": {
+      "label": "ძაღლი",
+      "value": "გმირი ძაღლი"
+    },
+    "superhero": {
+      "label": "სუპერგმირი",
+      "value": "პატარა სუპერგმირი"
+    },
+    "tiger": {
+      "label": "ვეფხვი",
+      "value": "ძლიერი ვეფხვი"
+    },
+    "space": {
+      "label": "კოსმონავტი",
+      "value": "კოსმოსის მკვლევარი"
+    }
+  },
+  "wants": {
+    "princess": {
+      "label": "გადაარჩინე პრინცესა",
+      "value": "გადაარჩინე პრინცესა კოშკიდან"
+    },
+    "treasure": {
+      "label": "იპოვე განძი",
+      "value": "იპოვე დამალული განძი"
+    },
+    "race": {
+      "label": "მოიგე რბოლა",
+      "value": "მოიგე დიდი რბოლა"
+    },
+    "home": {
+      "label": "სახლში წასვლა",
+      "value": "უსაფრთხოდ სახლში მისვლა"
+    },
+    "friend": {
+      "label": "იპოვე მეგობარი",
+      "value": "იპოვე ახალი მეგობარი"
+    },
+    "fly": {
+      "label": "ფრენის სწავლა",
+      "value": "ფრენის სწავლა"
+    },
+    "wizard": {
+      "label": "გახდი ჯადოქარი",
+      "value": "გახდი ჯადოქარი"
+    },
+    "ocean": {
+      "label": "ოკეანის გამოკვლევა",
+      "value": "ოკეანის გამოკვლევა"
+    }
+  },
+  "obstacles": {
+    "giant": {
+      "label": "გოლიათი",
+      "value": "გაბრაზებული გოლიათი"
+    },
+    "monster": {
+      "label": "მონსტრი",
+      "value": "საშინელი მონსტრი"
+    },
+    "mountain": {
+      "label": "მთა",
+      "value": "უზარმაზარი მთა"
+    },
+    "door": {
+      "label": "ჯადოსნური კარი",
+      "value": "ჩაკეტილი ჯადოსნური კარი"
+    },
+    "storm": {
+      "label": "ქარიშხალი",
+      "value": "ძლიერი ქარიშხალი"
+    },
+    "forest": {
+      "label": "ტყე",
+      "value": "ბნელი ღრმა ტყე"
+    },
+    "wizard": {
+      "label": "ჯადოქარი",
+      "value": "მზაკვარი ჯადოქარი"
+    },
+    "maze": {
+      "label": "ლაბირინთი",
+      "value": "დამაბნეველი ლაბირინთი"
+    }
+  },
+  "solutions": {
+    "speed": {
+      "label": "სისწრაფე",
+      "value": "სუპერ სწრაფი ძალა"
+    },
+    "friend": {
+      "label": "მეგობარი",
+      "value": "დამხმარე მეგობარი"
+    },
+    "trick": {
+      "label": "ხრიკი",
+      "value": "ჭკვიანი ხრიკი"
+    },
+    "magic": {
+      "label": "მაგია",
+      "value": "ჯადოსნური ძალა"
+    },
+    "brave": {
+      "label": "სიმამაცე",
+      "value": "ძალიან მამაცი ყოფნა"
+    },
+    "kindness": {
+      "label": "სიკეთე",
+      "value": "სიკეთე და სიყვარული"
+    },
+    "teamwork": {
+      "label": "გუნდური მუშაობა",
+      "value": "გუნდური მუშაობა ყველასთან"
+    },
+    "nevergiveup": {
+      "label": "არ დანებდე",
+      "value": "არასოდეს დანებდე"
+    }
+  },
+  "endings": {
+    "party": {
+      "label": "წვეულება",
+      "value": "ყველა ცეკვავს დიდ წვეულებაზე"
+    },
+    "sunset": {
+      "label": "მზის ჩასვლა",
+      "value": "ერთად მიფრინავენ მზის ჩასვლისკენ"
+    },
+    "castle": {
+      "label": "ციხესიმაგრე",
+      "value": "ცხოვრობენ ლამაზ ციხესიმაგრეში"
+    },
+    "hugging": {
+      "label": "ჩახუტება",
+      "value": "ყველა მეგობარი ეხუტება და იცინის"
+    },
+    "cake": {
+      "label": "ტორტი",
+      "value": "ჭამენ ტორტს და ნაყინს"
+    },
+    "medal": {
+      "label": "მედალი",
+      "value": "იღებენ ოქროს მედალს"
+    },
+    "adventure": {
+      "label": "თავგადასავალი",
+      "value": "მიდიან ახალ თავგადასავალში"
+    },
+    "sleep": {
+      "label": "ძილი",
+      "value": "იძინებენ რბილ საწოლში"
+    }
+  },
+  "artModes": {
+    "coloring": "საღებავების წიგნი",
+    "pollinations": "AI ხელოვნება",
+    "ai-coloring": "AI ფერწერა"
+  },
   "scenes": {
     "meetTitle": "გაიცანით {hero}",
     "meetDesc": "ეს არის {hero}. {hero} ჩვენი გმირია!",
@@ -26,55 +235,260 @@
     "title": "ქართული ანბანი",
     "instructions": "დააწკაპუნეთ ასოს!",
     "letters": {
-      "ა": { "word": "ავოკადო", "emoji": "🥑", "phrase": "ა ავოკადო" },
-      "ბ": { "word": "ბურთი", "emoji": "⚽", "phrase": "ბ ბურთი" },
-      "გ": { "word": "გვირილა", "emoji": "🌼", "phrase": "გ გვირილა" },
-      "დ": { "word": "დათვი", "emoji": "🐻", "phrase": "დ დათვი" },
-      "ე": { "word": "ექიმი", "emoji": "👨‍⚕️", "phrase": "ე ექიმი" },
-      "ვ": { "word": "ვარსკვლავი", "emoji": "⭐", "phrase": "ვ ვარსკვლავი" },
-      "ზ": { "word": "ზებრა", "emoji": "🦓", "phrase": "ზ ზებრა" },
-      "თ": { "word": "თვალი", "emoji": "👁️", "phrase": "თ თვალი" },
-      "ი": { "word": "იხვი", "emoji": "🦆", "phrase": "ი იხვი" },
-      "კ": { "word": "კატა", "emoji": "🐱", "phrase": "კ კატა" },
-      "ლ": { "word": "ლომი", "emoji": "🦁", "phrase": "ლ ლომი" },
-      "მ": { "word": "მთვარე", "emoji": "🌙", "phrase": "მ მთვარე" },
-      "ნ": { "word": "ნაყინი", "emoji": "🍦", "phrase": "ნ ნაყინი" },
-      "ო": { "word": "ოთახი", "emoji": "🏠", "phrase": "ო ოთახი" },
-      "პ": { "word": "პეპელა", "emoji": "🦋", "phrase": "პ პეპელა" },
-      "ჟ": { "word": "ჟირაფი", "emoji": "🦒", "phrase": "ჟ ჟირაფი" },
-      "რ": { "word": "რკო", "emoji": "🍇", "phrase": "რ რკო" },
-      "ს": { "word": "სპილო", "emoji": "🐘", "phrase": "ს სპილო" },
-      "ტ": { "word": "ტიტა", "emoji": "🌷", "phrase": "ტ ტიტა" },
-      "უ": { "word": "უფლისწული", "emoji": "🤴", "phrase": "უ უფლისწული" },
-      "ფ": { "word": "ფოთოლი", "emoji": "🍃", "phrase": "ფ ფოთოლი" },
-      "ქ": { "word": "ქათამი", "emoji": "🐓", "phrase": "ქ ქათამი" },
-      "ღ": { "word": "ღამე", "emoji": "🌙", "phrase": "ღ ღამე" },
-      "ყ": { "word": "ყვავილი", "emoji": "🌸", "phrase": "ყ ყვავილი" },
-      "შ": { "word": "შვილი", "emoji": "👶", "phrase": "შ შვილი" },
-      "ჩ": { "word": "ჩიტი", "emoji": "🐦", "phrase": "ჩ ჩიტი" },
-      "ც": { "word": "ცხენი", "emoji": "🐴", "phrase": "ც ცხენი" },
-      "ძ": { "word": "ძაღლი", "emoji": "🐕", "phrase": "ძ ძაღლი" },
-      "წ": { "word": "წიგნი", "emoji": "📚", "phrase": "წ წიგნი" },
-      "ჭ": { "word": "ჭიანჭველა", "emoji": "🐜", "phrase": "ჭ ჭიანჭველა" },
-      "ხ": { "word": "ხახვი", "emoji": "🧅", "phrase": "ხ ხახვი" },
-      "ჯ": { "word": "ჯოხი", "emoji": "🏒", "phrase": "ჯ ჯოხი" },
-      "ჰ": { "word": "ჰაერი", "emoji": "💨", "phrase": "ჰ ჰაერი" }
+      "ა": {
+        "word": "ავოკადო",
+        "emoji": "🥑",
+        "phrase": "ა ავოკადო",
+        "romanization": "ani (a)"
+      },
+      "ბ": {
+        "word": "ბურთი",
+        "emoji": "⚽",
+        "phrase": "ბ ბურთი",
+        "romanization": "bani (b)"
+      },
+      "გ": {
+        "word": "გვირილა",
+        "emoji": "🌼",
+        "phrase": "გ გვირილა",
+        "romanization": "gani (g)"
+      },
+      "დ": {
+        "word": "დათვი",
+        "emoji": "🐻",
+        "phrase": "დ დათვი",
+        "romanization": "doni (d)"
+      },
+      "ე": {
+        "word": "ექიმი",
+        "emoji": "👨‍⚕️",
+        "phrase": "ე ექიმი",
+        "romanization": "eni (e)"
+      },
+      "ვ": {
+        "word": "ვარსკვლავი",
+        "emoji": "⭐",
+        "phrase": "ვ ვარსკვლავი",
+        "romanization": "vini (v)"
+      },
+      "ზ": {
+        "word": "ზებრა",
+        "emoji": "🦓",
+        "phrase": "ზ ზებრა",
+        "romanization": "zeni (z)"
+      },
+      "თ": {
+        "word": "თვალი",
+        "emoji": "👁️",
+        "phrase": "თ თვალი",
+        "romanization": "tani (t)"
+      },
+      "ი": {
+        "word": "იხვი",
+        "emoji": "🦆",
+        "phrase": "ი იხვი",
+        "romanization": "ini (i)"
+      },
+      "კ": {
+        "word": "კატა",
+        "emoji": "🐱",
+        "phrase": "კ კატა",
+        "romanization": "k'ani (k)"
+      },
+      "ლ": {
+        "word": "ლომი",
+        "emoji": "🦁",
+        "phrase": "ლ ლომი",
+        "romanization": "lasi (l)"
+      },
+      "მ": {
+        "word": "მთვარე",
+        "emoji": "🌙",
+        "phrase": "მ მთვარე",
+        "romanization": "mani (m)"
+      },
+      "ნ": {
+        "word": "ნაყინი",
+        "emoji": "🍦",
+        "phrase": "ნ ნაყინი",
+        "romanization": "nari (n)"
+      },
+      "ო": {
+        "word": "ოთახი",
+        "emoji": "🏠",
+        "phrase": "ო ოთახი",
+        "romanization": "oni (o)"
+      },
+      "პ": {
+        "word": "პეპელა",
+        "emoji": "🦋",
+        "phrase": "პ პეპელა",
+        "romanization": "p'ari (p)"
+      },
+      "ჟ": {
+        "word": "ჟირაფი",
+        "emoji": "🦒",
+        "phrase": "ჟ ჟირაფი",
+        "romanization": "zhani (zh)"
+      },
+      "რ": {
+        "word": "რკო",
+        "emoji": "🍇",
+        "phrase": "რ რკო",
+        "romanization": "rae (r)"
+      },
+      "ს": {
+        "word": "სპილო",
+        "emoji": "🐘",
+        "phrase": "ს სპილო",
+        "romanization": "sani (s)"
+      },
+      "ტ": {
+        "word": "ტიტა",
+        "emoji": "🌷",
+        "phrase": "ტ ტიტა",
+        "romanization": "t'ari (t)"
+      },
+      "უ": {
+        "word": "უფლისწული",
+        "emoji": "🤴",
+        "phrase": "უ უფლისწული",
+        "romanization": "uni (u)"
+      },
+      "ფ": {
+        "word": "ფოთოლი",
+        "emoji": "🍃",
+        "phrase": "ფ ფოთოლი",
+        "romanization": "pari (p)"
+      },
+      "ქ": {
+        "word": "ქათამი",
+        "emoji": "🐓",
+        "phrase": "ქ ქათამი",
+        "romanization": "kani (k)"
+      },
+      "ღ": {
+        "word": "ღამე",
+        "emoji": "🌙",
+        "phrase": "ღ ღამე",
+        "romanization": "ghani (gh)"
+      },
+      "ყ": {
+        "word": "ყვავილი",
+        "emoji": "🌸",
+        "phrase": "ყ ყვავილი",
+        "romanization": "q'ari (q)"
+      },
+      "შ": {
+        "word": "შვილი",
+        "emoji": "👶",
+        "phrase": "შ შვილი",
+        "romanization": "shini (sh)"
+      },
+      "ჩ": {
+        "word": "ჩიტი",
+        "emoji": "🐦",
+        "phrase": "ჩ ჩიტი",
+        "romanization": "chini (ch)"
+      },
+      "ც": {
+        "word": "ცხენი",
+        "emoji": "🐴",
+        "phrase": "ც ცხენი",
+        "romanization": "tsani (ts)"
+      },
+      "ძ": {
+        "word": "ძაღლი",
+        "emoji": "🐕",
+        "phrase": "ძ ძაღლი",
+        "romanization": "dzili (dz)"
+      },
+      "წ": {
+        "word": "წიგნი",
+        "emoji": "📚",
+        "phrase": "წ წიგნი",
+        "romanization": "ts'ili (ts)"
+      },
+      "ჭ": {
+        "word": "ჭიანჭველა",
+        "emoji": "🐜",
+        "phrase": "ჭ ჭიანჭველა",
+        "romanization": "ch'ari (ch)"
+      },
+      "ხ": {
+        "word": "ხახვი",
+        "emoji": "🧅",
+        "phrase": "ხ ხახვი",
+        "romanization": "khani (kh)"
+      },
+      "ჯ": {
+        "word": "ჯოხი",
+        "emoji": "🏒",
+        "phrase": "ჯ ჯოხი",
+        "romanization": "jani (j)"
+      },
+      "ჰ": {
+        "word": "ჰაერი",
+        "emoji": "💨",
+        "phrase": "ჰ ჰაერი",
+        "romanization": "hae (h)"
+      }
     }
   },
   "numbers": {
     "title": "რიცხვები",
     "instructions": "დააწკაპუნეთ რიცხვს!",
     "items": {
-      "1": { "word": "ერთი", "emoji": "⭐", "phrase": "ერთი ვარსკვლავი" },
-      "2": { "word": "ორი", "emoji": "⭐⭐", "phrase": "ორი ვარსკვლავი" },
-      "3": { "word": "სამი", "emoji": "⭐⭐⭐", "phrase": "სამი ვარსკვლავი" },
-      "4": { "word": "ოთხი", "emoji": "🐉🐉🐉🐉", "phrase": "ოთხი დრაკონი" },
-      "5": { "word": "ხუთი", "emoji": "🖐️", "phrase": "ხუთი თითი" },
-      "6": { "word": "ექვსი", "emoji": "🍎🍎🍎🍎🍎🍎", "phrase": "ექვსი ვაშლი" },
-      "7": { "word": "შვიდი", "emoji": "🌈", "phrase": "შვიდი ფერი" },
-      "8": { "word": "რვა", "emoji": "🐙", "phrase": "რვა ფეხი" },
-      "9": { "word": "ცხრა", "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈", "phrase": "ცხრა ბუშტი" },
-      "10": { "word": "ათი", "emoji": "🖐️🖐️", "phrase": "ათი თითი" }
+      "1": {
+        "word": "ერთი",
+        "emoji": "⭐",
+        "phrase": "ერთი ვარსკვლავი"
+      },
+      "2": {
+        "word": "ორი",
+        "emoji": "⭐⭐",
+        "phrase": "ორი ვარსკვლავი"
+      },
+      "3": {
+        "word": "სამი",
+        "emoji": "⭐⭐⭐",
+        "phrase": "სამი ვარსკვლავი"
+      },
+      "4": {
+        "word": "ოთხი",
+        "emoji": "🐉🐉🐉🐉",
+        "phrase": "ოთხი დრაკონი"
+      },
+      "5": {
+        "word": "ხუთი",
+        "emoji": "🖐️",
+        "phrase": "ხუთი თითი"
+      },
+      "6": {
+        "word": "ექვსი",
+        "emoji": "🍎🍎🍎🍎🍎🍎",
+        "phrase": "ექვსი ვაშლი"
+      },
+      "7": {
+        "word": "შვიდი",
+        "emoji": "🌈",
+        "phrase": "შვიდი ფერი"
+      },
+      "8": {
+        "word": "რვა",
+        "emoji": "🐙",
+        "phrase": "რვა ფეხი"
+      },
+      "9": {
+        "word": "ცხრა",
+        "emoji": "🎈🎈🎈🎈🎈🎈🎈🎈🎈",
+        "phrase": "ცხრა ბუშტი"
+      },
+      "10": {
+        "word": "ათი",
+        "emoji": "🖐️🖐️",
+        "phrase": "ათი თითი"
+      }
     }
   }
 }

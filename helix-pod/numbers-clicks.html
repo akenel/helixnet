@@ -129,6 +129,64 @@
             color: #666;
             margin-bottom: 20px;
         }
+        .display-romanization {
+            font-size: 1.8em;
+            color: #11998e;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 8px 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .training-wheels {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .toggle-btn {
+            padding: 8px 16px;
+            font-size: 1em;
+            border: 2px solid #f5576c;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .my-lang-selector {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 15px;
+        }
+        .my-lang-selector label {
+            font-weight: bold;
+            color: #e65100;
+            margin-right: 10px;
+        }
+        .my-lang-selector select {
+            padding: 8px 15px;
+            font-size: 1em;
+            border: 2px solid #e65100;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+        }
+        .display-translation {
+            font-size: 1.4em;
+            color: #e65100;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            padding: 8px 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
 
         /* Speak button */
         .speak-btn {
@@ -198,6 +256,15 @@
         <h1 id="title">123 Numbers</h1>
         <p class="subtitle" id="instructions">Click a number!</p>
 
+        <!-- My Language selector (what I speak) -->
+        <div class="my-lang-selector">
+            <label>🏠 I speak:</label>
+            <select id="myLangSelect" onchange="setMyLanguage(this.value)">
+                <!-- Populated by JS -->
+            </select>
+            <span style="margin-left: 20px;">📚 Learning:</span>
+        </div>
+
         <!-- Smart language flags: Local + English + Adventure -->
         <div class="lang-selector" id="smartLangSelector">
             <!-- Populated by JS -->
@@ -206,6 +273,13 @@
         <!-- Number grid -->
         <div class="number-grid" id="numberGrid">
             <!-- Numbers will be populated by JavaScript -->
+        </div>
+
+        <!-- Training wheels toggle -->
+        <div class="training-wheels">
+            <button class="toggle-btn active" id="toggleRoman" onclick="toggleRomanization()">
+                🔤 Show Pronunciation
+            </button>
         </div>
 
         <!-- Display area -->
@@ -224,8 +298,33 @@
 
     <script>
         let currentLang = 'en';
+        let myLang = 'en';  // Language I speak (for translations)
         let numbersData = null;
         let langData = null;
+        let myLangData = null;  // My language numbers for reference
+        let showRomanization = true;  // Training wheels ON by default
+        let showTranslation = true;   // Show my language translation
+
+        function toggleRomanization() {
+            showRomanization = !showRomanization;
+            const btn = document.getElementById('toggleRoman');
+            btn.classList.toggle('active', showRomanization);
+            btn.textContent = showRomanization ? '🔤 Show Pronunciation' : '🔤 Hide Pronunciation';
+            // Re-render current number if one is selected
+            const activeBtn = document.querySelector('.number-btn.active');
+            if (activeBtn) showNumber(activeBtn.textContent);
+        }
+
+        // Language names for dropdown
+        const LANG_NAMES = {
+            en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch',
+            it: 'Italiano', pt: 'Português', nl: 'Nederlands', ru: 'Русский',
+            zh: '中文', ja: '日本語', ko: '한국어', ar: 'العربية',
+            hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', vi: 'Tiếng Việt',
+            tr: 'Türkçe', pl: 'Polski', uk: 'Українська', he: 'עברית',
+            fa: 'فارسی', id: 'Bahasa Indonesia', ms: 'Bahasa Melayu',
+            sw: 'Kiswahili', tl: 'Tagalog', ta: 'தமிழ்', te: 'తెలుగు'
+        };
 
         // All 65 supported languages with numbers data
         const LANGUAGES = {
@@ -261,6 +360,46 @@
             const local = getLocalLang();
             if (lang !== local && lang !== 'en') {
                 localStorage.setItem('teller-adventure-lang', lang);
+            }
+        }
+
+        // My Language functions (what I speak)
+        function getMyLang() {
+            return localStorage.getItem('teller-my-lang') || detectBrowserLanguage();
+        }
+
+        async function setMyLanguage(lang) {
+            myLang = lang;
+            localStorage.setItem('teller-my-lang', lang);
+            // Load my language data for translations
+            try {
+                const resp = await fetch(`/lang/${lang}.json`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    myLangData = data.numbers;
+                }
+            } catch (e) {
+                console.error('Failed to load my language:', e);
+            }
+            // Re-render current number if one is selected
+            const activeBtn = document.querySelector('.number-btn.active');
+            if (activeBtn) showNumber(activeBtn.textContent);
+        }
+
+        function buildMyLangSelector() {
+            const select = document.getElementById('myLangSelect');
+            select.innerHTML = '';
+
+            // Common languages first, then all others
+            const common = ['en', 'es', 'fr', 'de', 'zh', 'ja', 'ar', 'hi', 'pt', 'ru'];
+            const others = Object.keys(LANGUAGES).filter(l => !common.includes(l)).sort();
+
+            for (const code of [...common, ...others]) {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${LANGUAGES[code]} ${LANG_NAMES[code] || code.toUpperCase()}`;
+                if (code === myLang) opt.selected = true;
+                select.appendChild(opt);
             }
         }
 
@@ -393,11 +532,27 @@
                 btn.classList.toggle('active', btn.textContent === num);
             });
 
+            // Build romanization HTML if available and enabled
+            const romanHtml = (showRomanization && data.romanization)
+                ? `<div class="display-romanization">Sounds like: ${data.romanization}</div>`
+                : '';
+
+            // Build translation HTML - show my language word for this number
+            let translationHtml = '';
+            if (showTranslation && myLang !== currentLang && myLangData?.items) {
+                const myNum = myLangData.items[num];
+                if (myNum) {
+                    translationHtml = `<div class="display-translation">In ${LANG_NAMES[myLang] || myLang}: ${myNum.word}</div>`;
+                }
+            }
+
             // Show in display area with animation
             const displayArea = document.getElementById('displayArea');
             displayArea.innerHTML = `
                 <div class="display-emoji">${data.emoji}</div>
                 <div class="display-number">${num}</div>
+                ${romanHtml}
+                ${translationHtml}
                 <div class="display-word">${data.word}</div>
                 <div class="display-phrase">${data.phrase}</div>
                 <button class="speak-btn" onclick="speak('${data.phrase.replace(/'/g, "\\'")}')">
@@ -450,8 +605,13 @@
         }
 
         // Initialize with smart language detection
+        myLang = getMyLang();
+        buildMyLangSelector();
         buildSmartLangSelector();
-        loadLanguage(getSavedLang() || getLocalLang());
+        // Load my language data first, then the learning language
+        setMyLanguage(myLang).then(() => {
+            loadLanguage(getSavedLang() || getLocalLang());
+        });
     </script>
 </body>
 </html>

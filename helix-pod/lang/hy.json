@@ -238,192 +238,230 @@
       "Ա": {
         "word": "Աղավնի",
         "emoji": "🦆",
-        "phrase": "Ա Աղավնի"
+        "phrase": "Ա Աղավնի",
+        "romanization": "Ayb (a)"
       },
       "Բ": {
         "word": "Բալիկ",
         "emoji": "💊",
-        "phrase": "Բ Բալիկ"
+        "phrase": "Բ Բալիկ",
+        "romanization": "Ben (b)"
       },
       "Գ": {
         "word": "Գիրք",
         "emoji": "📚",
-        "phrase": "Գ Գիրք"
+        "phrase": "Գ Գիրք",
+        "romanization": "Gim (g)"
       },
       "Դ": {
         "word": "Դեղին",
         "emoji": "🍋",
-        "phrase": "Դ Դեղին"
+        "phrase": "Դ Դեղին",
+        "romanization": "Da (d)"
       },
       "Ե": {
         "word": "Եղեվնի",
         "emoji": "☀️",
-        "phrase": "Ե Եղեվնի"
+        "phrase": "Ե Եղեվնի",
+        "romanization": "Yech (e/ye)"
       },
       "Զ": {
         "word": "Զանգ",
         "emoji": "🔔",
-        "phrase": "Զ Զանգ"
+        "phrase": "Զ Զանգ",
+        "romanization": "Za (z)"
       },
       "Է": {
         "word": "Էթեր",
         "emoji": "🦋",
-        "phrase": "Է Էթեր"
+        "phrase": "Է Էթեր",
+        "romanization": "E (ē)"
       },
       "Ը": {
         "word": "Ընկեր",
         "emoji": "👵",
-        "phrase": "Ը Ընկեր"
+        "phrase": "Ը Ընկեր",
+        "romanization": "Ët (ë)"
       },
       "Թ": {
         "word": "Թմբուկ",
         "emoji": "🥁",
-        "phrase": "Թ Թմբուկ"
+        "phrase": "Թ Թմբուկ",
+        "romanization": "To (t')"
       },
       "Ժ": {
         "word": "Ժաղիկ",
         "emoji": "🌙",
-        "phrase": "Ժ Ժաղիկ"
+        "phrase": "Ժ Ժաղիկ",
+        "romanization": "Zhe (zh)"
       },
       "Ի": {
         "word": "Ինքնաթիռ",
         "emoji": "🎋",
-        "phrase": "Ի Ինքնաթիռ"
+        "phrase": "Ի Ինքնաթիռ",
+        "romanization": "Ini (i)"
       },
       "Լ": {
         "word": "Լավա",
         "emoji": "🐮",
-        "phrase": "Լ Լավա"
+        "phrase": "Լ Լավա",
+        "romanization": "Liwn (l)"
       },
       "Խ": {
         "word": "Խնձոր",
         "emoji": "🧊",
-        "phrase": "Խ Խնձոր"
+        "phrase": "Խ Խնձոր",
+        "romanization": "Xeh (kh)"
       },
       "Ծ": {
         "word": "Ծառ",
         "emoji": "🦁",
-        "phrase": "Ծ Ծառ"
+        "phrase": "Ծ Ծառ",
+        "romanization": "Ca (ts)"
       },
       "Կ": {
         "word": "Կատու",
         "emoji": "🐱",
-        "phrase": "Կ Կատու"
+        "phrase": "Կ Կատու",
+        "romanization": "Ken (k)"
       },
       "Հ": {
         "word": "Հաց",
         "emoji": "🍞",
-        "phrase": "Հ Հաց"
+        "phrase": "Հ Հաց",
+        "romanization": "Ho (h)"
       },
       "Ձ": {
         "word": "Ձուր",
         "emoji": "💧",
-        "phrase": "Ձ Ձուր"
+        "phrase": "Ձ Ձուր",
+        "romanization": "Ja (dz)"
       },
       "Ղ": {
         "word": "Ղինի",
         "emoji": "🍷",
-        "phrase": "Ղ Ղինի"
+        "phrase": "Ղ Ղինի",
+        "romanization": "Ghad (gh)"
       },
       "Ճ": {
         "word": "Ճուր",
         "emoji": "🐳",
-        "phrase": "Ճ Ճուր"
+        "phrase": "Ճ Ճուր",
+        "romanization": "Čhe (ch)"
       },
       "Մ": {
         "word": "Մեղու",
         "emoji": "🐝",
-        "phrase": "Մ Մեղու"
+        "phrase": "Մ Մեղու",
+        "romanization": "Men (m)"
       },
       "Յ": {
         "word": "Յուղ",
         "emoji": "🐏",
-        "phrase": "Յ Յուղ"
+        "phrase": "Յ Յուղ",
+        "romanization": "Yi (y)"
       },
       "Ն": {
         "word": "Նավ",
         "emoji": "⛵",
-        "phrase": "Ն Նավ"
+        "phrase": "Ն Նավ",
+        "romanization": "Nu (n)"
       },
       "Շ": {
         "word": "Շուն",
         "emoji": "🐕",
-        "phrase": "Շ Շուն"
+        "phrase": "Շ Շուն",
+        "romanization": "Sha (sh)"
       },
       "Ո": {
         "word": "Ոսկի",
         "emoji": "🏅",
-        "phrase": "Ո Ոսկի"
+        "phrase": "Ո Ոսկի",
+        "romanization": "Vo (o/vo)"
       },
       "Չ": {
         "word": "Չայ",
         "emoji": "🫖",
-        "phrase": "Չ Չայ"
+        "phrase": "Չ Չայ",
+        "romanization": "Cha (ch')"
       },
       "Պ": {
         "word": "Պանիր",
         "emoji": "🧀",
-        "phrase": "Պ Պանիր"
+        "phrase": "Պ Պանիր",
+        "romanization": "Peh (p)"
       },
       "Ջ": {
         "word": "Ջսկ",
         "emoji": "🐟",
-        "phrase": "Ջ Ջսկ"
+        "phrase": "Ջ Ջսկ",
+        "romanization": "Jheh (j)"
       },
       "Ռ": {
         "word": "Ռադիո",
         "emoji": "📻",
-        "phrase": "Ռ Ռադիո"
+        "phrase": "Ռ Ռադիո",
+        "romanization": "Ra (ṙ)"
       },
       "Ս": {
         "word": "Սեղան",
         "emoji": "💼",
-        "phrase": "Ս Սեղան"
+        "phrase": "Ս Սեղան",
+        "romanization": "Seh (s)"
       },
       "Վ": {
         "word": "Վարդ",
         "emoji": "🌹",
-        "phrase": "Վ Վարդ"
+        "phrase": "Վ Վարդ",
+        "romanization": "Vev (v)"
       },
       "Տ": {
         "word": "Տուն",
         "emoji": "🏠",
-        "phrase": "Տ Տուն"
+        "phrase": "Տ Տուն",
+        "romanization": "Tiwn (t)"
       },
       "Ր": {
         "word": "Րադիո",
         "emoji": "📻",
-        "phrase": "Ր Րադիո"
+        "phrase": "Ր Րադիո",
+        "romanization": "Reh (r)"
       },
       "Ց": {
         "word": "Ցաղիկ",
         "emoji": "🦎",
-        "phrase": "Ց Ցաղիկ"
+        "phrase": "Ց Ցաղիկ",
+        "romanization": "Co (ts')"
       },
       "Ւ": {
         "word": "Ւուրգ",
         "emoji": "🐓",
-        "phrase": "Ւ Ւուրգ"
+        "phrase": "Ւ Ւուրգ",
+        "romanization": "Hiwn (w)"
       },
       "Փ": {
         "word": "Փողոց",
         "emoji": "🎺",
-        "phrase": "Փ Փողոց"
+        "phrase": "Փ Փողոց",
+        "romanization": "P'iwr (p')"
       },
       "Ք": {
         "word": "Քար",
         "emoji": "🗿",
-        "phrase": "Ք Քար"
+        "phrase": "Ք Քար",
+        "romanization": "K'eh (k')"
       },
       "Օ": {
         "word": "Օձ",
         "emoji": "🐍",
-        "phrase": "Օ Օձ"
+        "phrase": "Օ Օձ",
+        "romanization": "O (ō)"
       },
       "Ֆ": {
         "word": "Ֆիլ",
         "emoji": "🐘",
-        "phrase": "Ֆ Ֆիլ"
+        "phrase": "Ֆ Ֆիլ",
+        "romanization": "Feh (f)"
       }
     }
   },

@@ -118,6 +118,64 @@
             color: #666;
             margin-bottom: 20px;
         }
+        .display-romanization {
+            font-size: 1.8em;
+            color: #11998e;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 8px 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .training-wheels {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .toggle-btn {
+            padding: 8px 16px;
+            font-size: 1em;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .my-lang-selector {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+        }
+        .my-lang-selector label {
+            font-weight: bold;
+            color: #1976d2;
+            margin-right: 10px;
+        }
+        .my-lang-selector select {
+            padding: 8px 15px;
+            font-size: 1em;
+            border: 2px solid #1976d2;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+        }
+        .display-translation {
+            font-size: 1.4em;
+            color: #1976d2;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 8px 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
 
         /* Speak button */
         .speak-btn {
@@ -161,6 +219,15 @@
         <h1 id="title">🔤 Alphabet</h1>
         <p class="subtitle" id="instructions">Click a letter!</p>
 
+        <!-- My Language selector (what I speak) -->
+        <div class="my-lang-selector">
+            <label>🏠 I speak:</label>
+            <select id="myLangSelect" onchange="setMyLanguage(this.value)">
+                <!-- Populated by JS -->
+            </select>
+            <span style="margin-left: 20px;">📚 Learning:</span>
+        </div>
+
         <!-- Smart language flags: Local + English + Adventure -->
         <div class="lang-selector" id="smartLangSelector">
             <!-- Populated by JS -->
@@ -169,6 +236,13 @@
         <!-- Letter grid -->
         <div class="letter-grid" id="letterGrid">
             <!-- Letters will be populated by JavaScript -->
+        </div>
+
+        <!-- Training wheels toggle -->
+        <div class="training-wheels">
+            <button class="toggle-btn active" id="toggleRoman" onclick="toggleRomanization()">
+                🔤 Show Pronunciation
+            </button>
         </div>
 
         <!-- Display area -->
@@ -186,7 +260,32 @@
 
     <script>
         let currentLang = 'en';
+        let myLang = 'en';  // Language I speak (for translations)
         let alphabetData = null;
+        let myLangData = null;  // My language alphabet for reference
+        let showRomanization = true;  // Training wheels ON by default
+        let showTranslation = true;   // Show my language translation
+
+        function toggleRomanization() {
+            showRomanization = !showRomanization;
+            const btn = document.getElementById('toggleRoman');
+            btn.classList.toggle('active', showRomanization);
+            btn.textContent = showRomanization ? '🔤 Show Pronunciation' : '🔤 Hide Pronunciation';
+            // Re-render current letter if one is selected
+            const activeBtn = document.querySelector('.letter-btn.active');
+            if (activeBtn) showLetter(activeBtn.textContent);
+        }
+
+        // Language names for dropdown
+        const LANG_NAMES = {
+            en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch',
+            it: 'Italiano', pt: 'Português', nl: 'Nederlands', ru: 'Русский',
+            zh: '中文', ja: '日本語', ko: '한국어', ar: 'العربية',
+            hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', vi: 'Tiếng Việt',
+            tr: 'Türkçe', pl: 'Polski', uk: 'Українська', he: 'עברית',
+            fa: 'فارسی', id: 'Bahasa Indonesia', ms: 'Bahasa Melayu',
+            sw: 'Kiswahili', tl: 'Tagalog', ta: 'தமிழ்', te: 'తెలుగు'
+        };
 
         // All 65 supported languages with alphabet data
         const LANGUAGES = {
@@ -222,6 +321,46 @@
             const local = getLocalLang();
             if (lang !== local && lang !== 'en') {
                 localStorage.setItem('teller-adventure-lang', lang);
+            }
+        }
+
+        // My Language functions (what I speak)
+        function getMyLang() {
+            return localStorage.getItem('teller-my-lang') || detectBrowserLanguage();
+        }
+
+        async function setMyLanguage(lang) {
+            myLang = lang;
+            localStorage.setItem('teller-my-lang', lang);
+            // Load my language data for translations
+            try {
+                const resp = await fetch(`/lang/${lang}.json`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    myLangData = data.alphabet;
+                }
+            } catch (e) {
+                console.error('Failed to load my language:', e);
+            }
+            // Re-render current letter if one is selected
+            const activeBtn = document.querySelector('.letter-btn.active');
+            if (activeBtn) showLetter(activeBtn.textContent);
+        }
+
+        function buildMyLangSelector() {
+            const select = document.getElementById('myLangSelect');
+            select.innerHTML = '';
+
+            // Common languages first, then all others
+            const common = ['en', 'es', 'fr', 'de', 'zh', 'ja', 'ar', 'hi', 'pt', 'ru'];
+            const others = Object.keys(LANGUAGES).filter(l => !common.includes(l)).sort();
+
+            for (const code of [...common, ...others]) {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${LANGUAGES[code]} ${LANG_NAMES[code] || code.toUpperCase()}`;
+                if (code === myLang) opt.selected = true;
+                select.appendChild(opt);
             }
         }
 
@@ -349,10 +488,34 @@
                 btn.classList.toggle('active', btn.textContent === letter);
             });
 
+            // Build romanization HTML if available and enabled
+            const romanHtml = (showRomanization && data.romanization)
+                ? `<div class="display-romanization">Sounds like: ${data.romanization}</div>`
+                : '';
+
+            // Build translation HTML - show my language equivalent if different
+            let translationHtml = '';
+            if (showTranslation && myLang !== currentLang && myLangData?.letters) {
+                // Try to find equivalent letter in my language
+                const myLetter = myLangData.letters[letter];
+                if (myLetter) {
+                    translationHtml = `<div class="display-translation">In ${LANG_NAMES[myLang] || myLang}: ${myLetter.word} ${myLetter.emoji}</div>`;
+                } else {
+                    // For non-matching scripts, show the emoji meaning in my language
+                    // Find a letter in my language with same emoji
+                    const sameEmoji = Object.entries(myLangData.letters).find(([k, v]) => v.emoji === data.emoji);
+                    if (sameEmoji) {
+                        translationHtml = `<div class="display-translation">${data.emoji} = ${sameEmoji[1].word} (${LANG_NAMES[myLang] || myLang})</div>`;
+                    }
+                }
+            }
+
             // Show in display area
             document.getElementById('displayArea').innerHTML = `
                 <div class="display-emoji">${data.emoji}</div>
                 <div class="display-letter">${letter}</div>
+                ${romanHtml}
+                ${translationHtml}
                 <div class="display-word">${data.word}</div>
                 <div class="display-phrase">${data.phrase}</div>
                 <button class="speak-btn" onclick="speak('${data.phrase.replace(/'/g, "\\'")}')">
@@ -405,8 +568,13 @@
         }
 
         // Initialize with smart language detection
+        myLang = getMyLang();
+        buildMyLangSelector();
         buildSmartLangSelector();
-        loadLanguage(getSavedLang() || getLocalLang());
+        // Load my language data first, then the learning language
+        setMyLanguage(myLang).then(() => {
+            loadLanguage(getSavedLang() || getLocalLang());
+        });
     </script>
 </body>
 </html>
