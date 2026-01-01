@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccola Bistro - Restocking List</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+        .date-header {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .category {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .category h2 {
+            margin: 0 0 10px 0;
+            color: #e74c3c;
+            font-size: 1.1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .item input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .item-name {
+            flex: 1;
+            font-size: 1em;
+        }
+        .par-level {
+            width: 80px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .current {
+            width: 60px;
+        }
+        .current input {
+            width: 50px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .need-order {
+            background: #ffe6e6;
+        }
+        .reorder-list {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .reorder-list h2 {
+            margin: 0 0 15px 0;
+            color: #856404;
+        }
+        #reorderItems {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #reorderItems li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ffe69c;
+            font-size: 1.1em;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .actions button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-print {
+            background: #3498db;
+            color: white;
+        }
+        .btn-clear {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-generate {
+            background: #27ae60;
+            color: white;
+        }
+        @media print {
+            body { background: white; }
+            .actions { display: none; }
+            .category { box-shadow: none; border: 1px solid #ddd; }
+        }
+        .header-row {
+            display: flex;
+            font-weight: bold;
+            padding: 5px 0;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 5px;
+        }
+        .header-row .item-name { padding-left: 34px; }
+    </style>
+</head>
+<body>
+    <h1>Piccola Bistro</h1>
+    <div class="date-header">
+        Restocking Checklist - <span id="currentDate"></span>
+    </div>
+
+    <!-- PRODUCE -->
+    <div class="category">
+        <h2>PRODUCE (Verdure)</h2>
+        <div class="header-row">
+            <span class="item-name">Item</span>
+            <span class="par-level">Par Level</span>
+            <span class="current">Have</span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Tomatoes (Pomodori)</span>
+            <span class="par-level">2 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Lettuce/Salad Mix</span>
+            <span class="par-level">1 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Onions (Cipolle)</span>
+            <span class="par-level">2 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Garlic (Aglio)</span>
+            <span class="par-level">500g</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Lemons (Limoni)</span>
+            <span class="par-level">10 pcs</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Fresh Herbs (Basilico, Prezzemolo)</span>
+            <span class="par-level">3 bunches</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+    </div>
+
+    <!-- PROTEINS -->
+    <div class="category">
+        <h2>PROTEINS (Proteine)</h2>
+        <div class="header-row">
+            <span class="item-name">Item</span>
+            <span class="par-level">Par Level</span>
+            <span class="current">Have</span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Fresh Fish (Pesce Fresco)</span>
+            <span class="par-level">3 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Shrimp/Prawns (Gamberi)</span>
+            <span class="par-level">1 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Chicken (Pollo)</span>
+            <span class="par-level">2 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Beef (Manzo)</span>
+            <span class="par-level">1 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Prosciutto/Salumi</span>
+            <span class="par-level">500g</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+    </div>
+
+    <!-- DAIRY -->
+    <div class="category">
+        <h2>DAIRY (Latticini)</h2>
+        <div class="header-row">
+            <span class="item-name">Item</span>
+            <span class="par-level">Par Level</span>
+            <span class="current">Have</span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Parmigiano Reggiano</span>
+            <span class="par-level">500g</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Mozzarella</span>
+            <span class="par-level">1 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Butter (Burro)</span>
+            <span class="par-level">500g</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Cream (Panna)</span>
+            <span class="par-level">1 L</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Eggs (Uova)</span>
+            <span class="par-level">30 pcs</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+    </div>
+
+    <!-- DRY GOODS -->
+    <div class="category">
+        <h2>DRY GOODS (Dispensa)</h2>
+        <div class="header-row">
+            <span class="item-name">Item</span>
+            <span class="par-level">Par Level</span>
+            <span class="current">Have</span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Pasta (Assorted)</span>
+            <span class="par-level">3 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Rice (Riso)</span>
+            <span class="par-level">2 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Olive Oil (Olio EVO)</span>
+            <span class="par-level">2 L</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Canned Tomatoes (Pelati)</span>
+            <span class="par-level">6 cans</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Flour (Farina)</span>
+            <span class="par-level">2 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Bread (Pane)</span>
+            <span class="par-level">Daily</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+    </div>
+
+    <!-- BEVERAGES -->
+    <div class="category">
+        <h2>BEVERAGES (Bevande)</h2>
+        <div class="header-row">
+            <span class="item-name">Item</span>
+            <span class="par-level">Par Level</span>
+            <span class="current">Have</span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">House Wine Red</span>
+            <span class="par-level">6 bottles</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">House Wine White</span>
+            <span class="par-level">6 bottles</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Sparkling Water</span>
+            <span class="par-level">12 bottles</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Still Water</span>
+            <span class="par-level">12 bottles</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+        <div class="item">
+            <input type="checkbox" class="reorder-check">
+            <span class="item-name">Coffee Beans (Caffe)</span>
+            <span class="par-level">1 kg</span>
+            <span class="current"><input type="text" placeholder="?"></span>
+        </div>
+    </div>
+
+    <!-- REORDER LIST -->
+    <div class="reorder-list">
+        <h2>REORDER LIST (Lista Ordini)</h2>
+        <ul id="reorderItems">
+            <li style="color: #888;">Check items above to add to reorder list</li>
+        </ul>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <button class="btn-generate" onclick="generateList()">Generate Reorder List</button>
+        <button class="btn-print" onclick="window.print()">Print</button>
+        <button class="btn-clear" onclick="clearAll()">Clear All</button>
+    </div>
+
+    <script>
+        // Set today's date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('it-IT', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Generate reorder list from checked items
+        function generateList() {
+            const checks = document.querySelectorAll('.reorder-check:checked');
+            const list = document.getElementById('reorderItems');
+            list.innerHTML = '';
+
+            if (checks.length === 0) {
+                list.innerHTML = '<li style="color: #888;">No items checked for reorder</li>';
+                return;
+            }
+
+            checks.forEach(check => {
+                const item = check.closest('.item');
+                const name = item.querySelector('.item-name').textContent;
+                const par = item.querySelector('.par-level').textContent;
+                const li = document.createElement('li');
+                li.textContent = `${name} — need: ${par}`;
+                list.appendChild(li);
+            });
+        }
+
+        // Clear all checkboxes and inputs
+        function clearAll() {
+            document.querySelectorAll('.reorder-check').forEach(c => c.checked = false);
+            document.querySelectorAll('.current input').forEach(i => i.value = '');
+            document.getElementById('reorderItems').innerHTML =
+                '<li style="color: #888;">Check items above to add to reorder list</li>';
+        }
+
+        // Auto-update list when checkbox changes
+        document.querySelectorAll('.reorder-check').forEach(check => {
+            check.addEventListener('change', generateList);
+        });
+    </script>
+</body>
+</html>
