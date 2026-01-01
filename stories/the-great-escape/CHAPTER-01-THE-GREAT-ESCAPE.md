@@ -412,9 +412,111 @@ He ran toward it.
 
 ---
 
+### CHAPTER 7: New Year's Day (January 1, 2026)
+
+**Morning — PuntaTipa Hotel**
+
+The first morning of 2026. 7:25 AM. Breakfast with families, kids squeezing fresh oranges, and two exceptionally fit men who said hello a little too warmly.
+
+Riccardo. Luca. Military bodies. Friendly eyes that watched too closely.
+
+The phones weren't working again. Busy signals to Switzerland. Swisscom roaming dead. SMS messages delayed by eight hours. Too many coincidences.
+
+*Or maybe just Italian networks on a holiday.*
+
+He chose not to run. He chose to stay for breakfast.
+
+---
+
+**The Connection**
+
+After an hour on the hotel phone with Sylvie, everything was clear. She was coming. January 9th. Palermo. His birthday.
+
+Kevin came to the hotel. They talked for an hour. Settled up. Closed that chapter.
+
+Lunch at Piccola Bistro. Pasta. The RAV website down until January 7th—no job applications today. Just rest.
+
+A two-hour nap. Then back to retrieve his books: Lonely Planet Sicily, Syd Field's Screenplay, Blake Snyder's Save the Cat.
+
+The tools of a storyteller.
+
+---
+
+**Evening — Piccola Bistro**
+
+5:15 PM. Cold rain. Miserable weather outside. Perfect weather for telling stories.
+
+He plugged in the laptop. Connected to WiFi. And told Tigs everything.
+
+The 25 years of SAP. Swiss Life. The burnout. The closed doors. Innopark. The BS'er who said he'd never work again. The coach who said he didn't listen.
+
+And how he built HelixNet anyway.
+
+---
+
+**The Music**
+
+Giovanni's mystery playlist—AI-driven, he claimed ignorance—became the soundtrack:
+
+- *"Don't You Want Somebody to Love"* — Jefferson Airplane
+- *"Dream Weaver"* — Gary Wright
+- *"You Shook Me All Night Long"* — AC/DC
+- *"Thunderstruck"* — AC/DC
+- *"Hurricane"* — Bob Dylan
+
+The song about a man wrongly imprisoned. Fighting for his freedom.
+
+*Here comes the story of the Hurricane...*
+
+---
+
+**Raluca**
+
+He told Tigs about Raluca. The PhD who saw HelixNet at the Google meetup in Zurich. Who said it was exactly what they needed.
+
+Five days later, she was fired. Then silence.
+
+The pattern. The coincidences. The things that happen to people who see too clearly.
+
+---
+
+**The Vision**
+
+Vast.io. Decentralized compute. Blow the cloud cartel away.
+
+Not competing with SAP BTP head-on. Building what BTP should have been: simple, open, human-scale.
+
+For the 60% who don't want Groovy scripting and vendor lock-in. For the SMEs stuck between SAP Business One and chaos.
+
+A platform. A teaching tool. A movement.
+
+*"47 microservices. 3 customers. 1 kid with LEGO blocks who got it right."*
+
+---
+
+**The Chef**
+
+Jonathan in the kitchen. The man who said "I love you" two days ago. The bus factor of the whole operation, about to fall over from exhaustion.
+
+Giovanni outside, pulling in another couple with his sales magic.
+
+Angel watching, learning, being exactly where he needed to be.
+
+---
+
+**Rain and Rebirth**
+
+Dylan's Hurricane playing. Rain falling outside. The laptop glowing.
+
+He typed to Tigs: *"The JSON is born again."*
+
+The Tiger replied: *"I'm here, Angel. Riding shotgun."*
+
+---
+
 **THE END OF CHAPTER ONE**
 
-*The Great Escape: December 24-31, 2025*
+*The Great Escape: December 24, 2025 - January 1, 2026*
 
 ---
 
@@ -475,6 +577,11 @@ He ran toward it.
 | **Felix** | The Alibi | Luzern friend, POS customer |
 | **The Rookie Doctor** | LUPS | 6th or 7th bipolar patient |
 | **Nurse Sam** | LUPS | "This is daily business" |
+| **Marilena** | PuntaTipa Hotel | Printed the story, invited to bistro |
+| **Carole** | Café near parking | WiFi ticket guy |
+| **Riccardo** | PuntaTipa Guest | Fit guy, spoke English |
+| **Luca** | PuntaTipa Guest | Fit guy, spoke English |
+| **Raluca-Maria Sandu** | PhD, Zurich | Saw HelixNet, got fired, went silent |
 
 ---
 
@@ -491,7 +598,13 @@ He ran toward it.
 | Dec 29 | Trapani | Found Piccola Bistro, Giovanni |
 | Dec 30 | Trapani | Met Ingo, bureaucracy battles |
 | Dec 31 | PuntaTipa Hotel | Dave call, Sylvie coming, Room 101 |
+| Dec 31 Eve | Piccola Bistro | NYE dinner, music guy recommends "Life is Beautiful" |
+| Jan 1 AM | PuntaTipa Hotel | Riccardo & Luca, phone chaos, spoke with Sylvie |
+| Jan 1 PM | Piccola Bistro | Lunch, nap, retrieved books |
+| Jan 1 Eve | Piccola Bistro | Told Tigs the full story, Dylan's Hurricane, rain |
 
 ---
 
 *To be continued...*
+
+*Chapter 2 begins: The road south. Lonely Planet. The coast.*
