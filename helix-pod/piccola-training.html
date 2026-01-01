@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccola Bistro - Training Checklist</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff8e1;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .trainee-info {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .trainee-info h2 {
+            margin: 0 0 15px 0;
+            color: #ff9800;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-grid label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .info-grid input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .module {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid #ff9800;
+        }
+        .module h2 {
+            margin: 0 0 15px 0;
+            color: #e65100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .module h2 .badge {
+            font-size: 0.6em;
+            background: #ffecb3;
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: #ff6f00;
+        }
+        .skill {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .skill:last-child {
+            border-bottom: none;
+        }
+        .skill input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            margin-top: 3px;
+            cursor: pointer;
+        }
+        .skill-content {
+            flex: 1;
+        }
+        .skill-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .skill-why {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .skill-how {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            border-left: 3px solid #ff9800;
+        }
+        .critical {
+            border-left-color: #f44336 !important;
+        }
+        .critical h2 {
+            color: #d32f2f;
+        }
+        .critical .badge {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        .warning-box {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .warning-box h3 {
+            color: #c62828;
+            margin: 0 0 10px 0;
+        }
+        .progress-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #ff9800, #ffc107);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .signature-box {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .signature-box h4 {
+            margin: 0 0 30px 0;
+            color: #666;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 30px;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .actions button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-print {
+            background: #3498db;
+            color: white;
+        }
+        .btn-reset {
+            background: #95a5a6;
+            color: white;
+        }
+        @media print {
+            body { background: white; }
+            .actions { display: none; }
+            .module { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Piccola Bistro</h1>
+    <p class="subtitle">Training Checklist - Health & Safety<br>Lista Formazione - Igiene e Sicurezza</p>
+
+    <!-- TRAINEE INFO -->
+    <div class="trainee-info">
+        <h2>Trainee Information / Dati Dipendente</h2>
+        <div class="info-grid">
+            <div>
+                <label>Name / Nome:</label>
+                <input type="text" placeholder="Full name">
+            </div>
+            <div>
+                <label>Start Date / Data Inizio:</label>
+                <input type="date">
+            </div>
+            <div>
+                <label>Position / Posizione:</label>
+                <input type="text" placeholder="Kitchen helper, etc.">
+            </div>
+            <div>
+                <label>Trainer / Formatore:</label>
+                <input type="text" placeholder="Jonathan, Giovanni">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 1: PERSONAL HYGIENE -->
+    <div class="module critical">
+        <h2>
+            MODULE 1: Personal Hygiene / Igiene Personale
+            <span class="badge">CRITICAL - HEALTH INSPECTION</span>
+        </h2>
+
+        <div class="warning-box">
+            <h3>Health Inspector Checks This First!</h3>
+            L'ispettore sanitario controlla prima questo!
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Handwashing / Lavaggio Mani</div>
+                <div class="skill-why">WHY: #1 cause of foodborne illness is dirty hands</div>
+                <div class="skill-how">
+                    HOW: Wet → Soap 20 sec → Rinse → Dry with paper towel<br>
+                    WHEN: Before work, after toilet, after touching raw meat/fish, after touching face/hair
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Clean Uniform / Divisa Pulita</div>
+                <div class="skill-why">WHY: Dirty clothes carry bacteria into kitchen</div>
+                <div class="skill-how">
+                    Clean apron daily. No street clothes in kitchen. Hair tied back or covered.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">No Jewelry / Niente Gioielli</div>
+                <div class="skill-why">WHY: Rings harbor bacteria, can fall into food</div>
+                <div class="skill-how">
+                    Remove all rings, watches, bracelets before work. Wedding band = NO.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Illness Policy / Politica Malattia</div>
+                <div class="skill-why">WHY: Sick workers spread illness to customers</div>
+                <div class="skill-how">
+                    DO NOT work if: vomiting, diarrhea, fever, jaundice, open wounds on hands.<br>
+                    Tell Giovanni IMMEDIATELY. Stay home.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 2: FOOD SAFETY -->
+    <div class="module critical">
+        <h2>
+            MODULE 2: Food Safety / Sicurezza Alimentare
+            <span class="badge">CRITICAL - HEALTH INSPECTION</span>
+        </h2>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Temperature Danger Zone / Zona di Pericolo</div>
+                <div class="skill-why">WHY: Bacteria multiply rapidly between 4°C - 60°C</div>
+                <div class="skill-how">
+                    Cold food: ≤4°C | Hot food: ≥60°C<br>
+                    Never leave food in danger zone more than 2 hours. When in doubt, throw it out.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Cross-Contamination / Contaminazione Incrociata</div>
+                <div class="skill-why">WHY: Raw meat bacteria can transfer to ready-to-eat food</div>
+                <div class="skill-how">
+                    Use color-coded cutting boards:<br>
+                    🔴 RED = Raw meat | 🔵 BLUE = Fish | 🟢 GREEN = Vegetables | 🟡 YELLOW = Poultry<br>
+                    Never use same board for raw and cooked without washing.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">FIFO: First In, First Out</div>
+                <div class="skill-why">WHY: Older food must be used first to prevent spoilage</div>
+                <div class="skill-how">
+                    New deliveries go to BACK of shelf. Use items from FRONT first.<br>
+                    Check dates daily. Label everything with date received.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Proper Storage / Conservazione Corretta</div>
+                <div class="skill-why">WHY: Wrong storage = contamination + spoilage</div>
+                <div class="skill-how">
+                    Fridge order (top to bottom): Ready-to-eat → Vegetables → Raw fish → Raw meat<br>
+                    All containers covered and labeled. Nothing on floor.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 3: CLEANING -->
+    <div class="module">
+        <h2>
+            MODULE 3: Cleaning & Sanitizing / Pulizia e Sanificazione
+            <span class="badge">IMPORTANT</span>
+        </h2>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Clean vs Sanitize / Pulire vs Sanificare</div>
+                <div class="skill-why">WHY: Clean removes dirt, sanitize kills bacteria - need BOTH</div>
+                <div class="skill-how">
+                    Step 1: Scrape/remove food debris<br>
+                    Step 2: Wash with soap and hot water<br>
+                    Step 3: Rinse<br>
+                    Step 4: Sanitize (chemical solution OR hot water ≥77°C)
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Knows Location of Cleaning Supplies</div>
+                <div class="skill-why">WHY: Must be able to clean immediately when needed</div>
+                <div class="skill-how">
+                    Can locate: Sanitizer, degreaser, floor cleaner, mop, broom, clean towels
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">End of Night Cleaning Checklist</div>
+                <div class="skill-why">WHY: Consistent closing = ready for tomorrow</div>
+                <div class="skill-how">
+                    Has reviewed and can follow the Pulizia Cucina checklist independently.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 4: EMERGENCY -->
+    <div class="module">
+        <h2>
+            MODULE 4: Emergency Procedures / Procedure di Emergenza
+            <span class="badge">SAFETY</span>
+        </h2>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Fire Extinguisher Location / Estintore</div>
+                <div class="skill-why">WHY: Kitchen fires can spread in seconds</div>
+                <div class="skill-how">
+                    Knows location. Knows PASS: Pull pin, Aim low, Squeeze, Sweep.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">First Aid Kit Location / Kit Pronto Soccorso</div>
+                <div class="skill-why">WHY: Cuts and burns happen - need immediate treatment</div>
+                <div class="skill-how">
+                    Knows location. Knows to report ALL injuries to Giovanni.
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <input type="checkbox" class="skill-check" onchange="updateProgress()">
+            <div class="skill-content">
+                <div class="skill-title">Emergency Exit / Uscita di Emergenza</div>
+                <div class="skill-why">WHY: Must evacuate quickly in emergency</div>
+                <div class="skill-how">
+                    Knows all exit locations. Exit paths always clear - never blocked.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-section">
+        <h2>Training Progress / Progresso Formazione</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">0%</div>
+        </div>
+        <p id="progressText">0 of 15 skills completed</p>
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <h4>Trainee Signature / Firma Dipendente</h4>
+                <div class="signature-line"></div>
+                <small>Date / Data: _______________</small>
+            </div>
+            <div class="signature-box">
+                <h4>Trainer Signature / Firma Formatore</h4>
+                <div class="signature-line"></div>
+                <small>Date / Data: _______________</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <button type="button" class="btn-print" onclick="window.print()">Print / Stampa</button>
+        <button type="button" class="btn-reset" onclick="resetAll()">Reset</button>
+    </div>
+
+    <script>
+        function updateProgress() {
+            const total = document.querySelectorAll('.skill-check').length;
+            const checked = document.querySelectorAll('.skill-check:checked').length;
+            const percent = Math.round((checked / total) * 100);
+
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = percent + '%';
+            document.getElementById('progressText').textContent =
+                `${checked} of ${total} skills completed / competenze completate`;
+        }
+
+        function resetAll() {
+            document.querySelectorAll('.skill-check').forEach(c => c.checked = false);
+            document.querySelectorAll('input[type="text"], input[type="date"]').forEach(i => i.value = '');
+            updateProgress();
+        }
+    </script>
+</body>
+</html>
