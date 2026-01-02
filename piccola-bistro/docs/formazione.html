@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccolo Bistrot - Formazione Nuovo Personale</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 15px;
+            background: #e3f2fd;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .trainee-box {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .trainee-box h2 {
+            margin: 0 0 10px 0;
+            color: #1565c0;
+            font-size: 1em;
+        }
+        .info-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .info-row div {
+            flex: 1;
+        }
+        .info-row label {
+            font-size: 0.85em;
+            color: #666;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .info-row input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .module {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #1565c0;
+        }
+        .module.critical {
+            border-left-color: #c62828;
+            background: #ffebee;
+        }
+        .module h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .module h2 .tag {
+            font-size: 0.65em;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-weight: normal;
+        }
+        .tag-critical {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        .tag-important {
+            background: #bbdefb;
+            color: #1565c0;
+        }
+        .tag-safety {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+        .warning {
+            background: #ffcdd2;
+            border: 1px solid #c62828;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #c62828;
+        }
+        .skill {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .skill:last-child { border-bottom: none; }
+        .skill-header {
+            display: flex;
+            align-items: flex-start;
+        }
+        .skill input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .skill-content { flex: 1; }
+        .skill-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .skill-why {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .skill-how {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            border-left: 3px solid #1565c0;
+        }
+        .module.critical .skill-how {
+            border-left-color: #c62828;
+        }
+        .progress-box {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 25px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #1565c0, #42a5f5);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .sig-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .sig-box h4 {
+            margin: 0 0 20px 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .sig-line {
+            border-bottom: 1px solid #333;
+            height: 25px;
+            margin-bottom: 5px;
+        }
+        .sig-box small { color: #888; }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .actions button {
+            flex: 1;
+            padding: 12px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-print { background: #1565c0; color: white; }
+        .btn-reset { background: #95a5a6; color: white; }
+        @media print {
+            body { background: white; }
+            .actions { display: none; }
+            .module { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <h1>PICCOLO BISTROT</h1>
+    <p class="subtitle">Formazione Nuovo Personale - Via Garibaldi 43</p>
+
+    <!-- DATI DIPENDENTE -->
+    <div class="trainee-box">
+        <h2>Dati Dipendente</h2>
+        <div class="info-row">
+            <div>
+                <label>Nome e Cognome:</label>
+                <input type="text" placeholder="Nome completo">
+            </div>
+            <div>
+                <label>Data Inizio:</label>
+                <input type="date">
+            </div>
+        </div>
+        <div class="info-row">
+            <div>
+                <label>Posizione:</label>
+                <input type="text" placeholder="Aiuto cucina, cameriere...">
+            </div>
+            <div>
+                <label>Formatore:</label>
+                <input type="text" placeholder="Jonathan / Giovanni">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULO 1: IGIENE PERSONALE -->
+    <div class="module critical">
+        <h2>
+            <span style="color:#c62828;">MODULO 1: Igiene Personale</span>
+            <span class="tag tag-critical">CRITICO - ASL</span>
+        </h2>
+        <div class="warning">
+            L'ispettore ASL controlla PRIMA questo! Errori = multa o chiusura.
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Lavaggio Mani</div>
+                    <div class="skill-why">PERCHÉ: Mani sporche = causa #1 di intossicazioni alimentari</div>
+                    <div class="skill-how">
+                        COME: Bagnare → Sapone 20 secondi → Sciacquare → Asciugare con carta<br>
+                        QUANDO: Prima di lavorare, dopo bagno, dopo carne/pesce crudo, dopo toccare viso/capelli
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Divisa Pulita</div>
+                    <div class="skill-why">PERCHÉ: Vestiti sporchi portano batteri in cucina</div>
+                    <div class="skill-how">
+                        Grembiule pulito ogni giorno. Capelli legati o coperti. No vestiti da strada in cucina.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Niente Gioielli</div>
+                    <div class="skill-why">PERCHÉ: Anelli = batteri nascosti, possono cadere nel cibo</div>
+                    <div class="skill-how">
+                        Togliere TUTTI gli anelli, orologi, bracciali prima di lavorare. Anche fede = NO.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Se Stai Male = STAI A CASA</div>
+                    <div class="skill-why">PERCHÉ: Dipendente malato = clienti malati</div>
+                    <div class="skill-how">
+                        NON lavorare se: vomito, diarrea, febbre, ittero, ferite aperte sulle mani.<br>
+                        Avvisare Giovanni SUBITO. Stare a casa.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULO 2: SICUREZZA ALIMENTARE -->
+    <div class="module critical">
+        <h2>
+            <span style="color:#c62828;">MODULO 2: Sicurezza Alimentare</span>
+            <span class="tag tag-critical">CRITICO - ASL</span>
+        </h2>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Zona di Pericolo Temperature</div>
+                    <div class="skill-why">PERCHÉ: Batteri si moltiplicano tra 4°C e 60°C</div>
+                    <div class="skill-how">
+                        Cibo freddo: ≤4°C | Cibo caldo: ≥60°C<br>
+                        MAI lasciare cibo nella zona pericolo più di 2 ore. Nel dubbio, BUTTA.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Contaminazione Incrociata</div>
+                    <div class="skill-why">PERCHÉ: Batteri da carne cruda possono passare al cibo pronto</div>
+                    <div class="skill-how">
+                        Taglieri colorati: 🔴 Carne cruda | 🔵 Pesce | 🟢 Verdure | 🟡 Pollame<br>
+                        MAI usare stesso tagliere per crudo e cotto senza lavare.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">FIFO: Prima Entra, Prima Esce</div>
+                    <div class="skill-why">PERCHÉ: Cibo vecchio deve essere usato prima</div>
+                    <div class="skill-how">
+                        Nuove consegne vanno DIETRO sullo scaffale. Usare prima quello DAVANTI.<br>
+                        Controllare scadenze ogni giorno. Etichettare tutto con data ricevimento.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Conservazione Corretta</div>
+                    <div class="skill-why">PERCHÉ: Conservazione sbagliata = contaminazione + spreco</div>
+                    <div class="skill-how">
+                        Ordine frigo (alto → basso): Cibo pronto → Verdure → Pesce crudo → Carne cruda<br>
+                        Tutti i contenitori coperti e etichettati. Niente sul pavimento.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULO 3: LA NOSTRA CUCINA -->
+    <div class="module">
+        <h2>
+            <span style="color:#1565c0;">MODULO 3: Attrezzatura Cucina</span>
+            <span class="tag tag-important">IMPORTANTE</span>
+        </h2>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Piano Cottura (4 Fuochi + Friggitrice)</div>
+                    <div class="skill-why">Sa accendere, spegnere e pulire correttamente</div>
+                    <div class="skill-how">
+                        Accensione sicura. Spegnere gas a fine servizio. Raschiare e sgrassare ogni sera.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Frigoriferi TECNODOM</div>
+                    <div class="skill-why">Conosce posizione e temperature corrette</div>
+                    <div class="skill-how">
+                        Sottobanco cucina: ≤4°C | Congelatore retro: ≤-18°C<br>
+                        Controllare temperature ogni sera durante pulizia.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Affettatrice (Bar)</div>
+                    <div class="skill-why">ATTENZIONE: lama molto affilata!</div>
+                    <div class="skill-how">
+                        Sa smontare, pulire, sanificare e rimontare. Sempre spegnere e staccare prima di pulire.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Lavello Doppio</div>
+                    <div class="skill-why">Sa usare correttamente per lavaggio stoviglie</div>
+                    <div class="skill-how">
+                        Vasca 1: Lavaggio con sapone | Vasca 2: Risciacquo<br>
+                        Pulire filtro scarico ogni sera.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULO 4: PULIZIA -->
+    <div class="module">
+        <h2>
+            <span style="color:#1565c0;">MODULO 4: Pulizia e Sanificazione</span>
+            <span class="tag tag-important">IMPORTANTE</span>
+        </h2>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Pulire vs Sanificare</div>
+                    <div class="skill-why">PERCHÉ: Pulire toglie sporco, sanificare uccide batteri - servono ENTRAMBI</div>
+                    <div class="skill-how">
+                        1. Raschiare/rimuovere residui<br>
+                        2. Lavare con sapone e acqua calda<br>
+                        3. Sciacquare<br>
+                        4. Sanificare (prodotto chimico O acqua ≥77°C)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Dove Sono i Prodotti</div>
+                    <div class="skill-why">Deve saper trovare subito quello che serve</div>
+                    <div class="skill-how">
+                        Sa trovare: Sanificante, sgrassatore, detergente pavimenti, mocio, scopa, panni puliti
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Checklist Pulizia Fine Giornata</div>
+                    <div class="skill-why">PERCHÉ: Pulizia costante = pronti per domani</div>
+                    <div class="skill-how">
+                        Ha visto e può seguire da solo la checklist "Pulizia Cucina" (31 task, ~50 min)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULO 5: EMERGENZE -->
+    <div class="module">
+        <h2>
+            <span style="color:#f57f17;">MODULO 5: Emergenze</span>
+            <span class="tag tag-safety">SICUREZZA</span>
+        </h2>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Estintore</div>
+                    <div class="skill-why">PERCHÉ: Incendi in cucina si propagano in secondi</div>
+                    <div class="skill-how">
+                        Sa dov'è l'estintore. Sa usarlo: Tirare sicura → Mirare in basso → Premere → Spazzare
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Kit Pronto Soccorso</div>
+                    <div class="skill-why">PERCHÉ: Tagli e scottature succedono - servono cure immediate</div>
+                    <div class="skill-how">
+                        Sa dov'è il kit. Sa che TUTTI gli infortuni vanno segnalati a Giovanni.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Uscita di Emergenza</div>
+                    <div class="skill-why">PERCHÉ: In emergenza bisogna uscire velocemente</div>
+                    <div class="skill-how">
+                        Sa dove sono tutte le uscite. Percorsi sempre liberi - MAI bloccare.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill">
+            <div class="skill-header">
+                <input type="checkbox" class="skill-check" onchange="updateProgress()">
+                <div class="skill-content">
+                    <div class="skill-title">Chiusura Gas</div>
+                    <div class="skill-why">PERCHÉ: Perdita gas = pericolo esplosione</div>
+                    <div class="skill-how">
+                        Sa dov'è la valvola principale del gas e come chiuderla.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-box">
+        <h2 style="margin:0 0 5px 0;color:#1565c0;">Progresso Formazione</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">0%</div>
+        </div>
+        <p id="progressText" style="margin:5px 0;color:#666;font-size:0.9em;">0 di 19 competenze completate</p>
+
+        <div class="signature-grid">
+            <div class="sig-box">
+                <h4>Firma Dipendente</h4>
+                <div class="sig-line"></div>
+                <small>Data: _______________</small>
+            </div>
+            <div class="sig-box">
+                <h4>Firma Formatore</h4>
+                <div class="sig-line"></div>
+                <small>Data: _______________</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <button class="btn-print" onclick="window.print()">Stampa</button>
+        <button class="btn-reset" onclick="resetAll()">Reset</button>
+    </div>
+
+    <script>
+        function updateProgress() {
+            const total = document.querySelectorAll('.skill-check').length;
+            const checked = document.querySelectorAll('.skill-check:checked').length;
+            const percent = Math.round((checked / total) * 100);
+
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = percent + '%';
+            document.getElementById('progressText').textContent =
+                `${checked} di ${total} competenze completate`;
+        }
+
+        function resetAll() {
+            document.querySelectorAll('.skill-check').forEach(c => c.checked = false);
+            document.querySelectorAll('input[type="text"], input[type="date"]').forEach(i => i.value = '');
+            updateProgress();
+        }
+    </script>
+</body>
+</html>
