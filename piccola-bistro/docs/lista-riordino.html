@@ -49,6 +49,11 @@
             border-bottom: 2px solid #ff9800;
             padding-bottom: 5px;
         }
+        .category h2 small {
+            font-weight: normal;
+            color: #888;
+            font-size: 0.75em;
+        }
         .item {
             display: flex;
             align-items: center;
@@ -64,7 +69,15 @@
         }
         .item-name {
             flex: 1;
+        }
+        .item-name .it {
+            display: block;
             font-size: 1em;
+        }
+        .item-name .en {
+            display: block;
+            font-size: 0.8em;
+            color: #888;
         }
         .par {
             width: 70px;
@@ -137,44 +150,59 @@
 </head>
 <body>
     <h1>PICCOLO BISTROT</h1>
-    <p class="subtitle">Lista Riordino - Via Garibaldi 43</p>
+    <p class="subtitle">Lista Riordino / Restocking List<br>Via Garibaldi 43, Trapani</p>
     <div class="date-box" id="dateBox"></div>
 
     <!-- PESCE / CRUDO -->
     <div class="category">
-        <h2>🐟 PESCE / CRUDO</h2>
+        <h2>PESCE / CRUDO <small>Fish / Raw</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Pesce fresco del giorno</span>
+            <span class="item-name">
+                <span class="it">Pesce fresco del giorno</span>
+                <span class="en">Fresh fish of the day</span>
+            </span>
             <span class="par">2 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Gamberi</span>
+            <span class="item-name">
+                <span class="it">Gamberi</span>
+                <span class="en">Shrimp/Prawns</span>
+            </span>
             <span class="par">1 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Tonno (per crudo)</span>
+            <span class="item-name">
+                <span class="it">Tonno (per crudo)</span>
+                <span class="en">Tuna (for raw)</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Salmone</span>
+            <span class="item-name">
+                <span class="it">Salmone</span>
+                <span class="en">Salmon</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Cozze/Vongole</span>
+            <span class="item-name">
+                <span class="it">Cozze/Vongole</span>
+                <span class="en">Mussels/Clams</span>
+            </span>
             <span class="par">1 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -182,33 +210,45 @@
 
     <!-- CARNE / SALUMI -->
     <div class="category">
-        <h2>🥩 CARNE / SALUMI</h2>
+        <h2>CARNE / SALUMI <small>Meat / Deli</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Pollo</span>
+            <span class="item-name">
+                <span class="it">Pollo</span>
+                <span class="en">Chicken</span>
+            </span>
             <span class="par">2 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Manzo</span>
+            <span class="item-name">
+                <span class="it">Manzo</span>
+                <span class="en">Beef</span>
+            </span>
             <span class="par">1 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Prosciutto crudo</span>
+            <span class="item-name">
+                <span class="it">Prosciutto crudo</span>
+                <span class="en">Cured ham</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Salame/Speck</span>
+            <span class="item-name">
+                <span class="it">Salame/Speck</span>
+                <span class="en">Salami/Speck</span>
+            </span>
             <span class="par">300g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -216,57 +256,81 @@
 
     <!-- VERDURE / ERBE -->
     <div class="category">
-        <h2>🥬 VERDURE / ERBE</h2>
+        <h2>VERDURE / ERBE <small>Vegetables / Herbs</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Basilico fresco</span>
+            <span class="item-name">
+                <span class="it">Basilico fresco</span>
+                <span class="en">Fresh basil</span>
+            </span>
             <span class="par">3 mazzi</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Prezzemolo</span>
+            <span class="item-name">
+                <span class="it">Prezzemolo</span>
+                <span class="en">Parsley</span>
+            </span>
             <span class="par">2 mazzi</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Cipolle rosse</span>
+            <span class="item-name">
+                <span class="it">Cipolle rosse</span>
+                <span class="en">Red onions</span>
+            </span>
             <span class="par">2 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Aglio</span>
+            <span class="item-name">
+                <span class="it">Aglio</span>
+                <span class="en">Garlic</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Pomodori</span>
+            <span class="item-name">
+                <span class="it">Pomodori</span>
+                <span class="en">Tomatoes</span>
+            </span>
             <span class="par">2 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Limoni</span>
+            <span class="item-name">
+                <span class="it">Limoni</span>
+                <span class="en">Lemons</span>
+            </span>
             <span class="par">10 pz</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Insalata mista</span>
+            <span class="item-name">
+                <span class="it">Insalata mista</span>
+                <span class="en">Mixed salad</span>
+            </span>
             <span class="par">1 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Rucola</span>
+            <span class="item-name">
+                <span class="it">Rucola</span>
+                <span class="en">Arugula/Rocket</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -274,39 +338,54 @@
 
     <!-- LATTICINI -->
     <div class="category">
-        <h2>🧀 LATTICINI</h2>
+        <h2>LATTICINI <small>Dairy</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Parmigiano Reggiano</span>
+            <span class="item-name">
+                <span class="it">Parmigiano Reggiano</span>
+                <span class="en">Parmesan cheese</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Mozzarella/Burrata</span>
+            <span class="item-name">
+                <span class="it">Mozzarella/Burrata</span>
+                <span class="en">Mozzarella/Burrata</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Burro</span>
+            <span class="item-name">
+                <span class="it">Burro</span>
+                <span class="en">Butter</span>
+            </span>
             <span class="par">500g</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Panna</span>
+            <span class="item-name">
+                <span class="it">Panna</span>
+                <span class="en">Cream</span>
+            </span>
             <span class="par">1 L</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Uova</span>
+            <span class="item-name">
+                <span class="it">Uova</span>
+                <span class="en">Eggs</span>
+            </span>
             <span class="par">30 pz</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -314,45 +393,63 @@
 
     <!-- DISPENSA -->
     <div class="category">
-        <h2>🍝 DISPENSA</h2>
+        <h2>DISPENSA <small>Pantry</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Pasta secca (vari)</span>
+            <span class="item-name">
+                <span class="it">Pasta secca (vari)</span>
+                <span class="en">Dry pasta (assorted)</span>
+            </span>
             <span class="par">3 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Riso</span>
+            <span class="item-name">
+                <span class="it">Riso</span>
+                <span class="en">Rice</span>
+            </span>
             <span class="par">2 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Olio EVO</span>
+            <span class="item-name">
+                <span class="it">Olio EVO</span>
+                <span class="en">Extra virgin olive oil</span>
+            </span>
             <span class="par">3 L</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Pelati/Passata</span>
+            <span class="item-name">
+                <span class="it">Pelati/Passata</span>
+                <span class="en">Canned/Crushed tomatoes</span>
+            </span>
             <span class="par">6 latte</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Sale</span>
+            <span class="item-name">
+                <span class="it">Sale</span>
+                <span class="en">Salt</span>
+            </span>
             <span class="par">1 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Pane fresco</span>
+            <span class="item-name">
+                <span class="it">Pane fresco</span>
+                <span class="en">Fresh bread</span>
+            </span>
             <span class="par">Giornaliero</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -360,45 +457,63 @@
 
     <!-- BEVANDE -->
     <div class="category">
-        <h2>🍷 BEVANDE</h2>
+        <h2>BEVANDE <small>Beverages</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Vino rosso casa</span>
+            <span class="item-name">
+                <span class="it">Vino rosso casa</span>
+                <span class="en">House red wine</span>
+            </span>
             <span class="par">6 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Vino bianco casa</span>
+            <span class="item-name">
+                <span class="it">Vino bianco casa</span>
+                <span class="en">House white wine</span>
+            </span>
             <span class="par">6 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Acqua frizzante</span>
+            <span class="item-name">
+                <span class="it">Acqua frizzante</span>
+                <span class="en">Sparkling water</span>
+            </span>
             <span class="par">24 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Acqua naturale</span>
+            <span class="item-name">
+                <span class="it">Acqua naturale</span>
+                <span class="en">Still water</span>
+            </span>
             <span class="par">24 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Caffè</span>
+            <span class="item-name">
+                <span class="it">Caffè</span>
+                <span class="en">Coffee beans</span>
+            </span>
             <span class="par">1 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Birra</span>
+            <span class="item-name">
+                <span class="it">Birra</span>
+                <span class="en">Beer</span>
+            </span>
             <span class="par">12 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -406,39 +521,54 @@
 
     <!-- BAR / COCKTAIL -->
     <div class="category">
-        <h2>🍸 BAR / COCKTAIL</h2>
+        <h2>BAR / COCKTAIL <small>Bar / Cocktails</small></h2>
         <div class="header-row">
-            <span class="item-name">Prodotto</span>
-            <span class="par">Minimo</span>
+            <span class="item-name">Prodotto / Product</span>
+            <span class="par">Min</span>
             <span class="have">Ora</span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Ghiaccio</span>
+            <span class="item-name">
+                <span class="it">Ghiaccio</span>
+                <span class="en">Ice</span>
+            </span>
             <span class="par">5 kg</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Aperol/Campari</span>
+            <span class="item-name">
+                <span class="it">Aperol/Campari</span>
+                <span class="en">Aperol/Campari</span>
+            </span>
             <span class="par">1 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Prosecco</span>
+            <span class="item-name">
+                <span class="it">Prosecco</span>
+                <span class="en">Prosecco</span>
+            </span>
             <span class="par">3 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Gin</span>
+            <span class="item-name">
+                <span class="it">Gin</span>
+                <span class="en">Gin</span>
+            </span>
             <span class="par">1 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
         <div class="item">
             <input type="checkbox" class="order-check">
-            <span class="item-name">Tonica</span>
+            <span class="item-name">
+                <span class="it">Tonica</span>
+                <span class="en">Tonic water</span>
+            </span>
             <span class="par">12 bott</span>
             <span class="have"><input type="text" placeholder="?"></span>
         </div>
@@ -446,17 +576,17 @@
 
     <!-- LISTA ORDINI -->
     <div class="order-list">
-        <h2>📋 DA ORDINARE</h2>
+        <h2>DA ORDINARE / TO ORDER</h2>
         <ul id="orderItems">
-            <li style="color:#888;">Seleziona i prodotti da riordinare</li>
+            <li style="color:#888;">Seleziona i prodotti / Check items to order</li>
         </ul>
     </div>
 
     <!-- ACTIONS -->
     <div class="actions">
-        <button class="btn-gen" onclick="generateList()">📋 Genera Lista</button>
-        <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
-        <button class="btn-clear" onclick="clearAll()">🔄 Reset</button>
+        <button class="btn-gen" onclick="generateList()">Genera Lista / Generate</button>
+        <button class="btn-print" onclick="window.print()">Stampa / Print</button>
+        <button class="btn-clear" onclick="clearAll()">Reset</button>
     </div>
 
     <script>
@@ -474,16 +604,16 @@
             list.innerHTML = '';
 
             if (checks.length === 0) {
-                list.innerHTML = '<li style="color:#888;">Nessun prodotto selezionato</li>';
+                list.innerHTML = '<li style="color:#888;">Nessun prodotto / No items selected</li>';
                 return;
             }
 
             checks.forEach(check => {
                 const item = check.closest('.item');
-                const name = item.querySelector('.item-name').textContent;
+                const nameIt = item.querySelector('.item-name .it').textContent;
                 const par = item.querySelector('.par').textContent;
                 const li = document.createElement('li');
-                li.textContent = `${name} — ${par}`;
+                li.textContent = `${nameIt} — ${par}`;
                 list.appendChild(li);
             });
         }
@@ -491,7 +621,7 @@
         function clearAll() {
             document.querySelectorAll('.order-check').forEach(c => c.checked = false);
             document.querySelectorAll('.have input').forEach(i => i.value = '');
-            document.getElementById('orderItems').innerHTML = '<li style="color:#888;">Seleziona i prodotti da riordinare</li>';
+            document.getElementById('orderItems').innerHTML = '<li style="color:#888;">Seleziona i prodotti / Check items to order</li>';
         }
 
         document.querySelectorAll('.order-check').forEach(c => {

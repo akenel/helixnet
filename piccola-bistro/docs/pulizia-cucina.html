@@ -69,7 +69,7 @@
         }
         .task {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             padding: 8px 0;
             border-bottom: 1px solid #f0f0f0;
         }
@@ -80,17 +80,29 @@
             width: 26px;
             height: 26px;
             margin-right: 12px;
+            margin-top: 2px;
             cursor: pointer;
             flex-shrink: 0;
         }
         .task label {
             flex: 1;
             cursor: pointer;
-            font-size: 1em;
         }
-        .task.done label {
+        .task label .it {
+            font-size: 1em;
+            display: block;
+        }
+        .task label .en {
+            font-size: 0.8em;
+            color: #888;
+            display: block;
+        }
+        .task.done label .it {
             text-decoration: line-through;
             color: #aaa;
+        }
+        .task.done label .en {
+            color: #ccc;
         }
         .signature {
             background: white;
@@ -119,7 +131,7 @@
             text-align: center;
             padding: 20px;
             border-radius: 8px;
-            font-size: 1.5em;
+            font-size: 1.3em;
             margin-top: 15px;
         }
         .actions {
@@ -147,10 +159,10 @@
 </head>
 <body>
     <h1>PICCOLO BISTROT</h1>
-    <p class="subtitle">Pulizia Fine Giornata - Via Garibaldi 43</p>
+    <p class="subtitle">Pulizia Fine Giornata / End of Day Cleaning<br>Via Garibaldi 43, Trapani</p>
 
     <div class="timer-bar">
-        <span>⏱️ Timer</span>
+        <span>Timer</span>
         <span class="time" id="timer">00:00</span>
         <button onclick="startTimer()" style="padding:5px 15px;border:none;border-radius:5px;cursor:pointer;">START</button>
     </div>
@@ -158,180 +170,273 @@
     <!-- ZONA 1: FORNELLI + FRIGGITRICE -->
     <div class="zone">
         <div class="zone-header">
-            <h2>🔥 FORNELLI + FRIGGITRICE</h2>
+            <h2>FORNELLI + FRIGGITRICE</h2>
             <span class="mins">~10 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t1" onchange="checkTask(this)">
-            <label for="t1">Spegnere tutti i fuochi e gas</label>
+            <label for="t1">
+                <span class="it">Spegnere tutti i fuochi e gas</span>
+                <span class="en">Turn off all burners and gas</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t2" onchange="checkTask(this)">
-            <label for="t2">Raschiare piano cottura (4 fuochi)</label>
+            <label for="t2">
+                <span class="it">Raschiare piano cottura (4 fuochi)</span>
+                <span class="en">Scrape stovetop (4 burners)</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t3" onchange="checkTask(this)">
-            <label for="t3">Sgrassare con prodotto e panno</label>
+            <label for="t3">
+                <span class="it">Sgrassare con prodotto e panno</span>
+                <span class="en">Degrease with cleaner and cloth</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t4" onchange="checkTask(this)">
-            <label for="t4">Pulire manopole</label>
+            <label for="t4">
+                <span class="it">Pulire manopole</span>
+                <span class="en">Clean knobs</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t5" onchange="checkTask(this)">
-            <label for="t5">Friggitrice: spegnere, filtrare olio se necessario</label>
+            <label for="t5">
+                <span class="it">Friggitrice: spegnere, filtrare olio se necessario</span>
+                <span class="en">Fryer: turn off, filter oil if needed</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t6" onchange="checkTask(this)">
-            <label for="t6">Pulire esterno friggitrice</label>
+            <label for="t6">
+                <span class="it">Pulire esterno friggitrice</span>
+                <span class="en">Clean fryer exterior</span>
+            </label>
         </div>
     </div>
 
     <!-- ZONA 2: CAPPA -->
     <div class="zone">
         <div class="zone-header">
-            <h2>💨 CAPPA + FILTRI</h2>
+            <h2>CAPPA + FILTRI</h2>
             <span class="mins">~5 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t7" onchange="checkTask(this)">
-            <label for="t7">Pulire bordo cappa con sgrassatore</label>
+            <label for="t7">
+                <span class="it">Pulire bordo cappa con sgrassatore</span>
+                <span class="en">Clean hood edges with degreaser</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t8" onchange="checkTask(this)">
-            <label for="t8">Controllare filtri (SABATO: lavare filtri)</label>
+            <label for="t8">
+                <span class="it">Controllare filtri (SABATO: lavare filtri)</span>
+                <span class="en">Check filters (SATURDAY: wash filters)</span>
+            </label>
         </div>
     </div>
 
     <!-- ZONA 3: PREPARAZIONE -->
     <div class="zone">
         <div class="zone-header">
-            <h2>🔪 ZONA PREPARAZIONE</h2>
+            <h2>ZONA PREPARAZIONE</h2>
             <span class="mins">~10 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t9" onchange="checkTask(this)">
-            <label for="t9">Riporre tutti gli ingredienti in frigo</label>
+            <label for="t9">
+                <span class="it">Riporre tutti gli ingredienti in frigo</span>
+                <span class="en">Store all ingredients in fridge</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t10" onchange="checkTask(this)">
-            <label for="t10">Lavare e sanificare taglieri</label>
+            <label for="t10">
+                <span class="it">Lavare e sanificare taglieri</span>
+                <span class="en">Wash and sanitize cutting boards</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t11" onchange="checkTask(this)">
-            <label for="t11">Pulire piano inox con sanificante</label>
+            <label for="t11">
+                <span class="it">Pulire piano inox con sanificante</span>
+                <span class="en">Clean stainless steel with sanitizer</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t12" onchange="checkTask(this)">
-            <label for="t12">Lavare squeeze bottles se usate</label>
+            <label for="t12">
+                <span class="it">Lavare squeeze bottles se usate</span>
+                <span class="en">Wash squeeze bottles if used</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t13" onchange="checkTask(this)">
-            <label for="t13">Organizzare utensili</label>
+            <label for="t13">
+                <span class="it">Organizzare utensili</span>
+                <span class="en">Organize utensils</span>
+            </label>
         </div>
     </div>
 
     <!-- ZONA 4: LAVELLO -->
     <div class="zone">
         <div class="zone-header">
-            <h2>🚿 LAVELLO DOPPIO</h2>
+            <h2>LAVELLO DOPPIO</h2>
             <span class="mins">~5 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t14" onchange="checkTask(this)">
-            <label for="t14">Lavare tutti i piatti/pentole</label>
+            <label for="t14">
+                <span class="it">Lavare tutti i piatti/pentole</span>
+                <span class="en">Wash all dishes/pots</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t15" onchange="checkTask(this)">
-            <label for="t15">Pulire lavello con sanificante</label>
+            <label for="t15">
+                <span class="it">Pulire lavello con sanificante</span>
+                <span class="en">Clean sink with sanitizer</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t16" onchange="checkTask(this)">
-            <label for="t16">Pulire rubinetto</label>
+            <label for="t16">
+                <span class="it">Pulire rubinetto</span>
+                <span class="en">Clean faucet</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t17" onchange="checkTask(this)">
-            <label for="t17">Scaricare filtro scarico</label>
+            <label for="t17">
+                <span class="it">Scaricare filtro scarico</span>
+                <span class="en">Clean drain filter</span>
+            </label>
         </div>
     </div>
 
     <!-- ZONA 5: FRIGHI -->
     <div class="zone">
         <div class="zone-header">
-            <h2>❄️ FRIGORIFERI</h2>
+            <h2>FRIGORIFERI</h2>
             <span class="mins">~5 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t18" onchange="checkTask(this)">
-            <label for="t18">Sottobanco cucina: temp OK? (≤4°C)</label>
+            <label for="t18">
+                <span class="it">Sottobanco cucina: temp OK? (≤4°C)</span>
+                <span class="en">Under-counter fridge: temp OK? (≤4°C)</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t19" onchange="checkTask(this)">
-            <label for="t19">Congelatore retro: temp OK? (≤-18°C)</label>
+            <label for="t19">
+                <span class="it">Congelatore retro: temp OK? (≤-18°C)</span>
+                <span class="en">Back freezer: temp OK? (≤-18°C)</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t20" onchange="checkTask(this)">
-            <label for="t20">FIFO: vecchio davanti, nuovo dietro</label>
+            <label for="t20">
+                <span class="it">FIFO: vecchio davanti, nuovo dietro</span>
+                <span class="en">FIFO: old in front, new in back</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t21" onchange="checkTask(this)">
-            <label for="t21">Pulire maniglie e guarnizioni</label>
+            <label for="t21">
+                <span class="it">Pulire maniglie e guarnizioni</span>
+                <span class="en">Clean handles and seals</span>
+            </label>
         </div>
     </div>
 
     <!-- ZONA 6: AFFETTATRICE -->
     <div class="zone">
         <div class="zone-header">
-            <h2>🍖 AFFETTATRICE (Bar)</h2>
+            <h2>AFFETTATRICE (Bar)</h2>
             <span class="mins">~5 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t22" onchange="checkTask(this)">
-            <label for="t22">Spegnere e staccare</label>
+            <label for="t22">
+                <span class="it">Spegnere e staccare</span>
+                <span class="en">Turn off and unplug</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t23" onchange="checkTask(this)">
-            <label for="t23">Smontare lama (attenzione!)</label>
+            <label for="t23">
+                <span class="it">Smontare lama (attenzione!)</span>
+                <span class="en">Remove blade (careful!)</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t24" onchange="checkTask(this)">
-            <label for="t24">Lavare e sanificare tutte le parti</label>
+            <label for="t24">
+                <span class="it">Lavare e sanificare tutte le parti</span>
+                <span class="en">Wash and sanitize all parts</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t25" onchange="checkTask(this)">
-            <label for="t25">Rimontare e coprire</label>
+            <label for="t25">
+                <span class="it">Rimontare e coprire</span>
+                <span class="en">Reassemble and cover</span>
+            </label>
         </div>
     </div>
 
     <!-- ZONA 7: PAVIMENTO -->
     <div class="zone">
         <div class="zone-header">
-            <h2>🧹 PAVIMENTO + FINALE</h2>
+            <h2>PAVIMENTO + FINALE</h2>
             <span class="mins">~10 min</span>
         </div>
         <div class="task">
             <input type="checkbox" id="t26" onchange="checkTask(this)">
-            <label for="t26">Spazzare tutto il pavimento cucina</label>
+            <label for="t26">
+                <span class="it">Spazzare tutto il pavimento cucina</span>
+                <span class="en">Sweep entire kitchen floor</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t27" onchange="checkTask(this)">
-            <label for="t27">Lavare con prodotto sanificante</label>
+            <label for="t27">
+                <span class="it">Lavare con prodotto sanificante</span>
+                <span class="en">Mop with sanitizing solution</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t28" onchange="checkTask(this)">
-            <label for="t28">Pulire tappetini gomma</label>
+            <label for="t28">
+                <span class="it">Pulire tappetini gomma</span>
+                <span class="en">Clean rubber mats</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t29" onchange="checkTask(this)">
-            <label for="t29">Svuotare cestini immondizia</label>
+            <label for="t29">
+                <span class="it">Svuotare cestini immondizia</span>
+                <span class="en">Empty trash bins</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t30" onchange="checkTask(this)">
-            <label for="t30">Controllare passaggio bagno pulito</label>
+            <label for="t30">
+                <span class="it">Controllare passaggio bagno pulito</span>
+                <span class="en">Check bathroom hallway is clean</span>
+            </label>
         </div>
         <div class="task">
             <input type="checkbox" id="t31" onchange="checkTask(this)">
-            <label for="t31">Luci spente, gas chiuso, tutto OK</label>
+            <label for="t31">
+                <span class="it">Luci spente, gas chiuso, tutto OK</span>
+                <span class="en">Lights off, gas off, all OK</span>
+            </label>
         </div>
     </div>
 
@@ -339,28 +444,28 @@
     <div class="signature">
         <div>
             <div class="line"></div>
-            <small>Pulito da</small>
+            <small>Pulito da / Cleaned by</small>
         </div>
         <div>
             <div class="line"></div>
-            <small>Ora</small>
+            <small>Ora / Time</small>
         </div>
         <div>
             <div class="line"></div>
-            <small>Data</small>
+            <small>Data / Date</small>
         </div>
     </div>
 
     <!-- DONE BANNER -->
     <div class="done-banner" id="doneBanner">
-        ✅ FATTO! VAI A CASA! 🏠
+        FATTO! VAI A CASA!<br>DONE! GO HOME!
     </div>
 
     <!-- ACTIONS -->
     <div class="actions">
-        <button class="btn-start" onclick="startTimer()">▶️ Start</button>
-        <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
-        <button class="btn-reset" onclick="resetAll()">🔄 Reset</button>
+        <button class="btn-start" onclick="startTimer()">Start</button>
+        <button class="btn-print" onclick="window.print()">Stampa / Print</button>
+        <button class="btn-reset" onclick="resetAll()">Reset</button>
     </div>
 
     <script>

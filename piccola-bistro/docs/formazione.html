@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piccolo Bistrot - Formazione Nuovo Personale</title>
+    <title>Piccolo Bistrot - Formazione</title>
     <style>
         * {
             box-sizing: border-box;
@@ -126,6 +126,11 @@
             font-weight: bold;
             margin-bottom: 3px;
         }
+        .skill-title .en {
+            font-weight: normal;
+            color: #888;
+            font-size: 0.85em;
+        }
         .skill-why {
             font-size: 0.85em;
             color: #666;
@@ -137,6 +142,12 @@
             border-radius: 5px;
             font-size: 0.9em;
             border-left: 3px solid #1565c0;
+        }
+        .skill-how .en {
+            color: #888;
+            font-size: 0.9em;
+            display: block;
+            margin-top: 5px;
         }
         .module.critical .skill-how {
             border-left-color: #c62828;
@@ -213,28 +224,28 @@
 </head>
 <body>
     <h1>PICCOLO BISTROT</h1>
-    <p class="subtitle">Formazione Nuovo Personale - Via Garibaldi 43</p>
+    <p class="subtitle">Formazione Nuovo Personale / New Staff Training<br>Via Garibaldi 43, Trapani</p>
 
     <!-- DATI DIPENDENTE -->
     <div class="trainee-box">
-        <h2>Dati Dipendente</h2>
+        <h2>Dati Dipendente / Employee Info</h2>
         <div class="info-row">
             <div>
-                <label>Nome e Cognome:</label>
-                <input type="text" placeholder="Nome completo">
+                <label>Nome / Name:</label>
+                <input type="text" placeholder="Full name">
             </div>
             <div>
-                <label>Data Inizio:</label>
+                <label>Data Inizio / Start Date:</label>
                 <input type="date">
             </div>
         </div>
         <div class="info-row">
             <div>
-                <label>Posizione:</label>
-                <input type="text" placeholder="Aiuto cucina, cameriere...">
+                <label>Posizione / Position:</label>
+                <input type="text" placeholder="Kitchen helper, waiter...">
             </div>
             <div>
-                <label>Formatore:</label>
+                <label>Formatore / Trainer:</label>
                 <input type="text" placeholder="Jonathan / Giovanni">
             </div>
         </div>
@@ -244,21 +255,21 @@
     <div class="module critical">
         <h2>
             <span style="color:#c62828;">MODULO 1: Igiene Personale</span>
-            <span class="tag tag-critical">CRITICO - ASL</span>
+            <span class="tag tag-critical">CRITICO / CRITICAL</span>
         </h2>
         <div class="warning">
-            L'ispettore ASL controlla PRIMA questo! Errori = multa o chiusura.
+            L'ispettore ASL controlla PRIMA questo! / Health inspector checks this FIRST!
         </div>
 
         <div class="skill">
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Lavaggio Mani</div>
-                    <div class="skill-why">PERCHÉ: Mani sporche = causa #1 di intossicazioni alimentari</div>
+                    <div class="skill-title">Lavaggio Mani <span class="en">/ Handwashing</span></div>
+                    <div class="skill-why">Mani sporche = causa #1 intossicazioni / Dirty hands = #1 cause of food poisoning</div>
                     <div class="skill-how">
-                        COME: Bagnare → Sapone 20 secondi → Sciacquare → Asciugare con carta<br>
-                        QUANDO: Prima di lavorare, dopo bagno, dopo carne/pesce crudo, dopo toccare viso/capelli
+                        Bagnare → Sapone 20 sec → Sciacquare → Asciugare con carta
+                        <span class="en">Wet → Soap 20 sec → Rinse → Dry with paper towel</span>
                     </div>
                 </div>
             </div>
@@ -268,10 +279,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Divisa Pulita</div>
-                    <div class="skill-why">PERCHÉ: Vestiti sporchi portano batteri in cucina</div>
+                    <div class="skill-title">Divisa Pulita <span class="en">/ Clean Uniform</span></div>
+                    <div class="skill-why">Vestiti sporchi portano batteri / Dirty clothes carry bacteria</div>
                     <div class="skill-how">
-                        Grembiule pulito ogni giorno. Capelli legati o coperti. No vestiti da strada in cucina.
+                        Grembiule pulito ogni giorno. Capelli legati o coperti.
+                        <span class="en">Clean apron daily. Hair tied back or covered.</span>
                     </div>
                 </div>
             </div>
@@ -281,10 +293,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Niente Gioielli</div>
-                    <div class="skill-why">PERCHÉ: Anelli = batteri nascosti, possono cadere nel cibo</div>
+                    <div class="skill-title">Niente Gioielli <span class="en">/ No Jewelry</span></div>
+                    <div class="skill-why">Anelli = batteri nascosti / Rings harbor bacteria</div>
                     <div class="skill-how">
-                        Togliere TUTTI gli anelli, orologi, bracciali prima di lavorare. Anche fede = NO.
+                        Togliere TUTTI gli anelli, orologi, bracciali. Anche fede = NO.
+                        <span class="en">Remove ALL rings, watches, bracelets. Wedding band = NO.</span>
                     </div>
                 </div>
             </div>
@@ -294,11 +307,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Se Stai Male = STAI A CASA</div>
-                    <div class="skill-why">PERCHÉ: Dipendente malato = clienti malati</div>
+                    <div class="skill-title">Se Stai Male = STAI A CASA <span class="en">/ If Sick = STAY HOME</span></div>
+                    <div class="skill-why">Dipendente malato = clienti malati / Sick worker = sick customers</div>
                     <div class="skill-how">
-                        NON lavorare se: vomito, diarrea, febbre, ittero, ferite aperte sulle mani.<br>
-                        Avvisare Giovanni SUBITO. Stare a casa.
+                        NON lavorare se: vomito, diarrea, febbre. Avvisare Giovanni SUBITO.
+                        <span class="en">DO NOT work if: vomiting, diarrhea, fever. Tell Giovanni IMMEDIATELY.</span>
                     </div>
                 </div>
             </div>
@@ -309,18 +322,18 @@
     <div class="module critical">
         <h2>
             <span style="color:#c62828;">MODULO 2: Sicurezza Alimentare</span>
-            <span class="tag tag-critical">CRITICO - ASL</span>
+            <span class="tag tag-critical">CRITICO / CRITICAL</span>
         </h2>
 
         <div class="skill">
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Zona di Pericolo Temperature</div>
-                    <div class="skill-why">PERCHÉ: Batteri si moltiplicano tra 4°C e 60°C</div>
+                    <div class="skill-title">Zona di Pericolo Temperature <span class="en">/ Temperature Danger Zone</span></div>
+                    <div class="skill-why">Batteri si moltiplicano tra 4°C e 60°C / Bacteria multiply between 4°C-60°C</div>
                     <div class="skill-how">
-                        Cibo freddo: ≤4°C | Cibo caldo: ≥60°C<br>
-                        MAI lasciare cibo nella zona pericolo più di 2 ore. Nel dubbio, BUTTA.
+                        Freddo: ≤4°C | Caldo: ≥60°C | Nel dubbio, BUTTA.
+                        <span class="en">Cold: ≤4°C | Hot: ≥60°C | When in doubt, throw it out.</span>
                     </div>
                 </div>
             </div>
@@ -330,11 +343,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Contaminazione Incrociata</div>
-                    <div class="skill-why">PERCHÉ: Batteri da carne cruda possono passare al cibo pronto</div>
+                    <div class="skill-title">Contaminazione Incrociata <span class="en">/ Cross-Contamination</span></div>
+                    <div class="skill-why">Batteri da crudo possono passare a cibo pronto / Raw bacteria can transfer to ready food</div>
                     <div class="skill-how">
-                        Taglieri colorati: 🔴 Carne cruda | 🔵 Pesce | 🟢 Verdure | 🟡 Pollame<br>
-                        MAI usare stesso tagliere per crudo e cotto senza lavare.
+                        Taglieri: 🔴 Carne | 🔵 Pesce | 🟢 Verdure | 🟡 Pollame
+                        <span class="en">Cutting boards: 🔴 Meat | 🔵 Fish | 🟢 Vegetables | 🟡 Poultry</span>
                     </div>
                 </div>
             </div>
@@ -344,11 +357,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">FIFO: Prima Entra, Prima Esce</div>
-                    <div class="skill-why">PERCHÉ: Cibo vecchio deve essere usato prima</div>
+                    <div class="skill-title">FIFO: Prima Entra, Prima Esce <span class="en">/ First In, First Out</span></div>
+                    <div class="skill-why">Cibo vecchio deve essere usato prima / Older food must be used first</div>
                     <div class="skill-how">
-                        Nuove consegne vanno DIETRO sullo scaffale. Usare prima quello DAVANTI.<br>
-                        Controllare scadenze ogni giorno. Etichettare tutto con data ricevimento.
+                        Nuove consegne → DIETRO. Usare prima quello DAVANTI.
+                        <span class="en">New deliveries → BACK. Use items from FRONT first.</span>
                     </div>
                 </div>
             </div>
@@ -358,11 +371,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Conservazione Corretta</div>
-                    <div class="skill-why">PERCHÉ: Conservazione sbagliata = contaminazione + spreco</div>
+                    <div class="skill-title">Conservazione Corretta <span class="en">/ Proper Storage</span></div>
+                    <div class="skill-why">Conservazione sbagliata = contaminazione / Wrong storage = contamination</div>
                     <div class="skill-how">
-                        Ordine frigo (alto → basso): Cibo pronto → Verdure → Pesce crudo → Carne cruda<br>
-                        Tutti i contenitori coperti e etichettati. Niente sul pavimento.
+                        Frigo (alto→basso): Pronto → Verdure → Pesce → Carne
+                        <span class="en">Fridge (top→bottom): Ready-to-eat → Vegetables → Fish → Raw meat</span>
                     </div>
                 </div>
             </div>
@@ -380,10 +393,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Piano Cottura (4 Fuochi + Friggitrice)</div>
-                    <div class="skill-why">Sa accendere, spegnere e pulire correttamente</div>
+                    <div class="skill-title">Piano Cottura (4 Fuochi + Friggitrice) <span class="en">/ Stovetop + Fryer</span></div>
+                    <div class="skill-why">Sa accendere, spegnere e pulire / Knows how to operate and clean</div>
                     <div class="skill-how">
-                        Accensione sicura. Spegnere gas a fine servizio. Raschiare e sgrassare ogni sera.
+                        Accensione sicura. Spegnere gas a fine servizio.
+                        <span class="en">Safe ignition. Turn off gas at end of service.</span>
                     </div>
                 </div>
             </div>
@@ -393,11 +407,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Frigoriferi TECNODOM</div>
-                    <div class="skill-why">Conosce posizione e temperature corrette</div>
+                    <div class="skill-title">Frigoriferi TECNODOM <span class="en">/ TECNODOM Fridges</span></div>
+                    <div class="skill-why">Conosce posizione e temperature / Knows location and temperatures</div>
                     <div class="skill-how">
-                        Sottobanco cucina: ≤4°C | Congelatore retro: ≤-18°C<br>
-                        Controllare temperature ogni sera durante pulizia.
+                        Sottobanco: ≤4°C | Congelatore: ≤-18°C
+                        <span class="en">Under-counter: ≤4°C | Freezer: ≤-18°C</span>
                     </div>
                 </div>
             </div>
@@ -407,10 +421,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Affettatrice (Bar)</div>
-                    <div class="skill-why">ATTENZIONE: lama molto affilata!</div>
+                    <div class="skill-title">Affettatrice (Bar) <span class="en">/ Meat Slicer</span></div>
+                    <div class="skill-why">ATTENZIONE: lama molto affilata! / WARNING: Very sharp blade!</div>
                     <div class="skill-how">
-                        Sa smontare, pulire, sanificare e rimontare. Sempre spegnere e staccare prima di pulire.
+                        Spegnere e staccare PRIMA di pulire. Smontare con cura.
+                        <span class="en">Turn off and unplug BEFORE cleaning. Disassemble carefully.</span>
                     </div>
                 </div>
             </div>
@@ -420,11 +435,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Lavello Doppio</div>
-                    <div class="skill-why">Sa usare correttamente per lavaggio stoviglie</div>
+                    <div class="skill-title">Lavello Doppio <span class="en">/ Double Sink</span></div>
+                    <div class="skill-why">Sa usare correttamente / Knows proper use</div>
                     <div class="skill-how">
-                        Vasca 1: Lavaggio con sapone | Vasca 2: Risciacquo<br>
-                        Pulire filtro scarico ogni sera.
+                        Vasca 1: Lavaggio | Vasca 2: Risciacquo
+                        <span class="en">Basin 1: Wash | Basin 2: Rinse</span>
                     </div>
                 </div>
             </div>
@@ -442,13 +457,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Pulire vs Sanificare</div>
-                    <div class="skill-why">PERCHÉ: Pulire toglie sporco, sanificare uccide batteri - servono ENTRAMBI</div>
+                    <div class="skill-title">Pulire vs Sanificare <span class="en">/ Clean vs Sanitize</span></div>
+                    <div class="skill-why">Pulire toglie sporco, sanificare uccide batteri / Clean removes dirt, sanitize kills germs</div>
                     <div class="skill-how">
-                        1. Raschiare/rimuovere residui<br>
-                        2. Lavare con sapone e acqua calda<br>
-                        3. Sciacquare<br>
-                        4. Sanificare (prodotto chimico O acqua ≥77°C)
+                        1. Raschiare → 2. Lavare → 3. Sciacquare → 4. Sanificare
+                        <span class="en">1. Scrape → 2. Wash → 3. Rinse → 4. Sanitize</span>
                     </div>
                 </div>
             </div>
@@ -458,10 +471,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Dove Sono i Prodotti</div>
-                    <div class="skill-why">Deve saper trovare subito quello che serve</div>
+                    <div class="skill-title">Dove Sono i Prodotti <span class="en">/ Where Are Supplies</span></div>
+                    <div class="skill-why">Deve saper trovare subito / Must find quickly when needed</div>
                     <div class="skill-how">
-                        Sa trovare: Sanificante, sgrassatore, detergente pavimenti, mocio, scopa, panni puliti
+                        Sa trovare: Sanificante, sgrassatore, mocio, scopa, panni
+                        <span class="en">Can locate: Sanitizer, degreaser, mop, broom, cloths</span>
                     </div>
                 </div>
             </div>
@@ -471,10 +485,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Checklist Pulizia Fine Giornata</div>
-                    <div class="skill-why">PERCHÉ: Pulizia costante = pronti per domani</div>
+                    <div class="skill-title">Checklist Pulizia Fine Giornata <span class="en">/ End of Day Cleaning</span></div>
+                    <div class="skill-why">Pulizia costante = pronti per domani / Consistent cleaning = ready for tomorrow</div>
                     <div class="skill-how">
-                        Ha visto e può seguire da solo la checklist "Pulizia Cucina" (31 task, ~50 min)
+                        Ha visto e può seguire da solo la checklist "Pulizia Cucina"
+                        <span class="en">Has reviewed and can follow the "Pulizia Cucina" checklist alone</span>
                     </div>
                 </div>
             </div>
@@ -485,17 +500,18 @@
     <div class="module">
         <h2>
             <span style="color:#f57f17;">MODULO 5: Emergenze</span>
-            <span class="tag tag-safety">SICUREZZA</span>
+            <span class="tag tag-safety">SICUREZZA / SAFETY</span>
         </h2>
 
         <div class="skill">
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Estintore</div>
-                    <div class="skill-why">PERCHÉ: Incendi in cucina si propagano in secondi</div>
+                    <div class="skill-title">Estintore <span class="en">/ Fire Extinguisher</span></div>
+                    <div class="skill-why">Incendi in cucina si propagano in secondi / Kitchen fires spread in seconds</div>
                     <div class="skill-how">
-                        Sa dov'è l'estintore. Sa usarlo: Tirare sicura → Mirare in basso → Premere → Spazzare
+                        Sa dov'è. Sa usarlo: Tirare → Mirare → Premere → Spazzare
+                        <span class="en">Knows location. PASS: Pull → Aim → Squeeze → Sweep</span>
                     </div>
                 </div>
             </div>
@@ -505,10 +521,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Kit Pronto Soccorso</div>
-                    <div class="skill-why">PERCHÉ: Tagli e scottature succedono - servono cure immediate</div>
+                    <div class="skill-title">Kit Pronto Soccorso <span class="en">/ First Aid Kit</span></div>
+                    <div class="skill-why">Tagli e scottature succedono / Cuts and burns happen</div>
                     <div class="skill-how">
-                        Sa dov'è il kit. Sa che TUTTI gli infortuni vanno segnalati a Giovanni.
+                        Sa dov'è il kit. TUTTI gli infortuni → segnalare a Giovanni
+                        <span class="en">Knows kit location. ALL injuries → report to Giovanni</span>
                     </div>
                 </div>
             </div>
@@ -518,10 +535,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Uscita di Emergenza</div>
-                    <div class="skill-why">PERCHÉ: In emergenza bisogna uscire velocemente</div>
+                    <div class="skill-title">Uscita di Emergenza <span class="en">/ Emergency Exit</span></div>
+                    <div class="skill-why">In emergenza bisogna uscire velocemente / Must evacuate quickly</div>
                     <div class="skill-how">
-                        Sa dove sono tutte le uscite. Percorsi sempre liberi - MAI bloccare.
+                        Sa dove sono le uscite. Percorsi sempre liberi.
+                        <span class="en">Knows all exit locations. Paths always clear.</span>
                     </div>
                 </div>
             </div>
@@ -531,10 +549,11 @@
             <div class="skill-header">
                 <input type="checkbox" class="skill-check" onchange="updateProgress()">
                 <div class="skill-content">
-                    <div class="skill-title">Chiusura Gas</div>
-                    <div class="skill-why">PERCHÉ: Perdita gas = pericolo esplosione</div>
+                    <div class="skill-title">Chiusura Gas <span class="en">/ Gas Shutoff</span></div>
+                    <div class="skill-why">Perdita gas = pericolo esplosione / Gas leak = explosion danger</div>
                     <div class="skill-how">
-                        Sa dov'è la valvola principale del gas e come chiuderla.
+                        Sa dov'è la valvola principale e come chiuderla.
+                        <span class="en">Knows main valve location and how to close it.</span>
                     </div>
                 </div>
             </div>
@@ -543,29 +562,29 @@
 
     <!-- PROGRESS -->
     <div class="progress-box">
-        <h2 style="margin:0 0 5px 0;color:#1565c0;">Progresso Formazione</h2>
+        <h2 style="margin:0 0 5px 0;color:#1565c0;">Progresso / Progress</h2>
         <div class="progress-bar">
             <div class="progress-fill" id="progressFill">0%</div>
         </div>
-        <p id="progressText" style="margin:5px 0;color:#666;font-size:0.9em;">0 di 19 competenze completate</p>
+        <p id="progressText" style="margin:5px 0;color:#666;font-size:0.9em;">0 di 19 competenze / 0 of 19 skills</p>
 
         <div class="signature-grid">
             <div class="sig-box">
-                <h4>Firma Dipendente</h4>
+                <h4>Firma Dipendente / Employee Signature</h4>
                 <div class="sig-line"></div>
-                <small>Data: _______________</small>
+                <small>Data / Date: _______________</small>
             </div>
             <div class="sig-box">
-                <h4>Firma Formatore</h4>
+                <h4>Firma Formatore / Trainer Signature</h4>
                 <div class="sig-line"></div>
-                <small>Data: _______________</small>
+                <small>Data / Date: _______________</small>
             </div>
         </div>
     </div>
 
     <!-- ACTIONS -->
     <div class="actions">
-        <button class="btn-print" onclick="window.print()">Stampa</button>
+        <button class="btn-print" onclick="window.print()">Stampa / Print</button>
         <button class="btn-reset" onclick="resetAll()">Reset</button>
     </div>
 
@@ -578,7 +597,7 @@
             document.getElementById('progressFill').style.width = percent + '%';
             document.getElementById('progressFill').textContent = percent + '%';
             document.getElementById('progressText').textContent =
-                `${checked} di ${total} competenze completate`;
+                `${checked} di ${total} competenze / ${checked} of ${total} skills`;
         }
 
         function resetAll() {
