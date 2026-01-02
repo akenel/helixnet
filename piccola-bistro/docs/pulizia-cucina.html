@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccolo Bistrot - Pulizia Cucina</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 15px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .timer-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #27ae60;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .timer-bar .time {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .zone {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .zone-header h2 {
+            margin: 0;
+            color: #27ae60;
+            font-size: 1.1em;
+        }
+        .zone-header .mins {
+            background: #e8f5e9;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            color: #27ae60;
+        }
+        .task {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .task:last-child {
+            border-bottom: none;
+        }
+        .task input[type="checkbox"] {
+            width: 26px;
+            height: 26px;
+            margin-right: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .task label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .task.done label {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+        .signature {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        .signature div {
+            text-align: center;
+        }
+        .signature .line {
+            border-bottom: 1px solid #333;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+        .signature small {
+            color: #666;
+        }
+        .done-banner {
+            display: none;
+            background: #27ae60;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            margin-top: 15px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .actions button {
+            flex: 1;
+            padding: 12px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-start { background: #27ae60; color: white; }
+        .btn-print { background: #3498db; color: white; }
+        .btn-reset { background: #95a5a6; color: white; }
+        @media print {
+            body { background: white; }
+            .actions, .timer-bar { display: none; }
+            .zone { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <h1>PICCOLO BISTROT</h1>
+    <p class="subtitle">Pulizia Fine Giornata - Via Garibaldi 43</p>
+
+    <div class="timer-bar">
+        <span>⏱️ Timer</span>
+        <span class="time" id="timer">00:00</span>
+        <button onclick="startTimer()" style="padding:5px 15px;border:none;border-radius:5px;cursor:pointer;">START</button>
+    </div>
+
+    <!-- ZONA 1: FORNELLI + FRIGGITRICE -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>🔥 FORNELLI + FRIGGITRICE</h2>
+            <span class="mins">~10 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t1" onchange="checkTask(this)">
+            <label for="t1">Spegnere tutti i fuochi e gas</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t2" onchange="checkTask(this)">
+            <label for="t2">Raschiare piano cottura (4 fuochi)</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t3" onchange="checkTask(this)">
+            <label for="t3">Sgrassare con prodotto e panno</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t4" onchange="checkTask(this)">
+            <label for="t4">Pulire manopole</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t5" onchange="checkTask(this)">
+            <label for="t5">Friggitrice: spegnere, filtrare olio se necessario</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t6" onchange="checkTask(this)">
+            <label for="t6">Pulire esterno friggitrice</label>
+        </div>
+    </div>
+
+    <!-- ZONA 2: CAPPA -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>💨 CAPPA + FILTRI</h2>
+            <span class="mins">~5 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t7" onchange="checkTask(this)">
+            <label for="t7">Pulire bordo cappa con sgrassatore</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t8" onchange="checkTask(this)">
+            <label for="t8">Controllare filtri (SABATO: lavare filtri)</label>
+        </div>
+    </div>
+
+    <!-- ZONA 3: PREPARAZIONE -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>🔪 ZONA PREPARAZIONE</h2>
+            <span class="mins">~10 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t9" onchange="checkTask(this)">
+            <label for="t9">Riporre tutti gli ingredienti in frigo</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t10" onchange="checkTask(this)">
+            <label for="t10">Lavare e sanificare taglieri</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t11" onchange="checkTask(this)">
+            <label for="t11">Pulire piano inox con sanificante</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t12" onchange="checkTask(this)">
+            <label for="t12">Lavare squeeze bottles se usate</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t13" onchange="checkTask(this)">
+            <label for="t13">Organizzare utensili</label>
+        </div>
+    </div>
+
+    <!-- ZONA 4: LAVELLO -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>🚿 LAVELLO DOPPIO</h2>
+            <span class="mins">~5 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t14" onchange="checkTask(this)">
+            <label for="t14">Lavare tutti i piatti/pentole</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t15" onchange="checkTask(this)">
+            <label for="t15">Pulire lavello con sanificante</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t16" onchange="checkTask(this)">
+            <label for="t16">Pulire rubinetto</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t17" onchange="checkTask(this)">
+            <label for="t17">Scaricare filtro scarico</label>
+        </div>
+    </div>
+
+    <!-- ZONA 5: FRIGHI -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>❄️ FRIGORIFERI</h2>
+            <span class="mins">~5 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t18" onchange="checkTask(this)">
+            <label for="t18">Sottobanco cucina: temp OK? (≤4°C)</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t19" onchange="checkTask(this)">
+            <label for="t19">Congelatore retro: temp OK? (≤-18°C)</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t20" onchange="checkTask(this)">
+            <label for="t20">FIFO: vecchio davanti, nuovo dietro</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t21" onchange="checkTask(this)">
+            <label for="t21">Pulire maniglie e guarnizioni</label>
+        </div>
+    </div>
+
+    <!-- ZONA 6: AFFETTATRICE -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>🍖 AFFETTATRICE (Bar)</h2>
+            <span class="mins">~5 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t22" onchange="checkTask(this)">
+            <label for="t22">Spegnere e staccare</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t23" onchange="checkTask(this)">
+            <label for="t23">Smontare lama (attenzione!)</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t24" onchange="checkTask(this)">
+            <label for="t24">Lavare e sanificare tutte le parti</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t25" onchange="checkTask(this)">
+            <label for="t25">Rimontare e coprire</label>
+        </div>
+    </div>
+
+    <!-- ZONA 7: PAVIMENTO -->
+    <div class="zone">
+        <div class="zone-header">
+            <h2>🧹 PAVIMENTO + FINALE</h2>
+            <span class="mins">~10 min</span>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t26" onchange="checkTask(this)">
+            <label for="t26">Spazzare tutto il pavimento cucina</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t27" onchange="checkTask(this)">
+            <label for="t27">Lavare con prodotto sanificante</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t28" onchange="checkTask(this)">
+            <label for="t28">Pulire tappetini gomma</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t29" onchange="checkTask(this)">
+            <label for="t29">Svuotare cestini immondizia</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t30" onchange="checkTask(this)">
+            <label for="t30">Controllare passaggio bagno pulito</label>
+        </div>
+        <div class="task">
+            <input type="checkbox" id="t31" onchange="checkTask(this)">
+            <label for="t31">Luci spente, gas chiuso, tutto OK</label>
+        </div>
+    </div>
+
+    <!-- FIRMA -->
+    <div class="signature">
+        <div>
+            <div class="line"></div>
+            <small>Pulito da</small>
+        </div>
+        <div>
+            <div class="line"></div>
+            <small>Ora</small>
+        </div>
+        <div>
+            <div class="line"></div>
+            <small>Data</small>
+        </div>
+    </div>
+
+    <!-- DONE BANNER -->
+    <div class="done-banner" id="doneBanner">
+        ✅ FATTO! VAI A CASA! 🏠
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <button class="btn-start" onclick="startTimer()">▶️ Start</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+        <button class="btn-reset" onclick="resetAll()">🔄 Reset</button>
+    </div>
+
+    <script>
+        let timerInterval = null;
+        let seconds = 0;
+
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                seconds++;
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function checkTask(cb) {
+            const task = cb.closest('.task');
+            if (cb.checked) {
+                task.classList.add('done');
+            } else {
+                task.classList.remove('done');
+            }
+            checkComplete();
+        }
+
+        function checkComplete() {
+            const total = document.querySelectorAll('.task input').length;
+            const done = document.querySelectorAll('.task input:checked').length;
+            if (done === total) {
+                document.getElementById('doneBanner').style.display = 'block';
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            } else {
+                document.getElementById('doneBanner').style.display = 'none';
+            }
+        }
+
+        function resetAll() {
+            document.querySelectorAll('.task input').forEach(cb => {
+                cb.checked = false;
+                cb.closest('.task').classList.remove('done');
+            });
+            document.getElementById('doneBanner').style.display = 'none';
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            seconds = 0;
+            document.getElementById('timer').textContent = '00:00';
+        }
+    </script>
+</body>
+</html>
