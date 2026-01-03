@@ -590,6 +590,8 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'piccola_riordino_v1';
+
         // Set date
         document.getElementById('dateBox').textContent = new Date().toLocaleDateString('it-IT', {
             weekday: 'long',
@@ -597,6 +599,48 @@
             month: 'long',
             year: 'numeric'
         });
+
+        // LocalStorage functions
+        function saveState() {
+            const state = {
+                checks: [],
+                inputs: [],
+                date: new Date().toDateString()
+            };
+            document.querySelectorAll('.order-check').forEach((c, i) => {
+                state.checks[i] = c.checked;
+            });
+            document.querySelectorAll('.have input').forEach((inp, i) => {
+                state.inputs[i] = inp.value;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            const state = JSON.parse(saved);
+            // Keep for a week (restocking list persists longer)
+            const savedDate = new Date(state.date);
+            const daysDiff = (new Date() - savedDate) / (1000 * 60 * 60 * 24);
+            if (daysDiff > 7) {
+                localStorage.removeItem(STORAGE_KEY);
+                return;
+            }
+
+            // Restore checkboxes
+            document.querySelectorAll('.order-check').forEach((c, i) => {
+                if (state.checks[i]) c.checked = true;
+            });
+
+            // Restore input values
+            document.querySelectorAll('.have input').forEach((inp, i) => {
+                if (state.inputs[i]) inp.value = state.inputs[i];
+            });
+
+            generateList();
+        }
 
         function generateList() {
             const checks = document.querySelectorAll('.order-check:checked');
@@ -616,17 +660,28 @@
                 li.textContent = `${nameIt} — ${par}`;
                 list.appendChild(li);
             });
+
+            saveState();
         }
 
         function clearAll() {
             document.querySelectorAll('.order-check').forEach(c => c.checked = false);
             document.querySelectorAll('.have input').forEach(i => i.value = '');
             document.getElementById('orderItems').innerHTML = '<li style="color:#888;">Seleziona i prodotti / Check items to order</li>';
+            localStorage.removeItem(STORAGE_KEY);
         }
 
+        // Event listeners
         document.querySelectorAll('.order-check').forEach(c => {
             c.addEventListener('change', generateList);
         });
+
+        document.querySelectorAll('.have input').forEach(inp => {
+            inp.addEventListener('input', saveState);
+        });
+
+        // Load saved state on page load
+        document.addEventListener('DOMContentLoaded', loadState);
     </script>
 </body>
 </html>

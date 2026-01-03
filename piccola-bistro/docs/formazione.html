@@ -589,6 +589,50 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'piccola_formazione_v1';
+
+        // LocalStorage functions
+        function saveState() {
+            const state = {
+                checks: [],
+                inputs: [],
+                date: new Date().toDateString()
+            };
+            document.querySelectorAll('.skill-check').forEach((c, i) => {
+                state.checks[i] = c.checked;
+            });
+            document.querySelectorAll('input[type="text"], input[type="date"]').forEach((inp, i) => {
+                state.inputs[i] = inp.value;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            const state = JSON.parse(saved);
+            // Training persists for 30 days
+            const savedDate = new Date(state.date);
+            const daysDiff = (new Date() - savedDate) / (1000 * 60 * 60 * 24);
+            if (daysDiff > 30) {
+                localStorage.removeItem(STORAGE_KEY);
+                return;
+            }
+
+            // Restore checkboxes
+            document.querySelectorAll('.skill-check').forEach((c, i) => {
+                if (state.checks[i]) c.checked = true;
+            });
+
+            // Restore input values (trainee info)
+            document.querySelectorAll('input[type="text"], input[type="date"]').forEach((inp, i) => {
+                if (state.inputs[i]) inp.value = state.inputs[i];
+            });
+
+            updateProgress();
+        }
+
         function updateProgress() {
             const total = document.querySelectorAll('.skill-check').length;
             const checked = document.querySelectorAll('.skill-check:checked').length;
@@ -598,13 +642,24 @@
             document.getElementById('progressFill').textContent = percent + '%';
             document.getElementById('progressText').textContent =
                 `${checked} di ${total} competenze / ${checked} of ${total} skills`;
+
+            saveState();
         }
 
         function resetAll() {
             document.querySelectorAll('.skill-check').forEach(c => c.checked = false);
             document.querySelectorAll('input[type="text"], input[type="date"]').forEach(i => i.value = '');
             updateProgress();
+            localStorage.removeItem(STORAGE_KEY);
         }
+
+        // Event listeners for text inputs
+        document.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+            inp.addEventListener('input', saveState);
+        });
+
+        // Load saved state on page load
+        document.addEventListener('DOMContentLoaded', loadState);
     </script>
 </body>
 </html>

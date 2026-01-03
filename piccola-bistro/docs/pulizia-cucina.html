@@ -469,8 +469,50 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'piccola_pulizia_v1';
         let timerInterval = null;
         let seconds = 0;
+
+        // LocalStorage functions
+        function saveState() {
+            const state = {
+                checks: {},
+                seconds: seconds,
+                date: new Date().toDateString()
+            };
+            document.querySelectorAll('.task input').forEach(cb => {
+                state.checks[cb.id] = cb.checked;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            const state = JSON.parse(saved);
+            // Only restore if same day (reset daily)
+            if (state.date !== new Date().toDateString()) {
+                localStorage.removeItem(STORAGE_KEY);
+                return;
+            }
+
+            // Restore checkboxes
+            document.querySelectorAll('.task input').forEach(cb => {
+                if (state.checks[cb.id]) {
+                    cb.checked = true;
+                    cb.closest('.task').classList.add('done');
+                }
+            });
+
+            // Restore timer
+            seconds = state.seconds || 0;
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${m}:${s}`;
+
+            checkComplete();
+        }
 
         function startTimer() {
             if (timerInterval) return;
@@ -479,6 +521,7 @@
                 const m = Math.floor(seconds / 60).toString().padStart(2, '0');
                 const s = (seconds % 60).toString().padStart(2, '0');
                 document.getElementById('timer').textContent = `${m}:${s}`;
+                saveState();
             }, 1000);
         }
 
@@ -489,6 +532,7 @@
             } else {
                 task.classList.remove('done');
             }
+            saveState();
             checkComplete();
         }
 
@@ -518,7 +562,11 @@
             }
             seconds = 0;
             document.getElementById('timer').textContent = '00:00';
+            localStorage.removeItem(STORAGE_KEY);
         }
+
+        // Load saved state on page load
+        document.addEventListener('DOMContentLoaded', loadState);
     </script>
 </body>
 </html>
