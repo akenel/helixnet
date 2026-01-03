@@ -125,11 +125,39 @@
             padding: 2px 0;
             break-inside: avoid;
         }
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .week-info { font-weight: 500; }
+        .week-dates { color: #666; }
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .footer .sig-line {
+            border-bottom: 1px solid #333;
+            width: 120px;
+            display: inline-block;
+            margin-left: 5px;
+        }
         @media print {
             .actions { display: none; }
             body { padding: 5px; }
             * { font-size: 10px; }
             input[type="checkbox"] { width: 14px; height: 14px; }
+            .footer { font-size: 9px; }
         }
         @media (max-width: 600px) {
             th.day { font-size: 0.8em; }
@@ -140,7 +168,17 @@
 </head>
 <body>
     <h1>PICCOLO BISTROT</h1>
-    <p class="subtitle">Piano Riordino Settimanale / Weekly Restocking Plan</p>
+    <p class="subtitle">Piano Riordino Settimanale / Weekly Restocking Plan<br>Via Garibaldi 43, Trapani</p>
+
+    <div class="week-header">
+        <div class="week-info">
+            <strong>Settimana / Week:</strong> <span id="weekNum"></span>
+        </div>
+        <div class="week-dates">
+            <span id="weekDates"></span>
+        </div>
+    </div>
+
     <div class="today-box" id="todayBox">Loading...</div>
 
     <table>
@@ -383,9 +421,15 @@
     </div>
 
     <div class="actions">
-        <button type="button" class="btn-save" onclick="saveState()">💾 Salva</button>
-        <button type="button" class="btn-print" onclick="window.print()">🖨️ Stampa</button>
-        <button type="button" class="btn-reset" onclick="resetAll()">🔄 Reset</button>
+        <button type="button" class="btn-save" onclick="saveState()">Salva</button>
+        <button type="button" class="btn-print" onclick="window.print()">Stampa</button>
+        <button type="button" class="btn-reset" onclick="resetAll()">Reset</button>
+    </div>
+
+    <div class="footer">
+        <div>Piccolo Bistrot - Via Garibaldi 43, Trapani</div>
+        <div>Compilato da / Prepared by: <span class="sig-line"></span></div>
+        <div>Data / Date: <span class="sig-line"></span></div>
     </div>
 
     <script>
@@ -397,7 +441,40 @@
         let jsDay = new Date().getDay(); // 0 = Sunday
         let today = jsDay === 0 ? 6 : jsDay - 1; // Convert to 0 = Monday
 
+        // Calculate ISO week number
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // Get Monday of current week
+        function getMonday(d) {
+            d = new Date(d);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        // Format date as "6 Gen"
+        function formatDateShort(d) {
+            const months = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+            return `${d.getDate()} ${months[d.getMonth()]}`;
+        }
+
         function init() {
+            const now = new Date();
+            const weekNum = getWeekNumber(now);
+            const monday = getMonday(now);
+            const sunday = new Date(monday);
+            sunday.setDate(sunday.getDate() + 6);
+
+            // Set week info
+            document.getElementById('weekNum').textContent = weekNum;
+            document.getElementById('weekDates').textContent =
+                `${formatDateShort(monday)} - ${formatDateShort(sunday)} ${now.getFullYear()}`;
+
             // Set today box
             document.getElementById('todayBox').textContent =
                 `OGGI: ${DAYS_IT[today]} / TODAY: ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][today]}`;
