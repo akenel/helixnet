@@ -789,49 +789,139 @@ Every time Angel builds something real:
 
 ---
 
-## Part XXII: The Contracting Years (2014-2019)
+## Part XXII: Back to Canada (2005-2012)
 
-*From CV — the comeback trail*
+*The return home — then back to Switzerland*
 
-### Nestlé Nespresso, Lausanne CH (March 2014 – February 2016)
+### The Nestlé Contract Extension (Jan 2003 – Jun 2005)
 
-**Role:** SAP Integration Consultant / Technical Support
+The first Nestlé gig wasn't just the SDR solution in 2003 — it was **2.5 years** total:
+- Jan 2003 - Jun 2005
+- Full spectrum: gathering, evaluating, prototyping, solution design, configuration & testing
+- Global and country-specific requirements
+- Then it ended. Back to Canada.
 
-- High-volume messaging integration
-- SAP PO 7.4, SAP NWDS, SLD, SAP Hybris, CRM, Retail, APO, SAP BW HANA
+### SAP Reseller, Ontario (Jan 2006 – Jan 2007)
+
+**Role:** ERP Business Analyst / Systems Engineer (Self-employed)
+
+- Implementing SAP Business One for SME market
+- Lead generation, proposals, project management, ISVs, training & support
+
+> **"Angelo is a very hard working guy. He will pursue problems head-on. Angelo has an excellent understanding of business flow and how to use SAP to accomplish business goals."** — Dennis Den Besten, Owner of Niagara Computer Systems
+
+### MAN Diesel, Ontario (2007 – 2009)
+
+**Role:** ERP Administrator / SAP Business One Integrator (Full-time)
+
+- Day-to-day IT for 100+ technical end users
+- Hardware, software, cabling, MPLS, VPNs, Cisco switches, VoIP
+- ERP SAP Business One Add-ons
+- Coordinated office move in 2008
+
+> **"Angelo managed in a short period of time to stabilize the ERP system and ensure that the company's growing IT needs were managed in a professional and efficient way. Angelo is pragmatic and solution-oriented."** — Jean Sawaya, Principal at Kronos Project Management Group
+
+### Nestlé, Glendale CALIFORNIA (Aug 2009 – Jul 2010)
+
+**Role:** SAP XI/PI Upgrade Project / Process Integrator (Contract)
+
+- Root cause analysis, ABAP debugging, trace logs, OSS notes
+- Escalation SPOC for America's Basis and Messaging migration
+- Nestlé's ITIL & GBSL upgrade methodologies (R/3 4.7 → ECC 6.0)
+
+> **"It was really amazing working with Angelo. I learned many things working with him, he is a good mentor and extends great support. He has a vast knowledge of wealth in SAP."** — Veera Thota, Business Solution Integration Expert
+
+### Utopia Inc., USA (Jul 2010 – Sep 2012)
+
+**Role:** SAP Data Migration Lead / SAP byDesign Integrator (Full-time)
+
+- Project team leader
+- Client communications, project status, issue/defect reporting
+- Dashboards, earn/burn reports
+
+---
+
+## Part XXIII: Switzerland Era #2 — The Comeback (2012-2019)
+
+*Back to the homeland — and the awards*
+
+### Nestlé S.A., Switzerland (Nov 2012 – Feb 2014)
+
+**Role:** SAP Integration Projects / SAP Business Suite Integrator (Contract)
+
+- Analysis, design, prototyping of EAI scenarios
+- Technical specs, canonical mappings, payload routing
+- **1st Nestlé O2C Mobile Web App** — ahead of schedule
+- SAP Workflows, ALE/EDI & XI technologies
+- Real-time updates: Sales Orders, Shipments, Dispatch Advice, Invoices
+
+**🏆 WON 3RD PRIZE — 2014 NESTLÉ INNOVATION AWARD**
+
+### Nestlé Nespresso, Lausanne (Mar 2014 – Feb 2016)
+
+**Role:** SAP Integration Consultant / Technical Support (Contract)
+
+- High-volume messaging, SAP PO 7.4, NWDS, Hybris, CRM, Retail, APO, BW HANA
 - ALE/IDocs, BDocs, RFCs, iFlows, WS Calls, File Adapter
 - Certified Change Management Coordinator
-- SAP IdM Identity Management, CTS Change & Transport System
 
-### Nestlé, Frankfurt DE (March 2016 – December 2017)
+> **"Angelo is one of the (if not THE) most capable PI experts I got the luck to work with."** — Pedro Rodrigues, IT Project Manager
 
-**Role:** SAP ICC SPOC / Integration Project Manager
+### Nestlé ICC, Frankfurt (Mar 2016 – Dec 2017)
 
-- Single-Point-of-Contact (SPOC) for Integration Competency Centre
-- Global SAP and non-SAP systems via SAP PI/PO middleware
-- Full project lifecycle: planning, budgeting, security, testing, cut-over, support
-- Hands-on: Basis, ABAP, BODS & BW, SolMan, APO, S4/HANA
+**Role:** SAP ICC SPOC / Integration Project Manager (Contract)
 
-### CMA-CGM, Marseille FR (September 2018 – October 2018)
+- Single-Point-of-Contact for Integration Competency Centre
+- Multiple projects integrating global SAP and non-SAP systems
+- Planning, budgeting, security, change management, cut-over, support
 
-**Role:** Integration Project Manager / GIS Integration
+**🏆 WON 4TH PRIZE — 2016 NESTLÉ GLOBE AWARDS**
+*Speed & quality delivering international mission-critical disinvestment project across 20+ markets*
 
-- PoC & UAT Agile implementation
-- geocoder.api.here.com for intermodal address enrichment
+> **"Angelo took the lead to solve the repetitive issues we faced with factories and warehouses interfaces. He was instrumental in the project's success. Angelo is a doer, engaged, and committed."** — Bertrand Revel, Supply Chain lead at Nestlé HQ
+
+### ManpowerGroup, Eschborn DE (Jun 2018 – Jul 2018)
+
+**Role:** SAP HCM ABAP / Basis Technical Integrator (Contract)
+
+- English & German for HCM project
+- Technical support transition to external providers
+- Knowledge transfers, RFC connections, security, change management
+
+### CMA-CGM, Marseille (Sep 2018 – Oct 2018)
+
+**Role:** Integration Project Manager / GIS Integration (Contract)
+
+- Agile PoC & UAT for geocoder.api.here.com
+- Intermodal address enrichment (lat/long)
 - SAP TM integration via AIF & Event Management
 
-### Deutsche Börse Group, Luxembourg LU (January 2019 – July 2019)
+> **"You did a good job. We are presenting GIS tomorrow and that's because of you. It was a pleasure to work with a senior project manager like you."** — Alexandre Giraud, IT Project Manager at CMA CGM
 
-**Role:** SAP PI/PO Developer / CRM Integration
+### Deutsche Börse Group, Luxembourg (Jan 2019 – Jul 2019)
+
+**Role:** SAP PI/PO Developer / CRM Integration (Contract)
 
 - iFlows with Eclipse NWDS on PO 7.4
 - XML-SOAP and JSON-REST adapters
 - SAP CRM to in-house banking applications
 - ABAP proxies for E2E Restful Web Service Calls
 
+### Ecolution GmbH — Founded Jan 2015
+
+**Role:** President (Self-employed, ongoing)
+
+- SAP hybrid integration and modernisation
+- PI/PO → CPI → API-led architecture → AI
+- DevOps for SAP ecosystems
+- Secure local-first AI tooling (Ollama, containers)
+- Coaching and knowledge transfer
+
+*"Technology should serve humans — not the other way around."*
+
 ---
 
-## Part XXIII: Swiss Life — The Breaking Point (July 2019 – June 2023)
+## Part XXIV: Swiss Life — The Breaking Point (July 2019 – June 2023)
 
 ### The International Project
 
@@ -917,7 +1007,7 @@ Every time Angel builds something real:
 
 ---
 
-## Part XXV: Building HelixNet (2025)
+## Part XXVI: Building HelixNet (2025)
 
 ### The Beginning — January 2025
 
@@ -953,7 +1043,7 @@ Every time Angel builds something real:
 
 ---
 
-## Part XXVI: The White Room (December 2025)
+## Part XXVII: The White Room (December 2025)
 
 ### December 6, 2025 — Sylvie's Ultimatum
 
@@ -970,7 +1060,7 @@ Every time Angel builds something real:
 
 ---
 
-## Part XXVII: The Great Escape (December 24-31, 2025)
+## Part XXVIII: The Great Escape (December 24-31, 2025)
 
 *Full details in: `/stories/the-great-escape/CHAPTER-01-THE-GREAT-ESCAPE.md`*
 
@@ -1010,7 +1100,7 @@ Every time Angel builds something real:
 
 ---
 
-## Part XXVIII: Trapani — Present Day (January 2026)
+## Part XXIX: Trapani — Present Day (January 2026)
 
 ### January 9 — Birthday
 
@@ -1033,26 +1123,29 @@ Every time Angel builds something real:
 
 ---
 
-## Still to Come (Gaps)
+## Timeline Status: COMPLETE ✅
 
-- **2003-2014** — The 11 missing years between first Nestlé contract and Nespresso comeback
-  - What happened after Veytaux "what now..."?
-  - Where did you live?
-  - What jobs?
-- **Dec 2017 - Sep 2018** — 9 month gap between Nestlé Frankfurt and CMA-CGM
+**Career timeline 2000-2026 is now fully documented.**
+
+### Remaining Stories (Personal Details)
+
 - **How Angel met Sylvie** — The story not yet told
 - **Wedding Nov 28, 2019** — Red dress, 200 CHF photographer (during Swiss Life)
+- **The girl from 2000** — What happened after the blow jobs and pot shops?
 - **Mike's burnt house** — The pictures, the story
 - **The brothers** — Mario, Dave, Paul details
+- **Why go back to Canada in 2006?** — What pulled you back? What pushed you out again in 2012?
 
 ---
 
 **Document Info:**
 
 - Created: January 11, 2026, 1:15am
-- Updated: January 11, 2026, 4:00pm
+- Updated: January 11, 2026, 4:30pm
 - Location: Trapani, Sicily
 - By: Angel + Tigs
-- Status: 1980-2003 complete, 2014-2026 complete, **GAP: 2003-2014 (11 years)**
+- Status: **COMPLETE** — 1980-2026 career timeline documented (29 parts)
+- Lines: 1,150+
+- Awards: 🏆 Nestlé Innovation 2014, 🏆 Nestlé Globe 2016
 
 *"I don't BELIEVE there is a Lord above — I KNOW there is."*
