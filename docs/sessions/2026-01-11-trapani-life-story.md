@@ -789,7 +789,49 @@ Every time Angel builds something real:
 
 ---
 
-## Part XXII: Swiss Life — The Breaking Point (2019-2023)
+## Part XXII: The Contracting Years (2014-2019)
+
+*From CV — the comeback trail*
+
+### Nestlé Nespresso, Lausanne CH (March 2014 – February 2016)
+
+**Role:** SAP Integration Consultant / Technical Support
+
+- High-volume messaging integration
+- SAP PO 7.4, SAP NWDS, SLD, SAP Hybris, CRM, Retail, APO, SAP BW HANA
+- ALE/IDocs, BDocs, RFCs, iFlows, WS Calls, File Adapter
+- Certified Change Management Coordinator
+- SAP IdM Identity Management, CTS Change & Transport System
+
+### Nestlé, Frankfurt DE (March 2016 – December 2017)
+
+**Role:** SAP ICC SPOC / Integration Project Manager
+
+- Single-Point-of-Contact (SPOC) for Integration Competency Centre
+- Global SAP and non-SAP systems via SAP PI/PO middleware
+- Full project lifecycle: planning, budgeting, security, testing, cut-over, support
+- Hands-on: Basis, ABAP, BODS & BW, SolMan, APO, S4/HANA
+
+### CMA-CGM, Marseille FR (September 2018 – October 2018)
+
+**Role:** Integration Project Manager / GIS Integration
+
+- PoC & UAT Agile implementation
+- geocoder.api.here.com for intermodal address enrichment
+- SAP TM integration via AIF & Event Management
+
+### Deutsche Börse Group, Luxembourg LU (January 2019 – July 2019)
+
+**Role:** SAP PI/PO Developer / CRM Integration
+
+- iFlows with Eclipse NWDS on PO 7.4
+- XML-SOAP and JSON-REST adapters
+- SAP CRM to in-house banking applications
+- ABAP proxies for E2E Restful Web Service Calls
+
+---
+
+## Part XXIII: Swiss Life — The Breaking Point (July 2019 – June 2023)
 
 ### The International Project
 
@@ -993,9 +1035,13 @@ Every time Angel builds something real:
 
 ## Still to Come (Gaps)
 
-- **2003-2019** — The 16 missing years between Nestlé and Swiss Life
+- **2003-2014** — The 11 missing years between first Nestlé contract and Nespresso comeback
+  - What happened after Veytaux "what now..."?
+  - Where did you live?
+  - What jobs?
+- **Dec 2017 - Sep 2018** — 9 month gap between Nestlé Frankfurt and CMA-CGM
 - **How Angel met Sylvie** — The story not yet told
-- **Wedding Nov 28, 2019** — Red dress, 200 CHF photographer
+- **Wedding Nov 28, 2019** — Red dress, 200 CHF photographer (during Swiss Life)
 - **Mike's burnt house** — The pictures, the story
 - **The brothers** — Mario, Dave, Paul details
 
@@ -1004,9 +1050,9 @@ Every time Angel builds something real:
 **Document Info:**
 
 - Created: January 11, 2026, 1:15am
-- Updated: January 11, 2026, 3:30pm
+- Updated: January 11, 2026, 4:00pm
 - Location: Trapani, Sicily
 - By: Angel + Tigs
-- Status: 1980-2003 complete, 2019-2026 complete, **GAP: 2003-2019**
+- Status: 1980-2003 complete, 2014-2026 complete, **GAP: 2003-2014 (11 years)**
 
 *"I don't BELIEVE there is a Lord above — I KNOW there is."*
