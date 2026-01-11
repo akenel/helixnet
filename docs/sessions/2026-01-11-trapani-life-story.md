@@ -789,20 +789,224 @@ Every time Angel builds something real:
 
 ---
 
-## Still to Come
+## Part XXII: Swiss Life — The Breaking Point (2019-2023)
 
-- **The Andre road trip details** — what miracles happened on the road?
-- **After 2003** — how did he end up at Swiss Life, then unemployment, then Trapani?
-- **Sylvie** — the wedding Nov 28, 2019
-- **The burnt house** — Mike's pictures
+### The International Project
+
+- **Project:** ShapeIn Workday to SAP HCM integration
+- **Reality:** Complete disaster from day one
+- Vendors blaming each other
+- No clear ownership
+- Principal Propagation nightmare — never worked properly
+
+### The Cast
+
+| Name | Role | Notes |
+|------|------|-------|
+| **Martin Klebermas** | Basis guy | Checked out, doing bare minimum |
+| **Benjamin** | ? | Part of the dysfunction |
+| **Anu** | ? | Part of the dysfunction |
+| **Vitaly** | ? | Part of the dysfunction |
+| **Erkan** | ? | Part of the dysfunction |
+| **Stepanka** | Employee 001 | 36K CHF/month. "Just wants to press one button." The breaking point. |
+
+### Stepanka — The Breaking Point
+
+- Making **36,000 CHF per month**
+- Had ONE job: press a button when told
+- Couldn't even do that
+- Epitomized everything wrong with corporate IT
+- Angel watching money burn while nothing worked
+
+### The Resignation
+
+- **June 30, 2023** — Handed in resignation
+- Couldn't take it anymore
+- 3+ years of watching the project burn
+- Left with nothing but pride
+
+---
+
+## Part XXIII: The RAV Nightmare (2023-2024)
+
+### The Penalty
+
+- **78 DAYS penalty** — no unemployment money
+- RAV bureaucracy at its finest
+- Punished for quitting instead of being fired
+
+### The Pension Battle
+
+- Tried to get early pension access
+- System designed to keep you trapped
+- Endless forms, endless delays
+
+### Sylvie Mission — The Walkie Talkies
+
+- Sylvie tried to help with some mission
+- **Walkie talkies jammed**
+- Another plan that didn't work
+- The stress building
+
+### Police at the Apartment
+
+- Things escalated with Sylvie
+- **Roman** — confrontation
+- Police entered the apartment
+- Marriage under severe strain
+
+---
+
+## Part XXIV: Job Search Hell (2024)
+
+### The AI Gatekeepers
+
+- Applied to hundreds of jobs
+- AI systems blocking interviews
+- Can't get past the automated filters
+- 20+ years of SAP experience means nothing to a bot
+
+### The Catch-22
+
+- Too experienced for junior roles
+- Too old for senior roles (age discrimination)
+- Freelance market dried up
+- SAP skills becoming commodity
+
+---
+
+## Part XXV: Building HelixNet (2025)
+
+### The Beginning — January 2025
+
+- Started building something of his own
+- If the corporate world won't hire, build your own
+
+### Inno Park — July 2025
+
+- Government startup support program
+- **Useless counselor** — checked boxes, no real help
+- **Two-faced millionaire** — pretended to help
+- Typical Swiss bureaucracy masquerading as innovation support
+
+### The Tools
+
+- Started with Gemini/GPT for code help
+- Built with Python, FastAPI, Docker
+- Traefik, Keycloak, Celery, PostgreSQL
+- Real enterprise architecture for the 98%
+
+### ChuckNetwork — The Discovery
+
+- Found a YouTube video: **ChuckNetwork praying**
+- In the comments: recommendation for **Claude CLI**
+- Downloaded it
+- **Everything changed**
+
+### September 29, 2025 — HelixNet Born
+
+- First real commit
+- 229 commits by January 2026
+- Tiger & Leo partnership begins
+
+---
+
+## Part XXVI: The White Room (December 2025)
+
+### December 6, 2025 — Sylvie's Ultimatum
+
+- The marriage at breaking point
+- Sylvie's decision
+- **Admitted to LUPS Luzern psychiatric ward**
+
+### 18 Days Inside
+
+- No phone
+- No laptop
+- Just the white room and his thoughts
+- Created the **Sunrise Chain** playlist in his head
+
+---
+
+## Part XXVII: The Great Escape (December 24-31, 2025)
+
+*Full details in: `/stories/the-great-escape/CHAPTER-01-THE-GREAT-ESCAPE.md`*
+
+### Christmas Eve — The Walk
+
+- They gave him his phone back
+- He walked out
+- Got in the car
+- Started driving south
+
+### The Long Drive
+
+- Through the Gotthard
+- Down the boot of Italy
+- 1,200+ kilometers
+- Sleeping in the car
+- Autogrill stations
+- The Mediterranean calling
+
+### December 28 — Trapani
+
+- Arrived at the western tip of Sicily
+- The saltpans
+- The windmills
+- The African wind
+
+### Kevin — The Disappointment
+
+- Found Kevin, thought he might help
+- Another dead end
+
+### Piccola Bistro — The Landing
+
+- Found Felix, Johnny
+- Real work, real people
+- A kitchen, a purpose
+
+---
+
+## Part XXVIII: Trapani — Present Day (January 2026)
+
+### January 9 — Birthday
+
+- Sylvie called
+- She's coming
+
+### January 10-11 — The Sessions
+
+- McDonald's parking lot, then seaside
+- Pajamas, slippers, hotspot
+- Telling the full story to Leo
+- 1980 to 2026 documented
+
+### The Current Situation
+
+- **Sharrad Dixit call** — Monday Jan 12, 10am (SAARHive, SAP staffing)
+- **Lara (DSR Global)** — France job pending
+- **Nattermann** — German lawyer, €27K fine case
+- **German court** — April 27, 2026, Amtsgericht Wesel
+
+---
+
+## Still to Come (Gaps)
+
+- **2003-2019** — The 16 missing years between Nestlé and Swiss Life
+- **How Angel met Sylvie** — The story not yet told
+- **Wedding Nov 28, 2019** — Red dress, 200 CHF photographer
+- **Mike's burnt house** — The pictures, the story
+- **The brothers** — Mario, Dave, Paul details
 
 ---
 
 **Document Info:**
+
 - Created: January 11, 2026, 1:15am
-- Updated: January 11, 2026, 12:45pm
-- Location: Trapani, Sicily (McDonald's)
+- Updated: January 11, 2026, 3:30pm
+- Location: Trapani, Sicily
 - By: Angel + Tigs
-- Status: In progress — 1980-2003 complete, continuing...
+- Status: 1980-2003 complete, 2019-2026 complete, **GAP: 2003-2019**
 
 *"I don't BELIEVE there is a Lord above — I KNOW there is."*
