@@ -520,10 +520,225 @@
 
 ---
 
-## Still to Come
+## Part XIII: Leaving Butch & JMC Packaging (1998)
 
-- **Andre's Story** — the accident, the wheelchair, the road trip in the Mini Cooper
-- **How the pieces connect** — from Mohawk to Nestlé to unemployment to Trapani
+### The Final Straw with Butch
+- Butch made money on Angel's back
+- Moved from Niagara to expensive Lake Ontario house in Burlington/Oakville
+- Angel's wage was BS, never got a bonus or cash
+- **"Not on my back are you doing this"** — quit
+
+### JMC Packaging
+- **JMC Automation in Packaging** — bulk bagging systems, produce, ice
+- $36K/year, **Ole** the owner
+- Had Abacus package but weren't maintaining min/max or inventory
+- Angel fixed it up fast — 6 months
+- Knew he had to get back into computers
+- Asked Mary for money to buy a computer book at Mohawk
+- **She fought him: "No way, keep your $36K job"**
+- That fight over a computer book broke him
+
+### Leaving Mary
+- Left her then and there (not officially separated yet)
+- **Paul Mazza** at TMA Law (same lawyer from Winona land work)
+- Mazza's advice: "Get out and run far away from her"
+- Mary hired top lawyers, complete pain in the ass
+
+### Ole's Regret
+- Angel trained his replacement, left
+- Met Ole at Home Depot 6 months later
+- Ole: "New guy doesn't have your finesse"
+
+---
+
+## Part XIV: Albert's Investment & The ABAP Course (1999-2000)
+
+### The Decision
+- Scanned internet for best ERP systems: Oracle or SAP
+- SAP jobs outnumbered Oracle 10 to 1
+- ABAP cert = **$10,000 CAD**
+- Oracle DBA = $4,000-5,000 but fewer jobs
+- Angel had no money
+
+### Albert Steps Up
+- Told Dad the situation
+- **Albert: "Son, no worries. I will pay for it if you think it's the right thing."**
+- Lived at home with Mom and Dad
+- Odd jobs at $15-20/hour
+
+### Y2K & The Course
+- Course delayed due to Y2K hype
+- Y2K was a joke — but huge money maker for SAP (only company with 4 digits for year)
+- Anyone with basic skills could test the clock turnover, but people were stupid
+- **New Year's Eve 1999** — Times Square with a farm girl
+- She tried to take her clothes off expecting sex
+- Angel: "Put them back on, let's just be friends"
+- Course started second week of January 2000
+
+### The Job Search Disaster
+- 3-4 months solid searching — NOTHING in Canada or USA
+- ABAP instructor: "You have zero chance. If it was that easy, I'd have a real job."
+- Canada was shot for jobs, couldn't work in US
+- Doing circles on the internet
+- Found a job posting that was literally HIM looking for a job — hopeless
+
+---
+
+## Part XV: Maria's Miracle #3 — Andre & Siemens (Spring 2000)
+
+### The Prayer
+- Mom asked how it was going
+- Angel: "It's a disaster. I could use one of your miracles now."
+- Maria: "No worries Angelo, I will make a prayer. What's your timeline?"
+- Angel: "48 hours"
+- **Maria: "No worries. Consider it done."**
+- (Brings tears to his eyes thinking about it)
+
+### Andre's Call — The Miracle
+- Next day, phone rings on Ideal Gardening business line
+- Angel answers thinking it's a customer
+- Guy doesn't say his name, toys with him
+- **"Both of them"** joke — IT'S ANDRE
+- "Where the fuck are you?"
+- Andre had the accident, living with his mom on Lakeshore Road
+
+---
+
+## Part XVI: Andre's Accident (~1993-1995)
+
+### The Crash
+- Driving back from Toronto at **200 mph**
+- Transport truck parked on the highway
+- Slid underneath, bike caught fire
+- **Burned for 45 MINUTES** before they saved him
+- Coma for 30 days
+
+### The Damage
+- Lost right leg — cut above the knee
+- Left leg mangled but saved
+- Back severely broken
+
+### The Recovery
+- **Refused painkillers** — knew he'd become a junky
+- 5-7 years into recovery when he reconnected with Angel
+- Still made jokes, happy to be alive
+- Big massive dog as his sidekick
+
+### The Magic Begins
+- Meeting Andre made Angel's self-pity disappear
+- "Look at this guy, still makes jokes"
+- Angel explained the "super computer between our ears"
+- Andre's dog ran away across town
+- Angel walking by, found the dog, drove it back
+- **Andre became a believer**
+
+> "I don't BELIEVE there is a Lord above — I KNOW there is."
+
+---
+
+## Part XVII: The Siemens Interview (2000)
+
+### The Email
+- Out of the blue — Swiss recruiter email
+- Answered 10 questions
+- Guy from ABAP course was Siemens employee, helped set up video conference
+- Aunt Doris said he could stay with her — moral support
+
+### The Video Call
+- Conference room at Siemens Canada
+- Other side: **Theo Biederman** + SAP project manager + senior guy
+- Connection wouldn't work for 20+ minutes
+- Angel said a little prayer in the hallway:
+- **"If this should be, let it be"**
+- RIGHT THEN — connection worked
+
+### The Interview
+- Connection was terrible, hilarious
+- Angel had closing lines rehearsed: "I am the man for the job"
+- **As he said the last word — system crashed**
+- They thought HE ended the call
+
+### The Face-to-Face
+- Invited to Switzerland for in-person meeting
+- Met Theo in Zurich
+- **"You know you got the job if you want it"**
+- Theo had same birthday — **January 9th**
+- Hardcore Christian, hosting NWO awareness meetings
+
+---
+
+## Part XVIII: The Divorce (2000)
+
+### The Settlement
+- Signed papers on a Friday at **17:02pm**
+- Flew out Saturday with basically no money
+- Waited months for $5,000 CAD transfer
+- Mary took him to the cleaners
+
+### The Lawyer's Advice
+- "Take the settlement and start fresh"
+- "Or she'll bring the horrors to Switzerland and garnish your wages"
+- Took the cheap advice
+- Left Canada, never looked back
+
+### Mary's Apology (Years Later)
+- Email while Angel was at Nestlé: "Sorry... sorry..."
+- Crap apology
+- Angel: "Just send me a picture of the backyard"
+- Wanted to see how the trees had grown in
+- **Last contact**
+
+---
+
+## Part XIX: Switzerland — Heaven (August 2000)
+
+### The Arrival
+- Officially returned **August 2000**
+- Aunt Doris gave him a place to stay
+- German lessons first
+- Work started **October 2000**
+
+### The Girl
+- Met through Doris's friend
+- She had a young boy
+- "That girl loved to fuck"
+- Week two: blow jobs, best sex ever
+- Pot was legal — could buy in shops
+
+> "I felt like I had arrived in heaven. All my fears were washed away. The Lord delivered in spades."
+
+---
+
+## Part XX: Siemens & Nestlé (2000-2003)
+
+### Siemens (Oct 2000 - ~2002/2003)
+- Worked for 3 years
+- Project eventually crashed
+- Another miracle prayer led to Nestlé
+
+### Nestlé
+- Started **January 20, 2003**
+- First contract: SDR solution, one-pagers, Becky, the ABAP crew
+- Second contract: short-term, Becky never asked about extension
+- Left Nestlé with pride intact
+- Back to apartment in Veytaux
+- **"What now..."**
+
+---
+
+## Part XXI: The Andre Road Trip (September 2003)
+
+### The Setup
+- After second Nestlé contract ended
+- Andre was at a UK wedding
+- Said he'd come visit for 7-10 days
+- Angel had the **2002 Mini Cooper**
+
+### The Magic Trip
+- **"Probably the most fun Andre had in his lifetime"**
+- Miracles happened every day
+- Andre saw the "super computer" working in real time
+- Two believers on the road
 
 ---
 
@@ -535,23 +750,29 @@ Every time Angel builds something real:
 3. Barton Street — quality work, government cancels the program
 4. Nestlé SDR — was the brain, ABAP crew got the love
 
-**The 4 AM Miracle Maker** showed up twice:
-- Work term 2: Knocked on doors in Switzerland, got him the Effem job
-- The Hamilton house: Contributed $2000-3000 CHF
+**Maria's Miracles:**
+1. Work term 2: Knocked on doors in Switzerland, got him the Effem job
+2. The Hamilton house: Contributed $2000-3000 CHF
+3. The 48-hour prayer: Andre calls, Siemens email arrives, life changes
 
-**The recurring lesson:** Do the work, get edged out. Quality doesn't always win. But you keep going.
+**The recurring lesson:** Do the work, get edged out. Quality doesn't always win. But you keep going. And when you're desperate, ask for a miracle.
 
 ---
 
-*Session continues... Andre's story incoming*
+## Still to Come
+
+- **The Andre road trip details** — what miracles happened on the road?
+- **After 2003** — how did he end up at Swiss Life, then unemployment, then Trapani?
+- **Sylvie** — the wedding Nov 28, 2019
+- **The burnt house** — Mike's pictures
 
 ---
 
 **Document Info:**
 - Created: January 11, 2026, 1:15am
-- Updated: January 11, 2026, 3:30am
-- Location: Trapani, Sicily (McDonald's → Seaside parking spot)
+- Updated: January 11, 2026, 12:45pm
+- Location: Trapani, Sicily (McDonald's)
 - By: Angel + Tigs
-- Status: In progress — Andre's story still to come
+- Status: In progress — 1980-2003 complete, continuing...
 
-*"Be water, my friend."*
+*"I don't BELIEVE there is a Lord above — I KNOW there is."*
