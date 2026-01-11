@@ -371,6 +371,155 @@
 
 ---
 
+## Part IX: Marriage to Mary Sergi (1991)
+
+### The Wedding
+- Married Mary Sergi in 1991
+- Thought he might get overflow work from Images Kitchen and Bath
+- Never happened — not one penny
+
+### The Winona House
+- Found a house in Winona
+- Angel bought it (Mary didn't spend a penny)
+- Did all the work
+- Crazy landscaping — irregular shaped lot
+- Squared it up: 150 wide x 175 deep
+- Prepped for future: tear down house, sell 3 x 50-wide lots
+
+### Mary's Control
+- Major control freak
+- Wanted Angel to take full-time job, stop freelancing
+- Recession didn't help
+
+---
+
+## Part X: The Ed Schmit Years (1989-1993)
+
+### Working for Bill Deluca
+- ~6 months with Bill, he loved them
+- Projects in Toronto, all over Ontario — jobs nobody else could do
+- Ed made good money, Angel made steady wage
+- Ed got greedy — started other projects, not showing up
+- Angel working alone at Joe's house
+- Bill: "Hey what's wrong with my money?"
+
+### Ed's Greed Pattern
+- Ed had a shop rented for free from a friend
+- Ed gallivanting, stealing work
+- Starting projects, bouncing around
+- Angel covering for him
+
+### The Kadlick and Williams Job
+- $55,000 reno — flawless, perfect
+- Ed never helped — too busy
+- Found Dutch brothers, older one helped frame the addition
+- **John Williams** (architect) showed up every day, amazed
+- Same John Williams from Barton Street
+- Did it at cost, never lost money
+
+### The $30K Debt — Mary's "Solution"
+- Met Angel's parents (Albert and Maria)
+- Dropped the bomb: "Ang is $30K in the hole"
+- Mary: "Declare bankruptcy. No choice."
+- Everyone shocked
+- Angel talked with Mom and Dad
+- All agreed: just need one good project, could make $30K
+- "That's not something to declare bankruptcy over"
+- Never occurred to Angel. Never would.
+
+---
+
+## Part XI: Butch Hager & Hager Mechanical (1993-1994+)
+
+### The Meeting
+- Ed forced out of the free shop by Butch Hager (Hager Mechanical)
+- 5000-7000 sq ft shop with office space
+- Ed left Angel there working for nothing, cleaning up
+- Sweeping the floor, green stuff to keep dust down
+- 2 hours from finishing
+- Butch walks in — nice guy, 5-10 years older
+- Been watching from the sidelines
+- "This guy Kenel is a solid worker"
+
+### The Offer
+- "What's your gig? You do carpentry? Can you hang a door?"
+- "Sure"
+- **"Want a job? $15/hour, guaranteed 50+ hours per week"**
+- Angel said start in 2 weeks (had commitments)
+- Butch: "Please start sooner"
+- Mary said: "Take the job"
+
+### The Reality
+- 75 hours = light easy week
+- Often 100+ hours, hit **110 hours** some weeks
+- 7 days a week
+- All money went to mortgage
+- Mary gave him $10 and a lunch — "that's your allowance"
+- Barely enough for smokes and a coffee
+- Couldn't buy pot or a beer
+- Tried to save enough for a gram — impossible with Mary
+
+### Mary's Abuse
+- Would yell so viciously, call him an idiot
+- **Foam at the mouth** — literally
+- Maria laughed: "Why do you put up with this shit?"
+- Angel: "I married her, what else can I do?"
+
+### The Mary Cycle
+- After 3 years, walked out for a year or two
+- Started to live again
+- She didn't want divorce
+- Went back trying to make it work
+- Nice for a year or two
+- Turned back into "the stupid animal she was"
+
+### Angel's Setup with Butch
+- Own van (Butch only paid gas)
+- Fully equipped with own tools
+- Butch could send him anywhere — he'd take care of business
+- Running **$250,000 projects single-handedly**
+- Butch loved him, never had to worry
+
+### The Work
+- Liquid nitrogen jobs (preferred) vs food plant rip and replace
+- 8 or 6 inch x50 pipe — make in shop, install
+- Food plants = x50 cheap pipe
+- Electronics (Bell Canada) + medical labs = VJ (vacuum jacket) pipe
+- Only one approved VJ supplier in Ontario — crazy prices, low margins
+
+---
+
+## Part XII: The Alabama VJ Pipe Story
+
+### The Ottawa/Kanata Job
+- Sent by plane to Marconi, liquid nitrogen job
+- Hung over
+- Air Liquide — Quebec supplying liquid, job in Ottawa/Kanata (border town)
+- Shows up, spools on the floor
+- "Where'd you get the pipe?" — Alabama
+- Vacuum jacket pipe — fine pipe, but **NOT approved for Canada**
+
+### Angel's Solution
+- "I can install it, but a few conditions..."
+- Knew the inspectors well, knew exactly what they want
+- Alabama welders need to pass Canadian welding test — Angel can set it up (extra week or two)
+- Smooth talk the female inspector — hard ass but she likes him
+- Just finished flawless Bell Canada job with 10 shakers (heat and shock electronic panels)
+- Custom way for final 18 inches — fly pipe from boys in Stoney Creek
+- Scoped job right there: "Leave those hangers exactly where they are, I can reuse them"
+
+### The Result
+- Flew back to Toronto
+- Told Butch: "I might have found a new supplier in Alabama"
+- **Butch licking his lips**
+- Another flawless job, tons of money for Butch
+- Quality time away from home (away from Mary), all expenses paid
+- Drove to Alabama, met the CEO, got everything approved
+- **Used that VJ pipe from then on**
+- Alabama folks were a pleasure, much better priced, super fair
+
+---
+
 ## Still to Come
 
 - **Andre's Story** — the accident, the wheelchair, the road trip in the Mini Cooper
@@ -400,8 +549,9 @@ Every time Angel builds something real:
 
 **Document Info:**
 - Created: January 11, 2026, 1:15am
-- Location: Trapani, Sicily
+- Updated: January 11, 2026, 3:30am
+- Location: Trapani, Sicily (McDonald's → Seaside parking spot)
 - By: Angel + Tigs
-- Status: In progress
+- Status: In progress — Andre's story still to come
 
 *"Be water, my friend."*
