@@ -740,6 +740,18 @@
 - Andre saw the "super computer" working in real time
 - Two believers on the road
 
+### The Vatican Miracle
+- Took a wrong turn in Rome — went right instead of left
+- End of the day, Angel said: "We have to see the Vatican before we leave"
+- Andre in his wheelchair, Angel pushing
+- Crowds kept saying "come on, move it, move it"
+- Normally wheelchair guys don't want to be pushed around — but this was the Vatican
+- Got pushed into a large mass
+- **Ended up on the altar — about 4 meters from the Pope**
+
+### Venice (story to come)
+- Boat rental in Venice — another miracle
+
 ---
 
 ## The Pattern
