@@ -749,8 +749,26 @@
 - Got pushed into a large mass
 - **Ended up on the altar — about 4 meters from the Pope**
 
-### Venice (story to come)
-- Boat rental in Venice — another miracle
+### Venice — Diamonds in the Backyard
+- Booked the honeymoon suite
+- Andre takes till 10:30am to get moving — moves slow
+- Angel goes for breakfast alone
+- Asks front desk guy: "Where can I rent a boat in Venice?"
+- Guy looks at him like he has three heads: "Do you know how to drive one?"
+- Angel: "Sure, where can I rent one?"
+- Guy has no idea, asks the waitress
+- Waitress: "Go around the corner, ask Brussy's Boat"
+- Angel goes — no problem, come back after lunch around 1pm
+- **90 euro for the day** or 15 euro per hour
+- Gets the boat, they had walkie talkies
+- Motors to the hotel, meets Andre out back
+- **Andre dives in the boat**
+- Great time all day cruising Venice
+- Return boat, pay, Angel takes business cards
+- Goes back to front desk, gives guy the cards
+- Guy: "You know, I live right there and walk past that place for 7 years and never knew. Thanks."
+
+**"Diamonds in the backyard"** — people don't see what's right in front of them. Angel sees it in 10 minutes.
 
 ---
 
