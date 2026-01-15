@@ -80,3 +80,12 @@ helix.logs
 super_test_suite.log
 # FourTwenty feed downloads (fetched daily, not tracked)
 debllm/feeds/
+
+# Large media files - keep local only
+compose/helix-media/videos/
+compose/helix-media/music/
+*.mp4
+*.mp3
+*.m4a
+*.flac
+*.wav
