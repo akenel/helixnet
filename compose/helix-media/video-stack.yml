@@ -1,0 +1,50 @@
+# =============================================================================
+# 🎬 HELIX VIDEO STACK — TRAPANI CINEMA EDITION 🎥
+# =============================================================================
+#
+# "Be water, my friend." — Bruce Lee
+#
+# PURPOSE:
+#   - Self-hosted video player for HelixNet
+#   - No ads, no algorithm, YOUR videos, YOUR way
+#
+# STACK:
+#   - Jellyfin — Beautiful Netflix-like UI, fully OSS
+#
+# USAGE:
+#   docker compose -f video-stack.yml up -d
+#
+# ACCESS:
+#   http://localhost:8096 (or video.helix.local with Traefik)
+#
+# Built: Jan 14, 2026 — Trapani, Sicily
+# =============================================================================
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # 🎬 JELLYFIN — Your Personal Netflix (Without the Netflix)
+  # ─────────────────────────────────────────────────────────────────────────
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: helix-video
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    volumes:
+      # 🎬 Your video library - STANDARD LOCATION
+      - ~/Videos:/media/videos
+      # ⚙️ Config and cache
+      - ./config-jellyfin:/config
+      - ./cache-jellyfin:/cache
+    environment:
+      - TZ=Europe/Rome
+      - JELLYFIN_PublishedServerUrl=https://video.helix.local
+    # Optional: Hardware acceleration (uncomment if needed)
+    # devices:
+    #   - /dev/dri:/dev/dri
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.rule=Host(`video.helix.local`)"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.tls=true"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"

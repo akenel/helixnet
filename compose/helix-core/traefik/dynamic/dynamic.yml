@@ -149,6 +149,11 @@ http:
       service: teller
       entryPoints: [websecure]
       tls: {}
+    video:
+      rule: "Host(`video.helix.local`)"
+      service: video
+      entryPoints: [websecure]
+      tls: {}
 # 🔎 Traefik Dashboard
     traefik_dashboard:
       rule: "Host(`traefik.helix.local`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
@@ -255,6 +260,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://helix-teller:7791"
+    video:
+      loadBalancer:
+        servers:
+          - url: "http://helix-video:8096"
     # Traefik Dashboard
     api@internal:
       loadBalancer:

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helix Lingo - Italian/English Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .progress {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 8px 20px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #e94560, #c73e54);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.3);
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #00d9ff, #00b4d8);
+            transform: rotateY(180deg);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .card-lang {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .card-word {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-phonetic {
+            font-size: 1rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .card-hint {
+            font-size: 0.85rem;
+            margin-top: 15px;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: #e94560;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .category-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        .category-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+        }
+
+        .instructions {
+            text-align: center;
+            opacity: 0.6;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding-top: 20px;
+            opacity: 0.5;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Helix Lingo</h1>
+    <p class="subtitle">"Trapped in Trapani" Edition</p>
+
+    <div class="category-selector">
+        <button class="category-btn active" onclick="setCategory('bar')">Bar/Cafe</button>
+        <button class="category-btn" onclick="setCategory('greetings')">Greetings</button>
+        <button class="category-btn" onclick="setCategory('numbers')">Numbers</button>
+        <button class="category-btn" onclick="setCategory('food')">Food</button>
+        <button class="category-btn" onclick="setCategory('phrases')">Phrases</button>
+        <button class="category-btn" onclick="setCategory('flirty')">Flirty</button>
+    </div>
+
+    <div class="progress">
+        Card <span id="current">1</span> of <span id="total">10</span>
+    </div>
+
+    <div class="card-container">
+        <div class="card" id="card" onclick="flipCard()">
+            <div class="card-face card-front">
+                <div class="card-lang">Italiano</div>
+                <div class="card-word" id="italian-word">Ciao</div>
+                <div class="card-phonetic" id="italian-phonetic">(chow)</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="card-lang">English</div>
+                <div class="card-word" id="english-word">Hello / Bye</div>
+                <div class="card-hint" id="hint">Casual greeting, any time of day</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevCard()">Prev</button>
+        <button onclick="nextCard()">Next</button>
+        <button onclick="shuffleCards()">Shuffle</button>
+    </div>
+
+    <p class="instructions">Tap card to flip | Swipe or use buttons to navigate</p>
+
+    <div class="footer">
+        Built in Trapani | Jan 2026 | Be Water, My Friend
+    </div>
+
+    <script>
+        const flashcards = {
+            bar: [
+                { it: "Una birra, per favore", ph: "(oo-nah beer-rah, pair fah-vor-eh)", en: "A beer, please", hint: "Essential survival Italian" },
+                { it: "Il conto", ph: "(eel con-toh)", en: "The bill", hint: "When you're ready to leave" },
+                { it: "Un caffè", ph: "(oon caf-feh)", en: "An espresso", hint: "Never say 'espresso' - just caffè" },
+                { it: "Birra piccola", ph: "(beer-rah pee-koh-lah)", en: "Small beer", hint: "Your Messina size" },
+                { it: "Birra grande", ph: "(beer-rah grahn-deh)", en: "Large beer", hint: "When piccola isn't enough" },
+                { it: "Acqua naturale", ph: "(ah-kwah nah-too-rah-leh)", en: "Still water", hint: "No bubbles" },
+                { it: "Acqua frizzante", ph: "(ah-kwah free-zahn-teh)", en: "Sparkling water", hint: "With bubbles" },
+                { it: "Quanto costa?", ph: "(kwahn-toh cos-tah)", en: "How much?", hint: "Before you order" },
+                { it: "Grazie mille", ph: "(grah-tsee-eh mee-leh)", en: "Thanks a lot", hint: "Literally 'a thousand thanks'" },
+                { it: "Salute!", ph: "(sah-loo-teh)", en: "Cheers!", hint: "When clinking glasses" }
+            ],
+            greetings: [
+                { it: "Buongiorno", ph: "(bwon-jor-noh)", en: "Good morning/day", hint: "Formal, until about 4pm" },
+                { it: "Buonasera", ph: "(bwon-ah-seh-rah)", en: "Good evening", hint: "After 4pm" },
+                { it: "Buonanotte", ph: "(bwon-ah-not-teh)", en: "Good night", hint: "Only when going to sleep" },
+                { it: "Ciao", ph: "(chow)", en: "Hi / Bye", hint: "Informal, for friends" },
+                { it: "Arrivederci", ph: "(ah-ree-veh-dair-chee)", en: "Goodbye", hint: "Formal goodbye" },
+                { it: "Come stai?", ph: "(coh-meh sty)", en: "How are you?", hint: "Informal" },
+                { it: "Sto bene", ph: "(stoh beh-neh)", en: "I'm good", hint: "Standard response" },
+                { it: "Piacere", ph: "(pee-ah-cheh-reh)", en: "Nice to meet you", hint: "When introduced" },
+                { it: "Mi chiamo...", ph: "(mee kee-ah-moh)", en: "My name is...", hint: "Introducing yourself" },
+                { it: "Scusa / Scusi", ph: "(skoo-zah / skoo-zee)", en: "Excuse me / Sorry", hint: "Informal / Formal" }
+            ],
+            numbers: [
+                { it: "Uno", ph: "(oo-noh)", en: "One", hint: "1" },
+                { it: "Due", ph: "(doo-eh)", en: "Two", hint: "2" },
+                { it: "Tre", ph: "(treh)", en: "Three", hint: "3" },
+                { it: "Quattro", ph: "(kwat-troh)", en: "Four", hint: "4" },
+                { it: "Cinque", ph: "(cheen-kweh)", en: "Five", hint: "5" },
+                { it: "Sei", ph: "(say)", en: "Six", hint: "6" },
+                { it: "Sette", ph: "(set-teh)", en: "Seven", hint: "7" },
+                { it: "Otto", ph: "(ot-toh)", en: "Eight", hint: "8" },
+                { it: "Nove", ph: "(noh-veh)", en: "Nine", hint: "9" },
+                { it: "Dieci", ph: "(dee-eh-chee)", en: "Ten", hint: "10" }
+            ],
+            food: [
+                { it: "Pane", ph: "(pah-neh)", en: "Bread", hint: "The essential" },
+                { it: "Formaggio", ph: "(for-mahd-joh)", en: "Cheese", hint: "Sicily has great cheese" },
+                { it: "Prosciutto", ph: "(pro-shoo-toh)", en: "Ham", hint: "The good stuff" },
+                { it: "Pasta", ph: "(pah-stah)", en: "Pasta", hint: "You know this one" },
+                { it: "Pizza", ph: "(peet-sah)", en: "Pizza", hint: "Pronounce it right!" },
+                { it: "Pesce", ph: "(peh-sheh)", en: "Fish", hint: "Trapani specialty" },
+                { it: "Gelato", ph: "(jeh-lah-toh)", en: "Ice cream", hint: "Better than regular ice cream" },
+                { it: "Vino rosso", ph: "(vee-noh ros-soh)", en: "Red wine", hint: "Sicily has great reds" },
+                { it: "Vino bianco", ph: "(vee-noh bee-ahn-koh)", en: "White wine", hint: "Good with fish" },
+                { it: "Buonissimo!", ph: "(bwon-ee-see-moh)", en: "Delicious!", hint: "Compliment the chef" }
+            ],
+            phrases: [
+                { it: "Non capisco", ph: "(non cah-pee-skoh)", en: "I don't understand", hint: "Very useful" },
+                { it: "Parla inglese?", ph: "(par-lah een-gleh-zeh)", en: "Do you speak English?", hint: "Polite question" },
+                { it: "Dov'è il bagno?", ph: "(doh-veh eel bahn-yoh)", en: "Where's the bathroom?", hint: "Essential!" },
+                { it: "Mi sono perso", ph: "(mee soh-noh pair-soh)", en: "I'm lost", hint: "Asking for directions" },
+                { it: "Che ora è?", ph: "(keh oh-rah eh)", en: "What time is it?", hint: "Time check" },
+                { it: "Va bene", ph: "(vah beh-neh)", en: "Okay / It's fine", hint: "All-purpose agreement" },
+                { it: "Perfetto", ph: "(pair-fet-toh)", en: "Perfect", hint: "When things are good" },
+                { it: "Bellissimo", ph: "(bel-lee-see-moh)", en: "Beautiful", hint: "For views, things, people" },
+                { it: "Piano piano", ph: "(pee-ah-noh pee-ah-noh)", en: "Slowly slowly", hint: "Take it easy" },
+                { it: "In bocca al lupo!", ph: "(een bok-kah al loo-poh)", en: "Good luck!", hint: "Reply: Crepi! (may it die)" }
+            ],
+            flirty: [
+                { it: "Sei bellissima", ph: "(say bel-lee-see-mah)", en: "You're beautiful", hint: "For women" },
+                { it: "Sei bellissimo", ph: "(say bel-lee-see-moh)", en: "You're beautiful", hint: "For men" },
+                { it: "Hai degli occhi bellissimi", ph: "(eye deh-lyee ok-kee bel-lee-see-mee)", en: "You have beautiful eyes", hint: "Classic Italian move" },
+                { it: "Posso offrirti qualcosa?", ph: "(pos-soh of-freer-tee kwal-koh-zah)", en: "Can I buy you something?", hint: "Offering a drink" },
+                { it: "Mi piaci", ph: "(mee pee-ah-chee)", en: "I like you", hint: "Casual, friendly" },
+                { it: "Sei simpatica/o", ph: "(say seem-pah-tee-kah/koh)", en: "You're nice/fun", hint: "Good vibes" },
+                { it: "Qual è il tuo numero?", ph: "(kwal eh eel too-oh noo-meh-roh)", en: "What's your number?", hint: "Getting digits" },
+                { it: "Ci vediamo dopo?", ph: "(chee veh-dee-ah-moh doh-poh)", en: "See you later?", hint: "Making plans" },
+                { it: "Andiamo a fare una passeggiata?", ph: "(ahn-dee-ah-moh ah fah-reh oo-nah pas-seh-jah-tah)", en: "Shall we go for a walk?", hint: "Classic Italian date" },
+                { it: "Un bacio", ph: "(oon bah-choh)", en: "A kiss", hint: "When the moment is right" }
+            ]
+        };
+
+        let currentCategory = 'bar';
+        let currentIndex = 0;
+        let cards = [...flashcards.bar];
+
+        function setCategory(category) {
+            currentCategory = category;
+            cards = [...flashcards[category]];
+            currentIndex = 0;
+
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            updateCard();
+        }
+
+        function flipCard() {
+            document.getElementById('card').classList.toggle('flipped');
+        }
+
+        function updateCard() {
+            const card = cards[currentIndex];
+            document.getElementById('italian-word').textContent = card.it;
+            document.getElementById('italian-phonetic').textContent = card.ph;
+            document.getElementById('english-word').textContent = card.en;
+            document.getElementById('hint').textContent = card.hint;
+            document.getElementById('current').textContent = currentIndex + 1;
+            document.getElementById('total').textContent = cards.length;
+
+            // Reset flip
+            document.getElementById('card').classList.remove('flipped');
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % cards.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+            updateCard();
+        }
+
+        function shuffleCards() {
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Touch swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.querySelector('.card-container').addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.querySelector('.card-container').addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextCard();
+                else prevCard();
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === 'ArrowLeft') prevCard();
+            if (e.key === ' ') flipCard();
+        });
+
+        // Initialize
+        updateCard();
+    </script>
+</body>
+</html>

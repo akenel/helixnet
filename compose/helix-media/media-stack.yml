@@ -39,8 +39,8 @@ services:
     ports:
       - "1970:1970"
     volumes:
-      # 🎸 Your music library — THE SUNRISE CHAIN lives here
-      - ./music:/music:ro
+      # 🎸 Your music library — STANDARD LOCATION
+      - ~/Music:/music:ro
       # ⚙️ Config and database
       - ./config:/config
     environment:

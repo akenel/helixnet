@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick 20 Min - Tiger Blitz v2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16pt;
+            line-height: 1.5;
+            padding: 15px;
+            background: #1a1a2e;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #e94560;
+            margin-bottom: 5px;
+            font-size: 24pt;
+        }
+        h2 {
+            text-align: center;
+            color: #666;
+            font-weight: normal;
+            margin-bottom: 15px;
+            font-size: 14pt;
+        }
+        .time-box {
+            background: #e94560;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 20pt;
+            font-weight: bold;
+        }
+        .exercise {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .exercise:last-child {
+            border-bottom: none;
+        }
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .exercise-name {
+            flex: 1;
+        }
+        .italian {
+            font-weight: bold;
+            color: #333;
+            font-size: 15pt;
+        }
+        .english {
+            color: #666;
+            font-size: 12pt;
+        }
+        .reps {
+            background: #e94560;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14pt;
+        }
+        /* NEW: My Settings Box */
+        .my-settings {
+            background: #f0f7ff;
+            border-left: 4px solid #2c5aa0;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 0 8px 8px 0;
+            font-size: 12pt;
+        }
+        .my-settings strong {
+            color: #2c5aa0;
+        }
+        /* NEW: Video Link */
+        .video-link {
+            display: inline-block;
+            background: #ff0000;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 11pt;
+            margin-top: 8px;
+        }
+        .video-link:hover {
+            background: #cc0000;
+        }
+        .section-title {
+            background: #16213e;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+        }
+        .rounds {
+            text-align: center;
+            font-size: 18pt;
+            color: #e94560;
+            font-weight: bold;
+            margin: 15px 0;
+            background: #fff5f7;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .warmup {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .warmup-title {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 5px;
+        }
+        .finisher {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .finisher-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .finisher-item {
+            padding: 5px 0;
+            border-bottom: 1px dashed #ffc107;
+        }
+        .finisher-item:last-child {
+            border-bottom: none;
+        }
+        .rest {
+            background: #e8f4f8;
+            color: #2c5aa0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12pt;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #ccc;
+            font-size: 11pt;
+            margin-top: 15px;
+        }
+        .tip {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid #2c5aa0;
+        }
+        .tip-title {
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 5px;
+        }
+        .guide-link {
+            display: block;
+            text-align: center;
+            background: #16213e;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 14pt;
+            margin-top: 15px;
+        }
+        .guide-link:hover {
+            background: #0f3460;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>⚡ TIGER 20-MIN BLITZ v2</h1>
+    <h2>Allenamento Rapido / Quick Workout</h2>
+
+    <div class="time-box">⏱️ 20 MINUTI / 20 MINUTES</div>
+
+    <div class="warmup">
+        <div class="warmup-title">🔥 Riscaldamento / Warm-up (2 min)</div>
+        <div class="exercise">
+            <div class="exercise-header">
+                <div class="exercise-name">
+                    <div class="italian">Cyclette / Bike</div>
+                    <div class="english">Stationary Bike - easy pace</div>
+                </div>
+                <div class="reps">2 min</div>
+            </div>
+            <div class="my-settings">
+                <strong>⚙️ My Settings:</strong> Seat height #7, Resistance level 3
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">💪 CIRCUITO MACCHINE / MACHINE CIRCUIT (15 min)</div>
+
+    <div class="rounds">3 Giri / 3 Rounds</div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">Chest Press (Pettorali)</div>
+                <div class="english">Chest Press Machine</div>
+            </div>
+            <div class="reps">12×</div>
+        </div>
+        <div class="my-settings">
+            <strong>⚙️ My Settings:</strong> Seat #4, Weight 30kg, Grip handles at chest level
+        </div>
+        <a href="https://www.youtube.com/watch?v=xUm0BiZCWlQ" class="video-link" target="_blank">📹 Watch Form</a>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">Lat Pulldown (Dorsali)</div>
+                <div class="english">Lat Pulldown Machine</div>
+            </div>
+            <div class="reps">12×</div>
+        </div>
+        <div class="my-settings">
+            <strong>⚙️ My Settings:</strong> Thigh pad snug, Weight 35kg, Wide grip
+        </div>
+        <a href="https://www.youtube.com/watch?v=CAwf7n6Luuc" class="video-link" target="_blank">📹 Watch Form</a>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">Leg Press (Gambe)</div>
+                <div class="english">Leg Press Machine</div>
+            </div>
+            <div class="reps">12×</div>
+        </div>
+        <div class="my-settings">
+            <strong>⚙️ My Settings:</strong> Back pad flat, Weight 60kg, Feet shoulder-width
+        </div>
+        <a href="https://www.youtube.com/watch?v=IZxyjW7MPJQ" class="video-link" target="_blank">📹 Watch Form</a>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">Shoulder Press (Spalle)</div>
+                <div class="english">Shoulder Press Machine</div>
+            </div>
+            <div class="reps">10×</div>
+        </div>
+        <div class="my-settings">
+            <strong>⚙️ My Settings:</strong> Seat #3, Weight 20kg, Handles at ear level to start
+        </div>
+        <a href="https://www.youtube.com/watch?v=Wqq43dKW1TU" class="video-link" target="_blank">📹 Watch Form</a>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">Cable Row (Rematore cavo)</div>
+                <div class="english">Seated Cable Row</div>
+            </div>
+            <div class="reps">12×</div>
+        </div>
+        <div class="my-settings">
+            <strong>⚙️ My Settings:</strong> Weight 25kg, V-bar attachment, slight knee bend
+        </div>
+        <a href="https://www.youtube.com/watch?v=GZbfZ033f74" class="video-link" target="_blank">📹 Watch Form</a>
+    </div>
+
+    <div class="rest">⏸️ RIPOSO / REST: 60 secondi dopo ogni giro</div>
+
+    <div class="finisher">
+        <div class="finisher-title">🔥 FINISHER - Core (3 min)</div>
+        <div class="finisher-item">
+            <span class="italian">Crunch Machine</span> - <strong>15×</strong>
+        </div>
+        <div class="finisher-item">
+            <span class="italian">Plank (Tavola)</span> - <strong>30 sec</strong>
+        </div>
+        <div class="finisher-item">
+            <span class="italian">Bicycle Crunches</span> - <strong>20×</strong>
+        </div>
+    </div>
+
+    <div class="tip">
+        <div class="tip-title">💡 Suggerimento / Tip:</div>
+        <div class="italian">Controlla sempre le impostazioni della macchina prima di iniziare!</div>
+        <div class="english">Always check machine settings before starting!</div>
+    </div>
+
+    <a href="equipment-guide.html" class="guide-link">📖 Full Equipment Guide →</a>
+</div>
+
+<div class="card">
+    <div class="section-title">🗣️ Frasi Utili / Useful Phrases</div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">"Come si regola questo?"</div>
+                <div class="english">How do I adjust this?</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">"Mi può aiutare con questa macchina?"</div>
+                <div class="english">Can you help me with this machine?</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">"Quanto peso usi?"</div>
+                <div class="english">How much weight do you use?</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="exercise">
+        <div class="exercise-header">
+            <div class="exercise-name">
+                <div class="italian">"Grazie mille!"</div>
+                <div class="english">Thanks a lot!</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    ⚡ Tiger Blitz v2 - Gym 4 You - Trapani 🇮🇹<br>
+    Updated: Jan 14, 2026
+</div>
+
+</body>
+</html>
