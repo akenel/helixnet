@@ -1,5 +1,5 @@
 # HELIX CBD MAX
-## Business Case v1.1 | January 2026
+## Business Case v1.3 | January 2026
 
 ---
 
@@ -42,11 +42,11 @@ This proposal formalizes an expansion of our existing partnership into the Itali
 
 ## The Opportunity
 
-**Sicily has no dedicated CBD presence in Trapani** - a city of 70,000 with significant port traffic (Egadi Islands ferries) and zero competition.
+**Sicily has minimal CBD presence in Trapani** - a city of 70,000 with significant port traffic (Egadi Islands ferries) and only one weak competitor (Che Maria H24 - broken payment system, low-quality product).
 
-Field reconnaissance (Palermo, January 2026) confirmed:
+Field reconnaissance (Palermo & Trapani, January 2026) confirmed:
 - Existing shops are disorganized, cash-heavy, compliance-light
-- No vending machine presence for CBD products
+- One vending machine exists (Che Maria H24) but poorly operated
 - Tourist traffic underserved
 - Local market uneducated but receptive
 
@@ -121,7 +121,7 @@ We propose a 12-month pilot in Sicily:
 1. **Angelo is on the ground in Sicily** - Already building relationships (Vito, gym network)
 2. **HelixNet is ready** - ISO 9001 framework built, batch tracking operational
 3. **Sylvken returns end of January** - Packaging design can begin immediately
-4. **No competition in Trapani** - First mover advantage
+4. **Weak competition in Trapani** - One broken machine (Che Maria) = validated demand, easy to outperform
 5. **Felix's Swiss credibility** - Legitimizes the operation from day one
 
 ---
@@ -136,7 +136,7 @@ We propose a 12-month pilot in Sicily:
 | **DHL shipment lost** | Restocking delayed | Local buffer stock with Vito, multiple shipping options |
 | **Cash skimming by partner** | Revenue underreported | Card-preferred machines, regular audits, trust but verify |
 | **Vending license delays** | Launch delayed | Start paperwork early, Vito knows local bureaucracy |
-| **Competition copies us** | Price war, margin pressure | First mover advantage, compliance moat, relationship network |
+| **Competition copies us** | Price war, margin pressure | Better operator advantage, compliance moat, relationship network |
 | **Single supplier (Grow Motion)** | Supply interruption | Benny maintains mother plants we own; backup supplier relationships |
 
 **Philosophy:** Every gotcha has a mitigation. Beer revenue insulates CBD risk. Compliance outlasts cowboys.
@@ -174,8 +174,10 @@ We propose a 12-month pilot in Sicily:
 
 | Version | Date | Author | Status |
 |---------|------|--------|--------|
-| 1.0 | 2026-01-17 | Angelo Kenel | DRAFT |
-| 1.1 | 2026-01-17 | Angelo Kenel | Added Ecolution GmbH, vape production, Zurich lab |
+| 1.0 | 2026-01-16 | Angelo Kenel | DRAFT |
+| 1.1 | 2026-01-16 | Angelo Kenel | Added Ecolution GmbH, vape production, Zurich lab |
+| 1.2 | 2026-01-16 | Angelo Kenel | HTML formatting, print-ready layout |
+| 1.3 | 2026-01-16 | Angelo Kenel | **Added Che Maria competitive analysis (field recon)** |
 
 **Classification:** Partner Confidential
 
@@ -255,7 +257,7 @@ On-the-ground reconnaissance of Sicily's CBD market. Two top-rated shops visited
 - Population: ~70,000
 - Nearest competition: Palermo (100km / 1h 15min drive)
 - Online delivery exists but no local presence
-- No vending machines
+- One vending machine exists (Che Maria H24) — poorly operated (see Page 2B)
 
 ### Why This Gap Exists
 1. Smaller city = less obvious opportunity
@@ -266,7 +268,7 @@ On-the-ground reconnaissance of Sicily's CBD market. Two top-rated shops visited
 ### Why We Fill It
 1. Angelo is already there (GYM 4U, Vito, local relationships)
 2. Port traffic (Egadi Islands ferries) = tourist customers
-3. First mover advantage
+3. Better operator advantage (Che Maria proves demand, we execute better)
 4. Vending model = low overhead, 24/7 sales
 5. Beer/drinks revenue de-risks CBD uncertainty
 
@@ -348,6 +350,158 @@ Neither Palermo shop emphasizes vape production. They resell. We produce.
 ---
 
 *Field research photos: 23 images documented in `/Pictures/palermo-recon/`*
+
+---
+---
+
+# Page 2B: Competitive Analysis - Trapani
+
+## Field Discovery: Che Maria H24 (January 16, 2026)
+
+**Breaking news:** Trapani is NOT a blank slate. A CBD vending machine already exists.
+
+During reconnaissance today, we discovered **Che Maria H24** — a 24-hour CBD vending machine located approximately 600 meters from GYM 4U, next to ChiCoffee (coffee capsule shop).
+
+---
+
+## The Machine
+
+| Attribute | Details |
+|-----------|---------|
+| Brand | Che Maria |
+| Location | Via [near ChiCoffee], Trapani |
+| Operation | H24 (24 hours) |
+| Type | Standard vending machine, black with cannabis leaf branding |
+| Products | CBD flower, energy drinks, accessories |
+| Payment | **BROKEN** — required owner to open with key |
+
+**Critical observation:** The owner of the adjacent shop had to physically open the machine with a key to complete my purchase. The payment system was non-functional.
+
+---
+
+## Product Analysis
+
+### What's In The Machine
+
+| Row | Products | Notes |
+|-----|----------|-------|
+| Top | CBD flower bags (various strains) | Small baggies, different packaging |
+| Middle | Energy drinks (Monster, Fanta, etc.) | Mixed beverage selection |
+| Bottom | CBD products, grinders | AK-47 strain visible |
+
+### Purchase Made
+
+| Item | Price | Quality |
+|------|-------|---------|
+| AK-47 CBD (5g) | €5 | Not buds — shake/trim quality |
+
+**Assessment:** Low-quality product, poor presentation, no compliance documentation visible.
+
+---
+
+## Competitor Weaknesses
+
+### 1. Payment System Failure
+The machine could not process payment. Owner intervention required.
+
+**Impact:** Lost sales 24/7. Customers walk away. Trust eroded.
+
+**Our advantage:** Marco-maintained Harbin machines with working card + cash systems.
+
+### 2. Basic Branding
+Black box with cannabis leaf. No premium positioning. Looks like every other amateur CBD operation.
+
+**Impact:** No differentiation. No brand loyalty. Commodity perception.
+
+**Our advantage:** Sylvken-designed professional branding. Helix CBD Max = quality signal.
+
+### 3. No Visible Compliance
+No QR codes, no batch certificates, no lab test references visible on products.
+
+**Impact:** Vulnerable to police scrutiny. No defense if tested.
+
+**Our advantage:** HelixNet batch tracking. Every product traceable to lab certificate.
+
+### 4. Product Quality
+AK-47 purchased was shake/trim, not proper buds. €5 for 5g = €1/g pricing signals low quality.
+
+**Impact:** Educated customers go elsewhere. Only serves desperate/uninformed market.
+
+**Our advantage:** Felix production, lab-tested, 0.5% THC target, real flower quality.
+
+### 5. Location (Recessed)
+Machine set back in archway. Not prime sidewalk visibility.
+
+**Impact:** Lower impulse purchases. Less foot traffic exposure.
+
+**Our advantage:** 100m rule — prime port/station locations with maximum visibility.
+
+---
+
+## Competitive Matrix
+
+| Factor | Che Maria H24 | Helix CBD Max |
+|--------|---------------|---------------|
+| Payment system | **Broken** | Working (card + cash) |
+| Product quality | Shake/trim | Lab-tested flower |
+| Branding | Amateur | Professional |
+| Compliance | None visible | ISO 9001 tracked |
+| Location | Recessed | 100m rule prime |
+| Price point | €1/g (low quality) | €8-10/g (quality) |
+| Vapes | Not visible | Core product (Felix) |
+| Beer/drinks | Yes (mixed) | Yes (refrigerated) |
+| Machine maintenance | Broken | Marco contract |
+
+---
+
+## Strategic Implications
+
+### 1. Market IS Validated
+Someone already bet on CBD vending in Trapani. The concept works. We're not pioneers — we're upgrades.
+
+### 2. Bar Is LOW
+If this broken machine survives, a properly operated machine will thrive.
+
+### 3. Different Positioning
+We're not competing on price (€1/g shake). We're competing on:
+- Reliability (machine works)
+- Quality (lab-tested)
+- Experience (cold beer + premium CBD)
+- Trust (compliance documentation)
+
+### 4. Potential Acquisition Target?
+If Che Maria owner is struggling with broken equipment and low-quality supply, they might welcome:
+- Machine upgrade partnership
+- Supply agreement (Felix products)
+- Full acquisition of location contract
+
+**Note:** This is speculative. Observe before approaching.
+
+---
+
+## Recon Photos
+
+7 photos documented in `/docs/business/recon/`:
+- `che-maria-1.jpg` - Street approach (rainy night)
+- `che-maria-2.jpg` - Exterior view
+- `che-maria-3.jpg` - Machine next to ChiCoffee
+- `che-maria-4.jpg` - Location context
+- `che-maria-5.jpg` - Product display (full machine)
+- `che-maria-6.jpg` - Product close-up
+- `che-maria-7.jpg` - Product detail (strains visible)
+
+---
+
+## Key Insight
+
+> Che Maria proves the market. Their failures prove the opportunity.
+>
+> A broken machine selling €1/g shake is surviving in Trapani.
+> A working machine selling lab-tested Felix products will dominate.
+>
+> We're not entering a blank market. We're entering a market with one weak player.
+> That's better. The demand is proven. The execution is lacking.
+> We execute.
 
 ---
 ---
@@ -1430,7 +1584,7 @@ At €207/day average = 18 days to break even
 | Vito unavailable | Low | Medium | Angelo as backup; build second local contact |
 | Felix production delays | Low | High | Buffer inventory; alternative Swiss suppliers |
 | Grow Motion supply issues | Low | High | Benny maintains mothers; outdoor farmer network Year 2 |
-| Competition enters Trapani | Medium | Medium | First mover advantage; relationship moat; compliance edge |
+| Competition enters Trapani | Medium | Medium | Better operator advantage; relationship moat; compliance edge |
 | Economic downturn | Low | Medium | Beer = recession-proof; CBD = discretionary (adjust mix) |
 | Personal health/burnout | Medium | High | Document everything; Vito/Sylvken can run operations |
 
