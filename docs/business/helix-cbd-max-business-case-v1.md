@@ -1075,3 +1075,660 @@ TRACE HISTORY:
 > For Helix CBD Max, we're not building new software. We're deploying existing software to a new vertical.
 >
 > That's the difference between a €100K development project and a €5K configuration project.
+
+---
+---
+
+# Page 7: Operations Model
+
+## Daily Operations
+
+### Who Does What
+
+| Task | Owner | Frequency | Notes |
+|------|-------|-----------|-------|
+| Machine restocking | Location partner | As needed (2-3x/week) | DHL delivery to their address |
+| Inventory ordering | Angelo | Weekly | Based on sales data |
+| Cash collection | Location partner | Daily | Deposited or transferred |
+| Sales reporting | Automatic | Daily | HelixNet dashboard |
+| Quality checks | Location partner | Weekly | Product condition, expiry dates |
+| Machine maintenance | Marco (remote) | As needed | Harbin service contract |
+
+### Communication Flow
+
+```
+ANGELO (Sicily/Remote)
+    │
+    ├──► VITO (Trapani)
+    │    └─ Location negotiations
+    │    └─ Partner relationships
+    │    └─ Emergency local contact
+    │
+    ├──► LOCATION PARTNER
+    │    └─ Restocking
+    │    └─ Cash handling
+    │    └─ Issue reporting
+    │
+    ├──► FELIX (Switzerland)
+    │    └─ Production orders
+    │    └─ Quality issues
+    │    └─ Regulatory updates
+    │
+    └──► MARCO (Switzerland)
+         └─ Machine issues
+         └─ Technical support
+         └─ New machine orders
+```
+
+---
+
+## Restocking Process
+
+### Standard Flow
+
+```
+1. INVENTORY ALERT (HelixNet)
+   └─ Product X below threshold
+
+2. ANGELO ORDERS
+   └─ Places order with Felix
+   └─ Confirms shipping timeline
+
+3. FELIX SHIPS
+   └─ DHL from Switzerland to Sicily
+   └─ Tracking number shared
+
+4. LOCATION PARTNER RECEIVES
+   └─ Package delivered to their address
+   └─ Confirms receipt via WhatsApp
+
+5. PARTNER RESTOCKS
+   └─ Loads machine within 24 hours
+   └─ Reports quantities in HelixNet
+
+6. MACHINE UPDATED
+   └─ Inventory synced
+   └─ Ready for sales
+```
+
+### Emergency Restocking
+
+If location partner unavailable:
+1. Vito as backup (has key/access)
+2. Angelo drives (if in Sicily)
+3. Temporary "out of stock" slots
+
+---
+
+## Cash Management
+
+### Revenue Collection
+
+| Method | Process | Risk |
+|--------|---------|------|
+| Card payments | Direct to Ecolution GmbH account | Low |
+| Cash | Location partner deposits weekly | Medium |
+
+### Cash Audit Protocol
+
+| Check | Frequency | Method |
+|-------|-----------|--------|
+| Machine counter vs reported | Weekly | Compare digital count to partner report |
+| Bank deposits vs sales | Monthly | Reconciliation |
+| Surprise count | Quarterly | Unannounced visit |
+
+**Trust but verify.** Partners who consistently match = trusted. Partners who don't = conversation, then 3-strike rule.
+
+---
+
+## Quality Control
+
+### Product Freshness
+
+| Product | Shelf Life | Action at 75% |
+|---------|------------|---------------|
+| CBD Flower | 6 months | Discount or rotate |
+| CBD Vapes | 12 months | Monitor |
+| CBD Oil | 12 months | Monitor |
+| Beer | 6+ months | N/A (sells fast) |
+
+### Temperature Monitoring
+
+- Refrigerated machines maintain 2-8°C
+- Harbin machines have built-in monitoring
+- Alert if temperature exceeds range
+
+---
+
+## Scaling Operations
+
+### Year 1: 1-2 Machines (Trapani)
+
+```
+Angelo: Primary operator
+Vito: Local support
+Location partners: 1-2
+
+Manageable by one person with local backup.
+```
+
+### Year 2: 3-5 Machines (Trapani + Palermo)
+
+```
+Angelo: Oversight, strategy
+Vito: Trapani operations manager
+New hire: Palermo operations
+
+Need dedicated Palermo person.
+```
+
+### Year 3+: 5-10 Machines (Sicily-wide)
+
+```
+Angelo: CEO, expansion strategy
+Vito: Western Sicily manager
+Palermo manager: Eastern expansion
+Operations manual: Documented SOPs
+
+Franchise-ready operations.
+```
+
+---
+
+## Key Insight
+
+> Operations scale with documentation, not with Angelo's time.
+>
+> Year 1: Learn what works, document everything.
+> Year 2: Hand off Trapani to Vito, expand to Palermo.
+> Year 3: The system runs itself. Angelo focuses on growth.
+
+---
+---
+
+# Page 8: Financial Model
+
+## Startup Costs (Year 1)
+
+| Item | Cost | Notes |
+|------|------|-------|
+| Vending machine lease (1 unit) | €10,000-12,000 | Harbin via Marco |
+| Age verification module | €900 | Required for CBD |
+| Initial inventory | €2,000-3,000 | Beer, vapes, flower, accessories |
+| Lab testing (first batches) | €500 | Zurich lab |
+| Packaging/branding | €1,000 | Sylvken design + materials |
+| Legal/permits | €500-1,000 | Vending license, municipal permits |
+| Buffer/contingency | €2,000 | Unexpected costs |
+| **TOTAL STARTUP** | **€17,000-22,000** | Conservative estimate |
+
+**Note:** No company formation costs (Ecolution GmbH exists).
+
+---
+
+## Monthly Operating Costs
+
+| Item | Monthly Cost | Notes |
+|------|--------------|-------|
+| Machine lease payment | €800-1,000 | If financed monthly |
+| Inventory replenishment | €1,500-2,500 | Based on sales |
+| DHL shipping | €100-200 | Switzerland to Sicily |
+| Location partner revenue share | 20-30% of sales | Variable |
+| Insurance | €50-100 | Product liability |
+| Phone/connectivity | €30 | Machine SIM |
+| HelixNet hosting | €0 | Self-hosted |
+| **TOTAL MONTHLY** | **€2,500-4,000** | Variable with sales |
+
+---
+
+## Revenue Projections
+
+### Conservative Scenario (Machine at 50% capacity)
+
+| Product Category | Units/Day | Avg Price | Daily Revenue |
+|------------------|-----------|-----------|---------------|
+| Beer/Drinks | 15 | €2.50 | €37.50 |
+| Vapes | 2 | €20 | €40.00 |
+| CBD Flower | 1 | €25 | €25.00 |
+| Accessories | 2 | €5 | €10.00 |
+| **Daily Total** | | | **€112.50** |
+| **Monthly Total** | | | **€3,375** |
+
+### Moderate Scenario (Machine at 75% capacity)
+
+| Product Category | Units/Day | Avg Price | Daily Revenue |
+|------------------|-----------|-----------|---------------|
+| Beer/Drinks | 25 | €2.50 | €62.50 |
+| Vapes | 4 | €20 | €80.00 |
+| CBD Flower | 2 | €25 | €50.00 |
+| Accessories | 3 | €5 | €15.00 |
+| **Daily Total** | | | **€207.50** |
+| **Monthly Total** | | | **€6,225** |
+
+### Optimistic Scenario (Tourist season, good location)
+
+| Product Category | Units/Day | Avg Price | Daily Revenue |
+|------------------|-----------|-----------|---------------|
+| Beer/Drinks | 40 | €2.50 | €100.00 |
+| Vapes | 6 | €20 | €120.00 |
+| CBD Flower | 3 | €25 | €75.00 |
+| Accessories | 5 | €5 | €25.00 |
+| **Daily Total** | | | **€320.00** |
+| **Monthly Total** | | | **€9,600** |
+
+---
+
+## Profit & Loss (Monthly)
+
+### Conservative Scenario
+
+| Line | Amount |
+|------|--------|
+| Revenue | €3,375 |
+| - Cost of goods (40%) | -€1,350 |
+| - Location partner (25%) | -€844 |
+| - Operating costs | -€500 |
+| **Gross Profit** | **€681** |
+
+### Moderate Scenario
+
+| Line | Amount |
+|------|--------|
+| Revenue | €6,225 |
+| - Cost of goods (40%) | -€2,490 |
+| - Location partner (25%) | -€1,556 |
+| - Operating costs | -€500 |
+| **Gross Profit** | **€1,679** |
+
+### Optimistic Scenario
+
+| Line | Amount |
+|------|--------|
+| Revenue | €9,600 |
+| - Cost of goods (40%) | -€3,840 |
+| - Location partner (25%) | -€2,400 |
+| - Operating costs | -€500 |
+| **Gross Profit** | **€2,860** |
+
+---
+
+## Break-Even Analysis
+
+### Monthly Break-Even Point
+
+```
+Fixed costs: ~€1,300/month (lease + insurance + connectivity)
+Variable margin: ~35% (after COGS and partner share)
+
+Break-even revenue = €1,300 / 0.35 = €3,714/month
+
+At €112/day average = 33 days to break even
+At €207/day average = 18 days to break even
+```
+
+**Machine pays for itself if it does €125/day average.**
+
+---
+
+## Payback Period
+
+| Scenario | Monthly Profit | Startup Recovery |
+|----------|----------------|------------------|
+| Conservative | €681 | 26-32 months |
+| Moderate | €1,679 | 10-13 months |
+| Optimistic | €2,860 | 6-8 months |
+
+**Target:** Moderate scenario = payback in ~12 months.
+
+---
+
+## Year 1 Cash Flow Summary
+
+| Month | Startup | Revenue | Costs | Net | Cumulative |
+|-------|---------|---------|-------|-----|------------|
+| 1 | -€20,000 | €2,000 | €3,000 | -€21,000 | -€21,000 |
+| 2 | | €3,000 | €3,000 | €0 | -€21,000 |
+| 3 | | €4,000 | €3,200 | €800 | -€20,200 |
+| 4 | | €5,000 | €3,500 | €1,500 | -€18,700 |
+| 5 | | €5,500 | €3,700 | €1,800 | -€16,900 |
+| 6 (summer) | | €7,000 | €4,200 | €2,800 | -€14,100 |
+| 7 (summer) | | €8,000 | €4,500 | €3,500 | -€10,600 |
+| 8 (summer) | | €8,000 | €4,500 | €3,500 | -€7,100 |
+| 9 | | €6,000 | €4,000 | €2,000 | -€5,100 |
+| 10 | | €5,000 | €3,500 | €1,500 | -€3,600 |
+| 11 | | €4,500 | €3,300 | €1,200 | -€2,400 |
+| 12 | | €4,000 | €3,200 | €800 | -€1,600 |
+
+**Year 1 ends ~€1,600 short of breakeven.** Machine 2 in Year 2 accelerates profitability.
+
+---
+
+## Key Insight
+
+> This is not a get-rich-quick scheme. It's a slow-burn business that compounds.
+>
+> Year 1: Learn, validate, survive.
+> Year 2: Profitable, expand.
+> Year 3+: Multiple machines = real income.
+>
+> €20K investment. 12-18 month payback. Then it's passive income with maintenance.
+
+---
+---
+
+# Page 9: Risk Mitigation
+
+## Risk Matrix
+
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+| Italian hemp flower ban | Medium | High | Beer/drinks continue; pivot to vapes/oils only |
+| THC lab variance (batch over limit) | Low | High | 0.5% target gives buffer; clone consistency; reject batches >0.55% |
+| Location partner fails | Medium | Medium | 3-strike rule; backup locations pre-scouted |
+| DHL shipment lost/delayed | Low | Medium | Local buffer stock; insurance; alternative carriers |
+| Cash skimming | Medium | Medium | Card-preferred machines; weekly audits; surprise counts |
+| Machine vandalism/theft | Low | High | Insurance; secure locations; camera coverage |
+| Vito unavailable | Low | Medium | Angelo as backup; build second local contact |
+| Felix production delays | Low | High | Buffer inventory; alternative Swiss suppliers |
+| Grow Motion supply issues | Low | High | Benny maintains mothers; outdoor farmer network Year 2 |
+| Competition enters Trapani | Medium | Medium | First mover advantage; relationship moat; compliance edge |
+| Economic downturn | Low | Medium | Beer = recession-proof; CBD = discretionary (adjust mix) |
+| Personal health/burnout | Medium | High | Document everything; Vito/Sylvken can run operations |
+
+---
+
+## Political/Regulatory Risk
+
+### The Hemp Ban Threat
+
+**Status:** Italian parliament proposed ban on hemp flower sales (late 2024). Not yet passed.
+
+**Why it might not pass:**
+- €500M industry employs thousands
+- Agricultural lobby (hemp farmers)
+- EU free movement (Kanavape ruling)
+- Tax revenue
+
+**If it passes:**
+
+| Product | Status | Action |
+|---------|--------|--------|
+| CBD Flower | Banned | Remove from machine |
+| CBD Vapes | Likely still legal | Increase slots |
+| CBD Oils | Likely still legal | Increase slots |
+| Beer/Drinks | Always legal | Already primary revenue |
+| Seeds | Likely still legal | Add if profitable |
+
+**48-Hour Pivot Plan:**
+1. Remove flower from machine
+2. Increase vape/oil inventory
+3. Add more beer/drinks slots
+4. Communicate with customers (social media)
+5. Continue operations without interruption
+
+---
+
+## Quality/Compliance Risk
+
+### The Police Test Scenario
+
+**Situation:** Guardia di Finanza pulls product from machine, tests it.
+
+**Preparation:**
+- Every batch has lab certificate (Zurich lab)
+- Batch code on every package → traceable to certificate
+- Certificate shows: date, THC %, CBD %, lab name
+- Our target (0.5%) is well under limit (0.6%)
+
+**If test shows higher than expected:**
+1. Present certificate showing original lab result
+2. Request retest at accredited lab
+3. If genuine issue: recall batch, investigate supply chain
+4. Legal defense: "We tested, we documented, we complied"
+
+**ISO 9001 advantage:** Documented quality management system shows intent and process. Courts favor operators who tried to comply over cowboys who didn't.
+
+---
+
+## Operational Risk
+
+### Single Points of Failure
+
+| SPOF | Risk | Mitigation |
+|------|------|------------|
+| Angelo | Hit by bus | Vito + Sylvken have access to everything; documented SOPs |
+| Felix | Can't produce | Buffer inventory; alternative suppliers |
+| Benny | Leaves with genetics | We own strain; multiple mother plants in different locations |
+| Marco | No machine support | Harbin direct contact; other technicians |
+| Vito | Unavailable | Build second Trapani contact |
+| HelixNet | System down | Self-hosted; daily backups; can run manually short-term |
+
+### Redundancy Principle
+
+```
+CRITICAL FUNCTIONS:
+├─ Production: Felix primary, Grow Motion backup, outdoor farmers Year 2
+├─ Machines: Marco primary, Harbin direct backup
+├─ Local ops: Vito primary, Angelo backup, build 2nd contact
+├─ Technology: HelixNet primary, manual spreadsheet backup
+└─ Genetics: Benny operates, we own, multiple mother locations
+```
+
+---
+
+## Financial Risk
+
+### Cash Flow Stress Test
+
+**What if machine does 50% of conservative projection?**
+
+| Metric | Expected | 50% Scenario |
+|--------|----------|--------------|
+| Monthly revenue | €3,375 | €1,688 |
+| Monthly costs | €2,694 | €2,000 (reduced inventory) |
+| Monthly loss | - | -€312 |
+| Survival runway (€5K buffer) | - | 16 months |
+
+**Action plan at 50%:**
+1. Reduce inventory (just-in-time ordering)
+2. Renegotiate location partner split
+3. Add more beer slots (guaranteed sales)
+4. Consider machine relocation
+5. Extend timeline, don't panic
+
+### Personal Runway
+
+**Question:** How long can Angelo survive if machine makes €0?
+
+**Factors:**
+- Van life = low burn rate (~€1,500/month)
+- Hapimag job potential (CHF 140K)
+- Freelance consulting fallback
+- Ecolution GmbH existing (some runway)
+
+**Answer:** 6-12 months of personal runway without business income. Hapimag job = unlimited runway.
+
+---
+
+## Insurance Checklist
+
+| Coverage | Status | Priority |
+|----------|--------|----------|
+| Product liability | Needed | High |
+| Machine theft/damage | Needed | High |
+| Business interruption | Optional | Medium |
+| Personal health (Angelo) | Existing? | High |
+
+**Action:** Price product liability insurance before machine goes live.
+
+---
+
+## Key Insight
+
+> Every risk has a mitigation. The question is not "will problems happen?" — they will.
+>
+> The question is: "When problems happen, do we have a plan?"
+>
+> This document is that plan. Print it. Read it. Know it.
+>
+> When the Guardia di Finanza shows up, you don't panic. You show them the certificate.
+
+---
+---
+
+# Page 10: The Ask & Timeline
+
+## What We're Asking
+
+### From Felix
+
+| Request | Purpose |
+|---------|---------|
+| Review this business case | Validate assumptions, catch errors |
+| Confirm production capacity | Can you supply X vapes/month? |
+| Pricing for CBD products | Wholesale cost for vapes, flower, oil |
+| Regulatory guidance | Italy-specific compliance requirements |
+| Introduction to Italian contacts | Anyone Felix knows in Sicily? |
+
+### From Sylvken
+
+| Request | Purpose |
+|---------|---------|
+| Brand concept for Helix CBD Max | Logo, colors, packaging style |
+| Packaging design | Compliant labels, multi-language |
+| Website landing page | Simple info + location finder |
+| Marketing materials | Flyers for location partners |
+
+### From Vito (If Partnership Confirmed)
+
+| Request | Purpose |
+|---------|---------|
+| Port authority introduction | Who controls ferry terminal space? |
+| Location scouting | Best spots in Trapani |
+| Local business intel | Who's reliable, who's not |
+| Backup contacts | Second local person to build relationship |
+
+---
+
+## Investment Required
+
+| Source | Amount | Purpose |
+|--------|--------|---------|
+| Angelo (personal) | €15,000-20,000 | Machine, inventory, startup |
+| Felix (in-kind) | Production capacity | CBD products at wholesale |
+| Sylvken (in-kind) | Design work | Branding, packaging |
+| Vito (in-kind) | Local expertise | Introductions, operations support |
+
+**No external investors needed.** Bootstrap with existing resources.
+
+---
+
+## Timeline
+
+### Q1 2026 (Now - March)
+
+| Week | Activity |
+|------|----------|
+| Jan W3-4 | Finalize business case, Felix review |
+| Feb W1-2 | Sylvken returns, branding begins |
+| Feb W3-4 | Vito conversation, location scouting |
+| Mar W1-2 | Legal/permits research |
+| Mar W3-4 | Machine order placed with Marco |
+
+### Q2 2026 (April - June)
+
+| Week | Activity |
+|------|----------|
+| Apr W1-2 | Machine arrives, installation |
+| Apr W3-4 | Initial inventory loaded |
+| May W1-2 | **SOFT LAUNCH** (limited products) |
+| May W3-4 | Monitor, adjust, learn |
+| Jun W1-4 | **FULL LAUNCH** (all products, tourist season) |
+
+### Q3-Q4 2026 (July - December)
+
+| Month | Activity |
+|-------|----------|
+| Jul-Aug | Peak tourist season, maximize revenue |
+| Sep | Post-season review, optimize |
+| Oct-Nov | Plan Machine 2 (Palermo?) |
+| Dec | Year 1 review, Year 2 planning |
+
+---
+
+## Success Criteria (12 Months)
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Machines deployed | 1-2 | Count |
+| Monthly revenue (Month 12) | €4,000-6,000 | HelixNet |
+| Compliance audits passed | 100% | No violations |
+| Location partners retained | 80%+ | Active agreements |
+| Customer complaints | <5 | Tracked issues |
+| Payback progress | 50%+ of startup | Cash flow |
+
+---
+
+## Decision Points
+
+### Go/No-Go Criteria
+
+| Checkpoint | Date | Criteria |
+|------------|------|----------|
+| Felix approval | Feb 2026 | Felix says "yes, this makes sense" |
+| Location secured | Mar 2026 | Written agreement with location partner |
+| Permits confirmed | Apr 2026 | Vending license obtained |
+| Machine operational | May 2026 | First sale recorded |
+
+**If any checkpoint fails:** Pause, reassess, adjust or abort.
+
+---
+
+## Exit Strategy
+
+If this doesn't work:
+
+| Scenario | Action |
+|----------|--------|
+| Machine unprofitable after 12 months | Sell/return machine, minimize loss |
+| Regulations make CBD impossible | Pivot to beer/snacks only or exit |
+| Personal circumstances change | Vito takes over operations or wind down |
+| Better opportunity emerges | Document, hand off, or sell |
+
+**Not a "burn the boats" play.** Test, learn, scale OR exit gracefully.
+
+---
+
+## Next Steps (This Week)
+
+1. ☐ Angelo: Print business case, review over weekend
+2. ☐ Angelo: Send PDF to Felix (after review)
+3. ☐ Angelo: Schedule call with Felix (next week)
+4. ☐ Angelo: Talk to Vito at gym (casual, gauge interest)
+5. ☐ Angelo: Check Sylvken return date (confirm end of Jan)
+
+---
+
+## Final Word
+
+> This is not a fantasy. This is a plan.
+>
+> The team exists. The technology exists. The market exists.
+> The only thing missing is execution.
+>
+> Beer pays the rent. Vapes pay the profit. Flower builds loyalty.
+> HelixNet tracks everything. ISO 9001 survives audits.
+>
+> We're not selling dreams. We're selling cold beer and lab-tested CBD
+> from a machine that works 24/7 while we sleep.
+>
+> Let's build it.
+
+---
+
+**END OF BUSINESS CASE v1.1**
+
+---
+
+*Document prepared by Angelo Kenel with assistance from Tigs (Claude AI)*
+*January 2026 | Trapani, Sicily*
+*Ecolution GmbH | HelixNet Platform*
