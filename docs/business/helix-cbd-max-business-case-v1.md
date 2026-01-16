@@ -686,3 +686,208 @@ Risk: Medium (weather, farmer reliability)
 > The supply chain is not "buy from whoever" — it's a controlled pipeline where every step is documented and every batch is traceable.
 >
 > This is the ISO 9001 difference. This is why we survive audits.
+
+---
+---
+
+# Page 5: Product Mix
+
+## Three-Tier Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         PRODUCT TIERS                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  TIER 1: FOUNDATION (Beer & Drinks)                                │
+│  ├─ Role: Revenue stability                                        │
+│  ├─ Margin: Low-Medium (20-30%)                                    │
+│  ├─ Risk: Zero (always legal, always in demand)                    │
+│  └─ Revenue share: ~50% of total                                   │
+│                                                                     │
+│  TIER 2: CORE (CBD Vapes)                                          │
+│  ├─ Role: Primary profit driver                                    │
+│  ├─ Margin: HIGH (50-70%)                                          │
+│  ├─ Risk: Medium (regulatory)                                      │
+│  └─ Revenue share: ~30% of total                                   │
+│                                                                     │
+│  TIER 3: PREMIUM (CBD Flower, Oils, Accessories)                   │
+│  ├─ Role: Differentiation, repeat customers                        │
+│  ├─ Margin: Medium-High (40-60%)                                   │
+│  ├─ Risk: Medium (regulatory for flower)                           │
+│  └─ Revenue share: ~20% of total                                   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Philosophy:** Beer pays the rent. Vapes pay the profit. Flower builds loyalty.
+
+---
+
+## Tier 1: Foundation Products
+
+### Cold Drinks (Refrigerated Machine Essential)
+
+| Product | Unit Cost | Sell Price | Margin | Notes |
+|---------|-----------|------------|--------|-------|
+| Beer (Peroni, Moretti) | €0.80 | €2.50 | 68% | Always sells in heat |
+| Water | €0.20 | €1.50 | 86% | Highest margin, lowest cost |
+| Energy drinks | €0.90 | €2.50 | 64% | Red Bull, Monster |
+| Soft drinks | €0.50 | €2.00 | 75% | Coca-Cola, Fanta |
+| Iced coffee | €0.70 | €2.50 | 72% | Growing demand |
+
+**Why this tier matters:**
+- Zero regulatory risk
+- Consistent demand (especially in Sicilian heat)
+- Keeps machine active even if CBD regulations change
+- Funds the operation while CBD builds
+
+### Snacks (Optional)
+
+| Product | Unit Cost | Sell Price | Margin |
+|---------|-----------|------------|--------|
+| Chips/crisps | €0.40 | €1.50 | 73% |
+| Chocolate bars | €0.50 | €1.50 | 67% |
+| Nuts | €0.60 | €2.00 | 70% |
+
+---
+
+## Tier 2: Core Products (Vapes)
+
+### CBD Vapes (Felix Production)
+
+| Product | Unit Cost | Sell Price | Margin | Notes |
+|---------|-----------|------------|--------|-------|
+| Disposable vape (300 puffs) | €4-6 | €15 | 60-73% | Entry level |
+| Disposable vape (600 puffs) | €6-8 | €25 | 68-76% | Best seller |
+| Cartridge refill | €5-7 | €18 | 61-72% | Repeat purchase |
+
+**Production advantage:**
+- Felix fills 100 vapes/hour
+- In-house = no middleman markup
+- Custom branding possible
+- Quality control at source
+
+### Why Vapes Win (Mosey's Rule)
+
+```
+"VAPES, VAPES, VAPES!"
+
+✓ Compact (fits vending slots perfectly)
+✓ High margin
+✓ Impulse purchase price point (€15-25)
+✓ Repeat customers (cartridge refills)
+✓ Less regulatory scrutiny than flower
+✓ No smell (discrete)
+✓ Tourist-friendly (easy to use)
+```
+
+---
+
+## Tier 3: Premium Products
+
+### CBD Flower
+
+| Product | Unit Cost | Sell Price | Margin | Notes |
+|---------|-----------|------------|--------|-------|
+| 1g pouch | €3-4 | €10 | 60-70% | Sample size |
+| 3g pouch | €8-10 | €25 | 60-68% | Standard purchase |
+| 5g pouch | €12-15 | €40 | 63-70% | Value pack |
+
+**Competitive pricing (vs Palermo):**
+- Mr Joint: €6.67/g
+- Green Seed: €15/g
+- Our target: €8-10/g (between both, quality positioning)
+
+### CBD Oils
+
+| Product | Unit Cost | Sell Price | Margin | Notes |
+|---------|-----------|------------|--------|-------|
+| 10ml bottle (5% CBD) | €8-10 | €25 | 60-68% | Entry level |
+| 10ml bottle (10% CBD) | €12-15 | €40 | 63-70% | Standard |
+| 30ml bottle (10% CBD) | €25-30 | €80 | 63-69% | Value size |
+
+### Accessories
+
+| Product | Unit Cost | Sell Price | Margin | Notes |
+|---------|-----------|------------|--------|-------|
+| Grinder | €2-3 | €8 | 63-75% | Impulse add-on |
+| Rolling papers | €0.50 | €2 | 75% | Consumable |
+| Lighter | €0.30 | €1.50 | 80% | Essential |
+| Storage tin | €1-2 | €5 | 60-80% | Brand opportunity |
+
+---
+
+## Vending Machine Slot Allocation
+
+### Recommended Layout (Typical 40-slot machine)
+
+```
+TOP ROW (Eye Level) — HIGHEST VALUE
+├─ Slot 1-4: CBD Vapes (600 puff)
+├─ Slot 5-8: CBD Vapes (300 puff)
+└─ Slot 9-10: Vape cartridge refills
+
+MIDDLE ROWS — CORE PRODUCTS
+├─ Slot 11-14: Beer (Peroni, Moretti)
+├─ Slot 15-18: Energy drinks
+├─ Slot 19-22: CBD Flower pouches
+├─ Slot 23-26: CBD Oils
+└─ Slot 27-30: Soft drinks / Water
+
+BOTTOM ROWS — IMPULSE / ACCESSORIES
+├─ Slot 31-34: Snacks
+├─ Slot 35-38: Accessories (grinders, papers)
+└─ Slot 39-40: Promotional / seasonal items
+```
+
+---
+
+## Pricing Strategy
+
+### Price Positioning
+
+```
+         CHEAP                    QUALITY                    PREMIUM
+           │                         │                          │
+   Street dealers         ▶ HELIX CBD MAX ◀              Boutique shops
+   (no traceability)        (lab tested,               (high rent, staff)
+                            compliant)
+```
+
+**Our position:** Quality middle. Not the cheapest (that's sketchy). Not the most expensive (that's boutiques). Lab-tested, vending-convenient, fair price.
+
+### Dynamic Pricing Consideration
+
+| Time/Season | Adjustment | Example |
+|-------------|------------|---------|
+| Summer (tourist season) | +10-15% | Beer €2.50 → €2.80 |
+| Night hours (after 10pm) | +5-10% | Vape €25 → €27 |
+| Winter (low season) | Standard | Keep loyal customers |
+
+---
+
+## Pivot Flexibility
+
+If CBD regulations change:
+
+| Scenario | Pivot |
+|----------|-------|
+| CBD flower banned | Shift slots to vapes, oils, accessories |
+| All CBD banned | Beer, energy drinks, snacks (still profitable) |
+| Vapes regulated | More flower, oils |
+| New product trend | Slots are reconfigurable |
+
+**The machine is the platform. Products are interchangeable.**
+
+---
+
+## Key Insight
+
+> We're not a "CBD company" — we're a **vending operator** with a CBD product line.
+>
+> If CBD disappears tomorrow, we sell beer.
+> If vapes get regulated, we sell flower.
+> If everything changes, we adapt.
+>
+> The machine stays. The products evolve.
