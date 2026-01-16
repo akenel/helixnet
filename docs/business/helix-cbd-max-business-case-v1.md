@@ -1,5 +1,17 @@
 # HELIX CBD MAX
-## Business Case v1.0 | January 2026
+## Business Case v1.1 | January 2026
+
+---
+
+## ⚠️ CONFIDENTIAL - NDA REQUIRED
+
+**Classification:** PARTNER CONFIDENTIAL
+
+This document contains proprietary business information and trade secrets. Distribution is restricted to parties who have signed a Non-Disclosure Agreement with Ecolution GmbH.
+
+**Unauthorized disclosure prohibited.**
+
+If you received this document in error, delete it immediately and notify ecolution.gmbh@gmail.com
 
 ---
 
@@ -13,10 +25,16 @@ This proposal formalizes an expansion of our existing partnership into the Itali
 
 | Partner | Role | Contribution |
 |---------|------|--------------|
-| Felix (Artemis) | CBD Expert | 25 years Swiss CBD industry, regulatory knowledge, supply chain, production capability |
-| Sylvken | Marketing & Packaging | Brand design, packaging, customer experience |
+| Felix (Artemis) | CBD Expert & Production | 25 years Swiss CBD, regulatory knowledge, **vape production (100 units/hour)** |
+| Sylvken | Marketing & Packaging | Brand design, packaging, customer experience, existing website |
 | Angelo (HelixNet) | Technology & Operations | ISO 9001 compliance platform, VAT tracking, business development |
 | Vito (Proposed) | Local Operations Sicily | 20+ years port industry contacts, location negotiations, Italian market knowledge |
+| Miki (Romania) | Frontend & UX Support | Web design, user experience, technical support |
+
+**Existing Infrastructure:**
+- **Ecolution GmbH** (Swiss company, established 2015) - Already operational, bank accounts, VAT registration
+- **Zurich Lab Connection** - Validation and testing via existing account
+- **Felix's Production Line** - Vape filling capability proven at scale, ready for CBD production
 
 **Note:** Vito is a potential Sicily operations partner - independent professional with deep relationships across Italian ports. Final partnership terms TBD.
 
@@ -38,17 +56,26 @@ Field reconnaissance (Palermo, January 2026) confirmed:
 
 ## The Solution
 
-**Helix CBD Max** is a refrigerated vending operation with premium CBD as the high-margin add-on:
+**Helix CBD Max** is a refrigerated vending operation with a three-tier product strategy:
 
-1. **Refrigerated machines first** - Cold beer, drinks, snacks = consistent revenue in warm climate
-2. **CBD as premium line** - Higher margin, differentiated, but not survival-dependent
-3. **Harbin vending machines** (Italian-made) - Euro-native, lease model, refrigeration standard
-4. **Swiss GmbH sells CBD into Italy** - Clean legal structure for regulated products
+### Product Tiers (by margin)
+
+| Tier | Products | Role | Margin |
+|------|----------|------|--------|
+| **1. Foundation** | Cold beer, drinks, snacks | Revenue stability, warm climate demand | Low-Medium |
+| **2. Core** | **CBD Vapes** (Felix production) | Primary profit driver, 100 units/hour capacity | **High** |
+| **3. Premium** | CBD flower, oils, accessories | Differentiation, repeat customers | Medium-High |
+
+### Infrastructure
+
+1. **Ecolution GmbH** (est. 2015) - Existing Swiss company, no setup required
+2. **Harbin vending machines** (Italian-made) - Euro-native, lease model, refrigeration standard
+3. **Felix's production line** - Vape filling proven at scale (100/hour)
+4. **Zurich lab** - Existing account for validation/testing
 5. **HelixNet platform** - ISO 9001 batch tracking, VAT compliance, full traceability
 6. **Location partner model** - Local restocking, shared revenue, 3-strike accountability
-7. **Product flexibility** - If CBD regulations tighten, beer keeps the lights on
 
-**The insight:** Beer pays the rent. CBD pays the profit. No single point of failure.
+**The insight:** Beer pays the rent. Vapes pay the profit. Flower builds loyalty. No single point of failure.
 
 ---
 
@@ -74,15 +101,18 @@ We propose a 12-month pilot in Sicily:
 
 | Item | Approach |
 |------|----------|
+| Company | **Ecolution GmbH** (existing - no setup costs) |
 | Supply | Grow Motion AG / Benny clones, 0.5% THC target |
+| Vape Production | Felix fills CBD vapes (100/hour capacity) |
+| Lab Testing | Zurich lab (existing account) |
 | Machines | Marco's Harbin network, lease model, €10-12K |
 | First location | Trapani (port area or train station) |
-| Investment | €20-30K total (conservative) |
+| Investment | **€15-25K total** (reduced - no company formation) |
 | Timeline | Machine live by Q2 2026 |
 
-**Felix's role:** Supply chain, quality assurance, regulatory guidance
+**Felix's role:** Vape production, supply chain, quality assurance, regulatory guidance
 **Sylvken's role:** Packaging, branding, customer materials
-**Angelo's role:** Technology, operations, location partnerships
+**Angelo's role:** Technology, operations, location partnerships, Ecolution GmbH administration
 
 ---
 
@@ -145,9 +175,331 @@ We propose a 12-month pilot in Sicily:
 | Version | Date | Author | Status |
 |---------|------|--------|--------|
 | 1.0 | 2026-01-17 | Angelo Kenel | DRAFT |
+| 1.1 | 2026-01-17 | Angelo Kenel | Added Ecolution GmbH, vape production, Zurich lab |
 
 **Classification:** Partner Confidential
 
 ---
 
 *Built with HelixNet. Tracked with ISO 9001. Ready for audit.*
+
+---
+---
+
+# Page 2: Market Analysis
+
+## Field Research: Palermo, Sicily (January 15, 2026)
+
+On-the-ground reconnaissance of Sicily's CBD market. Two top-rated shops visited, purchases made, operations observed.
+
+---
+
+## Shop 1: Mr Joint Italy (Via San Lorenzo 192)
+
+| Attribute | Details |
+|-----------|---------|
+| Google Rating | 5.0 stars (33 reviews) |
+| Size | Super small |
+| Parking | Easy, off beaten path |
+| Payment | Card working |
+| Vending | Hemp Care 24/7 outside |
+| English | Good |
+
+**Product Pricing:**
+- Amnesia CBD flower: 38% CBD, 0.3% THC - **€6.67/gram**
+- CBD seeds only (no THC genetics)
+- Basic grow gear (Plagron, CANNA)
+- Better accessory selection
+
+**Key Observation:** Owner nervous about police testing. Higher CBD % = more scrutiny. If police test, owner pays for lab work.
+
+---
+
+## Shop 2: Green Seed Growshop (Via Dante 35)
+
+| Attribute | Details |
+|-----------|---------|
+| Google Rating | 5.0 stars (62 reviews) |
+| Size | Small but well-stocked |
+| Parking | Nightmare - deep city center |
+| Payment | **Card machine BROKEN** |
+| Vending | 420 machine 24/7 outside |
+| English | Weaker |
+
+**Product Pricing:**
+- Amnesia CBD flower: 25% CBD, <0.5% THC - **€15/gram**
+- Hash: €15/gram
+- **Real THC seeds available** (Dutch Passion, Barney's, Sensi, RQS)
+- Massive nutrients selection (Plagron, BioBizz, CANNA, BAC, T.A.)
+
+**Key Observation:** Legally safer (branded prepackaged products). More confident operation. Full grow shop, not just CBD.
+
+---
+
+## Price Comparison Matrix
+
+| Product | Mr Joint | Green Seed | Opportunity |
+|---------|----------|------------|-------------|
+| CBD Flower/gram | €6.67 | €15.00 | Price between = margin |
+| CBD % | 38% | 25% | Quality matters |
+| THC Seeds | No | Yes | Differentiation |
+| Nutrients | Basic | Massive | Stock what sells |
+| Card Payment | Yes | Broken | **Basic competence wins** |
+
+---
+
+## The Trapani Gap
+
+### Current State
+- **Zero dedicated headshops in Trapani**
+- Population: ~70,000
+- Nearest competition: Palermo (100km / 1h 15min drive)
+- Online delivery exists but no local presence
+- No vending machines
+
+### Why This Gap Exists
+1. Smaller city = less obvious opportunity
+2. Palermo dominates Sicilian commerce
+3. No local entrepreneur has moved yet
+4. Regulatory uncertainty scares conservative operators
+
+### Why We Fill It
+1. Angelo is already there (GYM 4U, Vito, local relationships)
+2. Port traffic (Egadi Islands ferries) = tourist customers
+3. First mover advantage
+4. Vending model = low overhead, 24/7 sales
+5. Beer/drinks revenue de-risks CBD uncertainty
+
+---
+
+## Tourist Traffic Potential
+
+### Trapani Port
+- Ferry terminal to Egadi Islands (Favignana, Levanzo, Marettimo)
+- Peak season: 500+ tourists/day waiting for ferries
+- Impulse buy environment
+- Cold drinks + CBD = perfect combo
+
+### Train Station
+- Trapani Centrale
+- Connects to Palermo, Marsala
+- Commuter + tourist traffic
+- 100m rule applies
+
+---
+
+## Competitive Advantages Over Palermo Shops
+
+| Factor | Palermo Shops | Helix CBD Max |
+|--------|---------------|---------------|
+| Location convenience | City center (parking nightmare) | Port/station (easy access) |
+| Operating hours | 10-13, 16-19 (siesta gap) | **24/7 vending** |
+| Payment | One shop has broken card | Card + cash from day 1 |
+| Compliance | Informal, nervous | **ISO 9001 tracked** |
+| Beer/drinks | No | **Yes - revenue stability** |
+| Audit-ready | No | **Yes - HelixNet** |
+
+---
+
+## Market Size Estimate (Conservative)
+
+### Trapani + Surrounding Area
+- Population: ~100,000 (Trapani + Erice + Marsala commute zone)
+- Estimated CBD users: 2-5% = 2,000-5,000 people
+- Average purchase: €15-20
+- Purchase frequency: 2x/month
+
+### Monthly Addressable Market
+- Low estimate: 2,000 × €15 × 2 = **€60,000/month**
+- High estimate: 5,000 × €20 × 2 = **€200,000/month**
+
+### Realistic Capture (Year 1)
+- Target: 2-5% market share
+- Monthly revenue: **€1,200 - €10,000**
+- Midpoint target: **€3,000-5,000/month** (aligns with success metrics)
+
+**Note:** Beer/drinks revenue adds €1,000-2,000/month baseline regardless of CBD performance.
+
+---
+
+## Key Insight
+
+> Both Palermo shops have 24/7 vending machines outside. **The vending model is already validated in Sicily.** We're not inventing a new concept - we're deploying a proven model to an underserved location with better execution (working card machines, beer, compliance tracking).
+
+---
+
+## The Vape Opportunity
+
+From Mosey's Rule (KB-020): **"VAPES, VAPES, VAPES!"**
+
+Neither Palermo shop emphasizes vape production. They resell. We produce.
+
+| Factor | Palermo Shops | Helix CBD Max |
+|--------|---------------|---------------|
+| Vape source | Third-party resale | **Felix production (100/hour)** |
+| Quality control | Trust supplier | **In-house, lab verified** |
+| Margin | Standard retail | **Production margin** |
+| Customization | None | Brand our own |
+
+**Felix's capability:** Proven vape filling at scale. CBD production uses same equipment and process. Lab validation via existing Zurich account.
+
+> "Vapes are what's selling NOW. CBD flower is the niche differentiator." — Mosey's Rule
+
+---
+
+*Field research photos: 23 images documented in `/Pictures/palermo-recon/`*
+
+---
+---
+
+# Page 3: The 100m Rule & Location Strategy
+
+## Mosey's Rule
+
+> "ANY DECENT VENDING MACHINE WITHIN 100 METERS OF ANY TRAIN STATION ARE MONEY MAKERS IF MANAGED PROPERLY"
+> — Mosey, Swiss vending industry veteran
+
+This is not theory. This is field-tested wisdom from operators running profitable machines.
+
+---
+
+## The Formula
+
+```
+VENDING SUCCESS = LOCATION + CALIBRATION + BEST SELLERS
+
+1. LOCATION (100m Rule)
+   └─ Within 100 meters of train station OR ferry terminal
+   └─ High foot traffic
+   └─ Commuters/tourists = impulse buyers
+   └─ 24/7 potential customers
+
+2. CALIBRATION (Equipment/Site)
+   ├─ SAFE:    Secure from vandalism
+   ├─ SECURE:  Proper locks, camera coverage
+   ├─ POWER:   Reliable electrical connection
+   └─ ACCESS:  Easy for restocking
+
+3. BEST SELLERS (Restock Strategy)
+   └─ Stock what's HOT today
+   └─ Not what was hot last year
+   └─ Adapt to market trends (currently: vapes)
+```
+
+---
+
+## Trapani Target Locations
+
+### Priority 1: Porto di Trapani (Ferry Terminal)
+
+| Factor | Assessment |
+|--------|------------|
+| Traffic | 500+ tourists/day peak season (Egadi Islands ferries) |
+| Dwell time | 30-60 min wait for ferries |
+| Demographics | Tourists, day-trippers, families |
+| Competition | Zero vending for CBD/vapes |
+| Products fit | Cold drinks (waiting in heat), CBD (vacation relaxation), vapes |
+| Contact | Vito (port industry connections, 20+ years) |
+
+**Why this works:** Captive audience waiting in heat. Impulse buy environment. No competition.
+
+### Priority 2: Trapani Centrale (Train Station)
+
+| Factor | Assessment |
+|--------|------------|
+| Traffic | Commuters + tourists to/from Palermo, Marsala |
+| Dwell time | 10-30 min platform wait |
+| Demographics | Mixed local/tourist |
+| Competition | Standard snack machines only |
+| Products fit | Cold drinks, quick vape purchase, CBD for travel |
+| Contact | Municipal permit required |
+
+**Why this works:** Classic 100m rule application. Proven model across Europe.
+
+### Priority 3: Nettuno Area (Waterfront)
+
+| Factor | Assessment |
+|--------|------------|
+| Traffic | Evening passeggiata, nightlife |
+| Dwell time | Extended (bars, restaurants nearby) |
+| Demographics | Young locals, tourists |
+| Competition | Bars sell beer (but close at night) |
+| Products fit | Late-night beer, CBD, vapes |
+| Contact | Local business relationships (GYM 4U network) |
+
+**Why this works:** 24/7 machine serves after-hours demand when bars close.
+
+---
+
+## Backup Locations (Pre-Scouted)
+
+Critical for 3-strike rule: if primary location partner fails, immediate alternatives ready.
+
+| Backup | Type | Notes |
+|--------|------|-------|
+| Erice cable car station | Tourist | High season traffic |
+| Marsala centro | Expansion | Wine tourism crossover |
+| Trapani airport | Long-term | Requires airport authority approval |
+| Beach areas (San Vito) | Seasonal | Summer-only consideration |
+
+---
+
+## Location Partner Model
+
+We don't buy real estate. We partner with existing businesses.
+
+### The Deal Structure
+
+```
+HELIX CBD MAX          LOCATION PARTNER
+─────────────────      ─────────────────
+Provides machine       Provides space + power
+Supplies inventory     Restocks (DHL delivery)
+Handles compliance     Reports issues
+Sets prices            Collects revenue share
+                       ↓
+              REVENUE SPLIT: TBD (typically 70/30 or 80/20)
+```
+
+### Partner Accountability
+
+| Strike | Consequence |
+|--------|-------------|
+| 1st | Warning + conversation |
+| 2nd | Formal notice |
+| 3rd | Machine relocated to backup location |
+
+**Philosophy:** Win-win or move on. No drama. Backup already scouted.
+
+---
+
+## Sicily Niche Strategy
+
+We do NOT scale to all of Italy. We niche.
+
+```
+YEAR 1: Trapani only (prove the model)
+YEAR 2: Palermo expansion (if Trapani profitable)
+YEAR 3: Eastern Sicily consideration (Catania, Siracusa)
+
+NEVER: Mainland Italy (different market, different regulations, different mafia)
+```
+
+**Why niche?**
+- Sicily is an island = natural boundary
+- 5 million population = enough market
+- Manageable logistics (van can reach any point in 3 hours)
+- Build relationships deep, not wide
+- Become "the Sicily vending guys"
+
+---
+
+## Key Insight
+
+> The 100m rule is not about the machine. It's about the **humans walking past.**
+>
+> Ferry terminal: humans waiting, bored, hot, have money, want something NOW.
+> Train station: humans in transit, impulse decisions, quick purchases.
+> Waterfront: humans relaxing, open to new experiences, evening mindset.
+>
+> Put the right products where humans are already gathered. That's it.
