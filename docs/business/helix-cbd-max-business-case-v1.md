@@ -50,7 +50,7 @@ Field reconnaissance (Palermo, January 2026) confirmed:
 - Tourist traffic underserved
 - Local market uneducated but receptive
 
-**Mosey's Rule applies:** Any decent vending machine within 100 meters of a train station or ferry terminal is a money maker if managed properly.
+**Marco's Rule applies:** Any decent vending machine within 100 meters of a train station or ferry terminal is a money maker if managed properly.
 
 ---
 
@@ -330,7 +330,7 @@ On-the-ground reconnaissance of Sicily's CBD market. Two top-rated shops visited
 
 ## The Vape Opportunity
 
-From Mosey's Rule (KB-020): **"VAPES, VAPES, VAPES!"**
+From Marco's Rule (KB-020): **"VAPES, VAPES, VAPES!"**
 
 Neither Palermo shop emphasizes vape production. They resell. We produce.
 
@@ -343,7 +343,7 @@ Neither Palermo shop emphasizes vape production. They resell. We produce.
 
 **Felix's capability:** Proven vape filling at scale. CBD production uses same equipment and process. Lab validation via existing Zurich account.
 
-> "Vapes are what's selling NOW. CBD flower is the niche differentiator." — Mosey's Rule
+> "Vapes are what's selling NOW. CBD flower is the niche differentiator." — Marco's Rule
 
 ---
 
@@ -354,12 +354,12 @@ Neither Palermo shop emphasizes vape production. They resell. We produce.
 
 # Page 3: The 100m Rule & Location Strategy
 
-## Mosey's Rule
+## Marco's 100m Rule
 
 > "ANY DECENT VENDING MACHINE WITHIN 100 METERS OF ANY TRAIN STATION ARE MONEY MAKERS IF MANAGED PROPERLY"
-> — Mosey, Swiss vending industry veteran
+> — Marco, Swiss Harbin Representative
 
-This is not theory. This is field-tested wisdom from operators running profitable machines.
+This is not theory. This is field-tested wisdom from the guy who installs and services vending machines across Switzerland. Marco is the Harbin rep for all of Switzerland, ordering machines from Italy (near Milan).
 
 ---
 
@@ -614,6 +614,18 @@ NEVER: Mainland Italy (different market, different regulations, different mafia)
 
 **Role:** Every batch tested before sale. Paper trail for audits.
 
+### Mosey / 420 Wholesale (Accessories & Resale Products)
+
+| Attribute | Details |
+|-----------|---------|
+| Business | 420 Wholesale Shop, Bern |
+| Position | Biggest wholesale supplier in Switzerland |
+| Relationship | Felix buys heavily from Mosey; they're tight |
+| Data Integration | Open source CSV catalog → integrated into Artemis POS |
+| Our relationship | Indirect (via Felix) - Mosey is money-focused |
+
+**Role:** Source for accessories, papers, grinders, resale products. Not a direct partner but part of the supply ecosystem via Felix.
+
 ---
 
 ## The 0.5% THC Strategy
@@ -768,7 +780,7 @@ Risk: Medium (weather, farmer reliability)
 - Custom branding possible
 - Quality control at source
 
-### Why Vapes Win (Mosey's Rule)
+### Why Vapes Win (Marco's Rule)
 
 ```
 "VAPES, VAPES, VAPES!"
@@ -891,3 +903,175 @@ If CBD regulations change:
 > If everything changes, we adapt.
 >
 > The machine stays. The products evolve.
+
+---
+---
+
+# Page 6: Technology Stack
+
+## HelixNet Platform
+
+HelixNet is not just software — it's the compliance backbone that makes Helix CBD Max audit-proof.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        HELIXNET ARCHITECTURE                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  BATCH TRACKING (ISO 9001 Compliant)                               │
+│  └─ Every product traced from clone to customer                     │
+│  └─ Batch codes link to lab certificates                           │
+│  └─ Expiry dates enforced                                          │
+│                                                                     │
+│  VAT COMPLIANCE (The Catch)                                        │
+│  └─ VAT calculated AFTER discounts (not before)                    │
+│  └─ Multi-rate support (CH 8.1%/2.5%, IT 22%/10%)                 │
+│  └─ Audit-ready reports                                            │
+│                                                                     │
+│  INVENTORY MANAGEMENT                                               │
+│  └─ Real-time stock levels                                         │
+│  └─ Reorder alerts                                                 │
+│  └─ Multi-location tracking                                        │
+│                                                                     │
+│  ARTEMIS POS INTEGRATION                                           │
+│  └─ 6,000+ products loaded (420 wholesale CSV)                     │
+│  └─ Barcode scanning                                               │
+│  └─ Receipt generation                                             │
+│                                                                     │
+│  REPORTING                                                          │
+│  └─ Sales by product, location, time                               │
+│  └─ Margin analysis                                                │
+│  └─ Compliance exports                                             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Why VAT Compliance Matters
+
+### The €20 Million Mistake (Real Story)
+
+A major consulting firm (rhymes with "Decenture") built a system that calculated VAT BEFORE applying discounts. Result: customers overcharged, company liable for €20M+ in corrections.
+
+**HelixNet does it right:**
+
+```
+WRONG (How others do it):
+├─ Price: €100
+├─ VAT (22%): €22
+├─ Subtotal: €122
+├─ Discount (10%): -€12.20
+└─ Total: €109.80  ← VAT calculated on wrong base!
+
+RIGHT (How HelixNet does it):
+├─ Price: €100
+├─ Discount (10%): -€10
+├─ Subtotal: €90
+├─ VAT (22%): €19.80
+└─ Total: €109.80  ← Same total, but VAT is CORRECT
+```
+
+**Why it matters for audits:** Tax authorities check VAT calculations. Wrong method = penalties + back taxes. Right method = clean audit.
+
+---
+
+## Batch Tracking Flow
+
+Every product in the vending machine has a traceable history:
+
+```
+BATCH CODE: HCM-2026-001-A
+
+TRACE HISTORY:
+├─ 2026-02-01: Clone created (Benny, mother plant #3)
+├─ 2026-02-15: Planted at Grow Motion AG
+├─ 2026-05-01: Harvested, dried, cured
+├─ 2026-05-10: Lab test (Zurich) - 0.48% THC, 18% CBD ✓
+├─ 2026-05-12: Certificate issued (CERT-2026-0547)
+├─ 2026-05-15: Felix production - 200 vapes filled
+├─ 2026-05-16: Sylvken packaging - branded, labeled
+├─ 2026-05-18: Shipped to Sicily (DHL tracking: 1234567890)
+├─ 2026-05-20: Received by Vito (Trapani)
+├─ 2026-05-20: Loaded into machine (Porto location)
+├─ 2026-06-15: EXPIRES (90-day shelf life)
+│
+└─ STATUS: Active, 47 units remaining, 153 sold
+```
+
+**If inspector asks:** "Where did this product come from?" — we show them the full chain in 30 seconds.
+
+---
+
+## Integration Points
+
+### Artemis POS (Felix's System)
+
+| Feature | Status |
+|---------|--------|
+| Product catalog (6,000+ SKUs) | ✓ Loaded from 420 CSV |
+| Barcode scanning | ✓ Operational |
+| VAT calculation | ✓ Correct method |
+| Receipt printing | ✓ Multi-language |
+| Banana accounting export | ✓ Swiss standard |
+
+### Vending Machine Integration (Future)
+
+| Feature | Status |
+|---------|--------|
+| Real-time inventory sync | Planned (API with Harbin) |
+| Sales reporting | Planned |
+| Remote price updates | Planned |
+| Stock alerts | Planned |
+
+**Year 1:** Manual inventory tracking + Artemis backend
+**Year 2+:** Full vending machine API integration
+
+---
+
+## Data Security
+
+| Layer | Implementation |
+|-------|----------------|
+| Access control | Keycloak (role-based) |
+| Data encryption | TLS in transit, encrypted at rest |
+| Backup | Daily automated |
+| Audit logs | All changes tracked (who, what, when) |
+
+**GDPR compliance:** Customer data minimized. No personal data stored beyond transaction requirements.
+
+---
+
+## Existing Infrastructure (No Build Required)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| HelixNet core platform | ✓ Built | Python/FastAPI |
+| Batch tracking models | ✓ Built | lab_test_model.py, batch_model.py |
+| ISO 9001 framework | ✓ Documented | BLQ-ISO-9001-FRAMEWORK.md |
+| Artemis POS | ✓ Operational | Felix using daily |
+| Farm-to-locker schema | ✓ Built | Molly's model → CBD model |
+| VAT calculations | ✓ Built | Multi-jurisdiction support |
+| Product catalog | ✓ Loaded | 420 wholesale CSV integrated |
+
+**Development effort for CBD vertical:** Configuration, not coding. The platform exists.
+
+---
+
+## Tech Team
+
+| Person | Role | Availability |
+|--------|------|--------------|
+| Angelo | HelixNet architecture, backend | Full time on project |
+| Miki | Frontend, UX, website | Part time (Romania) |
+| Felix | Artemis POS operations | Using daily |
+
+---
+
+## Key Insight
+
+> The technology is already built. HelixNet started as a "flunky" project — but it solved real problems: batch tracking, VAT compliance, inventory management.
+>
+> For Helix CBD Max, we're not building new software. We're deploying existing software to a new vertical.
+>
+> That's the difference between a €100K development project and a €5K configuration project.
