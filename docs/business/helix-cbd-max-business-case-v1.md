@@ -503,3 +503,186 @@ NEVER: Mainland Italy (different market, different regulations, different mafia)
 > Waterfront: humans relaxing, open to new experiences, evening mindset.
 >
 > Put the right products where humans are already gathered. That's it.
+
+---
+---
+
+# Page 4: Supply Chain
+
+## The Chain
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    HELIX CBD MAX SUPPLY CHAIN                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  GENETICS (We Own)                                                  │
+│  └─ Mother plants → proprietary strain                              │
+│  └─ Target: 0.5% THC (buffer under Italy 0.6% limit)               │
+│         │                                                           │
+│         ▼                                                           │
+│  CLONING (Benny)                                                    │
+│  └─ Clone expert maintains mothers                                  │
+│  └─ Consistent genetics = consistent THC %                          │
+│  └─ Scales via outdoor farmers                                      │
+│         │                                                           │
+│         ▼                                                           │
+│  GROWING (Year 1: Grow Motion AG / Year 2+: Outdoor Farmers)       │
+│  └─ Year 1: Swiss indoor (Grow Motion AG, Zuchwil)                 │
+│  └─ Year 2+: Outdoor farmers with our clones                       │
+│  └─ Lower cost, higher volume                                       │
+│         │                                                           │
+│         ▼                                                           │
+│  LAB TESTING (Zurich Lab - Existing Account)                       │
+│  └─ THC % verification                                              │
+│  └─ CBD % confirmation                                              │
+│  └─ Batch certification                                             │
+│         │                                                           │
+│         ▼                                                           │
+│  PRODUCTION (Felix)                                                 │
+│  └─ Vape filling: 100 units/hour                                   │
+│  └─ Flower packaging                                                │
+│  └─ Oil extraction (if needed)                                      │
+│         │                                                           │
+│         ▼                                                           │
+│  PACKAGING (Sylvken)                                                │
+│  └─ Brand design                                                    │
+│  └─ Compliant labeling (batch codes, THC %, warnings)              │
+│  └─ Multi-language (IT/EN/DE)                                       │
+│         │                                                           │
+│         ▼                                                           │
+│  DISTRIBUTION (DHL to Sicily)                                       │
+│  └─ Ecolution GmbH (Swiss) ships to Italy                          │
+│  └─ Location partner receives                                       │
+│  └─ Partner restocks machine                                        │
+│         │                                                           │
+│         ▼                                                           │
+│  CUSTOMER (Vending Machine)                                         │
+│  └─ 24/7 availability                                               │
+│  └─ Card + cash payment                                             │
+│  └─ Age verification                                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Key Suppliers
+
+### Grow Motion AG (Year 1 Primary)
+
+| Attribute | Details |
+|-----------|---------|
+| Location | Zuchwil, Switzerland (near Solothurn) |
+| Facility | 6,000 sqm |
+| Quality | Pharmaceutical grade |
+| Relationship | Existing (Angelo saved them from Fabio/Roberto scam) |
+| Contact | Ben Green (headgrower) |
+
+**Role:** Initial flower supply while outdoor farming scales up.
+
+### Benny (Clone Operations)
+
+| Attribute | Details |
+|-----------|---------|
+| Expertise | Clone propagation, mother plant maintenance |
+| Value | Genetic consistency |
+| Ownership | We own the strain, Benny operates |
+| Scalability | Supplies clones to outdoor farmers |
+
+**Role:** Ensures every plant produces the same 0.5% THC flower. No variance.
+
+### Felix (Production)
+
+| Attribute | Details |
+|-----------|---------|
+| Capability | Vape filling (100/hour), packaging, quality control |
+| Experience | 25 years Swiss CBD industry |
+| Equipment | Production line ready |
+| Location | Artemis, Littau area |
+
+**Role:** Transforms raw flower/oil into finished vape products.
+
+### Zurich Lab (Testing)
+
+| Attribute | Details |
+|-----------|---------|
+| Account | Existing via Ecolution GmbH |
+| Tests | THC %, CBD %, contaminants |
+| Turnaround | TBD (typically 3-5 days) |
+| Certification | Batch certificates for compliance |
+
+**Role:** Every batch tested before sale. Paper trail for audits.
+
+---
+
+## The 0.5% THC Strategy
+
+Italian legal limit: **0.6% THC**
+
+Our target: **0.5% THC**
+
+**Why the buffer?**
+
+| Scenario | Our Position |
+|----------|--------------|
+| Lab tests at 0.5% | ✓ Compliant |
+| Natural variance (+0.05%) | ✓ Still compliant at 0.55% |
+| Different lab equipment (+0.05%) | ✓ Still compliant at 0.55% |
+| Police test with margin of error | ✓ Buffer protects us |
+
+**How we achieve it:**
+1. Clone consistency (same genetics every time)
+2. Controlled growing conditions (Grow Motion Year 1)
+3. Lab testing BEFORE shipment to Italy
+4. Reject any batch over 0.55%
+
+---
+
+## Year 1 vs Year 2+ Model
+
+### Year 1: Swiss Indoor
+
+```
+Grow Motion AG → Lab Test → Felix Production → DHL → Sicily
+
+Cost: Higher (indoor Swiss production)
+Quality: Guaranteed
+Volume: Limited
+Risk: Low (proven facility)
+```
+
+### Year 2+: Outdoor Farmer Network
+
+```
+Benny Clones → Sicilian/Italian Farmers → Lab Test → Packaging → Local Distribution
+
+Cost: Lower (outdoor, local)
+Quality: Controlled via clones
+Volume: Scalable
+Risk: Medium (weather, farmer reliability)
+```
+
+**Transition criteria:** Year 1 profitable + reliable farmer partners identified.
+
+---
+
+## Supply Chain Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Grow Motion can't deliver | No product | Benny maintains backup mothers; alternative Swiss suppliers |
+| Batch fails lab test | Delayed shipment | Buffer inventory; reject early, retest |
+| DHL loses shipment | Empty machine | Local buffer stock with Vito; insurance |
+| Felix unavailable | No vape production | Flower-only sales temporarily; cross-train backup |
+| Clone contamination | Genetic drift | Multiple mother plants; regular genetic verification |
+
+---
+
+## Key Insight
+
+> We own the genetics. We control the quality. We test before we ship.
+>
+> The supply chain is not "buy from whoever" — it's a controlled pipeline where every step is documented and every batch is traceable.
+>
+> This is the ISO 9001 difference. This is why we survive audits.
