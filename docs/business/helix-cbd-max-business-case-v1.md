@@ -1,5 +1,5 @@
 # HELIX CBD MAX
-## Business Case v1.3 | January 2026
+## Business Case v1.4 | January 2026
 
 ---
 
@@ -42,7 +42,7 @@ This proposal formalizes an expansion of our existing partnership into the Itali
 
 ## The Opportunity
 
-**Sicily has minimal CBD presence in Trapani** - a city of 70,000 with significant port traffic (Egadi Islands ferries) and only one weak competitor (Che Maria H24 - broken payment system, low-quality product).
+**Sicily has minimal CBD presence in Trapani** - a city of 70,000 with significant port traffic (Egadi Islands ferries) and one existing competitor (Che Maria H24 - decent product selection but payment issues and no vapes).
 
 Field reconnaissance (Palermo & Trapani, January 2026) confirmed:
 - Existing shops are disorganized, cash-heavy, compliance-light
@@ -121,7 +121,7 @@ We propose a 12-month pilot in Sicily:
 1. **Angelo is on the ground in Sicily** - Already building relationships (Vito, gym network)
 2. **HelixNet is ready** - ISO 9001 framework built, batch tracking operational
 3. **Sylvken returns end of January** - Packaging design can begin immediately
-4. **Weak competition in Trapani** - One broken machine (Che Maria) = validated demand, easy to outperform
+4. **Weak competition in Trapani** - One competitor (Che Maria) with payment issues and no vapes = validated demand, clear gaps to fill
 5. **Felix's Swiss credibility** - Legitimizes the operation from day one
 
 ---
@@ -177,7 +177,8 @@ We propose a 12-month pilot in Sicily:
 | 1.0 | 2026-01-16 | Angelo Kenel | DRAFT |
 | 1.1 | 2026-01-16 | Angelo Kenel | Added Ecolution GmbH, vape production, Zurich lab |
 | 1.2 | 2026-01-16 | Angelo Kenel | HTML formatting, print-ready layout |
-| 1.3 | 2026-01-16 | Angelo Kenel | **Added Che Maria competitive analysis (field recon)** |
+| 1.3 | 2026-01-16 | Angelo Kenel | Added Che Maria competitive analysis (field recon) |
+| 1.4 | 2026-01-17 | Angelo Kenel | **Corrected Che Maria assessment - decent product selection, payment issues not "broken"** |
 
 **Classification:** Partner Confidential
 
@@ -358,9 +359,9 @@ Neither Palermo shop emphasizes vape production. They resell. We produce.
 
 ## Field Discovery: Che Maria H24 (January 16, 2026)
 
-**Breaking news:** Trapani is NOT a blank slate. A CBD vending machine already exists.
+**Update:** Trapani has one existing CBD vending machine — and it's better stocked than initially assessed.
 
-During reconnaissance today, we discovered **Che Maria H24** — a 24-hour CBD vending machine located approximately 600 meters from GYM 4U, next to ChiCoffee (coffee capsule shop).
+During reconnaissance, we discovered **Che Maria H24** — a 24-hour CBD vending machine located approximately 600 meters from GYM 4U, next to ChiCoffee (coffee capsule shop). Possibly part of an **Erice franchise** (branding visible above machine).
 
 ---
 
@@ -368,120 +369,139 @@ During reconnaissance today, we discovered **Che Maria H24** — a 24-hour CBD v
 
 | Attribute | Details |
 |-----------|---------|
-| Brand | Che Maria |
-| Location | Via [near ChiCoffee], Trapani |
+| Brand | Che Maria (possible Erice franchise) |
+| Location | Casa Santa, near ChiCoffee, Trapani |
 | Operation | H24 (24 hours) |
-| Type | Standard vending machine, black with cannabis leaf branding |
-| Products | CBD flower, energy drinks, accessories |
-| Payment | **BROKEN** — required owner to open with key |
+| Type | Standard vending machine with touchscreen |
+| Operator | Coffee shop owner (turnkey franchise model) |
+| Supply | Products sourced from Palermo |
 
-**Critical observation:** The owner of the adjacent shop had to physically open the machine with a key to complete my purchase. The payment system was non-functional.
+### Payment System (Corrected)
+
+| Method | Status | Notes |
+|--------|--------|-------|
+| Coins | Available | Recommended per Google review |
+| Bills | **Problematic** | €5 note rejected during test |
+| Cards | Not available | No debit/credit option |
+| ID Check | **Issues** | Requires chip-enabled ID (Swiss ID without chip failed) |
+
+**Note:** Machine isn't "broken" — it has payment compatibility issues. Google review (10 months ago) confirms: *"The product is good. The machine often malfunctions. I recommend using coins, not bills."*
 
 ---
 
-## Product Analysis
+## Product Analysis (Corrected Assessment)
 
-### What's In The Machine
+### Full Inventory Observed
 
-| Row | Products | Notes |
-|-----|----------|-------|
-| Top | CBD flower bags (various strains) | Small baggies, different packaging |
-| Middle | Energy drinks (Monster, Fanta, etc.) | Mixed beverage selection |
-| Bottom | CBD products, grinders | AK-47 strain visible |
+![Che Maria Product Display](recon/che-maria-product-display.jpg)
 
-### Purchase Made
+| Row | Products | Brands/Strains Visible |
+|-----|----------|------------------------|
+| **Top** | Premium CBD flower | CHE MARIA branded, specialty strains |
+| **Row 2** | CBD flower varieties | Multiple packaging styles, different grades |
+| **Row 3** | CBD flower + hash | AK-47, KING, others visible |
+| **Row 4** | Drinks | Water, Fanta, Coca-Cola, Peroni beer, energy drinks |
+| **Bottom** | Budget CBD + accessories | AK-47 small bags (€5-6), grinders |
+
+### Products Confirmed
+
+| Category | Available | Notes |
+|----------|-----------|-------|
+| CBD Flower | ✓ Multiple strains | AK-47, KING, premium branded bags |
+| CBD Oil | **SOLD OUT** | Owner said "people use for sleep" — HIGH DEMAND |
+| CBD Hash | ✓ Visible | Round containers |
+| CBD Vapes | **NOT VISIBLE** | Gap in their offering |
+| Drinks | ✓ Good selection | Beer, energy drinks, soft drinks, water |
+| Accessories | ✓ Grinders | Bottom row |
+
+### Price Points Observed
+
+| Product | Price | Quality Assessment |
+|---------|-------|-------------------|
+| AK-47 (5g bag) | €5-6 | Budget tier (shake/trim) |
+| Premium strains | €10-15+ | Better quality visible |
+| Drinks | €2-3 | Standard vending prices |
+
+---
+
+## Purchase Test
 
 | Item | Price | Quality |
 |------|-------|---------|
-| AK-47 CBD (5g) | €5 | Not buds — shake/trim quality |
+| AK-47 CBD (5g) | €5 | Shake/trim — cheapest option available |
 
-**Assessment:** Low-quality product, poor presentation, no compliance documentation visible.
-
----
-
-## Competitor Weaknesses
-
-### 1. Payment System Failure
-The machine could not process payment. Owner intervention required.
-
-**Impact:** Lost sales 24/7. Customers walk away. Trust eroded.
-
-**Our advantage:** Marco-maintained Harbin machines with working card + cash systems.
-
-### 2. Basic Branding
-Black box with cannabis leaf. No premium positioning. Looks like every other amateur CBD operation.
-
-**Impact:** No differentiation. No brand loyalty. Commodity perception.
-
-**Our advantage:** Sylvken-designed professional branding. Helix CBD Max = quality signal.
-
-### 3. No Visible Compliance
-No QR codes, no batch certificates, no lab test references visible on products.
-
-**Impact:** Vulnerable to police scrutiny. No defense if tested.
-
-**Our advantage:** HelixNet batch tracking. Every product traceable to lab certificate.
-
-### 4. Product Quality
-AK-47 purchased was shake/trim, not proper buds. €5 for 5g = €1/g pricing signals low quality.
-
-**Impact:** Educated customers go elsewhere. Only serves desperate/uninformed market.
-
-**Our advantage:** Felix production, lab-tested, 0.5% THC target, real flower quality.
-
-### 5. Location (Recessed)
-Machine set back in archway. Not prime sidewalk visibility.
-
-**Impact:** Lower impulse purchases. Less foot traffic exposure.
-
-**Our advantage:** 100m rule — prime port/station locations with maximum visibility.
+**Note:** Only had €5 in wallet. Purchased lowest tier. Higher quality products available but not tested.
 
 ---
 
-## Competitive Matrix
+## Corrected Competitive Assessment
+
+### What They Do RIGHT
+
+| Factor | Assessment |
+|--------|------------|
+| Product variety | Good — multiple strains, price points |
+| Drink selection | Good — beer, energy, soft drinks, water |
+| 24/7 availability | Yes |
+| Location | Decent foot traffic area |
+| CBD oil demand | High — sold out proves market |
+
+### What They Do WRONG (Our Opportunity)
+
+| Factor | Issue | Our Advantage |
+|--------|-------|---------------|
+| Payment | Bills fail, no cards, ID chip required | Harbin machines: cards + cash + all IDs |
+| Vapes | **NOT IN MACHINE** | Felix production (100/hour) — core product |
+| Stock management | CBD oil sold out | HelixNet inventory alerts |
+| Compliance | No visible batch codes | ISO 9001 tracked |
+| Branding | Generic cannabis branding | Sylvken professional design |
+| Machine support | Issues known for 10+ months | Marco service contract |
+
+---
+
+## Competitive Matrix (Updated)
 
 | Factor | Che Maria H24 | Helix CBD Max |
 |--------|---------------|---------------|
-| Payment system | **Broken** | Working (card + cash) |
-| Product quality | Shake/trim | Lab-tested flower |
-| Branding | Amateur | Professional |
+| Product variety | Good (multiple strains) | Good + VAPES |
+| CBD Vapes | **NOT AVAILABLE** | **CORE PRODUCT** |
+| CBD Oil | Sold out | Stocked (Felix supply) |
+| Payment (cards) | No | Yes |
+| Payment (bills) | Problematic | Working |
+| ID verification | Chip-only (limited) | All IDs worldwide |
 | Compliance | None visible | ISO 9001 tracked |
-| Location | Recessed | 100m rule prime |
-| Price point | €1/g (low quality) | €8-10/g (quality) |
-| Vapes | Not visible | Core product (Felix) |
-| Beer/drinks | Yes (mixed) | Yes (refrigerated) |
-| Machine maintenance | Broken | Marco contract |
+| Location | Casa Santa (decent) | 100m rule (prime) |
+| Google Rating | 4.3 ★ (3 reviews) | TBD |
 
 ---
 
-## Strategic Implications
+## Strategic Implications (Updated)
 
 ### 1. Market IS Validated
-Someone already bet on CBD vending in Trapani. The concept works. We're not pioneers — we're upgrades.
+Che Maria has decent product selection and survives. Demand exists. **CBD oil sold out = sleep product demand is HIGH.**
 
-### 2. Bar Is LOW
-If this broken machine survives, a properly operated machine will thrive.
+### 2. The REAL Gap: VAPES
+Che Maria doesn't have vapes visible. This is our core product (Felix). We're not competing head-to-head on flower — we're filling a product gap.
 
-### 3. Different Positioning
-We're not competing on price (€1/g shake). We're competing on:
-- Reliability (machine works)
-- Quality (lab-tested)
-- Experience (cold beer + premium CBD)
-- Trust (compliance documentation)
+### 3. Payment Is The Weakness
+Their machine has known payment issues for 10+ months (per Google review). Working payment = immediate advantage.
 
-### 4. Potential Acquisition Target?
-If Che Maria owner is struggling with broken equipment and low-quality supply, they might welcome:
-- Machine upgrade partnership
-- Supply agreement (Felix products)
-- Full acquisition of location contract
+### 4. Franchise Model Exists
+Che Maria appears to be a turnkey franchise (Erice branding, coffee shop owner operates). **Could be partnership or acquisition opportunity.**
 
-**Note:** This is speculative. Observe before approaching.
+### 5. Different Positioning
+| Che Maria | Helix CBD Max |
+|-----------|---------------|
+| Budget-focused (€1/g shake) | Quality-focused (€8-10/g flower) |
+| No vapes | Vapes = core product |
+| Payment issues | Payment works |
+| Local Palermo supply | Swiss lab-tested supply |
 
 ---
 
 ## Recon Photos
 
-7 photos documented in `/docs/business/recon/`:
+8 photos documented in `/docs/business/recon/`:
 - `che-maria-1.jpg` - Street approach (rainy night)
 - `che-maria-2.jpg` - Exterior view
 - `che-maria-3.jpg` - Machine next to ChiCoffee
@@ -489,19 +509,22 @@ If Che Maria owner is struggling with broken equipment and low-quality supply, t
 - `che-maria-5.jpg` - Product display (full machine)
 - `che-maria-6.jpg` - Product close-up
 - `che-maria-7.jpg` - Product detail (strains visible)
+- **`che-maria-product-display.jpg`** - Cropped product display (for documents)
 
 ---
 
-## Key Insight
+## Key Insight (Updated)
 
-> Che Maria proves the market. Their failures prove the opportunity.
+> Che Maria proves the market. Their product selection is decent.
 >
-> A broken machine selling €1/g shake is surviving in Trapani.
-> A working machine selling lab-tested Felix products will dominate.
+> But they don't have vapes. They don't have working card payments.
+> They don't have lab-tested Swiss product. They don't have HelixNet compliance.
 >
-> We're not entering a blank market. We're entering a market with one weak player.
-> That's better. The demand is proven. The execution is lacking.
-> We execute.
+> CBD oil sold out = people want sleep products. We stock it.
+> No vapes visible = people want vapes. We make them (Felix, 100/hour).
+>
+> We're not replacing them. We're filling the gaps they can't fill.
+> We execute better.
 
 ---
 ---
