@@ -337,34 +337,66 @@
             margin-left: 5px;
             font-weight: bold;
         }
+
+        /* Full-bleed image cover */
+        .cover-image {
+            position: relative;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 0;
+            background: #1a1a1a;
+        }
+        .cover-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .cover-image .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            padding: 40px 30px 30px 30px;
+            text-align: center;
+        }
+        .cover-image .overlay h1 {
+            color: #f4a460;
+            font-size: 24pt;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .cover-image .overlay .subtitle {
+            color: #fff;
+            font-size: 12pt;
+            margin-bottom: 8px;
+        }
+        .cover-image .overlay .version {
+            color: #ccc;
+            font-size: 10pt;
+        }
+        .cover-image .overlay .confidential {
+            color: #ff6b6b;
+            font-size: 8pt;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        @media print {
+            .cover-image { page-break-after: always; }
+        }
     </style>
 </head>
 <body>
 
 <!-- ==================== COPERTINA ==================== -->
-<div class="page">
-    <div class="cover">
-        <div class="logo" style="font-size: 28pt; margin-bottom: 15px;">HELIX <span>CBD MAX</span></div>
-        <h1>Piano Aziendale</h1>
-        <div class="subtitle">Operazioni Distributori Automatici Sicilia</div>
-        <div class="version">Versione 1.4 | Gennaio 2026</div>
-
-        <div class="confidential" style="width: 70%; margin: 0 auto 30px auto;">
-            RISERVATO - RICHIESTO NDA
-        </div>
-
-        <div class="meta">
-            <strong>Preparato da:</strong> Angelo Kenel<br>
-            <strong>Azienda:</strong> Ecolution GmbH (fondata 2015)<br>
-            <strong>Piattaforma:</strong> HelixNet<br>
-            <strong>Sede:</strong> Trapani, Sicilia<br>
-            <strong>Contatto:</strong> ecolution.gmbh@gmail.com
-        </div>
-    </div>
-
-    <div class="page-footer-line">
-        <span>Helix CBD Max | Piano Aziendale v1.4</span>
-        <span>RISERVATO</span>
+<div class="cover-image">
+    <img src="recon/trapani-cover-portrait.png" alt="Trapani - La Città tra i Due Mari">
+    <div class="overlay">
+        <h1>HELIX CBD MAX</h1>
+        <div class="subtitle">Piano Aziendale | Operazioni Sicilia</div>
+        <div class="version">Versione 1.5 | Gennaio 2026</div>
+        <div class="confidential">⚠️ RISERVATO — RICHIESTO NDA</div>
     </div>
 </div>
 
