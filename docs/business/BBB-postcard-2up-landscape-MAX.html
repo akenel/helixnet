@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BBB Postcard 2-Up Landscape MAX</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page { size: A4; margin: 5mm; }
+        body { font-family: 'Segoe UI', sans-serif; background: #333; }
+
+        .sheet {
+            width: 200mm;
+            height: 287mm;
+            background: white;
+            margin: 5mm auto;
+            padding: 5mm;
+            display: flex;
+            flex-direction: column;
+            gap: 5mm;
+            page-break-after: always;
+        }
+        .sheet:last-child { page-break-after: avoid; }
+
+        .card {
+            flex: 1;
+            border: 0.5mm dashed #ccc;
+            overflow: hidden;
+        }
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-back {
+            flex: 1;
+            border: 0.5mm dashed #ccc;
+            padding: 6mm;
+            display: flex;
+            flex-direction: column;
+            font-size: 11pt;
+            background: #faf9f6;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 0.3mm solid #333;
+            padding-bottom: 4mm;
+            margin-bottom: 4mm;
+        }
+        .logo { font-weight: bold; font-size: 16pt; }
+        .edition { font-size: 10pt; color: #666; text-align: right; }
+        .track-trace { font-family: monospace; font-size: 9pt; }
+
+        .quote-section { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 8mm 0; }
+        .quote { font-style: italic; font-size: 14pt; line-height: 1.5; margin-bottom: 5mm; }
+        .fighter { font-size: 10pt; color: #666; text-align: right; }
+
+        .postcard-format { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: auto; }
+        .message-area { border: 0.3mm solid #999; padding: 5mm; min-height: 35mm; }
+        .message-area .label { font-size: 9pt; color: #999; }
+        .address-area { display: flex; flex-direction: column; }
+        .stamp-box { width: 25mm; height: 30mm; border: 0.3mm solid #999; margin-left: auto; display: flex; align-items: center; justify-content: center; font-size: 9pt; color: #999; }
+        .address-lines { margin-top: auto; }
+        .line { border-bottom: 0.3mm solid #999; height: 9mm; margin-bottom: 3mm; }
+
+        .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5mm; padding-top: 4mm; border-top: 0.3mm solid #333; }
+        .qr-placeholder { width: 22mm; height: 22mm; border: 0.3mm solid #333; display: flex; align-items: center; justify-content: center; font-size: 8pt; text-align: center; }
+        .metadata { text-align: right; color: #666; font-size: 9pt; line-height: 1.6; }
+
+        @media print { body { background: white; } .sheet { margin: 0; } }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: FRONTS - MAX SIZE LANDSCAPE -->
+<div class="sheet">
+    <div class="card">
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/1. ARRIVEDERCI — The Farewell Card . photo_10_2026-01-17_16-42-41.jpg" alt="Arrivederci">
+    </div>
+    <div class="card">
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/3. COASTAL CURVE — The Road - photo_9_2026-01-17_16-42-41.jpg" alt="La Strada">
+    </div>
+</div>
+
+<!-- PAGE 2: BACKS -->
+<div class="sheet">
+    <div class="card-back">
+        <div class="header">
+            <div class="logo">BBB</div>
+            <div class="edition">Sicily Collection Vol.1<br><span class="track-trace">BBB-SC1-002-ARRIV</span></div>
+        </div>
+        <div class="quote-section">
+            <div class="quote">"Get up, stand up. Stand up for your rights."</div>
+            <div class="fighter">— Bob Marley</div>
+        </div>
+        <div class="postcard-format">
+            <div class="message-area"><div class="label">Your message</div></div>
+            <div class="address-area">
+                <div class="stamp-box">STAMP</div>
+                <div class="address-lines"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="qr-placeholder">QR<br>SCAN ME</div>
+            <div class="metadata">Ed. ___/100<br>Monte Cofano<br>38.1°N 12.7°E<br>Jan 2026</div>
+        </div>
+    </div>
+
+    <div class="card-back">
+        <div class="header">
+            <div class="logo">BBB</div>
+            <div class="edition">Sicily Collection Vol.1<br><span class="track-trace">BBB-SC1-004-STRADA</span></div>
+        </div>
+        <div class="quote-section">
+            <div class="quote">"The only thing we have to fear is fear itself."</div>
+            <div class="fighter">— Franklin D. Roosevelt</div>
+        </div>
+        <div class="postcard-format">
+            <div class="message-area"><div class="label">Your message</div></div>
+            <div class="address-area">
+                <div class="stamp-box">STAMP</div>
+                <div class="address-lines"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="qr-placeholder">QR<br>SCAN ME</div>
+            <div class="metadata">Ed. ___/100<br>Coast Road<br>38.0°N 12.6°E<br>Jan 2026</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

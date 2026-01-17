@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BBB Postcard 2-Up Portrait MAX</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page { size: A4; margin: 5mm; }
+        body { font-family: 'Segoe UI', sans-serif; background: #333; }
+
+        .sheet {
+            width: 200mm;
+            height: 287mm;
+            background: white;
+            margin: 5mm auto;
+            padding: 5mm;
+            display: flex;
+            flex-direction: row;
+            gap: 5mm;
+            page-break-after: always;
+        }
+        .sheet:last-child { page-break-after: avoid; }
+
+        .card {
+            flex: 1;
+            border: 0.5mm dashed #ccc;
+            overflow: hidden;
+        }
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-back {
+            flex: 1;
+            border: 0.5mm dashed #ccc;
+            padding: 5mm;
+            display: flex;
+            flex-direction: column;
+            font-size: 10pt;
+            background: #faf9f6;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 0.3mm solid #333;
+            padding-bottom: 4mm;
+            margin-bottom: 4mm;
+        }
+        .logo { font-weight: bold; font-size: 14pt; }
+        .edition { font-size: 9pt; color: #666; text-align: right; }
+        .track-trace { font-family: monospace; font-size: 8pt; }
+
+        .quote-section { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 5mm 0; }
+        .quote { font-style: italic; font-size: 12pt; line-height: 1.5; margin-bottom: 4mm; }
+        .fighter { font-size: 9pt; color: #666; text-align: right; }
+
+        .postcard-format { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: auto; }
+        .message-area { border: 0.3mm solid #999; padding: 4mm; min-height: 40mm; }
+        .message-area .label { font-size: 8pt; color: #999; }
+        .address-area { display: flex; flex-direction: column; }
+        .stamp-box { width: 22mm; height: 28mm; border: 0.3mm solid #999; margin-left: auto; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #999; }
+        .address-lines { margin-top: auto; }
+        .line { border-bottom: 0.3mm solid #999; height: 8mm; margin-bottom: 2mm; }
+
+        .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4mm; padding-top: 4mm; border-top: 0.3mm solid #333; }
+        .qr-placeholder { width: 20mm; height: 20mm; border: 0.3mm solid #333; display: flex; align-items: center; justify-content: center; font-size: 7pt; text-align: center; }
+        .metadata { text-align: right; color: #666; font-size: 8pt; line-height: 1.5; }
+
+        @media print { body { background: white; } .sheet { margin: 0; } }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: FRONTS - MAX SIZE -->
+<div class="sheet">
+    <div class="card">
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/WWII_Bunker_Trapani  _ A4 Portrait _ POST-CARD.png" alt="La Città tra i Due Mari">
+    </div>
+    <div class="card">
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/2. MONTE COFANO — The Peak - photo_2_2026-01-17_16-42-41.jpg" alt="Monte Cofano">
+    </div>
+</div>
+
+<!-- PAGE 2: BACKS -->
+<div class="sheet">
+    <div class="card-back">
+        <div class="header">
+            <div class="logo">BBB</div>
+            <div class="edition">Sicily Collection Vol.1<br><span class="track-trace">BBB-SC1-001-CITTA</span></div>
+        </div>
+        <div class="quote-section">
+            <div class="quote">"One arrow. One apple. One act of defiance that echoed through centuries."</div>
+            <div class="fighter">— Wilhelm Tell</div>
+        </div>
+        <div class="postcard-format">
+            <div class="message-area"><div class="label">Your message</div></div>
+            <div class="address-area">
+                <div class="stamp-box">STAMP</div>
+                <div class="address-lines"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="qr-placeholder">QR<br>SCAN ME</div>
+            <div class="metadata">Ed. ___/100<br>Trapani, Sicily<br>38.0°N 12.5°E<br>Jan 2026</div>
+        </div>
+    </div>
+
+    <div class="card-back">
+        <div class="header">
+            <div class="logo">BBB</div>
+            <div class="edition">Sicily Collection Vol.1<br><span class="track-trace">BBB-SC1-003-COFAN</span></div>
+        </div>
+        <div class="quote-section">
+            <div class="quote">"In a time of universal deceit, telling the truth is a revolutionary act."</div>
+            <div class="fighter">— George Orwell</div>
+        </div>
+        <div class="postcard-format">
+            <div class="message-area"><div class="label">Your message</div></div>
+            <div class="address-area">
+                <div class="stamp-box">STAMP</div>
+                <div class="address-lines"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="qr-placeholder">QR<br>SCAN ME</div>
+            <div class="metadata">Ed. ___/100<br>Monte Cofano<br>38.1°N 12.7°E<br>Jan 2026</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
