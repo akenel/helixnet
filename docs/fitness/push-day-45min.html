@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Day - 45 Min</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 5px;
+            color: #ff6b6b;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        .warmup {
+            background: #2d3a4a;
+            border-left: 4px solid #ffd93d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .warmup h2 { color: #ffd93d; font-size: 1.1em; margin-bottom: 10px; }
+        .warmup ul { padding-left: 20px; }
+        .warmup li { margin: 5px 0; color: #ccc; }
+        .exercise {
+            background: #2d3a4a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4ecdc4;
+        }
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .exercise-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        .exercise-num {
+            background: #4ecdc4;
+            color: #1a1a2e;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .exercise-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .detail-box {
+            background: #1a1a2e;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .detail-label { font-size: 0.7em; color: #888; text-transform: uppercase; }
+        .detail-value { font-size: 1.3em; font-weight: bold; color: #fff; }
+        .notes {
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #aaa;
+            font-style: italic;
+        }
+        .superset {
+            border-left-color: #ff6b6b;
+            position: relative;
+        }
+        .superset::before {
+            content: "SUPERSET";
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: #ff6b6b;
+            color: #fff;
+            font-size: 0.65em;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .finisher {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            border-left: none;
+            color: #fff;
+        }
+        .finisher .exercise-name { color: #fff; }
+        .finisher .detail-box { background: rgba(0,0,0,0.2); }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PUSH DAY</h1>
+        <div class="subtitle">Chest / Shoulders / Triceps - 45 min</div>
+
+        <div class="warmup">
+            <h2>Warm Up (5 min)</h2>
+            <ul>
+                <li>Arm circles - 30 sec each direction</li>
+                <li>Band pull-aparts or light cable flies - 15 reps</li>
+                <li>Push-ups - 10-15 reps</li>
+                <li>Light shoulder press - 10 reps empty bar or light DBs</li>
+            </ul>
+        </div>
+
+        <div class="exercise">
+            <div class="exercise-header">
+                <span class="exercise-name">Flat Bench Press</span>
+                <span class="exercise-num">1</span>
+            </div>
+            <div class="exercise-details">
+                <div class="detail-box">
+                    <div class="detail-label">Sets</div>
+                    <div class="detail-value">4</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Reps</div>
+                    <div class="detail-value">8-10</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Rest</div>
+                    <div class="detail-value">90s</div>
+                </div>
+            </div>
+            <div class="notes">Barbell or dumbbells. Control the weight down, explode up.</div>
+        </div>
+
+        <div class="exercise">
+            <div class="exercise-header">
+                <span class="exercise-name">Overhead Press</span>
+                <span class="exercise-num">2</span>
+            </div>
+            <div class="exercise-details">
+                <div class="detail-box">
+                    <div class="detail-label">Sets</div>
+                    <div class="detail-value">3</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Reps</div>
+                    <div class="detail-value">8-10</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Rest</div>
+                    <div class="detail-value">90s</div>
+                </div>
+            </div>
+            <div class="notes">Standing or seated. Keep core tight, don't arch back.</div>
+        </div>
+
+        <div class="exercise">
+            <div class="exercise-header">
+                <span class="exercise-name">Incline DB Press</span>
+                <span class="exercise-num">3</span>
+            </div>
+            <div class="exercise-details">
+                <div class="detail-box">
+                    <div class="detail-label">Sets</div>
+                    <div class="detail-value">3</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Reps</div>
+                    <div class="detail-value">10-12</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Rest</div>
+                    <div class="detail-value">60s</div>
+                </div>
+            </div>
+            <div class="notes">30-45 degree incline. Squeeze chest at top.</div>
+        </div>
+
+        <div class="exercise superset">
+            <div class="exercise-header">
+                <span class="exercise-name">Lateral Raises</span>
+                <span class="exercise-num">4a</span>
+            </div>
+            <div class="exercise-details">
+                <div class="detail-box">
+                    <div class="detail-label">Sets</div>
+                    <div class="detail-value">3</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Reps</div>
+                    <div class="detail-value">12-15</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Rest</div>
+                    <div class="detail-value">0s</div>
+                </div>
+            </div>
+            <div class="notes">Light weight, control the movement. Slight bend in elbows.</div>
+        </div>
+
+        <div class="exercise superset">
+            <div class="exercise-header">
+                <span class="exercise-name">Tricep Pushdowns</span>
+                <span class="exercise-num">4b</span>
+            </div>
+            <div class="exercise-details">
+                <div class="detail-box">
+                    <div class="detail-label">Sets</div>
+                    <div class="detail-value">3</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Reps</div>
+                    <div class="detail-value">12-15</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Rest</div>
+                    <div class="detail-value">60s</div>
+                </div>
+            </div>
+            <div class="notes">Rope or bar. Keep elbows pinned to sides.</div>
+        </div>
+
+        <div class="exercise finisher">
+            <div class="exercise-header">
+                <span class="exercise-name">Dips or Push-Ups</span>
+                <span class="exercise-num">5</span>
+            </div>
+            <div class="exercise-details">
+                <div class="detail-box">
+                    <div class="detail-label">Sets</div>
+                    <div class="detail-value">2</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Reps</div>
+                    <div class="detail-value">AMRAP</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Rest</div>
+                    <div class="detail-value">Done</div>
+                </div>
+            </div>
+            <div class="notes">Finisher - go to failure. Leave nothing in the tank.</div>
+        </div>
+
+        <div class="footer">
+            GYM 4U Trapani - Saturday Push
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1228 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helix CBD Max - Business Case v1.4 (Italiano)</title>
+    <style>
+        /* Reset and Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #1a1a1a;
+            background: #fff;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                font-size: 9.5pt;
+            }
+            .no-break {
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none;
+            }
+            @page {
+                margin: 1.2cm 1.5cm;
+                size: A4;
+            }
+        }
+
+        /* Page Structure */
+        .page {
+            max-width: 190mm;
+            margin: 0 auto;
+            padding: 20px 30px;
+            background: #fff;
+        }
+
+        @media screen {
+            .page {
+                border-bottom: 2px dashed #ccc;
+                margin-bottom: 20px;
+                padding-bottom: 30px;
+            }
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2d5a27;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #2d5a27;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #f4a460;
+        }
+
+        .doc-info {
+            text-align: right;
+            font-size: 8pt;
+            color: #666;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 16pt;
+            color: #2d5a27;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 12pt;
+            color: #2d5a27;
+            margin: 15px 0 8px 0;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #f4a460;
+        }
+
+        h3 {
+            font-size: 10pt;
+            color: #333;
+            margin: 12px 0 6px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 8px;
+            text-align: justify;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 9pt;
+        }
+
+        th {
+            background: #2d5a27;
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        /* Highlight boxes */
+        .highlight {
+            background: linear-gradient(135deg, #f0f7ee 0%, #e8f5e3 100%);
+            border-left: 3px solid #2d5a27;
+            padding: 10px 12px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+            font-size: 9pt;
+        }
+
+        .highlight-orange {
+            background: linear-gradient(135deg, #fef8f0 0%, #fdf3e6 100%);
+            border-left: 3px solid #f4a460;
+        }
+
+        .highlight-red {
+            background: linear-gradient(135deg, #fef0f0 0%, #fde6e6 100%);
+            border-left: 3px solid #dc3545;
+        }
+
+        /* Warning box */
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 3px solid #ffc107;
+            padding: 8px 12px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+            font-size: 9pt;
+        }
+
+        .warning-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 3px;
+        }
+
+        /* Confidential banner */
+        .confidential {
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 6px;
+            font-weight: bold;
+            font-size: 9pt;
+            margin-bottom: 12px;
+            border-radius: 3px;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 6px 0 10px 20px;
+            font-size: 9pt;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+
+        /* Code/Pre blocks */
+        .diagram {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 8pt;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 8px 0;
+        }
+
+        /* Key insight box */
+        .insight {
+            background: linear-gradient(135deg, #2d5a27 0%, #3d7a37 100%);
+            color: white;
+            padding: 12px 15px;
+            margin: 12px 0;
+            border-radius: 4px;
+            font-size: 9pt;
+        }
+
+        .insight strong {
+            color: #f4a460;
+        }
+
+        /* Two column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Cover page specific */
+        .cover {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .cover h1 {
+            font-size: 28pt;
+            margin-bottom: 5px;
+        }
+
+        .cover .subtitle {
+            font-size: 14pt;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .cover .version {
+            font-size: 11pt;
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .cover .meta {
+            font-size: 10pt;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* TOC */
+        .toc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+            font-size: 9pt;
+        }
+
+        /* Metrics */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .metric {
+            background: #f9f9f9;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .metric-value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #2d5a27;
+        }
+
+        .metric-label {
+            font-size: 8pt;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .checklist li {
+            padding: 4px 0 4px 20px;
+            position: relative;
+        }
+
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: #2d5a27;
+        }
+
+        /* Footer line */
+        .page-footer-line {
+            border-top: 1px solid #ddd;
+            margin-top: 15px;
+            padding-top: 5px;
+            font-size: 7pt;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Compact table */
+        .compact-table td, .compact-table th {
+            padding: 4px 6px;
+        }
+
+        /* New in v1.4 badge */
+        .new-badge {
+            background: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            font-size: 7pt;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== COPERTINA ==================== -->
+<div class="page">
+    <div class="cover">
+        <div class="logo" style="font-size: 28pt; margin-bottom: 15px;">HELIX <span>CBD MAX</span></div>
+        <h1>Piano Aziendale</h1>
+        <div class="subtitle">Operazioni Distributori Automatici Sicilia</div>
+        <div class="version">Versione 1.4 | Gennaio 2026</div>
+
+        <div class="confidential" style="width: 70%; margin: 0 auto 30px auto;">
+            RISERVATO - RICHIESTO NDA
+        </div>
+
+        <div class="meta">
+            <strong>Preparato da:</strong> Angelo Kenel<br>
+            <strong>Azienda:</strong> Ecolution GmbH (fondata 2015)<br>
+            <strong>Piattaforma:</strong> HelixNet<br>
+            <strong>Sede:</strong> Trapani, Sicilia<br>
+            <strong>Contatto:</strong> ecolution.gmbh@gmail.com
+        </div>
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>RISERVATO</span>
+    </div>
+</div>
+
+
+<!-- ==================== INDICE + PAGINA 1 ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>Indice</h1>
+    <div class="toc-item"><span>1. Sintesi Esecutiva</span><span>3</span></div>
+    <div class="toc-item"><span>2. Analisi di Mercato</span><span>4</span></div>
+    <div class="toc-item"><span>2B. Analisi Competitiva — Che Maria H24 <span class="new-badge">NUOVO</span></span><span>5</span></div>
+    <div class="toc-item"><span>3. Strategia Localizzazione (Regola 100m)</span><span>6</span></div>
+    <div class="toc-item"><span>4. Catena di Fornitura</span><span>7</span></div>
+    <div class="toc-item"><span>5. Mix Prodotti</span><span>8</span></div>
+    <div class="toc-item"><span>6. Infrastruttura Tecnologica</span><span>9</span></div>
+    <div class="toc-item"><span>7. Modello Operativo</span><span>10</span></div>
+    <div class="toc-item"><span>8. Modello Finanziario</span><span>11</span></div>
+    <div class="toc-item"><span>9. Mitigazione Rischi</span><span>12</span></div>
+    <div class="toc-item"><span>10. La Richiesta & Timeline</span><span>13</span></div>
+    <div class="toc-item"><span>Appendice A: Espansione Prodotti <span class="new-badge">NUOVO</span></span><span>14</span></div>
+    <div class="toc-item"><span>Appendice B: Domande per Vito</span><span>15</span></div>
+
+    <div class="warning" style="margin-top: 15px;">
+        <div class="warning-title">Avviso di Riservatezza</div>
+        Questo documento contiene informazioni aziendali proprietarie. Distribuzione limitata ai firmatari NDA. Divulgazione non autorizzata vietata. Contatto: ecolution.gmbh@gmail.com
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Indice</span>
+    </div>
+</div>
+
+<!-- ==================== PAGINA 2: SINTESI ESECUTIVA ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>1. Sintesi Esecutiva</h1>
+
+    <h2>La Partnership</h2>
+    <p>Questa proposta formalizza un'espansione della nostra partnership esistente nel mercato CBD italiano, con la Sicilia come proof-of-concept.</p>
+
+    <table class="compact-table no-break">
+        <tr><th>Partner</th><th>Ruolo</th><th>Contributo</th></tr>
+        <tr><td><strong>Felix (Artemis)</strong></td><td>Esperto CBD</td><td>25 anni CBD Svizzera, produzione vape (100/ora)</td></tr>
+        <tr><td><strong>Sylvken</strong></td><td>Marketing</td><td>Design brand, packaging, sito web</td></tr>
+        <tr><td><strong>Angelo (HelixNet)</strong></td><td>Tech & Ops</td><td>Piattaforma ISO 9001, tracciamento IVA</td></tr>
+        <tr><td><strong>Vito (Proposto)</strong></td><td>Ops Locale</td><td>20+ anni contatti porto, negoziazioni</td></tr>
+        <tr><td><strong>Miki (Romania)</strong></td><td>Frontend</td><td>Web design, supporto UX</td></tr>
+    </table>
+
+    <div class="highlight no-break">
+        <strong>Infrastruttura Esistente:</strong> Ecolution GmbH (Svizzera, fondata 2015) • Account laboratorio Zurigo • Linea produzione Felix pronta • Piattaforma HelixNet costruita
+    </div>
+
+    <h2>La Soluzione: Strategia a Tre Livelli</h2>
+    <table class="compact-table">
+        <tr><th>Livello</th><th>Prodotti</th><th>Ruolo</th><th>Margine</th></tr>
+        <tr><td><strong>1. Base</strong></td><td>Birra, bevande, snack</td><td>Stabilità ricavi</td><td>Medio</td></tr>
+        <tr><td><strong>2. Core</strong></td><td>Vape CBD</td><td>Driver profitto</td><td><strong>Alto</strong></td></tr>
+        <tr><td><strong>3. Premium</strong></td><td>Fiore CBD, oli</td><td>Differenziazione</td><td>Medio-Alto</td></tr>
+    </table>
+
+    <div class="insight no-break">
+        <strong>L'Intuizione:</strong> La birra paga l'affitto. I vape pagano il profitto. Il fiore costruisce la fedeltà. Nessun punto unico di fallimento.
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 3</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 4: MERCATO ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>2. Analisi di Mercato</h1>
+    <p><strong>Ricerca sul Campo:</strong> Palermo & Trapani, Sicilia — Gennaio 2026. Due negozi Palermo + un competitor Trapani visitati.</p>
+
+    <div class="two-col no-break">
+        <div>
+            <h3>Mr Joint Italy (Palermo)</h3>
+            <table class="compact-table">
+                <tr><td>Valutazione</td><td>5.0 ★ (33 recensioni)</td></tr>
+                <tr><td>Parcheggio</td><td>Facile</td></tr>
+                <tr><td>Carta</td><td>Funzionante</td></tr>
+                <tr><td>CBD/grammo</td><td><strong>€6,67</strong> (38% CBD)</td></tr>
+            </table>
+        </div>
+        <div>
+            <h3>Green Seed (Palermo)</h3>
+            <table class="compact-table">
+                <tr><td>Valutazione</td><td>5.0 ★ (62 recensioni)</td></tr>
+                <tr><td>Parcheggio</td><td>Incubo</td></tr>
+                <tr><td>Carta</td><td><strong>GUASTA</strong></td></tr>
+                <tr><td>CBD/grammo</td><td>€15,00 (25% CBD)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="highlight-red highlight no-break">
+        <strong>AGGIORNAMENTO (16 Gen):</strong> Esiste un competitor a Trapani — distributore Che Maria H24. <strong>Sistema pagamento PROBLEMATICO.</strong> Qualità prodotto bassa. Vedi Pagina 2B per analisi completa.
+    </div>
+
+    <h2>Il Gap di Trapani</h2>
+    <table class="compact-table">
+        <tr><th>Fattore</th><th>Che Maria H24</th><th>Helix CBD Max</th></tr>
+        <tr><td>Pagamento</td><td><strong>PROBLEMATICO</strong></td><td>Carta + contanti funzionanti</td></tr>
+        <tr><td>Prodotto</td><td>€1/g shake</td><td>Fiore testato in laboratorio</td></tr>
+        <tr><td>Posizione</td><td>Vicolo nascosto</td><td>Regola 100m prime</td></tr>
+        <tr><td>Conformità</td><td>Non visibile</td><td><strong>ISO 9001</strong></td></tr>
+        <tr><td>Vape</td><td>Non visibili</td><td><strong>Produzione Felix</strong></td></tr>
+    </table>
+
+    <h2>Dimensione Mercato (Conservativa)</h2>
+    <ul>
+        <li>Popolazione area Trapani: ~100.000</li>
+        <li>Utenti CBD stimati: 2-5% = 2.000-5.000 persone</li>
+        <li>Mercato mensile indirizzabile: €60.000-200.000</li>
+        <li><strong>Target acquisizione (Anno 1):</strong> €3.000-5.000/mese</li>
+    </ul>
+
+    <div class="insight no-break">
+        Che Maria dimostra che il mercato esiste. La loro macchina problematica e prodotto di bassa qualità dimostrano l'opportunità. <strong>Non siamo pionieri — siamo un upgrade.</strong>
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 4</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 5: ANALISI COMPETITIVA (AGGIORNATA) ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>2B. Analisi Competitiva <span class="new-badge" style="background: #28a745;">AGGIORNATO</span></h1>
+    <p><strong>Scoperta sul Campo:</strong> Che Maria H24 — Casa Santa, Trapani. 16 Gennaio 2026. <em>Possibile franchising Erice.</em></p>
+
+    <div class="highlight no-break">
+        <strong>Valutazione Corretta:</strong> La macchina ha una buona selezione prodotti — varietà multiple, bevande, hashish. I problemi sono il pagamento (banconote non funzionano, no carte) e NIENTE VAPE. L'olio CBD era <strong>ESAURITO</strong> (alta domanda per prodotti per il sonno).
+    </div>
+
+    <h2>Display Prodotti</h2>
+    <div style="text-align: center; margin: 10px 0;">
+        <img src="recon/che-maria-product-display.jpg" alt="Display Prodotti Che Maria" style="max-width: 100%; height: auto; max-height: 550px; border: 1px solid #ddd; border-radius: 4px;">
+    </div>
+
+    <h2>Analisi Inventario Completo</h2>
+    <table class="compact-table">
+        <tr><th>Categoria</th><th>Stato</th><th>Note</th></tr>
+        <tr><td>Fiore CBD</td><td>✓ Varietà multiple</td><td>AK-47, KING, brand premium</td></tr>
+        <tr><td>Olio CBD</td><td><strong>ESAURITO</strong></td><td>"La gente lo usa per dormire" — ALTA DOMANDA</td></tr>
+        <tr><td>Hashish CBD</td><td>✓ Disponibile</td><td>Contenitori rotondi visibili</td></tr>
+        <tr><td>Vape CBD</td><td><strong>NON VISIBILI</strong></td><td>Gap = nostra opportunità</td></tr>
+        <tr><td>Bevande</td><td>✓ Buona selezione</td><td>Birra, energy, Coca, Fanta, acqua</td></tr>
+        <tr><td>Accessori</td><td>✓ Grinder</td><td>Fila inferiore</td></tr>
+    </table>
+
+    <h2>Problemi Pagamento (Non "Guasta")</h2>
+    <table class="compact-table">
+        <tr><th>Metodo</th><th>Stato</th></tr>
+        <tr><td>Monete</td><td>Funziona (consigliato da recensione Google)</td></tr>
+        <tr><td>Banconote</td><td>Problematico (€5 rifiutata)</td></tr>
+        <tr><td>Carte</td><td>Non disponibile</td></tr>
+        <tr><td>Verifica ID</td><td>Solo chip (carta svizzera senza chip fallita)</td></tr>
+    </table>
+    <p style="font-size: 8pt;"><em>Recensione Google (10 mesi fa): "Prodotto buono. Macchina spesso non funziona. Usare monete, non banconote."</em></p>
+
+    <h2>I VERI Gap (Nostra Opportunità)</h2>
+    <table class="compact-table">
+        <tr><th>Loro Gap</th><th>Nostro Vantaggio</th></tr>
+        <tr><td><strong>Niente vape</strong></td><td>Produzione Felix (100/ora) — nostro prodotto CORE</td></tr>
+        <tr><td>Olio CBD esaurito</td><td>Alert inventario HelixNet — sempre riforniti</td></tr>
+        <tr><td>Niente pagamento carta</td><td>Macchine Harbin: carta + contanti + tutti gli ID</td></tr>
+        <tr><td>Problemi pagamento da 10+ mesi</td><td>Contratto assistenza Marco</td></tr>
+    </table>
+
+    <div class="insight no-break">
+        Che Maria dimostra la domanda. Olio CBD esaurito = prodotti per il sonno richiesti. Niente vape = gap prodotto che noi riempiamo. <strong>Non li stiamo sostituendo — stiamo riempiendo gap che loro non possono riempire.</strong>
+    </div>
+
+    <p style="font-size: 8pt; color: #666; margin-top: 8px;"><em>Google: 4.3★ (3 recensioni) | Foto: 8 immagini in /docs/business/recon/</em></p>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 5</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 6: LOCALIZZAZIONE ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>3. Strategia Localizzazione (Regola 100m)</h1>
+
+    <div class="highlight no-break">
+        <strong>Regola 100m di Marco:</strong> "Qualsiasi distributore automatico decente entro 100 metri da qualsiasi stazione ferroviaria fa soldi se gestito correttamente." — Marco, Rappresentante Svizzero Harbin
+    </div>
+
+    <h2>La Formula</h2>
+    <div class="diagram no-break">SUCCESSO VENDING = POSIZIONE + CALIBRAZIONE + BEST SELLER
+
+POSIZIONE:    Entro 100m da stazione treni / terminal traghetti
+CALIBRAZIONE: Sicuro, protetto, alimentato, accessibile per rifornimento
+BEST SELLER:  Stoccare ciò che è CALDO oggi (vape, bevande fredde, birra)</div>
+
+    <h2>Location Target Trapani</h2>
+    <table class="compact-table">
+        <tr><th>Priorità</th><th>Location</th><th>Traffico</th><th>Contatto</th></tr>
+        <tr><td><strong>1</strong></td><td>Porto di Trapani (Traghetti)</td><td>500+ turisti/giorno (Isole Egadi)</td><td>Vito</td></tr>
+        <tr><td><strong>2</strong></td><td>Trapani Centrale (Treno)</td><td>Pendolari + turisti</td><td>Municipale</td></tr>
+        <tr><td><strong>3</strong></td><td>Zona Nettuno (Lungomare)</td><td>Sera/nightlife</td><td>Network GYM 4U</td></tr>
+    </table>
+
+    <h2>Modello Partner Location</h2>
+    <div class="diagram no-break">HELIX CBD MAX              PARTNER LOCATION
+─────────────────          ─────────────────
+Fornisce macchina          Fornisce spazio + corrente
+Fornisce inventario        Rifornisce (consegna DHL)
+Gestisce conformità        Raccoglie quota ricavi
+                    SPLIT: 70/30 o 80/20</div>
+
+    <h3>Responsabilità 3-Strike</h3>
+    <table class="compact-table">
+        <tr><th>Strike</th><th>Azione</th></tr>
+        <tr><td>1°</td><td>Avvertimento + conversazione</td></tr>
+        <tr><td>2°</td><td>Notifica formale</td></tr>
+        <tr><td>3°</td><td>Macchina rilocata su backup</td></tr>
+    </table>
+
+    <h2>Strategia di Nicchia Sicilia</h2>
+    <div class="highlight-orange highlight no-break">
+        <strong>Facciamo nicchia. Non scaliamo su tutta Italia.</strong><br>
+        Anno 1: Solo Trapani | Anno 2: + Palermo | Anno 3: Sicilia Est | Mai: Continente
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 6</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 7: CATENA FORNITURA ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>4. Catena di Fornitura</h1>
+
+    <div class="diagram no-break">GENETICA (Nostra) → Target 0,5% THC
+       ↓
+CLONAZIONE (Benny) → Genetica consistente
+       ↓
+COLTIVAZIONE (Grow Motion AG Anno 1 / Outdoor Anno 2+)
+       ↓
+TEST LABORATORIO (Zurigo) → THC %, CBD %, certificazione
+       ↓
+PRODUZIONE (Felix) → 100 vape/ora
+       ↓
+PACKAGING (Sylvken) → Etichette conformi
+       ↓
+DISTRIBUZIONE (DHL) → Svizzera verso Sicilia
+       ↓
+CLIENTE (Distributore Automatico) → 24/7</div>
+
+    <h2>Fornitori Chiave</h2>
+    <table class="compact-table">
+        <tr><th>Fornitore</th><th>Ruolo</th><th>Dettagli</th></tr>
+        <tr><td><strong>Grow Motion AG</strong></td><td>Coltivazione Anno 1</td><td>6.000 mq, Zuchwil, grado farmaceutico</td></tr>
+        <tr><td><strong>Benny</strong></td><td>Cloni</td><td>Noi possediamo varietà, lui opera</td></tr>
+        <tr><td><strong>Felix</strong></td><td>Produzione</td><td>100 vape/ora, 25 anni esperienza</td></tr>
+        <tr><td><strong>Laboratorio Zurigo</strong></td><td>Testing</td><td>Account Ecolution esistente</td></tr>
+        <tr><td><strong>Mosey/420</strong></td><td>Accessori</td><td>Più grande grossista svizzero, CSV integrato</td></tr>
+    </table>
+
+    <h2>La Strategia 0,5% THC</h2>
+    <div class="highlight no-break">
+        <strong>Limite italiano: 0,6% THC | Nostro target: 0,5% THC</strong><br>
+        Il buffer protegge contro varianza laboratorio, differenze attrezzature, margine test polizia. Anche a +0,05% varianza, siamo conformi a 0,55%.
+    </div>
+
+    <h2>Anno 1 vs Anno 2+</h2>
+    <table class="compact-table">
+        <tr><th>Aspetto</th><th>Anno 1: Indoor Svizzera</th><th>Anno 2+: Network Outdoor</th></tr>
+        <tr><td>Fonte</td><td>Grow Motion AG</td><td>Agricoltori con nostri cloni</td></tr>
+        <tr><td>Costo</td><td>Più alto</td><td>Più basso</td></tr>
+        <tr><td>Rischio</td><td>Basso</td><td>Medio</td></tr>
+    </table>
+
+    <div class="insight no-break">
+        Possediamo la genetica. Controlliamo la qualità. Testiamo prima di spedire. Ogni passaggio documentato. <strong>Questa è la differenza ISO 9001.</strong>
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 7</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 8: MIX PRODOTTI ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>5. Mix Prodotti</h1>
+
+    <h2>Livello 1: Base (Birra & Bevande)</h2>
+    <table class="compact-table">
+        <tr><th>Prodotto</th><th>Costo</th><th>Prezzo</th><th>Margine</th></tr>
+        <tr><td>Birra (Peroni, Moretti)</td><td>€0,80</td><td>€2,50</td><td>68%</td></tr>
+        <tr><td>Acqua</td><td>€0,20</td><td>€1,50</td><td>86%</td></tr>
+        <tr><td>Energy drink</td><td>€0,90</td><td>€2,50</td><td>64%</td></tr>
+        <tr><td>Bibite</td><td>€0,50</td><td>€2,00</td><td>75%</td></tr>
+    </table>
+    <p><em>Zero rischio regolamentare. Domanda costante nel caldo siciliano. Mantiene macchina attiva se regolamenti CBD cambiano.</em></p>
+
+    <h2>Livello 2: Core (Vape CBD) — Produzione Felix</h2>
+    <table class="compact-table">
+        <tr><th>Prodotto</th><th>Costo</th><th>Prezzo</th><th>Margine</th></tr>
+        <tr><td>Vape usa e getta (300 tiri)</td><td>€4-6</td><td>€15</td><td>60-73%</td></tr>
+        <tr><td>Vape usa e getta (600 tiri)</td><td>€6-8</td><td>€25</td><td>68-76%</td></tr>
+        <tr><td>Ricarica cartuccia</td><td>€5-7</td><td>€18</td><td>61-72%</td></tr>
+    </table>
+    <p><em>Alto margine, compatto, prezzo impulso (€15-25), clienti ripetuti, meno scrutinio regolamentare rispetto al fiore.</em></p>
+
+    <h2>Livello 3: Premium (Fiore, Oli, Accessori)</h2>
+    <table class="compact-table">
+        <tr><th>Prodotto</th><th>Costo</th><th>Prezzo</th><th>Margine</th></tr>
+        <tr><td>Fiore CBD (3g)</td><td>€8-10</td><td>€25</td><td>60-68%</td></tr>
+        <tr><td>Olio CBD (10ml, 10%)</td><td>€12-15</td><td>€40</td><td>63-70%</td></tr>
+        <tr><td>Grinder</td><td>€2-3</td><td>€8</td><td>63-75%</td></tr>
+    </table>
+
+    <h2>Allocazione Slot (macchina 40 slot)</h2>
+    <div class="diagram no-break">ALTO (Altezza Occhi): Vape 600pf | Vape 300pf | Ricariche
+MEDIO:                 Birra | Energy | Fiore CBD | Olio CBD | Bibite
+BASSO:                 Snack | Accessori | Promozionale</div>
+
+    <div class="insight no-break">
+        Non siamo un'"azienda CBD" — siamo un <strong>operatore di vending</strong> con prodotti CBD. Se CBD vietato, vendiamo birra. La macchina resta. I prodotti evolvono.
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 8</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 9: TECNOLOGIA ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>6. Infrastruttura Tecnologica</h1>
+    <p>HelixNet è la spina dorsale della conformità che rende Helix CBD Max a prova di audit.</p>
+
+    <div class="diagram no-break">┌─────────────────────────────────────────────────────┐
+│               ARCHITETTURA HELIXNET                 │
+├─────────────────────────────────────────────────────┤
+│ TRACCIAMENTO LOTTO  Ogni prodotto tracciato clone→cliente│
+│ CONFORMITÀ IVA      Calcolata DOPO gli sconti       │
+│ INVENTARIO          Stock real-time, alert riordino │
+│ ARTEMIS POS         6.000+ prodotti (420 CSV)       │
+│ REPORTISTICA        Vendite, margini, conformità    │
+└─────────────────────────────────────────────────────┘</div>
+
+    <h2>Perché la Conformità IVA è Importante</h2>
+    <div class="warning no-break">
+        <div class="warning-title">L'Errore da €20M</div>
+        Grande società di consulenza ha calcolato IVA PRIMA degli sconti. Clienti sovraccaricati. Passività €20M+.
+    </div>
+
+    <div class="two-col" style="font-size: 8pt;">
+        <div>
+            <strong>❌ SBAGLIATO:</strong>
+            <div class="diagram">Prezzo: €100 → IVA: €22 → Sconto: -€12,20
+IVA calcolata su base sbagliata!</div>
+        </div>
+        <div>
+            <strong>✓ CORRETTO (HelixNet):</strong>
+            <div class="diagram">Prezzo: €100 → Sconto: -€10 → IVA: €19,80
+IVA è CORRETTA</div>
+        </div>
+    </div>
+
+    <h2>Esempio Tracciamento Lotto</h2>
+    <div class="diagram no-break">LOTTO: HCM-2026-001-A
+├─ Clone creato (Benny) → Piantato (Grow Motion)
+├─ Raccolto → Test lab: 0,48% THC ✓ → Certificato
+├─ Produzione Felix (200 vape) → Packaging Sylvken
+└─ DHL verso Sicilia → Caricato in macchina (Porto)</div>
+
+    <h2>Infrastruttura Esistente (Nessuna Costruzione)</h2>
+    <table class="compact-table">
+        <tr><th>Componente</th><th>Stato</th></tr>
+        <tr><td>Core HelixNet (Python/FastAPI)</td><td>✓ Costruito</td></tr>
+        <tr><td>Modelli tracciamento lotto</td><td>✓ Costruiti</td></tr>
+        <tr><td>Framework ISO 9001</td><td>✓ Documentato</td></tr>
+        <tr><td>Artemis POS</td><td>✓ Felix lo usa quotidianamente</td></tr>
+        <tr><td>Calcoli IVA</td><td>✓ Multi-giurisdizione</td></tr>
+    </table>
+
+    <div class="insight no-break">
+        La tecnologia è costruita. Stiamo deployando software esistente su un nuovo verticale. €5K configurazione, non €100K sviluppo.
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 9</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 10: OPERAZIONI ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>7. Modello Operativo</h1>
+
+    <h2>Operazioni Giornaliere</h2>
+    <table class="compact-table">
+        <tr><th>Attività</th><th>Responsabile</th><th>Frequenza</th></tr>
+        <tr><td>Rifornimento macchina</td><td>Partner location</td><td>2-3x/settimana</td></tr>
+        <tr><td>Ordine inventario</td><td>Angelo</td><td>Settimanale</td></tr>
+        <tr><td>Raccolta contanti</td><td>Partner location</td><td>Giornaliera</td></tr>
+        <tr><td>Report vendite</td><td>Automatico (HelixNet)</td><td>Giornaliero</td></tr>
+        <tr><td>Manutenzione macchina</td><td>Marco (remoto)</td><td>Quando necessario</td></tr>
+    </table>
+
+    <h2>Flusso Rifornimento</h2>
+    <div class="diagram no-break">1. ALERT → Prodotto basso    4. PARTNER RICEVE → Conferma WhatsApp
+2. ANGELO ORDINA → Felix     5. RIFORNISCE → Entro 24h
+3. FELIX SPEDISCE → DHL      6. MACCHINA AGGIORNATA → Pronta</div>
+
+    <h2>Gestione Contanti</h2>
+    <table class="compact-table">
+        <tr><th>Metodo</th><th>Processo</th><th>Rischio</th></tr>
+        <tr><td>Carta</td><td>Diretto a Ecolution GmbH</td><td>Basso</td></tr>
+        <tr><td>Contanti</td><td>Partner deposita settimanalmente</td><td>Medio</td></tr>
+    </table>
+    <p><strong>Protocollo audit:</strong> Check contatore macchina settimanale | Riconciliazione mensile | Conteggio a sorpresa trimestrale</p>
+
+    <h2>Piano di Scaling</h2>
+    <table class="compact-table">
+        <tr><th>Anno</th><th>Macchine</th><th>Team</th></tr>
+        <tr><td><strong>1</strong></td><td>1-2 (Trapani)</td><td>Angelo + Vito backup</td></tr>
+        <tr><td><strong>2</strong></td><td>3-5 (+ Palermo)</td><td>Vito gestisce Trapani, nuovo assunto Palermo</td></tr>
+        <tr><td><strong>3+</strong></td><td>5-10 (Sicilia)</td><td>Manager regionali, SOP documentate</td></tr>
+    </table>
+
+    <div class="insight no-break">
+        Le operazioni scalano con la documentazione, non con il tempo di Angelo. Anno 1: Impara & documenta. Anno 2: Passa consegne. Anno 3: Il sistema funziona da solo.
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 10</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 11: FINANZIARIO ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>8. Modello Finanziario</h1>
+
+    <h2>Costi di Avvio (Anno 1)</h2>
+    <table class="compact-table">
+        <tr><th>Voce</th><th>Costo</th></tr>
+        <tr><td>Leasing distributore automatico (1 unità)</td><td>€10.000-12.000</td></tr>
+        <tr><td>Modulo verifica età</td><td>€900</td></tr>
+        <tr><td>Inventario iniziale</td><td>€2.000-3.000</td></tr>
+        <tr><td>Test laboratorio, packaging, permessi</td><td>€2.000-2.500</td></tr>
+        <tr><td>Buffer/contingenza</td><td>€2.000</td></tr>
+        <tr style="background: #2d5a27; color: white;"><td><strong>TOTALE</strong></td><td><strong>€17.000-22.000</strong></td></tr>
+    </table>
+    <p><em>Nessun costo di costituzione società — Ecolution GmbH esiste.</em></p>
+
+    <h2>Proiezioni Ricavi (Mensili)</h2>
+    <div class="metrics no-break">
+        <div class="metric">
+            <div class="metric-value">€3.375</div>
+            <div class="metric-label">Conservativo (50%)</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">€6.225</div>
+            <div class="metric-label">Moderato (75%)</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">€9.600</div>
+            <div class="metric-label">Ottimistico</div>
+        </div>
+    </div>
+
+    <h2>P&L — Scenario Moderato</h2>
+    <table class="compact-table">
+        <tr><td>Ricavi</td><td style="text-align:right;">€6.225</td></tr>
+        <tr><td>- Costo merce (40%)</td><td style="text-align:right;">-€2.490</td></tr>
+        <tr><td>- Partner location (25%)</td><td style="text-align:right;">-€1.556</td></tr>
+        <tr><td>- Costi operativi</td><td style="text-align:right;">-€500</td></tr>
+        <tr style="background: #2d5a27; color: white;"><td><strong>Utile Lordo</strong></td><td style="text-align:right;"><strong>€1.679</strong></td></tr>
+    </table>
+
+    <h2>Break-Even & Payback</h2>
+    <div class="highlight no-break">
+        <strong>Break-even:</strong> €3.714/mese (~€125/giorno)<br>
+        <strong>Payback (Moderato):</strong> 10-13 mesi<br>
+        <strong>Target:</strong> La macchina si ripaga nell'Anno 1
+    </div>
+
+    <div class="insight no-break">
+        Non arricchimento rapido. Crescita lenta che si accumula. <strong>Anno 1:</strong> Impara, sopravvivi. <strong>Anno 2:</strong> Profittevole. <strong>Anno 3+:</strong> Macchine multiple = reddito reale.
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 11</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 12: RISCHI ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>9. Mitigazione Rischi</h1>
+
+    <h2>Matrice Rischi</h2>
+    <table class="compact-table">
+        <tr><th>Rischio</th><th>P</th><th>I</th><th>Mitigazione</th></tr>
+        <tr><td>Divieto fiore canapa (Italia)</td><td>M</td><td>A</td><td>Birra continua; pivot su vape/oli</td></tr>
+        <tr><td>Varianza THC laboratorio</td><td>B</td><td>A</td><td>Target 0,5% = buffer sotto 0,6%</td></tr>
+        <tr><td>Partner location fallisce</td><td>M</td><td>M</td><td>Regola 3-strike; backup pronti</td></tr>
+        <tr><td>Furto contanti</td><td>M</td><td>M</td><td>Preferenza carta; audit settimanali</td></tr>
+        <tr><td>Vandalismo macchina</td><td>B</td><td>A</td><td>Assicurazione; location sicure</td></tr>
+        <tr><td>Entra competizione</td><td>M</td><td>M</td><td>Operatore migliore; vantaggio conformità</td></tr>
+    </table>
+    <p><em>P = Probabilità, I = Impatto | B = Basso, M = Medio, A = Alto</em></p>
+
+    <h2>Piano Pivot 48 Ore (Se Canapa Vietata)</h2>
+    <ol>
+        <li>Rimuovere fiore dalla macchina</li>
+        <li>Aumentare inventario vape/olio</li>
+        <li>Aggiungere più slot birra/bevande</li>
+        <li>Comunicare con clienti</li>
+        <li>Continuare operazioni senza interruzione</li>
+    </ol>
+
+    <h2>Scenario Test Polizia</h2>
+    <div class="highlight no-break">
+        <strong>Se Guardia di Finanza testa prodotto:</strong><br>
+        • Ogni lotto ha certificato laboratorio Zurigo<br>
+        • Codice lotto → tracciabile a certificato<br>
+        • Nostro target 0,5% è sotto limite 0,6%<br>
+        • ISO 9001 dimostra intento di conformità
+    </div>
+
+    <h2>Single Point of Failure</h2>
+    <table class="compact-table">
+        <tr><th>SPOF</th><th>Mitigazione</th></tr>
+        <tr><td>Angelo</td><td>Vito + Sylvken hanno accesso; SOP documentate</td></tr>
+        <tr><td>Felix</td><td>Inventario buffer; fornitori alternativi</td></tr>
+        <tr><td>Benny</td><td>Possediamo varietà; location madre multiple</td></tr>
+        <tr><td>HelixNet</td><td>Self-hosted; backup; fallback manuale</td></tr>
+    </table>
+
+    <div class="insight no-break">
+        Ogni rischio ha una mitigazione. Quando arriva la Guardia, non ti fai prendere dal panico. <strong>Mostri il certificato.</strong>
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 12</span>
+    </div>
+</div>
+
+
+<!-- ==================== PAGINA 13: LA RICHIESTA ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>10. La Richiesta & Timeline</h1>
+
+    <h2>Cosa Chiediamo</h2>
+    <div class="two-col">
+        <div>
+            <h3>Da Felix</h3>
+            <ul>
+                <li>Revisione questo business case</li>
+                <li>Conferma capacità produttiva</li>
+                <li>Prezzi per prodotti CBD</li>
+                <li>Guida regolamentare (Italia)</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Da Sylvken</h3>
+            <ul>
+                <li>Concept brand</li>
+                <li>Design packaging</li>
+                <li>Landing page sito web</li>
+                <li>Materiali marketing</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>Investimento</h2>
+    <table class="compact-table">
+        <tr><th>Fonte</th><th>Importo</th><th>Tipo</th></tr>
+        <tr><td>Angelo</td><td>€15.000-20.000</td><td>Contanti</td></tr>
+        <tr><td>Felix</td><td>Capacità produttiva</td><td>In-kind</td></tr>
+        <tr><td>Sylvken</td><td>Lavoro design</td><td>In-kind</td></tr>
+        <tr><td>Vito</td><td>Esperienza locale</td><td>In-kind</td></tr>
+    </table>
+    <p><strong>Nessun investitore esterno.</strong> Bootstrap con risorse esistenti.</p>
+
+    <h2>Timeline 2026</h2>
+    <table class="compact-table">
+        <tr><th>Periodo</th><th>Milestone</th></tr>
+        <tr><td>Gen-Feb</td><td>Business case finalizzato, revisione Felix, Sylvken ritorna</td></tr>
+        <tr><td>Mar</td><td>Location assicurata, permessi, macchina ordinata</td></tr>
+        <tr><td>Apr</td><td>Macchina arriva, installazione</td></tr>
+        <tr><td>Mag</td><td><strong>SOFT LAUNCH</strong></td></tr>
+        <tr><td>Giu</td><td><strong>LANCIO COMPLETO</strong> (stagione turistica)</td></tr>
+        <tr><td>Lug-Ago</td><td>Alta stagione, massimizzare ricavi</td></tr>
+        <tr><td>Dic</td><td>Review Anno 1, pianificazione Anno 2</td></tr>
+    </table>
+
+    <h2>Criteri di Successo (12 Mesi)</h2>
+    <div class="metrics no-break">
+        <div class="metric"><div class="metric-value">1-2</div><div class="metric-label">Macchine</div></div>
+        <div class="metric"><div class="metric-value">€4-6K</div><div class="metric-label">Ricavi Mensili</div></div>
+        <div class="metric"><div class="metric-value">100%</div><div class="metric-label">Audit Superati</div></div>
+    </div>
+
+    <h2>Prossimi Passi (Questa Settimana)</h2>
+    <ul class="checklist">
+        <li>Stampare business case, revisione weekend</li>
+        <li>Inviare PDF a Felix</li>
+        <li>Schedulare chiamata con Felix</li>
+        <li>Parlare con Vito in palestra</li>
+    </ul>
+
+    <div class="insight no-break" style="margin-top: 15px;">
+        Questa non è una fantasia. Questo è un piano. Il team esiste. La tecnologia esiste. Il mercato esiste.<br>
+        <strong>La birra paga l'affitto. I vape pagano il profitto. Costruiamolo.</strong>
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 13</span>
+    </div>
+</div>
+
+<!-- ==================== PAGINA 14: ESPANSIONE PRODOTTI ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>Appendice A: Espansione Prodotti <span class="new-badge">NUOVO</span></h1>
+    <p>Idee prodotto dai test sul campo e ricerche di mercato — Trapani, Gennaio 2026.</p>
+
+    <h2>1. Shake CBD — Sostituto Tabacco</h2>
+    <div class="highlight no-break">
+        <strong>Insight:</strong> Lo shake non è un prodotto di scarto — è un <strong>sostituto del tabacco</strong> per chi vuole joint più grandi senza nicotina.
+    </div>
+    <table class="compact-table">
+        <tr><th>Segmento Cliente</th><th>Bisogno</th></tr>
+        <tr><td>Chi smette di fumare</td><td>Qualcosa da fumare senza tabacco</td></tr>
+        <tr><td>Salutisti</td><td>Joint grandi senza nicotina</td></tr>
+        <tr><td>Budget</td><td>Benefici CBD a prezzo ridotto</td></tr>
+    </table>
+    <p><strong>Zero sprechi:</strong> Produzione Felix salva tutto. Shake diventa ricavo, non rifiuto.</p>
+    <p><strong>Promo:</strong> Shake gratis con acquisto €50+ (costo quasi zero, costruisce fedeltà).</p>
+
+    <h2>2. Kit Starter / Bundle Rolling</h2>
+    <table class="compact-table">
+        <tr><th>Componente</th><th>Costo</th><th>Valore</th></tr>
+        <tr><td>Grinder piccolo</td><td>€2</td><td>Essenziale</td></tr>
+        <tr><td>Cartine OCB Slim</td><td>€0.50</td><td>Premium</td></tr>
+        <tr><td>Filtri/tips</td><td>€0.30</td><td>Pratico</td></tr>
+        <tr><td>Vassoio rolling mini</td><td>€1.50</td><td>Comodità</td></tr>
+        <tr><td>Accendino/fiammiferi</td><td>€0.50</td><td>Completo</td></tr>
+        <tr style="background: #2d5a27; color: white;"><td><strong>Kit Completo</strong></td><td><strong>~€5</strong></td><td><strong>Vendita €12-15</strong></td></tr>
+    </table>
+    <p><em>Turista compra fiore, non ha niente per rollare → kit salva la giornata → acquisto impulso.</em></p>
+
+    <h2>3. Linea Souvenir Trapani</h2>
+    <div class="insight no-break">
+        <strong>Non vendiamo accessori CBD. Vendiamo Trapani in tasca.</strong>
+    </div>
+    <table class="compact-table">
+        <tr><th>Prodotto</th><th>Design</th><th>Prezzo</th></tr>
+        <tr><td>Grinder Trapani</td><td>Saline, mulini a vento</td><td>€15</td></tr>
+        <tr><td>Cartine Egadi</td><td>Artwork isole</td><td>€3</td></tr>
+        <tr><td>Vassoio Sicilia</td><td>Costa trapanese</td><td>€12</td></tr>
+        <tr><td>Accendino "Trapani 2026"</td><td>Logo città</td><td>€5</td></tr>
+        <tr><td>Pochette cotone</td><td>Pattern siciliano</td><td>€8</td></tr>
+    </table>
+    <p><strong>Sylvken:</strong> Design artwork locale. <strong>Edizioni limitate:</strong> "Collezione Egadi" / "Serie Saline".</p>
+
+    <h2>4. Grinder Premium — Antiodore</h2>
+    <p><strong>Verità del settore (Felix & Mosey):</strong> Nessuno compra grinder online — devono sentire il peso, testare l'azione. Vending = vedono e comprano.</p>
+    <table class="compact-table">
+        <tr><th>Livello</th><th>Caratteristiche</th><th>Prezzo</th></tr>
+        <tr><td>Base</td><td>Grinder semplice</td><td>€8</td></tr>
+        <tr><td>Souvenir</td><td>Brandizzato Trapani</td><td>€15</td></tr>
+        <tr><td>Premium</td><td>Waterproof, antiodore, stash integrato</td><td>€25-30</td></tr>
+    </table>
+    <p><em>Premium = viaggiatori discreti, antiodore per i cani, tutto-in-uno.</em></p>
+
+    <h2>5. Semi (Zero THC) — Piano Pivot</h2>
+    <div class="highlight-orange highlight no-break">
+        <strong>Se CBD vietato → vendiamo semi.</strong> Semi con 0% THC sono legali. Miguel (Palermo) lo sapeva, Mr Joint no. Gap di mercato confermato.
+    </div>
+    <p>Semi da collezione, semi per coltivazione legale, semi CBD. Nessun THC = nessun problema legale.</p>
+
+    <h2>6. Filosofia di Curazione</h2>
+    <div class="insight no-break">
+        <strong>Non un distributore con prodotti casuali. Un headshop curato in una macchina.</strong>
+    </div>
+
+    <p><strong>Il problema dei competitor:</strong> Che Maria e altri stoccano prodotti generici — qualsiasi cartina, qualsiasi grinder, qualsiasi accessorio. Nessuna selezione, nessuna competenza.</p>
+
+    <p><strong>Il nostro vantaggio — Tre esperti:</strong></p>
+    <table class="compact-table">
+        <tr><th>Esperto</th><th>Ruolo</th><th>Contributo</th></tr>
+        <tr><td><strong>Mosey (420 Wholesale)</strong></td><td>Business</td><td>Più grande grossista svizzero. Sa cosa VENDE.</td></tr>
+        <tr><td><strong>Felix (Artemis)</strong></td><td>Prodotto</td><td>25 anni esperienza. Fuma, testa, sperimenta. Sa cosa è BUONO.</td></tr>
+        <tr><td><strong>Angelo</strong></td><td>Campo</td><td>50 anni esperienza. Test sul campo Sicilia. Sa cosa FUNZIONA.</td></tr>
+    </table>
+
+    <p><strong>Verità del settore (da Felix & Mosey):</strong></p>
+    <ul>
+        <li>Grinder sono personali — nessuno compra online, devono sentire il peso e l'azione</li>
+        <li>Solo cartine premium — OCB Slim, non marche generiche</li>
+        <li>Grinder antiodore per viaggiatori — waterproof, stash integrato</li>
+        <li>Ogni prodotto testato da chi effettivamente lo usa</li>
+    </ul>
+
+    <div class="highlight no-break">
+        <strong>Origin Story:</strong> Smoke cafe privato a Luzern (porta chiusa fino alle 17:30). Mosey e Felix facevano demo prodotti. I veri esperti ai tavoli — dabbers principalmente, ma anche fumatori tradizionali. Quella competenza ora è nella macchina.
+    </div>
+
+    <p style="text-align: center; font-style: italic; margin-top: 15px;"><strong>"Curato da fumatori. Fornito dal più grande grossista svizzero."</strong></p>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 14 — Espansione Prodotti</span>
+    </div>
+</div>
+
+<!-- ==================== PAGINA 15: DOMANDE PER VITO ==================== -->
+<div class="page">
+    <div class="page-header">
+        <div class="logo">HELIX <span>CBD MAX</span></div>
+        <div class="doc-info">v1.4 | Gen 2026</div>
+    </div>
+
+    <h1>Appendice B: Domande per Vito</h1>
+    <p>Per valutare la partnership e definire aspettative chiare, abbiamo bisogno del tuo feedback su questi punti.</p>
+
+    <h2>1. Contatti & Network</h2>
+    <table class="compact-table">
+        <tr><th>Domanda</th><th>Risposta</th></tr>
+        <tr><td>Hai contatti al Porto di Trapani che possono prendere decisioni su spazi commerciali?</td><td style="width:40%"></td></tr>
+        <tr><td>Conosci chi gestisce gli spazi al terminal traghetti Egadi?</td><td></td></tr>
+        <tr><td>Hai contatti alla stazione Trapani Centrale?</td><td></td></tr>
+        <tr><td>Conosci altri imprenditori locali che potrebbero volere una macchina?</td><td></td></tr>
+    </table>
+
+    <h2>2. Disponibilità & Impegno</h2>
+    <table class="compact-table">
+        <tr><th>Domanda</th><th>Risposta</th></tr>
+        <tr><td>Quante ore a settimana puoi dedicare a questo progetto?</td><td style="width:40%"></td></tr>
+        <tr><td>Puoi gestire rifornimenti 2-3 volte a settimana?</td><td></td></tr>
+        <tr><td>Puoi raccogliere contanti giornalmente e depositare settimanalmente?</td><td></td></tr>
+        <tr><td>Hai flessibilità per emergenze (macchina guasta, rifornimento urgente)?</td><td></td></tr>
+    </table>
+
+    <h2>3. Aspetti Legali & Comfort</h2>
+    <table class="compact-table">
+        <tr><th>Domanda</th><th>Risposta</th></tr>
+        <tr><td>Ti senti a tuo agio a lavorare con prodotti CBD legali?</td><td style="width:40%"></td></tr>
+        <tr><td>Conosci le regolamentazioni locali per distributori automatici?</td><td></td></tr>
+        <tr><td>Hai una partita IVA o preferisci lavorare come privato?</td><td></td></tr>
+        <tr><td>Conosci qualcuno al Comune per permessi commerciali?</td><td></td></tr>
+    </table>
+
+    <h2>4. Aspettative Economiche</h2>
+    <table class="compact-table">
+        <tr><th>Domanda</th><th>Risposta</th></tr>
+        <tr><td>Che tipo di compenso ti aspetti? (% ricavi, fisso mensile, altro)</td><td style="width:40%"></td></tr>
+        <tr><td>Saresti disponibile a iniziare con % più bassa e crescere con i risultati?</td><td></td></tr>
+        <tr><td>Hai interesse a investire direttamente nel progetto in futuro?</td><td></td></tr>
+    </table>
+
+    <h2>5. Valore Aggiunto</h2>
+    <table class="compact-table">
+        <tr><th>Domanda</th><th>Risposta</th></tr>
+        <tr><td>Quali altri contatti o risorse puoi portare al progetto?</td><td style="width:40%"></td></tr>
+        <tr><td>Hai esperienza con distributori automatici o retail?</td><td></td></tr>
+        <tr><td>Cosa ti interessa di più di questa opportunità?</td><td></td></tr>
+    </table>
+
+    <div class="insight no-break" style="margin-top: 20px;">
+        <strong>Il tuo ruolo è fondamentale.</strong> I contatti locali e la gestione quotidiana sono quello che trasforma un business plan in un business reale. Vogliamo costruire qualcosa insieme.
+    </div>
+
+    <div class="page-footer-line">
+        <span>Helix CBD Max | Piano Aziendale v1.4</span>
+        <span>Pagina 15 — Riservato per Discussione</span>
+    </div>
+</div>
+
+</body>
+</html>
