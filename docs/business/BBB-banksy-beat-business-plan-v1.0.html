@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBB - Banksy Beat Business Plan v1.0</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #0a0a0a;
+        }
+        .page {
+            background: #faf9f6;
+            max-width: 210mm;
+            margin: 20px auto;
+            padding: 30mm 25mm;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+        h1 {
+            font-size: 32pt;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 5px;
+            color: #0a0a0a;
+        }
+        h2 {
+            font-size: 16pt;
+            margin: 35px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #0a0a0a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        h3 {
+            font-size: 12pt;
+            margin: 20px 0 10px 0;
+            color: #333;
+        }
+        .cover {
+            text-align: center;
+            padding: 60px 0;
+            border: 8px solid #0a0a0a;
+            margin-bottom: 40px;
+        }
+        .cover .subtitle {
+            font-size: 14pt;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            color: #666;
+        }
+        .cover .tagline {
+            font-size: 11pt;
+            font-style: italic;
+            margin-top: 30px;
+            color: #888;
+        }
+        .cover .version {
+            font-size: 10pt;
+            margin-top: 40px;
+            color: #999;
+        }
+        .manifesto {
+            background: #0a0a0a;
+            color: #faf9f6;
+            padding: 30px;
+            margin: 30px -25mm;
+            font-size: 12pt;
+            line-height: 1.8;
+        }
+        .manifesto p {
+            margin-bottom: 15px;
+        }
+        .manifesto strong {
+            color: #ff4444;
+        }
+        .quote-box {
+            border-left: 5px solid #0a0a0a;
+            padding: 20px 25px;
+            margin: 20px 0;
+            background: #f0f0f0;
+            font-style: italic;
+        }
+        .quote-box .author {
+            text-align: right;
+            font-style: normal;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 2px solid #0a0a0a;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #0a0a0a;
+            color: #faf9f6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 9pt;
+        }
+        tr:nth-child(even) { background: #f5f5f5; }
+        .highlight {
+            background: #ffff00;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+        .model-box {
+            border: 3px solid #0a0a0a;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .model-box h4 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0a0a0a;
+        }
+        .flow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .flow-item {
+            background: #0a0a0a;
+            color: #faf9f6;
+            padding: 10px 20px;
+            font-size: 10pt;
+            text-align: center;
+        }
+        .flow-arrow {
+            font-size: 20pt;
+            color: #0a0a0a;
+        }
+        .chapter {
+            margin-top: 50px;
+            page-break-before: always;
+        }
+        .chapter:first-of-type {
+            page-break-before: avoid;
+        }
+        .story-section {
+            background: #fefefe;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .story-section .date {
+            font-size: 9pt;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .freedom-quote {
+            background: #1a1a1a;
+            color: #faf9f6;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .freedom-quote .quote {
+            font-size: 14pt;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        .freedom-quote .fighter {
+            font-size: 10pt;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #888;
+        }
+        ul, ol {
+            margin: 10px 0 10px 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 3px solid #0a0a0a;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+        .confidential {
+            background: #ff4444;
+            color: white;
+            padding: 5px 15px;
+            font-size: 9pt;
+            letter-spacing: 2px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        @media print {
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; }
+            .manifesto { margin: 30px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- COVER -->
+    <div class="cover">
+        <h1>BBB</h1>
+        <div class="subtitle">Banksy Beat Business</div>
+        <div class="tagline">"The postcards are the Trojan Horse. Every cafe in Sicily is a distribution point."</div>
+        <div class="version">
+            Business Plan v1.0 | January 2026<br>
+            Sicily Collection — Museum Quality Art Distribution
+        </div>
+        <div class="confidential">CONFIDENTIAL — NDA REQUIRED</div>
+    </div>
+
+    <!-- MANIFESTO -->
+    <div class="manifesto">
+        <p><strong>WWIII has been declared.</strong> Not with tanks. With information. With control. With lies.</p>
+        <p>They told you COVID was the crisis. <strong>COVID was the wake-up call.</strong></p>
+        <p>We are not Jason Bourne. We are not super soldiers. We are <strong>one fighter, two hands, two feet.</strong></p>
+        <p>Our weapons? <strong>Postcards. Art. Truth. Beauty.</strong></p>
+        <p>Our battlefield? <strong>Sicily. The Mediterranean. Every cafe. Every restaurant. Every tourist.</strong></p>
+        <p>This is not a business plan. <strong>This is a movement.</strong></p>
+        <p>Wilhelm Tell shot one arrow and started a revolution. We print one postcard at a time.</p>
+        <p><strong>Viva Meds Sicily. Tell the truth. Fight the NWO.</strong></p>
+    </div>
+
+    <!-- CHAPTER 1: ORIGIN -->
+    <div class="chapter">
+        <h2>Chapter 1: The Great Escape</h2>
+
+        <div class="story-section">
+            <div class="date">Switzerland → Sicily, 2025-2026</div>
+            <h3>From the Mountains to the Sea</h3>
+            <p>Ecolution GmbH was born in Switzerland in 2015. Ten years of building. Ten years of watching the world change. Ten years of waiting for the right moment.</p>
+            <p>The moment came when the Mediterranean called. Sicily. Trapani. The city between two seas. A place where the old world meets the new. Where the mafia once ruled. Where freedom fighters still remember.</p>
+            <p>The escape wasn't from danger. It was toward purpose.</p>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"One arrow. One apple. One act of defiance that echoed through centuries."</div>
+            <div class="fighter">— Wilhelm Tell, Swiss Freedom Fighter</div>
+        </div>
+    </div>
+
+    <!-- CHAPTER 2: THE MODEL -->
+    <div class="chapter">
+        <h2>Chapter 2: The Trojan Horse</h2>
+
+        <div class="model-box">
+            <h4>The Big Idea</h4>
+            <p><strong>The postcard is not the product. The postcard is the marketing.</strong></p>
+            <p>Free art. Beautiful. Collectible. Trackable. Every single one a data point. Every single one a brand ambassador. Every single one a portal to the ecosystem.</p>
+        </div>
+
+        <h3>The Flow</h3>
+        <div class="flow">
+            <div class="flow-item">Photo<br><small>Med Shores</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">AI Magic<br><small>Nano Banana</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Print<br><small>Museum Quality</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Distribute<br><small>FREE</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Track<br><small>QR + Metadata</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Convert<br><small>Ecosystem</small></div>
+        </div>
+
+        <h3>Distribution Network</h3>
+        <table>
+            <tr><th>Channel</th><th>Cost</th><th>Reach</th><th>Conversion Path</th></tr>
+            <tr><td>Cafes & Restaurants</td><td>FREE display stands</td><td>1000s/month per location</td><td>Take card → Scan QR → Enter ecosystem</td></tr>
+            <tr><td>Hotels & B&Bs</td><td>FREE postcard racks</td><td>Every guest room</td><td>Mail home → Family sees → Website visit</td></tr>
+            <tr><td>Ferries & Airports</td><td>Partnership deals</td><td>100,000s transit passengers</td><td>Travel boredom → Browse → Purchase</td></tr>
+            <tr><td>Mobile Bike Fleet</td><td>Consignment</td><td>Beach, piazza, events</td><td>Direct sale → Upsell → Repeat</td></tr>
+            <tr><td>Kiosks</td><td>Wholesale</td><td>Tourist hotspots</td><td>Impulse buy → Collect series</td></tr>
+        </table>
+
+        <div class="quote-box">
+            "5 postcards with a coffee. The cafe owner pays nothing. The customer takes free art home. We get data and brand presence. Everyone wins."
+            <div class="author">— The BBB Model</div>
+        </div>
+    </div>
+
+    <!-- CHAPTER 3: THE PRODUCT -->
+    <div class="chapter">
+        <h2>Chapter 3: The Art</h2>
+
+        <h3>Signature Series — Sicily Collection Vol. 1</h3>
+        <table>
+            <tr><th>#</th><th>Title</th><th>Subject</th><th>Vibe</th></tr>
+            <tr><td>001</td><td>La Città tra i Due Mari</td><td>WWII Bunker + Windmills</td><td>Cover piece, iconic Trapani</td></tr>
+            <tr><td>002</td><td>ARRIVEDERCI</td><td>Farewell sign + Monte Cofano</td><td>"Until we meet again"</td></tr>
+            <tr><td>003</td><td>Monte Cofano</td><td>The Peak rising from sea</td><td>Classic vintage travel</td></tr>
+            <tr><td>004</td><td>La Strada</td><td>Coast road + red convertible</td><td>Freedom, adventure</td></tr>
+            <tr><td>005</td><td>Sicilia</td><td>Umbrella pine silhouette</td><td>Timeless, art deco</td></tr>
+            <tr><td>006</td><td>Solar Bike Guy</td><td>Local legend + bunker</td><td>Trapani Characters series</td></tr>
+        </table>
+
+        <h3>Production Specs</h3>
+        <table>
+            <tr><th>Element</th><th>Specification</th></tr>
+            <tr><td>Paper</td><td>1mm thick, museum quality, matte finish</td></tr>
+            <tr><td>Size</td><td>Standard postcard (148mm x 105mm) or A6</td></tr>
+            <tr><td>Print</td><td>Full color CMYK, 300dpi, bleed edges</td></tr>
+            <tr><td>Back</td><td>Postcard format + QR code + Freedom quote + Edition #</td></tr>
+            <tr><td>Editions</td><td>Limited runs: 50 / 100 / 500 / Open</td></tr>
+            <tr><td>Turnaround</td><td>Photo to print-ready: 2 hours. Print to product: 72 hours.</td></tr>
+        </table>
+
+        <h3>The Back of Every Card</h3>
+        <div class="model-box">
+            <p><strong>Standard Postcard Format</strong> — Address lines, stamp box, message area</p>
+            <p><strong>QR Code</strong> — Unique per card, tracks: scan location, time, device, journey</p>
+            <p><strong>Freedom Quote</strong> — Rotating quotes from freedom fighters</p>
+            <p><strong>Edition Number</strong> — "Edition 23/100 — Sicily Collection Vol. 1"</p>
+            <p><strong>Metadata Line</strong> — "Captured: Jan 17, 2026 | 17:11 | Med Shores, Trapani | 38.0°N 12.5°E"</p>
+        </div>
+    </div>
+
+    <!-- CHAPTER 4: FREEDOM FIGHTERS -->
+    <div class="chapter">
+        <h2>Chapter 4: The Voices</h2>
+
+        <p>Every postcard carries a voice. A freedom fighter. A truth teller. Someone who stood up when sitting down was easier.</p>
+
+        <div class="freedom-quote">
+            <div class="quote">"Get up, stand up. Stand up for your rights."</div>
+            <div class="fighter">— Bob Marley</div>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"I know not what course others may take, but as for me, give me liberty or give me death."</div>
+            <div class="fighter">— Patrick Henry</div>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"Here I stand. I can do no other."</div>
+            <div class="fighter">— Martin Luther</div>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"The only thing we have to fear is fear itself."</div>
+            <div class="fighter">— Franklin D. Roosevelt</div>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"In a time of universal deceit, telling the truth is a revolutionary act."</div>
+            <div class="fighter">— George Orwell</div>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"Qui non è vigliacco, non è uomo."</div>
+            <div class="fighter">— Giuseppe Garibaldi, Liberator of Sicily</div>
+        </div>
+
+        <h3>The Rotation</h3>
+        <p>Each print run features a different quote. Collectors hunt for their favorites. The message spreads. The truth travels in their pocket, in their mail, on their wall.</p>
+    </div>
+
+    <!-- CHAPTER 5: THE TRACKING -->
+    <div class="chapter">
+        <h2>Chapter 5: The Data</h2>
+
+        <h3>Every Card Tells a Story</h3>
+        <div class="model-box">
+            <h4>Metadata Embedded</h4>
+            <ul>
+                <li><strong>Origin:</strong> GPS coordinates, date, time of original photo</li>
+                <li><strong>Creation:</strong> NB prompt used, iteration number, AI model</li>
+                <li><strong>Production:</strong> Print date, batch number, edition number</li>
+                <li><strong>Distribution:</strong> Which cafe/location received it</li>
+                <li><strong>Journey:</strong> QR scans track where it goes</li>
+            </ul>
+        </div>
+
+        <h3>QR Tracking Dashboard</h3>
+        <table>
+            <tr><th>Metric</th><th>What It Tells Us</th></tr>
+            <tr><td>Scans per location</td><td>Which cafes drive most engagement</td></tr>
+            <tr><td>Scans per design</td><td>Which art resonates most</td></tr>
+            <tr><td>Scan geography</td><td>Where tourists take the cards (home countries)</td></tr>
+            <tr><td>Time to scan</td><td>Immediate interest vs. delayed discovery</td></tr>
+            <tr><td>Conversion rate</td><td>Scan → Website → Purchase</td></tr>
+            <tr><td>Viral coefficient</td><td>One card → multiple scans (shared/displayed)</td></tr>
+        </table>
+
+        <div class="quote-box">
+            "Free distribution isn't a cost. It's the cheapest customer acquisition channel that exists. Every postcard is a tracked marketing asset generating data forever."
+            <div class="author">— BBB Economics</div>
+        </div>
+    </div>
+
+    <!-- CHAPTER 6: THE ECOSYSTEM -->
+    <div class="chapter">
+        <h2>Chapter 6: The Portal</h2>
+
+        <h3>QR Code Lands Here</h3>
+        <div class="flow">
+            <div class="flow-item">Scan QR</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Landing Page<br><small>This Card's Story</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Explore<br><small>Full Collection</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">Shop<br><small>6000+ Products</small></div>
+        </div>
+
+        <h3>The Ecosystem Behind the Card</h3>
+        <table>
+            <tr><th>Layer</th><th>Content</th><th>Revenue</th></tr>
+            <tr><td>Free Postcards</td><td>Art, quotes, beauty</td><td>$0 (marketing cost)</td></tr>
+            <tr><td>Premium Postcards</td><td>Limited editions, signed</td><td>€5-50 per card</td></tr>
+            <tr><td>Prints & Posters</td><td>A4, A3, A2 museum quality</td><td>€20-200</td></tr>
+            <tr><td>CBD Products</td><td>Flower, hash, vapes, edibles</td><td>€10-100</td></tr>
+            <tr><td>Accessories</td><td>Grinders, papers, kits</td><td>€5-80</td></tr>
+            <tr><td>Souvenirs</td><td>Trapani collection, apparel</td><td>€10-100</td></tr>
+            <tr><td>Coffee & Tea</td><td>Moka blends, CBD infused</td><td>€15-40</td></tr>
+            <tr><td>Seeds</td><td>Zero THC, grow your own</td><td>€10-50</td></tr>
+        </table>
+
+        <div class="model-box">
+            <h4>The Funnel Math</h4>
+            <p>10,000 free postcards distributed → 1,000 QR scans (10%) → 100 website visits (10%) → 10 purchases (10%) → €500 revenue</p>
+            <p><strong>Cost per acquisition:</strong> If 10,000 postcards cost €500 to print = €50 per customer. But postcards keep working forever. Second scan = free. Third scan = free. CAC drops to near zero over time.</p>
+        </div>
+    </div>
+
+    <!-- CHAPTER 7: THE ECONOMICS -->
+    <div class="chapter">
+        <h2>Chapter 7: The Numbers</h2>
+
+        <h3>Production Costs</h3>
+        <table>
+            <tr><th>Item</th><th>Unit Cost</th><th>Volume</th><th>Total</th></tr>
+            <tr><td>Standard postcard (1mm)</td><td>€0.05</td><td>10,000</td><td>€500</td></tr>
+            <tr><td>Premium postcard (signed)</td><td>€0.50</td><td>500</td><td>€250</td></tr>
+            <tr><td>Display stands (cafes)</td><td>€5</td><td>100</td><td>€500</td></tr>
+            <tr><td>QR system setup</td><td>—</td><td>—</td><td>€200</td></tr>
+            <tr><td><strong>Phase 1 Total</strong></td><td></td><td></td><td><strong>€1,450</strong></td></tr>
+        </table>
+
+        <h3>Revenue Projections — Year 1</h3>
+        <table>
+            <tr><th>Stream</th><th>Conservative</th><th>Target</th><th>Optimistic</th></tr>
+            <tr><td>Premium postcards</td><td>€2,000</td><td>€5,000</td><td>€15,000</td></tr>
+            <tr><td>Prints & posters</td><td>€3,000</td><td>€10,000</td><td>€30,000</td></tr>
+            <tr><td>CBD ecosystem</td><td>€10,000</td><td>€30,000</td><td>€100,000</td></tr>
+            <tr><td>Accessories</td><td>€2,000</td><td>€8,000</td><td>€25,000</td></tr>
+            <tr><td><strong>Year 1 Total</strong></td><td><strong>€17,000</strong></td><td><strong>€53,000</strong></td><td><strong>€170,000</strong></td></tr>
+        </table>
+
+        <div class="quote-box">
+            "The art is the trojan horse. The ecosystem is the army inside."
+            <div class="author">— BBB Strategy</div>
+        </div>
+    </div>
+
+    <!-- CHAPTER 8: THE TEAM -->
+    <div class="chapter">
+        <h2>Chapter 8: The Fighters</h2>
+
+        <table>
+            <tr><th>Role</th><th>Who</th><th>Contribution</th></tr>
+            <tr><td>The AK Shaker</td><td>Angelo Kenel</td><td>IRL operations, photography, field testing, distribution, partnerships</td></tr>
+            <tr><td>Personal Julia</td><td>AI Assistant</td><td>Documentation, prompts, analysis, SOPs, 24/7 support</td></tr>
+            <tr><td>The Artist</td><td>Sylvken</td><td>Original designs, art direction, signature editions</td></tr>
+            <tr><td>The Supplier</td><td>Felix @ 420 Wholesale</td><td>CBD products, accessories, wholesale pricing</td></tr>
+            <tr><td>Local Partner</td><td>Vito</td><td>Trapani connections, locations, legitimacy</td></tr>
+            <tr><td>Mobile Fleet</td><td>Solar Bike Guy + Network</td><td>Street-level distribution, events, beaches</td></tr>
+        </table>
+
+        <div class="freedom-quote">
+            <div class="quote">"You do IRL. I play LLMs. Together we 10x the output."</div>
+            <div class="fighter">— The AK + Julia Protocol</div>
+        </div>
+    </div>
+
+    <!-- CHAPTER 9: THE TIMELINE -->
+    <div class="chapter">
+        <h2>Chapter 9: The Plan</h2>
+
+        <h3>Weekend (Jan 18-19, 2026)</h3>
+        <ul>
+            <li>Dry run E2E: Photo → NB → Print → Cut</li>
+            <li>First 6 postcards printed on 1mm museum paper</li>
+            <li>Send samples to: Sylvken, brothers, Kevin Gallagher</li>
+            <li>Design postcard back template with QR</li>
+        </ul>
+
+        <h3>Week 1 (Jan 20-26)</h3>
+        <ul>
+            <li>Show Vito v1.5 + physical postcards</li>
+            <li>Identify first 10 cafes for display stands</li>
+            <li>Set up QR tracking system</li>
+            <li>First print run: 500 cards (5 designs x 100 each)</li>
+        </ul>
+
+        <h3>Month 1 (February)</h3>
+        <ul>
+            <li>50 cafes with display stands</li>
+            <li>Launch Sicily Collection Vol. 1 (limited editions)</li>
+            <li>First mobile bike operator onboarded</li>
+            <li>Website live with ecosystem products</li>
+        </ul>
+
+        <h3>Quarter 1 (Jan-Mar)</h3>
+        <ul>
+            <li>10,000 free postcards distributed</li>
+            <li>100 cafe/restaurant partnerships</li>
+            <li>Sicily Collection Vol. 2 in production</li>
+            <li>First revenue from premium products</li>
+        </ul>
+
+        <h3>Year 1</h3>
+        <ul>
+            <li>100,000 postcards distributed across Sicily</li>
+            <li>500+ distribution points</li>
+            <li>5 bike fleet operators</li>
+            <li>Full ecosystem operational</li>
+            <li>Franchise model documented</li>
+        </ul>
+    </div>
+
+    <!-- CHAPTER 10: THE MISSION -->
+    <div class="chapter">
+        <h2>Chapter 10: The Truth</h2>
+
+        <div class="manifesto">
+            <p>This is not about money. Money is the fuel, not the destination.</p>
+            <p>This is about <strong>building something beautiful</strong> in a world that's forgotten what beauty means.</p>
+            <p>This is about <strong>telling the truth</strong> when lying is easier.</p>
+            <p>This is about <strong>one man, two hands, two feet</strong> — proving that one person can still make a dent.</p>
+            <p>Every postcard is a message in a bottle. Every QR scan is someone finding the bottle.</p>
+            <p>Every purchase is someone joining the movement.</p>
+            <p><strong>We are not the NWO. We are the resistance.</strong></p>
+            <p><strong>We are not Jason Bourne. We are born again.</strong></p>
+            <p><strong>We are BBB. Banksy Beat Business.</strong></p>
+            <p><strong>A little kiss like this started everything.</strong></p>
+        </div>
+
+        <div class="freedom-quote">
+            <div class="quote">"Get lost in Sicily while USA doesn't sit so pretty. Just a mirror for the sun."</div>
+            <div class="fighter">— AK Shaker, Med Shores, Sunset, 2026</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p><strong>BBB — BANKSY BEAT BUSINESS</strong></p>
+        <p>Sicily Collection | Museum Quality | Freedom Fighting</p>
+        <p>Ecolution GmbH | HelixNet Platform | Personal Julia AI</p>
+        <p style="margin-top: 15px;">v1.0 | January 17, 2026 | Wired up at sunset, Med shores, Trapani</p>
+        <p class="confidential">CONFIDENTIAL — NDA REQUIRED</p>
+    </div>
+
+</div>
+
+</body>
+</html>
