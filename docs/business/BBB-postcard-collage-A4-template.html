@@ -9,25 +9,28 @@
 
         @page {
             size: A4;
-            margin: 5mm;
+            margin: 0;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #333;
+            margin: 0;
+            padding: 0;
         }
 
         .sheet {
-            width: 210mm;
-            height: 297mm;
+            width: 200mm;
+            height: 287mm;
             background: white;
-            margin: 10px auto;
-            padding: 8mm;
+            margin: 5mm auto;
+            padding: 5mm;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 4mm;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 3mm;
             page-break-after: always;
+            page-break-inside: avoid;
         }
 
         .sheet:last-child {
@@ -40,12 +43,14 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            max-height: 90mm;
         }
 
         .card-front img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            background: #f5f5f5;
         }
 
         .card-front .placeholder {
@@ -82,11 +87,13 @@
         /* BACK CARDS */
         .card-back {
             border: 0.5mm dashed #ccc;
-            padding: 4mm;
+            padding: 3mm;
             display: flex;
             flex-direction: column;
-            font-size: 8pt;
+            font-size: 7pt;
             background: #faf9f6;
+            overflow: hidden;
+            max-height: 90mm;
         }
 
         .card-back .header {
@@ -284,56 +291,32 @@
 <div class="sheet" id="fronts">
     <!-- Card 1: La Città tra i Due Mari -->
     <div class="card-front">
-        <div class="placeholder">
-            <div class="number">001</div>
-            <div class="title">LA CITTÀ TRA I DUE MARI</div>
-            <div class="subtitle">WWII Bunker • Windmills • Trapani</div>
-        </div>
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/WWII_Bunker_Trapani  _ A4 Portrait _ POST-CARD.png" alt="La Città tra i Due Mari">
     </div>
 
     <!-- Card 2: Arrivederci -->
     <div class="card-front">
-        <div class="placeholder">
-            <div class="number">002</div>
-            <div class="title">ARRIVEDERCI</div>
-            <div class="subtitle">Until We Meet Again • Monte Cofano</div>
-        </div>
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/1. ARRIVEDERCI — The Farewell Card . photo_10_2026-01-17_16-42-41.jpg" alt="Arrivederci">
     </div>
 
     <!-- Card 3: Monte Cofano -->
     <div class="card-front">
-        <div class="placeholder">
-            <div class="number">003</div>
-            <div class="title">MONTE COFANO</div>
-            <div class="subtitle">The Peak • Sicilia Italia</div>
-        </div>
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/2. MONTE COFANO — The Peak - photo_2_2026-01-17_16-42-41.jpg" alt="Monte Cofano">
     </div>
 
     <!-- Card 4: La Strada -->
     <div class="card-front">
-        <div class="placeholder">
-            <div class="number">004</div>
-            <div class="title">LA STRADA</div>
-            <div class="subtitle">The Coast Road • Trapani Sicilia</div>
-        </div>
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/3. COASTAL CURVE — The Road - photo_9_2026-01-17_16-42-41.jpg" alt="La Strada">
     </div>
 
     <!-- Card 5: Sicilia -->
     <div class="card-front">
-        <div class="placeholder">
-            <div class="number">005</div>
-            <div class="title">SICILIA</div>
-            <div class="subtitle">Umbrella Pine • Timeless</div>
-        </div>
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/4. UMBRELLA PINE — Classic Sicily - photo_6_2026-01-17_16-42-41.jpg" alt="Sicilia">
     </div>
 
     <!-- Card 6: Solar Bike Guy -->
     <div class="card-front">
-        <div class="placeholder">
-            <div class="number">006</div>
-            <div class="title">TRAPANI LEGEND</div>
-            <div class="subtitle">Solar Bike Guy • Local Character</div>
-        </div>
+        <img src="file:///home/angel/Pictures/palermo-recon/HelixMax - PostCards/Solar pic pic with local fixture guy roking his way around town full power - photo_2026-01-17_15-54-46.jpg" alt="Trapani Legend - Solar Bike Guy">
     </div>
 </div>
 
