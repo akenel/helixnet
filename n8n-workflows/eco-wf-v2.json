@@ -1,0 +1,174 @@
+{
+  "name": "eco-gdrive-uploads-v1",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerOn": "folder",
+        "path": "/data/eco-2026/",
+        "events": [
+          "add",
+          "change",
+          "addDir"
+        ],
+        "options": {
+          "ignoreInitial": true
+        }
+      },
+      "id": "8c7eee77-1856-482f-b4c3-45bd8c3736a3",
+      "name": "Watch Eco Folder",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "{{ $('JS_Rename_File').item.json.newPath }}"
+      },
+      "id": "360cd30e-30af-459b-835c-a7ff8c3b315c",
+      "name": "Read File",
+      "type": "n8n-nodes-base.readBinaryFiles",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "=data ",
+        "name": "={{ $('JS_Rename_File').item.json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1esF4Va0j6c4TInLFSwPrZKbdtLWovrXx",
+          "mode": "list",
+          "cachedResultName": "ECO-HelixNet-Backups",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1esF4Va0j6c4TInLFSwPrZKbdtLWovrXx"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        896,
+        -160
+      ],
+      "id": "bc0d6432-53de-4379-a974-b0dd3166e376",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "NNZYG1RA9Qnau0Ki",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "= mv \"{{ $json.originalPath }}\" \"{{ $json.newPath }}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -160
+      ],
+      "id": "fba307ac-64a6-4b7d-a7ee-9be8fa4354c3",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the file path from trigger\n  const filePath = $input.item.json.path;\n\n  // Extract filename and extension using string methods\n  const lastSlash = filePath.lastIndexOf('/');\n  const fileName = filePath.substring(lastSlash + 1);\n  const dirName = filePath.substring(0, lastSlash);\n  const lastDot = fileName.lastIndexOf('.');\n  const ext = fileName.substring(lastDot).toLowerCase();\n\n  // Get current timestamp\n  const now = new Date();\n  const year = now.getFullYear();\n  const month = String(now.getMonth() + 1).padStart(2, '0');\n  const day = String(now.getDate()).padStart(2, '0');\n  const hours = String(now.getHours()).padStart(2, '0');\n  const mins = String(now.getMinutes()).padStart(2, '0');\n  const secs = String(now.getSeconds()).padStart(2, '0');\n  const timestamp = `${year}${month}${day}_${hours}${mins}${secs}`;\n\n  // Determine type based on extension\n  let fileType = 'photo';\n  if (['.mp4', '.mov', '.avi', '.webm'].includes(ext)) fileType = 'video';\n  if (['.ogg', '.mp3', '.wav', '.m4a'].includes(ext)) fileType = 'audio';\n\n  // New filename\n  const newFileName = `${timestamp}_Sicily_${fileType}${ext}`;\n  const newPath = `${dirName}/${newFileName}`;\n\n  return {\n    originalPath: filePath,\n    newPath: newPath,\n    fileName: newFileName,\n    fileType: fileType,\n    dirName: dirName,\n    timestamp: now.toISOString()\n  };"
+      },
+      "id": "30b67e55-2bb0-4664-9e5f-cc904e3332dc",
+      "name": "JS_Rename_File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -160
+      ]
+    }
+  ],
+  "pinData": {
+    "Upload file": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Watch Eco Folder": {
+      "main": [
+        [
+          {
+            "node": "JS_Rename_File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read File": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Read File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS_Rename_File": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6cf25004-6516-4a9d-b8a4-b74035b0efaf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6ee37a07d8cb81430e49f773046a992c2d40489c58074f54fcb09c1053e531d5"
+  },
+  "id": "NfgrcyhMbvLentd5",
+  "tags": []
+}

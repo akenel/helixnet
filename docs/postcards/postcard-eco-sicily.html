@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: 15cm 10cm;
+      margin: 0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 15cm;
+      height: 10cm;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #415a77 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .triangle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 8cm 10cm 0;
+      border-color: transparent #e0e1dd transparent transparent;
+      opacity: 0.1;
+    }
+    .bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1.5cm;
+      background: #778da9;
+    }
+    .content {
+      padding: 1cm;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 24pt;
+      font-weight: 900;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+    }
+    .logo span {
+      color: #778da9;
+    }
+    .tagline {
+      font-size: 9pt;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #778da9;
+      margin-top: 0.2cm;
+    }
+    .main-text {
+      font-size: 11pt;
+      line-height: 1.6;
+      max-width: 10cm;
+    }
+    .location {
+      position: absolute;
+      bottom: 0.4cm;
+      left: 1cm;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0d1b2a;
+      letter-spacing: 2px;
+    }
+    .coordinates {
+      position: absolute;
+      bottom: 0.4cm;
+      right: 1cm;
+      font-size: 8pt;
+      font-family: monospace;
+      color: #0d1b2a;
+    }
+    .stars {
+      position: absolute;
+      top: 1cm;
+      right: 1cm;
+      font-size: 18pt;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="triangle"></div>
+  <div class="bar"></div>
+  <div class="stars">&#9733; &#9733; &#9733;</div>
+
+  <div class="content">
+    <div>
+      <div class="logo">HELIX<span>NET</span></div>
+      <div class="tagline">Where the stars fall from the sky</div>
+    </div>
+
+    <div class="main-text">
+      Building from the edge of Europe.<br>
+      Monte Cofano on the horizon.<br>
+      The fishermen don't ask why.<br><br>
+      Some things are worth the journey.
+    </div>
+
+    <div class="location">TRAPANI, SICILY</div>
+    <div class="coordinates">38.0174° N, 12.5365° E</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 210mm;
+      height: 297mm;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #fafafa;
+      color: #1a1a1a;
+      position: relative;
+      overflow: hidden;
+      padding: 2cm;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 1cm;
+      margin-bottom: 1cm;
+    }
+    .logo {
+      font-size: 24pt;
+      font-weight: 900;
+      letter-spacing: 4px;
+    }
+    .logo span {
+      color: #e63946;
+    }
+    .date {
+      font-size: 11pt;
+      text-align: right;
+      color: #666;
+    }
+    .ref {
+      font-family: monospace;
+      font-size: 9pt;
+      color: #999;
+      margin-top: 0.3cm;
+    }
+    .addresses {
+      display: flex;
+      justify-content: space-between;
+      margin: 1.5cm 0;
+    }
+    .address-block {
+      width: 45%;
+    }
+    .address-label {
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #999;
+      margin-bottom: 0.3cm;
+    }
+    .address {
+      font-size: 12pt;
+      line-height: 1.6;
+    }
+    .address strong {
+      font-size: 14pt;
+    }
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: #ddd;
+      margin: 1cm 0;
+    }
+    .subject {
+      font-size: 14pt;
+      font-weight: 700;
+      margin-bottom: 1cm;
+      padding: 0.5cm;
+      background: #f0f0f0;
+      border-left: 4px solid #e63946;
+    }
+    .body-text {
+      font-size: 11pt;
+      line-height: 1.8;
+      margin-bottom: 1cm;
+    }
+    .body-text p {
+      margin-bottom: 0.8cm;
+    }
+    .list {
+      margin: 0.5cm 0 0.5cm 1cm;
+    }
+    .list li {
+      margin-bottom: 0.3cm;
+    }
+    .signature-block {
+      margin-top: 2cm;
+    }
+    .signature-block .sign {
+      font-size: 14pt;
+      font-style: italic;
+      margin-bottom: 0.5cm;
+    }
+    .signature-block .name {
+      font-size: 12pt;
+      font-weight: 700;
+    }
+    .signature-block .contact {
+      font-size: 10pt;
+      color: #666;
+      margin-top: 0.3cm;
+    }
+    .footer {
+      position: absolute;
+      bottom: 1.5cm;
+      left: 2cm;
+      right: 2cm;
+      font-size: 8pt;
+      color: #999;
+      text-align: center;
+      border-top: 1px solid #eee;
+      padding-top: 0.5cm;
+    }
+    .stamp-area {
+      position: absolute;
+      top: 2cm;
+      right: 2cm;
+      width: 3cm;
+      height: 3.5cm;
+      border: 1px dashed #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8pt;
+      color: #ccc;
+    }
+    .tracked {
+      position: absolute;
+      top: 6cm;
+      right: 2cm;
+      font-size: 9pt;
+      font-weight: 700;
+      color: #e63946;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border: 2px solid #e63946;
+      padding: 0.3cm 0.5cm;
+    }
+  </style>
+</head>
+<body>
+  <div class="stamp-area">AFFRANCATURA<br>POSTAGE</div>
+  <div class="tracked">RACCOMANDATA<br>TRACKED</div>
+
+  <div class="header">
+    <div>
+      <div class="logo">HELIX<span>NET</span></div>
+      <div class="ref">REF: LUPS-RECKONING-2026-001</div>
+    </div>
+    <div class="date">
+      20 January 2026<br>
+      Trapani, Sicily
+    </div>
+  </div>
+
+  <div class="addresses">
+    <div class="address-block">
+      <div class="address-label">From / Mittente</div>
+      <div class="address">
+        <strong>Angelo Kenel</strong><br>
+        Via Scoglio Tondo<br>
+        91010 San Vito Lo Capo (TP)<br>
+        ITALIA
+      </div>
+    </div>
+    <div class="address-block">
+      <div class="address-label">To / Destinatario</div>
+      <div class="address">
+        <strong>Dr. Minday</strong><br>
+        LUPS - Luzerner Psychiatrie<br>
+        Schafmattstrasse 1<br>
+        4915 St. Urban<br>
+        SCHWEIZ / SWITZERLAND
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="subject">RE: Patient Discharge — Christmas Eve 2025 — Formal Documentation</div>
+
+  <div class="body-text">
+    <p>Dr. Minday,</p>
+
+    <p>This letter serves as formal documentation of my involuntary hospitalization at LUPS during November-December 2025, and my subsequent self-discharge on Christmas Eve.</p>
+
+    <p>For the record:</p>
+    <ul class="list">
+      <li>3 days in isolation ("white room")</li>
+      <li>7 days under heavy medication against my will</li>
+      <li>Morning meetings where my concerns were dismissed</li>
+      <li>No proper discharge documentation provided</li>
+    </ul>
+
+    <p>I am now in Sicily, fully clean, fully free, and documenting everything. The archive is secure. Monte Cofano guards the truth.</p>
+
+    <p>This is not a threat. This is accountability.</p>
+
+    <p>The reckoning is a process of documentation and transparency. Everything that happened at LUPS is being recorded for future reference, should it ever be needed.</p>
+  </div>
+
+  <div class="signature-block">
+    <div class="sign">Arrivederci,</div>
+    <div class="name">Angelo Kenel</div>
+    <div class="name" style="font-style: italic; font-weight: 400;">— The Patient Who Escaped</div>
+    <div class="contact">
+      +41 79 828 2841<br>
+      angelo.kenel@ecolution.cloud
+    </div>
+  </div>
+
+  <div class="footer">
+    HELIXNET // ECO.2026 // "How long must we sing this song?" — U2
+  </div>
+</body>
+</html>

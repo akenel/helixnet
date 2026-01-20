@@ -1,0 +1,154 @@
+{
+  "name": "eco-gdrive-uploads-v1",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerOn": "folder",
+        "path": "/home/angel/Downloads/Telegram Desktop/eco-2026/",
+        "events": [
+          "add",
+          "change",
+          "addDir"
+        ],
+        "options": {
+          "ignoreInitial": true
+        }
+      },
+      "id": "8c7eee77-1856-482f-b4c3-45bd8c3736a3",
+      "name": "Watch Eco Folder",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rename file with proper convention\nconst path = require('path');\nconst fs = require('fs');\n\nconst filePath = $input.item.json.path;\nconst fileName = path.basename(filePath);\nconst dirName = path.dirname(filePath);\nconst ext = path.extname(fileName).toLowerCase();\n\n// Get current timestamp\nconst now = new Date();\nconst timestamp = now.toISOString().slice(0,19).replace(/[-:T]/g, '').replace(/(.{8})(.{6})/, '$1_$2');\n\n// Determine type based on extension\nlet fileType = 'photo';\nif (['.mp4', '.mov', '.avi', '.webm'].includes(ext)) fileType = 'video';\nif (['.ogg', '.mp3', '.wav', '.m4a'].includes(ext)) fileType = 'audio';\n\n// New filename: YYYYMMDD_HHMMSS_Sicily_type.ext\nconst newFileName = `${timestamp}_Sicily_${fileType}${ext}`;\nconst newPath = path.join(dirName, newFileName);\n\n// Rename the file\nif (filePath !== newPath && fs.existsSync(filePath)) {\n  fs.renameSync(filePath, newPath);\n}\n\nreturn {\n  originalPath: filePath,\n  newPath: newPath,\n  fileName: newFileName,\n  fileType: fileType,\n  timestamp: now.toISOString(),\n  size: fs.statSync(newPath).size\n};"
+      },
+      "id": "30b67e55-2bb0-4664-9e5f-cc904e3332dc",
+      "name": "Rename File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/angel/Downloads/Telegram Desktop/eco-2026/*.jpeg"
+      },
+      "id": "360cd30e-30af-459b-835c-a7ff8c3b315c",
+      "name": "Read File",
+      "type": "n8n-nodes-base.readBinaryFiles",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log to manifest\nconst fs = require('fs');\nconst manifestPath = '/home/angel/Downloads/Telegram Desktop/eco-2026/manifest.json';\n\nlet manifest = [];\nif (fs.existsSync(manifestPath)) {\n  manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));\n}\n\nconst entry = {\n  id: manifest.length + 1,\n  originalFile: $('Rename File').item.json.originalPath,\n  newFile: $('Rename File').item.json.newPath,\n  fileName: $('Rename File').item.json.fileName,\n  fileType: $('Rename File').item.json.fileType,\n  size: $('Rename File').item.json.size,\n  uploadedAt: new Date().toISOString(),\n  googlePhotosId: $json.id || 'pending',\n  status: 'uploaded'\n};\n\nmanifest.push(entry);\nfs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));\n\nreturn entry;"
+      },
+      "id": "fb8ff965-9272-4a0e-99e2-4c7f7c13da41",
+      "name": "Log to Manifest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "bc0d6432-53de-4379-a974-b0dd3166e376",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "NNZYG1RA9Qnau0Ki",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Watch Eco Folder": {
+      "main": [
+        [
+          {
+            "node": "Rename File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename File": {
+      "main": [
+        [
+          {
+            "node": "Read File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Manifest": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read File": {
+      "main": [
+        [
+          {
+            "node": "Log to Manifest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "02b2f2a0-a7a3-46eb-a9cd-d42056a4993a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6ee37a07d8cb81430e49f773046a992c2d40489c58074f54fcb09c1053e531d5"
+  },
+  "id": "NfgrcyhMbvLentd5",
+  "tags": []
+}

@@ -1,0 +1,122 @@
+{
+  "name": "Eco-Photos-Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/home/angel/Downloads/Telegram Desktop/eco-2026",
+        "events": ["add"],
+        "options": {
+          "ignoreInitial": true,
+          "recursive": true
+        }
+      },
+      "id": "trigger-watch-folder",
+      "name": "Watch Eco Folder",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rename file with proper convention\nconst path = require('path');\nconst fs = require('fs');\n\nconst filePath = $input.item.json.path;\nconst fileName = path.basename(filePath);\nconst dirName = path.dirname(filePath);\nconst ext = path.extname(fileName).toLowerCase();\n\n// Get current timestamp\nconst now = new Date();\nconst timestamp = now.toISOString().slice(0,19).replace(/[-:T]/g, '').replace(/(.{8})(.{6})/, '$1_$2');\n\n// Determine type based on extension\nlet fileType = 'photo';\nif (['.mp4', '.mov', '.avi', '.webm'].includes(ext)) fileType = 'video';\nif (['.ogg', '.mp3', '.wav', '.m4a'].includes(ext)) fileType = 'audio';\n\n// New filename: YYYYMMDD_HHMMSS_Sicily_type.ext\nconst newFileName = `${timestamp}_Sicily_${fileType}${ext}`;\nconst newPath = path.join(dirName, newFileName);\n\n// Rename the file\nif (filePath !== newPath && fs.existsSync(filePath)) {\n  fs.renameSync(filePath, newPath);\n}\n\nreturn {\n  originalPath: filePath,\n  newPath: newPath,\n  fileName: newFileName,\n  fileType: fileType,\n  timestamp: now.toISOString(),\n  size: fs.statSync(newPath).size\n};"
+      },
+      "id": "rename-file",
+      "name": "Rename File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "mediaItem",
+        "operation": "upload",
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "albumId": "={{ $json.albumId }}"
+        }
+      },
+      "id": "upload-google-photos",
+      "name": "Upload to Google Photos",
+      "type": "n8n-nodes-base.googlePhotos",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "googlePhotosOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Photos - ecolution"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filePath": "={{ $('Rename File').item.json.newPath }}",
+        "options": {}
+      },
+      "id": "read-binary",
+      "name": "Read File",
+      "type": "n8n-nodes-base.readBinaryFiles",
+      "typeVersion": 1,
+      "position": [570, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log to manifest\nconst fs = require('fs');\nconst manifestPath = '/home/angel/Downloads/Telegram Desktop/eco-2026/manifest.json';\n\nlet manifest = [];\nif (fs.existsSync(manifestPath)) {\n  manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));\n}\n\nconst entry = {\n  id: manifest.length + 1,\n  originalFile: $('Rename File').item.json.originalPath,\n  newFile: $('Rename File').item.json.newPath,\n  fileName: $('Rename File').item.json.fileName,\n  fileType: $('Rename File').item.json.fileType,\n  size: $('Rename File').item.json.size,\n  uploadedAt: new Date().toISOString(),\n  googlePhotosId: $json.id || 'pending',\n  status: 'uploaded'\n};\n\nmanifest.push(entry);\nfs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));\n\nreturn entry;"
+      },
+      "id": "log-manifest",
+      "name": "Log to Manifest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Watch Eco Folder": {
+      "main": [
+        [
+          {
+            "node": "Rename File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename File": {
+      "main": [
+        [
+          {
+            "node": "Read File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read File": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Google Photos": {
+      "main": [
+        [
+          {
+            "node": "Log to Manifest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["ecolution", "photos", "sicily"]
+}

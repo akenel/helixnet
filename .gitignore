@@ -89,3 +89,14 @@ compose/helix-media/music/
 *.m4a
 *.flac
 *.wav
+.secrets/
+
+# ====================================================================
+# 🤝 CONFIDENTIAL BUSINESS DOCS (KEEP LOCAL)
+# ====================================================================
+# Paulo / Caffè Maltese partnership docs
+docs/business/*Paulo*
+docs/business/*NDA*
+docs/business/*Partnership*
+docs/business/*Platform-Partner*
+docs/business/*POC-*
