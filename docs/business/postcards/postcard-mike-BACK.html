@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Postcard BACK - Mike</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page { size: 6in 4in; margin: 0; }
+        body { font-family: Georgia, serif; background: #333; }
+        .postcard {
+            width: 6in;
+            height: 4in;
+            background: #faf9f6;
+            margin: 10px auto;
+            padding: 0.15in 0.2in;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 4px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+        .logo {
+            font-weight: bold;
+            font-size: 14pt;
+            letter-spacing: 2px;
+        }
+        .collection {
+            font-size: 7pt;
+            color: #666;
+            text-align: right;
+        }
+        .quote-section {
+            padding: 3px 0;
+        }
+        .quote {
+            font-style: italic;
+            font-size: 9pt;
+            line-height: 1.25;
+            color: #333;
+        }
+        .attribution {
+            font-size: 7pt;
+            color: #666;
+            text-align: right;
+            margin-top: 1px;
+        }
+        .message-address {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .message-side {
+            font-size: 8pt;
+            line-height: 1.3;
+        }
+        .message-side .recipient {
+            font-weight: bold;
+            margin-bottom: 3px;
+            font-size: 9pt;
+        }
+        .message-side .body { color: #333; }
+        .message-side .contact {
+            margin-top: 5px;
+            font-size: 7pt;
+            color: #666;
+        }
+        .address-side {
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #ccc;
+            padding-left: 10px;
+        }
+        .stamp-box {
+            width: 0.65in;
+            height: 0.8in;
+            border: 1px solid #999;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #999;
+        }
+        .address-lines {
+            margin-top: auto;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 4px;
+            border-top: 1px solid #333;
+        }
+        .qr-section {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .qr-section img {
+            width: 0.5in;
+            height: 0.5in;
+        }
+        .qr-label {
+            font-size: 6pt;
+            color: #666;
+            line-height: 1.2;
+        }
+        .metadata {
+            font-size: 6pt;
+            color: #666;
+            text-align: right;
+            line-height: 1.2;
+        }
+        @media print {
+            body { background: white; }
+            .postcard { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="postcard">
+    <div class="header">
+        <div class="logo">UFA</div>
+        <div class="collection">Universal UnFuckAbles<br>Sicily Series No. 003</div>
+    </div>
+    <div class="quote-section">
+        <div class="quote">"Get up, stand up. Stand up for your rights."</div>
+        <div class="attribution">— Bob Marley</div>
+    </div>
+    <div class="message-address">
+        <div class="message-side">
+            <div class="recipient">Mike —</div>
+            <div class="body">
+                Look at this place. Things grow here.<br>
+                Even when nobody tends them.<br><br>
+                The agave doesn't ask permission.<br>
+                It just reaches for the sun.<br><br>
+                You and Andre are neighbors.<br>
+                I'm bringing him here too.<br><br>
+                Brother, let's grow.
+            </div>
+            <div class="contact">+41 79 828 2841 — Angelo<br>angel.kenel@gmail.com</div>
+        </div>
+        <div class="address-side">
+            <div class="stamp-box">STAMP</div>
+            <div class="address-lines">
+                <strong>Mike Kenel</strong><br>
+                287 Hwy #8<br>
+                Dundas, Ontario<br>
+                L9H 5E1<br>
+                CANADA
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="qr-section">
+            <img src="qr-baglio-xiare.png" alt="QR Code">
+            <div class="qr-label">Scan for location<br>📍 Baglio Xiare</div>
+        </div>
+        <div class="metadata">
+            Ed. 1/1 • Baglio Xiare, Valderice<br>
+            38.06°N 12.63°E • January 2026
+        </div>
+    </div>
+</div>
+</body>
+</html>
