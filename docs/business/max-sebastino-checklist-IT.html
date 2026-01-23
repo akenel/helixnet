@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAX Checklist - Sebastino's | EN-IT</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18pt;
+            margin-bottom: 5px;
+            color: #4ecca3;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 10pt;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .date {
+            text-align: center;
+            font-size: 11pt;
+            color: #4ecca3;
+            margin-bottom: 15px;
+        }
+        .item {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4ecca3;
+        }
+        .item.high { border-left-color: #e94560; }
+        .item.medium { border-left-color: #f9a825; }
+        .item.low { border-left-color: #4ecca3; }
+        .item.main {
+            border-left-color: #00ff00;
+            background: #1a3a2e;
+        }
+        .num {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background: #4ecca3;
+            color: #1a1a2e;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            font-size: 12pt;
+            margin-right: 10px;
+        }
+        .item.main .num { background: #00ff00; }
+        .item.high .num { background: #e94560; }
+        .item.medium .num { background: #f9a825; }
+        .en {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #fff;
+        }
+        .it {
+            font-size: 14pt;
+            color: #4ecca3;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .item.main .it { color: #00ff00; }
+        .phrase {
+            font-size: 10pt;
+            color: #888;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #333;
+        }
+        .phrase strong {
+            color: #f9a825;
+        }
+        .section {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+        .checkbox {
+            float: right;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #4ecca3;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 9pt;
+        }
+        .useful {
+            background: #2d2d44;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .useful h3 {
+            color: #4ecca3;
+            font-size: 11pt;
+            margin-bottom: 10px;
+        }
+        .useful p {
+            font-size: 11pt;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        .useful .it {
+            margin-top: 0;
+            font-size: 12pt;
+        }
+        @media print {
+            body { background: white; color: black; }
+            .item { border: 1px solid #ccc; background: #f9f9f9; }
+            .it { color: #006644; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>🚐 MAX @ SEBASTINO'S</h1>
+<div class="subtitle">Camper Checklist | EN → IT</div>
+<div class="date">📅 23 Gennaio 2026 | ⏰ 9:30</div>
+
+<div class="section">🎯 Main Job / Lavoro Principale</div>
+
+<div class="item main">
+    <div class="checkbox"></div>
+    <span class="num">1</span>
+    <div class="en">Backup Camera</div>
+    <div class="it">Telecamera di retromarcia</div>
+    <div class="phrase"><strong>Say:</strong> "Vorrei installare la telecamera di retromarcia"</div>
+</div>
+
+<div class="section">🔧 Repairs / Riparazioni</div>
+
+<div class="item high">
+    <div class="checkbox"></div>
+    <span class="num">2</span>
+    <div class="en">Workbench fix</div>
+    <div class="it">Riparare il banco da lavoro</div>
+    <div class="phrase"><strong>Say:</strong> "Il banco da lavoro è rotto"</div>
+</div>
+
+<div class="item medium">
+    <div class="checkbox"></div>
+    <span class="num">3</span>
+    <div class="en">Towel rack screw</div>
+    <div class="it">Vite del portasciugamani</div>
+    <div class="phrase"><strong>Say:</strong> "La vite del portasciugamani è allentata"</div>
+</div>
+
+<div class="item high">
+    <div class="checkbox"></div>
+    <span class="num">4</span>
+    <div class="en">Bathroom sink</div>
+    <div class="it">Lavandino del bagno</div>
+    <div class="phrase"><strong>Say:</strong> "Il lavandino del bagno ha un problema"</div>
+</div>
+
+<div class="item medium">
+    <div class="checkbox"></div>
+    <span class="num">5</span>
+    <div class="en">Stove rubbers / gaskets</div>
+    <div class="it">Guarnizioni del fornello</div>
+    <div class="phrase"><strong>Say:</strong> "Le guarnizioni del fornello sono da cambiare"</div>
+</div>
+
+<div class="item high">
+    <div class="checkbox"></div>
+    <span class="num">6</span>
+    <div class="en">Passenger side mirror</div>
+    <div class="it">Specchietto lato passeggero</div>
+    <div class="phrase"><strong>Say:</strong> "Può controllare lo specchietto destro?"</div>
+</div>
+
+<div class="item medium">
+    <div class="checkbox"></div>
+    <span class="num">7</span>
+    <div class="en">Buff out scratch</div>
+    <div class="it">Lucidare il graffio</div>
+    <div class="phrase"><strong>Say:</strong> "C'è un graffio da lucidare"</div>
+</div>
+
+<div class="section">🛠️ Installations / Installazioni</div>
+
+<div class="item low">
+    <div class="checkbox"></div>
+    <span class="num">8</span>
+    <div class="en">Net bags in sleep area</div>
+    <div class="it">Reti portaoggetti nella zona letto</div>
+    <div class="phrase"><strong>Say:</strong> "Vorrei delle reti portaoggetti per la zona notte"</div>
+</div>
+
+<div class="item medium">
+    <div class="checkbox"></div>
+    <span class="num">9</span>
+    <div class="en">Charging station</div>
+    <div class="it">Stazione di ricarica</div>
+    <div class="phrase"><strong>Say:</strong> "Può installare una stazione di ricarica USB?"</div>
+</div>
+
+<div class="section">💰 Quote / Preventivo</div>
+
+<div class="item low">
+    <div class="checkbox"></div>
+    <span class="num">10</span>
+    <div class="en">Extra lithium battery</div>
+    <div class="it">Batteria al litio aggiuntiva</div>
+    <div class="phrase"><strong>Say:</strong> "Quanto costa una batteria al litio extra?"</div>
+</div>
+
+<div class="useful">
+    <h3>🗣️ Useful Phrases / Frasi Utili</h3>
+
+    <p><strong>How much does it cost?</strong></p>
+    <div class="it">"Quanto costa?"</div>
+
+    <p><strong>How long will it take?</strong></p>
+    <div class="it">"Quanto tempo ci vuole?"</div>
+
+    <p><strong>Can you fix it today?</strong></p>
+    <div class="it">"Può ripararlo oggi?"</div>
+
+    <p><strong>Is it urgent?</strong></p>
+    <div class="it">"È urgente?"</div>
+
+    <p><strong>I'll come back later</strong></p>
+    <div class="it">"Torno più tardi"</div>
+
+    <p><strong>Thank you very much!</strong></p>
+    <div class="it">"Grazie mille!"</div>
+
+    <p><strong>It works! / It doesn't work</strong></p>
+    <div class="it">"Funziona!" / "Non funziona"</div>
+</div>
+
+<div class="footer">
+    MAX + AK Shaker + Tigs = UnFuckAble<br>
+    🚐🇮🇹 UFA Sicily HQ
+</div>
+
+</body>
+</html>
