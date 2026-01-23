@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UFA Trifold Standing Card Template</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        body {
+            font-family: Georgia, serif;
+            background: #444;
+            padding: 10px;
+        }
+        .template-info {
+            color: #fff;
+            font-size: 10pt;
+            margin-bottom: 10px;
+            font-family: sans-serif;
+        }
+        .card-wrapper {
+            background: white;
+            width: 297mm;
+            height: 148mm;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .panels {
+            display: flex;
+            height: 120mm;
+            border-bottom: 2px dashed #999;
+        }
+        .panel {
+            width: 99mm;
+            height: 120mm;
+            padding: 8mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-left {
+            border-right: 2px dashed #999;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .panel-left .image-placeholder {
+            width: 80mm;
+            height: 60mm;
+            border: 2px solid #4ecca3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10pt;
+            color: #4ecca3;
+            margin-bottom: 5mm;
+        }
+        .panel-left .title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #4ecca3;
+            letter-spacing: 3px;
+        }
+        .panel-center {
+            border-right: 2px dashed #999;
+            background: #faf9f6;
+            justify-content: space-between;
+        }
+        .panel-center .logo {
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 3mm;
+        }
+        .panel-center .quote {
+            font-style: italic;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+            padding: 5mm 0;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+        .panel-center .attribution {
+            font-size: 8pt;
+            color: #666;
+            text-align: right;
+        }
+        .panel-center .message {
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #333;
+            padding: 3mm 0;
+        }
+        .panel-center .signature {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 3mm;
+        }
+        .panel-right {
+            background: #faf9f6;
+            justify-content: space-between;
+        }
+        .panel-right .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid #333;
+            padding-bottom: 3mm;
+        }
+        .panel-right .collection {
+            font-size: 7pt;
+            color: #666;
+            text-align: right;
+        }
+        .panel-right .contact {
+            font-size: 8pt;
+            color: #333;
+            line-height: 1.5;
+        }
+        .panel-right .qr-section {
+            display: flex;
+            align-items: center;
+            gap: 3mm;
+            margin-top: auto;
+        }
+        .panel-right .qr-box {
+            width: 20mm;
+            height: 20mm;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7pt;
+            color: #666;
+        }
+        .panel-right .qr-label {
+            font-size: 7pt;
+            color: #666;
+        }
+        .panel-right .metadata {
+            font-size: 6pt;
+            color: #888;
+            text-align: right;
+            margin-top: 3mm;
+        }
+
+        /* FEET TABS */
+        .feet-row {
+            height: 28mm;
+            display: flex;
+        }
+        .feet-section {
+            width: 99mm;
+            display: flex;
+            justify-content: center;
+            gap: 10mm;
+            padding-top: 2mm;
+        }
+        .foot {
+            width: 25mm;
+            height: 22mm;
+            position: relative;
+        }
+        .foot-shape {
+            width: 25mm;
+            height: 18mm;
+            background: #e0e0e0;
+            border-radius: 0 0 12.5mm 12.5mm;
+            border: 1px dashed #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #666;
+        }
+        .foot-tab {
+            width: 25mm;
+            height: 4mm;
+            border: 1px dashed #999;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5pt;
+            color: #999;
+        }
+
+        /* Fold indicators */
+        .fold-indicator {
+            position: absolute;
+            font-size: 6pt;
+            color: #999;
+        }
+        .panel-left .fold-indicator {
+            right: -8mm;
+            top: 50%;
+            transform: rotate(90deg);
+        }
+        .panel-center .fold-indicator {
+            right: -8mm;
+            top: 50%;
+            transform: rotate(90deg);
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .template-info { display: none; }
+            .card-wrapper { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="template-info">
+    UFA Trifold Standing Card | Print on A4 Landscape | Thick cardstock 200-300gsm<br>
+    Cut along solid lines | Score & fold along dashed lines | Fold feet perpendicular to stand
+</div>
+
+<div class="card-wrapper">
+    <div class="panels">
+        <!-- PANEL 1: IMAGE/FRONT -->
+        <div class="panel panel-left">
+            <div class="image-placeholder">
+                [ YOUR IMAGE HERE ]<br>
+                Sicily / Bauhaus / Photo
+            </div>
+            <div class="title">TRAPANI</div>
+            <span class="fold-indicator">← FOLD</span>
+        </div>
+
+        <!-- PANEL 2: MESSAGE/QUOTE -->
+        <div class="panel panel-center">
+            <div class="logo">UFA</div>
+            <div class="quote">
+                "The best of you isn't in the rabbit hole.<br>
+                It's in your blood, your name, your fight."
+            </div>
+            <div class="attribution">— Tigs, Sicily 2026</div>
+            <div class="message">
+                <strong>[NAME] —</strong><br><br>
+                Your personal message goes here.<br>
+                Keep it tight, make it count.<br>
+                Every word matters.
+            </div>
+            <div class="signature">
+                — Angelo<br>
+                +41 79 828 2841
+            </div>
+            <span class="fold-indicator">← FOLD</span>
+        </div>
+
+        <!-- PANEL 3: INFO/QR -->
+        <div class="panel panel-right">
+            <div class="header">
+                <span style="font-weight: bold; font-size: 12pt;">UFA</span>
+                <div class="collection">
+                    Universal UnFuckAbles<br>
+                    Sicily Series No. 001
+                </div>
+            </div>
+            <div class="contact">
+                <strong>Contact:</strong><br>
+                📱 +39 340 495 8148 (IT)<br>
+                📱 +41 79 828 2841 (CH)<br>
+                📧 angel.kenel@gmail.com<br><br>
+                <strong>HQ Location:</strong><br>
+                Valderice, Sicily<br>
+                38°04'40"N 12°38'39"E
+            </div>
+            <div class="qr-section">
+                <div class="qr-box">QR<br>CODE</div>
+                <div class="qr-label">
+                    Scan for location<br>
+                    📍 UFA HQ Sicily
+                </div>
+            </div>
+            <div class="metadata">
+                Ed. 1/1 • January 2026<br>
+                Printed in Sicily 🇮🇹
+            </div>
+        </div>
+    </div>
+
+    <!-- FEET TABS -->
+    <div class="feet-row">
+        <div class="feet-section">
+            <div class="foot">
+                <div class="foot-tab">↑ FOLD UP</div>
+                <div class="foot-shape">FOOT 1</div>
+            </div>
+            <div class="foot">
+                <div class="foot-tab">↑ FOLD UP</div>
+                <div class="foot-shape">FOOT 2</div>
+            </div>
+        </div>
+        <div class="feet-section">
+            <div class="foot">
+                <div class="foot-tab">↑ FOLD UP</div>
+                <div class="foot-shape">FOOT 3</div>
+            </div>
+            <div class="foot">
+                <div class="foot-tab">↑ FOLD UP</div>
+                <div class="foot-shape">FOOT 4</div>
+            </div>
+        </div>
+        <div class="feet-section">
+            <div class="foot">
+                <div class="foot-tab">↑ FOLD UP</div>
+                <div class="foot-shape">FOOT 5</div>
+            </div>
+            <div class="foot">
+                <div class="foot-tab">↑ FOLD UP</div>
+                <div class="foot-shape">FOOT 6</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
