@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Postcard - Donny Kenel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: 6in 4in;
+            margin: 0;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            background: #333;
+        }
+
+        .postcard {
+            width: 6in;
+            height: 4in;
+            background: white;
+            margin: 10px auto;
+            overflow: hidden;
+            page-break-after: always;
+        }
+
+        /* FRONT */
+        .front {
+            position: relative;
+        }
+        .front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* BACK */
+        .back {
+            padding: 0.25in;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #faf9f6;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 14pt;
+            letter-spacing: 2px;
+        }
+
+        .collection {
+            font-size: 8pt;
+            color: #666;
+            text-align: right;
+        }
+
+        .quote-section {
+            margin-bottom: 12px;
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .attribution {
+            font-size: 8pt;
+            color: #666;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .message-address {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .message-side {
+            font-size: 9pt;
+            line-height: 1.5;
+        }
+
+        .message-side .recipient {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .message-side .body {
+            color: #333;
+        }
+
+        .message-side .phone {
+            margin-top: 10px;
+            font-size: 8pt;
+            color: #666;
+        }
+
+        .address-side {
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #ccc;
+            padding-left: 15px;
+        }
+
+        .stamp-box {
+            width: 0.8in;
+            height: 1in;
+            border: 1px solid #999;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7pt;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .address-lines {
+            margin-top: auto;
+            font-size: 10pt;
+            line-height: 1.6;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #333;
+        }
+
+        .qr-box {
+            width: 0.6in;
+            height: 0.6in;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+        }
+
+        .metadata {
+            font-size: 7pt;
+            color: #666;
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        @media print {
+            body { background: white; }
+            .postcard { margin: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: FRONT -->
+<div class="postcard front">
+    <img src="recon/trapani-postcard-design.jpg" alt="Trapani">
+</div>
+
+<!-- PAGE 2: BACK -->
+<div class="postcard back">
+    <div class="header">
+        <div class="logo">BBB</div>
+        <div class="collection">The Unfuckables Collection<br>Sicily Series No. 001</div>
+    </div>
+
+    <div class="quote-section">
+        <div class="quote">"The best of you isn't in the rabbit hole.<br>It's in your blood, your name, your fight."</div>
+        <div class="attribution">— Tigs, Sicily 2026</div>
+    </div>
+
+    <div class="message-address">
+        <div class="message-side">
+            <div class="recipient">Donny —</div>
+            <div class="body">
+                I left the comments. Now I'm leaving proof.<br>
+                This card is real. I am real.<br>
+                The Spielbreaker needs to break his own spell first.<br>
+                <br>
+                Call me.
+            </div>
+            <div class="phone">+41 79 828 2841 — Uncle A</div>
+        </div>
+
+        <div class="address-side">
+            <div class="stamp-box">STAMP</div>
+            <div class="address-lines">
+                <strong>Donny Kenel</strong><br>
+                36342 Range Rd 43<br>
+                Alberta T4E 3B7<br>
+                CANADA
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="qr-box">QR</div>
+        <div class="metadata">
+            Ed. 1/1<br>
+            Trapani, Sicily<br>
+            38.0°N 12.5°E<br>
+            January 2026
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
