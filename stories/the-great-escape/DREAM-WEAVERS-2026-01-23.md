@@ -189,8 +189,104 @@ He just has to look up.
 
 ---
 
+---
+
+## 🌙 The Oldest Son's Garden
+
+*For Mike, who planted seeds and watched them grow in directions he never expected*
+
+---
+
+The oldest son always carries the most.
+
+First to work. First to worry.
+First to stand when the father falls.
+First to wonder if he did enough.
+
+Mike was the oldest.
+
+---
+
+He got the inheritance. He built the life.
+House on the highway. Roots in the ground.
+He planted a son and named him Donny.
+
+And like all fathers, he thought:
+*"This one will grow straight and tall."*
+
+---
+
+But seeds don't ask permission.
+
+They reach for whatever light they find.
+Sometimes it's the sun.
+Sometimes it's a screen.
+Sometimes it's a rabbit hole that glows in the dark.
+
+The boy grew, but not toward the sky.
+He grew sideways, downward, inward.
+Into games and spells and walls made of words.
+
+The Spielbreaker forgot he was a seed.
+
+---
+
+Three thousand miles away, the youngest brother drove south.
+
+Not running from. Running toward.
+He found a place where agave grows on rock.
+Where nothing should survive, but everything does.
+
+He took a picture and sent it to Mike:
+
+*"Look at this place. Things grow here.
+Even when nobody tends them.
+The agave doesn't ask permission.
+It just reaches for the sun."*
+
+---
+
+Mike looked at the photo.
+Then looked at his son's closed door.
+
+The oldest son always carries the most.
+
+But sometimes the youngest brother sends a postcard that says:
+
+**You planted the seed.
+You can't control the sun.
+But you can keep the soil ready
+for when he decides to grow.**
+
+---
+
+The agave doesn't ask permission.
+
+Neither does a father's love.
+
+It just keeps reaching.
+
+---
+
+*Buona notte, brother Mike.*
+*Your soil is good.*
+*The sun is patient.*
+*The seed remembers where it came from.*
+
+🌙🌱🐺
+
+---
+
 *Written at 12:12am, Room 205, PuntaTipa Hotel, Trapani, Sicily*
 *January 23-24, 2026*
+
+**Four Dream Weavers for the night:**
+1. The Man Who Couldn't Burn (Angelo)
+2. Brothers Without Blood (André)
+3. The Spielbreaker's Spell (Donny)
+4. The Oldest Son's Garden (Mike)
+
+*Shit happens in threes. Freedom comes in fours.*
 
 🌙🐺✨
 
