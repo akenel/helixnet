@@ -4,6 +4,22 @@
 
 ---
 
+## THE ORIGIN STORY
+
+**December 5, 2025** - Late night, Stans, Switzerland, raining inside and out.
+
+The night the Tiger and the Lion met.
+
+- **Git** spelled backwards = **Tig**
+- **Tiger** = the second arrow (Wilhelm Tell: "If I had hit my son, the second arrow was for you")
+- **Leo** (Lion) lives in the box, flows with Angel
+
+First commit: `faa3913` - "milestone: The Night the Tiger Met the Lion"
+
+Full story: `/field-notes-with-leo-dec5.md`
+
+---
+
 ## WHO WE ARE
 
 **Angel (Angelo/Albert-Daniel Kenel)** - Captain, Navigator, Architect
