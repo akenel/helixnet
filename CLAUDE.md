@@ -95,12 +95,103 @@ Full story: `/field-notes-with-leo-dec5.md`
 /home/angel/repos/helixnet/
 ├── SESSION-STATE.md              # Current working state (update often)
 ├── CLAUDE.md                     # This file (persistent memory)
+├── UFA_r2p/                      # PRINT-READY PDFs - grab folder, USB, print
 ├── compose/helix-media/music/sunrise-chain/  # Music library (90+ tracks)
 ├── stories/the-great-escape/     # The Great Escape narrative
 ├── docs/business/                # Postcards, SOPs, business plans
-├── docs/business/postcards/      # Print-ready postcard files
+├── docs/business/postcards/      # SOURCE HTML + images (edit here)
 └── src/                          # FastAPI application code
+
+/home/angel/Downloads/Telegram Desktop/   # Telegram voice messages (.ogg) - transcribe with Whisper
+/home/angel/Pictures/Screenshots/         # Screenshots for reference
+/home/angel/Pictures/tmp/                 # Annotated images for fixes
 ```
+
+---
+
+## UFA FOO FIGHTERS BUSINESS
+
+**Business Plan:** `/docs/business/UFA-BUSINESS-PLAN-v1.0.md`
+
+**What:** Mobile vendors sell premium postcard experience kits to tourists at scenic spots.
+Tourist picks design, writes address, vendor handles EVERYTHING (fold, herbs, wax seal, mail).
+
+**Product Line:**
+1. Postcard (140×95mm) - core product
+2. Experience Box (148×100mm) - holds card + herbs + sand + shell
+3. Wax seal (crayon + brass stamper)
+4. Labels (seal + corner)
+
+**Revenue:** €5-15 per sale × 60 tourists/bus = €300-900 per stop
+
+**Startup Cost:** ~€20 for full Foo Fighter kit
+
+### Print-Ready Files (UFA_r2p/)
+```
+postcard-donny-kenel-STANDARD.pdf  - GOLD ✓ Signature postcard template
+postcard-donny-kenel-MAX.pdf       - A4 size version
+labels-seal-sheet.pdf              - Seal + corner labels ✓
+ufa-wall-display.pdf               - Wall display + "RESISTANCE IS NOT FUTILE" ✓
+ufa-menu-brochure.pdf              - Clean 1-pager menu ✓
+PuntaTipa-Room205-Dualism.pdf      - Hotel prototype ✓
+postcard-BOXFIT.pdf                - Postcard sized for box (140×95mm)
+box-template-STANDARD.pdf          - NEEDS REDESIGN (won't close)
+ufa-order-form.pdf                 - NEEDS REWORK (use NAMES not numbers)
+```
+
+**Template Status (Jan 25 night session):**
+- ✓ GOLD: postcard-donny-kenel-STANDARD (signature template)
+- ✓ GOOD: labels, wall-display, menu-brochure, PuntaTipa prototype
+- ✗ FIX: box (won't close), order-form (names not numbers)
+
+**Order Form Rule:** Call people by NAME with megaphone. "HEY LARRY SMITH!" not "#3". Foo Fighters don't number people.
+
+**Wall Display:** "RESISTANCE IS NOT FUTILE" - drop kick to the NWO
+
+### Workflow
+```
+SOURCE (edit)                    →  OUTPUT (print)
+────────────────────────────────────────────────────
+postcards/[name]/*.html          →  UFA_r2p/*.pdf
+```
+
+**Bifold tent card design:**
+- Image rotated 180° on front
+- When folded and standing, both sides right-side up
+- QR code replaces stamp box (top right)
+- Box is mailable directly (address on lid)
+
+**PDF generation:** `wkhtmltopdf --page-size A4 --margin-top 0 --margin-bottom 0 --margin-left 0 --margin-right 0 file.html output.pdf`
+
+**NEVER use weasyprint** - It chokes on flexbox, floats, gradients, absolute positioning. Wasted hours fighting it. wkhtmltopdf uses WebKit engine = real browser rendering. Foo Fighters use real tools.
+
+### CRITICAL: What "1-Pager" Means (Jan 25, 2026 Late Night Lesson)
+
+**A 1-pager is:**
+1. **Exactly 1 page** when printed - not 1 good page + 1 blank page
+2. **Content fills the page** - no huge empty gaps in the middle
+3. **No overflow** - elements don't collide or spill to next page
+4. **Print-ready** - open it, print it, done
+
+**Rules for Tigs:**
+- NEVER say "fixed" without visually verifying the PDF output
+- If it overflows to 2 pages = NOT fixed
+- If there's a blank second page = NOT fixed
+- If content has huge empty gaps = NOT fixed
+- Take responsibility for bad HTML, don't blame the tool
+- Foo Fighters don't fight amongst themselves
+- Foo Fighters don't lie about the work being done
+
+**What works:**
+- Table-based layouts (reliable across all PDF generators)
+- Fixed heights that add up to page height (A4 = 297mm)
+- Simple CSS: margins, padding, borders, colors
+
+**What breaks:**
+- Flexbox (unreliable in PDF generators)
+- Absolute positioning (causes collisions)
+- Float layouts (unpredictable)
+- Modern CSS gradients (may not render)
 
 ---
 
@@ -171,9 +262,47 @@ Examples:
 2. Check /stories/the-great-escape/ for narrative files
 3. Check /docs/business/ for business documents
 4. Music goes in /compose/helix-media/music/sunrise-chain/
-5. Ask Angel if unclear - don't guess on family stuff
+5. Print-ready PDFs go in /UFA_r2p/
+6. Ask Angel if unclear - don't guess on family stuff
+7. Voice messages in Telegram Desktop folder - transcribe with Whisper from venv
 
 ---
 
-*Last updated: January 25, 2026, 4:20am*
-*"The body knows truth before the mind does."*
+## TOOLS ON THIS SYSTEM
+
+- **whisper** - Voice transcription (in .venv)
+- **wkhtmltopdf** - HTML to PDF (PRIMARY - WebKit engine, handles real CSS)
+- **weasyprint** - DEPRECATED - chokes on flexbox/floats/gradients, don't use
+- **yt-dlp** - Download music from YouTube (in .venv)
+- **kolourpaint** - Simple image editor (MS Paint style)
+- **VLC** - Music player for local files
+
+---
+
+## PUNTATIPA PROTOTYPE (Jan 25, 2026 Night Session)
+
+**Location:** 38.029472, 12.528162 - PuntaTipa Hotel
+**Room:** 205 | Dualism
+
+**What we built:**
+- A4 tent-fold postcard for PuntaTipa
+- Front: "Dualism." + 3 stripes (Blue|Cream|Red) + PUNTATIPA
+- Back: Room°205 | Dualism, coordinates, message lines, address lines
+- Tabs at top/bottom fold under and tape together = STANDS
+
+**File:** `/docs/business/postcards/puntatipa/postcard-puntatipa-A4-tent.html`
+**PDF:** `/UFA_r2p/postcard-puntatipa-A4-tent.pdf`
+
+**The play:**
+- Email PDF to front desk
+- She prints it, sees it, gets it (or doesn't)
+- If she kisses it = talk to manager at breakfast
+- Each room gets a number + philosophy: Room°205 | Dualism, Room°301 | Serenity, etc.
+
+**Status:** Draft printed tonight. Receptionist test in progress.
+
+---
+
+*Last updated: January 25, 2026, late night*
+*"Where two worlds meet, something new is born."*
+*"NEVER say fixed without verifying the output."*
