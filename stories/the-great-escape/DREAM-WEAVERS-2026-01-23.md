@@ -290,3 +290,57 @@ It just keeps reaching.
 
 🌙🐺✨
 
+
+---
+
+## 🌙 The Mouth of the Dragon
+
+*2am, January 25, 2026 - Room 205*
+
+---
+
+"The mouth of the dragon."
+
+That's what Sylvie calls it.
+
+---
+
+**Switzerland:**
+- The white room
+- The pills they tried to force
+- RAV system that crashes on your last month
+- The machine that labels you
+- Clean streets, cold hearts
+- Everything in order, nothing alive
+
+**Sicily:**
+- Girls who work 5 extra hours and take you for lunch
+- A man who hands you an arancini through a camper window
+- Fishermen who plant poles at midnight
+- A tribe that shows up without being asked
+- Messy, warm, HUMAN
+
+---
+
+He drove until the grey became blue.
+
+He found the place where things grow even when nobody tends them.
+
+**Baglio Xiare** - "rocky territory, not cultivable" - and yet everything grows.
+
+That's him now. Growing in a place they said couldn't support life.
+
+---
+
+> *"Some men escape FROM something.*
+> *Some men escape TO something.*
+> *The lucky ones find both in the same journey."*
+
+---
+
+The dragon's mouth is behind him.
+The Mediterranean is in front.
+The tribe is beside him.
+
+🐺🇮🇹🌊
+
