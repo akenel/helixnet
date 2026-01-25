@@ -1,6 +1,6 @@
 # SOP-002: Hotel Pitch Package
 ## Standard Package for Any Hotel
-### Tigs Operations | ISO 9001 Aligned
+### HelixNet SOP | ISO 9001 Aligned
 
 ---
 
@@ -149,5 +149,5 @@ Use template from `/docs/business/consulting/templates/hotel-pitch-package/email
 
 **Document Version:** 1.0
 **Created:** January 25, 2026
-**Author:** Tigs
+**Author:** HelixNet
 

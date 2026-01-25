@@ -1,6 +1,6 @@
 # SOP-001: Postcard Print Workflow
 ## From HTML to Print-Ready PDF
-### Tigs Operations | ISO 9001 Aligned
+### HelixNet SOP | ISO 9001 Aligned
 
 ---
 
@@ -177,5 +177,5 @@ background: linear-gradient(); /* May not render */
 
 **Document Version:** 1.0
 **Created:** January 25, 2026
-**Author:** Tigs
+**Author:** HelixNet
 

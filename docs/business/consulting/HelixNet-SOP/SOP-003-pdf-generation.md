@@ -1,6 +1,6 @@
 # SOP-003: PDF Generation Standards
 ## wkhtmltopdf Command Reference
-### Tigs Operations | ISO 9001 Aligned
+### HelixNet SOP | ISO 9001 Aligned
 
 ---
 
@@ -171,5 +171,5 @@ ALL COMMANDS ADD:
 
 **Document Version:** 1.0
 **Created:** January 25, 2026
-**Author:** Tigs
+**Author:** HelixNet
 
