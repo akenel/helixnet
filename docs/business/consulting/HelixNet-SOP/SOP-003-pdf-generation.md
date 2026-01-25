@@ -1,6 +1,6 @@
 # SOP-003: PDF Generation Standards
 ## wkhtmltopdf Command Reference
-### HelixNet SOP | ISO 9001 Aligned
+### HelixNet Standard Operating Procedure | ISO 9001 Aligned
 
 ---
 

@@ -1,6 +1,6 @@
 # SOP-001: Postcard Print Workflow
 ## From HTML to Print-Ready PDF
-### HelixNet SOP | ISO 9001 Aligned
+### HelixNet Standard Operating Procedure | ISO 9001 Aligned
 
 ---
 

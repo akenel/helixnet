@@ -1,6 +1,6 @@
 # SOP-002: Hotel Pitch Package
 ## Standard Package for Any Hotel
-### HelixNet SOP | ISO 9001 Aligned
+### HelixNet Standard Operating Procedure | ISO 9001 Aligned
 
 ---
 
