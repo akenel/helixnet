@@ -56,7 +56,8 @@ Full story: `/field-notes-with-leo-dec5.md`
 ### Sicily Tribe
 | Name | Role |
 |------|------|
-| Sebastino's Team | Camper repair, stayed 5 hours late for MAX |
+| Sebastino | Camper & Tour owner, drives Angel to bank, stayed 5 hours late for MAX |
+| Nino | Sebastino's son, runs the show, speaks excellent English, met at McDonald's |
 | Paulo (Maltese) | Caffè Maltese owner, CBD vending partner |
 | Carmello | Midnight fisherman at Baglio Xiare |
 
@@ -405,6 +406,44 @@ SOP-001-descriptive-name.pdf   (output)
 
 ---
 
+## CAMPER & TOUR LIVE UAT (Jan 26, 2026)
+
+**Location:** 38.003173, 12.539914 - Sebastino's Camper Service, Trapani
+**Contact:** Nino (son, speaks excellent English) - met at McDonald's
+
+**Business Details:**
+- **Name:** Camper & Tour
+- **Services:** Noleggio (Rental), Riparazione (Repair), Vendita (Sales), Accessori per il Campeggio (Camping Accessories)
+- **Address:** Via F. Culcasi, 4 (Palazzo Asia) 91100 Trapani
+- **Tel:** +39 0923 534452
+- **Cell:** +39 328 684 4546
+- **Website:** www.camperandtour.it
+- **Email:** info@camperandtour.it
+- **P.IVA:** 02255410819
+
+**Postcard Created:**
+- **Theme:** Libertà (Freedom) - Italian + English bilingual
+- **Quote:** "Casa è dove parcheggi." / "Home is where you park it."
+- **Tagline:** BUON VIAGGIO! (Have a good trip!)
+- **File:** `/docs/business/postcards/camperandtour/postcard-camperandtour-A4-tent.html`
+- **PDF:** `/docs/business/postcards/camperandtour/postcard-camperandtour-A4-tent.pdf`
+
+**Key fixes from PuntaTipa feedback:**
+- WHITE message section (not black - kills printers)
+- Subtle fold lines (corner marks only, no "FOLD HERE" text)
+- Bilingual throughout (Italian + English)
+- Maximized A4 layout (smaller tabs, larger content area)
+- Contact info section with QR placeholder
+
+**Workflow:** HTML → Browser verify → PDF → Email → Test print on their color printer
+
+**Relationship:**
+- Sebastino: Owner, drives Angel to bank for cash
+- Nino: Son, runs the show, approved the postcard concept
+- This is a LIVE UAT with color printer on-site for immediate testing
+
+---
+
 ## TIGS: 4-STAR → 5-STAR LLM TRANSFORMATION
 
 **The same SOP methodology applies to me. Two-way street.**
@@ -444,7 +483,8 @@ SOP-001-descriptive-name.pdf   (output)
 
 ---
 
-*Last updated: January 25, 2026, late night*
+*Last updated: January 26, 2026, morning - Camper & Tour UAT*
 *"Where two worlds meet, something new is born."*
 *"NEVER say fixed without verifying the output."*
+*"Casa è dove parcheggi." - Home is where you park it.*
 *"IT GOES BOTH WAYS BRO"*

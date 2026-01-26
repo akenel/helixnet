@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Camper & Tour - Libertà | Freedom</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f0f0;
+        }
+
+        .page {
+            width: 297mm;
+            height: 210mm;
+            background: white;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TAB - top (folds under) - 10mm for more content space */
+        .tab {
+            width: 100%;
+            height: 10mm;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #ccc;
+            letter-spacing: 1px;
+        }
+
+        /* FRONT SIDE - top half (rotated 180° for tent) */
+        .front-side {
+            width: 100%;
+            height: 95mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(180deg);
+            padding: 8mm 15mm;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+        }
+
+        .front-layout {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .front-text {
+            flex: 1;
+            padding-right: 15mm;
+        }
+
+        .main-title {
+            font-size: 72pt;
+            font-weight: 200;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            margin-bottom: 3mm;
+            line-height: 0.9;
+        }
+
+        .main-subtitle {
+            font-size: 28pt;
+            font-weight: 300;
+            color: #666;
+            letter-spacing: 2px;
+            margin-bottom: 6mm;
+        }
+
+        .bilingual-quote {
+            font-size: 11pt;
+            color: #444;
+            line-height: 1.6;
+            max-width: 145mm;
+        }
+
+        .bilingual-quote .italian {
+            font-style: italic;
+            color: #666;
+            margin-top: 2mm;
+        }
+
+        .company-tag {
+            margin-top: 6mm;
+            font-size: 16pt;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: #C41E3A;
+        }
+
+        /* STRIPES - Italian flag - warmer travel tones */
+        .stripes {
+            width: 85mm;
+            height: 75mm;
+            display: flex;
+            flex-shrink: 0;
+            border-radius: 3mm;
+            overflow: hidden;
+            box-shadow: 0 2mm 8mm rgba(0,0,0,0.1);
+        }
+
+        .stripe {
+            flex: 1;
+            height: 100%;
+        }
+
+        .stripe-green { background: #009246; }
+        .stripe-white { background: #F1F2F1; }
+        .stripe-red { background: #CE2B37; }
+
+        /* FOLD LINE - subtle */
+        .fold-line {
+            width: 100%;
+            height: 0;
+            border-top: 1px dashed #bbb;
+            position: relative;
+        }
+
+        .fold-line::before,
+        .fold-line::after {
+            content: "+";
+            position: absolute;
+            top: -2.5mm;
+            font-size: 8pt;
+            color: #bbb;
+        }
+
+        .fold-line::before { left: 5mm; }
+        .fold-line::after { right: 5mm; }
+
+        /* BACK SIDE - bottom half */
+        .back-side {
+            width: 100%;
+            height: 95mm;
+            padding: 6mm 15mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #C41E3A;
+            padding-bottom: 4mm;
+            margin-bottom: 4mm;
+        }
+
+        .brand-title {
+            font-size: 22pt;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: #1a1a1a;
+        }
+
+        .brand-title span {
+            color: #009246;
+            font-weight: 600;
+        }
+
+        .brand-subtitle {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 1mm;
+        }
+
+        .back-location {
+            text-align: right;
+            font-size: 8pt;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .back-location .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 7pt;
+            color: #888;
+        }
+
+        .back-quote {
+            font-style: italic;
+            font-size: 10pt;
+            color: #333;
+            text-align: center;
+            padding: 3mm 8mm;
+            border-left: 3px solid #009246;
+            border-right: 3px solid #CE2B37;
+            margin-bottom: 4mm;
+            background: #fafafa;
+        }
+
+        .back-quote .translation {
+            font-style: normal;
+            font-size: 9pt;
+            color: #666;
+            display: block;
+            margin-top: 1mm;
+        }
+
+        .back-main {
+            display: flex;
+            flex: 1;
+        }
+
+        .message-section {
+            flex: 1;
+            padding-right: 6mm;
+        }
+
+        .section-label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 2mm;
+        }
+
+        /* WHITE background message lines - NOT black */
+        .message-lines {
+            height: 28mm;
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 6mm,
+                #ddd 6mm,
+                #ddd 6.3mm
+            );
+        }
+
+        .info-section {
+            width: 55mm;
+            padding-left: 6mm;
+            border-left: 1px solid #ddd;
+            font-size: 8pt;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .info-section .icon-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5mm;
+        }
+
+        .info-section .icon {
+            width: 12mm;
+            color: #888;
+            font-size: 7pt;
+        }
+
+        .info-section .detail {
+            flex: 1;
+        }
+
+        .qr-placeholder {
+            width: 18mm;
+            height: 18mm;
+            border: 1px solid #ddd;
+            margin-top: 2mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #aaa;
+            text-align: center;
+        }
+
+        .address-section {
+            width: 60mm;
+            padding-left: 6mm;
+            border-left: 1px solid #ddd;
+        }
+
+        .address-line {
+            border-bottom: 1px solid #ccc;
+            height: 6mm;
+            margin-bottom: 1.5mm;
+        }
+
+        .address-line:first-of-type {
+            border-bottom: 2px solid #333;
+        }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 2mm;
+            border-top: 1px solid #eee;
+            font-size: 7pt;
+            color: #999;
+        }
+
+        .foo-tag {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #C41E3A;
+            letter-spacing: 2px;
+        }
+
+        /* TAB - bottom */
+        .tab-bottom {
+            width: 100%;
+            height: 10mm;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #ccc;
+            letter-spacing: 1px;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- TAB TOP -->
+    <div class="tab">PIEGA SOTTO • FOLD UNDER</div>
+
+    <!-- FRONT SIDE (rotated 180° for tent display) -->
+    <div class="front-side">
+        <div class="front-layout">
+            <div class="front-text">
+                <div class="main-title">Libertà.</div>
+                <div class="main-subtitle">Freedom.</div>
+                <div class="bilingual-quote">
+                    The open road calls to those who seek adventure.<br>
+                    Your journey begins wherever you decide to go.
+                    <div class="italian">
+                        La strada aperta chiama chi cerca l'avventura.<br>
+                        Il tuo viaggio inizia ovunque tu decida di andare.
+                    </div>
+                </div>
+                <div class="company-tag">CAMPER & TOUR</div>
+            </div>
+            <div class="stripes">
+                <div class="stripe stripe-green"></div>
+                <div class="stripe stripe-white"></div>
+                <div class="stripe stripe-red"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOLD LINE - subtle corner marks only -->
+    <div class="fold-line"></div>
+
+    <!-- BACK SIDE (info) -->
+    <div class="back-side">
+        <div class="back-header">
+            <div>
+                <div class="brand-title"><span>Camper</span> & Tour</div>
+                <div class="brand-subtitle">Noleggio • Riparazione • Vendita • Accessori</div>
+            </div>
+            <div class="back-location">
+                Via F. Culcasi, 4 (Palazzo Asia)<br>
+                91100 Trapani, Sicilia<br>
+                <span class="coords">38.003°N 12.540°E</span>
+            </div>
+        </div>
+
+        <div class="back-quote">
+            "Casa è dove parcheggi."
+            <span class="translation">"Home is where you park it."</span>
+        </div>
+
+        <div class="back-main">
+            <div class="message-section">
+                <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                <div class="message-lines"></div>
+            </div>
+            <div class="info-section">
+                <div class="icon-row">
+                    <span class="icon">Tel:</span>
+                    <span class="detail">+39 0923 534452</span>
+                </div>
+                <div class="icon-row">
+                    <span class="icon">Cell:</span>
+                    <span class="detail">+39 328 684 4546</span>
+                </div>
+                <div class="icon-row">
+                    <span class="icon">Email:</span>
+                    <span class="detail">info@camperandtour.it</span>
+                </div>
+                <div class="icon-row">
+                    <span class="icon">Web:</span>
+                    <span class="detail">www.camperandtour.it</span>
+                </div>
+                <div class="qr-placeholder">QR<br>CODE</div>
+            </div>
+            <div class="address-section">
+                <div class="section-label">Invia A / Send To</div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <span>Fatto a mano in Sicilia • Handmade in Sicily • Gennaio 2026</span>
+            <span class="foo-tag">BUON VIAGGIO!</span>
+        </div>
+    </div>
+
+    <!-- TAB BOTTOM -->
+    <div class="tab-bottom">PIEGA SOTTO • FOLD UNDER</div>
+</div>
+
+</body>
+</html>
