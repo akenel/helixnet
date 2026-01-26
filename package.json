@@ -1,0 +1,18 @@
+{
+  "name": "helixnet",
+  "version": "1.0.0",
+  "description": "**Status:** Forged Bronze Edition 🏆 **Author:** Angel **Tagline:** “Because you don’t learn Keycloak in school.”",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^24.36.0"
+  }
+}

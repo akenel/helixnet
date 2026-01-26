@@ -6,146 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>SOP-002-hotel-pitch-package</title>
   <style>
-    html {
-      line-height: 1.5;
-      font-family: Georgia, serif;
-      font-size: 20px;
-      color: #1a1a1a;
-      background-color: #fdfdfd;
-    }
-    body {
-      margin: 0 auto;
-      max-width: 36em;
-      padding-left: 50px;
-      padding-right: 50px;
-      padding-top: 50px;
-      padding-bottom: 50px;
-      hyphens: auto;
-      overflow-wrap: break-word;
-      text-rendering: optimizeLegibility;
-      font-kerning: normal;
-    }
-    @media (max-width: 600px) {
-      body {
-        font-size: 0.9em;
-        padding: 1em;
-      }
-      h1 {
-        font-size: 1.8em;
-      }
-    }
-    @media print {
-      body {
-        background-color: transparent;
-        color: black;
-        font-size: 12pt;
-      }
-      p, h2, h3 {
-        orphans: 3;
-        widows: 3;
-      }
-      h2, h3, h4 {
-        page-break-after: avoid;
-      }
-    }
-    p {
-      margin: 1em 0;
-    }
-    a {
-      color: #1a1a1a;
-    }
-    a:visited {
-      color: #1a1a1a;
-    }
-    img {
-      max-width: 100%;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      margin-top: 1.4em;
-    }
-    h5, h6 {
-      font-size: 1em;
-      font-style: italic;
-    }
-    h6 {
-      font-weight: normal;
-    }
-    ol, ul {
-      padding-left: 1.7em;
-      margin-top: 1em;
-    }
-    li > ol, li > ul {
-      margin-top: 0;
-    }
-    blockquote {
-      margin: 1em 0 1em 1.7em;
-      padding-left: 1em;
-      border-left: 2px solid #e6e6e6;
-      color: #606060;
-    }
-    code {
-      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
-      font-size: 85%;
-      margin: 0;
-    }
-    pre {
-      margin: 1em 0;
-      overflow: auto;
-    }
-    pre code {
-      padding: 0;
-      overflow: visible;
-      overflow-wrap: normal;
-    }
-    .sourceCode {
-     background-color: transparent;
-     overflow: visible;
-    }
-    hr {
-      background-color: #1a1a1a;
-      border: none;
-      height: 1px;
-      margin: 1em 0;
-    }
-    table {
-      margin: 1em 0;
-      border-collapse: collapse;
-      width: 100%;
-      overflow-x: auto;
-      display: block;
-      font-variant-numeric: lining-nums tabular-nums;
-    }
-    table caption {
-      margin-bottom: 0.75em;
-    }
-    tbody {
-      margin-top: 0.5em;
-      border-top: 1px solid #1a1a1a;
-      border-bottom: 1px solid #1a1a1a;
-    }
-    th {
-      border-top: 1px solid #1a1a1a;
-      padding: 0.25em 0.5em 0.25em 0.5em;
-    }
-    td {
-      padding: 0.125em 0.5em 0.25em 0.5em;
-    }
-    header {
-      margin-bottom: 4em;
-      text-align: center;
-    }
-    #TOC li {
-      list-style: none;
-    }
-    #TOC ul {
-      padding-left: 1.3em;
-    }
-    #TOC > ul {
-      padding-left: 0;
-    }
-    #TOC a:not(:hover) {
-      text-decoration: none;
-    }
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     span.underline{text-decoration: underline;}
@@ -217,23 +77,79 @@
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
+  <link rel="stylesheet" href="sop-template.css" />
   <style>
-  body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #fff; color: #222; line-height: 1.6; }
-  h1, h2, h3 { color: #2C3E50; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
-  h1 { color: #C0392B; }
-  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-  th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-  th { background: #f5f5f5; color: #2C3E50; }
+  /* Inline critical styles for standalone viewing */
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.5; color: #222; }
+  h1 { color: #C0392B; border-bottom: 3px solid #C0392B; padding-bottom: 10px; font-size: 24pt; }
+  h2 { color: #2C3E50; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-top: 25px; font-size: 16pt; }
+  h3 { color: #2C3E50; margin-top: 20px; font-size: 12pt; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+  th, td { border: 1px solid #999; padding: 8px 10px; text-align: left; }
+  th { background: #f0f0f0; color: #2C3E50; font-weight: bold; }
   tr:nth-child(even) { background: #fafafa; }
-  code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; color: #333; }
-  pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; border-left: 3px solid #4A90A4; }
+  code { font-family: monospace; background: #f5f5f5; padding: 2px 5px; border-radius: 3px; }
+  pre { background: #f5f5f5; padding: 12px; border-left: 4px solid #4A90A4; overflow-x: auto; margin: 15px 0; }
   pre code { background: none; padding: 0; }
-  hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
-  blockquote { border-left: 3px solid #C0392B; padding-left: 15px; color: #666; font-style: italic; }
-  @media print { body { margin: 0; padding: 10px; } }
+  blockquote { border-left: 4px solid #C0392B; padding-left: 15px; color: #555; font-style: italic; margin: 15px 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 25px 0; }
+  #TOC { background: #f8f8f8; border: 1px solid #ddd; padding: 15px 25px; margin: 20px 0 30px 0; }
+  #TOC::before { content: "TABLE OF CONTENTS"; display: block; font-size: 14pt; font-weight: bold; color: #2C3E50; margin-bottom: 15px; border-bottom: 2px solid #2C3E50; padding-bottom: 8px; }
+  #TOC > ul { list-style: none; padding-left: 0; }
+  #TOC li { margin: 8px 0; }
+  #TOC a { color: #2C3E50; text-decoration: none; }
+  @media print {
+    @page { size: A4; margin: 25mm 15mm 20mm 15mm; }
+    body { font-size: 10pt; }
+    h1 { page-break-before: always; }
+    h1:first-of-type { page-break-before: avoid; }
+    h2, h3 { page-break-after: avoid; }
+    table, pre { page-break-inside: avoid; }
+    #TOC { page-break-after: always; }
+  }
   </style>
 </head>
 <body>
+<div style="border-bottom: 2px solid #2C3E50; padding-bottom: 15px; margin-bottom: 20px;">
+<div style="font-size: 18pt; font-weight: bold; color: #C0392B;">HelixNet</div>
+<div style="font-size: 10pt; color: #666; text-transform: uppercase; letter-spacing: 2px;">Standard Operating Procedure</div>
+</div>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#sop-002-hotel-pitch-package">SOP-002: Hotel Pitch
+Package</a>
+<ul>
+<li><a href="#standard-package-for-any-hotel">Standard Package for Any
+Hotel</a>
+<ul>
+<li><a
+href="#helixnet-standard-operating-procedure-iso-9001-aligned">HelixNet
+Standard Operating Procedure | ISO 9001 Aligned</a></li>
+</ul></li>
+<li><a href="#purpose">PURPOSE</a></li>
+<li><a href="#package-contents">PACKAGE CONTENTS</a></li>
+<li><a href="#procedure">PROCEDURE</a>
+<ul>
+<li><a href="#step-1-create-hotel-folder">Step 1: Create Hotel
+Folder</a></li>
+<li><a href="#step-2-copy-standard-files">Step 2: Copy Standard
+Files</a></li>
+<li><a href="#step-3-create-custom-tent-card">Step 3: Create Custom Tent
+Card</a></li>
+<li><a href="#step-4-verify-package">Step 4: Verify Package</a></li>
+<li><a href="#step-5-prepare-email">Step 5: Prepare Email</a></li>
+</ul></li>
+<li><a href="#customization-options">CUSTOMIZATION OPTIONS</a>
+<ul>
+<li><a href="#tent-card-variations">Tent Card Variations</a></li>
+<li><a href="#color-schemes">Color Schemes</a></li>
+</ul></li>
+<li><a href="#timeline">TIMELINE</a></li>
+<li><a href="#output-location">OUTPUT LOCATION</a></li>
+<li><a href="#examples">EXAMPLES</a></li>
+</ul></li>
+</ul>
+</nav>
 <h1 id="sop-002-hotel-pitch-package">SOP-002: Hotel Pitch Package</h1>
 <h2 id="standard-package-for-any-hotel">Standard Package for Any
 Hotel</h2>

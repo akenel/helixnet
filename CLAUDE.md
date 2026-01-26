@@ -271,11 +271,91 @@ Examples:
 ## TOOLS ON THIS SYSTEM
 
 - **whisper** - Voice transcription (in .venv)
-- **wkhtmltopdf** - HTML to PDF (PRIMARY - WebKit engine, handles real CSS)
+- **puppeteer** - HTML to PDF (PRIMARY - Chrome headless, real headers/footers/page numbers)
+- **wkhtmltopdf** - HTML to PDF (BACKUP - unpatched version, no headers/footers)
 - **weasyprint** - DEPRECATED - chokes on flexbox/floats/gradients, don't use
 - **yt-dlp** - Download music from YouTube (in .venv)
 - **kolourpaint** - Simple image editor (MS Paint style)
 - **VLC** - Music player for local files
+
+**PDF Generation Command:**
+```bash
+node /home/angel/repos/helixnet/scripts/sop-to-pdf.js input.html output.pdf "Document Title" "SOP-001"
+```
+
+---
+
+## HOW TO WRITE A PROPER SOP (ISO 9001 Standard)
+
+**This is NOT optional. This is the standard. No shortcuts. No "good enough."**
+
+### Required Elements
+
+1. **Document Header (on every page)**
+   - Left: HelixNet brand
+   - Center: Document title
+   - Right: Document ID (SOP-XXX)
+
+2. **Document Footer (on every page)**
+   - Left: "Confidential - Internal Use Only"
+   - Center: "Page X of Y" (DYNAMIC, not hardcoded)
+   - Right: Revision + Date
+
+3. **Table of Contents**
+   - Every section listed
+   - Page numbers next to each item
+   - Indented sub-sections
+
+4. **Content Structure**
+   - Purpose (why this SOP exists)
+   - Scope (who/what it applies to)
+   - Procedure (step-by-step)
+   - Verification (how to confirm it worked)
+   - References (related documents)
+
+### Page Break Rules
+
+- **NEVER** cut a sentence mid-way
+- **NEVER** orphan a heading (heading at bottom, content on next page)
+- **KEEP TOGETHER:** headings + first paragraph, tables, code blocks, checklists
+
+### Formatting Standards
+
+- Font: Arial or Helvetica (professional, readable)
+- Size: 11pt body, 14pt headings
+- Colors: #C0392B (HelixNet red), #2C3E50 (headings), #222 (body)
+- Tables: borders visible, header row shaded
+- Code: monospace, light gray background, left border accent
+
+### File Naming
+
+```
+SOP-001-descriptive-name.html  (source)
+SOP-001-descriptive-name.pdf   (output)
+```
+
+### Quality Checklist Before Publishing
+
+- [ ] Header appears on EVERY printed page
+- [ ] Footer with Page X of Y on EVERY printed page
+- [ ] TOC page numbers are accurate
+- [ ] No orphaned headings
+- [ ] No mid-sentence page breaks
+- [ ] All tables fit on one page (or break cleanly)
+- [ ] Printed version matches screen version
+- [ ] Spell-checked
+- [ ] Version number updated
+
+### NEVER Do This
+
+- Never hardcode "Page 1 of 4" - use dynamic page numbers
+- Never use dark backgrounds (kills printers)
+- Never skip the TOC for documents > 2 pages
+- Never use "SOP" without spelling out "Standard Operating Procedure" at least once
+- Never say "good enough" or "for now" - do it right or don't do it
+- Never settle for second best
+
+**Tool:** Use Puppeteer (`scripts/sop-to-pdf.js`) for all SOP PDF generation. It does real headers/footers/page numbers.
 
 ---
 
