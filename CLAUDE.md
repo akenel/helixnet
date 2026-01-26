@@ -425,22 +425,84 @@ SOP-001-descriptive-name.pdf   (output)
 - **Theme:** Libertà (Freedom) - Italian + English bilingual
 - **Quote:** "Casa è dove parcheggi." / "Home is where you park it."
 - **Tagline:** BUON VIAGGIO! (Have a good trip!)
-- **File:** `/docs/business/postcards/camperandtour/postcard-camperandtour-A4-tent.html`
-- **PDF:** `/docs/business/postcards/camperandtour/postcard-camperandtour-A4-tent.pdf`
+- **FINAL File:** `/docs/business/postcards/camperandtour/postcard-camperandtour-TENT-FINAL.html`
+- **FINAL PDF:** `/UFA_r2p/postcard-camperandtour-TENT-FINAL.pdf`
 
-**Key fixes from PuntaTipa feedback:**
-- WHITE message section (not black - kills printers)
-- Subtle fold lines (corner marks only, no "FOLD HERE" text)
-- Bilingual throughout (Italian + English)
-- Maximized A4 layout (smaller tabs, larger content area)
-- Contact info section with QR placeholder
-
-**Workflow:** HTML → Browser verify → PDF → Email → Test print on their color printer
+**Status:** APPROVED by Nino. Final PDF sent for print. First LIVE UAT success!
 
 **Relationship:**
-- Sebastino: Owner, drives Angel to bank for cash
-- Nino: Son, runs the show, approved the postcard concept
-- This is a LIVE UAT with color printer on-site for immediate testing
+- Sebastiano (Sebastino): Owner of Camper & Tour sas di Sebastiano Cassisa
+- Nino: Son, runs the show, speaks excellent English, approved the postcard
+
+---
+
+## A4 TENT CARD TEMPLATE (Jan 26, 2026 - Perfected)
+
+**The golden standard for business postcards. ZERO CUTS - just fold and tape!**
+
+### Specifications (Full A4 Portrait - 210mm × 297mm)
+
+```
+┌────────────────────────────┐
+│     TOP TAB (42mm)         │ ← Folds DOWN inside
+│─ ─                     ─ ─ │ ← Tick marks at edges only
+│                            │
+│     FRONT PANEL (100mm)    │ ← Rotated 180° (shows when tent stands)
+│     [Theme + Stripes]      │
+│                            │
+│─ ─                     ─ ─ │ ← MAIN FOLD (peak of tent)
+│                            │
+│     BACK PANEL (100mm)     │ ← Info side (contact, QR, message)
+│     [Business Info]        │
+│                            │
+│─ ─                     ─ ─ │ ← Tick marks at edges only
+│     BOTTOM TAB (55mm)      │ ← Folds UP inside
+└────────────────────────────┘
+
+42 + 100 + 100 + 55 = 297mm ✓
+Width: 210mm (full A4) ✓
+```
+
+### Key Design Rules
+
+1. **ZERO CUTS** - Full A4, just fold and tape
+2. **Top tab shorter (42mm)** - Bottom tab longer (55mm) - they overlap cleanly inside
+3. **Tick marks only** - 8mm lines at corners, NOT full dashed lines (overkill)
+4. **Front panel rotated 180°** - So it displays right-side-up when tent stands
+5. **White backgrounds** - Dark kills printers
+6. **Bilingual** - Italian + English for Sicily market
+7. **QR to Google Maps** - Reviews, directions, everything in one scan
+
+### Assembly Instructions
+
+1. Print on A4 (portrait, 100% scale)
+2. Fold at tick marks (3 folds total)
+3. Top tab folds DOWN (behind front)
+4. Bottom tab folds UP (behind back)
+5. Tabs meet inside - tape or staple together
+6. Stand up - tent card ready!
+
+### Template File
+
+`/docs/business/postcards/camperandtour/postcard-camperandtour-TENT-FINAL.html`
+
+**To create a new business postcard:**
+1. Copy TENT-FINAL.html
+2. Change theme title (e.g., "Libertà" → "Dualism")
+3. Change stripes/colors if needed
+4. Update business info (name, address, contact, QR)
+5. Update quote/tagline
+6. Generate PDF with Puppeteer
+7. Done - lightning fast!
+
+### What We Learned (Jan 26 Live UAT)
+
+- v1: Landscape A4 - didn't maximize page
+- v2: Portrait with tabs - tabs too small, full dashed lines overkill
+- v3: Bigger panels, but tabs didn't meet properly
+- **FINAL:** 42mm top + 100mm front + 100mm back + 55mm bottom = PERFECT
+
+**This template is now the standard for all UFA business postcards.**
 
 ---
 
@@ -483,8 +545,9 @@ SOP-001-descriptive-name.pdf   (output)
 
 ---
 
-*Last updated: January 26, 2026, morning - Camper & Tour UAT*
+*Last updated: January 26, 2026, noon - A4 Tent Card Template perfected*
 *"Where two worlds meet, something new is born."*
 *"NEVER say fixed without verifying the output."*
 *"Casa è dove parcheggi." - Home is where you park it.*
+*"ZERO CUTS - just fold and tape!"*
 *"IT GOES BOTH WAYS BRO"*

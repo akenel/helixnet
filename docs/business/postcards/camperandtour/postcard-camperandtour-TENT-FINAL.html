@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Camper & Tour - Libertà | FINAL</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            width: 210mm;
+            height: 297mm;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ========== TICK MARKS (corners only) ========== */
+        .tick {
+            position: absolute;
+            background: #888;
+        }
+
+        .tick-h { width: 8mm; height: 0.3mm; }
+        .tick-v { width: 0.3mm; height: 8mm; }
+
+        /* Top tab fold line ticks (at 42mm) */
+        .tick-top-l { top: 42mm; left: 0; }
+        .tick-top-r { top: 42mm; right: 0; }
+
+        /* Main fold line ticks (at 142mm) */
+        .tick-main-l { top: 142mm; left: 0; }
+        .tick-main-r { top: 142mm; right: 0; }
+
+        /* Bottom tab fold line ticks (at 242mm) */
+        .tick-bot-l { top: 242mm; left: 0; }
+        .tick-bot-r { top: 242mm; right: 0; }
+
+        /* ========== TOP TAB (42mm) - folds DOWN inside ========== */
+        .top-tab {
+            width: 100%;
+            height: 42mm;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .tab-instruction {
+            font-size: 8pt;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2mm;
+        }
+
+        .tab-arrow {
+            font-size: 24pt;
+            color: #bbb;
+        }
+
+        /* ========== FRONT PANEL (100mm) - rotated 180° ========== */
+        .front-panel {
+            width: 100%;
+            height: 100mm;
+            transform: rotate(180deg);
+            padding: 8mm 15mm;
+            background: linear-gradient(180deg, #fffef8 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .front-top { text-align: center; }
+
+        .main-title {
+            font-size: 72pt;
+            font-weight: 200;
+            letter-spacing: 5px;
+            color: #1a1a1a;
+            line-height: 0.85;
+        }
+
+        .main-subtitle {
+            font-size: 30pt;
+            font-weight: 300;
+            color: #666;
+            letter-spacing: 3px;
+            margin-top: 2mm;
+        }
+
+        .front-middle {
+            display: flex;
+            justify-content: center;
+            padding: 3mm 0;
+        }
+
+        .stripes {
+            width: 160mm;
+            height: 35mm;
+            display: flex;
+            border-radius: 2mm;
+            overflow: hidden;
+            box-shadow: 0 2mm 8mm rgba(0,0,0,0.1);
+        }
+
+        .stripe { flex: 1; height: 100%; }
+        .stripe-green { background: #009246; }
+        .stripe-white { background: #F4F5F0; }
+        .stripe-red { background: #CE2B37; }
+
+        .front-bottom { text-align: center; }
+
+        .tagline {
+            font-size: 11pt;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .tagline .italian { font-style: italic; color: #777; }
+
+        .company-tag {
+            font-size: 18pt;
+            font-weight: 600;
+            letter-spacing: 5px;
+            color: #C41E3A;
+            margin-top: 2mm;
+        }
+
+        /* ========== BACK PANEL (100mm) ========== */
+        .back-panel {
+            width: 100%;
+            height: 100mm;
+            padding: 6mm 12mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2.5px solid #C41E3A;
+            padding-bottom: 3mm;
+            margin-bottom: 3mm;
+        }
+
+        .brand-title {
+            font-size: 22pt;
+            font-weight: 400;
+            color: #1a1a1a;
+        }
+
+        .brand-title span {
+            color: #009246;
+            font-weight: 600;
+        }
+
+        .brand-subtitle {
+            font-size: 8pt;
+            color: #666;
+            margin-top: 1mm;
+        }
+
+        .location-block {
+            text-align: right;
+            font-size: 8pt;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 7pt;
+            color: #888;
+        }
+
+        .back-quote {
+            font-style: italic;
+            font-size: 11pt;
+            color: #333;
+            text-align: center;
+            padding: 3mm 10mm;
+            border-left: 3px solid #009246;
+            border-right: 3px solid #CE2B37;
+            margin-bottom: 4mm;
+            background: #fafafa;
+        }
+
+        .back-quote .translation {
+            font-style: normal;
+            font-size: 10pt;
+            color: #666;
+        }
+
+        .back-main {
+            display: flex;
+            flex: 1;
+            gap: 5mm;
+        }
+
+        .message-section { flex: 1; }
+
+        .section-label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            margin-bottom: 2mm;
+        }
+
+        .message-lines {
+            height: 30mm;
+            background: repeating-linear-gradient(
+                transparent, transparent 6.5mm,
+                #ccc 6.5mm, #ccc 6.8mm
+            );
+        }
+
+        .info-section {
+            width: 50mm;
+            padding: 0 4mm;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            font-size: 8pt;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .info-row { margin-bottom: 1.5mm; }
+        .info-label { color: #888; font-size: 7pt; }
+
+        .qr-code {
+            width: 20mm;
+            height: 20mm;
+            margin: 2mm auto 0;
+            display: block;
+        }
+
+        .address-section { width: 55mm; }
+
+        .address-line {
+            border-bottom: 1px solid #bbb;
+            height: 6.5mm;
+            margin-bottom: 1.5mm;
+        }
+
+        .address-line:first-of-type { border-bottom: 2px solid #333; }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2mm;
+            border-top: 1px solid #eee;
+            font-size: 7pt;
+            color: #999;
+        }
+
+        .footer-tagline {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #C41E3A;
+            letter-spacing: 2px;
+        }
+
+        /* ========== BOTTOM TAB (55mm) - folds UP inside ========== */
+        .bottom-tab {
+            width: 100%;
+            height: 55mm;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .bottom-tab .tab-arrow {
+            transform: rotate(180deg);
+            margin-bottom: 2mm;
+        }
+
+        @media print {
+            html, body { background: white; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- TICK MARKS (discreet fold indicators) -->
+    <div class="tick tick-h tick-top-l"></div>
+    <div class="tick tick-h tick-top-r"></div>
+    <div class="tick tick-h tick-main-l"></div>
+    <div class="tick tick-h tick-main-r"></div>
+    <div class="tick tick-h tick-bot-l"></div>
+    <div class="tick tick-h tick-bot-r"></div>
+
+    <!-- TOP TAB (42mm) - folds DOWN inside tent -->
+    <div class="top-tab">
+        <span class="tab-instruction">Fold Down / Piega Giù</span>
+        <span class="tab-arrow">↓</span>
+    </div>
+
+    <!-- FRONT PANEL (100mm) - rotated 180° for tent display -->
+    <div class="front-panel">
+        <div class="front-top">
+            <div class="main-title">Libertà.</div>
+            <div class="main-subtitle">Freedom.</div>
+        </div>
+        <div class="front-middle">
+            <div class="stripes">
+                <div class="stripe stripe-green"></div>
+                <div class="stripe stripe-white"></div>
+                <div class="stripe stripe-red"></div>
+            </div>
+        </div>
+        <div class="front-bottom">
+            <div class="tagline">
+                The open road calls to those who seek adventure.<br>
+                <span class="italian">La strada aperta chiama chi cerca l'avventura.</span>
+            </div>
+            <div class="company-tag">CAMPER & TOUR</div>
+        </div>
+    </div>
+
+    <!-- BACK PANEL (100mm) -->
+    <div class="back-panel">
+        <div class="back-header">
+            <div>
+                <div class="brand-title"><span>Camper</span> & Tour</div>
+                <div class="brand-subtitle">Noleggio • Riparazione • Vendita • Accessori</div>
+            </div>
+            <div class="location-block">
+                Via F. Culcasi, 4 (Palazzo Asia)<br>
+                91100 Trapani, Sicilia<br>
+                <span class="coords">38.003°N 12.540°E</span>
+            </div>
+        </div>
+
+        <div class="back-quote">
+            "Casa è dove parcheggi." <span class="translation">— Home is where you park it.</span>
+        </div>
+
+        <div class="back-main">
+            <div class="message-section">
+                <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                <div class="message-lines"></div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-row"><span class="info-label">Tel:</span> +39 0923 534452</div>
+                <div class="info-row"><span class="info-label">Cell:</span> +39 328 684 4546</div>
+                <div class="info-row"><span class="info-label">Email:</span> info@camperandtour.it</div>
+                <div class="info-row"><span class="info-label">Web:</span> camperandtour.it</div>
+                <img class="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATYAAAE2AQMAAADRcizqAAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAGXSURBVGiB7ZlLjsMgEERb8gE4kq/OkTiApQ7pHziakbJJeVO9QAQe3pT6G9HvTMiBuC5hc3e8j648aGtHDsc19dtdpiGynXVySO5yjexFCaV2YaqSe4ibfiRn+pHrRu5Jbto573Mh9whXcW3MPGPJJl78F//I/ZKTsAhktyWMHI7bbBzuQsujysihuDi77h4l5VYV18hBuJIsFtPtXZGdQ+ItOSRn8rTSzVuU3FlwO5UckIsL606m21Rwa7pkJIfi3FMsuI3qU1oVx/EVcijOVhfKYSnu8uZx1WHkfs95Zpeqi3PnvSQ5NGc78xmJHK91mxWAkoNxNt1aGrkfuUVbTw7JaQayzaNi5Hh4niGH5LZoZgqa1Vg4BCUH4zRDWtxmsxJ1mJIDcyOFsjmXR7M1chQhh+XKeiWWpWA3spGDcX3J4yn/Dm/1ATkIl4VwLhnNQjd7QQ7IVY+YE0ibsKQLVX9JDsz1Lfl/pB1yT3DemOQ/JhHS/APkcFzGtf0if8ofeYbcT7nK+55YVgn2Oecih+C+M3IY7gXYN9AlYUBpsgAAAABJRU5ErkJggg==" alt="Google Maps">
+            </div>
+
+            <div class="address-section">
+                <div class="section-label">Invia A / Send To</div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <span>Fatto a mano in Sicilia • Handmade in Sicily • Gennaio 2026</span>
+            <span class="footer-tagline">BUON VIAGGIO!</span>
+        </div>
+    </div>
+
+    <!-- BOTTOM TAB (55mm) - folds UP inside tent -->
+    <div class="bottom-tab">
+        <span class="tab-arrow">↑</span>
+        <span class="tab-instruction">Fold Up / Piega Su</span>
+    </div>
+</div>
+
+</body>
+</html>

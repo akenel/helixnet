@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Camper & Tour - Libertà | Tent Card v2</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            width: 210mm;
+            height: 297mm;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* CARD CONTAINER - flush LEFT, flush TOP, 2 cuts only */
+        .card {
+            width: 180mm;
+            height: 200mm;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px dashed #888;
+            border-bottom: 2px dashed #888;
+        }
+
+        /* FRONT PANEL - 80mm (rotated 180° for tent) */
+        .front-panel {
+            width: 100%;
+            height: 80mm;
+            transform: rotate(180deg);
+            padding: 6mm 10mm;
+            background: linear-gradient(180deg, #fffef8 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-bottom: 1px dashed #aaa;
+        }
+
+        .front-top {
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 52pt;
+            font-weight: 200;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            line-height: 0.9;
+        }
+
+        .main-subtitle {
+            font-size: 22pt;
+            font-weight: 300;
+            color: #666;
+            letter-spacing: 2px;
+            margin-top: 1mm;
+        }
+
+        .front-middle {
+            display: flex;
+            justify-content: center;
+        }
+
+        .stripes {
+            width: 120mm;
+            height: 28mm;
+            display: flex;
+            border-radius: 1.5mm;
+            overflow: hidden;
+            box-shadow: 0 1mm 4mm rgba(0,0,0,0.08);
+        }
+
+        .stripe { flex: 1; height: 100%; }
+        .stripe-green { background: #009246; }
+        .stripe-white { background: #F4F5F0; }
+        .stripe-red { background: #CE2B37; }
+
+        .front-bottom {
+            text-align: center;
+        }
+
+        .tagline {
+            font-size: 9pt;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .tagline .italian { font-style: italic; color: #777; }
+
+        .company-tag {
+            font-size: 14pt;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: #C41E3A;
+            margin-top: 2mm;
+        }
+
+        /* MAIN FOLD LINE */
+        .fold-main {
+            width: 100%;
+            height: 0;
+            border-top: 2px dashed #888;
+            position: relative;
+        }
+
+        .fold-main::before,
+        .fold-main::after {
+            content: "✂";
+            position: absolute;
+            top: -4mm;
+            font-size: 10pt;
+            color: #888;
+        }
+        .fold-main::before { left: 2mm; }
+        .fold-main::after { right: 2mm; content: "FOLD / PIEGA"; font-size: 7pt; top: -3mm; }
+
+        /* BACK PANEL - 80mm */
+        .back-panel {
+            width: 100%;
+            height: 80mm;
+            padding: 5mm 8mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #C41E3A;
+            padding-bottom: 3mm;
+            margin-bottom: 3mm;
+        }
+
+        .brand-title {
+            font-size: 18pt;
+            font-weight: 400;
+            color: #1a1a1a;
+        }
+
+        .brand-title span {
+            color: #009246;
+            font-weight: 600;
+        }
+
+        .brand-subtitle {
+            font-size: 7pt;
+            color: #666;
+            margin-top: 0.5mm;
+        }
+
+        .location-block {
+            text-align: right;
+            font-size: 7pt;
+            color: #555;
+            line-height: 1.3;
+        }
+
+        .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 6pt;
+            color: #888;
+        }
+
+        .back-quote {
+            font-style: italic;
+            font-size: 9pt;
+            color: #333;
+            text-align: center;
+            padding: 2mm 6mm;
+            border-left: 2px solid #009246;
+            border-right: 2px solid #CE2B37;
+            margin-bottom: 3mm;
+            background: #fafafa;
+        }
+
+        .back-quote .translation {
+            font-style: normal;
+            font-size: 8pt;
+            color: #666;
+        }
+
+        .back-main {
+            display: flex;
+            flex: 1;
+            gap: 3mm;
+        }
+
+        .message-section { flex: 1; }
+
+        .section-label {
+            font-size: 6pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            margin-bottom: 1mm;
+        }
+
+        .message-lines {
+            height: 22mm;
+            background: repeating-linear-gradient(
+                transparent, transparent 5.5mm,
+                #ddd 5.5mm, #ddd 5.8mm
+            );
+        }
+
+        .info-section {
+            width: 40mm;
+            padding: 0 3mm;
+            border-left: 1px solid #eee;
+            border-right: 1px solid #eee;
+            font-size: 7pt;
+            color: #444;
+            line-height: 1.4;
+        }
+
+        .info-row { margin-bottom: 1mm; }
+        .info-label { color: #888; font-size: 6pt; }
+
+        .qr-code {
+            width: 18mm;
+            height: 18mm;
+            margin: 2mm auto 0;
+            display: block;
+        }
+
+        .address-section { width: 45mm; }
+
+        .address-line {
+            border-bottom: 1px solid #ccc;
+            height: 5.5mm;
+            margin-bottom: 1mm;
+        }
+
+        .address-line:first-of-type { border-bottom: 1.5px solid #333; }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2mm;
+            border-top: 1px solid #eee;
+            font-size: 6pt;
+            color: #999;
+        }
+
+        .footer-tagline {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #C41E3A;
+            letter-spacing: 1px;
+        }
+
+        /* BOTTOM FLAP - 40mm (folds under, tapes to front) */
+        .bottom-flap {
+            width: 100%;
+            height: 40mm;
+            border-top: 2px dashed #888;
+            padding: 8mm 10mm;
+            background: #fafafa;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flap-instruction {
+            font-size: 8pt;
+            color: #888;
+            margin-bottom: 3mm;
+        }
+
+        .flap-arrows {
+            font-size: 24pt;
+            color: #bbb;
+            letter-spacing: 10mm;
+        }
+
+        .flap-text {
+            font-size: 7pt;
+            color: #aaa;
+            margin-top: 2mm;
+        }
+
+        /* CUT GUIDES */
+        .cut-right {
+            position: absolute;
+            top: 0;
+            left: 180mm;
+            width: 30mm;
+            height: 200mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(
+                45deg,
+                #f8f8f8,
+                #f8f8f8 5mm,
+                #fff 5mm,
+                #fff 10mm
+            );
+        }
+
+        .cut-bottom {
+            position: absolute;
+            top: 200mm;
+            left: 0;
+            width: 210mm;
+            height: 97mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(
+                45deg,
+                #f8f8f8,
+                #f8f8f8 5mm,
+                #fff 5mm,
+                #fff 10mm
+            );
+        }
+
+        .cut-text {
+            font-size: 9pt;
+            color: #aaa;
+            background: white;
+            padding: 2mm 4mm;
+        }
+
+        .cut-text-vertical {
+            transform: rotate(90deg);
+            white-space: nowrap;
+        }
+
+        @media print {
+            html, body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="card">
+        <!-- FRONT PANEL (80mm) - rotated for tent display -->
+        <div class="front-panel">
+            <div class="front-top">
+                <div class="main-title">Libertà.</div>
+                <div class="main-subtitle">Freedom.</div>
+            </div>
+            <div class="front-middle">
+                <div class="stripes">
+                    <div class="stripe stripe-green"></div>
+                    <div class="stripe stripe-white"></div>
+                    <div class="stripe stripe-red"></div>
+                </div>
+            </div>
+            <div class="front-bottom">
+                <div class="tagline">
+                    The open road calls.<br>
+                    <span class="italian">La strada aperta chiama.</span>
+                </div>
+                <div class="company-tag">CAMPER & TOUR</div>
+            </div>
+        </div>
+
+        <!-- MAIN FOLD LINE -->
+        <div class="fold-main"></div>
+
+        <!-- BACK PANEL (80mm) -->
+        <div class="back-panel">
+            <div class="back-header">
+                <div>
+                    <div class="brand-title"><span>Camper</span> & Tour</div>
+                    <div class="brand-subtitle">Noleggio • Riparazione • Vendita</div>
+                </div>
+                <div class="location-block">
+                    Via F. Culcasi, 4<br>
+                    91100 Trapani<br>
+                    <span class="coords">38.003°N 12.540°E</span>
+                </div>
+            </div>
+
+            <div class="back-quote">
+                "Casa è dove parcheggi." <span class="translation">— Home is where you park it.</span>
+            </div>
+
+            <div class="back-main">
+                <div class="message-section">
+                    <div class="section-label">Your Message</div>
+                    <div class="message-lines"></div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-row"><span class="info-label">Tel:</span> 0923 534452</div>
+                    <div class="info-row"><span class="info-label">Cell:</span> 328 684 4546</div>
+                    <div class="info-row"><span class="info-label">Web:</span> camperandtour.it</div>
+                    <img class="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATYAAAE2AQMAAADRcizqAAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAGXSURBVGiB7ZlLjsMgEERb8gE4kq/OkTiApQ7pHziakbJJeVO9QAQe3pT6G9HvTMiBuC5hc3e8j648aGtHDsc19dtdpiGynXVySO5yjexFCaV2YaqSe4ibfiRn+pHrRu5Jbto573Mh9whXcW3MPGPJJl78F//I/ZKTsAhktyWMHI7bbBzuQsujysihuDi77h4l5VYV18hBuJIsFtPtXZGdQ+ItOSRn8rTSzVuU3FlwO5UckIsL606m21Rwa7pkJIfi3FMsuI3qU1oVx/EVcijOVhfKYSnu8uZx1WHkfs95Zpeqi3PnvSQ5NGc78xmJHK91mxWAkoNxNt1aGrkfuUVbTw7JaQayzaNi5Hh4niGH5LZoZgqa1Vg4BCUH4zRDWtxmsxJ1mJIDcyOFsjmXR7M1chQhh+XKeiWWpWA3spGDcX3J4yn/Dm/1ATkIl4VwLhnNQjd7QQ7IVY+YE0ibsKQLVX9JDsz1Lfl/pB1yT3DemOQ/JhHS/APkcFzGtf0if8ofeYbcT7nK+55YVgn2Oecih+C+M3IY7gXYN9AlYUBpsgAAAABJRU5ErkJggg==" alt="Google Maps">
+                </div>
+
+                <div class="address-section">
+                    <div class="section-label">Send To</div>
+                    <div class="address-line"></div>
+                    <div class="address-line"></div>
+                    <div class="address-line"></div>
+                    <div class="address-line"></div>
+                </div>
+            </div>
+
+            <div class="back-footer">
+                <span>Handmade in Sicily • Gennaio 2026</span>
+                <span class="footer-tagline">BUON VIAGGIO!</span>
+            </div>
+        </div>
+
+        <!-- BOTTOM FLAP (40mm) - folds under and tapes -->
+        <div class="bottom-flap">
+            <div class="flap-instruction">FOLD UNDER & TAPE TO INSIDE OF FRONT PANEL</div>
+            <div class="flap-arrows">↑ ↑ ↑</div>
+            <div class="flap-text">PIEGA SOTTO E FISSA CON NASTRO</div>
+        </div>
+    </div>
+
+    <!-- CUT ZONES (hatched = discard) -->
+    <div class="cut-right">
+        <span class="cut-text cut-text-vertical">✂ CUT / TAGLIARE</span>
+    </div>
+    <div class="cut-bottom">
+        <span class="cut-text">✂ CUT / TAGLIARE ✂</span>
+    </div>
+</div>
+
+</body>
+</html>
