@@ -359,27 +359,47 @@ SOP-001-descriptive-name.pdf   (output)
 
 ---
 
-## PUNTATIPA PROTOTYPE (Jan 25, 2026 Night Session)
+## PUNTATIPA PROTOTYPE (Jan 25-26, 2026)
 
 **Location:** 38.029472, 12.528162 - PuntaTipa Hotel
-**Room:** 205 | Dualism
+**Room:** 205 → 101 (moving Jan 26)
 
 **What we built:**
 - A4 tent-fold postcard for PuntaTipa
 - Front: "Dualism." + 3 stripes (Blue|Cream|Red) + PUNTATIPA
 - Back: Room°205 | Dualism, coordinates, message lines, address lines
-- Tabs at top/bottom fold under and tape together = STANDS
 
-**File:** `/docs/business/postcards/puntatipa/postcard-puntatipa-A4-tent.html`
-**PDF:** `/UFA_r2p/postcard-puntatipa-A4-tent.pdf`
+**Status:** Dualism PDF sent to receptionist. Printer was broken. She's reviewing on screen.
 
-**The play:**
-- Email PDF to front desk
-- She prints it, sees it, gets it (or doesn't)
-- If she kisses it = talk to manager at breakfast
-- Each room gets a number + philosophy: Room°205 | Dualism, Room°301 | Serenity, etc.
+---
 
-**Status:** Draft printed tonight. Receptionist test in progress.
+## JAN 25-26, 2026 NIGHT SESSION SUMMARY
+
+**Major accomplishments:**
+1. **Hotel SOP Master** - 10 SOPs for hotel consulting (ISO 9001 aligned)
+2. **HelixNet-SOP folder** - 3 internal SOPs (Postcard Print, Hotel Pitch Package, PDF Generation)
+3. **Puppeteer installed** - Professional PDF generation with real headers/footers/page numbers
+4. **SOP writing standards** documented in CLAUDE.md
+5. **Music grabbed:** Scissor Sisters - Take Your Mama, Wintersleep - Amerika
+
+**Key lessons documented:**
+- What "1-pager" means (content fills page, no overflow, no blank pages)
+- NEVER say "fixed" without verifying output
+- White backgrounds for print (dark = kills printers)
+- Spell out "Standard Operating Procedure" not just "SOP"
+- Use Puppeteer for PDF, not unpatched wkhtmltopdf
+
+**Files created:**
+- `/scripts/sop-to-pdf.js` - Puppeteer PDF generator
+- `/docs/business/consulting/HOTEL-SOP-MASTER.md` - Hotel operations SOPs
+- `/docs/business/consulting/HelixNet-SOP/` - Internal SOPs with HTML + PDF
+
+**Email ready for PuntaTipa:** info@puntatipa.it (6 attachments in Rm°205 folder)
+
+**Today (Jan 26):**
+- Move rooms 205 → 101
+- Camper van phase 3 cleanup at Sebastino's
+- Weather: 12°C, light rain, SW winds 41-59 km/h
 
 ---
 
