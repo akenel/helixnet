@@ -28,17 +28,30 @@
             position: relative;
         }
 
-        /* ========== TICK MARKS (corners only - SVG-based for print reliability) ========== */
-        .tick-marks {
+        /* ========== TICK MARKS (positioned divs with SVG content) ========== */
+        .tick {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 210mm;
-            height: 297mm;
-            pointer-events: none;
+            width: 8mm;
+            height: 0.3mm;
         }
 
-        /* Tick positions defined in SVG below */
+        .tick svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Top tab fold line ticks (at 42mm) */
+        .tick-top-l { top: 42mm; left: 0; }
+        .tick-top-r { top: 42mm; right: 0; }
+
+        /* Main fold line ticks (at 142mm) */
+        .tick-main-l { top: 142mm; left: 0; }
+        .tick-main-r { top: 142mm; right: 0; }
+
+        /* Bottom tab fold line ticks (at 242mm) */
+        .tick-bot-l { top: 242mm; left: 0; }
+        .tick-bot-r { top: 242mm; right: 0; }
 
         /* ========== TOP TAB (42mm) - folds DOWN inside ========== */
         .top-tab {
@@ -296,18 +309,13 @@
 <body>
 
 <div class="page">
-    <!-- TICK MARKS (SVG for print reliability) -->
-    <svg class="tick-marks" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" preserveAspectRatio="none">
-        <!-- Top tab fold (42mm) -->
-        <line x1="0" y1="42" x2="8" y2="42" stroke="#888" stroke-width="0.3"/>
-        <line x1="202" y1="42" x2="210" y2="42" stroke="#888" stroke-width="0.3"/>
-        <!-- Main fold (142mm) -->
-        <line x1="0" y1="142" x2="8" y2="142" stroke="#888" stroke-width="0.3"/>
-        <line x1="202" y1="142" x2="210" y2="142" stroke="#888" stroke-width="0.3"/>
-        <!-- Bottom tab fold (242mm) -->
-        <line x1="0" y1="242" x2="8" y2="242" stroke="#888" stroke-width="0.3"/>
-        <line x1="202" y1="242" x2="210" y2="242" stroke="#888" stroke-width="0.3"/>
-    </svg>
+    <!-- TICK MARKS (positioned divs with SVG content for print reliability) -->
+    <div class="tick tick-top-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="tick tick-top-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="tick tick-main-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="tick tick-main-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="tick tick-bot-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="tick tick-bot-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
 
     <!-- TOP TAB (42mm) - folds DOWN inside tent -->
     <div class="top-tab">
