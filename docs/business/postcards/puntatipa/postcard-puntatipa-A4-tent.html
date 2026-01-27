@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PuntaTipa - Room°205 | Dualism</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #333;
+        }
+
+        .page {
+            width: 297mm;
+            height: 210mm;
+            background: white;
+            margin: 5px auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TAB - top (folds under) */
+        .tab {
+            width: 100%;
+            height: 15mm;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7pt;
+            color: #bbb;
+            letter-spacing: 1px;
+        }
+
+        /* FRONT SIDE - top half (rotated 180° for tent) */
+        .front-side {
+            width: 100%;
+            height: 90mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(180deg);
+            padding: 10mm 20mm;
+        }
+
+        .front-layout {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .front-text {
+            flex: 1;
+        }
+
+        .dualism-title {
+            font-size: 64pt;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: #222;
+            margin-bottom: 5mm;
+        }
+
+        .dualism-quote {
+            font-size: 12pt;
+            color: #555;
+            line-height: 1.5;
+            max-width: 140mm;
+        }
+
+        .hotel-tag {
+            margin-top: 8mm;
+            font-size: 14pt;
+            letter-spacing: 5px;
+            color: #888;
+        }
+
+        /* 3 STRIPES - Italian/EU flag style */
+        .stripes {
+            width: 80mm;
+            height: 70mm;
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .stripe {
+            flex: 1;
+            height: 100%;
+        }
+
+        .stripe-1 { background: #4A90A4; }
+        .stripe-2 { background: #F5F5F0; }
+        .stripe-3 { background: #D35F5F; }
+
+        /* FOLD LINE */
+        .fold-line {
+            width: 100%;
+            height: 0;
+            border-top: 2px dashed #999;
+            position: relative;
+        }
+
+        .fold-line::after {
+            content: "— FOLD HERE —";
+            position: absolute;
+            top: -3mm;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0 5mm;
+            font-size: 8pt;
+            color: #999;
+            letter-spacing: 2px;
+        }
+
+        /* BACK SIDE - bottom half */
+        .back-side {
+            width: 100%;
+            height: 90mm;
+            padding: 8mm 20mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5mm;
+            margin-bottom: 5mm;
+        }
+
+        .room-title {
+            font-size: 24pt;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .room-title span {
+            color: #888;
+        }
+
+        .back-location {
+            text-align: right;
+            font-size: 9pt;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .back-quote {
+            font-style: italic;
+            font-size: 11pt;
+            color: #444;
+            text-align: center;
+            padding: 4mm 10mm;
+            border-left: 3px solid #4A90A4;
+            border-right: 3px solid #D35F5F;
+            margin-bottom: 5mm;
+        }
+
+        .back-main {
+            display: flex;
+            flex: 1;
+        }
+
+        .message-section {
+            flex: 1;
+            padding-right: 8mm;
+        }
+
+        .section-label {
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 2mm;
+        }
+
+        .message-lines {
+            height: 30mm;
+            background: repeating-linear-gradient(
+                transparent,
+                transparent 7mm,
+                #ddd 7mm,
+                #ddd 7.5mm
+            );
+        }
+
+        .address-section {
+            flex: 1;
+            padding-left: 8mm;
+            border-left: 1px solid #ddd;
+        }
+
+        .address-line {
+            border-bottom: 1px solid #ccc;
+            height: 7mm;
+            margin-bottom: 1.5mm;
+        }
+
+        .address-line:first-child {
+            border-bottom: 2px solid #333;
+        }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 3mm;
+            border-top: 1px solid #eee;
+            font-size: 8pt;
+            color: #999;
+        }
+
+        .foo-tag {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 1px;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- TAB TOP (folds under to bottom) -->
+    <div class="tab">FOLD UNDER • TAPE TO BOTTOM TAB</div>
+
+    <!-- FRONT SIDE (rotated 180° for tent display) -->
+    <div class="front-side">
+        <div class="front-layout">
+            <div class="front-text">
+                <div class="dualism-title">Dualism.</div>
+                <div class="dualism-quote">
+                    The conviction that all concepts within the world
+                    fundamentally consist of two contrasting qualities,
+                    such as good and evil, or body and mind.
+                </div>
+                <div class="hotel-tag">PUNTATIPA</div>
+            </div>
+            <div class="stripes">
+                <div class="stripe stripe-1"></div>
+                <div class="stripe stripe-2"></div>
+                <div class="stripe stripe-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOLD LINE -->
+    <div class="fold-line"></div>
+
+    <!-- BACK SIDE (info) -->
+    <div class="back-side">
+        <div class="back-header">
+            <div class="room-title">Room°205 <span>| Dualism</span></div>
+            <div class="back-location">
+                PUNTATIPA<br>
+                Trapani, Sicily<br>
+                38.03°N 12.53°E
+            </div>
+        </div>
+
+        <div class="back-quote">
+            "Where two worlds meet, something new is born."
+        </div>
+
+        <div class="back-main">
+            <div class="message-section">
+                <div class="section-label">Your Message</div>
+                <div class="message-lines"></div>
+            </div>
+            <div class="address-section">
+                <div class="section-label">Send To</div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <span>Handmade in Sicily • January 2026</span>
+            <span class="foo-tag">BE MY GUEST</span>
+        </div>
+    </div>
+
+    <!-- TAB BOTTOM (meets top tab) -->
+    <div class="tab">FOLD UNDER • TAPE TO TOP TAB</div>
+</div>
+
+</body>
+</html>

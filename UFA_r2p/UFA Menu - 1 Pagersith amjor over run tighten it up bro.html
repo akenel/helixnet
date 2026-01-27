@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>UFA Menu - 1 Pager</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            background: #333;
+        }
+
+        .page {
+            width: 180mm;
+            height: 267mm;
+            background: #faf9f6;
+            margin: 5px auto;
+            padding: 15mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            border-bottom: 4px solid;
+            border-image: linear-gradient(to right, #4A90A4, #F5F5F0, #D35F5F) 1;
+            padding-bottom: 10mm;
+            margin-bottom: 10mm;
+        }
+
+        .logo {
+            font-size: 48pt;
+            font-weight: bold;
+            letter-spacing: 8px;
+            margin-bottom: 3mm;
+            color: #C0392B;
+        }
+
+        .tagline {
+            font-size: 14pt;
+            font-style: italic;
+            color: #555;
+            margin-bottom: 2mm;
+        }
+
+        .series {
+            font-size: 10pt;
+            color: #888;
+            letter-spacing: 2px;
+        }
+
+        /* MENU SECTION */
+        .menu-section {
+            margin-bottom: 10mm;
+        }
+
+        .section-title {
+            font-size: 14pt;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 2px solid #4A90A4;
+            padding-bottom: 3mm;
+            margin-bottom: 5mm;
+            color: #2C3E50;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 3mm 0;
+            border-bottom: 1px dotted #ddd;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 1mm;
+        }
+
+        .item-desc {
+            font-size: 10pt;
+            color: #666;
+        }
+
+        .item-price {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #C0392B;
+            min-width: 20mm;
+            text-align: right;
+        }
+
+        /* OPTIONS */
+        .options-row {
+            display: flex;
+            margin-bottom: 8mm;
+        }
+
+        .option-group {
+            flex: 1;
+        }
+
+        .option-title {
+            font-size: 11pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 3mm;
+        }
+
+        .option-list {
+            font-size: 12pt;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .seal-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 3px;
+            vertical-align: middle;
+        }
+        .seal-red { background: #C0392B; }
+        .seal-purple { background: #8E44AD; }
+        .seal-gold { background: #F1C40F; }
+        .seal-blue { background: #2980B9; }
+        .seal-green { background: #27AE60; }
+
+        /* HOW IT WORKS */
+        .how-section {
+            background: #f0f0f0;
+            padding: 8mm;
+            margin-bottom: 8mm;
+        }
+
+        .how-title {
+            font-size: 12pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 5mm;
+            color: #333;
+        }
+
+        .how-steps {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .step {
+            font-size: 10pt;
+            color: #555;
+        }
+
+        .step-num {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #C0392B;
+            display: block;
+            margin-bottom: 2mm;
+        }
+
+        /* WHAT YOU GET */
+        .get-section {
+            margin-bottom: 8mm;
+        }
+
+        .get-list {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .get-item {
+            width: 50%;
+            font-size: 10pt;
+            color: #555;
+            padding: 2mm 0;
+        }
+
+        .get-item strong {
+            color: #333;
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            border-top: 2px solid #333;
+            padding-top: 8mm;
+        }
+
+        .footer-main {
+            font-size: 12pt;
+            font-style: italic;
+            color: #444;
+            margin-bottom: 5mm;
+            line-height: 1.5;
+        }
+
+        .footer-info {
+            font-size: 10pt;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo">UFA</div>
+        <div class="tagline">The Unfuckables Collection</div>
+        <div class="series">Sicily Series • Handmade with Love</div>
+    </div>
+
+    <!-- MENU -->
+    <div class="menu-section">
+        <div class="section-title">Menu</div>
+
+        <div class="menu-item">
+            <div class="item-info">
+                <div class="item-name">Postcard</div>
+                <div class="item-desc">Folding tent card, landscape photo</div>
+            </div>
+            <div class="item-price">€5</div>
+        </div>
+
+        <div class="menu-item">
+            <div class="item-info">
+                <div class="item-name">Experience Box</div>
+                <div class="item-desc">Card + local herbs + sand + shell</div>
+            </div>
+            <div class="item-price">€10</div>
+        </div>
+
+        <div class="menu-item">
+            <div class="item-info">
+                <div class="item-name">Wax Seal</div>
+                <div class="item-desc">Hand-stamped, color of your choice</div>
+            </div>
+            <div class="item-price">+€2</div>
+        </div>
+
+        <div class="menu-item">
+            <div class="item-info">
+                <div class="item-name">International Mail</div>
+                <div class="item-desc">We mail it for you today</div>
+            </div>
+            <div class="item-price">+€3</div>
+        </div>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="options-row">
+        <div class="option-group">
+            <div class="option-title">Designs</div>
+            <div class="option-list">
+                ☐ Trapani &nbsp; ☐ WWIII &nbsp; ☐ Pink &nbsp; ☐ Erice
+            </div>
+        </div>
+        <div class="option-group">
+            <div class="option-title">Seal Colors</div>
+            <div class="option-list">
+                <span class="seal-dot seal-red"></span>Red &nbsp;
+                <span class="seal-dot seal-purple"></span>Purple &nbsp;
+                <span class="seal-dot seal-gold"></span>Gold &nbsp;
+                <span class="seal-dot seal-blue"></span>Blue &nbsp;
+                <span class="seal-dot seal-green"></span>Green
+            </div>
+        </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div class="how-section">
+        <div class="how-title">How It Works</div>
+        <div class="how-steps">
+            <div class="step"><span class="step-num">1</span>Pick design</div>
+            <div class="step"><span class="step-num">2</span>Write address</div>
+            <div class="step"><span class="step-num">3</span>Choose seal</div>
+            <div class="step"><span class="step-num">4</span>Pay cash</div>
+            <div class="step"><span class="step-num">5</span>We do the rest</div>
+        </div>
+    </div>
+
+    <!-- WHAT YOU GET -->
+    <div class="get-section">
+        <div class="section-title">What You Get</div>
+        <div class="get-list">
+            <div class="get-item"><strong>Postcard</strong> — Folds into tent display</div>
+            <div class="get-item"><strong>Experience Box</strong> — Custom gift box</div>
+            <div class="get-item"><strong>Local Herbs</strong> — Wild rosemary from the hills</div>
+            <div class="get-item"><strong>Beach Sand</strong> — From Sicilian shores</div>
+            <div class="get-item"><strong>Shell or Pebble</strong> — Mediterranean treasure</div>
+            <div class="get-item"><strong>Wax Seal</strong> — Hand-stamped by Foo Fighter</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-main">
+            Your postcard arrives home with the scent of the Mediterranean.<br>
+            Open it and smell Sicily. Touch the sand. Remember this moment.
+        </div>
+        <div class="footer-info">
+            Handmade in Sicily • Cash Only • UFA Foo Fighters • unfuckables.com
+        </div>
+    </div>
+</div>
+
+
+
+</body></html>

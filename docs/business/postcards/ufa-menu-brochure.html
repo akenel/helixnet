@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UFA Menu - 1 Pager</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            background: #faf9f6;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 12mm 15mm;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding-bottom: 8mm;
+            margin-bottom: 8mm;
+            border-bottom: 3px solid #C0392B;
+        }
+
+        .logo {
+            font-size: 48pt;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #C0392B;
+        }
+
+        .tagline {
+            font-size: 12pt;
+            font-style: italic;
+            color: #555;
+            margin-top: 2mm;
+        }
+
+        .series {
+            font-size: 9pt;
+            color: #888;
+            letter-spacing: 2px;
+            margin-top: 1mm;
+        }
+
+        /* MENU */
+        .section-title {
+            font-size: 12pt;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 2px solid #4A90A4;
+            padding-bottom: 2mm;
+            margin-bottom: 4mm;
+            color: #2C3E50;
+        }
+
+        table.menu {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8mm;
+        }
+
+        table.menu td {
+            padding: 3mm 0;
+            border-bottom: 1px dotted #ddd;
+            vertical-align: top;
+        }
+
+        table.menu tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .item-desc {
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .item-price {
+            font-size: 15pt;
+            font-weight: bold;
+            color: #C0392B;
+            text-align: right;
+            width: 20mm;
+        }
+
+        /* OPTIONS */
+        table.options {
+            width: 100%;
+            margin-bottom: 8mm;
+        }
+
+        table.options td {
+            width: 50%;
+            vertical-align: top;
+            padding: 2mm 0;
+        }
+
+        .option-title {
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 2mm;
+        }
+
+        .option-list {
+            font-size: 10pt;
+            color: #333;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 1px;
+        }
+        .dot-red { background: #C0392B; }
+        .dot-purple { background: #8E44AD; }
+        .dot-gold { background: #F1C40F; }
+        .dot-blue { background: #2980B9; }
+        .dot-green { background: #27AE60; }
+
+        /* HOW IT WORKS */
+        .how-section {
+            background: #f0f0f0;
+            padding: 6mm;
+            margin-bottom: 8mm;
+            text-align: center;
+        }
+
+        .how-title {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4mm;
+            color: #333;
+        }
+
+        table.steps {
+            width: 100%;
+        }
+
+        table.steps td {
+            text-align: center;
+            font-size: 9pt;
+            color: #555;
+        }
+
+        .step-num {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #C0392B;
+        }
+
+        /* WHAT YOU GET */
+        .get-section {
+            margin-bottom: 8mm;
+        }
+
+        table.get-list {
+            width: 100%;
+        }
+
+        table.get-list td {
+            width: 50%;
+            font-size: 9pt;
+            color: #555;
+            padding: 2mm 0;
+        }
+
+        table.get-list strong {
+            color: #333;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            border-top: 2px solid #333;
+            padding-top: 8mm;
+        }
+
+        .footer-main {
+            font-size: 11pt;
+            font-style: italic;
+            color: #444;
+            margin-bottom: 4mm;
+            line-height: 1.5;
+        }
+
+        .footer-info {
+            font-size: 9pt;
+            color: #888;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="header">
+        <div class="logo">UFA</div>
+        <div class="tagline">The Unfuckables Collection</div>
+        <div class="series">Sicily Series • Handmade with Love</div>
+    </div>
+
+    <div class="section-title">Menu</div>
+    <table class="menu">
+        <tr>
+            <td>
+                <div class="item-name">Postcard</div>
+                <div class="item-desc">Folding tent card, landscape photo</div>
+            </td>
+            <td class="item-price">€5</td>
+        </tr>
+        <tr>
+            <td>
+                <div class="item-name">Experience Box</div>
+                <div class="item-desc">Card + local herbs + sand + shell</div>
+            </td>
+            <td class="item-price">€10</td>
+        </tr>
+        <tr>
+            <td>
+                <div class="item-name">Wax Seal</div>
+                <div class="item-desc">Hand-stamped, color of your choice</div>
+            </td>
+            <td class="item-price">+€2</td>
+        </tr>
+        <tr>
+            <td>
+                <div class="item-name">International Mail</div>
+                <div class="item-desc">We mail it for you today</div>
+            </td>
+            <td class="item-price">+€3</td>
+        </tr>
+    </table>
+
+    <table class="options">
+        <tr>
+            <td>
+                <div class="option-title">Designs</div>
+                <div class="option-list">☐ Trapani ☐ WWIII ☐ Pink ☐ Erice</div>
+            </td>
+            <td>
+                <div class="option-title">Seal Colors</div>
+                <div class="option-list">
+                    <span class="dot dot-red"></span>Red
+                    <span class="dot dot-purple"></span>Purple
+                    <span class="dot dot-gold"></span>Gold
+                    <span class="dot dot-blue"></span>Blue
+                    <span class="dot dot-green"></span>Green
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="how-section">
+        <div class="how-title">How It Works</div>
+        <table class="steps">
+            <tr>
+                <td><div class="step-num">1</div>Pick design</td>
+                <td><div class="step-num">2</div>Write address</td>
+                <td><div class="step-num">3</div>Choose seal</td>
+                <td><div class="step-num">4</div>Pay cash</td>
+                <td><div class="step-num">5</div>We do the rest</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="get-section">
+        <div class="section-title">What You Get</div>
+        <table class="get-list">
+            <tr>
+                <td><strong>Postcard</strong> — Folds into tent display</td>
+                <td><strong>Experience Box</strong> — Custom gift box</td>
+            </tr>
+            <tr>
+                <td><strong>Local Herbs</strong> — Wild rosemary from the hills</td>
+                <td><strong>Beach Sand</strong> — From Sicilian shores</td>
+            </tr>
+            <tr>
+                <td><strong>Shell or Pebble</strong> — Mediterranean treasure</td>
+                <td><strong>Wax Seal</strong> — Hand-stamped by Foo Fighter</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <div class="footer-main">
+            Your postcard arrives home with the scent of the Mediterranean.<br>
+            Open it and smell Sicily. Touch the sand. Remember this moment.
+        </div>
+        <div class="footer-info">Handmade in Sicily • Cash Only • UFA Foo Fighters • unfuckables.com</div>
+    </div>
+</div>
+
+</body>
+</html>

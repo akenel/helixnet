@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UFA Box Template - Standard (6x4 Postcard)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #eee;
+        }
+
+        .template {
+            width: 200mm;
+            height: 280mm;
+            background: white;
+            margin: 10px auto;
+            position: relative;
+            padding: 5mm;
+        }
+
+        .box-net {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Box dimensions for 140x95mm postcard + margin */
+        /* Base: 148mm x 100mm, Walls: 10mm tall (keeps it thin for post) */
+
+        .panel {
+            position: absolute;
+            border: 2px solid #333;
+            background: #faf9f6;
+        }
+
+        /* MAIN BASE - center panel */
+        .base {
+            width: 148mm;
+            height: 100mm;
+            left: 26mm;
+            top: 70mm;
+        }
+
+        /* TOP WALL */
+        .wall-top {
+            width: 148mm;
+            height: 10mm;
+            left: 26mm;
+            top: 60mm;
+            border-bottom: 2px dashed #666;
+        }
+
+        /* BOTTOM WALL */
+        .wall-bottom {
+            width: 148mm;
+            height: 10mm;
+            left: 26mm;
+            top: 170mm;
+            border-top: 2px dashed #666;
+        }
+
+        /* LEFT WALL */
+        .wall-left {
+            width: 10mm;
+            height: 100mm;
+            left: 16mm;
+            top: 70mm;
+            border-right: 2px dashed #666;
+        }
+
+        /* RIGHT WALL */
+        .wall-right {
+            width: 10mm;
+            height: 100mm;
+            left: 174mm;
+            top: 70mm;
+            border-left: 2px dashed #666;
+        }
+
+        /* CORNER GLUE FLAPS */
+        .flap {
+            position: absolute;
+            background: #f0f0f0;
+            border: 2px solid #333;
+        }
+
+        .flap-top-left {
+            left: 16mm;
+            top: 60mm;
+            width: 10mm;
+            height: 10mm;
+            border-right: 2px dashed #666;
+            border-bottom: 2px dashed #666;
+        }
+
+        .flap-top-right {
+            left: 174mm;
+            top: 60mm;
+            width: 10mm;
+            height: 10mm;
+            border-left: 2px dashed #666;
+            border-bottom: 2px dashed #666;
+        }
+
+        .flap-bottom-left {
+            left: 16mm;
+            top: 170mm;
+            width: 10mm;
+            height: 10mm;
+            border-right: 2px dashed #666;
+            border-top: 2px dashed #666;
+        }
+
+        .flap-bottom-right {
+            left: 174mm;
+            top: 170mm;
+            width: 10mm;
+            height: 10mm;
+            border-left: 2px dashed #666;
+            border-top: 2px dashed #666;
+        }
+
+        /* LID - folds over from top - THIS IS THE MAILING SURFACE */
+        .lid {
+            width: 148mm;
+            height: 100mm;
+            left: 26mm;
+            top: -50mm;
+            border-bottom: 2px dashed #666;
+            padding: 8mm;
+        }
+
+        /* LID TUCK TAB */
+        .lid-tab {
+            width: 100mm;
+            height: 15mm;
+            left: 50mm;
+            top: -65mm;
+            border-bottom: 2px dashed #666;
+            border-radius: 3mm 3mm 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7pt;
+            color: #999;
+        }
+
+        /* CLOSURE FLAP - folds up from bottom, gets sealed */
+        .closure-flap {
+            width: 120mm;
+            height: 45mm;
+            left: 40mm;
+            top: 180mm;
+            border-top: 2px dashed #666;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 0 10mm 10mm;
+        }
+
+        .seal-circle {
+            width: 30mm;
+            height: 30mm;
+            border: 2px dashed #999;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7pt;
+            color: #999;
+            text-align: center;
+            margin-top: 5mm;
+        }
+
+        /* LID CONTENT - Address area like a mailer */
+        .lid-content {
+            height: 100%;
+            display: flex;
+        }
+
+        .lid-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 50%;
+            padding-right: 3mm;
+        }
+
+        .lid-branding {
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .lid-series {
+            font-size: 7pt;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .lid-from {
+            font-size: 7pt;
+            color: #666;
+            margin-top: auto;
+        }
+
+        .lid-right {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            padding-left: 3mm;
+        }
+
+        .stamp-qr-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 5mm;
+        }
+
+        .stamp-box {
+            width: 22mm;
+            height: 22mm;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            color: #999;
+            text-align: center;
+        }
+
+        .address-lines {
+            margin-top: auto;
+            border-top: 1px solid #ccc;
+            padding-top: 3mm;
+        }
+
+        .address-line {
+            border-bottom: 1px solid #ddd;
+            height: 7mm;
+            margin-bottom: 2mm;
+        }
+
+        .address-line:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Labels and instructions */
+        .label {
+            position: absolute;
+            font-size: 6pt;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .base-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 5mm;
+        }
+
+        .base-branding {
+            font-size: 10pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-align: right;
+        }
+
+        .base-info {
+            font-size: 6pt;
+            color: #666;
+            text-align: left;
+        }
+
+        /* CUT/FOLD LEGEND */
+        .legend {
+            position: absolute;
+            bottom: 3mm;
+            right: 5mm;
+            font-size: 6pt;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-left: 10mm;
+        }
+
+        .legend-item:first-child {
+            margin-left: 0;
+        }
+
+        .cut-sample {
+            width: 10mm;
+            border-top: 2px solid #333;
+            margin-right: 2mm;
+        }
+
+        .fold-sample {
+            width: 10mm;
+            border-top: 2px dashed #666;
+            margin-right: 2mm;
+        }
+
+        @media print {
+            body { background: white; }
+            .template { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="template">
+    <div class="box-net">
+
+        <!-- LID TUCK TAB -->
+        <div class="panel lid-tab">
+            ↑ tuck under closure flap
+        </div>
+
+        <!-- LID - MAILING SURFACE -->
+        <div class="panel lid">
+            <div class="lid-content">
+                <div class="lid-left">
+                    <div>
+                        <div class="lid-branding">UFA</div>
+                        <div class="lid-series">
+                            The Unfuckables Collection<br>
+                            Sicily Series No. 001
+                        </div>
+                    </div>
+                    <div class="lid-from">
+                        <strong>From:</strong><br>
+                        _______________________<br>
+                        _______________________
+                    </div>
+                </div>
+                <div class="lid-right">
+                    <div class="stamp-qr-area">
+                        <div class="stamp-box">STAMP<br>or<br>QR</div>
+                    </div>
+                    <div class="address-lines">
+                        <div class="address-line"></div>
+                        <div class="address-line"></div>
+                        <div class="address-line"></div>
+                        <div class="address-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP WALL -->
+        <div class="panel wall-top">
+            <span class="label" style="position:absolute; top:2mm; left:50%; transform:translateX(-50%);">fold ↓</span>
+        </div>
+
+        <!-- CORNER FLAPS -->
+        <div class="panel flap flap-top-left"></div>
+        <div class="panel flap flap-top-right"></div>
+        <div class="panel flap flap-bottom-left"></div>
+        <div class="panel flap flap-bottom-right"></div>
+
+        <!-- LEFT WALL -->
+        <div class="panel wall-left">
+            <span class="label" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-90deg); white-space:nowrap;">fold →</span>
+        </div>
+
+        <!-- MAIN BASE -->
+        <div class="panel base">
+            <div class="base-content">
+                <div class="base-info">Sicily Experience Box • Ed. 1/1</div>
+                <div class="base-branding">UFA</div>
+            </div>
+        </div>
+
+        <!-- RIGHT WALL -->
+        <div class="panel wall-right">
+            <span class="label" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(90deg); white-space:nowrap;">← fold</span>
+        </div>
+
+        <!-- BOTTOM WALL -->
+        <div class="panel wall-bottom">
+            <span class="label" style="position:absolute; top:2mm; left:50%; transform:translateX(-50%);">↑ fold</span>
+        </div>
+
+        <!-- CLOSURE FLAP - seals the box -->
+        <div class="panel closure-flap">
+            <span class="label">closure flap - fold up over lid</span>
+            <div class="seal-circle">
+                WAX SEAL<br>or LABEL<br>here
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-item"><span class="cut-sample"></span> CUT</div>
+        <div class="legend-item"><span class="fold-sample"></span> FOLD</div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Postcard - Donny Kenel</title>
+    <title>Postcard - Donny Kenel (MAX A4)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         @page {
-            size: 6in 4in;
-            margin: 0;
+            size: A4 landscape;
+            margin: 5mm;
         }
 
         body {
@@ -17,10 +17,10 @@
         }
 
         .postcard {
-            width: 6in;
-            height: 4in;
+            width: 280mm;
+            height: 187mm;
             background: white;
-            margin: 10px auto;
+            margin: 5mm auto;
             overflow: hidden;
             page-break-after: always;
         }
@@ -36,9 +36,9 @@
             transform: rotate(180deg);
         }
 
-        /* BACK */
+        /* BACK - MAX scaled ~1.8x */
         .back {
-            padding: 0.25in;
+            padding: 12mm;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -49,56 +49,56 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .logo {
             font-weight: bold;
-            font-size: 14pt;
-            letter-spacing: 2px;
+            font-size: 26pt;
+            letter-spacing: 3px;
         }
 
         .collection {
-            font-size: 8pt;
+            font-size: 14pt;
             color: #666;
             text-align: right;
         }
 
         .quote-section {
-            margin-bottom: 12px;
+            margin-bottom: 20px;
         }
 
         .quote {
             font-style: italic;
-            font-size: 10pt;
+            font-size: 18pt;
             line-height: 1.4;
             color: #333;
         }
 
         .attribution {
-            font-size: 8pt;
+            font-size: 14pt;
             color: #666;
             text-align: right;
-            margin-top: 4px;
+            margin-top: 8px;
         }
 
         .message-address {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 25px;
             flex: 1;
         }
 
         .message-side {
-            font-size: 9pt;
+            font-size: 16pt;
             line-height: 1.5;
         }
 
         .message-side .recipient {
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
 
         .message-side .body {
@@ -106,40 +106,40 @@
         }
 
         .message-side .phone {
-            margin-top: 10px;
-            font-size: 8pt;
+            margin-top: 18px;
+            font-size: 14pt;
             color: #666;
         }
 
         .address-side {
             display: flex;
             flex-direction: column;
-            border-left: 1px solid #ccc;
-            padding-left: 15px;
+            border-left: 2px solid #ccc;
+            padding-left: 25px;
         }
 
         .qr-meta-row {
             display: flex;
             justify-content: flex-end;
             align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .qr-code {
-            width: 0.7in;
-            height: 0.7in;
+            width: 35mm;
+            height: 35mm;
             object-fit: contain;
         }
 
         .address-lines {
             margin-top: auto;
-            font-size: 10pt;
+            font-size: 18pt;
             line-height: 1.6;
         }
 
         .metadata {
-            font-size: 7pt;
+            font-size: 12pt;
             color: #666;
             text-align: right;
             line-height: 1.3;

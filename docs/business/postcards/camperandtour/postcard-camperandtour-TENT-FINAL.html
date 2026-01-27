@@ -28,30 +28,30 @@
             position: relative;
         }
 
-        /* ========== TICK MARKS (positioned divs with SVG content) ========== */
-        .tick {
+        /* ========== FOLD LINES (in-flow, zero height, exact boundary) ========== */
+        .fold-line {
+            width: 100%;
+            height: 0;
+            flex-shrink: 0;
+            position: relative;
+            overflow: visible;
+        }
+
+        .fold-tick {
             position: absolute;
+            top: -0.15mm;
             width: 8mm;
             height: 0.3mm;
         }
 
-        .tick svg {
+        .fold-tick svg {
             width: 100%;
             height: 100%;
             display: block;
         }
 
-        /* Top tab fold line ticks (at 42mm) */
-        .tick-top-l { top: 42mm; left: 0; }
-        .tick-top-r { top: 42mm; right: 0; }
-
-        /* Main fold line ticks (at 142mm) */
-        .tick-main-l { top: 142mm; left: 0; }
-        .tick-main-r { top: 142mm; right: 0; }
-
-        /* Bottom tab fold line ticks (at 242mm) */
-        .tick-bot-l { top: 242mm; left: 0; }
-        .tick-bot-r { top: 242mm; right: 0; }
+        .fold-tick-l { left: 0; }
+        .fold-tick-r { right: 0; }
 
         /* ========== TOP TAB (42mm) - folds DOWN inside ========== */
         .top-tab {
@@ -309,18 +309,16 @@
 <body>
 
 <div class="page">
-    <!-- TICK MARKS (positioned divs with SVG content for print reliability) -->
-    <div class="tick tick-top-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
-    <div class="tick tick-top-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
-    <div class="tick tick-main-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
-    <div class="tick tick-main-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
-    <div class="tick tick-bot-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
-    <div class="tick tick-bot-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
-
     <!-- TOP TAB (42mm) - folds DOWN inside tent -->
     <div class="top-tab">
         <span class="tab-instruction">Fold Down / Piega Giù</span>
         <span class="tab-arrow">↓</span>
+    </div>
+
+    <!-- FOLD LINE: top tab / front panel boundary -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
     </div>
 
     <!-- FRONT PANEL (100mm) - rotated 180° for tent display -->
@@ -345,6 +343,12 @@
             </div>
             <div class="company-tag">CAMPER & TOUR</div>
         </div>
+    </div>
+
+    <!-- FOLD LINE: front panel / back panel boundary (MAIN FOLD - peak of tent) -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
     </div>
 
     <!-- BACK PANEL (100mm) -->
@@ -399,6 +403,12 @@
             <span>Fatto a mano in Sicilia • Handmade in Sicily • Gennaio 2026</span>
             <span class="footer-tagline">BUON VIAGGIO!</span>
         </div>
+    </div>
+
+    <!-- FOLD LINE: back panel / bottom tab boundary -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
     </div>
 
     <!-- BOTTOM TAB (55mm) - folds UP inside tent -->
