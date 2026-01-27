@@ -28,26 +28,17 @@
             position: relative;
         }
 
-        /* ========== TICK MARKS (corners only) ========== */
-        .tick {
+        /* ========== TICK MARKS (corners only - SVG-based for print reliability) ========== */
+        .tick-marks {
             position: absolute;
-            background: #888;
+            top: 0;
+            left: 0;
+            width: 210mm;
+            height: 297mm;
+            pointer-events: none;
         }
 
-        .tick-h { width: 8mm; height: 0.3mm; }
-        .tick-v { width: 0.3mm; height: 8mm; }
-
-        /* Top tab fold line ticks (at 42mm) */
-        .tick-top-l { top: 42mm; left: 0; }
-        .tick-top-r { top: 42mm; right: 0; }
-
-        /* Main fold line ticks (at 142mm) */
-        .tick-main-l { top: 142mm; left: 0; }
-        .tick-main-r { top: 142mm; right: 0; }
-
-        /* Bottom tab fold line ticks (at 242mm) */
-        .tick-bot-l { top: 242mm; left: 0; }
-        .tick-bot-r { top: 242mm; right: 0; }
+        /* Tick positions defined in SVG below */
 
         /* ========== TOP TAB (42mm) - folds DOWN inside ========== */
         .top-tab {
@@ -79,7 +70,7 @@
             height: 100mm;
             transform: rotate(180deg);
             padding: 8mm 15mm;
-            background: linear-gradient(180deg, #fffef8 0%, #ffffff 100%);
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -109,19 +100,19 @@
             padding: 3mm 0;
         }
 
-        .stripes {
+        .flag-container {
             width: 160mm;
             height: 35mm;
-            display: flex;
             border-radius: 2mm;
             overflow: hidden;
-            box-shadow: 0 2mm 8mm rgba(0,0,0,0.1);
+            border: 0.5px solid #ccc;
         }
 
-        .stripe { flex: 1; height: 100%; }
-        .stripe-green { background: #009246; }
-        .stripe-white { background: #F4F5F0; }
-        .stripe-red { background: #CE2B37; }
+        .flag-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
         .front-bottom { text-align: center; }
 
@@ -225,10 +216,12 @@
 
         .message-lines {
             height: 30mm;
-            background: repeating-linear-gradient(
-                transparent, transparent 6.5mm,
-                #ccc 6.5mm, #ccc 6.8mm
-            );
+        }
+
+        .message-lines svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .info-section {
@@ -303,13 +296,18 @@
 <body>
 
 <div class="page">
-    <!-- TICK MARKS (discreet fold indicators) -->
-    <div class="tick tick-h tick-top-l"></div>
-    <div class="tick tick-h tick-top-r"></div>
-    <div class="tick tick-h tick-main-l"></div>
-    <div class="tick tick-h tick-main-r"></div>
-    <div class="tick tick-h tick-bot-l"></div>
-    <div class="tick tick-h tick-bot-r"></div>
+    <!-- TICK MARKS (SVG for print reliability) -->
+    <svg class="tick-marks" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" preserveAspectRatio="none">
+        <!-- Top tab fold (42mm) -->
+        <line x1="0" y1="42" x2="8" y2="42" stroke="#888" stroke-width="0.3"/>
+        <line x1="202" y1="42" x2="210" y2="42" stroke="#888" stroke-width="0.3"/>
+        <!-- Main fold (142mm) -->
+        <line x1="0" y1="142" x2="8" y2="142" stroke="#888" stroke-width="0.3"/>
+        <line x1="202" y1="142" x2="210" y2="142" stroke="#888" stroke-width="0.3"/>
+        <!-- Bottom tab fold (242mm) -->
+        <line x1="0" y1="242" x2="8" y2="242" stroke="#888" stroke-width="0.3"/>
+        <line x1="202" y1="242" x2="210" y2="242" stroke="#888" stroke-width="0.3"/>
+    </svg>
 
     <!-- TOP TAB (42mm) - folds DOWN inside tent -->
     <div class="top-tab">
@@ -324,10 +322,12 @@
             <div class="main-subtitle">Freedom.</div>
         </div>
         <div class="front-middle">
-            <div class="stripes">
-                <div class="stripe stripe-green"></div>
-                <div class="stripe stripe-white"></div>
-                <div class="stripe stripe-red"></div>
+            <div class="flag-container">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" preserveAspectRatio="none">
+                    <rect width="1" height="2" x="0" fill="#009246"/>
+                    <rect width="1" height="2" x="1" fill="#F4F5F0"/>
+                    <rect width="1" height="2" x="2" fill="#CE2B37"/>
+                </svg>
             </div>
         </div>
         <div class="front-bottom">
@@ -360,7 +360,14 @@
         <div class="back-main">
             <div class="message-section">
                 <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                <div class="message-lines"></div>
+                <div class="message-lines">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 30" preserveAspectRatio="none">
+                        <line x1="0" y1="6.5" x2="100" y2="6.5" stroke="#ccc" stroke-width="0.3"/>
+                        <line x1="0" y1="13" x2="100" y2="13" stroke="#ccc" stroke-width="0.3"/>
+                        <line x1="0" y1="19.5" x2="100" y2="19.5" stroke="#ccc" stroke-width="0.3"/>
+                        <line x1="0" y1="26" x2="100" y2="26" stroke="#ccc" stroke-width="0.3"/>
+                    </svg>
+                </div>
             </div>
 
             <div class="info-section">
