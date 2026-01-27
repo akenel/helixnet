@@ -60,6 +60,9 @@ Full story: `/field-notes-with-leo-dec5.md`
 | Nino | Sebastino's son, runs the show, speaks excellent English, met at McDonald's |
 | Paulo (Maltese) | Caffè Maltese owner, CBD vending partner |
 | Carmello | Midnight fisherman at Baglio Xiare |
+| ISOTTO Sport | Print + merch partner, Via Buscaino area, since 1968, WhatsApp +39 349 972 9418 |
+| Mixology Trapani | Beverage wholesale, Via M. Buscaino 15, Tel 0923 390052, FB @mixologytp |
+| Marcello Virzi | Sales Manager, Tenute Parrinello winery (since 1936), Marsala - meeting end of week |
 
 ### Core
 | Name | Role |
@@ -68,12 +71,15 @@ Full story: `/field-notes-with-leo-dec5.md`
 
 ---
 
-## CURRENT SITUATION (Jan 2026)
+## CURRENT SITUATION (Jan 27, 2026)
 
-- **Location:** Trapani, Sicily - PuntaTipa Hotel Room 205
-- **Vehicle:** MAX (camper) - recovering from fire at Sebastino's
-- **Mission:** The Great Escape - left Switzerland, building life in Sicily
-- **HQ:** Baglio Xiare (38°04'40"N 12°38'39"E) - "rocky territory, not cultivable" - yet everything grows
+- **Location:** Trapani, Sicily - PuntaTipa Hotel Room 101
+- **Vehicle:** MAX (camper) - stove install tomorrow at Sebastino's, cleanup done
+- **Insurance:** AXA claim 22.831.735/0001 - no deductible, adjuster contacting repair shop
+- **RAV:** CLOSED OUT - all forms submitted, 27 vacation days approved, benefits end Jan 31
+- **Mission:** The Great Escape - building UFA postcard/merch business in Sicily
+- **HQ:** Baglio Xiare (38°04'40"N 12°38'39"E)
+- **Print partner:** ISOTTO Sport, Trapani - printing, clothing, merch, small runs since 1968
 
 ---
 
@@ -440,69 +446,59 @@ SOP-001-descriptive-name.pdf   (output)
 
 **The golden standard for business postcards. ZERO CUTS - just fold and tape!**
 
-### Specifications (Full A4 Portrait - 210mm × 297mm)
+### Specifications v2 (Full A4 Portrait - 210mm × 297mm)
 
 ```
 ┌────────────────────────────┐
-│     TOP TAB (42mm)         │ ← Folds DOWN inside
-│─ ─                     ─ ─ │ ← Tick marks at edges only
+│     TOP FLAP (50mm)        │ ← Folds DOWN inside
+│─ ─                     ─ ─ │ ← Tick marks (8mm) at edges only
 │                            │
-│     FRONT PANEL (100mm)    │ ← Rotated 180° (shows when tent stands)
-│     [Theme + Stripes]      │
+│   BACK PANEL (98.5mm)      │ ← Rotated 180° (details, QR, message)
+│   [Business Info]          │
 │                            │
 │─ ─                     ─ ─ │ ← MAIN FOLD (peak of tent)
 │                            │
-│     BACK PANEL (100mm)     │ ← Info side (contact, QR, message)
-│     [Business Info]        │
+│   FRONT PANEL (98.5mm)     │ ← Normal orientation (theme, flag, tagline)
+│   [Theme + Flag]           │
 │                            │
 │─ ─                     ─ ─ │ ← Tick marks at edges only
-│     BOTTOM TAB (55mm)      │ ← Folds UP inside
+│     BOTTOM FLAP (50mm)     │ ← Folds UP inside
 └────────────────────────────┘
 
-42 + 100 + 100 + 55 = 297mm ✓
-Width: 210mm (full A4) ✓
+50 + 98.5 + 98.5 + 50 = 297mm ✓
+Equal flaps = fits envelopes cleanly
 ```
 
 ### Key Design Rules
 
 1. **ZERO CUTS** - Full A4, just fold and tape
-2. **Top tab shorter (42mm)** - Bottom tab longer (55mm) - they overlap cleanly inside
-3. **Tick marks only** - 8mm lines at corners, NOT full dashed lines (overkill)
-4. **Front panel rotated 180°** - So it displays right-side-up when tent stands
+2. **Equal flaps (50mm)** - Clean fold, fits envelopes
+3. **Tick marks only** - 8mm lines at corners, NOT full borders
+4. **Back panel rotated 180°** - Reads right when tent stands
 5. **White backgrounds** - Dark kills printers
 6. **Bilingual** - Italian + English for Sicily market
-7. **QR to Google Maps** - Reviews, directions, everything in one scan
+7. **QR to Google Maps** - Reviews, directions, one scan
+8. **No flexbox on page** - Stacked blocks with fixed heights, float inside panels
+9. **SVG flag** - CSS backgrounds don't survive PDF pipeline
 
-### Assembly Instructions
+### Template File (v2 - CURRENT)
 
-1. Print on A4 (portrait, 100% scale)
-2. Fold at tick marks (3 folds total)
-3. Top tab folds DOWN (behind front)
-4. Bottom tab folds UP (behind back)
-5. Tabs meet inside - tape or staple together
-6. Stand up - tent card ready!
-
-### Template File
-
-`/docs/business/postcards/camperandtour/postcard-camperandtour-TENT-FINAL.html`
+`/docs/business/postcards/camperandtour/postcard-camperandtour-TENT-v2.html`
 
 **To create a new business postcard:**
-1. Copy TENT-FINAL.html
-2. Change theme title (e.g., "Libertà" → "Dualism")
-3. Change stripes/colors if needed
-4. Update business info (name, address, contact, QR)
-5. Update quote/tagline
-6. Generate PDF with Puppeteer
-7. Done - lightning fast!
+1. Copy TENT-v2.html
+2. Change theme (e.g., "Libertà" → "Spirito")
+3. Update business info, contact, QR code
+4. Update quote/tagline
+5. Generate PDF: `node scripts/postcard-to-pdf.js input.html output.pdf`
+6. Verify output before claiming done
 
-### What We Learned (Jan 26 Live UAT)
+### Clients
 
-- v1: Landscape A4 - didn't maximize page
-- v2: Portrait with tabs - tabs too small, full dashed lines overkill
-- v3: Bigger panels, but tabs didn't meet properly
-- **FINAL:** 42mm top + 100mm front + 100mm back + 55mm bottom = PERFECT
-
-**This template is now the standard for all UFA business postcards.**
+| # | Business | Theme | Status |
+|---|----------|-------|--------|
+| 1 | Camper & Tour | Libertà / Freedom | PRINTED + APPROVED by Nino |
+| 2 | Mixology Trapani | Spirito / Spirit | PoC draft, needs approval |
 
 ---
 
@@ -545,9 +541,9 @@ Width: 210mm (full A4) ✓
 
 ---
 
-*Last updated: January 26, 2026, noon - A4 Tent Card Template perfected*
-*"Where two worlds meet, something new is born."*
+*Last updated: January 27, 2026, 10pm - Tent Card v2 printed at ISOTTO, Mixology PoC drafted*
 *"NEVER say fixed without verifying the output."*
 *"Casa è dove parcheggi." - Home is where you park it.*
 *"ZERO CUTS - just fold and tape!"*
-*"IT GOES BOTH WAYS BRO"*
+*"Don't poke the dragon on your way out the door."*
+*"The postcard is the handshake. The coffee is the close."*
