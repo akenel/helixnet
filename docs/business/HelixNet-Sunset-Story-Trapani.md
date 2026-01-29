@@ -29,7 +29,7 @@ The workflow:
 - Voice notes into the machine
 - Whisper transcribes
 - Claude transforms
-- wkhtmltopdf renders
+- Puppeteer (Chrome) renders
 - Print-ready PDFs out
 
 All in one evening session. Moka in hand. CBD burning. Morning Glory on the speakers.
@@ -131,7 +131,7 @@ The universe pays attention.
 ├── Python + FastAPI
 ├── Claude CLI (dev mode)
 ├── Whisper STT (CPU-only)
-├── wkhtmltopdf
+├── Puppeteer (Chrome headless)
 ├── HTML/CSS print templates
 ├── Git + GitHub
 ├── Pydantic schemas

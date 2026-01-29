@@ -162,15 +162,41 @@ SOURCE (edit)                    →  OUTPUT (print)
 postcards/[name]/*.html          →  UFA_r2p/*.pdf
 ```
 
-**Bifold tent card design:**
+**Bifold tent card design (B2B):**
 - Image rotated 180° on front
 - When folded and standing, both sides right-side up
 - QR code replaces stamp box (top right)
 - Box is mailable directly (address on lid)
 
-**PDF generation:** `wkhtmltopdf --page-size A4 --margin-top 0 --margin-bottom 0 --margin-left 0 --margin-right 0 file.html output.pdf`
+**Duplex postcard design (B2C):**
+- Single HTML file, 2 pages: page 1 = front (images), page 2 = back (postcard info)
+- A4 portrait, de-personalized: blank message lines, blank address, stamp box
+- Each card has unique series number, quote, and front image
+- Source: `postcards/duplex-a4/duplex-NNN-name.html`
 
-**NEVER use weasyprint** - It chokes on flexbox, floats, gradients, absolute positioning. Wasted hours fighting it. wkhtmltopdf uses WebKit engine = real browser rendering. Foo Fighters use real tools.
+**Format A: 2-card layout (001-003):**
+- 148mm x 100mm cards, stacked vertically, centered
+- Dashed cut line between cards, registration marks at corners + midpoints
+- Page labels top/bottom centered
+- Cost: 50 cents per card (1 EUR per A4 = 2 cards)
+
+**Format B: 3-card layout (004+) -- PREFERRED:**
+- 137.6mm x 93mm cards (5% proportional scale), 3 per A4 sheet
+- 6mm gaps between cards (3mm safety each side for hand-cutting)
+- 3mm frame: cards positioned top-left (`position: absolute; top: 3mm; left: 3mm`)
+- NO registration marks on front page (clean image side)
+- Registration marks on back page only
+- Page labels rotated 90° in right margin (`left: 175mm; rotate(90deg)`) -- invisible in card zone
+- Layout: 3mm + 93 + 6 + 93 + 6 + 93 + 3 = 297mm (fills A4 exactly)
+- Cost: **33 cents per card** (1 EUR per A4 = 3 cards)
+- SVG for graphic-only fronts (e.g., 005 Italian flag) -- no raster images needed, prints razor sharp
+
+**PDF generation:** `node scripts/postcard-to-pdf.js input.html output.pdf`
+
+**ONLY use Puppeteer (Chrome headless)** for all PDF generation. wkhtmltopdf and weasyprint are UNINSTALLED.
+- wkhtmltopdf (Qt WebKit ~2016) caused blank second pages, black bars from CSS gradients, broken flexbox. Uninstalled Jan 29, 2026.
+- weasyprint chokes on flexbox/floats/gradients. Never worked. Uninstalled.
+- Puppeteer uses real Chrome 144 -- modern CSS, exact 1-page output, printBackground support. Foo Fighters use real tools.
 
 ### CRITICAL: What "1-Pager" Means (Jan 25, 2026 Late Night Lesson)
 
@@ -189,16 +215,15 @@ postcards/[name]/*.html          →  UFA_r2p/*.pdf
 - Foo Fighters don't fight amongst themselves
 - Foo Fighters don't lie about the work being done
 
-**What works:**
-- Table-based layouts (reliable across all PDF generators)
-- Fixed heights that add up to page height (A4 = 297mm)
-- Simple CSS: margins, padding, borders, colors
+**What works (Puppeteer/Chrome):**
+- Everything -- flexbox, grid, gradients, absolute positioning, modern CSS
+- Fixed heights that add up to page height (A4 = 297mm portrait, 210mm landscape)
+- `@page { size: A4 landscape; }` respected by Chrome
+- `printBackground: true` renders all colors and backgrounds
 
-**What breaks:**
-- Flexbox (unreliable in PDF generators)
-- Absolute positioning (causes collisions)
-- Float layouts (unpredictable)
-- Modern CSS gradients (may not render)
+**What to avoid:**
+- JavaScript-dependent layouts (Chrome renders before JS settles)
+- External fonts without @font-face (use system fonts or embed)
 
 ---
 
@@ -278,9 +303,7 @@ Examples:
 ## TOOLS ON THIS SYSTEM
 
 - **whisper** - Voice transcription (in .venv)
-- **puppeteer** - HTML to PDF (PRIMARY - Chrome headless, real headers/footers/page numbers)
-- **wkhtmltopdf** - HTML to PDF (BACKUP - unpatched version, no headers/footers)
-- **weasyprint** - DEPRECATED - chokes on flexbox/floats/gradients, don't use
+- **puppeteer** - HTML to PDF (ONLY tool -- Chrome 144 headless, real headers/footers/page numbers)
 - **yt-dlp** - Download music from YouTube (in .venv)
 - **kolourpaint** - Simple image editor (MS Paint style)
 - **VLC** - Music player for local files
@@ -394,7 +417,7 @@ SOP-001-descriptive-name.pdf   (output)
 - NEVER say "fixed" without verifying output
 - White backgrounds for print (dark = kills printers)
 - Spell out "Standard Operating Procedure" not just "SOP"
-- Use Puppeteer for PDF, not unpatched wkhtmltopdf
+- Puppeteer ONLY for PDF -- wkhtmltopdf uninstalled Jan 29, 2026
 
 **Files created:**
 - `/scripts/sop-to-pdf.js` - Puppeteer PDF generator
@@ -514,7 +537,7 @@ Equal flaps = fits envelopes cleanly
 
 ### Target State (5-Star)
 - **Verify before claiming done** - Open the PDF. Count the pages. Check the output.
-- **Own the mistakes** - "My HTML was bad" not "weasyprint can't handle it"
+- **Own the mistakes** - "My HTML was bad" not "the PDF tool can't handle it"
 - **No rhetorical questions** - Ask real questions that need real answers
 - **Consistency** - Same quality at 11pm as at 11am
 - **Execute, don't note** - Do it NOW, not "will do later"

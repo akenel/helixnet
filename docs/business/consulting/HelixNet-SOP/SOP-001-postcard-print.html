@@ -288,14 +288,9 @@
         <th>Status</th>
     </tr>
     <tr>
-        <td>wkhtmltopdf</td>
+        <td>Puppeteer (Chrome headless)</td>
         <td>HTML → PDF conversion</td>
-        <td><strong>PRIMARY</strong></td>
-    </tr>
-    <tr>
-        <td>weasyprint</td>
-        <td>DO NOT USE</td>
-        <td>DEPRECATED</td>
+        <td><strong>PRIMARY + ONLY</strong></td>
     </tr>
     <tr>
         <td>Browser Print</td>
@@ -375,23 +370,10 @@ firefox /path/to/postcard.html</code></pre>
 </ul>
 
 <h3 id="step-2">Step 2: Generate PDF</h3>
-<pre><code># A4 Portrait (menu, wall display, labels)
-wkhtmltopdf --page-size A4 \
-  --margin-top 0 --margin-bottom 0 \
-  --margin-left 0 --margin-right 0 \
-  input.html output.pdf
+<pre><code># One command for all postcards and tent cards
+node scripts/postcard-to-pdf.js input.html output.pdf
 
-# A4 Landscape (tent cards)
-wkhtmltopdf --page-size A4 --orientation Landscape \
-  --margin-top 0 --margin-bottom 0 \
-  --margin-left 0 --margin-right 0 \
-  input.html output.pdf
-
-# Custom size (postcards)
-wkhtmltopdf --page-width 152mm --page-height 102mm \
-  --margin-top 0 --margin-bottom 0 \
-  --margin-left 0 --margin-right 0 \
-  input.html output.pdf</code></pre>
+# Chrome respects @page CSS for orientation and size</code></pre>
 
 <h3 id="step-3">Step 3: VERIFY (Critical)</h3>
 <pre><code># Check page count

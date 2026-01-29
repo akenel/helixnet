@@ -46,7 +46,7 @@ github.com/akenel/helixnet
 |-------------|----------|
 | Python/FastAPI backend | HelixNet stack |
 | Architecture oversight | E2E system design shown |
-| Integration of solutions | Whisper + Claude + wkhtmltopdf pipeline |
+| Integration of solutions | Whisper + Claude + Puppeteer (Chrome) pipeline |
 | Non-technical stakeholder interaction | This message itself |
 | Digital transformation | AI-human collaboration model |
 | Work from resort occasionally | Literally in Sicily |

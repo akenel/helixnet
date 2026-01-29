@@ -42,7 +42,7 @@ Build the UnFuckAbles brand and community of freedom fighters.
    - Address area (right side) with stamp box
    - Footer: QR code + metadata
 4. **Generate QR code**: `qrencode -o qr-name.png -s 10 "URL"`
-5. **Convert to PDF**: `wkhtmltopdf --enable-local-file-access --page-width 6in --page-height 4in ...`
+5. **Convert to PDF**: `node scripts/postcard-to-pdf.js input.html output.pdf`
 6. **Print at ISOTTO** - thick paper, color
 7. **Quality check** - no cutoff, colors correct
 

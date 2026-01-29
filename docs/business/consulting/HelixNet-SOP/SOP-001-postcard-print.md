@@ -14,9 +14,8 @@ Convert HTML postcard designs to print-ready PDFs. Every time. Same quality. No 
 
 | Tool | Use | Status |
 |------|-----|--------|
-| wkhtmltopdf | HTML → PDF conversion | PRIMARY |
-| weasyprint | DO NOT USE | DEPRECATED |
-| Browser Print | Fallback only | BACKUP |
+| Puppeteer (Chrome headless) | HTML to PDF conversion | PRIMARY + ONLY |
+| Browser Print (Ctrl+P) | Fallback only | BACKUP |
 
 ---
 
@@ -27,6 +26,8 @@ SOURCE (edit here):
 /home/angel/repos/helixnet/docs/business/postcards/
 ├── donny/                    # Donny Kenel designs
 ├── puntatipa/                # PuntaTipa hotel designs
+├── camperandtour/            # Camper & Tour designs
+├── colorclean/               # Color Clean designs
 ├── ufa-menu-brochure.html
 ├── ufa-wall-display.html
 └── ufa-order-form.html
@@ -43,12 +44,12 @@ OUTPUT (grab for print):
 
 | Product | Size | Orientation |
 |---------|------|-------------|
-| Postcard Standard | 6in × 4in (152mm × 102mm) | Landscape |
-| Postcard BOXFIT | 140mm × 95mm | Landscape |
-| Postcard A4 Tent | A4 (297mm × 210mm) | Landscape |
-| Menu/Brochure | A4 (210mm × 297mm) | Portrait |
-| Wall Display | A4 (210mm × 297mm) | Portrait |
-| Labels Sheet | A4 (210mm × 297mm) | Portrait |
+| Postcard Standard | 6in x 4in (152mm x 102mm) | Landscape |
+| Postcard BOXFIT | 140mm x 95mm | Landscape |
+| Postcard A4 Tent | A4 (297mm x 210mm) | Landscape |
+| Menu/Brochure | A4 (210mm x 297mm) | Portrait |
+| Wall Display | A4 (210mm x 297mm) | Portrait |
+| Labels Sheet | A4 (210mm x 297mm) | Portrait |
 
 ---
 
@@ -65,24 +66,10 @@ firefox /path/to/postcard.html
 
 ### Step 2: Generate PDF
 ```bash
-# A4 Portrait (menu, wall display, labels)
-wkhtmltopdf --page-size A4 \
-  --margin-top 0 --margin-bottom 0 \
-  --margin-left 0 --margin-right 0 \
-  input.html output.pdf
-
-# A4 Landscape (tent cards)
-wkhtmltopdf --page-size A4 --orientation Landscape \
-  --margin-top 0 --margin-bottom 0 \
-  --margin-left 0 --margin-right 0 \
-  input.html output.pdf
-
-# Custom size (postcards)
-wkhtmltopdf --page-width 152mm --page-height 102mm \
-  --margin-top 0 --margin-bottom 0 \
-  --margin-left 0 --margin-right 0 \
-  input.html output.pdf
+node scripts/postcard-to-pdf.js input.html output.pdf
 ```
+
+That's it. One command. Chrome handles orientation from the HTML's `@page` CSS.
 
 ### Step 3: VERIFY (Critical)
 ```bash
@@ -102,6 +89,7 @@ xdg-open output.pdf
 - [ ] No empty gaps in middle
 - [ ] Text readable
 - [ ] Images display correctly
+- [ ] Colors and backgrounds rendered
 
 ### Step 4: Move to Output
 ```bash
@@ -121,48 +109,44 @@ cp output.pdf /home/angel/repos/helixnet/UFA_r2p/
 
 ---
 
-## COMMON FIXES
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| 2 pages instead of 1 | Content too big | Reduce padding/margins/font |
-| Blank second page | Extra whitespace | Check body/page height in CSS |
-| Empty gaps | Flexbox issues | Use table-based layout |
-| Text collision | Absolute positioning | Use normal document flow |
-| Images missing | Wrong path | Use absolute paths or embed base64 |
-
----
-
-## CSS THAT WORKS
+## CSS THAT WORKS (everything with Chrome)
 
 ```css
 /* Page setup */
 @page {
-    size: A4 portrait;
+    size: A4 landscape;  /* Chrome respects this */
     margin: 0;
 }
 
-/* Use tables, not flexbox */
-table { width: 100%; border-collapse: collapse; }
+/* All modern CSS works */
+display: flex;                    /* WORKS */
+display: grid;                    /* WORKS */
+position: absolute;               /* WORKS */
+background: linear-gradient();    /* WORKS */
+background: repeating-linear-gradient();  /* WORKS */
+transform: rotate(180deg);       /* WORKS */
+```
 
-/* Fixed heights that add up to page height */
-.header { height: 50mm; }
-.content { height: 200mm; }
-.footer { height: 47mm; }
-/* Total: 297mm = A4 height */
+Fixed heights should still add up to page height for predictable layouts:
+```css
+/* A4 landscape = 210mm height */
+.tab-top { height: 15mm; }
+.front { height: 90mm; }
+.back { height: 90mm; }
+.tab-bottom { height: 15mm; }
+/* Total: 210mm */
 ```
 
 ---
 
-## CSS THAT BREAKS
+## COMMON FIXES
 
-```css
-/* AVOID THESE */
-display: flex;           /* Unreliable in PDF */
-position: absolute;      /* Causes collisions */
-float: left/right;       /* Unpredictable */
-background: linear-gradient(); /* May not render */
-```
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| 2 pages instead of 1 | Content exceeds page size | Heights must sum to page height |
+| Blank second page | Extra whitespace/margin | Add `overflow: hidden` to body |
+| Images missing | Wrong path | Use relative paths from HTML location |
+| Text collision | Layout error | Check your CSS, Chrome renders it faithfully |
 
 ---
 
@@ -170,12 +154,14 @@ background: linear-gradient(); /* May not render */
 
 - Never say "fixed" without opening the PDF
 - Never say "1 page" without checking page count
-- Never blame the tool - own the HTML
+- Never blame the tool -- Chrome renders faithfully, own the HTML
 - Never skip verification
+- Never use wkhtmltopdf or weasyprint (uninstalled)
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 2.0
 **Created:** January 25, 2026
+**Revised:** January 29, 2026 -- Migrated from wkhtmltopdf to Puppeteer (Chrome headless)
 **Author:** HelixNet
 

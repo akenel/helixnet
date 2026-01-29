@@ -23,9 +23,9 @@ async function generatePDF(inputHtml, outputPdf) {
     const page = await browser.newPage();
 
     const htmlPath = path.resolve(inputHtml);
-    const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+    const fileUrl = 'file://' + htmlPath;
 
-    await page.setContent(htmlContent, {
+    await page.goto(fileUrl, {
         waitUntil: 'networkidle0'
     });
 
