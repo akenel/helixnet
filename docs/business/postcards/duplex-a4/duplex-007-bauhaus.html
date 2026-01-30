@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UFA 007 Bauhaus Trapani - Duplex A4 (3 cards per sheet)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            background: white;
+            font-family: Georgia, serif;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            overflow: hidden;
+            position: relative;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: avoid;
+        }
+
+        .page-label-right {
+            position: absolute;
+            left: 175mm;
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            transform-origin: center center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 6.5pt;
+            color: #bbb;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .grid-wrapper {
+            position: absolute;
+            top: 3mm;
+            left: 3mm;
+        }
+
+        .grid-inner {
+            display: grid;
+            grid-template-columns: 137.6mm;
+            grid-template-rows: 93mm 93mm 93mm;
+            gap: 6mm;
+        }
+
+        .rm { position: absolute; background: #999; }
+        .rm-h { width: 5mm; height: 0.3px; }
+        .rm-v { width: 0.3px; height: 5mm; }
+        .rm-tl-h { top: -0.5mm; left: -6mm; }
+        .rm-tl-v { top: -6mm; left: -0.5mm; }
+        .rm-tr-h { top: -0.5mm; right: -6mm; }
+        .rm-tr-v { top: -6mm; right: -0.5mm; }
+        .rm-bl-h { bottom: -0.5mm; left: -6mm; }
+        .rm-bl-v { bottom: -6mm; left: -0.5mm; }
+        .rm-br-h { bottom: -0.5mm; right: -6mm; }
+        .rm-br-v { bottom: -6mm; right: -0.5mm; }
+        .rm-c1-l { top: calc(93mm + 3mm - 0.15px); left: -6mm; }
+        .rm-c1-r { top: calc(93mm + 3mm - 0.15px); right: -6mm; }
+        .rm-c2-l { top: calc(93mm + 6mm + 93mm + 3mm - 0.15px); left: -6mm; }
+        .rm-c2-r { top: calc(93mm + 6mm + 93mm + 3mm - 0.15px); right: -6mm; }
+
+        .card-front {
+            width: 137.6mm;
+            height: 93mm;
+            overflow: hidden;
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-back {
+            width: 137.6mm;
+            height: 93mm;
+            overflow: hidden;
+            background: #faf9f6;
+            padding: 3.5mm 4.5mm 2.5mm 4.5mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 1.2mm;
+            margin-bottom: 1.5mm;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 11pt;
+            letter-spacing: 2px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .collection {
+            font-size: 6pt;
+            color: #666;
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 8pt;
+            line-height: 1.2;
+            color: #333;
+            margin-bottom: 1mm;
+        }
+
+        .attribution {
+            font-size: 6pt;
+            color: #666;
+            text-align: right;
+            margin-bottom: 1.5mm;
+        }
+
+        .msg-addr {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2mm;
+            flex: 1;
+        }
+
+        .msg-side {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-label {
+            font-size: 5.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin-bottom: 0.8mm;
+        }
+
+        .msg-line {
+            border-bottom: 0.5px solid #ccc;
+            height: 5mm;
+        }
+
+        .addr-side {
+            display: flex;
+            flex-direction: column;
+            border-left: 0.5px solid #ccc;
+            padding-left: 2mm;
+        }
+
+        .stamp-box {
+            width: 15mm;
+            height: 16mm;
+            border: 0.5px solid #bbb;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5pt;
+            color: #bbb;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .addr-lines { margin-top: auto; }
+
+        .addr-line {
+            border-bottom: 0.5px solid #ccc;
+            height: 5mm;
+        }
+
+        .addr-line:first-of-type {
+            border-bottom: 1px solid #666;
+        }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-top: 1.2mm;
+            border-top: 0.5px solid #ddd;
+            margin-top: auto;
+        }
+
+        .qr-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5mm;
+        }
+
+        .qr-section img {
+            width: 9mm;
+            height: 9mm;
+        }
+
+        .qr-label {
+            font-size: 4.5pt;
+            color: #888;
+            line-height: 1.2;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .metadata {
+            font-size: 4.5pt;
+            color: #888;
+            text-align: right;
+            line-height: 1.2;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        @media print {
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: FRONT (3 cards) - NO registration marks -->
+<div class="page">
+    <div class="page-label-right">UFA 007 &mdash; BAUHAUS &mdash; FRONT &mdash; PAGE 1 OF 2 &mdash; 3 CARDS PER SHEET</div>
+
+    <div class="grid-wrapper">
+        <div class="grid-inner">
+            <div class="card-front">
+                <img src="../sylvie/sylvie-bauhaus-trapani.jpg" alt="Bauhaus Trapani">
+            </div>
+            <div class="card-front">
+                <img src="../sylvie/sylvie-bauhaus-trapani.jpg" alt="Bauhaus Trapani">
+            </div>
+            <div class="card-front">
+                <img src="../sylvie/sylvie-bauhaus-trapani.jpg" alt="Bauhaus Trapani">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE 2: BACK (3 cards) - registration marks for alignment -->
+<div class="page">
+    <div class="page-label-right">UFA 007 &mdash; BAUHAUS &mdash; BACK &mdash; PAGE 2 OF 2 &mdash; ALIGN WITH FRONT</div>
+
+    <div class="grid-wrapper">
+        <div class="rm rm-h rm-tl-h"></div><div class="rm rm-v rm-tl-v"></div>
+        <div class="rm rm-h rm-tr-h"></div><div class="rm rm-v rm-tr-v"></div>
+        <div class="rm rm-h rm-bl-h"></div><div class="rm rm-v rm-bl-v"></div>
+        <div class="rm rm-h rm-br-h"></div><div class="rm rm-v rm-br-v"></div>
+        <div class="rm rm-h rm-c1-l"></div><div class="rm rm-h rm-c1-r"></div>
+        <div class="rm rm-h rm-c2-l"></div><div class="rm rm-h rm-c2-r"></div>
+
+        <div class="grid-inner">
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">UFA</div>
+                    <div class="collection">The Unfuckables Collection<br>Sicily Series No. 007</div>
+                </div>
+                <div class="quote">&ldquo;La bellezza &egrave; nelle imperfezioni.&rdquo;</div>
+                <div class="attribution">&mdash; Proverbio Siciliano</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Your Message</div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">Send To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="../donny/qr-hq-valderice.png" alt="QR">
+                        <div class="qr-label">Scan for location<br>UFA HQ Valderice</div>
+                    </div>
+                    <div class="metadata">Handmade in Sicily<br>Trapani 38.0&deg;N 12.5&deg;E<br>January 2026</div>
+                </div>
+            </div>
+
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">UFA</div>
+                    <div class="collection">The Unfuckables Collection<br>Sicily Series No. 007</div>
+                </div>
+                <div class="quote">&ldquo;La bellezza &egrave; nelle imperfezioni.&rdquo;</div>
+                <div class="attribution">&mdash; Proverbio Siciliano</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Your Message</div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">Send To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="../donny/qr-hq-valderice.png" alt="QR">
+                        <div class="qr-label">Scan for location<br>UFA HQ Valderice</div>
+                    </div>
+                    <div class="metadata">Handmade in Sicily<br>Trapani 38.0&deg;N 12.5&deg;E<br>January 2026</div>
+                </div>
+            </div>
+
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">UFA</div>
+                    <div class="collection">The Unfuckables Collection<br>Sicily Series No. 007</div>
+                </div>
+                <div class="quote">&ldquo;La bellezza &egrave; nelle imperfezioni.&rdquo;</div>
+                <div class="attribution">&mdash; Proverbio Siciliano</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Your Message</div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                        <div class="msg-line"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">Send To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="../donny/qr-hq-valderice.png" alt="QR">
+                        <div class="qr-label">Scan for location<br>UFA HQ Valderice</div>
+                    </div>
+                    <div class="metadata">Handmade in Sicily<br>Trapani 38.0&deg;N 12.5&deg;E<br>January 2026</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
