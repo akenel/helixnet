@@ -1,6 +1,6 @@
 # SESSION STATE - HelixNet Development
 
-*Last Updated: January 30, 2026, 6:00pm - PuntaTipa Room 101, Trapani*
+*Last Updated: January 30, 2026, 8:30pm - PuntaTipa Room 101, Trapani*
 
 ---
 
@@ -166,6 +166,14 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 | 2 | Mixology Trapani | Spirito / Spirit | Pending | PoC draft | Pending | Showed review, needs meeting |
 | 3 | Color Clean Laundry | Freschezza / Freshness | NEXT (photos ready) | PDF READY | On pickup | Review first, card on pickup |
 | 4 | Buffetti | TBD | TBD | TBD | TBD | Office supply partner - explore |
+| 5 | Gym For You | Forza / Strength | TODO (Google review first) | TODO (tent B2C) | Pending | Sebastian (owner) = warm lead, talked 1hr, COVID survivor. Co-owns gym + has own shop. Fill intake checklist first. |
+
+### Merch Scaling (NEW - Jan 30 evening)
+- **ISOTTO** has full catalog -- shirts, mugs, bags, everything (like Printavista)
+- **Next move:** UFA t-shirt or muscle shirt. Walk into ISOTTO wearing it.
+- **Roly line** -- look into Roly brand clothing for blank merch (gym/fitness angle)
+- **Strategy:** Postcards = handshake. Shirt = brand. Show up wearing UFA, not carrying paper.
+- **Gym For You angle:** Muscle shirts with UFA logo for gym crowd. Sebastian might bite on that.
 
 ### HelixNet Middleware Vision (CAPTURED Jan 29, 1pm)
 - **Concept:** SAP PIPO replacement using AI-driven mapping
