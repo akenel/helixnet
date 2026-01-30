@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>[BUSINESS_NAME] - [THEME_IT] | Tent Card</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            width: 210mm;
+            height: 297mm;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ========== FOLD LINES (in-flow, zero height, exact boundary) ========== */
+        .fold-line {
+            width: 100%;
+            height: 0;
+            flex-shrink: 0;
+            position: relative;
+            overflow: visible;
+        }
+
+        .fold-tick {
+            position: absolute;
+            top: -0.15mm;
+            width: 8mm;
+            height: 0.3mm;
+        }
+
+        .fold-tick svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .fold-tick-l { left: 0; }
+        .fold-tick-r { right: 0; }
+
+        /* ========== TOP TAB (42mm) - folds DOWN inside ========== */
+        .top-tab {
+            width: 100%;
+            height: 42mm;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .tab-instruction {
+            font-size: 8pt;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2mm;
+        }
+
+        .tab-arrow {
+            font-size: 24pt;
+            color: #bbb;
+        }
+
+        /* ========== FRONT PANEL (100mm) - rotated 180 ========== */
+        .front-panel {
+            width: 100%;
+            height: 100mm;
+            transform: rotate(180deg);
+            padding: 8mm 15mm;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .front-top { text-align: center; }
+
+        .main-title {
+            font-size: 72pt;
+            font-weight: 200;
+            letter-spacing: 5px;
+            color: #1a1a1a;
+            line-height: 0.85;
+        }
+
+        .main-subtitle {
+            font-size: 30pt;
+            font-weight: 300;
+            color: #666;
+            letter-spacing: 3px;
+            margin-top: 2mm;
+        }
+
+        .front-middle {
+            display: flex;
+            justify-content: center;
+            padding: 3mm 0;
+        }
+
+        .flag-container {
+            width: 160mm;
+            height: 35mm;
+            border-radius: 2mm;
+            overflow: hidden;
+            border: 0.5px solid #ccc;
+        }
+
+        .flag-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .front-bottom { text-align: center; }
+
+        .tagline {
+            font-size: 11pt;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .tagline .italian { font-style: italic; color: #777; }
+
+        .company-tag {
+            font-size: 18pt;
+            font-weight: 600;
+            letter-spacing: 5px;
+            color: #C41E3A;
+            margin-top: 2mm;
+        }
+
+        /* ========== BACK PANEL (100mm) ========== */
+        .back-panel {
+            width: 100%;
+            height: 100mm;
+            padding: 6mm 12mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2.5px solid #C41E3A;
+            padding-bottom: 3mm;
+            margin-bottom: 3mm;
+        }
+
+        .brand-title {
+            font-size: 22pt;
+            font-weight: 400;
+            color: #1a1a1a;
+        }
+
+        .brand-title span {
+            color: #009246;
+            font-weight: 600;
+        }
+
+        .brand-subtitle {
+            font-size: 8pt;
+            color: #666;
+            margin-top: 1mm;
+        }
+
+        .location-block {
+            text-align: right;
+            font-size: 8pt;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 7pt;
+            color: #888;
+        }
+
+        .back-quote {
+            font-style: italic;
+            font-size: 11pt;
+            color: #333;
+            text-align: center;
+            padding: 3mm 10mm;
+            border-left: 3px solid #009246;
+            border-right: 3px solid #CE2B37;
+            margin-bottom: 4mm;
+            background: #fafafa;
+        }
+
+        .back-quote .translation {
+            font-style: normal;
+            font-size: 10pt;
+            color: #666;
+        }
+
+        .back-main {
+            display: flex;
+            flex: 1;
+            gap: 5mm;
+        }
+
+        .message-section { flex: 1; }
+
+        .section-label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            margin-bottom: 2mm;
+        }
+
+        .message-lines {
+            height: 30mm;
+        }
+
+        .message-lines svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .info-section {
+            width: 50mm;
+            padding: 0 4mm;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            font-size: 8pt;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .info-row { margin-bottom: 1.5mm; }
+        .info-label { color: #888; font-size: 7pt; }
+
+        .qr-code {
+            width: 20mm;
+            height: 20mm;
+            margin: 2mm auto 0;
+            display: block;
+        }
+
+        .address-section { width: 55mm; }
+
+        .address-line {
+            border-bottom: 1px solid #bbb;
+            height: 6.5mm;
+            margin-bottom: 1.5mm;
+        }
+
+        .address-line:first-of-type { border-bottom: 2px solid #333; }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2mm;
+            border-top: 1px solid #eee;
+            font-size: 7pt;
+            color: #999;
+        }
+
+        .footer-tagline {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #C41E3A;
+            letter-spacing: 2px;
+        }
+
+        /* ========== BOTTOM TAB (55mm) - folds UP inside ========== */
+        .bottom-tab {
+            width: 100%;
+            height: 55mm;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .bottom-tab .tab-arrow {
+            transform: rotate(180deg);
+            margin-bottom: 2mm;
+        }
+
+        @media print {
+            html, body { background: white; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!--
+    ================================================================
+    UFA A4 TENT CARD TEMPLATE (B2B)
+    ================================================================
+    INSTRUCTIONS:
+    1. Copy this file for each new client
+    2. Replace all [PLACEHOLDERS]:
+       [BUSINESS_NAME]   - Full business name (e.g., Camper & Tour)
+       [BUSINESS_SHORT]  - Short brand display (can use <span> for color)
+       [THEME_IT]        - Italian theme word (e.g., Liberta)
+       [THEME_EN]        - English theme word (e.g., Freedom)
+       [SERVICES]        - Dot-separated services list
+       [ADDRESS]         - Full street address
+       [CITY_ZIP]        - City + zip (e.g., 91100 Trapani, Sicilia)
+       [COORDS]          - GPS coordinates
+       [QUOTE_IT]        - Italian quote
+       [QUOTE_EN]        - English translation
+       [TAGLINE_IT]      - Italian tagline for front
+       [TAGLINE_EN]      - English tagline for front
+       [FOOTER_TAGLINE]  - Big footer word (e.g., BUON VIAGGIO!)
+       [TEL]             - Phone number
+       [CELL]            - Mobile number
+       [EMAIL]           - Email address
+       [WEB]             - Website (no https://)
+       [QR_BASE64]       - Base64 encoded QR code PNG (Google Maps link)
+       [MONTH_YEAR]      - e.g., Gennaio 2026
+       [ACCENT_COLOR]    - CSS color for borders/accents (default: #C41E3A)
+       [BRAND_COLOR]     - CSS color for brand highlight (default: #009246)
+    3. Customize flag/graphic in .front-middle if needed
+    4. Generate PDF: node scripts/postcard-to-pdf.js input.html output.pdf
+
+    LAYOUT:
+    Top tab (42mm) + Front panel (100mm) + Back panel (100mm) + Bottom tab (55mm) = 297mm
+    Front panel rotated 180 - reads correctly when tent stands
+    ZERO CUTS - just fold and tape!
+    ================================================================
+-->
+
+<div class="page">
+    <!-- TOP TAB (42mm) - folds DOWN inside tent -->
+    <div class="top-tab">
+        <span class="tab-instruction">Fold Down / Piega Giu</span>
+        <span class="tab-arrow">&#8595;</span>
+    </div>
+
+    <!-- FOLD LINE: top tab / front panel boundary -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- FRONT PANEL (100mm) - rotated 180 for tent display -->
+    <div class="front-panel">
+        <div class="front-top">
+            <div class="main-title">[THEME_IT].</div>
+            <div class="main-subtitle">[THEME_EN].</div>
+        </div>
+        <div class="front-middle">
+            <div class="flag-container">
+                <!-- Italian flag SVG - replace with client-specific graphic if needed -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" preserveAspectRatio="none">
+                    <rect width="1" height="2" x="0" fill="#009246"/>
+                    <rect width="1" height="2" x="1" fill="#F4F5F0"/>
+                    <rect width="1" height="2" x="2" fill="#CE2B37"/>
+                </svg>
+            </div>
+        </div>
+        <div class="front-bottom">
+            <div class="tagline">
+                [TAGLINE_EN]<br>
+                <span class="italian">[TAGLINE_IT]</span>
+            </div>
+            <div class="company-tag">[BUSINESS_NAME]</div>
+        </div>
+    </div>
+
+    <!-- FOLD LINE: front panel / back panel boundary (MAIN FOLD - peak of tent) -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- BACK PANEL (100mm) -->
+    <div class="back-panel">
+        <div class="back-header">
+            <div>
+                <div class="brand-title">[BUSINESS_SHORT]</div>
+                <div class="brand-subtitle">[SERVICES]</div>
+            </div>
+            <div class="location-block">
+                [ADDRESS]<br>
+                [CITY_ZIP]<br>
+                <span class="coords">[COORDS]</span>
+            </div>
+        </div>
+
+        <div class="back-quote">
+            "[QUOTE_IT]" <span class="translation">-- [QUOTE_EN]</span>
+        </div>
+
+        <div class="back-main">
+            <div class="message-section">
+                <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                <div class="message-lines">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 30" preserveAspectRatio="none">
+                        <line x1="0" y1="6.5" x2="100" y2="6.5" stroke="#ccc" stroke-width="0.3"/>
+                        <line x1="0" y1="13" x2="100" y2="13" stroke="#ccc" stroke-width="0.3"/>
+                        <line x1="0" y1="19.5" x2="100" y2="19.5" stroke="#ccc" stroke-width="0.3"/>
+                        <line x1="0" y1="26" x2="100" y2="26" stroke="#ccc" stroke-width="0.3"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-row"><span class="info-label">Tel:</span> [TEL]</div>
+                <div class="info-row"><span class="info-label">Cell:</span> [CELL]</div>
+                <div class="info-row"><span class="info-label">Email:</span> [EMAIL]</div>
+                <div class="info-row"><span class="info-label">Web:</span> [WEB]</div>
+                <img class="qr-code" src="data:image/png;base64,[QR_BASE64]" alt="Google Maps">
+            </div>
+
+            <div class="address-section">
+                <div class="section-label">Invia A / Send To</div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <span>Fatto a mano in Sicilia &bull; Handmade in Sicily &bull; [MONTH_YEAR]</span>
+            <span class="footer-tagline">[FOOTER_TAGLINE]</span>
+        </div>
+    </div>
+
+    <!-- FOLD LINE: back panel / bottom tab boundary -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- BOTTOM TAB (55mm) - folds UP inside tent -->
+    <div class="bottom-tab">
+        <span class="tab-arrow">&#8593;</span>
+        <span class="tab-instruction">Fold Up / Piega Su</span>
+    </div>
+</div>
+
+</body>
+</html>

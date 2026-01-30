@@ -1,6 +1,6 @@
 # SESSION STATE - HelixNet Development
 
-*Last Updated: January 30, 2026, 5:15pm - PuntaTipa Room 101, Trapani*
+*Last Updated: January 30, 2026, 6:00pm - PuntaTipa Room 101, Trapani*
 
 ---
 
@@ -38,6 +38,14 @@
 - [ ] **NEXT: Print 004 + 005 at ISOTTO** (when feeling better)
 - [ ] **NEXT: Visit Mixology** -- show samples, pitch collection
 - [ ] Wax seal test + mail Donny's card
+- [x] Built 4 production pipeline tools (templates + checklists)
+
+### Production Pipeline Tools (NEW - Jan 30 evening)
+Built 4 reusable tools in `docs/business/postcards/templates/`:
+1. **duplex-3card-template.html** -- Format B template with [PLACEHOLDERS], supports photo or SVG fronts
+2. **tent-card-template.html** -- A4 tent card template with all client [PLACEHOLDERS]
+3. **client-intake-checklist.html** -- Mobile-friendly bilingual form for client meetings (5 sections, checkboxes)
+4. **pdf-preflight-checklist.html** -- 5-step verification checklist (source HTML, browser preview, generate, verify, deliver)
 - [ ] Explore Sozialhilfe (Gemeinde) when back in Switzerland for cashflow bridge
 
 ### Key Insights (Jan 30 afternoon conversation)
