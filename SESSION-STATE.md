@@ -1,47 +1,45 @@
 # SESSION STATE - HelixNet Development
 
-*Last Updated: January 30, 2026, 9:25am - PuntaTipa Room 101, Trapani*
+*Last Updated: January 30, 2026, 2:30pm - PuntaTipa Room 101, Trapani*
 
 ---
 
 ## CURRENT CONTEXT
 
 **Location:** PuntaTipa Hotel Room 101, Trapani
-**Vehicle:** MAX (camper van) - at Camper & Tour, stove + camera parts NOT yet arrived (est. Friday)
-**Status:** Jan 30 -- showered, feeling better at 9:22am. Heading to breakfast (camomilla + toast) then pharmacy for Imodium + electrolytes. Not 100% but moving.
+**Vehicle:** MAX (camper van) - at Camper & Tour, stove NOT arrived yet (maybe Monday). Hotel booked till Monday night.
+**Status:** Jan 30 -- recovery day. Pharmacy done: Imodium 2mg + Prolife 10 Forte (probiotics) + camomilla tea + Galbusera crackers. Sleeping on and off. Rain + wind outside. Resting in Room 101.
 
 ---
 
-## TODAY - JAN 29, 2026
+## TODAY - JAN 30, 2026 (Recovery Day)
 
-### Morning (completed)
-- [x] Duolingo Italian lesson
-- [x] Shower + breakfast with Matteo (7am)
-- [x] Matteo update: works on WAR tanks (military), not fuel tanks. Gym 6hrs/day. Watches anime only. Knows the global situation but checks out deliberately.
+### Health
+- [x] Rough night: diarrhea at 12am, 3:25am, up at 6:21am
+- [x] Sugar water + crackers at 3:30am
+- [x] Slept 8am-9:20am, showered
+- [x] Pharmacy: Imodium 2mg + Prolife 10 Forte (probiotics + B vitamins)
+- [x] Camomilla tea + Galbusera crackers
+- [x] Visited Camper & Tour -- stove not arrived, maybe Monday
+- [x] Hotel booked through Monday night
+- [x] Sleeping on and off -- Imodium causes drowsiness
+- [ ] Keep hydrating, small meals (plain bread, crackers, pasta in bianco)
+- [ ] Prolife: 1 capsule per day to rebuild gut
 
-### Late Morning / Early Afternoon (in progress)
-- [x] Created PuntaTipa Room°101 "Oranges Are Blue" tent card
-- [x] PDF generated -- `UFA_r2p/PuntaTipa-Room101-OrangesAreBlue.pdf`
-- [x] **HTML-to-PDF issues RESOLVED** -- switched to Puppeteer (Chrome headless). wkhtmltopdf was the problem. Uninstalled. SOPs updated.
-- [x] **wkhtmltopdf UNINSTALLED** -- `sudo apt remove --purge wkhtmltopdf -y` executed
-- [x] **All SOPs updated** -- 10 files cleaned, every wkhtmltopdf reference replaced with Puppeteer
-- [x] **HelixNet middleware vision memo** transcribed -- SAP PIPO replacement concept, context engineering, postcard pipeline as proof of concept
-- [x] Check RAV portal -- final pay stub (Abrechnung Jan 2026). CHF 7,443.91 net to UBS. 502 of 520 days used. Rahmenfrist ends Jan 31. DONE.
-- [x] Unfallversicherung gap identified -- SUVA coverage ends ~March 2. Email sent to Sylvie to call Groupe Mutuel (0848 803 111) and add Unfallrisiko to KVG. AHV: 756.7033.0988.84.
-- [x] Meetup account DELETED -- had to delete 2 groups (Docker K8s, Active Souls Lucerne) before deactivation allowed. Dark pattern scam model. No charges found in Payments Made.
-- [x] **Card production SOP LOCKED** -- duplex A4, 2 cards/sheet, single file (front + back), Puppeteer + Chrome
-- [x] **3 duplex postcards built** -- 001 Trapani, 002 The Road, 003 Grow. All de-personalized.
-- [x] **Puppeteer script fixed** -- `page.goto(file://)` for relative image paths
-- [x] **Mixology tent card PDF regenerated** with Puppeteer (was old wkhtmltopdf version)
-- [x] **Print run folder packed** -- `UFA_r2p/PRINT-RUN-2026-01-29/` with all PDFs, matching HTMLs, source images, PRINT-ORDER.md
-- [x] **ISOTTO print run COMPLETE** -- 3 duplex sheets + 2 tent cards printed (~5 EUR)
-- [x] **Back at Room 101** with Wiler EZ550 rotary trimmer for cutting + creasing
-- [x] **Cards cut + creased** with Wiler EZ550 -- first run not perfect but functional
-- [x] **3-card layout designed + perfected** -- 004 Mediterranean + 005 Be Yourself (Italian flag SVG)
-- [x] **All changes committed + pushed** -- `81f01df` (89 files, 15,579 insertions)
-- [ ] **NEXT: Print 004 + 005 at ISOTTO** (next run)
-- [ ] **NEXT: Visit Mixology** -- show samples, pitch collection idea (6 cards, 1 per delivery, customers collect)
+### Work (from bed)
+- [x] Downloaded: Trump/Starmer interview + China sells US debt video
+- [x] SESSION-STATE updated
+- [ ] Post Color Clean Google review (text drafted, photos from phone)
+- [ ] **NEXT: Print 004 + 005 at ISOTTO** (when feeling better)
+- [ ] **NEXT: Visit Mixology** -- show samples, pitch collection
 - [ ] Wax seal test with packaging
+
+### Yesterday - JAN 29, 2026 (completed)
+- [x] 3-card layout perfected -- 004 Mediterranean + 005 Be Yourself (Italian flag SVG)
+- [x] ISOTTO print run -- 3 duplex sheets + 2 tent cards (~5 EUR)
+- [x] Cards cut + creased with Wiler EZ550
+- [x] wkhtmltopdf killed, Puppeteer locked, all SOPs updated
+- [x] Committed + pushed: `81f01df` (89 files, 15,579 insertions)
 
 ### Waiting On
 - [ ] Stove delivery for MAX (est. Friday)
