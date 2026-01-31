@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Order - Piccolo Bistrot Menu</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #222;
+            background: #fff;
+            padding: 30px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            font-size: 22pt;
+            color: #6B2D3E;
+            border-bottom: 3px solid #6B2D3E;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 14pt;
+            color: #2C3E50;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th {
+            background: #f5f0e8;
+            font-weight: 700;
+            color: #2C3E50;
+        }
+        .highlight {
+            background: #fff3cd;
+            border-left: 4px solid #f0ad4e;
+            padding: 12px 16px;
+            margin: 15px 0;
+            font-size: 11pt;
+        }
+        .highlight strong {
+            color: #856404;
+        }
+        .fold-diagram {
+            background: #f9f7f4;
+            border: 1px solid #e0d8d0;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+            line-height: 1.8;
+            white-space: pre;
+        }
+        .checkmark { color: #27ae60; font-weight: bold; }
+        .important { color: #c0392b; font-weight: bold; }
+        .contact-box {
+            background: #f0f7ff;
+            border: 1px solid #b8d4f0;
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 9pt;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Ordine di Stampa / Print Order</h1>
+
+<table>
+    <tr><th>Cliente / Client</th><td><strong>Piccolo Bistrot</strong> - Via Garibaldi 43, Trapani</td></tr>
+    <tr><th>Prodotto / Product</th><td>Menu bifold A5 (1 foglio A4 = 1 menu)</td></tr>
+    <tr><th>Data / Date</th><td>Gennaio 2026</td></tr>
+    <tr><th>Ordinato da / Ordered by</th><td>Angelo Kenel - @BigKingFisher</td></tr>
+</table>
+
+<h2>File da stampare / File to Print</h2>
+
+<table>
+    <tr>
+        <th>File</th>
+        <th>Formato / Format</th>
+        <th>Orientamento</th>
+        <th>Fronte-retro</th>
+        <th>Carta / Paper</th>
+    </tr>
+    <tr>
+        <td><strong>menu-piccolo-bistrot-A5-bifold.pdf</strong></td>
+        <td>A4</td>
+        <td>Orizzontale / Landscape</td>
+        <td class="important">SI - Duplex (lato corto / short-edge)</td>
+        <td>160-200 gsm (bianco / white)</td>
+    </tr>
+</table>
+
+<div class="highlight">
+    <strong>IMPORTANTE / IMPORTANT:</strong> Stampare fronte-retro con rilegatura sul lato corto (short-edge binding).
+    NON lato lungo. Il file ha 2 pagine = 1 foglio stampato su entrambi i lati.
+    <br><br>
+    Print duplex with <strong>short-edge binding</strong>. NOT long-edge.
+    The file has 2 pages = 1 sheet printed on both sides.
+</div>
+
+<h2>Istruzioni per piegare / How to Fold</h2>
+
+<div class="fold-diagram">
+FOGLIO STAMPATO (lato 1 verso l'alto / side 1 facing up):
+┌──────────────────┬──────────────────┐
+│                  │                  │
+│   RETRO          │   COPERTINA      │
+│   (capovolto)    │   (Menu)         │
+│                  │                  │
+└──────────────────┴──────────────────┘
+         ↑ piega qui / fold here
+
+PASSO 1: Foglio orizzontale, copertina "Menu" a DESTRA
+STEP 1: Sheet landscape, "Menu" cover on the RIGHT
+
+PASSO 2: Piegare a meta -- lato SINISTRO sopra il DESTRO
+STEP 2: Fold in half -- LEFT side OVER the RIGHT side
+
+PASSO 3: La copertina e ora davanti. Aprire = menu interno.
+STEP 3: Cover is now the front. Open = inside menu.
+
+RISULTATO / RESULT:
+┌─────────┐
+│ PICCOLO │
+│ BISTROT │
+│         │
+│  Menu   │  ← Davanti / Front
+│         │
+│  [QR]   │
+└─────────┘
+Dimensione finale / Final size: A5 (148.5 x 210mm)
+</div>
+
+<h2>Quantita / Quantity</h2>
+
+<table>
+    <tr><th>Primo ordine / First order</th><td>_____ copie (compilare / fill in)</td></tr>
+    <tr><th>Costo stimato / Est. cost</th><td>~1 EUR per copia (1 A4 duplex)</td></tr>
+</table>
+
+<h2>Checklist prima di stampare / Before Printing</h2>
+
+<table>
+    <tr><td><span class="checkmark">&#9744;</span></td><td>File aperto e verificato / File opened and verified</td></tr>
+    <tr><td><span class="checkmark">&#9744;</span></td><td>A4 orizzontale / A4 landscape</td></tr>
+    <tr><td><span class="checkmark">&#9744;</span></td><td>Fronte-retro lato corto / Duplex short-edge</td></tr>
+    <tr><td><span class="checkmark">&#9744;</span></td><td>Carta 160-200 gsm</td></tr>
+    <tr><td><span class="checkmark">&#9744;</span></td><td>Stampa di prova OK / Test print OK</td></tr>
+    <tr><td><span class="checkmark">&#9744;</span></td><td>Piegatura corretta / Fold correct (cover in front)</td></tr>
+</table>
+
+<div class="contact-box">
+    <strong>Domande? / Questions?</strong><br>
+    Angelo Kenel<br>
+    Telegram: @BigKingFisher<br>
+    Tel: (su richiesta / on request)
+</div>
+
+<div class="footer">
+    Generato da HelixNet &middot; Print Order Template v1.0 &middot; Gennaio 2026
+</div>
+
+</body>
+</html>

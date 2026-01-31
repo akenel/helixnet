@@ -142,28 +142,36 @@ Copy the A5 bifold template. Fill in content following the panel layout:
 node scripts/postcard-to-pdf.js menu-[name]-A5-bifold.html menu-[name]-A5-bifold.pdf
 ```
 
-### Step 5: VERIFY (Critical)
+### Step 5: VERIFY (Critical -- 3 Checks, No Shortcuts)
 
+**Check 1: Page count (Tig does this)**
 ```bash
-# Must be exactly 2 pages
 pdfinfo menu-[name]-A5-bifold.pdf | grep Pages
 # Expected: Pages: 2
-
-# Open and check
-xdg-open menu-[name]-A5-bifold.pdf
 ```
 
-**Verification Checklist:**
+**Check 2: Open PDF for visual proof (Tig opens, Angel reviews)**
+```bash
+# Tig opens the PDF -- that's the deliverable, that's what prints
+xdg-open menu-[name]-A5-bifold.pdf &
+```
+PDF only. The HTML is source code -- Angel pulls it up himself if he needs to debug. The PDF is the truth because that's what Puppeteer/Chrome rendered and that's what ISOTTO prints. Tig does NOT say "looks good" -- Tig opens the file and Angel confirms.
+
+**Check 3: Verification Checklist (both check together)**
 - [ ] Exactly 2 pages (outside + inside)
 - [ ] Page 1: Cover reads normally (right side), Back reads upside-down (left side)
 - [ ] Page 2: Both inside panels read normally
 - [ ] All prices match the original menu
 - [ ] No content overflow or cut-off
 - [ ] No blank gaps
+- [ ] Logo renders clean (no overlap, no emoji artifacts)
+- [ ] QR code visible and scannable
 - [ ] Dotted leaders connect item names to prices
 - [ ] Wine list fits without overflow
 - [ ] Fold line is centered (148.5mm from left)
 - [ ] Print a test copy at ISOTTO before the full run
+
+**Rule: Tig opens it. Angel approves it. Nobody says "done" until both agree.**
 
 ### Step 6: Client Approval
 
@@ -177,10 +185,21 @@ Print ONE test copy. Bring it to the restaurant. Fold it. Stand it on the table.
 
 ### Step 7: Print at ISOTTO
 
-- Format: A4 duplex (front + back on same sheet)
-- Paper: 160-200gsm (thicker = more professional, holds up to sauce stains)
+**Print specs:**
+- Format: A4 landscape, duplex, **short-edge binding**
+- Paper: 160-200gsm white (thicker = more professional, holds up to sauce stains)
 - Quantity: Start with 50 (test batch), then 100-200 per order
 - Cost: ~1 EUR per menu (A4 duplex on quality paper)
+
+**Fold:** Left side over right side. Cover ends up in front. A5 result.
+
+**Deliverable package (email to ISOTTO):**
+1. Create `PRINT-ORDER-[client].html` from template (bilingual IT/EN)
+2. Include: client name, file specs, fold diagram, quantity, checklist
+3. Email to ISOTTO with PDF attached
+4. No USB stick. No driving. Just email.
+
+**Print order template:** `docs/business/PB/menu/PRINT-ORDER-PB-MENU.html` (copy for new clients)
 
 ---
 
