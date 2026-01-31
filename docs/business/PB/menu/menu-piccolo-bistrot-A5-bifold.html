@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Piccolo Bistrot - Menu A5 Bifold</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #2C2C2C;
+            background: white;
+        }
+
+        /* ==================== SHEET LAYOUT ==================== */
+        .sheet {
+            width: 297mm;
+            height: 210mm;
+            position: relative;
+            page-break-after: always;
+            background: #FDFAF5;
+            overflow: hidden;
+        }
+        .sheet:last-child {
+            page-break-after: auto;
+        }
+        /* Each panel = half of A4 landscape */
+        .panel {
+            position: absolute;
+            top: 0;
+            width: 148.5mm;
+            height: 210mm;
+            overflow: hidden;
+        }
+        .panel-left { left: 0; }
+        .panel-right { left: 148.5mm; }
+
+        /* Fold line (subtle) */
+        .fold-line {
+            position: absolute;
+            top: 8mm;
+            bottom: 8mm;
+            left: 148.5mm;
+            border-left: 1px dashed #e0d8d0;
+        }
+
+        /* ==================== COVER PANEL ==================== */
+        .cover {
+            padding: 20mm 12mm;
+            text-align: center;
+        }
+        .cover-inner {
+            border: 1.5px solid #6B2D3E;
+            padding: 18mm 10mm 15mm;
+            height: 170mm;
+        }
+        .cover-logo {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #6B2D3E;
+            border-radius: 6px;
+            margin: 0 auto 15px;
+            padding: 6px;
+            text-align: center;
+        }
+        .cover-logo .logo-text-top {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 9pt;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #6B2D3E;
+            line-height: 1.2;
+        }
+        .cover-logo .logo-icons {
+            font-size: 20pt;
+            margin: 3px 0;
+        }
+        .cover-logo .logo-text-bottom {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 6pt;
+            letter-spacing: 2px;
+            color: #6B2D3E;
+            text-transform: uppercase;
+        }
+        .cover-title {
+            font-size: 32pt;
+            font-style: italic;
+            color: #6B2D3E;
+            margin-bottom: 5px;
+            margin-top: 10px;
+        }
+        .cover-subtitle {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 8pt;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 18px;
+        }
+        .cover-tagline {
+            font-size: 9pt;
+            color: #6B2D3E;
+            font-style: italic;
+            margin-bottom: 3px;
+        }
+        .cover-tagline-en {
+            font-size: 7.5pt;
+            color: #999;
+            font-style: italic;
+            margin-bottom: 18px;
+        }
+        .cover-divider {
+            width: 40px;
+            height: 1.5px;
+            background: #6B2D3E;
+            margin: 0 auto 18px;
+        }
+        .cover-info {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 7pt;
+            color: #888;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+        }
+
+        /* ==================== CONTENT PANELS ==================== */
+        .content {
+            padding: 8mm 10mm 6mm;
+        }
+
+        /* Section headers */
+        .section-title {
+            font-size: 12pt;
+            font-style: italic;
+            color: #6B2D3E;
+            border-bottom: 1px solid #6B2D3E;
+            padding-bottom: 2px;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+        .section-title:first-child,
+        .content > .section-title:first-child {
+            margin-top: 0;
+        }
+        .section-subtitle {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 6pt;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #999;
+            margin-top: -3px;
+            margin-bottom: 5px;
+        }
+        .subsection {
+            font-size: 8pt;
+            font-weight: bold;
+            color: #6B2D3E;
+            margin-top: 5px;
+            margin-bottom: 3px;
+            font-style: italic;
+        }
+
+        /* Menu items */
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 1.2px 0;
+            font-size: 7.5pt;
+            line-height: 1.3;
+        }
+        .item-name {
+            flex: 1;
+        }
+        .item-it {
+            color: #2C2C2C;
+        }
+        .item-en {
+            color: #999;
+            font-size: 6.5pt;
+            font-style: italic;
+        }
+        .item-dots {
+            flex: 1;
+            border-bottom: 1px dotted #ccc;
+            margin: 0 4px;
+            min-width: 10px;
+        }
+        .item-price {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 7pt;
+            color: #6B2D3E;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Wine compact style */
+        .wine-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.8px 0;
+            font-size: 7pt;
+            line-height: 1.25;
+        }
+        .wine-item .item-name {
+            flex: 1;
+        }
+        .wine-item .item-dots {
+            flex: 1;
+            border-bottom: 1px dotted #ccc;
+            margin: 0 3px;
+            min-width: 8px;
+        }
+        .wine-item .item-price {
+            font-size: 6.5pt;
+        }
+
+        /* Back panel (drinks etc) - tighter spacing */
+        .back-content {
+            padding: 8mm 10mm 6mm;
+        }
+        .back-content .section-title {
+            font-size: 10pt;
+            margin-top: 6px;
+            margin-bottom: 3px;
+        }
+        .back-content .item {
+            font-size: 7pt;
+            padding: 0.8px 0;
+            line-height: 1.2;
+        }
+        .back-content .item-en {
+            font-size: 6pt;
+        }
+        .back-content .item-price {
+            font-size: 6.5pt;
+        }
+        .back-content .subsection {
+            font-size: 7pt;
+            margin-top: 3px;
+            margin-bottom: 2px;
+        }
+
+        /* Coperto */
+        .coperto {
+            background: #f5f0e8;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 6.5pt;
+            color: #888;
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        /* WiFi */
+        .wifi {
+            text-align: center;
+            margin-top: 6px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 6pt;
+            color: #aaa;
+        }
+
+        /* Footer on back panel */
+        .back-footer {
+            position: absolute;
+            bottom: 6mm;
+            left: 10mm;
+            right: 10mm;
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 6pt;
+            color: #bbb;
+            border-top: 1px solid #e0d8d0;
+            padding-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: OUTSIDE (print side 1) ====================
+     When folded: LEFT = BACK PANEL (Panel 4), RIGHT = COVER (Panel 1)
+     Back panel is rotated 180° so it reads correctly when the menu
+     is flipped over. Cover reads normally (right side up when front-facing).
+-->
+<div class="sheet">
+    <div class="fold-line"></div>
+
+    <!-- PANEL 4: BACK (Drinks, Beer, Breakfast, Bar, Coperto, WiFi) -->
+    <div class="panel panel-left">
+        <div class="back-content" style="transform: rotate(180deg); height: 210mm; padding: 8mm 10mm;">
+
+            <div class="section-title" style="margin-top: 0;">Dolci</div>
+            <div class="section-subtitle">Desserts</div>
+            <div class="item"><div class="item-name"><span class="item-it">Dolce del giorno</span> <span class="item-en">&middot; Dessert of the day</span></div><div class="item-dots"></div><div class="item-price">&euro; 5,00</div></div>
+
+            <div class="section-title">Bibite</div>
+            <div class="section-subtitle">Drinks</div>
+            <div class="item"><div class="item-name"><span class="item-it">Acqua piccola</span> <span class="item-en">&middot; Small water</span></div><div class="item-dots"></div><div class="item-price">&euro; 1,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Acqua litro</span> <span class="item-en">&middot; Water 1L</span></div><div class="item-dots"></div><div class="item-price">&euro; 2,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Coca Cola (vetro)</span> <span class="item-en">&middot; Glass bottle</span></div><div class="item-dots"></div><div class="item-price">&euro; 2,50</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Lemon soda</span></div><div class="item-dots"></div><div class="item-price">&euro; 3,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Cocktail analcolico</span> <span class="item-en">&middot; Non-alcoholic</span></div><div class="item-dots"></div><div class="item-price">&euro; 5,00</div></div>
+
+            <div class="section-title">Birra</div>
+            <div class="section-subtitle">Beer</div>
+            <div class="subsection">Spina &middot; Draft</div>
+            <div class="item"><div class="item-name"><span class="item-it">Bionda piccola</span> <span class="item-en">&middot; Small lager</span></div><div class="item-dots"></div><div class="item-price">&euro; 3,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Grande</span> <span class="item-en">&middot; Large</span></div><div class="item-dots"></div><div class="item-price">&euro; 5,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Doppio malto 33cl</span> <span class="item-en">&middot; Double malt</span></div><div class="item-dots"></div><div class="item-price">&euro; 4,50</div></div>
+            <div class="subsection">Bottiglia &middot; Bottle</div>
+            <div class="item"><div class="item-name"><span class="item-it">Ceres / Corona</span></div><div class="item-dots"></div><div class="item-price">&euro; 4,50</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Heineken</span></div><div class="item-dots"></div><div class="item-price">&euro; 4,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Stretto</span></div><div class="item-dots"></div><div class="item-price">&euro; 3,00</div></div>
+
+            <div class="section-title">Colazione</div>
+            <div class="section-subtitle">Breakfast</div>
+            <div class="item"><div class="item-name"><span class="item-it">Uova, cipolla e pancetta</span> <span class="item-en">&middot; Eggs, onion &amp; bacon</span></div><div class="item-dots"></div><div class="item-price">&euro; 8,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Omlet</span> <span class="item-en">&middot; Omelette</span></div><div class="item-dots"></div><div class="item-price">&euro; 5,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Uova e bacon</span> <span class="item-en">&middot; Eggs &amp; bacon</span></div><div class="item-dots"></div><div class="item-price">&euro; 7,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Torta</span> <span class="item-en">&middot; Cake</span></div><div class="item-dots"></div><div class="item-price">&euro; 3,00</div></div>
+
+            <div class="section-title">Bar</div>
+            <div class="section-subtitle">Hot Drinks &amp; Spirits</div>
+            <div class="item"><div class="item-name"><span class="item-it">Caffe</span> <span class="item-en">&middot; Espresso</span></div><div class="item-dots"></div><div class="item-price">&euro; 1,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Cappuccino</span></div><div class="item-dots"></div><div class="item-price">&euro; 1,50</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Cioccolata calda</span> <span class="item-en">&middot; Hot chocolate</span></div><div class="item-dots"></div><div class="item-price">&euro; 3,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Ginseng / Orzo</span></div><div class="item-dots"></div><div class="item-price">&euro; 1,20</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">The o infusi</span> <span class="item-en">&middot; Tea / herbal</span></div><div class="item-dots"></div><div class="item-price">&euro; 1,50</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Amaro</span> <span class="item-en">&middot; Digestif</span></div><div class="item-dots"></div><div class="item-price">&euro; 4,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Tonica</span> <span class="item-en">&middot; Tonic water</span></div><div class="item-dots"></div><div class="item-price">&euro; 3,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Superalcolico</span> <span class="item-en">&middot; Spirit</span></div><div class="item-dots"></div><div class="item-price">&euro; 5,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Gin Premium</span></div><div class="item-dots"></div><div class="item-price">&euro; 8,00</div></div>
+
+            <div class="coperto">
+                Coperto / Cover charge &middot; &euro; 2,00 a persona / per person
+            </div>
+
+            <div class="wifi">
+                Wi-Fi: FASTWEB-31E44F &middot; Password: 2emP6CpakhkR
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PANEL 1: COVER -->
+    <div class="panel panel-right">
+        <div class="cover">
+            <div class="cover-inner">
+                <div class="cover-logo">
+                    <div class="logo-text-top">PICCOLO<br>BISTROT</div>
+                    <div class="logo-icons">&#x1F41F; &#x1F378;</div>
+                    <div class="logo-text-bottom">Crudo &middot; Cocktail</div>
+                </div>
+
+                <div class="cover-title">Menu</div>
+                <div class="cover-subtitle">Primi e Secondi &middot; Di pesce e carne</div>
+
+                <div class="cover-tagline">"Il mare in tavola, il sole nel bicchiere."</div>
+                <div class="cover-tagline-en">"The sea on the table, the sun in the glass."</div>
+
+                <div class="cover-divider"></div>
+
+                <div class="cover-info">
+                    Via Garibaldi 43, Trapani<br>
+                    Tel. 379 0147 4191 &middot; 0923 050392<br>
+                    Colazione &middot; Pranzo &middot; Cena &middot; Cocktails
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== PAGE 2: INSIDE (print side 2) ====================
+     When opened: LEFT = Panel 2 (Antipasti + Primi), RIGHT = Panel 3 (Secondi + Contorni + Wines)
+-->
+<div class="sheet">
+    <div class="fold-line"></div>
+
+    <!-- PANEL 2: ANTIPASTI + PRIMI -->
+    <div class="panel panel-left">
+        <div class="content">
+
+            <div class="section-title" style="margin-top: 0;">Antipasti</div>
+            <div class="section-subtitle">Starters</div>
+
+            <div class="item">
+                <div class="item-name"><span class="item-it">Antipasto misto (carne o pesce)</span><br><span class="item-en">Mixed starter (meat or fish) 120g</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 21,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Tartare</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 15,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Caponata</span> <span class="item-en">&middot; Sweet &amp; sour aubergine</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 8,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Insalata di polpo</span> <span class="item-en">&middot; Octopus salad</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 12,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Crudo di pesce</span> <span class="item-en">&middot; Raw fish selection</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 25,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Impanata di cozze</span> <span class="item-en">&middot; Breaded mussels</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 11,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Zuppa di cozze</span> <span class="item-en">&middot; Mussel soup</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 13,00</div>
+            </div>
+
+            <!-- PRIMI -->
+            <div class="section-title">Primi</div>
+            <div class="section-subtitle">First Courses</div>
+
+            <div class="subsection">Terra &middot; Land</div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Pesto trapanese</span><br><span class="item-en">Trapani-style pesto (tomato, almond, basil)</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 9,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Norma</span> <span class="item-en">&middot; Aubergine, tomato &amp; ricotta</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 9,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Pomodoro</span> <span class="item-en">&middot; Tomato sauce</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 8,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Piatto del giorno</span> <span class="item-en">&middot; Daily special</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">--</div>
+            </div>
+
+            <div class="subsection">Mare &middot; Sea</div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Scoglio</span> <span class="item-en">&middot; Mixed seafood pasta</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 20,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Vongole</span> <span class="item-en">&middot; Clams</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 16,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Cozze e vongole</span> <span class="item-en">&middot; Mussels &amp; clams</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 18,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Bottarga</span> <span class="item-en">&middot; Cured fish roe</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 16,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Piatto del giorno</span> <span class="item-en">&middot; Daily special</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 15,00</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PANEL 3: SECONDI + CONTORNI + TAGLIERI + WINES -->
+    <div class="panel panel-right">
+        <div class="content">
+
+            <div class="section-title" style="margin-top: 0;">Secondi</div>
+            <div class="section-subtitle">Main Courses</div>
+
+            <div class="subsection">Terra &middot; Land</div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Entrecote grill</span> <span class="item-en">&middot; Grilled rib-eye</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 22,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Cotoletta pollo / vitello</span> <span class="item-en">&middot; Cutlet</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 12,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Tagliata argentina grill 300g</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 28,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Pollo al limone</span> <span class="item-en">&middot; Lemon chicken</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 13,00</div>
+            </div>
+
+            <div class="subsection">Mare &middot; Sea</div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Calamaro grill o fritto</span> <span class="item-en">&middot; Squid</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 15,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Polpo grill o fritto</span> <span class="item-en">&middot; Octopus</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 13,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Spada grill</span> <span class="item-en">&middot; Swordfish</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 16,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Tonno grill</span> <span class="item-en">&middot; Tuna</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 18,00</div>
+            </div>
+            <div class="item">
+                <div class="item-name"><span class="item-it">Pescato al Kg</span> <span class="item-en">&middot; Catch of the day</span></div>
+                <div class="item-dots"></div>
+                <div class="item-price">&euro; 60,00</div>
+            </div>
+
+            <div class="section-title">Contorni &amp; Insalate</div>
+            <div class="section-subtitle">Sides &amp; Salads</div>
+            <div class="item"><div class="item-name"><span class="item-it">Insalata verde / mista</span> <span class="item-en">&middot; Green / mixed</span></div><div class="item-dots"></div><div class="item-price">&euro; 4-5</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Patate fritte / al forno</span> <span class="item-en">&middot; Fries / roasted</span></div><div class="item-dots"></div><div class="item-price">&euro; 5,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Insalata rustica</span> <span class="item-en">&middot; Fennel, orange &amp; spring onion</span></div><div class="item-dots"></div><div class="item-price">&euro; 6,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Insalata arancia</span> <span class="item-en">&middot; Orange salad</span></div><div class="item-dots"></div><div class="item-price">&euro; 7,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Insalatona</span> <span class="item-en">&middot; Large salad (lettuce, capers, anchovy)</span></div><div class="item-dots"></div><div class="item-price">&euro; 11,00</div></div>
+
+            <div class="section-title">Taglieri</div>
+            <div class="section-subtitle">Sharing Boards</div>
+            <div class="item"><div class="item-name"><span class="item-it">Affettati e formaggi</span> <span class="item-en">&middot; Meats &amp; cheeses</span></div><div class="item-dots"></div><div class="item-price">&euro; 15,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Prodotti di tonnara</span> <span class="item-en">&middot; Tuna specialties</span></div><div class="item-dots"></div><div class="item-price">&euro; 8,00</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Bruschetta pate assortiti</span></div><div class="item-dots"></div><div class="item-price">&euro; 7,50</div></div>
+            <div class="item"><div class="item-name"><span class="item-it">Crudo di pesce</span> <span class="item-en">&middot; Raw fish</span></div><div class="item-dots"></div><div class="item-price">&euro; 6,50</div></div>
+
+            <!-- WINES -->
+            <div class="section-title">Vini</div>
+            <div class="section-subtitle">Wine List</div>
+
+            <div class="subsection">Bianchi &middot; White</div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Cantina Mothia</span> <span class="item-en">&middot; Grillo</span></div><div class="item-dots"></div><div class="item-price">&euro; 12</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Iuppa</span> <span class="item-en">&middot; Etna Bianco</span></div><div class="item-dots"></div><div class="item-price">&euro; 39</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Mustazza</span> <span class="item-en">&middot; Catarratto / Grillo / Zibibbo</span></div><div class="item-dots"></div><div class="item-price">&euro; 24</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Baglio Oro</span> <span class="item-en">&middot; Grecanico / Rosato</span></div><div class="item-dots"></div><div class="item-price">&euro; 18-19</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Castelluccio Miano</span></div><div class="item-dots"></div><div class="item-price">&euro; 27-28</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Cellaro</span> <span class="item-en">&middot; Chardonnay / Spumante</span></div><div class="item-dots"></div><div class="item-price">&euro; 21-24</div></div>
+
+            <div class="subsection">Rossi &middot; Red</div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Mustazza</span> <span class="item-en">&middot; Merlot / Cabernet</span></div><div class="item-dots"></div><div class="item-price">&euro; 27</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Iuppa</span> <span class="item-en">&middot; Etna Rosso</span></div><div class="item-dots"></div><div class="item-price">&euro; 39</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Baglio Oro</span> <span class="item-en">&middot; Frappato</span></div><div class="item-dots"></div><div class="item-price">&euro; 22</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Castelluccio Miano</span> <span class="item-en">&middot; Perricone</span></div><div class="item-dots"></div><div class="item-price">&euro; 30</div></div>
+            <div class="wine-item"><div class="item-name"><span class="item-it">Cellaro</span> <span class="item-en">&middot; Nero d'Avola</span></div><div class="item-dots"></div><div class="item-price">&euro; 21</div></div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
