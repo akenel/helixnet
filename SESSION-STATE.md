@@ -1,6 +1,6 @@
 # SESSION STATE - HelixNet Development
 
-*Last Updated: January 31, 2026, 5:30pm - PuntaTipa Room 101, Trapani*
+*Last Updated: January 31, 2026, 10:30pm - PuntaTipa Room 101, Trapani*
 
 ---
 
@@ -8,7 +8,7 @@
 
 **Location:** PuntaTipa Hotel Room 101, Trapani
 **Vehicle:** MAX (camper van) - at Camper & Tour, stove NOT arrived yet (maybe Monday). Hotel booked till Monday night.
-**Status:** Jan 31 -- Day 2 recovery. Stomach held up through all-you-can-eat sushi lunch. Productive day: Bitcoin wallet recovered, TRICKED video transcribed, Color Clean review posted + owner replied, 3 new postcards built. Winding down for the evening.
+**Status:** Jan 31 -- Day 2 recovery. Monster session: SOPs Are Programs manifesto + LinkedIn post + 10 use cases + Piccolo Bistrot A5 bifold menu (v3 with Greek corners, accurate SVG logo, Google Maps QR) + Restaurant Menu SOP-004 + ISOTTO print order template. Pipeline proven end-to-end on a real restaurant client.
 
 ---
 
@@ -36,6 +36,15 @@
 - [x] Voice memos transcribed: 6 overnight recordings (2am-9am)
 - [x] Researched Fabric (Daniel Miessler's open source AI framework)
 - [x] Downloaded Fabric intro video from YouTube
+- [x] **SOPs Are Programs** -- manifesto written (MD + styled HTML), concept documented
+- [x] **LinkedIn post** -- SOPs as programs, scheduled 8pm, posted
+- [x] **SOP Use Cases** -- 10 applications across 3 tiers, priority matrix
+- [x] **Piccolo Bistrot menu** -- A5 bifold, 3 iterations (v1 A4 → v2 A5 → v3 Greek corners + accurate logo)
+- [x] **SOP-004 Restaurant Menu** -- full methodology: intake → extract → template → print → verify
+- [x] **ISOTTO print order template** -- bilingual HTML, fold diagram, checklist, email-ready
+- [x] **PB folder organized** -- photos/, menu/, sop/, assets/ all in one place
+- [x] **Google Maps QR** for PB (maps.app.goo.gl/yE4c1MGFtcjTM6As6)
+- [x] **SOP verification rule updated** -- PDF only for proofing, Tig opens, Angel approves
 - [ ] **MONDAY: Print 004-008 at ISOTTO** (closed weekends)
 - [ ] **MONDAY: Deliver Color Clean tent card** on laundry pickup (closed weekends)
 - [ ] **NEXT: Visit Mixology** -- show samples, pitch collection
@@ -66,6 +75,11 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 
 ### Key Insights (Jan 30-31)
 - **Context Engineering = SOP + Right Tool + Human Judgment** -- the pattern behind postcards, middleware, and HelixNet
+- **SOPs ARE the new programs** -- CLAUDE.md = boot loader, intake checklist = input form, templates = business logic, Puppeteer = compiler, preflight = test suite. Same pipeline, different templates, different domain knowledge.
+- **Restaurant menus = closest to money** -- every restaurant has ugly menus, tourists need bilingual, 100-300 EUR per menu, 1 EUR print cost, 10 restaurants = 500-1000 EUR/month
+- **Rajiv Jha's LinkedIn post** -- AI pilots don't scale because context lives in one person's head. That person IS the SOP. Extract it, version-control it, now the SOP is the trust layer.
+- **ISOTTO email workflow** -- bilingual HTML print orders replace USB sticks. Famous can read HTML, can't read .md. Idiot-proof deliverables.
+- **PDF is the truth** -- HTML for drafting, PDF for proofing. Chrome/Puppeteer renders differently from Firefox. We got burned before. Unfuckables verify both.
 - **Why big companies fail with AI:** They try to remove the human. The human IS the context.
 - **"People think I'm crazy":** Same pattern as Jeff Berwick -- builder outside the system, dismissed by people inside it. TRICKED video articulates this parallel.
 - **Card sales reality:** No cards sold yet -- all giveaways/proof of concept. Patient seeding strategy. "Eventually somebody's going to catch on."
@@ -190,6 +204,7 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 | 3 | Color Clean Laundry | Freschezza / Freshness | DONE (5 stars, 17 photos, 1 video) | PDF READY | Monday pickup | Owner Loredana replied in 2hrs. Deliver card on next laundry pickup (Monday). |
 | 4 | Buffetti | TBD | TBD | TBD | TBD | Office supply partner - explore |
 | 5 | Gym For You | Forza / Strength | TODO (Google review first) | TODO (tent B2C) | Pending | Sebastian (owner) = warm lead, talked 1hr, COVID survivor. Co-owns gym + has own shop. Fill intake checklist first. |
+| 6 | Piccolo Bistrot | Crudo & Cocktail | TODO | A5 BIFOLD MENU v3 READY | Pending approval | Via Garibaldi 43. Full menu extracted from photos. Greek corner frames, SVG logo, Google Maps QR. Print order template ready for ISOTTO. |
 
 ### Merch Scaling (NEW - Jan 30 evening)
 - **ISOTTO** has full catalog -- shirts, mugs, bags, everything (like Printavista)
@@ -420,6 +435,18 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 ### Transcriptions
 - `docs/personal/TRICKED-transcription.txt` -- Raw Whisper transcript (2,217 lines, ~14,250 words)
 - `docs/personal/TRICKED-summary.md` -- Structured summary with 8 main themes
+
+### Business Documents (Jan 31 evening session)
+- `docs/business/SOPs-ARE-PROGRAMS.md` -- Manifesto: SOPs are the new programs
+- `docs/business/SOPs-ARE-PROGRAMS.html` -- Styled HTML version (shareable)
+- `docs/business/SOP-USE-CASES.md` -- 10 use cases, 3 tiers, priority matrix
+- `docs/business/PB/menu/menu-piccolo-bistrot-A5-bifold.html` -- PB menu source (v3)
+- `docs/business/PB/menu/menu-piccolo-bistrot-A5-bifold.pdf` -- PB menu print-ready
+- `docs/business/PB/menu/PRINT-ORDER-PB-MENU.html` -- ISOTTO print order (bilingual)
+- `docs/business/PB/sop/PB-MENU-GUIDE.md` -- PB-specific update/fold/print guide
+- `docs/business/PB/assets/qr-google-maps.png` -- PB Google Maps QR (burgundy)
+- `docs/business/consulting/HelixNet-SOP/SOP-004-restaurant-menu.md` -- General restaurant menu methodology
+- `Downloads/Telegram Desktop/linkedin-post-SOPs-are-programs.txt` -- LinkedIn post (posted + scheduled 8pm)
 
 ---
 
