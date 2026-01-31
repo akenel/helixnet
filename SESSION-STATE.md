@@ -1,6 +1,6 @@
 # SESSION STATE - HelixNet Development
 
-*Last Updated: January 30, 2026, 8:30pm - PuntaTipa Room 101, Trapani*
+*Last Updated: January 31, 2026, 5:30pm - PuntaTipa Room 101, Trapani*
 
 ---
 
@@ -8,80 +8,103 @@
 
 **Location:** PuntaTipa Hotel Room 101, Trapani
 **Vehicle:** MAX (camper van) - at Camper & Tour, stove NOT arrived yet (maybe Monday). Hotel booked till Monday night.
-**Status:** Jan 30 -- recovery day turning into strategy day. Stomach settling. No episodes since pharmacy. Deep conversations: Iran/world situation, China/US debt, AI replacing developers, cashflow planning, Sylvie's Ecolution Etsy shop (673 five-star reviews). Weather clearing at sunset.
+**Status:** Jan 31 -- Day 2 recovery. Stomach held up through all-you-can-eat sushi lunch. Productive day: Bitcoin wallet recovered, TRICKED video transcribed, Color Clean review posted + owner replied, 3 new postcards built. Winding down for the evening.
 
 ---
 
-## TODAY - JAN 30, 2026 (Recovery Day)
+## TODAY - JAN 31, 2026 (Recovery Day 2)
 
 ### Health
-- [x] Rough night: diarrhea at 12am, 3:25am, up at 6:21am
-- [x] Sugar water + crackers at 3:30am
-- [x] Slept 8am-9:20am, showered
-- [x] Pharmacy: Imodium 2mg + Prolife 10 Forte (probiotics + B vitamins)
-- [x] Camomilla tea + Galbusera crackers
-- [x] Visited Camper & Tour -- stove not arrived, maybe Monday
-- [x] Hotel booked through Monday night
-- [x] Sleeping on and off -- Imodium causes drowsiness
-- [ ] Keep hydrating, small meals (plain bread, crackers, pasta in bianco)
-- [ ] Prolife: 1 capsule per day to rebuild gut
+- [x] Rough night again: 2am wakeup (stomach), 4am can't sleep (NWO anxiety), 5am Duolingo (20 lessons before 5am)
+- [x] Sore legs at 5:30am -- dehydration + bed rest + Imodium side effect
+- [x] WHO rehydration: salt + sugar packs in water
+- [x] Light breakfast at hotel -- followed cheat sheet
+- [x] Prolife 10 Forte capsule taken
+- [x] Sushi lunch with KG + Stephen -- stomach held up, ate cooked items
+- [ ] Light dinner tonight (pasta in bianco, camomilla)
+- [ ] Keep hydrating, Prolife capsule daily
 
-### Work (from bed)
-- [x] Downloaded: Trump/Starmer interview + China sells US debt video + AI replacing developers video
-- [x] SESSION-STATE updated
-- [x] Voice memos transcribed (3 messages -- product photos, middleware vision, context engineering philosophy)
-- [x] Reviewed finished product photos: 3 duplex postcards + 2 tent cards (Mixology + Camper & Tour)
-- [x] Researched Sylvie's Ecolution Etsy shop -- 673 five-star reviews, wool felt + Tuscan leather, est. 2010
-- [x] World news research: Iran massacres (5,700-36,500 dead), China selling US debt (9 months, $682B), US armada
-- [x] Financial position assessment: 600K apartment, 15K mortgage, 50K cash, 300K pension (locked till 63)
-- [ ] Post Color Clean Google review (text drafted, photos from phone)
-- [ ] **NEXT: Print 004 + 005 at ISOTTO** (when feeling better)
+### Work
+- [x] Built postcards 006 (Monte Cofano), 007 (Bauhaus Trapani), 008 (Be Water / Bruce Lee SVG)
+- [x] All 3 PDFs generated + verified (2 pages each)
+- [x] Color Clean Google review POSTED -- 5 stars, 17 photos + 1 video uploaded
+- [x] Owner (Loredana) replied within 2 hours -- "we look forward to seeing you soon as every week"
+- [x] Bitcoin wallet recovered via BlueWallet -- 12-word seed phrase from April 2023
+- [x] Balance: **0.04528975 BTC = ~CHF 3,050-3,300** (~3x return on ~1,000 CHF invested)
+- [x] TRICKED video (Jeff Berwick, 94min) transcribed with Whisper + summarized
+- [x] Breakfast + sushi cheat sheet built (bilingual, mobile-friendly)
+- [x] Voice memos transcribed: 6 overnight recordings (2am-9am)
+- [x] Researched Fabric (Daniel Miessler's open source AI framework)
+- [x] Downloaded Fabric intro video from YouTube
+- [ ] **MONDAY: Print 004-008 at ISOTTO** (closed weekends)
+- [ ] **MONDAY: Deliver Color Clean tent card** on laundry pickup (closed weekends)
 - [ ] **NEXT: Visit Mixology** -- show samples, pitch collection
 - [ ] Wax seal test + mail Donny's card
-- [x] Built 4 production pipeline tools (templates + checklists)
+- [ ] Gym For You -- fill intake checklist, post Google review, build tent card
+- [ ] Explore Sozialhilfe (Gemeinde) when back in Switzerland for cashflow bridge
 
-### Production Pipeline Tools (NEW - Jan 30 evening)
+### Sushi Lunch with KG
+- **Who:** Kevin Galalae + Stephen
+- **Where:** All-you-can-eat sushi restaurant (Kevin's idea, Kevin invited Angel)
+- **Result:** All went OK. Stephen's presence kept things balanced.
+- **Background:** KG previously kicked Angel out ("You're part of the New World Order!"). Now softened. Speaks 5-7 languages. No business sense (refuses to monetize Italian tutoring, always broke, paid teaching gig ends May then back to Romania).
+
+### Bitcoin Wallet
+- **Wallet app:** BlueWallet (restored from 12-word seed phrase)
+- **Purchase date:** April 2023 (~CHF 1,000 invested)
+- **Balance:** 0.04528975 BTC
+- **Current value:** ~CHF 3,050-3,300 (BTC trading ~CHF 67,500-69,000)
+- **All-time high:** CHF 100K per BTC (Oct 2025) -- would have been ~CHF 4,500
+- **Status:** Holding. No rush to sell.
+
+### Production Pipeline Tools (built Jan 30 evening)
 Built 4 reusable tools in `docs/business/postcards/templates/`:
 1. **duplex-3card-template.html** -- Format B template with [PLACEHOLDERS], supports photo or SVG fronts
 2. **tent-card-template.html** -- A4 tent card template with all client [PLACEHOLDERS]
 3. **client-intake-checklist.html** -- Mobile-friendly bilingual form for client meetings (5 sections, checkboxes)
 4. **pdf-preflight-checklist.html** -- 5-step verification checklist (source HTML, browser preview, generate, verify, deliver)
-- [ ] Explore Sozialhilfe (Gemeinde) when back in Switzerland for cashflow bridge
 
-### Key Insights (Jan 30 afternoon conversation)
+### Key Insights (Jan 30-31)
 - **Context Engineering = SOP + Right Tool + Human Judgment** -- the pattern behind postcards, middleware, and HelixNet
 - **Why big companies fail with AI:** They try to remove the human. The human IS the context.
-- **Pharmacy HTML cheat sheet** = context engineering in real life (structured info, right format, right language, right moment)
-- **Financial position is strong** -- asset-rich, income-poor. Solvable. Don't pay off 15K mortgage (Sylvie is right).
-- **Ecolution + UFA** = two proven product lines (her: wool/leather, him: postcards/consulting)
-- **Famoso at ISOTTO** asked what software Angel uses -- "I wrote my own." That's the pitch.
-
-### Yesterday - JAN 29, 2026 (completed)
-- [x] 3-card layout perfected -- 004 Mediterranean + 005 Be Yourself (Italian flag SVG)
-- [x] ISOTTO print run -- 3 duplex sheets + 2 tent cards (~5 EUR)
-- [x] Cards cut + creased with Wiler EZ550
-- [x] wkhtmltopdf killed, Puppeteer locked, all SOPs updated
-- [x] Committed + pushed: `81f01df` (89 files, 15,579 insertions)
+- **"People think I'm crazy":** Same pattern as Jeff Berwick -- builder outside the system, dismissed by people inside it. TRICKED video articulates this parallel.
+- **Card sales reality:** No cards sold yet -- all giveaways/proof of concept. Patient seeding strategy. "Eventually somebody's going to catch on."
+- **Bitcoin lesson:** Forgot about 1K investment from 2023, tripled in value. Patience pays.
 
 ### Waiting On
 - [ ] Stove delivery for MAX (maybe Monday now)
 - [ ] Backup camera delivery for MAX
 - [ ] AXA insurance adjuster call to Camper & Tour (claim 22.831.735/0001)
-- [ ] Mikael at Camper & Tour (wasn't there yesterday)
+- [ ] Mikael at Camper & Tour (was sick, sneezing)
 
-### Ready to Execute (TODAY)
-- [x] **ISOTTO print run** -- `UFA_r2p/PRINT-RUN-2026-01-29/` -- 5 prints DONE
-- [ ] **Cut + crease cards** -- Wiler EZ550 trimmer at Room 101
-- [ ] **Mixology visit** -- show tent card + duplex samples, pitch collection idea
-- [ ] Post Google review for Color Clean (photos ready)
-- [ ] Print Color Clean tent card at ISOTTO (PDF ready)
-- [ ] Deliver Color Clean card on laundry pickup
+### Monday Plan (Feb 2)
+- [ ] Print 004-008 at ISOTTO (5 new duplex cards ready)
+- [ ] Deliver Color Clean tent card on laundry pickup
+- [ ] Visit Mixology with samples
+- [ ] Check on MAX stove delivery at Camper & Tour
+- [ ] Talk to Mikael (the money man) at Camper & Tour
 
 ### Donny Response
-- **Status:** PARKED. Draft written but Angel not ready to send. Not in the right headspace.
-- **Draft saved in chat.** Short, warm, human. No rebuttal.
-- **Decision:** Don't respond today. Let it sit. When the moment is right, maybe just 3 lines: "Dan. I heard you. I love you too. Give Victoria a hug from her uncle."
-- **No rush.** Donny is in Calgary, 8 hours behind. He said his piece and moved on.
+- **Status:** PARKED. Draft written but Angel not ready to send.
+- **No rush.** Donny is in Calgary. He said his piece and moved on.
+
+---
+
+## YESTERDAY - JAN 30, 2026 (Recovery Day 1)
+
+### Health
+- Rough night: diarrhea at 12am, 3:25am, up at 6:21am
+- Pharmacy: Imodium 2mg + Prolife 10 Forte (probiotics + B vitamins)
+- Visited Camper & Tour -- stove not arrived, maybe Monday
+- Hotel booked through Monday night
+
+### Work
+- Downloaded: Trump/Starmer interview + China sells US debt video + AI replacing developers video
+- Voice memos transcribed (3 messages -- product photos, middleware vision, context engineering)
+- Researched Sylvie's Ecolution Etsy shop -- 673 five-star reviews
+- World news research: Iran, China/US debt, US armada
+- Financial position assessment: 600K apartment, 15K mortgage, 50K cash, 300K pension
+- Built 4 production pipeline tools (templates + checklists)
 
 ---
 
@@ -162,9 +185,9 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 ### UFA Foo Fighters Pipeline
 | # | Business | Theme | Review | Card | Delivered | Status |
 |---|----------|-------|--------|------|-----------|--------|
-| 1 | Camper & Tour | Liberta / Freedom | Done | Done | APPROVED by Nino | PRINTED at ISOTTO |
+| 1 | Camper & Tour | Liberta / Freedom | Done | Done | APPROVED by Nino | PRINTED at ISOTTO. Tent card on front desk beside flowers. |
 | 2 | Mixology Trapani | Spirito / Spirit | Pending | PoC draft | Pending | Showed review, needs meeting |
-| 3 | Color Clean Laundry | Freschezza / Freshness | NEXT (photos ready) | PDF READY | On pickup | Review first, card on pickup |
+| 3 | Color Clean Laundry | Freschezza / Freshness | DONE (5 stars, 17 photos, 1 video) | PDF READY | Monday pickup | Owner Loredana replied in 2hrs. Deliver card on next laundry pickup (Monday). |
 | 4 | Buffetti | TBD | TBD | TBD | TBD | Office supply partner - explore |
 | 5 | Gym For You | Forza / Strength | TODO (Google review first) | TODO (tent B2C) | Pending | Sebastian (owner) = warm lead, talked 1hr, COVID survivor. Co-owns gym + has own shop. Fill intake checklist first. |
 
@@ -211,7 +234,7 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 - **Process:** Open HTML in Firefox to review, then `node scripts/postcard-to-pdf.js input.html output.pdf`, give PDF to ISOTTO
 - **Print:** ISOTTO prints page 1 (fronts), flips paper manually (heavy photo stock), prints page 2 (backs), cut along marks
 - **Cutting:** Wiler EZ550 -- straight blade (dritto) for cuts, scoring blade (cordonatura) for fold creases
-- [ ] Print 004 + 005 at ISOTTO (next run)
+- [ ] Print 004-008 at ISOTTO (Monday -- 5 cards ready, ISOTTO closed weekends)
 - [ ] Wax seal test with packaging
 
 ### Duplex Postcard Files
@@ -222,6 +245,9 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 | 003 | Grow | 2-card | `postcards/duplex-a4/duplex-003-grow.html` | `UFA_r2p/duplex-003-grow.pdf` |
 | 004 | Mediterranean | 3-card | `postcards/duplex-a4/duplex-004-mediterranean.html` | `UFA_r2p/duplex-004-mediterranean.pdf` |
 | 005 | Be Yourself | 3-card | `postcards/duplex-a4/duplex-005-beYourself.html` | `UFA_r2p/duplex-005-beYourself.pdf` |
+| 006 | Monte Cofano | 3-card | `postcards/duplex-a4/duplex-006-monteCofano.html` | `UFA_r2p/duplex-006-monteCofano.pdf` |
+| 007 | Bauhaus Trapani | 3-card | `postcards/duplex-a4/duplex-007-bauhaus.html` | `UFA_r2p/duplex-007-bauhaus.pdf` |
+| 008 | Be Water | 3-card (SVG) | `postcards/duplex-a4/duplex-008-beWater.html` | `UFA_r2p/duplex-008-beWater.pdf` |
 
 ### SOP: Review First, Card on Pickup
 - Full SOP documented: `docs/business/postcards/SOP-REVIEW-FIRST-CARD-ON-PICKUP.md`
@@ -305,14 +331,27 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 ### Friends
 - **Kevin Bosco** - Bos & Co Footwear owner, Burlington ON. Spannabis Bilbao April 17-19?
 - **Kathy Bosco** - Kevin's wife. Hernia surgery Oct 2025, recovering
-- **Kevin Galalee** - Telegram channel, depopulation researcher. Met in Trapani Dec 28. Chapter closed but still follow his channel.
+- **Kevin Galalee** - Depopulation researcher. Met in Trapani Dec 28. Had sushi lunch Jan 31 (with Stephen). Speaks 5-7 languages, no business sense, refuses to monetize Italian tutoring. Paid teaching gig ends May, then back to Romania.
 
 ### Print + Supply
 - **ISOTTO Sport** - Print partner, since 1968. **Famoso can do duplex A4.**
 - **Buffetti** - Office supplies
-- **Color Clean** - Laundry, card ready, review pending
+- **Color Clean** - Laundry, Via Virgilio 105/107. Owner: Loredana. Review POSTED (5 stars). Card ready for Monday delivery. Tel: 320 054 0352. colorclean.tp@gmail.com
 
 ---
+
+## VOICE MEMOS TRANSCRIBED (Jan 30-31)
+
+| File | Content |
+|------|---------|
+| `audio_2026-01-30_19-08-05.ogg` | UFA pipeline review, ISOTTO merch scaling, "business in a box" |
+| `audio_2026-01-30_19-49-23.ogg` | KG backstory, kicked Angel out (NWO paranoia), Italian lessons refused, builders vs talkers |
+| `audio_2026-01-30_20-24-00.ogg` | Card sales reality (no sales yet, all giveaways), Gym For You lead, sushi is all-you-can-eat |
+| `audio_2026-01-31_02-01-17.ogg` | 2am wakeup, stomach issues, medicine questions |
+| `audio_2026-01-31_04-09-05.ogg` | 4am can't sleep, mp4 vs ogg format, NWO anxiety, legs sore |
+| `audio_2026-01-31_05-04-05.ogg` | Duolingo early riser award, 20 lessons before 5am |
+| `audio_2026-01-31_05-31-55.ogg` | Sore legs, dehydration diagnosis |
+| `audio_2026-01-31_09-10-28.ogg` | Breakfast done, what's on agenda |
 
 ## VOICE MEMOS TRANSCRIBED (Jan 28-29)
 
@@ -375,6 +414,12 @@ Built 4 reusable tools in `docs/business/postcards/templates/`:
 
 ### Video
 - `compose/helix-media/video/jon-stewart-ice-minneapolis-2026-01.mp4` -- Jon Stewart Daily Show, ICE/Minneapolis/Alex Pretti, 23min
+- `TRICKED Totalitarian State VIDEO 720p Social.mp4` -- Jeff Berwick (Dollar Vigilante), 94min. Transcribed + summarized.
+- Fabric intro video (YouTube) -- Daniel Miessler's open source AI framework
+
+### Transcriptions
+- `docs/personal/TRICKED-transcription.txt` -- Raw Whisper transcript (2,217 lines, ~14,250 words)
+- `docs/personal/TRICKED-summary.md` -- Structured summary with 8 main themes
 
 ---
 
