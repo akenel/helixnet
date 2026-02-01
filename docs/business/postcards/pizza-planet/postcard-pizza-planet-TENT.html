@@ -16,7 +16,7 @@
         }
 
         /* ==================== A4 TENT CARD LAYOUT ==================== */
-        /* 50mm top flap + 98.5mm back + 98.5mm front + 50mm bottom flap = 297mm */
+        /* 40mm top flap + 108.5mm back + 108.5mm front + 40mm bottom flap = 297mm */
         .page {
             width: 210mm;
             height: 297mm;
@@ -32,9 +32,9 @@
             width: 210mm;
             height: 0;
         }
-        .fold-line-1 { top: 50mm; }
+        .fold-line-1 { top: 40mm; }
         .fold-line-2 { top: 148.5mm; }
-        .fold-line-3 { top: 247mm; }
+        .fold-line-3 { top: 257mm; }
         .fold-tick {
             position: absolute;
             top: -0.15mm;
@@ -49,13 +49,13 @@
         .fold-tick-l { left: 0; }
         .fold-tick-r { right: 0; }
 
-        /* ==================== TOP FLAP (50mm) ==================== */
+        /* ==================== TOP FLAP (40mm) ==================== */
         .flap-top {
             position: absolute;
             top: 0;
             left: 0;
             width: 210mm;
-            height: 50mm;
+            height: 40mm;
             padding: 8mm 15mm;
             text-align: center;
         }
@@ -67,86 +67,135 @@
             text-transform: uppercase;
         }
 
-        /* ==================== BACK PANEL (98.5mm) - rotated 180° ==================== */
+        /* ==================== BACK PANEL (108.5mm) - rotated 180° ==================== */
         .panel-back {
             position: absolute;
-            top: 50mm;
+            top: 40mm;
             left: 0;
             width: 210mm;
-            height: 98.5mm;
+            height: 108.5mm;
             transform: rotate(180deg);
-            padding: 10mm 18mm;
+            padding: 8mm 18mm 6mm 18mm;
+            display: flex;
+            flex-direction: column;
         }
-        .back-title {
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-top: 2.5px solid #8B0000;
+            padding-top: 3mm;
+            margin-bottom: 4mm;
+        }
+        .back-brand {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-size: 9pt;
-            font-weight: 700;
+        }
+        .back-brand-name {
+            font-size: 14pt;
+            font-weight: 800;
             color: #8B0000;
             letter-spacing: 2px;
             text-transform: uppercase;
-            text-align: center;
-            margin-bottom: 6px;
         }
-        .back-tagline {
-            font-size: 10pt;
-            font-style: italic;
-            color: #8B0000;
-            text-align: center;
-            margin-bottom: 10px;
+        .back-brand-sub {
+            font-size: 6.5pt;
+            color: #888;
+            letter-spacing: 1px;
+            margin-top: 1px;
         }
-        .back-info {
-            text-align: center;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-size: 8pt;
-            color: #555;
-            line-height: 2;
-        }
-        .back-hours {
+        .back-location {
+            text-align: right;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             font-size: 7pt;
             color: #888;
-            text-align: center;
-            margin-top: 6px;
-            line-height: 1.6;
+            line-height: 1.5;
         }
-        .back-qr {
+        .back-quote {
             text-align: center;
-            margin-top: 8px;
+            padding: 3mm 8mm;
+            margin-bottom: 3mm;
+            border-left: 2px solid #009246;
+            border-right: 2px solid #CE2B37;
         }
-        .back-qr img {
-            width: 50px;
-            height: 50px;
+        .back-quote-it {
+            font-size: 10pt;
+            font-style: italic;
+            color: #8B0000;
+            margin-bottom: 2px;
+        }
+        .back-quote-en {
+            font-size: 7.5pt;
+            font-style: italic;
+            color: #999;
+        }
+        .back-content {
+            display: flex;
+            gap: 4mm;
+            flex: 1;
+        }
+        .back-info {
+            flex: 1;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        .back-info-label {
+            font-size: 5.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin-bottom: 1.5mm;
+        }
+        .back-info-text {
+            font-size: 7.5pt;
+            color: #555;
+            line-height: 1.8;
+        }
+        .back-qr-col {
+            width: 22mm;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-qr-col img {
+            width: 20mm;
+            height: 20mm;
         }
         .back-qr-label {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-size: 5.5pt;
+            font-size: 5pt;
             color: #aaa;
-            margin-top: 2px;
+            margin-top: 1.5mm;
+            line-height: 1.3;
         }
-        /* Float layout for back panel */
-        .back-left {
-            float: left;
-            width: 60%;
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 2mm;
+            border-top: 0.5px solid #ddd;
         }
-        .back-right {
-            float: right;
-            width: 35%;
-            text-align: center;
-            padding-top: 5mm;
+        .back-footer-left {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 5pt;
+            color: #bbb;
+            letter-spacing: 0.5px;
         }
-        .clearfix::after {
-            content: '';
-            display: table;
-            clear: both;
+        .back-footer-right {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 5pt;
+            color: #bbb;
+            text-align: right;
         }
 
-        /* ==================== FRONT PANEL (98.5mm) ==================== */
+        /* ==================== FRONT PANEL (108.5mm) ==================== */
         .panel-front {
             position: absolute;
             top: 148.5mm;
             left: 0;
             width: 210mm;
-            height: 98.5mm;
+            height: 108.5mm;
             padding: 8mm 18mm;
             text-align: center;
         }
@@ -205,13 +254,13 @@
             color: #999;
         }
 
-        /* ==================== BOTTOM FLAP (50mm) ==================== */
+        /* ==================== BOTTOM FLAP (40mm) ==================== */
         .flap-bottom {
             position: absolute;
-            top: 247mm;
+            top: 257mm;
             left: 0;
             width: 210mm;
-            height: 50mm;
+            height: 40mm;
             padding: 8mm 15mm;
             text-align: center;
         }
@@ -256,28 +305,44 @@
 
     <!-- BACK PANEL (rotated 180°) -->
     <div class="panel-back">
-        <div class="clearfix">
-            <div class="back-left">
-                <div class="back-title">Pizza Planet</div>
-                <div class="back-tagline">"Il Signore della Pizza d'Asporto"</div>
+        <div class="back-header">
+            <div class="back-brand">
+                <div class="back-brand-name">Pizza Planet</div>
+                <div class="back-brand-sub">Forno a legna &middot; Wood-fired oven &middot; dal 2000</div>
+            </div>
+            <div class="back-location">
+                Bonagia, Trapani<br>
+                Sicilia &middot; Italia
+            </div>
+        </div>
 
-                <div class="back-info">
+        <div class="back-quote">
+            <div class="back-quote-it">&ldquo;Il Signore della Pizza d'Asporto.&rdquo;</div>
+            <div class="back-quote-en">&ldquo;The Lord of Takeaway Pizza.&rdquo;</div>
+        </div>
+
+        <div class="back-content">
+            <div class="back-info">
+                <div class="back-info-label">Contatti / Contact</div>
+                <div class="back-info-text">
                     Via Asmara 35, Bonagia<br>
                     Tel. 0923 592609
                 </div>
+                <div class="back-info-label" style="margin-top: 3mm;">Orari / Hours</div>
+                <div class="back-info-text">
+                    Mar&ndash;Dom / Tue&ndash;Sun: 18:00 &ndash; 00:00<br>
+                    Luned&igrave; chiuso / Monday closed
+                </div>
+            </div>
+            <div class="back-qr-col">
+                <img src="/tmp/qr-pp-google.png" alt="QR">
+                <div class="back-qr-label">Recensioni<br>&amp; Indicazioni<br>Reviews<br>&amp; Directions</div>
+            </div>
+        </div>
 
-                <div class="back-hours">
-                    Mar-Dom / Tue-Sun: 18:00 - 00:00<br>
-                    Luned&igrave; chiuso / Monday closed<br>
-                    Forno a legna &middot; Wood-fired oven
-                </div>
-            </div>
-            <div class="back-right">
-                <div class="back-qr">
-                    <img src="/tmp/qr-pp-google.png" alt="QR">
-                    <div class="back-qr-label">Recensioni &amp; Indicazioni<br>Reviews &amp; Directions</div>
-                </div>
-            </div>
+        <div class="back-footer">
+            <div class="back-footer-left">UFA &middot; Handmade in Sicily</div>
+            <div class="back-footer-right">683 Google Reviews &middot; 4.5&#9733;</div>
         </div>
     </div>
 

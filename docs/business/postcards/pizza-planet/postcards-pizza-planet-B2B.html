@@ -55,18 +55,9 @@
             gap: 6mm;
         }
 
-        /* Registration marks - BACK PAGE ONLY */
+        /* Cut marks - mid-card boundaries only (back page) */
         .rm { position: absolute; background: #999; }
         .rm-h { width: 5mm; height: 0.3px; }
-        .rm-v { width: 0.3px; height: 5mm; }
-        .rm-tl-h { top: -0.5mm; left: -6mm; }
-        .rm-tl-v { top: -6mm; left: -0.5mm; }
-        .rm-tr-h { top: -0.5mm; right: -6mm; }
-        .rm-tr-v { top: -6mm; right: -0.5mm; }
-        .rm-bl-h { bottom: -0.5mm; left: -6mm; }
-        .rm-bl-v { bottom: -6mm; left: -0.5mm; }
-        .rm-br-h { bottom: -0.5mm; right: -6mm; }
-        .rm-br-v { bottom: -6mm; right: -0.5mm; }
         .rm-c1-l { top: calc(93mm + 3mm - 0.15px); left: -6mm; }
         .rm-c1-r { top: calc(93mm + 3mm - 0.15px); right: -6mm; }
         .rm-c2-l { top: calc(93mm + 6mm + 93mm + 3mm - 0.15px); left: -6mm; }
@@ -80,9 +71,10 @@
             position: relative;
         }
 
-        .card-front svg {
+        .card-front img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
             display: block;
         }
 
@@ -138,7 +130,7 @@
 
         .msg-addr {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 45fr 55fr;
             gap: 2mm;
             flex: 1;
         }
@@ -157,21 +149,21 @@
             margin-bottom: 0.8mm;
         }
 
-        .msg-line {
-            border-bottom: 0.5px solid #ccc;
-            height: 5mm;
+        /* Freeform message area -- pure open space, no borders */
+        .msg-freeform {
+            flex: 1;
         }
 
         .addr-side {
             display: flex;
             flex-direction: column;
             border-left: 0.5px solid #ccc;
-            padding-left: 2mm;
+            padding-left: 3mm;
         }
 
         .stamp-box {
-            width: 15mm;
-            height: 16mm;
+            width: 16mm;
+            height: 17mm;
             border: 0.5px solid #bbb;
             margin-left: auto;
             display: flex;
@@ -187,11 +179,15 @@
 
         .addr-line {
             border-bottom: 0.5px solid #ccc;
-            height: 5mm;
+            height: 7mm;
         }
 
         .addr-line:first-of-type {
             border-bottom: 1px solid #666;
+        }
+
+        .addr-line:last-of-type {
+            border-bottom: none;
         }
 
         .back-footer {
@@ -245,79 +241,19 @@
     <div class="grid-wrapper">
         <div class="grid-inner">
 
-            <!-- CARD A: "Tradizione" - Banksy-inspired stencil style -->
+            <!-- CARD A: "The Oven" - Banksy stencil, wood-fired pizza -->
             <div class="card-front">
-                <svg viewBox="0 0 520 352" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Warm cream background -->
-                    <rect width="520" height="352" fill="#FFFDF5"/>
-                    <!-- Bold stencil pizza slice - Banksy spray-paint feel -->
-                    <g transform="translate(260,145)">
-                        <!-- Slice silhouette -->
-                        <path d="M0,-105 L85,75 L-85,75 Z" fill="#8B0000" opacity="0.85"/>
-                        <!-- Pepperoni holes (negative space) -->
-                        <circle cx="-15" cy="15" r="12" fill="#FFFDF5"/>
-                        <circle cx="20" cy="40" r="10" fill="#FFFDF5"/>
-                        <circle cx="-5" cy="-30" r="9" fill="#FFFDF5"/>
-                        <!-- Drip effect (Banksy signature) -->
-                        <rect x="60" y="75" width="4" height="18" rx="2" fill="#8B0000" opacity="0.6"/>
-                        <rect x="-70" y="75" width="3" height="12" rx="1.5" fill="#8B0000" opacity="0.4"/>
-                        <rect x="30" y="75" width="3.5" height="25" rx="1.75" fill="#8B0000" opacity="0.5"/>
-                    </g>
-                    <!-- Stencil text -->
-                    <text x="260" y="290" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="900" fill="#1a1a1a" letter-spacing="8">TRADIZIONE</text>
-                    <text x="260" y="315" text-anchor="middle" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#888" letter-spacing="3">dal 2000 &middot; Bonagia</text>
-                    <!-- UFA mark subtle -->
-                    <text x="500" y="340" text-anchor="end" font-family="'Helvetica Neue', Arial, sans-serif" font-size="7" fill="#ccc" letter-spacing="2">UFA</text>
-                </svg>
+                <img src="images/The Oven.jpg" alt="The Oven - Banksy stencil">
             </div>
 
-            <!-- CARD B: "Forno a Legna" - Bauhaus geometric -->
+            <!-- CARD B: "The Handover" - Bauhaus geometric pizza -->
             <div class="card-front">
-                <svg viewBox="0 0 520 352" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Bauhaus color blocks -->
-                    <rect width="520" height="352" fill="#F5F0E6"/>
-                    <!-- Geometric circles (Bauhaus primary forms) -->
-                    <circle cx="160" cy="150" r="90" fill="#8B0000" opacity="0.9"/>
-                    <circle cx="320" cy="170" r="65" fill="#D4A017" opacity="0.7"/>
-                    <circle cx="240" cy="120" r="45" fill="#2C2C2C" opacity="0.15"/>
-                    <!-- Triangle (pizza reference + Bauhaus form) -->
-                    <polygon points="380,60 440,190 320,190" fill="none" stroke="#2C2C2C" stroke-width="2"/>
-                    <!-- Horizontal lines (Bauhaus grid) -->
-                    <line x1="40" y1="230" x2="480" y2="230" stroke="#2C2C2C" stroke-width="0.5"/>
-                    <line x1="40" y1="234" x2="480" y2="234" stroke="#2C2C2C" stroke-width="0.3"/>
-                    <!-- Typography -->
-                    <text x="260" y="270" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="300" fill="#2C2C2C" letter-spacing="12">FORNO A LEGNA</text>
-                    <text x="260" y="295" text-anchor="middle" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#888">Wood-fired oven &middot; Pizza Planet</text>
-                    <!-- Grid accent -->
-                    <rect x="40" y="315" width="60" height="3" fill="#8B0000"/>
-                    <rect x="110" y="315" width="30" height="3" fill="#D4A017"/>
-                    <rect x="150" y="315" width="15" height="3" fill="#2C2C2C"/>
-                    <text x="500" y="340" text-anchor="end" font-family="'Helvetica Neue', Arial, sans-serif" font-size="7" fill="#ccc" letter-spacing="2">UFA</text>
-                </svg>
+                <img src="images/The Handover.jpg" alt="The Handover - Bauhaus geometric">
             </div>
 
-            <!-- CARD C: "Ciccio" - Minimalist portrait tribute -->
+            <!-- CARD C: "The Hands" - Minimalist dough kneading -->
             <div class="card-front">
-                <svg viewBox="0 0 520 352" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Italian flag as background stripes (subtle) -->
-                    <rect x="0" y="0" width="174" height="352" fill="#009246" opacity="0.08"/>
-                    <rect x="174" y="0" width="172" height="352" fill="#FFFDF5"/>
-                    <rect x="346" y="0" width="174" height="352" fill="#CE2B37" opacity="0.08"/>
-                    <!-- Flame silhouette (wood fire) -->
-                    <g transform="translate(260,90)">
-                        <path d="M0,-60 C-15,-30 -35,0 -30,30 C-25,55 -10,65 0,55 C10,65 25,55 30,30 C35,0 15,-30 0,-60Z" fill="#8B0000" opacity="0.12"/>
-                        <path d="M0,-40 C-8,-20 -18,0 -15,20 C-12,35 -5,40 0,35 C5,40 12,35 15,20 C18,0 8,-20 0,-40Z" fill="#D4A017" opacity="0.15"/>
-                    </g>
-                    <!-- Main quote -->
-                    <text x="260" y="195" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-style="italic" fill="#8B0000" letter-spacing="1">&ldquo;Un mito trapanese.&rdquo;</text>
-                    <text x="260" y="225" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#999">&ldquo;A Trapanese legend.&rdquo;</text>
-                    <!-- Divider -->
-                    <line x1="220" y1="248" x2="300" y2="248" stroke="#8B0000" stroke-width="1"/>
-                    <!-- Name -->
-                    <text x="260" y="280" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#2C2C2C" letter-spacing="6">PIZZA PLANET</text>
-                    <text x="260" y="300" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" fill="#888" letter-spacing="3">BONAGIA &middot; SICILIA</text>
-                    <text x="260" y="340" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" fill="#aaa" letter-spacing="4">UFA &middot; SICILY</text>
-                </svg>
+                <img src="images/The Hands.jpg" alt="The Hands - Stencil art">
             </div>
 
         </div>
@@ -331,10 +267,6 @@
     <div class="page-label-right">PIZZA PLANET &mdash; B2B KIT &mdash; BACKS &mdash; SHEET 1 OF 2</div>
 
     <div class="grid-wrapper">
-        <div class="rm rm-h rm-tl-h"></div><div class="rm rm-v rm-tl-v"></div>
-        <div class="rm rm-h rm-tr-h"></div><div class="rm rm-v rm-tr-v"></div>
-        <div class="rm rm-h rm-bl-h"></div><div class="rm rm-v rm-bl-v"></div>
-        <div class="rm rm-h rm-br-h"></div><div class="rm rm-v rm-br-v"></div>
         <div class="rm rm-h rm-c1-l"></div><div class="rm rm-h rm-c1-r"></div>
         <div class="rm rm-h rm-c2-l"></div><div class="rm rm-h rm-c2-r"></div>
 
@@ -350,16 +282,13 @@
                 <div class="msg-addr">
                     <div class="msg-side">
                         <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
+                        <div class="msg-freeform"></div>
                     </div>
                     <div class="addr-side">
                         <div class="stamp-box">STAMP</div>
                         <div class="addr-lines">
-                            <div class="section-label">Invia A / Send To</div>
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
@@ -368,7 +297,7 @@
                 </div>
                 <div class="back-footer">
                     <div class="qr-section">
-                        <img src="/tmp/qr-pizza-planet.png" alt="QR">
+                        <img src="/tmp/qr-pp-google.png" alt="QR">
                         <div class="qr-label">Pizza Planet<br>Google Maps</div>
                     </div>
                     <div class="metadata">Forno a legna &middot; dal 2000<br>Via Asmara 35, Bonagia<br>Tel. 0923 592609</div>
@@ -386,16 +315,13 @@
                 <div class="msg-addr">
                     <div class="msg-side">
                         <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
+                        <div class="msg-freeform"></div>
                     </div>
                     <div class="addr-side">
                         <div class="stamp-box">STAMP</div>
                         <div class="addr-lines">
-                            <div class="section-label">Invia A / Send To</div>
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
@@ -422,16 +348,13 @@
                 <div class="msg-addr">
                     <div class="msg-side">
                         <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
+                        <div class="msg-freeform"></div>
                     </div>
                     <div class="addr-side">
                         <div class="stamp-box">STAMP</div>
                         <div class="addr-lines">
-                            <div class="section-label">Invia A / Send To</div>
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
@@ -458,62 +381,19 @@
 
     <div class="grid-wrapper">
         <div class="grid-inner">
-            <!-- Repeat same 3 designs for second sheet -->
-            <!-- CARD A: Tradizione (Banksy) -->
+            <!-- CARD A: "The Oven" - Banksy stencil -->
             <div class="card-front">
-                <svg viewBox="0 0 520 352" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="520" height="352" fill="#FFFDF5"/>
-                    <g transform="translate(260,145)">
-                        <path d="M0,-105 L85,75 L-85,75 Z" fill="#8B0000" opacity="0.85"/>
-                        <circle cx="-15" cy="15" r="12" fill="#FFFDF5"/>
-                        <circle cx="20" cy="40" r="10" fill="#FFFDF5"/>
-                        <circle cx="-5" cy="-30" r="9" fill="#FFFDF5"/>
-                        <rect x="60" y="75" width="4" height="18" rx="2" fill="#8B0000" opacity="0.6"/>
-                        <rect x="-70" y="75" width="3" height="12" rx="1.5" fill="#8B0000" opacity="0.4"/>
-                        <rect x="30" y="75" width="3.5" height="25" rx="1.75" fill="#8B0000" opacity="0.5"/>
-                    </g>
-                    <text x="260" y="290" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="900" fill="#1a1a1a" letter-spacing="8">TRADIZIONE</text>
-                    <text x="260" y="315" text-anchor="middle" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#888" letter-spacing="3">dal 2000 &middot; Bonagia</text>
-                    <text x="500" y="340" text-anchor="end" font-family="'Helvetica Neue', Arial, sans-serif" font-size="7" fill="#ccc" letter-spacing="2">UFA</text>
-                </svg>
+                <img src="images/The Oven.jpg" alt="The Oven - Banksy stencil">
             </div>
 
-            <!-- CARD B: Forno a Legna (Bauhaus) -->
+            <!-- CARD B: "The Handover" - Bauhaus geometric -->
             <div class="card-front">
-                <svg viewBox="0 0 520 352" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="520" height="352" fill="#F5F0E6"/>
-                    <circle cx="160" cy="150" r="90" fill="#8B0000" opacity="0.9"/>
-                    <circle cx="320" cy="170" r="65" fill="#D4A017" opacity="0.7"/>
-                    <circle cx="240" cy="120" r="45" fill="#2C2C2C" opacity="0.15"/>
-                    <polygon points="380,60 440,190 320,190" fill="none" stroke="#2C2C2C" stroke-width="2"/>
-                    <line x1="40" y1="230" x2="480" y2="230" stroke="#2C2C2C" stroke-width="0.5"/>
-                    <line x1="40" y1="234" x2="480" y2="234" stroke="#2C2C2C" stroke-width="0.3"/>
-                    <text x="260" y="270" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="300" fill="#2C2C2C" letter-spacing="12">FORNO A LEGNA</text>
-                    <text x="260" y="295" text-anchor="middle" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#888">Wood-fired oven &middot; Pizza Planet</text>
-                    <rect x="40" y="315" width="60" height="3" fill="#8B0000"/>
-                    <rect x="110" y="315" width="30" height="3" fill="#D4A017"/>
-                    <rect x="150" y="315" width="15" height="3" fill="#2C2C2C"/>
-                    <text x="500" y="340" text-anchor="end" font-family="'Helvetica Neue', Arial, sans-serif" font-size="7" fill="#ccc" letter-spacing="2">UFA</text>
-                </svg>
+                <img src="images/The Handover.jpg" alt="The Handover - Bauhaus geometric">
             </div>
 
-            <!-- CARD C: Ciccio (Minimalist) -->
+            <!-- CARD C: "The Hands" - Minimalist dough kneading -->
             <div class="card-front">
-                <svg viewBox="0 0 520 352" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="0" y="0" width="174" height="352" fill="#009246" opacity="0.08"/>
-                    <rect x="174" y="0" width="172" height="352" fill="#FFFDF5"/>
-                    <rect x="346" y="0" width="174" height="352" fill="#CE2B37" opacity="0.08"/>
-                    <g transform="translate(260,90)">
-                        <path d="M0,-60 C-15,-30 -35,0 -30,30 C-25,55 -10,65 0,55 C10,65 25,55 30,30 C35,0 15,-30 0,-60Z" fill="#8B0000" opacity="0.12"/>
-                        <path d="M0,-40 C-8,-20 -18,0 -15,20 C-12,35 -5,40 0,35 C5,40 12,35 15,20 C18,0 8,-20 0,-40Z" fill="#D4A017" opacity="0.15"/>
-                    </g>
-                    <text x="260" y="195" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-style="italic" fill="#8B0000" letter-spacing="1">&ldquo;Un mito trapanese.&rdquo;</text>
-                    <text x="260" y="225" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#999">&ldquo;A Trapanese legend.&rdquo;</text>
-                    <line x1="220" y1="248" x2="300" y2="248" stroke="#8B0000" stroke-width="1"/>
-                    <text x="260" y="280" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#2C2C2C" letter-spacing="6">PIZZA PLANET</text>
-                    <text x="260" y="300" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" fill="#888" letter-spacing="3">BONAGIA &middot; SICILIA</text>
-                    <text x="260" y="340" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="9" fill="#aaa" letter-spacing="4">UFA &middot; SICILY</text>
-                </svg>
+                <img src="images/The Hands.jpg" alt="The Hands - Stencil art">
             </div>
 
         </div>
@@ -527,10 +407,6 @@
     <div class="page-label-right">PIZZA PLANET &mdash; B2B KIT &mdash; BACKS &mdash; SHEET 2 OF 2</div>
 
     <div class="grid-wrapper">
-        <div class="rm rm-h rm-tl-h"></div><div class="rm rm-v rm-tl-v"></div>
-        <div class="rm rm-h rm-tr-h"></div><div class="rm rm-v rm-tr-v"></div>
-        <div class="rm rm-h rm-bl-h"></div><div class="rm rm-v rm-bl-v"></div>
-        <div class="rm rm-h rm-br-h"></div><div class="rm rm-v rm-br-v"></div>
         <div class="rm rm-h rm-c1-l"></div><div class="rm rm-h rm-c1-r"></div>
         <div class="rm rm-h rm-c2-l"></div><div class="rm rm-h rm-c2-r"></div>
 
@@ -545,16 +421,13 @@
                 <div class="msg-addr">
                     <div class="msg-side">
                         <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
+                        <div class="msg-freeform"></div>
                     </div>
                     <div class="addr-side">
                         <div class="stamp-box">STAMP</div>
                         <div class="addr-lines">
-                            <div class="section-label">Invia A / Send To</div>
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
@@ -563,7 +436,7 @@
                 </div>
                 <div class="back-footer">
                     <div class="qr-section">
-                        <img src="/tmp/qr-pizza-planet.png" alt="QR">
+                        <img src="/tmp/qr-pp-google.png" alt="QR">
                         <div class="qr-label">Pizza Planet<br>Google Maps</div>
                     </div>
                     <div class="metadata">Forno a legna &middot; dal 2000<br>Via Asmara 35, Bonagia<br>Tel. 0923 592609</div>
@@ -580,16 +453,13 @@
                 <div class="msg-addr">
                     <div class="msg-side">
                         <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
+                        <div class="msg-freeform"></div>
                     </div>
                     <div class="addr-side">
                         <div class="stamp-box">STAMP</div>
                         <div class="addr-lines">
-                            <div class="section-label">Invia A / Send To</div>
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
@@ -615,16 +485,13 @@
                 <div class="msg-addr">
                     <div class="msg-side">
                         <div class="section-label">Il Tuo Messaggio / Your Message</div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
-                        <div class="msg-line"></div>
+                        <div class="msg-freeform"></div>
                     </div>
                     <div class="addr-side">
                         <div class="stamp-box">STAMP</div>
                         <div class="addr-lines">
-                            <div class="section-label">Invia A / Send To</div>
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
                             <div class="addr-line"></div>
