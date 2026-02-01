@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizza Planet - Tent Card</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #2C2C2C;
+            background: white;
+        }
+
+        /* ==================== A4 TENT CARD LAYOUT ==================== */
+        /* 50mm top flap + 98.5mm back + 98.5mm front + 50mm bottom flap = 297mm */
+        .page {
+            width: 210mm;
+            height: 297mm;
+            position: relative;
+            background: #FFFDF5;
+            overflow: hidden;
+        }
+
+        /* Fold lines with SVG tick marks */
+        .fold-line {
+            position: absolute;
+            left: 0;
+            width: 210mm;
+            height: 0;
+        }
+        .fold-line-1 { top: 50mm; }
+        .fold-line-2 { top: 148.5mm; }
+        .fold-line-3 { top: 247mm; }
+        .fold-tick {
+            position: absolute;
+            top: -0.15mm;
+            width: 8mm;
+            height: 0.3mm;
+        }
+        .fold-tick svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .fold-tick-l { left: 0; }
+        .fold-tick-r { right: 0; }
+
+        /* ==================== TOP FLAP (50mm) ==================== */
+        .flap-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 210mm;
+            height: 50mm;
+            padding: 8mm 15mm;
+            text-align: center;
+        }
+        .flap-label {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 6pt;
+            color: #bbb;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ==================== BACK PANEL (98.5mm) - rotated 180° ==================== */
+        .panel-back {
+            position: absolute;
+            top: 50mm;
+            left: 0;
+            width: 210mm;
+            height: 98.5mm;
+            transform: rotate(180deg);
+            padding: 10mm 18mm;
+        }
+        .back-title {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 9pt;
+            font-weight: 700;
+            color: #8B0000;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .back-tagline {
+            font-size: 10pt;
+            font-style: italic;
+            color: #8B0000;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .back-info {
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 8pt;
+            color: #555;
+            line-height: 2;
+        }
+        .back-hours {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 7pt;
+            color: #888;
+            text-align: center;
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+        .back-qr {
+            text-align: center;
+            margin-top: 8px;
+        }
+        .back-qr img {
+            width: 50px;
+            height: 50px;
+        }
+        .back-qr-label {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 5.5pt;
+            color: #aaa;
+            margin-top: 2px;
+        }
+        /* Float layout for back panel */
+        .back-left {
+            float: left;
+            width: 60%;
+        }
+        .back-right {
+            float: right;
+            width: 35%;
+            text-align: center;
+            padding-top: 5mm;
+        }
+        .clearfix::after {
+            content: '';
+            display: table;
+            clear: both;
+        }
+
+        /* ==================== FRONT PANEL (98.5mm) ==================== */
+        .panel-front {
+            position: absolute;
+            top: 148.5mm;
+            left: 0;
+            width: 210mm;
+            height: 98.5mm;
+            padding: 8mm 18mm;
+            text-align: center;
+        }
+        /* Pizza slice SVG decoration */
+        .front-icon {
+            margin: 0 auto 6px;
+        }
+        .front-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+        .front-name {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 28pt;
+            font-weight: 900;
+            color: #8B0000;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .front-subtitle {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 8pt;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 12px;
+        }
+        .front-theme {
+            font-size: 22pt;
+            font-style: italic;
+            color: #8B0000;
+            margin-bottom: 3px;
+        }
+        .front-theme-en {
+            font-size: 10pt;
+            font-style: italic;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .front-divider {
+            width: 40px;
+            height: 1.5px;
+            background: #8B0000;
+            margin: 0 auto 10px;
+        }
+        .front-quote {
+            font-size: 9pt;
+            font-style: italic;
+            color: #8B0000;
+            margin-bottom: 2px;
+        }
+        .front-quote-en {
+            font-size: 7.5pt;
+            font-style: italic;
+            color: #999;
+        }
+
+        /* ==================== BOTTOM FLAP (50mm) ==================== */
+        .flap-bottom {
+            position: absolute;
+            top: 247mm;
+            left: 0;
+            width: 210mm;
+            height: 50mm;
+            padding: 8mm 15mm;
+            text-align: center;
+        }
+
+        /* Italian flag - bordered SVG container */
+        .flag-container {
+            width: 160mm;
+            height: 35mm;
+            border-radius: 2mm;
+            overflow: hidden;
+            border: 0.5px solid #ccc;
+            margin: 0 auto 8px;
+        }
+        .flag-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- Fold lines with tick marks -->
+    <div class="fold-line fold-line-1">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+    <div class="fold-line fold-line-2">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+    <div class="fold-line fold-line-3">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- TOP FLAP -->
+    <div class="flap-top">
+        <div class="flap-label">Fold &amp; tape &middot; Piega e incolla</div>
+    </div>
+
+    <!-- BACK PANEL (rotated 180°) -->
+    <div class="panel-back">
+        <div class="clearfix">
+            <div class="back-left">
+                <div class="back-title">Pizza Planet</div>
+                <div class="back-tagline">"Il Signore della Pizza d'Asporto"</div>
+
+                <div class="back-info">
+                    Via Asmara 35, Bonagia<br>
+                    Tel. 0923 592609
+                </div>
+
+                <div class="back-hours">
+                    Mar-Dom / Tue-Sun: 18:00 - 00:00<br>
+                    Luned&igrave; chiuso / Monday closed<br>
+                    Forno a legna &middot; Wood-fired oven
+                </div>
+            </div>
+            <div class="back-right">
+                <div class="back-qr">
+                    <img src="/tmp/qr-pizza-planet.png" alt="QR">
+                    <div class="back-qr-label">Recensioni &amp; Indicazioni<br>Reviews &amp; Directions</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRONT PANEL -->
+    <div class="panel-front">
+        <!-- Pizza SVG icon -->
+        <div class="front-icon">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32 4 L58 56 L6 56 Z" fill="none" stroke="#8B0000" stroke-width="2.5" stroke-linejoin="round"/>
+                <circle cx="28" cy="36" r="4" fill="#8B0000" opacity="0.3"/>
+                <circle cx="38" cy="42" r="3.5" fill="#8B0000" opacity="0.3"/>
+                <circle cx="32" cy="24" r="3" fill="#8B0000" opacity="0.3"/>
+                <path d="M32 4 C32 4 20 30 6 56" fill="none" stroke="#8B0000" stroke-width="0.5" stroke-dasharray="2 3"/>
+                <path d="M32 4 C32 4 44 30 58 56" fill="none" stroke="#8B0000" stroke-width="0.5" stroke-dasharray="2 3"/>
+            </svg>
+        </div>
+
+        <div class="front-name">Pizza Planet</div>
+        <div class="front-subtitle">Bonagia &middot; dal 2000</div>
+
+        <!-- Italian flag - bordered SVG like Camper & Tour -->
+        <div class="flag-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" preserveAspectRatio="none">
+                <rect width="1" height="2" x="0" fill="#009246"/>
+                <rect width="1" height="2" x="1" fill="#F4F5F0"/>
+                <rect width="1" height="2" x="2" fill="#CE2B37"/>
+            </svg>
+        </div>
+
+        <div class="front-theme">Tradizione</div>
+        <div class="front-theme-en">Tradition</div>
+
+        <div class="front-divider"></div>
+
+        <div class="front-quote">"La pizza di Ciccio: un mito trapanese."</div>
+        <div class="front-quote-en">"Ciccio's pizza: a Trapanese legend."</div>
+    </div>
+
+    <!-- BOTTOM FLAP -->
+    <div class="flap-bottom">
+        <div class="flap-label">Fold &amp; tape &middot; Piega e incolla</div>
+    </div>
+</div>
+
+</body>
+</html>
