@@ -1,6 +1,6 @@
 # SESSION STATE - HelixNet Development
 
-*Last Updated: January 31, 2026, 11pm - PuntaTipa Room 101, Trapani*
+*Last Updated: February 1, 2026, 6:15am - PuntaTipa Room 101, Trapani*
 
 ---
 
@@ -8,11 +8,36 @@
 
 **Location:** PuntaTipa Hotel Room 101, Trapani
 **Vehicle:** MAX (camper van) - at Camper & Tour, stove NOT arrived yet (maybe Monday). Hotel booked till Monday night.
-**Status:** Jan 31 -- Day 2 recovery. PACKED IT IN ~11pm. Monster session: SOPs Are Programs manifesto + LinkedIn post + 10 use cases + Piccolo Bistrot A5 bifold menu (v3 with Greek corners, accurate SVG logo, Google Maps QR) + Restaurant Menu SOP-004 + ISOTTO print order template. Pipeline proven end-to-end on a real restaurant client. 7 commits pushed. Good day.
+**Status:** Feb 1 -- Day 3 recovery. Sunday. ISOTTO closed. Up at 6:15am. Stomach still recovering but improving. Fairphone white-screen scare resolved overnight. Planning + prep day.
 
 ---
 
-## TODAY - JAN 31, 2026 (Recovery Day 2)
+## TODAY - FEB 1, 2026 (Recovery Day 3 - Sunday)
+
+### Health
+- [x] Up at 6:15am -- stomach not too bad, still recovering
+- [x] Fairphone back to life (white screen scare last night, resolved)
+- [ ] Day 3 = turning the corner. Water, camomilla, plain food.
+- [ ] Prolife capsule daily
+- [ ] Rest -- don't push it
+
+### Plan (Sunday - ISOTTO closed)
+- [ ] Walk into Piccolo Bistrot -- show menu on phone, feel them out
+- [ ] Gym For You -- pop in, fill intake checklist, snap photos for Google review
+- [ ] Visit Mixology with samples if passing by
+- [ ] QR code tracking research -- dynamic QR for scan analytics (future upsell)
+- [ ] Wax seal test + prep Donny's card for mailing
+
+### Monday Loaded (Feb 2)
+- [ ] Print 004-008 postcards at ISOTTO (5 cards ready)
+- [ ] Print PB menu test copy at ISOTTO (print order HTML ready to email)
+- [ ] Deliver Color Clean tent card on laundry pickup
+- [ ] Check on MAX stove at Camper & Tour
+- [ ] Talk to Mikael (the money man)
+
+---
+
+## YESTERDAY - JAN 31, 2026 (Recovery Day 2)
 
 ### Health
 - [x] Rough night again: 2am wakeup (stomach), 4am can't sleep (NWO anxiety), 5am Duolingo (20 lessons before 5am)
