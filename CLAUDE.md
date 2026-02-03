@@ -227,13 +227,114 @@ Two templates, same math, different orientation:
 - Page 2: Backs (B, A, D, C) -- mirrored for short-edge flip
 - Tell printer: "PORTRAIT PDF = Portrait orientation, LANDSCAPE PDF = Landscape orientation"
 
+**4-UP GOLD Templates (Feb 3, 2026 - LOCKED IN):**
+
+| Template | File | QR Size | Footer Style |
+|----------|------|---------|--------------|
+| Portrait | `templates/4UP-PORTRAIT-GOLD.html` | 30mm | QR stacked, label below |
+| Landscape | `templates/4UP-LANDSCAPE-GOLD.html` | 24mm | QR + label side by side |
+
+**Landscape footer layout (space-optimized):**
+```
+[QR 24mm] Google Maps        [coords]       [address]
+          Reviews•Directions  [tagline]      [phone]
+```
+
+**Key design decisions (DO NOT CHANGE):**
+- Landscape: QR + "Google Maps" side by side (saves vertical space)
+- Landscape: "Reviews • Directions" sublabel (tells what they get)
+- Landscape: NO "Your Message" label (blank space is obvious)
+- Portrait: QR stacked with label below (more vertical room)
+- Both: Footer has red top border (1px solid #8B0000)
+- Both: Phone number bold + red (#8B0000)
+
+**To create new client postcards:**
+1. Copy the GOLD template for the orientation you need
+2. Replace images, quotes, business info, QR code
+3. DO NOT touch the footer layout - it's perfected
+
 **UFA Wolf Philosophy (QR codes):**
 - One shot, one kill
 - Don't give people choices, give them THE choice
 - A QR code is a command: "Scan this." Not "scan one of these three things maybe."
 - All cards get Google Maps QR only -- directions + reviews + call in one scan
 
+**QR Code URLs - CRITICAL DISTINCTION (Feb 3, 2026 lesson):**
+
+| Type | URL Format | Result | USE THIS? |
+|------|------------|--------|-----------|
+| **PLACE link** | `https://maps.google.com/?cid=XXXXX` or `https://g.page/shortname` | Reviews, directions, call, hours, photos | YES |
+| **Coordinates** | `https://www.google.com/maps?q=38.064,12.597` | Pin on map, street view only | NO |
+
+**How to get the PLACE link:**
+1. Search business on Google Maps
+2. Click "Share" → "Copy link"
+3. That's the link with `?cid=` or `g.page` - use THIS for QR
+
+**NEVER use DMS coordinates for QR** - they just drop a pin with no business info.
+
+**QR Verification Checklist (before print):**
+- [ ] Scan the QR with phone
+- [ ] Confirm it opens Google Maps PLACE (not just coordinates)
+- [ ] Confirm you see: business name, reviews, "Directions" button, "Call" button
+- [ ] If you only see a pin with street view = WRONG QR, regenerate
+
 **PDF generation:** `node scripts/postcard-to-pdf.js input.html output.pdf`
+
+### Print Kit Structure (ISOTTO Runs) - Feb 3, 2026
+
+**Every print run gets a complete kit. No loose files. No guessing.**
+
+**Folder naming:**
+```
+ClientName-ISOTTO/YYYY-MM-DD - Description/
+```
+
+**Required contents:**
+```
+ClientName-ISOTTO/
+└── YYYY-MM-DD - Description/
+    ├── PRINT-INSTRUCTIONS.md      ← SOURCE (edit this)
+    ├── PRINT-INSTRUCTIONS.html    ← STYLED (show to printer)
+    ├── client-4UP-PORTRAIT.pdf    ← Print file
+    ├── client-4UP-LANDSCAPE.pdf   ← Print file
+    ├── client-4UP-PORTRAIT.html   ← Source HTML (for on-site fixes)
+    ├── client-4UP-LANDSCAPE.html  ← Source HTML (for on-site fixes)
+    └── images-pollinations/       ← Images used by HTML
+```
+
+**PRINT-INSTRUCTIONS.md must include:**
+1. **Files to Print** - Table with filename, orientation, result
+2. **Print Settings** - Paper weight, duplex mode, scale, margins
+3. **CRITICAL setting** - SHORT EDGE FLIP (Voltare sul lato corto)
+4. **Order Quantity** - Sheets, cards, budget
+5. **Cut Dimensions for Cutter Machine** - Exact numbers so printer doesn't do math
+6. **Cutting Guide** - ASCII diagram showing 2-cut method
+7. **Quality Checklist** - Checkboxes for printer to verify
+8. **Backup Files** - What to use if edits needed on-site
+
+**Standard 4-UP Cut Dimensions (enter directly into cutter):**
+| PDF | Page Size | Horizontal Cut | Vertical Cut |
+|-----|-----------|----------------|--------------|
+| PORTRAIT | 210 x 297mm | 148.5mm | 105mm |
+| LANDSCAPE | 297 x 210mm | 105mm | 148.5mm |
+
+**PRINT-INSTRUCTIONS.html features:**
+- Red header with client name and date
+- Tables for settings and files
+- Orange warning box for CRITICAL settings
+- Blue cutting diagram
+- Green checklist with empty checkboxes
+- Professional look - printer takes you seriously
+
+**Workflow:**
+1. Create .md first (easy to edit)
+2. Generate .html from .md template (or hand-code)
+3. **VERIFY QR CODE** - Scan it, confirm Google Maps PLACE opens (not just coordinates)
+4. Copy entire folder to USB
+5. Tell printer: "Open PRINT-INSTRUCTIONS.html first"
+
+**Template location:** `/UFA_r2p/PRINT-INSTRUCTIONS.html` (copy and customize)
 
 **ONLY use Puppeteer (Chrome headless)** for all PDF generation. wkhtmltopdf and weasyprint are UNINSTALLED.
 - wkhtmltopdf (Qt WebKit ~2016) caused blank second pages, black bars from CSS gradients, broken flexbox. Uninstalled Jan 29, 2026.
@@ -561,10 +662,13 @@ Equal flaps = fits envelopes cleanly
 
 ### Clients
 
-| # | Business | Theme | Status |
-|---|----------|-------|--------|
-| 1 | Camper & Tour | Libertà / Freedom | PRINTED + APPROVED by Nino |
-| 2 | Mixology Trapani | Spirito / Spirit | PoC draft, needs approval |
+| # | Business | Format | Status |
+|---|----------|--------|--------|
+| 1 | Camper & Tour | Tent Card | PRINTED + APPROVED by Nino |
+| 2 | Mixology Trapani | Tent Card | PoC draft, needs approval |
+| 3 | Pizza Planet | 4-UP (Portrait + Landscape) | Ready for print, Feb 3 |
+| 4 | Color Clean | 4-UP | Pipeline |
+| 5 | Piccolo Bistratto | 4-UP | Pipeline |
 
 ---
 
@@ -607,7 +711,7 @@ Equal flaps = fits envelopes cleanly
 
 ---
 
-*Last updated: January 27, 2026, 10pm - Tent Card v2 printed at ISOTTO, Mixology PoC drafted*
+*Last updated: February 3, 2026, 6:30pm - 4-UP GOLD templates locked in, QR best practices documented, Pizza Planet v3 ready*
 *"NEVER say fixed without verifying the output."*
 *"Casa è dove parcheggi." - Home is where you park it.*
 *"ZERO CUTS - just fold and tape!"*

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Instructions - Pizza Planet 4-UP Postcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .header .date {
+            margin-top: 15px;
+            font-size: 14px;
+            background: rgba(255,255,255,0.2);
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #d32f2f;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f8f8;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .file-name {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .critical-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .critical-box h3 {
+            color: #e65100;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .critical-box .setting {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e65100;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 10px;
+            border: 2px dashed #ff9800;
+        }
+
+        .cutting-guide {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .cutting-guide pre {
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            display: inline-block;
+            text-align: left;
+        }
+
+        .checklist {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .checklist-item {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #4caf50;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .total-row {
+            background: #e8f5e9 !important;
+            font-weight: bold;
+        }
+
+        .budget-box {
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .footer {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .footer .brand {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PRINT INSTRUCTIONS</h1>
+            <div class="subtitle">Pizza Planet 4-UP Postcard Kit</div>
+            <div class="date">February 3, 2026</div>
+        </div>
+
+        <div class="content">
+            <!-- FILES TO PRINT -->
+            <div class="section">
+                <h2>Files to Print</h2>
+                <table>
+                    <tr>
+                        <th>File</th>
+                        <th>Page Orientation</th>
+                        <th>Result</th>
+                    </tr>
+                    <tr>
+                        <td><span class="file-name">pizza-planet-4UP-PORTRAIT-v2.pdf</span></td>
+                        <td>A4 PORTRAIT</td>
+                        <td>4 portrait postcards</td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-name">pizza-planet-4UP-LANDSCAPE-v2.pdf</span></td>
+                        <td>A4 LANDSCAPE</td>
+                        <td>4 landscape postcards</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- PRINT SETTINGS -->
+            <div class="section">
+                <h2>Print Settings</h2>
+                <table>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Paper</td>
+                        <td><strong>300gsm</strong> matte card stock</td>
+                    </tr>
+                    <tr>
+                        <td>Color</td>
+                        <td>Full color <strong>BOTH SIDES</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Duplex</td>
+                        <td><strong>YES - SHORT EDGE FLIP</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Scale</td>
+                        <td>100% (do NOT fit to page)</td>
+                    </tr>
+                    <tr>
+                        <td>Margins</td>
+                        <td>None / Borderless</td>
+                    </tr>
+                </table>
+
+                <div class="critical-box">
+                    <h3>CRITICAL SETTING</h3>
+                    <p>Duplex must be set to:</p>
+                    <div class="setting">SHORT EDGE FLIP</div>
+                    <p style="margin-top: 10px; font-style: italic;">Italian: "Voltare sul lato corto"</p>
+                    <p style="margin-top: 10px;">This ensures backs align with fronts when cut.</p>
+                </div>
+            </div>
+
+            <!-- ORDER QUANTITY -->
+            <div class="section">
+                <h2>Order Quantity</h2>
+                <table>
+                    <tr>
+                        <th>Item</th>
+                        <th>Sheets</th>
+                        <th>Cards</th>
+                    </tr>
+                    <tr>
+                        <td>Portrait set</td>
+                        <td>2</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td>Landscape set</td>
+                        <td>2</td>
+                        <td>8</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td>4 sheets</td>
+                        <td>16 cards</td>
+                    </tr>
+                </table>
+                <div style="margin-top: 15px; text-align: center;">
+                    <div class="budget-box">Budget: ~10 EUR</div>
+                </div>
+            </div>
+
+            <!-- CUTTING GUIDE -->
+            <div class="section">
+                <h2>Cutting Guide</h2>
+
+                <!-- CUT DIMENSIONS TABLE -->
+                <div class="critical-box" style="background: #e3f2fd; border-left-color: #1976d2; margin-bottom: 20px;">
+                    <h3 style="color: #1565c0;">CUTTER MACHINE DIMENSIONS</h3>
+                    <table style="margin: 15px 0;">
+                        <tr>
+                            <th>PDF</th>
+                            <th>Page Size</th>
+                            <th>Horizontal Cut</th>
+                            <th>Vertical Cut</th>
+                        </tr>
+                        <tr>
+                            <td><strong>PORTRAIT</strong></td>
+                            <td>210 x 297mm</td>
+                            <td style="font-size: 18px; font-weight: bold; color: #1565c0;">148.5mm</td>
+                            <td style="font-size: 18px; font-weight: bold; color: #1565c0;">105mm</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LANDSCAPE</strong></td>
+                            <td>297 x 210mm</td>
+                            <td style="font-size: 18px; font-weight: bold; color: #1565c0;">105mm</td>
+                            <td style="font-size: 18px; font-weight: bold; color: #1565c0;">148.5mm</td>
+                        </tr>
+                    </table>
+                    <p style="color: #1565c0;"><strong>Enter these numbers directly into cutter - no math needed!</strong></p>
+                </div>
+
+                <div class="cutting-guide">
+                    <p style="margin-bottom: 15px;">Visual reference:</p>
+                    <pre>
+PORTRAIT (210x297)              LANDSCAPE (297x210)
+┌────────┬────────┐             ┌──────────┬──────────┐
+│   A    │   B    │             │    A     │    B     │
+├────────┼────────┤ 148.5mm     ├──────────┼──────────┤ 105mm
+│   C    │   D    │             │    C     │    D     │
+└────────┴────────┘             └──────────┴──────────┘
+       105mm                          148.5mm
+                    </pre>
+                    <p style="margin-top: 15px; color: #1565c0;"><strong>3mm white frame is built into each card</strong></p>
+                </div>
+            </div>
+
+            <!-- QUALITY CHECKLIST -->
+            <div class="section">
+                <h2>Quality Checklist</h2>
+                <div class="checklist">
+                    <div class="checklist-item">
+                        <span class="checkbox"></span>
+                        <span>Paper is 300gsm or heavy card stock</span>
+                    </div>
+                    <div class="checklist-item">
+                        <span class="checkbox"></span>
+                        <span>Duplex is SHORT EDGE FLIP</span>
+                    </div>
+                    <div class="checklist-item">
+                        <span class="checkbox"></span>
+                        <span>Colors are vibrant (not washed out)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <span class="checkbox"></span>
+                        <span>Scale is 100% (cards ~99mm x 142mm)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <span class="checkbox"></span>
+                        <span>Test print 1 sheet first before full run</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACKUP FILES -->
+            <div class="section">
+                <h2>Backup Files (if edits needed)</h2>
+                <table>
+                    <tr>
+                        <th>File</th>
+                        <th>Purpose</th>
+                    </tr>
+                    <tr>
+                        <td><span class="file-name">postcards-pizza-planet-A4-PORTRAIT-v2.html</span></td>
+                        <td>Source for portrait PDF</td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-name">postcards-pizza-planet-A4-LANDSCAPE-v2.html</span></td>
+                        <td>Source for landscape PDF</td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-name">images-pollinations/</span></td>
+                        <td>Image files used in HTML</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 15px; color: #666;"><strong>To regenerate PDF:</strong> Open HTML in Chrome → Print → Save as PDF</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div style="font-size: 18px; margin-bottom: 5px;">Grazie mille!</div>
+            <div class="brand">HelixNet UFA Foo Fighters - Trapani, Sicily</div>
+            <div style="margin-top: 10px; font-size: 12px;">Contact: Angelo (BigKingFisher) - Telegram @BigKingFisher</div>
+        </div>
+    </div>
+</body>
+</html>

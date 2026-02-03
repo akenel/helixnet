@@ -1,0 +1,54 @@
+PIZZA PLANET 4-UP POSTCARD PRINT KIT
+=====================================
+Date: Feb 3, 2026
+Client: Pizza Planet, Bonagia
+Contact: Angelo (BigKingFisher)
+
+FILES TO PRINT:
+---------------
+1. pizza-planet-4UP-PORTRAIT-v2.pdf
+   - A4 PORTRAIT page orientation
+   - DUPLEX: Short-edge flip
+   - Page 1 = Fronts (images)
+   - Page 2 = Backs (QR + info)
+   - Result: 4 portrait postcards per sheet
+
+2. pizza-planet-4UP-LANDSCAPE-v2.pdf
+   - A4 LANDSCAPE page orientation
+   - DUPLEX: Short-edge flip
+   - Page 1 = Fronts (images)
+   - Page 2 = Backs (QR + info)
+   - Result: 4 landscape postcards per sheet
+
+PRINT SETTINGS:
+---------------
+- Paper: 300gsm matte card stock (or best available)
+- Color: FULL COLOR both sides
+- Duplex: YES - SHORT EDGE FLIP (critical!)
+- Scale: 100% (do not fit to page)
+- Margins: None / Borderless if possible
+
+CUTTING:
+--------
+After printing, cut each A4 into 4 cards:
+- 1 horizontal cut through center
+- 1 vertical cut through center
+- Each card has 3mm white frame built-in
+
+BUDGET:
+-------
+- Target: 10 EUR total
+- 2 sheets PORTRAIT + 2 sheets LANDSCAPE = 16 cards
+- Or adjust quantity as needed
+
+BACKUP FILES:
+-------------
+HTML source files included if any last-minute edits needed:
+- postcards-pizza-planet-A4-PORTRAIT-v2.html
+- postcards-pizza-planet-A4-LANDSCAPE-v2.html
+(Open in Chrome, print to PDF if changes made)
+
+NOTE: Both PDFs are ready to print. No adjustments needed.
+      Images are embedded. QR codes link to Google Maps.
+
+Grazie mille!
