@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>ISOTTO - Ordine di Stampa / Print Order - Pizza Planet</title>
+    <style>
+        @page { size: A4 portrait; margin: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #222; background: white; }
+        .page { width: 210mm; padding: 10mm 16mm; }
+        h1 { font-size: 15pt; color: #8B0000; margin-bottom: 2mm; }
+        h2 { font-size: 10pt; color: #2C3E50; margin-top: 4mm; margin-bottom: 2mm; border-bottom: 1px solid #ddd; padding-bottom: 1mm; }
+        .subtitle { font-size: 8pt; color: #888; margin-bottom: 4mm; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; font-size: 8pt; }
+        th { background: #2C3E50; color: white; padding: 1.5mm 3mm; text-align: left; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 1.5mm 3mm; border-bottom: 0.5px solid #eee; vertical-align: top; }
+        tr:nth-child(even) { background: #FAFAFA; }
+        .important { background: #FDF2F2; border: 1px solid #E8CACA; border-radius: 2mm; padding: 2mm 3mm; margin-bottom: 3mm; font-size: 7.5pt; }
+        .important strong { color: #C0392B; }
+        .checklist { font-size: 7.5pt; line-height: 1.7; }
+        .checklist li { list-style: none; padding-left: 2mm; }
+        .checklist li::before { content: "[ ] "; font-family: monospace; }
+        .footer { margin-top: 4mm; padding-top: 2mm; border-top: 1px solid #ddd; font-size: 7pt; color: #aaa; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <h1>ORDINE DI STAMPA / PRINT ORDER</h1>
+    <div class="subtitle">Cliente / Client: Pizza Planet &middot; Bonagia, Trapani &middot; Data / Date: 2 Febbraio 2026</div>
+
+    <h2>FILE DA STAMPARE / FILES TO PRINT</h2>
+    <table>
+        <tr>
+            <th>#</th>
+            <th>File</th>
+            <th>Formato / Format</th>
+            <th>Pagine / Pages</th>
+            <th>Stampa / Print</th>
+            <th>Copie / Copies</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td><strong>postcards-pizza-planet-B2B.pdf</strong><br>Cartoline 6 pezzi / 6-card postcard kit</td>
+            <td>A4 Verticale / Portrait</td>
+            <td>4 (2 fogli fronte-retro / 2 sheets duplex)</td>
+            <td>Fronte-retro, bordo corto<br>Duplex, short-edge binding</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><strong>postcard-pizza-planet-TENT.pdf</strong><br>Biglietto da tavolo / Tent card</td>
+            <td>A4 Verticale / Portrait</td>
+            <td>1 (solo fronte / single side)</td>
+            <td>Solo fronte<br>Single side only</td>
+            <td>5</td>
+        </tr>
+    </table>
+
+    <h2>SPECIFICHE DI STAMPA / PRINT SPECIFICATIONS</h2>
+
+    <div class="important">
+        <strong>IMPORTANTE / IMPORTANT:</strong> Le cartoline (File 1) devono essere stampate fronte-retro con rilegatura bordo corto, NON bordo lungo. Questo assicura che il retro sia allineato correttamente con il fronte.<br>
+        The postcards (File 1) must be printed duplex with SHORT-EDGE binding, NOT long-edge. This ensures the back aligns correctly with the front.
+    </div>
+
+    <table>
+        <tr>
+            <th>Specifica / Spec</th>
+            <th>File 1: Cartoline / Postcards</th>
+            <th>File 2: Biglietto / Tent Card</th>
+        </tr>
+        <tr>
+            <td>Carta / Paper</td>
+            <td>160-200 gsm, bianca / white</td>
+            <td>160-200 gsm, bianca / white</td>
+        </tr>
+        <tr>
+            <td>Colore / Color</td>
+            <td>A colori / Full colour</td>
+            <td>A colori / Full colour</td>
+        </tr>
+        <tr>
+            <td>Fronte-retro / Duplex</td>
+            <td><strong>SI -- bordo corto / YES -- short-edge</strong></td>
+            <td>NO -- solo fronte / single side</td>
+        </tr>
+        <tr>
+            <td>Scala / Scale</td>
+            <td>100% -- non scalare / do not scale</td>
+            <td>100% -- non scalare / do not scale</td>
+        </tr>
+        <tr>
+            <td>Margini / Margins</td>
+            <td>Nessuno / None (senza bordi / borderless)</td>
+            <td>Nessuno / None (senza bordi / borderless)</td>
+        </tr>
+        <tr>
+            <td>Dopo stampa / After print</td>
+            <td>Tagliare a mano / Hand-cut into 3 cards per sheet</td>
+            <td>Piegare in 3 / Fold into tent card</td>
+        </tr>
+    </table>
+
+    <h2>DIAGRAMMA PIEGATURA TENT CARD / FOLD DIAGRAM</h2>
+    <div class="important">
+        <strong>Piegatura / Folding:</strong> Il biglietto da tavolo ha 3 piegature segnate con tacche ai bordi. Piegare alle tacche: linguetta superiore (40mm) verso il basso, linguetta inferiore (40mm) verso l'alto, piega principale al centro. Incollare le linguette all'interno.<br>
+        The tent card has 3 fold lines marked with tick marks at the edges. Fold at the ticks: top flap (40mm) folds down, bottom flap (40mm) folds up, main fold at center. Tape flaps inside.
+    </div>
+
+    <h2>LAYOUT CARTOLINE / POSTCARD LAYOUT</h2>
+    <div class="important">
+        <strong>Taglio / Cutting:</strong> Ogni foglio A4 contiene 3 cartoline (137.6 x 93mm). Spazio di 6mm tra le cartoline. Tagliare al centro degli spazi. Margine esterno 3mm -- non serve taglio preciso, il bordo bianco viene rimosso.<br>
+        Each A4 sheet contains 3 postcards (137.6 x 93mm). 6mm gaps between cards. Cut in the middle of the gaps. 3mm outer margin -- no precision cutting needed, the white border gets trimmed.
+    </div>
+
+    <h2>CHECKLIST PRIMA DI STAMPARE / PRE-PRINT CHECKLIST</h2>
+    <ul class="checklist">
+        <li>Stampare 1 copia di prova prima del lotto completo / Print 1 test copy before full run</li>
+        <li>Verificare fronte-retro allineato (cartoline) / Verify duplex alignment (postcards)</li>
+        <li>Verificare colori vivaci sulle immagini / Verify vibrant colours on images</li>
+        <li>Verificare QR code leggibile / Verify QR code is scannable</li>
+        <li>Verificare testo non tagliato ai bordi / Verify text is not cut at edges</li>
+        <li>Piegare il biglietto di prova -- deve stare in piedi / Fold test tent card -- must stand upright</li>
+    </ul>
+
+    <div class="footer">
+        <div>UFA &middot; Handmade in Sicily &middot; Ordine per ISOTTO Sport, Trapani</div>
+        <div>Angelo Kenel &middot; Ecolution GmbH &middot; +41 79 828 2841</div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -31,7 +31,7 @@ async function generatePDF(inputHtml, outputPdf) {
 
     await page.pdf({
         path: outputPdf,
-        format: 'A4',
+        preferCSSPageSize: true,
         margin: { top: '0', bottom: '0', left: '0', right: '0' },
         displayHeaderFooter: false,
         printBackground: true

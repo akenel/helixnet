@@ -60,9 +60,13 @@ Full story: `/field-notes-with-leo-dec5.md`
 | Nino | Sebastino's son, runs the show, speaks excellent English, met at McDonald's |
 | Paulo (Maltese) | Caffè Maltese owner, CBD vending partner |
 | Carmello | Midnight fisherman at Baglio Xiare |
-| ISOTTO Sport | Print + merch partner, Via Buscaino area, since 1968, WhatsApp +39 349 972 9418 |
+| ISOTTO Sport | Print + merch partner, Via Buscaino area, since 1968, WhatsApp +39 349 972 9418, Famous Guy knows his stuff |
 | Mixology Trapani | Beverage wholesale, Via M. Buscaino 15, Tel 0923 390052, FB @mixologytp |
 | Marcello Virzi | Sales Manager, Tenute Parrinello winery (since 1936), Marsala - meeting end of week |
+| Kevin Galilee | World passport holder, insane in a good way, camping/shower host near HQ |
+| Color Clean | Lavanderia, Via Virgilio 71/73, loved the tent card + review, wants full card set |
+| Pizza Planet | Ciccio's place, Via Vespucci 13 Bonagia, 38°03'51"N 12°35'49"E, forno a legna dal 2000 |
+| Piccolo Bistratto | Giovanni's place, Jonathan the chef, Paolo (friend), wants card set |
 
 ### Core
 | Name | Role |
@@ -71,15 +75,17 @@ Full story: `/field-notes-with-leo-dec5.md`
 
 ---
 
-## CURRENT SITUATION (Jan 27, 2026)
+## CURRENT SITUATION (Feb 3, 2026)
 
 - **Location:** Trapani, Sicily - PuntaTipa Hotel Room 101
-- **Vehicle:** MAX (camper) - stove install tomorrow at Sebastino's, cleanup done
-- **Insurance:** AXA claim 22.831.735/0001 - no deductible, adjuster contacting repair shop
-- **RAV:** CLOSED OUT - all forms submitted, 27 vacation days approved, benefits end Jan 31
+- **Vehicle:** MAX (camper) - stove install Thursday at Sebastino's
+- **Insurance:** AXA claim 22.831.735/0001 - no deductible, waiting on adjuster
+- **RAV:** CLOSED OUT - benefits ended Jan 31
 - **Mission:** The Great Escape - building UFA postcard/merch business in Sicily
-- **HQ:** Baglio Xiare (38°04'40"N 12°38'39"E)
-- **Print partner:** ISOTTO Sport, Trapani - printing, clothing, merch, small runs since 1968
+- **HQ:** Baglio Xiare (38°04'40"N 12°38'39"E) - Kevin offers camping + showers
+- **Print partner:** ISOTTO Sport, Trapani - printing, clothing, merch, since 1968
+- **Dharma Life:** Meeting done Feb 3, Vyoma demo, waiting for instance access + recording
+- **Postcard pipeline:** Pizza Planet (tonight), Color Clean (card set), Piccolo Bistratto (card set)
 
 ---
 
@@ -180,7 +186,7 @@ postcards/[name]/*.html          →  UFA_r2p/*.pdf
 - Page labels top/bottom centered
 - Cost: 50 cents per card (1 EUR per A4 = 2 cards)
 
-**Format B: 3-card layout (004+) -- PREFERRED:**
+**Format B: 3-card layout (004+):**
 - 137.6mm x 93mm cards (5% proportional scale), 3 per A4 sheet
 - 6mm gaps between cards (3mm safety each side for hand-cutting)
 - 3mm frame: cards positioned top-left (`position: absolute; top: 3mm; left: 3mm`)
@@ -191,12 +197,49 @@ postcards/[name]/*.html          →  UFA_r2p/*.pdf
 - Cost: **33 cents per card** (1 EUR per A4 = 3 cards)
 - SVG for graphic-only fronts (e.g., 005 Italian flag) -- no raster images needed, prints razor sharp
 
+**Format C: 4-UP layout (Feb 3, 2026) -- PREFERRED for B2B:**
+Two templates, same math, different orientation:
+
+**C1: A4 PORTRAIT page = PORTRAIT images**
+- `@page { size: A4 portrait; }` (210mm x 297mm)
+- Card size: **99mm x 142.5mm** (taller than wide)
+- 2x2 grid, 3mm frame all edges, 6mm gap middle
+- Math: 3 + 99 + 6 + 99 + 3 = 210mm width ✓
+- Math: 3 + 142.5 + 6 + 142.5 + 3 = 297mm height ✓
+- Template: `postcards-pizza-planet-A4-PORTRAIT.html`
+
+**C2: A4 LANDSCAPE page = LANDSCAPE images**
+- `@page { size: A4 landscape; }` (297mm x 210mm)
+- Card size: **142.5mm x 99mm** (wider than tall)
+- 2x2 grid, 3mm frame all edges, 6mm gap middle
+- Math: 3 + 142.5 + 6 + 142.5 + 3 = 297mm width ✓
+- Math: 3 + 99 + 6 + 99 + 3 = 210mm height ✓
+- Template: `postcards-pizza-planet-A4-LANDSCAPE.html`
+
+**4-UP Cutting:**
+- 1 horizontal cut through center
+- 1 vertical cut through center
+- Result: 4 cards with 3mm white frame on all sides
+- Cost: **25 cents per card** (1 EUR per A4 = 4 cards)
+
+**4-UP Duplex Printing:**
+- Page 1: Fronts (A, B, C, D)
+- Page 2: Backs (B, A, D, C) -- mirrored for short-edge flip
+- Tell printer: "PORTRAIT PDF = Portrait orientation, LANDSCAPE PDF = Landscape orientation"
+
+**UFA Wolf Philosophy (QR codes):**
+- One shot, one kill
+- Don't give people choices, give them THE choice
+- A QR code is a command: "Scan this." Not "scan one of these three things maybe."
+- All cards get Google Maps QR only -- directions + reviews + call in one scan
+
 **PDF generation:** `node scripts/postcard-to-pdf.js input.html output.pdf`
 
 **ONLY use Puppeteer (Chrome headless)** for all PDF generation. wkhtmltopdf and weasyprint are UNINSTALLED.
 - wkhtmltopdf (Qt WebKit ~2016) caused blank second pages, black bars from CSS gradients, broken flexbox. Uninstalled Jan 29, 2026.
 - weasyprint chokes on flexbox/floats/gradients. Never worked. Uninstalled.
 - Puppeteer uses real Chrome 144 -- modern CSS, exact 1-page output, printBackground support. Foo Fighters use real tools.
+- **Key setting:** `preferCSSPageSize: true` -- respects `@page { size: A4 landscape; }` from CSS (added Feb 3, 2026)
 
 ### CRITICAL: What "1-Pager" Means (Jan 25, 2026 Late Night Lesson)
 
