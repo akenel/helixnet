@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HelixNet - Platform Overview for Dharma Life</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #222;
+            background: white;
+        }
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 15mm 18mm;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2.5px solid #C0392B;
+            padding-bottom: 3mm;
+            margin-bottom: 4mm;
+        }
+        .brand {
+            font-size: 22pt;
+            font-weight: 900;
+            color: #C0392B;
+            letter-spacing: 2px;
+        }
+        .brand-sub {
+            font-size: 8pt;
+            color: #888;
+            letter-spacing: 1px;
+            margin-top: 1mm;
+        }
+        .header-right {
+            text-align: right;
+            font-size: 7pt;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        /* Tagline */
+        .tagline {
+            text-align: center;
+            font-size: 13pt;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 3mm;
+            padding: 2mm 0;
+        }
+        .tagline-sub {
+            font-size: 8pt;
+            color: #666;
+            font-weight: 400;
+            margin-top: 1mm;
+        }
+
+        /* Two columns */
+        .columns {
+            display: flex;
+            gap: 6mm;
+            margin-bottom: 3mm;
+        }
+        .col {
+            flex: 1;
+        }
+
+        /* Section headers */
+        .section-title {
+            font-size: 9pt;
+            font-weight: 800;
+            color: #C0392B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 1.5mm;
+            margin-bottom: 3mm;
+        }
+
+        /* Bullet items */
+        .item {
+            font-size: 7.5pt;
+            line-height: 1.6;
+            margin-bottom: 1.5mm;
+            padding-left: 3mm;
+            border-left: 2px solid #E8E8E8;
+        }
+        .item strong {
+            color: #2C3E50;
+        }
+        .item-highlight {
+            border-left: 2px solid #C0392B;
+        }
+
+        /* Problem/Solution */
+        .ps-grid {
+            display: flex;
+            gap: 4mm;
+            margin-bottom: 3mm;
+        }
+        .ps-box {
+            flex: 1;
+            padding: 3mm 4mm;
+            border-radius: 2mm;
+        }
+        .ps-problem {
+            background: #FDF2F2;
+            border: 0.5px solid #E8CACA;
+        }
+        .ps-solution {
+            background: #F0F7F0;
+            border: 0.5px solid #C8DCC8;
+        }
+        .ps-title {
+            font-size: 8pt;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2mm;
+        }
+        .ps-problem .ps-title { color: #C0392B; }
+        .ps-solution .ps-title { color: #27AE60; }
+        .ps-text {
+            font-size: 7.5pt;
+            line-height: 1.7;
+            color: #444;
+        }
+
+        /* Comparison table */
+        .comparison {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 3mm;
+            font-size: 7.5pt;
+        }
+        .comparison th {
+            background: #2C3E50;
+            color: white;
+            padding: 2mm 3mm;
+            text-align: left;
+            font-weight: 700;
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .comparison td {
+            padding: 2mm 3mm;
+            border-bottom: 0.5px solid #eee;
+            vertical-align: top;
+        }
+        .comparison tr:nth-child(even) {
+            background: #FAFAFA;
+        }
+        .comparison .helixnet-col {
+            color: #27AE60;
+            font-weight: 700;
+        }
+        .comparison .sap-col {
+            color: #C0392B;
+        }
+
+        /* Use case section */
+        .usecase {
+            background: #F8F9FA;
+            border: 0.5px solid #E0E0E0;
+            border-radius: 2mm;
+            padding: 3mm 4mm;
+            margin-bottom: 3mm;
+        }
+        .usecase-title {
+            font-size: 9pt;
+            font-weight: 800;
+            color: #2C3E50;
+            margin-bottom: 2mm;
+        }
+        .usecase-text {
+            font-size: 7.5pt;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 12mm;
+            left: 18mm;
+            right: 18mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px solid #ddd;
+            padding-top: 3mm;
+        }
+        .footer-left {
+            font-size: 6pt;
+            color: #aaa;
+        }
+        .footer-right {
+            font-size: 6pt;
+            color: #aaa;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <div class="brand">HELIXNET</div>
+            <div class="brand-sub">Open Platform &middot; API-First &middot; Built to Adapt</div>
+        </div>
+        <div class="header-right">
+            Prepared for Dharma Life Foundation<br>
+            February 2, 2026
+        </div>
+    </div>
+
+    <!-- TAGLINE -->
+    <div class="tagline">
+        An Open Foundation for Dharma Life<br>
+        <div class="tagline-sub">Vyoma documents your processes. HelixNet gives you the platform to run them. No walled garden. No per-seat licensing. We build it together.</div>
+    </div>
+
+    <!-- PROBLEM / SOLUTION -->
+    <div class="ps-grid">
+        <div class="ps-box ps-problem">
+            <div class="ps-title">Why Not SAP</div>
+            <div class="ps-text">
+                SAP Public Cloud costs &euro;800K+ in licensing, locks you into a proprietary ecosystem, charges per seat, and takes 6-12 months to implement. For a non-profit scaling from 17K to 50K micro-entrepreneurs, it's the wrong tool at the wrong price.
+            </div>
+        </div>
+        <div class="ps-box ps-solution">
+            <div class="ps-title">Vyoma + HelixNet</div>
+            <div class="ps-text">
+                Vyoma provides AI-powered process documentation (replacing Signavio). HelixNet provides an open-source ERP and middleware foundation -- working REST APIs, authentication, data models, and containerized deployment. We configure and extend it to fit Dharma Life's needs.
+            </div>
+        </div>
+    </div>
+
+    <!-- WHAT EXISTS TODAY TABLE -->
+    <div class="section-title">What HelixNet Has Today (Built &amp; Running)</div>
+    <table class="comparison">
+        <tr>
+            <th>Component</th>
+            <th>Status</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>REST API</td>
+            <td class="helixnet-col">Built</td>
+            <td>~80 endpoints across 12 route modules (FastAPI + Python)</td>
+        </tr>
+        <tr>
+            <td>Data Models</td>
+            <td class="helixnet-col">Built</td>
+            <td>20+ active SQLAlchemy models with PostgreSQL + Alembic migrations</td>
+        </tr>
+        <tr>
+            <td>Authentication</td>
+            <td class="helixnet-col">Built</td>
+            <td>Keycloak OIDC with JWT RS256, 5-role RBAC enforced per endpoint</td>
+        </tr>
+        <tr>
+            <td>Infrastructure</td>
+            <td class="helixnet-col">Built</td>
+            <td>Docker Compose multi-stack: PostgreSQL, Redis, RabbitMQ, Traefik, Celery workers, MinIO</td>
+        </tr>
+        <tr>
+            <td>POS Module</td>
+            <td class="helixnet-col">Demo-ready</td>
+            <td>Full checkout, barcode scan, shifts, loyalty, 12 web templates</td>
+        </tr>
+        <tr>
+            <td>HR / Payroll</td>
+            <td class="helixnet-col">Demo-ready</td>
+            <td>Time entries, approval workflow, payroll calculations</td>
+        </tr>
+        <tr>
+            <td>Dharma Life Modules</td>
+            <td class="sap-col">To Build</td>
+            <td>DLE registry, field data inputs, funder dashboards, interfaces</td>
+        </tr>
+    </table>
+
+    <!-- TWO COLUMN: What We Bring + What We Build -->
+    <div class="columns">
+        <div class="col">
+            <div class="section-title">Platform Foundation (Exists)</div>
+            <div class="item"><strong>FastAPI + PostgreSQL</strong> -- Production-grade Python backend with async support, database migrations, and seed data infrastructure</div>
+            <div class="item"><strong>Keycloak SSO</strong> -- Enterprise authentication with role-based access. 5 roles defined and enforced: cashier, manager, admin, developer, auditor</div>
+            <div class="item"><strong>Open REST APIs</strong> -- ~80 endpoints built. Every function API-accessible. Connect any frontend, mobile app, or third-party system</div>
+            <div class="item"><strong>Docker Multi-Stack</strong> -- 14+ containerized services with health checks, orchestrated via Makefile. Traefik reverse proxy, Celery workers, object storage</div>
+        </div>
+        <div class="col">
+            <div class="section-title">Dharma Life Scope (To Build)</div>
+            <div class="item item-highlight"><strong>Data Inputs</strong> -- Custom forms for DLE onboarding, field data collection, sales tracking, inventory, and impact measurement. Built on existing model + API patterns</div>
+            <div class="item item-highlight"><strong>System Interfaces</strong> -- Connect DL's existing systems (CRM, accounting, funder portals) via new API endpoints. Open architecture, no vendor lock-in</div>
+            <div class="item item-highlight"><strong>Entrepreneur Registry</strong> -- New data models for 50,000 DLEs: profiles, locations, performance metrics, certifications. Extends existing customer/user models</div>
+            <div class="item item-highlight"><strong>Funder Reporting</strong> -- Dashboards for IKEA Foundation, FMO, DOEN. Built on existing PostgreSQL reporting patterns</div>
+        </div>
+    </div>
+
+    <!-- ROADMAP -->
+    <div class="usecase">
+        <div class="usecase-title">Engagement Roadmap</div>
+        <div class="usecase-text">
+            <strong>Phase 1 -- Discover:</strong> Vyoma documents existing DL processes. Angelo maps data inputs, interfaces, and integration points. Output: requirements spec + architecture plan.<br>
+            <strong>Phase 2 -- Pilot:</strong> Build DLE registry, core data input forms, and initial API endpoints on HelixNet. Deploy to a cloud server for stakeholder review. Target: one state as pilot.<br>
+            <strong>Phase 3 -- Harden:</strong> UAT with Dharma Life team. Add funder reporting, system interfaces, role-based access for field coordinators and state managers. Production deployment.<br>
+            <strong>Phase 4 -- Scale:</strong> Expand state by state. Mature infrastructure from Docker Compose to Kubernetes (K3s) as user count grows. Cost stays flat -- no per-seat licensing.
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-left">Angelo Kenel &middot; Ecolution GmbH &middot; Switzerland<br>ecolution.gmbh@gmail.com &middot; +41 79 828 2841</div>
+        <div class="footer-right">github.com/akenel/helixnet<br>Confidential &middot; February 2026</div>
+    </div>
+
+</div>
+
+</body>
+</html>
