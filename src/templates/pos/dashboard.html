@@ -222,7 +222,7 @@
                     // Get today's summary
                     const summary = await API.get('/api/v1/pos/reports/daily-summary');
                     this.stats.todaySales = parseFloat(summary.total_sales || 0);
-                    this.stats.transactionCount = summary.transaction_count || 0;
+                    this.stats.transactionCount = summary.total_transactions || 0;
                 } catch (error) {
                     console.error('Failed to load stats:', error);
                     // Don't show error toast, stats are optional

@@ -69,7 +69,7 @@ class ProductModel(Base):
     # Inventory
     stock_quantity: Mapped[int] = mapped_column(
         Integer,
-        default=0,
+        default=1,
         nullable=False,
         comment="Current stock on hand"
     )

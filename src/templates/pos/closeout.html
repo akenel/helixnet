@@ -155,10 +155,10 @@
                 try {
                     const data = await API.get('/api/v1/pos/reports/daily-summary');
                     this.summary = {
-                        transactionCount: data.transaction_count || 0,
+                        transactionCount: data.total_transactions || 0,
                         totalSales: parseFloat(data.total_sales || 0),
-                        cashSales: parseFloat(data.cash_sales || 0),
-                        cardSales: parseFloat(data.card_sales || 0)
+                        cashSales: parseFloat(data.cash_total || 0),
+                        cardSales: parseFloat(data.visa_total || 0) + parseFloat(data.debit_total || 0) + parseFloat(data.twint_total || 0)
                     };
                 } catch (error) {
                     console.error('Failed to load summary:', error);

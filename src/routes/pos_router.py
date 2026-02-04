@@ -856,6 +856,55 @@ async def get_my_session(
 # TRANSACTION ENDPOINTS (Cart/Checkout)
 # ================================================================
 
+@router.get("/transactions", response_model=list[TransactionRead])
+async def list_transactions(
+    date: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    payment_method: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """List transactions with optional filters. Managers see all, cashiers see their own."""
+    query = select(TransactionModel)
+
+    # Date filter
+    if date:
+        target_date = datetime.strptime(date, "%Y-%m-%d").date()
+    else:
+        target_date = datetime.now(timezone.utc).date()
+
+    start_of_day = datetime.combine(target_date, datetime.min.time(), tzinfo=timezone.utc)
+    end_of_day = datetime.combine(target_date, datetime.max.time(), tzinfo=timezone.utc)
+    query = query.where(TransactionModel.created_at >= start_of_day)
+    query = query.where(TransactionModel.created_at <= end_of_day)
+
+    # Status filter
+    if status_filter:
+        try:
+            ts = TransactionStatus(status_filter.upper())
+            query = query.where(TransactionModel.status == ts)
+        except ValueError:
+            pass
+
+    # Payment method filter
+    if payment_method:
+        try:
+            pm = PaymentMethod(payment_method.upper())
+            query = query.where(TransactionModel.payment_method == pm)
+        except ValueError:
+            pass
+
+    # Cashiers only see their own transactions; managers/admins see all
+    user_roles = current_user.get("user_roles", [])
+    is_manager = any("pos-manager" in r or "pos-admin" in r or "pos-auditor" in r for r in user_roles)
+    if not is_manager:
+        query = query.where(TransactionModel.cashier_id == current_user.get("sub"))
+
+    query = query.order_by(TransactionModel.created_at.desc())
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
 @router.post("/transactions", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 async def create_transaction(
     transaction: TransactionCreate,
@@ -1183,9 +1232,9 @@ async def refund_transaction(
 async def get_daily_summary(
     report_date: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(require_roles(["👔️ pos-manager", "📊️ pos-auditor", "👑️ pos-admin"])),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Get daily sales summary for Banana export (manager/auditor/admin only)"""
+    """Get daily sales summary - accessible by any POS role (cashiers need it for closeout)"""
     # Default to today
     if not report_date:
         target_date = date.today()

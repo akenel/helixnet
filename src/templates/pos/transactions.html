@@ -190,15 +190,10 @@
                     // Build query parameters
                     const params = new URLSearchParams();
                     if (this.filterDate) params.append('date', this.filterDate);
-                    if (this.filterStatus) params.append('status', this.filterStatus);
+                    if (this.filterStatus) params.append('status_filter', this.filterStatus);
                     if (this.filterPayment) params.append('payment_method', this.filterPayment);
 
-                    // For now, we'll use the products endpoint as a placeholder
-                    // TODO: Create proper transactions list endpoint
-                    // const data = await API.get(`/api/v1/pos/transactions?${params}`);
-
-                    // Placeholder: Empty array until we build the backend endpoint
-                    this.transactions = [];
+                    this.transactions = await API.get(`/api/v1/pos/transactions?${params}`);
 
                     // Calculate summary
                     this.calculateSummary();
