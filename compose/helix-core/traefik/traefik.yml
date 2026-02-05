@@ -3,6 +3,8 @@ global:
   checkNewVersion: false
   sendAnonymousUsage: false
 
+ping: {}
+
 log:
   level: DEBUG
 

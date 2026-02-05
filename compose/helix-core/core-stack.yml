@@ -46,7 +46,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
       - "--ping=true"
-      - "--ping.entrypoint=traefik"
       - --serversTransport.insecureSkipVerify=true
       # Static Configuration File (only set once)
       - --configFile=/etc/traefik/traefik.yml
@@ -67,9 +66,7 @@ services:
       # Health Check / Logging
       - --log.level=INFO
     healthcheck:
-      # Check if the internal Traefik API/Management port (often 8080 or 8081) is listening.
-      # You may need to check your Traefik config for the exact internal port (usually 8080/8081).
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 8080"] 
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -247,10 +244,9 @@ services:
       - portainer_data:/data # 💾 Named volume for configuration
     restart: unless-stopped
     healthcheck:
-      # Check for the main Portainer data folder that is created on startup
-      test: ["CMD", "test", "-d", "/data"] 
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "wget --no-check-certificate -qO- https://127.0.0.1:9443/api/system/status || exit 1"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
 # -------------------------------------------------------------
@@ -302,7 +298,7 @@ services:
       VAULT_SKIP_VERIFY: "true" 
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "ps -o comm= 1 | grep vault || exit 1"]
+      test: ["CMD", "vault", "status"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -322,10 +318,9 @@ services:
       - helixnet_edge
     # Adminer is stateless, so we remove the unnecessary volume but keep
     healthcheck:
-      # Check for the main index file that is served
-      test: ["CMD", "test", "-f", "/var/www/html/index.php"] 
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "php", "-r", "if(file_get_contents('http://127.0.0.1:8080/')===false)exit(1);"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
 # -------------------------------------------------------------
@@ -347,10 +342,9 @@ services:
       - helixnet_core
       - helixnet_edge
     healthcheck:
-      # Check for the mounted Prometheus config file
-      test: ["CMD", "test", "-f", "/etc/prometheus/prometheus.yml"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9090/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
 # -------------------------------------------------------------
@@ -369,10 +363,9 @@ services:
       - helixnet_core
       - helixnet_edge
     healthcheck:
-      # Check for Grafana's core configuration file
-      test: ["CMD", "test", "-f", "/etc/grafana/grafana.ini"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
 # -------------------------------------------------------------
@@ -406,18 +399,11 @@ services:
     networks:
       - helixnet_core
     healthcheck:
-      test: ["CMD", "true"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
-
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://n8n:5678/healthz"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 60s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 # -------------------------------------------------------------
 # 💾 NAMED VOLUMES 
 # -------------------------------------------------------------

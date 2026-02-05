@@ -54,11 +54,11 @@ services:
       - "helix.service=music"
       - "helix.description=Sunrise Chain Music Player"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:1970/"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:1970/', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 30s
     networks:
       - helix-media
       - helixnet_core
