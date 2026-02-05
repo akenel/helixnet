@@ -267,6 +267,24 @@ services:
       retries: 5                              # Try 5 times before marking unhealthy
       start_period: 30s
 # -------------------------------------------------------------
+# 🩺 AUTOHEAL: Self-Healing for Docker Compose
+# -------------------------------------------------------------
+# Watches all containers with health checks. If any goes unhealthy,
+# autoheal restarts it automatically. The Kubernetes experience
+# without Kubernetes.
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: autoheal
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: all
+      AUTOHEAL_INTERVAL: 10
+      AUTOHEAL_START_PERIOD: 30
+      AUTOHEAL_DEFAULT_STOP_TIMEOUT: 10
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [ helixnet_core ]
+# -------------------------------------------------------------
 # 🖥️ FILEBROWSER: Lightweight File Manager
 # -------------------------------------------------------------
   filebrowser:

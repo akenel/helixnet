@@ -277,6 +277,7 @@ render_cycle() {
         mailhog)        ICONS="🐷️";  desc_base="mailhog - Email Testing" ;;
         portainer)      ICONS="🐳";  desc_base="portainer - Docker Management" ;;
         dozzle)         ICONS="🪵 "; desc_base="dozzle - Live Log Viewer" ;;
+        autoheal)       ICONS="🩺";  desc_base="autoheal - Self-Healing Monitor" ;;
         ollama)         ICONS="🍏️";  desc_base="ollama - Local LLM Engine" ;;
         openwebui)      ICONS="🐦️";  desc_base="openwebui - AI Web Chat" ;;
         n8n)            ICONS="📢";  desc_base="n8n - Automation & Webhooks" ;;
