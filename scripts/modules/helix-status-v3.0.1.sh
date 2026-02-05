@@ -157,6 +157,7 @@ simple_spinner() {
 # --- 4. SERVICE CONFIGURATION ---
 # --- A. Service URL Mapping for Health Checks ---
 declare -A HEALTH_URLS=(
+  [helix-platform]="https://helix-platform.local/docs"
   [helix]="https://helix-platform.local/docs"
   [keycloak]="https://keycloak.helix.local/realms/master"
   [traefik]="https://traefik.helix.local/dashboard/"
@@ -166,12 +167,16 @@ declare -A HEALTH_URLS=(
   [grafana]="https://grafana.helix.local/api/health"
   [prometheus]="http://127.0.0.1:9090/-/ready"
   [flower]="https://flower.helix.local"
-    [ollama]="https://ollama.helix.local"
-        [m8m]="https://n8n.helix.local"
+  [ollama]="https://ollama.helix.local"
+  [n8n]="https://n8n.helix.local"
   [helix-music]="http://localhost:1970"
+  [portainer]="https://127.0.0.1:9443/api/system/status"
+  [dozzle]="https://dozzle.helix.local"
+  [mailhog]="http://127.0.0.1:8069"
 )
 # --- B. Service Hyperlinks (for OSC 8) ---
 declare -A URLS=(
+  [helix-platform]="https://helix-platform.local/docs"
   [helix]="https://helix-platform.local/docs"
   [traefik]="https://traefik.helix.local/dashboard/"
   [portainer]="https://portainer.helix.local"
@@ -185,18 +190,19 @@ declare -A URLS=(
   [mailhog]="https://mailhog.helix.local"
   [prometheus]="https://prometheus.helix.local/query"
   [grafana]="https://grafana.helix.local/"
-  [dozzle]="https://dozzle.helix.local"  
+  [dozzle]="https://dozzle.helix.local"
   [filebrowser]="https://filebrowser.helix.local/"
   [adminer]="https://adminer.helix.local/"
-  [olllama]="https://ollama.helix.local/"
+  [ollama]="https://ollama.helix.local/"
   [openwebui]="https://openwebui.helix.local/"
   [n8n]="https://n8n.helix.local/"
   [helix-music]="http://localhost:1970"
 )
 # --- C. Port & Description Mapping ---
 declare -A PORTS=(
-  [helix]=8000 [n8n]="5678:5678" [adminer]=8080 [ollama]=11343 [openwebui]=8080 [worker]="5555" [beat]="5555" [flower]=5555 [postgres]=5432 [redis]=6379 [rabbitmq]=5672 
-  [prometheus]=9090 [dozzle]=8080 [grafana]=3000 [mailhog]=8025 [keycloak]=8080 [minio]="9000/1" [portainer]=9443 [vault]=8200 [traefik]="80/443" [filebrowser]=80 [helix-music]=1970
+  [helix-platform]=8000 [helix]=8000 [n8n]="5678:5678" [adminer]=8080 [ollama]=11434 [openwebui]=8080 [worker]="5555" [beat]="5555" [flower]=5555 [postgres]=5432 [redis]=6379 [rabbitmq]=5672
+  [prometheus]=9090 [dozzle]=8080 [grafana]=3000 [mailhog]=8025 [keycloak]=8080 [minio]="9000/1" [minio-mc]="—" [portainer]=9443 [vault]=8200 [traefik]="80/443" [filebrowser]=80 [helix-music]=1970
+  [helix-teller]=7791 [helix-video]=8096
 )
 # --- 5. RENDER FUNCTIONS ---
 # Header renderer
@@ -226,7 +232,7 @@ render_cycle() {
   # Enumerate ALL containers (running or stopped)
   docker ps -a --format "{{.Names}}\t{{.Status}}\t{{.ID}}" | while IFS=$'\t' read -r name status container_id; do
     [[ -z "$name" ]] && continue
-    service_name=$(echo "$name" | grep -oP '^[a-z]+-?[a-z]*')
+    service_name="$name"
     # 1. Look up Health Check Status
     url_to_check="${HEALTH_URLS[$service_name]:-}"
     http_code="N/A"
@@ -249,29 +255,33 @@ render_cycle() {
         ICON_STATUS="⚫"; base_color=$RED;        status_msg="⛔ Stopped"
     fi
     # 3. Service-specific emoji labels and base description
-    case "$service_name" in
-        filebrowser)  ICONS="🗄️ "; desc_base="filebrowser 🗄️  Traefik File Browser" ;;
-        adminer)      ICONS="🥎️";  desc_base="adminer 🥎️ pgAdmin-lite Database UI" ;;
-        grafana)      ICONS="♨️ "; desc_base="grafana ♨️  Monitoring Dashboards   " ;;
-        prometheus)   ICONS="🖥️ "; desc_base="prometheus 🖥️  Collecting Metrics   " ;;
-        postgres)     ICONS="🐘";  desc_base="postgres 🐘 Inventory Management   " ;;
-        keycloak)     ICONS="🔐";  desc_base="keycloak 🔐 Security Gate Keeper   " ;;
-        rabbitmq)     ICONS="🐇";  desc_base="rabbitmq 🐇 Mailboxes & Job Tasks  " ;;
-        redis)        ICONS="🧃️";  desc_base="redis 🧃️ Cache / Queue Control     " ;;
-        helix)        ICONS="🦄";  desc_base="helix-platform 🦄 Main FastAPI Core" ;;
-        worker)       ICONS="🥬️";  desc_base="worker 🥬️ Celery Job Runner " ;;
-        beat)         ICONS="🧩️";  desc_base="beat 🧩️ Task Scheduler Clock" ;;
-        flower)       ICONS="🌼";  desc_base="flower 🌼 Celery Monitor           " ;;
-        minio)        ICONS="🪣️ "; desc_base="minio 🪣️  Object Storage            " ;;
-        traefik)      ICONS="💦";  desc_base="traefik 💦 Reverse Proxy           " ;;
-        vault)        ICONS="🔒";  desc_base="vault 🔒 Secrets Manager           " ;;
-        mailhog)      ICONS="🐷️";  desc_base="mailhog 🐷️ Email Testing           " ;;
-        dozzle)       ICONS="🪵 "; desc_base="dozzle 🪵  Live Log Monitoring      " ;; 
-        ollama)       ICONS="🍏️";  desc_base="ollama 🍏️ LLM Models " ;;
-        openwebui)    ICONS="🐦️";  desc_base="openwebui 🐦️ AI Web Chat           " ;; 
-        n8n)          ICONS="📢";  desc_base="n8n 📢 Automation, Webhook Workflow" ;;
-        helix-music)  ICONS="🐅";  desc_base="helix-music 🐅 Electric Jungle Player" ;;
-          *)          ICONS="🪝️ ";  desc_base="$name ❓️  Unknown Service Name" ;;
+    case "$name" in
+        filebrowser)    ICONS="🗄️ "; desc_base="filebrowser 🗄️  Traefik File Browser    " ;;
+        adminer)        ICONS="🥎️";  desc_base="adminer 🥎️ pgAdmin-lite Database UI   " ;;
+        grafana)        ICONS="♨️ "; desc_base="grafana ♨️  Monitoring Dashboards     " ;;
+        prometheus)     ICONS="🖥️ "; desc_base="prometheus 🖥️  Collecting Metrics     " ;;
+        postgres)       ICONS="🐘";  desc_base="postgres 🐘 Inventory Management     " ;;
+        keycloak)       ICONS="🔐";  desc_base="keycloak 🔐 Security Gate Keeper     " ;;
+        rabbitmq)       ICONS="🐇";  desc_base="rabbitmq 🐇 Mailboxes & Job Tasks    " ;;
+        redis)          ICONS="🧃️";  desc_base="redis 🧃️ Cache / Queue Control       " ;;
+        helix-platform) ICONS="🦄";  desc_base="helix-platform 🦄 Main FastAPI Core  " ;;
+        worker)         ICONS="🥬️";  desc_base="worker 🥬️ Celery Job Runner          " ;;
+        beat)           ICONS="🧩️";  desc_base="beat 🧩️ Task Scheduler Clock         " ;;
+        flower)         ICONS="🌼";  desc_base="flower 🌼 Celery Monitor              " ;;
+        minio)          ICONS="🪣️ "; desc_base="minio 🪣️  S3 Object Storage           " ;;
+        minio-mc)       ICONS="🪣️ "; desc_base="minio-mc 🪣️  S3 Admin CLI Sidecar     " ;;
+        traefik)        ICONS="💦";  desc_base="traefik 💦 Reverse Proxy / TLS        " ;;
+        vault)          ICONS="🔒";  desc_base="vault 🔒 Secrets Manager              " ;;
+        mailhog)        ICONS="🐷️";  desc_base="mailhog 🐷️ Email Testing              " ;;
+        portainer)      ICONS="🐳";  desc_base="portainer 🐳 Docker Management UI     " ;;
+        dozzle)         ICONS="🪵 "; desc_base="dozzle 🪵  Live Log Monitoring        " ;;
+        ollama)         ICONS="🍏️";  desc_base="ollama 🍏️ Local LLM Engine           " ;;
+        openwebui)      ICONS="🐦️";  desc_base="openwebui 🐦️ AI Web Chat             " ;;
+        n8n)            ICONS="📢";  desc_base="n8n 📢 Automation & Webhooks          " ;;
+        helix-music)    ICONS="🐅";  desc_base="helix-music 🐅 Electric Jungle Player " ;;
+        helix-teller)   ICONS="🗣️";  desc_base="helix-teller 🗣️ Language Learning App  " ;;
+        helix-video)    ICONS="🎬";  desc_base="helix-video 🎬 Jellyfin Media Server  " ;;
+          *)            ICONS="🪝️ ";  desc_base="$name 🪝️  Unregistered Service       " ;;
     esac
     # 4. Hyperlink Integration (Service UI link)
     url="${URLS[$service_name]:-}"
