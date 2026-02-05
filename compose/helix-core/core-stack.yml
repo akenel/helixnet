@@ -253,7 +253,7 @@ services:
 # 🪵 Dozzle: Live monitoring of your container logs
 # -------------------------------------------------------------
   dozzle:
-    image: amir20/dozzle
+    image: amir20/dozzle:latest
     container_name: dozzle
     restart: unless-stopped
     volumes:

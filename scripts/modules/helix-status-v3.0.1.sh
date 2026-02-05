@@ -200,8 +200,8 @@ declare -A URLS=(
 )
 # --- C. Port & Description Mapping ---
 declare -A PORTS=(
-  [helix-platform]=8000 [helix]=8000 [n8n]="5678:5678" [adminer]=8080 [ollama]=11434 [openwebui]=8080 [worker]="5555" [beat]="5555" [flower]=5555 [postgres]=5432 [redis]=6379 [rabbitmq]=5672
-  [prometheus]=9090 [dozzle]=8080 [grafana]=3000 [mailhog]=8025 [keycloak]=8080 [minio]="9000/1" [minio-mc]="—" [portainer]=9443 [vault]=8200 [traefik]="80/443" [filebrowser]=80 [helix-music]=1970
+  [helix-platform]=8000 [helix]=8000 [n8n]="5678" [adminer]=8080 [ollama]=11434 [openwebui]=8080 [worker]="5555" [beat]="5555" [flower]=5555 [postgres]=5432 [redis]=6379 [rabbitmq]=5672
+  [prometheus]=9090 [dozzle]=8080 [grafana]=3000 [mailhog]=8025 [keycloak]=8080 [minio]="9000/1" [minio-mc]="————" [portainer]=9443 [vault]=8200 [traefik]="80/443" [filebrowser]=80 [helix-music]=1970
   [helix-teller]=7791 [helix-video]=8096
 )
 # --- 5. RENDER FUNCTIONS ---
@@ -226,12 +226,14 @@ render_cycle() {
   tput cup 0 0 2>/dev/null || true
   clear -x 2>/dev/null || true
   render_header
-  printf "%b\n" "${GREEN}${BOLD} 🏗️  ◾🚢 🔐 STATUS  💦️ PORT   service ◾️ Description 🌐 ENDPOINT 👁️  Logs${NC}"
+  printf "%b\n" "${GREEN}${BOLD}    ◾      STATUS  PORTS     SERVICE                                        LOGS${NC}"
   # Fetch all container stats once (for completeness, though not currently displayed)
   docker stats --no-stream --format "{{.Container}},{{.CPUPerc}},{{.MemUsage}}" > /tmp/helix_stats.csv
   # Enumerate ALL containers (running or stopped)
   docker ps -a --format "{{.Names}}\t{{.Status}}\t{{.ID}}" | while IFS=$'\t' read -r name status container_id; do
     [[ -z "$name" ]] && continue
+    # Skip non-service sidecar containers
+    [[ "$name" == "minio-mc" ]] && continue
     service_name="$name"
     # 1. Look up Health Check Status
     url_to_check="${HEALTH_URLS[$service_name]:-}"
@@ -256,34 +258,37 @@ render_cycle() {
     fi
     # 3. Service-specific emoji labels and base description
     case "$name" in
-        filebrowser)    ICONS="🗄️ "; desc_base="filebrowser 🗄️  Traefik File Browser    " ;;
-        adminer)        ICONS="🥎️";  desc_base="adminer 🥎️ pgAdmin-lite Database UI   " ;;
-        grafana)        ICONS="♨️ "; desc_base="grafana ♨️  Monitoring Dashboards     " ;;
-        prometheus)     ICONS="🖥️ "; desc_base="prometheus 🖥️  Collecting Metrics     " ;;
-        postgres)       ICONS="🐘";  desc_base="postgres 🐘 Inventory Management     " ;;
-        keycloak)       ICONS="🔐";  desc_base="keycloak 🔐 Security Gate Keeper     " ;;
-        rabbitmq)       ICONS="🐇";  desc_base="rabbitmq 🐇 Mailboxes & Job Tasks    " ;;
-        redis)          ICONS="🧃️";  desc_base="redis 🧃️ Cache / Queue Control       " ;;
-        helix-platform) ICONS="🦄";  desc_base="helix-platform 🦄 Main FastAPI Core  " ;;
-        worker)         ICONS="🥬️";  desc_base="worker 🥬️ Celery Job Runner          " ;;
-        beat)           ICONS="🧩️";  desc_base="beat 🧩️ Task Scheduler Clock         " ;;
-        flower)         ICONS="🌼";  desc_base="flower 🌼 Celery Monitor              " ;;
-        minio)          ICONS="🪣️ "; desc_base="minio 🪣️  S3 Object Storage           " ;;
-        minio-mc)       ICONS="🪣️ "; desc_base="minio-mc 🪣️  S3 Admin CLI Sidecar     " ;;
-        traefik)        ICONS="💦";  desc_base="traefik 💦 Reverse Proxy / TLS        " ;;
-        vault)          ICONS="🔒";  desc_base="vault 🔒 Secrets Manager              " ;;
-        mailhog)        ICONS="🐷️";  desc_base="mailhog 🐷️ Email Testing              " ;;
-        portainer)      ICONS="🐳";  desc_base="portainer 🐳 Docker Management UI     " ;;
-        dozzle)         ICONS="🪵 "; desc_base="dozzle 🪵  Live Log Monitoring        " ;;
-        ollama)         ICONS="🍏️";  desc_base="ollama 🍏️ Local LLM Engine           " ;;
-        openwebui)      ICONS="🐦️";  desc_base="openwebui 🐦️ AI Web Chat             " ;;
-        n8n)            ICONS="📢";  desc_base="n8n 📢 Automation & Webhooks          " ;;
-        helix-music)    ICONS="🐅";  desc_base="helix-music 🐅 Electric Jungle Player " ;;
-        helix-teller)   ICONS="🗣️";  desc_base="helix-teller 🗣️ Language Learning App  " ;;
-        helix-video)    ICONS="🎬";  desc_base="helix-video 🎬 Jellyfin Media Server  " ;;
-          *)            ICONS="🪝️ ";  desc_base="$name 🪝️  Unregistered Service       " ;;
+        filebrowser)    ICONS="🗄️ "; desc_base="filebrowser - File Browser" ;;
+        adminer)        ICONS="🥎️";  desc_base="adminer - Database UI" ;;
+        grafana)        ICONS="♨️ "; desc_base="grafana - Monitoring Dashboards" ;;
+        prometheus)     ICONS="🖥️ "; desc_base="prometheus - Metrics Collector" ;;
+        postgres)       ICONS="🐘";  desc_base="postgres - Primary Database" ;;
+        keycloak)       ICONS="🔐";  desc_base="keycloak - Identity & Access" ;;
+        rabbitmq)       ICONS="🐇";  desc_base="rabbitmq - Message Broker" ;;
+        redis)          ICONS="🧃️";  desc_base="redis - Cache & Queue" ;;
+        helix-platform) ICONS="🦄";  desc_base="helix-platform - FastAPI Core" ;;
+        worker)         ICONS="🥬️";  desc_base="worker - Celery Job Runner" ;;
+        beat)           ICONS="🧩️";  desc_base="beat - Task Scheduler" ;;
+        flower)         ICONS="🌼";  desc_base="flower - Celery Monitor" ;;
+        minio)          ICONS="🪣️ "; desc_base="minio - S3 Object Storage" ;;
+        minio-mc)       continue ;;  # CLI sidecar, not a service
+        traefik)        ICONS="💦";  desc_base="traefik - Reverse Proxy / TLS" ;;
+        vault)          ICONS="🔒";  desc_base="vault - Secrets Manager" ;;
+        mailhog)        ICONS="🐷️";  desc_base="mailhog - Email Testing" ;;
+        portainer)      ICONS="🐳";  desc_base="portainer - Docker Management" ;;
+        dozzle)         ICONS="🪵 "; desc_base="dozzle - Live Log Viewer" ;;
+        ollama)         ICONS="🍏️";  desc_base="ollama - Local LLM Engine" ;;
+        openwebui)      ICONS="🐦️";  desc_base="openwebui - AI Web Chat" ;;
+        n8n)            ICONS="📢";  desc_base="n8n - Automation & Webhooks" ;;
+        helix-music)    ICONS="🐅";  desc_base="helix-music - Jungle Player" ;;
+        helix-teller)   ICONS="🗣️ ";  desc_base="helix-teller - Language Learning" ;;
+        helix-video)    ICONS="🎬";  desc_base="helix-video - Media Server" ;;
+          *)            ICONS="🪝️ ";  desc_base="$name - Unregistered" ;;
     esac
     # 4. Hyperlink Integration (Service UI link)
+    # Pad desc_base to fixed visual width BEFORE wrapping in hyperlink
+    # (OSC 8 escape codes are invisible but printf counts them as width)
+    desc_base=$(printf "%-45s" "$desc_base")
     url="${URLS[$service_name]:-}"
     if [[ -n "$url" ]]; then
       hyperlinked_desc=$(format_link "$url" "$desc_base")
@@ -295,15 +300,15 @@ render_cycle() {
     # Priority 1: Link to Dozzle (best log viewer)
     dozzle_base_url="${URLS[dozzle]:-}"
     if [[ -n "$dozzle_base_url" ]]; then
-        # Link to the specific container ID in Dozzle
-        log_url="${dozzle_base_url%/}/view/${container_id}"
+        # Dozzle v8+: /show?name= redirects to /container/{id} automatically
+        log_url="${dozzle_base_url%/}/show?name=${name}"
         logs_hyperlink=$(format_link "$log_url" "$log_link_text")
     else
         logs_hyperlink="${YELLOW} (No Dozzle UI)${NC}" 
     fi
     # 6. Port mapping lookup
     PORT_INFO="${PORTS[$service_name]:-—}"
-    printf "%b %-2s ◾%-4b %-8s %-8s  %-48s %-12s\n" \
+    printf "%b %-2s ◾%-4b %-8s %-8s  %s %s\n" \
       "$base_color" "$ICON_STATUS" "$ICONS" "$status_msg" "$PORT_INFO" "$hyperlinked_desc" "$logs_hyperlink"
   done
   # Cleanup temp file
