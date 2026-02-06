@@ -711,9 +711,39 @@ Equal flaps = fits envelopes cleanly
 
 ---
 
-*Last updated: February 3, 2026, 6:30pm - 4-UP GOLD templates locked in, QR best practices documented, Pizza Planet v3 ready*
+## THE SEAL INSPECTION LESSON (Feb 6, 2026)
+
+**What happened:** MAX camper van had a bathroom window seal fail. Water leaked behind plastic ceiling panels for years. Entire roof structure rotted end-to-end. Estimated repair: EUR 5,000-10,000+, 4-6 weeks.
+
+**The pattern:**
+- Sleeping area window seal failed immediately after purchase from Bantam
+- Bantam fixed ONE window, never inspected the other two
+- Swiss repair shops did work over the years, never did proper seal inspections
+- Even at Camper & Tour (Trapani), technicians were inside the van for DAYS and didn't see the damage
+- Only discovered because Angel INSISTED on a ladder inspection of the roof
+
+**The lesson:** When ONE component fails, check ALL similar components.
+
+If one seal is bad, ALL seals are suspect -- same age, same manufacturer, same exposure. This applies to:
+- Software: If one API endpoint has a bug, check the similar ones
+- Hardware: If one seal fails, inspect all seals
+- Systems: If one health check is fake, audit all health checks
+- People: If one person cuts corners, verify everyone's work
+
+**The bigger problem:** The senior people who would have caught this are gone. Retired, laid off, pushed out. Juniors fix what's on the ticket and close the job. Nobody thinks two steps ahead anymore. Institutional knowledge is disappearing.
+
+**Why Angel has to ask four times:** Because he's become the "old guy who catches things" by necessity. The mentorship chain is broken. Knowledge now passes customer-to-technician, the hard way.
+
+**The rule:** When you find one problem, ask: "What else has the same failure mode?" Don't fix the symptom and close the ticket. Find the pattern.
+
+> "If one seal fails, check all the seals. If one window leaks, inspect all the windows. The problem you find is rarely the only problem."
+
+---
+
+*Last updated: February 6, 2026, 2:00pm - Seal inspection lesson learned at Camper & Tour, Trapani*
 *"NEVER say fixed without verifying the output."*
 *"Casa è dove parcheggi." - Home is where you park it.*
 *"ZERO CUTS - just fold and tape!"*
 *"Don't poke the dragon on your way out the door."*
 *"The postcard is the handshake. The coffee is the close."*
+*"If one seal fails, check all the seals."*
