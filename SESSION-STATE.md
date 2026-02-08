@@ -1,205 +1,130 @@
-# SESSION STATE - February 6, 2026
+# SESSION STATE - February 8, 2026
 
-*Last Updated: Feb 6, 2026 ~3:30pm - Camper & Tour, Trapani*
+*Last Updated: Feb 8, 2026 ~8:00am - Sunday Planning*
 
 ---
 
-## URGENT: MAX WATER DAMAGE CLAIM
+## AXA INSURANCE CLAIM
 
-**AXA Claim:** 22.831.735/0001
+**Claim:** 22.831.735/0001
+**Adjuster:** Iwan Zgraggen
 
-### Timeline (CORRECT)
+### Timeline
+- **Late Jan/Early Feb:** Van at Camper & Tour for stove repair, Angel at PuntaTipa Hotel
+- **During smoke cleanup:** Technicians cleaned every millimeter, saw ceiling bubbles, said nothing
+- **Thu Feb 5:** Stove DONE, left hotel, paid EUR 1,010, living in van again
+- **Fri Feb 6:** Returned for backup camera, insisted on window inspection, water damage discovered
+- **Sat Feb 8 2:02am:** Email SENT to Iwan Zgraggen - stove complete + hotel expenses + new water damage
 
-**Original Issue:** Stove fire/smoke damage (separate from water damage)
+### Waiting For (from AXA)
+1. Where to submit hotel receipts (portal or email?)
+2. Same claim or new claim for water damage?
+3. Do they need an inspector?
 
-**Late Jan / Early Feb 2026:**
-- Van at Camper & Tour for stove replacement + smoke damage cleanup
-- Angel staying at PuntaTipa Hotel during repairs
-- Technicians cleaned EVERY MILLIMETER of van interior for smoke damage
-- Bubbles visible in ceiling during cleaning - NO ONE said anything
+### To Do
+- [ ] Gather PuntaTipa hotel receipts
+- [ ] Return to Camper & Tour for backup camera + full water damage estimate
+- [ ] Do NOT authorize roof repairs until AXA confirms coverage
 
-**Thursday Feb 5:**
-- Stove work COMPLETED - van clean, A1 condition
-- Angel left PuntaTipa Hotel (morning)
-- Angel paid EUR 1,010 for stove repair
-- Now living in camper van again at Camper & Tour
-
-**Friday Feb 6 (TODAY):**
-- Returned to Camper & Tour for backup camera installation
-- Asked AGAIN about bathroom window seal (had suspected issue)
-- Technicians initially dismissed it
-- Angel INSISTED on ladder inspection at roof level
-- Bathroom window seal found COMPLETELY FAILED
-- Panels removed - extensive hidden water damage revealed
-- NOW technicians point to ceiling bubbles: "See? Water damage"
-- Same bubbles they saw during smoke cleaning and said nothing
-
-### The GOLD Observation
-When they cleaned every surface for smoke damage, they saw bubbles in the ceiling and said nothing. Today after finding water damage, they point to SAME bubbles as evidence. This proves:
-1. Evidence was visible during cleaning
-2. Professionals didn't connect the dots
-3. Damage was truly hidden/non-obvious
-4. NOT policyholder negligence
-
-### What Happened (Root Cause)
-- Bathroom window seal failed (manufacturing defect from Day 1)
-- Sleeping area window was fixed immediately after purchase from Bantam
-- Bantam NEVER inspected/resealed other windows despite known seal issue
-- Water leaked behind plastic ceiling panels for years
-- Entire roof structure likely rotted end-to-end
-- Hidden damage - impossible to detect without panel removal
-
-### Estimated Costs (Water Damage - Pending)
-- Roof repair: EUR 5,000 - 10,000+
-- Replacement van: EUR 50/day x 42 days = EUR 2,100
-- Repair duration: 4-6 weeks
-
-### Expenses to Claim
-- [x] Stove repair: EUR 1,010 (PAID Feb 5)
-- [ ] PuntaTipa Hotel nights (submit receipts - ask AXA where)
-- [ ] Water damage repair (estimate pending next week)
-
-### Documentation Saved
+### Documentation
 - **Local:** `/home/angel/Documents/MAX-water-damage-claim/`
 - **Google Drive:** https://drive.google.com/open?id=1W8dHglKx_pOIzr4naJnIQjBdKOqp_tkC
-- **Files:** 7 photos, 2 videos, complete claim file, timeline, email drafts
-
-### Status Today (Feb 6)
-- Stove repair: COMPLETE, PAID
-- Water damage: Quick patch only - bathroom window back in temporarily
-- Full water damage repair AFTER insurance approval
-- Return next week for: backup camera adapter + full damage report/estimate
-
-### DO NOT MIX IN
-- Side scratch (separate incident, ~EUR 800-1000 - claim separately later)
-
-### Key Arguments for Insurance
-- Seal problems from Day 1 (documented - sleeping window fixed at purchase)
-- You repeatedly requested inspections - never properly done
-- Bathroom floor water blamed on sink design (reasonable assumption)
-- Damage hidden behind factory panels - impossible to detect
-- Professionals cleaned entire van, saw bubbles, said nothing
-- Even professionals missed it until YOU insisted on ladder inspection
-- This is MANUFACTURING DEFECT, not wear and tear or neglect
+- **DO NOT MIX IN:** Side scratch (separate incident, claim separately later)
 
 ---
 
-## SYLVIE SITUATION
+## SYLVIE
 
-**Her Status:**
-- 4 teeth removed, traveling back to Switzerland tomorrow (Feb 7)
-- High cholesterol needs to stabilize over next month
-- Major surgery coming: all teeth removed, implants
-- Birthday: September 16, 1960
-- Feeling abandoned, overwhelmed
-
-**This Morning:** She said she feels alone, feels your problems always come first, has anxiety from past situations, feels she was never allowed to express her frustrations.
-
-**Recommendation:** Do NOT tell her about roof damage now. Wait until after her surgery or when she's stable. Adding your problems now will confirm her feeling that "Angelo's troubles always come first."
+- Back in Switzerland, no internet at home, no phone
+- Went to KFN, paid the bill - should have internet back Monday
+- Looking for internet cafe to send messages
+- She knows about roof damage (already slipped out) - no stress
+- Major dental surgery coming (all teeth removed, implants)
 
 ---
 
-## HELIXNET / VIDEO PRODUCTION
+## HELIXNET VIDEOS - ALL 3 LIVE
 
-### Video Status
-| # | Title | Status |
-|---|-------|--------|
-| 1 | The Stack | UPLOADED: https://youtu.be/P2k63CXZwBg |
-| 2 | HTTPS in Development | UPLOADED (EP.2) |
-| 3 | Health Checks & Self-Healing | Script ready: `scripts/demo/video3-self-healing.sh` |
+| # | Title | Link |
+|---|-------|------|
+| 1 | The Stack | https://youtu.be/P2k63CXZwBg |
+| 2 | HTTPS in Development | https://youtu.be/9E2tBu1wIkM |
+| 3 | Health Checks & Self-Healing | https://youtu.be/V4QbXM1_fLQ |
 
-### Video 3 Instructions
-```bash
-bash scripts/demo/video3-self-healing.sh
-```
-- 45 seconds automated demo
-- Record screen silently in OBS
-- Shows: redis healthy → crash → restart → healthy again
-- Narrate live or add voiceover after
+**Playlist:** https://www.youtube.com/playlist?list=PLrRlgzUrqK1-rz6EhQIn65h-mJb409cNA
 
-### Recent Commits (Feb 5-6)
+**EP4 idea:** Keycloak demo - intro to realms
+
+**Video files:** `~/Videos/HelixNet-YouTube/EP1|EP2|EP3-*/`
+
+### Recent Commits
+- `c3b7585` - Status dashboard configurable refresh (`make status REFRESH=2`)
 - `98a9776` - Autoheal self-healing + Video 3 demo script
 - `e40cc6d` - Status dashboard polished (aligned columns, Dozzle v9 links)
-- `57b9fc1` - Status dashboard labels (all services named)
 - `b76c1df` - Health checks upgraded (real endpoint checks)
 
-### Autoheal Added
-- Container `willfarrell/autoheal` now running
-- Watches all containers, restarts any that go unhealthy
-- Kubernetes-style self-healing for Docker Compose
+---
+
+## DHARMA LIFE / VYOMA
+
+- **Message sent** to Rajiv & Venky with all 3 video links
+- **Waiting for:** Vyoma platform access (Rajiv to respond on WhatsApp)
+- **Goal:** PoC connecting Vyoma SOP-to-workflow tool with HelixNet
+- **Meeting needed:** Rajiv, Venky, Karthick - pending Rajiv response
+- **Venki:** +971 56 999 9181 (Telegram)
+
+---
+
+## UFA POSTCARDS - NEXT WEEK
+
+| # | Client | Status | Next Step |
+|---|--------|--------|-----------|
+| 1 | Pizza Planet | Cards ready | Verify QR + all data, then print at ISOTTO |
+| 2 | Color Clean | Pipeline | Generate back side, crop/generate images |
+| 3 | Piccolo Bistratto | Pipeline | Create card + back side, 8 pics needed |
+
+**Print run:** When Color Clean is ready, print both Color Clean + Pizza Planet at ISOTTO
+
+---
+
+## PENDING ACTIONS - WEEK OF FEB 9
+
+### Monday-Tuesday
+- [ ] Gather PuntaTipa hotel receipts
+- [ ] Wait for AXA response (Iwan Zgraggen)
+- [ ] Wait for Rajiv/Vyoma response
+
+### Mid-Week
+- [ ] Return to Camper & Tour (backup camera + water damage estimate)
+- [ ] Pizza Planet: verify QR code + data
+- [ ] Color Clean: design card back, prepare images
+- [ ] Piccolo Bistratto: design card, prepare 8 images
+
+### When Ready
+- [ ] ISOTTO print run (Pizza Planet + Color Clean)
+- [ ] EP4 planning (Keycloak realms demo)
 
 ---
 
 ## KEY CONTACTS
 
-### Camper & Tour (Van Repairs)
-- **Sebastiano** (owner), **Nino** (son, English)
-- Via F. Culcasi 4, 91100 Trapani
-- Tel: +39 0923 534452 / Cell: +39 328 684 4546
-- Email: info@camperandtour.it
-
-### AXA Insurance
-- Claim: 22.831.735/0001
-- Adjuster contacted, awaiting response
-- Google Drive evidence: https://drive.google.com/open?id=1W8dHglKx_pOIzr4naJnIQjBdKOqp_tkC
-
-### Dharma Life / Vyoma
-- Venki: +971 56 999 9181 (Telegram)
-- Demo done, follow-up pending
-
----
-
-## PENDING ACTIONS
-
-### Urgent (Insurance) - TODAY
-1. [ ] Send short email to AXA (use EMAIL-TO-AXA-SHORT-v2.txt)
-2. [ ] Ask: Where to submit hotel receipts?
-3. [ ] Ask: Same claim or new claim for water damage?
-4. [ ] Ask: Do they need an inspector?
-5. [ ] Gather PuntaTipa hotel receipts
-
-### Next Week
-6. [ ] Return to Camper & Tour for backup camera adapter
-7. [ ] Get full water damage estimate after complete disassembly
-8. [ ] Get written assessment from Sebastino
-9. [ ] Add new photos/videos to Drive folder
-10. [ ] Do NOT authorize full repairs until AXA confirms coverage
-
-### Video Production
-7. [ ] Record Video 3 when at stable location with good wifi
-
-### Sylvie
-8. [ ] Do NOT tell her about roof damage until she's stable
-9. [ ] Be present for her without adding your problems
+| Who | Details |
+|-----|---------|
+| **Camper & Tour** | Sebastiano/Nino, Via F. Culcasi 4, Trapani, +39 328 684 4546 |
+| **AXA** | Iwan Zgraggen, Claim 22.831.735/0001 |
+| **Vyoma/Dharma** | Venki +971 56 999 9181 (Telegram) |
+| **ISOTTO Sport** | Print partner, +39 349 972 9418 |
 
 ---
 
 ## FINANCIAL OVERVIEW
 
-- **Pension:** 11 months away (birthday ~Jan 2027)
+- **Pension:** ~11 months away (birthday ~Jan 2027)
 - **RAV:** Closed Jan 31, 2026
 - **Living:** Surviving on savings, building UFA postcard business in Sicily
-
-**Upcoming Costs:**
-- Roof repair: EUR 5,000-10,000 (insurance claim pending)
-- Replacement van: EUR 2,100 (50/day x 42 days) if not covered
-- Stove repair: EUR 1,010 (already paid, separate matter)
-
----
-
-## THE PATTERN YOU IDENTIFIED
-
-You have to be your own advocate because everyone cuts corners:
-- Bantam fixed ONE window, should have checked all three
-- Swiss repair shops never did proper inspections despite your requests
-- Technicians cleaned EVERY MILLIMETER for smoke damage, saw ceiling bubbles, said nothing
-- Same technicians NOW point to bubbles: "See? Water damage!" - only after YOU insisted on inspection
-- The doctor at Christmas who almost forgot your medication
-- Over and over: you have to ask 4+ times to get someone to actually look
-
-**You're not being difficult. You're being thorough. And you keep being right.**
-
-**The Bubble Lesson:** Evidence can be in plain sight. Professionals see it and don't connect the dots. You have to ask the right questions AND insist on the right inspections.
+- **Stove repair:** EUR 1,010 (PAID, claiming from AXA)
+- **Roof repair:** EUR 5,000-10,000 (estimate pending, insurance claim)
+- **Hotel nights:** To be claimed from AXA (receipts needed)
 
 ---
 
