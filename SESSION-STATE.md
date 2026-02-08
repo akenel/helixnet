@@ -1,6 +1,6 @@
 # SESSION STATE - February 8, 2026
 
-*Last Updated: Feb 8, 2026 ~8:00am - Sunday Planning*
+*Last Updated: Feb 8, 2026 ~9:00pm - Marghe postcards done*
 
 ---
 
@@ -80,10 +80,24 @@
 | # | Client | Status | Next Step |
 |---|--------|--------|-----------|
 | 1 | Pizza Planet | Cards ready | Verify QR + all data, then print at ISOTTO |
-| 2 | Color Clean | Pipeline | Generate back side, crop/generate images |
-| 3 | Piccolo Bistratto | Pipeline | Create card + back side, 8 pics needed |
+| 2 | **Marghe Trapani** | **PDFs DONE** | Show owner, get approval, print at ISOTTO |
+| 3 | Color Clean | Pipeline | Generate back side, crop/generate images |
+| 4 | Piccolo Bistratto | Pipeline | Create card + back side, 8 pics needed |
 
-**Print run:** When Color Clean is ready, print both Color Clean + Pizza Planet at ISOTTO
+### Marghe Trapani (NEW - Feb 8, 2026)
+- **Business:** MARGHE - Rita.gli di farine e felicita
+- **Address:** Via Garibaldi, 52, 91100 Trapani
+- **Phone:** 352 088 2833
+- **Google Maps:** https://maps.app.goo.gl/NvDNytf8No376k9X7
+- **ScoutMenu:** https://www.scoutmenu.it/dettagli-locale.php?id=1986
+- **Google Review:** POSTED (5 stars, Feb 8)
+- **Deliverables:** Tent card (story back) + 4-UP Portrait + 4-UP Landscape
+- **PDFs:** `UFA_r2p/marghe-A4-TENT.pdf`, `marghe-4UP-PORTRAIT.pdf`, `marghe-4UP-LANDSCAPE.pdf`
+- **Source:** `docs/business/postcards/Marghe Trapani/`
+- **Images:** 27 Telegram photos + 9 ScoutMenu food shots + QR codes (Maps + Menu)
+- **Notes:** Electric oven (not wood-fired), artisan focaccia/pizza, stone arch interior, cocktail bar
+
+**Print run:** When Color Clean is ready, print Color Clean + Pizza Planet + Marghe at ISOTTO
 
 ---
 
@@ -113,6 +127,7 @@
 | **Camper & Tour** | Sebastiano/Nino, Via F. Culcasi 4, Trapani, +39 328 684 4546 |
 | **AXA** | Iwan Zgraggen, Claim 22.831.735/0001 |
 | **Vyoma/Dharma** | Venki +971 56 999 9181 (Telegram) |
+| **Marghe Trapani** | Via Garibaldi 52, Trapani, 352 088 2833, Google review posted |
 | **ISOTTO Sport** | Print partner, +39 349 972 9418 |
 
 ---
