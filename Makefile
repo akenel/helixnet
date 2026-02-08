@@ -75,7 +75,7 @@ llm-up:
 # ===================================================================
 
 status:
-	@./scripts/modules/helix-status-v3.0.1.sh
+	@REFRESH_INTERVAL=$(or $(REFRESH),60) ./scripts/modules/helix-status-v3.0.1.sh
 
 lazy:
 	@command -v lazydocker >/dev/null 2>&1 || { echo "Error: lazydocker not installed"; exit 1; }

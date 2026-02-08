@@ -325,8 +325,13 @@ tput civis 2>/dev/null || true
 # Main loop
 while true; do
   render_cycle
-  # Pause and spin
+  # Pause and refresh
   printf "\n"
-  simple_spinner "📺 Refreshing in ${REFRESH_INTERVAL}s"
-  sleep "$REFRESH_INTERVAL"
+  if (( REFRESH_INTERVAL <= 5 )); then
+    printf "${CYAN}📺 LIVE MODE (${REFRESH_INTERVAL}s)${NC}"
+    sleep "$REFRESH_INTERVAL"
+  else
+    simple_spinner "📺 Refreshing in ${REFRESH_INTERVAL}s"
+    sleep "$REFRESH_INTERVAL"
+  fi
 done
