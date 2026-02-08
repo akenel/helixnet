@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Color Clean - Freschezza | Tent Card v2</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            width: 210mm;
+            height: 297mm;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ========== FOLD LINES ========== */
+        .fold-line {
+            width: 100%;
+            height: 0;
+            flex-shrink: 0;
+            position: relative;
+            overflow: visible;
+        }
+
+        .fold-tick {
+            position: absolute;
+            top: -0.15mm;
+            width: 8mm;
+            height: 0.3mm;
+        }
+
+        .fold-tick svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .fold-tick-l { left: 0; }
+        .fold-tick-r { right: 0; }
+
+        /* ========== TOP TAB (42mm) ========== */
+        .top-tab {
+            width: 100%;
+            height: 42mm;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .tab-instruction {
+            font-size: 8pt;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2mm;
+        }
+
+        .tab-arrow {
+            font-size: 24pt;
+            color: #bbb;
+        }
+
+        /* ========== FRONT PANEL (100mm) - rotated 180 ========== */
+        .front-panel {
+            width: 100%;
+            height: 100mm;
+            transform: rotate(180deg);
+            padding: 5mm 15mm;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .front-top { text-align: center; }
+
+        .main-title {
+            font-size: 56pt;
+            font-weight: 200;
+            letter-spacing: 4px;
+            color: #1a1a1a;
+            line-height: 0.9;
+        }
+
+        .main-subtitle {
+            font-size: 22pt;
+            font-weight: 300;
+            color: #666;
+            letter-spacing: 3px;
+            margin-top: 1mm;
+        }
+
+        .front-middle {
+            display: flex;
+            justify-content: center;
+            padding: 2mm 0;
+        }
+
+        .flag-container {
+            width: 160mm;
+            height: 25mm;
+            border-radius: 2mm;
+            overflow: hidden;
+            border: 0.5px solid #ccc;
+        }
+
+        .flag-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .front-bottom { text-align: center; }
+
+        .tagline {
+            font-size: 11pt;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .tagline .italian { font-style: italic; color: #777; }
+
+        .company-tag {
+            font-size: 18pt;
+            font-weight: 600;
+            letter-spacing: 5px;
+            color: #2980B9;
+            margin-top: 2mm;
+        }
+
+        /* ========== BACK PANEL (100mm) - CHAPTER 2: THE STORY ========== */
+        .back-panel {
+            width: 100%;
+            height: 100mm;
+            padding: 6mm 12mm;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2.5px solid #2980B9;
+            padding-bottom: 2.5mm;
+            margin-bottom: 3mm;
+        }
+
+        .brand-title {
+            font-size: 22pt;
+            font-weight: 600;
+            color: #2980B9;
+            letter-spacing: 2px;
+        }
+
+        .brand-subtitle {
+            font-size: 7.5pt;
+            color: #888;
+            font-style: italic;
+            margin-top: 0.5mm;
+        }
+
+        .location-block {
+            text-align: right;
+            font-size: 8pt;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 7pt;
+            color: #888;
+        }
+
+        .story-body {
+            flex: 1;
+            display: flex;
+            gap: 6mm;
+        }
+
+        .story-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .story-paragraph {
+            font-family: Georgia, serif;
+            font-size: 9.5pt;
+            line-height: 1.45;
+            color: #333;
+        }
+
+        .story-paragraph .it {
+            font-style: italic;
+            color: #555;
+            font-size: 8.5pt;
+        }
+
+        .story-highlights {
+            margin-top: 2mm;
+            padding-top: 2mm;
+            border-top: 0.5px solid #ddd;
+        }
+
+        .highlight-row {
+            font-size: 8pt;
+            color: #444;
+            line-height: 1.6;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .highlight-label {
+            color: #2980B9;
+            font-weight: 600;
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .qr-column {
+            width: 42mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2mm;
+        }
+
+        .qr-code {
+            width: 32mm;
+            height: 32mm;
+            display: block;
+        }
+
+        .qr-label {
+            font-size: 9pt;
+            font-weight: 600;
+            color: #2980B9;
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .qr-sublabel {
+            font-size: 7pt;
+            color: #888;
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2mm;
+            border-top: 1px solid #ddd;
+            font-size: 7pt;
+            color: #999;
+        }
+
+        .footer-phone {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #2980B9;
+            letter-spacing: 1px;
+        }
+
+        /* ========== BOTTOM TAB (55mm) ========== */
+        .bottom-tab {
+            width: 100%;
+            height: 55mm;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .bottom-tab .tab-arrow {
+            transform: rotate(180deg);
+            margin-bottom: 2mm;
+        }
+
+        @media print {
+            html, body { background: white; }
+            .page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- TOP TAB (42mm) -->
+    <div class="top-tab">
+        <span class="tab-instruction">Fold Down / Piega Giu</span>
+        <span class="tab-arrow">&#8595;</span>
+    </div>
+
+    <!-- FOLD LINE -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- FRONT PANEL (100mm) - rotated 180 -->
+    <div class="front-panel">
+        <div class="front-top">
+            <div class="main-title">Freschezza.</div>
+            <div class="main-subtitle">Freshness.</div>
+        </div>
+        <div class="front-middle">
+            <div class="flag-container">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" preserveAspectRatio="none">
+                    <rect width="1" height="2" x="0" fill="#009246"/>
+                    <rect width="1" height="2" x="1" fill="#F4F5F0"/>
+                    <rect width="1" height="2" x="2" fill="#CE2B37"/>
+                </svg>
+            </div>
+        </div>
+        <div class="front-bottom">
+            <div class="tagline">
+                Where your clothes come home happy.<br>
+                <span class="italian">Dove i tuoi vestiti tornano felici.</span>
+            </div>
+            <div class="company-tag">COLOR CLEAN</div>
+        </div>
+    </div>
+
+    <!-- FOLD LINE (MAIN FOLD - peak of tent) -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- BACK PANEL (100mm) - CHAPTER 2: THE STORY -->
+    <div class="back-panel">
+        <div class="back-header">
+            <div>
+                <div class="brand-title">COLOR CLEAN</div>
+                <div class="brand-subtitle">Lavanderia Professionale</div>
+            </div>
+            <div class="location-block">
+                Via Virgilio, 71/73<br>
+                91100 Trapani, Sicilia<br>
+                <span class="coords">38&deg;01'N 12&deg;31'E</span>
+            </div>
+        </div>
+
+        <div class="story-body">
+            <div class="story-text">
+                <div class="story-paragraph">
+                    On a quiet corner of Via Virgilio, Color Clean does what
+                    machines alone cannot &mdash; they care. Every garment
+                    washed, pressed, and folded as if it were their own.
+                    Drop it off heavy, pick it up light. That's the promise.
+                    <br><br>
+                    <span class="it">
+                        In un angolo tranquillo di Via Virgilio, Color Clean
+                        fa quello che le macchine da sole non possono &mdash;
+                        si prendono cura. Ogni capo lavato, stirato e piegato
+                        come fosse il loro. Portalo pesante, riprendilo leggero.
+                    </span>
+                </div>
+                <div class="story-highlights">
+                    <div class="highlight-row"><span class="highlight-label">Lavaggio</span> &bull; Self-service &bull; Servizio completo</div>
+                    <div class="highlight-row"><span class="highlight-label">Stiratura &amp; Piegatura</span> &bull; Capi delicati &bull; Camicie</div>
+                    <div class="highlight-row"><span class="highlight-label">Borsa Completa</span> &bull; &euro;25 &bull; Lun&ndash;Ven</div>
+                </div>
+            </div>
+
+            <div class="qr-column">
+                <img class="qr-code" src="qr-googlemaps.png" alt="Google Maps">
+                <div class="qr-label">Trovaci</div>
+                <div class="qr-sublabel">Find Us on Maps</div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <span>Via Virgilio, 71/73 &bull; Trapani &bull; Sicilia</span>
+            <span class="footer-phone">320 054 0352</span>
+        </div>
+    </div>
+
+    <!-- FOLD LINE -->
+    <div class="fold-line">
+        <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+        <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    </div>
+
+    <!-- BOTTOM TAB (55mm) -->
+    <div class="bottom-tab">
+        <span class="tab-arrow">&#8593;</span>
+        <span class="tab-instruction">Fold Up / Piega Su</span>
+    </div>
+</div>
+
+</body>
+</html>
