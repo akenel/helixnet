@@ -1,6 +1,6 @@
 # SESSION STATE - February 8, 2026
 
-*Last Updated: Feb 8, 2026 ~9:00pm - Marghe postcards done*
+*Last Updated: Feb 8, 2026 ~10:30pm - Color Clean full card set done*
 
 ---
 
@@ -81,7 +81,7 @@
 |---|--------|--------|-----------|
 | 1 | Pizza Planet | Cards ready | Verify QR + all data, then print at ISOTTO |
 | 2 | **Marghe Trapani** | **PDFs DONE** | Show owner, get approval, print at ISOTTO |
-| 3 | Color Clean | Pipeline | Generate back side, crop/generate images |
+| 3 | **Color Clean** | **PDFs DONE** | Show owner, get approval, print at ISOTTO |
 | 4 | Piccolo Bistratto | Pipeline | Create card + back side, 8 pics needed |
 
 ### Marghe Trapani (NEW - Feb 8, 2026)
@@ -97,7 +97,20 @@
 - **Images:** 27 Telegram photos + 9 ScoutMenu food shots + QR codes (Maps + Menu)
 - **Notes:** Electric oven (not wood-fired), artisan focaccia/pizza, stone arch interior, cocktail bar
 
-**Print run:** When Color Clean is ready, print Color Clean + Pizza Planet + Marghe at ISOTTO
+### Color Clean (NEW - Feb 8, 2026)
+- **Business:** Color Clean - Lavanderia Professionale
+- **Address:** Via Virgilio, 71/73, 91100 Trapani
+- **Phone:** 320 054 0352
+- **Google Maps:** https://maps.app.goo.gl/nxJGY69WRRaUxbXQ7
+- **Deliverables:** Tent card v2 (story back) + 4-UP Portrait + 4-UP Landscape
+- **PDFs:** `UFA_r2p/colorclean-TENT-v2.pdf`, `colorclean-4UP-PORTRAIT.pdf`, `colorclean-4UP-LANDSCAPE.pdf`
+- **Source:** `docs/business/postcards/colorclean/`
+- **Images:** 25 Telegram photos, 8 selected + cropped with ImageMagick (auto-levels)
+- **Portrait cards:** Owner/sign, FIRBIMATIC dry cleaner, Primus dryers, PONY press
+- **Landscape cards:** Wall sign, ironing action, Primus washers, owner smile
+- **Notes:** Hours Mon-Fri only, brand color #2980B9, Primus + PONY + FIRBIMATIC equipment
+
+**Print run:** Color Clean + Pizza Planet + Marghe all ready -- print at ISOTTO when Piccolo Bistratto done (or sooner)
 
 ---
 
@@ -111,11 +124,11 @@
 ### Mid-Week
 - [ ] Return to Camper & Tour (backup camera + water damage estimate)
 - [ ] Pizza Planet: verify QR code + data
-- [ ] Color Clean: design card back, prepare images
+- [x] Color Clean: full card set DONE (tent + portrait + landscape)
 - [ ] Piccolo Bistratto: design card, prepare 8 images
 
 ### When Ready
-- [ ] ISOTTO print run (Pizza Planet + Color Clean)
+- [ ] ISOTTO print run (Pizza Planet + Color Clean + Marghe)
 - [ ] EP4 planning (Keycloak realms demo)
 
 ---
@@ -128,6 +141,7 @@
 | **AXA** | Iwan Zgraggen, Claim 22.831.735/0001 |
 | **Vyoma/Dharma** | Venki +971 56 999 9181 (Telegram) |
 | **Marghe Trapani** | Via Garibaldi 52, Trapani, 352 088 2833, Google review posted |
+| **Color Clean** | Via Virgilio 71/73, Trapani, 320 054 0352, PDFs done |
 | **ISOTTO Sport** | Print partner, +39 349 972 9418 |
 
 ---
