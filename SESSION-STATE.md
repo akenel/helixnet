@@ -1,6 +1,6 @@
 # SESSION STATE - February 9, 2026
 
-*Last Updated: Feb 9, 2026 ~1:30pm - Pizza Planet real photos done, AXA email sent, hotel invoice collected*
+*Last Updated: Mon Feb 9, 2026 ~6:45pm - Mattenweg bills paid, git PAT renewed, full day complete*
 
 ---
 
@@ -15,8 +15,8 @@
 - **Thu Feb 5:** Stove DONE, left hotel, living in van again
 - **Fri Feb 6:** Returned for backup camera, insisted on window inspection, water damage discovered
 - **Sat Feb 8 2:02am:** Email SENT to Iwan Zgraggen - stove complete + hotel expenses + new water damage
-- **Sun Feb 9 ~10:30am:** Iwan replied -- case forwarded to English-speaking colleague, photos + email attached to file
-- **Sun Feb 9 ~10:45am:** Reply SENT to Iwan -- asked for new case worker name/email/timeline, flagged both fire + water damage
+- **Mon Feb 9 ~10:30am:** Iwan replied -- case forwarded to English-speaking colleague, photos + email attached to file
+- **Mon Feb 9 ~10:45am:** Reply SENT to Iwan -- asked for new case worker name/email/timeline, flagged both fire + water damage
 
 ### Costs to Claim
 | Item | Amount | Status |
@@ -65,6 +65,7 @@
 - Looking for internet cafe to send messages
 - She knows about roof damage (already slipped out) - no stress
 - Major dental surgery coming (all teeth removed, implants)
+- Sent Batch 2 of Mattenweg bills (11 bills, all PAID by Angel on Feb 9)
 
 ---
 
@@ -151,7 +152,7 @@
 
 ## CAMPER & TOUR STATUS
 
-- **Camera radio adapter part:** Expected tomorrow (Mon) or Wednesday
+- **Camera radio adapter part:** Expected Tue or Wed (checked Mon morning)
 - **Nino will contact via Telegram** when part arrives
 - **When part arrives:** Install camera + remove back window to assess roof damage + write preventivo
 - **Loaner camper:** Camper & Tour will provide small camper during repairs
@@ -161,15 +162,17 @@
 
 ## PENDING ACTIONS - WEEK OF FEB 9
 
-### Done Today (Sun Feb 9)
+### Done Mon Feb 9
 - [x] AXA reply email SENT to Ivan (case handoff questions)
 - [x] PuntaTipa hotel invoice collected (EUR 1,395.50, signed by Alessia)
 - [x] Camper & Tour check-in (camera part Tue/Wed, Nino will Telegram)
 - [x] Gym 4U membership renewed (30 days)
 - [x] Pizza Planet cards rebuilt with real photos (portrait + landscape PDFs)
 - [x] Workshop reorganized (client folders, INFO.md, arc/, CHANGELOG.md)
+- [x] Mattenweg bills Batch 2: 11 bills processed, renamed, reference sheet created, ALL PAID via UBS
+- [x] GitHub PAT renewed, git push restored
 
-### Monday-Tuesday
+### Tuesday-Wednesday
 - [ ] Upload hotel invoice to Google Drive (digital backup)
 - [ ] Wait for AXA new case worker introduction
 - [ ] Wait for Nino (Telegram -- camera part)
@@ -215,6 +218,27 @@
 - **Hotel (PuntaTipa):** EUR 1,395.50 (PAID, claiming from AXA)
 - **Total claimed so far:** EUR 2,405.50
 - **Roof repair:** EUR 5,000-10,000 (estimate pending, insurance claim)
+- **Mattenweg bills (Batch 2):** CHF 2,126.50 + EUR 93.50 -- ALL PAID Feb 9
+
+---
+
+## MATTENWEG BILLS - BATCH 2 (PAID Feb 9)
+
+| # | From | For | Amount | Status |
+|---|------|-----|--------|--------|
+| 01 | Polizei Rheinland-Pfalz | Traffic fine A61 (MAHNUNG) | EUR 93.50 | PAID |
+| 02 | AXA-ARAG Lausanne | Legal protection OPTIMA (Relance) | CHF 401.70 | PAID |
+| 03 | VSZ Stans | Verkehrssicherheit 2026 | CHF 18.85 | PAID |
+| 04 | AXA Motor Winterthur | Kontrollschilder Ducato 2026 | CHF 52.75 | PAID |
+| 05 | NSV Stans | Gewerbeversicherung Ecolution | CHF 33.35 | PAID |
+| 06 | NSV Stans | Hausratversicherung Angel+Sylvia | CHF 63.15 | PAID |
+| 07 | Groupe Mutuel | Sylvia KVG (Zahlungsaufforderung) | CHF 754.00 | PAID |
+| 08 | Groupe Mutuel | Sylvia KVG (MAHNUNG) | CHF 754.90 | PAID |
+| 09 | AXA Healthcare | Sylvie Health Dec 2025 (MAHNUNG) | CHF 262.80 | PAID |
+| 10 | AXA Healthcare | Sylvie Health Jan 2026 | CHF 280.00 | PAID |
+| 11 | AXA Healthcare | Sylvie Health Feb 2026 | CHF 280.00 | PAID |
+
+**Files:** `/home/angel/Documents/2026 Mattenweg/Batch 2 .../` (renamed + PAYMENT-REFERENCE.md)
 
 ---
 
