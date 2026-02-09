@@ -3,7 +3,7 @@
 ## Business
 - **Name:** Pizza Planet
 - **Owner:** Ciccio (Floreno Francesco)
-- **Address:** Via Vespucci, 13 - Bonagia, 91100 Trapani
+- **Address:** Via Vespucci, 13 - Bonagia, 91100 Trapani (VERIFY with Ciccio -- Google Maps says Via Asmara 35, Valderice)
 - **Phone:** 0923 592609
 - **Alt phones:** 340 414 4123, 339 205 1033
 - **Google Maps:** https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
