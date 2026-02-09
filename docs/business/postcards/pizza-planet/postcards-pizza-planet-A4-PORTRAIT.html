@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>PIZZA PLANET - 4-UP Portrait Postcards</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            background: white;
+            font-family: Georgia, serif;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            overflow: hidden;
+            position: relative;
+            page-break-after: always;
+            background: white;
+        }
+
+        .page:last-child {
+            page-break-after: avoid;
+        }
+
+        /*
+         * A4 PORTRAIT = PORTRAIT IMAGES
+         * Card size: 99mm x 142.5mm
+         * Width:  3 + 99 + 6 + 99 + 3 = 210mm
+         * Height: 3 + 142.5 + 6 + 142.5 + 3 = 297mm
+         */
+
+        .grid-wrapper {
+            position: absolute;
+            top: 3mm;
+            left: 3mm;
+            width: 204mm;
+            height: 291mm;
+        }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 99mm 99mm;
+            grid-template-rows: 142.5mm 142.5mm;
+            gap: 6mm;
+        }
+
+        .card-front {
+            width: 99mm;
+            height: 142.5mm;
+            overflow: hidden;
+            position: relative;
+            background: #f5f5f5;
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: block;
+        }
+
+        .card-back {
+            width: 99mm;
+            height: 142.5mm;
+            overflow: hidden;
+            background: #faf9f6;
+            padding: 4mm 5mm 3mm 5mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid #8B0000;
+            padding-bottom: 2mm;
+            margin-bottom: 2mm;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 13pt;
+            letter-spacing: 2px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #8B0000;
+        }
+
+        .collection {
+            font-size: 7pt;
+            color: #666;
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 9.5pt;
+            line-height: 1.3;
+            color: #333;
+            margin-bottom: 1.5mm;
+        }
+
+        .attribution {
+            font-size: 7pt;
+            color: #666;
+            text-align: right;
+            margin-bottom: 2mm;
+        }
+
+        .msg-addr {
+            display: grid;
+            grid-template-columns: 48fr 52fr;
+            gap: 3mm;
+            flex: 1;
+        }
+
+        .msg-side {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-label {
+            font-size: 6pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin-bottom: 1mm;
+        }
+
+        .msg-freeform { flex: 1; }
+
+        .addr-side {
+            display: flex;
+            flex-direction: column;
+            border-left: 0.5px solid #ccc;
+            padding-left: 3mm;
+        }
+
+        .stamp-box {
+            width: 18mm;
+            height: 18mm;
+            border: 0.5px solid #bbb;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5.5pt;
+            color: #bbb;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .addr-lines { margin-top: auto; }
+
+        .addr-line {
+            border-bottom: 0.5px solid #ccc;
+            height: 7mm;
+        }
+
+        .addr-line:first-of-type { border-bottom: 1px solid #666; }
+        .addr-line:last-of-type { border-bottom: none; }
+
+        .back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 3mm;
+            border-top: 1px solid #8B0000;
+            margin-top: auto;
+            min-height: 34mm;
+        }
+
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5mm;
+        }
+
+        .qr-section img {
+            width: 30mm;
+            height: 30mm;
+        }
+
+        .qr-label {
+            font-size: 8pt;
+            color: #666;
+            line-height: 1.2;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            text-align: center;
+        }
+
+        .center-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1mm;
+        }
+
+        .coords {
+            font-size: 8pt;
+            color: #8B0000;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .tagline {
+            font-size: 7pt;
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .metadata {
+            font-size: 8pt;
+            color: #333;
+            text-align: right;
+            line-height: 1.4;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .metadata .phone {
+            font-weight: bold;
+            font-size: 9pt;
+            color: #8B0000;
+        }
+
+        @media print {
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: FRONTS -->
+<div class="page">
+    <div class="grid-wrapper">
+        <div class="grid-2x2">
+            <div class="card-front">
+                <img src="images/counter-logo-sign.jpg" alt="L'Insegna - The Sign">
+            </div>
+            <div class="card-front">
+                <img src="images/pizza-messina-card.jpg" alt="La Tradizione - The Tradition">
+            </div>
+            <div class="card-front">
+                <img src="images/prep-counter-pizzas.jpg" alt="L'Artigiano - The Craftsman">
+            </div>
+            <div class="card-front">
+                <img src="images/pizza-closeup-messina.jpg" alt="La Pizza - The Pizza">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE 2: BACKS (B, A, D, C for short-edge duplex) -->
+<div class="page">
+    <div class="grid-wrapper">
+        <div class="grid-2x2">
+
+            <!-- BACK B (La Tradizione) -->
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">PIZZA PLANET</div>
+                    <div class="collection">UFA Collection<br>La Tradizione</div>
+                </div>
+                <div class="quote">&ldquo;Pizza, birra, e buona compagnia.&rdquo;</div>
+                <div class="attribution">&mdash; Pizza, beer, and good company.</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                        <div class="msg-freeform"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="images/qr-pizza-planet-PLACE.png" alt="QR">
+                        <div class="qr-label">Google Maps</div>
+                    </div>
+                    <div class="center-info">
+                        <div class="coords">38&deg;03'51"N 12&deg;35'49"E</div>
+                        <div class="tagline">Forno a legna dal 2000</div>
+                    </div>
+                    <div class="metadata">
+                        Via Vespucci, 13<br>
+                        Bonagia, Trapani<br>
+                        <span class="phone">0923 592609</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACK A (L'Insegna) -->
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">PIZZA PLANET</div>
+                    <div class="collection">UFA Collection<br>L'Insegna</div>
+                </div>
+                <div class="quote">&ldquo;Ciccio ha sfamato mezza Trapani.&rdquo;</div>
+                <div class="attribution">&mdash; Ciccio fed half of Trapani.</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                        <div class="msg-freeform"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="images/qr-pizza-planet-PLACE.png" alt="QR">
+                        <div class="qr-label">Google Maps</div>
+                    </div>
+                    <div class="center-info">
+                        <div class="coords">38&deg;03'51"N 12&deg;35'49"E</div>
+                        <div class="tagline">Forno a legna dal 2000</div>
+                    </div>
+                    <div class="metadata">
+                        Via Vespucci, 13<br>
+                        Bonagia, Trapani<br>
+                        <span class="phone">0923 592609</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACK D (La Pizza) -->
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">PIZZA PLANET</div>
+                    <div class="collection">UFA Collection<br>La Pizza</div>
+                </div>
+                <div class="quote">&ldquo;Dal forno alla tavola, con amore.&rdquo;</div>
+                <div class="attribution">&mdash; From oven to table, with love.</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                        <div class="msg-freeform"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="images/qr-pizza-planet-PLACE.png" alt="QR">
+                        <div class="qr-label">Google Maps</div>
+                    </div>
+                    <div class="center-info">
+                        <div class="coords">38&deg;03'51"N 12&deg;35'49"E</div>
+                        <div class="tagline">Forno a legna dal 2000</div>
+                    </div>
+                    <div class="metadata">
+                        Via Vespucci, 13<br>
+                        Bonagia, Trapani<br>
+                        <span class="phone">0923 592609</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACK C (L'Artigiano) -->
+            <div class="card-back">
+                <div class="back-header">
+                    <div class="logo">PIZZA PLANET</div>
+                    <div class="collection">UFA Collection<br>L'Artigiano</div>
+                </div>
+                <div class="quote">&ldquo;Le mani che impastano il futuro.&rdquo;</div>
+                <div class="attribution">&mdash; The hands that knead the future.</div>
+                <div class="msg-addr">
+                    <div class="msg-side">
+                        <div class="section-label">Il Tuo Messaggio / Your Message</div>
+                        <div class="msg-freeform"></div>
+                    </div>
+                    <div class="addr-side">
+                        <div class="stamp-box">STAMP</div>
+                        <div class="addr-lines">
+                            <div class="section-label">A / To</div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                            <div class="addr-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="back-footer">
+                    <div class="qr-section">
+                        <img src="images/qr-pizza-planet-PLACE.png" alt="QR">
+                        <div class="qr-label">Google Maps</div>
+                    </div>
+                    <div class="center-info">
+                        <div class="coords">38&deg;03'51"N 12&deg;35'49"E</div>
+                        <div class="tagline">Forno a legna dal 2000</div>
+                    </div>
+                    <div class="metadata">
+                        Via Vespucci, 13<br>
+                        Bonagia, Trapani<br>
+                        <span class="phone">0923 592609</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

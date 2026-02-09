@@ -101,3 +101,12 @@ docs/business/*Partnership*
 docs/business/*Platform-Partner*
 docs/business/*POC-*
 node_modules/
+
+# ====================================================================
+# 📁 POSTCARD WORKSHOP - Local Archives (not for repo)
+# ====================================================================
+# Arc folders keep previous versions locally for safety
+# Git tracks the current versions; arc/ is the belt-and-suspenders
+docs/business/postcards/**/arc/
+# Raw photos from Telegram (large, unprocessed)
+docs/business/postcards/**/raw/
