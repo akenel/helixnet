@@ -6,7 +6,7 @@
 - **Address:** Via Vespucci, 13 - Bonagia, 91100 Trapani
 - **Phone:** 0923 592609
 - **Alt phones:** 340 414 4123, 339 205 1033
-- **Google Maps:** https://maps.app.goo.gl/pizzaplanet (verify PLACE link)
+- **Google Maps:** https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
 - **Coordinates:** 38°03'51"N 12°35'49"E
 - **Hours:** Check with Ciccio
 - **Brand color:** #8B0000 (dark red)
@@ -15,7 +15,7 @@
 ## Status
 - **Current:** PDFs DONE with real photos -- show owner, get approval, print at ISOTTO
 - **Template version:** GOLD v3
-- **QR:** Needs verification before print (scan and confirm PLACE link)
+- **QR:** VERIFIED -- PLACE link https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
 
 ## Deliverables
 - `UFA_r2p/pizza-planet-4UP-PORTRAIT.pdf` (2 pages)
@@ -56,3 +56,4 @@
 - Feb 3: 4-UP templates created (v2 with 30mm QR)
 - Feb 9: Workshop reorg, INFO.md created
 - Feb 9: Real photos selected (8), cropped, cards built + PDFs generated
+- Feb 9: QR fixed -- was coordinates, now correct PLACE link, PDFs regenerated

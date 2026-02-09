@@ -126,7 +126,7 @@
 - **Images:** 23 Telegram photos, 13 restaurant, 8 selected + cropped
 - **Portrait cards:** Counter/logo (L'Insegna), Pizza+Messina (La Tradizione), Prep counter (L'Artigiano), Pizza close-up (La Pizza)
 - **Landscape cards:** Crew+oven hero (Il Forno), Tattooed guy (La Squadra), Kitchen wide (La Cucina), Menu board (Il Menu)
-- **QR:** Needs verification before print (scan and confirm PLACE link)
+- **QR:** FIXED -- was coordinates, now PLACE link https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
 
 ### Marghe Trapani (Feb 8)
 - **Business:** MARGHE - Rita.gli di farine e felicita
@@ -183,7 +183,7 @@
 - [ ] Camper & Tour: camera install + roof damage assessment + preventivo
 - [ ] Take photos/video of everything they find
 - [ ] Do NOT authorize roof repairs without AXA confirmation
-- [ ] Pizza Planet: verify QR code (scan it)
+- [x] Pizza Planet: QR FIXED (was coordinates, regenerated with PLACE link)
 
 ### When Ready
 - [ ] Cheap test print at digital photo shop (Color Clean first)
