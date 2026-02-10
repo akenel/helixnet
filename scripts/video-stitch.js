@@ -5,7 +5,7 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
 
-const EP_DIR = path.join(__dirname, '..', 'videos', 'keycloak', 'EP5-rbac-deep-dive');
+const EP_DIR = path.join(__dirname, '..', 'videos', 'keycloak', 'EP6-client-architecture');
 
 (async () => {
   const browser = await puppeteer.launch({

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.brand {
+  font-size: 28px;
+  font-weight: 300;
+  color: #666;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.helix { color: #0078D4; }
+.episode {
+  font-size: 18px;
+  font-weight: 400;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title {
+  font-size: 68px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.subtitle {
+  font-size: 24px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 3px;
+  margin-bottom: 50px;
+}
+.divider {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #0078D4, transparent);
+  margin: 0 auto 40px;
+}
+.clients {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+}
+.client {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 16px 24px;
+  text-align: center;
+  min-width: 200px;
+}
+.client .icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+.client .name {
+  color: #ccc;
+  font-size: 15px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.client .type {
+  color: #555;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="brand"><span class="helix">Helix</span>Net Keycloak Series</div>
+    <div class="episode">Episode 6</div>
+    <div class="title">Client Architecture</div>
+    <div class="subtitle">Three Clients, Three OIDC Patterns, One Realm</div>
+    <div class="divider"></div>
+    <div class="clients">
+      <div class="client">
+        <span class="icon">&#x1F310;</span>
+        <div class="name">helix_pos_web</div>
+        <div class="type">Public SPA</div>
+      </div>
+      <div class="client">
+        <span class="icon">&#x1F4F1;</span>
+        <div class="name">helix_pos_mobile</div>
+        <div class="type">Public Native</div>
+      </div>
+      <div class="client">
+        <span class="icon">&#x2699;&#xFE0F;</span>
+        <div class="name">helix_pos_service</div>
+        <div class="type">Confidential</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

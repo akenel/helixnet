@@ -1,10 +1,10 @@
-# SESSION STATE - February 10, 2026
+# SESSION STATE - February 11, 2026
 
-*Last Updated: Tue Feb 10, 2026 ~11:00pm - EP4 + EP5 recorded at McDonald's Trapani, video pipeline invented*
+*Last Updated: Tue Feb 11, 2026 ~12:30am - EP4 + EP5 + EP6 recorded at McDonald's Trapani*
 
 ---
 
-## KC VIDEO SERIES - EP4 + EP5 DONE
+## KC VIDEO SERIES - EP4 + EP5 + EP6 DONE
 
 **Method:** Puppeteer (non-headless) + OBS Screen Capture + ffmpeg post-production
 **SOP:** `videos/keycloak/VIDEO-PRODUCTION-SOP.md`
@@ -14,12 +14,13 @@
 |----|-------|----------|--------|------|
 | 4 | Keys to the Kingdom | 2:32 | FINAL (intro+content+outro) | `EP4-keys-to-the-kingdom/KC-EP4-Keys-to-the-Kingdom-FINAL.mp4` |
 | 5 | RBAC Deep Dive | 3:19 | FINAL (intro+content+outro) | `EP5-rbac-deep-dive/KC-EP5-RBAC-Deep-Dive-FINAL.mp4` |
-| 6 | Client Architecture | TBD | Planned | - |
+| 6 | Client Architecture | 2:30 | FINAL (intro+content+outro) | `EP6-client-architecture/KC-EP6-Client-Architecture-FINAL.mp4` |
 | 7 | Authentication Flows | TBD | Planned | - |
 | 8 | Multi-Tenant Platform | TBD | Planned | - |
 
 **EP4 content:** Login, master dashboard, realm dropdown (6 realms), POS users, role mapping, clients, realm tour
 **EP5 content:** 5 custom RBAC roles, role details (admin/cashier/manager), users in role, 4 user role mappings (Pam/Ralph/Michael/Felix), client scopes (10 OIDC), auth flows (7), realm settings
+**EP6 content:** 3 OIDC clients (web/mobile/service), public vs confidential, redirect URIs, custom scheme callback, client secret + credentials, service account roles, per-client scopes vs realm scopes
 
 **MP4s:** Local only (GDrive, not git). Voiceover to be added later.
 
@@ -118,14 +119,17 @@
 
 ## PENDING ACTIONS
 
-### Done Tue Feb 10
+### Done Tue Feb 10 / Wed Feb 11
 - [x] KC EP4 recorded, trimmed, stitched (Keys to the Kingdom - 2:32)
 - [x] KC EP5 recorded, trimmed, stitched (RBAC Deep Dive - 3:19)
+- [x] KC EP6 recorded, trimmed, stitched (Client Architecture - 2:30)
 - [x] Video Production SOP written and committed
 - [x] Video pipeline invented (Puppeteer + OBS + ffmpeg)
 - [x] TZLA Whisper transcript analyzed (Zish/Visionary Life Hacks)
 - [x] EP4 folder structure created with intro/outro HTML + voiceover script
 - [x] EP5 folder structure created with intro/outro HTML + voiceover script
+- [x] EP6 folder structure created with intro/outro HTML + voiceover script
+- [x] 3 episodes in one night (8:21 total runtime)
 
 ### Wednesday+
 - [ ] Upload hotel invoice to Google Drive (digital backup)
@@ -136,9 +140,9 @@
 - [ ] Cheap test print at digital photo shop (Color Clean first)
 - [ ] ISOTTO color print run (Color Clean + Pizza Planet + Marghe)
 - [ ] Piccolo Bistratto: design card, prepare 8 images
-- [ ] EP4+EP5 MP4s to Google Drive
-- [ ] Record voiceover for EP4 and EP5
-- [ ] EP6 Client Architecture (next KC video)
+- [ ] EP4+EP5+EP6 MP4s to Google Drive
+- [ ] Record voiceover for EP4, EP5, and EP6
+- [ ] EP7 Authentication Flows (next KC video)
 
 ---
 
@@ -173,3 +177,4 @@
 
 *This file is Tigs' working memory. Update it often.*
 *"You write a script, I press the clicker, OBS does the rest." -- McDonald's Trapani, Feb 10, 2026*
+*"Three episodes in one night. That's not a pipeline, that's a factory." -- Rio Figiori parking spot, Feb 11, 2026*
