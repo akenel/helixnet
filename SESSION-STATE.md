@@ -1,10 +1,10 @@
 # SESSION STATE - February 11, 2026
 
-*Last Updated: Tue Feb 11, 2026 ~12:30am - EP4 + EP5 + EP6 recorded at McDonald's Trapani*
+*Last Updated: Tue Feb 11, 2026 ~1:00am - EP4 + EP5 + EP6 + EP7 recorded at McDonald's Trapani*
 
 ---
 
-## KC VIDEO SERIES - EP4 + EP5 + EP6 DONE
+## KC VIDEO SERIES - EP4 + EP5 + EP6 + EP7 DONE
 
 **Method:** Puppeteer (non-headless) + OBS Screen Capture + ffmpeg post-production
 **SOP:** `videos/keycloak/VIDEO-PRODUCTION-SOP.md`
@@ -15,12 +15,13 @@
 | 4 | Keys to the Kingdom | 2:32 | FINAL (intro+content+outro) | `EP4-keys-to-the-kingdom/KC-EP4-Keys-to-the-Kingdom-FINAL.mp4` |
 | 5 | RBAC Deep Dive | 3:19 | FINAL (intro+content+outro) | `EP5-rbac-deep-dive/KC-EP5-RBAC-Deep-Dive-FINAL.mp4` |
 | 6 | Client Architecture | 2:30 | FINAL (intro+content+outro) | `EP6-client-architecture/KC-EP6-Client-Architecture-FINAL.mp4` |
-| 7 | Authentication Flows | TBD | Planned | - |
+| 7 | Authentication Flows | 2:35 | FINAL (intro+content+outro) | `EP7-authentication-flows/KC-EP7-Authentication-Flows-FINAL.mp4` |
 | 8 | Multi-Tenant Platform | TBD | Planned | - |
 
 **EP4 content:** Login, master dashboard, realm dropdown (6 realms), POS users, role mapping, clients, realm tour
 **EP5 content:** 5 custom RBAC roles, role details (admin/cashier/manager), users in role, 4 user role mappings (Pam/Ralph/Michael/Felix), client scopes (10 OIDC), auth flows (7), realm settings
 **EP6 content:** 3 OIDC clients (web/mobile/service), public vs confidential, redirect URIs, custom scheme callback, client secret + credentials, service account roles, per-client scopes vs realm scopes
+**EP7 content:** 7 built-in auth flows (browser/direct grant/registration/reset credentials/first broker login/docker auth/clients), execution steps with requirement levels, 11 required actions, 5 policy types
 
 **MP4s:** Local only (GDrive, not git). Voiceover to be added later.
 
@@ -130,6 +131,8 @@
 - [x] EP5 folder structure created with intro/outro HTML + voiceover script
 - [x] EP6 folder structure created with intro/outro HTML + voiceover script
 - [x] 3 episodes in one night (8:21 total runtime)
+- [x] KC EP7 recorded, trimmed, stitched (Authentication Flows - 2:35)
+- [x] 4 episodes in one night (10:56 total runtime)
 
 ### Wednesday+
 - [ ] Upload hotel invoice to Google Drive (digital backup)
@@ -140,9 +143,10 @@
 - [ ] Cheap test print at digital photo shop (Color Clean first)
 - [ ] ISOTTO color print run (Color Clean + Pizza Planet + Marghe)
 - [ ] Piccolo Bistratto: design card, prepare 8 images
-- [ ] EP4+EP5+EP6 MP4s to Google Drive
-- [ ] Record voiceover for EP4, EP5, and EP6
-- [ ] EP7 Authentication Flows (next KC video)
+- [ ] EP4+EP5+EP6+EP7 MP4s to Google Drive
+- [ ] Record voiceover for EP4, EP5, EP6, and EP7
+- [x] EP7 Authentication Flows -- DONE
+- [ ] EP8 Multi-Tenant Platform (next KC video)
 
 ---
 
@@ -178,3 +182,4 @@
 *This file is Tigs' working memory. Update it often.*
 *"You write a script, I press the clicker, OBS does the rest." -- McDonald's Trapani, Feb 10, 2026*
 *"Three episodes in one night. That's not a pipeline, that's a factory." -- Rio Figiori parking spot, Feb 11, 2026*
+*"Four episodes. Still going. Quality is fantastic." -- 1am, still at McDonald's*
