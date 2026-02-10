@@ -2,9 +2,11 @@
 
 ## Business
 - **Name:** Color Clean
-- **Type:** Lavanderia Professionale (Professional Laundry)
-- **Address:** Via Virgilio, 71/73, 91100 Trapani
+- **Type:** Lavanderia a Secco e ad Acqua (Dry Cleaning + Water Washing)
+- **Address:** Via Virgilio, 105/107, 91100 Trapani (CONFIRMED from business card -- 105 full service, 107 self-service)
 - **Phone:** 320 054 0352
+- **Website:** www.colorclean.it
+- **Email:** colorclean.tp@gmail.com
 - **Google Maps:** https://maps.app.goo.gl/nxJGY69WRRaUxbXQ7
 - **Coordinates:** 38°01'N 12°31'E
 - **Hours:** Monday - Friday (NOT Saturday/Sunday)
@@ -53,8 +55,13 @@
 - Tent card back panel: story style (Chapter 2), Google Maps QR with "Trovaci / Find Us"
 - Borsa Completa (full bag) service: EUR 25
 
+## Reference Photos
+- `archive/ref-business-card-front-white.jpg` - Front of business card (white)
+- `archive/ref-business-card-back-blue.jpg` - Back of business card (blue)
+
 ## History
 - Jan 27: Original tent card v1 created (old postcard-form back)
 - Feb 8: Tent card v2 (story back panel), Google Maps QR regenerated
 - Feb 8: 4-UP Portrait + Landscape cards built with real photos
 - Feb 9: Workshop reorg, INFO.md created
+- Feb 10: Business card photos captured -- new details: website, email, address discrepancy (71/73 vs 105/107)

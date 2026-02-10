@@ -141,7 +141,7 @@
 
 ### Color Clean (Feb 8)
 - **Business:** Color Clean - Lavanderia Professionale
-- **Address:** Via Virgilio, 71/73, 91100 Trapani
+- **Address:** Via Virgilio, 105/107, 91100 Trapani (CONFIRMED from business card)
 - **Phone:** 320 054 0352
 - **Google Maps:** https://maps.app.goo.gl/nxJGY69WRRaUxbXQ7
 - **Deliverables:** Tent card v2 + 4-UP Portrait + 4-UP Landscape
@@ -201,7 +201,7 @@
 | **AXA** | Iwan Zgraggen (forwarded), Claim 22.831.735/0001, new case worker TBD |
 | **Vyoma/Dharma** | Venki +971 56 999 9181 (Telegram) |
 | **Marghe Trapani** | Via Garibaldi 52, Trapani, 352 088 2833, Google review posted |
-| **Color Clean** | Via Virgilio 71/73, Trapani, 320 054 0352, PDFs done |
+| **Color Clean** | Via Virgilio 105/107, Trapani, 320 054 0352, www.colorclean.it, PDFs updated |
 | **Pizza Planet** | Ciccio, Via Asmara 35 Bonagia (TP), 0923 592609, PDFs done + address confirmed |
 | **ISOTTO Sport** | Print partner, +39 349 972 9418 |
 | **Gym 4U** | 30-day membership active (renewed Feb 9) |

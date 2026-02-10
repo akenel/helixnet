@@ -64,7 +64,7 @@ Full story: `/field-notes-with-leo-dec5.md`
 | Mixology Trapani | Beverage wholesale, Via M. Buscaino 15, Tel 0923 390052, FB @mixologytp |
 | Marcello Virzi | Sales Manager, Tenute Parrinello winery (since 1936), Marsala - meeting end of week |
 | Kevin Galilee | World passport holder, insane in a good way, camping/shower host near HQ |
-| Color Clean | Lavanderia, Via Virgilio 71/73, loved the tent card + review, wants full card set |
+| Color Clean | Lavanderia, Via Virgilio 105/107, www.colorclean.it, colorclean.tp@gmail.com, loved tent card + review |
 | Pizza Planet | Ciccio's place, Via Asmara 35 Bonagia (TP), 38°03'51"N 12°35'49"E, forno a legna dal 2000, closed Mondays |
 | Piccolo Bistratto | Giovanni's place, Jonathan the chef, Paolo (friend), wants card set |
 
