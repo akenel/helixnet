@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.brand {
+  font-size: 28px;
+  font-weight: 300;
+  color: #666;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.helix { color: #0078D4; }
+.episode {
+  font-size: 18px;
+  font-weight: 400;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title {
+  font-size: 72px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.subtitle {
+  font-size: 24px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 3px;
+  margin-bottom: 50px;
+}
+.divider {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #0078D4, transparent);
+  margin: 0 auto 40px;
+}
+.roles {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.role {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 12px 20px;
+  color: #aaa;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.role .icon {
+  margin-right: 6px;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="brand"><span class="helix">Helix</span>Net Keycloak Series</div>
+    <div class="episode">Episode 5</div>
+    <div class="title">RBAC Deep Dive</div>
+    <div class="subtitle">Role-Based Access Control in Production</div>
+    <div class="divider"></div>
+    <div class="roles">
+      <div class="role"><span class="icon">&#x1F451;</span> Admin</div>
+      <div class="role"><span class="icon">&#x1F4CA;</span> Auditor</div>
+      <div class="role"><span class="icon">&#x1F4B0;</span> Cashier</div>
+      <div class="role"><span class="icon">&#x1F6E0;</span> Developer</div>
+      <div class="role"><span class="icon">&#x1F454;</span> Manager</div>
+    </div>
+  </div>
+</body>
+</html>

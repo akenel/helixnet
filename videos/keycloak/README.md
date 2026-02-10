@@ -11,7 +11,7 @@
 | EP | Title | Duration | Status | Script |
 |----|-------|----------|--------|--------|
 | 4 | Keys to the Kingdom | 2:22 | RECORDED + TRIMMED | `kc-record-ep4.js` |
-| 5 | RBAC Deep Dive | TBD | Planned | - |
+| 5 | RBAC Deep Dive | ~3:00 | SCRIPT READY | `kc-record-ep5.js` |
 | 6 | Client Architecture | TBD | Planned | - |
 | 7 | Authentication Flows | TBD | Planned | - |
 | 8 | Multi-Tenant Platform | TBD | Planned | - |
@@ -28,7 +28,12 @@ videos/keycloak/
 │   ├── voiceover-script.md            <- Talking points for narration
 │   └── raw/
 │       └── take2-good-full.mp4        <- Full OBS recording before trim
-├── EP5-.../                           <- Future episodes same structure
+├── EP5-rbac-deep-dive/
+│   ├── intro.html                     <- Title card source
+│   ├── outro.html                     <- End card source
+│   ├── voiceover-script.md            <- Talking points for narration
+│   └── raw/                           <- OBS raw recordings
+├── EP6-.../                           <- Future episodes same structure
 └── archive/
     └── EP4-take1-wrong-window.mp4     <- Failed takes, old versions
 ```
