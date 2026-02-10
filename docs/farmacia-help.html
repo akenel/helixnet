@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmacia</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 15px;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #2e7d32;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .header h1 { font-size: 20pt; }
+        .header p { font-size: 11pt; opacity: 0.85; margin-top: 4px; }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            font-size: 13pt;
+            color: #2e7d32;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        .symptom {
+            font-size: 16pt;
+            color: #222;
+            line-height: 1.6;
+            padding: 4px 0;
+        }
+        .symptom .en {
+            font-size: 11pt;
+            color: #888;
+            font-style: italic;
+        }
+        .need {
+            font-size: 14pt;
+            color: #222;
+            line-height: 1.8;
+            padding: 3px 0;
+        }
+        .need .en {
+            font-size: 10pt;
+            color: #888;
+            font-style: italic;
+        }
+        .dot { color: #2e7d32; font-weight: bold; margin-right: 6px; }
+        .note {
+            background: #fff3e0;
+            border-left: 4px solid #f57c00;
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13pt;
+            color: #333;
+            line-height: 1.5;
+        }
+        .note .en {
+            font-size: 10pt;
+            color: #888;
+            font-style: italic;
+        }
+        .grazie {
+            text-align: center;
+            font-size: 16pt;
+            color: #2e7d32;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Buongiorno!</h1>
+    <p>Non parlo bene italiano. Posso mostrarle?</p>
+</div>
+
+<div class="card">
+    <h2>I miei sintomi / My Symptoms</h2>
+    <div class="symptom"><span class="dot">*</span> Starnuti frequenti <span class="en">(frequent sneezing)</span></div>
+    <div class="symptom"><span class="dot">*</span> Naso chiuso / che cola <span class="en">(stuffy / runny nose)</span></div>
+    <div class="symptom"><span class="dot">*</span> Iniziato ieri, sta peggiorando <span class="en">(started yesterday, getting worse)</span></div>
+</div>
+
+<div class="card">
+    <h2>Cosa cerco / What I Need</h2>
+    <div class="need"><span class="dot">1.</span> Vitamina C effervescente (1000mg)</div>
+    <div class="need"><span class="dot">2.</span> Tachipirina o Tachiflu <span class="en">(for fever/aches if it gets worse)</span></div>
+    <div class="need"><span class="dot">3.</span> Spray nasale (soluzione fisiologica) <span class="en">(saline nasal spray)</span></div>
+    <div class="need"><span class="dot">4.</span> Caramelle per la gola <span class="en">(throat lozenges)</span></div>
+</div>
+
+<div class="card">
+    <div class="note">
+        Cosa mi consiglia per il raffreddore?<br>
+        <span class="en">What do you recommend for a cold?</span>
+    </div>
+</div>
+
+<div class="grazie">Grazie mille!</div>
+
+</body>
+</html>
