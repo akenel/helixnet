@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+/* Subtle grid pattern */
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+/* Accent glow */
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.brand {
+  font-size: 28px;
+  font-weight: 300;
+  color: #666;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+.helix {
+  color: #0078D4;
+}
+.divider {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #0078D4, transparent);
+  margin: 0 auto 40px;
+}
+.episode {
+  font-size: 18px;
+  font-weight: 400;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title {
+  font-size: 72px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  margin-bottom: 30px;
+}
+.subtitle {
+  font-size: 22px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 3px;
+}
+.kc-badge {
+  display: inline-block;
+  margin-top: 50px;
+  padding: 8px 24px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #555;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="brand"><span class="helix">Helix</span>Net</div>
+    <div class="divider"></div>
+    <div class="episode">Episode 4</div>
+    <div class="title">Keys to the Kingdom</div>
+    <div class="subtitle">Keycloak Admin Console Tour</div>
+    <div class="kc-badge">Keycloak 24 &middot; OIDC &middot; Multi-Tenant RBAC</div>
+  </div>
+</body>
+</html>
