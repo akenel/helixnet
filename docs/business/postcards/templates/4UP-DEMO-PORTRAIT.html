@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>4-UP Demo - A4 PORTRAIT (Portrait Images)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html, body {
+            background: white;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            overflow: hidden;
+            position: relative;
+            page-break-after: always;
+            background: white;
+        }
+
+        .page:last-child {
+            page-break-after: avoid;
+        }
+
+        /*
+         * A4 PORTRAIT = PORTRAIT IMAGES
+         *
+         * Page: 210mm x 297mm
+         * Frame: 3mm all edges
+         * Gap: 6mm between cards
+         *
+         * Card WIDTH:  (210 - 3 - 6 - 3) / 2 = 99mm
+         * Card HEIGHT: (297 - 3 - 6 - 3) / 2 = 142.5mm
+         *
+         * Card = 99mm x 142.5mm = PORTRAIT (taller than wide)
+         *
+         * Width:  3 + 99 + 6 + 99 + 3 = 210mm ✓
+         * Height: 3 + 142.5 + 6 + 142.5 + 3 = 297mm ✓
+         */
+
+        .grid-wrapper {
+            position: absolute;
+            top: 3mm;
+            left: 3mm;
+            width: 204mm;
+            height: 291mm;
+        }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 99mm 99mm;
+            grid-template-rows: 142.5mm 142.5mm;
+            gap: 6mm;
+        }
+
+        .card {
+            width: 99mm;
+            height: 142.5mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24pt;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px dashed rgba(255,255,255,0.5);
+        }
+
+        .card-label {
+            font-size: 48pt;
+            margin-bottom: 5mm;
+        }
+
+        .card-dims {
+            font-size: 12pt;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .card-type {
+            font-size: 10pt;
+            font-weight: normal;
+            margin-top: 3mm;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Card colors */
+        .card-a { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .card-b { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .card-c { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .card-d { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+
+        /* Page label */
+        .page-label {
+            position: absolute;
+            bottom: 3mm;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8pt;
+            color: #999;
+            background: white;
+            padding: 1mm 3mm;
+        }
+
+        /* Cut guide */
+        .cut-guide {
+            position: absolute;
+            font-size: 7pt;
+            color: #ccc;
+        }
+        .cut-h { top: 148.5mm; left: 5mm; }
+        .cut-v { top: 5mm; left: 50%; transform: translateX(-50%); }
+
+        @media print {
+            body { background: white; }
+            .page-label { display: none; }
+            .cut-guide { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: FRONTS -->
+<div class="page">
+    <div class="grid-wrapper">
+        <div class="grid-2x2">
+            <div class="card card-a">
+                <div class="card-label">A</div>
+                <div class="card-dims">99mm × 142.5mm</div>
+                <div class="card-type">Portrait Card</div>
+            </div>
+            <div class="card card-b">
+                <div class="card-label">B</div>
+                <div class="card-dims">99mm × 142.5mm</div>
+                <div class="card-type">Portrait Card</div>
+            </div>
+            <div class="card card-c">
+                <div class="card-label">C</div>
+                <div class="card-dims">99mm × 142.5mm</div>
+                <div class="card-type">Portrait Card</div>
+            </div>
+            <div class="card card-d">
+                <div class="card-label">D</div>
+                <div class="card-dims">99mm × 142.5mm</div>
+                <div class="card-type">Portrait Card</div>
+            </div>
+        </div>
+    </div>
+    <div class="cut-guide cut-h">← horizontal cut →</div>
+    <div class="cut-guide cut-v">↑ vertical cut ↓</div>
+    <div class="page-label">PAGE 1 — FRONTS — A4 Portrait (210×297mm)</div>
+</div>
+
+<!-- PAGE 2: BACKS (mirrored B,A,D,C for short-edge duplex) -->
+<div class="page">
+    <div class="grid-wrapper">
+        <div class="grid-2x2">
+            <div class="card card-b" style="opacity: 0.7;">
+                <div class="card-label">B</div>
+                <div class="card-dims">BACK</div>
+                <div class="card-type">Aligns with Front B</div>
+            </div>
+            <div class="card card-a" style="opacity: 0.7;">
+                <div class="card-label">A</div>
+                <div class="card-dims">BACK</div>
+                <div class="card-type">Aligns with Front A</div>
+            </div>
+            <div class="card card-d" style="opacity: 0.7;">
+                <div class="card-label">D</div>
+                <div class="card-dims">BACK</div>
+                <div class="card-type">Aligns with Front D</div>
+            </div>
+            <div class="card card-c" style="opacity: 0.7;">
+                <div class="card-label">C</div>
+                <div class="card-dims">BACK</div>
+                <div class="card-type">Aligns with Front C</div>
+            </div>
+        </div>
+    </div>
+    <div class="page-label">PAGE 2 — BACKS (B,A,D,C) — Short-edge duplex flip</div>
+</div>
+
+</body>
+</html>
