@@ -1,6 +1,29 @@
-# SESSION STATE - February 9, 2026
+# SESSION STATE - February 10, 2026
 
-*Last Updated: Mon Feb 9, 2026 ~6:45pm - Mattenweg bills paid, git PAT renewed, full day complete*
+*Last Updated: Tue Feb 10, 2026 ~11:00pm - EP4 + EP5 recorded at McDonald's Trapani, video pipeline invented*
+
+---
+
+## KC VIDEO SERIES - EP4 + EP5 DONE
+
+**Method:** Puppeteer (non-headless) + OBS Screen Capture + ffmpeg post-production
+**SOP:** `videos/keycloak/VIDEO-PRODUCTION-SOP.md`
+**Location:** McDonald's Trapani, invented the pipeline over McFlurries
+
+| EP | Title | Duration | Status | File |
+|----|-------|----------|--------|------|
+| 4 | Keys to the Kingdom | 2:32 | FINAL (intro+content+outro) | `EP4-keys-to-the-kingdom/KC-EP4-Keys-to-the-Kingdom-FINAL.mp4` |
+| 5 | RBAC Deep Dive | 3:19 | FINAL (intro+content+outro) | `EP5-rbac-deep-dive/KC-EP5-RBAC-Deep-Dive-FINAL.mp4` |
+| 6 | Client Architecture | TBD | Planned | - |
+| 7 | Authentication Flows | TBD | Planned | - |
+| 8 | Multi-Tenant Platform | TBD | Planned | - |
+
+**EP4 content:** Login, master dashboard, realm dropdown (6 realms), POS users, role mapping, clients, realm tour
+**EP5 content:** 5 custom RBAC roles, role details (admin/cashier/manager), users in role, 4 user role mappings (Pam/Ralph/Michael/Felix), client scopes (10 OIDC), auth flows (7), realm settings
+
+**MP4s:** Local only (GDrive, not git). Voiceover to be added later.
+
+**Pipeline:** Script -> Dry run (headless) -> OBS Record -> ffmpeg trim+strip audio -> Puppeteer screenshot intro/outro -> ffmpeg stitch -> FINAL
 
 ---
 
@@ -32,30 +55,6 @@
 3. Same claim or new claim for water damage?
 4. Do they need an inspector to come to Sicily?
 
-### To Do
-- [x] Gather PuntaTipa hotel receipt -- DONE (invoice 153/HPT, signed by Alessia, EUR 1,395.50)
-- [ ] Upload invoice photo to Google Drive claim folder (backup)
-- [ ] Return to Camper & Tour for backup camera + water damage estimate (waiting for part -- Tue/Wed)
-- [ ] Do NOT authorize roof repairs until AXA confirms coverage
-- [ ] Side scratch -- separate incident, claim separately later
-
-### Documentation
-- **Local:** `/home/angel/Documents/MAX-water-damage-claim/`
-- **Hotel invoice:** `PuntaTipa Hotel Invoice for Water Damage -  photo_2026-02-09_13-21-44.jpg`
-- **Google Drive:** https://drive.google.com/open?id=1W8dHglKx_pOIzr4naJnIQjBdKOqp_tkC
-- **DO NOT MIX IN:** Side scratch (separate incident, claim separately later)
-
-### PuntaTipa Hotel Invoice Details
-- **Hotel:** FH SRL / Hotel Punta Tipa, Lungomare Dante Alighieri 70, 91100 Trapani
-- **P.IVA:** 02348620812
-- **Invoice #:** 153/HPT, dated 05/02/2026
-- **Room 205** (Doppia Vista Mare): 23/01 - 26/01/2026 (3 nights)
-- **Room 101** (Doppia Vista Mare): 26/01 - 05/02/2026 (10 nights)
-- **Accommodation:** EUR 1,378.00
-- **Caffe Americano:** EUR 3.50
-- **Imposta di Soggiorno:** EUR 14.00
-- **Total:** EUR 1,395.50 PAID (con caparra)
-
 ---
 
 ## SYLVIE
@@ -69,7 +68,7 @@
 
 ---
 
-## HELIXNET VIDEOS - ALL 3 LIVE
+## HELIXNET VIDEOS - ALL 3 LIVE (YouTube)
 
 | # | Title | Link |
 |---|-------|------|
@@ -78,10 +77,6 @@
 | 3 | Health Checks & Self-Healing | https://youtu.be/V4QbXM1_fLQ |
 
 **Playlist:** https://www.youtube.com/playlist?list=PLrRlgzUrqK1-rz6EhQIn65h-mJb409cNA
-
-**EP4 idea:** Keycloak demo - intro to realms
-
-**Video files:** `~/Videos/HelixNet-YouTube/EP1|EP2|EP3-*/`
 
 ---
 
@@ -104,49 +99,10 @@
 | 3 | **Color Clean** | **PDFs DONE** | Show owner (TOP PRIORITY client), cheap test print first, then ISOTTO |
 | 4 | Piccolo Bistratto | Pipeline | Create card + back side, 8 pics needed |
 
-### Workshop Reorg (Feb 9)
-- Client folders reorganized: each has `INFO.md`, `raw/`, `images/`, `arc/`
-- `arc/` and `raw/` gitignored (local archives, not for repo)
-- Template `CHANGELOG.md` created (v1/v2/v3 history)
-- All 3 client INFO.md files created as single source of truth
-
 ### Print Strategy
 1. Cheap test print at digital photo shop first (verify colors, QR, alignment)
 2. Once verified, ISOTTO for real color postcard batch
 3. Color Clean = top priority real customer
-
-### Pizza Planet (Updated Feb 9 - REAL PHOTOS)
-- **Business:** Pizza Planet - Forno a legna dal 2000
-- **Owner:** Ciccio (Floreno Francesco)
-- **Address:** Via Asmara, 35 - Bonagia (TP) (CONFIRMED from printed flyer)
-- **Phone:** 0923 592609
-- **Brand color:** #8B0000 (dark red)
-- **Deliverables:** `UFA_r2p/pizza-planet-4UP-PORTRAIT.pdf`, `pizza-planet-4UP-LANDSCAPE.pdf`
-- **Source:** `docs/business/postcards/pizza-planet/`
-- **Images:** 23 Telegram photos, 13 restaurant, 8 selected + cropped
-- **Portrait cards:** Counter/logo (L'Insegna), Pizza+Messina (La Tradizione), Prep counter (L'Artigiano), Pizza close-up (La Pizza)
-- **Landscape cards:** Crew+oven hero (Il Forno), Tattooed guy (La Squadra), Kitchen wide (La Cucina), Menu board (Il Menu)
-- **QR:** FIXED -- was coordinates, now PLACE link https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
-
-### Marghe Trapani (Feb 8)
-- **Business:** MARGHE - Rita.gli di farine e felicita
-- **Address:** Via Garibaldi, 52, 91100 Trapani
-- **Phone:** 352 088 2833
-- **Google Maps:** https://maps.app.goo.gl/NvDNytf8No376k9X7
-- **ScoutMenu:** https://www.scoutmenu.it/dettagli-locale.php?id=1986
-- **Google Review:** POSTED (5 stars, Feb 8)
-- **Deliverables:** Tent card + 4-UP Portrait + 4-UP Landscape
-- **PDFs:** `UFA_r2p/marghe-A4-TENT.pdf`, `marghe-4UP-PORTRAIT.pdf`, `marghe-4UP-LANDSCAPE.pdf`
-- **Notes:** Electric oven (not wood-fired), artisan focaccia/pizza, stone arch interior, cocktail bar
-
-### Color Clean (Feb 8)
-- **Business:** Color Clean - Lavanderia Professionale
-- **Address:** Via Virgilio, 105/107, 91100 Trapani (CONFIRMED from business card)
-- **Phone:** 320 054 0352
-- **Google Maps:** https://maps.app.goo.gl/nxJGY69WRRaUxbXQ7
-- **Deliverables:** Tent card v2 + 4-UP Portrait + 4-UP Landscape
-- **PDFs:** `UFA_r2p/colorclean-TENT-v2.pdf`, `colorclean-4UP-PORTRAIT.pdf`, `colorclean-4UP-LANDSCAPE.pdf`
-- **Notes:** Hours Mon-Fri only, brand color #2980B9, TOP PRIORITY real customer
 
 ---
 
@@ -160,36 +116,29 @@
 
 ---
 
-## PENDING ACTIONS - WEEK OF FEB 9
+## PENDING ACTIONS
 
-### Done Mon Feb 9
-- [x] AXA reply email SENT to Ivan (case handoff questions)
-- [x] PuntaTipa hotel invoice collected (EUR 1,395.50, signed by Alessia)
-- [x] Camper & Tour check-in (camera part Tue/Wed, Nino will Telegram)
-- [x] Gym 4U membership renewed (30 days)
-- [x] Pizza Planet cards rebuilt with real photos (portrait + landscape PDFs)
-- [x] Workshop reorganized (client folders, INFO.md, arc/, CHANGELOG.md)
-- [x] Mattenweg bills Batch 2: 11 bills processed, renamed, reference sheet created, ALL PAID via UBS
-- [x] GitHub PAT renewed, git push restored
+### Done Tue Feb 10
+- [x] KC EP4 recorded, trimmed, stitched (Keys to the Kingdom - 2:32)
+- [x] KC EP5 recorded, trimmed, stitched (RBAC Deep Dive - 3:19)
+- [x] Video Production SOP written and committed
+- [x] Video pipeline invented (Puppeteer + OBS + ffmpeg)
+- [x] TZLA Whisper transcript analyzed (Zish/Visionary Life Hacks)
+- [x] EP4 folder structure created with intro/outro HTML + voiceover script
+- [x] EP5 folder structure created with intro/outro HTML + voiceover script
 
-### Tuesday-Wednesday
+### Wednesday+
 - [ ] Upload hotel invoice to Google Drive (digital backup)
 - [ ] Wait for AXA new case worker introduction
 - [ ] Wait for Nino (Telegram -- camera part)
 - [ ] Wait for Rajiv/Vyoma response
 - [ ] Show Color Clean owner her cards (when passing Via Virgilio)
-
-### Mid-Week (when Nino calls)
-- [ ] Camper & Tour: camera install + roof damage assessment + preventivo
-- [ ] Take photos/video of everything they find
-- [ ] Do NOT authorize roof repairs without AXA confirmation
-- [x] Pizza Planet: QR FIXED (was coordinates, regenerated with PLACE link)
-
-### When Ready
 - [ ] Cheap test print at digital photo shop (Color Clean first)
 - [ ] ISOTTO color print run (Color Clean + Pizza Planet + Marghe)
 - [ ] Piccolo Bistratto: design card, prepare 8 images
-- [ ] EP4 planning (Keycloak realms demo)
+- [ ] EP4+EP5 MP4s to Google Drive
+- [ ] Record voiceover for EP4 and EP5
+- [ ] EP6 Client Architecture (next KC video)
 
 ---
 
@@ -222,25 +171,5 @@
 
 ---
 
-## MATTENWEG BILLS - BATCH 2 (PAID Feb 9)
-
-| # | From | For | Amount | Status |
-|---|------|-----|--------|--------|
-| 01 | Polizei Rheinland-Pfalz | Traffic fine A61 (MAHNUNG) | EUR 93.50 | PAID |
-| 02 | AXA-ARAG Lausanne | Legal protection OPTIMA (Relance) | CHF 401.70 | PAID |
-| 03 | VSZ Stans | Verkehrssicherheit 2026 | CHF 18.85 | PAID |
-| 04 | AXA Motor Winterthur | Kontrollschilder Ducato 2026 | CHF 52.75 | PAID |
-| 05 | NSV Stans | Gewerbeversicherung Ecolution | CHF 33.35 | PAID |
-| 06 | NSV Stans | Hausratversicherung Angel+Sylvia | CHF 63.15 | PAID |
-| 07 | Groupe Mutuel | Sylvia KVG (Zahlungsaufforderung) | CHF 754.00 | PAID |
-| 08 | Groupe Mutuel | Sylvia KVG (MAHNUNG) | CHF 754.90 | PAID |
-| 09 | AXA Healthcare | Sylvie Health Dec 2025 (MAHNUNG) | CHF 262.80 | PAID |
-| 10 | AXA Healthcare | Sylvie Health Jan 2026 | CHF 280.00 | PAID |
-| 11 | AXA Healthcare | Sylvie Health Feb 2026 | CHF 280.00 | PAID |
-
-**Files:** `/home/angel/Documents/2026 Mattenweg/Batch 2 .../` (renamed + PAYMENT-REFERENCE.md)
-
----
-
 *This file is Tigs' working memory. Update it often.*
-*"No matter where you go, just be yourself." -- Albert Kenel*
+*"You write a script, I press the clicker, OBS does the rest." -- McDonald's Trapani, Feb 10, 2026*
