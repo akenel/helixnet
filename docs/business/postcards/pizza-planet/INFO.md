@@ -3,19 +3,23 @@
 ## Business
 - **Name:** Pizza Planet
 - **Owner:** Ciccio (Floreno Francesco)
-- **Address:** Via Vespucci, 13 - Bonagia, 91100 Trapani (VERIFY with Ciccio -- Google Maps says Via Asmara 35, Valderice)
-- **Phone:** 0923 592609
-- **Alt phones:** 340 414 4123, 339 205 1033
+- **Address:** Via Asmara, 35 - Bonagia (TP) (CONFIRMED from printed menu flyer + business card)
+- **Phone (Tel):** 0923 592609
+- **Phone (Cell):** 340 4144123 (PRIMARY - on business card + flyer)
+- **Alt phone:** 339 205 1033 (wall sign)
+- **P.IVA:** 01858680810
+- **Services:** Pizza da Asporto, Servizio a Domicilio
 - **Google Maps:** https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
 - **Coordinates:** 38°03'51"N 12°35'49"E
-- **Hours:** Check with Ciccio
+- **Hours:** Closed Mondays (CHIUSO IL LUNEDI - from printed flyer)
 - **Brand color:** #8B0000 (dark red)
 - **Tagline:** Forno a legna dal 2000
 
 ## Status
-- **Current:** PDFs DONE with real photos -- show owner, get approval, print at ISOTTO
+- **Current:** PDFs DONE with real photos + CONFIRMED address -- ready for print at ISOTTO
 - **Template version:** GOLD v3
 - **QR:** VERIFIED -- PLACE link https://maps.app.goo.gl/fEXvqYgMR7pj3nJB8
+- **Address:** CONFIRMED from Ciccio's own printed menu flyer + business card (Via Asmara, 35)
 
 ## Deliverables
 - `UFA_r2p/pizza-planet-4UP-PORTRAIT.pdf` (2 pages)
@@ -57,3 +61,4 @@
 - Feb 9: Workshop reorg, INFO.md created
 - Feb 9: Real photos selected (8), cropped, cards built + PDFs generated
 - Feb 9: QR fixed -- was coordinates, now correct PLACE link, PDFs regenerated
+- Feb 10: Address CONFIRMED as Via Asmara, 35 (from printed flyer photo in Telegram batch 20:02:29)

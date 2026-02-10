@@ -99,7 +99,7 @@
 
 | # | Client | Status | Next Step |
 |---|--------|--------|-----------|
-| 1 | **Pizza Planet** | **PDFs DONE (real photos)** | Verify QR, show Ciccio, cheap test print, then ISOTTO |
+| 1 | **Pizza Planet** | **PDFs DONE (real photos + address confirmed)** | Show Ciccio, print at ISOTTO |
 | 2 | **Marghe Trapani** | **PDFs DONE** | Show owner, get approval, print at ISOTTO |
 | 3 | **Color Clean** | **PDFs DONE** | Show owner (TOP PRIORITY client), cheap test print first, then ISOTTO |
 | 4 | Piccolo Bistratto | Pipeline | Create card + back side, 8 pics needed |
@@ -118,7 +118,7 @@
 ### Pizza Planet (Updated Feb 9 - REAL PHOTOS)
 - **Business:** Pizza Planet - Forno a legna dal 2000
 - **Owner:** Ciccio (Floreno Francesco)
-- **Address:** Via Vespucci, 13 - Bonagia, 91100 Trapani
+- **Address:** Via Asmara, 35 - Bonagia (TP) (CONFIRMED from printed flyer)
 - **Phone:** 0923 592609
 - **Brand color:** #8B0000 (dark red)
 - **Deliverables:** `UFA_r2p/pizza-planet-4UP-PORTRAIT.pdf`, `pizza-planet-4UP-LANDSCAPE.pdf`
@@ -202,7 +202,7 @@
 | **Vyoma/Dharma** | Venki +971 56 999 9181 (Telegram) |
 | **Marghe Trapani** | Via Garibaldi 52, Trapani, 352 088 2833, Google review posted |
 | **Color Clean** | Via Virgilio 71/73, Trapani, 320 054 0352, PDFs done |
-| **Pizza Planet** | Ciccio, Via Vespucci 13 Bonagia, 0923 592609, PDFs done (real photos) |
+| **Pizza Planet** | Ciccio, Via Asmara 35 Bonagia (TP), 0923 592609, PDFs done + address confirmed |
 | **ISOTTO Sport** | Print partner, +39 349 972 9418 |
 | **Gym 4U** | 30-day membership active (renewed Feb 9) |
 | **PuntaTipa Hotel** | Alessia, Lungomare Dante Alighieri 70, 0923 948459 |
