@@ -11,10 +11,10 @@
 | EP | Title | Duration | Status | Script |
 |----|-------|----------|--------|--------|
 | 4 | Keys to the Kingdom | 2:22 | RECORDED + TRIMMED | `kc-record-ep4.js` |
-| 5 | RBAC Deep Dive | ~3:00 | SCRIPT READY | `kc-record-ep5.js` |
-| 6 | Client Architecture | ~3:00 | SCRIPT READY | `kc-record-ep6.js` |
-| 7 | Authentication Flows | ~3:30 | SCRIPT READY | `kc-record-ep7.js` |
-| 8 | Multi-Tenant Platform | TBD | Planned | - |
+| 5 | RBAC Deep Dive | 2:37 | RECORDED + TRIMMED | `kc-record-ep5.js` |
+| 6 | Client Architecture | 2:38 | RECORDED + TRIMMED | `kc-record-ep6.js` |
+| 7 | Authentication Flows | 2:35 | RECORDED + TRIMMED | `kc-record-ep7.js` |
+| 8 | Multi-Tenant Platform | 2:30 | RECORDED + TRIMMED | `kc-record-ep8.js` |
 
 ---
 
@@ -39,6 +39,11 @@ videos/keycloak/
 │   ├── voiceover-script.md            <- Talking points for narration
 │   └── raw/                           <- OBS raw recordings
 ├── EP7-authentication-flows/
+│   ├── intro.html                     <- Title card source
+│   ├── outro.html                     <- End card source
+│   ├── voiceover-script.md            <- Talking points for narration
+│   └── raw/                           <- OBS raw recordings
+├── EP8-multi-tenant-platform/
 │   ├── intro.html                     <- Title card source
 │   ├── outro.html                     <- End card source
 │   ├── voiceover-script.md            <- Talking points for narration

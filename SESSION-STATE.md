@@ -1,10 +1,10 @@
 # SESSION STATE - February 11, 2026
 
-*Last Updated: Tue Feb 11, 2026 ~1:00am - EP4 + EP5 + EP6 + EP7 recorded at McDonald's Trapani*
+*Last Updated: Tue Feb 11, 2026 ~1:30am - EP4 + EP5 + EP6 + EP7 + EP8 recorded at McDonald's Trapani*
 
 ---
 
-## KC VIDEO SERIES - EP4 + EP5 + EP6 + EP7 DONE
+## KC VIDEO SERIES - EP4 + EP5 + EP6 + EP7 + EP8 DONE (SERIES COMPLETE)
 
 **Method:** Puppeteer (non-headless) + OBS Screen Capture + ffmpeg post-production
 **SOP:** `videos/keycloak/VIDEO-PRODUCTION-SOP.md`
@@ -16,12 +16,13 @@
 | 5 | RBAC Deep Dive | 3:19 | FINAL (intro+content+outro) | `EP5-rbac-deep-dive/KC-EP5-RBAC-Deep-Dive-FINAL.mp4` |
 | 6 | Client Architecture | 2:30 | FINAL (intro+content+outro) | `EP6-client-architecture/KC-EP6-Client-Architecture-FINAL.mp4` |
 | 7 | Authentication Flows | 2:35 | FINAL (intro+content+outro) | `EP7-authentication-flows/KC-EP7-Authentication-Flows-FINAL.mp4` |
-| 8 | Multi-Tenant Platform | TBD | Planned | - |
+| 8 | Multi-Tenant Platform | 2:30 | FINAL (intro+content+outro) | `EP8-multi-tenant-platform/KC-EP8-Multi-Tenant-Platform-FINAL.mp4` |
 
 **EP4 content:** Login, master dashboard, realm dropdown (6 realms), POS users, role mapping, clients, realm tour
 **EP5 content:** 5 custom RBAC roles, role details (admin/cashier/manager), users in role, 4 user role mappings (Pam/Ralph/Michael/Felix), client scopes (10 OIDC), auth flows (7), realm settings
 **EP6 content:** 3 OIDC clients (web/mobile/service), public vs confidential, redirect URIs, custom scheme callback, client secret + credentials, service account roles, per-client scopes vs realm scopes
 **EP7 content:** 7 built-in auth flows (browser/direct grant/registration/reset credentials/first broker login/docker auth/clients), execution steps with requirement levels, 11 required actions, 5 policy types
+**EP8 content:** 6 realms (master/HelixPOS/HelixNet/420 Wholesale/Artemis/BlowUp V2), master clients list showing realm-clients, per-tenant users + roles, custom branding (BlowUp V2), multi-tenancy architecture
 
 **MP4s:** Local only (GDrive, not git). Voiceover to be added later.
 
@@ -133,6 +134,8 @@
 - [x] 3 episodes in one night (8:21 total runtime)
 - [x] KC EP7 recorded, trimmed, stitched (Authentication Flows - 2:35)
 - [x] 4 episodes in one night (10:56 total runtime)
+- [x] KC EP8 recorded, trimmed, stitched (Multi-Tenant Platform - 2:30)
+- [x] 5 episodes in one night (13:26 total runtime) -- SERIES COMPLETE
 
 ### Wednesday+
 - [ ] Upload hotel invoice to Google Drive (digital backup)
@@ -143,10 +146,10 @@
 - [ ] Cheap test print at digital photo shop (Color Clean first)
 - [ ] ISOTTO color print run (Color Clean + Pizza Planet + Marghe)
 - [ ] Piccolo Bistratto: design card, prepare 8 images
-- [ ] EP4+EP5+EP6+EP7 MP4s to Google Drive
-- [ ] Record voiceover for EP4, EP5, EP6, and EP7
+- [ ] EP4+EP5+EP6+EP7+EP8 MP4s to Google Drive
+- [ ] Record voiceover for EP4, EP5, EP6, EP7, and EP8
 - [x] EP7 Authentication Flows -- DONE
-- [ ] EP8 Multi-Tenant Platform (next KC video)
+- [x] EP8 Multi-Tenant Platform -- DONE (series complete!)
 
 ---
 
@@ -183,3 +186,4 @@
 *"You write a script, I press the clicker, OBS does the rest." -- McDonald's Trapani, Feb 10, 2026*
 *"Three episodes in one night. That's not a pipeline, that's a factory." -- Rio Figiori parking spot, Feb 11, 2026*
 *"Four episodes. Still going. Quality is fantastic." -- 1am, still at McDonald's*
+*"Five episodes. Series complete. From Login to Multi-Tenant in one night." -- 1:30am, the factory never sleeps*
