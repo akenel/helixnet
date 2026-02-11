@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@page { size: A4 portrait; margin: 15mm; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 15mm;
+  background: #fff;
+  color: #222;
+  line-height: 1.6;
+}
+h1 {
+  font-size: 22px;
+  text-align: center;
+  background: #1a1a2e;
+  color: #00d4ff;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+.scene {
+  margin-bottom: 14px;
+  page-break-inside: avoid;
+}
+.scene-header {
+  font-size: 13px;
+  font-weight: bold;
+  background: #e8f0fe;
+  color: #003366;
+  padding: 6px 10px;
+  border-left: 4px solid #003366;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 6px;
+}
+.scene-header .timestamp {
+  color: #c0392b;
+  font-family: monospace;
+}
+.script-text {
+  font-size: 18px;
+  line-height: 1.7;
+  padding: 8px 12px;
+  color: #111;
+}
+.money-shot .scene-header {
+  background: #fff3cd;
+  border-left-color: #f39c12;
+  color: #856404;
+}
+.tips {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f0f9f0;
+  border: 1px solid #27ae60;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #333;
+}
+.tips strong { color: #27ae60; }
+.closer {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #1a1a2e;
+  margin-top: 16px;
+  padding: 10px;
+  border-top: 2px solid #00d4ff;
+}
+</style>
+</head>
+<body>
+
+<h1>EP4 -- Keys to the Kingdom</h1>
+<div class="subtitle">Video: 2:22 | 8 Scenes | Read slowly, pause VLC at each scene</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">0:00-0:10</span> -- Chrome Opens + Loading</div>
+<div class="script-text">
+This is Keycloak -- the identity and access management layer that runs our entire platform. Every user, every role, every permission flows through here.
+</div>
+</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">0:10-0:20</span> -- Login Page</div>
+<div class="script-text">
+Standard OIDC login. Username, password, JWT token back. This is the admin console -- the master control panel.
+</div>
+</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">0:20-0:35</span> -- Master Dashboard</div>
+<div class="script-text">
+We're in the master realm now. This is the god view -- you can see everything from here. Server info shows us Keycloak 24 running on Java 17.
+</div>
+</div>
+
+<div class="scene money-shot">
+<div class="scene-header"><span class="timestamp">0:35-0:55</span> -- REALM DROPDOWN (Money Shot)</div>
+<div class="script-text">
+And here's the magic -- one Keycloak instance, SIX business realms. Each business gets its own realm with its own users, roles, and clients. 420 Wholesale, Artemis Headshop in Luzern, BlowUp in Littau -- each one completely isolated.
+</div>
+</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">0:55-1:10</span> -- POS Users List</div>
+<div class="script-text">
+Let's look inside the POS realm. Nine users, each with specific roles. Pam is a cashier, Ralph is a manager, Michael is a developer. The system knows exactly what each person can do.
+</div>
+</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">1:10-1:25</span> -- User Detail + Role Mapping</div>
+<div class="script-text">
+Aleena here has two roles -- pos-cashier and pos-manager. The cashier role lets her process transactions with up to 10% discount. The manager role gives her full product management and reporting. This is real RBAC -- role-based access control.
+</div>
+</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">1:25-1:40</span> -- Clients</div>
+<div class="script-text">
+Three custom clients: the mobile app, the service account for backend operations, and the web application for POS terminals. Each one has its own OAuth2 configuration, its own scopes, its own permissions.
+</div>
+</div>
+
+<div class="scene">
+<div class="scene-header"><span class="timestamp">1:40-2:00</span> -- Realm Tour (420, Artemis, BlowUp)</div>
+<div class="script-text">
+Quick tour of the other businesses -- each one gets the same treatment. Their own realm, their own identity. When we onboard a new client, we spin up a realm, configure their roles, and they're live. This is what makes HelixNet a real multi-tenant platform.
+</div>
+</div>
+
+<div class="scene money-shot">
+<div class="scene-header"><span class="timestamp">2:00-2:22</span> -- Final Dropdown + Close</div>
+<div class="script-text">
+Back to master. Six realms, one platform. This is the foundation that everything else builds on. SAP charges six figures for this. We built it with open source.
+</div>
+</div>
+
+<div class="tips">
+<strong>Recording Tips:</strong><br>
+1. Play the MP4 on VLC, pause at each scene transition<br>
+2. Read the text naturally -- don't rush, you'll sync in post<br>
+3. Jabra mic close to mouth, consistent distance<br>
+4. Quiet moment between scenes (1-2 seconds silence) makes editing easier<br>
+5. If you flub a line, pause, then re-read the whole block -- easier to cut in post<br>
+6. Total read time should be ~2:30 to 3:00 (slightly longer than video is fine)
+</div>
+
+<div class="closer">EP4 -- Keys to the Kingdom -- HelixNet Keycloak Series</div>
+
+</body>
+</html>

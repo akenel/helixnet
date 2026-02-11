@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Color Clean - Postcard Proof</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+@page { size: A4 portrait; margin: 0; }
+
+html, body {
+  background: white;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  position: relative;
+  page-break-after: always;
+  background: white;
+}
+.page:last-child { page-break-after: avoid; }
+
+/* ============ COVER PAGE ============ */
+.cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 297mm;
+  padding: 20mm;
+  text-align: center;
+}
+.cover-logo {
+  font-size: 42pt;
+  font-weight: bold;
+  color: #2980B9;
+  letter-spacing: 6px;
+  margin-bottom: 8mm;
+}
+.cover-sub {
+  font-size: 14pt;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 15mm;
+}
+.cover-line {
+  width: 60mm;
+  height: 2px;
+  background: #2980B9;
+  margin-bottom: 15mm;
+}
+.cover-info {
+  font-size: 11pt;
+  color: #444;
+  line-height: 2.2;
+}
+.cover-info strong { color: #2980B9; }
+.cover-footer {
+  margin-top: auto;
+  font-size: 9pt;
+  color: #999;
+  padding-top: 15mm;
+}
+
+/* ============ SECTION LABEL ============ */
+.section-banner {
+  background: #2980B9;
+  color: white;
+  text-align: center;
+  padding: 3mm 0;
+  font-size: 11pt;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+/* ============ CARD PREVIEW ============ */
+.card-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8mm 15mm;
+}
+.card-label {
+  font-size: 10pt;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 4mm;
+  text-align: center;
+}
+
+/* Portrait card frame: 99mm x 142.5mm */
+.portrait-frame {
+  width: 99mm;
+  height: 142.5mm;
+  border: 0.5px solid #ddd;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.portrait-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* Landscape card frame: 142.5mm x 99mm */
+.landscape-frame {
+  width: 142.5mm;
+  height: 99mm;
+  border: 0.5px solid #ddd;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.landscape-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* ============ BACK SIDE PREVIEW ============ */
+.back-preview {
+  background: #faf9f6;
+  padding: 5mm 6mm 4mm 6mm;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.back-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #2980B9;
+  padding-bottom: 2mm;
+  margin-bottom: 2mm;
+}
+.logo { font-weight: bold; font-size: 12pt; letter-spacing: 2px; color: #2980B9; }
+.collection { font-size: 7pt; color: #666; text-align: right; line-height: 1.3; }
+.quote { font-style: italic; font-size: 9pt; line-height: 1.3; color: #333; margin-bottom: 1.5mm; font-family: Georgia, serif; }
+.attribution { font-size: 7pt; color: #666; text-align: right; margin-bottom: 2mm; }
+
+.msg-addr {
+  display: grid;
+  grid-template-columns: 48fr 52fr;
+  gap: 3mm;
+  flex: 1;
+}
+.msg-side { display: flex; flex-direction: column; }
+.field-label { font-size: 6pt; text-transform: uppercase; letter-spacing: 0.5px; color: #999; margin-bottom: 1mm; }
+.msg-freeform { flex: 1; }
+.addr-side { display: flex; flex-direction: column; border-left: 0.5px solid #ccc; padding-left: 3mm; }
+.stamp-box {
+  width: 16mm; height: 16mm; border: 0.5px solid #bbb;
+  margin-left: auto; display: flex; align-items: center; justify-content: center;
+  font-size: 5pt; color: #bbb;
+}
+.addr-lines { margin-top: auto; }
+.addr-line { border-bottom: 0.5px solid #ccc; height: 6mm; }
+.addr-line:first-of-type { border-bottom: 1px solid #666; }
+.addr-line:last-of-type { border-bottom: none; }
+
+.back-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2mm;
+  border-top: 1px solid #2980B9;
+  margin-top: auto;
+  min-height: 28mm;
+}
+.qr-section { display: flex; flex-direction: column; align-items: center; gap: 1mm; }
+.qr-section img { width: 24mm; height: 24mm; }
+.qr-label { font-size: 7pt; color: #666; text-align: center; }
+.center-info { display: flex; flex-direction: column; align-items: center; gap: 1mm; }
+.coords { font-size: 7pt; color: #2980B9; font-family: 'Courier New', monospace; font-weight: bold; }
+.tagline { font-size: 6.5pt; color: #666; font-style: italic; }
+.metadata { font-size: 7.5pt; color: #333; text-align: right; line-height: 1.4; }
+.metadata .phone { font-weight: bold; font-size: 8pt; color: #2980B9; }
+
+@media print { body { background: white; } }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1: COVER -->
+<div class="page">
+  <div class="cover">
+    <div class="cover-logo">COLOR CLEAN</div>
+    <div class="cover-sub">Lavanderia Professionale</div>
+    <div class="cover-line"></div>
+    <div class="cover-info">
+      <strong>Postcard Collection</strong> -- Proof for Review<br>
+      2 designs: Portrait + Landscape<br>
+      Front + Back for each<br><br>
+      <strong>Via Virgilio, 105/107</strong><br>
+      91100 Trapani<br>
+      <strong>Tel:</strong> 320 054 0352<br>
+      <strong>Web:</strong> www.colorclean.it<br>
+      <strong>Email:</strong> colorclean.tp@gmail.com<br><br>
+      QR Code &rarr; Google Maps (Reviews + Directions)<br>
+    </div>
+    <div class="cover-footer">
+      UFA Design &bull; February 2026 &bull; Draft for Approval
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: PORTRAIT FRONT -->
+<div class="page">
+  <div class="section-banner">PORTRAIT CARD &mdash; FRONTE / FRONT</div>
+  <div class="card-preview" style="padding-top: 12mm;">
+    <div class="card-label">La Proprietaria &mdash; 99mm &times; 142.5mm</div>
+    <div class="portrait-frame">
+      <img src="images/owner-under-sign.jpg" alt="La Proprietaria">
+    </div>
+    <div style="margin-top: 6mm; font-size: 9pt; color: #999; text-align: center; max-width: 140mm; line-height: 1.5;">
+      4 foto diverse per il set Portrait: La Proprietaria, La Macchina, I Tamburi, La Pressa<br>
+      <em>4 different photos for the Portrait set</em>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: PORTRAIT BACK -->
+<div class="page">
+  <div class="section-banner">PORTRAIT CARD &mdash; RETRO / BACK</div>
+  <div class="card-preview" style="padding-top: 12mm;">
+    <div class="card-label">La Proprietaria &mdash; Flip Side</div>
+    <div class="portrait-frame" style="background: #faf9f6;">
+      <div class="back-preview">
+        <div class="back-header">
+          <div class="logo">COLOR CLEAN</div>
+          <div class="collection">UFA Collection<br>La Proprietaria</div>
+        </div>
+        <div class="quote">&ldquo;Ogni capo racconta una storia. Noi la rinnoviamo.&rdquo;</div>
+        <div class="attribution">&mdash; Every garment tells a story. We refresh it.</div>
+        <div class="msg-addr">
+          <div class="msg-side">
+            <div class="field-label">Il Tuo Messaggio / Your Message</div>
+            <div class="msg-freeform"></div>
+          </div>
+          <div class="addr-side">
+            <div class="stamp-box">STAMP</div>
+            <div class="addr-lines">
+              <div class="field-label">A / To</div>
+              <div class="addr-line"></div>
+              <div class="addr-line"></div>
+              <div class="addr-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="back-footer">
+          <div class="qr-section">
+            <img src="images/qr-colorclean-PLACE.png" alt="QR">
+            <div class="qr-label">Google Maps<br>Reviews &bull; Directions</div>
+          </div>
+          <div class="center-info">
+            <div class="coords">38&deg;01'N 12&deg;31'E</div>
+            <div class="tagline">Lavanderia Professionale</div>
+          </div>
+          <div class="metadata">
+            Via Virgilio, 105/107<br>
+            91100 Trapani<br>
+            <span class="phone">320 054 0352</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: LANDSCAPE FRONT -->
+<div class="page">
+  <div class="section-banner">LANDSCAPE CARD &mdash; FRONTE / FRONT</div>
+  <div class="card-preview" style="padding-top: 25mm;">
+    <div class="card-label">L'Insegna &mdash; 142.5mm &times; 99mm</div>
+    <div class="landscape-frame">
+      <img src="images/colorclean-wall-sign.jpg" alt="L'Insegna">
+    </div>
+    <div style="margin-top: 6mm; font-size: 9pt; color: #999; text-align: center; max-width: 160mm; line-height: 1.5;">
+      4 foto diverse per il set Landscape: L'Insegna, La Stiratura, Le Lavatrici, Il Sorriso<br>
+      <em>4 different photos for the Landscape set</em>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: LANDSCAPE BACK -->
+<div class="page">
+  <div class="section-banner">LANDSCAPE CARD &mdash; RETRO / BACK</div>
+  <div class="card-preview" style="padding-top: 25mm;">
+    <div class="card-label">L'Insegna &mdash; Flip Side</div>
+    <div class="landscape-frame" style="background: #faf9f6;">
+      <div class="back-preview">
+        <div class="back-header">
+          <div class="logo">COLOR CLEAN</div>
+          <div class="collection">UFA Collection<br>L'Insegna</div>
+        </div>
+        <div class="quote">&ldquo;Il segno di qualit&agrave; dal 2006.&rdquo;</div>
+        <div class="attribution">&mdash; The mark of quality since 2006.</div>
+        <div class="msg-addr">
+          <div class="msg-side">
+            <div class="field-label">Il Tuo Messaggio / Your Message</div>
+            <div class="msg-freeform"></div>
+          </div>
+          <div class="addr-side">
+            <div class="stamp-box">STAMP</div>
+            <div class="addr-lines">
+              <div class="field-label">A / To</div>
+              <div class="addr-line"></div>
+              <div class="addr-line"></div>
+              <div class="addr-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="back-footer">
+          <div class="qr-section">
+            <img src="images/qr-colorclean-PLACE.png" alt="QR">
+            <div class="qr-label">Google Maps<br>Reviews &bull; Directions</div>
+          </div>
+          <div class="center-info">
+            <div class="coords">38&deg;01'N 12&deg;31'E</div>
+            <div class="tagline">Lavanderia Professionale</div>
+          </div>
+          <div class="metadata">
+            Via Virgilio, 105/107<br>
+            91100 Trapani<br>
+            <span class="phone">320 054 0352</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
