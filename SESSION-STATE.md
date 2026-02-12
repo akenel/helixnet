@@ -1,17 +1,19 @@
-# SESSION STATE - February 11, 2026
+# SESSION STATE - February 12, 2026
 
-*Last Updated: Tue Feb 11, 2026 ~9:30pm - Full day done. Parked at McDonald's Trapani. Sleeping in MAX.*
+*Last Updated: Wed Feb 12, 2026 ~7:45am - At Gym 4U, waiting for 8am open. EP4 on YouTube.*
 
 ---
 
-## TODAY'S WINS (Feb 11)
+## TODAY'S WINS (Wed Feb 12)
 
+1. **EP4 ON YOUTUBE** -- https://youtu.be/_ap7-hgtC9o -- Thumbnail, description, SRT subtitles, timestamps all done. First public episode.
+
+### Yesterday (Tue Feb 11)
 1. **EP4 VOICED** -- First episode with voiceover. Recorded 9 scenes at McDonald's with Jabra headset, Tigs stitched + normalized + merged. New voiceover pipeline proven.
-2. **AXA email sent** -- Invoices (EUR 2,405.50) sent to schaden@axa.ch + water damage flagged with 3 questions. Iwan confirmed: send everything to schaden@axa.ch with claim number in subject.
-3. **Color Clean cards delivered** -- Guy on shift liked them. Owner meeting at 5pm done (walked through in person, phone was dead). Approval form template built for next visit.
-4. **Pizza Planet cards delivered** -- Ciccio happy. Free beer + panino + 4 monster slices = 7 EUR. Card dropped = meal earned.
-5. **Phone fixed** -- Fairphone 3+ screen fuzz from memory overload. Force restart (Power 10s) fixed it. Need to clear Telegram cache.
-6. **Afternoon playlist** -- 50-track set, zero overlap with morning shift. VLC on loop.
+2. **AXA email sent** -- Invoices (EUR 2,405.50) sent to schaden@axa.ch + water damage flagged with 3 questions.
+3. **Color Clean cards delivered** -- Owner meeting done in person. Approval form template built.
+4. **Pizza Planet cards delivered** -- Free beer + panino + 4 monster slices = 7 EUR.
+5. **Phone fixed** -- Fairphone 3+ force restart (Power 10s).
 
 ---
 
@@ -20,13 +22,13 @@
 **Voiceover Pipeline (NEW - Feb 11):**
 Record each scene as separate Telegram voice message (.ogg) → Whisper transcribe → ffmpeg trim/normalize/concat/speed-fit → merge into silent video
 
-| EP | Title | Duration | Video | Voice | File |
-|----|-------|----------|-------|-------|------|
-| 4 | Keys to the Kingdom | 2:32 | FINAL | VOICED | `EP4.../KC-EP4-Keys-to-the-Kingdom-WITH-VOICE.mp4` |
-| 5 | RBAC Deep Dive | 3:19 | FINAL | TODO | `EP5.../KC-EP5-RBAC-Deep-Dive-FINAL.mp4` |
-| 6 | Client Architecture | 2:30 | FINAL | TODO | `EP6.../KC-EP6-Client-Architecture-FINAL.mp4` |
-| 7 | Authentication Flows | 2:35 | FINAL | TODO | `EP7.../KC-EP7-Authentication-Flows-FINAL.mp4` |
-| 8 | Multi-Tenant Platform | 2:30 | FINAL | TODO | `EP8.../KC-EP8-Multi-Tenant-Platform-FINAL.mp4` |
+| EP | Title | Duration | Video | Voice | File | YouTube |
+|----|-------|----------|-------|-------|------|---------|
+| 4 | Keys to the Kingdom | 2:32 | FINAL | VOICED | `EP4.../KC-EP4-Keys-to-the-Kingdom-WITH-VOICE.mp4` | [YouTube](https://youtu.be/_ap7-hgtC9o) |
+| 5 | RBAC Deep Dive | 3:19 | FINAL | TODO | `EP5.../KC-EP5-RBAC-Deep-Dive-FINAL.mp4` | -- |
+| 6 | Client Architecture | 2:30 | FINAL | TODO | `EP6.../KC-EP6-Client-Architecture-FINAL.mp4` | -- |
+| 7 | Authentication Flows | 2:35 | FINAL | TODO | `EP7.../KC-EP7-Authentication-Flows-FINAL.mp4` | -- |
+| 8 | Multi-Tenant Platform | 2:30 | FINAL | TODO | `EP8.../KC-EP8-Multi-Tenant-Platform-FINAL.mp4` | -- |
 
 **Voiceover technical notes:**
 - Source: Opus 48kHz mono (.ogg from Telegram voice messages)
@@ -35,6 +37,8 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 - Fades: 0.5s in at voice start, 3s out before outro
 
 **Teleprompter PDFs:** `EP4.../voiceover-script-TELEPROMPTER.pdf` (built but not needed -- scene-by-scene recording is better)
+
+**YouTube assets:** `~/Videos/HelixNet-YouTube/Keycloak Episodes/` (thumbnails, descriptions, SRTs)
 
 **MP4s:** Local only (GDrive when on solid WiFi, not hotspot)
 
@@ -97,7 +101,7 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 
 ## CAMPER & TOUR STATUS
 
-- **Camera radio adapter:** Install TOMORROW (Wed Feb 12) -- they promised
+- **Camera radio adapter:** Install TODAY (Wed Feb 12) -- they promised
 - **Be there at 9am** for the install
 - **When installed:** Maybe remove back window to assess roof + write preventivo for AXA
 - **Cremers:** Angel buying coffee cremers for the guys tomorrow morning
@@ -107,19 +111,15 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 
 ## PENDING ACTIONS
 
-### Done Tue Feb 11
-- [x] EP4 voiceover recorded (9 scenes, Jabra + McDonald's)
-- [x] EP4 voiceover stitched into video (WITH-VOICE.mp4)
-- [x] AXA email to schaden@axa.ch with both invoices + water damage
-- [x] Color Clean cards delivered + 5pm meeting with owner
-- [x] Pizza Planet cards delivered (free beer!)
-- [x] Color Clean approval form template built (bilingual IT/EN)
-- [x] Color Clean proof PDF built (portrait + landscape samples)
-- [x] Afternoon playlist (50 tracks, VLC)
-- [x] Phone force restart (Fairphone 3+ memory overload)
-- [x] JYSK bathrobe shopping card created (for Kevin Saturday)
+### Done Wed Feb 12
+- [x] EP4 uploaded to YouTube (https://youtu.be/_ap7-hgtC9o)
+- [x] EP4 thumbnail created (1280x720, key icon + title)
+- [x] EP4 YouTube description + tags written
+- [x] EP4 SRT subtitles ready for upload
 
-### Wednesday Feb 12
+### Still TODO Wed Feb 12
+- [ ] Upload SRT subtitles to YouTube (Subtitles > Add > English > Upload SRT)
+- [ ] Set EP4 thumbnail on YouTube (upload KC-EP4-Keys-to-the-Kingdom-THUMBNAIL.png)
 - [ ] 9am Camper & Tour -- camera install
 - [ ] Ask C&T about preventivo for roof/water damage (for AXA)
 - [ ] Buy cremers for coffee at C&T
@@ -128,7 +128,6 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 - [ ] Color Clean: return with printed approval form, get her name + hours + details
 - [ ] ISOTTO: check in person, print status
 - [ ] Record voiceover EP5 (same scene-by-scene method)
-- [ ] Upload EP4-EP8 MP4s to GDrive (need solid WiFi)
 
 ### Later
 - [ ] Record voiceover EP6, EP7, EP8
@@ -149,6 +148,7 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 | **Pizza Planet** | Ciccio, Via Asmara 35 Bonagia, 0923 592609 |
 | **ISOTTO Sport** | Print partner, +39 349 972 9418 |
 | **Kevin Galilee** | Hot springs Saturday, needs XXL bathrobe from JYSK |
+| **Gym 4U** | Via Benedetto Valenza 31, Trapani. Mon/Wed/Fri 7am-10pm, Tue/Thu/Sat 8am-10pm, Sun CLOSED |
 | **Marghe Trapani** | Via Garibaldi 52, 352 088 2833 |
 
 ---
@@ -169,3 +169,4 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 *"Pizza Planet card drop = free beer. That's ROI on day one." -- 7 EUR dinner, try that in Switzerland*
 *"She's not your customer. She's your R&D department." -- Color Clean fabric testing strategy*
 *"I only work with people I like." -- The UFA client filter*
+*"First public episode. From McDonald's parking lot to YouTube." -- Gym 4U, Feb 12, 7:45am*

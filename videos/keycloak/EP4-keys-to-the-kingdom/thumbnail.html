@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px;
+  height: 720px;
+  background: #0a0a0a;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+/* Dark grid pattern */
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+/* Blue glow behind key icon */
+.glow-left {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.25) 0%, transparent 70%);
+  top: 50%;
+  left: 20%;
+  transform: translate(-50%, -50%);
+}
+/* Red accent glow right */
+.glow-right {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192,57,43,0.15) 0%, transparent 70%);
+  top: 30%;
+  right: 5%;
+}
+/* Key icon - large SVG */
+.key-icon {
+  position: absolute;
+  left: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+.key-icon svg {
+  width: 200px;
+  height: 200px;
+  filter: drop-shadow(0 0 30px rgba(0,120,212,0.5));
+}
+/* Text block - right side */
+.text-block {
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: right;
+  z-index: 2;
+}
+.ep-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0078D4;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.title-line1 {
+  font-size: 80px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.0;
+  letter-spacing: -1px;
+  text-shadow: 0 0 40px rgba(0,120,212,0.3);
+}
+.title-line2 {
+  font-size: 80px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.0;
+  letter-spacing: -1px;
+  text-shadow: 0 0 40px rgba(0,120,212,0.3);
+  margin-bottom: 20px;
+}
+.subtitle {
+  font-size: 28px;
+  font-weight: 300;
+  color: #999;
+  letter-spacing: 2px;
+}
+/* Bottom bar */
+.bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0078D4, #00B4D8, #0078D4);
+}
+/* Top-right badge */
+.badge {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  padding: 8px 20px;
+  background: rgba(0,120,212,0.15);
+  border: 1px solid rgba(0,120,212,0.4);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0078D4;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+/* Brand bottom-left */
+.brand {
+  position: absolute;
+  bottom: 24px;
+  left: 40px;
+  font-size: 20px;
+  font-weight: 300;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.brand .helix { color: #0078D4; }
+/* 6 realms count - visual punch */
+.realm-count {
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #666;
+  letter-spacing: 2px;
+  z-index: 2;
+}
+.realm-count span {
+  color: #0078D4;
+  font-weight: 700;
+  font-size: 22px;
+}
+</style>
+</head>
+<body>
+  <div class="glow-left"></div>
+  <div class="glow-right"></div>
+
+  <div class="badge">Keycloak Series</div>
+
+  <!-- Key Icon -->
+  <div class="key-icon">
+    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Key head (circle with hole) -->
+      <circle cx="75" cy="75" r="55" stroke="#0078D4" stroke-width="6" fill="none" opacity="0.9"/>
+      <circle cx="75" cy="75" r="25" stroke="#0078D4" stroke-width="4" fill="none" opacity="0.6"/>
+      <!-- Key shaft -->
+      <line x1="120" y1="105" x2="185" y2="170" stroke="#0078D4" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+      <!-- Key teeth -->
+      <line x1="160" y1="145" x2="175" y2="130" stroke="#0078D4" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+      <line x1="172" y1="157" x2="187" y2="142" stroke="#0078D4" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+      <!-- Glow dots -->
+      <circle cx="75" cy="75" r="3" fill="#00B4D8" opacity="0.8"/>
+      <circle cx="185" cy="170" r="4" fill="#00B4D8" opacity="0.9"/>
+    </svg>
+  </div>
+
+  <!-- Main Text -->
+  <div class="text-block">
+    <div class="ep-label">Episode 4</div>
+    <div class="title-line1">Keys to the</div>
+    <div class="title-line2">Kingdom</div>
+    <div class="subtitle">Keycloak Admin Console Tour</div>
+  </div>
+
+  <div class="brand"><span class="helix">Helix</span>Net</div>
+  <div class="realm-count"><span>6</span> Realms &middot; <span>1</span> Platform</div>
+  <div class="bottom-bar"></div>
+</body>
+</html>

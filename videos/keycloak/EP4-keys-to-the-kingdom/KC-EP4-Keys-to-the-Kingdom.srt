@@ -1,0 +1,35 @@
+1
+00:00:04,000 --> 00:00:15,509
+This is Keycloak, the identity and access management layer that runs our entire Helix platform. It's just starting up now -- every user, every role, every permission flows through here.
+
+2
+00:00:15,509 --> 00:00:27,570
+This is the standard OIDC login. Username, password, JWT token back. This is the admin console -- the master control panel.
+
+3
+00:00:27,570 --> 00:00:39,519
+We're in the master realm now. This is the god view. You can see everything from here. Server info shows us Keycloak 24 running on Java 17.
+
+4
+00:00:39,519 --> 00:00:58,759
+And here's the magic. One Keycloak instance, six business realms. Each business gets its own realm with its own users, roles and clients. 420 Wholesale, Artemis Headshop in Luzern, BlowUp in Littau -- each one completely isolated.
+
+5
+00:00:58,759 --> 00:01:14,829
+Let's look inside the POS realm. Nine users, each with specific roles. Pam is a cashier, Ralph is a manager, Michael is a developer. The system knows exactly what each person can do.
+
+6
+00:01:14,829 --> 00:01:37,959
+Aleena here has two roles -- POS cashier and POS manager. The cashier role lets her process transactions with up to 10% discount. The manager role gives her full product management and reporting. This is real RBAC -- role-based access control.
+
+7
+00:01:37,959 --> 00:01:53,059
+Three custom clients: the mobile app, the service account for backend operations, and the web application for POS terminals. Each one has its own OAuth2 configuration, its own scopes, its own permissions.
+
+8
+00:01:53,059 --> 00:02:12,049
+Quick tour of the other businesses. Each one gets the same treatment -- their own realm, their own identity. When we onboard a new client, we spin up a realm, configure their roles, and they're live. This is what makes HelixNet a real multi-tenant platform.
+
+9
+00:02:12,049 --> 00:02:25,979
+Back to master. Six realms, one platform. This is the foundation that everything else builds on. SAP charges six figures for this. We built it with open source, and it's free for you and me.
