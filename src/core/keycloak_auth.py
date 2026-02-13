@@ -1,6 +1,7 @@
 """
-Keycloak JWT Authentication & Authorization for POS System
-Validates tokens from kc-pos-realm-dev and enforces RBAC.
+Keycloak JWT Authentication & Authorization - Multi-Realm
+Validates tokens from any Keycloak realm by reading the issuer (iss) claim.
+Supports POS, Camper & Tour, and any future realm.
 """
 import logging
 from typing import List, Optional
@@ -62,9 +63,43 @@ async def get_jwks(realm: str = None) -> dict:
         )
 
 
+def _extract_realm_from_token(token: str) -> str:
+    """
+    Extract the realm name from a JWT token's issuer (iss) claim
+    WITHOUT verifying the signature first (we need the realm to fetch
+    the right JWKS to verify the signature -- chicken-and-egg).
+
+    Keycloak iss format: https://keycloak.helix.local/realms/{realm-name}
+
+    Returns realm name, or falls back to POS_REALM if extraction fails.
+    """
+    try:
+        # Decode without verification just to read the iss claim
+        unverified = jwt.get_unverified_claims(token)
+        issuer = unverified.get("iss", "")
+
+        # Extract realm from issuer URL: .../realms/{realm-name}
+        if "/realms/" in issuer:
+            realm = issuer.split("/realms/")[-1].rstrip("/")
+            if realm:
+                return realm
+
+        logger.warning(f"Could not extract realm from iss: {issuer}, falling back to {POS_REALM}")
+        return POS_REALM
+
+    except Exception as e:
+        logger.warning(f"Failed to read token claims for realm extraction: {e}")
+        return POS_REALM
+
+
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     """
-    Verify JWT token from Keycloak and return decoded payload.
+    Verify JWT token from any Keycloak realm and return decoded payload.
+
+    Multi-realm flow:
+    1. Read the token's iss claim (unverified) to determine the realm
+    2. Fetch JWKS for that specific realm
+    3. Verify signature + expiry against the correct keys
 
     Args:
         credentials: Bearer token from Authorization header
@@ -78,11 +113,13 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
     token = credentials.credentials
 
     try:
-        # Get JWKS for signature verification
-        jwks = await get_jwks()
+        # Step 1: Extract realm from token's iss claim
+        realm = _extract_realm_from_token(token)
 
-        # Decode and verify token
-        # Keycloak tokens are signed with RS256 algorithm
+        # Step 2: Get JWKS for the correct realm
+        jwks = await get_jwks(realm=realm)
+
+        # Step 3: Decode and verify token with realm-specific keys
         payload = jwt.decode(
             token,
             jwks,
@@ -94,7 +131,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             }
         )
 
-        logger.debug(f"Token verified for user: {payload.get('preferred_username')}")
+        logger.debug(f"Token verified for user: {payload.get('preferred_username')} (realm: {realm})")
         return payload
 
     except JWTError as e:
@@ -104,6 +141,8 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             detail="Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions from get_jwks (503)
     except Exception as e:
         logger.error(f"Token verification error: {e}")
         raise HTTPException(
@@ -117,10 +156,13 @@ def extract_roles(token_payload: dict) -> List[str]:
     """
     Extract realm roles from Keycloak token payload.
 
+    Multi-realm aware: returns ALL application roles (pos-*, camper-*, etc.)
+    Filters out Keycloak default roles (default-roles-*, uma_authorization, offline_access).
+
     Keycloak v24 structure:
     {
         "realm_access": {
-            "roles": ["💰️ pos-cashier", "default-roles-kc-pos-realm-dev"]
+            "roles": ["camper-mechanic", "default-roles-kc-camper-service-realm-dev"]
         },
         "resource_access": {...}
     }
@@ -134,11 +176,13 @@ def extract_roles(token_payload: dict) -> List[str]:
     realm_access = token_payload.get("realm_access", {})
     roles = realm_access.get("roles", [])
 
-    # Filter out default roles, keep only POS roles
-    # Support both artemis realm (pos-cashier) and legacy emoji format (💰️ pos-cashier)
-    pos_roles = [r for r in roles if "pos-" in r]
+    # Known application role prefixes across all realms
+    app_prefixes = ("pos-", "camper-")
 
-    return pos_roles
+    # Keep any role that matches an app prefix (plain or emoji-prefixed)
+    app_roles = [r for r in roles if any(prefix in r for prefix in app_prefixes)]
+
+    return app_roles
 
 
 def require_roles(allowed_roles: List[str]):
@@ -257,6 +301,9 @@ def require_any_camper_role():
         "camper-mechanic",
         "camper-manager",
         "camper-admin",
+        "camper-auditor",
+        "camper-hr",
+        "camper-accountant",
     ])
 
 

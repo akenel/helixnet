@@ -1,0 +1,448 @@
+{
+  "realm": "kc-camper-service-realm-dev",
+  "enabled": true,
+  "displayName": "Camper & Tour - Service Management - Trapani",
+  "displayNameHtml": "<div class='kc-logo-text'><span>Camper & Tour - Trapani</span></div>",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@camperandtour.it",
+    "fromDisplayName": "Camper & Tour Service",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "camper-counter",
+        "description": "Front desk / office - Check in vehicles, create customers, view jobs, prepare quotations."
+      },
+      {
+        "name": "camper-mechanic",
+        "description": "Mechanics and installers - Update jobs, log work hours, add parts, upload photos."
+      },
+      {
+        "name": "camper-manager",
+        "description": "Shop management - Approve quotes, assign work, customer relations, full operational access."
+      },
+      {
+        "name": "camper-admin",
+        "description": "System administrator - Full control over realm, settings, and user management."
+      },
+      {
+        "name": "camper-auditor",
+        "description": "Auditor - Read-only access to all jobs, invoices, and financial data for compliance."
+      },
+      {
+        "name": "camper-hr",
+        "description": "HR - Staff records, work hours, training records, personnel management."
+      },
+      {
+        "name": "camper-accountant",
+        "description": "Accountant - Financial access, invoicing, quotation review, revenue reporting."
+      },
+      {
+        "name": "default-roles-kc-camper-service-realm-dev",
+        "description": "Default roles for kc-camper-service-realm-dev",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "Office Staff",
+      "realmRoles": ["camper-counter", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Front desk, quotations, customer intake, van prep, cleaning."]
+      }
+    },
+    {
+      "name": "Mechanics",
+      "realmRoles": ["camper-mechanic", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Installers, fixers, technicians. Update jobs, log hours, document work."]
+      }
+    },
+    {
+      "name": "Management",
+      "realmRoles": ["camper-manager", "camper-mechanic", "camper-counter", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Shop management with full operational access. Includes mechanic and counter permissions."]
+      }
+    },
+    {
+      "name": "Admins",
+      "realmRoles": ["camper-admin", "camper-manager", "camper-mechanic", "camper-counter", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["System administrators with full realm control."]
+      }
+    },
+    {
+      "name": "Auditors",
+      "realmRoles": ["camper-auditor", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Read-only audit and compliance access."]
+      }
+    },
+    {
+      "name": "Finance",
+      "realmRoles": ["camper-accountant", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Accountants and financial staff. Invoice review, revenue reports."]
+      }
+    },
+    {
+      "name": "HR",
+      "realmRoles": ["camper-hr", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Human resources. Staff records, work hours, training."]
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "camper_service_web",
+      "name": "Camper & Tour Web Application (Public)",
+      "description": "Frontend web application for service management",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://helix.local/*",
+        "https://helix-platform.local/*",
+        "https://camperandtour.helix.local/*",
+        "http://localhost:8000/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "https://helix.local",
+        "https://helix-platform.local",
+        "https://camperandtour.helix.local",
+        "http://localhost:8000",
+        "http://localhost:3000",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "camper_service_api",
+      "name": "Camper & Tour Service Account (Backend API)",
+      "description": "Service account for backend API operations",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "secret": "helix_pass",
+      "bearerOnly": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false"
+      }
+    },
+    {
+      "clientId": "admin-cli",
+      "name": "Keycloak Admin CLI",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "id": "10000000-0000-0000-0000-000000000001",
+      "username": "sebastino",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "sebastino@camperandtour.it",
+      "firstName": "Sebastino",
+      "lastName": "Cassisa",
+      "attributes": {
+        "employee_id": ["CT-OWNER-001"],
+        "title": ["Owner & Master Technician"],
+        "store_location": ["Via F. Culcasi 4, Trapani"],
+        "language": ["it"],
+        "notes": ["The boss. Expert in all areas. Drives Angel to bank. Stayed 5 hours late for MAX."]
+      },
+      "realmRoles": ["camper-admin", "camper-manager", "camper-mechanic", "camper-counter", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Admins"]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000002",
+      "username": "nino",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "nino@camperandtour.it",
+      "firstName": "Nino",
+      "lastName": "Cassisa",
+      "attributes": {
+        "employee_id": ["CT-MGR-001"],
+        "title": ["Operations Manager"],
+        "store_location": ["Via F. Culcasi 4, Trapani"],
+        "language": ["it", "en"],
+        "notes": ["Sebastino's son. Runs the show. Speaks excellent English. Met Angel at McDonald's. Customer-facing, supervises backend crew."]
+      },
+      "realmRoles": ["camper-manager", "camper-mechanic", "camper-counter", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Management"]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000003",
+      "username": "maximo",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "maximo@camperandtour.it",
+      "firstName": "Maximo",
+      "lastName": "",
+      "attributes": {
+        "employee_id": ["CT-MECH-001"],
+        "title": ["Senior Installer & Fixer"],
+        "store_location": ["Via F. Culcasi 4, Trapani"],
+        "language": ["it"],
+        "notes": ["The ace. Installer and fixer. Supervises Seppi. Gets things done right."]
+      },
+      "realmRoles": ["camper-mechanic", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Mechanics"]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000004",
+      "username": "seppi",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "seppi@camperandtour.it",
+      "firstName": "Seppi",
+      "lastName": "",
+      "attributes": {
+        "employee_id": ["CT-MECH-002"],
+        "title": ["Mechanic"],
+        "store_location": ["Via F. Culcasi 4, Trapani"],
+        "language": ["it"],
+        "notes": ["The go-to guy for dirty jobs. Works under Maximo's supervision."]
+      },
+      "realmRoles": ["camper-mechanic", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Mechanics"]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000005",
+      "username": "miguel",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "miguel@camperandtour.it",
+      "firstName": "Miguel",
+      "lastName": "",
+      "attributes": {
+        "employee_id": ["CT-OFFICE-001"],
+        "title": ["Office Manager"],
+        "store_location": ["Via F. Culcasi 4, Trapani"],
+        "language": ["it", "en"],
+        "notes": ["Office manager. Prepares quotations. Simona's father. Speaks English."]
+      },
+      "realmRoles": ["camper-counter", "camper-accountant", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Office Staff", "/Finance"]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000006",
+      "username": "simona",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "simona@camperandtour.it",
+      "firstName": "Simona",
+      "lastName": "",
+      "attributes": {
+        "employee_id": ["CT-OFFICE-002"],
+        "title": ["Office Assistant (Training)"],
+        "store_location": ["Via F. Culcasi 4, Trapani"],
+        "language": ["it", "en"],
+        "notes": ["Miguel's daughter. In training. Sidekick to Miguel. Helps prepare quotations. Also cleans/preps vans. Speaks English well."]
+      },
+      "realmRoles": ["camper-counter", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Office Staff"]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000007",
+      "username": "angel",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "angel@helixnet.ch",
+      "firstName": "Angelo",
+      "lastName": "Kenel",
+      "attributes": {
+        "employee_id": ["CT-EXT-001"],
+        "title": ["Platform Architect (External)"],
+        "language": ["en", "de", "fr", "it"],
+        "notes": ["Building the HelixNet platform for Camper & Tour. MAX owner. The guy who asked for the ladder."]
+      },
+      "realmRoles": ["camper-admin", "camper-manager", "camper-mechanic", "camper-counter", "camper-auditor", "camper-accountant", "camper-hr", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Admins", "/Auditors", "/Finance", "/HR"]
+    },
+    {
+      "username": "camper-auditor",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "auditor@camperandtour.it",
+      "firstName": "Compliance",
+      "lastName": "Auditor",
+      "attributes": {
+        "role": ["Audit & Compliance"],
+        "access_level": ["Read-Only"]
+      },
+      "realmRoles": ["camper-auditor", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/Auditors"]
+    },
+    {
+      "username": "camper-hr",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "hr@camperandtour.it",
+      "firstName": "HR",
+      "lastName": "Manager",
+      "attributes": {
+        "role": ["Human Resources"],
+        "access_level": ["Staff Management"]
+      },
+      "realmRoles": ["camper-hr", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/HR"]
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "requiredCredentials": ["password"],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "webAuthnPolicyRpEntityName": "keycloak",
+  "webAuthnPolicySignatureAlgorithms": ["ES256"],
+  "webAuthnPolicyRpId": "",
+  "webAuthnPolicyAttestationConveyancePreference": "not specified",
+  "webAuthnPolicyAuthenticatorAttachment": "not specified",
+  "webAuthnPolicyRequireResidentKey": "not specified",
+  "webAuthnPolicyUserVerificationRequirement": "not specified",
+  "webAuthnPolicyCreateTimeout": 0,
+  "webAuthnPolicyAvoidSameAuthenticatorRegister": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de", "fr", "it"],
+  "defaultLocale": "it",
+  "attributes": {
+    "frontendUrl": "https://keycloak.helix.local",
+    "adminUrl": "https://keycloak.helix.local",
+    "cibaBackchannelTokenDeliveryMode": "poll",
+    "cibaExpiresIn": "120",
+    "cibaAuthRequestedUserHint": "login_hint",
+    "cibaInterval": "5",
+    "parRequestUriLifespan": "60",
+    "clientOfflineSessionIdleTimeout": "0",
+    "clientOfflineSessionMaxLifespan": "0",
+    "clientSessionIdleTimeout": "0",
+    "clientSessionMaxLifespan": "0"
+  }
+}
