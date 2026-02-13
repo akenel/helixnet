@@ -1,0 +1,180 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Ordini - ISOTTO Sport{% endblock %}
+{% block page_name %}Ordini{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="orderBoardData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Ordini</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header + New Order -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Ordini</h2>
+            <a href="/print-shop/orders/new" class="btn-primary" x-show="user.isCounter">
+                + Nuovo Ordine
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato</label>
+                    <select x-model="filters.status" @change="loadOrders()" class="input-field text-sm py-2">
+                        <option value="">Tutti</option>
+                        <option value="quoted">Preventivato</option>
+                        <option value="approved">Approvato</option>
+                        <option value="in_production">In Produzione</option>
+                        <option value="quality_check">Controllo Qualita</option>
+                        <option value="ready">Pronto Ritiro</option>
+                        <option value="picked_up">Ritirato</option>
+                        <option value="invoiced">Fatturato</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipo Prodotto</label>
+                    <select x-model="filters.product_type" @change="loadOrders()" class="input-field text-sm py-2">
+                        <option value="">Tutti</option>
+                        <template x-for="(label, key) in PRODUCT_TYPE_LABELS" :key="key">
+                            <option :value="key" x-text="label"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (n. ordine o titolo)</label>
+                    <input type="text" x-model="filters.search" @input.debounce.300ms="loadOrders()"
+                           class="input-field text-sm py-2" placeholder="ORD-... o titolo...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Count -->
+        <p class="text-sm text-gray-500 mb-3" x-show="!loading">
+            <span x-text="orders.length"></span> ordini trovati
+        </p>
+
+        <!-- Orders Table -->
+        <div class="card overflow-x-auto">
+            <template x-if="loading">
+                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+            </template>
+
+            <template x-if="!loading && orders.length === 0">
+                <p class="text-center text-gray-500 py-8">Nessun ordine trovato.</p>
+            </template>
+
+            <table class="min-w-full" x-show="!loading && orders.length > 0">
+                <thead>
+                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                        <th class="pb-3 pr-4">N. Ordine</th>
+                        <th class="pb-3 pr-4">Cliente</th>
+                        <th class="pb-3 pr-4">Titolo</th>
+                        <th class="pb-3 pr-4">Tipo</th>
+                        <th class="pb-3 pr-4">Quantita</th>
+                        <th class="pb-3 pr-4">Stato</th>
+                        <th class="pb-3 pr-4">Totale</th>
+                        <th class="pb-3">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="order in orders" :key="order.id">
+                        <tr class="border-b hover:bg-blue-50 cursor-pointer transition"
+                            @click="window.location.href='/print-shop/orders/' + order.id">
+                            <td class="py-3 pr-4 text-sm font-mono text-gray-700" x-text="order.order_number"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="customerMap[order.customer_id] || '...'"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700 max-w-xs truncate" x-text="order.title"></td>
+                            <td class="py-3 pr-4 text-xs text-gray-600" x-text="PRODUCT_TYPE_LABELS[order.product_type] || order.product_type"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700" x-text="order.quantity"></td>
+                            <td class="py-3 pr-4">
+                                <span class="badge" :class="'badge-' + order.status" x-text="ORDER_STATUS_LABELS[order.status] || order.status"></span>
+                            </td>
+                            <td class="py-3 pr-4 text-sm text-gray-700" x-text="formatPrice(order.total_price)"></td>
+                            <td class="py-3 text-sm text-gray-500" x-text="formatDate(order.created_at)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script>
+    function orderBoardData() {
+        return {
+            user: { username: '', isCounter: false, isManager: false, isOperator: false },
+            orders: [],
+            customerMap: {},
+            filters: { status: '', product_type: '', search: '' },
+            loading: true,
+
+            init() {
+                const token = IsottoAuth.getToken();
+                if (!token) { window.location.href = '/print-shop'; return; }
+                const userInfo = IsottoAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isCounter: IsottoAuth.isCounter(),
+                    isManager: IsottoAuth.isManager(),
+                    isOperator: IsottoAuth.isOperator()
+                };
+
+                // Check URL params for filters
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('status_filter')) this.filters.status = params.get('status_filter');
+                if (params.get('product_type')) this.filters.product_type = params.get('product_type');
+
+                this.loadCustomers();
+                this.loadOrders();
+            },
+
+            async loadCustomers() {
+                try {
+                    const customers = await API.get('/api/v1/print-shop/customers');
+                    customers.forEach(c => { this.customerMap[c.id] = c.company_name || c.name; });
+                } catch (e) {
+                    console.error('Customer load failed:', e);
+                }
+            },
+
+            async loadOrders() {
+                this.loading = true;
+                try {
+                    let url = '/api/v1/print-shop/orders?limit=200';
+                    if (this.filters.status) url += '&status_filter=' + this.filters.status;
+                    if (this.filters.product_type) url += '&product_type=' + this.filters.product_type;
+                    if (this.filters.search) url += '&search=' + encodeURIComponent(this.filters.search);
+                    this.orders = await API.get(url);
+                } catch (e) {
+                    showToast('Errore caricamento ordini: ' + e.message, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

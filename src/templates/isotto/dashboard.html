@@ -1,0 +1,228 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Cruscotto - ISOTTO Sport{% endblock %}
+{% block page_name %}Cruscotto{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="dashboardData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                    </div>
+                </div>
+
+                <!-- Nav Links -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-gray-900" x-text="user.username"></p>
+                        <p class="text-xs text-gray-500" x-text="user.roles.filter(r => r.startsWith('isotto-')).join(', ')"></p>
+                    </div>
+                    <button @click="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        Esci
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Welcome -->
+        <div class="card mb-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+            <h2 class="text-2xl font-bold mb-1" x-text="`Buongiorno, ${user.firstName || user.username}!`"></h2>
+            <p class="opacity-90">Ecco la situazione di oggi.</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">In Produzione</p>
+                <p class="text-3xl font-bold text-amber-600" x-text="stats.orders_in_production"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">In Attesa Approvazione</p>
+                <p class="text-3xl font-bold text-gray-600" x-text="stats.orders_pending_approval"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Pronti per Ritiro</p>
+                <p class="text-3xl font-bold text-green-600" x-text="stats.orders_ready"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Completati Oggi</p>
+                <p class="text-3xl font-bold text-blue-600" x-text="stats.orders_completed_today"></p>
+            </div>
+        </div>
+
+        <!-- Active Orders -->
+        <div class="card mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Ordini Attivi</h3>
+                <a href="/print-shop/orders" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Vedi tutti &rarr;</a>
+            </div>
+
+            <template x-if="activeOrders.length === 0">
+                <p class="text-gray-500 text-center py-8">Nessun ordine attivo al momento.</p>
+            </template>
+
+            <div class="overflow-x-auto" x-show="activeOrders.length > 0">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                            <th class="pb-3 pr-4">Ordine</th>
+                            <th class="pb-3 pr-4">Cliente</th>
+                            <th class="pb-3 pr-4">Titolo</th>
+                            <th class="pb-3 pr-4">Tipo</th>
+                            <th class="pb-3 pr-4">Stato</th>
+                            <th class="pb-3">Totale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="order in activeOrders" :key="order.id">
+                            <tr class="border-b hover:bg-gray-50 cursor-pointer" @click="window.location.href='/print-shop/orders/' + order.id">
+                                <td class="py-3 pr-4 text-sm font-mono text-gray-700" x-text="order.order_number"></td>
+                                <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="getCustomerName(order.customer_id)"></td>
+                                <td class="py-3 pr-4 text-sm text-gray-700" x-text="order.title"></td>
+                                <td class="py-3 pr-4 text-xs text-gray-600" x-text="PRODUCT_TYPE_LABELS[order.product_type] || order.product_type"></td>
+                                <td class="py-3 pr-4">
+                                    <span class="badge" :class="'badge-' + order.status" x-text="ORDER_STATUS_LABELS[order.status] || order.status"></span>
+                                </td>
+                                <td class="py-3 text-sm text-gray-700" x-text="formatPrice(order.total_price)"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <a href="/print-shop/orders/new" class="card hover:shadow-xl transition text-center py-6" x-show="user.isCounter">
+                <span class="text-4xl block mb-2">&#x1F4DD;</span>
+                <h3 class="text-lg font-bold text-gray-900">Nuovo Ordine</h3>
+                <p class="text-sm text-gray-500">Crea preventivo</p>
+            </a>
+
+            <a href="/print-shop/customers" class="card hover:shadow-xl transition text-center py-6">
+                <span class="text-4xl block mb-2">&#x1F465;</span>
+                <h3 class="text-lg font-bold text-gray-900">Cerca Cliente</h3>
+                <p class="text-sm text-gray-500">Gestione clienti</p>
+            </a>
+
+            <a href="/print-shop/orders?status_filter=ready" class="card hover:shadow-xl transition text-center py-6">
+                <span class="text-4xl block mb-2">&#x1F4E6;</span>
+                <h3 class="text-lg font-bold text-gray-900">Pronti</h3>
+                <p class="text-sm text-gray-500">Ordini da ritirare</p>
+            </a>
+        </div>
+    </main>
+</div>
+
+<script>
+    function dashboardData() {
+        return {
+            user: {
+                username: '', firstName: '', roles: [],
+                isAdmin: false, isManager: false, isOperator: false, isDesigner: false, isCounter: false
+            },
+            stats: {
+                orders_in_production: 0, orders_pending_approval: 0,
+                orders_ready: 0, orders_completed_today: 0,
+                orders_in_quality_check: 0, total_orders: 0
+            },
+            activeOrders: [],
+            customerMap: {},
+
+            init() {
+                // Check for token in URL fragment (from OAuth callback)
+                const hash = window.location.hash;
+                if (hash && hash.includes('token=')) {
+                    const tokenFromUrl = hash.split('token=')[1];
+                    if (tokenFromUrl) {
+                        IsottoAuth.setToken(tokenFromUrl);
+                        window.history.replaceState({}, document.title, '/print-shop/dashboard');
+                        showToast('Login effettuato!', 'success');
+                    }
+                }
+
+                const token = IsottoAuth.getToken();
+                if (!token) {
+                    window.location.href = '/print-shop';
+                    return;
+                }
+
+                const userInfo = IsottoAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) {
+                    showToast('Accesso non autorizzato.', 'error');
+                    setTimeout(() => IsottoAuth.logout(), 2000);
+                    return;
+                }
+
+                this.user = {
+                    ...userInfo,
+                    isAdmin: IsottoAuth.isAdmin(),
+                    isManager: IsottoAuth.isManager(),
+                    isOperator: IsottoAuth.isOperator(),
+                    isDesigner: IsottoAuth.isDesigner(),
+                    isCounter: IsottoAuth.isCounter()
+                };
+
+                this.loadDashboard();
+                this.loadActiveOrders();
+            },
+
+            async loadDashboard() {
+                try {
+                    this.stats = await API.get('/api/v1/print-shop/dashboard');
+                } catch (e) {
+                    console.error('Dashboard load failed:', e);
+                }
+            },
+
+            async loadActiveOrders() {
+                try {
+                    const inProduction = await API.get('/api/v1/print-shop/orders?status_filter=in_production');
+                    const approved = await API.get('/api/v1/print-shop/orders?status_filter=approved');
+                    const qc = await API.get('/api/v1/print-shop/orders?status_filter=quality_check');
+                    const quoted = await API.get('/api/v1/print-shop/orders?status_filter=quoted');
+                    this.activeOrders = [...inProduction, ...approved, ...qc, ...quoted];
+
+                    // Load customers for name display
+                    const customers = await API.get('/api/v1/print-shop/customers');
+                    customers.forEach(c => { this.customerMap[c.id] = c.company_name || c.name; });
+                } catch (e) {
+                    console.error('Active orders load failed:', e);
+                }
+            },
+
+            getCustomerName(customerId) {
+                return this.customerMap[customerId] || '...';
+            },
+
+            logout() {
+                if (confirm('Vuoi uscire?')) {
+                    showToast('Disconnessione...', 'info');
+                    setTimeout(() => IsottoAuth.logout(), 500);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,440 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Dettaglio Ordine - ISOTTO Sport{% endblock %}
+{% block page_name %}Dettaglio Ordine{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="orderDetailData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Ordini</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Back link -->
+        <a href="/print-shop/orders" class="text-blue-600 hover:text-blue-700 text-sm mb-4 inline-block">&larr; Torna agli ordini</a>
+
+        <!-- Loading -->
+        <template x-if="loading">
+            <div class="card text-center py-12">
+                <p class="text-gray-500">Caricamento...</p>
+            </div>
+        </template>
+
+        <!-- CREATE MODE -->
+        <template x-if="!loading && createMode">
+            <div class="card">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Nuovo Preventivo</h2>
+                <form @submit.prevent="createOrder()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Titolo *</label>
+                            <input type="text" x-model="newOrder.title" class="input-field" required
+                                   placeholder="Es: Pizza Planet 4-UP Postcards">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
+                            <textarea x-model="newOrder.description" class="input-field" rows="3"
+                                      placeholder="Dettagli del lavoro di stampa..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente (ID) *</label>
+                            <input type="text" x-model="newOrder.customer_id" class="input-field" required
+                                   placeholder="UUID del cliente">
+                            <p class="text-xs text-gray-400 mt-1">Cerca il cliente nella sezione Clienti</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Prodotto</label>
+                            <select x-model="newOrder.product_type" class="input-field">
+                                <template x-for="(label, key) in PRODUCT_TYPE_LABELS" :key="key">
+                                    <option :value="key" x-text="label"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantita</label>
+                            <input type="number" x-model.number="newOrder.quantity" class="input-field" min="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prezzo Unitario</label>
+                            <input type="number" x-model.number="newOrder.unit_price" class="input-field" min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Totale</label>
+                            <input type="number" x-model.number="newOrder.total_price" class="input-field" min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Grammatura Carta (gsm)</label>
+                            <input type="number" x-model.number="newOrder.paper_weight_gsm" class="input-field" min="0" placeholder="250">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Formato</label>
+                            <input type="text" x-model="newOrder.size_description" class="input-field" placeholder="A4 landscape, 210x99mm...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Copie per Foglio</label>
+                            <input type="number" x-model.number="newOrder.copies_per_sheet" class="input-field" min="1" placeholder="4">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Cliente</label>
+                            <textarea x-model="newOrder.customer_notes" class="input-field" rows="2"
+                                      placeholder="Richieste specifiche del cliente..."></textarea>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="btn-primary" :disabled="saving">
+                            <span x-show="!saving">Crea Preventivo</span>
+                            <span x-show="saving">Salvataggio...</span>
+                        </button>
+                        <a href="/print-shop/orders" class="btn-secondary">Annulla</a>
+                    </div>
+                </form>
+            </div>
+        </template>
+
+        <!-- VIEW/EDIT MODE -->
+        <template x-if="!loading && !createMode && order.id">
+            <div>
+                <!-- Header -->
+                <div class="card mb-6">
+                    <div class="flex flex-wrap justify-between items-start gap-4">
+                        <div>
+                            <p class="text-sm font-mono text-gray-500" x-text="order.order_number"></p>
+                            <h2 class="text-2xl font-bold text-gray-900" x-text="order.title"></h2>
+                            <p class="text-sm text-gray-600 mt-1">
+                                <span x-text="customerName"></span> &middot;
+                                <span x-text="PRODUCT_TYPE_LABELS[order.product_type] || order.product_type"></span>
+                            </p>
+                        </div>
+                        <span class="badge text-sm px-3 py-1" :class="'badge-' + order.status"
+                              x-text="ORDER_STATUS_LABELS[order.status] || order.status"></span>
+                    </div>
+                </div>
+
+                <!-- Preventivo (Quote) Section -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Preventivo</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500 block">Quantita</span>
+                            <span class="font-semibold" x-text="order.quantity"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Prezzo Unitario</span>
+                            <span class="font-semibold" x-text="formatPrice(order.unit_price)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Totale</span>
+                            <span class="font-bold text-lg text-blue-600" x-text="formatPrice(order.total_price)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Consegna Stimata</span>
+                            <span class="font-semibold" x-text="formatDate(order.estimated_completion)"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dettagli Stampa (Print Details) -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Dettagli Stampa</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500 block">Grammatura</span>
+                            <span class="font-semibold" x-text="order.paper_weight_gsm ? order.paper_weight_gsm + ' gsm' : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Colore</span>
+                            <span class="font-semibold" x-text="COLOR_MODE_LABELS[order.color_mode] || '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Fronte/Retro</span>
+                            <span class="font-semibold" x-text="order.duplex ? 'Si (' + (order.duplex_mode === 'short_edge' ? 'Lato Corto' : 'Lato Lungo') + ')' : 'No'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Plastificazione</span>
+                            <span class="font-semibold" x-text="LAMINATION_LABELS[order.lamination] || '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Formato</span>
+                            <span class="font-semibold" x-text="order.size_description || '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Copie per Foglio</span>
+                            <span class="font-semibold" x-text="order.copies_per_sheet || '-'"></span>
+                        </div>
+                    </div>
+
+                    <template x-if="order.cutting_instructions">
+                        <div class="mt-4">
+                            <span class="text-gray-500 block text-sm">Istruzioni Taglio</span>
+                            <p class="text-sm text-gray-700 whitespace-pre-line" x-text="order.cutting_instructions"></p>
+                        </div>
+                    </template>
+
+                    <template x-if="order.finishing_notes">
+                        <div class="mt-4">
+                            <span class="text-gray-500 block text-sm">Note Finitura</span>
+                            <p class="text-sm text-gray-700 whitespace-pre-line" x-text="order.finishing_notes"></p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Produzione (Production) -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Produzione</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500 block">Assegnato a</span>
+                            <template x-if="editing && user.isManager">
+                                <input type="text" x-model="editData.assigned_to" class="input-field text-sm py-2" placeholder="Nome operatore">
+                            </template>
+                            <template x-if="!editing || !user.isManager">
+                                <span class="font-semibold" x-text="order.assigned_to || 'Non assegnato'"></span>
+                            </template>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Inizio Produzione</span>
+                            <span class="font-semibold" x-text="formatDateTime(order.production_started_at)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Completato</span>
+                            <span class="font-semibold" x-text="formatDateTime(order.completed_at)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Prova Approvata</span>
+                            <span class="font-semibold" x-text="order.proof_approved ? 'Si (' + formatDateTime(order.proof_approved_at) + ')' : 'No'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">File Artwork</span>
+                            <span class="font-semibold text-xs" x-text="order.artwork_files || '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Ritirato</span>
+                            <span class="font-semibold" x-text="formatDateTime(order.picked_up_at)"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Note Section -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Note</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Cliente</label>
+                            <template x-if="editing">
+                                <textarea x-model="editData.customer_notes" class="input-field text-sm" rows="3"></textarea>
+                            </template>
+                            <template x-if="!editing">
+                                <p class="text-sm text-gray-600 whitespace-pre-line" x-text="order.customer_notes || '-'"></p>
+                            </template>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Produzione</label>
+                            <template x-if="editing">
+                                <textarea x-model="editData.production_notes" class="input-field text-sm" rows="3"></textarea>
+                            </template>
+                            <template x-if="!editing">
+                                <p class="text-sm text-gray-600 whitespace-pre-line" x-text="order.production_notes || '-'"></p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card flex flex-wrap gap-3">
+                    <!-- Edit/Save -->
+                    <template x-if="!editing && user.isOperator">
+                        <button @click="startEditing()" class="btn-secondary">Modifica</button>
+                    </template>
+                    <template x-if="editing">
+                        <button @click="saveOrder()" class="btn-primary" :disabled="saving">
+                            <span x-show="!saving">Salva Modifiche</span>
+                            <span x-show="saving">Salvataggio...</span>
+                        </button>
+                    </template>
+                    <template x-if="editing">
+                        <button @click="cancelEditing()" class="btn-secondary">Annulla</button>
+                    </template>
+
+                    <!-- Status Actions -->
+                    <template x-if="order.status === 'quoted'">
+                        <button @click="approveOrder()" class="btn-success">Approva Preventivo</button>
+                    </template>
+                    <template x-if="order.status === 'approved' && user.isOperator">
+                        <button @click="advanceStatus('in_production')" class="btn-primary">Avvia Produzione</button>
+                    </template>
+                    <template x-if="order.status === 'in_production' && user.isOperator">
+                        <button @click="advanceStatus('quality_check')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200">Controllo Qualita</button>
+                    </template>
+                    <template x-if="(order.status === 'in_production' || order.status === 'quality_check') && user.isOperator">
+                        <button @click="completeOrder()" class="btn-success">Pronto per Ritiro</button>
+                    </template>
+                    <template x-if="order.status === 'ready'">
+                        <button @click="advanceStatus('picked_up')" class="btn-primary">Ritirato</button>
+                    </template>
+                    <template x-if="order.status === 'picked_up' && user.isManager">
+                        <button @click="advanceStatus('invoiced')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200">Fatturato</button>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </main>
+</div>
+
+<script>
+    function orderDetailData() {
+        return {
+            user: { username: '', isAdmin: false, isManager: false, isOperator: false, isDesigner: false, isCounter: false },
+            order: {},
+            customerName: '...',
+            loading: true,
+            editing: false,
+            saving: false,
+            createMode: false,
+            editData: {},
+            newOrder: {
+                title: '', description: '', customer_id: '',
+                product_type: 'postcard',
+                quantity: 0, unit_price: 0, total_price: 0,
+                paper_weight_gsm: 250, size_description: '',
+                copies_per_sheet: null, customer_notes: ''
+            },
+
+            init() {
+                const token = IsottoAuth.getToken();
+                if (!token) { window.location.href = '/print-shop'; return; }
+                const userInfo = IsottoAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isAdmin: IsottoAuth.isAdmin(),
+                    isManager: IsottoAuth.isManager(),
+                    isOperator: IsottoAuth.isOperator(),
+                    isDesigner: IsottoAuth.isDesigner(),
+                    isCounter: IsottoAuth.isCounter()
+                };
+
+                const path = window.location.pathname;
+                if (path.endsWith('/new')) {
+                    this.createMode = true;
+                    this.loading = false;
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('customer_id')) this.newOrder.customer_id = params.get('customer_id');
+                    return;
+                }
+
+                const parts = path.split('/');
+                const orderId = parts[parts.length - 1];
+                this.loadOrder(orderId);
+            },
+
+            async loadOrder(orderId) {
+                try {
+                    this.order = await API.get('/api/v1/print-shop/orders/' + orderId);
+                    try {
+                        const customer = await API.get('/api/v1/print-shop/customers/' + this.order.customer_id);
+                        this.customerName = customer.company_name || customer.name;
+                    } catch (e) { this.customerName = '?'; }
+                } catch (e) {
+                    showToast('Errore caricamento ordine: ' + e.message, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async createOrder() {
+                if (!this.newOrder.title || !this.newOrder.customer_id) {
+                    showToast('Titolo e cliente sono obbligatori.', 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    const created = await API.post('/api/v1/print-shop/orders', this.newOrder);
+                    showToast('Preventivo creato: ' + created.order_number, 'success');
+                    window.location.href = '/print-shop/orders/' + created.id;
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            startEditing() {
+                this.editData = {
+                    assigned_to: this.order.assigned_to || '',
+                    customer_notes: this.order.customer_notes || '',
+                    production_notes: this.order.production_notes || '',
+                    proof_approved: this.order.proof_approved,
+                    cutting_instructions: this.order.cutting_instructions || '',
+                    finishing_notes: this.order.finishing_notes || '',
+                };
+                this.editing = true;
+            },
+
+            cancelEditing() {
+                this.editing = false;
+                this.editData = {};
+            },
+
+            async saveOrder() {
+                this.saving = true;
+                try {
+                    this.order = await API.put('/api/v1/print-shop/orders/' + this.order.id, this.editData);
+                    this.editing = false;
+                    showToast('Modifiche salvate!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async approveOrder() {
+                try {
+                    this.order = await API.post('/api/v1/print-shop/orders/' + this.order.id + '/approve');
+                    showToast('Preventivo approvato!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async advanceStatus(newStatus) {
+                try {
+                    this.order = await API.patch('/api/v1/print-shop/orders/' + this.order.id + '/status', { status: newStatus });
+                    showToast('Stato aggiornato: ' + ORDER_STATUS_LABELS[newStatus], 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async completeOrder() {
+                try {
+                    this.order = await API.post('/api/v1/print-shop/orders/' + this.order.id + '/complete');
+                    showToast('Ordine completato - pronto per ritiro!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

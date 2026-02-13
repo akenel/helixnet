@@ -1,0 +1,81 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Login - ISOTTO Sport{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-blue-600 to-blue-800 p-4">
+    <div class="max-w-md w-full">
+        <!-- Branding -->
+        <div class="text-center mb-8">
+            <div class="inline-block bg-white p-5 rounded-full shadow-2xl mb-4">
+                <span class="text-5xl">&#x1F5A8;</span>
+            </div>
+            <h1 class="text-4xl font-extrabold text-white mb-2">ISOTTO Sport</h1>
+            <p class="text-xl text-white opacity-90">Gestione Stampa - Trapani dal 1968</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                Accesso Staff
+            </h2>
+
+            <button
+                onclick="loginWithKeycloak()"
+                class="w-full btn-primary text-xl flex items-center justify-center space-x-3 mb-4 py-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                <span>Accedi</span>
+            </button>
+
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>Usa le tue credenziali ISOTTO Sport</p>
+                <p class="mt-2 text-xs text-gray-500">
+                    Demo: famousguy / helix_pass (Admin)<br>
+                    giulia_f / helix_pass (Accettazione)<br>
+                    luca_p / helix_pass (Operatore)
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center text-white text-sm">
+            <p class="opacity-75">Autenticazione sicura via Keycloak</p>
+            <p class="opacity-75 mt-1">Via M. Buscaino - 91100 Trapani</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const token = IsottoAuth.getToken();
+        if (token) {
+            const user = IsottoAuth.getUserInfo();
+            if (user && user.roles.length > 0) {
+                window.location.href = '/print-shop/dashboard';
+            }
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            showToast('Login fallito: ' + error, 'error');
+            window.history.replaceState({}, document.title, '/print-shop');
+        }
+    });
+
+    function loginWithKeycloak() {
+        const keycloakUrl = 'https://keycloak.helix.local';
+        const realm = 'kc-isotto-print-realm-dev';
+        const clientId = 'isotto_print_web';
+        const redirectUri = window.location.origin + '/print-shop/callback';
+
+        const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?` +
+            `client_id=${clientId}&` +
+            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+            `response_type=code&` +
+            `scope=openid profile email`;
+
+        window.location.href = authUrl;
+    }
+</script>
+{% endblock %}

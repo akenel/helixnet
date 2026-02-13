@@ -57,6 +57,10 @@ from .camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
 from .camper_customer_model import CamperCustomerModel, CustomerLanguage
 from .camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
 
+# ISOTTO Sport Print Shop (Via Buscaino, Trapani - since 1968)
+from .isotto_customer_model import IsottoCustomerModel
+from .isotto_order_model import IsottoOrderModel, ProductType, OrderStatus, ColorMode, DuplexMode, Lamination
+
 __all__ = [
     "Base",
     "UserModel",
@@ -146,4 +150,12 @@ __all__ = [
     "CamperServiceJobModel",
     "JobType",
     "JobStatus",
+    # ISOTTO Sport Print Shop
+    "IsottoCustomerModel",
+    "IsottoOrderModel",
+    "ProductType",
+    "OrderStatus",
+    "ColorMode",
+    "DuplexMode",
+    "Lamination",
 ]

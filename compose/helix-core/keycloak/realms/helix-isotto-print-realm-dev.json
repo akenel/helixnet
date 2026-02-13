@@ -1,0 +1,357 @@
+{
+  "realm": "kc-isotto-print-realm-dev",
+  "enabled": true,
+  "displayName": "ISOTTO Sport - Print Shop Management - Trapani",
+  "displayNameHtml": "<div class='kc-logo-text'><span>ISOTTO Sport - Trapani dal 1968</span></div>",
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@isottosport.it",
+    "fromDisplayName": "ISOTTO Sport Print Shop",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "isotto-counter",
+        "description": "Front desk - Order intake, customer creation, view orders, prepare quotations."
+      },
+      {
+        "name": "isotto-designer",
+        "description": "Design team - Artwork prep, proof generation, pre-press, file management."
+      },
+      {
+        "name": "isotto-operator",
+        "description": "Machine operators - Production, quality check, finishing, cutting."
+      },
+      {
+        "name": "isotto-manager",
+        "description": "Shop management - Pricing, approvals, full operational access."
+      },
+      {
+        "name": "isotto-admin",
+        "description": "System administrator - Full control over realm, settings, and user management."
+      },
+      {
+        "name": "default-roles-kc-isotto-print-realm-dev",
+        "description": "Default roles for kc-isotto-print-realm-dev",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "Office Staff",
+      "realmRoles": ["isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "attributes": {
+        "description": ["Front desk, order intake, customer management, quotation preparation."]
+      }
+    },
+    {
+      "name": "Design Team",
+      "realmRoles": ["isotto-designer", "isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "attributes": {
+        "description": ["Designers and pre-press. Artwork preparation, proofs, file management."]
+      }
+    },
+    {
+      "name": "Production",
+      "realmRoles": ["isotto-operator", "default-roles-kc-isotto-print-realm-dev"],
+      "attributes": {
+        "description": ["Machine operators, production staff. Printing, cutting, finishing."]
+      }
+    },
+    {
+      "name": "Management",
+      "realmRoles": ["isotto-manager", "isotto-operator", "isotto-designer", "isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "attributes": {
+        "description": ["Shop management with full operational access. Includes all operational permissions."]
+      }
+    },
+    {
+      "name": "Admins",
+      "realmRoles": ["isotto-admin", "isotto-manager", "isotto-operator", "isotto-designer", "isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "attributes": {
+        "description": ["System administrators with full realm control."]
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "isotto_print_web",
+      "name": "ISOTTO Sport Web Application (Public)",
+      "description": "Frontend web application for print shop management",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://helix.local/*",
+        "https://helix-platform.local/*",
+        "https://isotto.helix.local/*",
+        "http://localhost:8000/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "https://helix.local",
+        "https://helix-platform.local",
+        "https://isotto.helix.local",
+        "http://localhost:8000",
+        "http://localhost:3000",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "isotto_print_api",
+      "name": "ISOTTO Sport Service Account (Backend API)",
+      "description": "Service account for backend API operations",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "secret": "helix_pass",
+      "bearerOnly": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false"
+      }
+    },
+    {
+      "clientId": "isotto_print_mobile",
+      "name": "ISOTTO Sport Mobile App (Future)",
+      "description": "Mobile application for production floor tracking",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "isotto://callback",
+        "http://localhost:8100/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8100",
+        "+"
+      ],
+      "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "admin-cli",
+      "name": "Keycloak Admin CLI",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "id": "20000000-0000-0000-0000-000000000001",
+      "username": "famousguy",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "boss@isottosport.it",
+      "firstName": "Famous",
+      "lastName": "Guy",
+      "attributes": {
+        "employee_id": ["IS-OWNER-001"],
+        "title": ["Owner & Master Printer"],
+        "store_location": ["Via M. Buscaino, Trapani"],
+        "language": ["it"],
+        "notes": ["The boss. Since 1968. Knows his stuff. Printing, clothing, merch -- everything."]
+      },
+      "realmRoles": ["isotto-admin", "isotto-manager", "isotto-operator", "isotto-designer", "isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "groups": ["/Admins"]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000002",
+      "username": "marco_d",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "marco@isottosport.it",
+      "firstName": "Marco",
+      "lastName": "DiStefano",
+      "attributes": {
+        "employee_id": ["IS-DES-001"],
+        "title": ["Lead Designer & Pre-Press"],
+        "store_location": ["Via M. Buscaino, Trapani"],
+        "language": ["it"],
+        "notes": ["Pre-press and artwork preparation. Handles proofs and color matching."]
+      },
+      "realmRoles": ["isotto-designer", "isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "groups": ["/Design Team"]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000003",
+      "username": "luca_p",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "luca@isottosport.it",
+      "firstName": "Luca",
+      "lastName": "Ferrara",
+      "attributes": {
+        "employee_id": ["IS-OP-001"],
+        "title": ["Machine Operator"],
+        "store_location": ["Via M. Buscaino, Trapani"],
+        "language": ["it"],
+        "notes": ["Main machine operator. Runs the digital and offset presses."]
+      },
+      "realmRoles": ["isotto-operator", "default-roles-kc-isotto-print-realm-dev"],
+      "groups": ["/Production"]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000004",
+      "username": "giulia_f",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "giulia@isottosport.it",
+      "firstName": "Giulia",
+      "lastName": "Ferrante",
+      "attributes": {
+        "employee_id": ["IS-OFF-001"],
+        "title": ["Front Desk / Order Intake"],
+        "store_location": ["Via M. Buscaino, Trapani"],
+        "language": ["it", "en"],
+        "notes": ["Customer intake. Takes orders, creates quotes, handles pickups."]
+      },
+      "realmRoles": ["isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "groups": ["/Office Staff"]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000005",
+      "username": "angel",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "angel@helixnet.ch",
+      "firstName": "Angelo",
+      "lastName": "Kenel",
+      "attributes": {
+        "employee_id": ["IS-EXT-001"],
+        "title": ["Platform Architect (External)"],
+        "language": ["en", "de", "fr", "it"],
+        "notes": ["Building the HelixNet platform for ISOTTO Sport. UFA Foo Fighters postcard business. Top customer."]
+      },
+      "realmRoles": ["isotto-admin", "isotto-manager", "isotto-operator", "isotto-designer", "isotto-counter", "default-roles-kc-isotto-print-realm-dev"],
+      "groups": ["/Admins"]
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "requiredCredentials": ["password"],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "webAuthnPolicyRpEntityName": "keycloak",
+  "webAuthnPolicySignatureAlgorithms": ["ES256"],
+  "webAuthnPolicyRpId": "",
+  "webAuthnPolicyAttestationConveyancePreference": "not specified",
+  "webAuthnPolicyAuthenticatorAttachment": "not specified",
+  "webAuthnPolicyRequireResidentKey": "not specified",
+  "webAuthnPolicyUserVerificationRequirement": "not specified",
+  "webAuthnPolicyCreateTimeout": 0,
+  "webAuthnPolicyAvoidSameAuthenticatorRegister": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de", "fr", "it"],
+  "defaultLocale": "it",
+  "attributes": {
+    "frontendUrl": "https://keycloak.helix.local",
+    "adminUrl": "https://keycloak.helix.local",
+    "cibaBackchannelTokenDeliveryMode": "poll",
+    "cibaExpiresIn": "120",
+    "cibaAuthRequestedUserHint": "login_hint",
+    "cibaInterval": "5",
+    "parRequestUriLifespan": "60",
+    "clientOfflineSessionIdleTimeout": "0",
+    "clientOfflineSessionMaxLifespan": "0",
+    "clientSessionIdleTimeout": "0",
+    "clientSessionMaxLifespan": "0"
+  }
+}
