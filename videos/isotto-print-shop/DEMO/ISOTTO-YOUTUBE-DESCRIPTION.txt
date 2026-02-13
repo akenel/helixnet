@@ -10,7 +10,7 @@ CHAPTERS:
 0:00 Intro
 0:04 Scene 1 -- Login & Dashboard
 0:11 Keycloak SSO Login + Morning Dashboard
-0:32 Scene 2 -- Order Management
+1:32 Scene 2 -- Order Management
 0:39 7 Orders with Real Trapani Clients
 0:55 Scene 3 -- Order Detail
 1:02 Pizza Planet 4-UP Postcards (Full Print Specs)
@@ -52,7 +52,9 @@ luca_p / helix_pass -- Machine operator (production + quality)
 marco_d / helix_pass -- Designer + counter (pre-press + intake)
 
 MUSIC:
-Van Morrison -- Into the Mystic
+"Slow Burn" by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/
 
 ---
 ISOTTO Sport
