@@ -183,11 +183,11 @@
       ],
       "email": "boss@isottosport.it",
       "firstName": "Famous",
-      "lastName": "Guy",
+      "lastName": "Print-Master",
       "attributes": {
         "employee_id": ["IS-OWNER-001"],
         "title": ["Owner & Master Printer"],
-        "store_location": ["Via M. Buscaino, Trapani"],
+        "store_location": ["Largo Franchi 3, Trapani"],
         "language": ["it"],
         "notes": ["The boss. Since 1968. Knows his stuff. Printing, clothing, merch -- everything."]
       },
@@ -208,11 +208,11 @@
       ],
       "email": "marco@isottosport.it",
       "firstName": "Marco",
-      "lastName": "DiStefano",
+      "lastName": "Designer",
       "attributes": {
         "employee_id": ["IS-DES-001"],
         "title": ["Lead Designer & Pre-Press"],
-        "store_location": ["Via M. Buscaino, Trapani"],
+        "store_location": ["Largo Franchi 3, Trapani"],
         "language": ["it"],
         "notes": ["Pre-press and artwork preparation. Handles proofs and color matching."]
       },
@@ -233,11 +233,11 @@
       ],
       "email": "luca@isottosport.it",
       "firstName": "Luca",
-      "lastName": "Ferrara",
+      "lastName": "Operator",
       "attributes": {
         "employee_id": ["IS-OP-001"],
         "title": ["Machine Operator"],
-        "store_location": ["Via M. Buscaino, Trapani"],
+        "store_location": ["Largo Franchi 3, Trapani"],
         "language": ["it"],
         "notes": ["Main machine operator. Runs the digital and offset presses."]
       },
@@ -258,11 +258,11 @@
       ],
       "email": "giulia@isottosport.it",
       "firstName": "Giulia",
-      "lastName": "Ferrante",
+      "lastName": "Front-Desk",
       "attributes": {
         "employee_id": ["IS-OFF-001"],
         "title": ["Front Desk / Order Intake"],
-        "store_location": ["Via M. Buscaino, Trapani"],
+        "store_location": ["Largo Franchi 3, Trapani"],
         "language": ["it", "en"],
         "notes": ["Customer intake. Takes orders, creates quotes, handles pickups."]
       },

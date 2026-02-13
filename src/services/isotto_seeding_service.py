@@ -3,7 +3,7 @@
 ISOTTO Sport Print Shop Seeding Service - Demo data for the pitch to Famous Guy.
 Runs on application startup. Uses real client names from Angel's postcard pipeline.
 
-Since 1968. Via Buscaino, Trapani.
+Since 1968. Largo Franchi, 3 - Trapani.
 
 "The postcard is the handshake. The coffee is the close."
 """
@@ -130,7 +130,7 @@ async def seed_isotto_data(db: AsyncSession) -> None:
         artwork_files="postcards-pizza-planet-A4-PORTRAIT.html, postcards-pizza-planet-A4-LANDSCAPE.html",
         proof_approved=True,
         proof_approved_at=datetime(2026, 2, 3, 10, 0, tzinfo=timezone.utc),
-        assigned_to="Famous Guy",
+        assigned_to="Famous",
         quoted_at=datetime(2026, 2, 2, 14, 0, tzinfo=timezone.utc),
         approved_at=datetime(2026, 2, 3, 9, 0, tzinfo=timezone.utc),
         production_started_at=datetime(2026, 2, 3, 10, 30, tzinfo=timezone.utc),
@@ -162,7 +162,7 @@ async def seed_isotto_data(db: AsyncSession) -> None:
         artwork_files="postcard-camperandtour-TENT-FINAL.html",
         proof_approved=True,
         proof_approved_at=datetime(2026, 1, 26, 11, 0, tzinfo=timezone.utc),
-        assigned_to="Famous Guy",
+        assigned_to="Famous",
         quoted_at=datetime(2026, 1, 26, 9, 0, tzinfo=timezone.utc),
         approved_at=datetime(2026, 1, 26, 10, 0, tzinfo=timezone.utc),
         production_started_at=datetime(2026, 1, 26, 11, 30, tzinfo=timezone.utc),
@@ -193,7 +193,7 @@ async def seed_isotto_data(db: AsyncSession) -> None:
         cutting_instructions="Standard business card cutter template. 85x55mm.",
         proof_approved=True,
         proof_approved_at=datetime(2026, 2, 5, 10, 0, tzinfo=timezone.utc),
-        assigned_to="Marco",
+        assigned_to="Marco Designer",
         quoted_at=datetime(2026, 2, 1, 10, 0, tzinfo=timezone.utc),
         approved_at=datetime(2026, 2, 3, 9, 0, tzinfo=timezone.utc),
         production_started_at=datetime(2026, 2, 5, 11, 0, tzinfo=timezone.utc),
@@ -221,7 +221,7 @@ async def seed_isotto_data(db: AsyncSession) -> None:
         size_description="A5 (148x210mm) -- folded menu",
         copies_per_sheet=2,
         cutting_instructions="Cut A4 in half (148.5mm from top). Result: 2 x A5 cards.",
-        assigned_to="Luca",
+        assigned_to="Luca Operator",
         estimated_completion=date(2026, 2, 15),
         quoted_at=datetime(2026, 2, 8, 10, 0, tzinfo=timezone.utc),
         approved_at=datetime(2026, 2, 10, 9, 0, tzinfo=timezone.utc),
@@ -281,7 +281,7 @@ async def seed_isotto_data(db: AsyncSession) -> None:
         artwork_files="postcards-colorclean-A4-LANDSCAPE.html",
         proof_approved=True,
         proof_approved_at=datetime(2026, 2, 11, 10, 0, tzinfo=timezone.utc),
-        assigned_to="Famous Guy",
+        assigned_to="Famous",
         estimated_completion=date(2026, 2, 14),
         quoted_at=datetime(2026, 2, 10, 10, 0, tzinfo=timezone.utc),
         approved_at=datetime(2026, 2, 11, 9, 0, tzinfo=timezone.utc),
