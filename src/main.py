@@ -40,7 +40,7 @@ from src.routes.customer_router import router as customer_router
 from src.routes.kb_router import router as kb_router
 from src.routes.admin_router import router as admin_router
 from src.routes.hr_router import router as hr_router
-from src.routes.camper_router import router as camper_router
+from src.routes.camper_router import router as camper_router, html_router as camper_html_router
 from src.services.camper_seeding_service import seed_camper_data
 
 # ================================================================
@@ -230,6 +230,7 @@ app.include_router(admin_router, prefix=settings.API_V1_STR, tags=["👑 Admin -
 app.include_router(hr_router, tags=["HR - Time & Payroll (BLQ Module)"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
 app.include_router(camper_router, tags=["Camper & Tour - Service Management"])
+app.include_router(camper_html_router, tags=["Camper & Tour - Web UI"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")
 logger.info(f"🔗 API base path: {settings.API_V1_STR}")

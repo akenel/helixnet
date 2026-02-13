@@ -232,7 +232,7 @@
       ],
       "email": "maximo@camperandtour.it",
       "firstName": "Maximo",
-      "lastName": "Staff",
+      "lastName": "Ferrara",
       "attributes": {
         "employee_id": ["CT-MECH-001"],
         "title": ["Senior Installer & Fixer"],
@@ -257,7 +257,7 @@
       ],
       "email": "seppi@camperandtour.it",
       "firstName": "Seppi",
-      "lastName": "Staff",
+      "lastName": "Ferrara",
       "attributes": {
         "employee_id": ["CT-MECH-002"],
         "title": ["Mechanic"],
@@ -282,7 +282,7 @@
       ],
       "email": "miguel@camperandtour.it",
       "firstName": "Miguel",
-      "lastName": "Staff",
+      "lastName": "Ferrara",
       "attributes": {
         "employee_id": ["CT-OFFICE-001"],
         "title": ["Office Manager"],
@@ -307,7 +307,7 @@
       ],
       "email": "simona@camperandtour.it",
       "firstName": "Simona",
-      "lastName": "Staff",
+      "lastName": "Ferrara",
       "attributes": {
         "employee_id": ["CT-OFFICE-002"],
         "title": ["Office Assistant (Training)"],

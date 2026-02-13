@@ -1,0 +1,354 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Clienti - Camper & Tour{% endblock %}
+{% block page_name %}Clienti{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="customersData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Clienti</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Clienti</h2>
+            <button @click="showNewForm = true" class="btn-primary" x-show="!showNewForm">
+                + Nuovo Cliente
+            </button>
+        </div>
+
+        <!-- New Customer Form -->
+        <template x-if="showNewForm">
+            <div class="card mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Nuovo Cliente</h3>
+                <form @submit.prevent="createCustomer()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                            <input type="text" x-model="newCustomer.name" class="input-field" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                            <input type="tel" x-model="newCustomer.phone" class="input-field" placeholder="+39 ...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" x-model="newCustomer.email" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Citta</label>
+                            <input type="text" x-model="newCustomer.city" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lingua</label>
+                            <select x-model="newCustomer.language" class="input-field">
+                                <option value="it">Italiano</option>
+                                <option value="en">English</option>
+                                <option value="de">Deutsch</option>
+                                <option value="fr">Francais</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Codice Fiscale / P.IVA</label>
+                            <input type="text" x-model="newCustomer.tax_id" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Indirizzo</label>
+                            <input type="text" x-model="newCustomer.address" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                            <input type="text" x-model="newCustomer.notes" class="input-field">
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-4">
+                        <button type="submit" class="btn-primary" :disabled="saving">Salva</button>
+                        <button type="button" @click="showNewForm = false" class="btn-secondary">Annulla</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+
+        <!-- Search -->
+        <div class="card mb-6">
+            <div class="flex space-x-3">
+                <input type="text" x-model="searchQuery" @input.debounce.300ms="searchCustomers()"
+                       class="input-field flex-1" placeholder="Cerca per nome, telefono o email..." autofocus>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <p class="text-sm text-gray-500 mb-3" x-show="!loading">
+            <span x-text="customers.length"></span> clienti
+        </p>
+
+        <template x-if="loading">
+            <div class="card text-center py-8">
+                <p class="text-gray-500">Caricamento...</p>
+            </div>
+        </template>
+
+        <div class="space-y-4" x-show="!loading">
+            <template x-for="customer in customers" :key="customer.id">
+                <div class="card hover:shadow-xl transition cursor-pointer" @click="toggleCustomer(customer.id)">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900" x-text="customer.name"></h3>
+                            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
+                                <span x-show="customer.phone" x-text="customer.phone"></span>
+                                <span x-show="customer.email" x-text="customer.email"></span>
+                                <span x-show="customer.city" x-text="customer.city"></span>
+                            </div>
+                        </div>
+                        <div class="text-right text-sm">
+                            <p class="text-gray-500"><span x-text="customer.visit_count"></span> visite</p>
+                            <p class="font-semibold text-amber-600" x-text="formatPrice(customer.total_spend)"></p>
+                            <span class="text-xs px-2 py-0.5 rounded bg-gray-100" x-text="customer.language.toUpperCase()"></span>
+                        </div>
+                    </div>
+
+                    <!-- Expanded Detail -->
+                    <div x-show="expandedId === customer.id" x-cloak class="mt-4 border-t pt-4">
+                        <!-- Edit form -->
+                        <template x-if="editingId === customer.id">
+                            <form @submit.prevent="updateCustomer(customer.id)" @click.stop>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                        <label class="text-gray-500">Nome</label>
+                                        <input type="text" x-model="editCustomer.name" class="input-field text-sm py-2">
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500">Telefono</label>
+                                        <input type="tel" x-model="editCustomer.phone" class="input-field text-sm py-2">
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500">Email</label>
+                                        <input type="email" x-model="editCustomer.email" class="input-field text-sm py-2">
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500">Citta</label>
+                                        <input type="text" x-model="editCustomer.city" class="input-field text-sm py-2">
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500">Codice Fiscale / P.IVA</label>
+                                        <input type="text" x-model="editCustomer.tax_id" class="input-field text-sm py-2">
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-500">Note</label>
+                                        <input type="text" x-model="editCustomer.notes" class="input-field text-sm py-2">
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2 mt-3">
+                                    <button type="submit" class="btn-primary text-sm py-2 px-4">Salva</button>
+                                    <button type="button" @click.stop="editingId = null" class="btn-secondary text-sm py-2 px-4">Annulla</button>
+                                </div>
+                            </form>
+                        </template>
+
+                        <!-- Info display -->
+                        <template x-if="editingId !== customer.id">
+                            <div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
+                                    <div>
+                                        <span class="text-gray-500 block">Prima Visita</span>
+                                        <span x-text="formatDate(customer.first_visit)"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 block">Ultima Visita</span>
+                                        <span x-text="formatDate(customer.last_visit)"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 block">P.IVA/CF</span>
+                                        <span x-text="customer.tax_id || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 block">Indirizzo</span>
+                                        <span x-text="customer.address || '-'"></span>
+                                    </div>
+                                </div>
+
+                                <template x-if="customer.notes">
+                                    <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded mb-3">
+                                        <span class="font-medium">Note:</span> <span x-text="customer.notes"></span>
+                                    </p>
+                                </template>
+
+                                <!-- Vehicles -->
+                                <div x-show="customerVehicles[customer.id]" class="mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Veicoli</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="v in (customerVehicles[customer.id] || [])" :key="v.id">
+                                            <a :href="'/camper/checkin?plate=' + encodeURIComponent(v.registration_plate)"
+                                               class="inline-flex items-center bg-amber-50 border border-amber-200 px-3 py-1 rounded-lg text-sm hover:bg-amber-100" @click.stop>
+                                                <span class="font-mono font-semibold text-amber-700" x-text="v.registration_plate"></span>
+                                                <span class="text-gray-500 ml-2" x-text="`${v.make || ''} ${v.model || ''}`.trim()"></span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Recent Jobs -->
+                                <div x-show="customerJobs[customer.id]" class="mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Lavori Recenti</h4>
+                                    <div class="space-y-1">
+                                        <template x-for="j in (customerJobs[customer.id] || []).slice(0, 5)" :key="j.id">
+                                            <a :href="'/camper/jobs/' + j.id"
+                                               class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded hover:bg-gray-100 text-sm" @click.stop>
+                                                <span>
+                                                    <span class="font-mono text-gray-500" x-text="j.job_number"></span>
+                                                    <span class="text-gray-700 ml-2" x-text="j.title"></span>
+                                                </span>
+                                                <span class="badge" :class="'badge-' + j.status" x-text="JOB_STATUS_LABELS[j.status]"></span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <button @click.stop="startEditCustomer(customer)" class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                                    Modifica
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+</div>
+
+<script>
+    function customersData() {
+        return {
+            user: { username: '' },
+            customers: [],
+            searchQuery: '',
+            loading: true,
+            saving: false,
+            showNewForm: false,
+            expandedId: null,
+            editingId: null,
+            customerVehicles: {},
+            customerJobs: {},
+            newCustomer: {
+                name: '', phone: '', email: '', city: '', language: 'it',
+                tax_id: '', address: '', notes: ''
+            },
+            editCustomer: {},
+
+            init() {
+                const token = CamperAuth.getToken();
+                if (!token) { window.location.href = '/camper'; return; }
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { CamperAuth.logout(); return; }
+                this.user = userInfo;
+                this.searchCustomers();
+            },
+
+            async searchCustomers() {
+                this.loading = true;
+                try {
+                    let url = '/api/v1/camper/customers';
+                    if (this.searchQuery.trim()) {
+                        url += '?search=' + encodeURIComponent(this.searchQuery.trim());
+                    }
+                    this.customers = await API.get(url);
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async toggleCustomer(customerId) {
+                if (this.expandedId === customerId) {
+                    this.expandedId = null;
+                    this.editingId = null;
+                    return;
+                }
+                this.expandedId = customerId;
+                this.editingId = null;
+
+                // Load vehicles and jobs for this customer
+                if (!this.customerVehicles[customerId]) {
+                    try {
+                        const vehicles = await API.get('/api/v1/camper/vehicles?owner_name=');
+                        // Filter client-side by owner_id
+                        this.customerVehicles[customerId] = vehicles.filter(v => v.owner_id === customerId);
+                    } catch (e) { this.customerVehicles[customerId] = []; }
+                }
+                if (!this.customerJobs[customerId]) {
+                    try {
+                        this.customerJobs[customerId] = await API.get('/api/v1/camper/jobs?customer_id=' + customerId);
+                    } catch (e) { this.customerJobs[customerId] = []; }
+                }
+            },
+
+            startEditCustomer(customer) {
+                this.editCustomer = {
+                    name: customer.name,
+                    phone: customer.phone || '',
+                    email: customer.email || '',
+                    city: customer.city || '',
+                    tax_id: customer.tax_id || '',
+                    notes: customer.notes || ''
+                };
+                this.editingId = customer.id;
+            },
+
+            async updateCustomer(customerId) {
+                try {
+                    const updated = await API.put('/api/v1/camper/customers/' + customerId, this.editCustomer);
+                    // Update in list
+                    const idx = this.customers.findIndex(c => c.id === customerId);
+                    if (idx >= 0) this.customers[idx] = updated;
+                    this.editingId = null;
+                    showToast('Cliente aggiornato!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async createCustomer() {
+                if (!this.newCustomer.name) {
+                    showToast('Il nome e obbligatorio.', 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    const created = await API.post('/api/v1/camper/customers', this.newCustomer);
+                    this.customers.unshift(created);
+                    this.showNewForm = false;
+                    this.newCustomer = { name: '', phone: '', email: '', city: '', language: 'it', tax_id: '', address: '', notes: '' };
+                    showToast('Cliente creato: ' + created.name, 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -8,13 +8,16 @@ Prefix: /api/v1/camper
 "Casa e dove parcheggi." - Home is where you park it.
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from datetime import datetime, date, timezone
 from decimal import Decimal
 from uuid import UUID
 from typing import Optional
+from pathlib import Path
 
 from src.db.database import get_db_session
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleStatus
@@ -30,7 +33,15 @@ from src.core.keycloak_auth import require_roles
 
 logger = logging.getLogger(__name__)
 
+# API Router (JSON endpoints)
 router = APIRouter(prefix="/api/v1/camper", tags=["Camper & Tour"])
+
+# HTML Router (Web UI pages for Nino's team)
+html_router = APIRouter(tags=["Camper & Tour - Web UI"])
+
+# Setup Jinja2 templates
+templates_dir = Path(__file__).parent.parent / "templates"
+templates = Jinja2Templates(directory=str(templates_dir))
 
 
 # ================================================================
@@ -605,3 +616,112 @@ async def get_dashboard(
         pending_quotes=pending_quotes,
         total_jobs=total_jobs,
     )
+
+
+# ================================================================
+# HTML WEB UI ROUTES (Nino's Team Interface)
+# ================================================================
+
+@html_router.get("/camper", response_class=HTMLResponse, name="camper_login")
+async def camper_login(request: Request):
+    """Camper & Tour login page - entry point"""
+    return templates.TemplateResponse("camper/login.html", {"request": request})
+
+
+@html_router.get("/camper/callback")
+async def camper_oauth_callback(request: Request, code: str = None, error: str = None):
+    """
+    OAuth2 Callback - Server-side token exchange.
+    Same pattern as POS: browser -> Keycloak -> code -> server exchanges -> redirect with token.
+    """
+    import httpx
+    from fastapi.responses import RedirectResponse
+
+    if error:
+        logger.error(f"Camper OAuth callback error: {error}")
+        return RedirectResponse(url="/camper?error=" + error)
+
+    if not code:
+        logger.warning("Camper OAuth callback without code")
+        return RedirectResponse(url="/camper?error=no_code")
+
+    # Keycloak config -- internal Docker URL for server-to-server
+    keycloak_internal_url = "http://keycloak:8080"
+    realm = "kc-camper-service-realm-dev"
+    client_id = "camper_service_web"
+
+    # Reconstruct redirect_uri from forwarded headers (must match browser's original)
+    forwarded_proto = request.headers.get("x-forwarded-proto", "https")
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host", "helix.local")
+    redirect_uri = f"{forwarded_proto}://{forwarded_host}/camper/callback"
+
+    logger.info(f"Camper token exchange redirect_uri: {redirect_uri}")
+
+    token_endpoint = f"{keycloak_internal_url}/realms/{realm}/protocol/openid-connect/token"
+
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            response = await client.post(
+                token_endpoint,
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": client_id,
+                    "code": code,
+                    "redirect_uri": redirect_uri
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+
+            if response.status_code != 200:
+                logger.error(f"Camper token exchange failed: {response.status_code} - {response.text}")
+                return RedirectResponse(url="/camper?error=token_exchange_failed")
+
+            tokens = response.json()
+            access_token = tokens.get("access_token")
+
+            if not access_token:
+                logger.error("Camper: No access_token in response")
+                return RedirectResponse(url="/camper?error=no_token")
+
+            logger.info("Camper OAuth callback successful, redirecting to dashboard")
+            return RedirectResponse(url=f"/camper/dashboard#token={access_token}")
+
+    except Exception as e:
+        logger.error(f"Camper token exchange exception: {e}")
+        return RedirectResponse(url="/camper?error=token_exchange_error")
+
+
+@html_router.get("/camper/dashboard", response_class=HTMLResponse, name="camper_dashboard")
+async def camper_dashboard_page(request: Request):
+    """Dashboard - Morning overview for Nino"""
+    return templates.TemplateResponse("camper/dashboard.html", {"request": request})
+
+
+@html_router.get("/camper/checkin", response_class=HTMLResponse, name="camper_checkin")
+async def camper_checkin_page(request: Request):
+    """Vehicle check-in - plate search + registration"""
+    return templates.TemplateResponse("camper/checkin.html", {"request": request})
+
+
+@html_router.get("/camper/jobs", response_class=HTMLResponse, name="camper_jobs")
+async def camper_jobs_page(request: Request):
+    """Job board - filterable list of all service jobs"""
+    return templates.TemplateResponse("camper/jobs.html", {"request": request})
+
+
+@html_router.get("/camper/jobs/new", response_class=HTMLResponse, name="camper_job_new")
+async def camper_job_new_page(request: Request):
+    """New job - create a quotation"""
+    return templates.TemplateResponse("camper/job_detail.html", {"request": request})
+
+
+@html_router.get("/camper/jobs/{job_id}", response_class=HTMLResponse, name="camper_job_detail")
+async def camper_job_detail_page(request: Request, job_id: str):
+    """Job detail - view, edit, advance status"""
+    return templates.TemplateResponse("camper/job_detail.html", {"request": request})
+
+
+@html_router.get("/camper/customers", response_class=HTMLResponse, name="camper_customers")
+async def camper_customers_page(request: Request):
+    """Customer lookup - search and manage profiles"""
+    return templates.TemplateResponse("camper/customers.html", {"request": request})

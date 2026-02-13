@@ -1,0 +1,243 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Cruscotto - Camper & Tour{% endblock %}
+{% block page_name %}Cruscotto{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="dashboardData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+
+                <!-- Nav Links -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-gray-900" x-text="user.username"></p>
+                        <p class="text-xs text-gray-500" x-text="user.roles.filter(r => r.startsWith('camper-')).join(', ')"></p>
+                    </div>
+                    <button @click="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        Esci
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Welcome -->
+        <div class="card mb-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+            <h2 class="text-2xl font-bold mb-1" x-text="`Buongiorno, ${user.firstName || user.username}!`"></h2>
+            <p class="opacity-90">Ecco la situazione di oggi.</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Veicoli in Officina</p>
+                <p class="text-3xl font-bold text-amber-600" x-text="stats.vehicles_in_shop"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Lavori in Corso</p>
+                <p class="text-3xl font-bold text-blue-600" x-text="stats.jobs_in_progress"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Attesa Ricambi</p>
+                <p class="text-3xl font-bold text-red-600" x-text="stats.jobs_waiting_parts"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Preventivi da Approvare</p>
+                <p class="text-3xl font-bold text-purple-600" x-text="stats.pending_quotes"></p>
+            </div>
+        </div>
+
+        <!-- Active Jobs -->
+        <div class="card mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Lavori Attivi</h3>
+                <a href="/camper/jobs" class="text-amber-600 hover:text-amber-700 text-sm font-medium">Vedi tutti &rarr;</a>
+            </div>
+
+            <template x-if="activeJobs.length === 0">
+                <p class="text-gray-500 text-center py-8">Nessun lavoro attivo al momento.</p>
+            </template>
+
+            <div class="overflow-x-auto" x-show="activeJobs.length > 0">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                            <th class="pb-3 pr-4">Lavoro</th>
+                            <th class="pb-3 pr-4">Veicolo</th>
+                            <th class="pb-3 pr-4">Titolo</th>
+                            <th class="pb-3 pr-4">Assegnato a</th>
+                            <th class="pb-3 pr-4">Stato</th>
+                            <th class="pb-3">Giorni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="job in activeJobs" :key="job.id">
+                            <tr class="border-b hover:bg-gray-50 cursor-pointer" @click="window.location.href='/camper/jobs/' + job.id">
+                                <td class="py-3 pr-4 text-sm font-mono text-gray-700" x-text="job.job_number"></td>
+                                <td class="py-3 pr-4">
+                                    <span class="text-sm font-semibold text-gray-900" x-text="getVehiclePlate(job.vehicle_id)"></span>
+                                </td>
+                                <td class="py-3 pr-4 text-sm text-gray-700" x-text="job.title"></td>
+                                <td class="py-3 pr-4 text-sm text-gray-600" x-text="job.assigned_to || '-'"></td>
+                                <td class="py-3 pr-4">
+                                    <span class="badge" :class="'badge-' + job.status" x-text="JOB_STATUS_LABELS[job.status] || job.status"></span>
+                                </td>
+                                <td class="py-3 text-sm text-gray-600" x-text="daysSince(job.created_at)"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="/camper/checkin" class="card hover:shadow-xl transition text-center py-6" x-show="user.isCounter">
+                <span class="text-4xl block mb-2">&#x1F699;</span>
+                <h3 class="text-lg font-bold text-gray-900">Check-In</h3>
+                <p class="text-sm text-gray-500">Accetta veicolo</p>
+            </a>
+
+            <a href="/camper/jobs/new" class="card hover:shadow-xl transition text-center py-6" x-show="user.isCounter">
+                <span class="text-4xl block mb-2">&#x1F4DD;</span>
+                <h3 class="text-lg font-bold text-gray-900">Preventivo</h3>
+                <p class="text-sm text-gray-500">Nuovo lavoro</p>
+            </a>
+
+            <a href="/camper/checkin" class="card hover:shadow-xl transition text-center py-6">
+                <span class="text-4xl block mb-2">&#x1F50D;</span>
+                <h3 class="text-lg font-bold text-gray-900">Cerca Targa</h3>
+                <p class="text-sm text-gray-500">Ricerca veicolo</p>
+            </a>
+
+            <a href="/camper/customers" class="card hover:shadow-xl transition text-center py-6">
+                <span class="text-4xl block mb-2">&#x1F465;</span>
+                <h3 class="text-lg font-bold text-gray-900">Clienti</h3>
+                <p class="text-sm text-gray-500">Gestione clienti</p>
+            </a>
+        </div>
+    </main>
+</div>
+
+<script>
+    function dashboardData() {
+        return {
+            user: {
+                username: '', firstName: '', roles: [],
+                isAdmin: false, isManager: false, isMechanic: false, isCounter: false
+            },
+            stats: {
+                vehicles_in_shop: 0, jobs_in_progress: 0,
+                jobs_waiting_parts: 0, pending_quotes: 0,
+                jobs_completed_today: 0, total_jobs: 0
+            },
+            activeJobs: [],
+            vehicleMap: {},
+
+            init() {
+                // Check for token in URL fragment (from OAuth callback)
+                const hash = window.location.hash;
+                if (hash && hash.includes('token=')) {
+                    const tokenFromUrl = hash.split('token=')[1];
+                    if (tokenFromUrl) {
+                        CamperAuth.setToken(tokenFromUrl);
+                        window.history.replaceState({}, document.title, '/camper/dashboard');
+                        showToast('Login effettuato!', 'success');
+                    }
+                }
+
+                const token = CamperAuth.getToken();
+                if (!token) {
+                    window.location.href = '/camper';
+                    return;
+                }
+
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) {
+                    showToast('Accesso non autorizzato.', 'error');
+                    setTimeout(() => CamperAuth.logout(), 2000);
+                    return;
+                }
+
+                this.user = {
+                    ...userInfo,
+                    isAdmin: CamperAuth.isAdmin(),
+                    isManager: CamperAuth.isManager(),
+                    isMechanic: CamperAuth.isMechanic(),
+                    isCounter: CamperAuth.isCounter()
+                };
+
+                this.loadDashboard();
+                this.loadActiveJobs();
+            },
+
+            async loadDashboard() {
+                try {
+                    this.stats = await API.get('/api/v1/camper/dashboard');
+                } catch (e) {
+                    console.error('Dashboard load failed:', e);
+                }
+            },
+
+            async loadActiveJobs() {
+                try {
+                    // Load in-progress and waiting-parts jobs
+                    const inProgress = await API.get('/api/v1/camper/jobs?status_filter=in_progress');
+                    const waitingParts = await API.get('/api/v1/camper/jobs?status_filter=waiting_parts');
+                    const quoted = await API.get('/api/v1/camper/jobs?status_filter=quoted');
+                    this.activeJobs = [...inProgress, ...waitingParts, ...quoted];
+
+                    // Load vehicles for plate display
+                    const vehicles = await API.get('/api/v1/camper/vehicles');
+                    vehicles.forEach(v => { this.vehicleMap[v.id] = v.registration_plate; });
+                } catch (e) {
+                    console.error('Active jobs load failed:', e);
+                }
+            },
+
+            getVehiclePlate(vehicleId) {
+                return this.vehicleMap[vehicleId] || '...';
+            },
+
+            daysSince(dateStr) {
+                if (!dateStr) return '-';
+                const days = Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
+                return days + 'g';
+            },
+
+            logout() {
+                if (confirm('Vuoi uscire?')) {
+                    showToast('Disconnessione...', 'info');
+                    setTimeout(() => CamperAuth.logout(), 500);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

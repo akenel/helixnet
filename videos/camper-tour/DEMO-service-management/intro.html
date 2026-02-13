@@ -29,7 +29,7 @@ body::before {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(217,119,6,0.15) 0%, transparent 70%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -47,21 +47,13 @@ body::before {
   text-transform: uppercase;
   margin-bottom: 30px;
 }
-.helix { color: #0078D4; }
-.episode {
-  font-size: 18px;
-  font-weight: 400;
-  color: #555;
-  letter-spacing: 6px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
+.helix { color: #d97706; }
 .title {
   font-size: 64px;
   font-weight: 700;
   color: #fff;
   letter-spacing: 2px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 .subtitle {
   font-size: 22px;
@@ -73,17 +65,17 @@ body::before {
 .divider {
   width: 120px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #0078D4, transparent);
+  background: linear-gradient(90deg, transparent, #d97706, transparent);
   margin: 0 auto 40px;
 }
-.flows {
+.features {
   display: flex;
   gap: 30px;
   justify-content: center;
   flex-wrap: wrap;
   max-width: 1200px;
 }
-.flow {
+.feature {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
@@ -91,70 +83,66 @@ body::before {
   text-align: center;
   min-width: 160px;
 }
-.flow .icon {
+.feature .icon {
   font-size: 24px;
   margin-bottom: 6px;
   display: block;
 }
-.flow .name {
+.feature .name {
   color: #ccc;
   font-size: 14px;
   letter-spacing: 1px;
   margin-bottom: 3px;
 }
-.flow .type {
+.feature .type {
   color: #555;
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
+}
+.location {
+  margin-top: 50px;
+  font-size: 14px;
+  color: #444;
+  letter-spacing: 3px;
 }
 </style>
 </head>
 <body>
   <div class="glow"></div>
   <div class="content">
-    <div class="brand"><span class="helix">Helix</span>Net Keycloak Series</div>
-    <div class="episode">Episode 7</div>
-    <div class="title">Authentication Flows</div>
-    <div class="subtitle">Seven Flows, Eleven Actions, One Security Pipeline</div>
+    <div class="brand"><span class="helix">Helix</span>Net Platform Demo</div>
+    <div class="title">Camper &amp; Tour</div>
+    <div class="subtitle">Service Management System</div>
     <div class="divider"></div>
-    <div class="flows">
-      <div class="flow">
-        <span class="icon">&#x1F310;</span>
-        <div class="name">Browser</div>
-        <div class="type">Interactive Login</div>
+    <div class="features">
+      <div class="feature">
+        <span class="icon">&#x1F698;</span>
+        <div class="name">Vehicles</div>
+        <div class="type">Plate Lookup</div>
       </div>
-      <div class="flow">
-        <span class="icon">&#x1F4BB;</span>
-        <div class="name">Direct Grant</div>
-        <div class="type">API / CLI</div>
+      <div class="feature">
+        <span class="icon">&#x1F527;</span>
+        <div class="name">Service Jobs</div>
+        <div class="type">Quote to Invoice</div>
       </div>
-      <div class="flow">
-        <span class="icon">&#x1F4DD;</span>
-        <div class="name">Registration</div>
-        <div class="type">New Users</div>
+      <div class="feature">
+        <span class="icon">&#x1F4CB;</span>
+        <div class="name">Dashboard</div>
+        <div class="type">Morning Overview</div>
       </div>
-      <div class="flow">
+      <div class="feature">
+        <span class="icon">&#x1F465;</span>
+        <div class="name">Customers</div>
+        <div class="type">History + Spend</div>
+      </div>
+      <div class="feature">
         <span class="icon">&#x1F512;</span>
-        <div class="name">Reset Credentials</div>
-        <div class="type">Password Recovery</div>
-      </div>
-      <div class="flow">
-        <span class="icon">&#x1F517;</span>
-        <div class="name">First Broker</div>
-        <div class="type">Identity Federation</div>
-      </div>
-      <div class="flow">
-        <span class="icon">&#x1F433;</span>
-        <div class="name">Docker Auth</div>
-        <div class="type">Container Registry</div>
-      </div>
-      <div class="flow">
-        <span class="icon">&#x1F511;</span>
-        <div class="name">Clients</div>
-        <div class="type">Service Auth</div>
+        <div class="name">RBAC</div>
+        <div class="type">Keycloak SSO</div>
       </div>
     </div>
+    <div class="location">Via F. Culcasi, 4 &mdash; Trapani, Sicily</div>
   </div>
 </body>
 </html>

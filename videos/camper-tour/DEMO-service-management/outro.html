@@ -29,7 +29,7 @@ body::before {
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,120,212,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(217,119,6,0.12) 0%, transparent 70%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -46,7 +46,7 @@ body::before {
   letter-spacing: 4px;
   margin-bottom: 10px;
 }
-.helix { color: #0078D4; }
+.helix { color: #d97706; }
 .tagline {
   font-size: 18px;
   font-weight: 300;
@@ -58,7 +58,7 @@ body::before {
 .divider {
   width: 80px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #0078D4, transparent);
+  background: linear-gradient(90deg, transparent, #d97706, transparent);
   margin: 0 auto 50px;
 }
 .recap-label {
@@ -81,7 +81,7 @@ body::before {
 .stat-number {
   font-size: 36px;
   font-weight: 700;
-  color: #0078D4;
+  color: #d97706;
   margin-bottom: 4px;
 }
 .stat-label {
@@ -90,20 +90,14 @@ body::before {
   letter-spacing: 3px;
   text-transform: uppercase;
 }
-.next-label {
-  font-size: 14px;
-  font-weight: 400;
-  color: #555;
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-.next-title {
-  font-size: 32px;
-  font-weight: 600;
-  color: #ccc;
+.quote {
+  font-size: 20px;
+  font-weight: 300;
+  color: #888;
+  font-style: italic;
   letter-spacing: 1px;
-  margin-bottom: 60px;
+  margin-bottom: 50px;
+  max-width: 700px;
 }
 .footer {
   font-size: 14px;
@@ -111,7 +105,7 @@ body::before {
   letter-spacing: 2px;
 }
 .footer a {
-  color: #0078D4;
+  color: #d97706;
   text-decoration: none;
 }
 </style>
@@ -119,31 +113,30 @@ body::before {
 <body>
   <div class="glow"></div>
   <div class="content">
-    <div class="brand"><span class="helix">Helix</span>Net</div>
-    <div class="tagline">Enterprise Platform for Swiss SMEs</div>
+    <div class="brand"><span class="helix">Camper</span> &amp; Tour</div>
+    <div class="tagline">Service Management System</div>
     <div class="divider"></div>
-    <div class="recap-label">Episode 7 Recap</div>
+    <div class="recap-label">What You Just Saw</div>
     <div class="stats">
       <div class="stat">
-        <div class="stat-number">7</div>
-        <div class="stat-label">Auth Flows</div>
-      </div>
-      <div class="stat">
-        <div class="stat-number">11</div>
-        <div class="stat-label">Required Actions</div>
-      </div>
-      <div class="stat">
-        <div class="stat-number">5</div>
-        <div class="stat-label">Policy Types</div>
+        <div class="stat-number">4</div>
+        <div class="stat-label">Customers</div>
       </div>
       <div class="stat">
         <div class="stat-number">4</div>
-        <div class="stat-label">Requirement Levels</div>
+        <div class="stat-label">Vehicles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Service Jobs</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">6</div>
+        <div class="stat-label">Workflow Steps</div>
       </div>
     </div>
-    <div class="next-label">Next Episode</div>
-    <div class="next-title">EP8 &mdash; Multi-Tenant Platform</div>
-    <div class="footer">github.com/akenel/helixnet</div>
+    <div class="quote">"Casa &egrave; dove parcheggi." &mdash; Home is where you park it.</div>
+    <div class="footer">Built on <span style="color: #d97706;">HelixNet</span> &mdash; helixnet.ch</div>
   </div>
 </body>
 </html>
