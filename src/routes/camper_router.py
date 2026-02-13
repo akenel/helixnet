@@ -87,11 +87,10 @@ async def create_vehicle(
             detail=f"Vehicle with plate '{vehicle.registration_plate}' already registered"
         )
 
-    new_vehicle = CamperVehicleModel(
-        **vehicle.model_dump(),
-        registration_plate=vehicle.registration_plate.upper(),
-        status=VehicleStatus.CHECKED_IN,
-    )
+    vehicle_data = vehicle.model_dump()
+    vehicle_data["registration_plate"] = vehicle_data["registration_plate"].upper()
+    vehicle_data["status"] = VehicleStatus.CHECKED_IN
+    new_vehicle = CamperVehicleModel(**vehicle_data)
     db.add(new_vehicle)
     await db.commit()
     await db.refresh(new_vehicle)
@@ -342,11 +341,10 @@ async def create_job(
     count = count_result.scalar() or 0
     job_number = f"JOB-{today}-{count + 1:04d}"
 
-    new_job = CamperServiceJobModel(
-        **job.model_dump(),
-        job_number=job_number,
-        status=JobStatus.QUOTED,
-    )
+    job_data = job.model_dump()
+    job_data["job_number"] = job_number
+    job_data["status"] = JobStatus.QUOTED
+    new_job = CamperServiceJobModel(**job_data)
     db.add(new_job)
     await db.commit()
     await db.refresh(new_job)

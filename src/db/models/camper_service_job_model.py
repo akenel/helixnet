@@ -94,12 +94,12 @@ class CamperServiceJobModel(Base):
 
     # Classification
     job_type: Mapped[JobType] = mapped_column(
-        SQLEnum(JobType),
+        SQLEnum(JobType, name='camper_job_type', create_constraint=True),
         nullable=False,
         default=JobType.REPAIR
     )
     status: Mapped[JobStatus] = mapped_column(
-        SQLEnum(JobStatus),
+        SQLEnum(JobStatus, name='camper_job_status', create_constraint=True),
         default=JobStatus.QUOTED,
         nullable=False,
         index=True

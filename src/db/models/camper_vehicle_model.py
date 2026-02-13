@@ -66,7 +66,7 @@ class CamperVehicleModel(Base):
         comment="VIN / chassis number"
     )
     vehicle_type: Mapped[VehicleType] = mapped_column(
-        SQLEnum(VehicleType),
+        SQLEnum(VehicleType, name='camper_vehicle_type', create_constraint=True),
         nullable=False,
         default=VehicleType.CAMPERVAN
     )
@@ -127,7 +127,7 @@ class CamperVehicleModel(Base):
 
     # Status
     status: Mapped[VehicleStatus] = mapped_column(
-        SQLEnum(VehicleStatus),
+        SQLEnum(VehicleStatus, name='camper_vehicle_status', create_constraint=True),
         default=VehicleStatus.PICKED_UP,
         nullable=False
     )
