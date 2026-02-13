@@ -247,6 +247,37 @@ def require_manager_or_admin():
 
 
 # ================================================================
+# Camper & Tour Role Helpers (Sebastino's Shop)
+# ================================================================
+
+def require_any_camper_role():
+    """Any authenticated Camper & Tour staff."""
+    return require_roles([
+        "camper-counter",
+        "camper-mechanic",
+        "camper-manager",
+        "camper-admin",
+    ])
+
+
+def require_camper_mechanic_or_above():
+    """Mechanic, manager, or admin at Camper & Tour."""
+    return require_roles([
+        "camper-mechanic",
+        "camper-manager",
+        "camper-admin",
+    ])
+
+
+def require_camper_manager_or_admin():
+    """Manager or admin only at Camper & Tour."""
+    return require_roles([
+        "camper-manager",
+        "camper-admin",
+    ])
+
+
+# ================================================================
 # Helper: Get current user from database (optional)
 # ================================================================
 

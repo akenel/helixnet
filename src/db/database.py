@@ -30,6 +30,10 @@ from src.db.models import (  # noqa: F401
     TimeEntryModel,
     PayrollRunModel,
     PaySlipModel,
+    # Camper & Tour Service Management
+    CamperVehicleModel,
+    CamperCustomerModel,
+    CamperServiceJobModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

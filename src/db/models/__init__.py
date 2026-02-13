@@ -52,6 +52,11 @@ from .customs_clearance_model import CustomsClearanceModel, CustomsStatus
 from .maintenance_event_model import MaintenanceEventModel, MaintenanceType, MaintenanceStatus
 from .equipment_acquisition_model import EquipmentAcquisitionModel, AcquisitionType, AcquisitionStatus, UrgencyLevel
 
+# Camper & Tour Service Management (Sebastino's Shop, Trapani)
+from .camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
+from .camper_customer_model import CamperCustomerModel, CustomerLanguage
+from .camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
+
 __all__ = [
     "Base",
     "UserModel",
@@ -132,4 +137,13 @@ __all__ = [
     "AcquisitionType",
     "AcquisitionStatus",
     "UrgencyLevel",
+    # Camper & Tour Service Management
+    "CamperVehicleModel",
+    "VehicleType",
+    "VehicleStatus",
+    "CamperCustomerModel",
+    "CustomerLanguage",
+    "CamperServiceJobModel",
+    "JobType",
+    "JobStatus",
 ]

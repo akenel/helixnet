@@ -40,6 +40,8 @@ from src.routes.customer_router import router as customer_router
 from src.routes.kb_router import router as kb_router
 from src.routes.admin_router import router as admin_router
 from src.routes.hr_router import router as hr_router
+from src.routes.camper_router import router as camper_router
+from src.services.camper_seeding_service import seed_camper_data
 
 # ================================================================
 # 🌍 Global Configuration
@@ -141,6 +143,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ HR seeding encountered an issue: {e}", exc_info=True)
 
+    # --- Seed Camper & Tour Data (Sebastino's Shop, Trapani) ---
+    try:
+        logger.info("Seeding Camper & Tour service data...")
+        async with get_db_session_context() as db:
+            await seed_camper_data(db)
+        logger.info("Camper & Tour seeding completed successfully.")
+    except Exception as e:
+        logger.warning(f"Camper & Tour seeding encountered an issue: {e}", exc_info=True)
+
     # --- Keycloak Realm Health Check ---
     try:
         realm_status = await check_keycloak_realms()
@@ -218,6 +229,7 @@ app.include_router(kb_router, tags=["📚 KB Contributions - Knowledge is Gold"]
 app.include_router(admin_router, prefix=settings.API_V1_STR, tags=["👑 Admin - Role Management"])
 app.include_router(hr_router, tags=["HR - Time & Payroll (BLQ Module)"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
+app.include_router(camper_router, tags=["Camper & Tour - Service Management"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")
 logger.info(f"🔗 API base path: {settings.API_V1_STR}")
