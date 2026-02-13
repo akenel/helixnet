@@ -1,0 +1,62 @@
+ISOTTO Sport -- Print Shop Management System | Full Demo
+
+A real print shop deserves real software. Not spreadsheets. Not WhatsApp threads. Not paper notebooks with coffee stains.
+
+ISOTTO Sport has been printing in Trapani, Sicily since 1968. This demo shows a complete CRM and order management system built specifically for their workflow -- from the moment a customer walks in with a postcard idea to the final invoice.
+
+Every order in this demo is real. The Pizza Planet 4-UP postcards? Printed. The Camper & Tour tent cards? Delivered. The customer data, the pricing, the print specifications -- all from actual jobs run through ISOTTO's shop.
+
+CHAPTERS:
+0:00 Intro
+0:04 Scene 1 -- Login & Dashboard
+0:11 Keycloak SSO Login + Morning Dashboard
+0:32 Scene 2 -- Order Management
+0:39 7 Orders with Real Trapani Clients
+0:55 Scene 3 -- Order Detail
+1:02 Pizza Planet 4-UP Postcards (Full Print Specs)
+1:28 Scene 4 -- New Quote
+1:35 Creating a New Order: Piccolo Bistratto Table Cards
+2:03 Scene 5 -- Status Workflow
+2:10 Hotel PuntaTipa Postcard Set (Quote to Production)
+2:19 Scene 6 -- Customer Management
+2:26 4 Trapani Businesses + Search + Order History
+2:41 Scene 7 -- Access Control (RBAC)
+2:48 Different User, Different Permissions (Keycloak Roles)
+3:18 Outro
+
+WHAT THIS SYSTEM DOES:
+
+Morning Dashboard -- Famous (the owner) opens one screen and sees everything: orders in production, pending approvals, ready for pickup, completed today. No asking around the shop. No checking three different notebooks.
+
+Order Management -- Seven print jobs across the full lifecycle. Postcards, business cards, menus, sticker labels. Filter by status, product type, or search by name. Color-coded badges show status at a glance.
+
+Print Specifications -- This is what makes it a print shop system, not a generic CRM. Paper weight (250gsm card stock), color mode (CMYK full color), duplex settings (short-edge flip), lamination, cutting instructions. The complete spec sheet -- digitally.
+
+8-Step Order Lifecycle -- Quote, Approved, In Production, Quality Check, Ready, Picked Up, Invoiced, Cancelled. Every transition logged with a timestamp. From the counter to the press to the pickup shelf.
+
+Customer Intelligence -- Search by name, company, phone, or email. See total spend, order count, full history. Angelo Kenel -- 4 orders, EUR 85 total. Every customer, every euro, tracked from day one.
+
+Role-Based Access Control -- Giulia at the front desk creates orders and looks up customers. She cannot approve quotes, change production status, or see pricing controls. The counter sees what the counter needs. The boss sees everything. Five roles: counter, designer, operator, manager, admin.
+
+BUILT WITH:
+- FastAPI + SQLAlchemy (Python backend)
+- Keycloak OIDC authentication (JWT RS256, 5 staff roles)
+- Jinja2 templates (server-rendered HTML)
+- Docker Compose (single command deployment)
+- Built on HelixNet -- helixnet.ch
+
+DEMO CREDENTIALS (self-hosted Keycloak):
+famousguy / helix_pass -- Owner (full access)
+giulia_f / helix_pass -- Front desk (orders + customers only)
+luca_p / helix_pass -- Machine operator (production + quality)
+marco_d / helix_pass -- Designer + counter (pre-press + intake)
+
+MUSIC:
+Van Morrison -- Into the Mystic
+
+---
+ISOTTO Sport
+Trapani, Sicily -- Since 1968
+
+Replace the notebook. Keep the craft.
+"The postcard is the handshake. The coffee is the close."
