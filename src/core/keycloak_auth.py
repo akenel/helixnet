@@ -177,7 +177,7 @@ def extract_roles(token_payload: dict) -> List[str]:
     roles = realm_access.get("roles", [])
 
     # Known application role prefixes across all realms
-    app_prefixes = ("pos-", "camper-")
+    app_prefixes = ("pos-", "camper-", "isotto-")
 
     # Keep any role that matches an app prefix (plain or emoji-prefixed)
     app_roles = [r for r in roles if any(prefix in r for prefix in app_prefixes)]

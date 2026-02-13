@@ -477,16 +477,11 @@ async function main() {
   // ================================================================
   console.log('\n--- SCENE 9: RBAC Demo -- Giulia (Counter) ---');
 
-  // Logout first
-  try {
-    await page.evaluate(() => {
-      // Clear the token
-      sessionStorage.removeItem('isotto_token');
-    });
-    console.log('  Token cleared, redirecting to login...');
-  } catch (e) {
-    console.log('  Token clear failed');
-  }
+  // Clear ALL cookies (kills KC SSO session) + app token
+  const cdpClient = await page.target().createCDPSession();
+  await cdpClient.send('Network.clearBrowserCookies');
+  await page.evaluate(() => sessionStorage.removeItem('isotto_token'));
+  console.log('  All cookies + token cleared');
 
   // Go to login page
   await page.goto(`${PRINT_URL}`, { waitUntil: 'networkidle2', timeout: 15000 });
