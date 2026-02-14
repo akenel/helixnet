@@ -4,7 +4,7 @@ Pydantic schemas for Camper & Tour Service Management.
 Used for request validation and response serialization.
 Following the pos_schema.py pattern exactly.
 """
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
@@ -187,6 +187,7 @@ class ServiceJobUpdate(BaseModel):
     follow_up_required: Optional[bool] = None
     follow_up_notes: Optional[str] = None
     next_service_date: Optional[date] = None
+    deposit_required: Optional[Decimal] = Field(None, ge=0)
     # Optimistic locking: client sends the updated_at it read, server rejects if stale
     expected_updated_at: Optional[datetime] = Field(None, description="Send the updated_at you read. Rejects if another write happened since.")
 
@@ -259,6 +260,12 @@ class QuotationLineItem(BaseModel):
     line_total: Decimal = Field(default=Decimal("0.00"), ge=0)
     item_type: str = Field(default="labor", description="labor, parts, or materials")
 
+    @model_validator(mode="after")
+    def calc_line_total(self):
+        """Auto-calculate line_total = quantity * unit_price (always)"""
+        self.line_total = (Decimal(str(self.quantity)) * self.unit_price).quantize(Decimal("0.01"))
+        return self
+
 
 class QuotationCreate(BaseModel):
     """Schema for creating a quotation"""
@@ -321,6 +328,12 @@ class POLineItem(BaseModel):
     quantity: float = Field(default=1, ge=0)
     unit_price: Decimal = Field(default=Decimal("0.00"), ge=0)
     line_total: Decimal = Field(default=Decimal("0.00"), ge=0)
+
+    @model_validator(mode="after")
+    def calc_line_total(self):
+        """Auto-calculate line_total = quantity * unit_price (always)"""
+        self.line_total = (Decimal(str(self.quantity)) * self.unit_price).quantize(Decimal("0.01"))
+        return self
 
 
 class PurchaseOrderCreate(BaseModel):

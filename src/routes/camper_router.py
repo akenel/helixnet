@@ -732,7 +732,20 @@ async def record_deposit(
     if not job:
         raise HTTPException(status_code=404, detail="Service job not found")
 
-    job.deposit_paid = job.deposit_paid + deposit.amount
+    if deposit.amount <= 0:
+        raise HTTPException(status_code=422, detail="L'importo del deposito deve essere positivo")
+
+    new_total = (job.deposit_paid or Decimal("0")) + deposit.amount
+    if job.deposit_required and job.deposit_required > 0 and new_total > job.deposit_required:
+        remaining = job.deposit_required - (job.deposit_paid or Decimal("0"))
+        raise HTTPException(
+            status_code=422,
+            detail=f"Deposito eccessivo: richiesto {job.deposit_required:.2f} EUR, "
+                   f"già versato {job.deposit_paid:.2f} EUR, "
+                   f"massimo accettabile {remaining:.2f} EUR"
+        )
+
+    job.deposit_paid = new_total
     job.deposit_paid_at = datetime.now(timezone.utc)
     job.updated_at = datetime.now(timezone.utc)
 
@@ -1327,12 +1340,18 @@ async def create_invoice(
     subtotal = sum(Decimal(str(item.line_total)) for item in invoice.line_items)
     vat_amount = (subtotal * invoice.vat_rate / Decimal("100")).quantize(Decimal("0.01"))
     total = subtotal + vat_amount
-    amount_due = total - invoice.deposit_applied
+
+    # Cap deposit_applied to total (never go negative)
+    deposit_applied = min(invoice.deposit_applied, total)
+    amount_due = total - deposit_applied
 
     # Determine payment status based on deposit
-    payment_status = PaymentStatus.PENDING
-    if invoice.deposit_applied > Decimal("0"):
+    if amount_due <= Decimal("0"):
+        payment_status = PaymentStatus.PAID
+    elif deposit_applied > Decimal("0"):
         payment_status = PaymentStatus.DEPOSIT_PAID
+    else:
+        payment_status = PaymentStatus.PENDING
 
     new_invoice = CamperInvoiceModel(
         invoice_number=invoice_number,
@@ -1344,7 +1363,7 @@ async def create_invoice(
         vat_rate=invoice.vat_rate,
         vat_amount=vat_amount,
         total=total,
-        deposit_applied=invoice.deposit_applied,
+        deposit_applied=deposit_applied,
         amount_due=amount_due,
         payment_status=payment_status,
         due_date=invoice.due_date,
