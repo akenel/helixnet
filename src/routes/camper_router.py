@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFi
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, DateTime as SADateTime
 from datetime import datetime, date, timezone, timedelta
 from decimal import Decimal
 from uuid import UUID
@@ -24,7 +24,9 @@ import io
 from src.db.database import get_db_session
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleStatus
 from src.db.models.camper_customer_model import CamperCustomerModel
+from src.db.models.camper_bay_model import CamperBayModel
 from src.db.models.camper_service_job_model import CamperServiceJobModel, JobStatus
+from src.db.models.camper_work_log_model import CamperWorkLogModel, LogType
 from src.db.models.camper_quotation_model import CamperQuotationModel, QuotationStatus
 from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
 from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
@@ -32,12 +34,15 @@ from src.db.models.camper_document_model import CamperDocumentModel
 from src.schemas.camper_schema import (
     VehicleCreate, VehicleUpdate, VehicleRead, VehicleStatusUpdate,
     CamperCustomerCreate, CamperCustomerUpdate, CamperCustomerRead,
+    BayCreate, BayUpdate, BayResponse,
     ServiceJobCreate, ServiceJobUpdate, ServiceJobRead, ServiceJobStatusUpdate,
+    WorkLogCreate, WorkLogResponse, WaitStart, WaitEnd,
     QuotationCreate, QuotationUpdate, QuotationRead,
     PurchaseOrderCreate, PurchaseOrderUpdate, PurchaseOrderRead, POStatusUpdate,
     InvoiceCreate, InvoiceRead, InvoicePayment,
     DocumentRead, CalendarEvent,
     InspectionResult, DepositPayment,
+    BayTimelineEntry, BayTimelineResponse,
     DashboardSummary,
 )
 from src.core.keycloak_auth import require_roles
@@ -91,6 +96,32 @@ def require_camper_manager_or_admin():
         "camper-manager",
         "camper-admin",
     ])
+
+
+async def _enrich_job_response(job: CamperServiceJobModel, db: AsyncSession) -> ServiceJobRead:
+    """Build ServiceJobRead with computed fields (bay_name, total_logged_hours)"""
+    bay_name = None
+    if job.bay_id:
+        bay_result = await db.execute(
+            select(CamperBayModel.name).where(CamperBayModel.id == job.bay_id)
+        )
+        bay_name = bay_result.scalar_one_or_none()
+
+    total_hours_result = await db.execute(
+        select(func.coalesce(func.sum(CamperWorkLogModel.hours), 0)).where(
+            and_(
+                CamperWorkLogModel.job_id == job.id,
+                CamperWorkLogModel.log_type == LogType.WORK,
+            )
+        )
+    )
+    total_logged_hours = float(total_hours_result.scalar() or 0)
+
+    # Build from ORM attributes + computed fields
+    data = {c.key: getattr(job, c.key) for c in job.__table__.columns}
+    data["bay_name"] = bay_name
+    data["total_logged_hours"] = total_logged_hours
+    return ServiceJobRead.model_validate(data)
 
 
 # ================================================================
@@ -379,7 +410,7 @@ async def create_job(
     await db.refresh(new_job)
 
     logger.info(f"Service job created: {job_number} by {current_user['username']}")
-    return new_job
+    return await _enrich_job_response(new_job, db)
 
 
 @router.get("/jobs", response_model=list[ServiceJobRead])
@@ -414,7 +445,8 @@ async def list_jobs(
 
     query = query.order_by(CamperServiceJobModel.created_at.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
-    return result.scalars().all()
+    jobs = result.scalars().all()
+    return [await _enrich_job_response(j, db) for j in jobs]
 
 
 @router.get("/jobs/{job_id}", response_model=ServiceJobRead)
@@ -430,7 +462,7 @@ async def get_job(
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Service job not found")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 @router.put("/jobs/{job_id}", response_model=ServiceJobRead)
@@ -470,7 +502,7 @@ async def update_job(
     await db.refresh(job)
 
     logger.info(f"Job updated: {job.job_number} by {current_user['username']}")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 @router.patch("/jobs/{job_id}/status", response_model=ServiceJobRead)
@@ -502,7 +534,7 @@ async def update_job_status(
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number}: {old_status.value} -> {status_update.status.value} by {current_user['username']}")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 @router.post("/jobs/{job_id}/approve", response_model=ServiceJobRead)
@@ -531,7 +563,7 @@ async def approve_job(
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number} APPROVED by {current_user['username']}")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 @router.post("/jobs/{job_id}/complete", response_model=ServiceJobRead)
@@ -577,7 +609,7 @@ async def complete_job(
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number} COMPLETED by {current_user['username']}: {job.actual_total} EUR")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 # ================================================================
@@ -610,7 +642,7 @@ async def submit_for_inspection(
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number} submitted for INSPECTION by {current_user['username']}")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 @router.post("/jobs/{job_id}/pass-inspection", response_model=ServiceJobRead)
@@ -676,7 +708,7 @@ async def pass_inspection(
     except Exception as e:
         logger.warning(f"Failed to send job complete notification: {e}")
 
-    return job
+    return await _enrich_job_response(job, db)
 
 
 @router.post("/jobs/{job_id}/fail-inspection", response_model=ServiceJobRead)
@@ -712,7 +744,7 @@ async def fail_inspection(
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number} FAILED inspection by {current_user['username']}: {result_data.notes}")
-    return job
+    return await _enrich_job_response(job, db)
 
 
 # ================================================================
@@ -779,7 +811,7 @@ async def record_deposit(
     except Exception as e:
         logger.warning(f"Failed to send deposit notification: {e}")
 
-    return job
+    return await _enrich_job_response(job, db)
 
 
 # ================================================================
@@ -1584,6 +1616,480 @@ async def delete_document(
 
 
 # ================================================================
+# BAY MANAGEMENT ENDPOINTS (manager+ only)
+# ================================================================
+
+@router.get("/bays", response_model=list[BayResponse])
+async def list_bays(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """List all service bays, ordered by display_order"""
+    result = await db.execute(
+        select(CamperBayModel).order_by(CamperBayModel.display_order, CamperBayModel.name)
+    )
+    bays = result.scalars().all()
+
+    responses = []
+    for bay in bays:
+        # Count active jobs in this bay
+        job_count_result = await db.execute(
+            select(func.count()).where(
+                and_(
+                    CamperServiceJobModel.bay_id == bay.id,
+                    CamperServiceJobModel.status.in_([
+                        JobStatus.APPROVED, JobStatus.IN_PROGRESS,
+                        JobStatus.WAITING_PARTS, JobStatus.INSPECTION,
+                    ])
+                )
+            )
+        )
+        current_jobs = job_count_result.scalar() or 0
+
+        responses.append(BayResponse(
+            id=bay.id,
+            name=bay.name,
+            bay_type=bay.bay_type,
+            description=bay.description,
+            is_active=bay.is_active,
+            display_order=bay.display_order,
+            current_jobs=current_jobs,
+            created_at=bay.created_at,
+            updated_at=bay.updated_at,
+        ))
+
+    return responses
+
+
+@router.post("/bays", response_model=BayResponse, status_code=status.HTTP_201_CREATED)
+async def create_bay(
+    bay_data: BayCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Create a new service bay"""
+    bay = CamperBayModel(
+        name=bay_data.name,
+        bay_type=bay_data.bay_type,
+        description=bay_data.description,
+        display_order=bay_data.display_order,
+    )
+    db.add(bay)
+    await db.commit()
+    await db.refresh(bay)
+
+    logger.info(f"Bay created: '{bay.name}' by {current_user['username']}")
+
+    return BayResponse(
+        id=bay.id,
+        name=bay.name,
+        bay_type=bay.bay_type,
+        description=bay.description,
+        is_active=bay.is_active,
+        display_order=bay.display_order,
+        current_jobs=0,
+        created_at=bay.created_at,
+        updated_at=bay.updated_at,
+    )
+
+
+@router.patch("/bays/{bay_id}", response_model=BayResponse)
+async def update_bay(
+    bay_id: UUID,
+    bay_data: BayUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Update a service bay"""
+    result = await db.execute(
+        select(CamperBayModel).where(CamperBayModel.id == bay_id)
+    )
+    bay = result.scalar_one_or_none()
+    if not bay:
+        raise HTTPException(status_code=404, detail="Bay non trovato")
+
+    update_data = bay_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(bay, field, value)
+
+    await db.commit()
+    await db.refresh(bay)
+
+    # Count active jobs
+    job_count_result = await db.execute(
+        select(func.count()).where(
+            and_(
+                CamperServiceJobModel.bay_id == bay.id,
+                CamperServiceJobModel.status.in_([
+                    JobStatus.APPROVED, JobStatus.IN_PROGRESS,
+                    JobStatus.WAITING_PARTS, JobStatus.INSPECTION,
+                ])
+            )
+        )
+    )
+    current_jobs = job_count_result.scalar() or 0
+
+    logger.info(f"Bay updated: '{bay.name}' by {current_user['username']}")
+
+    return BayResponse(
+        id=bay.id,
+        name=bay.name,
+        bay_type=bay.bay_type,
+        description=bay.description,
+        is_active=bay.is_active,
+        display_order=bay.display_order,
+        current_jobs=current_jobs,
+        created_at=bay.created_at,
+        updated_at=bay.updated_at,
+    )
+
+
+@router.delete("/bays/{bay_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deactivate_bay(
+    bay_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Deactivate a service bay (soft delete -- jobs may reference it)"""
+    result = await db.execute(
+        select(CamperBayModel).where(CamperBayModel.id == bay_id)
+    )
+    bay = result.scalar_one_or_none()
+    if not bay:
+        raise HTTPException(status_code=404, detail="Bay non trovato")
+
+    bay.is_active = False
+    await db.commit()
+
+    logger.info(f"Bay deactivated: '{bay.name}' by {current_user['username']}")
+
+
+# ================================================================
+# WORK LOG ENDPOINTS (mechanic+ only)
+# ================================================================
+
+@router.post("/jobs/{job_id}/work-log", response_model=WorkLogResponse, status_code=status.HTTP_201_CREATED)
+async def log_work(
+    job_id: UUID,
+    log_data: WorkLogCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_mechanic_or_above()),
+):
+    """Log a work session on a job. Hours + what was done."""
+    # Verify job exists
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Lavoro non trovato")
+
+    if log_data.hours is None or log_data.hours <= 0:
+        raise HTTPException(status_code=400, detail="Le ore sono obbligatorie per le registrazioni di lavoro")
+
+    # Validate bay_id if provided
+    if log_data.bay_id:
+        bay_result = await db.execute(
+            select(CamperBayModel).where(CamperBayModel.id == log_data.bay_id)
+        )
+        if not bay_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Bay non trovato")
+
+    work_log = CamperWorkLogModel(
+        job_id=job_id,
+        bay_id=log_data.bay_id,
+        log_type=LogType.WORK,
+        hours=log_data.hours,
+        notes=log_data.notes,
+        logged_by=current_user["username"],
+    )
+    db.add(work_log)
+
+    # Auto-update actual_hours on the job (sum of all WORK logs)
+    total_hours_result = await db.execute(
+        select(func.sum(CamperWorkLogModel.hours)).where(
+            and_(
+                CamperWorkLogModel.job_id == job_id,
+                CamperWorkLogModel.log_type == LogType.WORK,
+            )
+        )
+    )
+    total_logged = (total_hours_result.scalar() or 0) + log_data.hours
+    job.actual_hours = total_logged
+
+    await db.commit()
+    await db.refresh(work_log)
+
+    logger.info(f"Work logged: {log_data.hours}h on {job.job_number} by {current_user['username']}")
+
+    return WorkLogResponse(
+        id=work_log.id,
+        job_id=work_log.job_id,
+        bay_id=work_log.bay_id,
+        log_type=work_log.log_type,
+        hours=work_log.hours,
+        notes=work_log.notes,
+        wait_reason=work_log.wait_reason,
+        logged_by=work_log.logged_by,
+        logged_at=work_log.logged_at,
+        created_at=work_log.created_at,
+    )
+
+
+@router.get("/jobs/{job_id}/work-log", response_model=list[WorkLogResponse])
+async def get_work_logs(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Get all work log entries for a job, chronological"""
+    # Verify job exists
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    if not job_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Lavoro non trovato")
+
+    result = await db.execute(
+        select(CamperWorkLogModel)
+        .where(CamperWorkLogModel.job_id == job_id)
+        .order_by(CamperWorkLogModel.logged_at)
+    )
+    logs = result.scalars().all()
+
+    return [
+        WorkLogResponse(
+            id=log.id,
+            job_id=log.job_id,
+            bay_id=log.bay_id,
+            log_type=log.log_type,
+            hours=log.hours,
+            notes=log.notes,
+            wait_reason=log.wait_reason,
+            logged_by=log.logged_by,
+            logged_at=log.logged_at,
+            created_at=log.created_at,
+        )
+        for log in logs
+    ]
+
+
+# ================================================================
+# WAIT TRACKING ENDPOINTS (mechanic+ only)
+# ================================================================
+
+@router.post("/jobs/{job_id}/wait", response_model=WorkLogResponse, status_code=status.HTTP_201_CREATED)
+async def start_wait(
+    job_id: UUID,
+    wait_data: WaitStart,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_mechanic_or_above()),
+):
+    """Mark a job as waiting. Creates WAIT_START log entry."""
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Lavoro non trovato")
+
+    if job.current_wait_reason:
+        raise HTTPException(status_code=400, detail="Il lavoro e gia in attesa")
+
+    # Create WAIT_START log entry
+    work_log = CamperWorkLogModel(
+        job_id=job_id,
+        bay_id=job.bay_id,
+        log_type=LogType.WAIT_START,
+        notes=wait_data.notes or f"In attesa: {wait_data.reason}",
+        wait_reason=wait_data.reason,
+        logged_by=current_user["username"],
+    )
+    db.add(work_log)
+
+    # Set wait fields on job
+    job.current_wait_reason = wait_data.reason
+    job.current_wait_until = wait_data.estimated_resume
+
+    await db.commit()
+    await db.refresh(work_log)
+
+    logger.info(f"Wait started on {job.job_number}: '{wait_data.reason}' by {current_user['username']}")
+
+    return WorkLogResponse(
+        id=work_log.id,
+        job_id=work_log.job_id,
+        bay_id=work_log.bay_id,
+        log_type=work_log.log_type,
+        hours=work_log.hours,
+        notes=work_log.notes,
+        wait_reason=work_log.wait_reason,
+        logged_by=work_log.logged_by,
+        logged_at=work_log.logged_at,
+        created_at=work_log.created_at,
+    )
+
+
+@router.post("/jobs/{job_id}/resume", response_model=WorkLogResponse, status_code=status.HTTP_201_CREATED)
+async def end_wait(
+    job_id: UUID,
+    resume_data: WaitEnd,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_mechanic_or_above()),
+):
+    """Resume work on a waiting job. Creates WAIT_END log entry."""
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Lavoro non trovato")
+
+    if not job.current_wait_reason:
+        raise HTTPException(status_code=400, detail="Il lavoro non e in attesa")
+
+    # Create WAIT_END log entry
+    work_log = CamperWorkLogModel(
+        job_id=job_id,
+        bay_id=job.bay_id,
+        log_type=LogType.WAIT_END,
+        notes=resume_data.notes,
+        logged_by=current_user["username"],
+    )
+    db.add(work_log)
+
+    # Clear wait fields on job
+    job.current_wait_reason = None
+    job.current_wait_until = None
+
+    await db.commit()
+    await db.refresh(work_log)
+
+    logger.info(f"Wait ended on {job.job_number} by {current_user['username']}")
+
+    return WorkLogResponse(
+        id=work_log.id,
+        job_id=work_log.job_id,
+        bay_id=work_log.bay_id,
+        log_type=work_log.log_type,
+        hours=work_log.hours,
+        notes=work_log.notes,
+        wait_reason=work_log.wait_reason,
+        logged_by=work_log.logged_by,
+        logged_at=work_log.logged_at,
+        created_at=work_log.created_at,
+    )
+
+
+# ================================================================
+# BAY TIMELINE ENDPOINT
+# ================================================================
+
+@router.get("/bay-timeline", response_model=list[BayTimelineResponse])
+async def get_bay_timeline(
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Bay timeline: all active bays with their job entries for the date range"""
+    # Parse dates (default to current week)
+    today = date.today()
+    try:
+        start_date = date.fromisoformat(start) if start else today - timedelta(days=today.weekday())
+    except ValueError:
+        start_date = today - timedelta(days=today.weekday())
+
+    try:
+        end_date = date.fromisoformat(end) if end else start_date + timedelta(days=6)
+    except ValueError:
+        end_date = start_date + timedelta(days=6)
+
+    # Get all active bays
+    bays_result = await db.execute(
+        select(CamperBayModel)
+        .where(CamperBayModel.is_active == True)
+        .order_by(CamperBayModel.display_order, CamperBayModel.name)
+    )
+    bays = bays_result.scalars().all()
+
+    # Status colors
+    status_colors = {
+        JobStatus.QUOTED: "#9CA3AF",
+        JobStatus.APPROVED: "#3B82F6",
+        JobStatus.IN_PROGRESS: "#F59E0B",
+        JobStatus.WAITING_PARTS: "#EF4444",
+        JobStatus.INSPECTION: "#8B5CF6",
+        JobStatus.COMPLETED: "#10B981",
+        JobStatus.INVOICED: "#6366F1",
+        JobStatus.CANCELLED: "#6B7280",
+    }
+
+    timeline = []
+    for bay in bays:
+        # Find jobs assigned to this bay that overlap with the date range
+        # A job overlaps if: job.start_date <= end_date AND job.end_date >= start_date
+        # Fall back to scheduled_date for single-day jobs
+        jobs_result = await db.execute(
+            select(CamperServiceJobModel).where(
+                and_(
+                    CamperServiceJobModel.bay_id == bay.id,
+                    CamperServiceJobModel.status.notin_([JobStatus.CANCELLED, JobStatus.INVOICED]),
+                    # Job has date range that overlaps with requested range
+                    CamperServiceJobModel.start_date.isnot(None),
+                    CamperServiceJobModel.start_date <= end_date,
+                    CamperServiceJobModel.end_date >= start_date,
+                )
+            ).order_by(CamperServiceJobModel.start_date)
+        )
+        jobs = jobs_result.scalars().all()
+
+        # Also get jobs with only scheduled_date (no start_date/end_date yet)
+        scheduled_only_result = await db.execute(
+            select(CamperServiceJobModel).where(
+                and_(
+                    CamperServiceJobModel.bay_id == bay.id,
+                    CamperServiceJobModel.status.notin_([JobStatus.CANCELLED, JobStatus.INVOICED]),
+                    CamperServiceJobModel.start_date.is_(None),
+                    CamperServiceJobModel.scheduled_date.isnot(None),
+                    CamperServiceJobModel.scheduled_date >= start_date,
+                    CamperServiceJobModel.scheduled_date <= end_date,
+                )
+            ).order_by(CamperServiceJobModel.scheduled_date)
+        )
+        scheduled_jobs = scheduled_only_result.scalars().all()
+
+        entries = []
+        for job in list(jobs) + list(scheduled_jobs):
+            # Eagerly load vehicle and customer for display
+            await db.refresh(job, ["vehicle", "customer"])
+
+            job_start = job.start_date or job.scheduled_date
+            job_end = job.end_date or job.start_date or job.scheduled_date
+
+            entries.append(BayTimelineEntry(
+                job_id=str(job.id),
+                job_number=job.job_number,
+                vehicle_plate=job.vehicle.registration_plate if job.vehicle else "???",
+                customer_name=job.customer.name if job.customer else "???",
+                status=job.status.value,
+                start_date=job_start.isoformat() if job_start else "",
+                end_date=job_end.isoformat() if job_end else "",
+                wait_reason=job.current_wait_reason,
+                color=status_colors.get(job.status, "#9CA3AF"),
+            ))
+
+        timeline.append(BayTimelineResponse(
+            bay_id=str(bay.id),
+            bay_name=bay.name,
+            bay_type=bay.bay_type.value,
+            entries=entries,
+        ))
+
+    return timeline
+
+
+# ================================================================
 # CALENDAR ENDPOINT
 # ================================================================
 
@@ -1594,28 +2100,41 @@ async def get_calendar(
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_camper_role()),
 ):
-    """Jobs with scheduled_date in range as calendar events"""
-    query = select(CamperServiceJobModel).where(
-        CamperServiceJobModel.scheduled_date.isnot(None)
+    """Jobs as calendar events. Uses start_date/end_date for multi-day bars, falls back to scheduled_date."""
+    try:
+        range_start = date.fromisoformat(start) if start else None
+    except ValueError:
+        range_start = None
+    try:
+        range_end = date.fromisoformat(end) if end else None
+    except ValueError:
+        range_end = None
+
+    # Get jobs with start_date/end_date (multi-day)
+    multi_day_query = select(CamperServiceJobModel).where(
+        CamperServiceJobModel.start_date.isnot(None)
     )
+    if range_start:
+        multi_day_query = multi_day_query.where(CamperServiceJobModel.end_date >= range_start)
+    if range_end:
+        multi_day_query = multi_day_query.where(CamperServiceJobModel.start_date <= range_end)
 
-    if start:
-        try:
-            start_date = date.fromisoformat(start)
-            query = query.where(CamperServiceJobModel.scheduled_date >= start_date)
-        except ValueError:
-            pass
+    # Get jobs with only scheduled_date (single-day, backwards compat)
+    single_day_query = select(CamperServiceJobModel).where(
+        and_(
+            CamperServiceJobModel.start_date.is_(None),
+            CamperServiceJobModel.scheduled_date.isnot(None),
+        )
+    )
+    if range_start:
+        single_day_query = single_day_query.where(CamperServiceJobModel.scheduled_date >= range_start)
+    if range_end:
+        single_day_query = single_day_query.where(CamperServiceJobModel.scheduled_date <= range_end)
 
-    if end:
-        try:
-            end_date = date.fromisoformat(end)
-            query = query.where(CamperServiceJobModel.scheduled_date <= end_date)
-        except ValueError:
-            pass
-
-    query = query.order_by(CamperServiceJobModel.scheduled_date)
-    result = await db.execute(query)
-    jobs = result.scalars().all()
+    multi_result = await db.execute(multi_day_query)
+    single_result = await db.execute(single_day_query)
+    multi_jobs = multi_result.scalars().all()
+    single_jobs = single_result.scalars().all()
 
     # Color-code by status
     status_colors = {
@@ -1630,7 +2149,28 @@ async def get_calendar(
     }
 
     events = []
-    for job in jobs:
+
+    # Multi-day jobs: use start_date and end_date+1 (FullCalendar end is exclusive)
+    for job in multi_jobs:
+        fc_end = (job.end_date + timedelta(days=1)).isoformat() if job.end_date else None
+        events.append(CalendarEvent(
+            id=str(job.id),
+            title=f"{job.job_number}: {job.title}",
+            start=job.start_date.isoformat(),
+            end=fc_end,
+            color=status_colors.get(job.status, "#9CA3AF"),
+            url=f"/camper/jobs/{job.id}",
+            extendedProps={
+                "status": job.status.value,
+                "assigned_to": job.assigned_to or "",
+                "job_number": job.job_number,
+                "waiting": bool(job.current_wait_reason),
+                "wait_reason": job.current_wait_reason or "",
+            }
+        ))
+
+    # Single-day jobs (backwards compat): scheduled_date only
+    for job in single_jobs:
         events.append(CalendarEvent(
             id=str(job.id),
             title=f"{job.job_number}: {job.title}",
@@ -1641,6 +2181,8 @@ async def get_calendar(
                 "status": job.status.value,
                 "assigned_to": job.assigned_to or "",
                 "job_number": job.job_number,
+                "waiting": bool(job.current_wait_reason),
+                "wait_reason": job.current_wait_reason or "",
             }
         ))
 
@@ -1743,10 +2285,58 @@ async def get_dashboard(
     )
     jobs_in_inspection = inspection_result.scalar() or 0
 
+    # Jobs currently waiting (have active wait reason)
+    waiting_result = await db.execute(
+        select(func.count()).where(
+            CamperServiceJobModel.current_wait_reason.isnot(None)
+        )
+    )
+    jobs_waiting = waiting_result.scalar() or 0
+
+    # Bay utilization: % of active bays that have at least one active job
+    active_bays_result = await db.execute(
+        select(func.count()).where(CamperBayModel.is_active == True)
+    )
+    active_bays = active_bays_result.scalar() or 0
+
+    if active_bays > 0:
+        occupied_bays_result = await db.execute(
+            select(func.count(func.distinct(CamperServiceJobModel.bay_id))).where(
+                and_(
+                    CamperServiceJobModel.bay_id.isnot(None),
+                    CamperServiceJobModel.status.in_([
+                        JobStatus.APPROVED, JobStatus.IN_PROGRESS,
+                        JobStatus.WAITING_PARTS, JobStatus.INSPECTION,
+                    ])
+                )
+            )
+        )
+        occupied_bays = occupied_bays_result.scalar() or 0
+        bay_utilization = round((occupied_bays / active_bays) * 100, 1)
+    else:
+        bay_utilization = 0
+
+    # Average days per completed job (start_date to completed_at)
+    avg_days_result = await db.execute(
+        select(func.avg(
+            func.extract('epoch', CamperServiceJobModel.completed_at) -
+            func.extract('epoch', func.cast(CamperServiceJobModel.start_date, SADateTime(timezone=True)))
+        )).where(
+            and_(
+                CamperServiceJobModel.status.in_([JobStatus.COMPLETED, JobStatus.INVOICED]),
+                CamperServiceJobModel.start_date.isnot(None),
+                CamperServiceJobModel.completed_at.isnot(None),
+            )
+        )
+    )
+    avg_seconds = avg_days_result.scalar()
+    average_days_per_job = round(avg_seconds / 86400, 1) if avg_seconds else 0
+
     return DashboardSummary(
         vehicles_in_shop=vehicles_in_shop,
         jobs_in_progress=jobs_in_progress,
         jobs_waiting_parts=jobs_waiting_parts,
+        jobs_waiting=jobs_waiting,
         jobs_completed_today=jobs_completed_today,
         pending_quotes=pending_quotes,
         total_jobs=total_jobs,
@@ -1754,6 +2344,8 @@ async def get_dashboard(
         total_revenue_month=total_revenue_month,
         overdue_invoices=overdue_invoices,
         jobs_in_inspection=jobs_in_inspection,
+        bay_utilization=bay_utilization,
+        average_days_per_job=average_days_per_job,
     )
 
 
@@ -1894,3 +2486,9 @@ async def camper_invoices_page(request: Request):
 async def camper_calendar_page(request: Request):
     """Calendar view"""
     return templates.TemplateResponse("camper/calendar.html", {"request": request})
+
+
+@html_router.get("/camper/bay-timeline", response_class=HTMLResponse, name="camper_bay_timeline")
+async def camper_bay_timeline_page(request: Request):
+    """Bay timeline view - CSS Grid resource timeline"""
+    return templates.TemplateResponse("camper/bay_timeline.html", {"request": request})

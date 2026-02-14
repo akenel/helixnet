@@ -93,6 +93,15 @@ class CamperServiceJobModel(Base):
         index=True
     )
 
+    # Bay assignment (which physical workspace)
+    bay_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('camper_bays.id'),
+        nullable=True,
+        index=True,
+        comment="Current bay assignment"
+    )
+
     # Classification
     job_type: Mapped[JobType] = mapped_column(
         SQLEnum(JobType, name='camper_job_type', create_constraint=True),
@@ -151,6 +160,21 @@ class CamperServiceJobModel(Base):
 
     # Timeline
     scheduled_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    estimated_days: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Calendar days expected (not labor hours)"
+    )
+    start_date: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+        comment="First day of work"
+    )
+    end_date: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+        comment="Expected completion date"
+    )
     started_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
@@ -159,6 +183,18 @@ class CamperServiceJobModel(Base):
     )
     picked_up_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+
+    # Wait tracking
+    current_wait_reason: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="Set when waiting, cleared when work resumes"
+    )
+    current_wait_until: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+        comment="Estimated resume date"
     )
 
     # Documentation
@@ -218,9 +254,11 @@ class CamperServiceJobModel(Base):
     # Relationships
     vehicle: Mapped["CamperVehicleModel"] = relationship(back_populates="service_jobs")
     customer: Mapped["CamperCustomerModel"] = relationship(back_populates="service_jobs")
+    bay: Mapped["CamperBayModel"] = relationship(back_populates="service_jobs", foreign_keys=[bay_id])
     quotations: Mapped[list["CamperQuotationModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
     purchase_orders: Mapped[list["CamperPurchaseOrderModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
     invoices: Mapped[list["CamperInvoiceModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
+    work_logs: Mapped[list["CamperWorkLogModel"]] = relationship(back_populates="job", cascade="all, delete-orphan", order_by="CamperWorkLogModel.logged_at")
 
     def __repr__(self):
         return f"<CamperServiceJob(number='{self.job_number}', title='{self.title}', status={self.status})>"

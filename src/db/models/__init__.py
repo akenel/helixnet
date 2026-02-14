@@ -55,7 +55,9 @@ from .equipment_acquisition_model import EquipmentAcquisitionModel, AcquisitionT
 # Camper & Tour Service Management (Sebastino's Shop, Trapani)
 from .camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
 from .camper_customer_model import CamperCustomerModel, CustomerLanguage
+from .camper_bay_model import CamperBayModel, BayType
 from .camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
+from .camper_work_log_model import CamperWorkLogModel, LogType
 from .camper_quotation_model import CamperQuotationModel, QuotationStatus
 from .camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
 from .camper_invoice_model import CamperInvoiceModel, PaymentStatus
@@ -151,9 +153,13 @@ __all__ = [
     "VehicleStatus",
     "CamperCustomerModel",
     "CustomerLanguage",
+    "CamperBayModel",
+    "BayType",
     "CamperServiceJobModel",
     "JobType",
     "JobStatus",
+    "CamperWorkLogModel",
+    "LogType",
     "CamperQuotationModel",
     "QuotationStatus",
     "CamperPurchaseOrderModel",

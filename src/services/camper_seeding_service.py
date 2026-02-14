@@ -17,7 +17,9 @@ from sqlalchemy import select
 
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
 from src.db.models.camper_customer_model import CamperCustomerModel, CustomerLanguage
+from src.db.models.camper_bay_model import CamperBayModel, BayType
 from src.db.models.camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
+from src.db.models.camper_work_log_model import CamperWorkLogModel, LogType
 from src.db.models.camper_quotation_model import CamperQuotationModel, QuotationStatus
 from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
 from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
@@ -186,6 +188,43 @@ async def seed_camper_data(db: AsyncSession) -> None:
     await db.flush()
 
     # ================================================================
+    # SERVICE BAYS
+    # ================================================================
+    bay_1 = CamperBayModel(
+        name="Bay 1",
+        bay_type=BayType.GENERAL,
+        description="Main service bay - large vehicles, general repairs",
+        display_order=1,
+    )
+    bay_2 = CamperBayModel(
+        name="Bay 2",
+        bay_type=BayType.GENERAL,
+        description="Secondary bay - smaller vehicles, routine maintenance",
+        display_order=2,
+    )
+    bay_electrical = CamperBayModel(
+        name="Electrical Bay",
+        bay_type=BayType.ELECTRICAL,
+        description="Solar, batteries, 12V/230V systems",
+        display_order=3,
+    )
+    bay_bodywork = CamperBayModel(
+        name="Bodywork Bay",
+        bay_type=BayType.BODYWORK,
+        description="Paint, panel repair, seals, waterproofing",
+        display_order=4,
+    )
+    bay_wash = CamperBayModel(
+        name="Wash Bay",
+        bay_type=BayType.WASH,
+        description="Pre-delivery wash and detail",
+        display_order=5,
+    )
+
+    db.add_all([bay_1, bay_2, bay_electrical, bay_bodywork, bay_wash])
+    await db.flush()
+
+    # ================================================================
     # SERVICE JOBS
     # ================================================================
 
@@ -206,9 +245,13 @@ async def seed_camper_data(db: AsyncSession) -> None:
         job_type=JobType.INSPECTION,
         status=JobStatus.IN_PROGRESS,
         assigned_to="Sebastino",
+        bay_id=bay_bodywork.id,
         estimated_hours=80,
         estimated_parts_cost=Decimal("3000.00"),
         estimated_total=Decimal("5800.00"),
+        estimated_days=30,
+        start_date=date(2026, 2, 6),
+        end_date=date(2026, 3, 8),
         actual_hours=16,
         actual_parts_cost=Decimal("0.00"),
         actual_labor_cost=Decimal("560.00"),
@@ -217,6 +260,8 @@ async def seed_camper_data(db: AsyncSession) -> None:
         started_at=datetime(2026, 2, 6, 9, 0, tzinfo=timezone.utc),
         parts_on_order=True,
         parts_po_number="PO-20260210-0001",
+        current_wait_reason="Waiting for Dometic window seals (shipping from Germany)",
+        current_wait_until=date(2026, 2, 18),
         deposit_required=Decimal("1450.00"),
         deposit_paid=Decimal("1450.00"),
         deposit_paid_at=datetime(2026, 2, 7, 10, 0, tzinfo=timezone.utc),
@@ -252,9 +297,13 @@ async def seed_camper_data(db: AsyncSession) -> None:
         job_type=JobType.MAINTENANCE,
         status=JobStatus.INVOICED,
         assigned_to="Maximo",
+        bay_id=bay_2.id,
         estimated_hours=4,
         estimated_parts_cost=Decimal("120.00"),
         estimated_total=Decimal("260.00"),
+        estimated_days=1,
+        start_date=date(2026, 1, 20),
+        end_date=date(2026, 1, 20),
         actual_hours=3.5,
         actual_parts_cost=Decimal("115.00"),
         actual_labor_cost=Decimal("122.50"),
@@ -364,9 +413,13 @@ async def seed_camper_data(db: AsyncSession) -> None:
         job_type=JobType.REPAIR,
         status=JobStatus.APPROVED,
         assigned_to="Maximo",
+        bay_id=bay_1.id,
         estimated_hours=6,
         estimated_parts_cost=Decimal("350.00"),
         estimated_total=Decimal("560.00"),
+        estimated_days=2,
+        start_date=date.today() + timedelta(days=3),
+        end_date=date.today() + timedelta(days=4),
         scheduled_date=date.today() + timedelta(days=3),
         deposit_required=Decimal("140.00"),
         deposit_paid=Decimal("140.00"),
@@ -374,6 +427,80 @@ async def seed_camper_data(db: AsyncSession) -> None:
     )
 
     db.add_all([max_seal_job, marco_service, hans_plumbing, sophie_inspection, max_electrical, upcoming_job])
+    await db.flush()
+
+    # ================================================================
+    # WORK LOGS (v3 - audit trail)
+    # ================================================================
+
+    # MAX seal job work logs
+    db.add_all([
+        CamperWorkLogModel(
+            job_id=max_seal_job.id,
+            bay_id=bay_bodywork.id,
+            log_type=LogType.WORK,
+            hours=4.0,
+            notes="Removed interior ceiling panels. Photographed extent of water damage.",
+            logged_by="sebastino",
+            logged_at=datetime(2026, 2, 6, 13, 0, tzinfo=timezone.utc),
+        ),
+        CamperWorkLogModel(
+            job_id=max_seal_job.id,
+            bay_id=bay_bodywork.id,
+            log_type=LogType.WORK,
+            hours=6.0,
+            notes="Full strip-out of damaged insulation. Assessed structural integrity of roof frame.",
+            logged_by="sebastino",
+            logged_at=datetime(2026, 2, 7, 17, 0, tzinfo=timezone.utc),
+        ),
+        CamperWorkLogModel(
+            job_id=max_seal_job.id,
+            bay_id=bay_bodywork.id,
+            log_type=LogType.WORK,
+            hours=3.0,
+            notes="Measured replacement panels. Prepared purchase order for Fiamma seals.",
+            logged_by="sebastino",
+            logged_at=datetime(2026, 2, 10, 12, 0, tzinfo=timezone.utc),
+        ),
+        CamperWorkLogModel(
+            job_id=max_seal_job.id,
+            bay_id=bay_bodywork.id,
+            log_type=LogType.WORK,
+            hours=3.0,
+            notes="Treated exposed wood frame with anti-fungal. Prepared mounting surfaces.",
+            logged_by="sebastino",
+            logged_at=datetime(2026, 2, 11, 16, 0, tzinfo=timezone.utc),
+        ),
+        CamperWorkLogModel(
+            job_id=max_seal_job.id,
+            bay_id=bay_bodywork.id,
+            log_type=LogType.WAIT_START,
+            notes="In attesa: Waiting for Dometic window seals (shipping from Germany)",
+            wait_reason="Waiting for Dometic window seals (shipping from Germany)",
+            logged_by="nino",
+            logged_at=datetime(2026, 2, 12, 9, 0, tzinfo=timezone.utc),
+        ),
+        # Hans plumbing work log
+        CamperWorkLogModel(
+            job_id=hans_plumbing.id,
+            bay_id=bay_1.id,
+            log_type=LogType.WORK,
+            hours=2.5,
+            notes="Replaced Shurflo pump with Fiamma Aqua 8. Tested all connections. No leaks.",
+            logged_by="seppi",
+            logged_at=datetime(2026, 2, 1, 12, 30, tzinfo=timezone.utc),
+        ),
+        # Marco annual service work log
+        CamperWorkLogModel(
+            job_id=marco_service.id,
+            bay_id=bay_2.id,
+            log_type=LogType.WORK,
+            hours=3.5,
+            notes="Oil change, filter replacement, front brake pad replacement, tire rotation, fluid top-up.",
+            logged_by="maximo",
+            logged_at=datetime(2026, 1, 20, 12, 0, tzinfo=timezone.utc),
+        ),
+    ])
     await db.flush()
 
     # ================================================================
@@ -528,16 +655,18 @@ async def seed_camper_data(db: AsyncSession) -> None:
     db.add(marco_invoice)
     await db.commit()
 
-    logger.info("Camper & Tour seeding completed! (v2)")
+    logger.info("Camper & Tour seeding completed! (v3 - calendar scheduling)")
     logger.info("  - 4 customers (Angel, Marco, Hans, Sophie)")
     logger.info("  - 4 vehicles (MAX, Ducato Maxi, California, Eriba)")
-    logger.info("  - 6 service jobs:")
-    logger.info("    - MAX roof seal (IN_PROGRESS -- the real story)")
-    logger.info("    - Marco annual service (INVOICED)")
+    logger.info("  - 5 service bays (Bay 1, Bay 2, Electrical, Bodywork, Wash)")
+    logger.info("  - 6 service jobs (with bay assignments + start/end dates):")
+    logger.info("    - MAX roof seal (IN_PROGRESS, Bodywork Bay, waiting for parts)")
+    logger.info("    - Marco annual service (INVOICED, Bay 2)")
     logger.info("    - Hans plumbing emergency (COMPLETED)")
     logger.info("    - Sophie gas inspection (QUOTED)")
     logger.info("    - MAX solar install (QUOTED)")
-    logger.info("    - Marco brake overhaul (APPROVED, scheduled)")
+    logger.info("    - Marco brake overhaul (APPROVED, Bay 1, scheduled)")
+    logger.info("  - 7 work logs (audit trail for MAX, Hans, Marco)")
     logger.info("  - 2 quotations (1 accepted, 1 sent)")
     logger.info("  - 2 purchase orders (1 shipped, 1 received)")
     logger.info("  - 1 invoice (paid)")

@@ -12,7 +12,9 @@ from typing import Optional, Any
 
 from src.db.models.camper_vehicle_model import VehicleType, VehicleStatus
 from src.db.models.camper_customer_model import CustomerLanguage
+from src.db.models.camper_bay_model import BayType
 from src.db.models.camper_service_job_model import JobType, JobStatus
+from src.db.models.camper_work_log_model import LogType
 from src.db.models.camper_quotation_model import QuotationStatus
 from src.db.models.camper_purchase_order_model import CamperPOStatus
 from src.db.models.camper_invoice_model import PaymentStatus
@@ -136,6 +138,42 @@ class CamperCustomerRead(CamperCustomerBase):
 
 
 # ================================================================
+# BAY SCHEMAS
+# ================================================================
+
+class BayCreate(BaseModel):
+    """Schema for creating a service bay"""
+    name: str = Field(..., max_length=100, description="Display name: 'Bay 1', 'Electrical Bay'")
+    bay_type: BayType = Field(default=BayType.GENERAL)
+    description: Optional[str] = None
+    display_order: int = Field(default=0, ge=0)
+
+
+class BayUpdate(BaseModel):
+    """Schema for updating a bay (all fields optional)"""
+    name: Optional[str] = Field(None, max_length=100)
+    bay_type: Optional[BayType] = None
+    description: Optional[str] = None
+    display_order: Optional[int] = Field(None, ge=0)
+    is_active: Optional[bool] = None
+
+
+class BayResponse(BaseModel):
+    """Schema for reading a bay"""
+    id: UUID
+    name: str
+    bay_type: BayType
+    description: Optional[str] = None
+    is_active: bool
+    display_order: int
+    current_jobs: int = Field(default=0, description="Count of active jobs in this bay")
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
 # SERVICE JOB SCHEMAS
 # ================================================================
 
@@ -147,11 +185,15 @@ class ServiceJobBase(BaseModel):
     customer_id: UUID
     job_type: JobType = Field(default=JobType.REPAIR)
     assigned_to: Optional[str] = Field(None, max_length=100, description="Mechanic name")
+    bay_id: Optional[UUID] = Field(None, description="Current bay assignment")
     estimated_hours: float = Field(default=0, ge=0)
     estimated_parts_cost: Decimal = Field(default=Decimal("0.00"), ge=0)
     estimated_total: Decimal = Field(default=Decimal("0.00"), ge=0)
     quote_valid_until: Optional[date] = None
     scheduled_date: Optional[date] = None
+    estimated_days: Optional[int] = Field(None, ge=1, description="Calendar days expected")
+    start_date: Optional[date] = Field(None, description="First day of work")
+    end_date: Optional[date] = Field(None, description="Expected completion date")
     customer_notes: Optional[str] = None
 
 
@@ -177,7 +219,11 @@ class ServiceJobUpdate(BaseModel):
     parts_used: Optional[str] = None
     parts_on_order: Optional[bool] = None
     parts_po_number: Optional[str] = Field(None, max_length=50)
+    bay_id: Optional[UUID] = None
     scheduled_date: Optional[date] = None
+    estimated_days: Optional[int] = Field(None, ge=1)
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     issue_found: Optional[str] = None
     work_performed: Optional[str] = None
     before_photos: Optional[str] = None
@@ -208,6 +254,16 @@ class ServiceJobRead(BaseModel):
     job_type: JobType
     status: JobStatus
     assigned_to: Optional[str] = None
+    # Bay & scheduling
+    bay_id: Optional[UUID] = None
+    bay_name: Optional[str] = Field(None, description="Populated from bay relationship")
+    estimated_days: Optional[int] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    current_wait_reason: Optional[str] = None
+    current_wait_until: Optional[date] = None
+    total_logged_hours: float = Field(default=0, description="Sum of work log hours")
+    # Estimation
     estimated_hours: float
     estimated_parts_cost: Decimal
     estimated_total: Decimal
@@ -497,6 +553,74 @@ class DepositPayment(BaseModel):
 
 
 # ================================================================
+# WORK LOG SCHEMAS
+# ================================================================
+
+class WorkLogCreate(BaseModel):
+    """Schema for logging a work session"""
+    hours: Optional[float] = Field(None, ge=0, description="Hours worked (required for WORK type)")
+    notes: str = Field(..., min_length=1, description="What was done")
+    bay_id: Optional[UUID] = Field(None, description="Which bay the work was done in")
+
+
+class WorkLogResponse(BaseModel):
+    """Schema for reading a work log entry"""
+    id: UUID
+    job_id: UUID
+    bay_id: Optional[UUID] = None
+    log_type: LogType
+    hours: Optional[float] = None
+    notes: str
+    wait_reason: Optional[str] = None
+    logged_by: str
+    logged_at: datetime
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# WAIT TRACKING SCHEMAS
+# ================================================================
+
+class WaitStart(BaseModel):
+    """Schema for marking a job as waiting"""
+    reason: str = Field(..., min_length=1, description="e.g., 'Glue curing', 'Parts on order'")
+    estimated_resume: Optional[date] = Field(None, description="When work can resume")
+    notes: Optional[str] = Field(None, description="Additional context")
+
+
+class WaitEnd(BaseModel):
+    """Schema for resuming work on a waiting job"""
+    notes: str = Field(..., min_length=1, description="What changed / ready to resume")
+
+
+# ================================================================
+# BAY TIMELINE SCHEMAS
+# ================================================================
+
+class BayTimelineEntry(BaseModel):
+    """A job entry on the bay timeline"""
+    job_id: str
+    job_number: str
+    vehicle_plate: str
+    customer_name: str
+    status: str
+    start_date: str
+    end_date: str
+    wait_reason: Optional[str] = None
+    color: str
+
+
+class BayTimelineResponse(BaseModel):
+    """A bay row on the timeline with its job entries"""
+    bay_id: str
+    bay_name: str
+    bay_type: str
+    entries: list[BayTimelineEntry] = Field(default_factory=list)
+
+
+# ================================================================
 # DASHBOARD SCHEMA
 # ================================================================
 
@@ -505,6 +629,7 @@ class DashboardSummary(BaseModel):
     vehicles_in_shop: int = Field(description="Vehicles currently checked in or in service")
     jobs_in_progress: int = Field(description="Active jobs being worked on")
     jobs_waiting_parts: int = Field(description="Jobs blocked on parts")
+    jobs_waiting: int = Field(default=0, description="Jobs with active wait reason")
     jobs_completed_today: int = Field(description="Jobs finished today")
     pending_quotes: int = Field(description="Quotes awaiting customer approval")
     total_jobs: int = Field(description="All-time job count")
@@ -512,3 +637,5 @@ class DashboardSummary(BaseModel):
     total_revenue_month: Decimal = Field(default=Decimal("0.00"), description="Invoice revenue this month")
     overdue_invoices: int = Field(default=0, description="Invoices past due date")
     jobs_in_inspection: int = Field(default=0, description="Jobs awaiting inspection")
+    bay_utilization: float = Field(default=0, description="Percentage of active bays with jobs")
+    average_days_per_job: float = Field(default=0, description="Average calendar days for completed jobs")
