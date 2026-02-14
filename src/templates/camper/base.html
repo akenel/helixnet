@@ -116,14 +116,20 @@
     <script>
         // JWT token management for Camper & Tour
         const CamperAuth = {
+            _expiryWarningShown: false,
+            _expiryTimer: null,
+
             getToken() {
                 return sessionStorage.getItem('camper_token');
             },
             setToken(token) {
                 sessionStorage.setItem('camper_token', token);
+                this._expiryWarningShown = false;
+                this._startExpiryWatch();
             },
             clearToken() {
                 sessionStorage.removeItem('camper_token');
+                if (this._expiryTimer) clearInterval(this._expiryTimer);
             },
             decodeToken(token) {
                 try {
@@ -136,6 +142,100 @@
                 } catch (e) {
                     console.error('Failed to decode token:', e);
                     return null;
+                }
+            },
+            getTokenExpiry() {
+                const token = this.getToken();
+                if (!token) return null;
+                const payload = this.decodeToken(token);
+                return payload?.exp ? payload.exp * 1000 : null; // ms
+            },
+            isTokenExpired() {
+                const exp = this.getTokenExpiry();
+                return exp ? Date.now() >= exp : true;
+            },
+            getMinutesRemaining() {
+                const exp = this.getTokenExpiry();
+                if (!exp) return 0;
+                return Math.max(0, Math.floor((exp - Date.now()) / 60000));
+            },
+            _startExpiryWatch() {
+                if (this._expiryTimer) clearInterval(this._expiryTimer);
+                this._expiryTimer = setInterval(() => {
+                    const mins = this.getMinutesRemaining();
+                    if (mins <= 5 && mins > 0 && !this._expiryWarningShown) {
+                        this._expiryWarningShown = true;
+                        this._showExpiryWarning(mins);
+                    }
+                    if (mins <= 0) {
+                        clearInterval(this._expiryTimer);
+                    }
+                }, 30000); // check every 30s
+            },
+            _showExpiryWarning(mins) {
+                // Show non-blocking banner at the top -- don't redirect, don't destroy form data
+                const banner = document.createElement('div');
+                banner.id = 'session-expiry-banner';
+                banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;background:#fbbf24;color:#78350f;padding:12px 24px;text-align:center;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+                banner.innerHTML = `
+                    Sessione in scadenza tra ${mins} minuti.
+                    <button onclick="CamperAuth._silentReauth()" style="margin-left:16px;background:#78350f;color:white;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600;">
+                        Rinnova Sessione
+                    </button>
+                    <button onclick="this.parentElement.remove()" style="margin-left:8px;background:transparent;border:1px solid #78350f;color:#78350f;padding:6px 12px;border-radius:6px;cursor:pointer;">
+                        Chiudi
+                    </button>
+                `;
+                const existing = document.getElementById('session-expiry-banner');
+                if (existing) existing.remove();
+                document.body.appendChild(banner);
+            },
+            async _silentReauth() {
+                // Open KC login in a popup -- if the SSO session is still active, it auto-completes
+                const keycloakUrl = 'https://keycloak.helix.local';
+                const realm = 'kc-camper-service-realm-dev';
+                const redirectUri = encodeURIComponent(window.location.origin + '/camper/dashboard');
+                const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?client_id=camper_service_web&redirect_uri=${redirectUri}&response_type=token&scope=openid`;
+
+                // Try iframe first (silent if SSO session alive)
+                try {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = authUrl + '&prompt=none';
+                    document.body.appendChild(iframe);
+
+                    await new Promise((resolve, reject) => {
+                        iframe.onload = () => {
+                            try {
+                                const hash = iframe.contentWindow.location.hash;
+                                if (hash && hash.includes('token=')) {
+                                    const token = hash.split('token=')[1]?.split('&')[0];
+                                    if (token) {
+                                        CamperAuth.setToken(token);
+                                        const banner = document.getElementById('session-expiry-banner');
+                                        if (banner) banner.remove();
+                                        showToast('Sessione rinnovata!', 'success');
+                                        resolve();
+                                        return;
+                                    }
+                                }
+                                reject('No token in iframe response');
+                            } catch (e) {
+                                reject(e); // cross-origin = KC needs interaction
+                            }
+                        };
+                        setTimeout(() => reject('timeout'), 5000);
+                    });
+                    iframe.remove();
+                } catch (e) {
+                    // Iframe failed (cross-origin or KC needs login) -- open popup
+                    console.log('Silent reauth failed, opening login popup:', e);
+                    const popup = window.open(authUrl, 'camper_reauth', 'width=500,height=600');
+                    if (popup) {
+                        showToast('Effettua il login nella finestra popup.', 'info');
+                    } else {
+                        showToast('Popup bloccato. Salva il lavoro e ricarica la pagina.', 'warning');
+                    }
                 }
             },
             getUserInfo() {
@@ -169,8 +269,13 @@
             }
         };
 
+        // Start expiry watch if token exists on page load
+        if (CamperAuth.getToken()) CamperAuth._startExpiryWatch();
+
         // API helper with automatic auth
         const API = {
+            _sessionExpiredShown: false,
+
             async call(endpoint, options = {}) {
                 const token = CamperAuth.getToken();
                 const defaultHeaders = {
@@ -187,13 +292,20 @@
                 try {
                     const response = await fetch(endpoint, config);
                     if (response.status === 401) {
-                        CamperAuth.logout();
-                        throw new Error('Sessione scaduta. Effettua il login.');
+                        // DON'T logout immediately -- show warning, let user save their work
+                        if (!this._sessionExpiredShown) {
+                            this._sessionExpiredShown = true;
+                            showToast('Sessione scaduta. Rinnova la sessione per continuare.', 'warning');
+                            CamperAuth._showExpiryWarning(0);
+                        }
+                        throw new Error('Sessione scaduta. Rinnova la sessione per continuare.');
                     }
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
                         throw new Error(error.detail || `Errore ${response.status}`);
                     }
+                    // Reset the flag on successful auth
+                    this._sessionExpiredShown = false;
                     if (response.status === 204) return null;
                     return await response.json();
                 } catch (error) {
