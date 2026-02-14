@@ -197,6 +197,38 @@ class CamperServiceJobModel(Base):
         comment="Estimated resume date"
     )
 
+    # Check-in / Check-out (CYA documentation)
+    mileage_in: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Odometer reading at drop-off (km)"
+    )
+    mileage_out: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Odometer reading at pickup (km)"
+    )
+    condition_notes_in: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Pre-existing damage documented at check-in: scratches, dents, leaks"
+    )
+    condition_notes_out: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Vehicle condition at checkout -- CYA for 'you broke my mirror'"
+    )
+    checked_in_by: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        comment="Who performed the vehicle check-in"
+    )
+    checked_in_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="When the vehicle was physically checked in"
+    )
+
     # Documentation
     issue_found: Mapped[str | None] = mapped_column(Text, nullable=True)
     work_performed: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -96,8 +96,24 @@ class CamperCustomerModel(Base):
         nullable=False
     )
 
+    # Preferences
+    preferred_contact_method: Mapped[str | None] = mapped_column(
+        String(30),
+        nullable=True,
+        comment="phone, whatsapp, email, telegram -- how they want to hear from us"
+    )
+
     # Notes
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="General notes visible to all"
+    )
+    internal_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Staff-only: 'pays cash', 'morning guy', 'picky about paint matching'"
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

@@ -104,6 +104,7 @@ class CamperCustomerBase(BaseModel):
     language: CustomerLanguage = Field(default=CustomerLanguage.IT)
     tax_id: Optional[str] = Field(None, max_length=50, description="Codice Fiscale or P.IVA")
     telegram_chat_id: Optional[str] = Field(None, max_length=50, description="Telegram bot chat ID")
+    preferred_contact_method: Optional[str] = Field(None, max_length=30, description="phone, whatsapp, email, telegram")
     notes: Optional[str] = None
 
 
@@ -122,7 +123,9 @@ class CamperCustomerUpdate(BaseModel):
     language: Optional[CustomerLanguage] = None
     tax_id: Optional[str] = Field(None, max_length=50)
     telegram_chat_id: Optional[str] = Field(None, max_length=50)
+    preferred_contact_method: Optional[str] = Field(None, max_length=30)
     notes: Optional[str] = None
+    internal_notes: Optional[str] = None
 
 
 class CamperCustomerRead(CamperCustomerBase):
@@ -132,6 +135,7 @@ class CamperCustomerRead(CamperCustomerBase):
     last_visit: Optional[date] = None
     visit_count: int
     total_spend: Decimal
+    internal_notes: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -196,6 +200,8 @@ class ServiceJobBase(BaseModel):
     start_date: Optional[date] = Field(None, description="First day of work")
     end_date: Optional[date] = Field(None, description="Expected completion date")
     customer_notes: Optional[str] = None
+    mileage_in: Optional[int] = Field(None, ge=0, description="Odometer at drop-off (km)")
+    condition_notes_in: Optional[str] = Field(None, description="Pre-existing damage at check-in")
 
 
 class ServiceJobCreate(ServiceJobBase):
@@ -235,6 +241,10 @@ class ServiceJobUpdate(BaseModel):
     follow_up_notes: Optional[str] = None
     next_service_date: Optional[date] = None
     deposit_required: Optional[Decimal] = Field(None, ge=0)
+    mileage_in: Optional[int] = Field(None, ge=0)
+    mileage_out: Optional[int] = Field(None, ge=0)
+    condition_notes_in: Optional[str] = None
+    condition_notes_out: Optional[str] = None
     # Optimistic locking: client sends the updated_at it read, server rejects if stale
     expected_updated_at: Optional[datetime] = Field(None, description="Send the updated_at you read. Rejects if another write happened since.")
 
@@ -290,6 +300,13 @@ class ServiceJobRead(BaseModel):
     follow_up_required: bool
     follow_up_notes: Optional[str] = None
     next_service_date: Optional[date] = None
+    # Check-in / Check-out
+    mileage_in: Optional[int] = None
+    mileage_out: Optional[int] = None
+    condition_notes_in: Optional[str] = None
+    condition_notes_out: Optional[str] = None
+    checked_in_by: Optional[str] = None
+    checked_in_at: Optional[datetime] = None
     # Inspection fields
     inspection_passed: bool = False
     inspection_notes: Optional[str] = None
@@ -708,6 +725,22 @@ class ResourceBookingResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# CHECK-IN / CHECK-OUT SCHEMAS
+# ================================================================
+
+class VehicleCheckIn(BaseModel):
+    """Schema for vehicle check-in at drop-off"""
+    mileage_in: Optional[int] = Field(None, ge=0, description="Odometer reading (km)")
+    condition_notes_in: Optional[str] = Field(None, description="Pre-existing damage, scratches, dents")
+
+
+class VehicleCheckOut(BaseModel):
+    """Schema for vehicle check-out at pickup"""
+    mileage_out: Optional[int] = Field(None, ge=0, description="Odometer reading at pickup (km)")
+    condition_notes_out: Optional[str] = Field(None, description="Vehicle condition at release")
 
 
 # ================================================================

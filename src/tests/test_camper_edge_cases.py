@@ -1453,3 +1453,244 @@ async def test_36_walk_in_plate_auto_uppercase(client):
         description="Quick fix", vehicle_plate="tp-999-zz"
     )
     assert appt["vehicle_plate"] == "TP-999-ZZ"
+
+
+# ================================================================
+# GROUP 8: CHECK-IN / CHECK-OUT + CUSTOMER NOTES (Tests 37-44)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_37_check_in_records_mileage_and_condition(client):
+    """
+    EDGE CASE 37: Happy path -- check in vehicle with mileage and damage notes.
+    Mileage and condition_notes_in should be recorded, checked_in_at/by set,
+    vehicle status -> CHECKED_IN.
+    """
+    vehicle = await _create_vehicle(client, "CHECKIN-001")
+    customer = await _create_customer(client, "Check-In Charlie")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Brake service")
+
+    resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-in",
+        json={
+            "mileage_in": 145230,
+            "condition_notes_in": "Scratch on rear bumper, small dent passenger side",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["mileage_in"] == 145230
+    assert "scratch" in data["condition_notes_in"].lower()
+    assert data["checked_in_by"] == "nino"
+    assert data["checked_in_at"] is not None
+
+    # Vehicle status should be CHECKED_IN
+    v_resp = await client.get(f"/api/v1/camper/vehicles/{vehicle['id']}")
+    assert v_resp.json()["status"] == "checked_in"
+
+
+@pytest.mark.asyncio
+async def test_38_double_check_in_rejected(client):
+    """
+    EDGE CASE 38: Check in same job twice = 400.
+    Can't check in a vehicle that's already checked in.
+    """
+    vehicle = await _create_vehicle(client, "DBLCI-001")
+    customer = await _create_customer(client, "Double Check-In Dave")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Oil change")
+
+    # First check-in
+    resp1 = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-in",
+        json={"mileage_in": 50000},
+    )
+    assert resp1.status_code == 200
+
+    # Second check-in -- should fail
+    resp2 = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-in",
+        json={"mileage_in": 50001},
+    )
+    assert resp2.status_code == 400, (
+        f"Double check-in should return 400, got {resp2.status_code}"
+    )
+    assert "already checked in" in resp2.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_39_check_out_without_check_in_rejected(client):
+    """
+    EDGE CASE 39: Try to check out a vehicle that was never checked in = 400.
+    """
+    vehicle = await _create_vehicle(client, "NOCI-001")
+    customer = await _create_customer(client, "No Check-In Nancy")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Tire rotation")
+
+    resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-out",
+        json={"mileage_out": 60000},
+    )
+    assert resp.status_code == 400, (
+        f"Check-out without check-in should return 400, got {resp.status_code}"
+    )
+    assert "never checked in" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_40_check_out_mileage_less_than_in_rejected(client):
+    """
+    EDGE CASE 40: mileage_out < mileage_in = 422.
+    Odometer can't go backwards (unless you're Ferris Bueller).
+    """
+    vehicle = await _create_vehicle(client, "FERRIS-001")
+    customer = await _create_customer(client, "Ferris Bueller")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Suspicion check")
+
+    # Check in at 100,000 km
+    await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-in",
+        json={"mileage_in": 100000},
+    )
+
+    # Try check out at 99,999 km -- should fail
+    resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-out",
+        json={"mileage_out": 99999},
+    )
+    assert resp.status_code == 422, (
+        f"Mileage going backwards should return 422, got {resp.status_code}"
+    )
+    assert "cannot be less" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_41_full_check_in_check_out_lifecycle(client):
+    """
+    EDGE CASE 41: Full lifecycle: check in -> work -> check out.
+    Verify mileage delta, condition notes both sides, vehicle status progression.
+    """
+    vehicle = await _create_vehicle(client, "LIFE2-001")
+    customer = await _create_customer(client, "Full Lifecycle Franco")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Full service")
+
+    # Check in
+    ci_resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-in",
+        json={
+            "mileage_in": 200000,
+            "condition_notes_in": "Existing scratch on driver door",
+        },
+    )
+    assert ci_resp.status_code == 200
+
+    # Do some work (advance to completed)
+    await _advance_job_to(client, job["id"], "completed")
+
+    # Check out
+    co_resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-out",
+        json={
+            "mileage_out": 200005,
+            "condition_notes_out": "Same scratch on driver door. No new damage.",
+        },
+    )
+    assert co_resp.status_code == 200
+    data = co_resp.json()
+
+    # Verify both sides recorded
+    assert data["mileage_in"] == 200000
+    assert data["mileage_out"] == 200005
+    assert "existing scratch" in data["condition_notes_in"].lower()
+    assert "no new damage" in data["condition_notes_out"].lower()
+    assert data["picked_up_at"] is not None
+
+    # Vehicle should be PICKED_UP
+    v_resp = await client.get(f"/api/v1/camper/vehicles/{vehicle['id']}")
+    assert v_resp.json()["status"] == "picked_up"
+
+
+@pytest.mark.asyncio
+async def test_42_double_check_out_rejected(client):
+    """
+    EDGE CASE 42: Check out same job twice = 400.
+    """
+    vehicle = await _create_vehicle(client, "DBLCO-001")
+    customer = await _create_customer(client, "Double Check-Out Diana")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Quick fix")
+
+    # Check in + check out
+    await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-in",
+        json={"mileage_in": 80000},
+    )
+    resp1 = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-out",
+        json={"mileage_out": 80002},
+    )
+    assert resp1.status_code == 200
+
+    # Second check-out -- should fail
+    resp2 = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/check-out",
+        json={"mileage_out": 80003},
+    )
+    assert resp2.status_code == 400, (
+        f"Double check-out should return 400, got {resp2.status_code}"
+    )
+    assert "already checked out" in resp2.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_43_customer_preferred_contact_and_internal_notes(client):
+    """
+    EDGE CASE 43: Create customer with preferred_contact_method,
+    then add internal_notes via update. Both should persist and be readable.
+    """
+    resp = await client.post("/api/v1/camper/customers", json={
+        "name": "Picky Pietro",
+        "phone": "+39 333 9999999",
+        "preferred_contact_method": "whatsapp",
+        "notes": "Has a white Ducato, always parks on the left",
+    })
+    assert resp.status_code == 201
+    customer = resp.json()
+    assert customer["preferred_contact_method"] == "whatsapp"
+
+    # Add internal notes (staff-only)
+    update_resp = await client.put(
+        f"/api/v1/camper/customers/{customer['id']}",
+        json={"internal_notes": "Pays cash only. Morning guy. Very picky about paint matching."},
+    )
+    assert update_resp.status_code == 200
+    updated = update_resp.json()
+    assert updated["internal_notes"] == "Pays cash only. Morning guy. Very picky about paint matching."
+    assert updated["preferred_contact_method"] == "whatsapp"
+    assert updated["notes"] == "Has a white Ducato, always parks on the left"
+
+
+@pytest.mark.asyncio
+async def test_44_check_in_with_job_creation(client):
+    """
+    EDGE CASE 44: Create job with mileage_in and condition_notes_in inline
+    (at creation time, no separate check-in step). Fields should persist.
+    """
+    vehicle = await _create_vehicle(client, "INLINE-001")
+    customer = await _create_customer(client, "Inline Ivan")
+
+    resp = await client.post("/api/v1/camper/jobs", json={
+        "title": "Full inspection",
+        "description": "Annual inspection",
+        "vehicle_id": vehicle["id"],
+        "customer_id": customer["id"],
+        "job_type": "inspection",
+        "mileage_in": 175000,
+        "condition_notes_in": "Small chip on windshield, noted before work starts",
+    })
+    assert resp.status_code == 201
+    job = resp.json()
+    assert job["mileage_in"] == 175000
+    assert "chip on windshield" in job["condition_notes_in"]
+
+    # Verify via GET
+    get_resp = await client.get(f"/api/v1/camper/jobs/{job['id']}")
+    assert get_resp.json()["mileage_in"] == 175000

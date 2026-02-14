@@ -50,6 +50,7 @@ from src.schemas.camper_schema import (
     SharedResourceCreate, SharedResourceUpdate, SharedResourceResponse,
     ResourceBookingCreate, ResourceBookingStatusUpdate, ResourceBookingResponse,
     AppointmentCreate, AppointmentUpdate, AppointmentRead, AppointmentStatusUpdate,
+    VehicleCheckIn, VehicleCheckOut,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -750,6 +751,121 @@ async def fail_inspection(
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number} FAILED inspection by {current_user['username']}: {result_data.notes}")
+    return await _enrich_job_response(job, db)
+
+
+# ================================================================
+# CHECK-IN / CHECK-OUT WORKFLOW
+# ================================================================
+
+@router.post("/jobs/{job_id}/check-in", response_model=ServiceJobRead)
+async def check_in_vehicle(
+    job_id: UUID,
+    check_in: VehicleCheckIn,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Record vehicle check-in: mileage, pre-existing damage, set vehicle status."""
+    result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.checked_in_at is not None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Vehicle already checked in at {job.checked_in_at.isoformat()}"
+        )
+
+    now = datetime.now(timezone.utc)
+    job.checked_in_at = now
+    job.checked_in_by = current_user["username"]
+
+    if check_in.mileage_in is not None:
+        job.mileage_in = check_in.mileage_in
+    if check_in.condition_notes_in is not None:
+        job.condition_notes_in = check_in.condition_notes_in
+
+    # Set vehicle status to CHECKED_IN
+    vehicle_result = await db.execute(
+        select(CamperVehicleModel).where(CamperVehicleModel.id == job.vehicle_id)
+    )
+    vehicle = vehicle_result.scalar_one_or_none()
+    if vehicle:
+        vehicle.status = VehicleStatus.CHECKED_IN
+
+    job.updated_at = now
+    await db.commit()
+    await db.refresh(job)
+
+    logger.info(
+        f"Job {job.job_number} CHECK-IN by {current_user['username']}"
+        f" | mileage={job.mileage_in} km"
+    )
+    return await _enrich_job_response(job, db)
+
+
+@router.post("/jobs/{job_id}/check-out", response_model=ServiceJobRead)
+async def check_out_vehicle(
+    job_id: UUID,
+    check_out: VehicleCheckOut,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Record vehicle check-out: mileage out, condition notes, set picked_up_at."""
+    result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.checked_in_at is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot check out -- vehicle was never checked in"
+        )
+
+    if job.picked_up_at is not None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Vehicle already checked out at {job.picked_up_at.isoformat()}"
+        )
+
+    now = datetime.now(timezone.utc)
+
+    if check_out.mileage_out is not None:
+        # Validate mileage_out >= mileage_in (if mileage_in was recorded)
+        if job.mileage_in is not None and check_out.mileage_out < job.mileage_in:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Mileage out ({check_out.mileage_out}) cannot be less than mileage in ({job.mileage_in})"
+            )
+        job.mileage_out = check_out.mileage_out
+
+    if check_out.condition_notes_out is not None:
+        job.condition_notes_out = check_out.condition_notes_out
+
+    job.picked_up_at = now
+
+    # Set vehicle status to PICKED_UP
+    vehicle_result = await db.execute(
+        select(CamperVehicleModel).where(CamperVehicleModel.id == job.vehicle_id)
+    )
+    vehicle = vehicle_result.scalar_one_or_none()
+    if vehicle:
+        vehicle.status = VehicleStatus.PICKED_UP
+
+    job.updated_at = now
+    await db.commit()
+    await db.refresh(job)
+
+    logger.info(
+        f"Job {job.job_number} CHECK-OUT by {current_user['username']}"
+        f" | mileage_in={job.mileage_in} -> mileage_out={job.mileage_out}"
+    )
     return await _enrich_job_response(job, db)
 
 
