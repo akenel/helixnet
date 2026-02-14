@@ -966,6 +966,22 @@ class JobCostSummary(BaseModel):
 
 
 # ================================================================
+# VEHICLE CURRENT JOB + JOB STATUS COUNTS
+# ================================================================
+
+class JobStatusCount(BaseModel):
+    """Count of jobs per status"""
+    status: str
+    count: int
+
+
+class JobStatusCountsResponse(BaseModel):
+    """Quick status board -- how many jobs in each state"""
+    total: int
+    by_status: list[JobStatusCount] = Field(default_factory=list)
+
+
+# ================================================================
 # CAMPER SUPPLIER DIRECTORY SCHEMAS
 # ================================================================
 

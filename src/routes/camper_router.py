@@ -57,6 +57,7 @@ from src.schemas.camper_schema import (
     TechnicianHours, TechnicianSummaryResponse,
     CamperSupplierCreate, CamperSupplierUpdate, CamperSupplierRead,
     CustomerVehicleSummary, CustomerVehicleListResponse, JobCostSummary,
+    JobStatusCount, JobStatusCountsResponse,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -1300,6 +1301,71 @@ async def get_job_cost_summary(
         invoice_total=invoice_total,
         deposit_paid=job.deposit_paid or Decimal("0.00"),
     )
+
+
+# ================================================================
+# VEHICLE CURRENT JOB
+# ================================================================
+
+@router.get("/vehicles/{vehicle_id}/current-job", response_model=ServiceJobRead)
+async def get_vehicle_current_job(
+    vehicle_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """What's happening with this van right now? Returns the active job, or 404."""
+    # Verify vehicle exists
+    v_result = await db.execute(
+        select(CamperVehicleModel).where(CamperVehicleModel.id == vehicle_id)
+    )
+    if not v_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    # Active = not cancelled, not invoiced, not completed (or completed but not invoiced)
+    active_statuses = [
+        JobStatus.QUOTED, JobStatus.APPROVED, JobStatus.IN_PROGRESS,
+        JobStatus.WAITING_PARTS, JobStatus.INSPECTION,
+    ]
+    result = await db.execute(
+        select(CamperServiceJobModel).where(
+            and_(
+                CamperServiceJobModel.vehicle_id == vehicle_id,
+                CamperServiceJobModel.status.in_(active_statuses),
+            )
+        ).order_by(CamperServiceJobModel.created_at.desc()).limit(1)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="No active job for this vehicle")
+
+    return await _enrich_job_response(job, db)
+
+
+# ================================================================
+# JOB STATUS COUNTS (Quick Status Board)
+# ================================================================
+
+@router.get("/stats/jobs-by-status", response_model=JobStatusCountsResponse)
+async def get_jobs_by_status(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Job count per status -- the quick status board widget."""
+    result = await db.execute(
+        select(
+            CamperServiceJobModel.status,
+            func.count(CamperServiceJobModel.id),
+        ).group_by(CamperServiceJobModel.status)
+    )
+    rows = result.all()
+
+    by_status = [
+        JobStatusCount(status=row[0].value, count=row[1])
+        for row in rows
+    ]
+    total = sum(item.count for item in by_status)
+
+    return JobStatusCountsResponse(total=total, by_status=by_status)
 
 
 # ================================================================

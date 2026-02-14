@@ -2352,3 +2352,183 @@ async def test_68_work_log_auto_updates_actual_hours(client):
     assert job_after.json()["actual_hours"] == 4.0, (
         f"Expected 4.0h, got {job_after.json()['actual_hours']}"
     )
+
+
+# ================================================================
+# GROUP 12: CALENDAR + BAY TIMELINE + CURRENT JOB + STATUS COUNTS (Tests 69-76)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_69_calendar_returns_scheduled_jobs(client):
+    """
+    EDGE CASE 69: Calendar returns jobs with start_date in range.
+    """
+    v = await _create_vehicle(client, "CAL-001")
+    c = await _create_customer(client, "Calendar Carlo", "cal@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Calendar test job")
+
+    # Set start_date and end_date on the job
+    today = date.today()
+    await client.put(f"/api/v1/camper/jobs/{j['id']}", json={
+        "start_date": today.isoformat(),
+        "end_date": (today + timedelta(days=3)).isoformat(),
+    })
+
+    # Query calendar for this week
+    start = (today - timedelta(days=1)).isoformat()
+    end = (today + timedelta(days=7)).isoformat()
+    resp = await client.get(f"/api/v1/camper/calendar?start={start}&end={end}")
+    assert resp.status_code == 200
+    events = resp.json()
+    assert any(e["extendedProps"]["job_number"] == j["job_number"] for e in events), (
+        f"Job {j['job_number']} not found in calendar events"
+    )
+
+
+@pytest.mark.asyncio
+async def test_70_bay_timeline_shows_jobs(client):
+    """
+    EDGE CASE 70: Bay timeline returns bays with their assigned jobs.
+    """
+    # Create a bay
+    bay_resp = await client.post("/api/v1/camper/bays", json={
+        "name": "Timeline Bay", "bay_type": "general",
+    })
+    assert bay_resp.status_code == 201
+    bay = bay_resp.json()
+
+    # Create a job and assign it to the bay with dates
+    v = await _create_vehicle(client, "BAY-T-001")
+    c = await _create_customer(client, "Bay Timeline Bob", "bay@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Bay timeline job")
+
+    today = date.today()
+    await client.put(f"/api/v1/camper/jobs/{j['id']}", json={
+        "bay_id": bay["id"],
+        "start_date": today.isoformat(),
+        "end_date": (today + timedelta(days=2)).isoformat(),
+    })
+
+    resp = await client.get(f"/api/v1/camper/bay-timeline?start={today.isoformat()}&end={(today + timedelta(days=7)).isoformat()}")
+    assert resp.status_code == 200
+    timeline = resp.json()
+    # Find our bay
+    our_bay = next((b for b in timeline if b["bay_id"] == bay["id"]), None)
+    assert our_bay is not None, "Bay not found in timeline"
+    assert len(our_bay["entries"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_71_vehicle_filter_by_status(client):
+    """
+    EDGE CASE 71: Vehicle list filtered by status returns only matching.
+    Create 2 vehicles, move one to READY_FOR_PICKUP, verify filter separates them.
+    """
+    v1 = await _create_vehicle(client, "FILT-001")
+    v2 = await _create_vehicle(client, "FILT-002")
+
+    # Both start CHECKED_IN. Move v2 to ready_for_pickup.
+    await client.patch(f"/api/v1/camper/vehicles/{v2['id']}/status", json={
+        "status": "ready_for_pickup",
+    })
+
+    # Filter by ready_for_pickup -- should find v2 but not v1
+    resp = await client.get("/api/v1/camper/vehicles?status_filter=ready_for_pickup")
+    assert resp.status_code == 200
+    plates = [v["registration_plate"] for v in resp.json()]
+    assert "FILT-002" in plates
+    assert "FILT-001" not in plates
+
+
+@pytest.mark.asyncio
+async def test_72_job_filter_by_mechanic(client):
+    """
+    EDGE CASE 72: Job list filtered by mechanic name.
+    """
+    v = await _create_vehicle(client, "MECH-001")
+    c = await _create_customer(client, "Mechanic Marta", "mech@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Mechanic filter test")
+
+    # Assign to a specific mechanic
+    await client.put(f"/api/v1/camper/jobs/{j['id']}", json={
+        "assigned_to": "Giuseppe",
+    })
+
+    resp = await client.get("/api/v1/camper/jobs?mechanic=Giuseppe")
+    assert resp.status_code == 200
+    jobs = resp.json()
+    assert any(job["job_number"] == j["job_number"] for job in jobs)
+
+    # Filter by non-existent mechanic
+    resp2 = await client.get("/api/v1/camper/jobs?mechanic=ZZZNOBODY")
+    assert resp2.status_code == 200
+    assert not any(job["job_number"] == j["job_number"] for job in resp2.json())
+
+
+@pytest.mark.asyncio
+async def test_73_vehicle_current_job_found(client):
+    """
+    EDGE CASE 73: Current-job returns the active job for a vehicle.
+    """
+    v = await _create_vehicle(client, "CURR-001")
+    c = await _create_customer(client, "Current Job Carlo", "curr@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Active job test")
+
+    resp = await client.get(f"/api/v1/camper/vehicles/{v['id']}/current-job")
+    assert resp.status_code == 200
+    assert resp.json()["job_number"] == j["job_number"]
+
+
+@pytest.mark.asyncio
+async def test_74_vehicle_current_job_none(client):
+    """
+    EDGE CASE 74: Current-job returns 404 when vehicle has no active job.
+    """
+    v = await _create_vehicle(client, "IDLE-001")
+
+    resp = await client.get(f"/api/v1/camper/vehicles/{v['id']}/current-job")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_75_jobs_by_status_counts(client):
+    """
+    EDGE CASE 75: Status counts reflect actual job distribution.
+    """
+    v = await _create_vehicle(client, "STAT-001")
+    c = await _create_customer(client, "Stats Steve", "stats@test.it")
+    j1 = await _create_job(client, v["id"], c["id"], "Stats job 1")
+    j2 = await _create_job(client, v["id"], c["id"], "Stats job 2")
+
+    # j1 stays quoted, advance j2 to in_progress
+    await _advance_job_to(client, j2["id"], "in_progress")
+
+    resp = await client.get("/api/v1/camper/stats/jobs-by-status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] >= 2
+
+    status_map = {s["status"]: s["count"] for s in data["by_status"]}
+    assert status_map.get("quoted", 0) >= 1
+    assert status_map.get("in_progress", 0) >= 1
+
+
+@pytest.mark.asyncio
+async def test_76_job_update_fields(client):
+    """
+    EDGE CASE 76: Job update changes fields correctly and returns updated data.
+    """
+    v = await _create_vehicle(client, "UPDT-001")
+    c = await _create_customer(client, "Update Ugo", "updt@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Update test")
+
+    resp = await client.put(f"/api/v1/camper/jobs/{j['id']}", json={
+        "assigned_to": "Sebastino",
+        "description": "Updated description -- now includes paint",
+        "estimated_hours": 5.0,
+    })
+    assert resp.status_code == 200
+    updated = resp.json()
+    assert updated["assigned_to"] == "Sebastino"
+    assert updated["description"] == "Updated description -- now includes paint"
+    assert updated["estimated_hours"] == 5.0
