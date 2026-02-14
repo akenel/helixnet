@@ -31,6 +31,8 @@ from src.db.models.camper_quotation_model import CamperQuotationModel, Quotation
 from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
 from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
 from src.db.models.camper_document_model import CamperDocumentModel
+from src.db.models.camper_shared_resource_model import CamperSharedResourceModel, ResourceType
+from src.db.models.camper_resource_booking_model import CamperResourceBookingModel, BookingStatus
 from src.schemas.camper_schema import (
     VehicleCreate, VehicleUpdate, VehicleRead, VehicleStatusUpdate,
     CamperCustomerCreate, CamperCustomerUpdate, CamperCustomerRead,
@@ -44,6 +46,8 @@ from src.schemas.camper_schema import (
     InspectionResult, DepositPayment,
     BayTimelineEntry, BayTimelineResponse,
     DashboardSummary,
+    SharedResourceCreate, SharedResourceUpdate, SharedResourceResponse,
+    ResourceBookingCreate, ResourceBookingStatusUpdate, ResourceBookingResponse,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -2347,6 +2351,288 @@ async def get_dashboard(
         bay_utilization=bay_utilization,
         average_days_per_job=average_days_per_job,
     )
+
+
+# ================================================================
+# SHARED RESOURCE ENDPOINTS (Hoist, Diagnostic Scanner, etc.)
+# ================================================================
+
+@router.get("/shared-resources", response_model=list[SharedResourceResponse])
+async def list_shared_resources(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """List all shared resources (any camper role)"""
+    result = await db.execute(
+        select(CamperSharedResourceModel).order_by(CamperSharedResourceModel.name)
+    )
+    return result.scalars().all()
+
+
+@router.post("/shared-resources", response_model=SharedResourceResponse, status_code=status.HTTP_201_CREATED)
+async def create_shared_resource(
+    resource: SharedResourceCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Create a new shared resource (manager/admin only)"""
+    try:
+        resource_type = ResourceType(resource.resource_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid resource type: {resource.resource_type}")
+
+    new_resource = CamperSharedResourceModel(
+        name=resource.name,
+        resource_type=resource_type,
+        description=resource.description,
+    )
+    db.add(new_resource)
+    await db.commit()
+    await db.refresh(new_resource)
+
+    logger.info(f"Shared resource created: {new_resource.name} by {current_user['username']}")
+    return new_resource
+
+
+@router.patch("/shared-resources/{resource_id}", response_model=SharedResourceResponse)
+async def update_shared_resource(
+    resource_id: UUID,
+    resource_update: SharedResourceUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Update a shared resource (manager/admin only)"""
+    result = await db.execute(
+        select(CamperSharedResourceModel).where(CamperSharedResourceModel.id == resource_id)
+    )
+    resource = result.scalar_one_or_none()
+    if not resource:
+        raise HTTPException(status_code=404, detail="Shared resource not found")
+
+    update_data = resource_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(resource, field, value)
+
+    resource.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(resource)
+
+    logger.info(f"Shared resource updated: {resource.name} by {current_user['username']}")
+    return resource
+
+
+# ================================================================
+# RESOURCE BOOKING ENDPOINTS (Hoist Scheduling)
+# ================================================================
+
+async def _enrich_booking_response(booking: CamperResourceBookingModel, db: AsyncSession) -> ResourceBookingResponse:
+    """Build ResourceBookingResponse with enriched fields from relationships."""
+    # Get resource name
+    resource_result = await db.execute(
+        select(CamperSharedResourceModel.name).where(CamperSharedResourceModel.id == booking.resource_id)
+    )
+    resource_name = resource_result.scalar_one_or_none() or "Unknown"
+
+    # Get job number and vehicle plate
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == booking.job_id)
+    )
+    job = job_result.scalar_one_or_none()
+    job_number = job.job_number if job else "Unknown"
+
+    vehicle_plate = "Unknown"
+    if job:
+        vehicle_result = await db.execute(
+            select(CamperVehicleModel.registration_plate).where(CamperVehicleModel.id == job.vehicle_id)
+        )
+        plate = vehicle_result.scalar_one_or_none()
+        if plate:
+            vehicle_plate = plate
+
+    return ResourceBookingResponse(
+        id=booking.id,
+        resource_id=booking.resource_id,
+        resource_name=resource_name,
+        job_id=booking.job_id,
+        job_number=job_number,
+        vehicle_plate=vehicle_plate,
+        start_date=booking.start_date,
+        end_date=booking.end_date,
+        status=booking.status.value,
+        notes=booking.notes,
+        booked_by=booking.booked_by,
+        created_at=booking.created_at,
+        updated_at=booking.updated_at,
+    )
+
+
+@router.post("/resource-bookings", response_model=ResourceBookingResponse, status_code=status.HTTP_201_CREATED)
+async def create_resource_booking(
+    booking: ResourceBookingCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_mechanic_or_above()),
+):
+    """Book a shared resource for a service job (mechanic+ only). Rejects overlapping bookings."""
+    # Validate resource exists
+    resource_result = await db.execute(
+        select(CamperSharedResourceModel).where(CamperSharedResourceModel.id == booking.resource_id)
+    )
+    resource = resource_result.scalar_one_or_none()
+    if not resource:
+        raise HTTPException(status_code=404, detail="Shared resource not found")
+    if not resource.is_active:
+        raise HTTPException(status_code=400, detail="Resource is deactivated")
+
+    # Validate job exists
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == booking.job_id)
+    )
+    if not job_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Service job not found")
+
+    # Validate dates
+    if booking.end_date < booking.start_date:
+        raise HTTPException(status_code=400, detail="end_date must be >= start_date")
+
+    # OVERLAP DETECTION: find any ACTIVE booking for the same resource
+    # that overlaps the requested date range
+    overlap_result = await db.execute(
+        select(CamperResourceBookingModel).where(
+            and_(
+                CamperResourceBookingModel.resource_id == booking.resource_id,
+                CamperResourceBookingModel.status.in_([BookingStatus.SCHEDULED, BookingStatus.IN_USE]),
+                CamperResourceBookingModel.start_date <= booking.end_date,
+                CamperResourceBookingModel.end_date >= booking.start_date,
+            )
+        )
+    )
+    if overlap_result.scalars().first():
+        raise HTTPException(
+            status_code=409,
+            detail="Resource already booked for this period"
+        )
+
+    new_booking = CamperResourceBookingModel(
+        resource_id=booking.resource_id,
+        job_id=booking.job_id,
+        start_date=booking.start_date,
+        end_date=booking.end_date,
+        notes=booking.notes,
+        booked_by=current_user['username'],
+        status=BookingStatus.SCHEDULED,
+    )
+    db.add(new_booking)
+    await db.commit()
+    await db.refresh(new_booking)
+
+    logger.info(
+        f"Resource booking created: {resource.name} for {booking.start_date} -> {booking.end_date} "
+        f"by {current_user['username']}"
+    )
+    return await _enrich_booking_response(new_booking, db)
+
+
+@router.get("/resource-bookings", response_model=list[ResourceBookingResponse])
+async def list_resource_bookings(
+    resource_id: Optional[UUID] = None,
+    start: Optional[date] = None,
+    end: Optional[date] = None,
+    status_filter: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """List resource bookings with optional filters (any camper role)"""
+    query = select(CamperResourceBookingModel)
+
+    if resource_id:
+        query = query.where(CamperResourceBookingModel.resource_id == resource_id)
+    if start:
+        query = query.where(CamperResourceBookingModel.end_date >= start)
+    if end:
+        query = query.where(CamperResourceBookingModel.start_date <= end)
+    if status_filter:
+        try:
+            bs = BookingStatus(status_filter)
+            query = query.where(CamperResourceBookingModel.status == bs)
+        except ValueError:
+            pass
+
+    query = query.order_by(CamperResourceBookingModel.start_date)
+    result = await db.execute(query)
+    bookings = result.scalars().all()
+    return [await _enrich_booking_response(b, db) for b in bookings]
+
+
+@router.patch("/resource-bookings/{booking_id}/status", response_model=ResourceBookingResponse)
+async def update_booking_status(
+    booking_id: UUID,
+    status_update: ResourceBookingStatusUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_mechanic_or_above()),
+):
+    """Advance booking status: SCHEDULED -> IN_USE -> COMPLETED, or CANCELLED"""
+    result = await db.execute(
+        select(CamperResourceBookingModel).where(CamperResourceBookingModel.id == booking_id)
+    )
+    booking = result.scalar_one_or_none()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Resource booking not found")
+
+    try:
+        new_status = BookingStatus(status_update.status)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {status_update.status}")
+
+    # Valid transitions
+    valid_transitions = {
+        BookingStatus.SCHEDULED: [BookingStatus.IN_USE, BookingStatus.CANCELLED],
+        BookingStatus.IN_USE: [BookingStatus.COMPLETED, BookingStatus.CANCELLED],
+    }
+    allowed = valid_transitions.get(booking.status, [])
+    if new_status not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot transition from {booking.status.value} to {new_status.value}"
+        )
+
+    booking.status = new_status
+    booking.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(booking)
+
+    logger.info(
+        f"Booking {booking.id} status -> {new_status.value} by {current_user['username']}"
+    )
+    return await _enrich_booking_response(booking, db)
+
+
+@router.delete("/resource-bookings/{booking_id}", response_model=ResourceBookingResponse)
+async def cancel_resource_booking(
+    booking_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_mechanic_or_above()),
+):
+    """Cancel a resource booking (sets status=CANCELLED)"""
+    result = await db.execute(
+        select(CamperResourceBookingModel).where(CamperResourceBookingModel.id == booking_id)
+    )
+    booking = result.scalar_one_or_none()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Resource booking not found")
+
+    if booking.status in (BookingStatus.COMPLETED, BookingStatus.CANCELLED):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel booking in {booking.status.value} status"
+        )
+
+    booking.status = BookingStatus.CANCELLED
+    booking.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(booking)
+
+    logger.info(f"Booking {booking.id} CANCELLED by {current_user['username']}")
+    return await _enrich_booking_response(booking, db)
 
 
 # ================================================================

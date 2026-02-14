@@ -23,6 +23,8 @@ from src.db.models.camper_work_log_model import CamperWorkLogModel, LogType
 from src.db.models.camper_quotation_model import CamperQuotationModel, QuotationStatus
 from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
 from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
+from src.db.models.camper_shared_resource_model import CamperSharedResourceModel, ResourceType
+from src.db.models.camper_resource_booking_model import CamperResourceBookingModel, BookingStatus
 
 logger = logging.getLogger(__name__)
 
@@ -653,9 +655,44 @@ async def seed_camper_data(db: AsyncSession) -> None:
     )
 
     db.add(marco_invoice)
+    await db.flush()
+
+    # ================================================================
+    # SHARED RESOURCES (v4 - hoist management)
+    # ================================================================
+    main_hoist = CamperSharedResourceModel(
+        name="Ponte Sollevatore",
+        resource_type=ResourceType.HOIST,
+        description="Main vehicle hoist - full undercarriage access. Only 1 vehicle at a time.",
+    )
+    db.add(main_hoist)
+    await db.flush()
+
+    # Booking 1: MAX seal job needs hoist (IN_USE, Feb 6-8)
+    db.add(CamperResourceBookingModel(
+        resource_id=main_hoist.id,
+        job_id=max_seal_job.id,
+        start_date=date(2026, 2, 6),
+        end_date=date(2026, 2, 8),
+        status=BookingStatus.IN_USE,
+        notes="Full undercarriage access for seal inspection and roof panel removal",
+        booked_by="sebastino",
+    ))
+
+    # Booking 2: Hans VW scheduled for hoist (SCHEDULED, Feb 10)
+    db.add(CamperResourceBookingModel(
+        resource_id=main_hoist.id,
+        job_id=hans_plumbing.id,
+        start_date=date(2026, 2, 10),
+        end_date=date(2026, 2, 10),
+        status=BookingStatus.SCHEDULED,
+        notes="Quick undercarriage check after plumbing work",
+        booked_by="nino",
+    ))
+
     await db.commit()
 
-    logger.info("Camper & Tour seeding completed! (v3 - calendar scheduling)")
+    logger.info("Camper & Tour seeding completed! (v4 - hoist management)")
     logger.info("  - 4 customers (Angel, Marco, Hans, Sophie)")
     logger.info("  - 4 vehicles (MAX, Ducato Maxi, California, Eriba)")
     logger.info("  - 5 service bays (Bay 1, Bay 2, Electrical, Bodywork, Wash)")
@@ -670,3 +707,5 @@ async def seed_camper_data(db: AsyncSession) -> None:
     logger.info("  - 2 quotations (1 accepted, 1 sent)")
     logger.info("  - 2 purchase orders (1 shipped, 1 received)")
     logger.info("  - 1 invoice (paid)")
+    logger.info("  - 1 shared resource (Ponte Sollevatore / Main Hoist)")
+    logger.info("  - 2 hoist bookings (1 IN_USE for MAX, 1 SCHEDULED for Hans)")

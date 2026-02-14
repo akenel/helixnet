@@ -960,3 +960,279 @@ async def test_20_second_po_same_job(mock_email, client):
     job3 = await client.get(f"/api/v1/camper/jobs/{job['id']}")
     assert job3.json()["parts_on_order"] is True
     assert job3.json()["parts_po_number"] == po2_resp.json()["po_number"]
+
+
+# ================================================================
+# HELPER FUNCTIONS (Shared Resources)
+# ================================================================
+
+async def _create_shared_resource(
+    c: AsyncClient, name: str = "Main Hoist", resource_type: str = "hoist"
+) -> dict:
+    resp = await c.post("/api/v1/camper/shared-resources", json={
+        "name": name,
+        "resource_type": resource_type,
+        "description": f"Test {resource_type}",
+    })
+    assert resp.status_code == 201, f"Resource create failed: {resp.text}"
+    return resp.json()
+
+
+async def _create_resource_booking(
+    c: AsyncClient, resource_id: str, job_id: str,
+    start: str, end: str, notes: str = None
+) -> "httpx.Response":
+    return await c.post("/api/v1/camper/resource-bookings", json={
+        "resource_id": resource_id,
+        "job_id": job_id,
+        "start_date": start,
+        "end_date": end,
+        "notes": notes,
+    })
+
+
+# ================================================================
+# GROUP 6: SHARED RESOURCE BOOKING (Tests 21-28)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_21_create_hoist_and_booking(client):
+    """
+    EDGE CASE 21: Happy path -- create resource, book it, verify response.
+    The booking response should include enriched fields (resource_name, job_number, vehicle_plate).
+    """
+    resource = await _create_shared_resource(client)
+    assert resource["resource_type"] == "hoist"
+    assert resource["is_active"] is True
+
+    vehicle = await _create_vehicle(client, "HOIST-001")
+    customer = await _create_customer(client, "Hoist Happy Henri")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Undercarriage check")
+
+    resp = await _create_resource_booking(
+        client, resource["id"], job["id"],
+        "2026-02-10", "2026-02-12",
+        notes="Full undercarriage access needed"
+    )
+    assert resp.status_code == 201
+    booking = resp.json()
+    assert booking["resource_name"] == "Main Hoist"
+    assert booking["vehicle_plate"] == "HOIST-001"
+    assert booking["status"] == "scheduled"
+    assert booking["start_date"] == "2026-02-10"
+    assert booking["end_date"] == "2026-02-12"
+    assert booking["notes"] == "Full undercarriage access needed"
+
+
+@pytest.mark.asyncio
+async def test_22_overlapping_booking_rejected(client):
+    """
+    EDGE CASE 22: Book Mon-Wed, try Tue-Thu = 409 Conflict.
+    Inclusive dates: Wednesday overlaps with both bookings.
+    """
+    resource = await _create_shared_resource(client, "Overlap Hoist")
+    vehicle = await _create_vehicle(client, "OVERLAP-001")
+    customer = await _create_customer(client, "Overlap Otto")
+    job1 = await _create_job(client, vehicle["id"], customer["id"], "Job A")
+    job2 = await _create_job(client, vehicle["id"], customer["id"], "Job B")
+
+    # Book Mon-Wed
+    resp1 = await _create_resource_booking(
+        client, resource["id"], job1["id"],
+        "2026-03-02", "2026-03-04"  # Mon-Wed
+    )
+    assert resp1.status_code == 201
+
+    # Try Tue-Thu (overlaps on Wed)
+    resp2 = await _create_resource_booking(
+        client, resource["id"], job2["id"],
+        "2026-03-03", "2026-03-05"  # Tue-Thu
+    )
+    assert resp2.status_code == 409, (
+        f"Overlapping booking should be rejected with 409, got {resp2.status_code}"
+    )
+    assert "already booked" in resp2.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_23_back_to_back_booking_allowed(client):
+    """
+    EDGE CASE 23: Book Mon-Wed, book Thu-Fri = 200 OK.
+    Back-to-back is allowed (end_date=Wed, next start_date=Thu).
+    """
+    resource = await _create_shared_resource(client, "B2B Hoist")
+    vehicle = await _create_vehicle(client, "B2B-001")
+    customer = await _create_customer(client, "BackToBack Bruno")
+    job1 = await _create_job(client, vehicle["id"], customer["id"], "First job")
+    job2 = await _create_job(client, vehicle["id"], customer["id"], "Second job")
+
+    # Book Mon-Wed
+    resp1 = await _create_resource_booking(
+        client, resource["id"], job1["id"],
+        "2026-03-02", "2026-03-04"  # Mon-Wed
+    )
+    assert resp1.status_code == 201
+
+    # Book Thu-Fri (no overlap -- Wed ends, Thu starts)
+    resp2 = await _create_resource_booking(
+        client, resource["id"], job2["id"],
+        "2026-03-05", "2026-03-06"  # Thu-Fri
+    )
+    assert resp2.status_code == 201, (
+        f"Back-to-back booking should succeed, got {resp2.status_code}: {resp2.text}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_24_cancelled_booking_doesnt_block(client):
+    """
+    EDGE CASE 24: Book Mon-Wed, cancel it, rebook Mon-Wed = 200 OK.
+    CANCELLED bookings are invisible to overlap detection.
+    """
+    resource = await _create_shared_resource(client, "Cancel Hoist")
+    vehicle = await _create_vehicle(client, "CANCEL-B01")
+    customer = await _create_customer(client, "Cancel Clara")
+    job1 = await _create_job(client, vehicle["id"], customer["id"], "Original booking")
+    job2 = await _create_job(client, vehicle["id"], customer["id"], "Replacement booking")
+
+    # Book Mon-Wed
+    resp1 = await _create_resource_booking(
+        client, resource["id"], job1["id"],
+        "2026-03-09", "2026-03-11"
+    )
+    assert resp1.status_code == 201
+    booking_id = resp1.json()["id"]
+
+    # Cancel it
+    cancel_resp = await client.delete(f"/api/v1/camper/resource-bookings/{booking_id}")
+    assert cancel_resp.status_code == 200
+    assert cancel_resp.json()["status"] == "cancelled"
+
+    # Rebook same dates with different job -- should succeed
+    resp2 = await _create_resource_booking(
+        client, resource["id"], job2["id"],
+        "2026-03-09", "2026-03-11"
+    )
+    assert resp2.status_code == 201, (
+        f"Rebooking after cancel should succeed, got {resp2.status_code}: {resp2.text}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_25_booking_status_lifecycle(client):
+    """
+    EDGE CASE 25: SCHEDULED -> IN_USE -> COMPLETED transitions.
+    Each step should succeed, and terminal states should block further transitions.
+    """
+    resource = await _create_shared_resource(client, "Lifecycle Hoist")
+    vehicle = await _create_vehicle(client, "LIFE-001")
+    customer = await _create_customer(client, "Lifecycle Luca")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Lifecycle test")
+
+    resp = await _create_resource_booking(
+        client, resource["id"], job["id"],
+        "2026-04-01", "2026-04-03"
+    )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+    assert resp.json()["status"] == "scheduled"
+
+    # SCHEDULED -> IN_USE
+    resp2 = await client.patch(
+        f"/api/v1/camper/resource-bookings/{booking_id}/status",
+        json={"status": "in_use"}
+    )
+    assert resp2.status_code == 200
+    assert resp2.json()["status"] == "in_use"
+
+    # IN_USE -> COMPLETED
+    resp3 = await client.patch(
+        f"/api/v1/camper/resource-bookings/{booking_id}/status",
+        json={"status": "completed"}
+    )
+    assert resp3.status_code == 200
+    assert resp3.json()["status"] == "completed"
+
+    # COMPLETED -> anything should fail
+    resp4 = await client.patch(
+        f"/api/v1/camper/resource-bookings/{booking_id}/status",
+        json={"status": "in_use"}
+    )
+    assert resp4.status_code == 400, (
+        f"Transition from completed should fail, got {resp4.status_code}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_26_completed_booking_doesnt_block(client):
+    """
+    EDGE CASE 26: Complete a booking, rebook same dates = 200 OK.
+    COMPLETED bookings are invisible to overlap detection (same as CANCELLED).
+    """
+    resource = await _create_shared_resource(client, "Complete Hoist")
+    vehicle = await _create_vehicle(client, "COMP-001")
+    customer = await _create_customer(client, "Complete Carla")
+    job1 = await _create_job(client, vehicle["id"], customer["id"], "Done job")
+    job2 = await _create_job(client, vehicle["id"], customer["id"], "New job")
+
+    # Book and complete
+    resp1 = await _create_resource_booking(
+        client, resource["id"], job1["id"],
+        "2026-04-07", "2026-04-09"
+    )
+    assert resp1.status_code == 201
+    booking_id = resp1.json()["id"]
+
+    # Advance: SCHEDULED -> IN_USE -> COMPLETED
+    await client.patch(
+        f"/api/v1/camper/resource-bookings/{booking_id}/status",
+        json={"status": "in_use"}
+    )
+    await client.patch(
+        f"/api/v1/camper/resource-bookings/{booking_id}/status",
+        json={"status": "completed"}
+    )
+
+    # Rebook same dates -- should succeed
+    resp2 = await _create_resource_booking(
+        client, resource["id"], job2["id"],
+        "2026-04-07", "2026-04-09"
+    )
+    assert resp2.status_code == 201, (
+        f"Rebooking after completion should succeed, got {resp2.status_code}: {resp2.text}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_27_booking_with_nonexistent_resource(client):
+    """
+    EDGE CASE 27: Fake resource_id = 404.
+    """
+    vehicle = await _create_vehicle(client, "FAKE-R01")
+    customer = await _create_customer(client, "Fake Resource Fabio")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Ghost hoist")
+
+    fake_resource_id = str(uuid4())
+    resp = await _create_resource_booking(
+        client, fake_resource_id, job["id"],
+        "2026-04-14", "2026-04-15"
+    )
+    assert resp.status_code == 404, (
+        f"Nonexistent resource should return 404, got {resp.status_code}"
+    )
+    assert "not found" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_28_counter_cannot_create_resource(counter_client):
+    """
+    EDGE CASE 28: Counter role = 403 on resource creation.
+    Only manager/admin can create shared resources.
+    """
+    resp = await counter_client.post("/api/v1/camper/shared-resources", json={
+        "name": "Unauthorized Hoist",
+        "resource_type": "hoist",
+    })
+    assert resp.status_code == 403, (
+        f"Counter should get 403, got {resp.status_code}"
+    )

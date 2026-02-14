@@ -639,3 +639,71 @@ class DashboardSummary(BaseModel):
     jobs_in_inspection: int = Field(default=0, description="Jobs awaiting inspection")
     bay_utilization: float = Field(default=0, description="Percentage of active bays with jobs")
     average_days_per_job: float = Field(default=0, description="Average calendar days for completed jobs")
+
+
+# ================================================================
+# SHARED RESOURCE SCHEMAS
+# ================================================================
+
+class SharedResourceCreate(BaseModel):
+    """Schema for creating a shared resource (hoist, diagnostic scanner, etc.)"""
+    name: str = Field(..., max_length=100, description="Display name: 'Main Hoist'")
+    resource_type: str = Field(default="hoist", description="hoist, compressor, diagnostic, welder")
+    description: Optional[str] = None
+
+
+class SharedResourceUpdate(BaseModel):
+    """Schema for updating a shared resource"""
+    name: Optional[str] = Field(None, max_length=100)
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class SharedResourceResponse(BaseModel):
+    """Schema for reading a shared resource"""
+    id: UUID
+    name: str
+    resource_type: str
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# RESOURCE BOOKING SCHEMAS
+# ================================================================
+
+class ResourceBookingCreate(BaseModel):
+    """Schema for booking a shared resource for a service job"""
+    resource_id: UUID
+    job_id: UUID
+    start_date: date
+    end_date: date
+    notes: Optional[str] = None
+
+
+class ResourceBookingStatusUpdate(BaseModel):
+    """Schema for advancing booking status"""
+    status: str = Field(..., description="scheduled, in_use, completed, cancelled")
+
+
+class ResourceBookingResponse(BaseModel):
+    """Schema for reading a resource booking"""
+    id: UUID
+    resource_id: UUID
+    resource_name: str = Field(description="Enriched from relationship")
+    job_id: UUID
+    job_number: str = Field(description="Enriched from relationship")
+    vehicle_plate: str = Field(description="Enriched: job -> vehicle -> plate")
+    start_date: date
+    end_date: date
+    status: str
+    notes: Optional[str] = None
+    booked_by: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
