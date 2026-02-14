@@ -56,6 +56,7 @@ from src.schemas.camper_schema import (
     ServiceReminder, RemindersResponse,
     TechnicianHours, TechnicianSummaryResponse,
     CamperSupplierCreate, CamperSupplierUpdate, CamperSupplierRead,
+    CustomerVehicleSummary, CustomerVehicleListResponse, JobCostSummary,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -1176,6 +1177,128 @@ async def get_technician_summary(
         job_number=job.job_number,
         total_hours=round(sum(t.total_hours for t in technicians), 2),
         technicians=technicians,
+    )
+
+
+# ================================================================
+# CUSTOMER VEHICLE LIST
+# ================================================================
+
+@router.get("/customers/{customer_id}/vehicles", response_model=CustomerVehicleListResponse)
+async def list_customer_vehicles(
+    customer_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """All vehicles linked to a customer through their jobs -- 'What does Marco drive?'"""
+    customer_result = await db.execute(
+        select(CamperCustomerModel).where(CamperCustomerModel.id == customer_id)
+    )
+    customer = customer_result.scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Get distinct vehicle IDs from this customer's jobs
+    jobs_result = await db.execute(
+        select(
+            CamperServiceJobModel.vehicle_id,
+            func.count(CamperServiceJobModel.id).label("job_count"),
+            func.max(CamperServiceJobModel.created_at).label("last_service"),
+        ).where(
+            CamperServiceJobModel.customer_id == customer_id
+        ).group_by(CamperServiceJobModel.vehicle_id)
+    )
+    vehicle_rows = jobs_result.all()
+
+    vehicles = []
+    for row in vehicle_rows:
+        v_result = await db.execute(
+            select(CamperVehicleModel).where(CamperVehicleModel.id == row.vehicle_id)
+        )
+        vehicle = v_result.scalar_one_or_none()
+        if vehicle:
+            vehicles.append(CustomerVehicleSummary(
+                vehicle_id=vehicle.id,
+                registration_plate=vehicle.registration_plate,
+                make=vehicle.make,
+                model=vehicle.model,
+                vehicle_type=vehicle.vehicle_type.value if vehicle.vehicle_type else None,
+                status=vehicle.status.value if vehicle.status else None,
+                total_jobs=row.job_count,
+                last_service=row.last_service,
+            ))
+
+    return CustomerVehicleListResponse(
+        customer_id=customer.id,
+        customer_name=customer.name,
+        total_vehicles=len(vehicles),
+        vehicles=vehicles,
+    )
+
+
+# ================================================================
+# JOB COST SUMMARY
+# ================================================================
+
+@router.get("/jobs/{job_id}/cost-summary", response_model=JobCostSummary)
+async def get_job_cost_summary(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Financial breakdown: labor + parts + totals. What's this job costing us?"""
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Service job not found")
+
+    labor_rate = Decimal("35.00")
+    estimated_labor = labor_rate * Decimal(str(job.estimated_hours or 0))
+    actual_labor = labor_rate * Decimal(str(job.actual_hours or 0))
+
+    # Sum all PO totals for parts cost
+    parts_result = await db.execute(
+        select(func.sum(CamperPurchaseOrderModel.total)).where(
+            and_(
+                CamperPurchaseOrderModel.job_id == job_id,
+                ~CamperPurchaseOrderModel.status.in_([CamperPOStatus.CANCELLED]),
+            )
+        )
+    )
+    parts_cost = parts_result.scalar() or Decimal("0.00")
+
+    # Quotation total (if any)
+    quote_result = await db.execute(
+        select(CamperQuotationModel.total).where(
+            CamperQuotationModel.job_id == job_id
+        ).order_by(CamperQuotationModel.created_at.desc()).limit(1)
+    )
+    quotation_total = quote_result.scalar()
+
+    # Invoice total (if any)
+    invoice_result = await db.execute(
+        select(CamperInvoiceModel.total).where(
+            CamperInvoiceModel.job_id == job_id
+        ).order_by(CamperInvoiceModel.created_at.desc()).limit(1)
+    )
+    invoice_total = invoice_result.scalar()
+
+    return JobCostSummary(
+        job_id=job.id,
+        job_number=job.job_number,
+        estimated_hours=job.estimated_hours or 0,
+        actual_hours=job.actual_hours or 0,
+        labor_rate_per_hour=labor_rate,
+        estimated_labor_cost=estimated_labor,
+        actual_labor_cost=actual_labor,
+        parts_cost=parts_cost,
+        estimated_total=estimated_labor + Decimal(str(job.estimated_parts_cost or 0)),
+        actual_total=actual_labor + parts_cost,
+        quotation_total=quotation_total,
+        invoice_total=invoice_total,
+        deposit_paid=job.deposit_paid or Decimal("0.00"),
     )
 
 
@@ -2315,8 +2438,9 @@ async def log_work(
         logged_by=current_user["username"],
     )
     db.add(work_log)
+    await db.flush()  # Ensure work_log is in DB before SUM query
 
-    # Auto-update actual_hours on the job (sum of all WORK logs)
+    # Auto-update actual_hours on the job (sum of all WORK logs incl. new one)
     total_hours_result = await db.execute(
         select(func.sum(CamperWorkLogModel.hours)).where(
             and_(
@@ -2325,8 +2449,7 @@ async def log_work(
             )
         )
     )
-    total_logged = (total_hours_result.scalar() or 0) + log_data.hours
-    job.actual_hours = total_logged
+    job.actual_hours = total_hours_result.scalar() or 0
 
     await db.commit()
     await db.refresh(work_log)

@@ -2120,3 +2120,235 @@ async def test_60_supplier_not_found(client):
     fake_id = str(uuid4())
     resp = await client.get(f"/api/v1/camper/suppliers/{fake_id}")
     assert resp.status_code == 404
+
+
+# ================================================================
+# GROUP 11: DASHBOARD + SEARCH + PO LIFECYCLE + COST SUMMARY (Tests 61-68)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_61_dashboard_returns_all_fields(client):
+    """
+    EDGE CASE 61: Dashboard returns 200 with all required fields.
+    Prior tests may have created data, so we verify shape + types, not zeros.
+    """
+    resp = await client.get("/api/v1/camper/dashboard")
+    assert resp.status_code == 200
+    d = resp.json()
+    # Every field must be present and the right type
+    assert isinstance(d["vehicles_in_shop"], int)
+    assert isinstance(d["jobs_in_progress"], int)
+    assert isinstance(d["jobs_waiting_parts"], int)
+    assert isinstance(d["pending_quotes"], int)
+    assert isinstance(d["total_jobs"], int)
+    assert isinstance(d["overdue_invoices"], int)
+    assert isinstance(d["jobs_in_inspection"], int)
+    assert isinstance(d["jobs_waiting"], int)
+    assert isinstance(d["jobs_completed_today"], int)
+    assert float(d["bay_utilization"]) >= 0
+    assert float(d["average_days_per_job"]) >= 0
+    # Financial fields present
+    assert "pending_deposits" in d
+    assert "total_revenue_month" in d
+
+
+@pytest.mark.asyncio
+async def test_62_dashboard_counts_after_data(client):
+    """
+    EDGE CASE 62: Dashboard counts match after creating vehicles + jobs.
+    Create 2 vehicles, 2 jobs (1 in_progress, 1 quoted), verify counts.
+    """
+    v1 = await _create_vehicle(client, "DASH-001")
+    v2 = await _create_vehicle(client, "DASH-002")
+    c = await _create_customer(client, "Dashboard Dude", "dash@test.it")
+
+    j1 = await _create_job(client, v1["id"], c["id"], "Dashboard Job 1")
+    j2 = await _create_job(client, v2["id"], c["id"], "Dashboard Job 2")
+
+    # Advance j1 to in_progress
+    await _advance_job_to(client, j1["id"], "in_progress")
+
+    resp = await client.get("/api/v1/camper/dashboard")
+    assert resp.status_code == 200
+    d = resp.json()
+    assert d["total_jobs"] >= 2
+    assert d["jobs_in_progress"] >= 1
+    assert d["pending_quotes"] >= 1  # j2 still quoted
+
+
+@pytest.mark.asyncio
+async def test_63_customer_search_by_name(client):
+    """
+    EDGE CASE 63: Customer search returns matching results.
+    """
+    await _create_customer(client, "Salvatore Bianchi", "salvo@test.it")
+    await _create_customer(client, "Rosa Verdi", "rosa@test.it")
+
+    # Search by partial name
+    resp = await client.get("/api/v1/camper/customers?search=Salvatore")
+    assert resp.status_code == 200
+    results = resp.json()
+    assert len(results) >= 1
+    assert any("Salvatore" in r["name"] for r in results)
+
+    # Search that matches nobody
+    resp2 = await client.get("/api/v1/camper/customers?search=ZZZZNOTEXIST")
+    assert resp2.status_code == 200
+    assert len(resp2.json()) == 0
+
+
+@pytest.mark.asyncio
+async def test_64_customer_vehicle_list(client):
+    """
+    EDGE CASE 64: Customer vehicle list shows all vehicles from their jobs.
+    Marco has 2 campers -- both should appear.
+    """
+    v1 = await _create_vehicle(client, "MARCO-01")
+    v2 = await _create_vehicle(client, "MARCO-02")
+    cust = await _create_customer(client, "Marco Due Camper", "marco2@test.it")
+
+    # Create jobs linking both vehicles to this customer
+    await _create_job(client, v1["id"], cust["id"], "Seal replacement on van 1")
+    await _create_job(client, v2["id"], cust["id"], "Oil change on van 2")
+
+    resp = await client.get(f"/api/v1/camper/customers/{cust['id']}/vehicles")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["customer_name"] == "Marco Due Camper"
+    assert data["total_vehicles"] == 2
+    plates = {v["registration_plate"] for v in data["vehicles"]}
+    assert "MARCO-01" in plates
+    assert "MARCO-02" in plates
+
+
+@pytest.mark.asyncio
+async def test_65_job_cost_summary(client):
+    """
+    EDGE CASE 65: Cost summary calculates labor + parts correctly.
+    2 estimated hours * EUR 35 = EUR 70 labor, plus PO parts.
+    """
+    v = await _create_vehicle(client, "COST-001")
+    c = await _create_customer(client, "Cost Calculator", "cost@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Full cost test")
+
+    # Log some work
+    await _log_work(client, j["id"], 1.5, "Removed old seals")
+    await _log_work(client, j["id"], 0.5, "Installed new seals")
+
+    resp = await client.get(f"/api/v1/camper/jobs/{j['id']}/cost-summary")
+    assert resp.status_code == 200
+    cs = resp.json()
+    assert cs["job_number"] == j["job_number"]
+    assert cs["estimated_hours"] == 2.0
+    assert cs["actual_hours"] == 2.0
+    assert Decimal(cs["labor_rate_per_hour"]) == Decimal("35.00")
+    assert Decimal(cs["actual_labor_cost"]) == Decimal("70.00")
+    assert Decimal(cs["estimated_labor_cost"]) == Decimal("70.00")
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+async def test_66_po_status_full_lifecycle(mock_email, client):
+    """
+    EDGE CASE 66: PO walks through DRAFT->SENT->CONFIRMED->SHIPPED->RECEIVED.
+    Each step should succeed. Final RECEIVED sets actual_delivery.
+    """
+    v = await _create_vehicle(client, "PO-LIFE-01")
+    c = await _create_customer(client, "PO Lifecycle", "polife@test.it")
+    j = await _create_job(client, v["id"], c["id"], "PO lifecycle test")
+
+    # Create PO
+    po_resp = await client.post("/api/v1/camper/purchase-orders", json={
+        "job_id": j["id"],
+        "supplier_name": "AutoParts Trapani",
+        "line_items": [{"description": "Seal kit", "part_number": "SK-100",
+                        "quantity": 1, "unit_price": "15.00", "line_total": "15.00"}],
+        "vat_rate": "22.00",
+    })
+    assert po_resp.status_code == 201
+    po = po_resp.json()
+    assert po["status"] == "draft"
+
+    # Walk through statuses
+    for next_status in ["sent", "confirmed", "shipped", "received"]:
+        resp = await client.patch(
+            f"/api/v1/camper/purchase-orders/{po['id']}/status",
+            json={"status": next_status},
+        )
+        assert resp.status_code == 200, f"PO -> {next_status} failed: {resp.text}"
+        assert resp.json()["status"] == next_status
+
+    # Verify actual_delivery was set
+    final = await client.get(f"/api/v1/camper/purchase-orders/{po['id']}")
+    assert final.json()["actual_delivery"] is not None
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+async def test_67_po_received_clears_parts_on_order(mock_email, client):
+    """
+    EDGE CASE 67: When ALL POs for a job are received, parts_on_order = False.
+    Two POs: first received doesn't clear it, second received does.
+    """
+    v = await _create_vehicle(client, "PARTS-01")
+    c = await _create_customer(client, "Parts Tracker", "parts@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Two-PO test")
+
+    # Mark parts_on_order on job
+    await client.put(f"/api/v1/camper/jobs/{j['id']}", json={"parts_on_order": True})
+
+    # Create 2 POs
+    po1_resp = await client.post("/api/v1/camper/purchase-orders", json={
+        "job_id": j["id"], "supplier_name": "Supplier A",
+        "line_items": [{"description": "Part A", "part_number": "A-1",
+                        "quantity": 1, "unit_price": "10.00", "line_total": "10.00"}],
+        "vat_rate": "22.00",
+    })
+    po2_resp = await client.post("/api/v1/camper/purchase-orders", json={
+        "job_id": j["id"], "supplier_name": "Supplier B",
+        "line_items": [{"description": "Part B", "part_number": "B-1",
+                        "quantity": 1, "unit_price": "20.00", "line_total": "20.00"}],
+        "vat_rate": "22.00",
+    })
+    po1 = po1_resp.json()
+    po2 = po2_resp.json()
+
+    # Receive first PO -- parts_on_order should STILL be True (second PO pending)
+    for s in ["sent", "confirmed", "received"]:
+        await client.patch(f"/api/v1/camper/purchase-orders/{po1['id']}/status", json={"status": s})
+
+    job_mid = await client.get(f"/api/v1/camper/jobs/{j['id']}")
+    assert job_mid.json()["parts_on_order"] is True, "Should still be True with 1 PO pending"
+
+    # Receive second PO -- NOW parts_on_order should be False
+    for s in ["sent", "confirmed", "received"]:
+        await client.patch(f"/api/v1/camper/purchase-orders/{po2['id']}/status", json={"status": s})
+
+    job_final = await client.get(f"/api/v1/camper/jobs/{j['id']}")
+    assert job_final.json()["parts_on_order"] is False, "All POs received, should be False"
+
+
+@pytest.mark.asyncio
+async def test_68_work_log_auto_updates_actual_hours(client):
+    """
+    EDGE CASE 68: Logging work auto-sums actual_hours on the job.
+    Log 1.5 + 2.0 + 0.5 = 4.0 actual_hours on the job.
+    """
+    v = await _create_vehicle(client, "HOURS-01")
+    c = await _create_customer(client, "Hours Tracker", "hours@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Hours sum test")
+
+    # Initially zero
+    job = await client.get(f"/api/v1/camper/jobs/{j['id']}")
+    assert job.json()["actual_hours"] == 0
+
+    # Log work in 3 entries
+    await _log_work(client, j["id"], 1.5, "First session")
+    await _log_work(client, j["id"], 2.0, "Second session")
+    await _log_work(client, j["id"], 0.5, "Quick fix")
+
+    # Verify sum
+    job_after = await client.get(f"/api/v1/camper/jobs/{j['id']}")
+    assert job_after.json()["actual_hours"] == 4.0, (
+        f"Expected 4.0h, got {job_after.json()['actual_hours']}"
+    )

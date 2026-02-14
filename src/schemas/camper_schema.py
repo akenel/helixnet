@@ -925,6 +925,47 @@ class TechnicianSummaryResponse(BaseModel):
 
 
 # ================================================================
+# CUSTOMER VEHICLE LIST + JOB COST SUMMARY
+# ================================================================
+
+class CustomerVehicleSummary(BaseModel):
+    """A vehicle linked to a customer through jobs"""
+    vehicle_id: UUID
+    registration_plate: str
+    make: Optional[str] = None
+    model: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    status: Optional[str] = None
+    total_jobs: int = 0
+    last_service: Optional[datetime] = None
+
+
+class CustomerVehicleListResponse(BaseModel):
+    """All vehicles associated with a customer"""
+    customer_id: UUID
+    customer_name: str
+    total_vehicles: int
+    vehicles: list[CustomerVehicleSummary] = Field(default_factory=list)
+
+
+class JobCostSummary(BaseModel):
+    """Financial breakdown for a single job"""
+    job_id: UUID
+    job_number: str
+    estimated_hours: float = 0
+    actual_hours: float = 0
+    labor_rate_per_hour: Decimal = Field(default=Decimal("35.00"), description="EUR/hr")
+    estimated_labor_cost: Decimal = Decimal("0.00")
+    actual_labor_cost: Decimal = Decimal("0.00")
+    parts_cost: Decimal = Decimal("0.00")
+    estimated_total: Decimal = Decimal("0.00")
+    actual_total: Decimal = Decimal("0.00")
+    quotation_total: Optional[Decimal] = None
+    invoice_total: Optional[Decimal] = None
+    deposit_paid: Decimal = Decimal("0.00")
+
+
+# ================================================================
 # CAMPER SUPPLIER DIRECTORY SCHEMAS
 # ================================================================
 
