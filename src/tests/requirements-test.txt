@@ -1,26 +1,6 @@
-databases
-# `app/tests/requirements-test.txt`£
-#¨httpx if you later convert to async
-httpx>=0.24
-# Test Dependencies for HelixNet API
-# Ensure these are installed in your dev container environment.
-# Critical Fix: Enables running async functions with pytest
+# Test dependencies for Camper & Tour edge case suite
+pytest>=8.0
 pytest-asyncio>=0.23.0
-# HTTP client for making real API requests
-httpx>=0.24.0
-# Core testing framework
-pytest>=7.0
 pytest-cov>=4.0
-# General dependencies you might use in test fixtures
-# Minimal extras for best experience with the test harness
-requests>=2.28
-rich>=13.0
-pydantic>=1.10
-python-jose>=3.3
-
-
-anyio
-pytest-asyncio
-pytest-tornasync
-pytest-trio
-pytest-twisted
+httpx>=0.24.0
+aiosqlite>=0.19.0

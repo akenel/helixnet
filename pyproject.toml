@@ -1,3 +1,7 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["src/tests"]
+
 [tool.semantic_release]
 version_variable = "src/__init__.py:__version__"
 upload_to_pypi = false
