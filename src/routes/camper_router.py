@@ -51,6 +51,7 @@ from src.schemas.camper_schema import (
     ResourceBookingCreate, ResourceBookingStatusUpdate, ResourceBookingResponse,
     AppointmentCreate, AppointmentUpdate, AppointmentRead, AppointmentStatusUpdate,
     VehicleCheckIn, VehicleCheckOut,
+    ServiceHistoryEntry, ServiceHistoryResponse, WarrantySet,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -282,6 +283,68 @@ async def update_vehicle_status(
     return vehicle
 
 
+@router.get("/vehicles/{vehicle_id}/service-history", response_model=ServiceHistoryResponse)
+async def get_vehicle_service_history(
+    vehicle_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Full service history for a vehicle -- 'brakes done at 200,000km last year'"""
+    vehicle_result = await db.execute(
+        select(CamperVehicleModel).where(CamperVehicleModel.id == vehicle_id)
+    )
+    vehicle = vehicle_result.scalar_one_or_none()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    jobs_result = await db.execute(
+        select(CamperServiceJobModel)
+        .where(CamperServiceJobModel.vehicle_id == vehicle_id)
+        .order_by(CamperServiceJobModel.created_at.desc())
+    )
+    jobs = jobs_result.scalars().all()
+
+    total_spend = sum(j.actual_total for j in jobs)
+    entries = []
+    for j in jobs:
+        # Get customer name
+        cust_result = await db.execute(
+            select(CamperCustomerModel.name).where(CamperCustomerModel.id == j.customer_id)
+        )
+        cust_name = cust_result.scalar_one_or_none() or "Unknown"
+
+        entries.append(ServiceHistoryEntry(
+            job_id=j.id,
+            job_number=j.job_number,
+            title=j.title,
+            job_type=j.job_type,
+            status=j.status,
+            assigned_to=j.assigned_to,
+            scheduled_date=j.scheduled_date,
+            started_at=j.started_at,
+            completed_at=j.completed_at,
+            mileage_in=j.mileage_in,
+            mileage_out=j.mileage_out,
+            actual_total=j.actual_total,
+            currency=j.currency,
+            warranty_months=j.warranty_months,
+            warranty_expires_at=j.warranty_expires_at,
+            work_performed=j.work_performed,
+            parts_used=j.parts_used,
+            vehicle_plate=vehicle.registration_plate,
+            customer_name=cust_name,
+        ))
+
+    return ServiceHistoryResponse(
+        entity_type="vehicle",
+        entity_id=vehicle_id,
+        entity_name=vehicle.registration_plate,
+        total_jobs=len(entries),
+        total_spend=total_spend,
+        jobs=entries,
+    )
+
+
 # ================================================================
 # CUSTOMER ENDPOINTS
 # ================================================================
@@ -371,6 +434,69 @@ async def update_customer(
 
     logger.info(f"Customer updated: {customer.name} by {current_user['username']}")
     return customer
+
+
+@router.get("/customers/{customer_id}/service-history", response_model=ServiceHistoryResponse)
+async def get_customer_service_history(
+    customer_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Full service history for a customer -- all their visits, all vehicles"""
+    customer_result = await db.execute(
+        select(CamperCustomerModel).where(CamperCustomerModel.id == customer_id)
+    )
+    customer = customer_result.scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    jobs_result = await db.execute(
+        select(CamperServiceJobModel)
+        .where(CamperServiceJobModel.customer_id == customer_id)
+        .order_by(CamperServiceJobModel.created_at.desc())
+    )
+    jobs = jobs_result.scalars().all()
+
+    total_spend = sum(j.actual_total for j in jobs)
+    entries = []
+    for j in jobs:
+        # Get vehicle plate
+        v_result = await db.execute(
+            select(CamperVehicleModel.registration_plate)
+            .where(CamperVehicleModel.id == j.vehicle_id)
+        )
+        plate = v_result.scalar_one_or_none() or "Unknown"
+
+        entries.append(ServiceHistoryEntry(
+            job_id=j.id,
+            job_number=j.job_number,
+            title=j.title,
+            job_type=j.job_type,
+            status=j.status,
+            assigned_to=j.assigned_to,
+            scheduled_date=j.scheduled_date,
+            started_at=j.started_at,
+            completed_at=j.completed_at,
+            mileage_in=j.mileage_in,
+            mileage_out=j.mileage_out,
+            actual_total=j.actual_total,
+            currency=j.currency,
+            warranty_months=j.warranty_months,
+            warranty_expires_at=j.warranty_expires_at,
+            work_performed=j.work_performed,
+            parts_used=j.parts_used,
+            vehicle_plate=plate,
+            customer_name=customer.name,
+        ))
+
+    return ServiceHistoryResponse(
+        entity_type="customer",
+        entity_id=customer_id,
+        entity_name=customer.name,
+        total_jobs=len(entries),
+        total_spend=total_spend,
+        jobs=entries,
+    )
 
 
 # ================================================================
@@ -865,6 +991,51 @@ async def check_out_vehicle(
     logger.info(
         f"Job {job.job_number} CHECK-OUT by {current_user['username']}"
         f" | mileage_in={job.mileage_in} -> mileage_out={job.mileage_out}"
+    )
+    return await _enrich_job_response(job, db)
+
+
+# ================================================================
+# WARRANTY TRACKING
+# ================================================================
+
+@router.post("/jobs/{job_id}/set-warranty", response_model=ServiceJobRead)
+async def set_warranty(
+    job_id: UUID,
+    warranty: WarrantySet,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Set warranty terms on a completed job. Auto-calculates expiry date."""
+    result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.status not in (JobStatus.COMPLETED, JobStatus.INVOICED):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Can only set warranty on COMPLETED or INVOICED jobs. Current: {job.status.value}"
+        )
+
+    job.warranty_months = warranty.warranty_months
+    if warranty.warranty_terms is not None:
+        job.warranty_terms = warranty.warranty_terms
+
+    # Auto-calculate expiry: completed_at + warranty_months (or today if no completed_at)
+    from dateutil.relativedelta import relativedelta
+    base_date = job.completed_at.date() if job.completed_at else date.today()
+    job.warranty_expires_at = base_date + relativedelta(months=warranty.warranty_months)
+
+    job.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(job)
+
+    logger.info(
+        f"Job {job.job_number} WARRANTY set: {warranty.warranty_months} months, "
+        f"expires {job.warranty_expires_at} by {current_user['username']}"
     )
     return await _enrich_job_response(job, db)
 

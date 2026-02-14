@@ -316,6 +316,10 @@ class ServiceJobRead(BaseModel):
     deposit_required: Decimal = Decimal("0.00")
     deposit_paid: Decimal = Decimal("0.00")
     deposit_paid_at: Optional[datetime] = None
+    # Warranty
+    warranty_months: Optional[int] = None
+    warranty_expires_at: Optional[date] = None
+    warranty_terms: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -725,6 +729,61 @@ class ResourceBookingResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# SERVICE HISTORY SCHEMAS
+# ================================================================
+
+class ServiceHistoryEntry(BaseModel):
+    """A single service record for vehicle/customer history view"""
+    job_id: UUID
+    job_number: str
+    title: str
+    job_type: JobType
+    status: JobStatus
+    assigned_to: Optional[str] = None
+    # Dates
+    scheduled_date: Optional[date] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    # Mileage (from check-in/check-out)
+    mileage_in: Optional[int] = None
+    mileage_out: Optional[int] = None
+    # Financials
+    actual_total: Decimal = Decimal("0.00")
+    currency: str = "EUR"
+    # Warranty
+    warranty_months: Optional[int] = None
+    warranty_expires_at: Optional[date] = None
+    # Notes
+    work_performed: Optional[str] = None
+    parts_used: Optional[str] = None
+    # Vehicle/Customer info (for cross-reference)
+    vehicle_plate: Optional[str] = None
+    customer_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ServiceHistoryResponse(BaseModel):
+    """Full service history for a vehicle or customer"""
+    entity_type: str = Field(description="vehicle or customer")
+    entity_id: UUID
+    entity_name: str = Field(description="Plate or customer name")
+    total_jobs: int
+    total_spend: Decimal = Decimal("0.00")
+    jobs: list[ServiceHistoryEntry] = Field(default_factory=list)
+
+
+# ================================================================
+# WARRANTY SCHEMAS
+# ================================================================
+
+class WarrantySet(BaseModel):
+    """Schema for setting warranty terms on a completed job"""
+    warranty_months: int = Field(..., ge=1, le=60, description="Warranty period in months (1-60)")
+    warranty_terms: Optional[str] = Field(None, description="e.g., 'Parts only', 'Full labor + parts'")
 
 
 # ================================================================

@@ -265,6 +265,23 @@ class CamperServiceJobModel(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # Warranty tracking
+    warranty_months: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment="Warranty period in months (1=30 days, 24=2 years)"
+    )
+    warranty_expires_at: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+        comment="Auto-calculated: completed_at + warranty_months"
+    )
+    warranty_terms: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="e.g., 'Parts only', 'Full labor + parts', 'Seal only, not bodywork'"
+    )
+
     # Follow-up
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=False)
     follow_up_notes: Mapped[str | None] = mapped_column(Text, nullable=True)

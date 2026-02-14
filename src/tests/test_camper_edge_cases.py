@@ -1694,3 +1694,204 @@ async def test_44_check_in_with_job_creation(client):
     # Verify via GET
     get_resp = await client.get(f"/api/v1/camper/jobs/{job['id']}")
     assert get_resp.json()["mileage_in"] == 175000
+
+
+# ================================================================
+# GROUP 9: SERVICE HISTORY + WARRANTY (Tests 45-52)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_45_vehicle_service_history(client):
+    """
+    EDGE CASE 45: Vehicle with 3 jobs -- service history returns all,
+    sorted newest first, with mileage and totals.
+    """
+    vehicle = await _create_vehicle(client, "HIST-001")
+    customer = await _create_customer(client, "History Harry")
+
+    jobs = []
+    for i, title in enumerate(["Oil change", "Brake pads", "Roof seal"]):
+        j = await _create_job(client, vehicle["id"], customer["id"], title)
+        # Check in with increasing mileage
+        await client.post(
+            f"/api/v1/camper/jobs/{j['id']}/check-in",
+            json={"mileage_in": 100000 + (i * 5000)},
+        )
+        jobs.append(j)
+
+    resp = await client.get(f"/api/v1/camper/vehicles/{vehicle['id']}/service-history")
+    assert resp.status_code == 200
+    history = resp.json()
+
+    assert history["entity_type"] == "vehicle"
+    assert history["entity_name"] == "HIST-001"
+    assert history["total_jobs"] == 3
+
+    # Newest first (Roof seal was created last)
+    assert history["jobs"][0]["title"] == "Roof seal"
+    assert history["jobs"][2]["title"] == "Oil change"
+
+    # Mileage recorded
+    assert history["jobs"][2]["mileage_in"] == 100000
+    assert history["jobs"][1]["mileage_in"] == 105000
+    assert history["jobs"][0]["mileage_in"] == 110000
+
+
+@pytest.mark.asyncio
+async def test_46_customer_service_history_multiple_vehicles(client):
+    """
+    EDGE CASE 46: Customer with 2 vehicles, jobs on both.
+    History returns all jobs across vehicles with plate info.
+    """
+    vehicle1 = await _create_vehicle(client, "CUST-V01")
+    vehicle2 = await _create_vehicle(client, "CUST-V02")
+    customer = await _create_customer(client, "Multi-Van Marco")
+
+    await _create_job(client, vehicle1["id"], customer["id"], "V1 brake check")
+    await _create_job(client, vehicle2["id"], customer["id"], "V2 oil change")
+    await _create_job(client, vehicle1["id"], customer["id"], "V1 tire rotation")
+
+    resp = await client.get(
+        f"/api/v1/camper/customers/{customer['id']}/service-history"
+    )
+    assert resp.status_code == 200
+    history = resp.json()
+
+    assert history["entity_type"] == "customer"
+    assert history["entity_name"] == "Multi-Van Marco"
+    assert history["total_jobs"] == 3
+
+    plates = [j["vehicle_plate"] for j in history["jobs"]]
+    assert "CUST-V01" in plates
+    assert "CUST-V02" in plates
+
+
+@pytest.mark.asyncio
+async def test_47_empty_service_history(client):
+    """
+    EDGE CASE 47: Vehicle with zero jobs -- history returns empty list.
+    """
+    vehicle = await _create_vehicle(client, "EMPTY-001")
+
+    resp = await client.get(f"/api/v1/camper/vehicles/{vehicle['id']}/service-history")
+    assert resp.status_code == 200
+    history = resp.json()
+    assert history["total_jobs"] == 0
+    assert history["jobs"] == []
+    assert Decimal(str(history["total_spend"])) == Decimal("0")
+
+
+@pytest.mark.asyncio
+async def test_48_service_history_nonexistent_vehicle(client):
+    """
+    EDGE CASE 48: Fake vehicle ID = 404.
+    """
+    fake_id = str(uuid4())
+    resp = await client.get(f"/api/v1/camper/vehicles/{fake_id}/service-history")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+@patch(
+    "src.services.camper_telegram_service.send_telegram_message",
+    new_callable=AsyncMock,
+    return_value=True,
+)
+async def test_49_set_warranty_on_completed_job(mock_tg, mock_email, client):
+    """
+    EDGE CASE 49: Set 12-month warranty on completed job.
+    Expiry auto-calculated from completed_at + 12 months.
+    """
+    vehicle = await _create_vehicle(client, "WARR-001")
+    customer = await _create_customer(client, "Warranty Wanda")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Seal replacement")
+
+    await _advance_job_to(client, job["id"], "completed")
+
+    resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/set-warranty",
+        json={
+            "warranty_months": 12,
+            "warranty_terms": "Full labor + parts, seal only",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["warranty_months"] == 12
+    assert data["warranty_terms"] == "Full labor + parts, seal only"
+    assert data["warranty_expires_at"] is not None
+
+    # Verify via GET
+    get_resp = await client.get(f"/api/v1/camper/jobs/{job['id']}")
+    assert get_resp.json()["warranty_months"] == 12
+
+
+@pytest.mark.asyncio
+async def test_50_warranty_on_non_completed_job_rejected(client):
+    """
+    EDGE CASE 50: Try to set warranty on IN_PROGRESS job = 400.
+    Warranty only makes sense on finished work.
+    """
+    vehicle = await _create_vehicle(client, "WARRNC-001")
+    customer = await _create_customer(client, "No Complete Nancy")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Gas line fix")
+
+    await _advance_job_to(client, job["id"], "in_progress")
+
+    resp = await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/set-warranty",
+        json={"warranty_months": 6},
+    )
+    assert resp.status_code == 400, (
+        f"Warranty on in_progress should return 400, got {resp.status_code}"
+    )
+    assert "COMPLETED or INVOICED" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+@patch(
+    "src.services.camper_telegram_service.send_telegram_message",
+    new_callable=AsyncMock,
+    return_value=True,
+)
+async def test_51_warranty_shows_in_service_history(mock_tg, mock_email, client):
+    """
+    EDGE CASE 51: Warranty info appears in vehicle service history.
+    Customer can see: 'Seal replacement - 24 month warranty, expires 2028-02-14'.
+    """
+    vehicle = await _create_vehicle(client, "WARRH-001")
+    customer = await _create_customer(client, "History + Warranty Hugo")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Water pump replacement")
+
+    await _advance_job_to(client, job["id"], "completed")
+
+    # Set 24-month warranty
+    await client.post(
+        f"/api/v1/camper/jobs/{job['id']}/set-warranty",
+        json={"warranty_months": 24, "warranty_terms": "Parts only, not labor"},
+    )
+
+    resp = await client.get(f"/api/v1/camper/vehicles/{vehicle['id']}/service-history")
+    assert resp.status_code == 200
+    history = resp.json()
+    assert history["total_jobs"] == 1
+    assert history["jobs"][0]["warranty_months"] == 24
+    assert history["jobs"][0]["warranty_expires_at"] is not None
+
+
+@pytest.mark.asyncio
+async def test_52_counter_cannot_set_warranty(counter_client):
+    """
+    EDGE CASE 52: Counter role = 403 on warranty set.
+    Only manager/admin can set warranty terms.
+    """
+    fake_id = str(uuid4())
+    resp = await counter_client.post(
+        f"/api/v1/camper/jobs/{fake_id}/set-warranty",
+        json={"warranty_months": 6},
+    )
+    assert resp.status_code == 403, (
+        f"Counter should get 403, got {resp.status_code}"
+    )
