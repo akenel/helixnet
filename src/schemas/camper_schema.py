@@ -873,3 +873,105 @@ class AppointmentRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# SERVICE REMINDER SCHEMAS
+# ================================================================
+
+class ServiceReminder(BaseModel):
+    """A follow-up or scheduled service reminder"""
+    job_id: UUID
+    job_number: str
+    title: str
+    customer_id: UUID
+    customer_name: str
+    customer_phone: Optional[str] = None
+    vehicle_id: UUID
+    vehicle_plate: str
+    next_service_date: Optional[date] = None
+    follow_up_notes: Optional[str] = None
+    warranty_expires_at: Optional[date] = None
+    days_until_due: int = Field(description="Negative = overdue")
+    is_overdue: bool = False
+
+
+class RemindersResponse(BaseModel):
+    """All pending service reminders"""
+    overdue: list[ServiceReminder] = Field(default_factory=list)
+    upcoming_7_days: list[ServiceReminder] = Field(default_factory=list)
+    upcoming_30_days: list[ServiceReminder] = Field(default_factory=list)
+    total: int = 0
+
+
+# ================================================================
+# TECHNICIAN SUMMARY SCHEMAS
+# ================================================================
+
+class TechnicianHours(BaseModel):
+    """Hours worked by a single technician on a job"""
+    technician: str
+    total_hours: float
+    log_count: int
+    latest_entry: Optional[datetime] = None
+
+
+class TechnicianSummaryResponse(BaseModel):
+    """Per-technician hour breakdown for a job"""
+    job_id: UUID
+    job_number: str
+    total_hours: float
+    technicians: list[TechnicianHours] = Field(default_factory=list)
+
+
+# ================================================================
+# CAMPER SUPPLIER DIRECTORY SCHEMAS
+# ================================================================
+
+class CamperSupplierCreate(BaseModel):
+    """Schema for creating a supplier in the directory"""
+    name: str = Field(..., max_length=200, description="Supplier name")
+    contact_person: Optional[str] = Field(None, max_length=200)
+    phone: Optional[str] = Field(None, max_length=50)
+    email: Optional[str] = Field(None, max_length=255)
+    address: Optional[str] = Field(None, max_length=500)
+    city: Optional[str] = Field(None, max_length=100)
+    specialty: Optional[str] = Field(None, max_length=200, description="e.g., 'Seals & gaskets', 'Electrical', 'Paint'")
+    lead_time_days: Optional[int] = Field(None, ge=0, description="Typical delivery time in days")
+    is_preferred: bool = Field(default=False, description="Preferred/regular supplier")
+    notes: Optional[str] = None
+
+
+class CamperSupplierUpdate(BaseModel):
+    """Schema for updating a supplier"""
+    name: Optional[str] = Field(None, max_length=200)
+    contact_person: Optional[str] = Field(None, max_length=200)
+    phone: Optional[str] = Field(None, max_length=50)
+    email: Optional[str] = Field(None, max_length=255)
+    address: Optional[str] = Field(None, max_length=500)
+    city: Optional[str] = Field(None, max_length=100)
+    specialty: Optional[str] = Field(None, max_length=200)
+    lead_time_days: Optional[int] = Field(None, ge=0)
+    is_preferred: Optional[bool] = None
+    is_active: Optional[bool] = None
+    notes: Optional[str] = None
+
+
+class CamperSupplierRead(BaseModel):
+    """Schema for reading a supplier"""
+    id: UUID
+    name: str
+    contact_person: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    specialty: Optional[str] = None
+    lead_time_days: Optional[int] = None
+    is_preferred: bool
+    is_active: bool
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

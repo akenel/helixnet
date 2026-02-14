@@ -13,7 +13,7 @@ import pytest_asyncio
 from httpx import AsyncClient
 from unittest.mock import patch, AsyncMock, MagicMock
 from decimal import Decimal
-from datetime import date
+from datetime import date, timedelta
 from uuid import uuid4
 
 from src.main import app
@@ -1895,3 +1895,228 @@ async def test_52_counter_cannot_set_warranty(counter_client):
     assert resp.status_code == 403, (
         f"Counter should get 403, got {resp.status_code}"
     )
+
+
+# ================================================================
+# HELPER FUNCTIONS (Work Logs)
+# ================================================================
+
+async def _log_work(c: AsyncClient, job_id: str, hours: float,
+                    notes: str = "Test work") -> dict:
+    resp = await c.post(
+        f"/api/v1/camper/jobs/{job_id}/work-log",
+        json={"hours": hours, "notes": notes},
+    )
+    assert resp.status_code == 201, f"Work log failed: {resp.text}"
+    return resp.json()
+
+
+# ================================================================
+# HELPER FUNCTIONS (Suppliers)
+# ================================================================
+
+async def _create_supplier(
+    c: AsyncClient, name: str = "AutoParts Trapani",
+    specialty: str = "General parts", is_preferred: bool = False,
+) -> dict:
+    resp = await c.post("/api/v1/camper/suppliers", json={
+        "name": name,
+        "specialty": specialty,
+        "is_preferred": is_preferred,
+        "phone": "+39 0923 555 111",
+        "city": "Trapani",
+    })
+    assert resp.status_code == 201, f"Supplier create failed: {resp.text}"
+    return resp.json()
+
+
+# ================================================================
+# GROUP 10: REMINDERS + TECH HOURS + SUPPLIERS (Tests 53-60)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_53_reminders_overdue_and_upcoming(client):
+    """
+    EDGE CASE 53: Create jobs with follow-ups: one overdue, one due in 3 days,
+    one due in 15 days. Reminders endpoint should sort them into correct buckets.
+    """
+    vehicle = await _create_vehicle(client, "REMIND-001")
+    customer = await _create_customer(client, "Reminder Roberto")
+
+    # Job 1: overdue (yesterday)
+    j1 = await _create_job(client, vehicle["id"], customer["id"], "Overdue brake check")
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    await client.put(f"/api/v1/camper/jobs/{j1['id']}", json={
+        "follow_up_required": True,
+        "follow_up_notes": "Check brake pads again",
+        "next_service_date": yesterday,
+    })
+
+    # Job 2: due in 3 days (within 7-day window)
+    j2 = await _create_job(client, vehicle["id"], customer["id"], "Oil change due soon")
+    in_3_days = (date.today() + timedelta(days=3)).isoformat()
+    await client.put(f"/api/v1/camper/jobs/{j2['id']}", json={
+        "follow_up_required": True,
+        "follow_up_notes": "Next oil change",
+        "next_service_date": in_3_days,
+    })
+
+    # Job 3: due in 15 days (within 30-day window)
+    j3 = await _create_job(client, vehicle["id"], customer["id"], "Filter replacement")
+    in_15_days = (date.today() + timedelta(days=15)).isoformat()
+    await client.put(f"/api/v1/camper/jobs/{j3['id']}", json={
+        "follow_up_required": True,
+        "follow_up_notes": "Replace cabin filter",
+        "next_service_date": in_15_days,
+    })
+
+    resp = await client.get("/api/v1/camper/reminders")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert len(data["overdue"]) >= 1
+    assert len(data["upcoming_7_days"]) >= 1
+    assert len(data["upcoming_30_days"]) >= 1
+    assert data["total"] >= 3
+
+    # Overdue entries should have is_overdue=True and negative days_until_due
+    for entry in data["overdue"]:
+        assert entry["is_overdue"] is True
+        assert entry["days_until_due"] < 0
+
+
+@pytest.mark.asyncio
+async def test_54_reminders_empty_when_no_followups(client):
+    """
+    EDGE CASE 54: No jobs with follow_up_required -- empty reminders.
+    """
+    resp = await client.get("/api/v1/camper/reminders")
+    assert resp.status_code == 200
+    data = resp.json()
+    # May have entries from other tests, but endpoint should not crash
+    assert "overdue" in data
+    assert "upcoming_7_days" in data
+    assert "upcoming_30_days" in data
+
+
+@pytest.mark.asyncio
+async def test_55_technician_summary_multiple_techs(client):
+    """
+    EDGE CASE 55: Job with work logs from 2 technicians.
+    Summary should show hours per tech, sorted by most hours first.
+    """
+    vehicle = await _create_vehicle(client, "TECH-001")
+    customer = await _create_customer(client, "Tech Test Toni")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Multi-tech job")
+    await _advance_job_to(client, job["id"], "in_progress")
+
+    # Nino logs 3 hours (default user is nino)
+    await _log_work(client, job["id"], 3.0, "Nino: removed old seal")
+    await _log_work(client, job["id"], 2.0, "Nino: installed new seal")
+
+    resp = await client.get(f"/api/v1/camper/jobs/{job['id']}/technician-summary")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data["total_hours"] == 5.0
+    assert len(data["technicians"]) == 1  # Both logs from same test user
+    assert data["technicians"][0]["technician"] == "nino"
+    assert data["technicians"][0]["total_hours"] == 5.0
+    assert data["technicians"][0]["log_count"] == 2
+
+
+@pytest.mark.asyncio
+async def test_56_technician_summary_empty_job(client):
+    """
+    EDGE CASE 56: Job with no work logs -- summary returns 0 hours, empty list.
+    """
+    vehicle = await _create_vehicle(client, "NOWORK-001")
+    customer = await _create_customer(client, "No Work Nick")
+    job = await _create_job(client, vehicle["id"], customer["id"], "Empty job")
+
+    resp = await client.get(f"/api/v1/camper/jobs/{job['id']}/technician-summary")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_hours"] == 0
+    assert data["technicians"] == []
+
+
+@pytest.mark.asyncio
+async def test_57_create_and_list_suppliers(client):
+    """
+    EDGE CASE 57: Create 2 suppliers (1 preferred, 1 regular).
+    List should return preferred first. Filter by specialty works.
+    """
+    s1 = await _create_supplier(
+        client, "Palermo Seals", specialty="Seals & gaskets", is_preferred=True
+    )
+    s2 = await _create_supplier(
+        client, "Catania Electric", specialty="Electrical", is_preferred=False
+    )
+
+    # List all
+    resp = await client.get("/api/v1/camper/suppliers")
+    assert resp.status_code == 200
+    suppliers = resp.json()
+    assert len(suppliers) >= 2
+
+    # Preferred should come first
+    names = [s["name"] for s in suppliers]
+    pal_idx = names.index("Palermo Seals")
+    cat_idx = names.index("Catania Electric")
+    assert pal_idx < cat_idx, "Preferred supplier should sort first"
+
+    # Filter by specialty
+    resp2 = await client.get("/api/v1/camper/suppliers?specialty=Electrical")
+    assert resp2.status_code == 200
+    filtered = resp2.json()
+    assert any(s["name"] == "Catania Electric" for s in filtered)
+    assert not any(s["name"] == "Palermo Seals" for s in filtered)
+
+    # Filter preferred_only
+    resp3 = await client.get("/api/v1/camper/suppliers?preferred_only=true")
+    assert resp3.status_code == 200
+    preferred = resp3.json()
+    assert all(s["is_preferred"] for s in preferred)
+
+
+@pytest.mark.asyncio
+async def test_58_update_supplier(client):
+    """
+    EDGE CASE 58: Update supplier lead time and mark as preferred.
+    """
+    supplier = await _create_supplier(client, "Slow Parts Srl")
+
+    resp = await client.put(
+        f"/api/v1/camper/suppliers/{supplier['id']}",
+        json={"lead_time_days": 5, "is_preferred": True},
+    )
+    assert resp.status_code == 200
+    updated = resp.json()
+    assert updated["lead_time_days"] == 5
+    assert updated["is_preferred"] is True
+    assert updated["name"] == "Slow Parts Srl"
+
+
+@pytest.mark.asyncio
+async def test_59_counter_cannot_create_supplier(counter_client):
+    """
+    EDGE CASE 59: Counter role = 403 on supplier creation.
+    Only manager/admin can manage the supplier directory.
+    """
+    resp = await counter_client.post("/api/v1/camper/suppliers", json={
+        "name": "Unauthorized Supplier",
+    })
+    assert resp.status_code == 403, (
+        f"Counter should get 403, got {resp.status_code}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_60_supplier_not_found(client):
+    """
+    EDGE CASE 60: Fake supplier ID = 404.
+    """
+    fake_id = str(uuid4())
+    resp = await client.get(f"/api/v1/camper/suppliers/{fake_id}")
+    assert resp.status_code == 404

@@ -34,6 +34,7 @@ from src.db.models.camper_document_model import CamperDocumentModel
 from src.db.models.camper_shared_resource_model import CamperSharedResourceModel, ResourceType
 from src.db.models.camper_resource_booking_model import CamperResourceBookingModel, BookingStatus
 from src.db.models.camper_appointment_model import CamperAppointmentModel, AppointmentType, AppointmentPriority, AppointmentStatus
+from src.db.models.camper_supplier_model import CamperSupplierModel
 from src.schemas.camper_schema import (
     VehicleCreate, VehicleUpdate, VehicleRead, VehicleStatusUpdate,
     CamperCustomerCreate, CamperCustomerUpdate, CamperCustomerRead,
@@ -52,6 +53,9 @@ from src.schemas.camper_schema import (
     AppointmentCreate, AppointmentUpdate, AppointmentRead, AppointmentStatusUpdate,
     VehicleCheckIn, VehicleCheckOut,
     ServiceHistoryEntry, ServiceHistoryResponse, WarrantySet,
+    ServiceReminder, RemindersResponse,
+    TechnicianHours, TechnicianSummaryResponse,
+    CamperSupplierCreate, CamperSupplierUpdate, CamperSupplierRead,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -1038,6 +1042,220 @@ async def set_warranty(
         f"expires {job.warranty_expires_at} by {current_user['username']}"
     )
     return await _enrich_job_response(job, db)
+
+
+# ================================================================
+# SERVICE REMINDERS
+# ================================================================
+
+@router.get("/reminders", response_model=RemindersResponse)
+async def get_service_reminders(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Get all pending follow-ups and upcoming service reminders for Nino's morning view."""
+    today = date.today()
+    in_7_days = today + timedelta(days=7)
+    in_30_days = today + timedelta(days=30)
+
+    # Jobs with follow_up_required=True and next_service_date set
+    result = await db.execute(
+        select(CamperServiceJobModel)
+        .where(
+            and_(
+                CamperServiceJobModel.follow_up_required == True,
+                CamperServiceJobModel.next_service_date.isnot(None),
+            )
+        )
+        .order_by(CamperServiceJobModel.next_service_date)
+    )
+    jobs = result.scalars().all()
+
+    overdue = []
+    upcoming_7 = []
+    upcoming_30 = []
+
+    for job in jobs:
+        # Get customer + vehicle info
+        cust_result = await db.execute(
+            select(CamperCustomerModel).where(CamperCustomerModel.id == job.customer_id)
+        )
+        customer = cust_result.scalar_one_or_none()
+        v_result = await db.execute(
+            select(CamperVehicleModel.registration_plate)
+            .where(CamperVehicleModel.id == job.vehicle_id)
+        )
+        plate = v_result.scalar_one_or_none() or "Unknown"
+
+        days_until = (job.next_service_date - today).days
+        reminder = ServiceReminder(
+            job_id=job.id,
+            job_number=job.job_number,
+            title=job.title,
+            customer_id=job.customer_id,
+            customer_name=customer.name if customer else "Unknown",
+            customer_phone=customer.phone if customer else None,
+            vehicle_id=job.vehicle_id,
+            vehicle_plate=plate,
+            next_service_date=job.next_service_date,
+            follow_up_notes=job.follow_up_notes,
+            warranty_expires_at=job.warranty_expires_at,
+            days_until_due=days_until,
+            is_overdue=days_until < 0,
+        )
+
+        if days_until < 0:
+            overdue.append(reminder)
+        elif job.next_service_date <= in_7_days:
+            upcoming_7.append(reminder)
+        elif job.next_service_date <= in_30_days:
+            upcoming_30.append(reminder)
+
+    total = len(overdue) + len(upcoming_7) + len(upcoming_30)
+    return RemindersResponse(
+        overdue=overdue,
+        upcoming_7_days=upcoming_7,
+        upcoming_30_days=upcoming_30,
+        total=total,
+    )
+
+
+# ================================================================
+# TECHNICIAN SUMMARY
+# ================================================================
+
+@router.get("/jobs/{job_id}/technician-summary", response_model=TechnicianSummaryResponse)
+async def get_technician_summary(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Per-technician hour breakdown from work logs -- who did what."""
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    # Get all WORK-type logs for this job
+    logs_result = await db.execute(
+        select(CamperWorkLogModel)
+        .where(
+            and_(
+                CamperWorkLogModel.job_id == job_id,
+                CamperWorkLogModel.log_type == LogType.WORK,
+            )
+        )
+        .order_by(CamperWorkLogModel.logged_at)
+    )
+    logs = logs_result.scalars().all()
+
+    # Group by technician
+    tech_map: dict[str, dict] = {}
+    for log in logs:
+        tech = log.logged_by
+        if tech not in tech_map:
+            tech_map[tech] = {"hours": 0.0, "count": 0, "latest": None}
+        tech_map[tech]["hours"] += log.hours or 0
+        tech_map[tech]["count"] += 1
+        tech_map[tech]["latest"] = log.logged_at
+
+    technicians = [
+        TechnicianHours(
+            technician=tech,
+            total_hours=round(data["hours"], 2),
+            log_count=data["count"],
+            latest_entry=data["latest"],
+        )
+        for tech, data in sorted(tech_map.items(), key=lambda x: x[1]["hours"], reverse=True)
+    ]
+
+    return TechnicianSummaryResponse(
+        job_id=job.id,
+        job_number=job.job_number,
+        total_hours=round(sum(t.total_hours for t in technicians), 2),
+        technicians=technicians,
+    )
+
+
+# ================================================================
+# SUPPLIER DIRECTORY
+# ================================================================
+
+@router.post("/suppliers", response_model=CamperSupplierRead, status_code=status.HTTP_201_CREATED)
+async def create_supplier(
+    supplier: CamperSupplierCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Add supplier to directory (manager/admin only)"""
+    new_supplier = CamperSupplierModel(**supplier.model_dump())
+    db.add(new_supplier)
+    await db.commit()
+    await db.refresh(new_supplier)
+    logger.info(f"Supplier created: {new_supplier.name} by {current_user['username']}")
+    return new_supplier
+
+
+@router.get("/suppliers", response_model=list[CamperSupplierRead])
+async def list_suppliers(
+    specialty: Optional[str] = None,
+    preferred_only: bool = False,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """List suppliers with optional filters"""
+    query = select(CamperSupplierModel).where(CamperSupplierModel.is_active == True)
+    if specialty:
+        query = query.where(CamperSupplierModel.specialty.ilike(f"%{specialty}%"))
+    if preferred_only:
+        query = query.where(CamperSupplierModel.is_preferred == True)
+    query = query.order_by(CamperSupplierModel.is_preferred.desc(), CamperSupplierModel.name)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+@router.get("/suppliers/{supplier_id}", response_model=CamperSupplierRead)
+async def get_supplier(
+    supplier_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Get supplier by ID"""
+    result = await db.execute(
+        select(CamperSupplierModel).where(CamperSupplierModel.id == supplier_id)
+    )
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return supplier
+
+
+@router.put("/suppliers/{supplier_id}", response_model=CamperSupplierRead)
+async def update_supplier(
+    supplier_id: UUID,
+    supplier_update: CamperSupplierUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_camper_manager_or_admin()),
+):
+    """Update supplier info (manager/admin only)"""
+    result = await db.execute(
+        select(CamperSupplierModel).where(CamperSupplierModel.id == supplier_id)
+    )
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    update_data = supplier_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(supplier, field, value)
+
+    supplier.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(supplier)
+    logger.info(f"Supplier updated: {supplier.name} by {current_user['username']}")
+    return supplier
 
 
 # ================================================================
