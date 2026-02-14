@@ -56,6 +56,10 @@ from .equipment_acquisition_model import EquipmentAcquisitionModel, AcquisitionT
 from .camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
 from .camper_customer_model import CamperCustomerModel, CustomerLanguage
 from .camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
+from .camper_quotation_model import CamperQuotationModel, QuotationStatus
+from .camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
+from .camper_invoice_model import CamperInvoiceModel, PaymentStatus
+from .camper_document_model import CamperDocumentModel
 
 # ISOTTO Sport Print Shop (Via Buscaino, Trapani - since 1968)
 from .isotto_customer_model import IsottoCustomerModel
@@ -150,6 +154,13 @@ __all__ = [
     "CamperServiceJobModel",
     "JobType",
     "JobStatus",
+    "CamperQuotationModel",
+    "QuotationStatus",
+    "CamperPurchaseOrderModel",
+    "CamperPOStatus",
+    "CamperInvoiceModel",
+    "PaymentStatus",
+    "CamperDocumentModel",
     # ISOTTO Sport Print Shop
     "IsottoCustomerModel",
     "IsottoOrderModel",

@@ -18,11 +18,15 @@
                 </div>
 
                 <!-- Nav Links -->
-                <div class="hidden md:flex items-center space-x-2">
+                <div class="hidden md:flex items-center space-x-1">
                     <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Cruscotto</a>
                     <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
                     <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
                     <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -44,6 +48,10 @@
         <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
         <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
         <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -53,8 +61,8 @@
             <p class="opacity-90">Ecco la situazione di oggi.</p>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Stats Cards Row 1 -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div class="card">
                 <p class="text-sm text-gray-600 font-medium">Veicoli in Officina</p>
                 <p class="text-3xl font-bold text-amber-600" x-text="stats.vehicles_in_shop"></p>
@@ -70,6 +78,26 @@
             <div class="card">
                 <p class="text-sm text-gray-600 font-medium">Preventivi da Approvare</p>
                 <p class="text-3xl font-bold text-purple-600" x-text="stats.pending_quotes"></p>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row 2 (v2) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">In Ispezione</p>
+                <p class="text-3xl font-bold text-violet-600" x-text="stats.jobs_in_inspection"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Acconti in Attesa</p>
+                <p class="text-2xl font-bold text-orange-600" x-text="formatPrice(stats.pending_deposits)"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Fatturato Mese</p>
+                <p class="text-2xl font-bold text-green-600" x-text="formatPrice(stats.total_revenue_month)"></p>
+            </div>
+            <div class="card" :class="stats.overdue_invoices > 0 ? 'border-2 border-red-300' : ''">
+                <p class="text-sm text-gray-600 font-medium">Fatture Scadute</p>
+                <p class="text-3xl font-bold" :class="stats.overdue_invoices > 0 ? 'text-red-600' : 'text-gray-400'" x-text="stats.overdue_invoices"></p>
             </div>
         </div>
 
@@ -130,16 +158,16 @@
                 <p class="text-sm text-gray-500">Nuovo lavoro</p>
             </a>
 
-            <a href="/camper/checkin" class="card hover:shadow-xl transition text-center py-6">
-                <span class="text-4xl block mb-2">&#x1F50D;</span>
-                <h3 class="text-lg font-bold text-gray-900">Cerca Targa</h3>
-                <p class="text-sm text-gray-500">Ricerca veicolo</p>
+            <a href="/camper/calendar" class="card hover:shadow-xl transition text-center py-6">
+                <span class="text-4xl block mb-2">&#x1F4C5;</span>
+                <h3 class="text-lg font-bold text-gray-900">Calendario</h3>
+                <p class="text-sm text-gray-500">Pianificazione</p>
             </a>
 
-            <a href="/camper/customers" class="card hover:shadow-xl transition text-center py-6">
-                <span class="text-4xl block mb-2">&#x1F465;</span>
-                <h3 class="text-lg font-bold text-gray-900">Clienti</h3>
-                <p class="text-sm text-gray-500">Gestione clienti</p>
+            <a href="/camper/invoices" class="card hover:shadow-xl transition text-center py-6" x-show="user.isManager">
+                <span class="text-4xl block mb-2">&#x1F4B0;</span>
+                <h3 class="text-lg font-bold text-gray-900">Fatture</h3>
+                <p class="text-sm text-gray-500">Gestione fatture</p>
             </a>
         </div>
     </main>
@@ -155,7 +183,9 @@
             stats: {
                 vehicles_in_shop: 0, jobs_in_progress: 0,
                 jobs_waiting_parts: 0, pending_quotes: 0,
-                jobs_completed_today: 0, total_jobs: 0
+                jobs_completed_today: 0, total_jobs: 0,
+                pending_deposits: 0, total_revenue_month: 0,
+                overdue_invoices: 0, jobs_in_inspection: 0
             },
             activeJobs: [],
             vehicleMap: {},
@@ -207,13 +237,12 @@
 
             async loadActiveJobs() {
                 try {
-                    // Load in-progress and waiting-parts jobs
                     const inProgress = await API.get('/api/v1/camper/jobs?status_filter=in_progress');
                     const waitingParts = await API.get('/api/v1/camper/jobs?status_filter=waiting_parts');
+                    const inspection = await API.get('/api/v1/camper/jobs?status_filter=inspection');
                     const quoted = await API.get('/api/v1/camper/jobs?status_filter=quoted');
-                    this.activeJobs = [...inProgress, ...waitingParts, ...quoted];
+                    this.activeJobs = [...inProgress, ...waitingParts, ...inspection, ...quoted];
 
-                    // Load vehicles for plate display
                     const vehicles = await API.get('/api/v1/camper/vehicles');
                     vehicles.forEach(v => { this.vehicleMap[v.id] = v.registration_plate; });
                 } catch (e) {

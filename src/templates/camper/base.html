@@ -96,6 +96,7 @@
         .badge-waiting_parts { @apply bg-red-100 text-red-800; }
         .badge-completed { @apply bg-green-100 text-green-800; }
         .badge-invoiced { @apply bg-purple-100 text-purple-800; }
+        .badge-inspection { @apply bg-purple-100 text-purple-800; }
         .badge-cancelled { @apply bg-gray-200 text-gray-500; }
 
         /* Vehicle status badges */
@@ -244,9 +245,36 @@
             'approved': 'Approvato',
             'in_progress': 'In Corso',
             'waiting_parts': 'Attesa Ricambi',
+            'inspection': 'Ispezione',
             'completed': 'Completato',
             'invoiced': 'Fatturato',
             'cancelled': 'Annullato'
+        };
+
+        const QUOTATION_STATUS_LABELS = {
+            'draft': 'Bozza',
+            'sent': 'Inviato',
+            'accepted': 'Accettato',
+            'rejected': 'Rifiutato',
+            'expired': 'Scaduto'
+        };
+
+        const PO_STATUS_LABELS = {
+            'draft': 'Bozza',
+            'sent': 'Inviato',
+            'confirmed': 'Confermato',
+            'shipped': 'Spedito',
+            'partial_received': 'Parziale',
+            'received': 'Ricevuto',
+            'cancelled': 'Annullato'
+        };
+
+        const PAYMENT_STATUS_LABELS = {
+            'pending': 'In Attesa',
+            'deposit_paid': 'Acconto Versato',
+            'partial': 'Parziale',
+            'paid': 'Pagato',
+            'overdue': 'Scaduto'
         };
 
         const VEHICLE_STATUS_LABELS = {

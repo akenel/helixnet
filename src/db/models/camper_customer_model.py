@@ -79,6 +79,13 @@ class CamperCustomerModel(Base):
         comment="Codice Fiscale or P.IVA"
     )
 
+    # Telegram notifications
+    telegram_chat_id: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="Telegram chat ID for bot notifications"
+    )
+
     # Visit tracking
     first_visit: Mapped[date | None] = mapped_column(Date, nullable=True)
     last_visit: Mapped[date | None] = mapped_column(Date, nullable=True)

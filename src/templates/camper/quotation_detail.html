@@ -1,0 +1,557 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Dettaglio Preventivo - Camper & Tour{% endblock %}
+{% block page_name %}Dettaglio Preventivo{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="quotationDetailData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini Acquisto</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Back link -->
+        <a href="/camper/quotations" class="text-amber-600 hover:text-amber-700 text-sm mb-4 inline-block">&larr; Torna ai preventivi</a>
+
+        <!-- Loading -->
+        <template x-if="loading">
+            <div class="card text-center py-12">
+                <p class="text-gray-500">Caricamento...</p>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template x-if="!loading && errorMsg">
+            <div class="card text-center py-12">
+                <p class="text-red-500" x-text="errorMsg"></p>
+                <a href="/camper/quotations" class="text-amber-600 hover:text-amber-700 text-sm mt-4 inline-block">Torna ai preventivi</a>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <template x-if="!loading && !errorMsg && quotation.id">
+            <div>
+                <!-- Header Section -->
+                <div class="card mb-6">
+                    <div class="flex flex-wrap justify-between items-start gap-4">
+                        <div>
+                            <p class="text-sm font-mono text-gray-500" x-text="quotation.quote_number"></p>
+                            <h2 class="text-2xl font-bold text-gray-900">Preventivo</h2>
+                            <p class="text-sm text-gray-600 mt-1">
+                                <span class="font-medium" x-text="customerName"></span>
+                                <span class="mx-1">&middot;</span>
+                                <span class="font-mono" x-text="vehiclePlate"></span>
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">
+                                Creato il <span x-text="formatDateTime(quotation.created_at)"></span>
+                                da <span x-text="quotation.created_by"></span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold"
+                                  :class="statusBadgeClass"
+                                  x-text="statusLabel"></span>
+                            <template x-if="quotation.valid_until">
+                                <p class="text-xs text-gray-400 mt-2">
+                                    Valido fino al <span x-text="formatDate(quotation.valid_until)"></span>
+                                </p>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Accepted / Rejected info -->
+                    <template x-if="quotation.status === 'accepted'">
+                        <div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p class="text-green-800 font-semibold">Preventivo accettato</p>
+                            <p class="text-green-700 text-sm" x-text="'Accettato il ' + formatDateTime(quotation.accepted_at)"></p>
+                        </div>
+                    </template>
+                    <template x-if="quotation.status === 'rejected'">
+                        <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                            <p class="text-red-800 font-semibold">Preventivo rifiutato</p>
+                            <p class="text-red-700 text-sm" x-text="'Rifiutato il ' + formatDateTime(quotation.rejected_at)"></p>
+                        </div>
+                    </template>
+                    <template x-if="quotation.status === 'sent'">
+                        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p class="text-blue-800 text-sm">
+                                Inviato al cliente il <span x-text="formatDateTime(quotation.sent_at)"></span>
+                            </p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Line Items Table -->
+                <div class="card mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-900">Voci del Preventivo</h3>
+                        <template x-if="isEditable">
+                            <button @click="addLineItem()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium text-sm px-4 py-2 rounded-lg transition">
+                                + Aggiungi Riga
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Table Header -->
+                    <div class="hidden md:grid md:grid-cols-12 gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b pb-2 mb-2">
+                        <div class="col-span-4">Descrizione</div>
+                        <div class="col-span-2">Tipo</div>
+                        <div class="col-span-1 text-right">Qta</div>
+                        <div class="col-span-2 text-right">Prezzo Unitario</div>
+                        <div class="col-span-2 text-right">Totale Riga</div>
+                        <div class="col-span-1"></div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <template x-for="(item, index) in lineItems" :key="index">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center py-2 border-b border-gray-100 last:border-0">
+                            <!-- Descrizione -->
+                            <div class="col-span-4">
+                                <template x-if="isEditable">
+                                    <input type="text" x-model="item.description"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
+                                           placeholder="Descrizione voce...">
+                                </template>
+                                <template x-if="!isEditable">
+                                    <span class="text-sm text-gray-800" x-text="item.description"></span>
+                                </template>
+                            </div>
+                            <!-- Tipo -->
+                            <div class="col-span-2">
+                                <template x-if="isEditable">
+                                    <select x-model="item.item_type"
+                                            class="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-200">
+                                        <option value="labor">Manodopera</option>
+                                        <option value="parts">Ricambi</option>
+                                        <option value="materials">Materiali</option>
+                                    </select>
+                                </template>
+                                <template x-if="!isEditable">
+                                    <span class="text-sm px-2 py-0.5 rounded-full"
+                                          :class="{
+                                              'bg-blue-100 text-blue-700': item.item_type === 'labor',
+                                              'bg-orange-100 text-orange-700': item.item_type === 'parts',
+                                              'bg-purple-100 text-purple-700': item.item_type === 'materials'
+                                          }"
+                                          x-text="itemTypeLabel(item.item_type)"></span>
+                                </template>
+                            </div>
+                            <!-- Quantita -->
+                            <div class="col-span-1">
+                                <template x-if="isEditable">
+                                    <input type="number" x-model.number="item.quantity"
+                                           @input="recalcLineTotal(index)"
+                                           class="w-full px-2 py-2 text-sm text-right border border-gray-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
+                                           min="0" step="0.5">
+                                </template>
+                                <template x-if="!isEditable">
+                                    <span class="text-sm text-gray-800 block text-right" x-text="item.quantity"></span>
+                                </template>
+                            </div>
+                            <!-- Prezzo Unitario -->
+                            <div class="col-span-2">
+                                <template x-if="isEditable">
+                                    <input type="number" x-model.number="item.unit_price"
+                                           @input="recalcLineTotal(index)"
+                                           class="w-full px-2 py-2 text-sm text-right border border-gray-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
+                                           min="0" step="0.01">
+                                </template>
+                                <template x-if="!isEditable">
+                                    <span class="text-sm text-gray-800 block text-right" x-text="formatPrice(item.unit_price)"></span>
+                                </template>
+                            </div>
+                            <!-- Totale Riga -->
+                            <div class="col-span-2 text-right">
+                                <span class="text-sm font-semibold text-gray-900" x-text="formatPrice(item.line_total)"></span>
+                            </div>
+                            <!-- Remove Button -->
+                            <div class="col-span-1 text-center">
+                                <template x-if="isEditable">
+                                    <button @click="removeLineItem(index)"
+                                            class="text-red-400 hover:text-red-600 text-lg font-bold transition"
+                                            title="Rimuovi riga">&times;</button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Empty state -->
+                    <template x-if="lineItems.length === 0">
+                        <div class="text-center py-8 text-gray-400">
+                            <p>Nessuna voce inserita.</p>
+                            <template x-if="isEditable">
+                                <button @click="addLineItem()" class="text-amber-600 hover:text-amber-700 text-sm mt-2">
+                                    + Aggiungi la prima riga
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Totals Section -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Riepilogo</h3>
+                    <div class="max-w-sm ml-auto space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotale</span>
+                            <span class="font-semibold text-gray-900" x-text="formatPrice(subtotal)"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">IVA 22%</span>
+                            <span class="font-semibold text-gray-900" x-text="formatPrice(vatAmount)"></span>
+                        </div>
+                        <div class="flex justify-between text-lg border-t border-gray-200 pt-3">
+                            <span class="font-bold text-gray-900">Totale</span>
+                            <span class="font-bold text-amber-600" x-text="formatPrice(total)"></span>
+                        </div>
+                        <div class="flex justify-between text-sm border-t border-dashed border-gray-200 pt-3">
+                            <span class="text-gray-600">Acconto 25%</span>
+                            <span class="font-semibold text-green-600" x-text="formatPrice(depositAmount)"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Note</h3>
+                    <template x-if="isEditable">
+                        <textarea x-model="notes" class="input-field" rows="4"
+                                  placeholder="Note aggiuntive per il preventivo..."></textarea>
+                    </template>
+                    <template x-if="!isEditable">
+                        <p class="text-sm text-gray-600 whitespace-pre-line" x-text="notes || 'Nessuna nota.'"></p>
+                    </template>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card flex flex-wrap gap-3">
+                    <!-- DRAFT status actions -->
+                    <template x-if="quotation.status === 'draft'">
+                        <div class="flex flex-wrap gap-3">
+                            <button @click="saveQuotation()" class="btn-primary" :disabled="saving">
+                                <span x-show="!saving">Salva Modifiche</span>
+                                <span x-show="saving">Salvataggio...</span>
+                            </button>
+                            <button @click="sendQuotation()" class="btn-secondary" :disabled="saving">
+                                Invia al Cliente
+                            </button>
+                            <button @click="acceptQuotation()" class="btn-success" :disabled="saving">
+                                Accetta
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- SENT status actions -->
+                    <template x-if="quotation.status === 'sent'">
+                        <div class="flex flex-wrap gap-3">
+                            <button @click="acceptQuotation()" class="btn-success" :disabled="saving">
+                                Accetta
+                            </button>
+                            <button @click="rejectQuotation()" class="btn-danger" :disabled="saving">
+                                Rifiuta
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- ACCEPTED - no edit buttons, info shown in header -->
+                    <template x-if="quotation.status === 'accepted'">
+                        <div class="text-sm text-gray-500">
+                            Preventivo accettato. Non modificabile.
+                        </div>
+                    </template>
+
+                    <!-- REJECTED - no edit buttons, info shown in header -->
+                    <template x-if="quotation.status === 'rejected'">
+                        <div class="text-sm text-gray-500">
+                            Preventivo rifiutato. Non modificabile.
+                        </div>
+                    </template>
+
+                    <!-- EXPIRED -->
+                    <template x-if="quotation.status === 'expired'">
+                        <div class="text-sm text-gray-500">
+                            Preventivo scaduto. Non modificabile.
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </main>
+</div>
+
+<script>
+    function quotationDetailData() {
+        return {
+            user: { username: '', isAdmin: false, isManager: false, isMechanic: false, isCounter: false },
+            quotation: {},
+            lineItems: [],
+            notes: '',
+            customerName: '...',
+            vehiclePlate: '...',
+            loading: true,
+            saving: false,
+            errorMsg: '',
+
+            // Computed-like getters
+            get isEditable() {
+                return this.quotation.status === 'draft';
+            },
+
+            get subtotal() {
+                return this.lineItems.reduce((sum, item) => sum + (parseFloat(item.line_total) || 0), 0);
+            },
+
+            get vatAmount() {
+                return Math.round(this.subtotal * 22 / 100 * 100) / 100;
+            },
+
+            get total() {
+                return Math.round((this.subtotal + this.vatAmount) * 100) / 100;
+            },
+
+            get depositAmount() {
+                return Math.round(this.total * 25 / 100 * 100) / 100;
+            },
+
+            get statusLabel() {
+                const labels = {
+                    'draft': 'Bozza',
+                    'sent': 'Inviato',
+                    'accepted': 'Accettato',
+                    'rejected': 'Rifiutato',
+                    'expired': 'Scaduto'
+                };
+                return labels[this.quotation.status] || this.quotation.status;
+            },
+
+            get statusBadgeClass() {
+                const classes = {
+                    'draft': 'bg-gray-100 text-gray-800',
+                    'sent': 'bg-blue-100 text-blue-800',
+                    'accepted': 'bg-green-100 text-green-800',
+                    'rejected': 'bg-red-100 text-red-800',
+                    'expired': 'bg-yellow-100 text-yellow-800'
+                };
+                return classes[this.quotation.status] || 'bg-gray-100 text-gray-800';
+            },
+
+            init() {
+                const token = CamperAuth.getToken();
+                if (!token) { window.location.href = '/camper'; return; }
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { CamperAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isAdmin: CamperAuth.isAdmin(),
+                    isManager: CamperAuth.isManager(),
+                    isMechanic: CamperAuth.isMechanic(),
+                    isCounter: CamperAuth.isCounter()
+                };
+
+                // Extract quotation ID from URL
+                const path = window.location.pathname;
+                const parts = path.split('/');
+                const quotationId = parts[parts.length - 1];
+                this.loadQuotation(quotationId);
+            },
+
+            async loadQuotation(quotationId) {
+                try {
+                    this.quotation = await API.get('/api/v1/camper/quotations/' + quotationId);
+
+                    // Deep copy line items for editing
+                    this.lineItems = (this.quotation.line_items || []).map(item => ({
+                        description: item.description || '',
+                        item_type: item.item_type || 'labor',
+                        quantity: parseFloat(item.quantity) || 1,
+                        unit_price: parseFloat(item.unit_price) || 0,
+                        line_total: parseFloat(item.line_total) || 0
+                    }));
+
+                    this.notes = this.quotation.notes || '';
+
+                    // Load customer name
+                    try {
+                        const customer = await API.get('/api/v1/camper/customers/' + this.quotation.customer_id);
+                        this.customerName = customer.name;
+                    } catch (e) {
+                        this.customerName = '?';
+                    }
+
+                    // Load vehicle plate
+                    try {
+                        const vehicle = await API.get('/api/v1/camper/vehicles/' + this.quotation.vehicle_id);
+                        this.vehiclePlate = vehicle.registration_plate;
+                    } catch (e) {
+                        this.vehiclePlate = '?';
+                    }
+                } catch (e) {
+                    this.errorMsg = 'Errore caricamento preventivo: ' + e.message;
+                    showToast(this.errorMsg, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            itemTypeLabel(type) {
+                const labels = {
+                    'labor': 'Manodopera',
+                    'parts': 'Ricambi',
+                    'materials': 'Materiali'
+                };
+                return labels[type] || type;
+            },
+
+            addLineItem() {
+                this.lineItems.push({
+                    description: '',
+                    item_type: 'labor',
+                    quantity: 1,
+                    unit_price: 0,
+                    line_total: 0
+                });
+            },
+
+            removeLineItem(index) {
+                this.lineItems.splice(index, 1);
+            },
+
+            recalcLineTotal(index) {
+                const item = this.lineItems[index];
+                item.line_total = Math.round((item.quantity || 0) * (item.unit_price || 0) * 100) / 100;
+            },
+
+            async saveQuotation() {
+                if (this.quotation.status !== 'draft') {
+                    showToast('Solo i preventivi in bozza possono essere modificati.', 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    // Recalculate all line totals before saving
+                    for (let i = 0; i < this.lineItems.length; i++) {
+                        this.recalcLineTotal(i);
+                    }
+
+                    const payload = {
+                        line_items: this.lineItems.map(item => ({
+                            description: item.description,
+                            item_type: item.item_type,
+                            quantity: item.quantity,
+                            unit_price: item.unit_price,
+                            line_total: item.line_total
+                        })),
+                        notes: this.notes || null
+                    };
+
+                    this.quotation = await API.put('/api/v1/camper/quotations/' + this.quotation.id, payload);
+
+                    // Refresh line items from server response
+                    this.lineItems = (this.quotation.line_items || []).map(item => ({
+                        description: item.description || '',
+                        item_type: item.item_type || 'labor',
+                        quantity: parseFloat(item.quantity) || 1,
+                        unit_price: parseFloat(item.unit_price) || 0,
+                        line_total: parseFloat(item.line_total) || 0
+                    }));
+                    this.notes = this.quotation.notes || '';
+
+                    showToast('Preventivo salvato!', 'success');
+                } catch (e) {
+                    showToast('Errore salvataggio: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async sendQuotation() {
+                if (!confirm('Inviare il preventivo al cliente?')) return;
+                this.saving = true;
+                try {
+                    // Save first to persist any edits
+                    if (this.quotation.status === 'draft') {
+                        for (let i = 0; i < this.lineItems.length; i++) {
+                            this.recalcLineTotal(i);
+                        }
+                        const payload = {
+                            line_items: this.lineItems.map(item => ({
+                                description: item.description,
+                                item_type: item.item_type,
+                                quantity: item.quantity,
+                                unit_price: item.unit_price,
+                                line_total: item.line_total
+                            })),
+                            notes: this.notes || null
+                        };
+                        await API.put('/api/v1/camper/quotations/' + this.quotation.id, payload);
+                    }
+
+                    this.quotation = await API.post('/api/v1/camper/quotations/' + this.quotation.id + '/send');
+                    showToast('Preventivo inviato al cliente!', 'success');
+                } catch (e) {
+                    showToast('Errore invio: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async acceptQuotation() {
+                if (!confirm('Accettare questo preventivo? Il lavoro verra approvato.')) return;
+                this.saving = true;
+                try {
+                    this.quotation = await API.post('/api/v1/camper/quotations/' + this.quotation.id + '/accept');
+                    showToast('Preventivo accettato! Acconto richiesto: ' + formatPrice(this.quotation.deposit_amount), 'success');
+                } catch (e) {
+                    showToast('Errore accettazione: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async rejectQuotation() {
+                const reason = prompt('Motivo del rifiuto (opzionale):');
+                if (reason === null) return; // User cancelled prompt
+                this.saving = true;
+                try {
+                    let url = '/api/v1/camper/quotations/' + this.quotation.id + '/reject';
+                    if (reason && reason.trim()) {
+                        url += '?reason=' + encodeURIComponent(reason.trim());
+                    }
+                    this.quotation = await API.post(url);
+                    this.notes = this.quotation.notes || '';
+                    showToast('Preventivo rifiutato.', 'info');
+                } catch (e) {
+                    showToast('Errore rifiuto: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

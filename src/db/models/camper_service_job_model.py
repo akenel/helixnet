@@ -34,11 +34,12 @@ class JobType(str, enum.Enum):
 
 
 class JobStatus(str, enum.Enum):
-    """Job lifecycle: QUOTED -> APPROVED -> IN_PROGRESS -> COMPLETED -> INVOICED"""
+    """Job lifecycle: QUOTED -> APPROVED -> IN_PROGRESS -> INSPECTION -> COMPLETED -> INVOICED"""
     QUOTED = "quoted"
     APPROVED = "approved"
     IN_PROGRESS = "in_progress"
     WAITING_PARTS = "waiting_parts"
+    INSPECTION = "inspection"
     COMPLETED = "completed"
     INVOICED = "invoiced"
     CANCELLED = "cancelled"
@@ -174,6 +175,28 @@ class CamperServiceJobModel(Base):
         Text, nullable=True, comment="Internal mechanic observations"
     )
 
+    # Inspection workflow
+    inspection_passed: Mapped[bool] = mapped_column(Boolean, default=False)
+    inspection_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    inspected_by: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, comment="Manager who performed inspection"
+    )
+    inspected_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # Deposit tracking
+    deposit_required: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), nullable=False,
+        comment="25% of quotation total on acceptance"
+    )
+    deposit_paid: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00"), nullable=False
+    )
+    deposit_paid_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     # Follow-up
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=False)
     follow_up_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -195,6 +218,9 @@ class CamperServiceJobModel(Base):
     # Relationships
     vehicle: Mapped["CamperVehicleModel"] = relationship(back_populates="service_jobs")
     customer: Mapped["CamperCustomerModel"] = relationship(back_populates="service_jobs")
+    quotations: Mapped[list["CamperQuotationModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
+    purchase_orders: Mapped[list["CamperPurchaseOrderModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
+    invoices: Mapped[list["CamperInvoiceModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<CamperServiceJob(number='{self.job_number}', title='{self.title}', status={self.status})>"

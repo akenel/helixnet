@@ -1,0 +1,545 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Ordini Acquisto - Camper & Tour{% endblock %}
+{% block page_name %}Ordini Acquisto{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="purchaseOrdersData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Ordini Acquisto</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Ordini Acquisto</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header + New PO Button -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Ordini Acquisto</h2>
+            <button @click="openNewPOModal()" class="btn-primary" x-show="user.isManager">
+                + Nuovo Ordine
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato</label>
+                    <select x-model="filters.status" @change="loadPurchaseOrders()" class="input-field text-sm py-2">
+                        <option value="">Tutti</option>
+                        <option value="draft">Bozza</option>
+                        <option value="sent">Inviato</option>
+                        <option value="confirmed">Confermato</option>
+                        <option value="shipped">Spedito</option>
+                        <option value="partial_received">Parziale</option>
+                        <option value="received">Ricevuto</option>
+                        <option value="cancelled">Annullato</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Fornitore</label>
+                    <input type="text" x-model="filters.supplier" @input.debounce.300ms="loadPurchaseOrders()"
+                           class="input-field text-sm py-2" placeholder="Cerca fornitore...">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (N. Ordine)</label>
+                    <input type="text" x-model="filters.search" @input.debounce.300ms=""
+                           class="input-field text-sm py-2" placeholder="PO-...">
+                </div>
+            </div>
+        </div>
+
+        <!-- PO Count -->
+        <p class="text-sm text-gray-500 mb-3" x-show="!loading">
+            <span x-text="filteredOrders.length"></span> ordini trovati
+        </p>
+
+        <!-- Purchase Orders Table -->
+        <div class="card overflow-x-auto">
+            <template x-if="loading">
+                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+            </template>
+
+            <template x-if="!loading && filteredOrders.length === 0">
+                <p class="text-center text-gray-500 py-8">Nessun ordine acquisto trovato.</p>
+            </template>
+
+            <table class="min-w-full" x-show="!loading && filteredOrders.length > 0">
+                <thead>
+                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                        <th class="pb-3 pr-4">N. Ordine</th>
+                        <th class="pb-3 pr-4">Fornitore</th>
+                        <th class="pb-3 pr-4">Lavoro</th>
+                        <th class="pb-3 pr-4">Totale</th>
+                        <th class="pb-3 pr-4">Stato</th>
+                        <th class="pb-3 pr-4">Consegna Prevista</th>
+                        <th class="pb-3">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="po in filteredOrders" :key="po.id">
+                        <tr class="border-b hover:bg-amber-50 transition">
+                            <td class="py-3 pr-4 text-sm font-mono text-gray-700" x-text="po.po_number"></td>
+                            <td class="py-3 pr-4">
+                                <div class="text-sm font-semibold text-gray-900" x-text="po.supplier_name"></div>
+                                <div class="text-xs text-gray-500" x-show="po.supplier_phone" x-text="po.supplier_phone"></div>
+                            </td>
+                            <td class="py-3 pr-4 text-sm text-gray-700">
+                                <span class="font-mono text-gray-500" x-text="jobMap[po.job_id] || '...'"></span>
+                            </td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="formatPrice(po.total)"></td>
+                            <td class="py-3 pr-4">
+                                <span class="badge" :class="statusBadgeClass(po.status)" x-text="PO_STATUS_LABELS[po.status] || po.status"></span>
+                            </td>
+                            <td class="py-3 pr-4 text-sm text-gray-600" x-text="formatDate(po.expected_delivery)"></td>
+                            <td class="py-3">
+                                <div class="flex items-center space-x-2">
+                                    <!-- Status advancement buttons -->
+                                    <template x-if="po.status === 'draft' && user.isManager">
+                                        <button @click.stop="advanceStatus(po.id, 'sent')"
+                                                class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
+                                            Invia
+                                        </button>
+                                    </template>
+                                    <template x-if="po.status === 'sent' && user.isManager">
+                                        <button @click.stop="advanceStatus(po.id, 'confirmed')"
+                                                class="px-2 py-1 text-xs font-medium rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition">
+                                            Conferma
+                                        </button>
+                                    </template>
+                                    <template x-if="po.status === 'confirmed' && user.isManager">
+                                        <button @click.stop="advanceStatus(po.id, 'shipped')"
+                                                class="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition">
+                                            Spedito
+                                        </button>
+                                    </template>
+                                    <template x-if="(po.status === 'shipped' || po.status === 'partial_received') && user.isManager">
+                                        <button @click.stop="advanceStatus(po.id, 'received')"
+                                                class="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-700 hover:bg-green-200 transition">
+                                            Ricevuto
+                                        </button>
+                                    </template>
+                                    <!-- Cancel button for non-terminal states -->
+                                    <template x-if="po.status !== 'received' && po.status !== 'cancelled' && user.isManager">
+                                        <button @click.stop="cancelOrder(po.id, po.po_number)"
+                                                class="px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition"
+                                                title="Annulla ordine">
+                                            &#x2715;
+                                        </button>
+                                    </template>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- New Purchase Order Modal -->
+    <div x-show="showModal" x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+             @click="showModal = false"></div>
+
+        <!-- Modal Panel -->
+        <div class="flex min-h-full items-start justify-center p-4 pt-16">
+            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl p-6"
+                 @click.stop>
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Nuovo Ordine Acquisto</h3>
+                    <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                </div>
+
+                <form @submit.prevent="createPurchaseOrder()">
+                    <!-- Job + Supplier Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lavoro *</label>
+                            <select x-model="newPO.job_id" class="input-field" required>
+                                <option value="">-- Seleziona lavoro --</option>
+                                <template x-for="job in jobs" :key="job.id">
+                                    <option :value="job.id" x-text="`${job.job_number} - ${job.title}`"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fornitore *</label>
+                            <input type="text" x-model="newPO.supplier_name" class="input-field"
+                                   placeholder="Es. Ricambi Camper SRL" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono Fornitore</label>
+                            <input type="tel" x-model="newPO.supplier_phone" class="input-field"
+                                   placeholder="+39 ...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Fornitore</label>
+                            <input type="email" x-model="newPO.supplier_email" class="input-field"
+                                   placeholder="ordini@fornitore.it">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Consegna Prevista</label>
+                            <input type="date" x-model="newPO.expected_delivery" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                            <input type="text" x-model="newPO.notes" class="input-field"
+                                   placeholder="Note aggiuntive...">
+                        </div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-sm font-bold text-gray-700 uppercase">Righe Ordine</h4>
+                            <button type="button" @click="addLineItem()"
+                                    class="text-sm font-medium text-amber-600 hover:text-amber-700">
+                                + Aggiungi Riga
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th class="pb-2 pr-2" style="min-width: 200px;">Descrizione</th>
+                                        <th class="pb-2 pr-2" style="min-width: 120px;">N. Parte</th>
+                                        <th class="pb-2 pr-2 text-center" style="width: 80px;">Quantita</th>
+                                        <th class="pb-2 pr-2 text-right" style="width: 100px;">Prezzo</th>
+                                        <th class="pb-2 pr-2 text-right" style="width: 100px;">Totale</th>
+                                        <th class="pb-2 text-center" style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, index) in newPO.line_items" :key="index">
+                                        <tr class="border-b">
+                                            <td class="py-2 pr-2">
+                                                <input type="text" x-model="item.description"
+                                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
+                                                       placeholder="Descrizione articolo" required>
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="text" x-model="item.part_number"
+                                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
+                                                       placeholder="Codice">
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="number" x-model.number="item.quantity" min="1" step="1"
+                                                       @input="calculateLineTotal(index)"
+                                                       class="w-full px-2 py-1.5 text-sm text-center border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-200">
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="number" x-model.number="item.unit_price" min="0" step="0.01"
+                                                       @input="calculateLineTotal(index)"
+                                                       class="w-full px-2 py-1.5 text-sm text-right border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-200">
+                                            </td>
+                                            <td class="py-2 pr-2 text-right text-sm font-semibold text-gray-700"
+                                                x-text="formatPrice(item.line_total)">
+                                            </td>
+                                            <td class="py-2 text-center">
+                                                <button type="button" @click="removeLineItem(index)"
+                                                        class="text-red-400 hover:text-red-600 text-lg leading-none"
+                                                        x-show="newPO.line_items.length > 1">&times;</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="border-t-2">
+                                        <td colspan="4" class="py-3 text-right text-sm font-medium text-gray-600">Subtotale:</td>
+                                        <td class="py-3 text-right text-sm font-semibold text-gray-900" x-text="formatPrice(calcSubtotal())"></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="py-1 text-right text-sm font-medium text-gray-600">IVA (22%):</td>
+                                        <td class="py-1 text-right text-sm text-gray-700" x-text="formatPrice(calcVAT())"></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="border-t">
+                                        <td colspan="4" class="py-3 text-right text-sm font-bold text-gray-900">Totale:</td>
+                                        <td class="py-3 text-right text-sm font-bold text-amber-700" x-text="formatPrice(calcTotal())"></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t">
+                        <button type="button" @click="showModal = false" class="btn-secondary">Annulla</button>
+                        <button type="submit" class="btn-primary" :disabled="saving">
+                            <span x-show="!saving">Crea Ordine</span>
+                            <span x-show="saving">Salvataggio...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const PO_STATUS_LABELS = {
+        'draft': 'Bozza',
+        'sent': 'Inviato',
+        'confirmed': 'Confermato',
+        'shipped': 'Spedito',
+        'partial_received': 'Parziale',
+        'received': 'Ricevuto',
+        'cancelled': 'Annullato'
+    };
+
+    function purchaseOrdersData() {
+        return {
+            user: { username: '', isManager: false },
+            purchaseOrders: [],
+            jobs: [],
+            jobMap: {},
+            filters: { status: '', supplier: '', search: '' },
+            loading: true,
+            saving: false,
+            showModal: false,
+            newPO: {
+                job_id: '',
+                supplier_name: '',
+                supplier_phone: '',
+                supplier_email: '',
+                expected_delivery: '',
+                notes: '',
+                line_items: [
+                    { description: '', part_number: '', quantity: 1, unit_price: 0, line_total: 0 }
+                ]
+            },
+
+            get filteredOrders() {
+                let result = this.purchaseOrders;
+                if (this.filters.search) {
+                    const q = this.filters.search.toLowerCase();
+                    result = result.filter(po =>
+                        po.po_number.toLowerCase().includes(q)
+                    );
+                }
+                if (this.filters.supplier) {
+                    const s = this.filters.supplier.toLowerCase();
+                    result = result.filter(po =>
+                        po.supplier_name.toLowerCase().includes(s)
+                    );
+                }
+                return result;
+            },
+
+            statusBadgeClass(status) {
+                const map = {
+                    'draft': 'bg-gray-100 text-gray-700',
+                    'sent': 'bg-blue-100 text-blue-800',
+                    'confirmed': 'bg-amber-100 text-amber-800',
+                    'shipped': 'bg-purple-100 text-purple-800',
+                    'partial_received': 'bg-orange-100 text-orange-800',
+                    'received': 'bg-green-100 text-green-800',
+                    'cancelled': 'bg-gray-200 text-gray-500'
+                };
+                return map[status] || 'bg-gray-100 text-gray-700';
+            },
+
+            init() {
+                const token = CamperAuth.getToken();
+                if (!token) { window.location.href = '/camper'; return; }
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { CamperAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isManager: CamperAuth.isManager()
+                };
+
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('status')) this.filters.status = params.get('status');
+
+                this.loadJobs();
+                this.loadPurchaseOrders();
+            },
+
+            async loadJobs() {
+                try {
+                    const allJobs = await API.get('/api/v1/camper/jobs?limit=500');
+                    this.jobs = allJobs;
+                    allJobs.forEach(j => { this.jobMap[j.id] = j.job_number; });
+                } catch (e) {
+                    console.error('Jobs load failed:', e);
+                }
+            },
+
+            async loadPurchaseOrders() {
+                this.loading = true;
+                try {
+                    let url = '/api/v1/camper/purchase-orders?limit=200';
+                    if (this.filters.status) url += '&status_filter=' + this.filters.status;
+                    this.purchaseOrders = await API.get(url);
+                } catch (e) {
+                    showToast('Errore caricamento ordini: ' + e.message, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            openNewPOModal() {
+                this.newPO = {
+                    job_id: '',
+                    supplier_name: '',
+                    supplier_phone: '',
+                    supplier_email: '',
+                    expected_delivery: '',
+                    notes: '',
+                    line_items: [
+                        { description: '', part_number: '', quantity: 1, unit_price: 0, line_total: 0 }
+                    ]
+                };
+                this.showModal = true;
+            },
+
+            addLineItem() {
+                this.newPO.line_items.push({
+                    description: '',
+                    part_number: '',
+                    quantity: 1,
+                    unit_price: 0,
+                    line_total: 0
+                });
+            },
+
+            removeLineItem(index) {
+                if (this.newPO.line_items.length > 1) {
+                    this.newPO.line_items.splice(index, 1);
+                }
+            },
+
+            calculateLineTotal(index) {
+                const item = this.newPO.line_items[index];
+                item.line_total = Math.round((item.quantity * item.unit_price) * 100) / 100;
+            },
+
+            calcSubtotal() {
+                return this.newPO.line_items.reduce((sum, item) => sum + (item.line_total || 0), 0);
+            },
+
+            calcVAT() {
+                return Math.round(this.calcSubtotal() * 0.22 * 100) / 100;
+            },
+
+            calcTotal() {
+                return Math.round((this.calcSubtotal() + this.calcVAT()) * 100) / 100;
+            },
+
+            async createPurchaseOrder() {
+                if (!this.newPO.job_id) {
+                    showToast('Seleziona un lavoro.', 'warning');
+                    return;
+                }
+                if (!this.newPO.supplier_name.trim()) {
+                    showToast('Inserisci il nome del fornitore.', 'warning');
+                    return;
+                }
+                const validItems = this.newPO.line_items.filter(i => i.description.trim());
+                if (validItems.length === 0) {
+                    showToast('Inserisci almeno una riga ordine.', 'warning');
+                    return;
+                }
+
+                this.saving = true;
+                try {
+                    const payload = {
+                        job_id: this.newPO.job_id,
+                        supplier_name: this.newPO.supplier_name.trim(),
+                        supplier_phone: this.newPO.supplier_phone.trim() || null,
+                        supplier_email: this.newPO.supplier_email.trim() || null,
+                        expected_delivery: this.newPO.expected_delivery || null,
+                        notes: this.newPO.notes.trim() || null,
+                        vat_rate: 22.00,
+                        line_items: validItems.map(item => ({
+                            description: item.description.trim(),
+                            part_number: item.part_number.trim() || null,
+                            quantity: item.quantity,
+                            unit_price: item.unit_price,
+                            line_total: item.line_total
+                        }))
+                    };
+
+                    const created = await API.post('/api/v1/camper/purchase-orders', payload);
+                    this.purchaseOrders.unshift(created);
+                    this.showModal = false;
+                    showToast('Ordine creato: ' + created.po_number, 'success');
+                } catch (e) {
+                    showToast('Errore creazione ordine: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async advanceStatus(poId, newStatus) {
+                try {
+                    const updated = await API.patch('/api/v1/camper/purchase-orders/' + poId + '/status', {
+                        status: newStatus
+                    });
+                    const idx = this.purchaseOrders.findIndex(po => po.id === poId);
+                    if (idx >= 0) this.purchaseOrders[idx] = updated;
+                    showToast('Stato aggiornato: ' + PO_STATUS_LABELS[newStatus], 'success');
+                } catch (e) {
+                    showToast('Errore aggiornamento stato: ' + e.message, 'error');
+                }
+            },
+
+            async cancelOrder(poId, poNumber) {
+                if (!confirm('Annullare l\'ordine ' + poNumber + '?')) return;
+                try {
+                    const updated = await API.patch('/api/v1/camper/purchase-orders/' + poId + '/status', {
+                        status: 'cancelled'
+                    });
+                    const idx = this.purchaseOrders.findIndex(po => po.id === poId);
+                    if (idx >= 0) this.purchaseOrders[idx] = updated;
+                    showToast('Ordine annullato: ' + poNumber, 'info');
+                } catch (e) {
+                    showToast('Errore annullamento: ' + e.message, 'error');
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

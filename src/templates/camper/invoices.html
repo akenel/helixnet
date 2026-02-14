@@ -1,0 +1,829 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Fatture - Camper & Tour{% endblock %}
+{% block page_name %}Fatture{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="invoicesData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/quotes" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini Acquisto</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/camper/quotes" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini Acquisto</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header + New Invoice -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Fatture</h2>
+            <button @click="openNewInvoiceModal()" class="btn-primary" x-show="user.isManager">
+                + Nuova Fattura
+            </button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Totale Fatturato</p>
+                <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(summary.totalInvoiced)"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Totale Incassato</p>
+                <p class="text-2xl font-bold text-green-600" x-text="formatPrice(summary.totalCollected)"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Totale Scoperto</p>
+                <p class="text-2xl font-bold" :class="summary.totalOutstanding > 0 ? 'text-red-600' : 'text-gray-400'" x-text="formatPrice(summary.totalOutstanding)"></p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato Pagamento</label>
+                    <select x-model="filters.status" @change="applyFilters()" class="input-field text-sm py-2">
+                        <option value="">Tutti</option>
+                        <option value="pending">In Attesa</option>
+                        <option value="deposit_paid">Acconto Versato</option>
+                        <option value="partial">Parziale</option>
+                        <option value="paid">Pagato</option>
+                        <option value="overdue">Scaduto</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (n. fattura o cliente)</label>
+                    <input type="text" x-model="filters.search" @input.debounce.300ms="applyFilters()"
+                           class="input-field text-sm py-2" placeholder="FAT-... o nome cliente...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Count -->
+        <p class="text-sm text-gray-500 mb-3" x-show="!loading">
+            <span x-text="filteredInvoices.length"></span> fatture trovate
+        </p>
+
+        <!-- Invoices Table -->
+        <div class="card overflow-x-auto">
+            <template x-if="loading">
+                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+            </template>
+
+            <template x-if="!loading && filteredInvoices.length === 0">
+                <p class="text-center text-gray-500 py-8">Nessuna fattura trovata.</p>
+            </template>
+
+            <table class="min-w-full" x-show="!loading && filteredInvoices.length > 0">
+                <thead>
+                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                        <th class="pb-3 pr-4">N. Fattura</th>
+                        <th class="pb-3 pr-4">Cliente</th>
+                        <th class="pb-3 pr-4 text-right">Subtotale</th>
+                        <th class="pb-3 pr-4 text-right">IVA 22%</th>
+                        <th class="pb-3 pr-4 text-right">Totale</th>
+                        <th class="pb-3 pr-4 text-right">Acconto</th>
+                        <th class="pb-3 pr-4 text-right">Dovuto</th>
+                        <th class="pb-3 pr-4">Stato Pagamento</th>
+                        <th class="pb-3 pr-4">Scadenza</th>
+                        <th class="pb-3">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="invoice in filteredInvoices" :key="invoice.id">
+                        <tr class="border-b hover:bg-amber-50 transition"
+                            :class="isOverdue(invoice) ? 'bg-red-50' : ''">
+                            <td class="py-3 pr-4 text-sm font-mono text-gray-700" x-text="invoice.invoice_number"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="customerMap[invoice.customer_id] || '...'"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700 text-right" x-text="formatPrice(invoice.subtotal)"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700 text-right" x-text="formatPrice(invoice.vat_amount)"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900 text-right" x-text="formatPrice(invoice.total)"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700 text-right" x-text="formatPrice(invoice.deposit_applied || 0)"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-right"
+                                :class="getAmountDue(invoice) > 0 ? 'text-red-600' : 'text-green-600'"
+                                x-text="formatPrice(getAmountDue(invoice))"></td>
+                            <td class="py-3 pr-4">
+                                <span class="badge" :class="getPaymentBadgeClass(invoice)"
+                                      x-text="getPaymentStatusLabel(invoice)"></span>
+                            </td>
+                            <td class="py-3 pr-4 text-sm" :class="isOverdue(invoice) ? 'text-red-600 font-semibold' : 'text-gray-500'"
+                                x-text="formatDate(invoice.due_date)"></td>
+                            <td class="py-3">
+                                <div class="flex items-center space-x-2">
+                                    <button @click="viewInvoice(invoice)" class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                                        Dettagli
+                                    </button>
+                                    <template x-if="user.isManager && invoice.payment_status !== 'paid'">
+                                        <button @click="openPaymentModal(invoice)" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                                            Segna Pagato
+                                        </button>
+                                    </template>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- New Invoice Modal -->
+    <template x-if="showNewModal">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 pt-10 px-4 overflow-y-auto">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mb-10" @click.outside="showNewModal = false">
+                <div class="px-6 py-4 border-b flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-900">Nuova Fattura</h3>
+                    <button @click="showNewModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                </div>
+
+                <form @submit.prevent="createInvoice()" class="px-6 py-4">
+                    <!-- Job & Customer Selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lavoro *</label>
+                            <select x-model="newInvoice.job_id" @change="onJobSelected()" class="input-field text-sm py-2" required>
+                                <option value="">-- Seleziona lavoro --</option>
+                                <template x-for="job in completedJobs" :key="job.id">
+                                    <option :value="job.id" x-text="job.job_number + ' - ' + job.title"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                            <select x-model="newInvoice.customer_id" class="input-field text-sm py-2" required>
+                                <option value="">-- Seleziona cliente --</option>
+                                <template x-for="customer in customers" :key="customer.id">
+                                    <option :value="customer.id" x-text="customer.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Scadenza *</label>
+                            <input type="date" x-model="newInvoice.due_date" class="input-field text-sm py-2" required>
+                        </div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-sm font-bold text-gray-900 uppercase">Voci Fattura</h4>
+                            <button type="button" @click="addLineItem()" class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                                + Aggiungi Voce
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                                        <th class="pb-2 pr-3" style="min-width: 250px;">Descrizione</th>
+                                        <th class="pb-2 pr-3 text-right" style="min-width: 80px;">Qty</th>
+                                        <th class="pb-2 pr-3 text-right" style="min-width: 120px;">Prezzo Unit.</th>
+                                        <th class="pb-2 pr-3 text-right" style="min-width: 120px;">Totale</th>
+                                        <th class="pb-2" style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, index) in newInvoice.line_items" :key="index">
+                                        <tr class="border-b">
+                                            <td class="py-2 pr-3">
+                                                <input type="text" x-model="item.description" class="input-field text-sm py-2"
+                                                       placeholder="Descrizione voce" required>
+                                            </td>
+                                            <td class="py-2 pr-3">
+                                                <input type="number" x-model.number="item.quantity" @input="recalcTotals()"
+                                                       class="input-field text-sm py-2 text-right" min="0.01" step="0.01" required>
+                                            </td>
+                                            <td class="py-2 pr-3">
+                                                <input type="number" x-model.number="item.unit_price" @input="recalcTotals()"
+                                                       class="input-field text-sm py-2 text-right" min="0" step="0.01" required>
+                                            </td>
+                                            <td class="py-2 pr-3 text-sm text-right font-semibold text-gray-700" x-text="formatPrice(item.quantity * item.unit_price)"></td>
+                                            <td class="py-2 text-center">
+                                                <button type="button" @click="removeLineItem(index)"
+                                                        class="text-red-400 hover:text-red-600 text-lg leading-none"
+                                                        x-show="newInvoice.line_items.length > 1">&times;</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Totals & Deposit -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Acconto Applicato</label>
+                                <input type="number" x-model.number="newInvoice.deposit_applied" @input="recalcTotals()"
+                                       class="input-field text-sm py-2" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                                <input type="text" x-model="newInvoice.notes" class="input-field text-sm py-2"
+                                       placeholder="Note fattura (opzionale)">
+                            </div>
+                        </div>
+                        <div class="mt-4 space-y-2 text-right">
+                            <div class="flex justify-end items-center space-x-4">
+                                <span class="text-sm text-gray-600">Subtotale:</span>
+                                <span class="text-sm font-semibold w-28 text-right" x-text="formatPrice(calcSubtotal)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4">
+                                <span class="text-sm text-gray-600">IVA 22%:</span>
+                                <span class="text-sm font-semibold w-28 text-right" x-text="formatPrice(calcVat)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4 border-t pt-2">
+                                <span class="text-base font-bold text-gray-900">Totale:</span>
+                                <span class="text-base font-bold text-gray-900 w-28 text-right" x-text="formatPrice(calcTotal)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4" x-show="newInvoice.deposit_applied > 0">
+                                <span class="text-sm text-gray-600">Acconto:</span>
+                                <span class="text-sm font-semibold text-blue-600 w-28 text-right" x-text="'-' + formatPrice(newInvoice.deposit_applied)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4" x-show="newInvoice.deposit_applied > 0">
+                                <span class="text-base font-bold text-gray-900">Dovuto:</span>
+                                <span class="text-base font-bold w-28 text-right"
+                                      :class="calcAmountDue > 0 ? 'text-red-600' : 'text-green-600'"
+                                      x-text="formatPrice(calcAmountDue)"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" @click="showNewModal = false" class="btn-secondary">Annulla</button>
+                        <button type="submit" class="btn-primary" :disabled="saving">
+                            <span x-show="!saving">Crea Fattura</span>
+                            <span x-show="saving">Creazione...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Payment Modal -->
+    <template x-if="showPaymentModal">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md" @click.outside="showPaymentModal = false">
+                <div class="px-6 py-4 border-b">
+                    <h3 class="text-lg font-bold text-gray-900">Registra Pagamento</h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Fattura: <span class="font-mono" x-text="paymentInvoice?.invoice_number"></span>
+                    </p>
+                </div>
+                <form @submit.prevent="confirmPayment()" class="px-6 py-4">
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-1">Importo dovuto:</p>
+                        <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(getAmountDue(paymentInvoice))"></p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Metodo di Pagamento *</label>
+                        <select x-model="paymentMethod" class="input-field" required>
+                            <option value="">-- Seleziona --</option>
+                            <option value="contanti">Contanti</option>
+                            <option value="carta">Carta</option>
+                            <option value="bonifico">Bonifico</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Note Pagamento</label>
+                        <input type="text" x-model="paymentNotes" class="input-field text-sm py-2"
+                               placeholder="Riferimento bonifico, ricevuta, ecc.">
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" @click="showPaymentModal = false" class="btn-secondary">Annulla</button>
+                        <button type="submit" class="btn-success" :disabled="saving || !paymentMethod">
+                            <span x-show="!saving">Conferma Pagamento</span>
+                            <span x-show="saving">Registrazione...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Invoice Detail Modal -->
+    <template x-if="showDetailModal">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 pt-10 px-4 overflow-y-auto">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mb-10" @click.outside="showDetailModal = false">
+                <div class="px-6 py-4 border-b flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900" x-text="'Fattura ' + detailInvoice.invoice_number"></h3>
+                        <p class="text-sm text-gray-500" x-text="'Cliente: ' + (customerMap[detailInvoice.customer_id] || '...')"></p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="badge" :class="getPaymentBadgeClass(detailInvoice)"
+                              x-text="getPaymentStatusLabel(detailInvoice)"></span>
+                        <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                    </div>
+                </div>
+                <div class="px-6 py-4">
+                    <!-- Invoice Info -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                        <div>
+                            <span class="text-gray-500 block">Data Emissione</span>
+                            <span class="font-semibold" x-text="formatDate(detailInvoice.created_at)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Scadenza</span>
+                            <span class="font-semibold" :class="isOverdue(detailInvoice) ? 'text-red-600' : ''"
+                                  x-text="formatDate(detailInvoice.due_date)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Lavoro</span>
+                            <span class="font-semibold font-mono" x-text="detailInvoice.job_number || '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 block">Metodo Pagamento</span>
+                            <span class="font-semibold" x-text="detailInvoice.payment_method ? paymentMethodLabels[detailInvoice.payment_method] : '-'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <table class="min-w-full mb-6">
+                        <thead>
+                            <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                                <th class="pb-2 pr-3">Descrizione</th>
+                                <th class="pb-2 pr-3 text-right">Qty</th>
+                                <th class="pb-2 pr-3 text-right">Prezzo Unit.</th>
+                                <th class="pb-2 text-right">Totale</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="item in (detailInvoice.line_items || [])" :key="item.description">
+                                <tr class="border-b">
+                                    <td class="py-2 pr-3 text-sm text-gray-700" x-text="item.description"></td>
+                                    <td class="py-2 pr-3 text-sm text-gray-600 text-right" x-text="item.quantity"></td>
+                                    <td class="py-2 pr-3 text-sm text-gray-600 text-right" x-text="formatPrice(item.unit_price)"></td>
+                                    <td class="py-2 text-sm font-semibold text-gray-700 text-right" x-text="formatPrice(item.quantity * item.unit_price)"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <!-- Totals -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="space-y-2 text-right">
+                            <div class="flex justify-end items-center space-x-4">
+                                <span class="text-sm text-gray-600">Subtotale:</span>
+                                <span class="text-sm font-semibold w-28 text-right" x-text="formatPrice(detailInvoice.subtotal)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4">
+                                <span class="text-sm text-gray-600">IVA 22%:</span>
+                                <span class="text-sm font-semibold w-28 text-right" x-text="formatPrice(detailInvoice.vat_amount)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4 border-t pt-2">
+                                <span class="text-base font-bold text-gray-900">Totale:</span>
+                                <span class="text-base font-bold text-gray-900 w-28 text-right" x-text="formatPrice(detailInvoice.total)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4" x-show="detailInvoice.deposit_applied > 0">
+                                <span class="text-sm text-gray-600">Acconto:</span>
+                                <span class="text-sm font-semibold text-blue-600 w-28 text-right" x-text="'-' + formatPrice(detailInvoice.deposit_applied)"></span>
+                            </div>
+                            <div class="flex justify-end items-center space-x-4">
+                                <span class="text-base font-bold text-gray-900">Dovuto:</span>
+                                <span class="text-base font-bold w-28 text-right"
+                                      :class="getAmountDue(detailInvoice) > 0 ? 'text-red-600' : 'text-green-600'"
+                                      x-text="formatPrice(getAmountDue(detailInvoice))"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <template x-if="detailInvoice.notes">
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                                <span class="font-medium">Note:</span> <span x-text="detailInvoice.notes"></span>
+                            </p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="px-6 py-4 border-t flex justify-end space-x-3">
+                    <template x-if="user.isManager && detailInvoice.payment_status !== 'paid'">
+                        <button @click="showDetailModal = false; openPaymentModal(detailInvoice)" class="btn-success text-sm py-2 px-4">
+                            Segna Pagato
+                        </button>
+                    </template>
+                    <button @click="showDetailModal = false" class="btn-secondary text-sm py-2 px-4">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+
+<script>
+    function invoicesData() {
+        return {
+            user: { username: '', isAdmin: false, isManager: false, isMechanic: false, isCounter: false },
+            invoices: [],
+            customerMap: {},
+            customers: [],
+            completedJobs: [],
+            filters: { status: '', search: '' },
+            loading: true,
+            saving: false,
+
+            // Modals
+            showNewModal: false,
+            showPaymentModal: false,
+            showDetailModal: false,
+
+            // New invoice form
+            newInvoice: {
+                job_id: '',
+                customer_id: '',
+                due_date: '',
+                deposit_applied: 0,
+                notes: '',
+                line_items: [
+                    { description: '', quantity: 1, unit_price: 0 }
+                ]
+            },
+
+            // Payment
+            paymentInvoice: null,
+            paymentMethod: '',
+            paymentNotes: '',
+
+            // Detail view
+            detailInvoice: {},
+
+            // Summary
+            summary: {
+                totalInvoiced: 0,
+                totalCollected: 0,
+                totalOutstanding: 0
+            },
+
+            paymentMethodLabels: {
+                'contanti': 'Contanti',
+                'carta': 'Carta',
+                'bonifico': 'Bonifico'
+            },
+
+            PAYMENT_STATUS_LABELS: {
+                'pending': 'In Attesa',
+                'deposit_paid': 'Acconto Versato',
+                'partial': 'Parziale',
+                'paid': 'Pagato',
+                'overdue': 'Scaduto'
+            },
+
+            get filteredInvoices() {
+                let result = this.invoices;
+                if (this.filters.status) {
+                    if (this.filters.status === 'overdue') {
+                        result = result.filter(inv => this.isOverdue(inv));
+                    } else {
+                        result = result.filter(inv => inv.payment_status === this.filters.status);
+                    }
+                }
+                if (this.filters.search) {
+                    const q = this.filters.search.toLowerCase();
+                    result = result.filter(inv =>
+                        (inv.invoice_number || '').toLowerCase().includes(q) ||
+                        (this.customerMap[inv.customer_id] || '').toLowerCase().includes(q)
+                    );
+                }
+                return result;
+            },
+
+            get calcSubtotal() {
+                return this.newInvoice.line_items.reduce((sum, item) => {
+                    return sum + (item.quantity * item.unit_price);
+                }, 0);
+            },
+
+            get calcVat() {
+                return this.calcSubtotal * 0.22;
+            },
+
+            get calcTotal() {
+                return this.calcSubtotal + this.calcVat;
+            },
+
+            get calcAmountDue() {
+                return Math.max(0, this.calcTotal - (this.newInvoice.deposit_applied || 0));
+            },
+
+            init() {
+                const token = CamperAuth.getToken();
+                if (!token) { window.location.href = '/camper'; return; }
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { CamperAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isAdmin: CamperAuth.isAdmin(),
+                    isManager: CamperAuth.isManager(),
+                    isMechanic: CamperAuth.isMechanic(),
+                    isCounter: CamperAuth.isCounter()
+                };
+
+                // Set default due date to 30 days from now
+                const defaultDue = new Date();
+                defaultDue.setDate(defaultDue.getDate() + 30);
+                this.newInvoice.due_date = defaultDue.toISOString().split('T')[0];
+
+                this.loadCustomers();
+                this.loadInvoices();
+            },
+
+            async loadCustomers() {
+                try {
+                    this.customers = await API.get('/api/v1/camper/customers');
+                    this.customers.forEach(c => { this.customerMap[c.id] = c.name; });
+                } catch (e) {
+                    console.error('Customer load failed:', e);
+                }
+            },
+
+            async loadInvoices() {
+                this.loading = true;
+                try {
+                    this.invoices = await API.get('/api/v1/camper/invoices');
+                    this.calculateSummary();
+                } catch (e) {
+                    showToast('Errore caricamento fatture: ' + e.message, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async loadCompletedJobs() {
+                try {
+                    const completed = await API.get('/api/v1/camper/jobs?status_filter=completed');
+                    const invoiced = await API.get('/api/v1/camper/jobs?status_filter=invoiced');
+                    this.completedJobs = [...completed, ...invoiced];
+                } catch (e) {
+                    console.error('Jobs load failed:', e);
+                    this.completedJobs = [];
+                }
+            },
+
+            calculateSummary() {
+                let totalInvoiced = 0;
+                let totalCollected = 0;
+
+                this.invoices.forEach(inv => {
+                    totalInvoiced += parseFloat(inv.total) || 0;
+                    if (inv.payment_status === 'paid') {
+                        totalCollected += parseFloat(inv.total) || 0;
+                    } else if (inv.payment_status === 'deposit_paid' || inv.payment_status === 'partial') {
+                        totalCollected += parseFloat(inv.deposit_applied) || 0;
+                    }
+                });
+
+                this.summary = {
+                    totalInvoiced,
+                    totalCollected,
+                    totalOutstanding: totalInvoiced - totalCollected
+                };
+            },
+
+            applyFilters() {
+                // Filters are reactive via computed filteredInvoices
+            },
+
+            isOverdue(invoice) {
+                if (!invoice || invoice.payment_status === 'paid') return false;
+                if (!invoice.due_date) return false;
+                return new Date(invoice.due_date) < new Date() && invoice.payment_status !== 'paid';
+            },
+
+            getAmountDue(invoice) {
+                if (!invoice) return 0;
+                const total = parseFloat(invoice.total) || 0;
+                const deposit = parseFloat(invoice.deposit_applied) || 0;
+                if (invoice.payment_status === 'paid') return 0;
+                return Math.max(0, total - deposit);
+            },
+
+            getPaymentStatusLabel(invoice) {
+                if (this.isOverdue(invoice) && invoice.payment_status !== 'paid') {
+                    return 'Scaduto';
+                }
+                return this.PAYMENT_STATUS_LABELS[invoice.payment_status] || invoice.payment_status;
+            },
+
+            getPaymentBadgeClass(invoice) {
+                if (this.isOverdue(invoice) && invoice.payment_status !== 'paid') {
+                    return 'bg-red-100 text-red-800';
+                }
+                const classes = {
+                    'pending': 'bg-amber-100 text-amber-800',
+                    'deposit_paid': 'bg-blue-100 text-blue-800',
+                    'partial': 'bg-amber-100 text-amber-800',
+                    'paid': 'bg-green-100 text-green-800',
+                    'overdue': 'bg-red-100 text-red-800'
+                };
+                return classes[invoice.payment_status] || 'bg-gray-100 text-gray-800';
+            },
+
+            // --- New Invoice ---
+
+            async openNewInvoiceModal() {
+                this.newInvoice = {
+                    job_id: '',
+                    customer_id: '',
+                    due_date: '',
+                    deposit_applied: 0,
+                    notes: '',
+                    line_items: [
+                        { description: '', quantity: 1, unit_price: 0 }
+                    ]
+                };
+                const defaultDue = new Date();
+                defaultDue.setDate(defaultDue.getDate() + 30);
+                this.newInvoice.due_date = defaultDue.toISOString().split('T')[0];
+
+                await this.loadCompletedJobs();
+                this.showNewModal = true;
+            },
+
+            async onJobSelected() {
+                if (!this.newInvoice.job_id) return;
+                const job = this.completedJobs.find(j => j.id === this.newInvoice.job_id);
+                if (!job) return;
+
+                // Auto-fill customer
+                if (job.customer_id) {
+                    this.newInvoice.customer_id = job.customer_id;
+                }
+
+                // Pre-populate line items from job actuals
+                const items = [];
+                const laborCost = parseFloat(job.actual_labor_cost) || 0;
+                const partsCost = parseFloat(job.actual_parts_cost) || 0;
+                const actualHours = parseFloat(job.actual_hours) || 0;
+
+                if (laborCost > 0 || actualHours > 0) {
+                    items.push({
+                        description: 'Manodopera - ' + (job.title || 'Lavoro'),
+                        quantity: actualHours > 0 ? actualHours : 1,
+                        unit_price: actualHours > 0 ? Math.round((laborCost / actualHours) * 100) / 100 : laborCost
+                    });
+                }
+
+                if (partsCost > 0) {
+                    items.push({
+                        description: 'Ricambi' + (job.parts_used ? ' - ' + job.parts_used : ''),
+                        quantity: 1,
+                        unit_price: partsCost
+                    });
+                }
+
+                // If neither actual was set, fall back to estimated total
+                if (items.length === 0) {
+                    const estimatedTotal = parseFloat(job.estimated_total) || 0;
+                    items.push({
+                        description: job.title || 'Lavoro',
+                        quantity: 1,
+                        unit_price: estimatedTotal
+                    });
+                }
+
+                this.newInvoice.line_items = items;
+            },
+
+            addLineItem() {
+                this.newInvoice.line_items.push({ description: '', quantity: 1, unit_price: 0 });
+            },
+
+            removeLineItem(index) {
+                if (this.newInvoice.line_items.length > 1) {
+                    this.newInvoice.line_items.splice(index, 1);
+                }
+            },
+
+            recalcTotals() {
+                // Computed properties handle this reactively
+            },
+
+            async createInvoice() {
+                if (!this.newInvoice.job_id || !this.newInvoice.customer_id || !this.newInvoice.due_date) {
+                    showToast('Lavoro, cliente e scadenza sono obbligatori.', 'warning');
+                    return;
+                }
+                if (this.newInvoice.line_items.length === 0 || !this.newInvoice.line_items[0].description) {
+                    showToast('Aggiungi almeno una voce alla fattura.', 'warning');
+                    return;
+                }
+
+                this.saving = true;
+                try {
+                    const payload = {
+                        job_id: this.newInvoice.job_id,
+                        customer_id: this.newInvoice.customer_id,
+                        due_date: this.newInvoice.due_date,
+                        deposit_applied: this.newInvoice.deposit_applied || 0,
+                        notes: this.newInvoice.notes || '',
+                        subtotal: this.calcSubtotal,
+                        vat_amount: this.calcVat,
+                        total: this.calcTotal,
+                        line_items: this.newInvoice.line_items.map(item => ({
+                            description: item.description,
+                            quantity: item.quantity,
+                            unit_price: item.unit_price,
+                            total: item.quantity * item.unit_price
+                        }))
+                    };
+                    const created = await API.post('/api/v1/camper/invoices', payload);
+                    this.invoices.unshift(created);
+                    this.calculateSummary();
+                    this.showNewModal = false;
+                    showToast('Fattura creata: ' + created.invoice_number, 'success');
+                } catch (e) {
+                    showToast('Errore creazione fattura: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            // --- Payment ---
+
+            openPaymentModal(invoice) {
+                this.paymentInvoice = invoice;
+                this.paymentMethod = '';
+                this.paymentNotes = '';
+                this.showPaymentModal = true;
+            },
+
+            async confirmPayment() {
+                if (!this.paymentMethod) {
+                    showToast('Seleziona un metodo di pagamento.', 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    const payload = {
+                        payment_status: 'paid',
+                        payment_method: this.paymentMethod,
+                        payment_notes: this.paymentNotes,
+                        paid_at: new Date().toISOString()
+                    };
+                    const updated = await API.patch('/api/v1/camper/invoices/' + this.paymentInvoice.id + '/payment', payload);
+
+                    // Update in list
+                    const idx = this.invoices.findIndex(inv => inv.id === this.paymentInvoice.id);
+                    if (idx >= 0) {
+                        this.invoices[idx] = updated;
+                    }
+                    this.calculateSummary();
+                    this.showPaymentModal = false;
+                    showToast('Pagamento registrato!', 'success');
+                } catch (e) {
+                    showToast('Errore registrazione pagamento: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            // --- Detail View ---
+
+            viewInvoice(invoice) {
+                this.detailInvoice = invoice;
+                this.showDetailModal = true;
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Calendario - Camper & Tour{% endblock %}
+{% block page_name %}Calendario{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <style>
+        /* FullCalendar overrides for Camper & Tour amber theme */
+        .fc .fc-button-primary {
+            background-color: #d97706;
+            border-color: #b45309;
+        }
+        .fc .fc-button-primary:hover {
+            background-color: #b45309;
+            border-color: #92400e;
+        }
+        .fc .fc-button-primary:not(:disabled).fc-button-active,
+        .fc .fc-button-primary:not(:disabled):active {
+            background-color: #92400e;
+            border-color: #78350f;
+        }
+        .fc .fc-button-primary:focus {
+            box-shadow: 0 0 0 0.2rem rgba(217, 119, 6, 0.4);
+        }
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: #fffbeb;
+        }
+        .fc .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            padding: 1px 4px;
+        }
+        .fc .fc-toolbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .fc .fc-col-header-cell-cushion {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .fc .fc-daygrid-day-number {
+            color: #374151;
+            font-weight: 500;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="calendarData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/quotes" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini Acquisto</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Calendario</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/camper/quotes" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini Acquisto</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Calendario</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Calendario Lavori</h2>
+        </div>
+
+        <!-- Calendar Container -->
+        <div class="card mb-6">
+            <div id="calendar"></div>
+        </div>
+
+        <!-- Status Legend -->
+        <div class="card">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Legenda Stati</h3>
+            <div class="flex flex-wrap gap-4">
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #6b7280;"></span>
+                    <span class="text-sm text-gray-700">Preventivato</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #3b82f6;"></span>
+                    <span class="text-sm text-gray-700">Approvato</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #d97706;"></span>
+                    <span class="text-sm text-gray-700">In Corso</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #ef4444;"></span>
+                    <span class="text-sm text-gray-700">Attesa Ricambi</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #8b5cf6;"></span>
+                    <span class="text-sm text-gray-700">Ispezione</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #10b981;"></span>
+                    <span class="text-sm text-gray-700">Completato</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 rounded" style="background-color: #6366f1;"></span>
+                    <span class="text-sm text-gray-700">Fatturato</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function calendarData() {
+        return {
+            user: {
+                username: '', firstName: '', roles: [],
+                isAdmin: false, isManager: false, isMechanic: false, isCounter: false
+            },
+            calendar: null,
+
+            init() {
+                const token = CamperAuth.getToken();
+                if (!token) {
+                    window.location.href = '/camper';
+                    return;
+                }
+
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) {
+                    showToast('Accesso non autorizzato.', 'error');
+                    setTimeout(() => CamperAuth.logout(), 2000);
+                    return;
+                }
+
+                this.user = {
+                    ...userInfo,
+                    isAdmin: CamperAuth.isAdmin(),
+                    isManager: CamperAuth.isManager(),
+                    isMechanic: CamperAuth.isMechanic(),
+                    isCounter: CamperAuth.isCounter()
+                };
+
+                this.$nextTick(() => {
+                    this.initCalendar();
+                });
+            },
+
+            initCalendar() {
+                const calendarEl = document.getElementById('calendar');
+                if (!calendarEl) return;
+
+                const authToken = CamperAuth.getToken();
+
+                this.calendar = new FullCalendar.Calendar(calendarEl, {
+                    locale: 'it',
+                    initialView: 'dayGridMonth',
+                    height: 'auto',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,listWeek'
+                    },
+                    buttonText: {
+                        today: 'Oggi',
+                        month: 'Mese',
+                        week: 'Settimana',
+                        list: 'Lista'
+                    },
+                    noEventsText: 'Nessun evento da visualizzare',
+                    navLinks: true,
+                    editable: false,
+                    dayMaxEvents: true,
+                    moreLinkText: 'altri',
+
+                    eventSources: [{
+                        url: '/api/v1/camper/calendar',
+                        method: 'GET',
+                        extraParams: function() {
+                            return {};
+                        },
+                        failure: function(error) {
+                            console.error('Errore caricamento eventi:', error);
+                            showToast('Errore caricamento eventi calendario.', 'error');
+                        },
+                        beforeSend: function(xhr) {
+                            xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
+                        }
+                    }],
+
+                    eventSourceSuccess: function(rawEvents) {
+                        return rawEvents;
+                    },
+
+                    // Pass auth token via fetch hook
+                    eventDidMount: function(info) {
+                        // Tooltip with job details
+                        const props = info.event.extendedProps;
+                        let tooltipText = info.event.title;
+                        if (props.job_number) {
+                            tooltipText = props.job_number + ' - ' + tooltipText;
+                        }
+                        if (props.assigned_to) {
+                            tooltipText += ' (' + props.assigned_to + ')';
+                        }
+                        info.el.title = tooltipText;
+                    },
+
+                    eventClick: function(info) {
+                        info.jsEvent.preventDefault();
+                        const url = info.event.url;
+                        if (url) {
+                            window.location.href = url;
+                        }
+                    },
+
+                    loading: function(isLoading) {
+                        // Could show a loading indicator if needed
+                    }
+                });
+
+                // Override the fetch function to add auth headers
+                const originalFetch = window.fetch;
+                const calendarApiPath = '/api/v1/camper/calendar';
+                window.fetch = function(input, init) {
+                    const url = typeof input === 'string' ? input : input.url;
+                    if (url && url.includes(calendarApiPath)) {
+                        init = init || {};
+                        init.headers = init.headers || {};
+                        if (init.headers instanceof Headers) {
+                            init.headers.set('Authorization', 'Bearer ' + authToken);
+                        } else {
+                            init.headers['Authorization'] = 'Bearer ' + authToken;
+                        }
+                    }
+                    return originalFetch.call(this, input, init);
+                };
+
+                this.calendar.render();
+            },
+
+            logout() {
+                if (confirm('Vuoi uscire?')) {
+                    showToast('Disconnessione...', 'info');
+                    setTimeout(() => CamperAuth.logout(), 500);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

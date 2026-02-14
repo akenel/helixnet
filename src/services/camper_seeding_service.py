@@ -3,6 +3,8 @@
 Camper & Tour Seeding Service - Demo data for the pitch to Nino.
 Runs on application startup. Uses MAX (Angel's camper) as the hero vehicle.
 
+v2: Adds quotations, purchase orders, invoices, and calendar scheduling.
+
 The seal inspection story is real. Everything else is demo data.
 
 "If one seal fails, check all the seals."
@@ -16,6 +18,9 @@ from sqlalchemy import select
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
 from src.db.models.camper_customer_model import CamperCustomerModel, CustomerLanguage
 from src.db.models.camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
+from src.db.models.camper_quotation_model import CamperQuotationModel, QuotationStatus
+from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
+from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +51,7 @@ async def seed_camper_data(db: AsyncSession) -> None:
         city="Trapani",
         language=CustomerLanguage.EN,
         tax_id=None,
+        telegram_chat_id="123456789",
         first_visit=date(2025, 11, 15),
         last_visit=date(2026, 2, 6),
         visit_count=8,
@@ -61,6 +67,7 @@ async def seed_camper_data(db: AsyncSession) -> None:
         city="Trapani",
         language=CustomerLanguage.IT,
         tax_id="RSSMRC80A01L219K",
+        telegram_chat_id="987654321",
         first_visit=date(2025, 6, 1),
         last_visit=date(2026, 1, 20),
         visit_count=5,
@@ -209,7 +216,10 @@ async def seed_camper_data(db: AsyncSession) -> None:
         scheduled_date=date(2026, 2, 6),
         started_at=datetime(2026, 2, 6, 9, 0, tzinfo=timezone.utc),
         parts_on_order=True,
-        parts_po_number="PO-MAX-ROOF-001",
+        parts_po_number="PO-20260210-0001",
+        deposit_required=Decimal("1450.00"),
+        deposit_paid=Decimal("1450.00"),
+        deposit_paid_at=datetime(2026, 2, 7, 10, 0, tzinfo=timezone.utc),
         issue_found=(
             "1. Bathroom window seal completely degraded\n"
             "2. Water ingress behind ceiling panels (both sides)\n"
@@ -232,7 +242,7 @@ async def seed_camper_data(db: AsyncSession) -> None:
         next_service_date=date(2026, 8, 1),
     )
 
-    # Job 2: Marco's annual service (routine, completed)
+    # Job 2: Marco's annual service (routine, completed + invoiced)
     marco_service = CamperServiceJobModel(
         job_number="JOB-20260120-0001",
         title="Annual maintenance + oil change",
@@ -253,6 +263,12 @@ async def seed_camper_data(db: AsyncSession) -> None:
         started_at=datetime(2026, 1, 20, 8, 30, tzinfo=timezone.utc),
         completed_at=datetime(2026, 1, 20, 12, 0, tzinfo=timezone.utc),
         picked_up_at=datetime(2026, 1, 20, 16, 0, tzinfo=timezone.utc),
+        inspection_passed=True,
+        inspected_by="nino",
+        inspected_at=datetime(2026, 1, 20, 11, 45, tzinfo=timezone.utc),
+        deposit_required=Decimal("65.00"),
+        deposit_paid=Decimal("65.00"),
+        deposit_paid_at=datetime(2026, 1, 18, 9, 0, tzinfo=timezone.utc),
         parts_used="Oil filter, air filter, 6L 5W-30 engine oil, brake pads (front)",
         issue_found="Front brake pads at 20% -- replaced. Rear pads still good (60%).",
         work_performed="Oil change, filter replacement, front brake pad replacement, tire rotation, "
@@ -284,6 +300,9 @@ async def seed_camper_data(db: AsyncSession) -> None:
         started_at=datetime(2026, 2, 1, 10, 0, tzinfo=timezone.utc),
         completed_at=datetime(2026, 2, 1, 12, 30, tzinfo=timezone.utc),
         picked_up_at=datetime(2026, 2, 1, 14, 0, tzinfo=timezone.utc),
+        inspection_passed=True,
+        inspected_by="nino",
+        inspected_at=datetime(2026, 2, 1, 12, 15, tzinfo=timezone.utc),
         parts_used="Fiamma Aqua 8 water pump, hose clamps x4, Teflon tape",
         issue_found="Original Shurflo pump motor burned out. Water lines in good condition.",
         work_performed="Replaced water pump with Fiamma Aqua 8. Tested all connections. "
@@ -303,11 +322,12 @@ async def seed_camper_data(db: AsyncSession) -> None:
         customer_id=sophie_dupont.id,
         job_type=JobType.GAS_SYSTEM,
         status=JobStatus.QUOTED,
-        assigned_to=None,  # Not assigned until approved
+        assigned_to=None,
         estimated_hours=5,
         estimated_parts_cost=Decimal("80.00"),
         estimated_total=Decimal("255.00"),
         quote_valid_until=date(2026, 2, 28),
+        scheduled_date=date(2026, 2, 20),
         customer_notes="Je suis inquiete pour le systeme de gaz. Il y a une odeur parfois. "
                        "(I'm worried about the gas system. There's a smell sometimes.)",
         follow_up_required=False,
@@ -328,20 +348,196 @@ async def seed_camper_data(db: AsyncSession) -> None:
         estimated_parts_cost=Decimal("1200.00"),
         estimated_total=Decimal("1760.00"),
         quote_valid_until=date(2026, 3, 15),
+        scheduled_date=date(2026, 3, 1),
         customer_notes="Want to be self-sufficient for off-grid camping at Baglio Xiare. "
                        "Need enough power for laptop + router + lights.",
         follow_up_required=False,
     )
 
-    db.add_all([max_seal_job, marco_service, hans_plumbing, sophie_inspection, max_electrical])
+    # Job 6: Upcoming scheduled work (for calendar demo)
+    upcoming_job = CamperServiceJobModel(
+        job_number="JOB-20260214-0001",
+        title="Brake system overhaul",
+        description="Full brake system inspection and replacement. Pads, rotors, fluid.",
+        vehicle_id=marco_ducato.id,
+        customer_id=marco_rossi.id,
+        job_type=JobType.REPAIR,
+        status=JobStatus.APPROVED,
+        assigned_to="Maximo",
+        estimated_hours=6,
+        estimated_parts_cost=Decimal("350.00"),
+        estimated_total=Decimal("560.00"),
+        scheduled_date=date.today() + timedelta(days=3),
+        deposit_required=Decimal("140.00"),
+        deposit_paid=Decimal("140.00"),
+        deposit_paid_at=datetime.now(timezone.utc),
+    )
+
+    db.add_all([max_seal_job, marco_service, hans_plumbing, sophie_inspection, max_electrical, upcoming_job])
+    await db.flush()
+
+    # ================================================================
+    # QUOTATIONS (v2)
+    # ================================================================
+
+    # Accepted quotation for MAX seal repair
+    max_quotation = CamperQuotationModel(
+        quote_number="QUO-20260206-0001",
+        job_id=max_seal_job.id,
+        customer_id=angel.id,
+        vehicle_id=max_camper.id,
+        line_items=[
+            {"description": "Roof panel removal + inspection", "quantity": 8, "unit_price": 35.0, "line_total": 280.0, "item_type": "labor"},
+            {"description": "Seal replacement (3 windows)", "quantity": 12, "unit_price": 35.0, "line_total": 420.0, "item_type": "labor"},
+            {"description": "Structural repair + waterproofing", "quantity": 40, "unit_price": 35.0, "line_total": 1400.0, "item_type": "labor"},
+            {"description": "Window seals (3x Dometic)", "quantity": 3, "unit_price": 85.0, "line_total": 255.0, "item_type": "parts"},
+            {"description": "Roof panels (marine-grade plywood)", "quantity": 6, "unit_price": 120.0, "line_total": 720.0, "item_type": "materials"},
+            {"description": "Waterproof membrane + sealant", "quantity": 1, "unit_price": 180.0, "line_total": 180.0, "item_type": "materials"},
+            {"description": "Ceiling panels (replacement)", "quantity": 4, "unit_price": 95.0, "line_total": 380.0, "item_type": "materials"},
+        ],
+        subtotal=Decimal("3635.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("799.70"),
+        total=Decimal("4434.70"),
+        deposit_percent=Decimal("25.00"),
+        deposit_amount=Decimal("1108.68"),
+        valid_until=date(2026, 3, 6),
+        status=QuotationStatus.ACCEPTED,
+        sent_at=datetime(2026, 2, 6, 14, 0, tzinfo=timezone.utc),
+        accepted_at=datetime(2026, 2, 7, 9, 0, tzinfo=timezone.utc),
+        notes="Comprehensive repair. Estimate may increase if hidden damage found behind panels.",
+        created_by="nino",
+    )
+
+    # Pending quotation for Sophie's gas inspection
+    sophie_quotation = CamperQuotationModel(
+        quote_number="QUO-20260213-0001",
+        job_id=sophie_inspection.id,
+        customer_id=sophie_dupont.id,
+        vehicle_id=sophie_hymer.id,
+        line_items=[
+            {"description": "Gas system visual inspection", "quantity": 1, "unit_price": 35.0, "line_total": 35.0, "item_type": "labor"},
+            {"description": "Pressure test (leak detection)", "quantity": 2, "unit_price": 35.0, "line_total": 70.0, "item_type": "labor"},
+            {"description": "Regulator function test", "quantity": 1, "unit_price": 35.0, "line_total": 35.0, "item_type": "labor"},
+            {"description": "Certification report", "quantity": 1, "unit_price": 35.0, "line_total": 35.0, "item_type": "labor"},
+            {"description": "Leak detection spray", "quantity": 1, "unit_price": 15.0, "line_total": 15.0, "item_type": "materials"},
+            {"description": "Replacement hose (if needed)", "quantity": 1, "unit_price": 45.0, "line_total": 45.0, "item_type": "parts"},
+        ],
+        subtotal=Decimal("235.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("51.70"),
+        total=Decimal("286.70"),
+        deposit_percent=Decimal("25.00"),
+        deposit_amount=Decimal("71.68"),
+        valid_until=date(2026, 2, 28),
+        status=QuotationStatus.SENT,
+        sent_at=datetime(2026, 2, 13, 16, 0, tzinfo=timezone.utc),
+        notes="Includes certification for Italian camping regulations.",
+        created_by="nino",
+    )
+
+    db.add_all([max_quotation, sophie_quotation])
+    await db.flush()
+
+    # ================================================================
+    # PURCHASE ORDERS (v2)
+    # ================================================================
+
+    # PO for MAX roof materials (in transit)
+    max_po = CamperPurchaseOrderModel(
+        po_number="PO-20260210-0001",
+        job_id=max_seal_job.id,
+        supplier_name="Fiamma S.p.A.",
+        supplier_contact="Vendite Italia",
+        supplier_email="vendite@fiamma.it",
+        supplier_phone="+39 049 820 1166",
+        line_items=[
+            {"description": "Dometic window seal S4 76x46cm", "part_number": "DOM-S4-7646", "quantity": 3, "unit_price": 85.0, "line_total": 255.0},
+            {"description": "Sikaflex 252i sealant (white)", "part_number": "SIKA-252I-W", "quantity": 4, "unit_price": 18.0, "line_total": 72.0},
+            {"description": "Butyl tape 10m roll", "part_number": "BUT-10M", "quantity": 2, "unit_price": 12.0, "line_total": 24.0},
+        ],
+        subtotal=Decimal("351.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("77.22"),
+        total=Decimal("428.22"),
+        status=CamperPOStatus.SHIPPED,
+        expected_delivery=date(2026, 2, 18),
+        tracking_number="FI-2026-89234",
+        notes="Express shipping requested. Should arrive by Tuesday.",
+        created_by="nino",
+    )
+
+    # PO for Marco's brake parts (received)
+    marco_po = CamperPurchaseOrderModel(
+        po_number="PO-20260118-0001",
+        job_id=marco_service.id,
+        supplier_name="Autoricambi Ferrara",
+        supplier_contact="Giovanni",
+        supplier_phone="+39 0923 123456",
+        line_items=[
+            {"description": "Oil filter Fiat Ducato 2.3L", "part_number": "MF-FD23-OF", "quantity": 1, "unit_price": 12.0, "line_total": 12.0},
+            {"description": "Air filter Fiat Ducato 2.3L", "part_number": "MF-FD23-AF", "quantity": 1, "unit_price": 18.0, "line_total": 18.0},
+            {"description": "Engine oil 5W-30 6L", "part_number": "EO-5W30-6L", "quantity": 1, "unit_price": 45.0, "line_total": 45.0},
+            {"description": "Front brake pads (set)", "part_number": "BP-FD-FRONT", "quantity": 1, "unit_price": 40.0, "line_total": 40.0},
+        ],
+        subtotal=Decimal("115.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("25.30"),
+        total=Decimal("140.30"),
+        status=CamperPOStatus.RECEIVED,
+        expected_delivery=date(2026, 1, 19),
+        actual_delivery=date(2026, 1, 19),
+        notes="Local supplier. Same-day delivery.",
+        created_by="nino",
+    )
+
+    db.add_all([max_po, marco_po])
+    await db.flush()
+
+    # ================================================================
+    # INVOICES (v2)
+    # ================================================================
+
+    # Invoice for Marco's completed job (paid)
+    marco_invoice = CamperInvoiceModel(
+        invoice_number="INV-20260120-0001",
+        job_id=marco_service.id,
+        customer_id=marco_rossi.id,
+        quotation_id=None,
+        line_items=[
+            {"description": "Annual maintenance labor", "quantity": 3.5, "unit_price": 35.0, "line_total": 122.5, "item_type": "labor"},
+            {"description": "Oil filter", "quantity": 1, "unit_price": 12.0, "line_total": 12.0, "item_type": "parts"},
+            {"description": "Air filter", "quantity": 1, "unit_price": 18.0, "line_total": 18.0, "item_type": "parts"},
+            {"description": "Engine oil 5W-30 6L", "quantity": 1, "unit_price": 45.0, "line_total": 45.0, "item_type": "parts"},
+            {"description": "Front brake pads (set)", "quantity": 1, "unit_price": 40.0, "line_total": 40.0, "item_type": "parts"},
+        ],
+        subtotal=Decimal("237.50"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("52.25"),
+        total=Decimal("289.75"),
+        deposit_applied=Decimal("65.00"),
+        amount_due=Decimal("224.75"),
+        payment_status=PaymentStatus.PAID,
+        payment_method="card",
+        paid_at=datetime(2026, 1, 20, 16, 30, tzinfo=timezone.utc),
+        due_date=date(2026, 2, 3),
+        notes="Annual service invoice. Payment received at pickup.",
+        created_by="nino",
+    )
+
+    db.add(marco_invoice)
     await db.commit()
 
-    logger.info("Camper & Tour seeding completed!")
+    logger.info("Camper & Tour seeding completed! (v2)")
     logger.info("  - 4 customers (Angel, Marco, Hans, Sophie)")
     logger.info("  - 4 vehicles (MAX, Ducato Maxi, California, Eriba)")
-    logger.info("  - 5 service jobs:")
+    logger.info("  - 6 service jobs:")
     logger.info("    - MAX roof seal (IN_PROGRESS -- the real story)")
     logger.info("    - Marco annual service (INVOICED)")
     logger.info("    - Hans plumbing emergency (COMPLETED)")
     logger.info("    - Sophie gas inspection (QUOTED)")
     logger.info("    - MAX solar install (QUOTED)")
+    logger.info("    - Marco brake overhaul (APPROVED, scheduled)")
+    logger.info("  - 2 quotations (1 accepted, 1 sent)")
+    logger.info("  - 2 purchase orders (1 shipped, 1 received)")
+    logger.info("  - 1 invoice (paid)")

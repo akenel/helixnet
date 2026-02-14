@@ -16,11 +16,15 @@
                         <p class="text-xs text-gray-500">Gestione Servizi</p>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-2">
+                <div class="hidden md:flex items-center space-x-1">
                     <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
                     <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
                     <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Lavori</a>
                     <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
@@ -137,6 +141,78 @@
                     </div>
                 </div>
 
+                <!-- Deposit Section (v2) -->
+                <template x-if="job.deposit_required > 0 || job.deposit_paid > 0">
+                    <div class="card mb-6" :class="job.deposit_paid >= job.deposit_required ? 'border-l-4 border-green-500' : 'border-l-4 border-amber-500'">
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Acconto</h3>
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-500 block">Richiesto</span>
+                                <span class="font-bold text-lg" x-text="formatPrice(job.deposit_required)"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Versato</span>
+                                <span class="font-bold text-lg" :class="job.deposit_paid >= job.deposit_required ? 'text-green-600' : 'text-amber-600'"
+                                      x-text="formatPrice(job.deposit_paid)"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Data Pagamento</span>
+                                <span class="font-semibold" x-text="formatDateTime(job.deposit_paid_at)"></span>
+                            </div>
+                        </div>
+                        <template x-if="job.deposit_paid < job.deposit_required && user.isCounter">
+                            <div class="mt-4 flex items-center space-x-3">
+                                <input type="number" x-model.number="depositAmount" class="input-field w-40 text-sm py-2" min="0" step="0.01" placeholder="Importo">
+                                <select x-model="depositMethod" class="input-field w-40 text-sm py-2">
+                                    <option value="cash">Contanti</option>
+                                    <option value="card">Carta</option>
+                                    <option value="transfer">Bonifico</option>
+                                </select>
+                                <button @click="recordDeposit()" class="btn-success text-sm py-2">Registra Acconto</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Inspection Section (v2) -->
+                <template x-if="job.inspected_by || job.status === 'inspection'">
+                    <div class="card mb-6" :class="job.inspection_passed ? 'border-l-4 border-green-500' : 'border-l-4 border-purple-500'">
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">Ispezione</h3>
+                        <template x-if="job.inspected_by">
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500 block">Esito</span>
+                                    <span class="font-bold" :class="job.inspection_passed ? 'text-green-600' : 'text-red-600'"
+                                          x-text="job.inspection_passed ? 'SUPERATA' : 'NON SUPERATA'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 block">Ispettore</span>
+                                    <span class="font-semibold" x-text="job.inspected_by"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 block">Data</span>
+                                    <span class="font-semibold" x-text="formatDateTime(job.inspected_at)"></span>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="job.inspection_notes">
+                            <div class="mt-3">
+                                <span class="text-gray-500 text-sm block">Note Ispezione</span>
+                                <p class="text-sm text-gray-700 whitespace-pre-line" x-text="job.inspection_notes"></p>
+                            </div>
+                        </template>
+                        <template x-if="job.status === 'inspection' && user.isManager">
+                            <div class="mt-4">
+                                <textarea x-model="inspectionNotes" class="input-field text-sm mb-3" rows="2" placeholder="Note ispezione..."></textarea>
+                                <div class="flex space-x-3">
+                                    <button @click="passInspection()" class="btn-success text-sm py-2">Ispezione Superata</button>
+                                    <button @click="failInspection()" class="btn-danger text-sm py-2">Non Superata</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
                 <!-- Quote Section -->
                 <div class="card mb-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Preventivo</h3>
@@ -158,8 +234,13 @@
                             <span class="font-semibold" x-text="formatDate(job.quote_valid_until)"></span>
                         </div>
                     </div>
-                    <div class="mt-4" x-show="job.status === 'quoted' && user.isManager">
-                        <button @click="approveJob()" class="btn-success">Approva Preventivo</button>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <template x-if="job.status === 'quoted' && user.isManager">
+                            <button @click="approveJob()" class="btn-success text-sm py-2">Approva Preventivo</button>
+                        </template>
+                        <template x-if="job.status === 'quoted'">
+                            <a :href="'/camper/quotations?job_id=' + job.id" class="btn-secondary text-sm py-2">Crea Preventivo Formale</a>
+                        </template>
                     </div>
                 </div>
 
@@ -350,6 +431,40 @@
                     </div>
                 </div>
 
+                <!-- Related Documents (v2) -->
+                <div class="card mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-900">Documenti</h3>
+                        <span class="text-sm text-gray-500" x-text="documents.length + ' file'"></span>
+                    </div>
+                    <template x-if="documents.length === 0">
+                        <p class="text-sm text-gray-500">Nessun documento allegato.</p>
+                    </template>
+                    <template x-if="documents.length > 0">
+                        <div class="space-y-2">
+                            <template x-for="doc in documents" :key="doc.id">
+                                <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2">
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-900" x-text="doc.file_name"></span>
+                                        <span class="text-xs text-gray-500 ml-2" x-text="(doc.file_size / 1024).toFixed(0) + ' KB'"></span>
+                                    </div>
+                                    <a :href="'/api/v1/camper/documents/' + doc.id + '/download'"
+                                       class="text-amber-600 hover:text-amber-700 text-sm font-medium"
+                                       target="_blank">Scarica</a>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Upload -->
+                    <div class="mt-4 border-t pt-4">
+                        <div class="flex items-center space-x-3">
+                            <input type="file" id="docUpload" @change="uploadDocument($event)" class="text-sm">
+                            <span x-show="uploading" class="text-sm text-gray-500">Caricamento...</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="card flex flex-wrap gap-3">
                     <!-- Edit/Save -->
@@ -372,6 +487,9 @@
                     </template>
                     <template x-if="job.status === 'approved' && user.isMechanic">
                         <button @click="advanceStatus('in_progress')" class="btn-primary">Inizia Lavoro</button>
+                    </template>
+                    <template x-if="job.status === 'in_progress' && user.isMechanic">
+                        <button @click="submitForInspection()" class="btn-primary">Invia a Ispezione</button>
                     </template>
                     <template x-if="(job.status === 'in_progress' || job.status === 'waiting_parts') && user.isMechanic">
                         <button @click="completeJob()" class="btn-success">Segna Completato</button>
@@ -400,6 +518,11 @@
             saving: false,
             createMode: false,
             editData: {},
+            documents: [],
+            uploading: false,
+            inspectionNotes: '',
+            depositAmount: 0,
+            depositMethod: 'cash',
             newJob: {
                 title: '', description: '', vehicle_id: '', customer_id: '',
                 job_type: 'repair', assigned_to: '',
@@ -420,19 +543,16 @@
                     isCounter: CamperAuth.isCounter()
                 };
 
-                // Check if this is create mode
                 const path = window.location.pathname;
                 if (path.endsWith('/new')) {
                     this.createMode = true;
                     this.loading = false;
-                    // Pre-fill from URL params
                     const params = new URLSearchParams(window.location.search);
                     if (params.get('vehicle_id')) this.newJob.vehicle_id = params.get('vehicle_id');
                     if (params.get('customer_id')) this.newJob.customer_id = params.get('customer_id');
                     return;
                 }
 
-                // Extract job ID from URL
                 const parts = path.split('/');
                 const jobId = parts[parts.length - 1];
                 this.loadJob(jobId);
@@ -441,16 +561,18 @@
             async loadJob(jobId) {
                 try {
                     this.job = await API.get('/api/v1/camper/jobs/' + jobId);
-                    // Load vehicle plate
                     try {
                         const vehicle = await API.get('/api/v1/camper/vehicles/' + this.job.vehicle_id);
                         this.vehiclePlate = vehicle.registration_plate;
                     } catch (e) { this.vehiclePlate = '?'; }
-                    // Load customer name
                     try {
                         const customer = await API.get('/api/v1/camper/customers/' + this.job.customer_id);
                         this.customerName = customer.name;
                     } catch (e) { this.customerName = '?'; }
+                    // Load documents
+                    try {
+                        this.documents = await API.get('/api/v1/camper/documents?entity_type=job&entity_id=' + jobId);
+                    } catch (e) { this.documents = []; }
                 } catch (e) {
                     showToast('Errore caricamento lavoro: ' + e.message, 'error');
                 } finally {
@@ -536,6 +658,83 @@
                     showToast('Lavoro completato!', 'success');
                 } catch (e) {
                     showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async submitForInspection() {
+                try {
+                    this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/submit-inspection');
+                    showToast('Inviato a ispezione!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async passInspection() {
+                try {
+                    this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/pass-inspection', { notes: this.inspectionNotes });
+                    showToast('Ispezione superata!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async failInspection() {
+                if (!this.inspectionNotes) {
+                    showToast('Inserisci le note di ispezione.', 'warning');
+                    return;
+                }
+                try {
+                    this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/fail-inspection', { notes: this.inspectionNotes });
+                    showToast('Ispezione non superata. Lavoro rimandato.', 'warning');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async recordDeposit() {
+                if (!this.depositAmount || this.depositAmount <= 0) {
+                    showToast('Inserisci un importo valido.', 'warning');
+                    return;
+                }
+                try {
+                    this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/record-deposit', {
+                        amount: this.depositAmount,
+                        payment_method: this.depositMethod
+                    });
+                    this.depositAmount = 0;
+                    showToast('Acconto registrato!', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async uploadDocument(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                this.uploading = true;
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('entity_type', 'job');
+                    formData.append('entity_id', this.job.id);
+                    formData.append('description', file.name);
+
+                    const token = CamperAuth.getToken();
+                    const response = await fetch('/api/v1/camper/documents/upload', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData
+                    });
+                    if (!response.ok) throw new Error('Upload failed');
+                    const doc = await response.json();
+                    this.documents.push(doc);
+                    showToast('Documento caricato!', 'success');
+                    event.target.value = '';
+                } catch (e) {
+                    showToast('Errore upload: ' + e.message, 'error');
+                } finally {
+                    this.uploading = false;
                 }
             }
         }

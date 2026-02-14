@@ -8,11 +8,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Any
 
 from src.db.models.camper_vehicle_model import VehicleType, VehicleStatus
 from src.db.models.camper_customer_model import CustomerLanguage
 from src.db.models.camper_service_job_model import JobType, JobStatus
+from src.db.models.camper_quotation_model import QuotationStatus
+from src.db.models.camper_purchase_order_model import CamperPOStatus
+from src.db.models.camper_invoice_model import PaymentStatus
 
 
 # ================================================================
@@ -97,6 +100,7 @@ class CamperCustomerBase(BaseModel):
     city: Optional[str] = Field(None, max_length=100)
     language: CustomerLanguage = Field(default=CustomerLanguage.IT)
     tax_id: Optional[str] = Field(None, max_length=50, description="Codice Fiscale or P.IVA")
+    telegram_chat_id: Optional[str] = Field(None, max_length=50, description="Telegram bot chat ID")
     notes: Optional[str] = None
 
 
@@ -114,6 +118,7 @@ class CamperCustomerUpdate(BaseModel):
     city: Optional[str] = Field(None, max_length=100)
     language: Optional[CustomerLanguage] = None
     tax_id: Optional[str] = Field(None, max_length=50)
+    telegram_chat_id: Optional[str] = Field(None, max_length=50)
     notes: Optional[str] = None
 
 
@@ -182,6 +187,8 @@ class ServiceJobUpdate(BaseModel):
     follow_up_required: Optional[bool] = None
     follow_up_notes: Optional[str] = None
     next_service_date: Optional[date] = None
+    # Optimistic locking: client sends the updated_at it read, server rejects if stale
+    expected_updated_at: Optional[datetime] = Field(None, description="Send the updated_at you read. Rejects if another write happened since.")
 
 
 class ServiceJobStatusUpdate(BaseModel):
@@ -225,10 +232,255 @@ class ServiceJobRead(BaseModel):
     follow_up_required: bool
     follow_up_notes: Optional[str] = None
     next_service_date: Optional[date] = None
+    # Inspection fields
+    inspection_passed: bool = False
+    inspection_notes: Optional[str] = None
+    inspected_by: Optional[str] = None
+    inspected_at: Optional[datetime] = None
+    # Deposit fields
+    deposit_required: Decimal = Decimal("0.00")
+    deposit_paid: Decimal = Decimal("0.00")
+    deposit_paid_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# QUOTATION SCHEMAS
+# ================================================================
+
+class QuotationLineItem(BaseModel):
+    """A single line item on a quotation"""
+    description: str = Field(..., max_length=500)
+    quantity: float = Field(default=1, ge=0)
+    unit_price: Decimal = Field(default=Decimal("0.00"), ge=0)
+    line_total: Decimal = Field(default=Decimal("0.00"), ge=0)
+    item_type: str = Field(default="labor", description="labor, parts, or materials")
+
+
+class QuotationCreate(BaseModel):
+    """Schema for creating a quotation"""
+    job_id: UUID
+    customer_id: UUID
+    vehicle_id: UUID
+    line_items: list[QuotationLineItem] = Field(default_factory=list)
+    vat_rate: Decimal = Field(default=Decimal("22.00"))
+    deposit_percent: Decimal = Field(default=Decimal("25.00"))
+    valid_until: Optional[date] = None
+    notes: Optional[str] = None
+
+
+class QuotationUpdate(BaseModel):
+    """Schema for updating quotation (all fields optional)"""
+    line_items: Optional[list[QuotationLineItem]] = None
+    vat_rate: Optional[Decimal] = None
+    deposit_percent: Optional[Decimal] = None
+    valid_until: Optional[date] = None
+    notes: Optional[str] = None
+
+
+class QuotationRead(BaseModel):
+    """Schema for reading quotation"""
+    id: UUID
+    quote_number: str
+    job_id: UUID
+    customer_id: UUID
+    vehicle_id: UUID
+    line_items: list[Any] = Field(default_factory=list)
+    subtotal: Decimal
+    vat_rate: Decimal
+    vat_amount: Decimal
+    total: Decimal
+    currency: str
+    deposit_percent: Decimal
+    deposit_amount: Decimal
+    valid_until: Optional[date] = None
+    notes: Optional[str] = None
+    status: QuotationStatus
+    sent_at: Optional[datetime] = None
+    accepted_at: Optional[datetime] = None
+    rejected_at: Optional[datetime] = None
+    pdf_url: Optional[str] = None
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# PURCHASE ORDER SCHEMAS
+# ================================================================
+
+class POLineItem(BaseModel):
+    """A single line item on a purchase order"""
+    description: str = Field(..., max_length=500)
+    part_number: Optional[str] = Field(None, max_length=100)
+    quantity: float = Field(default=1, ge=0)
+    unit_price: Decimal = Field(default=Decimal("0.00"), ge=0)
+    line_total: Decimal = Field(default=Decimal("0.00"), ge=0)
+
+
+class PurchaseOrderCreate(BaseModel):
+    """Schema for creating a purchase order"""
+    job_id: UUID
+    supplier_name: str = Field(..., max_length=200)
+    supplier_contact: Optional[str] = Field(None, max_length=200)
+    supplier_email: Optional[str] = Field(None, max_length=255)
+    supplier_phone: Optional[str] = Field(None, max_length=50)
+    line_items: list[POLineItem] = Field(default_factory=list)
+    vat_rate: Decimal = Field(default=Decimal("22.00"))
+    expected_delivery: Optional[date] = None
+    notes: Optional[str] = None
+
+
+class PurchaseOrderUpdate(BaseModel):
+    """Schema for updating purchase order"""
+    supplier_name: Optional[str] = Field(None, max_length=200)
+    supplier_contact: Optional[str] = Field(None, max_length=200)
+    supplier_email: Optional[str] = Field(None, max_length=255)
+    supplier_phone: Optional[str] = Field(None, max_length=50)
+    line_items: Optional[list[POLineItem]] = None
+    vat_rate: Optional[Decimal] = None
+    expected_delivery: Optional[date] = None
+    tracking_number: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = None
+
+
+class POStatusUpdate(BaseModel):
+    """Schema for advancing PO status"""
+    status: CamperPOStatus
+
+
+class PurchaseOrderRead(BaseModel):
+    """Schema for reading purchase order"""
+    id: UUID
+    po_number: str
+    job_id: UUID
+    supplier_name: str
+    supplier_contact: Optional[str] = None
+    supplier_email: Optional[str] = None
+    supplier_phone: Optional[str] = None
+    line_items: list[Any] = Field(default_factory=list)
+    subtotal: Decimal
+    vat_rate: Decimal
+    vat_amount: Decimal
+    total: Decimal
+    currency: str
+    status: CamperPOStatus
+    expected_delivery: Optional[date] = None
+    actual_delivery: Optional[date] = None
+    tracking_number: Optional[str] = None
+    notes: Optional[str] = None
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# INVOICE SCHEMAS
+# ================================================================
+
+class InvoiceCreate(BaseModel):
+    """Schema for creating an invoice from a completed job"""
+    job_id: UUID
+    customer_id: UUID
+    quotation_id: Optional[UUID] = None
+    line_items: list[QuotationLineItem] = Field(default_factory=list)
+    vat_rate: Decimal = Field(default=Decimal("22.00"))
+    deposit_applied: Decimal = Field(default=Decimal("0.00"))
+    due_date: date
+    notes: Optional[str] = None
+
+
+class InvoiceRead(BaseModel):
+    """Schema for reading invoice"""
+    id: UUID
+    invoice_number: str
+    job_id: UUID
+    customer_id: UUID
+    quotation_id: Optional[UUID] = None
+    line_items: list[Any] = Field(default_factory=list)
+    subtotal: Decimal
+    vat_rate: Decimal
+    vat_amount: Decimal
+    total: Decimal
+    currency: str
+    deposit_applied: Decimal
+    amount_due: Decimal
+    payment_status: PaymentStatus
+    payment_method: Optional[str] = None
+    paid_at: Optional[datetime] = None
+    due_date: date
+    pdf_url: Optional[str] = None
+    notes: Optional[str] = None
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InvoicePayment(BaseModel):
+    """Schema for marking invoice as paid"""
+    payment_method: str = Field(..., description="cash, card, transfer")
+
+
+# ================================================================
+# DOCUMENT SCHEMAS
+# ================================================================
+
+class DocumentRead(BaseModel):
+    """Schema for reading document metadata"""
+    id: UUID
+    entity_type: str
+    entity_id: UUID
+    file_name: str
+    file_type: str
+    file_size: int
+    description: Optional[str] = None
+    uploaded_by: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# CALENDAR SCHEMA
+# ================================================================
+
+class CalendarEvent(BaseModel):
+    """Job projected into calendar format for FullCalendar.js"""
+    id: str
+    title: str
+    start: str
+    end: Optional[str] = None
+    color: str
+    url: str
+    extendedProps: dict = Field(default_factory=dict)
+
+
+# ================================================================
+# INSPECTION SCHEMAS
+# ================================================================
+
+class InspectionResult(BaseModel):
+    """Schema for inspection pass/fail"""
+    notes: Optional[str] = None
+
+
+# ================================================================
+# DEPOSIT SCHEMA
+# ================================================================
+
+class DepositPayment(BaseModel):
+    """Schema for recording deposit payment"""
+    amount: Decimal = Field(..., gt=0)
+    payment_method: str = Field(default="cash", description="cash, card, transfer")
 
 
 # ================================================================
@@ -243,3 +495,7 @@ class DashboardSummary(BaseModel):
     jobs_completed_today: int = Field(description="Jobs finished today")
     pending_quotes: int = Field(description="Quotes awaiting customer approval")
     total_jobs: int = Field(description="All-time job count")
+    pending_deposits: Decimal = Field(default=Decimal("0.00"), description="Total deposits awaiting payment")
+    total_revenue_month: Decimal = Field(default=Decimal("0.00"), description="Invoice revenue this month")
+    overdue_invoices: int = Field(default=0, description="Invoices past due date")
+    jobs_in_inspection: int = Field(default=0, description="Jobs awaiting inspection")
