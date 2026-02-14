@@ -10,7 +10,7 @@ The seal inspection story is real. Everything else is demo data.
 "If one seal fails, check all the seals."
 """
 import logging
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, datetime, time, timezone, timedelta
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -25,6 +25,8 @@ from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, 
 from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
 from src.db.models.camper_shared_resource_model import CamperSharedResourceModel, ResourceType
 from src.db.models.camper_resource_booking_model import CamperResourceBookingModel, BookingStatus
+from src.db.models.camper_appointment_model import CamperAppointmentModel, AppointmentType, AppointmentPriority, AppointmentStatus
+from src.db.models.camper_supplier_model import CamperSupplierModel
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +63,8 @@ async def seed_camper_data(db: AsyncSession) -> None:
         visit_count=8,
         total_spend=Decimal("2450.00"),
         notes="Canadian-Swiss. Owns MAX campervan. Long-term customer. Building HelixNet platform for us.",
+        preferred_contact_method="telegram",
+        internal_notes="Speaks English, Italian, German. Pays on time. VIP -- building our software.",
     )
 
     marco_rossi = CamperCustomerModel(
@@ -77,6 +81,8 @@ async def seed_camper_data(db: AsyncSession) -> None:
         visit_count=5,
         total_spend=Decimal("1800.00"),
         notes="Regular customer. Fiat Ducato motorhome. Does annual maintenance here.",
+        preferred_contact_method="phone",
+        internal_notes="Pays cash. Morning guy -- always drops off at 8:30. Wife calls to check status.",
     )
 
     hans_mueller = CamperCustomerModel(
@@ -91,6 +97,8 @@ async def seed_camper_data(db: AsyncSession) -> None:
         visit_count=2,
         total_spend=Decimal("650.00"),
         notes="German tourist. VW California. Needed emergency plumbing repair while touring Sicily.",
+        preferred_contact_method="email",
+        internal_notes="Speaks German + English. Tourist, probably won't return but left 5-star review.",
     )
 
     sophie_dupont = CamperCustomerModel(
@@ -104,6 +112,8 @@ async def seed_camper_data(db: AsyncSession) -> None:
         visit_count=1,
         total_spend=Decimal("0.00"),
         notes="French tourist. Hymer caravan. Dropped off for inspection, waiting for quote.",
+        preferred_contact_method="whatsapp",
+        internal_notes="Speaks French only. Use Google Translate. Nervous about gas system -- reassure her.",
     )
 
     db.add_all([angel, marco_rossi, hans_mueller, sophie_dupont])
@@ -287,6 +297,12 @@ async def seed_camper_data(db: AsyncSession) -> None:
         follow_up_required=True,
         follow_up_notes="Check all seals again after repair. Schedule 6-month follow-up.",
         next_service_date=date(2026, 8, 1),
+        # Check-in data (CYA documentation)
+        mileage_in=148320,
+        condition_notes_in="Visible water stain on ceiling near bathroom. Small dent rear-left panel (pre-existing). "
+                           "Customer reports intermittent smell of damp inside cabin.",
+        checked_in_by="nino",
+        checked_in_at=datetime(2026, 2, 6, 8, 45, tzinfo=timezone.utc),
     )
 
     # Job 2: Marco's annual service (routine, completed + invoiced)
@@ -328,6 +344,16 @@ async def seed_camper_data(db: AsyncSession) -> None:
         follow_up_required=True,
         follow_up_notes="Timing belt replacement due at next annual service.",
         next_service_date=date(2027, 1, 20),
+        # Check-in/out + warranty
+        mileage_in=87450,
+        mileage_out=87452,
+        condition_notes_in="Minor scratch front bumper (pre-existing). Otherwise clean.",
+        condition_notes_out="Delivered clean. All work as described.",
+        checked_in_by="nino",
+        checked_in_at=datetime(2026, 1, 20, 8, 30, tzinfo=timezone.utc),
+        warranty_months=6,
+        warranty_expires_at=date(2026, 7, 20),
+        warranty_terms="Parts + labor. Brake pads guaranteed 6 months or 20,000 km.",
     )
 
     # Job 3: Hans emergency plumbing (completed)
@@ -360,6 +386,14 @@ async def seed_camper_data(db: AsyncSession) -> None:
                        "Ran system for 10 minutes -- no leaks.",
         customer_notes="Pump started making noise yesterday, then stopped completely this morning.",
         follow_up_required=False,
+        mileage_in=23100,
+        mileage_out=23100,
+        condition_notes_in="No visible damage. Clean vehicle.",
+        checked_in_by="seppi",
+        checked_in_at=datetime(2026, 2, 1, 9, 45, tzinfo=timezone.utc),
+        warranty_months=12,
+        warranty_expires_at=date(2027, 2, 1),
+        warranty_terms="Water pump + installation. 12 months parts + labor.",
     )
 
     # Job 4: Sophie's pending quote (waiting for approval)
@@ -690,22 +724,167 @@ async def seed_camper_data(db: AsyncSession) -> None:
         booked_by="nino",
     ))
 
+    # ================================================================
+    # APPOINTMENTS (v5 - appointment book + walk-in queue)
+    # ================================================================
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+
+    # Today's booked appointment: Sophie coming back to discuss the quote
+    db.add(CamperAppointmentModel(
+        customer_name="Sophie Dupont",
+        customer_phone="+33 6 55 66 77 88",
+        vehicle_plate="AB 123 CD",
+        appointment_type=AppointmentType.BOOKED,
+        priority=AppointmentPriority.NORMAL,
+        status=AppointmentStatus.SCHEDULED,
+        scheduled_date=today,
+        scheduled_time=time(10, 30),
+        estimated_duration_minutes=30,
+        description="Discuss gas inspection quotation. Customer wants to understand the process.",
+        notes="Speaks French only. Have Google Translate ready.",
+        created_by="nino",
+    ))
+
+    # Today's walk-in: unknown customer with flat tire
+    db.add(CamperAppointmentModel(
+        customer_name="Tourist (walk-in)",
+        vehicle_plate="NA 456 AB",
+        appointment_type=AppointmentType.WALK_IN,
+        priority=AppointmentPriority.URGENT,
+        status=AppointmentStatus.IN_SERVICE,
+        scheduled_date=today,
+        estimated_duration_minutes=60,
+        description="Flat tire on camper. Needs replacement ASAP -- leaving Trapani tomorrow.",
+        created_by="nino",
+    ))
+
+    # Tomorrow's appointment: Marco brake overhaul drop-off
+    db.add(CamperAppointmentModel(
+        customer_name="Marco Rossi",
+        customer_phone="+39 328 111 2222",
+        vehicle_plate="TP 987654",
+        appointment_type=AppointmentType.BOOKED,
+        priority=AppointmentPriority.NORMAL,
+        status=AppointmentStatus.SCHEDULED,
+        scheduled_date=tomorrow,
+        scheduled_time=time(8, 30),
+        estimated_duration_minutes=20,
+        description="Drop off Ducato for brake system overhaul. Approved job JOB-20260214-0001.",
+        notes="Morning guy -- always early. Have paperwork ready.",
+        created_by="nino",
+    ))
+
+    # Next week: Angel picking up MAX (optimistic)
+    db.add(CamperAppointmentModel(
+        customer_name="Angelo Kenel",
+        customer_phone="+41 79 000 0000",
+        vehicle_plate="TI 123456",
+        appointment_type=AppointmentType.BOOKED,
+        priority=AppointmentPriority.NORMAL,
+        status=AppointmentStatus.SCHEDULED,
+        scheduled_date=today + timedelta(days=7),
+        scheduled_time=time(14, 0),
+        estimated_duration_minutes=45,
+        description="Check progress on MAX roof repair. Review next phases.",
+        notes="VIP customer. Building our software. Show him the system!",
+        created_by="nino",
+    ))
+
+    # ================================================================
+    # SUPPLIER DIRECTORY (v5)
+    # ================================================================
+    db.add_all([
+        CamperSupplierModel(
+            name="Autoricambi Ferrara",
+            contact_person="Giovanni",
+            phone="+39 0923 123456",
+            address="Via Fardella 120",
+            city="Trapani",
+            specialty="General parts, filters, brakes, oil",
+            lead_time_days=0,
+            is_preferred=True,
+            notes="Walking distance. Same-day delivery for most parts. Good prices.",
+        ),
+        CamperSupplierModel(
+            name="Fiamma S.p.A.",
+            contact_person="Vendite Italia",
+            phone="+39 049 820 1166",
+            email="vendite@fiamma.it",
+            address="Via San Giacomo 7",
+            city="Cardano al Campo (VA)",
+            specialty="Camper accessories, seals, windows, awnings",
+            lead_time_days=5,
+            is_preferred=True,
+            notes="Main camper parts supplier. Good quality. 5 business day delivery to Sicily.",
+        ),
+        CamperSupplierModel(
+            name="Palermo Seals & Gaskets",
+            contact_person="Salvatore",
+            phone="+39 091 555 6789",
+            city="Palermo",
+            specialty="Seals, gaskets, rubber parts, waterproofing",
+            lead_time_days=2,
+            is_preferred=False,
+            notes="Ad-hoc supplier. That guy in Palermo who has everything. Cash only.",
+        ),
+        CamperSupplierModel(
+            name="Dometic Italia",
+            contact_person="Servizio Clienti",
+            phone="+39 02 123 4567",
+            email="ordini@dometic.it",
+            city="Milano",
+            specialty="Fridges, air conditioning, windows, marine/camper systems",
+            lead_time_days=7,
+            is_preferred=True,
+            notes="OEM parts for Dometic systems. Order online, good warranty.",
+        ),
+    ])
+
+    # ================================================================
+    # HANS INVOICE (overdue! -- good demo for alerts)
+    # ================================================================
+    hans_invoice = CamperInvoiceModel(
+        invoice_number="INV-20260201-0001",
+        job_id=hans_plumbing.id,
+        customer_id=hans_mueller.id,
+        quotation_id=None,
+        line_items=[
+            {"description": "Emergency plumbing labor", "quantity": 2.5, "unit_price": 35.0, "line_total": 87.5, "item_type": "labor"},
+            {"description": "Fiamma Aqua 8 water pump", "quantity": 1, "unit_price": 135.0, "line_total": 135.0, "item_type": "parts"},
+            {"description": "Hose clamps + fittings", "quantity": 1, "unit_price": 30.0, "line_total": 30.0, "item_type": "parts"},
+        ],
+        subtotal=Decimal("252.50"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("55.55"),
+        total=Decimal("308.05"),
+        deposit_applied=Decimal("0.00"),
+        amount_due=Decimal("308.05"),
+        payment_status=PaymentStatus.PENDING,
+        due_date=date(2026, 2, 8),  # Past due!
+        notes="Emergency repair. Tourist left without paying -- sent invoice by email. Follow up!",
+        created_by="nino",
+    )
+    db.add(hans_invoice)
+
     await db.commit()
 
-    logger.info("Camper & Tour seeding completed! (v4 - hoist management)")
-    logger.info("  - 4 customers (Angel, Marco, Hans, Sophie)")
-    logger.info("  - 4 vehicles (MAX, Ducato Maxi, California, Eriba)")
+    logger.info("Camper & Tour seeding completed! (v5 - full demo prep)")
+    logger.info("  - 4 customers (Angel, Marco, Hans, Sophie) + preferences + internal notes")
+    logger.info("  - 4 vehicles (MAX, Ducato Maxi, California, Eriba) + check-in data")
     logger.info("  - 5 service bays (Bay 1, Bay 2, Electrical, Bodywork, Wash)")
-    logger.info("  - 6 service jobs (with bay assignments + start/end dates):")
+    logger.info("  - 6 service jobs (with bay assignments + start/end dates + warranty):")
     logger.info("    - MAX roof seal (IN_PROGRESS, Bodywork Bay, waiting for parts)")
-    logger.info("    - Marco annual service (INVOICED, Bay 2)")
-    logger.info("    - Hans plumbing emergency (COMPLETED)")
+    logger.info("    - Marco annual service (INVOICED, Bay 2, warranty 6mo)")
+    logger.info("    - Hans plumbing emergency (COMPLETED, warranty 12mo)")
     logger.info("    - Sophie gas inspection (QUOTED)")
     logger.info("    - MAX solar install (QUOTED)")
     logger.info("    - Marco brake overhaul (APPROVED, Bay 1, scheduled)")
     logger.info("  - 7 work logs (audit trail for MAX, Hans, Marco)")
     logger.info("  - 2 quotations (1 accepted, 1 sent)")
     logger.info("  - 2 purchase orders (1 shipped, 1 received)")
-    logger.info("  - 1 invoice (paid)")
+    logger.info("  - 2 invoices (Marco=paid, Hans=OVERDUE since Feb 8!)")
     logger.info("  - 1 shared resource (Ponte Sollevatore / Main Hoist)")
     logger.info("  - 2 hoist bookings (1 IN_USE for MAX, 1 SCHEDULED for Hans)")
+    logger.info("  - 4 appointments (Sophie today, walk-in today, Marco tomorrow, Angel next week)")
+    logger.info("  - 4 suppliers (Ferrara local, Fiamma, Palermo seals, Dometic)")
