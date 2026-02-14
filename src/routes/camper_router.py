@@ -453,8 +453,10 @@ async def update_job(
     # Optimistic locking: if client sends expected_updated_at, reject stale writes
     expected = update_data.pop("expected_updated_at", None)
     if expected is not None and job.updated_at is not None:
-        # Compare with 1-second tolerance (DB vs Python datetime precision)
-        if abs((job.updated_at - expected).total_seconds()) > 1:
+        # Strip timezone info for comparison (DB may store naive, client sends aware)
+        db_ts = job.updated_at.replace(tzinfo=None) if job.updated_at.tzinfo else job.updated_at
+        exp_ts = expected.replace(tzinfo=None) if expected.tzinfo else expected
+        if db_ts != exp_ts:
             raise HTTPException(
                 status_code=409,
                 detail=f"Conflitto: il lavoro è stato modificato da un altro utente alle {job.updated_at.strftime('%H:%M:%S')}. Ricarica la pagina."
