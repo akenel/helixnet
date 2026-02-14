@@ -500,7 +500,8 @@ async def test_06_invoice_zero_amount_due(mock_tg, mock_email, client):
 async def test_07_cancel_job_mid_inspection(mock_tg, mock_email, client):
     """
     EDGE CASE 7: Job is in INSPECTION, someone cancels it.
-    FINDING: No status transition validation -- any status change allowed.
+    BUSINESS RULE: Allowed. Sometimes you just need to stop work mid-inspection
+    (customer changed mind, found bigger problem, etc).
     """
     vehicle = await _create_vehicle(client, "CANCEL-001")
     customer = await _create_customer(client, "Cancel Carlo")
@@ -512,7 +513,7 @@ async def test_07_cancel_job_mid_inspection(mock_tg, mock_email, client):
         f"/api/v1/camper/jobs/{job['id']}/status",
         json={"status": "cancelled"},
     )
-    # DESIGN GAP: No transition validation on the generic status endpoint
+    # Intentional: cancel from any status is a valid business operation
     assert resp.status_code == 200
     assert resp.json()["status"] == "cancelled"
 
@@ -551,8 +552,9 @@ async def test_08_double_accept_quotation(mock_tg, mock_email, client):
 async def test_09_invoice_on_non_completed_job(mock_email, client):
     """
     EDGE CASE 9: Create invoice while job is still IN_PROGRESS.
-    FINDING: No job-status guard -- invoice creation succeeds and
-    sets job to INVOICED, skipping the COMPLETED state entirely.
+    BUSINESS RULE: Allowed. Customer pays in full but needs to come back
+    next week for the final screw to be fitted. Pay now, come back for
+    the 5-minute job when the new part arrives.
     """
     vehicle = await _create_vehicle(client, "EARLYINV-001")
     customer = await _create_customer(client, "Impatient Irene")
@@ -579,12 +581,12 @@ async def test_09_invoice_on_non_completed_job(mock_email, client):
             "due_date": date.today().isoformat(),
         },
     )
-    # DESIGN GAP: No check that job must be COMPLETED before invoicing
+    # Intentional: invoice allowed from IN_PROGRESS (pay now, finish later)
     assert inv_resp.status_code == 201
 
     job_resp = await client.get(f"/api/v1/camper/jobs/{job['id']}")
     assert job_resp.json()["status"] == "invoiced", (
-        "Job jumped IN_PROGRESS -> INVOICED (skipped COMPLETED)"
+        "Job should advance IN_PROGRESS -> INVOICED (pay now, come back later)"
     )
 
 
@@ -635,8 +637,9 @@ async def test_10_fail_inspection_then_pass_without_resubmit(
 )
 async def test_11_reopen_completed_job(mock_tg, mock_email, client):
     """
-    EDGE CASE 11: Re-open a COMPLETED job (customer comes back).
-    FINDING: No transition guard -- COMPLETED -> IN_PROGRESS allowed.
+    EDGE CASE 11: Re-open a COMPLETED job (customer comes back next day,
+    same issue). BUSINESS RULE: Allowed. COMPLETED -> IN_PROGRESS is valid
+    because the original work may need follow-up or warranty rework.
     """
     vehicle = await _create_vehicle(client, "REOPEN-001")
     customer = await _create_customer(client, "Comeback Carlo")
@@ -648,7 +651,7 @@ async def test_11_reopen_completed_job(mock_tg, mock_email, client):
         f"/api/v1/camper/jobs/{job['id']}/status",
         json={"status": "in_progress"},
     )
-    # DESIGN GAP: Allows re-opening completed jobs with no guard
+    # Intentional: re-opening is a valid business operation (warranty, follow-up)
     assert resp.status_code == 200
     assert resp.json()["status"] == "in_progress"
     # started_at should still be set (not reset)
@@ -1236,3 +1239,217 @@ async def test_28_counter_cannot_create_resource(counter_client):
     assert resp.status_code == 403, (
         f"Counter should get 403, got {resp.status_code}"
     )
+
+
+# ================================================================
+# HELPER FUNCTIONS (Appointments)
+# ================================================================
+
+async def _create_appointment(
+    c: AsyncClient, customer_name: str = "Marco Rossi",
+    appointment_type: str = "booked", scheduled_time: str = "09:00",
+    description: str = "Brake check", priority: str = "normal",
+    scheduled_date: str = None, vehicle_plate: str = None,
+) -> dict:
+    if scheduled_date is None:
+        scheduled_date = date.today().isoformat()
+    data = {
+        "appointment_type": appointment_type,
+        "customer_name": customer_name,
+        "scheduled_date": scheduled_date,
+        "description": description,
+        "priority": priority,
+        "estimated_duration_minutes": 60,
+    }
+    if appointment_type == "booked":
+        data["scheduled_time"] = scheduled_time
+    if vehicle_plate:
+        data["vehicle_plate"] = vehicle_plate
+    resp = await c.post("/api/v1/camper/appointments", json=data)
+    assert resp.status_code == 201, f"Appointment create failed: {resp.text}"
+    return resp.json()
+
+
+# ================================================================
+# GROUP 7: APPOINTMENT / WALK-IN QUEUE (Tests 29-36)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_29_create_booked_appointment(client):
+    """
+    EDGE CASE 29: Happy path -- create a booked appointment with time slot.
+    Should start as SCHEDULED with scheduled_time set.
+    """
+    appt = await _create_appointment(
+        client, "Booked Bruno", scheduled_time="10:30",
+        description="Roof seal inspection"
+    )
+    assert appt["appointment_type"] == "booked"
+    assert appt["status"] == "scheduled"
+    assert appt["scheduled_time"] == "10:30"
+    assert appt["customer_name"] == "Booked Bruno"
+    assert appt["arrival_time"] is None
+
+
+@pytest.mark.asyncio
+async def test_30_create_walk_in(client):
+    """
+    EDGE CASE 30: Walk-in gets arrival_time auto-set and starts as WAITING.
+    No scheduled_time needed. First-come, first-served.
+    """
+    appt = await _create_appointment(
+        client, "Walk-in Walter", appointment_type="walk_in",
+        description="Quick oil check"
+    )
+    assert appt["appointment_type"] == "walk_in"
+    assert appt["status"] == "waiting"
+    assert appt["arrival_time"] is not None
+    assert appt["scheduled_time"] is None
+
+
+@pytest.mark.asyncio
+async def test_31_double_booking_same_time_slot(client):
+    """
+    EDGE CASE 31: Book 09:00, try booking 09:00 again = 409 Conflict.
+    BUSINESS RULE: One booking per time slot per day. No bumping.
+    """
+    await _create_appointment(
+        client, "First Franco", scheduled_time="09:00"
+    )
+    # Second booking at same time -- should fail
+    resp = await client.post("/api/v1/camper/appointments", json={
+        "appointment_type": "booked",
+        "customer_name": "Late Luigi",
+        "scheduled_date": date.today().isoformat(),
+        "scheduled_time": "09:00",
+        "description": "Brake check",
+    })
+    assert resp.status_code == 409, (
+        f"Double-booking should return 409, got {resp.status_code}"
+    )
+    assert "already booked" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_32_booked_without_time_rejected(client):
+    """
+    EDGE CASE 32: Booked appointment without scheduled_time = 422.
+    You can't book without a time slot.
+    """
+    resp = await client.post("/api/v1/camper/appointments", json={
+        "appointment_type": "booked",
+        "customer_name": "Timeless Tony",
+        "scheduled_date": date.today().isoformat(),
+        "description": "Unknown time brake job",
+    })
+    assert resp.status_code == 422, (
+        f"Booked without time should return 422, got {resp.status_code}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_33_appointment_status_lifecycle(client):
+    """
+    EDGE CASE 33: Full lifecycle: SCHEDULED -> WAITING -> IN_SERVICE -> COMPLETED.
+    Each transition should succeed, terminal state should block further changes.
+    """
+    appt = await _create_appointment(client, "Lifecycle Luca", scheduled_time="11:00")
+    appt_id = appt["id"]
+    assert appt["status"] == "scheduled"
+
+    # SCHEDULED -> WAITING (customer arrived)
+    resp1 = await client.patch(
+        f"/api/v1/camper/appointments/{appt_id}/status",
+        json={"status": "waiting"}
+    )
+    assert resp1.status_code == 200
+    assert resp1.json()["status"] == "waiting"
+    assert resp1.json()["arrival_time"] is not None
+
+    # WAITING -> IN_SERVICE
+    resp2 = await client.patch(
+        f"/api/v1/camper/appointments/{appt_id}/status",
+        json={"status": "in_service"}
+    )
+    assert resp2.status_code == 200
+    assert resp2.json()["status"] == "in_service"
+    assert resp2.json()["service_started_at"] is not None
+
+    # IN_SERVICE -> COMPLETED
+    resp3 = await client.patch(
+        f"/api/v1/camper/appointments/{appt_id}/status",
+        json={"status": "completed"}
+    )
+    assert resp3.status_code == 200
+    assert resp3.json()["status"] == "completed"
+    assert resp3.json()["service_completed_at"] is not None
+
+    # COMPLETED -> anything should fail (terminal)
+    resp4 = await client.patch(
+        f"/api/v1/camper/appointments/{appt_id}/status",
+        json={"status": "in_service"}
+    )
+    assert resp4.status_code == 400, (
+        f"Transition from completed should fail, got {resp4.status_code}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_34_cancel_and_rebook_same_slot(client):
+    """
+    EDGE CASE 34: Book 14:00, cancel it, rebook 14:00 = success.
+    Cancelled appointments don't block the time slot.
+    """
+    appt = await _create_appointment(
+        client, "Cancel Clara", scheduled_time="14:00"
+    )
+    appt_id = appt["id"]
+
+    # Cancel
+    cancel_resp = await client.delete(f"/api/v1/camper/appointments/{appt_id}")
+    assert cancel_resp.status_code == 200
+    assert cancel_resp.json()["status"] == "cancelled"
+
+    # Rebook same slot -- should succeed
+    appt2 = await _create_appointment(
+        client, "Replacement Rosa", scheduled_time="14:00"
+    )
+    assert appt2["status"] == "scheduled"
+    assert appt2["scheduled_time"] == "14:00"
+
+
+@pytest.mark.asyncio
+async def test_35_no_show_frees_slot(client):
+    """
+    EDGE CASE 35: Mark as NO_SHOW, slot should be available for rebooking.
+    """
+    appt = await _create_appointment(
+        client, "Ghost Giovanni", scheduled_time="15:00"
+    )
+    appt_id = appt["id"]
+
+    # Mark as no-show
+    resp = await client.patch(
+        f"/api/v1/camper/appointments/{appt_id}/status",
+        json={"status": "no_show"}
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "no_show"
+
+    # Rebook same slot -- should succeed
+    appt2 = await _create_appointment(
+        client, "Replacement Roberto", scheduled_time="15:00"
+    )
+    assert appt2["status"] == "scheduled"
+
+
+@pytest.mark.asyncio
+async def test_36_walk_in_plate_auto_uppercase(client):
+    """
+    EDGE CASE 36: Walk-in with lowercase plate gets auto-uppercased.
+    """
+    appt = await _create_appointment(
+        client, "Lowercase Leo", appointment_type="walk_in",
+        description="Quick fix", vehicle_plate="tp-999-zz"
+    )
+    assert appt["vehicle_plate"] == "TP-999-ZZ"

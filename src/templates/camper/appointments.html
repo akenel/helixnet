@@ -1,0 +1,837 @@
+{% extends "camper/base.html" %}
+
+{% block title %}Appuntamenti - Camper & Tour{% endblock %}
+{% block page_name %}Appuntamenti{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="appointmentsData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F69C;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Appuntamenti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Appuntamenti</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Appuntamenti di Oggi</h2>
+                <p class="text-sm text-gray-500" x-text="todayFormatted"></p>
+            </div>
+            <div class="flex space-x-3">
+                <button @click="openQuickWalkIn()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg transition-all duration-200 text-sm">
+                    + Walk-in Rapido
+                </button>
+                <button @click="openNewAppointment()" class="btn-primary text-sm py-2.5">
+                    + Nuovo Appuntamento
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Prenotati</p>
+                <p class="text-3xl font-bold text-blue-600" x-text="bookedAppointments.length"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Walk-in in Coda</p>
+                <p class="text-3xl font-bold text-amber-600" x-text="walkInAppointments.length"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">In Servizio</p>
+                <p class="text-3xl font-bold text-green-600" x-text="allAppointments.filter(a => a.status === 'in_service').length"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Completati</p>
+                <p class="text-3xl font-bold text-gray-400" x-text="completedToday.length"></p>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left: Booked Appointments -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                    Prenotati
+                    <span class="ml-2 text-sm font-normal text-gray-500" x-text="'(' + bookedAppointments.length + ')'"></span>
+                </h3>
+
+                <template x-if="bookedAppointments.length === 0">
+                    <div class="card text-center py-8">
+                        <p class="text-gray-500">Nessun appuntamento prenotato per oggi.</p>
+                    </div>
+                </template>
+
+                <div class="space-y-4">
+                    <template x-for="appt in bookedAppointments" :key="appt.id">
+                        <div class="card border-l-4" :class="{
+                            'border-gray-300': appt.status === 'scheduled',
+                            'border-amber-400': appt.status === 'waiting',
+                            'border-blue-500': appt.status === 'in_service',
+                            'border-green-500': appt.status === 'completed'
+                        }">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="text-lg font-bold text-gray-900" x-text="appt.customer_name"></h4>
+                                    <p class="text-sm text-gray-600" x-text="appt.description"></p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                      :class="statusBadgeClass(appt.status)"
+                                      x-text="APPT_STATUS_LABELS[appt.status] || appt.status">
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                                <div>
+                                    <span class="text-gray-500">Orario:</span>
+                                    <span class="font-semibold" x-text="appt.scheduled_time || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Durata:</span>
+                                    <span class="font-medium" x-text="appt.estimated_duration_minutes + ' min'"></span>
+                                </div>
+                                <div x-show="appt.vehicle_plate">
+                                    <span class="text-gray-500">Targa:</span>
+                                    <span class="font-mono font-semibold text-amber-700" x-text="appt.vehicle_plate"></span>
+                                </div>
+                                <div x-show="appt.bay_name">
+                                    <span class="text-gray-500">Baia:</span>
+                                    <span class="font-medium" x-text="appt.bay_name"></span>
+                                </div>
+                            </div>
+
+                            <template x-if="appt.notes">
+                                <div class="bg-gray-50 p-2 rounded text-sm text-gray-600 mb-3">
+                                    <span class="font-medium">Note:</span> <span x-text="appt.notes"></span>
+                                </div>
+                            </template>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-2 pt-2 border-t">
+                                <!-- SCHEDULED actions -->
+                                <template x-if="appt.status === 'scheduled'">
+                                    <div class="flex flex-wrap gap-2">
+                                        <button @click="advanceStatus(appt.id, 'waiting')"
+                                                class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Arrivato
+                                        </button>
+                                        <button @click="advanceStatus(appt.id, 'no_show')"
+                                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Non Presentato
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- WAITING actions -->
+                                <template x-if="appt.status === 'waiting'">
+                                    <div class="flex flex-wrap gap-2 items-center">
+                                        <select x-model="selectedBayId"
+                                                class="text-sm border-2 border-gray-300 rounded-lg py-1.5 px-2 focus:border-amber-500">
+                                            <option value="">-- Baia --</option>
+                                            <template x-for="bay in bays" :key="bay.id">
+                                                <option :value="bay.id" x-text="bay.name"></option>
+                                            </template>
+                                        </select>
+                                        <button @click="startService(appt.id)"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Inizio Servizio
+                                        </button>
+                                        <button @click="cancelAppointment(appt.id)"
+                                                class="bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Cancella
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- IN_SERVICE actions -->
+                                <template x-if="appt.status === 'in_service'">
+                                    <div class="flex gap-2">
+                                        <button @click="advanceStatus(appt.id, 'completed')"
+                                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Completato
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- COMPLETED: no actions -->
+                                <template x-if="appt.status === 'completed'">
+                                    <span class="text-sm text-green-600 font-medium">Completato</span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Right: Walk-in Queue -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <span class="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
+                    Coda Walk-in
+                    <span class="ml-2 text-sm font-normal text-gray-500" x-text="'(' + walkInAppointments.length + ')'"></span>
+                </h3>
+
+                <template x-if="walkInAppointments.length === 0">
+                    <div class="card text-center py-8">
+                        <p class="text-gray-500">Nessun walk-in in coda.</p>
+                    </div>
+                </template>
+
+                <div class="space-y-4">
+                    <template x-for="(appt, index) in walkInAppointments" :key="appt.id">
+                        <div class="card border-l-4" :class="{
+                            'border-amber-400': appt.status === 'waiting',
+                            'border-blue-500': appt.status === 'in_service',
+                            'border-green-500': appt.status === 'completed'
+                        }">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-start space-x-3">
+                                    <!-- Position number -->
+                                    <span class="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-bold"
+                                          x-text="'#' + (index + 1)">
+                                    </span>
+                                    <div>
+                                        <h4 class="text-lg font-bold text-gray-900" x-text="appt.customer_name"></h4>
+                                        <p class="text-sm text-gray-600" x-text="appt.description"></p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                          :class="statusBadgeClass(appt.status)"
+                                          x-text="APPT_STATUS_LABELS[appt.status] || appt.status">
+                                    </span>
+                                    <template x-if="appt.priority === 'urgent'">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white">
+                                            URGENTE
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                                <div>
+                                    <span class="text-gray-500">In attesa da:</span>
+                                    <span class="font-semibold text-amber-700" x-text="timeWaiting(appt.arrival_time)"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Durata stim.:</span>
+                                    <span class="font-medium" x-text="appt.estimated_duration_minutes + ' min'"></span>
+                                </div>
+                                <div x-show="appt.vehicle_plate">
+                                    <span class="text-gray-500">Targa:</span>
+                                    <span class="font-mono font-semibold text-amber-700" x-text="appt.vehicle_plate"></span>
+                                </div>
+                                <div x-show="appt.bay_name">
+                                    <span class="text-gray-500">Baia:</span>
+                                    <span class="font-medium" x-text="appt.bay_name"></span>
+                                </div>
+                            </div>
+
+                            <template x-if="appt.notes">
+                                <div class="bg-gray-50 p-2 rounded text-sm text-gray-600 mb-3">
+                                    <span class="font-medium">Note:</span> <span x-text="appt.notes"></span>
+                                </div>
+                            </template>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-2 pt-2 border-t">
+                                <!-- WAITING actions -->
+                                <template x-if="appt.status === 'waiting'">
+                                    <div class="flex flex-wrap gap-2 items-center">
+                                        <select x-model="selectedBayId"
+                                                class="text-sm border-2 border-gray-300 rounded-lg py-1.5 px-2 focus:border-amber-500">
+                                            <option value="">-- Baia --</option>
+                                            <template x-for="bay in bays" :key="bay.id">
+                                                <option :value="bay.id" x-text="bay.name"></option>
+                                            </template>
+                                        </select>
+                                        <button @click="startService(appt.id)"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Inizio Servizio
+                                        </button>
+                                        <button @click="cancelAppointment(appt.id)"
+                                                class="bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Cancella
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- IN_SERVICE actions -->
+                                <template x-if="appt.status === 'in_service'">
+                                    <div class="flex gap-2">
+                                        <button @click="advanceStatus(appt.id, 'completed')"
+                                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                            Completato
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- COMPLETED: no actions -->
+                                <template x-if="appt.status === 'completed'">
+                                    <span class="text-sm text-green-600 font-medium">Completato</span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Today (collapsible) -->
+        <div class="mt-6" x-show="completedToday.length > 0">
+            <div class="card">
+                <div class="flex justify-between items-center cursor-pointer" @click="showCompleted = !showCompleted">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                        Completati Oggi
+                        <span class="ml-2 text-sm font-normal text-gray-500" x-text="'(' + completedToday.length + ')'"></span>
+                    </h3>
+                    <span class="text-gray-400" x-text="showCompleted ? '&#9650;' : '&#9660;'"></span>
+                </div>
+
+                <div x-show="showCompleted" x-cloak class="mt-4">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                                    <th class="pb-3 pr-4">Cliente</th>
+                                    <th class="pb-3 pr-4">Tipo</th>
+                                    <th class="pb-3 pr-4">Descrizione</th>
+                                    <th class="pb-3 pr-4">Targa</th>
+                                    <th class="pb-3">Completato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="appt in completedToday" :key="appt.id">
+                                    <tr class="border-b">
+                                        <td class="py-2 pr-4 text-sm font-semibold text-gray-900" x-text="appt.customer_name"></td>
+                                        <td class="py-2 pr-4 text-xs text-gray-600" x-text="appt.appointment_type === 'booked' ? 'Prenotato' : 'Walk-in'"></td>
+                                        <td class="py-2 pr-4 text-sm text-gray-700 max-w-xs truncate" x-text="appt.description"></td>
+                                        <td class="py-2 pr-4 text-sm font-mono text-gray-600" x-text="appt.vehicle_plate || '-'"></td>
+                                        <td class="py-2 text-sm text-gray-500" x-text="formatDateTime(appt.service_completed_at)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Appointment Modal -->
+    <div x-show="showNewModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         @keydown.escape.window="showNewModal = false">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50" @click="showNewModal = false"></div>
+
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Nuovo Appuntamento</h3>
+                    <button @click="showNewModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+
+                <form @submit.prevent="createAppointment()">
+                    <!-- Appointment Type Toggle -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                        <div class="flex rounded-lg border-2 border-gray-300 overflow-hidden">
+                            <button type="button"
+                                    @click="newAppt.appointment_type = 'booked'"
+                                    class="flex-1 py-2.5 text-sm font-semibold transition"
+                                    :class="newAppt.appointment_type === 'booked' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                                Prenotato
+                            </button>
+                            <button type="button"
+                                    @click="newAppt.appointment_type = 'walk_in'"
+                                    class="flex-1 py-2.5 text-sm font-semibold transition"
+                                    :class="newAppt.appointment_type === 'walk_in' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                                Walk-in
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Name -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Cliente *</label>
+                        <input type="text" x-model="newAppt.customer_name" class="input-field" required
+                               placeholder="Es: Marco con il Ducato bianco">
+                    </div>
+
+                    <!-- Customer Phone -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                        <input type="tel" x-model="newAppt.customer_phone" class="input-field" placeholder="+39 ...">
+                    </div>
+
+                    <!-- Vehicle Plate -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Targa</label>
+                        <input type="text" x-model="newAppt.vehicle_plate" class="input-field uppercase" placeholder="Es: TP 123456">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione Lavoro *</label>
+                        <textarea x-model="newAppt.description" class="input-field" rows="2" required
+                                  placeholder="Es: controllo freni, perdita tetto, cambio olio"></textarea>
+                    </div>
+
+                    <!-- Scheduled Date -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                        <input type="date" x-model="newAppt.scheduled_date" class="input-field">
+                    </div>
+
+                    <!-- Scheduled Time (only for booked) -->
+                    <div class="mb-4" x-show="newAppt.appointment_type === 'booked'">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Orario *</label>
+                        <input type="time" x-model="newAppt.scheduled_time" class="input-field"
+                               :required="newAppt.appointment_type === 'booked'">
+                    </div>
+
+                    <!-- Estimated Duration -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Durata Stimata (minuti)</label>
+                        <input type="number" x-model.number="newAppt.estimated_duration_minutes" class="input-field"
+                               min="15" max="480" step="15">
+                    </div>
+
+                    <!-- Priority (only for walk-ins) -->
+                    <div class="mb-4" x-show="newAppt.appointment_type === 'walk_in'">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Priorita</label>
+                        <select x-model="newAppt.priority" class="input-field">
+                            <option value="normal">Normale</option>
+                            <option value="urgent">Urgente</option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                        <textarea x-model="newAppt.notes" class="input-field" rows="2"
+                                  placeholder="Note interne..."></textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex space-x-3">
+                        <button type="submit" class="btn-primary flex-1" :disabled="saving">
+                            <span x-show="!saving">Crea Appuntamento</span>
+                            <span x-show="saving">Salvataggio...</span>
+                        </button>
+                        <button type="button" @click="showNewModal = false" class="btn-secondary">
+                            Annulla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Walk-in Modal -->
+    <div x-show="showQuickModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         @keydown.escape.window="showQuickModal = false">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50" @click="showQuickModal = false"></div>
+
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Walk-in Rapido</h3>
+                    <button @click="showQuickModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+
+                <form @submit.prevent="createQuickWalkIn()">
+                    <!-- Customer Name -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Cliente *</label>
+                        <input type="text" x-model="quickWalkIn.customer_name" class="input-field" required
+                               placeholder="Es: Marco con il Ducato bianco" x-ref="quickNameInput">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cosa Serve? *</label>
+                        <textarea x-model="quickWalkIn.description" class="input-field" rows="2" required
+                                  placeholder="Es: controllo freni, perdita tetto"></textarea>
+                    </div>
+
+                    <!-- Vehicle Plate -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Targa</label>
+                        <input type="text" x-model="quickWalkIn.vehicle_plate" class="input-field uppercase"
+                               placeholder="Es: TP 123456">
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex space-x-3">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200 flex-1" :disabled="saving">
+                            <span x-show="!saving">Aggiungi alla Coda</span>
+                            <span x-show="saving">Salvataggio...</span>
+                        </button>
+                        <button type="button" @click="showQuickModal = false" class="btn-secondary">
+                            Annulla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function appointmentsData() {
+        return {
+            user: {
+                username: '', firstName: '', roles: [],
+                isAdmin: false, isManager: false, isMechanic: false, isCounter: false
+            },
+            allAppointments: [],
+            bays: [],
+            loading: true,
+            saving: false,
+            showNewModal: false,
+            showQuickModal: false,
+            showCompleted: false,
+            selectedBayId: '',
+            refreshInterval: null,
+            nowInterval: null,
+            now: new Date(),
+
+            // New Appointment form
+            newAppt: {
+                appointment_type: 'booked',
+                customer_name: '',
+                customer_phone: '',
+                vehicle_plate: '',
+                description: '',
+                scheduled_date: new Date().toISOString().split('T')[0],
+                scheduled_time: '',
+                estimated_duration_minutes: 60,
+                priority: 'normal',
+                notes: ''
+            },
+
+            // Quick Walk-in form
+            quickWalkIn: {
+                customer_name: '',
+                description: '',
+                vehicle_plate: ''
+            },
+
+            // Status labels in Italian
+            APPT_STATUS_LABELS: {
+                'scheduled': 'Programmato',
+                'waiting': 'In Attesa',
+                'in_service': 'In Servizio',
+                'completed': 'Completato',
+                'no_show': 'Non Presentato',
+                'cancelled': 'Annullato'
+            },
+
+            get todayFormatted() {
+                return new Date().toLocaleDateString('it-IT', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+            },
+
+            get bookedAppointments() {
+                return this.allAppointments.filter(a =>
+                    a.appointment_type === 'booked' && a.status !== 'completed' && a.status !== 'cancelled' && a.status !== 'no_show'
+                ).sort((a, b) => {
+                    // Sort by scheduled_time
+                    const timeA = a.scheduled_time || '99:99';
+                    const timeB = b.scheduled_time || '99:99';
+                    return timeA.localeCompare(timeB);
+                });
+            },
+
+            get walkInAppointments() {
+                return this.allAppointments.filter(a =>
+                    a.appointment_type === 'walk_in' && a.status !== 'completed' && a.status !== 'cancelled' && a.status !== 'no_show'
+                ).sort((a, b) => {
+                    // Sort by arrival_time
+                    const timeA = a.arrival_time || a.created_at;
+                    const timeB = b.arrival_time || b.created_at;
+                    return new Date(timeA) - new Date(timeB);
+                });
+            },
+
+            get completedToday() {
+                return this.allAppointments.filter(a => a.status === 'completed');
+            },
+
+            init() {
+                const token = CamperAuth.getToken();
+                if (!token) {
+                    window.location.href = '/camper';
+                    return;
+                }
+
+                const userInfo = CamperAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) {
+                    showToast('Accesso non autorizzato.', 'error');
+                    setTimeout(() => CamperAuth.logout(), 2000);
+                    return;
+                }
+
+                this.user = {
+                    ...userInfo,
+                    isAdmin: CamperAuth.isAdmin(),
+                    isManager: CamperAuth.isManager(),
+                    isMechanic: CamperAuth.isMechanic(),
+                    isCounter: CamperAuth.isCounter()
+                };
+
+                this.loadTodayAppointments();
+                this.loadBays();
+
+                // Auto-refresh every 30 seconds
+                this.refreshInterval = setInterval(() => {
+                    this.loadTodayAppointments();
+                }, 30000);
+
+                // Update "now" every minute for time-waiting calculations
+                this.nowInterval = setInterval(() => {
+                    this.now = new Date();
+                }, 60000);
+            },
+
+            destroy() {
+                if (this.refreshInterval) clearInterval(this.refreshInterval);
+                if (this.nowInterval) clearInterval(this.nowInterval);
+            },
+
+            async loadTodayAppointments() {
+                try {
+                    this.allAppointments = await API.get('/api/v1/camper/appointments/today');
+                } catch (e) {
+                    console.error('Appointments load failed:', e);
+                    if (this.loading) {
+                        showToast('Errore caricamento appuntamenti: ' + e.message, 'error');
+                    }
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async loadBays() {
+                try {
+                    const allBays = await API.get('/api/v1/camper/bays');
+                    this.bays = allBays.filter(b => b.is_active);
+                } catch (e) {
+                    console.error('Bays load failed:', e);
+                }
+            },
+
+            statusBadgeClass(status) {
+                const classes = {
+                    'scheduled': 'bg-gray-100 text-gray-800',
+                    'waiting': 'bg-amber-100 text-amber-800',
+                    'in_service': 'bg-blue-100 text-blue-800',
+                    'completed': 'bg-green-100 text-green-800',
+                    'no_show': 'bg-red-100 text-red-800',
+                    'cancelled': 'bg-gray-200 text-gray-500'
+                };
+                return classes[status] || 'bg-gray-100 text-gray-800';
+            },
+
+            timeWaiting(arrivalTime) {
+                if (!arrivalTime) return '-';
+                const arrival = new Date(arrivalTime);
+                const diffMs = this.now - arrival;
+                if (diffMs < 0) return '0 min';
+                const totalMinutes = Math.floor(diffMs / 60000);
+                if (totalMinutes < 60) {
+                    return totalMinutes + ' min';
+                }
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                return hours + 'h ' + (minutes > 0 ? minutes + 'min' : '');
+            },
+
+            openNewAppointment() {
+                this.newAppt = {
+                    appointment_type: 'booked',
+                    customer_name: '',
+                    customer_phone: '',
+                    vehicle_plate: '',
+                    description: '',
+                    scheduled_date: new Date().toISOString().split('T')[0],
+                    scheduled_time: '',
+                    estimated_duration_minutes: 60,
+                    priority: 'normal',
+                    notes: ''
+                };
+                this.showNewModal = true;
+            },
+
+            openQuickWalkIn() {
+                this.quickWalkIn = {
+                    customer_name: '',
+                    description: '',
+                    vehicle_plate: ''
+                };
+                this.showQuickModal = true;
+                this.$nextTick(() => {
+                    if (this.$refs.quickNameInput) this.$refs.quickNameInput.focus();
+                });
+            },
+
+            async createAppointment() {
+                if (!this.newAppt.customer_name.trim() || !this.newAppt.description.trim()) {
+                    showToast('Nome cliente e descrizione sono obbligatori.', 'warning');
+                    return;
+                }
+                if (this.newAppt.appointment_type === 'booked' && !this.newAppt.scheduled_time) {
+                    showToast('Per le prenotazioni, l\'orario e obbligatorio.', 'warning');
+                    return;
+                }
+
+                this.saving = true;
+                try {
+                    const payload = {
+                        appointment_type: this.newAppt.appointment_type,
+                        customer_name: this.newAppt.customer_name.trim(),
+                        customer_phone: this.newAppt.customer_phone.trim() || null,
+                        vehicle_plate: this.newAppt.vehicle_plate.trim().toUpperCase() || null,
+                        description: this.newAppt.description.trim(),
+                        scheduled_date: this.newAppt.scheduled_date,
+                        scheduled_time: this.newAppt.appointment_type === 'booked' ? this.newAppt.scheduled_time : null,
+                        estimated_duration_minutes: this.newAppt.estimated_duration_minutes,
+                        priority: this.newAppt.appointment_type === 'walk_in' ? this.newAppt.priority : 'normal',
+                        notes: this.newAppt.notes.trim() || null
+                    };
+
+                    await API.post('/api/v1/camper/appointments', payload);
+                    this.showNewModal = false;
+                    showToast('Appuntamento creato!', 'success');
+                    await this.loadTodayAppointments();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async createQuickWalkIn() {
+                if (!this.quickWalkIn.customer_name.trim() || !this.quickWalkIn.description.trim()) {
+                    showToast('Nome cliente e descrizione sono obbligatori.', 'warning');
+                    return;
+                }
+
+                this.saving = true;
+                try {
+                    const payload = {
+                        appointment_type: 'walk_in',
+                        customer_name: this.quickWalkIn.customer_name.trim(),
+                        vehicle_plate: this.quickWalkIn.vehicle_plate.trim().toUpperCase() || null,
+                        description: this.quickWalkIn.description.trim(),
+                        scheduled_date: new Date().toISOString().split('T')[0],
+                        estimated_duration_minutes: 60,
+                        priority: 'normal'
+                    };
+
+                    await API.post('/api/v1/camper/appointments', payload);
+                    this.showQuickModal = false;
+                    showToast('Walk-in aggiunto alla coda!', 'success');
+                    await this.loadTodayAppointments();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async advanceStatus(appointmentId, newStatus) {
+                try {
+                    const payload = { status: newStatus };
+                    await API.patch('/api/v1/camper/appointments/' + appointmentId + '/status', payload);
+                    showToast('Stato aggiornato!', 'success');
+                    await this.loadTodayAppointments();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async startService(appointmentId) {
+                try {
+                    const payload = { status: 'in_service' };
+                    if (this.selectedBayId) {
+                        payload.bay_id = this.selectedBayId;
+                    }
+                    await API.patch('/api/v1/camper/appointments/' + appointmentId + '/status', payload);
+                    this.selectedBayId = '';
+                    showToast('Servizio iniziato!', 'success');
+                    await this.loadTodayAppointments();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async cancelAppointment(appointmentId) {
+                if (!confirm('Vuoi cancellare questo appuntamento?')) return;
+                try {
+                    await API.delete('/api/v1/camper/appointments/' + appointmentId);
+                    showToast('Appuntamento cancellato.', 'info');
+                    await this.loadTodayAppointments();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            logout() {
+                if (confirm('Vuoi uscire?')) {
+                    showToast('Disconnessione...', 'info');
+                    setTimeout(() => CamperAuth.logout(), 500);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -33,6 +33,7 @@ from src.db.models.camper_invoice_model import CamperInvoiceModel, PaymentStatus
 from src.db.models.camper_document_model import CamperDocumentModel
 from src.db.models.camper_shared_resource_model import CamperSharedResourceModel, ResourceType
 from src.db.models.camper_resource_booking_model import CamperResourceBookingModel, BookingStatus
+from src.db.models.camper_appointment_model import CamperAppointmentModel, AppointmentType, AppointmentPriority, AppointmentStatus
 from src.schemas.camper_schema import (
     VehicleCreate, VehicleUpdate, VehicleRead, VehicleStatusUpdate,
     CamperCustomerCreate, CamperCustomerUpdate, CamperCustomerRead,
@@ -48,6 +49,7 @@ from src.schemas.camper_schema import (
     DashboardSummary,
     SharedResourceCreate, SharedResourceUpdate, SharedResourceResponse,
     ResourceBookingCreate, ResourceBookingStatusUpdate, ResourceBookingResponse,
+    AppointmentCreate, AppointmentUpdate, AppointmentRead, AppointmentStatusUpdate,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.camper_email_service import (
@@ -2636,6 +2638,361 @@ async def cancel_resource_booking(
 
 
 # ================================================================
+# APPOINTMENT / WALK-IN QUEUE ENDPOINTS
+# ================================================================
+
+async def _enrich_appointment_response(appt: CamperAppointmentModel, db: AsyncSession) -> AppointmentRead:
+    """Build AppointmentRead with enriched fields from relationships."""
+    bay_name = None
+    if appt.bay_id:
+        bay_result = await db.execute(
+            select(CamperBayModel.name).where(CamperBayModel.id == appt.bay_id)
+        )
+        bay_name = bay_result.scalar_one_or_none()
+
+    job_number = None
+    if appt.job_id:
+        job_result = await db.execute(
+            select(CamperServiceJobModel.job_number).where(CamperServiceJobModel.id == appt.job_id)
+        )
+        job_number = job_result.scalar_one_or_none()
+
+    return AppointmentRead(
+        id=appt.id,
+        appointment_type=appt.appointment_type,
+        priority=appt.priority,
+        status=appt.status,
+        customer_id=appt.customer_id,
+        customer_name=appt.customer_name,
+        customer_phone=appt.customer_phone,
+        vehicle_id=appt.vehicle_id,
+        vehicle_plate=appt.vehicle_plate,
+        bay_id=appt.bay_id,
+        bay_name=bay_name,
+        job_id=appt.job_id,
+        job_number=job_number,
+        scheduled_date=appt.scheduled_date,
+        scheduled_time=appt.scheduled_time.strftime("%H:%M") if appt.scheduled_time else None,
+        arrival_time=appt.arrival_time,
+        service_started_at=appt.service_started_at,
+        service_completed_at=appt.service_completed_at,
+        description=appt.description,
+        estimated_duration_minutes=appt.estimated_duration_minutes,
+        notes=appt.notes,
+        created_by=appt.created_by,
+        created_at=appt.created_at,
+        updated_at=appt.updated_at,
+    )
+
+
+@router.post("/appointments", response_model=AppointmentRead, status_code=status.HTTP_201_CREATED)
+async def create_appointment(
+    appt: AppointmentCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """
+    Create a booked appointment or walk-in queue entry.
+    - BOOKED: requires scheduled_time, status starts as SCHEDULED
+    - WALK_IN: arrival_time auto-set to NOW, status starts as WAITING
+    """
+    from datetime import time as time_type
+
+    # Parse scheduled_time for booked appointments
+    parsed_time = None
+    if appt.appointment_type == AppointmentType.BOOKED:
+        if not appt.scheduled_time:
+            raise HTTPException(
+                status_code=422,
+                detail="Booked appointments require a scheduled_time (HH:MM)"
+            )
+        try:
+            parts = appt.scheduled_time.split(":")
+            parsed_time = time_type(int(parts[0]), int(parts[1]))
+        except (ValueError, IndexError):
+            raise HTTPException(
+                status_code=422,
+                detail="Invalid time format. Use HH:MM (e.g., '09:30')"
+            )
+
+        # Check for double-booking: same date + overlapping time window
+        # A time slot is "occupied" if another booked appointment overlaps
+        existing = await db.execute(
+            select(CamperAppointmentModel).where(
+                and_(
+                    CamperAppointmentModel.scheduled_date == appt.scheduled_date,
+                    CamperAppointmentModel.scheduled_time == parsed_time,
+                    CamperAppointmentModel.appointment_type == AppointmentType.BOOKED,
+                    CamperAppointmentModel.status.notin_([
+                        AppointmentStatus.CANCELLED,
+                        AppointmentStatus.NO_SHOW,
+                        AppointmentStatus.COMPLETED,
+                    ]),
+                )
+            )
+        )
+        if existing.scalars().first():
+            raise HTTPException(
+                status_code=409,
+                detail=f"Time slot {appt.scheduled_time} on {appt.scheduled_date} is already booked"
+            )
+
+    # Auto-uppercase plate if provided
+    vehicle_plate = appt.vehicle_plate.upper() if appt.vehicle_plate else None
+
+    new_appt = CamperAppointmentModel(
+        appointment_type=appt.appointment_type,
+        priority=appt.priority,
+        status=AppointmentStatus.WAITING if appt.appointment_type == AppointmentType.WALK_IN else AppointmentStatus.SCHEDULED,
+        customer_id=appt.customer_id,
+        customer_name=appt.customer_name,
+        customer_phone=appt.customer_phone,
+        vehicle_id=appt.vehicle_id,
+        vehicle_plate=vehicle_plate,
+        scheduled_date=appt.scheduled_date,
+        scheduled_time=parsed_time,
+        arrival_time=datetime.now(timezone.utc) if appt.appointment_type == AppointmentType.WALK_IN else None,
+        description=appt.description,
+        estimated_duration_minutes=appt.estimated_duration_minutes,
+        notes=appt.notes,
+        created_by=current_user['username'],
+    )
+    db.add(new_appt)
+    await db.commit()
+    await db.refresh(new_appt)
+
+    type_label = "Walk-in" if appt.appointment_type == AppointmentType.WALK_IN else "Appointment"
+    logger.info(
+        f"{type_label} created: {appt.customer_name} on {appt.scheduled_date} "
+        f"by {current_user['username']}"
+    )
+    return await _enrich_appointment_response(new_appt, db)
+
+
+@router.get("/appointments/today", response_model=list[AppointmentRead])
+async def get_today_appointments(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """
+    Today's appointment book + walk-in queue.
+    Returns sorted: booked appointments by time first, then walk-ins by arrival time.
+    This is what Nino sees at 8am.
+    """
+    today = date.today()
+    result = await db.execute(
+        select(CamperAppointmentModel)
+        .where(CamperAppointmentModel.scheduled_date == today)
+        .where(CamperAppointmentModel.status.notin_([
+            AppointmentStatus.CANCELLED,
+            AppointmentStatus.NO_SHOW,
+        ]))
+        .order_by(
+            # Booked first (BOOKED=0, WALK_IN=1 in sort order)
+            CamperAppointmentModel.appointment_type,
+            # Then by time (nulls last for walk-ins)
+            CamperAppointmentModel.scheduled_time.asc().nullslast(),
+            # Walk-ins by arrival time (first-come first-served)
+            CamperAppointmentModel.arrival_time.asc().nullslast(),
+        )
+    )
+    appointments = result.scalars().all()
+    return [await _enrich_appointment_response(a, db) for a in appointments]
+
+
+@router.get("/appointments", response_model=list[AppointmentRead])
+async def list_appointments(
+    scheduled_date: Optional[date] = None,
+    status_filter: Optional[str] = None,
+    appointment_type: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """List appointments with optional filters"""
+    query = select(CamperAppointmentModel)
+
+    if scheduled_date:
+        query = query.where(CamperAppointmentModel.scheduled_date == scheduled_date)
+    if status_filter:
+        try:
+            s = AppointmentStatus(status_filter)
+            query = query.where(CamperAppointmentModel.status == s)
+        except ValueError:
+            pass
+    if appointment_type:
+        try:
+            t = AppointmentType(appointment_type)
+            query = query.where(CamperAppointmentModel.appointment_type == t)
+        except ValueError:
+            pass
+
+    query = query.order_by(
+        CamperAppointmentModel.scheduled_date.desc(),
+        CamperAppointmentModel.scheduled_time.asc().nullslast(),
+        CamperAppointmentModel.arrival_time.asc().nullslast(),
+    )
+    result = await db.execute(query)
+    appointments = result.scalars().all()
+    return [await _enrich_appointment_response(a, db) for a in appointments]
+
+
+@router.get("/appointments/{appointment_id}", response_model=AppointmentRead)
+async def get_appointment(
+    appointment_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Get a single appointment by ID"""
+    result = await db.execute(
+        select(CamperAppointmentModel).where(CamperAppointmentModel.id == appointment_id)
+    )
+    appt = result.scalar_one_or_none()
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return await _enrich_appointment_response(appt, db)
+
+
+@router.put("/appointments/{appointment_id}", response_model=AppointmentRead)
+async def update_appointment(
+    appointment_id: UUID,
+    update: AppointmentUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Update appointment details"""
+    result = await db.execute(
+        select(CamperAppointmentModel).where(CamperAppointmentModel.id == appointment_id)
+    )
+    appt = result.scalar_one_or_none()
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    update_data = update.model_dump(exclude_unset=True)
+    if "vehicle_plate" in update_data and update_data["vehicle_plate"]:
+        update_data["vehicle_plate"] = update_data["vehicle_plate"].upper()
+    if "scheduled_time" in update_data and update_data["scheduled_time"]:
+        from datetime import time as time_type
+        try:
+            parts = update_data["scheduled_time"].split(":")
+            update_data["scheduled_time"] = time_type(int(parts[0]), int(parts[1]))
+        except (ValueError, IndexError):
+            raise HTTPException(status_code=422, detail="Invalid time format. Use HH:MM")
+
+    for field, value in update_data.items():
+        setattr(appt, field, value)
+
+    appt.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(appt)
+
+    logger.info(f"Appointment {appt.id} updated by {current_user['username']}")
+    return await _enrich_appointment_response(appt, db)
+
+
+@router.patch("/appointments/{appointment_id}/status", response_model=AppointmentRead)
+async def update_appointment_status(
+    appointment_id: UUID,
+    status_update: AppointmentStatusUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """
+    Advance appointment status.
+    SCHEDULED -> WAITING (customer arrived)
+    WAITING -> IN_SERVICE (work started, optionally assign bay)
+    IN_SERVICE -> COMPLETED (done)
+    Any active -> CANCELLED or NO_SHOW
+    """
+    result = await db.execute(
+        select(CamperAppointmentModel).where(CamperAppointmentModel.id == appointment_id)
+    )
+    appt = result.scalar_one_or_none()
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    new_status = status_update.status
+
+    # Terminal states cannot be changed
+    if appt.status in (AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot change status from {appt.status.value} (terminal state)"
+        )
+
+    # Valid forward transitions
+    valid_transitions = {
+        AppointmentStatus.SCHEDULED: [
+            AppointmentStatus.WAITING, AppointmentStatus.IN_SERVICE,
+            AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW,
+        ],
+        AppointmentStatus.WAITING: [
+            AppointmentStatus.IN_SERVICE,
+            AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW,
+        ],
+        AppointmentStatus.IN_SERVICE: [
+            AppointmentStatus.COMPLETED,
+            AppointmentStatus.CANCELLED,
+        ],
+    }
+    allowed = valid_transitions.get(appt.status, [])
+    if new_status not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot transition from {appt.status.value} to {new_status.value}"
+        )
+
+    # Auto-set timestamps based on status transitions
+    if new_status == AppointmentStatus.WAITING and not appt.arrival_time:
+        appt.arrival_time = datetime.now(timezone.utc)
+    elif new_status == AppointmentStatus.IN_SERVICE:
+        appt.service_started_at = datetime.now(timezone.utc)
+        if status_update.bay_id:
+            appt.bay_id = status_update.bay_id
+    elif new_status == AppointmentStatus.COMPLETED:
+        appt.service_completed_at = datetime.now(timezone.utc)
+
+    appt.status = new_status
+    appt.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(appt)
+
+    logger.info(
+        f"Appointment {appt.id} ({appt.customer_name}): -> {new_status.value} "
+        f"by {current_user['username']}"
+    )
+    return await _enrich_appointment_response(appt, db)
+
+
+@router.delete("/appointments/{appointment_id}", response_model=AppointmentRead)
+async def cancel_appointment(
+    appointment_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Cancel an appointment (sets status=CANCELLED)"""
+    result = await db.execute(
+        select(CamperAppointmentModel).where(CamperAppointmentModel.id == appointment_id)
+    )
+    appt = result.scalar_one_or_none()
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    if appt.status in (AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel appointment in {appt.status.value} status"
+        )
+
+    appt.status = AppointmentStatus.CANCELLED
+    appt.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(appt)
+
+    logger.info(f"Appointment {appt.id} ({appt.customer_name}) CANCELLED by {current_user['username']}")
+    return await _enrich_appointment_response(appt, db)
+
+
+# ================================================================
 # HTML WEB UI ROUTES (Nino's Team Interface)
 # ================================================================
 
@@ -2772,6 +3129,12 @@ async def camper_invoices_page(request: Request):
 async def camper_calendar_page(request: Request):
     """Calendar view"""
     return templates.TemplateResponse("camper/calendar.html", {"request": request})
+
+
+@html_router.get("/camper/appointments", response_class=HTMLResponse, name="camper_appointments")
+async def camper_appointments_page(request: Request):
+    """Appointment book + walk-in queue - Nino's daily command center"""
+    return templates.TemplateResponse("camper/appointments.html", {"request": request})
 
 
 @html_router.get("/camper/bay-timeline", response_class=HTMLResponse, name="camper_bay_timeline")

@@ -64,6 +64,7 @@ from .camper_invoice_model import CamperInvoiceModel, PaymentStatus
 from .camper_document_model import CamperDocumentModel
 from .camper_shared_resource_model import CamperSharedResourceModel, ResourceType
 from .camper_resource_booking_model import CamperResourceBookingModel, BookingStatus
+from .camper_appointment_model import CamperAppointmentModel, AppointmentType, AppointmentPriority, AppointmentStatus
 
 # ISOTTO Sport Print Shop (Via Buscaino, Trapani - since 1968)
 from .isotto_customer_model import IsottoCustomerModel
@@ -173,6 +174,10 @@ __all__ = [
     "ResourceType",
     "CamperResourceBookingModel",
     "BookingStatus",
+    "CamperAppointmentModel",
+    "AppointmentType",
+    "AppointmentPriority",
+    "AppointmentStatus",
     # ISOTTO Sport Print Shop
     "IsottoCustomerModel",
     "IsottoOrderModel",

@@ -18,6 +18,7 @@ from src.db.models.camper_work_log_model import LogType
 from src.db.models.camper_quotation_model import QuotationStatus
 from src.db.models.camper_purchase_order_model import CamperPOStatus
 from src.db.models.camper_invoice_model import PaymentStatus
+from src.db.models.camper_appointment_model import AppointmentType, AppointmentPriority, AppointmentStatus
 
 
 # ================================================================
@@ -703,6 +704,79 @@ class ResourceBookingResponse(BaseModel):
     status: str
     notes: Optional[str] = None
     booked_by: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ================================================================
+# APPOINTMENT / WALK-IN QUEUE SCHEMAS
+# ================================================================
+
+class AppointmentCreate(BaseModel):
+    """Schema for creating an appointment or walk-in entry"""
+    appointment_type: AppointmentType = Field(default=AppointmentType.BOOKED)
+    priority: AppointmentPriority = Field(default=AppointmentPriority.NORMAL)
+    customer_name: str = Field(..., max_length=200, description="Quick name: 'Marco with the white Ducato'")
+    customer_phone: Optional[str] = Field(None, max_length=30)
+    customer_id: Optional[UUID] = Field(None, description="Link to existing customer (optional)")
+    vehicle_id: Optional[UUID] = Field(None, description="Link to existing vehicle (optional)")
+    vehicle_plate: Optional[str] = Field(None, max_length=20, description="Quick plate entry")
+    scheduled_date: date = Field(..., description="Date of appointment")
+    scheduled_time: Optional[str] = Field(None, description="Time slot for booked appointments (HH:MM)")
+    description: str = Field(..., description="What they need: 'brake check', 'roof leak'")
+    estimated_duration_minutes: int = Field(default=60, ge=15, le=480)
+    notes: Optional[str] = None
+
+
+class AppointmentUpdate(BaseModel):
+    """Schema for updating an appointment"""
+    priority: Optional[AppointmentPriority] = None
+    customer_name: Optional[str] = Field(None, max_length=200)
+    customer_phone: Optional[str] = Field(None, max_length=30)
+    customer_id: Optional[UUID] = None
+    vehicle_id: Optional[UUID] = None
+    vehicle_plate: Optional[str] = Field(None, max_length=20)
+    bay_id: Optional[UUID] = None
+    job_id: Optional[UUID] = None
+    scheduled_date: Optional[date] = None
+    scheduled_time: Optional[str] = None
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = Field(None, ge=15, le=480)
+    notes: Optional[str] = None
+
+
+class AppointmentStatusUpdate(BaseModel):
+    """Schema for advancing appointment status"""
+    status: AppointmentStatus
+    bay_id: Optional[UUID] = Field(None, description="Assign bay when moving to IN_SERVICE")
+
+
+class AppointmentRead(BaseModel):
+    """Schema for reading an appointment"""
+    id: UUID
+    appointment_type: AppointmentType
+    priority: AppointmentPriority
+    status: AppointmentStatus
+    customer_id: Optional[UUID] = None
+    customer_name: str
+    customer_phone: Optional[str] = None
+    vehicle_id: Optional[UUID] = None
+    vehicle_plate: Optional[str] = None
+    bay_id: Optional[UUID] = None
+    bay_name: Optional[str] = None
+    job_id: Optional[UUID] = None
+    job_number: Optional[str] = None
+    scheduled_date: date
+    scheduled_time: Optional[str] = None
+    arrival_time: Optional[datetime] = None
+    service_started_at: Optional[datetime] = None
+    service_completed_at: Optional[datetime] = None
+    description: str
+    estimated_duration_minutes: int
+    notes: Optional[str] = None
+    created_by: str
     created_at: datetime
     updated_at: datetime
 
