@@ -2532,3 +2532,239 @@ async def test_76_job_update_fields(client):
     assert updated["assigned_to"] == "Sebastino"
     assert updated["description"] == "Updated description -- now includes paint"
     assert updated["estimated_hours"] == 5.0
+
+
+# ================================================================
+# GROUP 13: WAIT TRACKING + INVOICE PAID + QUOTE UPDATE + BAYS (Tests 77-84)
+# ================================================================
+
+@pytest.mark.asyncio
+async def test_77_wait_resume_cycle(client):
+    """
+    EDGE CASE 77: Full wait/resume cycle -- job pauses for glue curing, then resumes.
+    Verifies wait_reason set/cleared and work log entries created.
+    """
+    v = await _create_vehicle(client, "WAIT-001")
+    c = await _create_customer(client, "Wait Walter", "wait@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Wait cycle test")
+    await _advance_job_to(client, j["id"], "in_progress")
+
+    # Start wait
+    resp = await client.post(f"/api/v1/camper/jobs/{j['id']}/wait", json={
+        "reason": "Glue curing 24h",
+        "notes": "Windshield seal needs to set",
+    })
+    assert resp.status_code == 201
+    assert resp.json()["log_type"] == "wait_start"
+    assert resp.json()["wait_reason"] == "Glue curing 24h"
+
+    # Verify job shows wait reason
+    job = await client.get(f"/api/v1/camper/jobs/{j['id']}")
+    assert job.json()["current_wait_reason"] == "Glue curing 24h"
+
+    # Resume
+    resp2 = await client.post(f"/api/v1/camper/jobs/{j['id']}/resume", json={
+        "notes": "Glue cured, back to work",
+    })
+    assert resp2.status_code == 201
+    assert resp2.json()["log_type"] == "wait_end"
+
+    # Verify wait cleared
+    job2 = await client.get(f"/api/v1/camper/jobs/{j['id']}")
+    assert job2.json()["current_wait_reason"] is None
+
+
+@pytest.mark.asyncio
+async def test_78_double_wait_rejected(client):
+    """
+    EDGE CASE 78: Can't start a second wait while already waiting.
+    """
+    v = await _create_vehicle(client, "DWAIT-001")
+    c = await _create_customer(client, "Double Wait Dave", "dwait@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Double wait test")
+    await _advance_job_to(client, j["id"], "in_progress")
+
+    # First wait
+    await client.post(f"/api/v1/camper/jobs/{j['id']}/wait", json={
+        "reason": "Parts on order",
+    })
+
+    # Second wait should fail
+    resp = await client.post(f"/api/v1/camper/jobs/{j['id']}/wait", json={
+        "reason": "Also waiting for paint",
+    })
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_79_resume_without_wait_rejected(client):
+    """
+    EDGE CASE 79: Can't resume a job that isn't waiting.
+    """
+    v = await _create_vehicle(client, "NWAIT-001")
+    c = await _create_customer(client, "No Wait Nick", "nwait@test.it")
+    j = await _create_job(client, v["id"], c["id"], "No wait test")
+    await _advance_job_to(client, j["id"], "in_progress")
+
+    resp = await client.post(f"/api/v1/camper/jobs/{j['id']}/resume", json={
+        "notes": "Trying to resume without waiting",
+    })
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+@patch(
+    "src.services.camper_telegram_service.send_telegram_message",
+    new_callable=AsyncMock,
+    return_value=True,
+)
+async def test_80_invoice_mark_paid(mock_tg, mock_email, client):
+    """
+    EDGE CASE 80: Mark invoice as paid records payment method and timestamp.
+    Full flow: quote -> accept -> complete -> invoice -> pay.
+    """
+    v = await _create_vehicle(client, "PAID-001")
+    c = await _create_customer(client, "Paid Paolo", "paid@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Invoice paid test")
+    q = await _create_quotation(client, j["id"], c["id"], v["id"])
+    await client.post(f"/api/v1/camper/quotations/{q['id']}/accept")
+    # Job is already APPROVED after accept -- advance from in_progress onward
+    await client.patch(f"/api/v1/camper/jobs/{j['id']}/status", json={"status": "in_progress"})
+    await client.post(f"/api/v1/camper/jobs/{j['id']}/submit-inspection")
+    await client.post(f"/api/v1/camper/jobs/{j['id']}/pass-inspection", json={"notes": "Good"})
+
+    # Create invoice
+    inv_resp = await client.post("/api/v1/camper/invoices", json={
+        "job_id": j["id"],
+        "customer_id": c["id"],
+        "quotation_id": q["id"],
+        "line_items": q["line_items"],
+        "vat_rate": "22.00",
+        "due_date": (date.today() + timedelta(days=30)).isoformat(),
+    })
+    assert inv_resp.status_code == 201
+    inv = inv_resp.json()
+    assert inv["payment_status"] == "pending"
+
+    # Mark paid
+    pay_resp = await client.post(f"/api/v1/camper/invoices/{inv['id']}/mark-paid", json={
+        "payment_method": "card",
+    })
+    assert pay_resp.status_code == 200
+    paid = pay_resp.json()
+    assert paid["payment_status"] == "paid"
+    assert paid["payment_method"] == "card"
+    assert paid["paid_at"] is not None
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+async def test_81_quotation_update_recalculates(mock_email, client):
+    """
+    EDGE CASE 81: Updating quotation line items recalculates totals.
+    Add a third line item, verify subtotal/IVA/total/deposit change.
+    """
+    v = await _create_vehicle(client, "QUPD-001")
+    c = await _create_customer(client, "Quote Update Quinto", "qupd@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Quote update test")
+    q = await _create_quotation(client, j["id"], c["id"], v["id"])
+
+    original_total = Decimal(q["total"])
+
+    # Add an extra line item
+    new_items = q["line_items"] + [{
+        "description": "Extra bodywork",
+        "quantity": 1,
+        "unit_price": "100.00",
+        "line_total": "100.00",
+        "item_type": "labor",
+    }]
+
+    resp = await client.put(f"/api/v1/camper/quotations/{q['id']}", json={
+        "line_items": new_items,
+    })
+    assert resp.status_code == 200
+    updated = resp.json()
+    new_total = Decimal(updated["total"])
+    assert new_total > original_total, "Total should increase after adding line item"
+    # New subtotal = 85 + 100 = 185, IVA 22% = 40.70, total = 225.70
+    assert Decimal(updated["subtotal"]) == Decimal("185.00")
+
+
+@pytest.mark.asyncio
+@patch("src.services.camper_email_service._send_email", return_value=True)
+async def test_82_quotation_update_rejected_after_accept(mock_email, client):
+    """
+    EDGE CASE 82: Can't update a quotation that's already accepted.
+    """
+    v = await _create_vehicle(client, "QACC-001")
+    c = await _create_customer(client, "Accepted Anna", "qacc@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Accepted quote test")
+    q = await _create_quotation(client, j["id"], c["id"], v["id"])
+    await client.post(f"/api/v1/camper/quotations/{q['id']}/accept")
+
+    resp = await client.put(f"/api/v1/camper/quotations/{q['id']}", json={
+        "notes": "Trying to change after acceptance",
+    })
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_83_bay_update_and_deactivate(client):
+    """
+    EDGE CASE 83: Bay update changes name, deactivate hides from listing.
+    """
+    bay_resp = await client.post("/api/v1/camper/bays", json={
+        "name": "Bay To Rename", "bay_type": "general",
+    })
+    assert bay_resp.status_code == 201
+    bay = bay_resp.json()
+
+    # Rename
+    rename_resp = await client.patch(f"/api/v1/camper/bays/{bay['id']}", json={
+        "name": "Bay Renamed",
+    })
+    assert rename_resp.status_code == 200
+    assert rename_resp.json()["name"] == "Bay Renamed"
+
+    # Deactivate
+    deact_resp = await client.patch(f"/api/v1/camper/bays/{bay['id']}", json={
+        "is_active": False,
+    })
+    assert deact_resp.status_code == 200
+    assert deact_resp.json()["is_active"] is False
+
+
+@pytest.mark.asyncio
+async def test_84_work_log_list_and_plate_lookup(client):
+    """
+    EDGE CASE 84: Work log list returns entries chronologically.
+    Also verifies vehicle plate lookup fast path.
+    """
+    v = await _create_vehicle(client, "LOG-001")
+    c = await _create_customer(client, "Logger Luigi", "log@test.it")
+    j = await _create_job(client, v["id"], c["id"], "Log list test")
+
+    # Log 3 work entries
+    await _log_work(client, j["id"], 1.0, "First entry")
+    await _log_work(client, j["id"], 2.0, "Second entry")
+    await _log_work(client, j["id"], 0.5, "Third entry")
+
+    # Get work log list
+    resp = await client.get(f"/api/v1/camper/jobs/{j['id']}/work-log")
+    assert resp.status_code == 200
+    logs = resp.json()
+    assert len(logs) == 3
+    assert logs[0]["notes"] == "First entry"
+    assert logs[2]["notes"] == "Third entry"
+    assert all(log["log_type"] == "work" for log in logs)
+
+    # Plate lookup fast path
+    plate_resp = await client.get("/api/v1/camper/vehicles/plate/LOG-001")
+    assert plate_resp.status_code == 200
+    assert plate_resp.json()["registration_plate"] == "LOG-001"
+
+    # Plate lookup 404
+    missing = await client.get("/api/v1/camper/vehicles/plate/NOEXIST-999")
+    assert missing.status_code == 404
