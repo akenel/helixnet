@@ -1,0 +1,65 @@
+Camper & Tour -- Service Management System | EP2: Quote to Invoice
+
+Every euro tracked from quotation to cash. No hand-written forms. No math errors. No "where are my parts?"
+
+Episode 2 follows the money flow through the Camper & Tour service management system. Formal quotations with line items and automatic IVA calculation. Purchase orders that track parts from supplier to delivery. Invoices generated from completed jobs with deposit deduction built in. Plus the calendar, bay timeline, and appointment queue that keep the shop running.
+
+CHAPTERS:
+0:00 Intro
+0:05 Quotation List -- All Quotes at a Glance
+0:25 Quotation Detail -- Line Items, IVA, Deposit
+0:55 Purchase Orders -- Parts Tracking
+1:20 Invoice Generation -- Deposit Deducted
+1:45 Calendar View -- Weekly Capacity
+2:05 Bay Timeline -- 5 Bays, Zero Conflicts
+2:30 Appointments -- Booked vs Walk-In Queue
+2:50 Outro
+
+WHAT THIS EPISODE COVERS:
+
+Quotations -- Formal quotes with sequential numbering (QUO-20260214-0001). Line items with description, hours, and cost. IVA at 22% calculated automatically. 25% deposit calculated on acceptance. Send to customer via email in Italian. When accepted, the job moves to Approved and the deposit requirement is locked in.
+
+Purchase Orders -- Every parts order gets a formal PO. Status tracks the full lifecycle: draft, sent to supplier, confirmed, shipped, received. When parts arrive and you mark received, the job's "waiting for parts" flag clears automatically. No more phone calls to ask "where are my parts?"
+
+Invoices -- Generated from completed jobs with one click. Deposit already deducted. Balance due calculated automatically. Payment status tracking: pending, deposit paid, partial, paid, overdue. Every euro auditable from day one.
+
+Calendar -- Jobs scheduled across the week. Nino sees at a glance which days are full and which have capacity. Click any job to jump to its detail page.
+
+Bay Timeline -- Five service bays (General, Electrical, Mechanical, Bodywork, Wash) shown on a CSS Grid timeline across the week. Overlap detection prevents double-booking. This is how the shop plans tomorrow's work tonight.
+
+Appointments -- Booked customers and walk-ins on the same screen. Booked first, walk-ins sorted by arrival time. Status lifecycle: scheduled, waiting, in service, completed. Fair queue, zero confusion.
+
+PREVIOUSLY ON EP1 -- FIRST IMPRESSIONS:
+- Dashboard morning overview
+- Vehicle check-in by plate number
+- Job board with status filtering
+- Job detail -- MAX roof seal repair (the real story)
+- Customer intelligence with spend history
+
+COMING IN EP3 -- APPOINTMENTS & SCHEDULING:
+- Multi-day job scheduling with drag-and-drop
+- Recurring maintenance reminders
+- Customer self-service booking portal
+- SMS/Telegram appointment confirmations
+
+BUILT WITH:
+- FastAPI + SQLAlchemy (Python async backend)
+- Keycloak OIDC authentication (JWT RS256, role-based access)
+- Alpine.js + Tailwind CSS (lightweight reactive frontend)
+- PostgreSQL (production database)
+- Docker Compose (single-command deployment)
+- Built on HelixNet -- helixnet.ch
+
+84 AUTOMATED TESTS passing. Every endpoint verified.
+
+---
+Camper & Tour sas di Sebastiano Cassisa
+Via F. Culcasi, 4 (Palazzo Asia) -- 91100 Trapani
+Tel: +39 0923 534452 | Cell: +39 328 684 4546
+www.camperandtour.it
+
+MUSIC:
+"Wholesome" by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+
+"Every euro tracked from quote to cash."
