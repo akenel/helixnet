@@ -1,6 +1,6 @@
 # Video Production SOP -- Puppeteer + OBS Automated Recording
 
-**SOP-VID-001** | Created: Feb 10, 2026 | Updated: Feb 13, 2026
+**SOP-VID-001** | Created: Feb 10, 2026 | Updated: Feb 15, 2026
 Invented at McDonald's Trapani | Scene Title Cards invented at PuntaTipa Room 101
 
 ---
@@ -223,15 +223,24 @@ ffmpeg -y -loop 1 -i outro.png -c:v libx264 -t 5 -pix_fmt yuv420p -r 30 outro-cl
 
 ### 3.5 Choose Post-Production Path
 
-You now have two options:
+You now have THREE options:
 
-**Option A: Simple Stitch (voiceover or silent)**
+**Option A: Baked-in Intro/Outro (PREFERRED -- CT EP1 Method)**
+```
+Recording script renders intro card + demo + outro card inside the browser.
+Post-production = strip audio + trim OBS CHECK from start.
+NO separate stitch step. Fastest pipeline.
+```
+Use when: recording script handles everything (Puppeteer renders cards inline).
+Result: single clean MP4 ready for YouTube.
+
+**Option B: Simple Stitch (voiceover or silent)**
 ```
 intro-clip.mp4 + content-fixed.mp4 + outro-clip.mp4
 ```
 Use when: voiceover will be added, or content is self-explanatory.
 
-**Option B: Scene Title Cards (PREFERRED for demos)**
+**Option C: Scene Title Cards (ISOTTO Method)**
 ```
 intro + [card-1 + scene-1 + card-2 + scene-2 + ...] + outro
 ```
@@ -367,26 +376,34 @@ ffmpeg -y \
 
 ### 4.1 File Organization
 
+**Main folder = what you need for YouTube.** Everything else goes in `arc/`.
+
 ```
-videos/{app}/DEMO/
-├── {APP}-Demo-FINAL.mp4          <- The one you share (titled + music)
-├── {APP}-Demo-TITLED.mp4         <- Titled, no music (backup)
-├── {APP}-Demo.mp4                <- Simple stitch, no cards (archive)
-├── intro.html                    <- Source (editable)
-├── outro.html                    <- Source (editable)
-├── intro.png / outro.png         <- Screenshots
-├── scene-cards-generator.js      <- Title card generator
-├── stitch-titled.sh              <- Stitch + music script
-├── post-production.sh            <- Simple stitch script
-├── voiceover-script.md           <- Scene descriptions (if needed)
-└── arc/                          <- Working files
-    ├── intro-clip.mp4
-    ├── outro-clip.mp4
-    ├── scene-card-{1..N}.png     <- Title card images
-    ├── card-{1..N}.mp4           <- Title card clips
-    ├── scene-{1..N}.mp4          <- Scene clips
-    └── concat-titled.txt         <- Concat list
+videos/{app}/DEMO-{feature}/
+├── {APP}-EP{N}-{Title}.mp4       <- FINAL VIDEO (upload this)
+├── voiceover-script.md           <- Script / scene descriptions
+├── EP{N}-{episode}/              <- Production kit for this episode
+│   ├── ct-ep{N}-record.js        <- Puppeteer recording script
+│   ├── intro.html                <- Intro card source (editable)
+│   ├── outro.html                <- Outro card source (editable)
+│   ├── scene-cards-generator.js  <- Title card generator (if used)
+│   ├── stitch-titled.sh          <- Stitch script (if used)
+│   └── arc/                      <- Episode working files (PNGs, frames)
+├── voice-recordings/             <- Voiceover .ogg files (if used)
+└── arc/                          <- ALL raw/intermediate files
+    ├── Raw OBS .mp4 recordings
+    ├── silent.mp4, trimmed.mp4   <- Intermediate steps
+    ├── intro-clip.mp4, outro-clip.mp4
+    ├── Old takes, concat.txt, etc.
+    └── take{N}-frames/           <- Debug frame extractions
 ```
+
+**Naming convention:** `{APP}-EP{N}-{Short-Title}.mp4`
+- `CT-EP1-First-Impressions.mp4`
+- `ISOTTO-Demo-Titled.mp4`
+- `KC-EP5-RBAC-Deep-Dive.mp4`
+
+**Rule:** The main folder should have ONLY the final MP4 + production sources. If you can't upload it or edit it, it goes in `arc/`.
 
 ### 4.2 Git vs GDrive
 
@@ -451,10 +468,13 @@ RECORD:
   Script runs (fullscreen) → Wait → "RECORDING COMPLETE" → Stop OBS
   → Play 10s to verify content
 
-POST-PRODUCTION (Simple):
+POST-PRODUCTION (Baked-in -- FASTEST):
+  Strip audio → Trim OBS CHECK → Done. Final MP4 ready.
+
+POST-PRODUCTION (Simple Stitch):
   Strip audio → Trim → Re-encode → Intro/Outro → Stitch → Verify
 
-POST-PRODUCTION (Scene Title Cards -- PREFERRED):
+POST-PRODUCTION (Scene Title Cards):
   Strip → Trim → Re-encode → Map scenes → Generate cards → Split → Stitch → Music
 
 MUSIC:
@@ -479,6 +499,25 @@ COMMANDS:
 | Feb 11 | KC EP5 | 1 | Voiceover pipeline invented (Telegram → Whisper → ffmpeg) |
 | Feb 11 | KC EP6 | 1 | Clean run |
 | Feb 13 | ISOTTO Demo | 3 | Take 1: OBS captured GNOME Settings. Take 2: terminal visible + mic on. Take 3: GOLD. Scene title card method invented in post. |
+| Feb 15 | CT EP1 - First Impressions | 2 | Take 1: bad timing, alt-tab visible. Take 2: GOLD. Baked-in intro/outro method -- no separate stitch step. Folder cleanup SOP added. |
+
+---
+
+## Lessons Learned (continued)
+
+### Bake Intro/Outro Into the Recording Script (Feb 15, 2026)
+- Old method: record raw, trim, create separate intro/outro clips, re-encode, stitch
+- New method: Puppeteer renders intro card -> demo -> outro card inside the browser
+- Post-production = just strip audio + trim OBS CHECK from start
+- **Saves 30+ minutes** of post-production per video
+- **Rule:** If the recording script can render cards inline, do it. Only use separate stitch for complex multi-take edits.
+
+### Clean Folders Make YouTube Loading Faster (Feb 15, 2026)
+- After post-production, folders had 10+ files mixed together
+- Raw recordings, intermediates, frames, debug files -- all in one place
+- Finding the final MP4 = digging through junk
+- **Fix:** Main folder = ONLY final MP4 + production sources. Everything else in `arc/`
+- **Rule:** If you can't upload it or edit it, it goes in `arc/`
 
 ---
 
@@ -487,3 +526,6 @@ COMMANDS:
 
 *"Title cards do the talking. Music sets the mood. No voice needed."*
 *The ISOTTO Method -- Feb 13, 2026 -- PuntaTipa Room 101, 11:00 PM*
+
+*"Bake the intro into the script. One file in, one file out."*
+*The CT Method -- Feb 15, 2026 -- PuntaTipa Room 101*

@@ -1,0 +1,82 @@
+Camper & Tour -- Service Management System | EP1: First Impressions
+
+A real camper repair shop. Real vehicles. Real jobs. Real damage.
+
+Camper & Tour is a service management system built for Sebastino's camper repair shop in Trapani, Sicily. This is not a mockup -- the demo data comes from real customers, real vehicles, and a real roof seal failure that cost thousands in repairs.
+
+This first episode walks through the core system: what Nino (the shop manager) sees every morning, how vehicles get checked in by plate number, and how the full repair lifecycle is tracked from first quote to final invoice.
+
+CHAPTERS:
+0:00 Intro
+0:04 Keycloak Login (SSO Single Sign-On)
+0:14 Dashboard -- Morning Overview
+0:38 Vehicle Check-In (Search by Plate)
+0:58 New Vehicle Registration
+1:15 Job Board -- All Active Work
+1:35 Job Detail -- MAX Roof Seal Repair (The Real Story)
+2:05 Customer Intelligence -- Full Service History
+2:20 Outro
+
+WHAT THIS SYSTEM DOES:
+
+Morning Dashboard -- Nino opens one screen and sees everything: vehicles in the shop, active jobs, parts waiting, quotes needing approval. Four numbers replace twenty minutes of walking around asking "what's going on?" Below that, every active job with mechanic assignment and status. One screen, zero guesswork.
+
+Vehicle Check-In -- A camper pulls up. The counter types the plate. Instantly: make, model, year, owner, insurance status, current service history. For first-time visitors, a registration form creates both the vehicle and customer record in under a minute. Plate number becomes the universal lookup key.
+
+Job Board -- Every job in the shop, filterable by status, mechanic, or free text. Color-coded badges: gray for quoted, amber for in progress, red for waiting on parts, green for completed. Nino sees at a glance who needs what, right now. No whiteboard. No sticky notes. No shouting across the shop floor.
+
+Job Detail -- The MAX roof seal inspection is the centerpiece. This is a real Fiat Ducato campervan with real water damage from failed seals. The system tracked every step: initial quote, deposit payment, 16+ hours of labor, parts on order with PO numbers, mechanic work logs, inspection notes, follow-up scheduling. The full repair story, from "something doesn't look right" to "here are your keys."
+
+Customer Intelligence -- Search by name, phone, or email. See total spend, visit count, vehicles owned, and full service history. Every customer touchpoint tracked from day one. This is how a repair shop builds business intelligence without a CRM consultant.
+
+THE MAX STORY:
+
+One bathroom window seal failed. Water leaked behind the ceiling panels for years. By the time it was discovered, the entire roof structure was damaged end-to-end. The lesson: when one seal fails, check ALL the seals. Same age, same manufacturer, same exposure. This system exists because the old way -- paper folders, Word documents, memory -- doesn't catch patterns. Digital records do.
+
+"If one seal fails, check all the seals."
+
+WHAT YOU JUST SAW:
+- 4 Customers (Italian, Swiss, French, German -- multilingual support)
+- 4 Vehicles (campervans, motorhomes, different types)
+- 5 Service Jobs (across all workflow states)
+- 8 Workflow Steps (quoted, approved, in progress, waiting parts, inspection, completed, invoiced, picked up)
+
+COMING IN EP2 -- QUOTE TO INVOICE:
+- Formal quotations with line items and 22% IVA
+- Purchase orders to parts suppliers
+- Invoice generation with deposit tracking
+- Appointment scheduling and calendar view
+- Document uploads (before/after photos)
+
+BUILT WITH:
+- FastAPI + SQLAlchemy (Python async backend)
+- Keycloak OIDC authentication (JWT RS256, role-based access)
+- Alpine.js + Tailwind CSS (lightweight reactive frontend)
+- PostgreSQL (production database)
+- Docker Compose (single-command deployment)
+- Built on HelixNet -- helixnet.ch
+
+9 STAFF ROLES:
+- camper-admin (Sebastino -- everything)
+- camper-manager (Nino -- shop management)
+- camper-mechanic (Maximo, Seppi -- jobs + work logging)
+- camper-counter (Simona, Miguel -- check-in + customers)
+- camper-accountant (Miguel -- invoicing)
+- camper-auditor (read-only audit trail)
+- camper-hr (employee management)
+
+84 AUTOMATED TESTS passing. Every endpoint verified.
+
+---
+Camper & Tour sas di Sebastiano Cassisa
+Via F. Culcasi, 4 (Palazzo Asia) -- 91100 Trapani
+Tel: +39 0923 534452 | Cell: +39 328 684 4546
+www.camperandtour.it
+
+MUSIC:
+"Wholesome" by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+
+"Casa e dove parcheggi." -- Home is where you park it.
+
+#camper #campervan #servicemanagement #repairshop #trapani #sicily #fiatducato #keycloak #sso #fastapi #python #docker #rbac #helixnet #workshop #garagemanagementsoftware #campervanlfe #vanlife #motorhome #camperrepair
