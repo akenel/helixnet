@@ -22,7 +22,7 @@
                     <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
                     <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
                     <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotes" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
                     <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini Acquisto</a>
                     <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Fatture</a>
                     <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
@@ -42,7 +42,7 @@
         <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
         <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
         <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotes" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
         <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini Acquisto</a>
         <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Fatture</a>
         <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
@@ -802,7 +802,7 @@
                         payment_notes: this.paymentNotes,
                         paid_at: new Date().toISOString()
                     };
-                    const updated = await API.patch('/api/v1/camper/invoices/' + this.paymentInvoice.id + '/payment', payload);
+                    const updated = await API.post('/api/v1/camper/invoices/' + this.paymentInvoice.id + '/mark-paid', payload);
 
                     // Update in list
                     const idx = this.invoices.findIndex(inv => inv.id === this.paymentInvoice.id);
