@@ -78,5 +78,3 @@ MUSIC:
 Licensed under Creative Commons: By Attribution 4.0
 
 "Casa e dove parcheggi." -- Home is where you park it.
-
-#camper #campervan #servicemanagement #repairshop #trapani #sicily #fiatducato #keycloak #sso #fastapi #python #docker #rbac #helixnet #workshop #garagemanagementsoftware #campervanlfe #vanlife #motorhome #camperrepair
