@@ -349,26 +349,42 @@ ffmpeg -y -f concat -safe 0 -i concat-titled.txt -c copy TITLED.mp4
 
 ### 3B.6 Add Background Music
 
-Pick a track from the sunrise-chain library. Volume at 10-15% (subtle, not distracting). Fade in at start, fade out before outro:
+**Two-step method** (avoids filter_complex + streamcopy conflict):
 
 ```bash
-ffmpeg -y \
-  -i TITLED.mp4 \
-  -i /path/to/music.mp3 \
-  -c:v copy -c:a aac -b:a 128k -ar 48000 -shortest \
-  -filter_complex "[1:a]volume=0.12,afade=t=in:st=0:d=3,afade=t=out:st=FADE_START:d=5[aout]" \
-  -map 0:v -map "[aout]" \
-  FINAL.mp4
+# Step 1: Process music separately (trim, volume, fades)
+ffmpeg -y -i music.mp3 \
+  -af "atrim=0:VIDEO_DURATION,asetpts=PTS-STARTPTS,volume=LEVEL,afade=t=in:st=0:d=2,afade=t=out:st=FADE_START:d=3.5" \
+  -c:a aac -b:a 128k -ar 48000 music-processed.m4a
+
+# Step 2: Mux video + processed audio (no re-encode!)
+ffmpeg -y -i video.mp4 -i music-processed.m4a -c:v copy -c:a copy -shortest FINAL.mp4
+
+# Step 3: Clean up
+rm music-processed.m4a
 ```
 
-**Music selection guidelines:**
-- Instrumental or very well-known (adds recognition, not distraction)
-- Mellow / atmospheric (not energetic)
-- Long enough to cover the full video (check duration with ffprobe)
-- Volume at 0.10-0.15 (barely audible, viewer focuses on visuals)
-- 3s fade-in, 5s fade-out
+**Volume levels:**
+- **Music-only (no voice):** `volume=0.35-0.40` -- present, sets the mood, not overwhelming
+- **Music under voiceover:** `volume=0.10-0.15` -- barely audible, voice dominates
+- **Rule of thumb:** If you can't hear it on laptop speakers, it's too quiet. If you notice it more than the content, it's too loud.
 
-**YouTube copyright note:** Well-known songs may trigger Content ID. The video stays up but the artist may claim ad revenue. For commercial use, consider royalty-free alternatives. For portfolio/demo use, this is acceptable -- the music adds soul.
+**Music source -- ALWAYS use royalty-free for YouTube:**
+- **Kevin MacLeod (incompetech.com)** -- CC BY 4.0, 2000+ tracks, proven
+- Add credit in YouTube description: `"Track Name" by Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0`
+- Browse by feel: incompetech.com → filter by "Bright", "Calm", "Warm"
+- **DO NOT use sunrise-chain library on YouTube** -- copyrighted tracks trigger Content ID
+
+**Proven tracks:**
+| Track | Feel | Used On |
+|-------|------|---------|
+| Wholesome | Warm, positive, homey | CT EP1 (camper shop) |
+| Slow Burn | Gentle, atmospheric | ISOTTO Demo (print shop) |
+
+**Fade timing:**
+- Fade-in: 2s (subtle entrance)
+- Fade-out: 3-3.5s before video end (clean exit, no abrupt cut)
+- `FADE_START` = VIDEO_DURATION - 3.5
 
 ---
 
@@ -376,26 +392,24 @@ ffmpeg -y \
 
 ### 4.1 File Organization
 
-**Main folder = what you need for YouTube.** Everything else goes in `arc/`.
+**Main folder = YouTube upload kit.** 4 files max. Everything else goes in `arc/`.
 
 ```
 videos/{app}/DEMO-{feature}/
-├── {APP}-EP{N}-{Title}.mp4       <- FINAL VIDEO (upload this)
-├── voiceover-script.md           <- Script / scene descriptions
-├── EP{N}-{episode}/              <- Production kit for this episode
-│   ├── ct-ep{N}-record.js        <- Puppeteer recording script
-│   ├── intro.html                <- Intro card source (editable)
-│   ├── outro.html                <- Outro card source (editable)
-│   ├── scene-cards-generator.js  <- Title card generator (if used)
-│   ├── stitch-titled.sh          <- Stitch script (if used)
-│   └── arc/                      <- Episode working files (PNGs, frames)
-├── voice-recordings/             <- Voiceover .ogg files (if used)
-└── arc/                          <- ALL raw/intermediate files
+├── {APP}-EP{N}-{Title}.mp4            <- FINAL VIDEO (upload this)
+├── {APP}-EP{N}-YOUTUBE-DESCRIPTION.txt <- Select all, paste into YouTube
+├── thumbnail.png                       <- Upload as custom thumbnail
+├── thumbnail.html                      <- Source (for future edits)
+└── arc/                                <- ALL production artifacts
     ├── Raw OBS .mp4 recordings
-    ├── silent.mp4, trimmed.mp4   <- Intermediate steps
-    ├── intro-clip.mp4, outro-clip.mp4
+    ├── silent.mp4, trimmed.mp4         <- Intermediate steps
+    ├── wholesome-kevin-macleod.mp3     <- Music source file
+    ├── voiceover-script.md             <- Script / scene descriptions
+    ├── EP{N}-{episode}/                <- Recording scripts, card generators
+    ├── voice-recordings/               <- Voiceover .ogg files (if used)
+    ├── intro-clip.mp4, outro-clip.mp4  <- Separate clips (if used)
     ├── Old takes, concat.txt, etc.
-    └── take{N}-frames/           <- Debug frame extractions
+    └── take{N}-frames/                 <- Debug frame extractions
 ```
 
 **Naming convention:** `{APP}-EP{N}-{Short-Title}.mp4`
@@ -403,7 +417,7 @@ videos/{app}/DEMO-{feature}/
 - `ISOTTO-Demo-Titled.mp4`
 - `KC-EP5-RBAC-Deep-Dive.mp4`
 
-**Rule:** The main folder should have ONLY the final MP4 + production sources. If you can't upload it or edit it, it goes in `arc/`.
+**Rule:** If you can't upload it to YouTube or edit it for the next video, it goes in `arc/`. The main folder should be so clean you can hand someone a USB and say "upload everything in here."
 
 ### 4.2 Git vs GDrive
 
@@ -413,14 +427,67 @@ videos/{app}/DEMO-{feature}/
 | MP4 video files | Google Drive / YouTube | Large binary, not for git |
 | PNG screenshots | Local only | Regenerable from HTML |
 
-### 4.3 YouTube Upload
+### 4.3 YouTube Kit (create BEFORE uploading)
 
-Prepare before uploading:
-- **Title:** "{App Name} -- {Feature} Demo" (under 70 chars)
-- **Description:** Scene list with timestamps, built on HelixNet, contact info
-- **Tags:** app name, helixnet, demo, keycloak, print shop, etc.
-- **Thumbnail:** Screenshot from intro.html or custom design (1280x720)
-- **Chapters:** Use scene timestamps in description for YouTube chapters
+Every video needs a complete YouTube kit. Create these files during post-production:
+
+**1. Description file** (`{APP}-EP{N}-YOUTUBE-DESCRIPTION.txt`)
+- **Max 5000 characters** (YouTube limit) -- aim for 4500-4800
+- Must be select-all-paste-ready (no editing needed at upload time)
+- Structure:
+  ```
+  Title line
+
+  Hook (1-2 sentences)
+
+  Context paragraph (what this is, who it's for)
+
+  CHAPTERS:
+  0:00 Intro
+  0:04 Scene 1
+  ...
+
+  WHAT THIS SYSTEM DOES:
+  (detailed feature descriptions)
+
+  BUILT WITH:
+  (tech stack)
+
+  MUSIC:
+  "Track Name" by Kevin MacLeod (incompetech.com)
+  Licensed under Creative Commons: By Attribution 4.0
+
+  ---
+  Business contact info
+
+  "Signature quote"
+
+  #tag1 #tag2 #tag3 ...
+  ```
+- Tags go at the BOTTOM of description (YouTube reads them)
+- Music credit is MANDATORY for CC BY tracks
+- Verify char count: `wc -c DESCRIPTION.txt` (must be < 5000)
+
+**2. Thumbnail** (`thumbnail.html` + `thumbnail.png`)
+- 1280x720 pixels (YouTube standard)
+- **Big fonts** -- must be readable on mobile phone screens
+- Title: 100-130px, subtitle: 30-36px, stat numbers: 50px+
+- Dark background with brand accent color
+- Generate: `node -e "..." > thumbnail.png` (Puppeteer screenshot)
+- Match the video's visual theme (same colors as intro/outro)
+
+**3. Title** (under 70 chars)
+- Format: `{Business} -- {Feature} | EP{N}: {Subtitle}`
+- Example: `Camper & Tour -- Service Management System | EP1: First Impressions`
+
+### 4.4 YouTube Upload Checklist
+
+- [ ] Upload MP4
+- [ ] Paste description from .txt file (select all, paste)
+- [ ] Upload custom thumbnail (thumbnail.png)
+- [ ] Set title
+- [ ] Verify chapters appear in timeline after processing
+- [ ] Set visibility (unlisted for review, public when ready)
 
 ---
 
@@ -477,16 +544,24 @@ POST-PRODUCTION (Simple Stitch):
 POST-PRODUCTION (Scene Title Cards):
   Strip → Trim → Re-encode → Map scenes → Generate cards → Split → Stitch → Music
 
-MUSIC:
-  Volume 0.12 → Fade in 3s → Fade out 5s → -shortest
+MUSIC (royalty-free only for YouTube!):
+  Music-only: volume=0.40 | Under voice: volume=0.12
+  Fade in 2s → Fade out 3.5s → Two-step method (process audio, then mux)
+
+YOUTUBE KIT:
+  Description.txt (< 5000 chars) + thumbnail.png (1280x720) + title (< 70 chars)
+
+TRIM VERIFICATION:
+  Extract end frames → Find exact transition → Cut 0.5s BEFORE junk appears
 
 COMMANDS:
-  STRIP:   ffmpeg -i video.mp4 -an -c:v copy silent.mp4
-  TRIM:    ffmpeg -ss START -to END -i silent.mp4 -c copy trimmed.mp4
+  STRIP:    ffmpeg -i raw.mp4 -an -c:v copy silent.mp4
+  TRIM:     ffmpeg -i silent.mp4 -t END_SEC -c copy trimmed.mp4
   REENCODE: ffmpeg -i trimmed.mp4 -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -r 30 fixed.mp4
-  CARD:    ffmpeg -loop 1 -i card.png -c:v libx264 -t 7 -pix_fmt yuv420p -r 30 card.mp4
-  STITCH:  ffmpeg -f concat -safe 0 -i list.txt -c copy output.mp4
-  MUSIC:   ffmpeg -i video.mp4 -i music.mp3 -c:v copy -c:a aac -shortest -filter_complex "volume=0.12" final.mp4
+  CARD:     ffmpeg -loop 1 -i card.png -c:v libx264 -t 7 -pix_fmt yuv420p -r 30 card.mp4
+  STITCH:   ffmpeg -f concat -safe 0 -i list.txt -c copy output.mp4
+  MUSIC-1:  ffmpeg -i music.mp3 -af "atrim=0:DUR,volume=0.40,afade=in:d=2,afade=out:st=X:d=3.5" -c:a aac -ar 48000 music.m4a
+  MUSIC-2:  ffmpeg -i video.mp4 -i music.m4a -c:v copy -c:a copy -shortest FINAL.mp4
 ```
 
 ---
@@ -511,6 +586,13 @@ COMMANDS:
 - Post-production = just strip audio + trim OBS CHECK from start
 - **Saves 30+ minutes** of post-production per video
 - **Rule:** If the recording script can render cards inline, do it. Only use separate stitch for complex multi-take edits.
+
+### Verify Trim Points Frame-by-Frame (Feb 15, 2026)
+- First trim of CT EP1 cut at 153s -- 2 seconds of terminal/desktop leaked into the final video
+- The outro card ended at 150.5s but we didn't check precisely enough
+- **Fix:** Extract frames at 0.5s intervals near the cut point: `ffmpeg -ss N.5 -i video.mp4 -frames:v 1 frame.jpg`
+- Find the EXACT frame where junk appears, then cut 0.5s BEFORE it
+- **Rule:** Always verify the last 3-4 frames of the final video. Desktop/terminal leak is the #1 amateur mistake.
 
 ### Clean Folders Make YouTube Loading Faster (Feb 15, 2026)
 - After post-production, folders had 10+ files mixed together
