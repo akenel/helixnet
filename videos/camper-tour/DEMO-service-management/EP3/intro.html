@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(230,126,34,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,126,34,0.025) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+.glow {
+  position: absolute;
+  width: 1200px;
+  height: 1000px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230,126,34,0.10) 0%, transparent 70%);
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 40px 80px;
+}
+.brand-label {
+  font-size: 36px;
+  font-weight: 400;
+  color: #e67e22;
+  letter-spacing: 12px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title {
+  font-size: 168px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -2px;
+  line-height: 0.95;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.subtitle {
+  font-size: 60px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.episode {
+  font-size: 48px;
+  font-weight: 600;
+  color: #e67e22;
+  letter-spacing: 4px;
+  margin-bottom: 48px;
+  text-align: center;
+}
+.divider {
+  width: 200px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #e67e22, transparent);
+  margin-bottom: 48px;
+}
+.features {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+.feature {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(230,126,34,0.25);
+  border-radius: 12px;
+  padding: 18px 32px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.feature .icon {
+  font-size: 36px;
+  display: block;
+}
+.feature .name {
+  color: #eee;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.feature .role {
+  color: #e67e22;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.location {
+  position: absolute;
+  bottom: 36px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 28px;
+  color: #444;
+  letter-spacing: 5px;
+  z-index: 1;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="frame">
+    <div class="brand-label">HelixNet Platform Demo</div>
+    <div class="title">Camper &amp; Tour</div>
+    <div class="subtitle">Service Management</div>
+    <div class="episode">EP3 &mdash; The Full Lifecycle</div>
+    <div class="divider"></div>
+    <div class="features">
+      <div class="feature">
+        <span class="icon">&#x1F4CB;</span>
+        <div><div class="name">Check-In</div><div class="role">Simona &bull; Counter</div></div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x1F4DD;</span>
+        <div><div class="name">Quote &amp; Approve</div><div class="role">Nino &bull; Manager</div></div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x1F527;</span>
+        <div><div class="name">Work &amp; Log</div><div class="role">Maximo &bull; Mechanic</div></div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x2705;</span>
+        <div><div class="name">Inspect &amp; Invoice</div><div class="role">Nino &bull; Manager</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="location">Via F. Culcasi, 4 &mdash; Trapani, Sicily</div>
+</body>
+</html>

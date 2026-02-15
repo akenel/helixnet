@@ -1,0 +1,77 @@
+Camper & Tour -- Service Management System | EP3: The Full Lifecycle
+
+One job. Three roles. Eight workflow steps. Zero paper.
+
+Episode 3 follows a single repair job from the moment a camper pulls up to the moment the keys are handed back. But here's the twist: we switch users at every stage. Simona at the counter checks in the vehicle. Nino the manager creates the quote and approves the job. Maximo the mechanic logs his work hours. Nino inspects, invoices, and closes. Each role sees exactly what they need -- nothing more.
+
+CHAPTERS:
+0:00 Intro
+0:05 Simona -- Counter Check-In (New Vehicle + Customer)
+0:35 Simona -- Access Denied (RBAC in Action)
+0:50 Nino -- Create Quotation (Line Items + IVA)
+1:20 Nino -- Approve Job (Deposit Recorded)
+1:35 Maximo -- Mechanic Work Log (Hours + Notes)
+2:05 Maximo -- Submit for Inspection
+2:15 Nino -- Inspection & Complete
+2:35 Nino -- Generate Invoice (Deposit Deducted)
+2:55 Outro
+
+ROLE-BASED ACCESS CONTROL:
+
+This is not "everyone sees everything." Each staff member has their own login with their own permissions.
+
+Simona (Counter):
+- Can check in vehicles and register customers
+- CANNOT see quotations, invoices, or purchase orders
+- CANNOT approve jobs or create invoices
+- Clean, focused screen for the reception desk
+
+Nino (Manager):
+- Sees everything Simona sees, plus financials
+- Creates quotations, approves jobs, generates invoices
+- Inspects completed work before closing
+- The command center for the shop
+
+Maximo (Mechanic):
+- Sees his assigned jobs only
+- Logs work hours, adds mechanic notes
+- Submits completed work for inspection
+- CANNOT approve jobs or touch invoices
+- Hands on the vehicle, not the books
+
+THE JOB LIFECYCLE:
+1. CHECK-IN -- Vehicle registered, customer created (Counter)
+2. QUOTED -- Formal quotation with line items (Manager)
+3. APPROVED -- Customer accepts, deposit recorded (Manager)
+4. IN PROGRESS -- Mechanic logging hours and notes (Mechanic)
+5. INSPECTION -- Work submitted for quality check (Mechanic -> Manager)
+6. COMPLETED -- Inspection passed (Manager)
+7. INVOICED -- Invoice generated, deposit deducted (Manager)
+8. PICKED UP -- Vehicle returned, check-out recorded (Manager)
+
+PREVIOUSLY:
+- EP1: First Impressions -- Dashboard, check-in, job board, customers
+- EP2: Quote to Invoice -- Quotations, POs, invoices, calendar, bay timeline
+
+BUILT WITH:
+- FastAPI + SQLAlchemy (Python async backend)
+- Keycloak OIDC authentication (JWT RS256, role-based access)
+- Alpine.js + Tailwind CSS (lightweight reactive frontend)
+- PostgreSQL (production database)
+- Docker Compose (single-command deployment)
+- Built on HelixNet -- helixnet.ch
+
+84 AUTOMATED TESTS passing. Every endpoint verified.
+9 staff roles enforced by Keycloak.
+
+---
+Camper & Tour sas di Sebastiano Cassisa
+Via F. Culcasi, 4 (Palazzo Asia) -- 91100 Trapani
+Tel: +39 0923 534452 | Cell: +39 328 684 4546
+www.camperandtour.it
+
+MUSIC:
+"Wholesome" by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+
+"The right person sees the right screen at the right time."
