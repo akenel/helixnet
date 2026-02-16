@@ -112,8 +112,48 @@
 
     {% block content %}{% endblock %}
 
+    <!-- i18n translations -->
+    <script src="/static/camper-i18n.js"></script>
+
     <!-- Global JavaScript utilities -->
     <script>
+        // ===== i18n: Language Detection =====
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const urlLang = params.get('lang');
+            if (urlLang && CAMPER_STRINGS[urlLang]) {
+                localStorage.setItem('camper_lang', urlLang);
+            }
+            const lang = localStorage.getItem('camper_lang') || 'it';
+            window._camperLang = CAMPER_STRINGS[lang] ? lang : 'it';
+            document.documentElement.lang = window._camperLang === 'it' ? 'it' : 'en';
+        })();
+
+        // Translation helper: t('nav.dashboard') => translated string
+        function t(key, replacements) {
+            const lang = window._camperLang || 'it';
+            const keys = key.split('.');
+            let val = CAMPER_STRINGS[lang];
+            for (const k of keys) {
+                if (val && typeof val === 'object' && k in val) {
+                    val = val[k];
+                } else {
+                    // Fallback to Italian
+                    let fb = CAMPER_STRINGS.it;
+                    for (const fk of keys) {
+                        if (fb && typeof fb === 'object' && fk in fb) fb = fb[fk]; else return key;
+                    }
+                    return typeof fb === 'string' ? fb : key;
+                }
+            }
+            if (replacements && typeof val === 'string') {
+                for (const [rk, rv] of Object.entries(replacements)) {
+                    val = val.replace('{' + rk + '}', rv);
+                }
+            }
+            return val;
+        }
+
         // JWT token management for Camper & Tour
         const CamperAuth = {
             _expiryWarningShown: false,
@@ -178,12 +218,12 @@
                 banner.id = 'session-expiry-banner';
                 banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;background:#fbbf24;color:#78350f;padding:12px 24px;text-align:center;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
                 banner.innerHTML = `
-                    Sessione in scadenza tra ${mins} minuti.
+                    ${t('system.session_expiry', {mins: mins})}
                     <button onclick="CamperAuth._silentReauth()" style="margin-left:16px;background:#78350f;color:white;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600;">
-                        Rinnova Sessione
+                        ${t('system.renew_session')}
                     </button>
                     <button onclick="this.parentElement.remove()" style="margin-left:8px;background:transparent;border:1px solid #78350f;color:#78350f;padding:6px 12px;border-radius:6px;cursor:pointer;">
-                        Chiudi
+                        ${t('common.close')}
                     </button>
                 `;
                 const existing = document.getElementById('session-expiry-banner');
@@ -214,7 +254,7 @@
                                         CamperAuth.setToken(token);
                                         const banner = document.getElementById('session-expiry-banner');
                                         if (banner) banner.remove();
-                                        showToast('Sessione rinnovata!', 'success');
+                                        showToast(t('system.session_renewed'), 'success');
                                         resolve();
                                         return;
                                     }
@@ -232,9 +272,9 @@
                     console.log('Silent reauth failed, opening login popup:', e);
                     const popup = window.open(authUrl, 'camper_reauth', 'width=500,height=600');
                     if (popup) {
-                        showToast('Effettua il login nella finestra popup.', 'info');
+                        showToast(t('system.login_popup'), 'info');
                     } else {
-                        showToast('Popup bloccato. Salva il lavoro e ricarica la pagina.', 'warning');
+                        showToast(t('system.popup_blocked'), 'warning');
                     }
                 }
             },
@@ -295,14 +335,16 @@
                         // DON'T logout immediately -- show warning, let user save their work
                         if (!this._sessionExpiredShown) {
                             this._sessionExpiredShown = true;
-                            showToast('Sessione scaduta. Rinnova la sessione per continuare.', 'warning');
+                            showToast(t('system.session_expired'), 'warning');
                             CamperAuth._showExpiryWarning(0);
                         }
-                        throw new Error('Sessione scaduta. Rinnova la sessione per continuare.');
+                        throw new Error(t('system.session_expired'));
                     }
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
-                        throw new Error(error.detail || `Errore ${response.status}`);
+                        let detail = error.detail;
+                        if (Array.isArray(detail)) detail = detail.map(d => d.msg || JSON.stringify(d)).join('; ');
+                        throw new Error(detail || t('system.error_status', {status: response.status}));
                     }
                     // Reset the flag on successful auth
                     this._sessionExpiredShown = false;
@@ -320,10 +362,11 @@
             delete(endpoint) { return this.call(endpoint, { method: 'DELETE' }); }
         };
 
-        // Camper config
+        // Camper config (language-aware)
         const CamperConfig = {
             currency: 'EUR',
-            locale: 'it-IT',
+            lang: window._camperLang || 'it',
+            locale: (window._camperLang === 'en') ? 'en-GB' : 'it-IT',
             vat_rate: 22
         };
 
@@ -335,89 +378,30 @@
             }).format(amount);
         }
 
-        // Date formatting
+        // Date formatting (locale-aware)
         function formatDate(dateStr) {
             if (!dateStr) return '-';
-            return new Date(dateStr).toLocaleDateString('it-IT', {
+            return new Date(dateStr).toLocaleDateString(CamperConfig.locale, {
                 day: '2-digit', month: '2-digit', year: 'numeric'
             });
         }
 
         function formatDateTime(dateStr) {
             if (!dateStr) return '-';
-            return new Date(dateStr).toLocaleString('it-IT', {
+            return new Date(dateStr).toLocaleString(CamperConfig.locale, {
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             });
         }
 
-        // Status labels (Italian)
-        const JOB_STATUS_LABELS = {
-            'quoted': 'Preventivato',
-            'approved': 'Approvato',
-            'in_progress': 'In Corso',
-            'waiting_parts': 'Attesa Ricambi',
-            'inspection': 'Ispezione',
-            'completed': 'Completato',
-            'invoiced': 'Fatturato',
-            'cancelled': 'Annullato'
-        };
-
-        const QUOTATION_STATUS_LABELS = {
-            'draft': 'Bozza',
-            'sent': 'Inviato',
-            'accepted': 'Accettato',
-            'rejected': 'Rifiutato',
-            'expired': 'Scaduto'
-        };
-
-        const PO_STATUS_LABELS = {
-            'draft': 'Bozza',
-            'sent': 'Inviato',
-            'confirmed': 'Confermato',
-            'shipped': 'Spedito',
-            'partial_received': 'Parziale',
-            'received': 'Ricevuto',
-            'cancelled': 'Annullato'
-        };
-
-        const PAYMENT_STATUS_LABELS = {
-            'pending': 'In Attesa',
-            'deposit_paid': 'Acconto Versato',
-            'partial': 'Parziale',
-            'paid': 'Pagato',
-            'overdue': 'Scaduto'
-        };
-
-        const VEHICLE_STATUS_LABELS = {
-            'checked_in': 'Accettato',
-            'in_service': 'In Lavorazione',
-            'waiting_parts': 'Attesa Ricambi',
-            'ready_for_pickup': 'Pronto Ritiro',
-            'picked_up': 'Ritirato'
-        };
-
-        const JOB_TYPE_LABELS = {
-            'repair': 'Riparazione',
-            'maintenance': 'Manutenzione',
-            'inspection': 'Ispezione',
-            'installation': 'Installazione',
-            'bodywork': 'Carrozzeria',
-            'electrical': 'Elettrico',
-            'plumbing': 'Idraulico',
-            'gas_system': 'Impianto Gas',
-            'warranty': 'Garanzia',
-            'other': 'Altro'
-        };
-
-        const VEHICLE_TYPE_LABELS = {
-            'motorhome': 'Motorhome',
-            'caravan': 'Caravan',
-            'campervan': 'Camper',
-            'van': 'Furgone',
-            'trailer': 'Rimorchio',
-            'other': 'Altro'
-        };
+        // Status labels (from i18n dictionary)
+        const JOB_STATUS_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.job;
+        const QUOTATION_STATUS_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.quotation;
+        const PO_STATUS_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.po;
+        const PAYMENT_STATUS_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.payment;
+        const VEHICLE_STATUS_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.vehicle;
+        const JOB_TYPE_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.job_type;
+        const VEHICLE_TYPE_LABELS = CAMPER_STRINGS[CamperConfig.lang].status.vehicle_type;
 
         // Toast notification
         function showToast(message, type = 'info') {
@@ -446,7 +430,7 @@
     <footer class="helix-status-bar" id="helix-status">
         <div class="status-section">
             <span class="pulse ok" id="status-pulse"></span>
-            <span id="status-text">Sistema OK</span>
+            <span id="status-text" data-i18n="system.ok">Sistema OK</span>
             <span class="divider">|</span>
             <span id="status-time">--:--</span>
         </div>
@@ -458,11 +442,30 @@
     </footer>
 
     <script>
+        // ===== i18n: data-i18n attribute handler =====
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-i18n]').forEach(function(el) {
+                const key = el.getAttribute('data-i18n');
+                const val = t(key);
+                if (val !== key) el.textContent = val;
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+                const key = el.getAttribute('data-i18n-placeholder');
+                const val = t(key);
+                if (val !== key) el.placeholder = val;
+            });
+            document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+                const key = el.getAttribute('data-i18n-html');
+                const val = t(key);
+                if (val !== key) el.innerHTML = val;
+            });
+        });
+
         (function() {
             function updateStatusBar() {
                 const now = new Date();
                 document.getElementById('status-time').textContent =
-                    now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    now.toLocaleTimeString(CamperConfig.locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 const user = CamperAuth.getUserInfo();
                 if (user) {
                     document.getElementById('status-user').textContent = user.username;
@@ -475,14 +478,14 @@
                     const statusText = document.getElementById('status-text');
                     if (response.ok) {
                         pulse.className = 'pulse ok';
-                        statusText.textContent = 'Sistema OK';
+                        statusText.textContent = t('system.ok');
                     } else {
                         pulse.className = 'pulse warn';
-                        statusText.textContent = 'Degradato';
+                        statusText.textContent = t('system.degraded');
                     }
                 } catch (e) {
                     document.getElementById('status-pulse').className = 'pulse error';
-                    document.getElementById('status-text').textContent = 'Offline';
+                    document.getElementById('status-text').textContent = t('system.offline');
                 }
             }
             updateStatusBar();

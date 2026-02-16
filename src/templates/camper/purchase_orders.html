@@ -12,24 +12,24 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.checkin">Accettazione</span></a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.jobs">Lavori</span></a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.customers">Clienti</span></a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.quotations">Preventivi</span></a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.invoices">Fatture</span></a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.calendar">Calendario</span></a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -37,22 +37,22 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.checkin">Accettazione</span></a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.jobs">Lavori</span></a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.customers">Clienti</span></a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.quotations">Preventivi</span></a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.invoices">Fatture</span></a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.calendar">Calendario</span></a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header + New PO Button -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Ordini</h2>
-            <button @click="openNewPOModal()" class="btn-primary" x-show="user.isManager">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="purchase_orders.title">Ordini</h2>
+            <button @click="openNewPOModal()" class="btn-primary" x-show="user.isManager" data-i18n="purchase_orders.new_order">
                 + Nuovo Ordine
             </button>
         </div>
@@ -61,56 +61,56 @@
         <div class="card mb-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="purchase_orders.filter_status">Stato</label>
                     <select x-model="filters.status" @change="loadPurchaseOrders()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
-                        <option value="draft">Bozza</option>
-                        <option value="sent">Inviato</option>
-                        <option value="confirmed">Confermato</option>
-                        <option value="shipped">Spedito</option>
-                        <option value="partial_received">Parziale</option>
-                        <option value="received">Ricevuto</option>
-                        <option value="cancelled">Annullato</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
+                        <option value="draft" x-text="PO_STATUS_LABELS['draft']">Bozza</option>
+                        <option value="sent" x-text="PO_STATUS_LABELS['sent']">Inviato</option>
+                        <option value="confirmed" x-text="PO_STATUS_LABELS['confirmed']">Confermato</option>
+                        <option value="shipped" x-text="PO_STATUS_LABELS['shipped']">Spedito</option>
+                        <option value="partial_received" x-text="PO_STATUS_LABELS['partial_received']">Parziale</option>
+                        <option value="received" x-text="PO_STATUS_LABELS['received']">Ricevuto</option>
+                        <option value="cancelled" x-text="PO_STATUS_LABELS['cancelled']">Annullato</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Fornitore</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="purchase_orders.filter_supplier">Fornitore</label>
                     <input type="text" x-model="filters.supplier" @input.debounce.300ms="loadPurchaseOrders()"
-                           class="input-field text-sm py-2" placeholder="Cerca fornitore...">
+                           class="input-field text-sm py-2" data-i18n-placeholder="purchase_orders.filter_supplier_placeholder" placeholder="Cerca fornitore...">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (N. Ordine)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="purchase_orders.filter_search">Cerca (N. Ordine)</label>
                     <input type="text" x-model="filters.search" @input.debounce.300ms=""
-                           class="input-field text-sm py-2" placeholder="PO-...">
+                           class="input-field text-sm py-2" data-i18n-placeholder="purchase_orders.search_placeholder" placeholder="PO-...">
                 </div>
             </div>
         </div>
 
         <!-- PO Count -->
         <p class="text-sm text-gray-500 mb-3" x-show="!loading">
-            <span x-text="filteredOrders.length"></span> ordini trovati
+            <span x-text="filteredOrders.length"></span> <span data-i18n="purchase_orders.count">ordini trovati</span>
         </p>
 
         <!-- Purchase Orders Table -->
         <div class="card overflow-x-auto">
             <template x-if="loading">
-                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('common.loading')">Caricamento...</p>
             </template>
 
             <template x-if="!loading && filteredOrders.length === 0">
-                <p class="text-center text-gray-500 py-8">Nessun ordine acquisto trovato.</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('purchase_orders.no_results')">Nessun ordine acquisto trovato.</p>
             </template>
 
             <table class="min-w-full" x-show="!loading && filteredOrders.length > 0">
                 <thead>
                     <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                        <th class="pb-3 pr-4">N. Ordine</th>
-                        <th class="pb-3 pr-4">Fornitore</th>
-                        <th class="pb-3 pr-4">Lavoro</th>
-                        <th class="pb-3 pr-4">Totale</th>
-                        <th class="pb-3 pr-4">Stato</th>
-                        <th class="pb-3 pr-4">Consegna Prevista</th>
-                        <th class="pb-3">Azioni</th>
+                        <th class="pb-3 pr-4" data-i18n="purchase_orders.th_po_number">N. Ordine</th>
+                        <th class="pb-3 pr-4" data-i18n="purchase_orders.th_supplier">Fornitore</th>
+                        <th class="pb-3 pr-4" data-i18n="purchase_orders.th_job">Lavoro</th>
+                        <th class="pb-3 pr-4" data-i18n="purchase_orders.th_total">Totale</th>
+                        <th class="pb-3 pr-4" data-i18n="purchase_orders.th_status">Stato</th>
+                        <th class="pb-3 pr-4" data-i18n="purchase_orders.th_delivery">Consegna Prevista</th>
+                        <th class="pb-3" data-i18n="purchase_orders.th_actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,25 +134,29 @@
                                     <!-- Status advancement buttons -->
                                     <template x-if="po.status === 'draft' && user.isManager">
                                         <button @click.stop="advanceStatus(po.id, 'sent')"
-                                                class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
+                                                class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                                                x-text="t('purchase_orders.btn_send')">
                                             Invia
                                         </button>
                                     </template>
                                     <template x-if="po.status === 'sent' && user.isManager">
                                         <button @click.stop="advanceStatus(po.id, 'confirmed')"
-                                                class="px-2 py-1 text-xs font-medium rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition">
+                                                class="px-2 py-1 text-xs font-medium rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition"
+                                                x-text="t('purchase_orders.btn_confirm')">
                                             Conferma
                                         </button>
                                     </template>
                                     <template x-if="po.status === 'confirmed' && user.isManager">
                                         <button @click.stop="advanceStatus(po.id, 'shipped')"
-                                                class="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition">
+                                                class="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition"
+                                                x-text="t('purchase_orders.btn_shipped')">
                                             Spedito
                                         </button>
                                     </template>
                                     <template x-if="(po.status === 'shipped' || po.status === 'partial_received') && user.isManager">
                                         <button @click.stop="advanceStatus(po.id, 'received')"
-                                                class="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-700 hover:bg-green-200 transition">
+                                                class="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-700 hover:bg-green-200 transition"
+                                                x-text="t('purchase_orders.btn_received')">
                                             Ricevuto
                                         </button>
                                     </template>
@@ -160,7 +164,7 @@
                                     <template x-if="po.status !== 'received' && po.status !== 'cancelled' && user.isManager">
                                         <button @click.stop="cancelOrder(po.id, po.po_number)"
                                                 class="px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition"
-                                                title="Annulla ordine">
+                                                :title="t('purchase_orders.cancel_order')"
                                             &#x2715;
                                         </button>
                                     </template>
@@ -186,7 +190,7 @@
                  @click.stop>
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">Nuovo Ordine Acquisto</h3>
+                    <h3 class="text-xl font-bold text-gray-900" data-i18n="purchase_orders.modal_title">Nuovo Ordine Acquisto</h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
                 </div>
 
@@ -194,46 +198,46 @@
                     <!-- Job + Supplier Info -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Lavoro *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="purchase_orders.label_job">Lavoro *</label>
                             <select x-model="newPO.job_id" class="input-field" required>
-                                <option value="">-- Seleziona lavoro --</option>
+                                <option value="" data-i18n="purchase_orders.select_job">-- Seleziona lavoro --</option>
                                 <template x-for="job in jobs" :key="job.id">
                                     <option :value="job.id" x-text="`${job.job_number} - ${job.title}`"></option>
                                 </template>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fornitore *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="purchase_orders.label_supplier_name">Nome Fornitore *</label>
                             <input type="text" x-model="newPO.supplier_name" class="input-field"
-                                   placeholder="Es. Ricambi Camper SRL" required>
+                                   data-i18n-placeholder="purchase_orders.supplier_name_placeholder" placeholder="Es. Ricambi Camper SRL" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono Fornitore</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="purchase_orders.label_supplier_phone">Telefono Fornitore</label>
                             <input type="tel" x-model="newPO.supplier_phone" class="input-field"
                                    placeholder="+39 ...">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Fornitore</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="purchase_orders.label_supplier_email">Email Fornitore</label>
                             <input type="email" x-model="newPO.supplier_email" class="input-field"
-                                   placeholder="ordini@fornitore.it">
+                                   data-i18n-placeholder="purchase_orders.supplier_email_placeholder" placeholder="ordini@fornitore.it">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Consegna Prevista</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="purchase_orders.label_delivery">Consegna Prevista</label>
                             <input type="date" x-model="newPO.expected_delivery" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="purchase_orders.label_notes">Note</label>
                             <input type="text" x-model="newPO.notes" class="input-field"
-                                   placeholder="Note aggiuntive...">
+                                   data-i18n-placeholder="purchase_orders.notes_placeholder" placeholder="Note aggiuntive...">
                         </div>
                     </div>
 
                     <!-- Line Items -->
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-3">
-                            <h4 class="text-sm font-bold text-gray-700 uppercase">Righe Ordine</h4>
+                            <h4 class="text-sm font-bold text-gray-700 uppercase" data-i18n="purchase_orders.line_items_title">Righe Ordine</h4>
                             <button type="button" @click="addLineItem()"
-                                    class="text-sm font-medium text-amber-600 hover:text-amber-700">
+                                    class="text-sm font-medium text-amber-600 hover:text-amber-700" data-i18n="purchase_orders.add_line">
                                 + Aggiungi Riga
                             </button>
                         </div>
@@ -242,11 +246,11 @@
                             <table class="min-w-full">
                                 <thead>
                                     <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                                        <th class="pb-2 pr-2" style="min-width: 200px;">Descrizione</th>
-                                        <th class="pb-2 pr-2" style="min-width: 120px;">N. Parte</th>
-                                        <th class="pb-2 pr-2 text-center" style="width: 80px;">Quantita</th>
-                                        <th class="pb-2 pr-2 text-right" style="width: 100px;">Prezzo</th>
-                                        <th class="pb-2 pr-2 text-right" style="width: 100px;">Totale</th>
+                                        <th class="pb-2 pr-2" style="min-width: 200px;" data-i18n="purchase_orders.th_line_desc">Descrizione</th>
+                                        <th class="pb-2 pr-2" style="min-width: 120px;" data-i18n="purchase_orders.th_part_number">N. Parte</th>
+                                        <th class="pb-2 pr-2 text-center" style="width: 80px;" data-i18n="purchase_orders.th_line_qty">Quantita</th>
+                                        <th class="pb-2 pr-2 text-right" style="width: 100px;" data-i18n="purchase_orders.th_line_price">Prezzo</th>
+                                        <th class="pb-2 pr-2 text-right" style="width: 100px;" data-i18n="purchase_orders.th_line_total">Totale</th>
                                         <th class="pb-2 text-center" style="width: 40px;"></th>
                                     </tr>
                                 </thead>
@@ -256,12 +260,12 @@
                                             <td class="py-2 pr-2">
                                                 <input type="text" x-model="item.description"
                                                        class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
-                                                       placeholder="Descrizione articolo" required>
+                                                       :placeholder="t('purchase_orders.desc_placeholder')" required>
                                             </td>
                                             <td class="py-2 pr-2">
                                                 <input type="text" x-model="item.part_number"
                                                        class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
-                                                       placeholder="Codice">
+                                                       :placeholder="t('purchase_orders.part_placeholder')">
                                             </td>
                                             <td class="py-2 pr-2">
                                                 <input type="number" x-model.number="item.quantity" min="1" step="1"
@@ -286,17 +290,17 @@
                                 </tbody>
                                 <tfoot>
                                     <tr class="border-t-2">
-                                        <td colspan="4" class="py-3 text-right text-sm font-medium text-gray-600">Subtotale:</td>
+                                        <td colspan="4" class="py-3 text-right text-sm font-medium text-gray-600" data-i18n="purchase_orders.subtotal">Subtotale:</td>
                                         <td class="py-3 text-right text-sm font-semibold text-gray-900" x-text="formatPrice(calcSubtotal())"></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="py-1 text-right text-sm font-medium text-gray-600">IVA (22%):</td>
+                                        <td colspan="4" class="py-1 text-right text-sm font-medium text-gray-600" data-i18n="purchase_orders.vat">IVA (22%):</td>
                                         <td class="py-1 text-right text-sm text-gray-700" x-text="formatPrice(calcVAT())"></td>
                                         <td></td>
                                     </tr>
                                     <tr class="border-t">
-                                        <td colspan="4" class="py-3 text-right text-sm font-bold text-gray-900">Totale:</td>
+                                        <td colspan="4" class="py-3 text-right text-sm font-bold text-gray-900" data-i18n="purchase_orders.total">Totale:</td>
                                         <td class="py-3 text-right text-sm font-bold text-amber-700" x-text="formatPrice(calcTotal())"></td>
                                         <td></td>
                                     </tr>
@@ -307,10 +311,10 @@
 
                     <!-- Actions -->
                     <div class="flex justify-end space-x-3 pt-4 border-t">
-                        <button type="button" @click="showModal = false" class="btn-secondary">Annulla</button>
+                        <button type="button" @click="showModal = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
                         <button type="submit" class="btn-primary" :disabled="saving">
-                            <span x-show="!saving">Crea Ordine</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" x-text="t('purchase_orders.create_order')">Crea Ordine</span>
+                            <span x-show="saving" x-text="t('common.saving')">Salvataggio...</span>
                         </button>
                     </div>
                 </form>
@@ -320,16 +324,6 @@
 </div>
 
 <script>
-    const PO_STATUS_LABELS = {
-        'draft': 'Bozza',
-        'sent': 'Inviato',
-        'confirmed': 'Confermato',
-        'shipped': 'Spedito',
-        'partial_received': 'Parziale',
-        'received': 'Ricevuto',
-        'cancelled': 'Annullato'
-    };
-
     function purchaseOrdersData() {
         return {
             user: { username: '', isManager: false },
@@ -416,7 +410,7 @@
                     if (this.filters.status) url += '&status_filter=' + this.filters.status;
                     this.purchaseOrders = await API.get(url);
                 } catch (e) {
-                    showToast('Errore caricamento ordini: ' + e.message, 'error');
+                    showToast(t('purchase_orders.toast_load_error') + e.message, 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -472,16 +466,16 @@
 
             async createPurchaseOrder() {
                 if (!this.newPO.job_id) {
-                    showToast('Seleziona un lavoro.', 'warning');
+                    showToast(t('purchase_orders.toast_select_job'), 'warning');
                     return;
                 }
                 if (!this.newPO.supplier_name.trim()) {
-                    showToast('Inserisci il nome del fornitore.', 'warning');
+                    showToast(t('purchase_orders.toast_enter_supplier'), 'warning');
                     return;
                 }
                 const validItems = this.newPO.line_items.filter(i => i.description.trim());
                 if (validItems.length === 0) {
-                    showToast('Inserisci almeno una riga ordine.', 'warning');
+                    showToast(t('purchase_orders.toast_enter_line'), 'warning');
                     return;
                 }
 
@@ -507,9 +501,9 @@
                     const created = await API.post('/api/v1/camper/purchase-orders', payload);
                     this.purchaseOrders.unshift(created);
                     this.showModal = false;
-                    showToast('Ordine creato: ' + created.po_number, 'success');
+                    showToast(t('purchase_orders.toast_created') + created.po_number, 'success');
                 } catch (e) {
-                    showToast('Errore creazione ordine: ' + e.message, 'error');
+                    showToast(t('purchase_orders.toast_create_error') + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -522,23 +516,23 @@
                     });
                     const idx = this.purchaseOrders.findIndex(po => po.id === poId);
                     if (idx >= 0) this.purchaseOrders[idx] = updated;
-                    showToast('Stato aggiornato: ' + PO_STATUS_LABELS[newStatus], 'success');
+                    showToast(t('purchase_orders.toast_status_updated') + PO_STATUS_LABELS[newStatus], 'success');
                 } catch (e) {
-                    showToast('Errore aggiornamento stato: ' + e.message, 'error');
+                    showToast(t('purchase_orders.toast_status_error') + e.message, 'error');
                 }
             },
 
             async cancelOrder(poId, poNumber) {
-                if (!confirm('Annullare l\'ordine ' + poNumber + '?')) return;
+                if (!confirm(t('purchase_orders.cancel_confirm', {poNumber: poNumber}))) return;
                 try {
                     const updated = await API.patch('/api/v1/camper/purchase-orders/' + poId + '/status', {
                         status: 'cancelled'
                     });
                     const idx = this.purchaseOrders.findIndex(po => po.id === poId);
                     if (idx >= 0) this.purchaseOrders[idx] = updated;
-                    showToast('Ordine annullato: ' + poNumber, 'info');
+                    showToast(t('purchase_orders.toast_cancelled') + poNumber, 'info');
                 } catch (e) {
-                    showToast('Errore annullamento: ' + e.message, 'error');
+                    showToast(t('purchase_orders.toast_cancel_error') + e.message, 'error');
                 }
             }
         }

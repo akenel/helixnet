@@ -12,24 +12,24 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle_location">Gestione Servizi</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.checkin">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.jobs">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800" data-i18n="nav.customers">Clienti</a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.appointments">Appuntamenti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.quotations">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.calendar">Calendario</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -37,22 +37,22 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.checkin">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.jobs">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.appointments">Appuntamenti</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.quotations">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.calendar">Calendario</a>
     </div>
 
     <main class="max-w-5xl mx-auto px-4 py-6">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Clienti</h2>
-            <button @click="showNewForm = true" class="btn-primary" x-show="!showNewForm">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="customers.title">Clienti</h2>
+            <button @click="showNewForm = true" class="btn-primary" x-show="!showNewForm" data-i18n="customers.new_customer">
                 + Nuovo Cliente
             </button>
         </div>
@@ -60,50 +60,50 @@
         <!-- New Customer Form -->
         <template x-if="showNewForm">
             <div class="card mb-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Nuovo Cliente</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('customers.new_customer_title')">Nuovo Cliente</h3>
                 <form @submit.prevent="createCustomer()">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_name') + ' *'">Nome *</label>
                             <input type="text" x-model="newCustomer.name" class="input-field" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_phone')">Telefono</label>
                             <input type="tel" x-model="newCustomer.phone" class="input-field" placeholder="+39 ...">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_email')">Email</label>
                             <input type="email" x-model="newCustomer.email" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Citta</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_city')">Citta</label>
                             <input type="text" x-model="newCustomer.city" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Lingua</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_language')">Lingua</label>
                             <select x-model="newCustomer.language" class="input-field">
-                                <option value="it">Italiano</option>
-                                <option value="en">English</option>
-                                <option value="de">Deutsch</option>
-                                <option value="fr">Francais</option>
+                                <option value="it" x-text="t('customers.lang_it')">Italiano</option>
+                                <option value="en" x-text="t('customers.lang_en')">English</option>
+                                <option value="de" x-text="t('customers.lang_de')">Deutsch</option>
+                                <option value="fr" x-text="t('customers.lang_fr')">Francais</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Codice Fiscale / P.IVA</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_tax_id')">Codice Fiscale / P.IVA</label>
                             <input type="text" x-model="newCustomer.tax_id" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Indirizzo</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_address')">Indirizzo</label>
                             <input type="text" x-model="newCustomer.address" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('customers.label_notes')">Note</label>
                             <input type="text" x-model="newCustomer.notes" class="input-field">
                         </div>
                     </div>
                     <div class="flex space-x-3 mt-4">
-                        <button type="submit" class="btn-primary" :disabled="saving">Salva</button>
-                        <button type="button" @click="showNewForm = false" class="btn-secondary">Annulla</button>
+                        <button type="submit" class="btn-primary" :disabled="saving" x-text="t('common.save')">Salva</button>
+                        <button type="button" @click="showNewForm = false" class="btn-secondary" x-text="t('common.cancel')">Annulla</button>
                     </div>
                 </form>
             </div>
@@ -113,18 +113,18 @@
         <div class="card mb-6">
             <div class="flex space-x-3">
                 <input type="text" x-model="searchQuery" @input.debounce.300ms="searchCustomers()"
-                       class="input-field flex-1" placeholder="Cerca per nome, telefono o email..." autofocus>
+                       class="input-field flex-1" data-i18n-placeholder="customers.search_placeholder" placeholder="Cerca per nome, telefono o email..." autofocus>
             </div>
         </div>
 
         <!-- Results -->
         <p class="text-sm text-gray-500 mb-3" x-show="!loading">
-            <span x-text="customers.length"></span> clienti
+            <span x-text="customers.length"></span> <span data-i18n="customers.count">clienti</span>
         </p>
 
         <template x-if="loading">
             <div class="card text-center py-8">
-                <p class="text-gray-500">Caricamento...</p>
+                <p class="text-gray-500" x-text="t('common.loading')">Caricamento...</p>
             </div>
         </template>
 
@@ -141,7 +141,7 @@
                             </div>
                         </div>
                         <div class="text-right text-sm">
-                            <p class="text-gray-500"><span x-text="customer.visit_count"></span> visite</p>
+                            <p class="text-gray-500"><span x-text="customer.visit_count"></span> <span x-text="t('customers.visits')">visite</span></p>
                             <p class="font-semibold text-amber-600" x-text="formatPrice(customer.total_spend)"></p>
                             <span class="text-xs px-2 py-0.5 rounded bg-gray-100" x-text="customer.language.toUpperCase()"></span>
                         </div>
@@ -154,33 +154,33 @@
                             <form @submit.prevent="updateCustomer(customer.id)" @click.stop>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                                     <div>
-                                        <label class="text-gray-500">Nome</label>
+                                        <label class="text-gray-500" x-text="t('customers.label_name')">Nome</label>
                                         <input type="text" x-model="editCustomer.name" class="input-field text-sm py-2">
                                     </div>
                                     <div>
-                                        <label class="text-gray-500">Telefono</label>
+                                        <label class="text-gray-500" x-text="t('customers.label_phone')">Telefono</label>
                                         <input type="tel" x-model="editCustomer.phone" class="input-field text-sm py-2">
                                     </div>
                                     <div>
-                                        <label class="text-gray-500">Email</label>
+                                        <label class="text-gray-500" x-text="t('customers.label_email')">Email</label>
                                         <input type="email" x-model="editCustomer.email" class="input-field text-sm py-2">
                                     </div>
                                     <div>
-                                        <label class="text-gray-500">Citta</label>
+                                        <label class="text-gray-500" x-text="t('customers.label_city')">Citta</label>
                                         <input type="text" x-model="editCustomer.city" class="input-field text-sm py-2">
                                     </div>
                                     <div>
-                                        <label class="text-gray-500">Codice Fiscale / P.IVA</label>
+                                        <label class="text-gray-500" x-text="t('customers.label_tax_id')">Codice Fiscale / P.IVA</label>
                                         <input type="text" x-model="editCustomer.tax_id" class="input-field text-sm py-2">
                                     </div>
                                     <div>
-                                        <label class="text-gray-500">Note</label>
+                                        <label class="text-gray-500" x-text="t('customers.label_notes')">Note</label>
                                         <input type="text" x-model="editCustomer.notes" class="input-field text-sm py-2">
                                     </div>
                                 </div>
                                 <div class="flex space-x-2 mt-3">
-                                    <button type="submit" class="btn-primary text-sm py-2 px-4">Salva</button>
-                                    <button type="button" @click.stop="editingId = null" class="btn-secondary text-sm py-2 px-4">Annulla</button>
+                                    <button type="submit" class="btn-primary text-sm py-2 px-4" x-text="t('common.save')">Salva</button>
+                                    <button type="button" @click.stop="editingId = null" class="btn-secondary text-sm py-2 px-4" x-text="t('common.cancel')">Annulla</button>
                                 </div>
                             </form>
                         </template>
@@ -190,32 +190,32 @@
                             <div>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
                                     <div>
-                                        <span class="text-gray-500 block">Prima Visita</span>
+                                        <span class="text-gray-500 block" x-text="t('customers.first_visit')">Prima Visita</span>
                                         <span x-text="formatDate(customer.first_visit)"></span>
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block">Ultima Visita</span>
+                                        <span class="text-gray-500 block" x-text="t('customers.last_visit')">Ultima Visita</span>
                                         <span x-text="formatDate(customer.last_visit)"></span>
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block">P.IVA/CF</span>
+                                        <span class="text-gray-500 block" x-text="t('customers.tax_id_short')">P.IVA/CF</span>
                                         <span x-text="customer.tax_id || '-'"></span>
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block">Indirizzo</span>
+                                        <span class="text-gray-500 block" x-text="t('customers.label_address')">Indirizzo</span>
                                         <span x-text="customer.address || '-'"></span>
                                     </div>
                                 </div>
 
                                 <template x-if="customer.notes">
                                     <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded mb-3">
-                                        <span class="font-medium">Note:</span> <span x-text="customer.notes"></span>
+                                        <span class="font-medium" x-text="t('customers.label_notes') + ':'">Note:</span> <span x-text="customer.notes"></span>
                                     </p>
                                 </template>
 
                                 <!-- Vehicles -->
                                 <div x-show="customerVehicles[customer.id]" class="mb-3">
-                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Veicoli</h4>
+                                    <h4 class="text-sm font-semibold text-gray-700 mb-2" x-text="t('customers.vehicles')">Veicoli</h4>
                                     <div class="flex flex-wrap gap-2">
                                         <template x-for="v in (customerVehicles[customer.id] || [])" :key="v.id">
                                             <a :href="'/camper/checkin?plate=' + encodeURIComponent(v.registration_plate)"
@@ -229,7 +229,7 @@
 
                                 <!-- Recent Jobs -->
                                 <div x-show="customerJobs[customer.id]" class="mb-3">
-                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Lavori Recenti</h4>
+                                    <h4 class="text-sm font-semibold text-gray-700 mb-2" x-text="t('customers.recent_jobs')">Lavori Recenti</h4>
                                     <div class="space-y-1">
                                         <template x-for="j in (customerJobs[customer.id] || []).slice(0, 5)" :key="j.id">
                                             <a :href="'/camper/jobs/' + j.id"
@@ -244,7 +244,7 @@
                                     </div>
                                 </div>
 
-                                <button @click.stop="startEditCustomer(customer)" class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                                <button @click.stop="startEditCustomer(customer)" class="text-amber-600 hover:text-amber-700 text-sm font-medium" x-text="t('common.edit')">
                                     Modifica
                                 </button>
                             </div>
@@ -293,7 +293,7 @@
                     }
                     this.customers = await API.get(url);
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -342,15 +342,15 @@
                     const idx = this.customers.findIndex(c => c.id === customerId);
                     if (idx >= 0) this.customers[idx] = updated;
                     this.editingId = null;
-                    showToast('Cliente aggiornato!', 'success');
+                    showToast(t('customers.toast_updated'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async createCustomer() {
                 if (!this.newCustomer.name) {
-                    showToast('Il nome e obbligatorio.', 'warning');
+                    showToast(t('customers.toast_name_required'), 'warning');
                     return;
                 }
                 this.saving = true;
@@ -359,9 +359,9 @@
                     this.customers.unshift(created);
                     this.showNewForm = false;
                     this.newCustomer = { name: '', phone: '', email: '', city: '', language: 'it', tax_id: '', address: '', notes: '' };
-                    showToast('Cliente creato: ' + created.name, 'success');
+                    showToast(t('customers.toast_created') + created.name, 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }

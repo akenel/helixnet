@@ -112,6 +112,7 @@ async function keycloakLogin(page, credentials) {
       const links = document.querySelectorAll('a, button');
       for (const el of links) {
         if (el.textContent.toLowerCase().includes('accedi') ||
+            el.textContent.toLowerCase().includes('log in') ||
             el.textContent.toLowerCase().includes('login') ||
             el.textContent.toLowerCase().includes('sign in')) {
           el.click();
@@ -142,32 +143,47 @@ async function keycloakLogin(page, credentials) {
 async function keycloakLogout(page) {
   console.log('  Logging out...');
   try {
-    // Try clicking logout link in the nav
-    const loggedOut = await page.evaluate(() => {
-      const links = document.querySelectorAll('a[href*="logout"], button[onclick*="logout"]');
-      for (const el of links) {
-        el.click();
-        return true;
-      }
-      // Try nav link
-      const navLinks = document.querySelectorAll('a');
-      for (const el of navLinks) {
-        if (el.textContent.toLowerCase().includes('esci') ||
-            el.textContent.toLowerCase().includes('logout')) {
-          el.click();
-          return true;
-        }
-      }
-      return false;
+    // Clear frontend token first
+    await page.evaluate(() => {
+      sessionStorage.removeItem('camper_token');
     });
 
-    if (!loggedOut) {
-      // Direct Keycloak logout URL
-      await page.goto(`${CAMPER_URL}/logout`, { waitUntil: 'networkidle2', timeout: 10000 });
+    // Navigate directly to Keycloak's logout endpoint
+    const keycloakUrl = 'https://keycloak.helix.local';
+    const realm = 'kc-camper-service-realm-dev';
+    const redirectUri = encodeURIComponent(`${BASE_URL}/camper`);
+    await page.goto(
+      `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?post_logout_redirect_uri=${redirectUri}&client_id=camper_service_web`,
+      { waitUntil: 'networkidle2', timeout: 15000 }
+    );
+    await sleep(1000);
+
+    // Keycloak shows a confirmation page -- click the Logout button
+    try {
+      await page.waitForSelector('#kc-logout', { timeout: 5000 });
+      await page.click('#kc-logout');
+      console.log('  Clicked Keycloak logout confirmation button.');
+      await sleep(2000);
+    } catch (btnErr) {
+      // Try any submit/logout button on the page
+      const clicked = await page.evaluate(() => {
+        const btns = document.querySelectorAll('input[type="submit"], button[type="submit"], #kc-logout');
+        for (const btn of btns) {
+          btn.click();
+          return true;
+        }
+        return false;
+      });
+      if (clicked) {
+        console.log('  Clicked logout submit button (fallback).');
+        await sleep(2000);
+      }
     }
-    await sleep(2000);
+
+    console.log('  Logged out via Keycloak endpoint.');
   } catch (e) {
-    console.log('  Logout failed, navigating to login page...');
+    console.log('  Logout failed, clearing session and going to login...');
+    await page.evaluate(() => { sessionStorage.clear(); });
     await page.goto(`${CAMPER_URL}`, { waitUntil: 'networkidle2', timeout: 10000 });
     await sleep(1000);
   }
@@ -299,6 +315,9 @@ async function main() {
   // SCENE 2: SIMONA -- Counter Check-In (30s)
   // ================================================================
   console.log('\n--- SCENE 2: Simona -- Counter Check-In ---');
+  // Set English language for demo recording (persists via localStorage)
+  await page.goto(`${CAMPER_URL}?lang=en`, { waitUntil: 'networkidle2', timeout: 10000 });
+  await sleep(500);
   await keycloakLogin(page, SIMONA);
   await sleep(PAUSE.SHORT);
 
@@ -380,22 +399,25 @@ async function main() {
   console.log('  Showing quotation list...');
   await sleep(PAUSE.LONG);
 
-  // Open a quotation detail
+  // Open a quotation detail -- navigate directly by ID (Alpine @click rows don't work in Puppeteer)
   console.log('  Opening quotation detail...');
   try {
-    const clicked = await page.evaluate(() => {
-      const link = document.querySelector('a[href*="/quotations/"]');
-      if (link) { link.click(); return true; }
-      const rows = document.querySelectorAll('tr.cursor-pointer, tr[onclick]');
-      if (rows.length > 0) { rows[0].click(); return true; }
-      return false;
+    const qId = await page.evaluate(async () => {
+      const token = sessionStorage.getItem('camper_token');
+      const res = await fetch('/api/v1/camper/quotations?limit=5', {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      return data.length > 0 ? data[0].id : null;
     });
-    if (clicked) {
-      await sleep(2000);
+    if (qId) {
+      await page.goto(`${CAMPER_URL}/quotations/${qId}`, { waitUntil: 'networkidle2', timeout: 15000 });
       await setZoom(page);
+    } else {
+      console.log('  No quotations found to open.');
     }
   } catch (e) {
-    console.log('  Quotation click failed:', e.message);
+    console.log('  Quotation detail failed:', e.message);
   }
 
   // Show line items + IVA + deposit
@@ -422,18 +444,25 @@ async function main() {
   console.log('  Showing job board...');
   await sleep(PAUSE.LONG);
 
-  // Click on a job to show detail
+  // Open a job detail -- navigate directly by ID (Alpine @click rows don't work in Puppeteer)
   console.log('  Opening a job detail...');
   try {
-    await page.evaluate(() => {
-      const link = document.querySelector('a[href*="/jobs/"]');
-      if (link) { link.click(); return true; }
-      return false;
+    const jobId = await page.evaluate(async () => {
+      const token = sessionStorage.getItem('camper_token');
+      const res = await fetch('/api/v1/camper/jobs?limit=5', {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      return data.length > 0 ? data[0].id : null;
     });
-    await sleep(2000);
-    await setZoom(page);
+    if (jobId) {
+      await page.goto(`${CAMPER_URL}/jobs/${jobId}`, { waitUntil: 'networkidle2', timeout: 15000 });
+      await setZoom(page);
+    } else {
+      console.log('  No jobs found to open.');
+    }
   } catch (e) {
-    console.log('  Job click failed');
+    console.log('  Job detail failed:', e.message);
   }
 
   // Show job detail with approve button
@@ -470,18 +499,25 @@ async function main() {
   console.log('  Showing Maximo job list...');
   await sleep(PAUSE.LONG);
 
-  // Click on an assigned job
+  // Open an assigned job -- navigate directly by ID
   console.log('  Opening assigned job...');
   try {
-    await page.evaluate(() => {
-      const link = document.querySelector('a[href*="/jobs/"]');
-      if (link) { link.click(); return true; }
-      return false;
+    const mechJobId = await page.evaluate(async () => {
+      const token = sessionStorage.getItem('camper_token');
+      const res = await fetch('/api/v1/camper/jobs?limit=5', {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      return data.length > 0 ? data[0].id : null;
     });
-    await sleep(2000);
-    await setZoom(page);
+    if (mechJobId) {
+      await page.goto(`${CAMPER_URL}/jobs/${mechJobId}`, { waitUntil: 'networkidle2', timeout: 15000 });
+      await setZoom(page);
+    } else {
+      console.log('  No jobs found for mechanic.');
+    }
   } catch (e) {
-    console.log('  Job click failed');
+    console.log('  Mechanic job detail failed:', e.message);
   }
 
   // Show job detail from mechanic perspective
@@ -531,18 +567,25 @@ async function main() {
   console.log('  Showing job board (inspection items visible)...');
   await sleep(PAUSE.LONG);
 
-  // Open a job in inspection state
+  // Open a job for inspection -- navigate directly by ID
   console.log('  Opening job for inspection...');
   try {
-    await page.evaluate(() => {
-      const link = document.querySelector('a[href*="/jobs/"]');
-      if (link) { link.click(); return true; }
-      return false;
+    const inspJobId = await page.evaluate(async () => {
+      const token = sessionStorage.getItem('camper_token');
+      const res = await fetch('/api/v1/camper/jobs?limit=5', {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      return data.length > 0 ? data[0].id : null;
     });
-    await sleep(2000);
-    await setZoom(page);
+    if (inspJobId) {
+      await page.goto(`${CAMPER_URL}/jobs/${inspJobId}`, { waitUntil: 'networkidle2', timeout: 15000 });
+      await setZoom(page);
+    } else {
+      console.log('  No jobs found for inspection.');
+    }
   } catch (e) {
-    console.log('  Job click failed');
+    console.log('  Inspection job detail failed:', e.message);
   }
 
   // Show inspection detail

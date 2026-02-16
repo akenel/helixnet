@@ -12,27 +12,27 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle_location">Gestione Servizi</p>
                     </div>
                 </div>
 
                 <!-- Nav Links -->
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.checkin">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.jobs">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.appointments">Appuntamenti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800" data-i18n="nav.quotations">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.calendar">Calendario</a>
                 </div>
 
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -40,22 +40,22 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.checkin">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.jobs">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.appointments">Appuntamenti</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap" data-i18n="nav.quotations">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.calendar">Calendario</a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header + New Quotation -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Preventivi</h2>
-            <a href="/camper/quotations/new" class="btn-primary" x-show="user.isManager">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="quotations.title">Preventivi</h2>
+            <a href="/camper/quotations/new" class="btn-primary" x-show="user.isManager" data-i18n="quotations.new_quotation">
                 + Nuovo Preventivo
             </a>
         </div>
@@ -64,58 +64,58 @@
         <div class="card mb-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="quotations.filter_status">Stato</label>
                     <select x-model="filters.status" @change="loadQuotations()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
-                        <option value="draft">Bozza</option>
-                        <option value="sent">Inviato</option>
-                        <option value="accepted">Accettato</option>
-                        <option value="rejected">Rifiutato</option>
-                        <option value="expired">Scaduto</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
+                        <option value="draft" data-i18n="status.quotation.draft">Bozza</option>
+                        <option value="sent" data-i18n="status.quotation.sent">Inviato</option>
+                        <option value="accepted" data-i18n="status.quotation.accepted">Accettato</option>
+                        <option value="rejected" data-i18n="status.quotation.rejected">Rifiutato</option>
+                        <option value="expired" data-i18n="status.quotation.expired">Scaduto</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Cliente</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="quotations.filter_customer">Cliente</label>
                     <select x-model="filters.customer_id" @change="loadQuotations()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
                         <template x-for="c in customerList" :key="c.id">
                             <option :value="c.id" x-text="c.name"></option>
                         </template>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (n. preventivo)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="quotations.filter_search">Cerca (n. preventivo)</label>
                     <input type="text" x-model="filters.search" @input.debounce.300ms="applySearch()"
-                           class="input-field text-sm py-2" placeholder="QUO-...">
+                           class="input-field text-sm py-2" data-i18n-placeholder="quotations.search_placeholder" placeholder="QUO-...">
                 </div>
             </div>
         </div>
 
         <!-- Quotation Count -->
         <p class="text-sm text-gray-500 mb-3" x-show="!loading">
-            <span x-text="filteredQuotations.length"></span> preventivi trovati
+            <span x-text="filteredQuotations.length"></span> <span data-i18n="quotations.count">preventivi trovati</span>
         </p>
 
         <!-- Quotations Table -->
         <div class="card overflow-x-auto">
             <template x-if="loading">
-                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('common.loading')">Caricamento...</p>
             </template>
 
             <template x-if="!loading && filteredQuotations.length === 0">
-                <p class="text-center text-gray-500 py-8">Nessun preventivo trovato.</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('quotations.no_results')">Nessun preventivo trovato.</p>
             </template>
 
             <table class="min-w-full" x-show="!loading && filteredQuotations.length > 0">
                 <thead>
                     <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                        <th class="pb-3 pr-4">Numero</th>
-                        <th class="pb-3 pr-4">Cliente</th>
-                        <th class="pb-3 pr-4">Totale</th>
-                        <th class="pb-3 pr-4">Acconto</th>
-                        <th class="pb-3 pr-4">Stato</th>
-                        <th class="pb-3 pr-4">Data</th>
-                        <th class="pb-3">Azioni</th>
+                        <th class="pb-3 pr-4" data-i18n="quotations.th_number">Numero</th>
+                        <th class="pb-3 pr-4" data-i18n="quotations.th_customer">Cliente</th>
+                        <th class="pb-3 pr-4" data-i18n="quotations.th_total">Totale</th>
+                        <th class="pb-3 pr-4" data-i18n="quotations.th_deposit">Acconto</th>
+                        <th class="pb-3 pr-4" data-i18n="quotations.th_status">Stato</th>
+                        <th class="pb-3 pr-4" data-i18n="quotations.th_date">Data</th>
+                        <th class="pb-3" data-i18n="quotations.th_actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,7 +130,7 @@
                                 <span class="badge"
                                       :class="statusBadgeClass(q.status)"
                                       :style="q.status === 'rejected' ? 'text-decoration: line-through;' : ''"
-                                      x-text="statusLabel(q.status)"></span>
+                                      x-text="QUOTATION_STATUS_LABELS[q.status] || q.status"></span>
                             </td>
                             <td class="py-3 pr-4 text-sm text-gray-500" x-text="formatDate(q.created_at)"></td>
                             <td class="py-3" @click.stop>
@@ -138,21 +138,21 @@
                                     <template x-if="q.status === 'draft'">
                                         <button @click="sendQuotation(q.id)"
                                                 class="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                                                title="Invia al cliente">
+                                                x-text="t('quotations.btn_send')">
                                             Invia
                                         </button>
                                     </template>
                                     <template x-if="q.status === 'draft' || q.status === 'sent'">
                                         <button @click="acceptQuotation(q.id)"
                                                 class="text-green-600 hover:text-green-800 text-xs font-medium"
-                                                title="Accetta preventivo">
+                                                x-text="t('quotations.btn_accept')">
                                             Accetta
                                         </button>
                                     </template>
                                     <template x-if="q.status === 'draft' || q.status === 'sent'">
                                         <button @click="rejectQuotation(q.id)"
                                                 class="text-red-600 hover:text-red-800 text-xs font-medium"
-                                                title="Rifiuta preventivo">
+                                                x-text="t('quotations.btn_reject')">
                                             Rifiuta
                                         </button>
                                     </template>
@@ -181,18 +181,6 @@
             customerList: [],
             filters: { status: '', customer_id: '', search: '' },
             loading: true,
-
-            // Status label mapping (Italian)
-            statusLabel(status) {
-                const labels = {
-                    'draft': 'Bozza',
-                    'sent': 'Inviato',
-                    'accepted': 'Accettato',
-                    'rejected': 'Rifiutato',
-                    'expired': 'Scaduto'
-                };
-                return labels[status] || status;
-            },
 
             // Status badge class mapping
             statusBadgeClass(status) {
@@ -258,7 +246,7 @@
                     if (this.filters.customer_id) url += '&customer_id=' + this.filters.customer_id;
                     this.quotations = await API.get(url);
                 } catch (e) {
-                    showToast('Errore caricamento preventivi: ' + e.message, 'error');
+                    showToast(t('quotations.toast_load_error') + e.message, 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -270,31 +258,31 @@
             },
 
             async sendQuotation(quotationId) {
-                if (!confirm('Inviare il preventivo al cliente?')) return;
+                if (!confirm(t('quotations.confirm_send'))) return;
                 try {
                     const updated = await API.post('/api/v1/camper/quotations/' + quotationId + '/send');
                     const idx = this.quotations.findIndex(q => q.id === quotationId);
                     if (idx >= 0) this.quotations[idx] = updated;
-                    showToast('Preventivo inviato!', 'success');
+                    showToast(t('quotations.toast_sent'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async acceptQuotation(quotationId) {
-                if (!confirm('Accettare il preventivo? Il lavoro sara approvato e l\'acconto calcolato.')) return;
+                if (!confirm(t('quotations.confirm_accept'))) return;
                 try {
                     const updated = await API.post('/api/v1/camper/quotations/' + quotationId + '/accept');
                     const idx = this.quotations.findIndex(q => q.id === quotationId);
                     if (idx >= 0) this.quotations[idx] = updated;
-                    showToast('Preventivo accettato! Acconto: ' + formatPrice(updated.deposit_amount), 'success');
+                    showToast(t('quotations.toast_accepted') + formatPrice(updated.deposit_amount), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async rejectQuotation(quotationId) {
-                const reason = prompt('Motivo del rifiuto (opzionale):');
+                const reason = prompt(t('quotations.reject_reason'));
                 if (reason === null) return; // User cancelled
                 try {
                     let url = '/api/v1/camper/quotations/' + quotationId + '/reject';
@@ -302,9 +290,9 @@
                     const updated = await API.post(url);
                     const idx = this.quotations.findIndex(q => q.id === quotationId);
                     if (idx >= 0) this.quotations[idx] = updated;
-                    showToast('Preventivo rifiutato.', 'info');
+                    showToast(t('quotations.toast_rejected'), 'info');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             }
         }

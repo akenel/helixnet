@@ -12,24 +12,24 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.checkin">Accettazione</span></a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800"><span data-i18n="nav.jobs">Lavori</span></a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.customers">Clienti</span></a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.quotations">Preventivi</span></a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.invoices">Fatture</span></a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.calendar">Calendario</span></a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -37,57 +37,57 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.checkin">Accettazione</span></a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap"><span data-i18n="nav.jobs">Lavori</span></a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.customers">Clienti</span></a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.quotations">Preventivi</span></a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.invoices">Fatture</span></a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.calendar">Calendario</span></a>
     </div>
 
     <main class="max-w-4xl mx-auto px-4 py-6">
         <!-- Back link -->
-        <a href="/camper/jobs" class="text-amber-600 hover:text-amber-700 text-sm mb-4 inline-block">&larr; Torna ai lavori</a>
+        <a href="/camper/jobs" class="text-amber-600 hover:text-amber-700 text-sm mb-4 inline-block">&larr; <span data-i18n="job_detail.back_to_jobs">Torna ai lavori</span></a>
 
         <!-- Loading -->
         <template x-if="loading">
             <div class="card text-center py-12">
-                <p class="text-gray-500">Caricamento...</p>
+                <p class="text-gray-500" x-text="t('common.loading')">Caricamento...</p>
             </div>
         </template>
 
         <!-- CREATE MODE -->
         <template x-if="!loading && createMode">
             <div class="card">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Nuovo Preventivo</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6" x-text="t('job_detail.new_quote_title')">Nuovo Preventivo</h2>
                 <form @submit.prevent="createJob()">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Titolo *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_title') + ' *'">Titolo *</label>
                             <input type="text" x-model="newJob.title" class="input-field" required
-                                   placeholder="Es: Sostituzione guarnizione finestra bagno">
+                                   :placeholder="t('job_detail.title_placeholder')">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_description')">Descrizione</label>
                             <textarea x-model="newJob.description" class="input-field" rows="3"
-                                      placeholder="Dettagli del lavoro..."></textarea>
+                                      :placeholder="t('job_detail.desc_placeholder')"></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Veicolo (ID) *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_vehicle_id') + ' *'">Veicolo (ID) *</label>
                             <input type="text" x-model="newJob.vehicle_id" class="input-field" required
-                                   placeholder="UUID del veicolo">
-                            <p class="text-xs text-gray-400 mt-1">Usa Accettazione per cercare il veicolo</p>
+                                   :placeholder="t('job_detail.vehicle_id_placeholder')">
+                            <p class="text-xs text-gray-400 mt-1" x-text="t('job_detail.vehicle_hint')">Usa Accettazione per cercare il veicolo</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente (ID) *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_customer_id') + ' *'">Cliente (ID) *</label>
                             <input type="text" x-model="newJob.customer_id" class="input-field" required
-                                   placeholder="UUID del cliente">
+                                   :placeholder="t('job_detail.customer_id_placeholder')">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Lavoro</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_job_type')">Tipo Lavoro</label>
                             <select x-model="newJob.job_type" class="input-field">
                                 <template x-for="(label, key) in JOB_TYPE_LABELS" :key="key">
                                     <option :value="key" x-text="label"></option>
@@ -95,42 +95,42 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Assegnato a</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_assigned_to')">Assegnato a</label>
                             <select x-model="newJob.assigned_to" class="input-field">
-                                <option value="">Non assegnato</option>
+                                <option value="" x-text="t('common.unassigned')">Non assegnato</option>
                                 <option value="Sebastino">Sebastino</option>
                                 <option value="Maximo">Maximo</option>
                                 <option value="Seppi">Seppi</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ore Stimate</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_estimated_hours')">Ore Stimate</label>
                             <input type="number" x-model.number="newJob.estimated_hours" class="input-field" min="0" step="0.5">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Costo Ricambi Stimato</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_estimated_parts')">Costo Ricambi Stimato</label>
                             <input type="number" x-model.number="newJob.estimated_parts_cost" class="input-field" min="0" step="0.01">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Totale Stimato</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_estimated_total')">Totale Stimato</label>
                             <input type="number" x-model.number="newJob.estimated_total" class="input-field" min="0" step="0.01">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data Prevista</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_scheduled_date')">Data Prevista</label>
                             <input type="date" x-model="newJob.scheduled_date" class="input-field">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Cliente</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_customer_notes')">Note Cliente</label>
                             <textarea x-model="newJob.customer_notes" class="input-field" rows="2"
-                                      placeholder="Cosa ha segnalato il cliente..."></textarea>
+                                      :placeholder="t('job_detail.customer_notes_placeholder')"></textarea>
                         </div>
                     </div>
                     <div class="flex space-x-3">
                         <button type="submit" class="btn-primary" :disabled="saving">
-                            <span x-show="!saving">Crea Preventivo</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" x-text="t('job_detail.create_quote')">Crea Preventivo</span>
+                            <span x-show="saving" x-text="t('common.saving')">Salvataggio...</span>
                         </button>
-                        <a href="/camper/jobs" class="btn-secondary">Annulla</a>
+                        <a href="/camper/jobs" class="btn-secondary" x-text="t('common.cancel')">Annulla</a>
                     </div>
                 </form>
             </div>
@@ -158,31 +158,31 @@
                 <!-- Deposit Section (v2) -->
                 <template x-if="job.deposit_required > 0 || job.deposit_paid > 0">
                     <div class="card mb-6" :class="job.deposit_paid >= job.deposit_required ? 'border-l-4 border-green-500' : 'border-l-4 border-amber-500'">
-                        <h3 class="text-lg font-bold text-gray-900 mb-3">Acconto</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3" x-text="t('job_detail.deposit_title')">Acconto</h3>
                         <div class="grid grid-cols-3 gap-4 text-sm">
                             <div>
-                                <span class="text-gray-500 block">Richiesto</span>
+                                <span class="text-gray-500 block" x-text="t('job_detail.deposit_required')">Richiesto</span>
                                 <span class="font-bold text-lg" x-text="formatPrice(job.deposit_required)"></span>
                             </div>
                             <div>
-                                <span class="text-gray-500 block">Versato</span>
+                                <span class="text-gray-500 block" x-text="t('job_detail.deposit_paid')">Versato</span>
                                 <span class="font-bold text-lg" :class="job.deposit_paid >= job.deposit_required ? 'text-green-600' : 'text-amber-600'"
                                       x-text="formatPrice(job.deposit_paid)"></span>
                             </div>
                             <div>
-                                <span class="text-gray-500 block">Data Pagamento</span>
+                                <span class="text-gray-500 block" x-text="t('job_detail.deposit_date')">Data Pagamento</span>
                                 <span class="font-semibold" x-text="formatDateTime(job.deposit_paid_at)"></span>
                             </div>
                         </div>
                         <template x-if="job.deposit_paid < job.deposit_required && user.isCounter">
                             <div class="mt-4 flex items-center space-x-3">
-                                <input type="number" x-model.number="depositAmount" class="input-field w-40 text-sm py-2" min="0" step="0.01" placeholder="Importo">
+                                <input type="number" x-model.number="depositAmount" class="input-field w-40 text-sm py-2" min="0" step="0.01" :placeholder="t('job_detail.deposit_amount_placeholder')">
                                 <select x-model="depositMethod" class="input-field w-40 text-sm py-2">
-                                    <option value="cash">Contanti</option>
-                                    <option value="card">Carta</option>
-                                    <option value="transfer">Bonifico</option>
+                                    <option value="cash" x-text="t('job_detail.deposit_cash')">Contanti</option>
+                                    <option value="card" x-text="t('job_detail.deposit_card')">Carta</option>
+                                    <option value="transfer" x-text="t('job_detail.deposit_transfer')">Bonifico</option>
                                 </select>
-                                <button @click="recordDeposit()" class="btn-success text-sm py-2">Registra Acconto</button>
+                                <button @click="recordDeposit()" class="btn-success text-sm py-2" x-text="t('job_detail.record_deposit')">Registra Acconto</button>
                             </div>
                         </template>
                     </div>
@@ -191,36 +191,36 @@
                 <!-- Inspection Section (v2) -->
                 <template x-if="job.inspected_by || job.status === 'inspection'">
                     <div class="card mb-6" :class="job.inspection_passed ? 'border-l-4 border-green-500' : 'border-l-4 border-purple-500'">
-                        <h3 class="text-lg font-bold text-gray-900 mb-3">Ispezione</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-3" x-text="t('job_detail.inspection_title')">Ispezione</h3>
                         <template x-if="job.inspected_by">
                             <div class="grid grid-cols-3 gap-4 text-sm">
                                 <div>
-                                    <span class="text-gray-500 block">Esito</span>
+                                    <span class="text-gray-500 block" x-text="t('job_detail.inspection_result')">Esito</span>
                                     <span class="font-bold" :class="job.inspection_passed ? 'text-green-600' : 'text-red-600'"
-                                          x-text="job.inspection_passed ? 'SUPERATA' : 'NON SUPERATA'"></span>
+                                          x-text="job.inspection_passed ? t('job_detail.inspection_passed') : t('job_detail.inspection_failed')"></span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500 block">Ispettore</span>
+                                    <span class="text-gray-500 block" x-text="t('job_detail.inspector')">Ispettore</span>
                                     <span class="font-semibold" x-text="job.inspected_by"></span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500 block">Data</span>
+                                    <span class="text-gray-500 block" x-text="t('job_detail.inspection_date')">Data</span>
                                     <span class="font-semibold" x-text="formatDateTime(job.inspected_at)"></span>
                                 </div>
                             </div>
                         </template>
                         <template x-if="job.inspection_notes">
                             <div class="mt-3">
-                                <span class="text-gray-500 text-sm block">Note Ispezione</span>
+                                <span class="text-gray-500 text-sm block" x-text="t('job_detail.inspection_notes_label')">Note Ispezione</span>
                                 <p class="text-sm text-gray-700 whitespace-pre-line" x-text="job.inspection_notes"></p>
                             </div>
                         </template>
                         <template x-if="job.status === 'inspection' && user.isManager">
                             <div class="mt-4">
-                                <textarea x-model="inspectionNotes" class="input-field text-sm mb-3" rows="2" placeholder="Note ispezione..."></textarea>
+                                <textarea x-model="inspectionNotes" class="input-field text-sm mb-3" rows="2" :placeholder="t('job_detail.inspection_notes_placeholder')"></textarea>
                                 <div class="flex space-x-3">
-                                    <button @click="passInspection()" class="btn-success text-sm py-2">Ispezione Superata</button>
-                                    <button @click="failInspection()" class="btn-danger text-sm py-2">Non Superata</button>
+                                    <button @click="passInspection()" class="btn-success text-sm py-2" x-text="t('job_detail.pass_inspection')">Ispezione Superata</button>
+                                    <button @click="failInspection()" class="btn-danger text-sm py-2" x-text="t('job_detail.fail_inspection')">Non Superata</button>
                                 </div>
                             </div>
                         </template>
@@ -229,59 +229,59 @@
 
                 <!-- Quote Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Preventivo</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('job_detail.quote_title')">Preventivo</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500 block">Ore Stimate</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.estimated_hours')">Ore Stimate</span>
                             <span class="font-semibold" x-text="job.estimated_hours + 'h'"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Ricambi Stimati</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.estimated_parts')">Ricambi Stimati</span>
                             <span class="font-semibold" x-text="formatPrice(job.estimated_parts_cost)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Totale Stimato</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.estimated_total')">Totale Stimato</span>
                             <span class="font-bold text-lg text-amber-600" x-text="formatPrice(job.estimated_total)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Valido Fino a</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.valid_until')">Valido Fino a</span>
                             <span class="font-semibold" x-text="formatDate(job.quote_valid_until)"></span>
                         </div>
                     </div>
                     <div class="mt-4 flex flex-wrap gap-2">
                         <template x-if="job.status === 'quoted' && user.isManager">
-                            <button @click="approveJob()" class="btn-success text-sm py-2">Approva Preventivo</button>
+                            <button @click="approveJob()" class="btn-success text-sm py-2" x-text="t('job_detail.approve_quote')">Approva Preventivo</button>
                         </template>
                         <template x-if="job.status === 'quoted'">
-                            <a :href="'/camper/quotations?job_id=' + job.id" class="btn-secondary text-sm py-2">Crea Preventivo Formale</a>
+                            <a :href="'/camper/quotations?job_id=' + job.id" class="btn-secondary text-sm py-2" x-text="t('job_detail.create_formal_quote')">Crea Preventivo Formale</a>
                         </template>
                     </div>
                 </div>
 
                 <!-- Work Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Lavoro</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('job_detail.work_title')">Lavoro</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('common.type')">Tipo</label>
                             <p class="text-sm" x-text="JOB_TYPE_LABELS[job.job_type] || job.job_type"></p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Assegnato a</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.label_assigned_to')">Assegnato a</label>
                             <template x-if="editing && user.isManager">
                                 <select x-model="editData.assigned_to" class="input-field text-sm py-2">
-                                    <option value="">Non assegnato</option>
+                                    <option value="" x-text="t('common.unassigned')">Non assegnato</option>
                                     <option value="Sebastino">Sebastino</option>
                                     <option value="Maximo">Maximo</option>
                                     <option value="Seppi">Seppi</option>
                                 </select>
                             </template>
                             <template x-if="!editing || !user.isManager">
-                                <p class="text-sm" x-text="job.assigned_to || 'Non assegnato'"></p>
+                                <p class="text-sm" x-text="job.assigned_to || t('common.unassigned')"></p>
                             </template>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ore Effettive</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.actual_hours')">Ore Effettive</label>
                             <template x-if="editing">
                                 <input type="number" x-model.number="editData.actual_hours" class="input-field text-sm py-2" min="0" step="0.5">
                             </template>
@@ -290,7 +290,7 @@
                             </template>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Costo Ricambi Effettivo</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.actual_parts_cost')">Costo Ricambi Effettivo</label>
                             <template x-if="editing">
                                 <input type="number" x-model.number="editData.actual_parts_cost" class="input-field text-sm py-2" min="0" step="0.01">
                             </template>
@@ -299,20 +299,20 @@
                             </template>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Costo Manodopera</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.labor_cost')">Costo Manodopera</label>
                             <p class="text-sm" x-text="formatPrice(job.actual_labor_cost)"></p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Totale Effettivo</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.actual_total')">Totale Effettivo</label>
                             <p class="text-lg font-bold text-green-600" x-text="formatPrice(job.actual_total)"></p>
                         </div>
                     </div>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ricambi Usati</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.parts_used')">Ricambi Usati</label>
                         <template x-if="editing">
                             <textarea x-model="editData.parts_used" class="input-field text-sm" rows="2"
-                                      placeholder="Elenco ricambi utilizzati..."></textarea>
+                                      :placeholder="t('job_detail.parts_used_placeholder')"></textarea>
                         </template>
                         <template x-if="!editing">
                             <p class="text-sm text-gray-600" x-text="job.parts_used || '-'"></p>
@@ -325,12 +325,12 @@
                                 <input type="checkbox" x-model="editData.parts_on_order" class="w-4 h-4">
                             </template>
                             <template x-if="!editing">
-                                <span x-text="job.parts_on_order ? 'Si' : 'No'" class="text-sm"></span>
+                                <span x-text="job.parts_on_order ? t('common.yes') : t('common.no')" class="text-sm"></span>
                             </template>
-                            <label class="text-sm text-gray-700">Ricambi in ordine</label>
+                            <label class="text-sm text-gray-700" x-text="t('job_detail.parts_on_order')">Ricambi in ordine</label>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">N. Ordine</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.po_number')">N. Ordine</label>
                             <template x-if="editing">
                                 <input type="text" x-model="editData.parts_po_number" class="input-field text-sm py-2">
                             </template>
@@ -341,10 +341,10 @@
                     </div>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Lavoro Eseguito</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.work_performed')">Lavoro Eseguito</label>
                         <template x-if="editing">
                             <textarea x-model="editData.work_performed" class="input-field text-sm" rows="3"
-                                      placeholder="Descrizione del lavoro eseguito..."></textarea>
+                                      :placeholder="t('job_detail.work_performed_placeholder')"></textarea>
                         </template>
                         <template x-if="!editing">
                             <p class="text-sm text-gray-600 whitespace-pre-line" x-text="job.work_performed || '-'"></p>
@@ -352,10 +352,10 @@
                     </div>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Problema Riscontrato</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.issue_found')">Problema Riscontrato</label>
                         <template x-if="editing">
                             <textarea x-model="editData.issue_found" class="input-field text-sm" rows="3"
-                                      placeholder="Problemi trovati durante il lavoro..."></textarea>
+                                      :placeholder="t('job_detail.issue_found_placeholder')"></textarea>
                         </template>
                         <template x-if="!editing">
                             <p class="text-sm text-gray-600 whitespace-pre-line" x-text="job.issue_found || '-'"></p>
@@ -365,10 +365,10 @@
 
                 <!-- Notes Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Note</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('job_detail.notes_title')">Note</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Cliente</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.customer_notes')">Note Cliente</label>
                             <template x-if="editing">
                                 <textarea x-model="editData.customer_notes" class="input-field text-sm" rows="3"></textarea>
                             </template>
@@ -377,7 +377,7 @@
                             </template>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Meccanico</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('job_detail.mechanic_notes')">Note Meccanico</label>
                             <template x-if="editing">
                                 <textarea x-model="editData.mechanic_notes" class="input-field text-sm" rows="3"></textarea>
                             </template>
@@ -390,22 +390,22 @@
 
                 <!-- Timeline Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Tempistica</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('job_detail.timeline_title')">Tempistica</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500 block">Data Prevista</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.scheduled_date')">Data Prevista</span>
                             <span class="font-semibold" x-text="formatDate(job.scheduled_date)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Iniziato</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.started_at')">Iniziato</span>
                             <span class="font-semibold" x-text="formatDateTime(job.started_at)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Completato</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.completed_at')">Completato</span>
                             <span class="font-semibold" x-text="formatDateTime(job.completed_at)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Ritirato</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.picked_up_at')">Ritirato</span>
                             <span class="font-semibold" x-text="formatDateTime(job.picked_up_at)"></span>
                         </div>
                     </div>
@@ -413,19 +413,19 @@
 
                 <!-- Follow-up Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Follow-up</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('job_detail.followup_title')">Follow-up</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div class="flex items-center space-x-2">
                             <template x-if="editing">
                                 <input type="checkbox" x-model="editData.follow_up_required" class="w-4 h-4">
                             </template>
                             <template x-if="!editing">
-                                <span x-text="job.follow_up_required ? 'Si' : 'No'"></span>
+                                <span x-text="job.follow_up_required ? t('common.yes') : t('common.no')"></span>
                             </template>
-                            <label class="text-gray-700">Follow-up richiesto</label>
+                            <label class="text-gray-700" x-text="t('job_detail.followup_required')">Follow-up richiesto</label>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Prossimo Servizio</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.next_service')">Prossimo Servizio</span>
                             <template x-if="editing">
                                 <input type="date" x-model="editData.next_service_date" class="input-field text-sm py-2">
                             </template>
@@ -434,7 +434,7 @@
                             </template>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Note Follow-up</span>
+                            <span class="text-gray-500 block" x-text="t('job_detail.followup_notes')">Note Follow-up</span>
                             <template x-if="editing">
                                 <textarea x-model="editData.follow_up_notes" class="input-field text-sm" rows="2"></textarea>
                             </template>
@@ -448,11 +448,11 @@
                 <!-- Related Documents (v2) -->
                 <div class="card mb-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold text-gray-900">Documenti</h3>
-                        <span class="text-sm text-gray-500" x-text="documents.length + ' file'"></span>
+                        <h3 class="text-lg font-bold text-gray-900" x-text="t('job_detail.documents_title')">Documenti</h3>
+                        <span class="text-sm text-gray-500" x-text="documents.length + ' ' + t('common.files')"></span>
                     </div>
                     <template x-if="documents.length === 0">
-                        <p class="text-sm text-gray-500">Nessun documento allegato.</p>
+                        <p class="text-sm text-gray-500" x-text="t('job_detail.no_documents')">Nessun documento allegato.</p>
                     </template>
                     <template x-if="documents.length > 0">
                         <div class="space-y-2">
@@ -464,7 +464,7 @@
                                     </div>
                                     <a :href="'/api/v1/camper/documents/' + doc.id + '/download'"
                                        class="text-amber-600 hover:text-amber-700 text-sm font-medium"
-                                       target="_blank">Scarica</a>
+                                       target="_blank" x-text="t('common.download')">Scarica</a>
                                 </div>
                             </template>
                         </div>
@@ -474,7 +474,7 @@
                     <div class="mt-4 border-t pt-4">
                         <div class="flex items-center space-x-3">
                             <input type="file" id="docUpload" @change="uploadDocument($event)" class="text-sm">
-                            <span x-show="uploading" class="text-sm text-gray-500">Caricamento...</span>
+                            <span x-show="uploading" class="text-sm text-gray-500" x-text="t('job_detail.uploading')">Caricamento...</span>
                         </div>
                     </div>
                 </div>
@@ -483,36 +483,36 @@
                 <div class="card flex flex-wrap gap-3">
                     <!-- Edit/Save -->
                     <template x-if="!editing && user.isMechanic">
-                        <button @click="startEditing()" class="btn-secondary">Modifica</button>
+                        <button @click="startEditing()" class="btn-secondary" x-text="t('job_detail.btn_edit')">Modifica</button>
                     </template>
                     <template x-if="editing">
                         <button @click="saveJob()" class="btn-primary" :disabled="saving">
-                            <span x-show="!saving">Salva Modifiche</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" x-text="t('common.save_changes')">Salva Modifiche</span>
+                            <span x-show="saving" x-text="t('common.saving')">Salvataggio...</span>
                         </button>
                     </template>
                     <template x-if="editing">
-                        <button @click="cancelEditing()" class="btn-secondary">Annulla</button>
+                        <button @click="cancelEditing()" class="btn-secondary" x-text="t('common.cancel')">Annulla</button>
                     </template>
 
                     <!-- Status Actions -->
                     <template x-if="job.status === 'quoted' && user.isManager">
-                        <button @click="approveJob()" class="btn-success">Approva Preventivo</button>
+                        <button @click="approveJob()" class="btn-success" x-text="t('job_detail.approve_quote')">Approva Preventivo</button>
                     </template>
                     <template x-if="job.status === 'approved' && user.isMechanic">
-                        <button @click="advanceStatus('in_progress')" class="btn-primary">Inizia Lavoro</button>
+                        <button @click="advanceStatus('in_progress')" class="btn-primary" x-text="t('job_detail.btn_start_work')">Inizia Lavoro</button>
                     </template>
                     <template x-if="job.status === 'in_progress' && user.isMechanic">
-                        <button @click="submitForInspection()" class="btn-primary">Invia a Ispezione</button>
+                        <button @click="submitForInspection()" class="btn-primary" x-text="t('job_detail.btn_submit_inspection')">Invia a Ispezione</button>
                     </template>
                     <template x-if="(job.status === 'in_progress' || job.status === 'waiting_parts') && user.isMechanic">
-                        <button @click="completeJob()" class="btn-success">Segna Completato</button>
+                        <button @click="completeJob()" class="btn-success" x-text="t('job_detail.btn_mark_completed')">Segna Completato</button>
                     </template>
                     <template x-if="job.status === 'in_progress' && user.isMechanic">
-                        <button @click="advanceStatus('waiting_parts')" class="btn-danger">Attesa Ricambi</button>
+                        <button @click="advanceStatus('waiting_parts')" class="btn-danger" x-text="t('job_detail.btn_waiting_parts')">Attesa Ricambi</button>
                     </template>
                     <template x-if="job.status === 'completed' && user.isManager">
-                        <button @click="advanceStatus('invoiced')" class="btn-primary">Fattura</button>
+                        <button @click="advanceStatus('invoiced')" class="btn-primary" x-text="t('job_detail.btn_invoice')">Fattura</button>
                     </template>
                 </div>
             </div>
@@ -588,7 +588,7 @@
                         this.documents = await API.get('/api/v1/camper/documents?entity_type=job&entity_id=' + jobId);
                     } catch (e) { this.documents = []; }
                 } catch (e) {
-                    showToast('Errore caricamento lavoro: ' + e.message, 'error');
+                    showToast(t('job_detail.toast_load_error') + e.message, 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -596,16 +596,16 @@
 
             async createJob() {
                 if (!this.newJob.title || !this.newJob.vehicle_id || !this.newJob.customer_id) {
-                    showToast('Titolo, veicolo e cliente sono obbligatori.', 'warning');
+                    showToast(t('job_detail.toast_create_validation'), 'warning');
                     return;
                 }
                 this.saving = true;
                 try {
                     const created = await API.post('/api/v1/camper/jobs', this.newJob);
-                    showToast('Preventivo creato: ' + created.job_number, 'success');
+                    showToast(t('job_detail.toast_quote_created') + created.job_number, 'success');
                     window.location.href = '/camper/jobs/' + created.id;
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -640,9 +640,9 @@
                 try {
                     this.job = await API.put('/api/v1/camper/jobs/' + this.job.id, this.editData);
                     this.editing = false;
-                    showToast('Modifiche salvate!', 'success');
+                    showToast(t('job_detail.toast_changes_saved'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -651,64 +651,64 @@
             async approveJob() {
                 try {
                     this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/approve');
-                    showToast('Preventivo approvato!', 'success');
+                    showToast(t('job_detail.toast_quote_approved'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async advanceStatus(newStatus) {
                 try {
                     this.job = await API.patch('/api/v1/camper/jobs/' + this.job.id + '/status', { status: newStatus });
-                    showToast('Stato aggiornato: ' + JOB_STATUS_LABELS[newStatus], 'success');
+                    showToast(t('job_detail.toast_status_updated') + JOB_STATUS_LABELS[newStatus], 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async completeJob() {
                 try {
                     this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/complete');
-                    showToast('Lavoro completato!', 'success');
+                    showToast(t('job_detail.toast_job_completed'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async submitForInspection() {
                 try {
                     this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/submit-inspection');
-                    showToast('Inviato a ispezione!', 'success');
+                    showToast(t('job_detail.toast_sent_inspection'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async passInspection() {
                 try {
                     this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/pass-inspection', { notes: this.inspectionNotes });
-                    showToast('Ispezione superata!', 'success');
+                    showToast(t('job_detail.toast_inspection_passed'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async failInspection() {
                 if (!this.inspectionNotes) {
-                    showToast('Inserisci le note di ispezione.', 'warning');
+                    showToast(t('job_detail.toast_enter_inspection_notes'), 'warning');
                     return;
                 }
                 try {
                     this.job = await API.post('/api/v1/camper/jobs/' + this.job.id + '/fail-inspection', { notes: this.inspectionNotes });
-                    showToast('Ispezione non superata. Lavoro rimandato.', 'warning');
+                    showToast(t('job_detail.toast_inspection_failed'), 'warning');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async recordDeposit() {
                 if (!this.depositAmount || this.depositAmount <= 0) {
-                    showToast('Inserisci un importo valido.', 'warning');
+                    showToast(t('job_detail.toast_enter_valid_amount'), 'warning');
                     return;
                 }
                 try {
@@ -717,9 +717,9 @@
                         payment_method: this.depositMethod
                     });
                     this.depositAmount = 0;
-                    showToast('Acconto registrato!', 'success');
+                    showToast(t('job_detail.toast_deposit_recorded'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
@@ -743,10 +743,10 @@
                     if (!response.ok) throw new Error('Upload failed');
                     const doc = await response.json();
                     this.documents.push(doc);
-                    showToast('Documento caricato!', 'success');
+                    showToast(t('job_detail.toast_document_uploaded'), 'success');
                     event.target.value = '';
                 } catch (e) {
-                    showToast('Errore upload: ' + e.message, 'error');
+                    showToast(t('job_detail.toast_upload_error') + e.message, 'error');
                 } finally {
                     this.uploading = false;
                 }

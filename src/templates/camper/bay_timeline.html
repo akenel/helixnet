@@ -141,25 +141,25 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
-                    <a href="/camper/bay-timeline" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Piazzole</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.checkin">Accettazione</span></a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.jobs">Lavori</span></a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.customers">Clienti</span></a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.quotations">Preventivi</span></a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.invoices">Fatture</span></a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.calendar">Calendario</span></a>
+                    <a href="/camper/bay-timeline" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800"><span data-i18n="nav.bays">Piazzole</span></a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -172,31 +172,31 @@
         <div class="card mb-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-lg font-bold text-gray-900">Piazzole - Timeline</h2>
+                    <h2 class="text-lg font-bold text-gray-900" data-i18n="bay_timeline.title">Piazzole - Timeline</h2>
                     <span class="text-sm text-gray-500" x-text="dateRangeLabel"></span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button @click="prevWeek()" class="btn-secondary !py-2 !px-3 text-sm">&larr; Settimana Prec.</button>
-                    <button @click="thisWeek()" class="btn-primary !py-2 !px-3 text-sm">Oggi</button>
-                    <button @click="nextWeek()" class="btn-secondary !py-2 !px-3 text-sm">Settimana Succ. &rarr;</button>
+                    <button @click="prevWeek()" class="btn-secondary !py-2 !px-3 text-sm">&larr; <span data-i18n="bay_timeline.prev_week">Settimana Prec.</span></button>
+                    <button @click="thisWeek()" class="btn-primary !py-2 !px-3 text-sm" data-i18n="bay_timeline.today">Oggi</button>
+                    <button @click="nextWeek()" class="btn-secondary !py-2 !px-3 text-sm"><span data-i18n="bay_timeline.next_week">Settimana Succ.</span> &rarr;</button>
                 </div>
             </div>
             <!-- Legend -->
             <div class="mt-3 flex flex-wrap gap-4">
-                <div class="legend-item"><div class="legend-swatch" style="background:#9CA3AF"></div> Preventivato</div>
-                <div class="legend-item"><div class="legend-swatch" style="background:#3B82F6"></div> Approvato</div>
-                <div class="legend-item"><div class="legend-swatch" style="background:#F59E0B"></div> In Corso</div>
-                <div class="legend-item"><div class="legend-swatch" style="background:#EF4444"></div> Attesa Ricambi</div>
-                <div class="legend-item"><div class="legend-swatch" style="background:#8B5CF6"></div> Ispezione</div>
-                <div class="legend-item"><div class="legend-swatch" style="background:#10B981"></div> Completato</div>
-                <div class="legend-item"><div class="legend-swatch striped"></div> In Attesa</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#9CA3AF"></div> <span data-i18n="bay_timeline.legend_quoted">Preventivato</span></div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#3B82F6"></div> <span data-i18n="bay_timeline.legend_approved">Approvato</span></div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#F59E0B"></div> <span data-i18n="bay_timeline.legend_in_progress">In Corso</span></div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#EF4444"></div> <span data-i18n="bay_timeline.legend_waiting">Attesa Ricambi</span></div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#8B5CF6"></div> <span data-i18n="bay_timeline.legend_inspection">Ispezione</span></div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#10B981"></div> <span data-i18n="bay_timeline.legend_completed">Completato</span></div>
+                <div class="legend-item"><div class="legend-swatch striped"></div> <span data-i18n="bay_timeline.legend_waiting_striped">In Attesa</span></div>
             </div>
         </div>
 
         <!-- Loading -->
         <div x-show="loading" class="text-center py-12">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-600 mx-auto mb-4"></div>
-            <p class="text-gray-500">Caricamento timeline...</p>
+            <p class="text-gray-500" data-i18n="bay_timeline.loading">Caricamento timeline...</p>
         </div>
 
         <!-- Timeline Grid -->
@@ -206,8 +206,8 @@
 
             <!-- Empty state -->
             <div x-show="timeline.length === 0 && !loading" class="p-12 text-center">
-                <p class="text-gray-400 text-lg">Nessuna piazzola configurata</p>
-                <p class="text-gray-400 text-sm mt-2">Aggiungi piazzole tramite l'API per vedere la timeline</p>
+                <p class="text-gray-400 text-lg" data-i18n="bay_timeline.no_bays">Nessuna piazzola configurata</p>
+                <p class="text-gray-400 text-sm mt-2" data-i18n="bay_timeline.no_bays_hint">Aggiungi piazzole tramite l'API per vedere la timeline</p>
             </div>
         </div>
     </main>
@@ -260,8 +260,8 @@ function bayTimelineData() {
         },
 
         buildDays() {
-            const dayNames = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-            const months = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+            const dayNames = t('bay_timeline.day_names');
+            const months = t('bay_timeline.month_names');
             const today = new Date();
             today.setHours(0,0,0,0);
 
@@ -341,7 +341,7 @@ function bayTimelineData() {
             const corner = document.createElement('div');
             corner.className = 'bay-label';
             corner.style.cssText = 'border-bottom: 2px solid #e5e7eb; font-size: 0.7rem; color: #9ca3af;';
-            corner.textContent = 'PIAZZOLA';
+            corner.textContent = t('bay_timeline.bay_header');
             grid.appendChild(corner);
 
             const todayIso = new Date().toISOString().split('T')[0];
@@ -385,7 +385,7 @@ function bayTimelineData() {
                         bar.style.cssText = `background-color:${entry.color}; width:${widthPct}%;`;
                         bar.title = entry.job_number + ' - ' + entry.vehicle_plate +
                             ' (' + entry.customer_name + ')' +
-                            (entry.wait_reason ? ' [ATTESA: ' + entry.wait_reason + ']' : '');
+                            (entry.wait_reason ? ' [' + t('bay_timeline.wait_prefix') + entry.wait_reason + ']' : '');
                         bar.innerHTML = `<span class="job-plate">${entry.vehicle_plate}</span><span class="job-title">${entry.job_number}</span>`;
                         cell.appendChild(bar);
                     }

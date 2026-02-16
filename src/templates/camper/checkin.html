@@ -12,24 +12,24 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800"><span data-i18n="nav.checkin">Accettazione</span></a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.jobs">Lavori</span></a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.customers">Clienti</span></a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.quotations">Preventivi</span></a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.invoices">Fatture</span></a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.calendar">Calendario</span></a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -37,35 +37,36 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap"><span data-i18n="nav.checkin">Accettazione</span></a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.jobs">Lavori</span></a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.customers">Clienti</span></a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.quotations">Preventivi</span></a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.invoices">Fatture</span></a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.calendar">Calendario</span></a>
     </div>
 
     <main class="max-w-3xl mx-auto px-4 py-6">
         <!-- Search by plate -->
         <div class="card mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Cerca per Targa</h2>
+            <h2 class="text-xl font-bold text-gray-900 mb-4" data-i18n="checkin.search_by_plate">Cerca per Targa</h2>
             <form @submit.prevent="searchByPlate()" class="flex space-x-3">
                 <input
                     type="text"
                     x-model="searchPlate"
+                    data-i18n-placeholder="checkin.plate_placeholder"
                     placeholder="Es: TI 123456"
                     class="input-field flex-1 uppercase"
                     x-ref="plateInput"
                     autofocus
                     maxlength="20">
-                <button type="submit" class="btn-primary" :disabled="!searchPlate.trim()">
+                <button type="submit" class="btn-primary" :disabled="!searchPlate.trim()" data-i18n="common.search">
                     Cerca
                 </button>
             </form>
-            <p x-show="searching" class="text-sm text-gray-500 mt-2">Ricerca in corso...</p>
+            <p x-show="searching" class="text-sm text-gray-500 mt-2" data-i18n="checkin.searching">Ricerca in corso...</p>
         </div>
 
         <!-- Vehicle Found -->
@@ -82,26 +83,26 @@
 
                 <div class="grid grid-cols-2 gap-4 text-sm mb-4">
                     <div>
-                        <span class="text-gray-500">Proprietario:</span>
+                        <span class="text-gray-500" x-text="t('checkin.owner')">Proprietario:</span>
                         <span class="font-medium" x-text="vehicle.owner_name || '-'"></span>
                     </div>
                     <div>
-                        <span class="text-gray-500">Telefono:</span>
+                        <span class="text-gray-500" x-text="t('checkin.phone')">Telefono:</span>
                         <span class="font-medium" x-text="vehicle.owner_phone || '-'"></span>
                     </div>
                     <div>
-                        <span class="text-gray-500">Colore:</span>
+                        <span class="text-gray-500" x-text="t('checkin.color')">Colore:</span>
                         <span class="font-medium" x-text="vehicle.color || '-'"></span>
                     </div>
                     <div>
-                        <span class="text-gray-500">Ultimo aggiornamento:</span>
+                        <span class="text-gray-500" x-text="t('checkin.last_updated')">Ultimo aggiornamento:</span>
                         <span class="font-medium" x-text="formatDate(vehicle.updated_at)"></span>
                     </div>
                 </div>
 
                 <template x-if="vehicle.notes">
                     <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 mb-4">
-                        <span class="font-medium">Note:</span> <span x-text="vehicle.notes"></span>
+                        <span class="font-medium" x-text="t('common.notes')">Note:</span> <span x-text="vehicle.notes"></span>
                     </div>
                 </template>
 
@@ -109,18 +110,21 @@
                     <button
                         x-show="vehicle.status !== 'checked_in' && vehicle.status !== 'in_service'"
                         @click="checkInVehicle()"
-                        class="btn-primary">
+                        class="btn-primary"
+                        x-text="t('checkin.checkin_vehicle')">
                         Check-In Veicolo
                     </button>
                     <a :href="'/camper/jobs/new?vehicle_id=' + vehicle.id + '&customer_id=' + (vehicle.owner_id || '')"
                        class="btn-secondary"
-                       x-show="vehicle.status === 'checked_in'">
+                       x-show="vehicle.status === 'checked_in'"
+                       x-text="t('checkin.create_quote')">
                         Crea Preventivo
                     </a>
                     <button
                         x-show="vehicle.status === 'ready_for_pickup'"
                         @click="pickUpVehicle()"
-                        class="btn-success">
+                        class="btn-success"
+                        x-text="t('checkin.pickup_vehicle')">
                         Ritiro Veicolo
                     </button>
                 </div>
@@ -131,8 +135,9 @@
         <template x-if="notFound">
             <div class="card mb-6">
                 <div class="text-center py-4 mb-4">
-                    <p class="text-gray-600 mb-2">Veicolo con targa <strong x-text="searchPlate.toUpperCase()"></strong> non trovato.</p>
-                    <button @click="showRegister = true" class="btn-primary">
+                    <p class="text-gray-600 mb-2" x-html="t('checkin.not_found', {plate: searchPlate.toUpperCase()})"></p>
+                    <button @click="showRegister = true" class="btn-primary"
+                            x-text="t('checkin.register_new')">
                         Registra Nuovo Veicolo
                     </button>
                 </div>
@@ -142,68 +147,66 @@
         <!-- Registration Form -->
         <template x-if="showRegister">
             <div class="card mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">Nuovo Veicolo</h3>
+                <h3 class="text-xl font-bold text-gray-900 mb-4" x-text="t('checkin.new_vehicle')">Nuovo Veicolo</h3>
                 <form @submit.prevent="registerNewVehicle()">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Targa *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.plate_label') + ' *'">Targa *</label>
                             <input type="text" x-model="newVehicle.registration_plate" class="input-field uppercase" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.type_label') + ' *'">Tipo *</label>
                             <select x-model="newVehicle.vehicle_type" class="input-field">
-                                <option value="campervan">Camper</option>
-                                <option value="motorhome">Motorhome</option>
-                                <option value="caravan">Caravan</option>
-                                <option value="van">Furgone</option>
-                                <option value="trailer">Rimorchio</option>
-                                <option value="other">Altro</option>
+                                <template x-for="(label, key) in VEHICLE_TYPE_LABELS" :key="key">
+                                    <option :value="key" x-text="label"></option>
+                                </template>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
-                            <input type="text" x-model="newVehicle.make" class="input-field" placeholder="Es: Fiat, VW, Mercedes">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.make')">Marca</label>
+                            <input type="text" x-model="newVehicle.make" class="input-field" :placeholder="t('checkin.make_placeholder')">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Modello</label>
-                            <input type="text" x-model="newVehicle.model" class="input-field" placeholder="Es: Ducato, California">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.model')">Modello</label>
+                            <input type="text" x-model="newVehicle.model" class="input-field" :placeholder="t('checkin.model_placeholder')">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Anno</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.year')">Anno</label>
                             <input type="number" x-model.number="newVehicle.year" class="input-field" min="1950" max="2030">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Colore</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.color_label')">Colore</label>
                             <input type="text" x-model="newVehicle.color" class="input-field">
                         </div>
                     </div>
 
-                    <h4 class="text-lg font-semibold text-gray-900 mt-6 mb-3">Proprietario</h4>
+                    <h4 class="text-lg font-semibold text-gray-900 mt-6 mb-3" x-text="t('checkin.owner_section')">Proprietario</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.name') + ' *'">Nome *</label>
                             <input type="text" x-model="newCustomer.name" class="input-field" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.phone_label')">Telefono</label>
                             <input type="tel" x-model="newCustomer.phone" class="input-field" placeholder="+39 ...">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.email')">Email</label>
                             <input type="email" x-model="newCustomer.email" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Citta</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('checkin.city')">Citta</label>
                             <input type="text" x-model="newCustomer.city" class="input-field">
                         </div>
                     </div>
 
                     <div class="flex space-x-3 mt-6">
                         <button type="submit" class="btn-primary" :disabled="saving">
-                            <span x-show="!saving">Registra e Check-In</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" x-text="t('checkin.register_checkin')">Registra e Check-In</span>
+                            <span x-show="saving" x-text="t('common.saving')">Salvataggio...</span>
                         </button>
-                        <button type="button" @click="showRegister = false; notFound = false" class="btn-secondary">
+                        <button type="button" @click="showRegister = false; notFound = false" class="btn-secondary"
+                                x-text="t('common.cancel')">
                             Annulla
                         </button>
                     </div>
@@ -264,7 +267,7 @@
                         this.notFound = true;
                         this.newVehicle.registration_plate = this.searchPlate.trim().toUpperCase();
                     } else {
-                        showToast('Errore: ' + e.message, 'error');
+                        showToast(t('common.error') + ': ' + e.message, 'error');
                     }
                 } finally {
                     this.searching = false;
@@ -275,9 +278,9 @@
                 try {
                     await API.patch('/api/v1/camper/vehicles/' + this.vehicle.id + '/status', { status: 'checked_in' });
                     this.vehicle.status = 'checked_in';
-                    showToast('Veicolo accettato!', 'success');
+                    showToast(t('checkin.toast_checked_in'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
@@ -285,15 +288,15 @@
                 try {
                     await API.patch('/api/v1/camper/vehicles/' + this.vehicle.id + '/status', { status: 'picked_up' });
                     this.vehicle.status = 'picked_up';
-                    showToast('Veicolo ritirato!', 'success');
+                    showToast(t('checkin.toast_picked_up'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async registerNewVehicle() {
                 if (!this.newVehicle.registration_plate || !this.newCustomer.name) {
-                    showToast('Targa e nome proprietario sono obbligatori.', 'warning');
+                    showToast(t('checkin.validation_required'), 'warning');
                     return;
                 }
                 this.saving = true;
@@ -312,9 +315,9 @@
                     this.vehicle = await API.post('/api/v1/camper/vehicles', vehicleData);
                     this.notFound = false;
                     this.showRegister = false;
-                    showToast('Veicolo registrato e accettato!', 'success');
+                    showToast(t('checkin.toast_registered'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }

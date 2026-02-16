@@ -12,22 +12,22 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
 
                 <!-- Nav Links -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.checkin">Accettazione</a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.jobs">Lavori</a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.appointments">Appuntamenti</a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.quotations">Preventivi</a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini</a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.calendar">Calendario</a>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -35,7 +35,7 @@
                         <p class="text-sm font-semibold text-gray-900" x-text="user.username"></p>
                         <p class="text-xs text-gray-500" x-text="user.roles.filter(r => r.startsWith('camper-')).join(', ')"></p>
                     </div>
-                    <button @click="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                    <button @click="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition" data-i18n="nav.logout">
                         Esci
                     </button>
                 </div>
@@ -45,40 +45,40 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.checkin">Accettazione</a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.jobs">Lavori</a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.appointments">Appuntamenti</a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.quotations">Preventivi</a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini</a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.calendar">Calendario</a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Welcome -->
         <div class="card mb-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white">
-            <h2 class="text-2xl font-bold mb-1" x-text="`Buongiorno, ${user.firstName || user.username}!`"></h2>
-            <p class="opacity-90">Ecco la situazione di oggi.</p>
+            <h2 class="text-2xl font-bold mb-1" x-text="t('dashboard.greeting', {name: user.firstName || user.username})"></h2>
+            <p class="opacity-90" x-text="t('dashboard.today_summary')">Ecco la situazione di oggi.</p>
         </div>
 
         <!-- Stats Cards Row 1 -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Veicoli in Officina</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.vehicles_in_shop">Veicoli in Officina</p>
                 <p class="text-3xl font-bold text-amber-600" x-text="stats.vehicles_in_shop"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Lavori in Corso</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.jobs_in_progress">Lavori in Corso</p>
                 <p class="text-3xl font-bold text-blue-600" x-text="stats.jobs_in_progress"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Attesa Ricambi</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.waiting_parts">Attesa Ricambi</p>
                 <p class="text-3xl font-bold text-red-600" x-text="stats.jobs_waiting_parts"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Preventivi da Approvare</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.pending_quotes">Preventivi da Approvare</p>
                 <p class="text-3xl font-bold text-purple-600" x-text="stats.pending_quotes"></p>
             </div>
         </div>
@@ -86,19 +86,19 @@
         <!-- Stats Cards Row 2 (v2) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">In Ispezione</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.in_inspection">In Ispezione</p>
                 <p class="text-3xl font-bold text-violet-600" x-text="stats.jobs_in_inspection"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Acconti in Attesa</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.pending_deposits">Acconti in Attesa</p>
                 <p class="text-2xl font-bold text-orange-600" x-text="formatPrice(stats.pending_deposits)"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Fatturato Mese</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.monthly_revenue">Fatturato Mese</p>
                 <p class="text-2xl font-bold text-green-600" x-text="formatPrice(stats.total_revenue_month)"></p>
             </div>
             <div class="card" :class="stats.overdue_invoices > 0 ? 'border-2 border-red-300' : ''">
-                <p class="text-sm text-gray-600 font-medium">Fatture Scadute</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.overdue_invoices">Fatture Scadute</p>
                 <p class="text-3xl font-bold" :class="stats.overdue_invoices > 0 ? 'text-red-600' : 'text-gray-400'" x-text="stats.overdue_invoices"></p>
             </div>
         </div>
@@ -106,24 +106,24 @@
         <!-- Active Jobs -->
         <div class="card mb-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900">Lavori Attivi</h3>
-                <a href="/camper/jobs" class="text-amber-600 hover:text-amber-700 text-sm font-medium">Vedi tutti &rarr;</a>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.active_jobs">Lavori Attivi</h3>
+                <a href="/camper/jobs" class="text-amber-600 hover:text-amber-700 text-sm font-medium"><span data-i18n="dashboard.view_all">Vedi tutti</span> &rarr;</a>
             </div>
 
             <template x-if="activeJobs.length === 0">
-                <p class="text-gray-500 text-center py-8">Nessun lavoro attivo al momento.</p>
+                <p class="text-gray-500 text-center py-8" x-text="t('dashboard.no_active_jobs')">Nessun lavoro attivo al momento.</p>
             </template>
 
             <div class="overflow-x-auto" x-show="activeJobs.length > 0">
                 <table class="min-w-full">
                     <thead>
                         <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                            <th class="pb-3 pr-4">Lavoro</th>
-                            <th class="pb-3 pr-4">Veicolo</th>
-                            <th class="pb-3 pr-4">Titolo</th>
-                            <th class="pb-3 pr-4">Assegnato a</th>
-                            <th class="pb-3 pr-4">Stato</th>
-                            <th class="pb-3">Giorni</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_job">Lavoro</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_vehicle">Veicolo</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_title">Titolo</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_assigned">Assegnato a</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_status">Stato</th>
+                            <th class="pb-3" data-i18n="dashboard.th_days">Giorni</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -150,26 +150,26 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <a href="/camper/checkin" class="card hover:shadow-xl transition text-center py-6" x-show="user.isCounter">
                 <span class="text-4xl block mb-2">&#x1F699;</span>
-                <h3 class="text-lg font-bold text-gray-900">Check-In</h3>
-                <p class="text-sm text-gray-500">Accetta veicolo</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.quick_checkin">Check-In</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.quick_checkin_desc">Accetta veicolo</p>
             </a>
 
             <a href="/camper/jobs/new" class="card hover:shadow-xl transition text-center py-6" x-show="user.isCounter">
                 <span class="text-4xl block mb-2">&#x1F4DD;</span>
-                <h3 class="text-lg font-bold text-gray-900">Preventivo</h3>
-                <p class="text-sm text-gray-500">Nuovo lavoro</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.quick_quote">Preventivo</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.quick_quote_desc">Nuovo lavoro</p>
             </a>
 
             <a href="/camper/calendar" class="card hover:shadow-xl transition text-center py-6">
                 <span class="text-4xl block mb-2">&#x1F4C5;</span>
-                <h3 class="text-lg font-bold text-gray-900">Calendario</h3>
-                <p class="text-sm text-gray-500">Pianificazione</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.quick_calendar">Calendario</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.quick_calendar_desc">Pianificazione</p>
             </a>
 
             <a href="/camper/invoices" class="card hover:shadow-xl transition text-center py-6" x-show="user.isManager">
                 <span class="text-4xl block mb-2">&#x1F4B0;</span>
-                <h3 class="text-lg font-bold text-gray-900">Fatture</h3>
-                <p class="text-sm text-gray-500">Gestione fatture</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.quick_invoices">Fatture</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.quick_invoices_desc">Gestione fatture</p>
             </a>
         </div>
     </main>
@@ -200,7 +200,7 @@
                     if (tokenFromUrl) {
                         CamperAuth.setToken(tokenFromUrl);
                         window.history.replaceState({}, document.title, '/camper/dashboard');
-                        showToast('Login effettuato!', 'success');
+                        showToast(t('login.success'), 'success');
                     }
                 }
 
@@ -212,7 +212,7 @@
 
                 const userInfo = CamperAuth.getUserInfo();
                 if (!userInfo || userInfo.roles.length === 0) {
-                    showToast('Accesso non autorizzato.', 'error');
+                    showToast(t('system.unauthorized'), 'error');
                     setTimeout(() => CamperAuth.logout(), 2000);
                     return;
                 }
@@ -259,12 +259,12 @@
             daysSince(dateStr) {
                 if (!dateStr) return '-';
                 const days = Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
-                return days + 'g';
+                return days + t('dashboard.days_suffix');
             },
 
             logout() {
-                if (confirm('Vuoi uscire?')) {
-                    showToast('Disconnessione...', 'info');
+                if (confirm(t('dashboard.confirm_logout'))) {
+                    showToast(t('dashboard.logging_out'), 'info');
                     setTimeout(() => CamperAuth.logout(), 500);
                 }
             }

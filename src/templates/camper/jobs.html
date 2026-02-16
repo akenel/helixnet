@@ -12,24 +12,24 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.checkin">Accettazione</span></a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800"><span data-i18n="nav.jobs">Lavori</span></a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.customers">Clienti</span></a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.quotations">Preventivi</span></a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.invoices">Fatture</span></a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.calendar">Calendario</span></a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="CamperAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -37,22 +37,22 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.checkin">Accettazione</span></a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap"><span data-i18n="nav.jobs">Lavori</span></a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.customers">Clienti</span></a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.quotations">Preventivi</span></a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.invoices">Fatture</span></a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.calendar">Calendario</span></a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header + New Job -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Lavori</h2>
-            <a href="/camper/jobs/new" class="btn-primary" x-show="user.isCounter">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="jobs.title">Lavori</h2>
+            <a href="/camper/jobs/new" class="btn-primary" x-show="user.isCounter" data-i18n="jobs.new_job">
                 + Nuovo Lavoro
             </a>
         </div>
@@ -61,61 +61,57 @@
         <div class="card mb-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="jobs.filter_status">Stato</label>
                     <select x-model="filters.status" @change="loadJobs()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
-                        <option value="quoted">Preventivato</option>
-                        <option value="approved">Approvato</option>
-                        <option value="in_progress">In Corso</option>
-                        <option value="waiting_parts">Attesa Ricambi</option>
-                        <option value="inspection">Ispezione</option>
-                        <option value="completed">Completato</option>
-                        <option value="invoiced">Fatturato</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
+                        <template x-for="(label, key) in JOB_STATUS_LABELS" :key="key">
+                            <option :value="key" x-text="label"></option>
+                        </template>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Meccanico</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="jobs.filter_mechanic">Meccanico</label>
                     <select x-model="filters.mechanic" @change="loadJobs()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
                         <option value="Sebastino">Sebastino</option>
                         <option value="Maximo">Maximo</option>
                         <option value="Seppi">Seppi</option>
                     </select>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (n. lavoro o targa)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="jobs.filter_search">Cerca (n. lavoro o targa)</label>
                     <input type="text" x-model="filters.search" @input.debounce.300ms="loadJobs()"
-                           class="input-field text-sm py-2" placeholder="JOB-... o targa...">
+                           class="input-field text-sm py-2" data-i18n-placeholder="jobs.search_placeholder" placeholder="JOB-... o targa...">
                 </div>
             </div>
         </div>
 
         <!-- Job Count -->
         <p class="text-sm text-gray-500 mb-3" x-show="!loading">
-            <span x-text="filteredJobs.length"></span> lavori trovati
+            <span x-text="filteredJobs.length"></span> <span data-i18n="jobs.count">lavori trovati</span>
         </p>
 
         <!-- Jobs Table -->
         <div class="card overflow-x-auto">
             <template x-if="loading">
-                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('common.loading')">Caricamento...</p>
             </template>
 
             <template x-if="!loading && filteredJobs.length === 0">
-                <p class="text-center text-gray-500 py-8">Nessun lavoro trovato.</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('jobs.no_results')">Nessun lavoro trovato.</p>
             </template>
 
             <table class="min-w-full" x-show="!loading && filteredJobs.length > 0">
                 <thead>
                     <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                        <th class="pb-3 pr-4">N. Lavoro</th>
-                        <th class="pb-3 pr-4">Veicolo</th>
-                        <th class="pb-3 pr-4">Titolo</th>
-                        <th class="pb-3 pr-4">Tipo</th>
-                        <th class="pb-3 pr-4">Assegnato</th>
-                        <th class="pb-3 pr-4">Stato</th>
-                        <th class="pb-3 pr-4">Totale</th>
-                        <th class="pb-3">Data</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_job_number">N. Lavoro</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_vehicle">Veicolo</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_title">Titolo</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_type">Tipo</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_assigned">Assegnato</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_status">Stato</th>
+                        <th class="pb-3 pr-4" data-i18n="jobs.th_total">Totale</th>
+                        <th class="pb-3" data-i18n="jobs.th_date">Data</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -132,7 +128,7 @@
                             </td>
                             <td class="py-3 pr-4 text-sm text-gray-700">
                                 <span x-text="job.actual_total > 0 ? formatPrice(job.actual_total) : formatPrice(job.estimated_total)"></span>
-                                <span x-show="job.actual_total == 0" class="text-xs text-gray-400">(stima)</span>
+                                <span x-show="job.actual_total == 0" class="text-xs text-gray-400" x-text="t('jobs.estimate_tag')">(stima)</span>
                             </td>
                             <td class="py-3 text-sm text-gray-500" x-text="formatDate(job.created_at)"></td>
                         </tr>
@@ -203,7 +199,7 @@
                     if (this.filters.mechanic) url += '&mechanic=' + encodeURIComponent(this.filters.mechanic);
                     this.jobs = await API.get(url);
                 } catch (e) {
-                    showToast('Errore caricamento lavori: ' + e.message, 'error');
+                    showToast(t('jobs.load_error') + e.message, 'error');
                 } finally {
                     this.loading = false;
                 }

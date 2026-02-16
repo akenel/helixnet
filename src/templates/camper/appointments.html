@@ -12,27 +12,27 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F69C;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Camper & Tour</h1>
-                        <p class="text-xs text-gray-500">Gestione Servizi</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">Camper & Tour</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Servizi</p>
                     </div>
                 </div>
 
                 <!-- Desktop Nav Links -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Accettazione</a>
-                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Lavori</a>
-                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
-                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">Appuntamenti</a>
-                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Preventivi</a>
-                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Calendario</a>
+                    <a href="/camper/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+                    <a href="/camper/checkin" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.checkin">Accettazione</span></a>
+                    <a href="/camper/jobs" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.jobs">Lavori</span></a>
+                    <a href="/camper/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.customers">Clienti</span></a>
+                    <a href="/camper/appointments" class="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+                    <a href="/camper/quotations" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.quotations">Preventivi</span></a>
+                    <a href="/camper/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+                    <a href="/camper/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.invoices">Fatture</span></a>
+                    <a href="/camper/calendar" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"><span data-i18n="nav.calendar">Calendario</span></a>
                 </div>
 
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="nav.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -40,29 +40,29 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Accettazione</a>
-        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Lavori</a>
-        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
-        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">Appuntamenti</a>
-        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Preventivi</a>
-        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Calendario</a>
+        <a href="/camper/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.dashboard">Cruscotto</span></a>
+        <a href="/camper/checkin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.checkin">Accettazione</span></a>
+        <a href="/camper/jobs" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.jobs">Lavori</span></a>
+        <a href="/camper/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.customers">Clienti</span></a>
+        <a href="/camper/appointments" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap"><span data-i18n="nav.appointments">Appuntamenti</span></a>
+        <a href="/camper/quotations" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.quotations">Preventivi</span></a>
+        <a href="/camper/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.purchase_orders">Ordini</span></a>
+        <a href="/camper/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.invoices">Fatture</span></a>
+        <a href="/camper/calendar" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap"><span data-i18n="nav.calendar">Calendario</span></a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Appuntamenti di Oggi</h2>
+                <h2 class="text-2xl font-bold text-gray-900" data-i18n="appointments.title">Appuntamenti di Oggi</h2>
                 <p class="text-sm text-gray-500" x-text="todayFormatted"></p>
             </div>
             <div class="flex space-x-3">
-                <button @click="openQuickWalkIn()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg transition-all duration-200 text-sm">
+                <button @click="openQuickWalkIn()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg transition-all duration-200 text-sm" data-i18n="appointments.quick_walkin">
                     + Walk-in Rapido
                 </button>
-                <button @click="openNewAppointment()" class="btn-primary text-sm py-2.5">
+                <button @click="openNewAppointment()" class="btn-primary text-sm py-2.5" data-i18n="appointments.new_appointment">
                     + Nuovo Appuntamento
                 </button>
             </div>
@@ -71,19 +71,19 @@
         <!-- Stats Summary -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Prenotati</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="appointments.stat_booked">Prenotati</p>
                 <p class="text-3xl font-bold text-blue-600" x-text="bookedAppointments.length"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Walk-in in Coda</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="appointments.stat_walkin_queue">Walk-in in Coda</p>
                 <p class="text-3xl font-bold text-amber-600" x-text="walkInAppointments.length"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">In Servizio</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="appointments.stat_in_service">In Servizio</p>
                 <p class="text-3xl font-bold text-green-600" x-text="allAppointments.filter(a => a.status === 'in_service').length"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Completati</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="appointments.stat_completed">Completati</p>
                 <p class="text-3xl font-bold text-gray-400" x-text="completedToday.length"></p>
             </div>
         </div>
@@ -94,13 +94,13 @@
             <div>
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-                    Prenotati
+                    <span data-i18n="appointments.section_booked">Prenotati</span>
                     <span class="ml-2 text-sm font-normal text-gray-500" x-text="'(' + bookedAppointments.length + ')'"></span>
                 </h3>
 
                 <template x-if="bookedAppointments.length === 0">
                     <div class="card text-center py-8">
-                        <p class="text-gray-500">Nessun appuntamento prenotato per oggi.</p>
+                        <p class="text-gray-500" x-text="t('appointments.no_booked')">Nessun appuntamento prenotato per oggi.</p>
                     </div>
                 </template>
 
@@ -125,19 +125,19 @@
 
                             <div class="grid grid-cols-2 gap-2 text-sm mb-3">
                                 <div>
-                                    <span class="text-gray-500">Orario:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.time')">Orario:</span>
                                     <span class="font-semibold" x-text="appt.scheduled_time || '-'"></span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500">Durata:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.duration')">Durata:</span>
                                     <span class="font-medium" x-text="appt.estimated_duration_minutes + ' min'"></span>
                                 </div>
                                 <div x-show="appt.vehicle_plate">
-                                    <span class="text-gray-500">Targa:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.plate')">Targa:</span>
                                     <span class="font-mono font-semibold text-amber-700" x-text="appt.vehicle_plate"></span>
                                 </div>
                                 <div x-show="appt.bay_name">
-                                    <span class="text-gray-500">Baia:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.bay')">Baia:</span>
                                     <span class="font-medium" x-text="appt.bay_name"></span>
                                 </div>
                             </div>
@@ -154,11 +154,13 @@
                                 <template x-if="appt.status === 'scheduled'">
                                     <div class="flex flex-wrap gap-2">
                                         <button @click="advanceStatus(appt.id, 'waiting')"
-                                                class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_arrived')">
                                             Arrivato
                                         </button>
                                         <button @click="advanceStatus(appt.id, 'no_show')"
-                                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_no_show')">
                                             Non Presentato
                                         </button>
                                     </div>
@@ -169,17 +171,19 @@
                                     <div class="flex flex-wrap gap-2 items-center">
                                         <select x-model="selectedBayId"
                                                 class="text-sm border-2 border-gray-300 rounded-lg py-1.5 px-2 focus:border-amber-500">
-                                            <option value="">-- Baia --</option>
+                                            <option value="" x-text="t('appointments.select_bay')">-- Baia --</option>
                                             <template x-for="bay in bays" :key="bay.id">
                                                 <option :value="bay.id" x-text="bay.name"></option>
                                             </template>
                                         </select>
                                         <button @click="startService(appt.id)"
-                                                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_start_service')">
                                             Inizio Servizio
                                         </button>
                                         <button @click="cancelAppointment(appt.id)"
-                                                class="bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_cancel')">
                                             Cancella
                                         </button>
                                     </div>
@@ -189,7 +193,8 @@
                                 <template x-if="appt.status === 'in_service'">
                                     <div class="flex gap-2">
                                         <button @click="advanceStatus(appt.id, 'completed')"
-                                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_completed')">
                                             Completato
                                         </button>
                                     </div>
@@ -197,7 +202,7 @@
 
                                 <!-- COMPLETED: no actions -->
                                 <template x-if="appt.status === 'completed'">
-                                    <span class="text-sm text-green-600 font-medium">Completato</span>
+                                    <span class="text-sm text-green-600 font-medium" x-text="t('appointments.completed_label')">Completato</span>
                                 </template>
                             </div>
                         </div>
@@ -209,13 +214,13 @@
             <div>
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <span class="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
-                    Coda Walk-in
+                    <span data-i18n="appointments.section_walkin">Coda Walk-in</span>
                     <span class="ml-2 text-sm font-normal text-gray-500" x-text="'(' + walkInAppointments.length + ')'"></span>
                 </h3>
 
                 <template x-if="walkInAppointments.length === 0">
                     <div class="card text-center py-8">
-                        <p class="text-gray-500">Nessun walk-in in coda.</p>
+                        <p class="text-gray-500" x-text="t('appointments.no_walkin')">Nessun walk-in in coda.</p>
                     </div>
                 </template>
 
@@ -243,7 +248,8 @@
                                           x-text="APPT_STATUS_LABELS[appt.status] || appt.status">
                                     </span>
                                     <template x-if="appt.priority === 'urgent'">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white"
+                                              x-text="t('appointments.urgent')">
                                             URGENTE
                                         </span>
                                     </template>
@@ -252,19 +258,19 @@
 
                             <div class="grid grid-cols-2 gap-2 text-sm mb-3">
                                 <div>
-                                    <span class="text-gray-500">In attesa da:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.waiting_since')">In attesa da:</span>
                                     <span class="font-semibold text-amber-700" x-text="timeWaiting(appt.arrival_time)"></span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500">Durata stim.:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.est_duration')">Durata stim.:</span>
                                     <span class="font-medium" x-text="appt.estimated_duration_minutes + ' min'"></span>
                                 </div>
                                 <div x-show="appt.vehicle_plate">
-                                    <span class="text-gray-500">Targa:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.plate')">Targa:</span>
                                     <span class="font-mono font-semibold text-amber-700" x-text="appt.vehicle_plate"></span>
                                 </div>
                                 <div x-show="appt.bay_name">
-                                    <span class="text-gray-500">Baia:</span>
+                                    <span class="text-gray-500" x-text="t('appointments.bay')">Baia:</span>
                                     <span class="font-medium" x-text="appt.bay_name"></span>
                                 </div>
                             </div>
@@ -282,17 +288,19 @@
                                     <div class="flex flex-wrap gap-2 items-center">
                                         <select x-model="selectedBayId"
                                                 class="text-sm border-2 border-gray-300 rounded-lg py-1.5 px-2 focus:border-amber-500">
-                                            <option value="">-- Baia --</option>
+                                            <option value="" x-text="t('appointments.select_bay')">-- Baia --</option>
                                             <template x-for="bay in bays" :key="bay.id">
                                                 <option :value="bay.id" x-text="bay.name"></option>
                                             </template>
                                         </select>
                                         <button @click="startService(appt.id)"
-                                                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_start_service')">
                                             Inizio Servizio
                                         </button>
                                         <button @click="cancelAppointment(appt.id)"
-                                                class="bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_cancel')">
                                             Cancella
                                         </button>
                                     </div>
@@ -302,7 +310,8 @@
                                 <template x-if="appt.status === 'in_service'">
                                     <div class="flex gap-2">
                                         <button @click="advanceStatus(appt.id, 'completed')"
-                                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition">
+                                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition"
+                                                x-text="t('appointments.btn_completed')">
                                             Completato
                                         </button>
                                     </div>
@@ -310,7 +319,7 @@
 
                                 <!-- COMPLETED: no actions -->
                                 <template x-if="appt.status === 'completed'">
-                                    <span class="text-sm text-green-600 font-medium">Completato</span>
+                                    <span class="text-sm text-green-600 font-medium" x-text="t('appointments.completed_label')">Completato</span>
                                 </template>
                             </div>
                         </div>
@@ -325,7 +334,7 @@
                 <div class="flex justify-between items-center cursor-pointer" @click="showCompleted = !showCompleted">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center">
                         <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                        Completati Oggi
+                        <span data-i18n="appointments.completed_today">Completati Oggi</span>
                         <span class="ml-2 text-sm font-normal text-gray-500" x-text="'(' + completedToday.length + ')'"></span>
                     </h3>
                     <span class="text-gray-400" x-text="showCompleted ? '&#9650;' : '&#9660;'"></span>
@@ -336,18 +345,18 @@
                         <table class="min-w-full">
                             <thead>
                                 <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                                    <th class="pb-3 pr-4">Cliente</th>
-                                    <th class="pb-3 pr-4">Tipo</th>
-                                    <th class="pb-3 pr-4">Descrizione</th>
-                                    <th class="pb-3 pr-4">Targa</th>
-                                    <th class="pb-3">Completato</th>
+                                    <th class="pb-3 pr-4" data-i18n="appointments.completed_th_customer">Cliente</th>
+                                    <th class="pb-3 pr-4" data-i18n="appointments.completed_th_type">Tipo</th>
+                                    <th class="pb-3 pr-4" data-i18n="appointments.completed_th_desc">Descrizione</th>
+                                    <th class="pb-3 pr-4" data-i18n="appointments.completed_th_plate">Targa</th>
+                                    <th class="pb-3" data-i18n="appointments.completed_th_completed">Completato</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template x-for="appt in completedToday" :key="appt.id">
                                     <tr class="border-b">
                                         <td class="py-2 pr-4 text-sm font-semibold text-gray-900" x-text="appt.customer_name"></td>
-                                        <td class="py-2 pr-4 text-xs text-gray-600" x-text="appt.appointment_type === 'booked' ? 'Prenotato' : 'Walk-in'"></td>
+                                        <td class="py-2 pr-4 text-xs text-gray-600" x-text="appt.appointment_type === 'booked' ? t('appointments.type_booked') : t('appointments.type_walkin')"></td>
                                         <td class="py-2 pr-4 text-sm text-gray-700 max-w-xs truncate" x-text="appt.description"></td>
                                         <td class="py-2 pr-4 text-sm font-mono text-gray-600" x-text="appt.vehicle_plate || '-'"></td>
                                         <td class="py-2 text-sm text-gray-500" x-text="formatDateTime(appt.service_completed_at)"></td>
@@ -371,25 +380,27 @@
         <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">Nuovo Appuntamento</h3>
+                    <h3 class="text-xl font-bold text-gray-900" data-i18n="appointments.modal_title">Nuovo Appuntamento</h3>
                     <button @click="showNewModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
                 </div>
 
                 <form @submit.prevent="createAppointment()">
                     <!-- Appointment Type Toggle -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="appointments.type_label">Tipo</label>
                         <div class="flex rounded-lg border-2 border-gray-300 overflow-hidden">
                             <button type="button"
                                     @click="newAppt.appointment_type = 'booked'"
                                     class="flex-1 py-2.5 text-sm font-semibold transition"
-                                    :class="newAppt.appointment_type === 'booked' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                                    :class="newAppt.appointment_type === 'booked' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'"
+                                    data-i18n="appointments.type_booked_btn">
                                 Prenotato
                             </button>
                             <button type="button"
                                     @click="newAppt.appointment_type = 'walk_in'"
                                     class="flex-1 py-2.5 text-sm font-semibold transition"
-                                    :class="newAppt.appointment_type === 'walk_in' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                                    :class="newAppt.appointment_type === 'walk_in' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'"
+                                    data-i18n="appointments.type_walkin_btn">
                                 Walk-in
                             </button>
                         </div>
@@ -397,73 +408,74 @@
 
                     <!-- Customer Name -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Cliente *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_customer_name">Nome Cliente *</label>
                         <input type="text" x-model="newAppt.customer_name" class="input-field" required
-                               placeholder="Es: Marco con il Ducato bianco">
+                               data-i18n-placeholder="appointments.customer_placeholder" placeholder="Es: Marco con il Ducato bianco">
                     </div>
 
                     <!-- Customer Phone -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_phone">Telefono</label>
                         <input type="tel" x-model="newAppt.customer_phone" class="input-field" placeholder="+39 ...">
                     </div>
 
                     <!-- Vehicle Plate -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Targa</label>
-                        <input type="text" x-model="newAppt.vehicle_plate" class="input-field uppercase" placeholder="Es: TP 123456">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_plate">Targa</label>
+                        <input type="text" x-model="newAppt.vehicle_plate" class="input-field uppercase"
+                               data-i18n-placeholder="appointments.plate_placeholder" placeholder="Es: TP 123456">
                     </div>
 
                     <!-- Description -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione Lavoro *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_description">Descrizione Lavoro *</label>
                         <textarea x-model="newAppt.description" class="input-field" rows="2" required
-                                  placeholder="Es: controllo freni, perdita tetto, cambio olio"></textarea>
+                                  data-i18n-placeholder="appointments.desc_placeholder" placeholder="Es: controllo freni, perdita tetto, cambio olio"></textarea>
                     </div>
 
                     <!-- Scheduled Date -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_date">Data</label>
                         <input type="date" x-model="newAppt.scheduled_date" class="input-field">
                     </div>
 
                     <!-- Scheduled Time (only for booked) -->
                     <div class="mb-4" x-show="newAppt.appointment_type === 'booked'">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Orario *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_time">Orario *</label>
                         <input type="time" x-model="newAppt.scheduled_time" class="input-field"
                                :required="newAppt.appointment_type === 'booked'">
                     </div>
 
                     <!-- Estimated Duration -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Durata Stimata (minuti)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_duration">Durata Stimata (minuti)</label>
                         <input type="number" x-model.number="newAppt.estimated_duration_minutes" class="input-field"
                                min="15" max="480" step="15">
                     </div>
 
                     <!-- Priority (only for walk-ins) -->
                     <div class="mb-4" x-show="newAppt.appointment_type === 'walk_in'">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Priorita</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_priority">Priorita</label>
                         <select x-model="newAppt.priority" class="input-field">
-                            <option value="normal">Normale</option>
-                            <option value="urgent">Urgente</option>
+                            <option value="normal" data-i18n="appointments.priority_normal">Normale</option>
+                            <option value="urgent" data-i18n="appointments.priority_urgent">Urgente</option>
                         </select>
                     </div>
 
                     <!-- Notes -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.label_notes">Note</label>
                         <textarea x-model="newAppt.notes" class="input-field" rows="2"
-                                  placeholder="Note interne..."></textarea>
+                                  data-i18n-placeholder="appointments.notes_placeholder" placeholder="Note interne..."></textarea>
                     </div>
 
                     <!-- Submit -->
                     <div class="flex space-x-3">
                         <button type="submit" class="btn-primary flex-1" :disabled="saving">
-                            <span x-show="!saving">Crea Appuntamento</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" data-i18n="appointments.create_appointment">Crea Appuntamento</span>
+                            <span x-show="saving" data-i18n="common.saving">Salvataggio...</span>
                         </button>
-                        <button type="button" @click="showNewModal = false" class="btn-secondary">
+                        <button type="button" @click="showNewModal = false" class="btn-secondary" data-i18n="common.cancel">
                             Annulla
                         </button>
                     </div>
@@ -482,39 +494,39 @@
         <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">Walk-in Rapido</h3>
+                    <h3 class="text-xl font-bold text-gray-900" data-i18n="appointments.quick_title">Walk-in Rapido</h3>
                     <button @click="showQuickModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
                 </div>
 
                 <form @submit.prevent="createQuickWalkIn()">
                     <!-- Customer Name -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Cliente *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.quick_customer">Nome Cliente *</label>
                         <input type="text" x-model="quickWalkIn.customer_name" class="input-field" required
-                               placeholder="Es: Marco con il Ducato bianco" x-ref="quickNameInput">
+                               data-i18n-placeholder="appointments.customer_placeholder" placeholder="Es: Marco con il Ducato bianco" x-ref="quickNameInput">
                     </div>
 
                     <!-- Description -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cosa Serve? *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.quick_desc_label">Cosa Serve? *</label>
                         <textarea x-model="quickWalkIn.description" class="input-field" rows="2" required
-                                  placeholder="Es: controllo freni, perdita tetto"></textarea>
+                                  data-i18n-placeholder="appointments.quick_desc_placeholder" placeholder="Es: controllo freni, perdita tetto"></textarea>
                     </div>
 
                     <!-- Vehicle Plate -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Targa</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="appointments.quick_plate">Targa</label>
                         <input type="text" x-model="quickWalkIn.vehicle_plate" class="input-field uppercase"
-                               placeholder="Es: TP 123456">
+                               data-i18n-placeholder="appointments.quick_plate_placeholder" placeholder="Es: TP 123456">
                     </div>
 
                     <!-- Submit -->
                     <div class="flex space-x-3">
                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200 flex-1" :disabled="saving">
-                            <span x-show="!saving">Aggiungi alla Coda</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" data-i18n="appointments.quick_add">Aggiungi alla Coda</span>
+                            <span x-show="saving" data-i18n="common.saving">Salvataggio...</span>
                         </button>
-                        <button type="button" @click="showQuickModal = false" class="btn-secondary">
+                        <button type="button" @click="showQuickModal = false" class="btn-secondary" data-i18n="common.cancel">
                             Annulla
                         </button>
                     </div>
@@ -564,18 +576,11 @@
                 vehicle_plate: ''
             },
 
-            // Status labels in Italian
-            APPT_STATUS_LABELS: {
-                'scheduled': 'Programmato',
-                'waiting': 'In Attesa',
-                'in_service': 'In Servizio',
-                'completed': 'Completato',
-                'no_show': 'Non Presentato',
-                'cancelled': 'Annullato'
-            },
+            // Status labels from i18n
+            APPT_STATUS_LABELS: CAMPER_STRINGS[CamperConfig.lang].status.appointment,
 
             get todayFormatted() {
-                return new Date().toLocaleDateString('it-IT', {
+                return new Date().toLocaleDateString(CamperConfig.locale, {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                 });
             },
@@ -615,7 +620,7 @@
 
                 const userInfo = CamperAuth.getUserInfo();
                 if (!userInfo || userInfo.roles.length === 0) {
-                    showToast('Accesso non autorizzato.', 'error');
+                    showToast(t('system.unauthorized'), 'error');
                     setTimeout(() => CamperAuth.logout(), 2000);
                     return;
                 }
@@ -653,7 +658,7 @@
                 } catch (e) {
                     console.error('Appointments load failed:', e);
                     if (this.loading) {
-                        showToast('Errore caricamento appuntamenti: ' + e.message, 'error');
+                        showToast(t('appointments.toast_load_error') + e.message, 'error');
                     }
                 } finally {
                     this.loading = false;
@@ -725,11 +730,11 @@
 
             async createAppointment() {
                 if (!this.newAppt.customer_name.trim() || !this.newAppt.description.trim()) {
-                    showToast('Nome cliente e descrizione sono obbligatori.', 'warning');
+                    showToast(t('appointments.toast_name_desc_required'), 'warning');
                     return;
                 }
                 if (this.newAppt.appointment_type === 'booked' && !this.newAppt.scheduled_time) {
-                    showToast('Per le prenotazioni, l\'orario e obbligatorio.', 'warning');
+                    showToast(t('appointments.toast_time_required'), 'warning');
                     return;
                 }
 
@@ -750,10 +755,10 @@
 
                     await API.post('/api/v1/camper/appointments', payload);
                     this.showNewModal = false;
-                    showToast('Appuntamento creato!', 'success');
+                    showToast(t('appointments.toast_created'), 'success');
                     await this.loadTodayAppointments();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -761,7 +766,7 @@
 
             async createQuickWalkIn() {
                 if (!this.quickWalkIn.customer_name.trim() || !this.quickWalkIn.description.trim()) {
-                    showToast('Nome cliente e descrizione sono obbligatori.', 'warning');
+                    showToast(t('appointments.toast_name_desc_required'), 'warning');
                     return;
                 }
 
@@ -779,10 +784,10 @@
 
                     await API.post('/api/v1/camper/appointments', payload);
                     this.showQuickModal = false;
-                    showToast('Walk-in aggiunto alla coda!', 'success');
+                    showToast(t('appointments.toast_walkin_added'), 'success');
                     await this.loadTodayAppointments();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -792,10 +797,10 @@
                 try {
                     const payload = { status: newStatus };
                     await API.patch('/api/v1/camper/appointments/' + appointmentId + '/status', payload);
-                    showToast('Stato aggiornato!', 'success');
+                    showToast(t('appointments.toast_status_updated'), 'success');
                     await this.loadTodayAppointments();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
@@ -807,27 +812,27 @@
                     }
                     await API.patch('/api/v1/camper/appointments/' + appointmentId + '/status', payload);
                     this.selectedBayId = '';
-                    showToast('Servizio iniziato!', 'success');
+                    showToast(t('appointments.toast_service_started'), 'success');
                     await this.loadTodayAppointments();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async cancelAppointment(appointmentId) {
-                if (!confirm('Vuoi cancellare questo appuntamento?')) return;
+                if (!confirm(t('appointments.cancel_confirm'))) return;
                 try {
                     await API.delete('/api/v1/camper/appointments/' + appointmentId);
-                    showToast('Appuntamento cancellato.', 'info');
+                    showToast(t('appointments.toast_cancelled'), 'info');
                     await this.loadTodayAppointments();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             logout() {
-                if (confirm('Vuoi uscire?')) {
-                    showToast('Disconnessione...', 'info');
+                if (confirm(t('dashboard.confirm_logout'))) {
+                    showToast(t('dashboard.logging_out'), 'info');
                     setTimeout(() => CamperAuth.logout(), 500);
                 }
             }
