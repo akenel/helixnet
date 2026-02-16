@@ -392,12 +392,13 @@ rm music-processed.m4a
 
 ### 4.1 File Organization
 
-**Main folder = YouTube upload kit.** 4 files max. Everything else goes in `arc/`.
+**Main folder = YouTube upload kit.** 5 files max. Everything else goes in `arc/`.
 
 ```
 videos/{app}/DEMO-{feature}/
 ├── {APP}-EP{N}-{Title}.mp4            <- FINAL VIDEO (upload this)
 ├── {APP}-EP{N}-YOUTUBE-DESCRIPTION.txt <- Select all, paste into YouTube
+├── {APP}-EP{N}-YOUTUBE-TAGS.txt       <- Copy-paste into YouTube tags
 ├── thumbnail.png                       <- Upload as custom thumbnail
 ├── thumbnail.html                      <- Source (for future edits)
 └── arc/                                <- ALL production artifacts
@@ -431,7 +432,13 @@ videos/{app}/DEMO-{feature}/
 
 Every video needs a complete YouTube kit. Create these files during post-production:
 
-**1. Description file** (`{APP}-EP{N}-YOUTUBE-DESCRIPTION.txt`)
+**1. Tags file** (`{APP}-EP{N}-YOUTUBE-TAGS.txt`)
+- Comma-separated keywords, one line, copy-paste into YouTube tags field
+- Mix broad terms (camper, vanlife, workshop) with specific features shown in the episode
+- Include: business name, location, tech stack keywords, feature names
+- Create during post-production -- don't leave it for upload time
+
+**2. Description file** (`{APP}-EP{N}-YOUTUBE-DESCRIPTION.txt`)
 - **Max 5000 characters** (YouTube limit) -- aim for 4500-4800
 - Must be select-all-paste-ready (no editing needed at upload time)
 - Structure:
@@ -468,7 +475,7 @@ Every video needs a complete YouTube kit. Create these files during post-product
 - Music credit is MANDATORY for CC BY tracks
 - Verify char count: `wc -c DESCRIPTION.txt` (must be < 5000)
 
-**2. Thumbnail** (`thumbnail.html` + `thumbnail.png`)
+**3. Thumbnail** (`thumbnail.html` + `thumbnail.png`)
 - 1280x720 pixels (YouTube standard)
 - **Big fonts** -- must be readable on mobile phone screens
 - Title: 100-130px, subtitle: 30-36px, stat numbers: 50px+
@@ -476,7 +483,7 @@ Every video needs a complete YouTube kit. Create these files during post-product
 - Generate: `node -e "..." > thumbnail.png` (Puppeteer screenshot)
 - Match the video's visual theme (same colors as intro/outro)
 
-**3. Title** (under 70 chars)
+**4. Title** (under 70 chars)
 - Format: `{Business} -- {Feature} | EP{N}: {Subtitle}`
 - Example: `Camper & Tour -- Service Management System | EP1: First Impressions`
 
@@ -549,7 +556,7 @@ MUSIC (royalty-free only for YouTube!):
   Fade in 2s → Fade out 3.5s → Two-step method (process audio, then mux)
 
 YOUTUBE KIT:
-  Description.txt (< 5000 chars) + thumbnail.png (1280x720) + title (< 70 chars)
+  Description.txt (< 5000 chars) + Tags.txt + thumbnail.png (1280x720) + title (< 70 chars)
 
 TRIM VERIFICATION:
   Extract end frames → Find exact transition → Cut 0.5s BEFORE junk appears
@@ -575,6 +582,9 @@ COMMANDS:
 | Feb 11 | KC EP6 | 1 | Clean run |
 | Feb 13 | ISOTTO Demo | 3 | Take 1: OBS captured GNOME Settings. Take 2: terminal visible + mic on. Take 3: GOLD. Scene title card method invented in post. |
 | Feb 15 | CT EP1 - First Impressions | 2 | Take 1: bad timing, alt-tab visible. Take 2: GOLD. Baked-in intro/outro method -- no separate stitch step. Folder cleanup SOP added. |
+| Feb 15 | CT EP2 - Quote to Invoice | 1 | Clean run. YouTube kit + post-production in one session. |
+| Feb 16 | CT EP3 - The Full Lifecycle | 3 | Take 1: broken logout + quotation error. Take 2: logout fixed, quotation still broken. Take 3: GOLD. Fixed Alpine.js row clicks, re-encode trim for intro card. Chrome translate hack for English. |
+| Feb 16 | CT EP4 - The Workshop Floor | 2 | Take 1: empty appointments (stale seed data). Take 2: same seed issue but walk-in + bay timeline GOLD. Baked-in pipeline, 1:38 final. Tags file added to SOP. |
 
 ---
 
@@ -593,6 +603,26 @@ COMMANDS:
 - **Fix:** Extract frames at 0.5s intervals near the cut point: `ffmpeg -ss N.5 -i video.mp4 -frames:v 1 frame.jpg`
 - Find the EXACT frame where junk appears, then cut 0.5s BEFORE it
 - **Rule:** Always verify the last 3-4 frames of the final video. Desktop/terminal leak is the #1 amateur mistake.
+
+### No Angled Brackets in YouTube Descriptions (Feb 16, 2026)
+- YouTube strips `<` and `>` characters from descriptions
+- Arrows like `->` get broken -- use `to` or a dash instead
+- Example: "Simona to Nino" not "Simona -> Nino"
+- **Rule:** Never use `<`, `>`, or `->` in YouTube description text files
+
+### Stream Copy Skips Keyframes on Trim (Feb 16, 2026)
+- `ffmpeg -ss 35 -c:v copy` can only cut at keyframes
+- If the intro card is between keyframes, it gets skipped entirely
+- First take of CT EP3 started at the login page -- missing the entire intro card
+- **Fix:** Use `-c:v libx264` (re-encode) when trimming, not `-c:v copy`
+- **Rule:** When precision trim matters (intro cards), always re-encode
+
+### Alpine.js @click Rows Don't Work in Puppeteer (Feb 16, 2026)
+- Table rows with `@click="window.location.href=..."` won't navigate when clicked via `page.evaluate(() => row.click())`
+- `document.querySelector('a[href*="/quotations/"]')` matched the "New Quotation" BUTTON, not a table row
+- This navigated to `/camper/quotations/new` which tried to load quotation ID "new" from the API
+- **Fix:** Fetch entity IDs from the API with the session token, then `page.goto()` directly
+- **Rule:** For Alpine.js apps, never click table rows in Puppeteer -- navigate by URL
 
 ### Clean Folders Make YouTube Loading Faster (Feb 15, 2026)
 - After post-production, folders had 10+ files mixed together

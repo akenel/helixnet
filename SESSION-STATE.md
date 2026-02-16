@@ -1,140 +1,104 @@
-# SESSION STATE - February 12, 2026
+# SESSION STATE - February 17, 2026
 
-*Last Updated: Wed Feb 12, 2026 ~7:45am - At Gym 4U, waiting for 8am open. EP4 on YouTube.*
-
----
-
-## TODAY'S WINS (Wed Feb 12)
-
-1. **EP4 ON YOUTUBE** -- https://youtu.be/_ap7-hgtC9o -- Thumbnail, description, SRT subtitles, timestamps all done. First public episode.
-
-### Yesterday (Tue Feb 11)
-1. **EP4 VOICED** -- First episode with voiceover. Recorded 9 scenes at McDonald's with Jabra headset, Tigs stitched + normalized + merged. New voiceover pipeline proven.
-2. **AXA email sent** -- Invoices (EUR 2,405.50) sent to schaden@axa.ch + water damage flagged with 3 questions.
-3. **Color Clean cards delivered** -- Owner meeting done in person. Approval form template built.
-4. **Pizza Planet cards delivered** -- Free beer + panino + 4 monster slices = 7 EUR.
-5. **Phone fixed** -- Fairphone 3+ force restart (Power 10s).
+*Last Updated: Mon Feb 17, 2026 ~12:00am - PuntaTipa Room 101, Trapani. EP4 on YouTube. Anne onboarding at 10:30 CET.*
 
 ---
 
-## KC VIDEO SERIES - EP4 VOICED, EP5-EP8 SILENT
+## TODAY'S PLAN (Mon Feb 17)
 
-**Voiceover Pipeline (NEW - Feb 11):**
-Record each scene as separate Telegram voice message (.ogg) → Whisper transcribe → ffmpeg trim/normalize/concat/speed-fit → merge into silent video
+### 10:30 CET -- Anne Onboarding Meeting
+- Anne is the new human tester for HelixNet
+- Needs: test account, orientation, testing checklist
+- Good opportunity to document the testing workflow properly
 
-| EP | Title | Duration | Video | Voice | File | YouTube |
-|----|-------|----------|-------|-------|------|---------|
-| 4 | Keys to the Kingdom | 2:32 | FINAL | VOICED | `EP4.../KC-EP4-Keys-to-the-Kingdom-WITH-VOICE.mp4` | [YouTube](https://youtu.be/_ap7-hgtC9o) |
-| 5 | RBAC Deep Dive | 3:19 | FINAL | TODO | `EP5.../KC-EP5-RBAC-Deep-Dive-FINAL.mp4` | -- |
-| 6 | Client Architecture | 2:30 | FINAL | TODO | `EP6.../KC-EP6-Client-Architecture-FINAL.mp4` | -- |
-| 7 | Authentication Flows | 2:35 | FINAL | TODO | `EP7.../KC-EP7-Authentication-Flows-FINAL.mp4` | -- |
-| 8 | Multi-Tenant Platform | 2:30 | FINAL | TODO | `EP8.../KC-EP8-Multi-Tenant-Platform-FINAL.mp4` | -- |
+---
 
-**Voiceover technical notes:**
-- Source: Opus 48kHz mono (.ogg from Telegram voice messages)
-- CRITICAL: Force `-ar 48000` at every ffmpeg step (loudnorm silently upsamples to 192kHz = lion growl)
-- Speed adjust: atempo ~1.1x to fit content window (barely noticeable)
-- Fades: 0.5s in at voice start, 3s out before outro
+## YESTERDAY'S WINS (Sun Feb 16)
 
-**Teleprompter PDFs:** `EP4.../voiceover-script-TELEPROMPTER.pdf` (built but not needed -- scene-by-scene recording is better)
+1. **CT EP4 ON YOUTUBE** -- https://youtu.be/e9bJpoSyOZU -- "The Workshop Floor" - appointments, walk-in, bay timeline, 1:38 runtime
+2. **CT EP3 ON YOUTUBE** -- https://youtu.be/L9g4MBRDr6I -- "The Full Lifecycle" - 3 roles, 8 workflow steps, 4:18 runtime
+3. **Wipro SAP PI/PO contract** -- RTR signed, updated CV submitted to Cholleti (EUR 320/day, 100% remote, Czechia)
+4. **i18n system complete** -- Full English mode via `?lang=en` across all 14 Camper templates
+5. **Video Production SOP updated** -- Tags file now mandatory in YouTube kit
 
-**YouTube assets:** `~/Videos/HelixNet-YouTube/Keycloak Episodes/` (thumbnails, descriptions, SRTs)
+---
 
-**MP4s:** Local only (GDrive when on solid WiFi, not hotspot)
+## CAMPER & TOUR VIDEO SERIES
+
+| EP | Title | Duration | Status | YouTube |
+|----|-------|----------|--------|---------|
+| 1 | First Impressions | 2:33 | FINAL | Published |
+| 2 | Quote to Invoice | 3:00 | FINAL | Published |
+| 3 | The Full Lifecycle | 4:18 | FINAL | [YouTube](https://youtu.be/L9g4MBRDr6I) |
+| 4 | The Workshop Floor | 1:38 | FINAL | [YouTube](https://youtu.be/e9bJpoSyOZU) |
+
+### Known Issue: Appointment Seed Data
+- Sophie Dupont and Tourist walk-in appointments don't appear after `make up`
+- Seeding code uses `today = date.today()` which should work
+- Possibly a timing issue with container startup vs seeding execution
+- EP4 worked around this with walk-in creation fallback
+- **TODO:** Investigate and fix before any future appointment demos
+
+---
+
+## WIPRO SAP PI/PO CONTRACT
+
+**Status:** RTR signed, CV submitted, waiting for interview
+**Role:** SAP PI/PO Development Lead / Architect
+**Client:** Wipro, Czechia (100% Remote)
+**Rate:** EUR 320/day all-inclusive
+**Recruiter:** Cholleti (WiseStep / Avance Services)
+**CV:** `/home/angel/Documents/2026 KENEL CV Infos/CV_Angelo_Kenel_WIPRO.pdf`
+**Availability:** Immediate, anytime with 1 day notice
+
+**Plan:** Work 9-5 CET on Wipro contract, HelixNet in off-hours. Set boundary early for working hours.
+
+---
+
+## NEXT UP (Priority Order)
+
+### 1. Anne Onboarding (TODAY 10:30 CET)
+- Test account setup, orientation, testing checklist
+- Document the testing workflow
+
+### 2. Fix Appointment Seed Data
+- Sophie + Tourist not appearing on appointments page
+- Need to debug seeding service timing
+
+### 3. KC Video Series Voiceovers
+- EP5-EP8 have silent videos ready, need voiceover
+- Pipeline proven with EP4 (Telegram voice messages, Whisper, ffmpeg)
+
+---
+
+## KC VIDEO SERIES
+
+| EP | Title | Duration | Video | Voice | YouTube |
+|----|-------|----------|-------|-------|---------|
+| 4 | Keys to the Kingdom | 2:32 | FINAL | VOICED | [YouTube](https://youtu.be/_ap7-hgtC9o) |
+| 5 | RBAC Deep Dive | 3:19 | FINAL | TODO | -- |
+| 6 | Client Architecture | 2:30 | FINAL | TODO | -- |
+| 7 | Authentication Flows | 2:35 | FINAL | TODO | -- |
+| 8 | Multi-Tenant Platform | 2:30 | FINAL | TODO | -- |
 
 ---
 
 ## AXA INSURANCE CLAIM
 
 **Claim:** 22.831.735/0001
-**Submit docs to:** schaden@axa.ch (with claim number in subject)
-**Adjuster:** Iwan Zgraggen (forwarded case, no longer primary)
-
-### Timeline
-- **Feb 9:** Iwan forwarded case to English-speaking colleague
-- **Feb 11 morning:** Iwan confirmed -- send everything to schaden@axa.ch directly
-- **Feb 11 ~9:50am:** Email SENT to schaden@axa.ch with both invoices + water damage questions
-
-### Costs to Claim
-| Item | Amount | Status |
-|------|--------|--------|
-| Camper & Tour (stove + smoke clean) | EUR 1,010 | PAID, invoice submitted |
-| PuntaTipa Hotel (13 nights B&B) | EUR 1,395.50 | PAID, invoice submitted |
-| Water damage (roof/seals) | EUR 5,000-10,000 est. | Pending preventivo from C&T |
-| **Total submitted** | **EUR 2,405.50** | |
-
-### Waiting For (from AXA)
-1. Confirmation of invoice receipt
-2. Same claim or new claim for water damage?
-3. Do they send an assessor to Sicily?
-4. New case worker introduction
+**Submit docs to:** schaden@axa.ch
+**Status:** Invoices submitted (EUR 2,405.50), waiting for response
+**Water damage:** EUR 5,000-10,000 est., pending preventivo from C&T
 
 ---
 
 ## UFA POSTCARDS - CLIENT STATUS
 
-| # | Client | Cards | Meeting | Next Step |
-|---|--------|-------|---------|-----------|
-| 1 | **Color Clean** | Delivered (4UP + tent card) | 5pm done, walked through in person | Get her detailed feedback, fill approval form properly, better photos |
-| 2 | **Pizza Planet** | Delivered | Free beer + positive reception | Done for now, reprint when photos improve |
-| 3 | **Marghe Trapani** | PDFs done | Not yet delivered | Show owner, get approval |
-| 4 | ~~Piccolo Bistratto~~ | Not started | Bad vibes | PARKED -- maybe never |
-
-### Color Clean CRM Notes
-- **Owner name:** Still unknown (need to get at next visit)
-- **Phone:** 320 054 0352 (only number on business card -- check if landline exists)
-- **Hours:** MISSING from postcards -- need to confirm every day + lunch break
-- **Payment methods:** Unknown -- ask (Google Pay, Satispay, cash, card?)
-- **Approval form:** `postcards/colorclean/colorclean-APPROVAL-FORM.pdf` (ready to print/show)
-- **Proof PDF:** `postcards/colorclean/colorclean-PROOF.pdf` (portrait + landscape samples)
-- **The deal:** She gets free design + printing. He gets fabric expertise + wash testing for merch R&D.
-- **ISOTTO triangle:** Angel (design) → ISOTTO (print/merch) → Color Clean (fabric testing) → sell to everyone
-- **Merch idea:** Test t-shirts with different print methods, she washes 5x, see what survives. Cotton only, no synthetic.
-
-### Business Philosophy
-- Only work with people you LIKE
-- Non-competing businesses in same category/area
-- Bad vibes = exit (Piccolo Bistratto lesson)
-- Approval form template is standard intake for all new clients
-
----
-
-## CAMPER & TOUR STATUS
-
-- **Camera radio adapter:** Install TODAY (Wed Feb 12) -- they promised
-- **Be there at 9am** for the install
-- **When installed:** Maybe remove back window to assess roof + write preventivo for AXA
-- **Cremers:** Angel buying coffee cremers for the guys tomorrow morning
-- **Kevin:** Gets his own JYSK bathrobe whenever, hot springs Saturday
-
----
-
-## PENDING ACTIONS
-
-### Done Wed Feb 12
-- [x] EP4 uploaded to YouTube (https://youtu.be/_ap7-hgtC9o)
-- [x] EP4 thumbnail created (1280x720, key icon + title)
-- [x] EP4 YouTube description + tags written
-- [x] EP4 SRT subtitles ready for upload
-
-### Still TODO Wed Feb 12
-- [ ] Upload SRT subtitles to YouTube (Subtitles > Add > English > Upload SRT)
-- [ ] Set EP4 thumbnail on YouTube (upload KC-EP4-Keys-to-the-Kingdom-THUMBNAIL.png)
-- [ ] 9am Camper & Tour -- camera install
-- [ ] Ask C&T about preventivo for roof/water damage (for AXA)
-- [ ] Buy cremers for coffee at C&T
-- [ ] Clear Telegram cache on Fairphone (prevent next fuzz)
-- [ ] Get JYSK bathrobe (for self, before Saturday)
-- [ ] Color Clean: return with printed approval form, get her name + hours + details
-- [ ] ISOTTO: check in person, print status
-- [ ] Record voiceover EP5 (same scene-by-scene method)
-
-### Later
-- [ ] Record voiceover EP6, EP7, EP8
-- [ ] Marghe Trapani: deliver cards, get approval
-- [ ] Cheap test print before next ISOTTO run
-- [ ] Wait for AXA response to schaden@axa.ch email
-- [ ] Wait for Rajiv/Vyoma response
+| # | Client | Status |
+|---|--------|--------|
+| 1 | Color Clean | Delivered, needs detailed feedback |
+| 2 | Pizza Planet | Delivered, done for now |
+| 3 | Marghe Trapani | PDFs done, not delivered |
 
 ---
 
@@ -142,31 +106,24 @@ Record each scene as separate Telegram voice message (.ogg) → Whisper transcri
 
 | Who | Details |
 |-----|---------|
-| **Camper & Tour** | Sebastiano/Nino, Via F. Culcasi 4, Trapani, +39 328 684 4546 |
+| **Cholleti (Wipro recruiter)** | WiseStep / Avance Services |
+| **Camper & Tour** | Sebastiano/Nino, Via F. Culcasi 4, Trapani |
 | **AXA** | schaden@axa.ch, Claim 22.831.735/0001 |
-| **Color Clean** | Via Virgilio 105/107, 320 054 0352, colorclean.tp@gmail.com |
-| **Pizza Planet** | Ciccio, Via Asmara 35 Bonagia, 0923 592609 |
-| **ISOTTO Sport** | Print partner, +39 349 972 9418 |
-| **Kevin Galilee** | Hot springs Saturday, needs XXL bathrobe from JYSK |
-| **Gym 4U** | Via Benedetto Valenza 31, Trapani. Mon/Wed/Fri 7am-10pm, Tue/Thu/Sat 8am-10pm, Sun CLOSED |
-| **Marghe Trapani** | Via Garibaldi 52, 352 088 2833 |
+| **Anne** | New tester, onboarding 10:30 CET today |
 
 ---
 
-## FINANCIAL OVERVIEW
+## VIDEO PRODUCTION LESSONS (Feb 16)
 
-- **Pension:** ~11 months away (birthday ~Jan 2027)
-- **RAV:** Closed Jan 31, 2026
-- **Today's spend:** ~10 EUR (Color Clean + Pizza Planet prints) + 7 EUR (Pizza Planet dinner)
-- **UFA budget:** ~50 EUR initial for test runs
-- **AXA submitted:** EUR 2,405.50 (stove + hotel)
-- **AXA pending:** EUR 5,000-10,000 (roof/water damage)
+- **No `<` `>` or `->` in YouTube descriptions** -- YouTube strips angled brackets
+- **Re-encode when trimming** -- `-c:v copy` skips keyframes, can miss intro cards
+- **Alpine.js @click rows** -- don't click in Puppeteer, navigate by URL instead
+- **Always include TAGS file** in YouTube kit -- added to SOP
+- **SOP updated:** `videos/keycloak/VIDEO-PRODUCTION-SOP.md`
 
 ---
 
 *This file is Tigs' working memory. Update it often.*
-*"The lion growl was a 192kHz sample rate bug. The fix was -ar 48000." -- McDonald's Trapani, Feb 11*
-*"Pizza Planet card drop = free beer. That's ROI on day one." -- 7 EUR dinner, try that in Switzerland*
-*"She's not your customer. She's your R&D department." -- Color Clean fabric testing strategy*
-*"I only work with people I like." -- The UFA client filter*
-*"First public episode. From McDonald's parking lot to YouTube." -- Gym 4U, Feb 12, 7:45am*
+*"The shop floor shouldn't need a spreadsheet." -- CT EP4 tagline*
+*"Don't fight the rate before you have the offer." -- Wipro lesson*
+*"4 Episodes. 1 System. Ready for Production."*

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(230,126,34,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,126,34,0.025) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+.glow {
+  position: absolute;
+  width: 1200px;
+  height: 1000px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230,126,34,0.08) 0%, transparent 70%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 50px 80px;
+}
+.title {
+  font-size: 144px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -2px;
+  line-height: 0.95;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.title .camper { color: #e67e22; }
+.tagline {
+  font-size: 48px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 10px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  text-align: center;
+}
+.divider {
+  width: 200px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #e67e22, transparent);
+  margin-bottom: 28px;
+}
+.recap-label {
+  font-size: 32px;
+  font-weight: 400;
+  color: #666;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.stats {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+.stat {
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(230,126,34,0.2);
+  border-radius: 16px;
+  padding: 24px 40px;
+  min-width: 180px;
+}
+.stat-number {
+  font-size: 72px;
+  font-weight: 700;
+  color: #e67e22;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label {
+  font-size: 22px;
+  color: #888;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.quote {
+  font-size: 36px;
+  font-weight: 300;
+  color: #777;
+  font-style: italic;
+  letter-spacing: 1px;
+  margin-bottom: 36px;
+  text-align: center;
+  max-width: 1200px;
+}
+.built-on {
+  font-size: 28px;
+  color: #555;
+  letter-spacing: 3px;
+  margin-bottom: 0;
+}
+.built-on .helix { color: #e67e22; font-weight: 600; }
+.next-ep {
+  position: absolute;
+  bottom: 36px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 24px;
+  color: #444;
+  letter-spacing: 4px;
+  z-index: 1;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="frame">
+    <div class="title"><span class="camper">Camper</span> &amp; Tour</div>
+    <div class="tagline">Service Management System</div>
+    <div class="divider"></div>
+    <div class="recap-label">One Manager, One Morning, Zero Spreadsheets</div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Service Bays</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Appointment Tracks</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">6</div>
+        <div class="stat-label">Status Transitions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">1</div>
+        <div class="stat-label">Happy Manager</div>
+      </div>
+    </div>
+    <div class="quote">&ldquo;The shop floor shouldn&rsquo;t need a spreadsheet.&rdquo;</div>
+    <div class="built-on">Built on <span class="helix">HelixNet</span> &mdash; helixnet.ch</div>
+  </div>
+  <div class="next-ep">4 Episodes. 1 System. Ready for Production.</div>
+</body>
+</html>

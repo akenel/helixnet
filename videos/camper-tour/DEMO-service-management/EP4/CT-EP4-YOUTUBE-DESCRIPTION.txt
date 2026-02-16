@@ -1,0 +1,75 @@
+Camper & Tour -- Service Management System | EP4: The Workshop Floor
+
+One manager. One morning. Five bays. Zero spreadsheets.
+
+Episode 4 follows Nino through a typical morning at the workshop. He logs in, checks the dashboard, then opens the appointments board to manage the day. A walk-in needs help -- assign a bay, fill the quick form, straight into the queue. Then the money shot: the Bay Timeline. A weekly resource grid showing every bay, every job, color-coded and hoverable. This is how you run a shop floor without a whiteboard.
+
+CHAPTERS:
+0:00 Intro
+0:06 Nino Logs In -- Keycloak SSO
+0:18 Manager Dashboard -- Morning Overview
+0:23 Appointments Board -- Walk-in Queue
+0:40 Assign Electrical Bay
+0:46 Quick Walk-in -- One Form, Into the Queue
+1:08 Bay Timeline -- Weekly Resource Grid
+1:35 Outro
+
+APPOINTMENT SYSTEM:
+
+Two tracks, one board. Booked appointments come in on the left with scheduled times. Walk-ins land on the right with queue positions. Both flow through the same status pipeline.
+
+Status Flow:
+- SCHEDULED -- Booked for a time slot, not yet arrived
+- WAITING -- Customer showed up, waiting for a bay
+- IN_SERVICE -- Vehicle in a bay, work underway
+- COMPLETED -- Done, customer notified
+
+Walk-ins skip SCHEDULED and start at WAITING. Urgent jobs get flagged.
+
+BAY TIMELINE:
+
+The resource planning view. Five bays down the left, seven days across the top. Jobs appear as colored bars spanning their duration.
+
+Color Key:
+- Blue = Approved (ready to start)
+- Amber = In Progress
+- Amber + Striped = Waiting for Parts
+- Purple = Inspection
+- Green = Completed
+
+Hover any bar for job details, customer name, and dates.
+
+BAYS:
+1. Bay 1 -- General service
+2. Bay 2 -- General service
+3. Electrical Bay -- Solar, batteries, 12V/230V systems
+4. Bodywork Bay -- Paint, seals, waterproofing
+5. Wash Bay -- Pre-delivery cleaning
+
+PREVIOUSLY:
+- EP1: First Impressions -- Dashboard, check-in, job board, customers
+- EP2: Quote to Invoice -- Quotations, POs, invoices, calendar, bay timeline
+- EP3: The Full Lifecycle -- One job, three roles, eight steps, RBAC in action
+
+BUILT WITH:
+- FastAPI + SQLAlchemy (Python async backend)
+- Keycloak OIDC authentication (JWT RS256, role-based access)
+- Alpine.js + Tailwind CSS (lightweight reactive frontend)
+- PostgreSQL (production database)
+- Docker Compose (single-command deployment)
+- Built on HelixNet -- helixnet.ch
+
+84 AUTOMATED TESTS passing. Every endpoint verified.
+5 service bays. 2 appointment tracks. 6 status transitions.
+
+---
+Camper & Tour sas di Sebastiano Cassisa
+Via F. Culcasi, 4 (Palazzo Asia) -- 91100 Trapani
+Tel: +39 0923 534452 | Cell: +39 328 684 4546
+www.camperandtour.it
+
+MUSIC:
+"Wholesome" by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+
+"The shop floor shouldn't need a spreadsheet."
