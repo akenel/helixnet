@@ -115,9 +115,10 @@ services:
     # Smart entrypoint auto-detects fresh install and imports realms
     environment:
       KC_PROXY_HEADERS: xforwarded
-      KC_HOSTNAME_URL: https://keycloak.helix.local 
+      # Public access for Anne's testing -- revert to https://keycloak.helix.local after session
+      KC_HOSTNAME_URL: https://206.189.30.236:8081
       KC_LOG_LEVEL: "INFO,org.infinispan.CONFIG:ERROR"
-      KC_HTTP_ENABLED: "true"  #   Traefik handles SSL termination 
+      KC_HTTP_ENABLED: "true"  #   Traefik handles SSL termination
       KC_HTTP_PORT: 8080       #   Explicitly internal HTTP port
       KC_HOSTNAME_STRICT_HTTPS: "false"
       # KC_DB: postgres  # Build-time option - already in image

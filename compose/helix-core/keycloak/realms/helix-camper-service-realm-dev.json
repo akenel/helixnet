@@ -126,7 +126,8 @@
         "https://helix-platform.local/*",
         "https://camperandtour.helix.local/*",
         "http://localhost:8000/*",
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "http://206.189.30.236:8081/*"
       ],
       "webOrigins": [
         "https://helix.local",
@@ -134,6 +135,7 @@
         "https://camperandtour.helix.local",
         "http://localhost:8000",
         "http://localhost:3000",
+        "http://206.189.30.236:8081",
         "+"
       ],
       "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
@@ -433,8 +435,8 @@
   "supportedLocales": ["en", "de", "fr", "it"],
   "defaultLocale": "it",
   "attributes": {
-    "frontendUrl": "https://keycloak.helix.local",
-    "adminUrl": "https://keycloak.helix.local",
+    "frontendUrl": "",
+    "adminUrl": "",
     "cibaBackchannelTokenDeliveryMode": "poll",
     "cibaExpiresIn": "120",
     "cibaAuthRequestedUserHint": "login_hint",

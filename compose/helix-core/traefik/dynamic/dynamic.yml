@@ -14,6 +14,18 @@ http:
         prefixes:
           - /api
   routers:
+    # ── PUBLIC ACCESS (HTTP, path-based for SSH tunnel via DO) ──
+    public-keycloak:
+      rule: "PathPrefix(`/realms`) || PathPrefix(`/resources`) || PathPrefix(`/js`) || PathPrefix(`/admin`)"
+      service: keycloak
+      entryPoints: [web]
+      priority: 100
+    public-app:
+      rule: "PathPrefix(`/`)"
+      service: helix-platform
+      entryPoints: [web]
+      priority: 1
+    # ── LOCAL ACCESS (HTTPS, host-based) ──
     keycloak:
       entryPoints:
         - websecure

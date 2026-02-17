@@ -15,6 +15,11 @@ api:
 entryPoints:
   web:
     address: ":80"
+    forwardedHeaders:
+      trustedIPs:
+        - "127.0.0.1/8"
+        - "172.16.0.0/12"
+        - "10.0.0.0/8"
 
   websecure:
     address: ":443"
