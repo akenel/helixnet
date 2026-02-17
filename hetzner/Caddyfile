@@ -1,17 +1,9 @@
 # =============================================================
 # HELIXNET UAT -- Caddy Reverse Proxy
 # =============================================================
-# Option A: IP-only (self-signed cert) -- use this first
-# Option B: Domain (Let's Encrypt auto-cert) -- when you have DNS
-#
-# To switch: comment out Option A, uncomment Option B, replace
-# the domain, and restart Caddy.
-# =============================================================
 
-# ── Option A: IP-only (self-signed TLS) ──
-# Replace YOUR_HETZNER_IP with the actual IP after server creation.
-https://YOUR_HETZNER_IP {
-	tls internal
+https://46.62.138.218 {
+	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
 
 	# Keycloak paths
 	handle /realms/* {
@@ -32,22 +24,3 @@ https://YOUR_HETZNER_IP {
 		reverse_proxy helix-platform:8000
 	}
 }
-
-# ── Option B: Domain with Let's Encrypt (uncomment when ready) ──
-# uat.helix.example.com {
-# 	handle /realms/* {
-# 		reverse_proxy keycloak:8080
-# 	}
-# 	handle /resources/* {
-# 		reverse_proxy keycloak:8080
-# 	}
-# 	handle /js/* {
-# 		reverse_proxy keycloak:8080
-# 	}
-# 	handle /admin/* {
-# 		reverse_proxy keycloak:8080
-# 	}
-# 	handle {
-# 		reverse_proxy helix-platform:8000
-# 	}
-# }
