@@ -1,0 +1,191 @@
+# =============================================================
+# HELIXNET UAT STACK -- Hetzner Cloud (Trimmed for Testing)
+# File: hetzner/docker-compose.uat.yml
+# -------------------------------------------------------------
+# Services: Caddy | Postgres | Keycloak | Redis | RabbitMQ |
+#           helix-platform
+# Target: Hetzner CX32 (4 vCPU / 8GB RAM) -- EUR 7.59/mo
+# =============================================================
+# Usage:
+#   docker compose -f docker-compose.uat.yml up -d --build
+#   docker compose -f docker-compose.uat.yml logs -f
+#   docker compose -f docker-compose.uat.yml down
+# =============================================================
+
+services:
+
+# -------------------------------------------------------------
+# CADDY -- Reverse Proxy with automatic HTTPS
+# -------------------------------------------------------------
+# Caddy replaces Traefik for UAT -- simpler, auto-TLS via
+# Let's Encrypt (with domain) or self-signed (IP only).
+# Config: ./Caddyfile
+# -------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - helixnet
+    depends_on:
+      helix-platform:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# -------------------------------------------------------------
+# POSTGRES -- Primary Database
+# -------------------------------------------------------------
+  postgres:
+    image: postgres:17.6
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: helix_user
+      POSTGRES_PASSWORD: helix_pass
+      POSTGRES_DB: helix_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - helixnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U helix_user -d helix_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# -------------------------------------------------------------
+# KEYCLOAK -- Identity Provider (OIDC / JWT)
+# -------------------------------------------------------------
+  keycloak:
+    build:
+      context: ../
+      dockerfile: compose/helix-core/Dockerfile.keycloak
+      target: final
+      args:
+        DOCKER_KEYCLOAK_IMAGE: quay.io/keycloak/keycloak
+        DOCKER_KEYCLOAK_VERSION: 24.0.4
+    image: helix-keycloak-custom:latest
+    container_name: keycloak
+    restart: unless-stopped
+    environment:
+      KC_PROXY_HEADERS: xforwarded
+      # SET THIS to your Hetzner IP or domain before first boot:
+      KC_HOSTNAME_URL: https://${HELIX_PUBLIC_HOST}
+      KC_LOG_LEVEL: "INFO,org.infinispan.CONFIG:ERROR"
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_DB_USERNAME: helix_user
+      KC_DB_PASSWORD: helix_pass
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: helix_db
+      KEYCLOAK_ADMIN: helix_user
+      KEYCLOAK_ADMIN_PASSWORD: helix_pass
+      QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY: "true"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"status\": \"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+# -------------------------------------------------------------
+# REDIS -- Cache + Celery Result Backend
+# -------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "helix_pass"]
+    networks:
+      - helixnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "helix_pass", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# -------------------------------------------------------------
+# RABBITMQ -- Celery Message Broker
+# -------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: helix_user
+      RABBITMQ_DEFAULT_PASS: helix_pass
+    networks:
+      - helixnet
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# -------------------------------------------------------------
+# HELIX-PLATFORM -- FastAPI Application
+# -------------------------------------------------------------
+  helix-platform:
+    build:
+      context: ../
+      dockerfile: compose/helix-main/Dockerfile.helix-platform
+    image: helix-platform:latest
+    container_name: helix-platform
+    restart: unless-stopped
+    env_file:
+      - ./uat.env
+    environment:
+      SERVICE_TYPE: platform
+    volumes:
+      - ../src:/app/src
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/healthz', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+# -------------------------------------------------------------
+# NAMED VOLUMES
+# -------------------------------------------------------------
+volumes:
+  postgres_data:
+  keycloak_data:
+  caddy_data:
+  caddy_config:
+
+# -------------------------------------------------------------
+# NETWORK -- Single flat network for UAT (no edge/core split)
+# -------------------------------------------------------------
+networks:
+  helixnet:
+    driver: bridge
