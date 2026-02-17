@@ -7,6 +7,18 @@
 
 ---
 
+> **IMPORTANT -- URL CHANGE (Feb 17, 2026)**
+>
+> The app has moved to a new dedicated server. If you saved the old URL, please update your bookmark:
+>
+> ~~Old: `https://206.189.30.236:8081/camper`~~ -- no longer active
+>
+> **New: `https://46.62.138.218/camper`** -- use this one
+>
+> The new server is faster and runs 24/7 (no longer depends on Angel's laptop).
+
+---
+
 ## ACCESS
 
 **URL:** https://46.62.138.218/camper
@@ -192,4 +204,4 @@ Thank you for being our first human tester!
 
 ---
 
-*Generated: Feb 17, 2026 | HelixNet v1.0 | Camper & Tour Service Management*
+*Updated: Feb 17, 2026 | HelixNet v1.0 | Camper & Tour Service Management | Server: Hetzner CX32 (Helsinki)*
