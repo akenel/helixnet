@@ -1,11 +1,6 @@
-# =============================================================
-# HELIXNET UAT -- Caddy Reverse Proxy
-# =============================================================
-
-https://46.62.138.218 {
+:443 {
 	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
 
-	# Keycloak paths
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -18,8 +13,6 @@ https://46.62.138.218 {
 	handle /admin/* {
 		reverse_proxy keycloak:8080
 	}
-
-	# Everything else goes to the app
 	handle {
 		reverse_proxy helix-platform:8000
 	}

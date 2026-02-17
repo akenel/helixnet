@@ -9,12 +9,12 @@
 
 ## ACCESS
 
-**URL:** https://206.189.30.236:8081/camper
+**URL:** https://46.62.138.218/camper
 
 **All passwords:** `helix_pass` (same for every account)
 
 > **First time only:** Your browser will show a security warning ("Your connection is not private" or similar) because we use a self-signed certificate for testing. This is expected and safe:
-> - **Chrome:** Click "Advanced" then "Proceed to 206.189.30.236 (unsafe)"
+> - **Chrome:** Click "Advanced" then "Proceed to 46.62.138.218 (unsafe)"
 > - **Firefox:** Click "Advanced" then "Accept the Risk and Continue"
 > - **Safari:** Click "Show Details" then "visit this website"
 >
@@ -39,7 +39,7 @@ Pick one account per session. Start with **nino** (manager) for the best first i
 
 ## PHASE 1: FIRST LOGIN (5 min)
 
-- [ ] Open https://206.189.30.236:8081/camper
+- [ ] Open https://46.62.138.218/camper
 - [ ] Click the orange "Accedi" button
 - [ ] On the Keycloak login page, enter: **nino** / **helix_pass**
 - [ ] Click "Sign In"
@@ -47,7 +47,7 @@ Pick one account per session. Start with **nino** (manager) for the best first i
 - [ ] Note: The dashboard shows stat cards: Vehicles, Jobs, Parts, Revenue
 
 **Tip:** Add `?lang=en` to any URL for English labels. Example:
-`https://206.189.30.236:8081/camper/dashboard?lang=en`
+`https://46.62.138.218/camper/dashboard?lang=en`
 
 ---
 
@@ -165,7 +165,7 @@ When you find something broken or confusing:
 
 ### What's NOT a bug (for now):
 - Italian labels (use `?lang=en` for English)
-- Slow loading (this goes through a tunnel to Sicily)
+- Slow loading on first page (server is in Helsinki, should be fast after that)
 - Appointment board empty on certain dates (seed data limitation)
 
 ---
@@ -173,7 +173,7 @@ When you find something broken or confusing:
 ## KNOWN ISSUES
 
 1. **Certificate warning:** The first time you visit the URL, your browser will warn about the security certificate. Accept it once -- see the ACCESS section above for instructions.
-2. **Speed:** The app runs on Angel's laptop in Sicily and is tunneled through a cloud server. Expect ~500ms-1s latency per page load. This is normal for testing.
+2. **Speed:** The app runs on a dedicated cloud server in Helsinki. Pages should load quickly (~100-300ms).
 3. **Appointment seed data:** Walk-in and booked appointments are generated for specific dates. The board might be empty today -- create your own walk-ins to test.
 4. **Session timeout:** If you get "Not authenticated" after ~30 minutes, just log out and back in.
 5. **English mode:** Most labels are in Italian by default. Add `?lang=en` to the URL for English.
