@@ -1,0 +1,186 @@
+1
+00:00:04,000 --> 00:00:09,000
+Let me show you something we built
+yesterday afternoon.
+
+2
+00:00:09,000 --> 00:00:16,000
+A full production environment. HTTPS,
+OAuth2 login, role-based access control,
+
+3
+00:00:16,000 --> 00:00:21,000
+six microservices running 24/7
+on a dedicated server.
+
+4
+00:00:21,000 --> 00:00:25,600
+Cost? Seven euros
+and 59 cents a month.
+
+5
+00:00:25,600 --> 00:00:29,000
+Now let me show you what a corporation
+takes to do the exact same thing.
+
+6
+00:00:29,000 --> 00:00:38,360
+This is the Hetzner Cloud console.
+That is the server. 2 CPUs, 8 gigs of RAM,
+
+7
+00:00:38,360 --> 00:00:50,280
+80 gig SSD, 7.59 a month.
+Six containers, all healthy.
+
+8
+00:00:50,280 --> 00:00:58,160
+Caddy for HTTPS, PostgreSQL for database,
+Keycloak for identity management,
+
+9
+00:00:58,160 --> 00:01:06,800
+Redis, RabbitMQ,
+and the application itself.
+
+10
+00:01:06,800 --> 00:01:13,320
+This is a real login. Real Keycloak.
+Real OAuth2. Real role-based access control
+
+11
+00:01:13,320 --> 00:01:19,760
+with five different roles.
+This is not a demo. This is not a mockup.
+
+12
+00:01:19,760 --> 00:01:27,480
+This is production-grade software
+running on a seven euro server.
+
+13
+00:01:27,480 --> 00:01:37,600
+Now here's what a corporation takes
+for the same thing. Requirements gathering.
+
+14
+00:01:37,600 --> 00:01:47,400
+Two weeks, four meetings.
+We said: Hetzner, let's go.
+
+15
+00:01:47,400 --> 00:01:54,360
+Architecture approval.
+Three weeks, review board.
+
+16
+00:01:54,360 --> 00:02:00,880
+We decided on a chat message.
+Server provisioning, one to two weeks,
+
+17
+00:02:00,880 --> 00:02:08,880
+infrastructure ticket.
+We clicked the button. 30 seconds.
+
+18
+00:02:08,880 --> 00:02:16,680
+Docker setup, one week, infrastructure backlog.
+We ran one curl command.
+
+19
+00:02:16,680 --> 00:02:22,680
+TLS certificate. Two weeks,
+security team request.
+
+20
+00:02:22,680 --> 00:02:26,320
+We ran one OpenSSL command.
+Total time for a corporation:
+
+21
+00:02:26,320 --> 00:02:32,320
+eight to 16 weeks. Total budget:
+50,000 to 200,000 euros.
+
+22
+00:02:32,320 --> 00:02:35,420
+We did it in one afternoon.
+
+23
+00:02:35,420 --> 00:02:39,880
+The difference is not intelligence.
+The difference is not tools.
+
+24
+00:02:39,880 --> 00:02:43,880
+The difference is decision latency.
+
+25
+00:02:43,880 --> 00:02:51,800
+Corporations spend 90% of their time
+asking permission.
+
+26
+00:02:51,800 --> 00:02:58,640
+We spend 90% of our time building.
+When something broke yesterday,
+
+27
+00:02:58,640 --> 00:03:05,800
+TLS certificates don't work
+on bare IP addresses, by the way,
+
+28
+00:03:05,800 --> 00:03:09,640
+there was no war room.
+No post-mortem scheduled for next Tuesday.
+
+29
+00:03:09,640 --> 00:03:15,640
+We diagnosed it. We fixed it.
+And we moved on.
+
+30
+00:03:15,640 --> 00:03:21,640
+That is not speed.
+That is ownership.
+
+31
+00:03:21,640 --> 00:03:28,400
+Swiss SMEs are paying SAP
+50 to 200,000 euros a year
+
+32
+00:03:28,400 --> 00:03:34,720
+for systems that take six months
+to change a form field.
+
+33
+00:03:34,720 --> 00:03:37,360
+That is not a feature.
+That is a trap.
+
+34
+00:03:37,360 --> 00:03:43,360
+HelixNet is built for the company
+with 5 to 50 people
+
+35
+00:03:43,360 --> 00:03:47,000
+that needs real tools without
+the enterprise ransom.
+
+36
+00:03:47,000 --> 00:03:53,000
+FastAPI. Keycloak. Docker. Open source.
+You own it. No license. No lock-in.
+
+37
+00:03:53,000 --> 00:03:55,920
+If you are a Swiss SME owner asking
+why your IT costs more than your rent --
+
+38
+00:03:55,920 --> 00:03:58,000
+Let's talk. Link in the description.

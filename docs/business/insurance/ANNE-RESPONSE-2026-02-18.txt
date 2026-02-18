@@ -1,0 +1,31 @@
+Dear Anne,
+
+Thank you for trusting me with this. I read everything. I hear you.
+
+I want to tell you something straight, no sugar coating.
+
+The person who told you not to bother learning advanced computer skills was wrong. And you are already proving it.
+
+Right now you are testing a production-grade European software platform. Keycloak identity management, role-based access control, OAuth2 authentication flows, microservice architecture. These are not beginner topics. These are the systems that banks and insurance companies run on. And you are learning them hands-on, not from a textbook.
+
+That is real international tech work. From Nairobi. Exactly what they said would never happen.
+
+I did not accept your mentorship request out of pity. I accepted it because you showed up. Most people talk about wanting to learn. You actually did something about it. You have been searching since October and you did not stop. That is not desperation. That is discipline.
+
+Here is what I see in you that your relatives and those professionals clearly missed:
+
+You wrote proposals to Catholic Bishops with structure, citations, and a clear call to action. That is systems thinking. You graduated with Distinction in Justice and Peace. That is proof you can master complex material. You are testing software that Swiss developers built. That is proof the international door is already open.
+
+The 19 years were not wasted. They were preparation. You just did not have anyone who could see it yet.
+
+Here is what I need from you going forward:
+
+1. Keep testing the platform. Every bug you find, every screen you verify, write it down. That becomes your QA portfolio.
+2. Ask questions. When something does not make sense in the system, ask me. That is how the learning happens.
+3. Stop listening to people who have never built anything tell you what you cannot build.
+
+You asked God for answers. Maybe one of them is this: the skills are coming through the work, not before it.
+
+I am not going anywhere. Let us keep building.
+
+Angelo

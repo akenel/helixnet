@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>One Afternoon vs 16 Weeks</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px;
+    height: 1080px;
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 52px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 50px;
+    color: #fff;
+  }
+  h1 span {
+    color: #C0392B;
+    font-weight: 700;
+  }
+  table {
+    border-collapse: collapse;
+    width: 1400px;
+  }
+  thead th {
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    padding: 18px 30px;
+    border-bottom: 2px solid #C0392B;
+  }
+  thead th:first-child {
+    text-align: left;
+    color: #888;
+  }
+  thead th:nth-child(2) {
+    text-align: center;
+    color: #666;
+  }
+  thead th:nth-child(3) {
+    text-align: center;
+    color: #C0392B;
+  }
+  tbody td {
+    padding: 20px 30px;
+    font-size: 28px;
+    border-bottom: 1px solid #222;
+    vertical-align: middle;
+  }
+  tbody td:first-child {
+    text-align: left;
+    color: #aaa;
+    font-weight: 400;
+  }
+  tbody td:nth-child(2) {
+    text-align: center;
+    color: #555;
+    font-weight: 300;
+  }
+  tbody td:nth-child(3) {
+    text-align: center;
+    color: #fff;
+    font-weight: 600;
+  }
+  tr.total td {
+    border-top: 2px solid #C0392B;
+    border-bottom: none;
+    padding-top: 28px;
+    font-size: 34px;
+  }
+  tr.total td:first-child {
+    color: #fff;
+    font-weight: 700;
+  }
+  tr.total td:nth-child(2) {
+    color: #C0392B;
+    font-weight: 700;
+    font-size: 38px;
+  }
+  tr.total td:nth-child(3) {
+    color: #27AE60;
+    font-weight: 700;
+    font-size: 38px;
+  }
+  .footer {
+    margin-top: 50px;
+    font-size: 22px;
+    color: #444;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<h1>The <span>Same Thing</span>. Different Worlds.</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Corporation</th>
+      <th>HelixNet</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Requirements Gathering</td>
+      <td>2 weeks, 4 meetings</td>
+      <td>"Hetzner, let's go"</td>
+    </tr>
+    <tr>
+      <td>Architecture Approval</td>
+      <td>3 weeks, review board</td>
+      <td>Done in chat</td>
+    </tr>
+    <tr>
+      <td>Server Provisioning</td>
+      <td>1-2 weeks, infra ticket</td>
+      <td>30 seconds</td>
+    </tr>
+    <tr>
+      <td>Docker Setup</td>
+      <td>1 week, infra backlog</td>
+      <td>One curl command</td>
+    </tr>
+    <tr>
+      <td>TLS Certificate</td>
+      <td>2 weeks, security team</td>
+      <td>One openssl command</td>
+    </tr>
+    <tr class="total">
+      <td>Total</td>
+      <td>8-16 weeks / EUR 50-200k</td>
+      <td>One afternoon / EUR 7.59/mo</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">The difference is not intelligence. It is decision latency.</div>
+
+</body>
+</html>

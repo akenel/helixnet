@@ -1,0 +1,23 @@
+Hi Jane,
+
+Thank you for the quick follow-up. I want to be transparent so we set the right expectations.
+
+My tenure at Nestle predates the current AI wave. At that time, AI transformation was not yet on the enterprise agenda. From what I know through former colleagues, they are still running SAP PI/PO for integration with no active migration to BTP, and Kubernetes adoption has not started. That is fairly typical for large FMCG enterprises -- the legacy stack is deeply embedded and change is slow.
+
+My direct hands-on experience with AI transformation comes from my current work: architecting and building an enterprise platform (HelixNet) that integrates AI-assisted development into the full engineering lifecycle. This is not theoretical -- I deployed a production UAT environment this week in one afternoon that would take a corporate team 8-16 weeks. I can speak in depth about:
+
+- AI-assisted development at enterprise scale (code generation, testing, deployment)
+- Why legacy enterprises struggle to adopt AI (decision latency, permission structures, skill gaps)
+- Practical success factors based on real implementation, not slide decks
+- The gap between where companies like Nestle are today and where the technology already is
+
+If the client values first-hand practitioner experience over a Nestle-specific case study, I am confident the call will be highly valuable. I will leave that to your judgement.
+
+For scheduling, mornings CET work better:
+
+  Monday Feb 24, 09:00 CET / 17:00 JST
+  Tuesday Feb 25, 09:00 CET / 17:00 JST
+  Wednesday Feb 26, 09:00 CET / 17:00 JST
+
+Best regards,
+Angelo

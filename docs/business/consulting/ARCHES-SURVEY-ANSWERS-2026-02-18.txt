@@ -1,0 +1,92 @@
+ARCHES PRE-INTERVIEW SURVEY -- DRAFT ANSWERS
+==============================================
+Use these as reference. Put in your own words on the form.
+Keep answers short -- this is a vetting step, not the interview.
+Save the good stuff for the paid call.
+
+
+Q1: Full overview of company-wide AI project, challenges, countermeasures
+------------------------------------------------------------------------
+
+I am currently architecting an enterprise microservice platform (HelixNet)
+that integrates AI-assisted development directly into the engineering workflow.
+The platform targets European SMEs as an alternative to SAP, built on FastAPI,
+Keycloak OIDC, and Docker orchestration.
+
+AI is embedded at two levels:
+1. Development process: AI pair programming for code generation, testing,
+   debugging, and deployment automation. This reduced a typical 8-16 week
+   UAT environment setup to a single afternoon.
+2. Platform features: AI-assisted data processing and workflow automation
+   for end users.
+
+Key challenges:
+- Legacy mindset: enterprise clients expect 6-month implementation cycles
+  and resist the speed that AI-assisted workflows enable
+- Skill gap: traditional IT teams lack experience integrating AI tools
+  into existing development pipelines
+- Trust and verification: AI-generated code requires rigorous QA processes
+  to maintain production-grade quality
+- Data governance: ensuring AI tools do not leak sensitive enterprise data
+
+Countermeasures:
+- Lean team structure with direct decision authority (no review boards)
+- Systematic verification workflows: every AI output is tested before deployment
+- Open source stack to avoid vendor lock-in and maintain full control
+- Incremental adoption: AI augments existing workflows rather than replacing them
+
+
+Q2: Current status and factors behind outcome
+----------------------------------------------
+
+The project is in active UAT with external testers accessing the platform
+on dedicated cloud infrastructure. The core system is operational:
+identity management, role-based access control (5 roles), service management
+modules, and a POS system are all functional in production-grade configuration.
+
+Factors behind the positive outcome:
+- Decision speed: architectural decisions are made and executed in hours,
+  not weeks. No committee approvals required.
+- AI-augmented velocity: tasks that traditionally require a team of 4-6
+  developers are handled by 1 developer with AI assistance, at higher speed
+  and comparable quality.
+- Cost efficiency: total infrastructure cost is under EUR 10/month for a
+  full enterprise stack that would cost EUR 50,000-200,000 in a corporate setting.
+- Direct ownership: the person making decisions is the person writing the code.
+  No handoffs, no lost context, no telephone game.
+
+
+Q3: Key Success Factors for AI implementation
+----------------------------------------------
+
+1. Leadership with technical depth. AI transformation fails when decision
+   makers do not understand the technology. The people approving AI strategy
+   must be the people using AI tools.
+
+2. Start with real problems. Successful AI implementation solves an existing
+   pain point on day one. Failed implementations start with "we should use AI"
+   and then look for a problem.
+
+3. Reduce decision latency. The single biggest factor in AI project success
+   is how fast the organization can move from idea to deployment. AI generates
+   output in seconds. If the organization takes weeks to approve that output,
+   the AI advantage is wasted.
+
+4. Verification over trust. Never deploy AI output without systematic testing.
+   The speed gain from AI is lost if you ship bugs. Build verification into
+   every step.
+
+5. Small teams over large committees. AI multiplies individual capability.
+   A team of 2 with AI outperforms a team of 12 without it. Reorganize
+   around capability, not headcount.
+
+
+AVAILABILITY (next week)
+------------------------
+Angel is in Sicily, CET (UTC+1). Japan is JST (UTC+9). That is +8 hours.
+
+Slot 1: Monday Feb 23, 17:00 CET / 01:00 JST (Tue Feb 24)
+Slot 2: Tuesday Feb 24, 10:00 CET / 18:00 JST
+Slot 3: Wednesday Feb 25, 10:00 CET / 18:00 JST
+
+(The 10:00 CET slots map to 18:00 JST which is reasonable for Japan side.)

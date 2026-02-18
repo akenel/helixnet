@@ -1,0 +1,1 @@
+HelixNet,SAP alternative,Swiss SME,enterprise IT,FastAPI,Keycloak,Docker,open source,microservices,UAT deployment,Hetzner Cloud,decision latency,DevOps,OAuth2,RBAC,startup vs corporation,enterprise software,IT costs,Swiss tech,SME tools,production deployment,one afternoon,EUR 7.59,SAP trap,digital transformation,AI development,lean engineering

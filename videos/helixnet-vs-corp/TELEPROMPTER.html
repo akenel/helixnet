@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TELEPROMPTER -- One Afternoon vs 16 Weeks</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
+    line-height: 1.6;
+    padding: 40px 80px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .scene {
+    border-top: 3px solid #C0392B;
+    margin: 60px 0 30px 0;
+    padding-top: 20px;
+  }
+  .scene-label {
+    color: #C0392B;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .direction {
+    color: #888;
+    font-size: 20px;
+    font-style: italic;
+    margin: 20px 0;
+    padding: 10px;
+    border-left: 3px solid #444;
+  }
+  .pause {
+    color: #F39C12;
+    font-size: 18px;
+    margin: 15px 0;
+    letter-spacing: 1px;
+  }
+  .emphasis {
+    color: #3498DB;
+    font-weight: bold;
+  }
+  .key-line {
+    color: #E74C3C;
+    font-weight: bold;
+    font-size: 36px;
+  }
+  p {
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================= -->
+
+<div class="scene">
+  <div class="scene-label">Scene 1 -- Camera -- The Hook (60 seconds)</div>
+  <div class="direction">Look straight into the lens. Relaxed. Like you're talking to a friend at a bar.</div>
+</div>
+
+<p>Let me show you something
+we built yesterday afternoon.</p>
+
+<p>A full production environment.
+HTTPS. OAuth2 login.
+Role-based access control.
+Six microservices.
+Running twenty-four seven
+on a dedicated server.</p>
+
+<div class="pause">... pause ...</div>
+
+<p>Cost?</p>
+
+<div class="pause">... let it hang ...</div>
+
+<p class="key-line">Seven euros and fifty-nine cents a month.</p>
+
+<div class="pause">... pause ...</div>
+
+<p>Now let me show you
+what a corporation takes
+to do the exact same thing.</p>
+
+<!-- ============================================================= -->
+
+<div class="scene">
+  <div class="scene-label">Scene 2 -- Screen Demo -- The Proof (90 seconds)</div>
+  <div class="direction">Cut to screen recording. Show each thing as you narrate over it.</div>
+</div>
+
+<p>This is the Hetzner Cloud console.
+That is the server.
+Two CPUs. Eight gigs of RAM.
+Eighty gig SSD.
+Seven fifty-nine a month.</p>
+
+<div class="direction">Show terminal: docker ps</div>
+
+<p>Six containers. All healthy.
+Caddy for HTTPS.
+PostgreSQL for the database.
+Keycloak for identity management.
+Redis. RabbitMQ.
+And the application itself.</p>
+
+<div class="direction">Show browser: open https://46.62.138.218/camper, login as nino / helix_pass</div>
+
+<p>This is a real login.
+Real Keycloak. Real OAuth2.
+Real role-based access control
+with five different roles.</p>
+
+<p>This is not a demo.
+This is not a mockup.
+This is production-grade software
+running on a seven euro server.</p>
+
+<!-- ============================================================= -->
+
+<div class="scene">
+  <div class="scene-label">Scene 3 -- Screen Demo -- The Comparison (90 seconds)</div>
+  <div class="direction">Show the comparison table as an HTML slide, full screen. Read each row slowly.</div>
+</div>
+
+<p>Now here is what a corporation
+takes for the same thing.</p>
+
+<div class="pause">... read each one, let each land ...</div>
+
+<p>Requirements gathering.
+<span class="emphasis">Two weeks. Four meetings.</span>
+We said: Hetzner, let's go.</p>
+
+<p>Architecture approval.
+<span class="emphasis">Three weeks. Review board.</span>
+We decided in a chat message.</p>
+
+<p>Server provisioning.
+<span class="emphasis">One to two weeks. Infrastructure ticket.</span>
+We clicked a button.
+Thirty seconds.</p>
+
+<p>Docker setup.
+<span class="emphasis">One week. Infrastructure backlog.</span>
+We ran one curl command.</p>
+
+<p>TLS certificate.
+<span class="emphasis">Two weeks. Security team request.</span>
+We ran one openssl command.</p>
+
+<div class="pause">... pause ...</div>
+
+<p>Total time for a corporation?
+<span class="emphasis">Eight to sixteen weeks.</span></p>
+
+<p>Total budget?
+<span class="emphasis">Fifty thousand
+to two hundred thousand euros.</span></p>
+
+<div class="pause">... pause ...</div>
+
+<p class="key-line">We did it in one afternoon.</p>
+
+<!-- ============================================================= -->
+
+<div class="scene">
+  <div class="scene-label">Scene 4 -- Camera -- The Point (90 seconds)</div>
+  <div class="direction">Back on camera. This is the heart of the video. Speak slowly. Mean every word.</div>
+</div>
+
+<p>The difference is not intelligence.</p>
+
+<p>The difference is not tools.</p>
+
+<div class="pause">... pause ...</div>
+
+<p class="key-line">The difference is decision latency.</p>
+
+<div class="pause">... let it land ...</div>
+
+<p>Corporations spend ninety percent
+of their time asking permission.</p>
+
+<p>We spend ninety percent
+of our time building.</p>
+
+<div class="pause">... pause ...</div>
+
+<p>When something broke yesterday --
+TLS certificates don't work
+on bare IP addresses, by the way --
+there was no war room.
+No post-mortem scheduled
+for next Tuesday.</p>
+
+<p>We diagnosed it.
+Fixed it.
+Moved on.</p>
+
+<p class="key-line">That is not speed.
+That is ownership.</p>
+
+<div class="pause">... pause ...</div>
+
+<p>Swiss SMEs are paying SAP
+fifty to two hundred thousand euros a year
+for systems that take six months
+to change a form field.</p>
+
+<p>That is not a feature.
+That is a trap.</p>
+
+<p>HelixNet is built for the company
+with five to fifty people
+that needs real tools
+without the enterprise ransom.</p>
+
+<p>FastAPI. Keycloak. Docker.
+Open source.
+You own it.
+No license. No lock-in.</p>
+
+<!-- ============================================================= -->
+
+<div class="scene">
+  <div class="scene-label">Scene 5 -- Camera -- Close (30 seconds)</div>
+  <div class="direction">Lean in slightly. Direct to camera. This is the handshake.</div>
+</div>
+
+<p>If you are a Swiss SME owner
+asking why your IT costs
+more than your rent --</p>
+
+<div class="pause">... pause ...</div>
+
+<p class="key-line">Let's talk.</p>
+
+<p>Link in the description.</p>
+
+<div class="pause">... hold eye contact for 3 seconds, then cut ...</div>
+
+<div class="direction">CUT TO: Outro card (HelixNet logo + subscribe)</div>
+
+<!-- ============================================================= -->
+
+<div class="scene">
+  <div class="scene-label">END -- Total Runtime Target: 5-7 minutes</div>
+</div>
+
+<p style="color: #888; font-size: 20px; margin-top: 40px;">
+NOTES FOR ANGEL:<br><br>
+- Speak slower than you think you need to<br>
+- The pauses are where the power is -- do not rush them<br>
+- Look at the LENS, not the screen<br>
+- The key lines in red are the ones people will quote -- deliver them clean<br>
+- It is OK to restart a scene -- we stitch in post<br>
+- Each scene is recorded separately -- take a breath between them<br>
+- Wolf hoodie stays on -- it is perfect for this<br>
+</p>
+
+</body>
+</html>

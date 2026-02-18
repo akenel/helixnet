@@ -1,0 +1,45 @@
+We deployed a production UAT environment in one afternoon.
+HTTPS. OAuth2 login. Role-based access control. 6 microservices. Running 24/7.
+Cost: EUR 7.59 per month.
+
+A corporation takes 8-16 weeks and EUR 50,000 to 200,000 for the same thing.
+The difference is not intelligence. It is decision latency.
+
+CHAPTERS
+0:00 Intro
+0:04 The Hook -- What We Built Yesterday
+0:29 Hetzner Cloud Console -- The Server
+0:38 Docker PS -- 6 Containers, All Healthy
+1:06 Keycloak OAuth2 Login
+1:13 Live Dashboard -- Buongiorno, Nino!
+1:27 The Comparison -- Corporation vs HelixNet
+2:26 The Difference: Decision Latency
+2:36 90% Building, Not 90% Asking Permission
+3:06 That Is Not Speed. That Is Ownership.
+3:15 The SAP Trap
+3:29 HelixNet -- Real Tools, No Ransom
+3:47 Let's Talk
+3:55 Outro
+
+WHAT IS HELIXNET?
+HelixNet is a production-grade microservice platform built for European SMEs with 5 to 50 employees. It replaces the enterprise stack (SAP, Oracle, Salesforce) with open-source tools you actually own.
+
+Tech stack: FastAPI, Keycloak OIDC, PostgreSQL, Redis, RabbitMQ, Docker, Caddy
+Infrastructure: Hetzner Cloud CCX13 -- 2 vCPU, 8GB RAM, 80GB SSD -- EUR 7.59/month
+
+THE COMPARISON
+Requirements gathering: 2 weeks (corp) vs "Hetzner, let's go" (us)
+Architecture approval: 3 weeks, review board (corp) vs done in chat (us)
+Server provisioning: 1-2 weeks, infra ticket (corp) vs 30 seconds (us)
+Docker setup: 1 week, infra backlog (corp) vs one curl command (us)
+TLS certificate: 2 weeks, security team (corp) vs one openssl command (us)
+Total: 8-16 weeks, EUR 50-200k (corp) vs one afternoon, EUR 7.59/mo (us)
+
+CONNECT
+LinkedIn: Angelo Kenel
+Telegram: @BigKingFisher
+Subscribe for more: building enterprise software without the enterprise ransom.
+
+No license. No lock-in. You own it.
+
+#HelixNet #SAP #SwissTech #SME #FastAPI #Keycloak #Docker #OpenSource #DevOps #EnterpriseIT

@@ -1,0 +1,13 @@
+Dear Jane,
+
+Thank you for reaching out. The topic is directly in my area of expertise and I would be happy to participate.
+
+I am currently leading the architecture and development of an enterprise microservice platform (FastAPI, Keycloak OIDC, Docker) positioned as an SAP alternative for European SMEs. I work extensively with AI-assisted development workflows and have first-hand experience with the challenges and success factors of AI transformation at the organizational level.
+
+I am available for a 1-hour consultation call. Please send the discussion guide at your convenience and let me know the preferred scheduling options.
+
+Best regards,
+
+Albert-Daniel Kenel
+Architect / Development Lead
+Telegram: @BigKingFisher
