@@ -1,0 +1,120 @@
+1
+00:00:00,000 --> 00:00:12,000
+Check one two, check one two, beginning take five in three seconds. Let me show you
+
+2
+00:00:12,000 --> 00:00:19,000
+something we built yesterday afternoon, a full production environment, HTTPS, or
+
+3
+00:00:19,000 --> 00:00:26,000
+two log-in, roll-based access control, six microservices running 24-7 on a
+
+4
+00:00:26,000 --> 00:00:35,600
+dedicated server. Costs, seven euros, and 59 cents a month. Now let me show you
+
+5
+00:00:35,600 --> 00:00:44,360
+what a corporation takes to do the exact same thing. This is the Harexner Cloud
+
+6
+00:00:44,360 --> 00:00:56,280
+console. That is the server. 2CPUs, 8 gigs of RAM, 80 gig SSD, 759 a month, six
+
+7
+00:00:56,280 --> 00:01:04,160
+containers, all healthy, caddy for HTTPS, Postgres SQL for database, key cloak for
+
+8
+00:01:04,160 --> 00:01:12,800
+identity management, redis, rabbit MQ, and the application itself. This is a real
+
+9
+00:01:12,800 --> 00:01:19,320
+log-in, real key cloak, real OAuth 2, real roll-based access control with five
+
+10
+00:01:19,320 --> 00:01:25,760
+different roles. This is not a demo. This is not a mockup. This is production
+
+11
+00:01:25,760 --> 00:01:33,480
+grade software running on a seven-year-old server. Now here's what a corporation
+
+12
+00:01:33,480 --> 00:01:43,600
+takes for the same thing. Requiring requirements gathering. Two weeks, four
+
+13
+00:01:43,600 --> 00:01:53,400
+meetings, we said, Harexner, let's go. Architectural approval. Three weeks, review
+
+14
+00:01:53,400 --> 00:02:00,360
+board. We decided on a chat message. Server provisioning one to two weeks
+
+15
+00:02:00,360 --> 00:02:06,880
+infrastructure ticket. We clicked the button 30 seconds. Docker set up one week
+
+16
+00:02:06,880 --> 00:02:14,880
+infrastructure backlog. We ran one curl command, TLS certificate. Two weeks
+
+17
+00:02:14,880 --> 00:02:22,680
+security team request. We ran one open SSL command. Total time for a corporation,
+
+18
+00:02:22,680 --> 00:02:32,320
+eight to 16 weeks. Total budget, 50,000 to 200,000 euros. We did it in one
+
+19
+00:02:32,320 --> 00:02:41,420
+afternoon. The difference is not intelligence. The difference is not tools. The
+
+20
+00:02:41,420 --> 00:02:49,880
+difference is decision latency. Corporations spend 90% of their time asking
+
+21
+00:02:49,920 --> 00:02:57,800
+permission. We spend 90% of our time building. When something broke yesterday, TLS
+
+22
+00:02:57,800 --> 00:03:04,640
+certificates don't work on bear IP addresses. By the way, there was no war room,
+
+23
+00:03:04,640 --> 00:03:11,800
+no post mortem scheduled for next Tuesday. We diagnosed it. We fixed it and we
+
+24
+00:03:11,800 --> 00:03:21,640
+moved on. That is not speed. That is ownership. Swiss SMEs are paying SAP 50 to
+
+25
+00:03:21,640 --> 00:03:28,400
+200,000 euros a year for systems that take six months to change a form field.
+
+26
+00:03:28,400 --> 00:03:34,720
+That is not a feature. That is a trap. Helixnet is built for the company with
+
+27
+00:03:34,720 --> 00:03:43,360
+five to 50 people that needs real tools without the enterprise, ransom, fast
+
+28
+00:03:43,360 --> 00:03:53,000
+happy, key cloak, doctor, open source, unit, no license, no lock-in. If you are
+
+29
+00:03:53,000 --> 00:04:00,920
+Swiss SME owner, asking why your IT costs more than your rent. Let's talk.
+
+30
+00:04:00,920 --> 00:04:10,840
+Link in the description. That's a take.
+
