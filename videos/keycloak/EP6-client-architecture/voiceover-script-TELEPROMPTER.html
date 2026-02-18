@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP6 Client Architecture - Teleprompter</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #111;
+  color: #eee;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1 {
+  color: #0078D4;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.subtitle {
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.scene {
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  border-left: 3px solid #333;
+  border-radius: 4px;
+}
+.scene.money-shot {
+  border-left-color: #DAA520;
+  background: rgba(218,165,32,0.05);
+}
+.scene-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.scene-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0078D4;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.scene-title {
+  font-size: 15px;
+  color: #888;
+  font-weight: 400;
+}
+.money-label {
+  font-size: 11px;
+  color: #DAA520;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.line {
+  font-size: 20px;
+  color: #eee;
+  margin-bottom: 8px;
+  padding-left: 8px;
+}
+.line:last-child { margin-bottom: 0; }
+.emphasis {
+  color: #DAA520;
+  font-weight: 600;
+}
+.tip {
+  color: #555;
+  font-size: 13px;
+  font-style: italic;
+  margin-top: 8px;
+  padding-left: 8px;
+}
+.footer {
+  text-align: center;
+  color: #444;
+  font-size: 12px;
+  margin-top: 40px;
+  letter-spacing: 2px;
+}
+@media print {
+  body { background: #fff; color: #111; font-size: 16px; }
+  .scene { border-left-color: #ccc; page-break-inside: avoid; }
+  .scene.money-shot { border-left-color: #DAA520; }
+  .line { color: #111; }
+}
+</style>
+</head>
+<body>
+
+<h1>Client Architecture</h1>
+<div class="subtitle">Episode 6 -- Keycloak Series -- 12 Scenes -- Keep it tight (2:30 video)</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 1</span>
+    <span class="scene-title">Login</span>
+  </div>
+  <div class="line">Welcome back to the HelixNet Keycloak series.</div>
+  <div class="line">Episode 6 -- Client Architecture.</div>
+  <div class="line">Last episode we covered RBAC -- five roles, four users, role accumulation.</div>
+  <div class="line">Today we look at the other side: how <span class="emphasis">applications connect to Keycloak</span>.</div>
+  <div class="line">Three clients, three different OIDC patterns, one realm.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 2</span>
+    <span class="scene-title">Clients List</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">Here's our POS realm clients list. Nine total, but three are ours.</div>
+  <div class="line">helix_pos_web -- the browser-based POS terminal.</div>
+  <div class="line">helix_pos_mobile -- the tablet and smartphone app.</div>
+  <div class="line">helix_pos_service -- the backend service account.</div>
+  <div class="line">Notice each client has an emoji name and a clear description.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 3</span>
+    <span class="scene-title">helix_pos_web -- Settings</span>
+  </div>
+  <div class="line">Starting with the web client. This is a <span class="emphasis">public client</span> -- no client secret.</div>
+  <div class="line">Why public? Because JavaScript running in a browser can't keep secrets.</div>
+  <div class="line">Look at the redirect URIs. Seven different URLs for different environments.</div>
+  <div class="line">Each POS deployment gets its own redirect URI.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 4</span>
+    <span class="scene-title">helix_pos_web -- Client Scopes</span>
+  </div>
+  <div class="line">The web client has eight scopes. The most comprehensive of the three.</div>
+  <div class="line">Default scopes: email, profile, roles, web-origins -- always included in the token.</div>
+  <div class="line">Optional scopes: address, phone, offline_access -- requested on demand.</div>
+  <div class="line">The dedicated scope holds custom mappers for this specific client.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 5</span>
+    <span class="scene-title">helix_pos_mobile -- Settings</span>
+  </div>
+  <div class="line">Now the mobile client. Also public -- same reason, the app binary can be decompiled.</div>
+  <div class="line">Key difference: look at the redirect URI. <span class="emphasis">helixpos://oauth/callback</span>.</div>
+  <div class="line">That's a custom URL scheme. When Keycloak finishes auth, it sends the user back to the app.</div>
+  <div class="line">Not a web URL, an app URL. This is how native OAuth works.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 6</span>
+    <span class="scene-title">helix_pos_mobile -- Client Scopes</span>
+  </div>
+  <div class="line">The mobile client is leaner. Six scopes instead of eight.</div>
+  <div class="line">No address, no phone -- a mobile POS doesn't need those claims.</div>
+  <div class="line"><span class="emphasis">Principle of least privilege applies to scopes too</span>, not just roles.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 7</span>
+    <span class="scene-title">helix_pos_service -- Settings (CONFIDENTIAL)</span>
+  </div>
+  <div class="line">And now the big one. helix_pos_service.</div>
+  <div class="line">Notice the difference immediately: <span class="emphasis">Client authentication is ON</span>.</div>
+  <div class="line">This is a confidential client. It has a secret.</div>
+  <div class="line">Why? Because this runs on the backend. Server-side code CAN keep secrets.</div>
+  <div class="line">This is machine-to-machine authentication.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 8</span>
+    <span class="scene-title">helix_pos_service -- Credentials</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">The Credentials tab. This is where it gets real.</div>
+  <div class="line"><span class="emphasis">Client ID and Client Secret.</span> This is how the backend proves its identity.</div>
+  <div class="line">The secret is masked by default. The Regenerate button rotates it.</div>
+  <div class="line">In production, this secret goes into environment variables, <span class="emphasis">never source code</span>.</div>
+  <div class="line">This is the handshake between your backend and Keycloak.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 9</span>
+    <span class="scene-title">helix_pos_service -- Service Account Roles</span>
+  </div>
+  <div class="line">Service account roles. The service client gets its own virtual user.</div>
+  <div class="line">service-account-helix_pos_service -- that's the identity.</div>
+  <div class="line">This user can be assigned roles just like a human user.</div>
+  <div class="line">Right now it has the default realm roles. In production, you'd assign specific permissions.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 10</span>
+    <span class="scene-title">helix_pos_service -- Client Scopes</span>
+  </div>
+  <div class="line">And the service client's scopes. Only five.</div>
+  <div class="line">The leanest of the three. No offline_access -- services don't need refresh tokens the same way.</div>
+  <div class="line">Machine-to-machine: authenticate, get token, use it, done.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 11</span>
+    <span class="scene-title">Realm Client Scopes</span>
+  </div>
+  <div class="line">Zooming out. These are the realm-level client scopes.</div>
+  <div class="line">Ten scopes total, shared across all clients.</div>
+  <div class="line">Nine OpenID Connect, one SAML for legacy systems.</div>
+  <div class="line">Default scopes are included automatically. Optional scopes must be requested.</div>
+  <div class="line">This is the menu. Each client picks what it needs.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 12</span>
+    <span class="scene-title">Final Shot -- Clients List</span>
+  </div>
+  <div class="line">Back to the clients list. <span class="emphasis">Three clients, three patterns.</span></div>
+  <div class="line">Web: public, browser-based, many redirect URIs.</div>
+  <div class="line">Mobile: public, native app, custom scheme callback.</div>
+  <div class="line">Service: confidential, client secret, machine-to-machine.</div>
+  <div class="line">One realm handles all three. That's the power of OIDC.</div>
+  <div class="line">Next episode: authentication flows -- how the actual login process works.</div>
+</div>
+
+<div class="footer">HELIXNET -- KEYCLOAK SERIES -- EP6 CLIENT ARCHITECTURE</div>
+
+</body>
+</html>

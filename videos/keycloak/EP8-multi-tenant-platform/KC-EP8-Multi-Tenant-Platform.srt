@@ -1,0 +1,51 @@
+1
+00:00:04,000 --> 00:00:27,933
+Welcome back to the HelixNet Keycloak series. Episode 8 -- Multi-Tenant Platform. We've covered keys, RBAC, clients, and authentication flows. Now we zoom out. Six realms, five businesses, one Keycloak instance. This is multi-tenancy in action.
+
+2
+00:00:27,933 --> 00:00:47,195
+The master realm. This is the control plane. Every Keycloak instance starts here. Master manages everything. It's the admin realm -- not for end users, not for applications. Think of it as the building manager's office in a multi-tenant building.
+
+3
+00:00:47,195 --> 00:01:19,077
+Look at the clients list in master. These are not application clients. artemis-realm, blowup-realm, blowup-v2-realm, fourtwenty-realm. kc-pos-realm-dev-realm, kc-realm-dev-realm. Each tenant realm registers as a client in master. That's how Keycloak manages them. Five business realms, all visible from this one screen.
+
+4
+00:01:19,077 --> 00:01:47,420
+HelixPOS Development. The biggest tenant. Nine users. aleena, andy, felix, leandra, michael, pam, ralph. Plus pos-auditor and pos-developer -- system accounts. Notice the email domains. blowup-littau.local, artemis-store.local. Users from different stores, all in one POS realm.
+
+5
+00:01:47,420 --> 00:02:17,839
+The POS realm's roles. Five custom roles with emoji prefixes. Crown for admin. Chart for auditor. Cash for cashier. Wrench for developer. Tie for manager. Plus the Keycloak defaults: offline_access, uma_authorization. This is the RBAC system from Episode 5, now in context.
+
+6
+00:02:17,839 --> 00:02:32,096
+HelixNet Development. The main platform realm. Six users. This is where the platform developers and admins live. Separate from POS. Different users, different roles, different purpose.
+
+7
+00:02:32,096 --> 00:02:46,078
+Four emoji roles here. Admin, auditor, developer, guest. Simpler than POS. Different business, different needs. Same Keycloak, completely independent role system.
+
+8
+00:02:46,078 --> 00:03:11,951
+420 Wholesale. The Mosey Network. Swiss cannabis wholesale. Four users: chuck from Bern, demo, mosey the Oracle, and a supplier. Email domains: bern-store.ch, 420-network.ch. Completely isolated from the POS realm. No data leaks between tenants.
+
+9
+00:03:11,951 --> 00:03:31,108
+Different industry, different roles. pos-buyer, pos-seller, pos-network-boss. Not admin and cashier. Buyer and seller. The roles match the business. That's the power of realms -- each tenant defines its own language.
+
+10
+00:03:31,108 --> 00:03:50,556
+Artemis Headshop. Luzern. Five users. Felix the Owner. Leandra the Designer. Mike the Developer. Pam the Cashier. Ralph the Manager. All with artemis.ch email addresses. A complete retail team in their own isolated realm.
+
+11
+00:03:50,556 --> 00:04:13,275
+BlowUp V2. And look at this -- custom branding. The BlowUp logo, the welcome page, the dark theme. Each realm can have its own look and feel. Users logging into BlowUp see BlowUp, not Keycloak. That's white-labeling at the identity layer.
+
+12
+00:04:13,275 --> 00:04:28,581
+Two users. The smallest tenant. It doesn't matter if you have two users or two thousand. Same isolation. Same security. Same Keycloak. The architecture scales from startup to enterprise.
+
+13
+00:04:28,581 --> 00:04:58,555
+Back to master. The control plane. Six realms. Twenty-six users across five businesses. Cannabis wholesale, headshops, POS systems, platform development. All on one Keycloak instance. All completely isolated. One login page per business. One admin console to manage them all. That's multi-tenancy. That's the HelixNet platform.

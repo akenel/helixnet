@@ -4,11 +4,23 @@
  *
  * HOW TO USE:
  * 1. Make sure Docker stack is running (docker compose up -d)
- * 2. Close ALL browser windows
- * 3. Open OBS, set source to Screen Capture (PipeWire)
- * 4. Hit Record in OBS
- * 5. Run: node scripts/isotto-demo-record.js
- * 6. Stop OBS when the console says "RECORDING COMPLETE"
+ * 2. Open OBS, set source to "Screen Capture (PipeWire)"
+ * 3. Run: node scripts/isotto-demo-record.js
+ *    - Script mutes your microphones automatically
+ *    - Chrome opens FULLSCREEN (covers terminal + taskbar)
+ * 4. A bright RED "OBS CHECK" card fills the screen
+ * 5. Check OBS PREVIEW -- do you see the red card FULLSCREEN?
+ *    - YES: Hit Record in OBS, then press ENTER in terminal
+ *    - NO:  Click Chrome + press F11 to force fullscreen, or fix OBS source
+ * 6. Demo runs automatically (~4:30). Don't touch anything.
+ * 7. Stop OBS when console says "RECORDING COMPLETE"
+ * 8. Mics are automatically unmuted when script exits
+ *
+ * LESSONS LEARNED (Feb 13, 2026):
+ * - Take 1: OBS captured GNOME Settings, not the browser
+ * - Take 2: Terminal covered half the screen (not fullscreen)
+ * - Take 2: Mic was on, captured ambient audio
+ * - Fix: --start-fullscreen + pactl mute + pre-flight check
  *
  * Total runtime: ~4:30
  *
@@ -27,6 +39,7 @@
 
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { execSync } = require('child_process');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const PAUSE = {
@@ -114,6 +127,47 @@ async function keycloakLogin(page, credentials) {
   }
 }
 
+async function muteMicrophones() {
+  // Mute ALL audio input sources so OBS records silent video
+  try {
+    const sources = execSync('pactl list short sources 2>/dev/null').toString();
+    for (const line of sources.split('\n')) {
+      if (!line.trim()) continue;
+      const parts = line.split('\t');
+      const sourceId = parts[0];
+      const sourceName = parts[1] || '';
+      // Mute input sources (microphones) -- skip monitor sources (they capture desktop audio)
+      if (sourceName.includes('input') || sourceName.includes('source')) {
+        execSync(`pactl set-source-mute ${sourceId} 1`);
+        console.log(`  Muted: ${sourceName}`);
+      }
+    }
+    console.log('  All microphones muted.');
+  } catch (e) {
+    console.log('  Warning: Could not mute mics with pactl:', e.message);
+    console.log('  Please mute manually in OBS Audio Mixer.');
+  }
+}
+
+async function unmuteMicrophones() {
+  // Restore mic state after recording
+  try {
+    const sources = execSync('pactl list short sources 2>/dev/null').toString();
+    for (const line of sources.split('\n')) {
+      if (!line.trim()) continue;
+      const parts = line.split('\t');
+      const sourceId = parts[0];
+      const sourceName = parts[1] || '';
+      if (sourceName.includes('input') || sourceName.includes('source')) {
+        execSync(`pactl set-source-mute ${sourceId} 0`);
+      }
+    }
+    console.log('  Microphones unmuted.');
+  } catch (e) {
+    // Silent fail on cleanup
+  }
+}
+
 async function main() {
   console.log('='.repeat(60));
   console.log('ISOTTO SPORT -- Print Shop Management Demo');
@@ -121,24 +175,69 @@ async function main() {
   console.log('');
   console.log('CHECKLIST:');
   console.log('  [ ] Docker stack running');
-  console.log('  [ ] OBS recording (Screen Capture -- NOT Window Capture)');
-  console.log('  [ ] All other browser windows closed');
+  console.log('  [ ] OBS open with Screen Capture (PipeWire) source');
   console.log('');
-  console.log('Starting in 3 seconds...');
-  await sleep(3000);
 
+  // Mute microphones BEFORE launching browser
+  console.log('[Pre-flight] Muting microphones...');
+  await muteMicrophones();
+
+  console.log('[Pre-flight] Launching Chrome in FULLSCREEN mode...');
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
     args: [
-      '--start-maximized',
+      '--start-fullscreen',           // F11 fullscreen -- covers taskbar + everything
       '--window-size=1920,1080',
       '--ignore-certificate-errors',
     ],
   });
 
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1920, height: 1080 });
+  // Use the first page (avoids blank tab) and set viewport
+  const pages = await browser.pages();
+  const page = pages[0] || await browser.newPage();
+
+  // ================================================================
+  // OBS VERIFICATION SCREEN -- Confirm capture source is correct
+  // Chrome is fullscreen. If OBS shows this card = you're good.
+  // ================================================================
+  await page.setContent(`
+    <html><body style="margin:0;background:#DC2626;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+      <div style="text-align:center;color:white;">
+        <div style="font-size:140px;font-weight:900;text-shadow:4px 4px 0 #000;">OBS CHECK</div>
+        <div style="font-size:56px;margin:40px 0;background:#FBBF24;color:#000;padding:24px 80px;border-radius:16px;font-weight:bold;">
+          DO YOU SEE THIS FULLSCREEN IN OBS?
+        </div>
+        <div style="font-size:36px;margin-top:30px;">YES &rarr; Hit Record in OBS, then press ENTER in terminal</div>
+        <div style="font-size:36px;margin-top:10px;">NO &rarr; STOP. Fix OBS source first.</div>
+        <div style="font-size:24px;margin-top:50px;opacity:0.7;">Chrome should be FULLSCREEN (no taskbar, no terminal visible)</div>
+        <div style="font-size:24px;margin-top:8px;opacity:0.7;">If you see a terminal behind this, press F11 on Chrome first</div>
+      </div>
+    </body></html>
+  `);
+
+  console.log('');
+  console.log('  Chrome should now be FULLSCREEN (covering everything).');
+  console.log('  If you can still see the terminal BEHIND Chrome:');
+  console.log('    -> Click the Chrome window, then press F11');
+  console.log('');
+  console.log('  CHECK your OBS preview -- do you see the red card FULLSCREEN?');
+  console.log('  If YES: Hit Record in OBS, then press ENTER here.');
+  console.log('  If NO:  Fix your OBS source (use Screen Capture, not Window Capture).');
+  console.log('');
+
+  // Wait for user to confirm OBS is capturing the right thing
+  const readline = require('readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  await new Promise(resolve => {
+    rl.question('  >>> Press ENTER when OBS shows the red card FULLSCREEN... ', () => {
+      rl.close();
+      resolve();
+    });
+  });
+
+  console.log('  OBS confirmed. Starting demo in 2 seconds...');
+  await sleep(2000);
 
   // ================================================================
   // SCENE 1: INTRO CARD (5s)
@@ -534,17 +633,21 @@ async function main() {
   console.log('RECORDING COMPLETE -- Stop OBS now');
   console.log('='.repeat(60));
   console.log('');
-  console.log('Post-production:');
-  console.log('  1. Strip audio: ffmpeg -i raw.mp4 -an -c:v copy silent.mp4');
-  console.log('  2. Trim: ffmpeg -i silent.mp4 -ss 0 -to END -c copy trimmed.mp4');
-  console.log('  3. Record voiceover per scene (Telegram voice messages)');
-  console.log('  4. Merge: ffmpeg -i trimmed.mp4 -i voiceover.m4a -c:v copy -c:a aac final.mp4');
-  console.log('');
 
   await browser.close();
+
+  // Restore mic state
+  await unmuteMicrophones();
+
+  console.log('Post-production:');
+  console.log('  cd videos/isotto-print-shop/DEMO/');
+  console.log('  # Set RAW_FILE and TRIM_END in post-production.sh, then:');
+  console.log('  bash post-production.sh');
+  console.log('');
 }
 
-main().catch(err => {
+main().catch(async err => {
   console.error('Demo recording failed:', err);
+  await unmuteMicrophones();
   process.exit(1);
 });

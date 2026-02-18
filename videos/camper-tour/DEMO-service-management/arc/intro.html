@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217,119,6,0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.brand {
+  font-size: 28px;
+  font-weight: 300;
+  color: #666;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.helix { color: #d97706; }
+.title {
+  font-size: 64px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.subtitle {
+  font-size: 22px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 3px;
+  margin-bottom: 50px;
+}
+.divider {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d97706, transparent);
+  margin: 0 auto 40px;
+}
+.features {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 1200px;
+}
+.feature {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 14px 22px;
+  text-align: center;
+  min-width: 160px;
+}
+.feature .icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+  display: block;
+}
+.feature .name {
+  color: #ccc;
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.feature .type {
+  color: #555;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.location {
+  margin-top: 50px;
+  font-size: 14px;
+  color: #444;
+  letter-spacing: 3px;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="brand"><span class="helix">Helix</span>Net Platform Demo</div>
+    <div class="title">Camper &amp; Tour</div>
+    <div class="subtitle">Service Management System</div>
+    <div class="divider"></div>
+    <div class="features">
+      <div class="feature">
+        <span class="icon">&#x1F698;</span>
+        <div class="name">Vehicles</div>
+        <div class="type">Plate Lookup</div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x1F527;</span>
+        <div class="name">Service Jobs</div>
+        <div class="type">Quote to Invoice</div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x1F4CB;</span>
+        <div class="name">Dashboard</div>
+        <div class="type">Morning Overview</div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x1F465;</span>
+        <div class="name">Customers</div>
+        <div class="type">History + Spend</div>
+      </div>
+      <div class="feature">
+        <span class="icon">&#x1F512;</span>
+        <div class="name">RBAC</div>
+        <div class="type">Keycloak SSO</div>
+      </div>
+    </div>
+    <div class="location">Via F. Culcasi, 4 &mdash; Trapani, Sicily</div>
+  </div>
+</body>
+</html>

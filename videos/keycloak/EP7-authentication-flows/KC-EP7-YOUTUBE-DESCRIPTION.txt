@@ -1,0 +1,61 @@
+Authentication Flows -- Login Pipelines & Security Policies | HelixNet EP7
+
+Seven built-in authentication flows. Eleven required actions. Five security policy types. This episode breaks down how Keycloak handles every login scenario -- from browser sessions to API grants, from new user registration to password recovery, from Docker containers to federated identity.
+
+Every step is configurable. Required, Alternative, Conditional, or Disabled. This is conditional logic, not just checkboxes.
+
+---
+
+TIMESTAMPS
+0:00 Intro
+0:04 Login + episode intro
+0:36 Authentication flows list -- 7 built-in flows
+1:07 Browser flow -- THE main login flow (MONEY SHOT)
+2:09 Direct grant -- API/CLI authentication (headless)
+2:42 Registration flow -- new user signup
+3:22 Reset credentials -- password recovery pipeline
+3:59 First broker login -- identity federation
+4:33 Docker auth -- one step, one purpose, clean
+4:57 Clients flow -- 4 authentication methods
+5:37 Required actions -- 11 enforceable policies (MONEY SHOT)
+6:31 Policies tab -- password, OTP, WebAuthn, FIDO2, CIBA
+7:22 Back to flows -- seven security pipelines
+
+---
+
+WHAT YOU'RE SEEING
+- 7 authentication flows (browser, direct grant, registration, reset credentials, first broker, docker, clients)
+- Browser flow deep dive: Cookie, Kerberos, IdP Redirector, Username/Password, Conditional OTP
+- 4 requirement levels: Required, Alternative, Conditional, Disabled
+- 11 required actions with Enabled/Default toggles
+- 5 security policy types (Password, OTP, WebAuthn, WebAuthn Passwordless/FIDO2, CIBA)
+- Conditional OTP appears in 3 different flows (browser, direct grant, reset credentials)
+- Disabled steps = ready to activate, not missing (defense in depth)
+
+TECH STACK
+- Keycloak 24 (OIDC / OAuth2 / RBAC)
+- FastAPI + SQLAlchemy (44 models)
+- Traefik reverse proxy
+- Docker Compose orchestration
+- PostgreSQL
+
+This is Episode 7 of the HelixNet Keycloak series.
+
+---
+
+SERIES
+EP1 -- The Stack (Docker Compose overview)
+EP2 -- HTTPS in Development (Traefik + mkcert)
+EP3 -- Health Checks & Self-Healing
+EP4 -- Keys to the Kingdom (Admin Console Tour)
+EP5 -- RBAC Deep Dive (Role-Based Access Control)
+EP6 -- Client Architecture (Public vs Confidential)
+EP7 -- Authentication Flows (this video)
+EP8 -- Multi-Tenant Platform
+
+---
+
+Built with open source. No vendor lock-in. No six-figure license.
+Do what you got to do.
+
+#keycloak #authentication #oauth2 #oidc #mfa #fido2 #webauthn #opensource #fastapi #docker #selfhosted #identitymanagement #helixnet

@@ -1,0 +1,63 @@
+RBAC Deep Dive -- Role-Based Access Control in Production | HelixNet EP5
+
+Five custom roles. Four real users. One POS realm. This is a deep dive into how role-based access control actually works in Keycloak -- from the principle of least privilege to role accumulation to complete separation of concerns.
+
+This isn't theory. This is a production system with real permission boundaries.
+
+---
+
+TIMESTAMPS
+0:00 Intro
+0:03 Login + episode intro
+0:21 The five custom POS roles (MONEY SHOT)
+1:00 Role detail -- pos-admin (full control)
+1:10 Role detail -- pos-cashier (10% discount limit)
+1:18 Role detail -- pos-manager (unlimited discounts)
+1:24 Users in pos-cashier role
+1:34 User Pam -- principle of least privilege
+1:44 User Ralph -- role accumulation (cashier + manager)
+1:56 User Michael -- separation of concerns (developer only)
+2:06 User Felix -- super user (MONEY SHOT #2)
+2:19 Client scopes -- JWT token claims
+2:34 Authentication flows -- 7 built-in flows
+2:48 Realm settings -- mission control
+3:06 Back to roles -- "real platform, not a toy"
+
+---
+
+WHAT YOU'RE SEEING
+- 5 custom realm roles: admin, auditor, cashier, developer, manager
+- Real permission boundaries (cashier limited to 10% discounts)
+- Principle of least privilege (Pam = cashier only)
+- Role accumulation (Ralph = cashier + manager)
+- Separation of concerns (Michael = developer, no cash access)
+- Super user pattern (Felix = admin + cashier + manager)
+- 10 client scopes controlling JWT token claims
+- 7 authentication flows (browser, direct grant, Docker, federated)
+
+TECH STACK
+- Keycloak 24 (OIDC / OAuth2 / RBAC)
+- FastAPI + SQLAlchemy (44 models)
+- Traefik reverse proxy
+- Docker Compose orchestration
+- PostgreSQL
+
+This is Episode 5 of the HelixNet Keycloak series. The full series covers identity management from first login to multi-tenant platform architecture.
+
+---
+
+SERIES
+EP1 -- The Stack (Docker Compose overview)
+EP2 -- HTTPS in Development (Traefik + mkcert)
+EP3 -- Health Checks & Self-Healing
+EP4 -- Keys to the Kingdom (Admin Console Tour)
+EP5 -- RBAC Deep Dive (this video)
+EP6 -- Client Architecture
+EP7 -- Authentication Flows
+EP8 -- Multi-Tenant Platform
+
+---
+
+Built with open source. No vendor lock-in. No six-figure license.
+
+#keycloak #rbac #oauth2 #oidc #identitymanagement #opensource #fastapi #docker #selfhosted #accesscontrol #multitenant #helixnet

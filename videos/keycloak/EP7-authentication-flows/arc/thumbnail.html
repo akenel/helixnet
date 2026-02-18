@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px;
+  height: 720px;
+  background: #0a0a0a;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.2) 0%, transparent 70%);
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.badge {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  padding: 8px 20px;
+  background: rgba(0,120,212,0.15);
+  border: 1px solid rgba(0,120,212,0.4);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0078D4;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.content {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+  width: 90%;
+}
+.ep-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0078D4;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.title {
+  font-size: 72px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.0;
+  letter-spacing: -1px;
+  text-shadow: 0 0 40px rgba(0,120,212,0.3);
+  margin-bottom: 16px;
+}
+.subtitle {
+  font-size: 24px;
+  font-weight: 300;
+  color: #999;
+  letter-spacing: 2px;
+  margin-bottom: 36px;
+}
+.flows {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.flow {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #aaa;
+  letter-spacing: 1px;
+}
+.flow.highlight {
+  border-color: rgba(0,120,212,0.5);
+  color: #0078D4;
+}
+.brand {
+  position: absolute;
+  bottom: 24px;
+  left: 40px;
+  font-size: 20px;
+  font-weight: 300;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.brand .helix { color: #0078D4; }
+.stat {
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #666;
+  letter-spacing: 2px;
+  z-index: 2;
+}
+.stat span { color: #0078D4; font-weight: 700; font-size: 22px; }
+.bottom-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0078D4, #00B4D8, #0078D4);
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="badge">Keycloak Series</div>
+  <div class="content">
+    <div class="ep-label">Episode 7</div>
+    <div class="title">Authentication Flows</div>
+    <div class="subtitle">Login Pipelines, Required Actions &amp; Security Policies</div>
+    <div class="flows">
+      <div class="flow highlight">Browser</div>
+      <div class="flow">Direct Grant</div>
+      <div class="flow">Registration</div>
+      <div class="flow">Reset Credentials</div>
+      <div class="flow">First Broker</div>
+      <div class="flow">Docker Auth</div>
+      <div class="flow">Clients</div>
+    </div>
+  </div>
+  <div class="brand"><span class="helix">Helix</span>Net</div>
+  <div class="stat"><span>7</span> Flows &middot; <span>11</span> Actions &middot; <span>5</span> Policies</div>
+  <div class="bottom-bar"></div>
+</body>
+</html>

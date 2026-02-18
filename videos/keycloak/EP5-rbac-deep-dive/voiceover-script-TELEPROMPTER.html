@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP5 RBAC Deep Dive - Teleprompter</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #111;
+  color: #eee;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1 {
+  color: #0078D4;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.subtitle {
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.scene {
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  border-left: 3px solid #333;
+  border-radius: 4px;
+}
+.scene.money-shot {
+  border-left-color: #DAA520;
+  background: rgba(218,165,32,0.05);
+}
+.scene-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.scene-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0078D4;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.scene-title {
+  font-size: 15px;
+  color: #888;
+  font-weight: 400;
+}
+.money-label {
+  font-size: 11px;
+  color: #DAA520;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.line {
+  font-size: 20px;
+  color: #eee;
+  margin-bottom: 8px;
+  padding-left: 8px;
+}
+.line:last-child { margin-bottom: 0; }
+.emphasis {
+  color: #DAA520;
+  font-weight: 600;
+}
+.tip {
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+  margin-top: 6px;
+  padding-left: 8px;
+}
+hr {
+  border: none;
+  border-top: 1px solid #222;
+  margin: 10px 0;
+}
+.footer {
+  text-align: center;
+  color: #444;
+  font-size: 12px;
+  margin-top: 40px;
+  letter-spacing: 2px;
+}
+@media print {
+  body { background: #fff; color: #111; font-size: 16px; }
+  .scene { border-left-color: #ccc; page-break-inside: avoid; }
+  .scene.money-shot { border-left-color: #DAA520; }
+  .line { color: #111; }
+}
+</style>
+</head>
+<body>
+
+<h1>RBAC Deep Dive</h1>
+<div class="subtitle">Episode 5 -- Keycloak Series -- 14 Scenes</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 1</span>
+    <span class="scene-title">Login</span>
+  </div>
+  <div class="line">Welcome back to the HelixNet Keycloak series.</div>
+  <div class="line">Episode 5 -- RBAC Deep Dive.</div>
+  <div class="line">Last episode we toured the admin console and saw all six realms.</div>
+  <div class="line">Today we go inside the POS realm and look at how <span class="emphasis">role-based access control</span> actually works.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 2</span>
+    <span class="scene-title">Realm Roles List</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">Here are the <span class="emphasis">five custom roles</span> we built for the POS system.</div>
+  <div class="line">Each role has an emoji icon and a clear description of what it does.</div>
+  <div class="line">pos-admin -- full system control, the crown.</div>
+  <div class="line">pos-auditor -- read-only access for compliance.</div>
+  <div class="line">pos-cashier -- front-line, can process transactions but limited to <span class="emphasis">10% discounts</span>.</div>
+  <div class="line">pos-developer -- testing role, can create products but no access to production data.</div>
+  <div class="line">pos-manager -- the senior role, <span class="emphasis">unlimited discounts</span> and full reporting.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 3</span>
+    <span class="scene-title">Role Detail -- pos-admin</span>
+  </div>
+  <div class="line">Let's look inside each role. The admin role -- full control over the POS realm and configuration.</div>
+  <div class="line">Notice the tabs: Details, Attributes, Users in role.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 4</span>
+    <span class="scene-title">Role Detail -- pos-cashier</span>
+  </div>
+  <div class="line">The cashier role. Key detail: <span class="emphasis">"Limited to 10% discount threshold."</span></div>
+  <div class="line">This is how you prevent staff from giving away the house.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 5</span>
+    <span class="scene-title">Role Detail -- pos-manager</span>
+  </div>
+  <div class="line">The manager role. "Unlimited discounts and reporting."</div>
+  <div class="line">When a customer needs more than 10% off, the manager steps in.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 6</span>
+    <span class="scene-title">Users in Role -- pos-cashier</span>
+  </div>
+  <div class="line">Now click "Users in role" to see who has cashier access.</div>
+  <div class="line">This is the other side of the coin -- <span class="emphasis">role to users mapping</span>.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 7</span>
+    <span class="scene-title">User Pam -- Cashier Only</span>
+  </div>
+  <div class="line">Pam is a front-line cashier. One role: pos-cashier.</div>
+  <div class="line">She can ring up sales and process checkouts. That's it.</div>
+  <div class="line"><span class="emphasis">Principle of least privilege</span> in action.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 8</span>
+    <span class="scene-title">User Ralph -- Cashier + Manager</span>
+  </div>
+  <div class="line">Ralph has two roles: cashier AND manager.</div>
+  <div class="line">He works the register but can also approve discounts and run reports.</div>
+  <div class="line">This is <span class="emphasis">role accumulation</span> -- each role adds capabilities.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 9</span>
+    <span class="scene-title">User Michael -- Developer Only</span>
+  </div>
+  <div class="line">Michael is our developer. One role: pos-developer.</div>
+  <div class="line">He can create test products but has no access to live transactions.</div>
+  <div class="line"><span class="emphasis">Complete separation of concerns.</span></div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 10</span>
+    <span class="scene-title">User Felix -- Super User</span>
+    <span class="money-label">MONEY SHOT #2</span>
+  </div>
+  <div class="line">And Felix. Look at this -- <span class="emphasis">admin, cashier, AND manager</span>.</div>
+  <div class="line">Three roles. Full system control.</div>
+  <div class="line">In a real deployment, you'd have exactly one or two Felix-level users.</div>
+  <div class="line">Everyone else gets the minimum they need.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 11</span>
+    <span class="scene-title">Client Scopes</span>
+  </div>
+  <div class="line">Client scopes control what information goes into the JWT token.</div>
+  <div class="line">Ten scopes here -- email, profile, roles, web-origins.</div>
+  <div class="line">When a user logs in, these scopes determine what claims appear in their access token.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 12</span>
+    <span class="scene-title">Authentication Flows</span>
+  </div>
+  <div class="line">Seven built-in authentication flows.</div>
+  <div class="line">Browser flow for interactive logins, direct grant for API authentication.</div>
+  <div class="line">Docker auth for container registries, first broker login for federated identity.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 13</span>
+    <span class="scene-title">Realm Settings</span>
+  </div>
+  <div class="line">The realm settings page. This is <span class="emphasis">mission control</span>.</div>
+  <div class="line">Realm ID: kc-pos-realm-dev. Frontend URL points to our Keycloak instance.</div>
+  <div class="line">SSL required for external requests. OpenID and SAML endpoints at the bottom.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 14</span>
+    <span class="scene-title">Final Shot -- Roles List</span>
+  </div>
+  <div class="line">Back to where we started. <span class="emphasis">Five roles, clean RBAC, production-ready.</span></div>
+  <div class="line">This is what separates a real platform from a toy project.</div>
+  <div class="line">Next episode: we'll look at the client architecture -- how the three POS clients connect to Keycloak.</div>
+</div>
+
+<div class="footer">HELIXNET -- KEYCLOAK SERIES -- EP5 RBAC DEEP DIVE</div>
+
+</body>
+</html>

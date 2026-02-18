@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px;
+  height: 720px;
+  background: #0a0a0a;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.2) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.badge {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  padding: 8px 20px;
+  background: rgba(0,120,212,0.15);
+  border: 1px solid rgba(0,120,212,0.4);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0078D4;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+.ep-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0078D4;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.title {
+  font-size: 86px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.0;
+  letter-spacing: -1px;
+  text-shadow: 0 0 40px rgba(0,120,212,0.3);
+  margin-bottom: 16px;
+}
+.subtitle {
+  font-size: 26px;
+  font-weight: 300;
+  color: #999;
+  letter-spacing: 2px;
+  margin-bottom: 40px;
+}
+/* Role chips */
+.roles {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+.role {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 16px;
+  color: #bbb;
+  letter-spacing: 1px;
+}
+.role .icon { margin-right: 4px; }
+.brand {
+  position: absolute;
+  bottom: 24px;
+  left: 40px;
+  font-size: 20px;
+  font-weight: 300;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.brand .helix { color: #0078D4; }
+.stat {
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #666;
+  letter-spacing: 2px;
+  z-index: 2;
+}
+.stat span { color: #0078D4; font-weight: 700; font-size: 22px; }
+.bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0078D4, #00B4D8, #0078D4);
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="badge">Keycloak Series</div>
+  <div class="content">
+    <div class="ep-label">Episode 5</div>
+    <div class="title">RBAC Deep Dive</div>
+    <div class="subtitle">Role-Based Access Control in Production</div>
+    <div class="roles">
+      <div class="role"><span class="icon">&#x1F451;</span> Admin</div>
+      <div class="role"><span class="icon">&#x1F4B0;</span> Cashier</div>
+      <div class="role"><span class="icon">&#x1F454;</span> Manager</div>
+      <div class="role"><span class="icon">&#x1F6E0;</span> Developer</div>
+      <div class="role"><span class="icon">&#x1F4CA;</span> Auditor</div>
+    </div>
+  </div>
+  <div class="brand"><span class="helix">Helix</span>Net</div>
+  <div class="stat"><span>5</span> Roles &middot; <span>4</span> Users &middot; <span>1</span> Realm</div>
+  <div class="bottom-bar"></div>
+</body>
+</html>

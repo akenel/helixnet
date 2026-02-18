@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP8 Multi-Tenant Platform - Teleprompter</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #111;
+  color: #eee;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1 {
+  color: #0078D4;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.subtitle {
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.scene {
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  border-left: 3px solid #333;
+  border-radius: 4px;
+}
+.scene.money-shot {
+  border-left-color: #DAA520;
+  background: rgba(218,165,32,0.05);
+}
+.scene-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.scene-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0078D4;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.scene-title {
+  font-size: 15px;
+  color: #888;
+  font-weight: 400;
+}
+.money-label {
+  font-size: 11px;
+  color: #DAA520;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.line {
+  font-size: 20px;
+  color: #eee;
+  margin-bottom: 8px;
+  padding-left: 8px;
+}
+.line:last-child { margin-bottom: 0; }
+.emphasis {
+  color: #DAA520;
+  font-weight: 600;
+}
+.footer {
+  text-align: center;
+  color: #444;
+  font-size: 12px;
+  margin-top: 40px;
+  letter-spacing: 2px;
+}
+@media print {
+  body { background: #fff; color: #111; font-size: 16px; }
+  .scene { border-left-color: #ccc; page-break-inside: avoid; }
+  .scene.money-shot { border-left-color: #DAA520; }
+  .line { color: #111; }
+}
+</style>
+</head>
+<body>
+
+<h1>Multi-Tenant Platform</h1>
+<div class="subtitle">Episode 8 -- Keycloak Series -- 13 Scenes -- Series Finale</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 1</span>
+    <span class="scene-title">Login</span>
+  </div>
+  <div class="line">Welcome back to the HelixNet Keycloak series.</div>
+  <div class="line">Episode 8 -- Multi-Tenant Platform.</div>
+  <div class="line">We've covered keys, RBAC, clients, and authentication flows.</div>
+  <div class="line">Now we zoom out. <span class="emphasis">Six realms, five businesses, one Keycloak instance.</span></div>
+  <div class="line">This is multi-tenancy in action.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 2</span>
+    <span class="scene-title">Master Realm Dashboard</span>
+  </div>
+  <div class="line">The master realm. This is <span class="emphasis">the control plane</span>.</div>
+  <div class="line">Every Keycloak instance starts here. Master manages everything.</div>
+  <div class="line">It's the admin realm -- not for end users, not for applications.</div>
+  <div class="line">Think of it as the building manager's office in a multi-tenant building.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 3</span>
+    <span class="scene-title">Master Realm Clients</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">Look at the clients list in master. These are not application clients.</div>
+  <div class="line">artemis-realm, blowup-realm, blowup-v2-realm, fourtwenty-realm.</div>
+  <div class="line">kc-pos-realm-dev-realm, kc-realm-dev-realm.</div>
+  <div class="line"><span class="emphasis">Each tenant realm registers as a client in master.</span> That's how Keycloak manages them.</div>
+  <div class="line">Five business realms, all visible from this one screen.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 4</span>
+    <span class="scene-title">HelixPOS Dev -- Users</span>
+  </div>
+  <div class="line">HelixPOS Development. The biggest tenant. Nine users.</div>
+  <div class="line">aleena, andy, felix, leandra, michael, pam, ralph.</div>
+  <div class="line">Plus pos-auditor and pos-developer -- system accounts.</div>
+  <div class="line">Notice the email domains. blowup-littau.local, artemis-store.local.</div>
+  <div class="line"><span class="emphasis">Users from different stores, all in one POS realm.</span></div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 5</span>
+    <span class="scene-title">HelixPOS Dev -- Roles</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">The POS realm's roles. <span class="emphasis">Five custom roles with emoji prefixes.</span></div>
+  <div class="line">Crown for admin. Chart for auditor. Cash for cashier.</div>
+  <div class="line">Wrench for developer. Tie for manager.</div>
+  <div class="line">Plus the Keycloak defaults: offline_access, uma_authorization.</div>
+  <div class="line">This is the RBAC system from Episode 5, now in context.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 6</span>
+    <span class="scene-title">HelixNet Dev -- Users</span>
+  </div>
+  <div class="line">HelixNet Development. The main platform realm. Six users.</div>
+  <div class="line">This is where the platform developers and admins live.</div>
+  <div class="line">Separate from POS. Different users, different roles, different purpose.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 7</span>
+    <span class="scene-title">HelixNet Dev -- Roles</span>
+  </div>
+  <div class="line">Four emoji roles here. Admin, auditor, developer, guest.</div>
+  <div class="line">Simpler than POS. Different business, different needs.</div>
+  <div class="line"><span class="emphasis">Same Keycloak, completely independent role system.</span></div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 8</span>
+    <span class="scene-title">420 Wholesale -- Users</span>
+  </div>
+  <div class="line">420 Wholesale. The Mosey Network. Swiss cannabis wholesale.</div>
+  <div class="line">Four users: chuck from Bern, demo, mosey the Oracle, and a supplier.</div>
+  <div class="line">Email domains: bern-store.ch, 420-network.ch.</div>
+  <div class="line"><span class="emphasis">Completely isolated from the POS realm. No data leaks between tenants.</span></div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 9</span>
+    <span class="scene-title">420 Wholesale -- Roles</span>
+  </div>
+  <div class="line">Different industry, different roles.</div>
+  <div class="line">pos-buyer, pos-seller, pos-network-boss.</div>
+  <div class="line">Not admin and cashier. Buyer and seller. <span class="emphasis">The roles match the business.</span></div>
+  <div class="line">That's the power of realms -- each tenant defines its own language.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 10</span>
+    <span class="scene-title">Artemis Headshop -- Users</span>
+  </div>
+  <div class="line">Artemis Headshop. Luzern. Five users.</div>
+  <div class="line">Felix the Owner. Leandra the Designer. Mike the Developer.</div>
+  <div class="line">Pam the Cashier. Ralph the Manager.</div>
+  <div class="line">All with @artemis.ch email addresses.</div>
+  <div class="line">A complete retail team in their own isolated realm.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 11</span>
+    <span class="scene-title">BlowUp V2 -- Dashboard</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">BlowUp V2. And look at this -- <span class="emphasis">custom branding</span>.</div>
+  <div class="line">The BlowUp logo, the welcome page, the dark theme.</div>
+  <div class="line">Each realm can have its own look and feel.</div>
+  <div class="line">Users logging into BlowUp see BlowUp, not Keycloak.</div>
+  <div class="line">That's white-labeling at the identity layer.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 12</span>
+    <span class="scene-title">BlowUp V2 -- Users</span>
+  </div>
+  <div class="line">Two users. The smallest tenant.</div>
+  <div class="line">It doesn't matter if you have two users or two thousand.</div>
+  <div class="line">Same isolation. Same security. Same Keycloak.</div>
+  <div class="line"><span class="emphasis">The architecture scales from startup to enterprise.</span></div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 13</span>
+    <span class="scene-title">Final Shot -- Master Realm</span>
+  </div>
+  <div class="line">Back to master. The control plane.</div>
+  <div class="line"><span class="emphasis">Six realms. Twenty-six users across five businesses.</span></div>
+  <div class="line">Cannabis wholesale, headshops, POS systems, platform development.</div>
+  <div class="line">All on one Keycloak instance. All completely isolated.</div>
+  <div class="line">One login page per business. One admin console to manage them all.</div>
+  <div class="line">That's multi-tenancy. That's the HelixNet platform.</div>
+</div>
+
+<div class="footer">HELIXNET -- KEYCLOAK SERIES -- EP8 MULTI-TENANT PLATFORM -- SERIES FINALE</div>
+
+</body>
+</html>

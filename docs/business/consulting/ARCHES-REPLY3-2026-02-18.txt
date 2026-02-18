@@ -1,0 +1,15 @@
+Hi Jane,
+
+Great to hear the client wants to proceed.
+
+Before the call, they may find this useful -- a short video (4 minutes) where I walk through exactly what I described: the production deployment we did in one afternoon versus what it takes in a corporate environment.
+
+https://youtu.be/YOd5IgTnIA4
+
+It covers the tech stack, a live demo of the running system, and the comparison with enterprise timelines and costs. Should give them a concrete sense of my approach before we speak.
+
+Looking forward to confirming a time slot.
+
+Best regards,
+Angelo
+

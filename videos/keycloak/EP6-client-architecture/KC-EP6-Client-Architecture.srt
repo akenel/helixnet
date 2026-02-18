@@ -1,0 +1,47 @@
+1
+00:00:04,000 --> 00:00:28,370
+Welcome back to the HelixNet Keycloak series. Episode 6 -- Client Architecture. Last episode we covered RBAC -- five roles, four users, role accumulation. Today we look at the other side: how applications connect to Keycloak. Three clients, three different OIDC patterns, one realm.
+
+2
+00:00:28,370 --> 00:00:53,780
+Here's our POS realm clients list. Nine total, but three are ours. helix_pos_web -- the browser-based POS terminal. helix_pos_mobile -- the tablet and smartphone app. helix_pos_service -- the backend service account.
+
+3
+00:00:53,780 --> 00:01:16,740
+Starting with the web client. This is a public client -- no client secret. Why public? Because JavaScript running in a browser can't keep secrets. Look at the redirect URIs. Seven different URLs for different environments. Each POS deployment gets its own redirect URI.
+
+4
+00:01:16,740 --> 00:01:41,150
+The web client has eight scopes. The most comprehensive of the three. Default scopes: email, profile, roles, web-origins -- always included in the token. Optional scopes: address, phone, offline_access -- requested on demand.
+
+5
+00:01:41,150 --> 00:02:11,730
+Now the mobile client. Also public -- same reason, the app binary can be decompiled. Key difference: the redirect URI is helixpos://oauth/callback. That's a custom URL scheme. When Keycloak finishes auth, it sends the user back to the app. Not a web URL, an app URL. This is how native OAuth works.
+
+6
+00:02:11,730 --> 00:02:26,650
+The mobile client is leaner. Six scopes instead of eight. No address, no phone -- a mobile POS doesn't need those claims. Principle of least privilege applies to scopes too, not just roles.
+
+7
+00:02:26,650 --> 00:02:46,920
+And now the big one. helix_pos_service. Notice the difference immediately: Client authentication is ON. This is a confidential client. It has a secret. Because this runs on the backend. Server-side code CAN keep secrets. This is machine-to-machine authentication.
+
+8
+00:02:46,920 --> 00:03:10,400
+The Credentials tab. This is where it gets real. Client ID and Client Secret. This is how the backend proves its identity. The secret is masked by default. The Regenerate button rotates it. In production, this secret goes into environment variables, never source code.
+
+9
+00:03:10,400 --> 00:03:31,879
+Service account roles. The service client gets its own virtual user. service-account-helix_pos_service -- that's the identity. This user can be assigned roles just like a human user. Right now it has the default realm roles. In production, you'd assign specific permissions.
+
+10
+00:03:31,879 --> 00:03:46,849
+The service client's scopes. Only five. The leanest of the three. No offline_access -- services don't need refresh tokens the same way. Machine-to-machine: authenticate, get token, use it, done.
+
+11
+00:03:46,849 --> 00:04:08,400
+These are the realm-level client scopes. Ten scopes total, shared across all clients. Nine OpenID Connect, one SAML for legacy systems. Default scopes are included automatically. Optional scopes must be requested. This is the menu. Each client picks what it needs.
+
+12
+00:04:08,400 --> 00:04:40,819
+Back to the clients list. Three clients, three patterns. Web: public, browser-based, many redirect URIs. Mobile: public, native app, custom scheme callback. Service: confidential, client secret, machine-to-machine. One realm handles all three. That's the power of OIDC. Next episode: authentication flows.

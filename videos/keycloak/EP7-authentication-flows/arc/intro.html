@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.brand {
+  font-size: 28px;
+  font-weight: 300;
+  color: #666;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.helix { color: #0078D4; }
+.episode {
+  font-size: 18px;
+  font-weight: 400;
+  color: #555;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title {
+  font-size: 64px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+.subtitle {
+  font-size: 22px;
+  font-weight: 300;
+  color: #888;
+  letter-spacing: 3px;
+  margin-bottom: 50px;
+}
+.divider {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #0078D4, transparent);
+  margin: 0 auto 40px;
+}
+.flows {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 1200px;
+}
+.flow {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 14px 22px;
+  text-align: center;
+  min-width: 160px;
+}
+.flow .icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+  display: block;
+}
+.flow .name {
+  color: #ccc;
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.flow .type {
+  color: #555;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="brand"><span class="helix">Helix</span>Net Keycloak Series</div>
+    <div class="episode">Episode 7</div>
+    <div class="title">Authentication Flows</div>
+    <div class="subtitle">Seven Flows, Eleven Actions, One Security Pipeline</div>
+    <div class="divider"></div>
+    <div class="flows">
+      <div class="flow">
+        <span class="icon">&#x1F310;</span>
+        <div class="name">Browser</div>
+        <div class="type">Interactive Login</div>
+      </div>
+      <div class="flow">
+        <span class="icon">&#x1F4BB;</span>
+        <div class="name">Direct Grant</div>
+        <div class="type">API / CLI</div>
+      </div>
+      <div class="flow">
+        <span class="icon">&#x1F4DD;</span>
+        <div class="name">Registration</div>
+        <div class="type">New Users</div>
+      </div>
+      <div class="flow">
+        <span class="icon">&#x1F512;</span>
+        <div class="name">Reset Credentials</div>
+        <div class="type">Password Recovery</div>
+      </div>
+      <div class="flow">
+        <span class="icon">&#x1F517;</span>
+        <div class="name">First Broker</div>
+        <div class="type">Identity Federation</div>
+      </div>
+      <div class="flow">
+        <span class="icon">&#x1F433;</span>
+        <div class="name">Docker Auth</div>
+        <div class="type">Container Registry</div>
+      </div>
+      <div class="flow">
+        <span class="icon">&#x1F511;</span>
+        <div class="name">Clients</div>
+        <div class="type">Service Auth</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

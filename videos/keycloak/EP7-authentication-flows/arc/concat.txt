@@ -1,0 +1,3 @@
+file 'intro-clip.mp4'
+file 'silent-trimmed.mp4'
+file 'outro-clip.mp4'

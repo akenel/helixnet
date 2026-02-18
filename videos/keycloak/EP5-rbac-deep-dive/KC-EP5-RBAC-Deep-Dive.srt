@@ -1,0 +1,55 @@
+1
+00:00:03,000 --> 00:00:21,216
+Welcome back to the HelixNet Keycloak series. Episode 5 -- RBAC Deep Dive. Last episode we toured the admin console and saw all six realms. Today we go inside the POS realm and look at how role-based access control actually works.
+
+2
+00:00:21,216 --> 00:00:54,888
+Here are the five custom roles we built for the POS system. Each role has an emoji icon and a clear description. pos-admin -- full system control, the crown. pos-auditor -- read-only access for compliance. pos-cashier -- front-line, limited to 10% discounts. pos-developer -- testing role, no production data. pos-manager -- unlimited discounts and full reporting.
+
+3
+00:00:54,888 --> 00:01:05,088
+Let's look inside each role. The admin role -- full control over the POS realm and configuration. Notice the tabs: Details, Attributes, Users in role.
+
+4
+00:01:05,088 --> 00:01:12,784
+The cashier role. Key detail: limited to 10% discount threshold. This is how you prevent staff from giving away the house.
+
+5
+00:01:12,784 --> 00:01:19,088
+The manager role. Unlimited discounts and reporting. When a customer needs more than 10% off, the manager steps in.
+
+6
+00:01:19,088 --> 00:01:28,328
+Now click Users in Role to see who has cashier access. This is the other side of the coin -- role to users mapping.
+
+7
+00:01:28,328 --> 00:01:38,311
+Pam is a front-line cashier. One role: pos-cashier. She can ring up sales and process checkouts. That's it. Principle of least privilege in action.
+
+8
+00:01:38,311 --> 00:01:50,079
+Ralph has two roles: cashier AND manager. He works the register but can also approve discounts and run reports. This is role accumulation -- each role adds capabilities.
+
+9
+00:01:50,079 --> 00:02:00,423
+Michael is our developer. One role: pos-developer. He can create test products but has no access to live transactions. Complete separation of concerns.
+
+10
+00:02:00,423 --> 00:02:13,567
+And Felix. Look at this -- admin, cashier, AND manager. Three roles. Full system control. In a real deployment, you'd have exactly one or two Felix-level users. Everyone else gets the minimum they need.
+
+11
+00:02:13,567 --> 00:02:28,607
+Client scopes control what information goes into the JWT token. Ten scopes here -- email, profile, roles, web-origins. When a user logs in, these scopes determine what claims appear in their access token.
+
+12
+00:02:28,607 --> 00:02:42,431
+Seven built-in authentication flows. Browser flow for interactive logins, direct grant for API authentication. Docker auth for container registries, first broker login for federated identity.
+
+13
+00:02:42,431 --> 00:03:00,279
+The realm settings page. This is mission control. Realm ID: kc-pos-realm-dev. Frontend URL points to our Keycloak instance. SSL required for external requests. OpenID and SAML endpoints at the bottom.
+
+14
+00:03:00,279 --> 00:03:15,463
+Back to where we started. Five roles, clean RBAC, production-ready. This is what separates a real platform from a toy project. Next episode: client architecture -- how the three POS clients connect to Keycloak.

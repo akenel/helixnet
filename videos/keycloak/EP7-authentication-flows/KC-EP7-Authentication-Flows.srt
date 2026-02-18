@@ -1,0 +1,47 @@
+1
+00:00:04,000 --> 00:00:33,049
+Welcome back to the HelixNet Keycloak series. Episode 7 -- Authentication Flows. Last episode we covered client architecture -- three OIDC patterns. Today we go deeper. How does the actual login process work? Seven built-in flows, eleven required actions, and security policies.
+
+2
+00:00:36,549 --> 00:01:05,069
+Here's the Authentication section. Seven built-in flows. Browser, clients, direct grant, docker auth, first broker login, registration, reset credentials. Each flow is a pipeline of execution steps. Steps can be Required, Alternative, Conditional, or Disabled. All seven are built-in. You can duplicate and customize, but never delete the originals.
+
+3
+00:01:07,069 --> 00:02:06,919
+The browser flow. This is THE login flow. Every interactive login goes through here. First: Cookie -- checks if you already have a session. Alternative, so it can be skipped. Second: Kerberos -- enterprise SSO. Disabled by default. Third: Identity Provider Redirector -- for federated login. Then the forms sub-flow. Username Password Form -- Required. Browser Conditional OTP -- checks if the user has OTP configured. If they do, they get the prompt. If not, it's skipped. This is the beauty of flows -- conditional logic, not just checkboxes.
+
+4
+00:02:11,919 --> 00:02:39,689
+Direct grant. This is the Resource Owner Password Credentials flow. Used by APIs and CLI tools -- no browser, no redirect. Username Validation, then Password, then Conditional OTP. Same security steps as browser, but headless. Machine-to-machine with user credentials.
+
+5
+00:02:44,689 --> 00:03:24,490
+The registration flow. What happens when a new user signs up. Registration User Profile Creation builds the user object. Password Validation enforces the password policy. Recaptcha -- disabled by default, enable it to stop bots. Terms and Conditions -- also disabled. Enable it when you need consent. Notice the pattern: disabled steps are ready to activate, not missing.
+
+6
+00:03:29,490 --> 00:04:03,450
+Reset credentials. The password recovery pipeline. Choose User -- finds the account. Send Reset Email -- delivers the reset link. Reset Password -- the actual change form. Then Conditional OTP again -- even password reset respects multi-factor authentication. Four steps, each one auditable, each one configurable.
+
+7
+00:04:08,450 --> 00:04:39,050
+First broker login. This fires when a user authenticates through an external identity provider for the first time. Review Profile -- verify the imported user data. Create User If Unique -- if no matching account exists, create one. Handle Existing Account -- if the email matches an existing user, link the accounts. This is identity federation. Google login, corporate SAML, social providers -- they all land here.
+
+8
+00:04:44,050 --> 00:05:03,110
+Docker auth. The simplest flow in the system. One step: Docker Authenticator. Required. This authenticates docker login commands against Keycloak. Container registries, private repos -- Keycloak handles the auth. One step. One purpose. Clean.
+
+9
+00:05:08,110 --> 00:05:42,930
+The clients flow. How client applications authenticate themselves. Client ID and Secret -- the most common method. Signed JWT -- the client signs a token with its private key. Signed JWT with Client Secret -- HMAC-based, simpler but less secure. X509 Certificate -- mutual TLS, the most secure option. All four are Alternative -- Keycloak tries each method until one succeeds.
+
+10
+00:05:47,930 --> 00:06:32,879
+Required Actions. These are actions that can be forced on users. Configure OTP -- force two-factor authentication. Terms and Conditions -- require acceptance. Update Password -- force a change on next login. Update Profile -- make users complete their profile. Verify Email -- email verification on registration. Eleven actions total. Each one has an Enabled toggle and a Default toggle. Enabled means available. Default means every new user gets it automatically. This is how you enforce security policies across all users.
+
+11
+00:06:34,879 --> 00:07:22,930
+Policies. Five policy types. Password Policy -- minimum length, complexity, history, expiration. OTP Policy -- algorithm, digits, period, look-ahead window. WebAuthn Policy -- hardware security keys, biometrics. WebAuthn Passwordless -- FIDO2, Fast Identity Online version 2, passwordless login. CIBA -- Client Initiated Backchannel Authentication. Do what you got to do.
+
+12
+00:07:26,430 --> 00:08:03,840
+Back to the flows list. Seven flows, each one a security pipeline. Browser for interactive login. Direct grant for APIs. Registration for new users. Reset credentials for recovery. First broker for federation. Docker for containers. Clients for service auth. Every step is configurable -- Required, Alternative, Conditional, or Disabled. Next episode: multi-tenant platform -- how all six realms work together.

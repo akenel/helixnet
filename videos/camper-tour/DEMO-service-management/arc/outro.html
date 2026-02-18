@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217,119,6,0.12) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.brand {
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 4px;
+  margin-bottom: 10px;
+}
+.helix { color: #d97706; }
+.tagline {
+  font-size: 18px;
+  font-weight: 300;
+  color: #666;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+}
+.divider {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d97706, transparent);
+  margin: 0 auto 50px;
+}
+.recap-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #555;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.stats {
+  display: flex;
+  gap: 60px;
+  justify-content: center;
+  margin-bottom: 50px;
+}
+.stat {
+  text-align: center;
+}
+.stat-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #d97706;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 12px;
+  color: #555;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.quote {
+  font-size: 20px;
+  font-weight: 300;
+  color: #888;
+  font-style: italic;
+  letter-spacing: 1px;
+  margin-bottom: 50px;
+  max-width: 700px;
+}
+.footer {
+  font-size: 14px;
+  color: #444;
+  letter-spacing: 2px;
+}
+.footer a {
+  color: #d97706;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="content">
+    <div class="brand"><span class="helix">Camper</span> &amp; Tour</div>
+    <div class="tagline">Service Management System</div>
+    <div class="divider"></div>
+    <div class="recap-label">What You Just Saw</div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Customers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Vehicles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Service Jobs</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">6</div>
+        <div class="stat-label">Workflow Steps</div>
+      </div>
+    </div>
+    <div class="quote">"Casa &egrave; dove parcheggi." &mdash; Home is where you park it.</div>
+    <div class="footer">Built on <span style="color: #d97706;">HelixNet</span> &mdash; helixnet.ch</div>
+  </div>
+</body>
+</html>

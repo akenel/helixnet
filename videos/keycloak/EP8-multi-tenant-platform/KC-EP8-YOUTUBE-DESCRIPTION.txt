@@ -1,0 +1,64 @@
+Multi-Tenant Platform -- Six Realms, Five Businesses, One Keycloak | HelixNet EP8
+
+Six realms. Twenty-six users across five businesses. Cannabis wholesale, headshops, POS systems, platform development -- all on one Keycloak instance. All completely isolated.
+
+This is the series finale. We zoom out from individual flows and roles to see the full multi-tenant architecture. Master realm as control plane, tenant realms as isolated business units, custom branding per realm, and role systems that match each business language.
+
+---
+
+TIMESTAMPS
+0:00 Intro
+0:04 Login + episode intro
+0:28 Master realm dashboard -- the control plane
+0:47 Master realm clients -- tenant realms as clients
+1:19 HelixPOS Dev -- Users (9 users, multi-store)
+1:48 HelixPOS Dev -- Roles (5 emoji roles, RBAC in context)
+2:18 HelixNet Dev -- Users (platform developers)
+2:32 HelixNet Dev -- Roles (4 roles, independent system)
+2:46 420 Wholesale -- Users (Swiss cannabis network)
+3:12 420 Wholesale -- Roles (buyer, seller, network-boss)
+3:32 Artemis Headshop -- Users (Luzern retail team)
+3:51 BlowUp V2 -- Custom branding (white-labeling)
+4:14 BlowUp V2 -- Users (smallest tenant, same security)
+4:29 Final shot -- Master realm, series complete
+
+---
+
+WHAT YOU'RE SEEING
+- Master realm as the control plane (not for end users)
+- Each tenant realm registers as a client in master
+- 5 business realms with completely independent users, roles, and branding
+- HelixPOS: 9 users, 5 custom roles (admin, auditor, cashier, developer, manager)
+- HelixNet: 6 users, 4 roles (simpler platform needs)
+- 420 Wholesale: 4 users, buyer/seller/network-boss roles (business language)
+- Artemis Headshop: 5 users, isolated retail team
+- BlowUp V2: Custom branding -- users see BlowUp, not Keycloak
+- Architecture scales from 2 users to thousands per tenant
+
+TECH STACK
+- Keycloak 24 (OIDC / OAuth2 / RBAC)
+- FastAPI + SQLAlchemy (44 models)
+- Traefik reverse proxy
+- Docker Compose orchestration
+- PostgreSQL
+
+This is Episode 8 -- the series finale.
+
+---
+
+SERIES
+EP1 -- The Stack (Docker Compose overview)
+EP2 -- HTTPS in Development (Traefik + mkcert)
+EP3 -- Health Checks & Self-Healing
+EP4 -- Keys to the Kingdom (Admin Console Tour)
+EP5 -- RBAC Deep Dive (Role-Based Access Control)
+EP6 -- Client Architecture (Public vs Confidential)
+EP7 -- Authentication Flows (Login Pipelines & Policies)
+EP8 -- Multi-Tenant Platform (this video)
+
+---
+
+Built with open source. No vendor lock-in. No six-figure license.
+Eight episodes. From login to multi-tenant. Series complete.
+
+#keycloak #multitenancy #oauth2 #oidc #rbac #opensource #fastapi #docker #selfhosted #identitymanagement #helixnet

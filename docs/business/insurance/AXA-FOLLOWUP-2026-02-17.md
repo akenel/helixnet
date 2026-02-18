@@ -1,0 +1,60 @@
+# AXA Follow-Up Email -- February 17, 2026
+
+**To:** schaden@axa.ch
+**CC:** iwan.zgraggen@axa.ch
+**Subject:** Schadennummer 22831735/0001 -- No Response Since Feb 11 -- Urgent Follow-Up
+
+---
+
+Dear AXA Claims Team,
+
+I am writing regarding claim number **22.831.735/0001** (vehicle fire and water damage, Fiat Ducato camper van).
+
+It has now been **six days** since my last communication with your vehicle expert, Mr. Ivan Zgraggen, and **eight days** since he informed me the case was being transferred to an English-speaking colleague. To date, no one from AXA has contacted me.
+
+**Timeline of non-response:**
+
+- **Jan 26:** Mr. Zgraggen took over as vehicle expert, requested photos
+- **Jan 26:** I provided all requested photos, damage description, and repair location
+- **Feb 9:** Mr. Zgraggen informed me he cannot communicate in English and forwarded the case to an English-speaking colleague
+- **Feb 9:** I asked for the name and contact details of the new handler -- no answer
+- **Feb 11:** I followed up again with two paid invoices ready to submit -- Mr. Zgraggen replied that he had forwarded all emails and directed me to send documents to schaden@axa.ch
+- **Feb 11 to today:** Complete silence. No handler assigned. No acknowledgment. No next steps communicated.
+
+**I want to be clear about two points:**
+
+1. **English service is contractual.** I specifically selected and pay for AXA coverage that includes English-language service. "I don't speak English" is not an acceptable reason to leave a claim unattended for weeks. I expect a qualified, English-speaking claims handler to be assigned and to contact me within **48 hours**.
+
+2. **Two separate damage claims require action:**
+
+**A) Fire Damage (Electrical Short -- Stove Installation)**
+Invoices paid and ready to submit:
+
+| Invoice | Vendor | Amount | Description |
+|---------|--------|--------|-------------|
+| Camper & Tour sas | Sebastiano Cassisa, Via F. Culcasi 4, 91100 Trapani | EUR 1,010.00 | Electrical repair, wiring replacement, stove installation |
+| PuntaTipa Hotel | 91010 San Vito Lo Capo (TP) | EUR 1,395.50 | Emergency accommodation during repair (no deductible per policy) |
+| **Total** | | **EUR 2,405.50** | |
+
+These invoices have been paid out of pocket. I am requesting reimbursement as confirmed by the original claims handler.
+
+**B) Water Damage (Roof Seal Failure)**
+Discovered February 6, 2026 during repair at Camper & Tour, Trapani. Multiple roof seals failed, causing water infiltration behind ceiling panels. Structural damage to roof. Detailed estimate is being prepared by the repair shop. This is a **separate claim** that has not yet been initiated because no handler is available to process it.
+
+**What I need from AXA immediately:**
+
+1. Confirmation that claim 22.831.735/0001 is active and assigned
+2. Name and direct contact of my English-speaking claims handler
+3. Instructions for submitting the two fire damage invoices (EUR 2,405.50)
+4. Initiation of the water damage claim (separate incident, same vehicle)
+
+I am currently located in Trapani, Sicily. I can be reached by email or on my Swiss mobile number on file.
+
+I trust AXA will resolve this promptly. If I do not receive a response within 48 hours, I will escalate through the AXA ombudsman and, if necessary, through the Swiss Insurance Ombudsman (Ombudsman der Privatversicherung).
+
+Kind regards,
+
+Albert-Daniel Kenel
+Policy holder
+Claim: 22.831.735/0001
+Telegram: @BigKingFisher

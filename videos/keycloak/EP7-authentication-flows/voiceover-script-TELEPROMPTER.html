@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP7 Authentication Flows - Teleprompter</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #111;
+  color: #eee;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1 {
+  color: #0078D4;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.subtitle {
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.scene {
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  border-left: 3px solid #333;
+  border-radius: 4px;
+}
+.scene.money-shot {
+  border-left-color: #DAA520;
+  background: rgba(218,165,32,0.05);
+}
+.scene-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.scene-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0078D4;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.scene-title {
+  font-size: 15px;
+  color: #888;
+  font-weight: 400;
+}
+.money-label {
+  font-size: 11px;
+  color: #DAA520;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.line {
+  font-size: 20px;
+  color: #eee;
+  margin-bottom: 8px;
+  padding-left: 8px;
+}
+.line:last-child { margin-bottom: 0; }
+.emphasis {
+  color: #DAA520;
+  font-weight: 600;
+}
+.footer {
+  text-align: center;
+  color: #444;
+  font-size: 12px;
+  margin-top: 40px;
+  letter-spacing: 2px;
+}
+@media print {
+  body { background: #fff; color: #111; font-size: 16px; }
+  .scene { border-left-color: #ccc; page-break-inside: avoid; }
+  .scene.money-shot { border-left-color: #DAA520; }
+  .line { color: #111; }
+}
+</style>
+</head>
+<body>
+
+<h1>Authentication Flows</h1>
+<div class="subtitle">Episode 7 -- Keycloak Series -- 12 Scenes -- Voice-first, Puppeteer follows</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 1</span>
+    <span class="scene-title">Login</span>
+  </div>
+  <div class="line">Welcome back to the HelixNet Keycloak series.</div>
+  <div class="line">Episode 7 -- Authentication Flows.</div>
+  <div class="line">Last episode we covered client architecture -- three OIDC patterns.</div>
+  <div class="line">Today we go deeper. <span class="emphasis">How does the actual login process work?</span></div>
+  <div class="line">Seven built-in flows, eleven required actions, and security policies.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 2</span>
+    <span class="scene-title">Authentication Flows List</span>
+  </div>
+  <div class="line">Here's the Authentication section. <span class="emphasis">Seven built-in flows.</span></div>
+  <div class="line">Browser, clients, direct grant, docker auth, first broker login, registration, reset credentials.</div>
+  <div class="line">Each flow is a pipeline of execution steps.</div>
+  <div class="line">Steps can be Required, Alternative, Conditional, or Disabled.</div>
+  <div class="line">All seven are built-in. You can duplicate and customize, but never delete the originals.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 3</span>
+    <span class="scene-title">Browser Flow</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">The browser flow. This is <span class="emphasis">THE login flow</span>. Every interactive login goes through here.</div>
+  <div class="line">First: Cookie -- checks if you already have a session. Alternative, so it can be skipped.</div>
+  <div class="line">Second: Kerberos -- enterprise SSO. Disabled by default.</div>
+  <div class="line">Third: Identity Provider Redirector -- for federated login. Also Alternative.</div>
+  <div class="line">Then the forms sub-flow. This is where it gets interesting.</div>
+  <div class="line">Username Password Form -- Required. This is the actual login prompt.</div>
+  <div class="line">Browser - Conditional OTP. A sub-flow that checks if the user has OTP configured.</div>
+  <div class="line">If they do, they get the OTP prompt. If not, it's skipped.</div>
+  <div class="line">This is the beauty of flows -- <span class="emphasis">conditional logic, not just checkboxes</span>.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 4</span>
+    <span class="scene-title">Direct Grant Flow</span>
+  </div>
+  <div class="line">Direct grant. This is the Resource Owner Password Credentials flow.</div>
+  <div class="line">Used by APIs and CLI tools -- no browser, no redirect.</div>
+  <div class="line">Username Validation, then Password, then Conditional OTP.</div>
+  <div class="line">Same security steps as browser, but headless. Machine-to-machine with user credentials.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 5</span>
+    <span class="scene-title">Registration Flow</span>
+  </div>
+  <div class="line">The registration flow. What happens when a new user signs up.</div>
+  <div class="line">Registration User Profile Creation -- builds the user object.</div>
+  <div class="line">Password Validation -- enforces the password policy.</div>
+  <div class="line">Recaptcha -- Disabled by default. Enable it to stop bots.</div>
+  <div class="line">Terms and Conditions -- also Disabled. Enable it when you need consent.</div>
+  <div class="line">Notice the pattern: <span class="emphasis">disabled steps are ready to activate, not missing</span>.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 6</span>
+    <span class="scene-title">Reset Credentials Flow</span>
+  </div>
+  <div class="line">Reset credentials. The password recovery pipeline.</div>
+  <div class="line">Choose User -- finds the account.</div>
+  <div class="line">Send Reset Email -- delivers the reset link.</div>
+  <div class="line">Reset Password -- the actual change form.</div>
+  <div class="line">Then Conditional OTP again -- <span class="emphasis">even password reset respects MFA</span>.</div>
+  <div class="line">Four steps, each one auditable, each one configurable.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 7</span>
+    <span class="scene-title">First Broker Login Flow</span>
+  </div>
+  <div class="line">First broker login. This fires when a user authenticates through an external identity provider for the first time.</div>
+  <div class="line">Review Profile -- verify the imported user data.</div>
+  <div class="line">Create User If Unique -- if no matching account exists, create one.</div>
+  <div class="line">Handle Existing Account -- if the email matches an existing user, link the accounts.</div>
+  <div class="line">This is <span class="emphasis">identity federation</span>. Google login, corporate SAML, social providers -- they all land here.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 8</span>
+    <span class="scene-title">Docker Auth Flow</span>
+  </div>
+  <div class="line">Docker auth. The simplest flow in the system.</div>
+  <div class="line">One step: Docker Authenticator. Required.</div>
+  <div class="line">This authenticates docker login commands against Keycloak.</div>
+  <div class="line">Container registries, private repos -- Keycloak handles the auth.</div>
+  <div class="line">One step. One purpose. Clean.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 9</span>
+    <span class="scene-title">Clients Flow</span>
+  </div>
+  <div class="line">The clients flow. How client applications authenticate themselves.</div>
+  <div class="line">Client ID and Secret -- the most common method.</div>
+  <div class="line">Signed JWT -- the client signs a token with its private key.</div>
+  <div class="line">Signed JWT with Client Secret -- HMAC-based, simpler but less secure.</div>
+  <div class="line">X509 Certificate -- mutual TLS, the most secure option.</div>
+  <div class="line">All four are Alternative -- <span class="emphasis">Keycloak tries each method until one succeeds</span>.</div>
+</div>
+
+<div class="scene money-shot">
+  <div class="scene-header">
+    <span class="scene-num">Scene 10</span>
+    <span class="scene-title">Required Actions</span>
+    <span class="money-label">MONEY SHOT</span>
+  </div>
+  <div class="line">Required Actions. These are <span class="emphasis">actions that can be forced on users</span>.</div>
+  <div class="line">Configure OTP -- force users to set up two-factor authentication.</div>
+  <div class="line">Terms and Conditions -- require acceptance before proceeding.</div>
+  <div class="line">Update Password -- force a password change on next login.</div>
+  <div class="line">Update Profile -- make users complete their profile.</div>
+  <div class="line">Verify Email -- email verification on registration.</div>
+  <div class="line">Eleven actions total. Each one has an Enabled toggle and a Default toggle.</div>
+  <div class="line">Enabled means available. <span class="emphasis">Default means every new user gets it automatically.</span></div>
+  <div class="line">This is how you enforce security policies across all users.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 11</span>
+    <span class="scene-title">Policies Tab</span>
+  </div>
+  <div class="line">Policies. Five policy types.</div>
+  <div class="line">Password Policy -- minimum length, complexity, history, expiration.</div>
+  <div class="line">OTP Policy -- algorithm, digits, period, look-ahead window.</div>
+  <div class="line">Webauthn Policy -- hardware security keys, biometrics.</div>
+  <div class="line">Webauthn Passwordless -- FIDO2 passwordless login.</div>
+  <div class="line">CIBA -- Client Initiated Backchannel Authentication.</div>
+  <div class="line">Right now no password policies are configured. In production, you'd set minimum length, special characters, expiration.</div>
+</div>
+
+<div class="scene">
+  <div class="scene-header">
+    <span class="scene-num">Scene 12</span>
+    <span class="scene-title">Final Shot -- Flows List</span>
+  </div>
+  <div class="line">Back to the flows list. <span class="emphasis">Seven flows, each one a security pipeline.</span></div>
+  <div class="line">Browser for interactive login. Direct grant for APIs.</div>
+  <div class="line">Registration for new users. Reset credentials for recovery.</div>
+  <div class="line">First broker for federation. Docker for containers. Clients for service auth.</div>
+  <div class="line">Every step is configurable. Required, Alternative, Conditional, or Disabled.</div>
+  <div class="line">Next episode: multi-tenant platform -- how all six realms work together.</div>
+</div>
+
+<div class="footer">HELIXNET -- KEYCLOAK SERIES -- EP7 AUTHENTICATION FLOWS</div>
+
+</body>
+</html>

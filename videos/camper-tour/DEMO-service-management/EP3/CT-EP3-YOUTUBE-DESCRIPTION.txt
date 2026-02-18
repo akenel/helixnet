@@ -6,15 +6,18 @@ Episode 3 follows a single repair job from the moment a camper pulls up to the m
 
 CHAPTERS:
 0:00 Intro
-0:05 Simona -- Counter Check-In (New Vehicle + Customer)
-0:35 Simona -- Access Denied (RBAC in Action)
-0:50 Nino -- Create Quotation (Line Items + IVA)
-1:20 Nino -- Approve Job (Deposit Recorded)
-1:35 Maximo -- Mechanic Work Log (Hours + Notes)
-2:05 Maximo -- Submit for Inspection
-2:15 Nino -- Inspection & Complete
-2:35 Nino -- Generate Invoice (Deposit Deducted)
-2:55 Outro
+0:06 Simona -- Counter Check-In (New Vehicle + Customer)
+0:46 Simona -- Access Denied (RBAC in Action)
+1:01 Role Switch: Simona -> Nino
+1:11 Nino -- Dashboard + Quotation List
+1:31 Nino -- Quotation Detail (Line Items + IVA)
+1:56 Nino -- Job Board + Approve Job
+2:16 Role Switch: Nino -> Maximo
+2:26 Maximo -- Mechanic Dashboard + Work Log
+3:01 Role Switch: Maximo -> Nino
+3:11 Nino -- Inspection + Invoice
+3:41 Nino -- Vehicle Pickup (Check-Out)
+3:56 Outro
 
 ROLE-BASED ACCESS CONTROL:
 
