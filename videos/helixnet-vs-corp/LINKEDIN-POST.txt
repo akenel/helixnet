@@ -1,0 +1,34 @@
+We built a production UAT environment yesterday afternoon.
+
+HTTPS. OAuth2 login. Role-based access control. 6 microservices running 24/7 on a dedicated server.
+
+Cost: EUR 7.59 per month.
+
+Here is what a corporation takes for the exact same thing:
+
+Requirements gathering: 2 weeks, 4 meetings
+Architecture approval: 3 weeks, review board
+Server provisioning: 1-2 weeks, infra ticket
+Docker setup: 1 week, infra backlog
+TLS certificate: 2 weeks, security team
+UAT live: 8-16 weeks total
+Budget: EUR 50,000 to 200,000
+
+The difference is not intelligence. It is not tools.
+
+It is decision latency.
+
+Corporations spend 90% of their time asking permission.
+We spend 90% of our time building.
+
+When something broke mid-session (TLS/SNI does not work on bare IP addresses, by the way) there was no war room. No post-mortem scheduled for next Tuesday. We diagnosed it, fixed it, and moved on. In the same conversation.
+
+That is not speed. That is ownership.
+
+Swiss SMEs are paying SAP EUR 50,000 to 200,000 per year for systems that take six months to change a form field. That is not a feature. That is a trap.
+
+HelixNet is built for the 5 to 50 person company that needs production-grade tools without the enterprise ransom. FastAPI. Keycloak. Docker. Open source. You own it. No license. No lock-in.
+
+If you are a Swiss SME owner asking why your IT costs more than your rent, let us talk.
+
+#HelixNet #SwissTech #SME #SAP #FastAPI #Keycloak #DevOps #OpenSource #EnterpriseIT #SwissStartup
