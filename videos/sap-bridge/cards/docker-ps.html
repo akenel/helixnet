@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px;
+    height: 1080px;
+    background: #1a1b26;
+    font-family: 'Courier New', monospace;
+    color: #a9b1d6;
+    padding: 60px 80px;
+    overflow: hidden;
+  }
+  .prompt {
+    color: #7aa2f7;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  .prompt span { color: #9ece6a; }
+  .cmd { color: #c0caf5; }
+  table {
+    font-size: 20px;
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 16px;
+  }
+  th {
+    color: #7aa2f7;
+    text-align: left;
+    padding: 8px 16px 8px 0;
+    border-bottom: 1px solid #333;
+    font-weight: normal;
+  }
+  td {
+    padding: 6px 16px 6px 0;
+    white-space: nowrap;
+  }
+  .name { color: #9ece6a; }
+  .status { color: #73daca; }
+  .healthy { color: #9ece6a; }
+  .label {
+    position: absolute;
+    bottom: 60px;
+    right: 80px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 20px;
+    color: #555;
+    letter-spacing: 2px;
+  }
+  .count {
+    position: absolute;
+    bottom: 60px;
+    left: 80px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 24px;
+    color: #9ece6a;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="prompt"><span>angel@helixnet</span>:~$ <span class="cmd">docker ps --format "table {{.Names}}\t{{.Status}}"</span></div>
+  <table>
+    <tr><th>NAMES</th><th>STATUS</th></tr>
+    <tr><td class="name">traefik</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">keycloak</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">helix-platform</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">postgres</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">redis</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">rabbitmq</td><td class="status">Up 3 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">worker</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">beat</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">flower</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">n8n</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">vault</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">ollama</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">openwebui</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">portainer</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">dozzle</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">helix-music</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">filebrowser</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+    <tr><td class="name">autoheal</td><td class="status">Up 11 hours <span class="healthy">(healthy)</span></td></tr>
+  </table>
+  <div class="count">18 containers -- all healthy</div>
+  <div class="label">HELIXNET PRODUCTION STACK</div>
+</body>
+</html>

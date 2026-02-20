@@ -1,0 +1,202 @@
+1
+00:00:00,000 --> 00:00:04,000
+20 Years of SAP.
+Here's What I'd Build Today.
+
+2
+00:00:05,000 --> 00:00:12,000
+I've been building SAP integrations
+for 20 years.
+
+3
+00:00:12,000 --> 00:00:19,000
+ABAP proxies for backend lookups,
+RFC calls to pull master data in real time.
+
+4
+00:00:19,000 --> 00:00:25,000
+IDoc and BDoc pipelines
+for CRM, logistics, finance.
+
+5
+00:00:26,000 --> 00:00:31,000
+PI/PO message mappings.
+XI before that.
+
+6
+00:00:31,000 --> 00:00:36,000
+EDI cross-border
+for customs and shipping.
+
+7
+00:00:36,000 --> 00:00:45,000
+I've worked in enterprise integration in Europe.
+You probably touched one of the systems I helped build.
+
+8
+00:00:45,000 --> 00:00:54,000
+Fortune 500. Swiss multinationals.
+Cross-border supply chains. I've seen it all.
+
+9
+00:00:54,000 --> 00:01:00,000
+And I want to be clear.
+I'm not here to trash SAP. SAP works.
+
+10
+00:01:00,000 --> 00:01:07,000
+It solved real problems for real companies.
+I built my career on it.
+
+11
+00:01:07,000 --> 00:01:12,000
+But I'd be lying if I said
+the world hasn't changed.
+
+12
+00:01:12,000 --> 00:01:19,000
+Think about where we were in 2005.
+Everything was on-premise.
+
+13
+00:01:19,000 --> 00:01:29,000
+Every integration was a three to six month project.
+You needed a dedicated team just to move data from one system to another.
+
+14
+00:01:29,000 --> 00:01:38,000
+SAP PI was the answer.
+And it was a good answer -- for that world.
+
+15
+00:01:38,000 --> 00:01:41,000
+But that world is disappearing.
+
+16
+00:01:41,000 --> 00:01:51,000
+Today you can deploy an integration platform
+in an afternoon. Cloud-native. Open source. Containerized.
+
+17
+00:01:51,000 --> 00:01:55,000
+One person. One laptop.
+
+18
+00:01:55,000 --> 00:02:03,000
+SAP knows this. That's why they built BTP --
+Business Technology Platform.
+
+19
+00:02:03,000 --> 00:02:16,000
+But migration from PI/PO to BTP is slow, expensive.
+And most companies I talk to -- they're stuck in the middle.
+
+20
+00:02:16,000 --> 00:02:26,000
+Running PI/PO because it works,
+knowing it won't last forever, not sure what comes next.
+
+21
+00:02:26,000 --> 00:02:34,000
+So let me show you what I built today --
+if I were starting fresh.
+
+22
+00:02:34,000 --> 00:02:42,000
+This is HelixNet. A production platform
+I built using only open source tools.
+
+23
+00:02:42,000 --> 00:02:53,000
+FastAPI for the backend.
+Modern Python, async, automatic API documentation.
+
+24
+00:02:53,000 --> 00:03:08,000
+This right here -- this is what PI/PO message mappings does.
+Except it's 10 lines of Python instead of a visual mapper that takes days to configure.
+
+25
+00:03:08,000 --> 00:03:18,000
+Keycloak. Enterprise identity management.
+OAuth2. OpenID Connect. Role-based access control.
+
+26
+00:03:18,000 --> 00:03:28,000
+This is what SAP Access Control charges
+hundreds of thousands of euros for. It's open source. It's free.
+
+27
+00:03:28,000 --> 00:03:37,000
+Six microservices, all containerized.
+Deploy anywhere, running right now on a dedicated server.
+
+28
+00:03:37,000 --> 00:03:45,000
+Cost? Seven euros and 59 cents.
+Per month.
+
+29
+00:03:45,000 --> 00:03:52,000
+Now here's the thing. I'm not saying tear out SAP tomorrow.
+That would be reckless.
+
+30
+00:03:52,000 --> 00:03:58,000
+And I've seen enough reckless migrations
+to know how that ends.
+
+31
+00:03:58,000 --> 00:04:08,000
+But if you're planning what comes after PI/PO --
+and you should be -- you need someone who understands both sides.
+
+32
+00:04:08,000 --> 00:04:14,000
+Someone who can read an IDoc
+and write a REST API.
+
+33
+00:04:14,000 --> 00:04:22,000
+Someone who knows why your RFC calls work today
+and why they won't scale tomorrow.
+
+34
+00:04:22,000 --> 00:04:32,000
+Someone who spent 20 years inside the SAP world
+and the last six months building what comes next.
+
+35
+00:04:32,000 --> 00:04:38,000
+The future is hybrid.
+SAP alongside open source.
+
+36
+00:04:38,000 --> 00:04:44,000
+Legacy alongside modern.
+And hybrid needs a translator.
+
+37
+00:04:44,000 --> 00:04:48,000
+That's what I do.
+I'm the bridge.
+
+38
+00:04:48,000 --> 00:05:02,000
+If your company is somewhere in the middle ground --
+running SAP but wondering what's next -- I'd like to talk.
+
+39
+00:05:02,000 --> 00:05:06,000
+Not to sell you anything.
+Just to show what's possible.
+
+40
+00:05:06,000 --> 00:05:12,000
+20 years taught me how enterprise works.
+The last six months taught me how fast it can be.
+
+41
+00:05:12,000 --> 00:05:18,000
+The link is below.
+

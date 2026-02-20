@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px;
+    height: 1080px;
+    background: #0d1117;
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  .header {
+    font-size: 48px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    margin-bottom: 60px;
+    color: #999;
+    text-transform: uppercase;
+  }
+  .columns {
+    display: flex;
+    gap: 80px;
+    align-items: flex-start;
+  }
+  .col {
+    width: 680px;
+    padding: 50px;
+    border-radius: 12px;
+  }
+  .col-old {
+    background: #1a1a2e;
+    border: 1px solid #333;
+  }
+  .col-new {
+    background: #0a1628;
+    border: 1px solid #1a4a7a;
+  }
+  .year {
+    font-size: 72px;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+  .col-old .year { color: #666; }
+  .col-new .year { color: #4a9eff; }
+  .item {
+    font-size: 28px;
+    line-height: 1.8;
+    color: #bbb;
+    padding-left: 24px;
+    position: relative;
+  }
+  .col-old .item::before {
+    content: "\2013";
+    position: absolute;
+    left: 0;
+    color: #555;
+  }
+  .col-new .item::before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    color: #4a9eff;
+  }
+  .col-new .item { color: #ddd; }
+</style>
+</head>
+<body>
+  <div class="header">The World Changed</div>
+  <div class="columns">
+    <div class="col col-old">
+      <div class="year">2005</div>
+      <div class="item">On-premise everything</div>
+      <div class="item">6-month integration projects</div>
+      <div class="item">Dedicated teams per system</div>
+      <div class="item">Licensed middleware (SAP PI)</div>
+      <div class="item">Vendor lock-in by design</div>
+    </div>
+    <div class="col col-new">
+      <div class="year">2025</div>
+      <div class="item">Cloud-native, containerized</div>
+      <div class="item">Deploy in one afternoon</div>
+      <div class="item">One person, one laptop</div>
+      <div class="item">Open source (FastAPI, Keycloak)</div>
+      <div class="item">Run anywhere for EUR 7.59/mo</div>
+    </div>
+  </div>
+</body>
+</html>

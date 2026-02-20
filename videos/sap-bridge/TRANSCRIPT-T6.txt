@@ -1,0 +1,66 @@
+TRANSCRIPT -- T6 (Take 6) -- SAP Bridge Video
+Recorded: Feb 19, 2026 21:05
+Transcribed: Whisper base model
+Duration: 5:15 (trimmed from 5:24)
+
+---
+
+[00:00] I've been building SAP integrations for 20 years.
+
+[00:12] ABAP proxies for back-end lookups, RFC calls to pull master data in real time. IDoc and BDoc pipelines for CRM, logistics, finance.
+
+[00:26] PI/PO message mappings. XI before that. EDI cross-border for customs and shipping.
+
+[00:36] I've worked in enterprise integration in Europe. You probably touched one of the systems I helped build.
+
+[00:45] Fortune 500. Swiss multinationals. Cross-border supply chains. I've seen it all.
+
+[00:54] And I want to be clear. I'm not here to trash SAP. SAP works. It solved real problems for real companies. I built my career on it.
+
+[01:07] But I'd be lying if I said the world hasn't changed.
+
+[01:12] Think about where we were in 2005. Everything was on premise. Every integration was a three to six month project. You needed a dedicated team just to move data from one system to another.
+
+[01:29] SAP PI was the answer. And it was a good answer -- for that world.
+
+[01:38] But that world is disappearing.
+
+[01:41] Today you can deploy an integration platform in an afternoon. Cloud-native, open source, containerized. One person, one laptop.
+
+[01:55] SAP knows this. That's why they built BTP -- Business Transformation Platform. But migration from PI/PO to BTP is slow, expensive. And most companies I talk to, they're stuck in the middle. Running PI/PO because it works, knowing it won't last forever, not sure what comes next.
+
+[02:26] So let me show you what I built today -- if I were starting fresh.
+
+[02:34] This is HelixNet. It's a production platform I built using only open source tools.
+
+[02:42] FastAPI for the backend. Modern Python, async, automatic API documentation.
+
+[02:53] This right here -- this is what PI/PO message mappings does. Except it's 10 lines of Python instead of a visual mapper that takes days to configure.
+
+[03:08] Keycloak. Enterprise identity management. OAuth2, OpenID Connect, role-based access control.
+
+[03:18] This is what SAP Access Control charges hundreds of thousands of euros for. It's open source. It's free.
+
+[03:28] Six microservices, all containerized. Deploy anywhere, running right now on a dedicated server.
+
+[03:37] Cost? Seven euros and 59 cents per month.
+
+[03:45] Now here's the thing. I'm not saying tear out SAP tomorrow. That would be reckless. And I've seen enough reckless migrations to know how that ends.
+
+[03:58] But if you're planning what comes after PI/PO -- and you should be -- you need someone who understands both sides.
+
+[04:08] Someone who can read an IDoc and write a REST API. Someone who knows why your RFC calls work today and why they won't scale tomorrow.
+
+[04:22] Someone who spent 20 years inside the SAP world and the last six months building what comes next.
+
+[04:32] The future is hybrid. SAP alongside open source. Legacy alongside modern. And hybrid needs a translator.
+
+[04:44] That's what I do. I'm the bridge.
+
+[04:48] If your company is somewhere in the middle ground -- running SAP but wondering what's next -- I'd like to talk. Not to sell you anything, just to show what's possible.
+
+[05:02] 20 years taught me how enterprise works. The last six months taught me how fast it can be.
+
+[05:12] The link is below.
+
+--- END ---

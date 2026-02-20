@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px;
+    height: 1080px;
+    background: #1a1a1a;
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    color: #e0e0e0;
+    display: flex;
+    overflow: hidden;
+  }
+  .sidebar {
+    width: 280px;
+    background: #151515;
+    border-right: 1px solid #333;
+    padding: 30px 0;
+  }
+  .sidebar-logo {
+    padding: 0 24px 24px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 1px solid #333;
+    margin-bottom: 20px;
+  }
+  .sidebar-logo span { color: #4a9eff; }
+  .realm-badge {
+    margin: 0 16px 24px;
+    padding: 10px 16px;
+    background: #0a2744;
+    border: 1px solid #1a4a7a;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #4a9eff;
+  }
+  .nav-item {
+    padding: 12px 24px;
+    font-size: 15px;
+    color: #888;
+    cursor: pointer;
+  }
+  .nav-item.active {
+    color: #fff;
+    background: #222;
+    border-left: 3px solid #4a9eff;
+  }
+  .nav-section {
+    padding: 20px 24px 8px;
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .main {
+    flex: 1;
+    padding: 40px;
+  }
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  .header-bar h1 {
+    font-size: 28px;
+    font-weight: 400;
+    color: #fff;
+  }
+  .header-bar .btn {
+    padding: 10px 24px;
+    background: #4a9eff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+  .stat-card {
+    flex: 1;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .stat-card .num {
+    font-size: 36px;
+    font-weight: 700;
+    color: #4a9eff;
+  }
+  .stat-card .label {
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1e1e1e;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th {
+    text-align: left;
+    padding: 14px 20px;
+    background: #252525;
+    color: #999;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #333;
+  }
+  td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 15px;
+  }
+  .user-name { color: #fff; font-weight: 500; }
+  .role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    background: #1a3a2a;
+    color: #4ade80;
+    margin-right: 6px;
+  }
+  .role-badge.admin { background: #3a1a1a; color: #f87171; }
+  .role-badge.manager { background: #1a2a3a; color: #60a5fa; }
+  .enabled { color: #4ade80; }
+</style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-logo"><span>Keycloak</span> Admin</div>
+    <div class="realm-badge">kc-camper-service-realm-dev</div>
+    <div class="nav-section">Manage</div>
+    <div class="nav-item active">Users</div>
+    <div class="nav-item">Groups</div>
+    <div class="nav-item">Sessions</div>
+    <div class="nav-section">Configure</div>
+    <div class="nav-item">Realm Settings</div>
+    <div class="nav-item">Clients</div>
+    <div class="nav-item">Client Scopes</div>
+    <div class="nav-item">Realm Roles</div>
+    <div class="nav-item">Identity Providers</div>
+    <div class="nav-item">Authentication</div>
+  </div>
+  <div class="main">
+    <div class="header-bar">
+      <h1>Users</h1>
+      <div class="btn">+ Add User</div>
+    </div>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="num">9</div>
+        <div class="label">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">7</div>
+        <div class="label">Realm Roles</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">2</div>
+        <div class="label">Clients</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">9</div>
+        <div class="label">Realms</div>
+      </div>
+    </div>
+    <table>
+      <tr><th>Username</th><th>Roles</th><th>Status</th></tr>
+      <tr><td class="user-name">nino</td><td><span class="role-badge manager">camper-manager</span><span class="role-badge admin">camper-admin</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">angel</td><td><span class="role-badge admin">camper-admin</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">sebastino</td><td><span class="role-badge manager">camper-manager</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">maximo</td><td><span class="role-badge">camper-mechanic</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">miguel</td><td><span class="role-badge">camper-counter</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">simona</td><td><span class="role-badge">camper-counter</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">camper-auditor</td><td><span class="role-badge">camper-auditor</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">seppi</td><td><span class="role-badge">camper-mechanic</span></td><td class="enabled">Enabled</td></tr>
+      <tr><td class="user-name">camper-hr</td><td><span class="role-badge">camper-hr</span></td><td class="enabled">Enabled</td></tr>
+    </table>
+  </div>
+</body>
+</html>

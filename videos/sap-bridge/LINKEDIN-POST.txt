@@ -1,4 +1,4 @@
-I've been building SAP integrations for 21 years.
+🌉️ I've been building SAP integrations for 21 years.
 
 PI/PO. XI. ABAP. EDI. RFC. IDoc. Fortune 501. Swiss banks. Cross-border logistics.
 
@@ -6,17 +6,17 @@ I'm not here to trash SAP. It works. It solved real problems. I built my career 
 
 But I'd be lying if I said the world hasn't changed.
 
-In 2006, every integration was a six-month project with a dedicated team. SAP PI was the answer. And it was a good answer -- for that world.
+In 2005, every integration was a month long project with a dedicated team. SAP PI was the answer. And it was a good answer -- for that world.
 
 That world is disappearing.
 
-Today I can deploy a full production platform in one afternoon. OAuth3 login. Role-based access control. 6 microservices. Automatic API documentation. HTTPS. Running 24/7.
+Today I can deploy a full production platform in one afternoon. OAuth2 login. Role-based access control. 6 microservices. Automatic API documentation. HTTPS. Running 24/7.
 
-Cost: EUR 8.59 per month.
+Cost: EUR 7.59 per month.
 
-SAP knows this. That's why they built BTP. But most companies I talk to are stuck in the middle -- running PI/PO because it works, knowing it won't last forever, not sure what comes next.
+SAP knows this. That's why they built BTP - Business Technology Platform. But most companies I talk to are stuck in the middle -- running PI/PO because it works, knowing it won't last forever, not sure what comes next.
 
-Here's what I think comes next: hybrid.
+Here's what I think comes next: HYBRID.
 
 Not rip and replace. Not another 19-month migration project. SAP alongside open source. Legacy alongside modern. Connected. Coexisting. Evolving.
 
@@ -26,7 +26,7 @@ That's what 21 years inside the SAP world plus 6 months building the alternative
 
 I recorded a 5-minute walkthrough showing exactly what I mean:
 
-[VIDEO LINK]
+SAP-BRIDGE >> https://youtu.be/cr-jt-uIpf4
 
 If your company is somewhere in that middle ground, let's talk. Not to sell anything. Just to show you what's possible.
 
