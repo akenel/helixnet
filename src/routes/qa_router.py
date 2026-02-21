@@ -418,7 +418,5 @@ async def testing_dashboard(request: Request):
 @html_router.get("/training", response_class=HTMLResponse)
 async def training_guide():
     """Serve the training guide -- How Code Gets To You."""
-    training_file = Path(__file__).parent.parent.parent / "docs" / "training" / "how-code-gets-to-you.html"
-    if not training_file.exists():
-        raise HTTPException(status_code=404, detail="Training guide not found")
+    training_file = templates_dir / "testing" / "training.html"
     return FileResponse(training_file, media_type="text/html")
