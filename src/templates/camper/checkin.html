@@ -49,25 +49,51 @@
     </div>
 
     <main class="max-w-3xl mx-auto px-4 py-6">
-        <!-- Search by plate -->
+        <!-- Search -->
         <div class="card mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4" data-i18n="checkin.search_by_plate">Cerca per Targa</h2>
+            <h2 class="text-xl font-bold text-gray-900 mb-4" data-i18n="checkin.search_by_plate">Cerca Veicolo</h2>
             <form @submit.prevent="searchByPlate()" class="flex space-x-3">
                 <input
                     type="text"
                     x-model="searchPlate"
                     data-i18n-placeholder="checkin.plate_placeholder"
-                    placeholder="Es: TI 123456"
-                    class="input-field flex-1 uppercase"
+                    placeholder="Targa, nome, telefono, marca..."
+                    class="input-field flex-1"
                     x-ref="plateInput"
-                    autofocus
-                    maxlength="20">
+                    autofocus>
                 <button type="submit" class="btn-primary" :disabled="!searchPlate.trim()" data-i18n="common.search">
                     Cerca
                 </button>
             </form>
             <p x-show="searching" class="text-sm text-gray-500 mt-2" data-i18n="checkin.searching">Ricerca in corso...</p>
         </div>
+
+        <!-- Search Results List -->
+        <template x-if="searchResults && searchResults.length > 1 && !vehicle">
+            <div class="card mb-6">
+                <p class="text-sm text-gray-600 mb-3" x-text="t('checkin.results_count', {count: searchResults.length})"></p>
+                <div class="divide-y">
+                    <template x-for="v in searchResults" :key="v.id">
+                        <button @click="selectVehicle(v)" class="w-full text-left px-4 py-3 hover:bg-amber-50 transition flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-gray-900" x-text="v.registration_plate"></span>
+                                <span class="text-gray-500 mx-2">--</span>
+                                <span class="text-gray-700" x-text="`${v.make || ''} ${v.model || ''}`.trim() || '-'"></span>
+                                <template x-if="v.owner_name">
+                                    <span class="text-gray-500 ml-2" x-text="'(' + v.owner_name + ')'"></span>
+                                </template>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <template x-if="v.owner_phone">
+                                    <span class="text-xs text-gray-400" x-text="v.owner_phone"></span>
+                                </template>
+                                <span class="badge text-xs" :class="'badge-' + v.status" x-text="VEHICLE_STATUS_LABELS[v.status] || v.status"></span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </template>
 
         <!-- Vehicle Found -->
         <template x-if="vehicle">
@@ -222,6 +248,7 @@
             user: { username: '' },
             searchPlate: '',
             searching: false,
+            searchResults: null,
             vehicle: null,
             notFound: false,
             showRegister: false,
@@ -257,21 +284,30 @@
                 if (!this.searchPlate.trim()) return;
                 this.searching = true;
                 this.vehicle = null;
+                this.searchResults = null;
                 this.notFound = false;
                 this.showRegister = false;
 
                 try {
-                    this.vehicle = await API.get('/api/v1/camper/vehicles/plate/' + encodeURIComponent(this.searchPlate.trim()));
-                } catch (e) {
-                    if (e.message.includes('404') || e.message.includes('No vehicle found')) {
+                    const results = await API.get('/api/v1/camper/vehicles/search?q=' + encodeURIComponent(this.searchPlate.trim()));
+                    if (results.length === 0) {
                         this.notFound = true;
                         this.newVehicle.registration_plate = this.searchPlate.trim().toUpperCase();
+                    } else if (results.length === 1) {
+                        this.vehicle = results[0];
                     } else {
-                        showToast(t('common.error') + ': ' + e.message, 'error');
+                        this.searchResults = results;
                     }
+                } catch (e) {
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.searching = false;
                 }
+            },
+
+            selectVehicle(v) {
+                this.vehicle = v;
+                this.searchResults = null;
             },
 
             async checkInVehicle() {

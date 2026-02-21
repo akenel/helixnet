@@ -209,9 +209,11 @@ const CAMPER_STRINGS = {
         },
         // Check-in
         checkin: {
-            search_by_plate: 'Cerca per Targa',
-            plate_placeholder: 'Es: TI 123456',
+            search_by_plate: 'Cerca Veicolo',
+            plate_placeholder: 'Targa, nome, telefono, marca...',
             searching: 'Ricerca in corso...',
+            no_results: 'Nessun veicolo trovato. Registrare un nuovo veicolo?',
+            results_count: '{count} veicolo/i trovato/i',
             owner: 'Proprietario:',
             phone: 'Telefono:',
             color: 'Colore:',
@@ -923,9 +925,11 @@ const CAMPER_STRINGS = {
             days_suffix: 'd'
         },
         checkin: {
-            search_by_plate: 'Search by Plate',
-            plate_placeholder: 'e.g. TI 123456',
+            search_by_plate: 'Search Vehicle',
+            plate_placeholder: 'Plate, name, phone, make...',
             searching: 'Searching...',
+            no_results: 'No vehicles found. Register a new one?',
+            results_count: '{count} vehicle(s) found',
             owner: 'Owner:',
             phone: 'Phone:',
             color: 'Color:',

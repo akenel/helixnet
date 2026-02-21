@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFi
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, DateTime as SADateTime
+from sqlalchemy import select, func, and_, or_, DateTime as SADateTime
 from sqlalchemy.orm import selectinload
 from datetime import datetime, date, timezone, timedelta
 from decimal import Decimal
@@ -201,20 +201,27 @@ async def list_vehicles(
     return result.scalars().all()
 
 
-@router.get("/vehicles/{vehicle_id}", response_model=VehicleRead)
-async def get_vehicle(
-    vehicle_id: UUID,
+@router.get("/vehicles/search", response_model=list[VehicleRead])
+async def search_vehicles(
+    q: str,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_camper_role()),
 ):
-    """Get vehicle by ID (any camper role)"""
+    """Fuzzy search across plate, owner name, phone, make/model, chassis."""
+    term = f"%{q.strip()}%"
     result = await db.execute(
-        select(CamperVehicleModel).where(CamperVehicleModel.id == vehicle_id)
+        select(CamperVehicleModel).where(
+            or_(
+                CamperVehicleModel.registration_plate.ilike(term),
+                CamperVehicleModel.owner_name.ilike(term),
+                CamperVehicleModel.owner_phone.ilike(term),
+                CamperVehicleModel.make.ilike(term),
+                CamperVehicleModel.model.ilike(term),
+                CamperVehicleModel.chassis_number.ilike(term),
+            )
+        ).order_by(CamperVehicleModel.registration_plate).limit(20)
     )
-    vehicle = result.scalar_one_or_none()
-    if not vehicle:
-        raise HTTPException(status_code=404, detail="Vehicle not found")
-    return vehicle
+    return result.scalars().all()
 
 
 @router.get("/vehicles/plate/{plate}", response_model=VehicleRead)
@@ -232,6 +239,22 @@ async def get_vehicle_by_plate(
     vehicle = result.scalar_one_or_none()
     if not vehicle:
         raise HTTPException(status_code=404, detail=f"No vehicle found with plate '{plate}'")
+    return vehicle
+
+
+@router.get("/vehicles/{vehicle_id}", response_model=VehicleRead)
+async def get_vehicle(
+    vehicle_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Get vehicle by ID (any camper role)"""
+    result = await db.execute(
+        select(CamperVehicleModel).where(CamperVehicleModel.id == vehicle_id)
+    )
+    vehicle = result.scalar_one_or_none()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
     return vehicle
 
 
