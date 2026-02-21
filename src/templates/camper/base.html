@@ -507,6 +507,21 @@
         });
 
         (function() {
+            // Translate status bar page name
+            const screenEl = document.getElementById('status-screen');
+            if (screenEl) {
+                const pageI18nMap = {
+                    'Cruscotto': 'nav.dashboard', 'Accettazione': 'nav.checkin',
+                    'Lavori': 'nav.jobs', 'Clienti': 'nav.customers',
+                    'Appuntamenti': 'nav.appointments', 'Preventivi': 'nav.quotations',
+                    'Ordini': 'nav.purchase_orders', 'Fatture': 'nav.invoices',
+                    'Calendario': 'nav.calendar', 'Dettaglio Lavoro': 'nav.jobs',
+                    'Dettaglio Preventivo': 'nav.quotations', 'Corsie Officina': 'nav.jobs',
+                };
+                const key = pageI18nMap[screenEl.textContent.trim()];
+                if (key) screenEl.textContent = t(key);
+            }
+
             function updateStatusBar() {
                 const now = new Date();
                 document.getElementById('status-time').textContent =
