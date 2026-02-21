@@ -14,6 +14,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, DateTime as SADateTime
+from sqlalchemy.orm import selectinload
 from datetime import datetime, date, timezone, timedelta
 from decimal import Decimal
 from uuid import UUID
@@ -2810,8 +2811,14 @@ async def get_calendar(
     except ValueError:
         range_end = None
 
+    # Eager-load customer + vehicle for calendar display
+    load_opts = [
+        selectinload(CamperServiceJobModel.customer),
+        selectinload(CamperServiceJobModel.vehicle),
+    ]
+
     # Get jobs with start_date/end_date (multi-day)
-    multi_day_query = select(CamperServiceJobModel).where(
+    multi_day_query = select(CamperServiceJobModel).options(*load_opts).where(
         CamperServiceJobModel.start_date.isnot(None)
     )
     if range_start:
@@ -2820,7 +2827,7 @@ async def get_calendar(
         multi_day_query = multi_day_query.where(CamperServiceJobModel.start_date <= range_end)
 
     # Get jobs with only scheduled_date (single-day, backwards compat)
-    single_day_query = select(CamperServiceJobModel).where(
+    single_day_query = select(CamperServiceJobModel).options(*load_opts).where(
         and_(
             CamperServiceJobModel.start_date.is_(None),
             CamperServiceJobModel.scheduled_date.isnot(None),
@@ -2850,41 +2857,48 @@ async def get_calendar(
 
     events = []
 
+    def _build_event(job, start_iso, end_iso=None):
+        """Build a CalendarEvent with customer + vehicle info."""
+        customer_name = job.customer.name if job.customer else ""
+        customer_lang = job.customer.language.value if job.customer and job.customer.language else ""
+        customer_phone = job.customer.phone if job.customer else ""
+        vehicle_plate = job.vehicle.registration_plate if job.vehicle else ""
+
+        # Title: "JOB-123: Title | Customer (LANG)"
+        title_parts = [f"{job.job_number}: {job.title}"]
+        if customer_name:
+            customer_label = f"{customer_name} ({customer_lang})" if customer_lang else customer_name
+            title_parts.append(customer_label)
+        title = " | ".join(title_parts)
+
+        return CalendarEvent(
+            id=str(job.id),
+            title=title,
+            start=start_iso,
+            end=end_iso,
+            color=status_colors.get(job.status, "#9CA3AF"),
+            url=f"/camper/jobs/{job.id}",
+            extendedProps={
+                "status": job.status.value,
+                "assigned_to": job.assigned_to or "",
+                "job_number": job.job_number,
+                "waiting": bool(job.current_wait_reason),
+                "wait_reason": job.current_wait_reason or "",
+                "customer_name": customer_name,
+                "customer_lang": customer_lang,
+                "customer_phone": customer_phone,
+                "vehicle_plate": vehicle_plate,
+            }
+        )
+
     # Multi-day jobs: use start_date and end_date+1 (FullCalendar end is exclusive)
     for job in multi_jobs:
         fc_end = (job.end_date + timedelta(days=1)).isoformat() if job.end_date else None
-        events.append(CalendarEvent(
-            id=str(job.id),
-            title=f"{job.job_number}: {job.title}",
-            start=job.start_date.isoformat(),
-            end=fc_end,
-            color=status_colors.get(job.status, "#9CA3AF"),
-            url=f"/camper/jobs/{job.id}",
-            extendedProps={
-                "status": job.status.value,
-                "assigned_to": job.assigned_to or "",
-                "job_number": job.job_number,
-                "waiting": bool(job.current_wait_reason),
-                "wait_reason": job.current_wait_reason or "",
-            }
-        ))
+        events.append(_build_event(job, job.start_date.isoformat(), fc_end))
 
     # Single-day jobs (backwards compat): scheduled_date only
     for job in single_jobs:
-        events.append(CalendarEvent(
-            id=str(job.id),
-            title=f"{job.job_number}: {job.title}",
-            start=job.scheduled_date.isoformat(),
-            color=status_colors.get(job.status, "#9CA3AF"),
-            url=f"/camper/jobs/{job.id}",
-            extendedProps={
-                "status": job.status.value,
-                "assigned_to": job.assigned_to or "",
-                "job_number": job.job_number,
-                "waiting": bool(job.current_wait_reason),
-                "wait_reason": job.current_wait_reason or "",
-            }
-        ))
+        events.append(_build_event(job, job.scheduled_date.isoformat()))
 
     return events
 

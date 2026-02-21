@@ -220,16 +220,16 @@
                         }
                     },
                     eventDidMount: function(info) {
-                        // Tooltip with job details
+                        // Tooltip with job + customer + vehicle details
                         const props = info.event.extendedProps;
-                        let tooltipText = info.event.title;
-                        if (props.job_number) {
-                            tooltipText = props.job_number + ' - ' + tooltipText;
-                        }
-                        if (props.assigned_to) {
-                            tooltipText += ' (' + props.assigned_to + ')';
-                        }
-                        info.el.title = tooltipText;
+                        let lines = [];
+                        if (props.job_number) lines.push(props.job_number);
+                        lines.push(info.event.title);
+                        if (props.vehicle_plate) lines.push('Plate: ' + props.vehicle_plate);
+                        if (props.customer_phone) lines.push('Tel: ' + props.customer_phone);
+                        if (props.assigned_to) lines.push('Assigned: ' + props.assigned_to);
+                        if (props.waiting && props.wait_reason) lines.push('WAITING: ' + props.wait_reason);
+                        info.el.title = lines.join('\n');
                     },
 
                     eventClick: function(info) {

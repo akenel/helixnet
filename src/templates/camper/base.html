@@ -160,7 +160,23 @@
             _expiryTimer: null,
 
             getToken() {
-                return sessionStorage.getItem('camper_token');
+                const token = sessionStorage.getItem('camper_token');
+                if (token) {
+                    // Check expiry without circular call
+                    try {
+                        const payload = this.decodeToken(token);
+                        const exp = payload?.exp ? payload.exp * 1000 : 0;
+                        if (Date.now() >= exp) {
+                            // Token is dead -- clear it so the page redirects to login
+                            this.clearToken();
+                            return null;
+                        }
+                    } catch (e) {
+                        this.clearToken();
+                        return null;
+                    }
+                }
+                return token;
             },
             setToken(token) {
                 sessionStorage.setItem('camper_token', token);
