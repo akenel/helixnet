@@ -161,10 +161,10 @@ class QABugReportModel(Base):
         nullable=True,
         comment="Optional link to the test that found this bug",
     )
-    screenshot_url: Mapped[str | None] = mapped_column(
-        String(500),
+    screenshot_data: Mapped[str | None] = mapped_column(
+        Text,
         nullable=True,
-        comment="URL to screenshot",
+        comment="Screenshot as base64 data URL",
     )
     browser_info: Mapped[str | None] = mapped_column(
         String(200),

@@ -256,7 +256,7 @@ async def create_bug(
         description=bug.description,
         severity=bug.severity,
         test_result_id=bug.test_result_id,
-        screenshot_url=bug.screenshot_url,
+        screenshot_data=bug.screenshot_data,
         browser_info=bug.browser_info,
         reported_by=bug.reported_by,
     )
@@ -297,8 +297,8 @@ async def update_bug(
         bug.severity = update.severity
     if update.status is not None:
         bug.status = update.status
-    if update.screenshot_url is not None:
-        bug.screenshot_url = update.screenshot_url
+    if update.screenshot_data is not None:
+        bug.screenshot_data = update.screenshot_data
     bug.updated_at = datetime.now(timezone.utc)
 
     await db.commit()

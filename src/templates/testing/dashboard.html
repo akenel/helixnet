@@ -240,6 +240,10 @@
                                 </div>
                                 <h4 class="text-sm font-semibold text-gray-800" x-text="bug.title"></h4>
                                 <p class="text-xs text-gray-500 mt-1" x-text="bug.description"></p>
+                                <template x-if="bug.screenshot_data">
+                                    <img :src="bug.screenshot_data" @click="viewScreenshot(bug.screenshot_data)"
+                                        class="mt-2 max-h-32 rounded-lg shadow cursor-pointer hover:opacity-80 transition" title="Click to enlarge">
+                                </template>
                                 <p class="text-xs text-gray-400 mt-1" x-text="'by ' + bug.reported_by + ' -- ' + new Date(bug.created_at).toLocaleDateString()"></p>
                             </div>
                             <div class="flex space-x-1 ml-3">
@@ -304,6 +308,36 @@
                 </div>
 
                 <div>
+                    <label class="text-sm font-medium text-gray-700">Screenshot</label>
+                    <div class="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center transition"
+                        :class="bugForm.screenshot_data ? 'border-green-400 bg-green-50' : 'hover:border-red-400'"
+                        @paste.window="handlePaste($event)"
+                        @dragover.prevent="$event.currentTarget.classList.add('border-red-400', 'bg-red-50')"
+                        @dragleave.prevent="$event.currentTarget.classList.remove('border-red-400', 'bg-red-50')"
+                        @drop.prevent="handleDrop($event)">
+                        <template x-if="!bugForm.screenshot_data">
+                            <div>
+                                <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="text-xs text-gray-500 mb-2">Paste from clipboard (Ctrl+V), drag & drop, or pick a file</p>
+                                <label class="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition">
+                                    Choose File
+                                    <input type="file" accept="image/*" class="hidden" @change="handleFileSelect($event)">
+                                </label>
+                            </div>
+                        </template>
+                        <template x-if="bugForm.screenshot_data">
+                            <div>
+                                <img :src="bugForm.screenshot_data" class="max-h-40 mx-auto rounded-lg shadow">
+                                <button @click="bugForm.screenshot_data = ''" type="button"
+                                    class="mt-2 text-xs text-red-600 hover:text-red-800 font-medium">Remove screenshot</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div>
                     <label class="text-sm font-medium text-gray-700">Browser Info</label>
                     <input type="text" x-model="bugForm.browser_info" :placeholder="navigator.userAgent.substring(0, 60) + '...'"
                         class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
@@ -339,7 +373,7 @@ function qaDashboard() {
         notesOpen: null,
         showBugs: false,
         showBugForm: false,
-        bugForm: { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '' },
+        bugForm: { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '' },
 
         async init() {
             await this.loadAll();
@@ -459,9 +493,12 @@ function qaDashboard() {
                 if (this.bugForm.test_result_id) {
                     payload.test_result_id = this.bugForm.test_result_id;
                 }
+                if (this.bugForm.screenshot_data) {
+                    payload.screenshot_data = this.bugForm.screenshot_data;
+                }
                 await API.post('/api/v1/testing/bugs', payload);
                 this.showBugForm = false;
-                this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '' };
+                this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '' };
                 // Reload bugs + summary
                 const [bugs, summary] = await Promise.all([
                     API.get('/api/v1/testing/bugs'),
@@ -487,6 +524,72 @@ function qaDashboard() {
             } catch (e) {
                 showToast('Failed to update bug: ' + e.message, 'error');
             }
+        },
+
+        // Screenshot: file picker
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) this.readImageFile(file);
+        },
+
+        // Screenshot: clipboard paste (Ctrl+V)
+        handlePaste(event) {
+            if (!this.showBugForm) return;
+            const items = event.clipboardData?.items;
+            if (!items) return;
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    event.preventDefault();
+                    this.readImageFile(item.getAsFile());
+                    return;
+                }
+            }
+        },
+
+        // Screenshot: drag & drop
+        handleDrop(event) {
+            const file = event.dataTransfer?.files[0];
+            if (file && file.type.startsWith('image/')) {
+                this.readImageFile(file);
+            }
+        },
+
+        // Convert image file to base64 data URL (resize if too large)
+        readImageFile(file) {
+            if (!file) return;
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                img.onload = () => {
+                    // Resize if wider than 1200px to keep payload reasonable
+                    const maxWidth = 1200;
+                    let w = img.width, h = img.height;
+                    if (w > maxWidth) {
+                        h = Math.round(h * maxWidth / w);
+                        w = maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    this.bugForm.screenshot_data = canvas.toDataURL('image/jpeg', 0.85);
+                    showToast('Screenshot attached', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+
+        // View screenshot fullscreen
+        viewScreenshot(dataUrl) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:2rem;';
+            overlay.onclick = () => overlay.remove();
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.style.cssText = 'max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.5);';
+            overlay.appendChild(img);
+            document.body.appendChild(overlay);
         },
     };
 }

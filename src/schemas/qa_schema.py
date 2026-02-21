@@ -46,7 +46,7 @@ class BugReportCreate(BaseModel):
     description: str = Field(..., description="What happened and what was expected")
     severity: BugSeverity = Field(default=BugSeverity.MEDIUM, description="Bug severity")
     test_result_id: Optional[UUID] = Field(None, description="Link to the test that found this bug")
-    screenshot_url: Optional[str] = Field(None, max_length=500, description="Screenshot URL")
+    screenshot_data: Optional[str] = Field(None, description="Screenshot as base64 data URL")
     browser_info: Optional[str] = Field(None, max_length=200, description="Browser/device info")
     reported_by: str = Field(default="Anne", max_length=100, description="Who reported this")
 
@@ -57,7 +57,7 @@ class BugReportUpdate(BaseModel):
     description: Optional[str] = None
     severity: Optional[BugSeverity] = None
     status: Optional[BugStatus] = None
-    screenshot_url: Optional[str] = Field(None, max_length=500)
+    screenshot_data: Optional[str] = Field(None, description="Screenshot as base64 data URL")
 
 
 class BugReportRead(BaseModel):
@@ -70,7 +70,7 @@ class BugReportRead(BaseModel):
     severity: BugSeverity
     status: BugStatus
     test_result_id: Optional[UUID] = None
-    screenshot_url: Optional[str] = None
+    screenshot_data: Optional[str] = None
     browser_info: Optional[str] = None
     reported_by: str
     created_at: datetime
