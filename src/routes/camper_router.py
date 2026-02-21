@@ -660,6 +660,18 @@ async def update_job(
     for field, value in update_data.items():
         setattr(job, field, value)
 
+    # Auto-transition: assigning a mechanic to a quoted/approved job starts work
+    if "assigned_to" in update_data and update_data["assigned_to"]:
+        if job.status in (JobStatus.QUOTED, JobStatus.APPROVED):
+            old_status = job.status
+            job.status = JobStatus.IN_PROGRESS
+            if not job.started_at:
+                job.started_at = datetime.now(timezone.utc)
+            logger.info(
+                f"Job {job.job_number}: {old_status.value} -> in_progress "
+                f"(auto, mechanic assigned: {update_data['assigned_to']})"
+            )
+
     job.updated_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(job)
