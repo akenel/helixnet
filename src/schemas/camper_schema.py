@@ -248,6 +248,16 @@ class ServiceJobUpdate(BaseModel):
     # Optimistic locking: client sends the updated_at it read, server rejects if stale
     expected_updated_at: Optional[datetime] = Field(None, description="Send the updated_at you read. Rejects if another write happened since.")
 
+    @model_validator(mode="before")
+    @classmethod
+    def empty_strings_to_none(cls, data: Any) -> Any:
+        """Coerce empty strings to None so Optional[date/int/float/Decimal] fields don't fail validation."""
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if value == "":
+                    data[key] = None
+        return data
+
 
 class ServiceJobStatusUpdate(BaseModel):
     """Schema for advancing job status"""

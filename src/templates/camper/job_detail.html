@@ -638,7 +638,12 @@
             async saveJob() {
                 this.saving = true;
                 try {
-                    this.job = await API.put('/api/v1/camper/jobs/' + this.job.id, this.editData);
+                    // Clean empty strings to null so Pydantic doesn't choke on Optional[date] fields
+                    const payload = {...this.editData};
+                    for (const [k, v] of Object.entries(payload)) {
+                        if (v === '') payload[k] = null;
+                    }
+                    this.job = await API.put('/api/v1/camper/jobs/' + this.job.id, payload);
                     this.editing = false;
                     showToast(t('job_detail.toast_changes_saved'), 'success');
                 } catch (e) {
