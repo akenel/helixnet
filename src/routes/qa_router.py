@@ -251,7 +251,14 @@ async def create_bug(
         if not test_result.scalar_one_or_none():
             raise HTTPException(status_code=404, detail="Linked test item not found")
 
+    # Auto-assign next bug number
+    max_num = await db.execute(
+        select(func.coalesce(func.max(QABugReportModel.bug_number), 0))
+    )
+    next_number = max_num.scalar() + 1
+
     new_bug = QABugReportModel(
+        bug_number=next_number,
         title=bug.title,
         description=bug.description,
         severity=bug.severity,

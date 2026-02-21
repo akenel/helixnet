@@ -131,6 +131,13 @@ class QABugReportModel(Base):
         index=True,
         default=uuid.uuid4,
     )
+    bug_number: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        unique=True,
+        index=True,
+        comment="Human-readable bug number (BUG-001)",
+    )
     title: Mapped[str] = mapped_column(
         String(200),
         nullable=False,

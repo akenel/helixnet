@@ -65,6 +65,7 @@ class BugReportRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    bug_number: int
     title: str
     description: str
     severity: BugSeverity

@@ -174,7 +174,9 @@ const CAMPER_STRINGS = {
         },
         // Dashboard
         dashboard: {
-            greeting: 'Buongiorno, {name}!',
+            greeting_morning: 'Buongiorno, {name}!',
+            greeting_afternoon: 'Buon pomeriggio, {name}!',
+            greeting_evening: 'Buonasera, {name}!',
             today_summary: 'Ecco la situazione di oggi.',
             vehicles_in_shop: 'Veicoli in Officina',
             jobs_in_progress: 'Lavori in Corso',
@@ -887,7 +889,9 @@ const CAMPER_STRINGS = {
             success: 'Login successful!'
         },
         dashboard: {
-            greeting: 'Good morning, {name}!',
+            greeting_morning: 'Good morning, {name}!',
+            greeting_afternoon: 'Good afternoon, {name}!',
+            greeting_evening: 'Good evening, {name}!',
             today_summary: "Here's today's overview.",
             vehicles_in_shop: 'Vehicles in Shop',
             jobs_in_progress: 'Jobs in Progress',

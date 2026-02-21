@@ -238,7 +238,10 @@
                                             'bg-gray-50 text-gray-600': bug.status === 'wont_fix'
                                         }" x-text="bug.status.replace('_', ' ')"></span>
                                 </div>
-                                <h4 class="text-sm font-semibold text-gray-800" x-text="bug.title"></h4>
+                                <h4 class="text-sm font-semibold text-gray-800">
+                                    <span class="text-indigo-600 font-mono" x-text="'BUG-' + String(bug.bug_number).padStart(3, '0')"></span>
+                                    <span x-text="bug.title"></span>
+                                </h4>
                                 <p class="text-xs text-gray-500 mt-1" x-text="bug.description"></p>
                                 <template x-if="bug.screenshot_data">
                                     <img :src="bug.screenshot_data" @click="viewScreenshot(bug.screenshot_data)"
