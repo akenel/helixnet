@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Code Gets To You - HelixNet Training</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.7;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1a2e 100%);
+            padding: 80px 24px 60px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(234, 179, 8, 0.06) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #f8fafc;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .hero h1 span { color: #eab308; }
+        .hero p {
+            font-size: 1.15em;
+            color: #94a3b8;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        /* Content Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Section */
+        section {
+            padding: 60px 0;
+            border-bottom: 1px solid #1e293b;
+        }
+        section:last-of-type { border-bottom: none; }
+
+        h2 {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h2 .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+        .section-subtitle {
+            color: #64748b;
+            font-size: 0.95em;
+            margin-bottom: 32px;
+        }
+
+        h3 {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin: 32px 0 12px;
+        }
+        h3:first-of-type { margin-top: 0; }
+
+        p { margin-bottom: 16px; color: #cbd5e1; }
+
+        strong { color: #f8fafc; font-weight: 600; }
+
+        /* Pipeline Diagram */
+        .pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 32px 0;
+        }
+        .pipeline-step {
+            display: flex;
+            align-items: stretch;
+            gap: 20px;
+        }
+        .pipeline-line {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 48px;
+            flex-shrink: 0;
+        }
+        .pipeline-dot {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            border: 3px solid;
+        }
+        .pipeline-connector {
+            width: 3px;
+            flex: 1;
+            min-height: 20px;
+            background: #334155;
+        }
+        .pipeline-content {
+            flex: 1;
+            padding: 8px 0 32px;
+        }
+        .pipeline-content h4 {
+            font-size: 1em;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+        .pipeline-content p {
+            font-size: 0.9em;
+            color: #94a3b8;
+            margin-bottom: 0;
+        }
+        .pipeline-step:last-child .pipeline-connector { display: none; }
+
+        .dot-kenya { background: rgba(234, 179, 8, 0.15); border-color: #eab308; color: #eab308; }
+        .dot-laptop { background: rgba(99, 102, 241, 0.15); border-color: #6366f1; color: #6366f1; }
+        .dot-github { background: rgba(148, 163, 184, 0.15); border-color: #94a3b8; color: #94a3b8; }
+        .dot-server { background: rgba(34, 197, 94, 0.15); border-color: #22c55e; color: #22c55e; }
+
+        /* Three Places Cards */
+        .places-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        @media (min-width: 640px) {
+            .places-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .place-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .place-card:hover {
+            transform: translateY(-2px);
+            border-color: #475569;
+        }
+        .place-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .place-card h4 {
+            font-size: 1em;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .place-card .location {
+            font-size: 0.8em;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .place-card p {
+            font-size: 0.85em;
+            color: #94a3b8;
+            margin-bottom: 0;
+        }
+        .place-workshop h4 { color: #818cf8; }
+        .place-warehouse h4 { color: #94a3b8; }
+        .place-store h4 { color: #4ade80; }
+
+        /* Code Blocks */
+        .code-block {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.8;
+            color: #e2e8f0;
+            overflow-x: auto;
+        }
+        .code-block .comment { color: #64748b; }
+        .code-block .command { color: #4ade80; }
+        .code-block .flag { color: #eab308; }
+        .code-block .arrow { color: #6366f1; font-weight: 700; }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        .flow-box {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .flow-arrow {
+            color: #475569;
+            font-size: 1.5em;
+            font-weight: 300;
+        }
+        .flow-you { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); }
+        .flow-dev { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .flow-git { background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+        .flow-server { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+
+        /* Info Cards */
+        .info-card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            border-left: 4px solid;
+        }
+        .info-card h4 {
+            font-size: 1em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .info-card p { margin-bottom: 0; font-size: 0.9em; }
+        .info-git { border-left-color: #f97316; }
+        .info-git h4 { color: #f97316; }
+        .info-docker { border-left-color: #38bdf8; }
+        .info-docker h4 { color: #38bdf8; }
+        .info-db { border-left-color: #a78bfa; }
+        .info-db h4 { color: #a78bfa; }
+
+        /* Cheat Sheet Table */
+        .cheat-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 24px 0;
+            font-size: 0.9em;
+        }
+        .cheat-table th {
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 0.75em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+        .cheat-table th:first-child { border-radius: 10px 0 0 0; }
+        .cheat-table th:last-child { border-radius: 0 10px 0 0; }
+        .cheat-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1e293b;
+            vertical-align: top;
+        }
+        .cheat-table tr:hover td { background: rgba(99, 102, 241, 0.04); }
+        .cheat-table .term {
+            color: #818cf8;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        /* Role Banner */
+        .role-banner {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.05));
+            border: 1px solid rgba(234, 179, 8, 0.25);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 32px 0;
+            text-align: center;
+        }
+        .role-banner h3 {
+            color: #eab308;
+            font-size: 1.3em;
+            margin: 0 0 12px 0;
+        }
+        .role-banner p { color: #fef3c7; margin-bottom: 8px; }
+        .role-banner .quote {
+            font-style: italic;
+            color: #eab308;
+            font-size: 1.05em;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(234, 179, 8, 0.2);
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 12px 0;
+        }
+        .faq-item .q {
+            color: #eab308;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+        .faq-item .a {
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 48px 24px;
+            color: #475569;
+            font-size: 0.85em;
+            border-top: 1px solid #1e293b;
+        }
+        footer strong { color: #64748b; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 1.8em; }
+            .hero { padding: 48px 20px 40px; }
+            section { padding: 40px 0; }
+            .flow-row { gap: 8px; }
+            .flow-box { font-size: 0.75em; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-content">
+        <span class="hero-badge">HelixNet Training Guide</span>
+        <h1>How Code Gets <span>To You</span></h1>
+        <p>From keyboard to your screen in Kenya. No magic -- just files moving through pipes.</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Section 1: The 3 Places -->
+    <section>
+        <h2><span class="num">1</span> The 3 Places Code Lives</h2>
+        <p class="section-subtitle">Think of it like a kitchen, a recipe book, and a restaurant</p>
+
+        <div class="places-grid">
+            <div class="place-card place-workshop">
+                <span class="place-icon">&#x1F4BB;</span>
+                <h4>The Workshop</h4>
+                <div class="location">Angel's Laptop - Sicily</div>
+                <p>Where code is written and edited. Angel and Tigs build here.</p>
+            </div>
+            <div class="place-card place-warehouse">
+                <span class="place-icon">&#x1F4E6;</span>
+                <h4>The Warehouse</h4>
+                <div class="location">GitHub - Internet</div>
+                <p>Where every version of every file is stored. The history book.</p>
+            </div>
+            <div class="place-card place-store">
+                <span class="place-icon">&#x1F680;</span>
+                <h4>The Store</h4>
+                <div class="location">Hetzner Server - Germany</div>
+                <p>Where the live app runs. This is what YOU test, Anne!</p>
+            </div>
+        </div>
+
+        <div class="flow-diagram">
+            <p style="color: #64748b; font-size: 0.85em; margin-bottom: 16px;">Every change follows this path:</p>
+            <div class="flow-row">
+                <span class="flow-box flow-dev">Workshop</span>
+                <span class="flow-arrow">&#x2192;</span>
+                <span class="flow-box flow-git">git push</span>
+                <span class="flow-arrow">&#x2192;</span>
+                <span class="flow-box flow-git">GitHub</span>
+                <span class="flow-arrow">&#x2192;</span>
+                <span class="flow-box flow-git">git pull</span>
+                <span class="flow-arrow">&#x2192;</span>
+                <span class="flow-box flow-server">Live Server</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Journey of a Bug Fix -->
+    <section>
+        <h2><span class="num">2</span> Journey of a Bug Fix</h2>
+        <p class="section-subtitle">Following BUG-009 from your report to the fix on your screen</p>
+
+        <div class="pipeline">
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-kenya">&#x1F4F1;</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>You Report the Bug</h4>
+                    <p>Open QA Dashboard, click "Report Bug", describe what happened. Saved to the database on Hetzner.</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-laptop">&#x1F441;</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>Angel + Tigs Investigate</h4>
+                    <p>Read the code, find the root cause. In BUG-009: modal was opening and closing instantly due to a timing race condition.</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-laptop">&#x1F527;</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>Tigs Fixes the Code</h4>
+                    <p>Edit the file on Angel's laptop. At this point, ONLY the laptop has the fix. You can't see it yet.</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-github">&#x1F4E4;</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>Git Commit + Push</h4>
+                    <p>Take a snapshot of the change, give it a message and a unique ID (SHA), send it to GitHub. The warehouse now has the fix.</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-server">&#x1F3D7;</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>Deploy to Server</h4>
+                    <p>Connect to Hetzner, download the latest code (git pull), rebuild the application (docker). Takes about 30 seconds.</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-kenya">&#x2705;</div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>You See the Fix!</h4>
+                    <p>Refresh the page. The new code is running. Test it. If it works, mark the bug "Verified." You have the final word.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Key Concepts -->
+    <section>
+        <h2><span class="num">3</span> Key Concepts Explained</h2>
+        <p class="section-subtitle">The building blocks -- no jargon, just clarity</p>
+
+        <div class="info-card info-git">
+            <h4>&#x1F4DA; What is Git?</h4>
+            <p>A <strong>time machine for files</strong>. Every time someone makes a change, Git takes a snapshot called a <strong>commit</strong>. Each commit has a unique ID (the <strong>SHA</strong> -- like <code style="color:#f97316">1fe510a</code>), a message, who made it, and when. You can go back to ANY previous version. Nothing is ever lost. <strong>GitHub</strong> is just a website that stores these snapshots in the cloud.</p>
+        </div>
+
+        <div class="info-card info-docker">
+            <h4>&#x1F433; What is Docker?</h4>
+            <p>Code files are just text -- they can't DO anything by themselves. It's like having a recipe but no kitchen. <strong>Docker is the kitchen</strong>. It reads the code and builds a <strong>container</strong> -- a complete running application. When we rebuild, the old container is replaced with a new one in about 30 seconds.</p>
+        </div>
+
+        <div class="info-card info-db">
+            <h4>&#x1F5C4; What is the Database?</h4>
+            <p><strong>Code</strong> = the building (walls, doors, layout). <strong>Database</strong> = everything INSIDE the building (your bugs, test results, customers). When we rebuild the app, we rebuild the building. Your data stays exactly where it is. Sometimes we add "new shelves" -- that's called a <strong>migration</strong>.</p>
+        </div>
+    </section>
+
+    <!-- Section 4: Your Role -->
+    <section>
+        <div class="role-banner">
+            <h3>Your Role: The Quality Gate</h3>
+            <p>You are not "just testing." Nothing goes to production without passing through you.</p>
+            <p>When a developer says <strong>"fixed"</strong> and attaches a commit SHA -- that's their word.<br>
+            When you test it and mark it <strong>"verified"</strong> -- that's the final word.</p>
+            <p class="quote">"The developer says fixed. The tester says verified. The tester has the final word."</p>
+        </div>
+
+        <div class="pipeline" style="margin-top:24px">
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-kenya" style="font-size:14px; font-weight:700;">1</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>You file a bug</h4>
+                    <p>It gets a number (BUG-001) and goes into the system</p>
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-laptop" style="font-size:14px; font-weight:700;">2</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>Developer picks it up</h4>
+                    <p>Assigned to Angel or Tigs, status changes to "In Progress"</p>
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-github" style="font-size:14px; font-weight:700;">3</div>
+                    <div class="pipeline-connector"></div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>Fix deployed with commit SHA</h4>
+                    <p>Status: "Fixed", SHA attached (e.g. 1fe510a), reassigned to YOU</p>
+                </div>
+            </div>
+            <div class="pipeline-step">
+                <div class="pipeline-line">
+                    <div class="pipeline-dot dot-server" style="font-size:14px; font-weight:700;">4</div>
+                </div>
+                <div class="pipeline-content">
+                    <h4>YOU verify or reopen</h4>
+                    <p>Test it. Works? Mark "Verified." Still broken? Back to "Open" with a comment.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Cheat Sheet -->
+    <section>
+        <h2><span class="num">4</span> Cheat Sheet</h2>
+        <p class="section-subtitle">Quick reference for terms you'll see in the system</p>
+
+        <table class="cheat-table">
+            <thead>
+                <tr>
+                    <th>Term</th>
+                    <th>What It Means</th>
+                    <th>Analogy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="term">Repository</td><td>A folder of code tracked by Git</td><td>A recipe book</td></tr>
+                <tr><td class="term">Commit</td><td>A saved snapshot of changes</td><td>A dated entry in the book</td></tr>
+                <tr><td class="term">SHA</td><td>Unique ID of a commit (e.g. 1fe510a)</td><td>A receipt number</td></tr>
+                <tr><td class="term">Push</td><td>Send commits to GitHub</td><td>Mail recipes to warehouse</td></tr>
+                <tr><td class="term">Pull</td><td>Download commits from GitHub</td><td>Warehouse delivers to store</td></tr>
+                <tr><td class="term">Deploy</td><td>Make new code live on server</td><td>Stock new products in store</td></tr>
+                <tr><td class="term">Docker</td><td>Turns code into a running app</td><td>The kitchen that cooks recipes</td></tr>
+                <tr><td class="term">Container</td><td>A running instance of the app</td><td>The meal being served</td></tr>
+                <tr><td class="term">Database</td><td>Where your data lives</td><td>The filing cabinet</td></tr>
+                <tr><td class="term">Migration</td><td>Changing database structure</td><td>Adding drawers to the cabinet</td></tr>
+                <tr><td class="term">API</td><td>How frontend talks to backend</td><td>The waiter between you and kitchen</td></tr>
+                <tr><td class="term">Frontend</td><td>What you see (buttons, forms)</td><td>The restaurant dining room</td></tr>
+                <tr><td class="term">Backend</td><td>What runs on server (Python)</td><td>The kitchen</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section 6: FAQ -->
+    <section>
+        <h2><span class="num">5</span> Questions You Might Have</h2>
+        <p class="section-subtitle">The questions everyone asks but nobody asks</p>
+
+        <div class="faq-item">
+            <div class="q">Can I break anything by testing?</div>
+            <p class="a">No. Testing is reading and clicking. You cannot damage the system. We WANT you to try to break things -- that's how we find problems before real customers do.</p>
+        </div>
+        <div class="faq-item">
+            <div class="q">What if I find the same bug twice?</div>
+            <p class="a">Report it again. Maybe the first fix didn't work. That's valuable information -- it means the fix needs to be better.</p>
+        </div>
+        <div class="faq-item">
+            <div class="q">How do I know if a bug is really fixed?</div>
+            <p class="a">Check the QA Dashboard. If it says "Fixed" with a git SHA, the code change is deployed. Test it yourself. If it works, mark it "Verified." If it doesn't, change it back to "Open" and add a comment explaining what's still wrong.</p>
+        </div>
+        <div class="faq-item">
+            <div class="q">What does the git SHA mean?</div>
+            <p class="a">It's the unique ID of the exact code change that fixed the bug. Like a receipt number -- it proves WHAT was changed and WHEN. Example: <code style="color:#818cf8">1fe510a</code></p>
+        </div>
+        <div class="faq-item">
+            <div class="q">What if I don't understand something?</div>
+            <p class="a">Ask. There are no stupid questions in software engineering. The only stupid thing is staying confused and not asking.</p>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; February 21, 2026</p>
+    <p>For <strong>Anne</strong> -- the quality gate of HelixNet</p>
+    <p style="margin-top: 12px; color: #334155;">"The developer says fixed. The tester says verified. The tester has the final word."</p>
+</footer>
+
+</body>
+</html>
