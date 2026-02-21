@@ -1,8 +1,8 @@
-🌉️ I've been building SAP integrations for 21 years.
+🌉️ I've been building SAP integrations for over 20 years.
 
-PI/PO. XI. ABAP. EDI. RFC. IDoc. Fortune 501. Swiss banks. Cross-border logistics.
+PI/PO. XI. ABAP. EDI. RFC. IDoc. Fortune 500. Swiss banks. Cross-border logistics.
 
-I'm not here to trash SAP. It works. It solved real problems. I built my career on it.
+I'm not here to trash SAP. It works. It solves real problems. I built my career on it.
 
 But I'd be lying if I said the world hasn't changed.
 
@@ -18,13 +18,13 @@ SAP knows this. That's why they built BTP - Business Technology Platform. But mo
 
 Here's what I think comes next: HYBRID.
 
-Not rip and replace. Not another 19-month migration project. SAP alongside open source. Legacy alongside modern. Connected. Coexisting. Evolving.
+Not rip and replace. Not another expensive migration project. SAP alongside open source. Legacy alongside modern. Connected. Coexisting. Evolving.
 
 But hybrid needs a translator. Someone who can read an IDoc AND write a REST API. Someone who knows why your RFC calls work today AND why they won't scale tomorrow.
 
-That's what 21 years inside the SAP world plus 6 months building the alternative gives you.
+That's what years inside the SAP world plus 6 months building the alternative gives you.
 
-I recorded a 5-minute walkthrough showing exactly what I mean:
+I recorded a 5-minute walk-through showing exactly what I mean:
 
 SAP-BRIDGE >> https://youtu.be/cr-jt-uIpf4
 

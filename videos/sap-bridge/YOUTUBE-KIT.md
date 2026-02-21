@@ -36,8 +36,9 @@ TECH SHOWN
 - Hetzner Cloud -- EUR 7.59/month dedicated server
 
 LINKS
-LinkedIn: https://www.linkedin.com/in/angelokenel
-GitHub: https://github.com/helixnet
+https://www.linkedin.com/in/thesapspecialist/
+GitHub: https://github.com/akenel/helixnet
+Telegram: HelixNet 👌 https://t.me/+ZCXowrO3IYg0ODc0 
 
 If your company is running SAP but wondering what comes next, let's talk.
 
