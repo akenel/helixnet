@@ -9,7 +9,7 @@ from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -413,3 +413,12 @@ async def health_check(db: AsyncSession = Depends(get_db_session)):
 async def testing_dashboard(request: Request):
     """Render the QA testing dashboard."""
     return templates.TemplateResponse("testing/dashboard.html", {"request": request})
+
+
+@html_router.get("/training", response_class=HTMLResponse)
+async def training_guide():
+    """Serve the training guide -- How Code Gets To You."""
+    training_file = Path(__file__).parent.parent.parent / "docs" / "training" / "how-code-gets-to-you.html"
+    if not training_file.exists():
+        raise HTTPException(status_code=404, detail="Training guide not found")
+    return FileResponse(training_file, media_type="text/html")
