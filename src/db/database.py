@@ -34,6 +34,9 @@ from src.db.models import (  # noqa: F401
     CamperVehicleModel,
     CamperCustomerModel,
     CamperServiceJobModel,
+    # QA Testing Dashboard
+    QATestResultModel,
+    QABugReportModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

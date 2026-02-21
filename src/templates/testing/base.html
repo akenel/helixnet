@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}QA Testing{% endblock %} - HelixNet</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { font-family: 'Inter', sans-serif; }
+        body { padding-bottom: 32px; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    {% block content %}{% endblock %}
+
+    <script>
+        // Simple API helper (no auth needed for QA dashboard)
+        const API = {
+            async call(endpoint, options = {}) {
+                const defaultHeaders = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                };
+                const config = {
+                    ...options,
+                    headers: { ...defaultHeaders, ...options.headers }
+                };
+                const response = await fetch(endpoint, config);
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.detail || `Error ${response.status}`);
+                }
+                if (response.status === 204) return null;
+                return await response.json();
+            },
+            get(endpoint) { return this.call(endpoint, { method: 'GET' }); },
+            post(endpoint, data) { return this.call(endpoint, { method: 'POST', body: JSON.stringify(data) }); },
+            put(endpoint, data) { return this.call(endpoint, { method: 'PUT', body: JSON.stringify(data) }); },
+        };
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                warning: 'bg-amber-600',
+                info: 'bg-blue-600'
+            };
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-xl z-50 transform transition-all duration-300 text-sm font-medium max-w-sm`;
+            toast.textContent = message;
+            toast.style.transform = 'translateX(400px)';
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => { toast.style.transform = 'translateX(0)'; });
+            setTimeout(() => {
+                toast.style.transform = 'translateX(400px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

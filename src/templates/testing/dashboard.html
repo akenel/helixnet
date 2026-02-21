@@ -1,0 +1,494 @@
+{% extends "testing/base.html" %}
+
+{% block title %}QA Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="qaDashboard()" x-init="init()">
+
+    <!-- Top Nav -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xl font-bold text-gray-900">QA Testing</span>
+                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">HelixNet</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- Health indicators -->
+                    <div class="flex items-center space-x-2 text-xs">
+                        <span class="flex items-center">
+                            <span class="w-2 h-2 rounded-full mr-1" :class="health.api === 'ok' ? 'bg-green-500' : 'bg-red-500'"></span>
+                            API
+                        </span>
+                        <span class="flex items-center">
+                            <span class="w-2 h-2 rounded-full mr-1" :class="health.database === 'ok' ? 'bg-green-500' : 'bg-red-500'"></span>
+                            DB
+                        </span>
+                    </div>
+                    <button @click="showBugForm = true"
+                        class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
+                        Report Bug
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Total</p>
+                <p class="text-2xl font-bold text-gray-900" x-text="summary.total_tests">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Passed</p>
+                <p class="text-2xl font-bold text-green-600" x-text="summary.passed">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Failed</p>
+                <p class="text-2xl font-bold text-red-600" x-text="summary.failed">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Pending</p>
+                <p class="text-2xl font-bold text-gray-400" x-text="summary.pending">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Skipped</p>
+                <p class="text-2xl font-bold text-amber-500" x-text="summary.skipped">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center" :class="summary.open_bugs > 0 ? 'ring-2 ring-red-300' : ''">
+                <p class="text-xs text-gray-500 font-medium uppercase">Open Bugs</p>
+                <p class="text-2xl font-bold" :class="summary.open_bugs > 0 ? 'text-red-600' : 'text-gray-400'" x-text="summary.open_bugs">0</p>
+            </div>
+        </div>
+
+        <!-- Overall Progress Bar -->
+        <div class="bg-white rounded-xl shadow p-4 mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold text-gray-700">Overall Progress</span>
+                <span class="text-sm font-bold" :class="summary.percent_complete === 100 ? 'text-green-600' : 'text-indigo-600'" x-text="summary.percent_complete + '%'">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="h-3 rounded-full transition-all duration-500"
+                    :class="summary.percent_complete === 100 ? 'bg-green-500' : 'bg-indigo-500'"
+                    :style="'width: ' + summary.percent_complete + '%'">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tester Name -->
+        <div class="bg-white rounded-xl shadow p-4 mb-6">
+            <div class="flex items-center space-x-3">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Tester Name:</label>
+                <input type="text" x-model="testerName" placeholder="Anne"
+                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200">
+                <button @click="resetAllTests()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition whitespace-nowrap">
+                    Reset All
+                </button>
+            </div>
+        </div>
+
+        <!-- Phase Sections -->
+        <template x-for="phase in phases" :key="phase.phase">
+            <div class="bg-white rounded-xl shadow mb-4 overflow-hidden">
+                <!-- Phase Header (collapsible) -->
+                <button @click="togglePhase(phase.phase)"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-lg font-bold text-gray-700" x-text="'Phase ' + phase.phase"></span>
+                        <span class="text-sm font-medium text-gray-500" x-text="phase.phase_name"></span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <!-- Phase progress -->
+                        <div class="hidden sm:flex items-center space-x-2">
+                            <span class="text-xs text-green-600 font-medium" x-text="phase.passed + ' passed'"></span>
+                            <template x-if="phase.failed > 0">
+                                <span class="text-xs text-red-600 font-medium" x-text="phase.failed + ' failed'"></span>
+                            </template>
+                        </div>
+                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all duration-300"
+                                :class="phase.percent_complete === 100 ? 'bg-green-500' : (phase.failed > 0 ? 'bg-red-400' : 'bg-indigo-400')"
+                                :style="'width: ' + phase.percent_complete + '%'">
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-gray-500" x-text="phase.percent_complete + '%'"></span>
+                        <!-- Chevron -->
+                        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                            :class="openPhases.includes(phase.phase) ? 'rotate-180' : ''"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                </button>
+
+                <!-- Test Items -->
+                <div x-show="openPhases.includes(phase.phase)" x-transition class="border-t">
+                    <template x-for="test in getPhaseTests(phase.phase)" :key="test.id">
+                        <div class="border-b last:border-b-0 p-4 hover:bg-gray-50 transition">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <!-- Status dot -->
+                                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :class="{
+                                                'bg-gray-300': test.status === 'pending',
+                                                'bg-green-500': test.status === 'pass',
+                                                'bg-red-500': test.status === 'fail',
+                                                'bg-amber-400': test.status === 'skip',
+                                                'bg-purple-400': test.status === 'blocked'
+                                            }"></span>
+                                        <h4 class="text-sm font-semibold text-gray-800" x-text="test.title"></h4>
+                                    </div>
+                                    <p class="text-xs text-gray-500 ml-5" x-text="test.description"></p>
+                                    <!-- Notes (if any) -->
+                                    <template x-if="test.notes">
+                                        <p class="text-xs text-indigo-600 ml-5 mt-1 italic" x-text="'Note: ' + test.notes"></p>
+                                    </template>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center space-x-2 flex-shrink-0 ml-5 sm:ml-0">
+                                    <button @click="markTest(test.id, 'pass')"
+                                        class="px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+                                        :class="test.status === 'pass' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'">
+                                        PASS
+                                    </button>
+                                    <button @click="markTest(test.id, 'fail')"
+                                        class="px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+                                        :class="test.status === 'fail' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'">
+                                        FAIL
+                                    </button>
+                                    <button @click="markTest(test.id, 'skip')"
+                                        class="px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+                                        :class="test.status === 'skip' ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'">
+                                        SKIP
+                                    </button>
+                                    <!-- Notes toggle -->
+                                    <button @click="toggleNotes(test.id)"
+                                        class="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                                        title="Add notes">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Notes input (collapsible) -->
+                            <div x-show="notesOpen === test.id" x-transition class="mt-3 ml-5">
+                                <div class="flex space-x-2">
+                                    <input type="text" :id="'notes-' + test.id"
+                                        :value="test.notes || ''"
+                                        @keyup.enter="saveNotes(test.id, $event.target.value)"
+                                        placeholder="Type notes and press Enter..."
+                                        class="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200">
+                                    <button @click="saveNotes(test.id, document.getElementById('notes-' + test.id).value)"
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-2 rounded-lg transition">
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Bug Reports Section -->
+        <div class="bg-white rounded-xl shadow mt-8 overflow-hidden">
+            <button @click="showBugs = !showBugs"
+                class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                <div class="flex items-center space-x-3">
+                    <span class="text-lg font-bold text-red-700">Bug Reports</span>
+                    <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium" x-text="bugs.length + ' total'"></span>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                    :class="showBugs ? 'rotate-180' : ''"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <div x-show="showBugs" x-transition class="border-t">
+                <template x-if="bugs.length === 0">
+                    <p class="text-sm text-gray-500 text-center py-8">No bugs reported yet. Nice!</p>
+                </template>
+                <template x-for="bug in bugs" :key="bug.id">
+                    <div class="border-b last:border-b-0 p-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                                        :class="{
+                                            'bg-red-100 text-red-800': bug.severity === 'critical',
+                                            'bg-orange-100 text-orange-800': bug.severity === 'high',
+                                            'bg-yellow-100 text-yellow-800': bug.severity === 'medium',
+                                            'bg-blue-100 text-blue-800': bug.severity === 'low'
+                                        }" x-text="bug.severity.toUpperCase()"></span>
+                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full"
+                                        :class="{
+                                            'bg-red-50 text-red-700': bug.status === 'open',
+                                            'bg-amber-50 text-amber-700': bug.status === 'in_progress',
+                                            'bg-green-50 text-green-700': bug.status === 'fixed',
+                                            'bg-blue-50 text-blue-700': bug.status === 'verified',
+                                            'bg-gray-50 text-gray-600': bug.status === 'wont_fix'
+                                        }" x-text="bug.status.replace('_', ' ')"></span>
+                                </div>
+                                <h4 class="text-sm font-semibold text-gray-800" x-text="bug.title"></h4>
+                                <p class="text-xs text-gray-500 mt-1" x-text="bug.description"></p>
+                                <p class="text-xs text-gray-400 mt-1" x-text="'by ' + bug.reported_by + ' -- ' + new Date(bug.created_at).toLocaleDateString()"></p>
+                            </div>
+                            <div class="flex space-x-1 ml-3">
+                                <select @change="updateBugStatus(bug.id, $event.target.value); $event.target.value = bug.status"
+                                    class="text-xs border border-gray-300 rounded px-1 py-1">
+                                    <option value="" disabled selected>Status...</option>
+                                    <option value="open">Open</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="verified">Verified</option>
+                                    <option value="wont_fix">Won't Fix</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bug Report Modal -->
+    <div x-show="showBugForm" x-transition
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        @click.self="showBugForm = false">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Report a Bug</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Title *</label>
+                    <input type="text" x-model="bugForm.title" placeholder="Brief description of the bug"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Description *</label>
+                    <textarea x-model="bugForm.description" rows="3" placeholder="What happened? What did you expect?"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200"></textarea>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Severity</label>
+                    <select x-model="bugForm.severity"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Linked Test (optional)</label>
+                    <select x-model="bugForm.test_result_id"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                        <option value="">-- None --</option>
+                        <template x-for="test in allTests" :key="test.id">
+                            <option :value="test.id" x-text="'P' + test.phase + ': ' + test.title"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Browser Info</label>
+                    <input type="text" x-model="bugForm.browser_info" :placeholder="navigator.userAgent.substring(0, 60) + '...'"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+                <button @click="showBugForm = false"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition">
+                    Cancel
+                </button>
+                <button @click="submitBug()"
+                    class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+                    :disabled="!bugForm.title || !bugForm.description">
+                    Submit Bug
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function qaDashboard() {
+    return {
+        summary: { total_tests: 0, passed: 0, failed: 0, skipped: 0, blocked: 0, pending: 0, percent_complete: 0, total_bugs: 0, open_bugs: 0, critical_bugs: 0 },
+        phases: [],
+        allTests: [],
+        bugs: [],
+        health: { api: 'error', database: 'error' },
+        testerName: localStorage.getItem('qa_tester_name') || 'Anne',
+        openPhases: [1],
+        notesOpen: null,
+        showBugs: false,
+        showBugForm: false,
+        bugForm: { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '' },
+
+        async init() {
+            await this.loadAll();
+            // Health check every 30s
+            setInterval(() => this.checkHealth(), 30000);
+            // Watch tester name changes
+            this.$watch('testerName', (val) => localStorage.setItem('qa_tester_name', val));
+        },
+
+        async loadAll() {
+            try {
+                const [summary, phases, tests, bugs] = await Promise.all([
+                    API.get('/api/v1/testing/summary'),
+                    API.get('/api/v1/testing/phases'),
+                    API.get('/api/v1/testing/tests'),
+                    API.get('/api/v1/testing/bugs'),
+                ]);
+                this.summary = summary;
+                this.phases = phases;
+                this.allTests = tests;
+                this.bugs = bugs;
+                this.health = { api: 'ok', database: 'ok' };
+            } catch (e) {
+                console.error('Failed to load dashboard:', e);
+                showToast('Failed to load dashboard data', 'error');
+            }
+        },
+
+        async checkHealth() {
+            try {
+                this.health = await API.get('/api/v1/testing/health-check');
+            } catch (e) {
+                this.health = { api: 'error', database: 'error' };
+            }
+        },
+
+        getPhaseTests(phaseNum) {
+            return this.allTests.filter(t => t.phase === phaseNum);
+        },
+
+        togglePhase(phaseNum) {
+            const idx = this.openPhases.indexOf(phaseNum);
+            if (idx >= 0) {
+                this.openPhases.splice(idx, 1);
+            } else {
+                this.openPhases.push(phaseNum);
+            }
+        },
+
+        toggleNotes(testId) {
+            this.notesOpen = this.notesOpen === testId ? null : testId;
+        },
+
+        async markTest(testId, status) {
+            try {
+                const result = await API.put('/api/v1/testing/tests/' + testId, {
+                    status: status,
+                    tester_name: this.testerName || 'Anne',
+                });
+                // Update local state
+                const idx = this.allTests.findIndex(t => t.id === testId);
+                if (idx >= 0) this.allTests[idx] = result;
+                // Refresh summary + phases
+                const [summary, phases] = await Promise.all([
+                    API.get('/api/v1/testing/summary'),
+                    API.get('/api/v1/testing/phases'),
+                ]);
+                this.summary = summary;
+                this.phases = phases;
+
+                const labels = { pass: 'PASSED', fail: 'FAILED', skip: 'SKIPPED' };
+                showToast('Test marked as ' + (labels[status] || status), status === 'pass' ? 'success' : status === 'fail' ? 'error' : 'warning');
+            } catch (e) {
+                showToast('Failed to update test: ' + e.message, 'error');
+            }
+        },
+
+        async saveNotes(testId, notes) {
+            try {
+                const test = this.allTests.find(t => t.id === testId);
+                if (!test) return;
+                const result = await API.put('/api/v1/testing/tests/' + testId, {
+                    status: test.status === 'pending' ? 'pending' : test.status,
+                    tester_name: this.testerName || 'Anne',
+                    notes: notes,
+                });
+                const idx = this.allTests.findIndex(t => t.id === testId);
+                if (idx >= 0) this.allTests[idx] = result;
+                this.notesOpen = null;
+                showToast('Notes saved', 'success');
+            } catch (e) {
+                showToast('Failed to save notes: ' + e.message, 'error');
+            }
+        },
+
+        async resetAllTests() {
+            if (!confirm('Reset ALL tests to pending? This cannot be undone.')) return;
+            try {
+                await API.post('/api/v1/testing/tests/reset', {});
+                await this.loadAll();
+                showToast('All tests reset to pending', 'info');
+            } catch (e) {
+                showToast('Failed to reset tests: ' + e.message, 'error');
+            }
+        },
+
+        async submitBug() {
+            if (!this.bugForm.title || !this.bugForm.description) return;
+            try {
+                const payload = {
+                    title: this.bugForm.title,
+                    description: this.bugForm.description,
+                    severity: this.bugForm.severity,
+                    reported_by: this.testerName || 'Anne',
+                    browser_info: this.bugForm.browser_info || navigator.userAgent,
+                };
+                if (this.bugForm.test_result_id) {
+                    payload.test_result_id = this.bugForm.test_result_id;
+                }
+                await API.post('/api/v1/testing/bugs', payload);
+                this.showBugForm = false;
+                this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '' };
+                // Reload bugs + summary
+                const [bugs, summary] = await Promise.all([
+                    API.get('/api/v1/testing/bugs'),
+                    API.get('/api/v1/testing/summary'),
+                ]);
+                this.bugs = bugs;
+                this.summary = summary;
+                this.showBugs = true;
+                showToast('Bug report submitted', 'success');
+            } catch (e) {
+                showToast('Failed to submit bug: ' + e.message, 'error');
+            }
+        },
+
+        async updateBugStatus(bugId, newStatus) {
+            try {
+                const result = await API.put('/api/v1/testing/bugs/' + bugId, { status: newStatus });
+                const idx = this.bugs.findIndex(b => b.id === bugId);
+                if (idx >= 0) this.bugs[idx] = result;
+                const summary = await API.get('/api/v1/testing/summary');
+                this.summary = summary;
+                showToast('Bug status updated', 'success');
+            } catch (e) {
+                showToast('Failed to update bug: ' + e.message, 'error');
+            }
+        },
+    };
+}
+</script>
+{% endblock %}

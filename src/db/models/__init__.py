@@ -71,6 +71,9 @@ from .camper_supplier_model import CamperSupplierModel
 from .isotto_customer_model import IsottoCustomerModel
 from .isotto_order_model import IsottoOrderModel, ProductType, OrderStatus, ColorMode, DuplexMode, Lamination
 
+# QA Testing Dashboard (Anne's Testing Checklist)
+from .qa_test_result_model import QATestResultModel, TestStatus, QABugReportModel, BugSeverity, BugStatus
+
 __all__ = [
     "Base",
     "UserModel",
@@ -189,4 +192,10 @@ __all__ = [
     "ColorMode",
     "DuplexMode",
     "Lamination",
+    # QA Testing Dashboard
+    "QATestResultModel",
+    "TestStatus",
+    "QABugReportModel",
+    "BugSeverity",
+    "BugStatus",
 ]
