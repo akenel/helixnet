@@ -18,10 +18,11 @@ from src.db.database import get_db_session
 from src.db.models.qa_test_result_model import (
     QATestResultModel, TestStatus,
     QABugReportModel, BugSeverity, BugStatus,
+    QABugActivityModel, BugActivityType,
 )
 from src.schemas.qa_schema import (
     TestResultUpdate, TestResultRead,
-    BugReportCreate, BugReportUpdate, BugReportRead,
+    BugReportCreate, BugReportUpdate, BugReportRead, BugActivityRead,
     DashboardSummary, PhaseProgress,
 )
 
@@ -288,7 +289,7 @@ async def update_bug(
     update: BugReportUpdate,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Update a bug report status or details."""
+    """Update a bug report -- auto-creates activity log entries for tracked changes."""
     result = await db.execute(
         select(QABugReportModel).where(QABugReportModel.id == bug_id)
     )
@@ -296,21 +297,93 @@ async def update_bug(
     if not bug:
         raise HTTPException(status_code=404, detail="Bug report not found")
 
+    actor = update.actor or "Anne"
+    activities = []
+
+    # Track status change
+    if update.status is not None and update.status != bug.status:
+        activities.append(QABugActivityModel(
+            bug_id=bug.id,
+            activity_type=BugActivityType.STATUS_CHANGE,
+            actor=actor,
+            old_value=bug.status.value,
+            new_value=update.status.value,
+        ))
+        bug.status = update.status
+
+    # Track assignment change
+    if update.assigned_to is not None and update.assigned_to != (bug.assigned_to or ""):
+        new_assignee = update.assigned_to if update.assigned_to else None
+        activities.append(QABugActivityModel(
+            bug_id=bug.id,
+            activity_type=BugActivityType.ASSIGNED,
+            actor=actor,
+            old_value=bug.assigned_to,
+            new_value=new_assignee,
+        ))
+        bug.assigned_to = new_assignee
+
+    # Track git SHA link
+    if update.git_sha is not None and update.git_sha != (bug.git_sha or ""):
+        activities.append(QABugActivityModel(
+            bug_id=bug.id,
+            activity_type=BugActivityType.GIT_LINKED,
+            actor=actor,
+            new_value=update.git_sha if update.git_sha else None,
+        ))
+        bug.git_sha = update.git_sha if update.git_sha else None
+
+    # Comment
+    if update.comment:
+        activities.append(QABugActivityModel(
+            bug_id=bug.id,
+            activity_type=BugActivityType.COMMENT,
+            actor=actor,
+            comment=update.comment,
+        ))
+
+    # Apply remaining field updates (not tracked in activity log)
     if update.title is not None:
         bug.title = update.title
     if update.description is not None:
         bug.description = update.description
     if update.severity is not None:
         bug.severity = update.severity
-    if update.status is not None:
-        bug.status = update.status
     if update.screenshot_data is not None:
         bug.screenshot_data = update.screenshot_data
+
     bug.updated_at = datetime.now(timezone.utc)
+
+    for activity in activities:
+        db.add(activity)
 
     await db.commit()
     await db.refresh(bug)
+
+    if activities:
+        logger.info(f"BUG-{bug.bug_number:03d} updated by {actor}: {len(activities)} activity entries")
+
     return bug
+
+
+@router.get("/bugs/{bug_id}/activities", response_model=list[BugActivityRead])
+async def get_bug_activities(
+    bug_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Get the activity log for a bug report, newest first."""
+    bug_result = await db.execute(
+        select(QABugReportModel).where(QABugReportModel.id == bug_id)
+    )
+    if not bug_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Bug report not found")
+
+    result = await db.execute(
+        select(QABugActivityModel)
+        .where(QABugActivityModel.bug_id == bug_id)
+        .order_by(QABugActivityModel.created_at.desc())
+    )
+    return result.scalars().all()
 
 
 # ================================================================

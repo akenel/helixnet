@@ -247,7 +247,15 @@
                                     <img :src="bug.screenshot_data" @click="viewScreenshot(bug.screenshot_data)"
                                         class="mt-2 max-h-32 rounded-lg shadow cursor-pointer hover:opacity-80 transition" title="Click to enlarge">
                                 </template>
-                                <p class="text-xs text-gray-400 mt-1" x-text="'by ' + bug.reported_by + ' -- ' + new Date(bug.created_at).toLocaleDateString()"></p>
+                                <div class="flex flex-wrap items-center gap-2 mt-1">
+                                    <p class="text-xs text-gray-400" x-text="'by ' + bug.reported_by + ' -- ' + new Date(bug.created_at).toLocaleDateString()"></p>
+                                    <template x-if="bug.assigned_to">
+                                        <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded" x-text="'Assigned: ' + bug.assigned_to"></span>
+                                    </template>
+                                    <template x-if="bug.git_sha">
+                                        <span class="text-xs font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded" x-text="'Fix: ' + bug.git_sha.substring(0, 7)"></span>
+                                    </template>
+                                </div>
                             </div>
                             <div class="flex flex-col space-y-1 ml-3">
                                 <select @change="updateBugStatus(bug.id, $event.target.value); $event.target.value = bug.status"
@@ -259,9 +267,21 @@
                                     <option value="verified">Verified</option>
                                     <option value="wont_fix">Won't Fix</option>
                                 </select>
+                                <select @change="assignBug(bug.id, $event.target.value)"
+                                    class="text-xs border border-gray-300 rounded px-1 py-1">
+                                    <option value="" x-text="bug.assigned_to ? bug.assigned_to : 'Assign...'"></option>
+                                    <option value="Angel">Angel</option>
+                                    <option value="Tigs">Tigs</option>
+                                    <option value="Anne">Anne</option>
+                                    <option value="">Unassign</option>
+                                </select>
                                 <button @click="editBug(bug)"
                                     class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium px-2 py-1 rounded transition">
                                     Edit
+                                </button>
+                                <button @click="showActivities(bug)"
+                                    class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium px-2 py-1 rounded transition">
+                                    History
                                 </button>
                             </div>
                         </div>
@@ -345,6 +365,26 @@
                 </div>
 
                 <div>
+                    <label class="text-sm font-medium text-gray-700">Assigned To</label>
+                    <input type="text" x-model="bugForm.assigned_to" placeholder="Name (e.g. Angel, Tigs, Anne)"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                </div>
+
+                <template x-if="editingBugId">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Fix Commit (git SHA)</label>
+                        <input type="text" x-model="bugForm.git_sha" placeholder="e.g. 1fe510a" maxlength="40"
+                            class="w-full mt-1 px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                    </div>
+                </template>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Comment (optional)</label>
+                    <input type="text" x-model="bugForm.comment" placeholder="Add a note to the activity log"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                </div>
+
+                <div>
                     <label class="text-sm font-medium text-gray-700">Browser Info</label>
                     <input type="text" x-model="bugForm.browser_info" :placeholder="navigator.userAgent.substring(0, 60) + '...'"
                         class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
@@ -366,6 +406,47 @@
         </div>
     </div>
 
+    <!-- Bug Activity Timeline Modal -->
+    <div x-show="showActivityModal" x-transition
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        @click.self="showActivityModal = false">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="'Activity: BUG-' + String(activeBug?.bug_number || 0).padStart(3, '0')"></h3>
+
+            <template x-if="activityLog.length === 0">
+                <p class="text-sm text-gray-500 text-center py-4">No activity recorded yet.</p>
+            </template>
+
+            <div class="space-y-3">
+                <template x-for="activity in activityLog" :key="activity.id">
+                    <div class="border-l-2 pl-3 py-1"
+                        :class="{
+                            'border-blue-400': activity.activity_type === 'status_change',
+                            'border-green-400': activity.activity_type === 'assigned',
+                            'border-purple-400': activity.activity_type === 'git_linked',
+                            'border-gray-300': activity.activity_type === 'comment'
+                        }">
+                        <div class="flex justify-between items-start">
+                            <span class="text-sm font-medium text-gray-800" x-text="formatActivity(activity)"></span>
+                            <span class="text-xs text-gray-400 whitespace-nowrap ml-2" x-text="new Date(activity.created_at).toLocaleString()"></span>
+                        </div>
+                        <span class="text-xs text-gray-500" x-text="'by ' + activity.actor"></span>
+                        <template x-if="activity.comment">
+                            <p class="text-xs text-gray-600 mt-1 italic" x-text="activity.comment"></p>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button @click="showActivityModal = false"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -382,7 +463,10 @@ function qaDashboard() {
         showBugs: false,
         showBugForm: false,
         editingBugId: null,
-        bugForm: { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '' },
+        bugForm: { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' },
+        showActivityModal: false,
+        activeBug: null,
+        activityLog: [],
 
         async init() {
             await this.loadAll();
@@ -498,13 +582,16 @@ function qaDashboard() {
                 test_result_id: bug.test_result_id || '',
                 browser_info: bug.browser_info || '',
                 screenshot_data: bug.screenshot_data || '',
+                assigned_to: bug.assigned_to || '',
+                git_sha: bug.git_sha || '',
+                comment: '',
             };
             this.showBugForm = true;
         },
 
         openNewBugForm() {
             this.editingBugId = null;
-            this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '' };
+            this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
             this.showBugForm = true;
         },
 
@@ -518,6 +605,10 @@ function qaDashboard() {
                         description: this.bugForm.description,
                         severity: this.bugForm.severity,
                         screenshot_data: this.bugForm.screenshot_data || null,
+                        assigned_to: this.bugForm.assigned_to || null,
+                        git_sha: this.bugForm.git_sha || null,
+                        comment: this.bugForm.comment || null,
+                        actor: this.testerName || 'Anne',
                     };
                     await API.put('/api/v1/testing/bugs/' + this.editingBugId, payload);
                     showToast('Bug updated', 'success');
@@ -541,7 +632,7 @@ function qaDashboard() {
                 }
                 this.showBugForm = false;
                 this.editingBugId = null;
-                this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '' };
+                this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
                 // Reload bugs + summary
                 const [bugs, summary] = await Promise.all([
                     API.get('/api/v1/testing/bugs'),
@@ -557,7 +648,7 @@ function qaDashboard() {
 
         async updateBugStatus(bugId, newStatus) {
             try {
-                const result = await API.put('/api/v1/testing/bugs/' + bugId, { status: newStatus });
+                const result = await API.put('/api/v1/testing/bugs/' + bugId, { status: newStatus, actor: this.testerName || 'Anne' });
                 const idx = this.bugs.findIndex(b => b.id === bugId);
                 if (idx >= 0) this.bugs[idx] = result;
                 const summary = await API.get('/api/v1/testing/summary');
@@ -565,6 +656,46 @@ function qaDashboard() {
                 showToast('Bug status updated', 'success');
             } catch (e) {
                 showToast('Failed to update bug: ' + e.message, 'error');
+            }
+        },
+
+        async assignBug(bugId, assignee) {
+            try {
+                const result = await API.put('/api/v1/testing/bugs/' + bugId, {
+                    assigned_to: assignee,
+                    actor: this.testerName || 'Anne',
+                });
+                const idx = this.bugs.findIndex(b => b.id === bugId);
+                if (idx >= 0) this.bugs[idx] = result;
+                showToast(assignee ? 'Assigned to ' + assignee : 'Unassigned', 'success');
+            } catch (e) {
+                showToast('Failed to assign bug: ' + e.message, 'error');
+            }
+        },
+
+        async showActivities(bug) {
+            this.activeBug = bug;
+            this.activityLog = [];
+            this.showActivityModal = true;
+            try {
+                this.activityLog = await API.get('/api/v1/testing/bugs/' + bug.id + '/activities');
+            } catch (e) {
+                showToast('Failed to load activity log: ' + e.message, 'error');
+            }
+        },
+
+        formatActivity(activity) {
+            switch (activity.activity_type) {
+                case 'status_change':
+                    return (activity.old_value || 'none').replaceAll('_', ' ') + ' -> ' + (activity.new_value || 'none').replaceAll('_', ' ');
+                case 'assigned':
+                    return activity.new_value ? 'Assigned to ' + activity.new_value : 'Unassigned';
+                case 'git_linked':
+                    return 'Linked to commit ' + (activity.new_value || '').substring(0, 7);
+                case 'comment':
+                    return 'Comment';
+                default:
+                    return activity.activity_type;
             }
         },
 

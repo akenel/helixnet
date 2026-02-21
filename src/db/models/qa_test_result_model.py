@@ -40,6 +40,14 @@ class BugStatus(str, enum.Enum):
     WONT_FIX = "wont_fix"
 
 
+class BugActivityType(str, enum.Enum):
+    """What kind of activity happened on a bug."""
+    STATUS_CHANGE = "status_change"
+    ASSIGNED = "assigned"
+    COMMENT = "comment"
+    GIT_LINKED = "git_linked"
+
+
 # ================================================================
 # QA Test Result Model
 # ================================================================
@@ -184,6 +192,16 @@ class QABugReportModel(Base):
         default="Anne",
         comment="Who reported this bug",
     )
+    assigned_to: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        comment="Who currently owns this bug",
+    )
+    git_sha: Mapped[str | None] = mapped_column(
+        String(40),
+        nullable=True,
+        comment="Commit SHA that fixed this bug",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -200,4 +218,65 @@ class QABugReportModel(Base):
     test_result: Mapped["QATestResultModel | None"] = relationship(
         back_populates="bug_reports",
         foreign_keys=[test_result_id],
+    )
+    activities: Mapped[list["QABugActivityModel"]] = relationship(
+        back_populates="bug",
+        cascade="all, delete-orphan",
+        order_by="QABugActivityModel.created_at",
+    )
+
+
+# ================================================================
+# QA Bug Activity Log (append-only)
+# ================================================================
+class QABugActivityModel(Base):
+    """Every status change, assignment, comment -- timestamped, attributed."""
+    __tablename__ = "qa_bug_activities"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        index=True,
+        default=uuid.uuid4,
+    )
+    bug_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("qa_bug_reports.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    activity_type: Mapped[BugActivityType] = mapped_column(
+        SQLEnum(BugActivityType, name="qa_bug_activity_type", create_constraint=True),
+        nullable=False,
+    )
+    actor: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        comment="Who performed this action",
+    )
+    old_value: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="Previous value (old status, old assignee)",
+    )
+    new_value: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="New value (new status, new assignee)",
+    )
+    comment: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Comment text or additional context",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    # Relationship
+    bug: Mapped["QABugReportModel"] = relationship(
+        back_populates="activities",
+        foreign_keys=[bug_id],
     )

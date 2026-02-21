@@ -57,7 +57,11 @@ class BugReportUpdate(BaseModel):
     description: Optional[str] = None
     severity: Optional[BugSeverity] = None
     status: Optional[BugStatus] = None
+    assigned_to: Optional[str] = Field(None, max_length=100, description="Assign to someone (empty string to unassign)")
+    git_sha: Optional[str] = Field(None, max_length=40, description="Git commit SHA that fixes this bug")
     screenshot_data: Optional[str] = Field(None, description="Screenshot as base64 data URL")
+    comment: Optional[str] = Field(None, description="Activity comment (logged in activity trail)")
+    actor: str = Field(default="Anne", max_length=100, description="Who is making this update")
 
 
 class BugReportRead(BaseModel):
@@ -70,12 +74,28 @@ class BugReportRead(BaseModel):
     description: str
     severity: BugSeverity
     status: BugStatus
+    assigned_to: Optional[str] = None
+    git_sha: Optional[str] = None
     test_result_id: Optional[UUID] = None
     screenshot_data: Optional[str] = None
     browser_info: Optional[str] = None
     reported_by: str
     created_at: datetime
     updated_at: datetime
+
+
+class BugActivityRead(BaseModel):
+    """Activity log entry for display."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    bug_id: UUID
+    activity_type: str
+    actor: str
+    old_value: Optional[str] = None
+    new_value: Optional[str] = None
+    comment: Optional[str] = None
+    created_at: datetime
 
 
 # ================================================================
