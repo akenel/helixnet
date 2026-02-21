@@ -118,16 +118,38 @@
     <!-- Global JavaScript utilities -->
     <script>
         // ===== i18n: Language Detection =====
+        // Priority: 1) ?lang=xx URL param  2) localStorage  3) Keycloak locale  4) default 'it'
         (function() {
             const params = new URLSearchParams(window.location.search);
             const urlLang = params.get('lang');
             if (urlLang && CAMPER_STRINGS[urlLang]) {
                 localStorage.setItem('camper_lang', urlLang);
             }
-            const lang = localStorage.getItem('camper_lang') || 'it';
+            let lang = localStorage.getItem('camper_lang');
+            // If no explicit choice, try Keycloak user locale
+            if (!lang) {
+                try {
+                    const token = sessionStorage.getItem('camper_token');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                        if (payload.locale && CAMPER_STRINGS[payload.locale]) {
+                            lang = payload.locale;
+                        }
+                    }
+                } catch (e) { /* ignore parse errors */ }
+            }
+            lang = lang || 'it';
             window._camperLang = CAMPER_STRINGS[lang] ? lang : 'it';
             document.documentElement.lang = window._camperLang === 'it' ? 'it' : 'en';
         })();
+
+        // Switch language and reload
+        function switchLanguage(newLang) {
+            if (CAMPER_STRINGS[newLang]) {
+                localStorage.setItem('camper_lang', newLang);
+                window.location.reload();
+            }
+        }
 
         // Translation helper: t('nav.dashboard') => translated string
         function t(key, replacements) {
@@ -305,6 +327,7 @@
                     firstName: payload.given_name || '',
                     lastName: payload.family_name || '',
                     email: payload.email || '',
+                    locale: payload.locale || '',
                     roles: roles
                 };
             },
@@ -453,6 +476,12 @@
         <div class="status-section">
             <span id="status-screen">{% block page_name %}Camper & Tour{% endblock %}</span>
             <span class="divider">|</span>
+            <select id="lang-switch" onchange="switchLanguage(this.value)"
+                style="background:#78350f;color:#fbbf24;border:1px solid #b45309;border-radius:3px;font-size:12px;padding:1px 4px;cursor:pointer;font-family:inherit;">
+                <option value="it" style="background:#78350f;">IT</option>
+                <option value="en" style="background:#78350f;">EN</option>
+            </select>
+            <span class="divider">|</span>
             <span id="status-user">--</span>
         </div>
     </footer>
@@ -504,6 +533,10 @@
                     document.getElementById('status-text').textContent = t('system.offline');
                 }
             }
+            // Set language dropdown to current language
+            const langSwitch = document.getElementById('lang-switch');
+            if (langSwitch) langSwitch.value = window._camperLang || 'it';
+
             updateStatusBar();
             checkHealth();
             setInterval(updateStatusBar, 1000);
