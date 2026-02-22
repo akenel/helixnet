@@ -10,14 +10,14 @@ BLQ: Track everything, question nothing. The numbers don't lie.
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
-from enum import Enum
+from src.core.constants import HelixEnum
 from sqlalchemy import String, DateTime, Integer, Text, Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from .base import Base
 
 
-class CreditTransactionType(str, Enum):
+class CreditTransactionType(HelixEnum):
     """How were credits earned or spent?"""
     # Earning
     PURCHASE = "purchase"              # 1 credit per CHF spent

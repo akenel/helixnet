@@ -14,12 +14,12 @@ from decimal import Decimal
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Numeric, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class JobType(str, enum.Enum):
+class JobType(HelixEnum):
     """What kind of service job"""
     REPAIR = "repair"
     MAINTENANCE = "maintenance"
@@ -33,7 +33,7 @@ class JobType(str, enum.Enum):
     OTHER = "other"
 
 
-class JobStatus(str, enum.Enum):
+class JobStatus(HelixEnum):
     """Job lifecycle: QUOTED -> APPROVED -> IN_PROGRESS -> INSPECTION -> COMPLETED -> INVOICED"""
     QUOTED = "quoted"
     APPROVED = "approved"

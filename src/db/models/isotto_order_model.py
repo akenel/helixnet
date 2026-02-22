@@ -14,12 +14,12 @@ from decimal import Decimal
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Numeric, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class ProductType(str, enum.Enum):
+class ProductType(HelixEnum):
     """What kind of print product"""
     POSTCARD = "postcard"
     BUSINESS_CARD = "business_card"
@@ -34,7 +34,7 @@ class ProductType(str, enum.Enum):
     CUSTOM = "custom"
 
 
-class OrderStatus(str, enum.Enum):
+class OrderStatus(HelixEnum):
     """Order lifecycle: QUOTED -> APPROVED -> IN_PRODUCTION -> QUALITY_CHECK -> READY -> PICKED_UP -> INVOICED"""
     QUOTED = "quoted"
     APPROVED = "approved"
@@ -46,20 +46,20 @@ class OrderStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
-class ColorMode(str, enum.Enum):
+class ColorMode(HelixEnum):
     """Print color mode"""
     CMYK = "cmyk"
     BW = "bw"
     SPOT = "spot"
 
 
-class DuplexMode(str, enum.Enum):
+class DuplexMode(HelixEnum):
     """Duplex flip mode"""
     LONG_EDGE = "long_edge"
     SHORT_EDGE = "short_edge"
 
 
-class Lamination(str, enum.Enum):
+class Lamination(HelixEnum):
     """Lamination type"""
     NONE = "none"
     MATTE = "matte"

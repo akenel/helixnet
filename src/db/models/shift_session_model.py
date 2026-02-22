@@ -15,14 +15,14 @@ Tracks:
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
-from enum import Enum
+from src.core.constants import HelixEnum
 from sqlalchemy import String, DateTime, Boolean, Text, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 
 
-class SessionStatus(str, Enum):
+class SessionStatus(HelixEnum):
     """POS session states"""
     ACTIVE = "active"          # Currently logged in
     ENDED = "ended"            # Normal logout

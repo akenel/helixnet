@@ -7,14 +7,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS
 # ================================================================
 
-class DiscountTypeEnum(str, Enum):
+class DiscountTypeEnum(HelixEnum):
     COMP_OWNER = "comp_owner"
     COMP_VIP = "comp_vip"
     COMP_STAFF = "comp_staff"
@@ -38,7 +38,7 @@ class DiscountTypeEnum(str, Enum):
     ROUND_DOWN = "round_down"
 
 
-class TaxCategoryEnum(str, Enum):
+class TaxCategoryEnum(HelixEnum):
     PROMOTIONAL_EXPENSE = "promo_expense"
     COST_OF_GOODS = "cogs"
     STAFF_BENEFIT = "staff_benefit"
@@ -47,7 +47,7 @@ class TaxCategoryEnum(str, Enum):
     NOT_DEDUCTIBLE = "not_deductible"
 
 
-class PromoStatusEnum(str, Enum):
+class PromoStatusEnum(HelixEnum):
     ACTIVE = "active"
     USED = "used"
     EXPIRED = "expired"

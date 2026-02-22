@@ -2,18 +2,18 @@ import uuid
 from typing import Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-import enum  # 💡 Added the standard 'enum' import
+from src.core.constants import HelixEnum
 
 
 # --- Enums for Schema Consistency ---
 # We define a Pydantic-compatible version of the JobStatus enum
-class JobStatusEnum(str, enum.Enum):  # ✅ FIX: Inherit from both str AND enum.Enum
-    PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
-    CANCELLED = "CANCELLED"
-    RETRYING = "RETRYING"
+class JobStatusEnum(HelixEnum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    SUCCESS = "success"
+    FAILURE = "failure"
+    CANCELLED = "cancelled"
+    RETRYING = "retrying"
 
 
 # =========================================================================

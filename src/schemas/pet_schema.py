@@ -7,10 +7,10 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
-class PetSpeciesEnum(str, Enum):
+class PetSpeciesEnum(HelixEnum):
     """Pet species"""
     DOG = "dog"
     CAT = "cat"
@@ -23,7 +23,7 @@ class PetSpeciesEnum(str, Enum):
     OTHER = "other"
 
 
-class PetSizeEnum(str, Enum):
+class PetSizeEnum(HelixEnum):
     """Pet size for pricing"""
     TINY = "tiny"
     SMALL = "small"
@@ -32,7 +32,7 @@ class PetSizeEnum(str, Enum):
     GIANT = "giant"
 
 
-class WashServiceTypeEnum(str, Enum):
+class WashServiceTypeEnum(HelixEnum):
     """Wash service types"""
     BASIC_WASH = "basic_wash"
     FULL_GROOM = "full_groom"
@@ -42,7 +42,7 @@ class WashServiceTypeEnum(str, Enum):
     DELUXE_SPA = "deluxe_spa"
 
 
-class AppointmentStatusEnum(str, Enum):
+class AppointmentStatusEnum(HelixEnum):
     """Appointment status"""
     SCHEDULED = "scheduled"
     CHECKED_IN = "checked_in"
@@ -211,7 +211,7 @@ class ServicePriceResponse(BaseModel):
 # ZONES & CAMERA ENUMS
 # ================================================================
 
-class WashZoneEnum(str, Enum):
+class WashZoneEnum(HelixEnum):
     """Wash station zones"""
     FRONT_CATS = "front_cats"
     FRONT_SMALL_DOGS = "front_small"
@@ -220,7 +220,7 @@ class WashZoneEnum(str, Enum):
     BACK_HUSKY = "back_husky"
 
 
-class CameraStatusEnum(str, Enum):
+class CameraStatusEnum(HelixEnum):
     """Camera status"""
     OFFLINE = "offline"
     RECORDING = "recording"
@@ -228,7 +228,7 @@ class CameraStatusEnum(str, Enum):
     PROCESSING = "processing"
 
 
-class MediaStatusEnum(str, Enum):
+class MediaStatusEnum(HelixEnum):
     """Media processing status"""
     RECORDING = "recording"
     PROCESSING = "processing"
@@ -400,7 +400,7 @@ class MediaSessionWithPet(MediaSessionRead):
 # MEDIA PURCHASE SCHEMAS - When They Buy the Polaroid
 # ================================================================
 
-class MediaPackageEnum(str, Enum):
+class MediaPackageEnum(HelixEnum):
     """Available media packages"""
     PHOTO_PACK = "photo_pack"           # CHF 15 - Before + After + Action
     VIDEO_CLIP = "video_clip"           # CHF 25 - 2-min highlight

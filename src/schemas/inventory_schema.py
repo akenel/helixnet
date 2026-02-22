@@ -8,14 +8,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS
 # ================================================================
 
-class StockStatusEnum(str, Enum):
+class StockStatusEnum(HelixEnum):
     OK = "ok"
     LOW = "low"
     CRITICAL = "critical"
@@ -23,7 +23,7 @@ class StockStatusEnum(str, Enum):
     OVERSTOCKED = "overstocked"
 
 
-class MovementTypeEnum(str, Enum):
+class MovementTypeEnum(HelixEnum):
     IN_PURCHASE = "in_purchase"
     IN_RETURN = "in_return"
     IN_ADJUSTMENT = "in_adjustment"
@@ -34,7 +34,7 @@ class MovementTypeEnum(str, Enum):
     TRANSFER = "transfer"
 
 
-class ReorderStatusEnum(str, Enum):
+class ReorderStatusEnum(HelixEnum):
     SUGGESTED = "suggested"
     APPROVED = "approved"
     ORDERED = "ordered"
@@ -43,7 +43,7 @@ class ReorderStatusEnum(str, Enum):
     CANCELLED = "cancelled"
 
 
-class SupplierTypeEnum(str, Enum):
+class SupplierTypeEnum(HelixEnum):
     COFFEE = "coffee"
     CBD = "cbd"
     FOOD = "food"
@@ -52,7 +52,7 @@ class SupplierTypeEnum(str, Enum):
     GENERAL = "general"
 
 
-class UnitTypeEnum(str, Enum):
+class UnitTypeEnum(HelixEnum):
     PIECE = "piece"
     BOX = "box"
     PACK = "pack"
@@ -361,7 +361,7 @@ class CapsuleOrder(BaseModel):
 # No more 30-minute email searches. No more midnight.
 # ================================================================
 
-class DeliveryLineStatusEnum(str, Enum):
+class DeliveryLineStatusEnum(HelixEnum):
     """Status of each line item in delivery"""
     PENDING = "pending"        # Not yet checked
     OK = "ok"                  # Received as ordered
@@ -372,7 +372,7 @@ class DeliveryLineStatusEnum(str, Enum):
     MISSING = "missing"        # Item not in delivery at all
 
 
-class DeliveryStatusEnum(str, Enum):
+class DeliveryStatusEnum(HelixEnum):
     """Overall delivery status"""
     EXPECTED = "expected"      # Order placed, waiting
     ARRIVED = "arrived"        # Box is here, not checked

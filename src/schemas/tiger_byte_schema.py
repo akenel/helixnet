@@ -36,7 +36,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 from decimal import Decimal
 
 
@@ -44,7 +44,7 @@ from decimal import Decimal
 # ENUMS
 # ================================================================
 
-class PackSizeEnum(str, Enum):
+class PackSizeEnum(HelixEnum):
     """How hungry?"""
     BYTE = "byte"                # 5 CHF — the quick bite
     KILOBYTE = "kilobyte"        # 8 CHF — regular lunch
@@ -52,7 +52,7 @@ class PackSizeEnum(str, Enum):
     GIGABYTE = "gigabyte"        # 18 CHF — feed the crew
 
 
-class UtensilTypeEnum(str, Enum):
+class UtensilTypeEnum(HelixEnum):
     """Hemp tools — eat them after"""
     HEMP_SPORK = "hemp_spork"           # Fork + spoon, pressed hemp
     HEMP_CHOPSTICKS = "hemp_chopsticks"  # Chinese department
@@ -61,7 +61,7 @@ class UtensilTypeEnum(str, Enum):
     EDIBLE_SPOON = "edible_spoon"       # Bread spoon
 
 
-class WrapTypeEnum(str, Enum):
+class WrapTypeEnum(HelixEnum):
     """The carrier — no plastic"""
     HEMP_WRAP = "hemp_wrap"       # Eat the wrapper
     BREAD_BOWL = "bread_bowl"     # The container IS the food
@@ -70,7 +70,7 @@ class WrapTypeEnum(str, Enum):
     PAPER_CONE = "paper_cone"     # Compostable
 
 
-class CoffeeTypeEnum(str, Enum):
+class CoffeeTypeEnum(HelixEnum):
     """Just add water"""
     ARABICA = "arabica"           # Smooth
     PERUVIAN = "peruvian"         # Bold
@@ -78,7 +78,7 @@ class CoffeeTypeEnum(str, Enum):
     PINK_PUNCH = "pink_punch"     # Not coffee but YES
 
 
-class MemberBandEnum(str, Enum):
+class MemberBandEnum(HelixEnum):
     """The loyalty tiers"""
     GUEST = "guest"               # One time, full price
     REGULAR = "regular"           # 10% off

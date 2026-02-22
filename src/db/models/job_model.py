@@ -5,13 +5,13 @@ from datetime import datetime
 # Ensure we are using mapped_column and Mapped for all definitions
 from sqlalchemy import String, DateTime, Text, Enum, ForeignKey, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column 
-import enum
+from src.core.constants import HelixEnum
 
 from src.db.models.artifact_model import ArtifactModel
 from src.db.models.task_model import TaskModel
 
 from .base import Base
-class JobStatus(enum.Enum):
+class JobStatus(HelixEnum):
     """Defines the possible states of a Job."""
     PENDING = "pending"
     RUNNING = "running"

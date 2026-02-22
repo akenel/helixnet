@@ -12,7 +12,7 @@ Ready to GO when it's GO TIME.
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 import uuid
 from datetime import datetime, timezone, date
-from enum import Enum
+from src.core.constants import HelixEnum
 from sqlalchemy import String, DateTime, Integer, Boolean, Text, Date, Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
@@ -22,7 +22,7 @@ from .base import Base
 # ================================================================
 # ENUMS — The Categories
 # ================================================================
-class EpisodeStatus(str, Enum):
+class EpisodeStatus(HelixEnum):
     """Pipeline status — from spark to legend"""
     IDEA = "idea"
     OUTLINED = "outlined"
@@ -36,7 +36,7 @@ class EpisodeStatus(str, Enum):
     LEGENDARY = "legendary"
 
 
-class EpisodeCategory(str, Enum):
+class EpisodeCategory(HelixEnum):
     """Which series does this belong to?"""
     HELLS_SAP_KITCHEN = "hells_sap_kitchen"
     TIGER_TALES = "tiger_tales"
@@ -49,7 +49,7 @@ class EpisodeCategory(str, Enum):
     FOUNDERS_CORNER = "founders_corner"
 
 
-class Platform(str, Enum):
+class Platform(HelixEnum):
     """Where does content go? BitChute FIRST."""
     BITCHUTE = "bitchute"
     RUMBLE = "rumble"

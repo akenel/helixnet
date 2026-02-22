@@ -7,10 +7,10 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
-class BookFormatEnum(str, Enum):
+class BookFormatEnum(HelixEnum):
     """Book format types"""
     HARDCOVER = "hardcover"
     PAPERBACK = "paperback"
@@ -18,7 +18,7 @@ class BookFormatEnum(str, Enum):
     AUDIOBOOK = "audiobook"
 
 
-class BookGenreEnum(str, Enum):
+class BookGenreEnum(HelixEnum):
     """Book genres"""
     RELIGIOUS = "religious"
     SPIRITUAL = "spiritual"

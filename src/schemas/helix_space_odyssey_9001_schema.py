@@ -12,18 +12,18 @@ WTFD = What The Fuck Diff
 
 from dataclasses import dataclass, field
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 from datetime import datetime
 
 
-class HoleType(Enum):
+class HoleType(HelixEnum):
     """The three holes of interdimensional travel"""
     RABBIT = "rabbit"      # Bugs digs wrong turn → Albuquerque → Moon
     WORM = "worm"          # Dune/space jump → Helix → 9001
     WTFD = "wtfd"          # Git diff → Reality A → Reality B
 
 
-class CraftStyle(Enum):
+class CraftStyle(HelixEnum):
     """Looney Tunes aesthetic — NOT serious sci-fi"""
     ACME_ROCKET = "acme_rocket"           # Wile E. Coyote engineering
     MARVIN_SAUCER = "marvin_saucer"       # Martian vibes
@@ -32,7 +32,7 @@ class CraftStyle(Enum):
     FLYING_TIGER = "flying_tiger"         # Above the clouds
 
 
-class LandingStatus(Enum):
+class LandingStatus(HelixEnum):
     """Above or below — same diff"""
     SAFE = "safe"          # diff = 0, commit success
     SPLAT = "splat"        # ACME failure
@@ -110,7 +110,7 @@ SMAGOR_BORG = Character(
 # Heaven: Chefs=French, Engineers=German (outsourced now), Organized=Swiss
 # Helix:  Chefs=MOLLY,  Engineers=FELIX+BORRIS,          Organized=CLAUDE
 
-class Driver(Enum):
+class Driver(HelixEnum):
     """The drivers of the TIG Cruiser — universe jumper, time bender"""
     GUMBY = "gumby"              # Bendy, flexible, adapts to anything
     POKEY = "pokey"              # The ride, the express, the horse

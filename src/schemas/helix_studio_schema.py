@@ -14,16 +14,16 @@ The Cast: Every CRACK in the system is a potential star.
 The Stories: Every KB is a potential episode.
 The Philosophy: Be water, my friend.
 """
-from enum import Enum
 from typing import Optional
 from datetime import date
 from pydantic import BaseModel, Field
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # EPISODE STATUS — The Pipeline
 # ================================================================
-class EpisodeStatus(str, Enum):
+class EpisodeStatus(HelixEnum):
     """Where is this episode in the pipeline?"""
     IDEA = "idea"                    # Spark in someone's head
     OUTLINED = "outlined"            # Basic structure exists
@@ -37,7 +37,7 @@ class EpisodeStatus(str, Enum):
     LEGENDARY = "legendary"          # Hall of fame status
 
 
-class EpisodeCategory(str, Enum):
+class EpisodeCategory(HelixEnum):
     """What kind of episode is this?"""
     HELLS_SAP_KITCHEN = "hells_sap_kitchen"      # The GIMP series
     TIGER_TALES = "tiger_tales"                  # Thommy, workers, real life
@@ -50,7 +50,7 @@ class EpisodeCategory(str, Enum):
     FOUNDERS_CORNER = "founders_corner"          # SAL, FELIX, BORRIS, TONY
 
 
-class Platform(str, Enum):
+class Platform(HelixEnum):
     """Where does this go? (BitChute FIRST, always)"""
     BITCHUTE = "bitchute"            # Primary — FUCK YouTube
     RUMBLE = "rumble"                # Backup 1

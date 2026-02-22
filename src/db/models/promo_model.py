@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime, timezone, date
 from sqlalchemy import String, DateTime, Integer, Text, ForeignKey, Enum as SQLEnum, Numeric, Boolean, Date
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
@@ -25,7 +25,7 @@ from .base import Base
 # ENUMS - The Ways Things Go Free
 # ================================================================
 
-class DiscountType(enum.Enum):
+class DiscountType(HelixEnum):
     """Types of discounts - Mr. TAXMAN needs categories"""
     # Comps - 100% free
     COMP_OWNER = "comp_owner"           # Owner's friends, landlord, partners
@@ -61,7 +61,7 @@ class DiscountType(enum.Enum):
     ROUND_DOWN = "round_down"           # Keep the change
 
 
-class PromoStatus(enum.Enum):
+class PromoStatus(HelixEnum):
     """Status of promo/discount"""
     ACTIVE = "active"
     USED = "used"
@@ -69,7 +69,7 @@ class PromoStatus(enum.Enum):
     CANCELLED = "cancelled"
 
 
-class TaxCategory(enum.Enum):
+class TaxCategory(HelixEnum):
     """Tax treatment categories - What Mr. TAXMAN sees"""
     PROMOTIONAL_EXPENSE = "promo_expense"       # Marketing deduction
     COST_OF_GOODS = "cogs"                      # Inventory loss

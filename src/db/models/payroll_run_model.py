@@ -8,10 +8,10 @@ One run per month. Calculates all payslips. Exports to MinIO.
 Mosey Rule: Every end of day has requirements. Month-end is the big one.
 """
 import uuid
-import enum
 from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING
 
+from src.core.constants import HelixEnum
 from sqlalchemy import String, DateTime, Integer, Enum, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from .payslip_model import PaySlipModel
 
 
-class PayrollRunStatus(str, enum.Enum):
+class PayrollRunStatus(HelixEnum):
     """Status of monthly payroll run."""
     DRAFT = "draft"                 # Created, not yet calculated
     CALCULATING = "calculating"     # Calculation in progress

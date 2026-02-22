@@ -13,14 +13,14 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 from datetime import datetime, timezone, date
 from decimal import Decimal
-from enum import Enum
+from src.core.constants import HelixEnum
 from sqlalchemy import String, DateTime, Numeric, Integer, Boolean, Text, Date, Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from .base import Base
 
 
-class CrackLevel(str, Enum):
+class CrackLevel(HelixEnum):
     """CRACK progression - from curious to oracle"""
     SEEDLING = "seedling"      # Just joined, learning the way
     SPROUT = "sprout"          # First KB written - started contributing
@@ -30,7 +30,7 @@ class CrackLevel(str, Enum):
     ORACLE = "oracle"          # Masters (Mosey, Felix level)
 
 
-class LoyaltyTier(str, Enum):
+class LoyaltyTier(HelixEnum):
     """Spending-based tiers - auto-calculated from lifetime spend"""
     BRONZE = "bronze"          # 0-199 CHF → 5% discount
     SILVER = "silver"          # 200-499 CHF → 10% discount
@@ -39,7 +39,7 @@ class LoyaltyTier(str, Enum):
     DIAMOND = "diamond"        # 2500+ CHF → 25% + VIP perks
 
 
-class PreferredContact(str, Enum):
+class PreferredContact(HelixEnum):
     """How does this CRACK want to be reached?"""
     EMAIL = "email"
     INSTAGRAM = "instagram"

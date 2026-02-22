@@ -13,24 +13,24 @@ from datetime import datetime, date, time, timezone
 from sqlalchemy import String, DateTime, Date, Time, Integer, Boolean, Text, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class AppointmentType(str, enum.Enum):
+class AppointmentType(HelixEnum):
     """How did the customer arrive?"""
     BOOKED = "booked"      # Pre-scheduled with a time slot
     WALK_IN = "walk_in"    # Showed up at the door
 
 
-class AppointmentPriority(str, enum.Enum):
+class AppointmentPriority(HelixEnum):
     """Urgency level -- roof leaking beats new curtains"""
     NORMAL = "normal"
     URGENT = "urgent"
 
 
-class AppointmentStatus(str, enum.Enum):
+class AppointmentStatus(HelixEnum):
     """Lifecycle: SCHEDULED -> WAITING -> IN_SERVICE -> COMPLETED"""
     SCHEDULED = "scheduled"    # Booked for a future time
     WAITING = "waiting"        # Customer arrived, waiting for a bay

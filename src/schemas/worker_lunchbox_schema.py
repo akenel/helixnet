@@ -29,7 +29,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date, time
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 from decimal import Decimal
 
 
@@ -37,7 +37,7 @@ from decimal import Decimal
 # ENUMS
 # ================================================================
 
-class WorkerTypeEnum(str, Enum):
+class WorkerTypeEnum(HelixEnum):
     """The crew types"""
     CONSTRUCTION = "construction"      # Thommy's drywall crew
     DELIVERY = "delivery"              # On the road all day
@@ -48,7 +48,7 @@ class WorkerTypeEnum(str, Enum):
     EVENT = "event"                    # Long shifts, no breaks
 
 
-class MealTypeEnum(str, Enum):
+class MealTypeEnum(HelixEnum):
     """When you eat"""
     BREAKFAST = "breakfast"            # Pink Punch time
     MORNING_SNACK = "morning_snack"    # 10:30 coffee break
@@ -57,7 +57,7 @@ class MealTypeEnum(str, Enum):
     DINNER = "dinner"                  # Late shift fuel
 
 
-class EnergyLevelEnum(str, Enum):
+class EnergyLevelEnum(HelixEnum):
     """How hard you working?"""
     LIGHT = "light"                    # Office, sitting
     MEDIUM = "medium"                  # Walking, light lifting
@@ -65,7 +65,7 @@ class EnergyLevelEnum(str, Enum):
     EXTREME = "extreme"                # 5 sheets drywall, no sleep
 
 
-class PackageTypeEnum(str, Enum):
+class PackageTypeEnum(HelixEnum):
     """How it comes"""
     LUNCHBOX = "lunchbox"              # Full meal pack
     GRAB_GO = "grab_go"                # Quick grab
@@ -75,17 +75,17 @@ class PackageTypeEnum(str, Enum):
     SNACK = "snack"                    # Biberli, energy bar
 
 
-class NutrientGradeEnum(str, Enum):
+class NutrientGradeEnum(HelixEnum):
     """The ABCDs — what you NEED"""
-    A_PLUS = "A+"                      # Full spectrum, perfect
-    A = "A"                            # Excellent nutrition
-    B = "B"                            # Good, solid
-    C = "C"                            # Acceptable
-    D = "D"                            # Barely there
-    F = "F"                            # Gas station garbage
+    A_PLUS = "a+"                      # Full spectrum, perfect
+    A = "a"                            # Excellent nutrition
+    B = "b"                            # Good, solid
+    C = "c"                            # Acceptable
+    D = "d"                            # Barely there
+    F = "f"                            # Gas station garbage
 
 
-class FreshnessEnum(str, Enum):
+class FreshnessEnum(HelixEnum):
     """How fresh?"""
     FARM_FRESH = "farm_fresh"          # Same day from Molly
     MORNING_MADE = "morning_made"      # Made this morning

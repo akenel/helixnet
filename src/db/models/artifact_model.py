@@ -1,5 +1,5 @@
 # File: app/db/models/artifact_model.py
-import enum
+from src.core.constants import HelixEnum
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
@@ -8,7 +8,7 @@ from sqlalchemy import String, DateTime, Text, BigInteger, Enum, ForeignKey, JSO
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from .base import Base
-class ArtifactType(enum.Enum):
+class ArtifactType(HelixEnum):
     """Defines the category of data the artifact represents."""
     RAW = "raw"             # Raw data, untouched
     PROCESSED = "processed" # Output from a processing step
@@ -20,7 +20,7 @@ class ArtifactType(enum.Enum):
     J2="j2"
     TONE  = "tone"
     AI_PROMPT = "ai_prompt"
-    CUSTOM="CustomArtifactType"
+    CUSTOM = "custom"
 
 class ArtifactModel(Base):
     __tablename__ = 'artifacts'

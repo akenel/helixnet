@@ -11,12 +11,12 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Boolean, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class BayType(str, enum.Enum):
+class BayType(HelixEnum):
     """What kind of bay"""
     GENERAL = "general"
     ELECTRICAL = "electrical"

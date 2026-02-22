@@ -7,14 +7,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS
 # ================================================================
 
-class ProductCategoryEnum(str, Enum):
+class ProductCategoryEnum(HelixEnum):
     CBD = "cbd"
     COFFEE = "coffee"
     ACCESSORIES = "accessories"
@@ -23,7 +23,7 @@ class ProductCategoryEnum(str, Enum):
     MERCH = "merch"
 
 
-class CBDTypeEnum(str, Enum):
+class CBDTypeEnum(HelixEnum):
     OIL = "oil"
     DROPS = "drops"
     GUMMIES = "gummies"
@@ -33,14 +33,14 @@ class CBDTypeEnum(str, Enum):
     EDIBLE = "edible"
 
 
-class CBDStrengthEnum(str, Enum):
+class CBDStrengthEnum(HelixEnum):
     LIGHT = "light"
     MEDIUM = "medium"
     STRONG = "strong"
     EXTRA = "extra"
 
 
-class CoffeeTypeEnum(str, Enum):
+class CoffeeTypeEnum(HelixEnum):
     ESPRESSO = "espresso"
     DOUBLE_ESPRESSO = "double_espresso"
     AMERICANO = "americano"
@@ -54,7 +54,7 @@ class CoffeeTypeEnum(str, Enum):
     HOT_CHOCOLATE = "hot_chocolate"
 
 
-class BLQFlavorEnum(str, Enum):
+class BLQFlavorEnum(HelixEnum):
     BLUE = "blue"
     PINEAPPLE = "pineapple"
     NATURAL = "natural"
@@ -62,7 +62,7 @@ class BLQFlavorEnum(str, Enum):
     BERRY = "berry"
 
 
-class MembershipTierEnum(str, Enum):
+class MembershipTierEnum(HelixEnum):
     GUEST = "guest"
     REGULAR = "regular"
     JACK_BOX = "jack_box"
@@ -70,7 +70,7 @@ class MembershipTierEnum(str, Enum):
     FOUNDER = "founder"
 
 
-class AccessoryTypeEnum(str, Enum):
+class AccessoryTypeEnum(HelixEnum):
     PAPERS = "papers"
     FILTERS = "filters"
     GRINDER = "grinder"
@@ -83,7 +83,7 @@ class AccessoryTypeEnum(str, Enum):
     OTHER = "other"
 
 
-class OrderStatusEnum(str, Enum):
+class OrderStatusEnum(HelixEnum):
     PENDING = "pending"
     PREPARING = "preparing"
     READY = "ready"

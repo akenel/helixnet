@@ -12,12 +12,12 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Text, ForeignKey, Enum as SQLEnum, Numeric, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class PetSpecies(enum.Enum):
+class PetSpecies(HelixEnum):
     """Pet species - Michel knows them all"""
     DOG = "dog"
     CAT = "cat"
@@ -30,7 +30,7 @@ class PetSpecies(enum.Enum):
     OTHER = "other"
 
 
-class PetSize(enum.Enum):
+class PetSize(HelixEnum):
     """Pet size for wash pricing"""
     TINY = "tiny"        # Under 5 kg
     SMALL = "small"      # 5-10 kg
@@ -39,7 +39,7 @@ class PetSize(enum.Enum):
     GIANT = "giant"      # Over 40 kg
 
 
-class WashServiceType(enum.Enum):
+class WashServiceType(HelixEnum):
     """Wash services - Michel's menu"""
     BASIC_WASH = "basic_wash"           # Wash and dry
     FULL_GROOM = "full_groom"           # Wash, dry, trim
@@ -49,7 +49,7 @@ class WashServiceType(enum.Enum):
     DELUXE_SPA = "deluxe_spa"           # The works
 
 
-class AppointmentStatus(enum.Enum):
+class AppointmentStatus(HelixEnum):
     """Appointment status"""
     SCHEDULED = "scheduled"
     CHECKED_IN = "checked_in"
@@ -342,7 +342,7 @@ def get_service_price(service_type: WashServiceType, size: PetSize) -> float:
 # ZONES - Front vs Back (Michel's Lab)
 # ================================================================
 
-class WashZone(enum.Enum):
+class WashZone(HelixEnum):
     """Wash station zones"""
     FRONT_CATS = "front_cats"           # Cats - anyone can do
     FRONT_SMALL_DOGS = "front_small"    # Small dogs - trained staff
@@ -351,7 +351,7 @@ class WashZone(enum.Enum):
     BACK_HUSKY = "back_husky"           # Husky/Giant breeds - Gerry territory
 
 
-class GroomerSkill(enum.Enum):
+class GroomerSkill(HelixEnum):
     """What each groomer can handle"""
     CATS_BASIC = "cats_basic"
     CATS_ADVANCED = "cats_advanced"
@@ -364,7 +364,7 @@ class GroomerSkill(enum.Enum):
     YOUTUBE_CERTIFIED = "youtube_cert"  # Andy's emergency mode
 
 
-class CameraStatus(enum.Enum):
+class CameraStatus(HelixEnum):
     """Camera feed status"""
     OFFLINE = "offline"
     RECORDING = "recording"
@@ -372,7 +372,7 @@ class CameraStatus(enum.Enum):
     PROCESSING = "processing"
 
 
-class MediaStatus(enum.Enum):
+class MediaStatus(HelixEnum):
     """Media processing status"""
     RECORDING = "recording"
     PROCESSING = "processing"

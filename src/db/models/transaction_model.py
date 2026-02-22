@@ -8,12 +8,12 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Numeric, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class TransactionStatus(enum.Enum):
+class TransactionStatus(HelixEnum):
     """Transaction lifecycle states"""
     OPEN = "open"              # Cart active, customer adding items
     PENDING = "pending"        # Awaiting payment
@@ -22,7 +22,7 @@ class TransactionStatus(enum.Enum):
     REFUNDED = "refunded"      # Full refund issued
 
 
-class PaymentMethod(enum.Enum):
+class PaymentMethod(HelixEnum):
     """Payment types for Felix's store"""
     CASH = "cash"
     VISA = "visa"

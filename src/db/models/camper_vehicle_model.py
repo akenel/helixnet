@@ -11,12 +11,12 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Boolean, Text, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class VehicleType(str, enum.Enum):
+class VehicleType(HelixEnum):
     """What kind of vehicle"""
     MOTORHOME = "motorhome"
     CARAVAN = "caravan"
@@ -26,7 +26,7 @@ class VehicleType(str, enum.Enum):
     OTHER = "other"
 
 
-class VehicleStatus(str, enum.Enum):
+class VehicleStatus(HelixEnum):
     """Where is this vehicle in the service lifecycle"""
     CHECKED_IN = "checked_in"
     IN_SERVICE = "in_service"

@@ -12,13 +12,13 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Boolean, Text, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 from .traceable_item_model import LifecycleStage, LocationType
 
 
-class ActorType(str, enum.Enum):
+class ActorType(HelixEnum):
     """Who touched it - The Cast"""
     # Farm & Production
     FARMER = "farmer"              # MOLLY, Brothers

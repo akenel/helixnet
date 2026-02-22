@@ -11,12 +11,12 @@ from datetime import datetime, date, timezone
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Numeric, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class ShipmentType(str, enum.Enum):
+class ShipmentType(HelixEnum):
     """How it travels"""
     # Small
     PARCEL = "parcel"
@@ -38,7 +38,7 @@ class ShipmentType(str, enum.Enum):
     HAND_CARRY = "hand_carry"
 
 
-class ShipmentStatus(str, enum.Enum):
+class ShipmentStatus(HelixEnum):
     """Where is the shipment"""
     PENDING = "pending"
     PICKED_UP = "picked_up"

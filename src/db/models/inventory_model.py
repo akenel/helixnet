@@ -15,7 +15,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import String, DateTime, Integer, Text, ForeignKey, Enum as SQLEnum, Numeric, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
@@ -24,7 +24,7 @@ from .base import Base
 # ENUMS - The Flow States
 # ================================================================
 
-class StockStatus(enum.Enum):
+class StockStatus(HelixEnum):
     """Stock level status"""
     OK = "ok"                       # All good
     LOW = "low"                     # Below threshold, reorder soon
@@ -33,7 +33,7 @@ class StockStatus(enum.Enum):
     OVERSTOCKED = "overstocked"     # Too much, slow down orders
 
 
-class MovementType(enum.Enum):
+class MovementType(HelixEnum):
     """Stock movement types"""
     IN_PURCHASE = "in_purchase"         # Bought from supplier
     IN_RETURN = "in_return"             # Customer return
@@ -45,7 +45,7 @@ class MovementType(enum.Enum):
     TRANSFER = "transfer"               # Between locations
 
 
-class ReorderStatus(enum.Enum):
+class ReorderStatus(HelixEnum):
     """Reorder request status"""
     SUGGESTED = "suggested"         # System suggests reorder
     APPROVED = "approved"           # Andy approved it
@@ -55,7 +55,7 @@ class ReorderStatus(enum.Enum):
     CANCELLED = "cancelled"         # Nevermind
 
 
-class SupplierType(enum.Enum):
+class SupplierType(HelixEnum):
     """Supplier categories"""
     COFFEE = "coffee"               # Capsules, beans
     CBD = "cbd"                     # BLQ products
@@ -65,7 +65,7 @@ class SupplierType(enum.Enum):
     GENERAL = "general"             # Aldi runs, misc
 
 
-class UnitType(enum.Enum):
+class UnitType(HelixEnum):
     """Measurement units"""
     PIECE = "piece"                 # Individual items
     BOX = "box"                     # Box of items

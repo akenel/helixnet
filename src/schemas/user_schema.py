@@ -1,23 +1,23 @@
 from __future__ import annotations # Required for forward references like List["TaskRead"]
 from datetime import datetime
 from typing import Any, Dict, Optional, List
-from enum import Enum
 from uuid import UUID
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.schemas.task_schema import TaskRead
 from pydantic import BaseModel, EmailStr, Field
+from src.core.constants import HelixEnum
 
 # Ensure TaskRead is available for UserReadWithTasks
 # NOTE: TaskRead must be defined in schemas.task_schema or imported successfully.
-# from src.schemas.task_schema import TaskRead 
+# from src.schemas.task_schema import TaskRead
 
 # ----------------------------------------------------------------------
 # 1. ENUM: User Roles
 # ----------------------------------------------------------------------
 
-class UserRoles(str, Enum):
+class UserRoles(HelixEnum):
     """
     Defines the available roles for users.
     Standardized, singular source of truth for all role checks.

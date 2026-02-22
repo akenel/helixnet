@@ -17,12 +17,12 @@ from datetime import datetime, date as date_type, timezone
 from sqlalchemy import String, DateTime, Date, Text, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class BookingStatus(str, enum.Enum):
+class BookingStatus(HelixEnum):
     """Lifecycle of a resource booking"""
     SCHEDULED = "scheduled"    # reserved for future
     IN_USE = "in_use"          # vehicle is on it now

@@ -11,12 +11,12 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Text, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class BookFormat(enum.Enum):
+class BookFormat(HelixEnum):
     """Book format types"""
     HARDCOVER = "hardcover"
     PAPERBACK = "paperback"
@@ -24,7 +24,7 @@ class BookFormat(enum.Enum):
     AUDIOBOOK = "audiobook"
 
 
-class BookGenre(enum.Enum):
+class BookGenre(HelixEnum):
     """Book genres - keep it simple like Tell's one page"""
     RELIGIOUS = "religious"
     SPIRITUAL = "spiritual"

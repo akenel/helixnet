@@ -10,12 +10,12 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Boolean, Text, Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class FarmType(str, enum.Enum):
+class FarmType(HelixEnum):
     """What kind of farm?"""
     DAIRY = "dairy"
     VEGETABLE = "vegetable"

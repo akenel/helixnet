@@ -37,7 +37,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, time
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 from decimal import Decimal
 
 
@@ -45,7 +45,7 @@ from decimal import Decimal
 # ENUMS — THE ECOSYSTEM
 # ================================================================
 
-class BarTypeEnum(str, Enum):
+class BarTypeEnum(HelixEnum):
     """Types of salad bars in the network"""
     FULL_SERVICE = "full_service"      # SAL's HAIRY FISH style
     SELF_SERVE = "self_serve"          # Weigh plate, tip at end
@@ -55,7 +55,7 @@ class BarTypeEnum(str, Enum):
     EVENT = "event"                    # Borris event hall style
 
 
-class MembershipTierEnum(str, Enum):
+class MembershipTierEnum(HelixEnum):
     """Member tiers — signature plates"""
     FISH = "fish"           # Entry level — 🐟
     CAT = "cat"             # Felix tier — 🐱
@@ -64,7 +64,7 @@ class MembershipTierEnum(str, Enum):
     FOUNDER = "founder"     # Original crew
 
 
-class ProductCategoryEnum(str, Enum):
+class ProductCategoryEnum(HelixEnum):
     """What we sell"""
     SALAD = "salad"
     DRESSING = "dressing"
@@ -79,7 +79,7 @@ class ProductCategoryEnum(str, Enum):
     PLATE = "plate"
 
 
-class SupplyChainStageEnum(str, Enum):
+class SupplyChainStageEnum(HelixEnum):
     """E2E: Seed to shit and back"""
     SEED = "seed"
     GROW = "grow"
@@ -93,7 +93,7 @@ class SupplyChainStageEnum(str, Enum):
     GOAT_MILK = "goat_milk"  # Goats to latte
 
 
-class RefillStatusEnum(str, Enum):
+class RefillStatusEnum(HelixEnum):
     """Refillable bottle tracking"""
     NEW = "new"              # First purchase
     REFILLED = "refilled"    # Came back for more
@@ -316,7 +316,7 @@ class RefillTransaction(BaseModel):
 # COFFEE STATION — JURA COOLIE HYBRID
 # ================================================================
 
-class CoffeeMachineTypeEnum(str, Enum):
+class CoffeeMachineTypeEnum(HelixEnum):
     JURA_FRESH = "jura_fresh"        # Fresh beans
     NESPRESSO = "nespresso"          # Capsules
     COOLIE_HYBRID = "coolie_hybrid"  # Both!

@@ -12,12 +12,12 @@ from decimal import Decimal
 from sqlalchemy import String, DateTime, Date, Integer, Text, Numeric
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class CustomerLanguage(str, enum.Enum):
+class CustomerLanguage(HelixEnum):
     """Preferred language -- Sicily is multilingual tourist territory"""
     IT = "it"
     EN = "en"

@@ -20,12 +20,12 @@ from datetime import datetime, date, timezone
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Numeric, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class AcquisitionType(str, enum.Enum):
+class AcquisitionType(HelixEnum):
     """How we're getting the equipment"""
     BUY = "buy"              # Full purchase, we own it
     LEASE = "lease"          # Long-term rental with purchase option
@@ -36,7 +36,7 @@ class AcquisitionType(str, enum.Enum):
     INTERNAL = "internal"    # Transferred from another location
 
 
-class AcquisitionStatus(str, enum.Enum):
+class AcquisitionStatus(HelixEnum):
     """Where are we in the decision"""
     REQUESTED = "requested"      # Someone asked for it
     EVALUATING = "evaluating"    # Comparing options
@@ -48,7 +48,7 @@ class AcquisitionStatus(str, enum.Enum):
     CANCELLED = "cancelled"      # Changed our minds
 
 
-class UrgencyLevel(str, enum.Enum):
+class UrgencyLevel(HelixEnum):
     """How soon do we need it"""
     CRITICAL = "critical"    # Yesterday. Production stopped.
     HIGH = "high"            # This week. Major impact.

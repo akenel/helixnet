@@ -1,15 +1,15 @@
 # app/schemas/task_schema.py
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from src.core.constants import HelixEnum
 
 # ----------------------------------------------------------------------
 # 1. ENUM: Task Status
 # ----------------------------------------------------------------------
 
-class TaskStatus(str, Enum):
+class TaskStatus(HelixEnum):
     """Defines the lifecycle status of an asynchronous job/task."""
     PENDING = "pending"
     RUNNING = "running"

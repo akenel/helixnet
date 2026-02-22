@@ -12,14 +12,14 @@ from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
 from typing import Optional, List
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS
 # ================================================================
 
-class CrackLevel(str, Enum):
+class CrackLevel(HelixEnum):
     """CRACK progression levels - from zero to hero"""
     SEEDLING = "seedling"      # Just joined, learning
     SPROUT = "sprout"          # First KB written
@@ -29,7 +29,7 @@ class CrackLevel(str, Enum):
     ORACLE = "oracle"          # The masters (Mosey, Felix level)
 
 
-class LoyaltyTier(str, Enum):
+class LoyaltyTier(HelixEnum):
     """Spending-based tiers - auto-calculated"""
     BRONZE = "bronze"          # 0-199 CHF → 5% off
     SILVER = "silver"          # 200-499 CHF → 10% off
@@ -38,7 +38,7 @@ class LoyaltyTier(str, Enum):
     DIAMOND = "diamond"        # 2500+ CHF → 25% + VIP
 
 
-class PreferredContact(str, Enum):
+class PreferredContact(HelixEnum):
     """How does this CRACK want to be reached?"""
     EMAIL = "email"
     INSTAGRAM = "instagram"
@@ -48,7 +48,7 @@ class PreferredContact(str, Enum):
     NONE = "none"              # Privacy first
 
 
-class KBStatus(str, Enum):
+class KBStatus(HelixEnum):
     """KB approval workflow status"""
     DRAFT = "draft"            # CRACK is writing
     SUBMITTED = "submitted"    # Ready for review
@@ -292,7 +292,7 @@ class KBApproval(BaseModel):
 # CREDIT TRANSACTION SCHEMAS
 # ================================================================
 
-class CreditTransactionType(str, Enum):
+class CreditTransactionType(HelixEnum):
     """How credits were earned/spent"""
     PURCHASE = "purchase"
     REFERRAL = "referral"
@@ -332,7 +332,7 @@ class CreditTransaction(BaseModel):
 # COUPON SCHEMAS
 # ================================================================
 
-class CouponType(str, Enum):
+class CouponType(HelixEnum):
     """What kind of discount"""
     PERCENT = "percent"            # 10% off
     FIXED = "fixed"                # CHF 5 off

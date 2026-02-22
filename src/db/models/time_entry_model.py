@@ -8,7 +8,6 @@ Employees log hours. Managers approve. Simple.
 BLQ Rule: Cameras verify. No buddy punching. LOGISH (Logical Swiss Ways).
 """
 import uuid
-import enum
 from datetime import datetime, date, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
@@ -17,6 +16,7 @@ from sqlalchemy import String, DateTime, Date, Numeric, Enum, ForeignKey, Text, 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
+from src.core.constants import HelixEnum
 from .base import Base
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from .user_model import UserModel
 
 
-class EntryType(str, enum.Enum):
+class EntryType(HelixEnum):
     """Type of time entry."""
     REGULAR = "regular"         # Normal work hours (on-site)
     REMOTE = "remote"           # Remote work (80% rate)
@@ -36,7 +36,7 @@ class EntryType(str, enum.Enum):
     TRAINING = "training"       # Training/KB work
 
 
-class EntryStatus(str, enum.Enum):
+class EntryStatus(HelixEnum):
     """Approval status of time entry."""
     DRAFT = "draft"             # Employee can edit
     SUBMITTED = "submitted"     # Awaiting manager approval

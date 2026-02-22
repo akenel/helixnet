@@ -8,9 +8,9 @@ from sqlalchemy import Column, String, DateTime, Text, Enum, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, Mapped
 from .base import Base
 
-import enum
+from src.core.constants import HelixEnum
 
-class TaskPriority(enum.Enum):
+class TaskPriority(HelixEnum):
     """Defines the priority levels for a Task."""
     LOW = "low"
     MEDIUM = "medium"

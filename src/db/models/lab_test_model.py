@@ -11,12 +11,12 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Boolean, Text, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class LabTestStatus(str, enum.Enum):
+class LabTestStatus(HelixEnum):
     """Lab test status"""
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -25,14 +25,14 @@ class LabTestStatus(str, enum.Enum):
     RESCUED = "rescued"      # Pink Punch save!
 
 
-class QualityGrade(str, enum.Enum):
+class QualityGrade(HelixEnum):
     """Quality assessment"""
-    A_PLUS = "A+"
-    A = "A"
-    B = "B"
-    C = "C"
-    D = "D"
-    F = "F"
+    A_PLUS = "a+"
+    A = "a"
+    B = "b"
+    C = "c"
+    D = "d"
+    F = "f"
 
 
 class LabTestModel(Base):

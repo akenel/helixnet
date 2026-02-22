@@ -12,12 +12,12 @@ from decimal import Decimal
 from sqlalchemy import String, DateTime, Date, Text, Numeric
 from sqlalchemy import Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(HelixEnum):
     """Invoice payment lifecycle"""
     PENDING = "pending"
     DEPOSIT_PAID = "deposit_paid"

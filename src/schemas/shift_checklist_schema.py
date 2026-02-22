@@ -26,14 +26,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS
 # ================================================================
 
-class ChecklistStatusEnum(str, Enum):
+class ChecklistStatusEnum(HelixEnum):
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -41,27 +41,27 @@ class ChecklistStatusEnum(str, Enum):
     BLOCKED = "blocked"       # Can't do - supply missing
 
 
-class TaskPriorityEnum(str, Enum):
+class TaskPriorityEnum(HelixEnum):
     MUST_DO = "must_do"       # Cannot leave without
     SHOULD_DO = "should_do"   # Expected
     NICE_TO_HAVE = "nice"     # If time permits
 
 
-class ShiftTypeEnum(str, Enum):
+class ShiftTypeEnum(HelixEnum):
     OPENING = "opening"
     CLOSING = "closing"
     MIDDAY = "midday"
     DELIVERY = "delivery"     # Special checklist for delivery days
 
 
-class SupplyStatusEnum(str, Enum):
+class SupplyStatusEnum(HelixEnum):
     OK = "ok"
     LOW = "low"
     OUT = "out"
     ORDERED = "ordered"
 
 
-class OwnershipEnum(str, Enum):
+class OwnershipEnum(HelixEnum):
     SHOP = "shop"             # Shop property
     FELIX = "felix"           # DO NOT TOUCH
     SHARED = "shared"         # Everyone can use

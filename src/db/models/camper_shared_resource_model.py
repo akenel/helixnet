@@ -14,12 +14,12 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Boolean, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class ResourceType(str, enum.Enum):
+class ResourceType(HelixEnum):
     """What kind of shared resource"""
     HOIST = "hoist"
     COMPRESSOR = "compressor"

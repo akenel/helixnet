@@ -37,7 +37,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date, time, timedelta
 from uuid import UUID, uuid4
 from typing import Optional, Any
-from enum import Enum
+from src.core.constants import HelixEnum
 from decimal import Decimal
 
 
@@ -45,7 +45,7 @@ from decimal import Decimal
 # THE LIFECYCLE STAGES — SEED TO SHIT AND BACK
 # ================================================================
 
-class LifecycleStageEnum(str, Enum):
+class LifecycleStageEnum(HelixEnum):
     """The complete food lifecycle — E2E"""
 
     # ORIGIN (Farm)
@@ -88,7 +88,7 @@ class LifecycleStageEnum(str, Enum):
     EXPIRED = "expired"        # Past freshness (should be rare!)
 
 
-class LocationTypeEnum(str, Enum):
+class LocationTypeEnum(HelixEnum):
     """Where in the chain"""
     FARM = "farm"              # Molly's farm
     KITCHEN = "kitchen"        # Where food is made
@@ -103,7 +103,7 @@ class LocationTypeEnum(str, Enum):
     COMPOST = "compost"        # Back to earth
 
 
-class ActorTypeEnum(str, Enum):
+class ActorTypeEnum(HelixEnum):
     """Who touched it"""
     FARMER = "farmer"          # Molly, Larry, Moe
     PROCESSOR = "processor"    # Kitchen staff
@@ -115,14 +115,14 @@ class ActorTypeEnum(str, Enum):
     SYSTEM = "system"          # Automated event
 
 
-class QualityGradeEnum(str, Enum):
+class QualityGradeEnum(HelixEnum):
     """Quality assessment"""
-    A_PLUS = "A+"              # Perfect
-    A = "A"                    # Excellent
-    B = "B"                    # Good
-    C = "C"                    # Acceptable
-    D = "D"                    # Marginal (Pink Punch candidate)
-    F = "F"                    # Failed (reject or rescue)
+    A_PLUS = "a+"              # Perfect
+    A = "a"                    # Excellent
+    B = "b"                    # Good
+    C = "c"                    # Acceptable
+    D = "d"                    # Marginal (Pink Punch candidate)
+    F = "f"                    # Failed (reject or rescue)
 
 
 # ================================================================

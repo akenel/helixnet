@@ -11,12 +11,12 @@ from datetime import datetime, date, time, timezone
 from sqlalchemy import String, DateTime, Date, Time, Integer, Boolean, Text, Numeric, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class FreshnessRule(str, enum.Enum):
+class FreshnessRule(HelixEnum):
     """No day-olds. Super fresh."""
     SAME_DAY = "same_day"
     NEXT_DAY = "next_day"
@@ -25,7 +25,7 @@ class FreshnessRule(str, enum.Enum):
     MONTH = "month"
 
 
-class BatchStatus(str, enum.Enum):
+class BatchStatus(HelixEnum):
     """Where is this batch in the lifecycle?"""
     CREATED = "created"
     PENDING_TEST = "pending_test"

@@ -6,7 +6,6 @@ Employee data model for Swiss-compliant HR/Payroll.
 KISS: Keep It Clean, Keep It Simple.
 """
 import uuid
-import enum
 from datetime import datetime, date, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
@@ -15,6 +14,7 @@ from sqlalchemy import String, DateTime, Date, Boolean, Numeric, Enum, ForeignKe
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
+from src.core.constants import HelixEnum
 from .base import Base
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from .payslip_model import PaySlipModel
 
 
-class ContractType(str, enum.Enum):
+class ContractType(HelixEnum):
     """Employment contract types."""
     FULLTIME = "fulltime"       # 40 hours/week standard
     PARTTIME = "parttime"       # Less than 40 hours/week
@@ -32,7 +32,7 @@ class ContractType(str, enum.Enum):
     TEMPORARY = "temporary"     # Fixed term contract
 
 
-class EmployeeStatus(str, enum.Enum):
+class EmployeeStatus(HelixEnum):
     """Employee lifecycle status."""
     ACTIVE = "active"           # Currently employed
     PROBATION = "probation"     # In probation period (Probezeit)

@@ -13,12 +13,12 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Float, Text, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class LogType(str, enum.Enum):
+class LogType(HelixEnum):
     """What kind of log entry"""
     WORK = "work"
     WAIT_START = "wait_start"

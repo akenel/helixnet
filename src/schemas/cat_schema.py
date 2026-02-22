@@ -7,14 +7,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS
 # ================================================================
 
-class CatSizeEnum(str, Enum):
+class CatSizeEnum(HelixEnum):
     KITTEN = "kitten"
     SMALL = "small"
     MEDIUM = "medium"
@@ -22,7 +22,7 @@ class CatSizeEnum(str, Enum):
     CHONK = "chonk"
 
 
-class CoatTypeEnum(str, Enum):
+class CoatTypeEnum(HelixEnum):
     SHORT = "short"
     MEDIUM = "medium"
     LONG = "long"
@@ -30,7 +30,7 @@ class CoatTypeEnum(str, Enum):
     CURLY = "curly"
 
 
-class CatTemperamentEnum(str, Enum):
+class CatTemperamentEnum(HelixEnum):
     CHILL = "chill"
     NERVOUS = "nervous"
     SPICY = "spicy"
@@ -38,7 +38,7 @@ class CatTemperamentEnum(str, Enum):
     WILDCARD = "wildcard"
 
 
-class ServiceTypeEnum(str, Enum):
+class ServiceTypeEnum(HelixEnum):
     BASIC_GROOM = "basic_groom"
     FULL_GROOM = "full_groom"
     BATH_ONLY = "bath_only"
@@ -49,7 +49,7 @@ class ServiceTypeEnum(str, Enum):
     FLEA_TREATMENT = "flea_treatment"
 
 
-class AppointmentStatusEnum(str, Enum):
+class AppointmentStatusEnum(HelixEnum):
     BOOKED = "booked"
     CHECKED_IN = "checked_in"
     IN_PROGRESS = "in_progress"
@@ -60,7 +60,7 @@ class AppointmentStatusEnum(str, Enum):
     NO_SHOW = "no_show"
 
 
-class MembershipTypeEnum(str, Enum):
+class MembershipTypeEnum(HelixEnum):
     SINGLE_VISIT = "single_visit"
     MONTHLY = "monthly"
     ANNUAL = "annual"

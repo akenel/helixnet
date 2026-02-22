@@ -7,9 +7,9 @@ from sqlalchemy import String, DateTime, Text, Enum, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column 
 from .base import Base
 
-import enum
+from src.core.constants import HelixEnum
 
-class TaskType(enum.Enum):
+class TaskType(HelixEnum):
     """Defines the type of task the message relates to."""
     EXECUTION = "execution"  # e.g., run a job/pipeline
     NOTIFICATION = "notification" # e.g., send an alert
@@ -17,7 +17,7 @@ class TaskType(enum.Enum):
     CONFIGURATION = "configuration" # e.g., update settings
     SCHEDULING = "scheduling" # e.g., set up a cron job
 
-class TaskStatus(enum.Enum):
+class TaskStatus(HelixEnum):
     """Defines the status of the background task."""
     PENDING = "pending"
     PROCESSING = "processing"

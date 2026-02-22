@@ -19,14 +19,14 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
-from enum import Enum
+from src.core.constants import HelixEnum
 from sqlalchemy import String, DateTime, Numeric, Integer, Boolean, Text, Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from .base import Base
 
 
-class KBStatus(str, Enum):
+class KBStatus(HelixEnum):
     """KB approval workflow - from draft to glory"""
     DRAFT = "draft"            # CRACK is writing
     SUBMITTED = "submitted"    # Ready for review
@@ -37,7 +37,7 @@ class KBStatus(str, Enum):
     ARCHIVED = "archived"      # No longer relevant
 
 
-class KBCategory(str, Enum):
+class KBCategory(HelixEnum):
     """What kind of knowledge?"""
     RECIPE = "recipe"          # How to make something (CBD butter, tinctures)
     PROTOCOL = "protocol"      # How to use something (sleep protocol, dosing)

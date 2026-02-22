@@ -37,7 +37,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date, time, timedelta
 from uuid import UUID
 from typing import Optional
-from enum import Enum
+from src.core.constants import HelixEnum
 from decimal import Decimal
 
 
@@ -45,7 +45,7 @@ from decimal import Decimal
 # ENUMS
 # ================================================================
 
-class FarmTypeEnum(str, Enum):
+class FarmTypeEnum(HelixEnum):
     """What kind of farm?"""
     DAIRY = "dairy"              # Goat milk, cheese
     VEGETABLE = "vegetable"      # Salad greens, carrots, onions
@@ -55,7 +55,7 @@ class FarmTypeEnum(str, Enum):
     HERB = "herb"                # CBD, hemp, flowers
 
 
-class ProductTypeEnum(str, Enum):
+class ProductTypeEnum(HelixEnum):
     """What Molly makes"""
     SALAD = "salad"              # The main event
     SOUP = "soup"                # Hot and fresh
@@ -69,7 +69,7 @@ class ProductTypeEnum(str, Enum):
     EGGS = "eggs"                # Farm fresh
 
 
-class PackagingTypeEnum(str, Enum):
+class PackagingTypeEnum(HelixEnum):
     """No plastic. No waste."""
     HEMP_BAG = "hemp_bag"        # Eat the wrapper
     TIN_FOIL = "tin_foil"        # For now
@@ -80,7 +80,7 @@ class PackagingTypeEnum(str, Enum):
     EDIBLE = "edible"            # EAT THE WRAPPER
 
 
-class FreshnessRuleEnum(str, Enum):
+class FreshnessRuleEnum(HelixEnum):
     """No day-olds. Super fresh."""
     SAME_DAY = "same_day"        # Made today, eat today
     NEXT_DAY = "next_day"        # 24 hours max
@@ -89,7 +89,7 @@ class FreshnessRuleEnum(str, Enum):
     MONTH = "month"              # Preserved/canned
 
 
-class LabStatusEnum(str, Enum):
+class LabStatusEnum(HelixEnum):
     """Felix signs off"""
     PENDING = "pending"          # Waiting for test
     TESTING = "testing"          # In the lab
@@ -98,7 +98,7 @@ class LabStatusEnum(str, Enum):
     EXPIRED = "expired"          # Past freshness window
 
 
-class LockerTypeEnum(str, Enum):
+class LockerTypeEnum(HelixEnum):
     """Where the food goes"""
     GAS_STATION = "gas_station"  # Front or back location
     SCHOOL = "school"            # YAN's scanner
@@ -110,7 +110,7 @@ class LockerTypeEnum(str, Enum):
     LOST_SOUL = "lost_soul"      # SAL's lockers for the bums
 
 
-class MemberTierEnum(str, Enum):
+class MemberTierEnum(HelixEnum):
     """Badge levels"""
     WORKER = "worker"            # Construction crew
     REGULAR = "regular"          # Daily customers

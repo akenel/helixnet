@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from datetime import datetime, date
 from uuid import uuid4
-import enum
+from src.core.constants import HelixEnum
 
 from src.db.models.base import Base
 
@@ -20,7 +20,7 @@ from src.db.models.base import Base
 # ENUMS - CATS ONLY
 # ================================================================
 
-class CatSize(enum.Enum):
+class CatSize(HelixEnum):
     KITTEN = "kitten"
     SMALL = "small"
     MEDIUM = "medium"
@@ -28,7 +28,7 @@ class CatSize(enum.Enum):
     CHONK = "chonk"
 
 
-class CoatType(enum.Enum):
+class CoatType(HelixEnum):
     SHORT = "short"
     MEDIUM = "medium"
     LONG = "long"
@@ -36,7 +36,7 @@ class CoatType(enum.Enum):
     CURLY = "curly"
 
 
-class CatTemperament(enum.Enum):
+class CatTemperament(HelixEnum):
     CHILL = "chill"
     NERVOUS = "nervous"
     SPICY = "spicy"
@@ -44,7 +44,7 @@ class CatTemperament(enum.Enum):
     WILDCARD = "wildcard"
 
 
-class ServiceType(enum.Enum):
+class ServiceType(HelixEnum):
     BASIC_GROOM = "basic_groom"
     FULL_GROOM = "full_groom"
     BATH_ONLY = "bath_only"
@@ -55,7 +55,7 @@ class ServiceType(enum.Enum):
     FLEA_TREATMENT = "flea_treatment"
 
 
-class AppointmentStatus(enum.Enum):
+class AppointmentStatus(HelixEnum):
     BOOKED = "booked"
     CHECKED_IN = "checked_in"
     IN_PROGRESS = "in_progress"
@@ -66,7 +66,7 @@ class AppointmentStatus(enum.Enum):
     NO_SHOW = "no_show"
 
 
-class MembershipType(enum.Enum):
+class MembershipType(HelixEnum):
     SINGLE_VISIT = "single_visit"
     MONTHLY = "monthly"
     ANNUAL = "annual"

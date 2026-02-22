@@ -35,7 +35,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, date, timedelta
 from uuid import UUID, uuid4
 from typing import Optional, Any
-from enum import Enum
+from src.core.constants import HelixEnum
 from decimal import Decimal
 
 
@@ -43,7 +43,7 @@ from decimal import Decimal
 # ENUMS — THE EQUIPMENT WORLD
 # ================================================================
 
-class EquipmentTypeEnum(str, Enum):
+class EquipmentTypeEnum(HelixEnum):
     """What kind of equipment"""
     # Food service
     SALAD_BAR = "salad_bar"              # The main event
@@ -80,7 +80,7 @@ class EquipmentTypeEnum(str, Enum):
     CUSTOM = "custom"                    # Borris specials
 
 
-class EquipmentStatusEnum(str, Enum):
+class EquipmentStatusEnum(HelixEnum):
     """Where is it in the lifecycle"""
     # Pre-arrival
     PLANNED = "planned"                  # On the wishlist
@@ -116,7 +116,7 @@ class EquipmentStatusEnum(str, Enum):
     SCRAPPED = "scrapped"
 
 
-class SupplierTypeEnum(str, Enum):
+class SupplierTypeEnum(HelixEnum):
     """What kind of supplier"""
     MANUFACTURER = "manufacturer"        # Makes the thing (Alibaba factory)
     DISTRIBUTOR = "distributor"          # Sells the thing (middleman)
@@ -126,7 +126,7 @@ class SupplierTypeEnum(str, Enum):
     REFURB = "refurb"                    # Used/refurbished
 
 
-class ShipmentTypeEnum(str, Enum):
+class ShipmentTypeEnum(HelixEnum):
     """How it travels"""
     # Small
     PARCEL = "parcel"                    # DHL, FedEx box
@@ -148,7 +148,7 @@ class ShipmentTypeEnum(str, Enum):
     HAND_CARRY = "hand_carry"            # Charlie's backpack
 
 
-class ShipmentStatusEnum(str, Enum):
+class ShipmentStatusEnum(HelixEnum):
     """Where is the shipment"""
     PENDING = "pending"                  # Not shipped yet
     PICKED_UP = "picked_up"              # Left supplier
@@ -166,7 +166,7 @@ class ShipmentStatusEnum(str, Enum):
     RECEIVED = "received"                # Checked in
 
 
-class CustomsStatusEnum(str, Enum):
+class CustomsStatusEnum(HelixEnum):
     """Ka-Maki's world"""
     NOT_REQUIRED = "not_required"        # Local/EU
     PENDING = "pending"                  # Waiting
@@ -181,7 +181,7 @@ class CustomsStatusEnum(str, Enum):
     REJECTED = "rejected"                # Big problem
 
 
-class POStatusEnum(str, Enum):
+class POStatusEnum(HelixEnum):
     """Purchase order status"""
     DRAFT = "draft"                      # Felix thinking about it
     SUBMITTED = "submitted"              # Sent to supplier
@@ -196,7 +196,7 @@ class POStatusEnum(str, Enum):
     DISPUTED = "disputed"                # Problem
 
 
-class MaintenanceTypeEnum(str, Enum):
+class MaintenanceTypeEnum(HelixEnum):
     """What kind of maintenance"""
     PREVENTIVE = "preventive"            # Scheduled
     CORRECTIVE = "corrective"            # It broke

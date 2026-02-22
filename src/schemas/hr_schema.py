@@ -13,14 +13,14 @@ from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
 from typing import Optional, List
-from enum import Enum
+from src.core.constants import HelixEnum
 
 
 # ================================================================
 # ENUMS - Time Entry Types & Status
 # ================================================================
 
-class EntryType(str, Enum):
+class EntryType(HelixEnum):
     """What kind of work day?"""
     REGULAR = "regular"              # Normal office/store work
     REMOTE = "remote"                # Home office (80% rate)
@@ -32,7 +32,7 @@ class EntryType(str, Enum):
     TRAINING = "training"            # Training/KB contribution
 
 
-class EntryStatus(str, Enum):
+class EntryStatus(HelixEnum):
     """Time entry approval workflow"""
     DRAFT = "draft"                  # Employee filling in
     SUBMITTED = "submitted"          # Ready for manager review
@@ -41,7 +41,7 @@ class EntryStatus(str, Enum):
     PAID = "paid"                    # Included in payroll
 
 
-class ContractType(str, Enum):
+class ContractType(HelixEnum):
     """Employment contract types"""
     FULLTIME = "fulltime"            # 100% (40h/week)
     PARTTIME = "parttime"            # <100%
@@ -50,7 +50,7 @@ class ContractType(str, Enum):
     INTERN = "intern"                # Praktikant
 
 
-class EmployeeStatus(str, Enum):
+class EmployeeStatus(HelixEnum):
     """Employee lifecycle status"""
     PROBATION = "probation"          # Probezeit (3 months)
     ACTIVE = "active"                # Regular employee
@@ -242,7 +242,7 @@ class EmployeeRead(EmployeeBase):
 # PAYROLL RUN SCHEMAS
 # ================================================================
 
-class PayrollRunStatus(str, Enum):
+class PayrollRunStatus(HelixEnum):
     """Payroll workflow status"""
     DRAFT = "draft"                  # Creating
     CALCULATING = "calculating"      # Processing time entries

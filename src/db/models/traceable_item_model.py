@@ -11,12 +11,12 @@ from datetime import datetime, date, timezone
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class LifecycleStage(str, enum.Enum):
+class LifecycleStage(HelixEnum):
     """The complete food/item lifecycle - E2E"""
     # Origin (Farm)
     SEED = "seed"
@@ -58,7 +58,7 @@ class LifecycleStage(str, enum.Enum):
     EXPIRED = "expired"
 
 
-class LocationType(str, enum.Enum):
+class LocationType(HelixEnum):
     """Where in the chain"""
     FARM = "farm"
     KITCHEN = "kitchen"

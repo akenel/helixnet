@@ -11,12 +11,12 @@ from datetime import datetime, date, timezone
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Numeric, Float, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class EquipmentType(str, enum.Enum):
+class EquipmentType(HelixEnum):
     """What kind of equipment"""
     # Food service
     SALAD_BAR = "salad_bar"
@@ -53,7 +53,7 @@ class EquipmentType(str, enum.Enum):
     CUSTOM = "custom"
 
 
-class EquipmentStatus(str, enum.Enum):
+class EquipmentStatus(HelixEnum):
     """Where is it in the lifecycle"""
     # Pre-arrival
     PLANNED = "planned"

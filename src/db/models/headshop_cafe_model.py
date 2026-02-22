@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import String, DateTime, Integer, Text, ForeignKey, Enum as SQLEnum, Numeric, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
@@ -22,7 +22,7 @@ from .base import Base
 # ENUMS - The Menu Categories
 # ================================================================
 
-class ProductCategory(enum.Enum):
+class ProductCategory(HelixEnum):
     """Main product categories"""
     CBD = "cbd"
     COFFEE = "coffee"
@@ -32,7 +32,7 @@ class ProductCategory(enum.Enum):
     MERCH = "merch"
 
 
-class CBDType(enum.Enum):
+class CBDType(HelixEnum):
     """CBD product types"""
     OIL = "oil"
     DROPS = "drops"
@@ -43,7 +43,7 @@ class CBDType(enum.Enum):
     EDIBLE = "edible"
 
 
-class CBDStrength(enum.Enum):
+class CBDStrength(HelixEnum):
     """CBD strength levels"""
     LIGHT = "light"         # 5-10%
     MEDIUM = "medium"       # 10-20%
@@ -51,7 +51,7 @@ class CBDStrength(enum.Enum):
     EXTRA = "extra"         # 30%+
 
 
-class CoffeeType(enum.Enum):
+class CoffeeType(HelixEnum):
     """Coffee menu items"""
     ESPRESSO = "espresso"
     DOUBLE_ESPRESSO = "double_espresso"
@@ -66,7 +66,7 @@ class CoffeeType(enum.Enum):
     HOT_CHOCOLATE = "hot_chocolate"
 
 
-class BLQFlavor(enum.Enum):
+class BLQFlavor(HelixEnum):
     """BLQ CBD flavors for PAM Cappo"""
     BLUE = "blue"
     PINEAPPLE = "pineapple"
@@ -75,7 +75,7 @@ class BLQFlavor(enum.Enum):
     BERRY = "berry"
 
 
-class MembershipTier(enum.Enum):
+class MembershipTier(HelixEnum):
     """Membership levels"""
     GUEST = "guest"             # Walk-in, no perks
     REGULAR = "regular"         # Basic member
@@ -84,7 +84,7 @@ class MembershipTier(enum.Enum):
     FOUNDER = "founder"         # Day one crew
 
 
-class AccessoryType(enum.Enum):
+class AccessoryType(HelixEnum):
     """Head shop accessories"""
     PAPERS = "papers"
     FILTERS = "filters"

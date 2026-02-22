@@ -11,12 +11,12 @@ from datetime import datetime, date, timezone
 from sqlalchemy import String, DateTime, Date, Integer, Boolean, Text, Numeric, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
+from src.core.constants import HelixEnum
 
 from .base import Base
 
 
-class CustomsStatus(str, enum.Enum):
+class CustomsStatus(HelixEnum):
     """Ka-Maki's world"""
     NOT_REQUIRED = "not_required"
     PENDING = "pending"
