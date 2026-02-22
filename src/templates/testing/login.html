@@ -1,0 +1,94 @@
+{% extends "testing/base.html" %}
+
+{% block title %}Login - QA Testing{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 p-4">
+    <div class="max-w-md w-full">
+        <!-- Branding -->
+        <div class="text-center mb-8">
+            <div class="inline-block bg-white p-5 rounded-full shadow-2xl mb-4">
+                <span class="text-5xl">&#x1F50D;</span>
+            </div>
+            <h1 class="text-4xl font-extrabold text-white mb-2">QA Testing</h1>
+            <p class="text-xl text-slate-400">HelixNet Quality Assurance</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                Tester Login
+            </h2>
+
+            <button
+                onclick="loginWithKeycloak()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold flex items-center justify-center space-x-3 py-4 rounded-xl transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                <span>Log In</span>
+            </button>
+
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>Use your HelixNet QA credentials</p>
+                <p class="mt-2 text-xs text-gray-500">
+                    anne / helix_pass (QA Tester)
+                </p>
+            </div>
+        </div>
+
+        <!-- Error display -->
+        <div id="login-error" class="hidden mt-4 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl text-center text-sm"></div>
+
+        <div class="mt-6 text-center text-slate-500 text-sm">
+            <p>Authenticated via Keycloak</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Check for error in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+        const el = document.getElementById('login-error');
+        el.textContent = 'Login failed: ' + error.replace(/_/g, ' ');
+        el.classList.remove('hidden');
+        window.history.replaceState({}, document.title, '/testing/login');
+    }
+
+    // If already have a valid token, go to dashboard
+    const existingToken = sessionStorage.getItem('qa_token');
+    if (existingToken) {
+        try {
+            const base64Url = existingToken.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join('')));
+            if (payload.exp * 1000 > Date.now()) {
+                window.location.href = '/testing';
+            } else {
+                sessionStorage.removeItem('qa_token');
+            }
+        } catch (e) {
+            sessionStorage.removeItem('qa_token');
+        }
+    }
+
+    function loginWithKeycloak() {
+        const keycloakUrl = window.location.origin;
+        const realm = 'kc-camper-service-realm-dev';
+        const clientId = 'camper_service_web';
+        const redirectUri = window.location.origin + '/testing/callback';
+
+        const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?` +
+            `client_id=${clientId}&` +
+            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+            `response_type=code&` +
+            `scope=openid profile email`;
+
+        window.location.href = authUrl;
+    }
+</script>
+{% endblock %}

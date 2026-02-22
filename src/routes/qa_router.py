@@ -1,7 +1,6 @@
 # File: src/routes/qa_router.py
 # Purpose: QA Testing Dashboard -- API + HTML routes
-# Auth: No Keycloak auth initially (Anne accesses from Kenya)
-# TODO: Add require_roles(["qa-tester"]) when ready
+# Auth: Keycloak RBAC via camper-qa-tester role
 
 import logging
 from datetime import datetime, timezone
@@ -9,7 +8,7 @@ from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +24,12 @@ from src.schemas.qa_schema import (
     BugReportCreate, BugReportUpdate, BugReportRead, BugActivityRead,
     DashboardSummary, PhaseProgress,
 )
+from src.core.keycloak_auth import require_roles
+
+
+def require_qa_tester():
+    """QA tester role required."""
+    return require_roles(["camper-qa-tester"])
 
 logger = logging.getLogger("helix.qa_router")
 
@@ -42,7 +47,10 @@ templates = Jinja2Templates(directory=str(templates_dir))
 # API: Dashboard Summary
 # ================================================================
 @router.get("/summary", response_model=DashboardSummary)
-async def get_summary(db: AsyncSession = Depends(get_db_session)):
+async def get_summary(
+    current_user: dict = Depends(require_qa_tester()),
+    db: AsyncSession = Depends(get_db_session),
+):
     """Overall testing progress stats."""
     # Test counts by status
     result = await db.execute(
@@ -103,7 +111,10 @@ async def get_summary(db: AsyncSession = Depends(get_db_session)):
 # API: Phase Progress
 # ================================================================
 @router.get("/phases", response_model=list[PhaseProgress])
-async def get_phases(db: AsyncSession = Depends(get_db_session)):
+async def get_phases(
+    current_user: dict = Depends(require_qa_tester()),
+    db: AsyncSession = Depends(get_db_session),
+):
     """Per-phase progress breakdown."""
     result = await db.execute(
         select(
@@ -172,6 +183,7 @@ async def get_phases(db: AsyncSession = Depends(get_db_session)):
 async def list_tests(
     phase: int | None = None,
     status_filter: str | None = None,
+    current_user: dict = Depends(require_qa_tester()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """List all test items. Filter by phase or status."""
@@ -196,6 +208,7 @@ async def list_tests(
 async def update_test(
     test_id: UUID,
     update: TestResultUpdate,
+    current_user: dict = Depends(require_qa_tester()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Mark a test as pass/fail/skip/blocked with optional notes."""
@@ -220,7 +233,10 @@ async def update_test(
 
 
 @router.post("/tests/reset", status_code=status.HTTP_200_OK)
-async def reset_all_tests(db: AsyncSession = Depends(get_db_session)):
+async def reset_all_tests(
+    current_user: dict = Depends(require_qa_tester()),
+    db: AsyncSession = Depends(get_db_session),
+):
     """Reset all tests to pending for a new test cycle."""
     result = await db.execute(select(QATestResultModel))
     tests = result.scalars().all()
@@ -241,6 +257,7 @@ async def reset_all_tests(db: AsyncSession = Depends(get_db_session)):
 @router.post("/bugs", response_model=BugReportRead, status_code=status.HTTP_201_CREATED)
 async def create_bug(
     bug: BugReportCreate,
+    current_user: dict = Depends(require_qa_tester()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """File a new bug report."""
@@ -275,7 +292,10 @@ async def create_bug(
 
 
 @router.get("/bugs", response_model=list[BugReportRead])
-async def list_bugs(db: AsyncSession = Depends(get_db_session)):
+async def list_bugs(
+    current_user: dict = Depends(require_qa_tester()),
+    db: AsyncSession = Depends(get_db_session),
+):
     """List all bug reports, newest first."""
     result = await db.execute(
         select(QABugReportModel).order_by(QABugReportModel.created_at.desc())
@@ -287,6 +307,7 @@ async def list_bugs(db: AsyncSession = Depends(get_db_session)):
 async def update_bug(
     bug_id: UUID,
     update: BugReportUpdate,
+    current_user: dict = Depends(require_qa_tester()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Update a bug report -- auto-creates activity log entries for tracked changes."""
@@ -369,6 +390,7 @@ async def update_bug(
 @router.get("/bugs/{bug_id}/activities", response_model=list[BugActivityRead])
 async def get_bug_activities(
     bug_id: UUID,
+    current_user: dict = Depends(require_qa_tester()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Get the activity log for a bug report, newest first."""
@@ -407,7 +429,73 @@ async def health_check(db: AsyncSession = Depends(get_db_session)):
 
 
 # ================================================================
-# HTML: Dashboard Page
+# HTML: Login + OAuth Callback
+# ================================================================
+@html_router.get("/testing/login", response_class=HTMLResponse)
+async def testing_login(request: Request):
+    """QA login page."""
+    return templates.TemplateResponse("testing/login.html", {"request": request})
+
+
+@html_router.get("/testing/callback")
+async def testing_oauth_callback(request: Request, code: str = None, error: str = None):
+    """OAuth2 callback -- exchanges code for token, redirects to dashboard."""
+    import httpx
+
+    if error:
+        logger.error(f"QA OAuth callback error: {error}")
+        return RedirectResponse(url="/testing/login?error=" + error)
+
+    if not code:
+        logger.warning("QA OAuth callback without code")
+        return RedirectResponse(url="/testing/login?error=no_code")
+
+    keycloak_internal_url = "http://keycloak:8080"
+    realm = "kc-camper-service-realm-dev"
+    client_id = "camper_service_web"
+
+    forwarded_proto = request.headers.get("x-forwarded-proto", "https")
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host", "helix.local")
+    redirect_uri = f"{forwarded_proto}://{forwarded_host}/testing/callback"
+
+    logger.info(f"QA token exchange redirect_uri: {redirect_uri}")
+
+    token_endpoint = f"{keycloak_internal_url}/realms/{realm}/protocol/openid-connect/token"
+
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            response = await client.post(
+                token_endpoint,
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": client_id,
+                    "code": code,
+                    "redirect_uri": redirect_uri,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+
+            if response.status_code != 200:
+                logger.error(f"QA token exchange failed: {response.status_code} - {response.text}")
+                return RedirectResponse(url="/testing/login?error=token_exchange_failed")
+
+            tokens = response.json()
+            access_token = tokens.get("access_token")
+
+            if not access_token:
+                logger.error("QA: No access_token in response")
+                return RedirectResponse(url="/testing/login?error=no_token")
+
+            logger.info("QA OAuth callback successful, redirecting to dashboard")
+            return RedirectResponse(url=f"/testing#token={access_token}")
+
+    except Exception as e:
+        logger.error(f"QA token exchange exception: {e}")
+        return RedirectResponse(url="/testing/login?error=token_exchange_error")
+
+
+# ================================================================
+# HTML: Dashboard + Static Pages
 # ================================================================
 @html_router.get("/testing", response_class=HTMLResponse)
 async def testing_dashboard(request: Request):

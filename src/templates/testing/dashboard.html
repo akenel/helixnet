@@ -43,6 +43,13 @@
                         class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition ml-1">
                         Report Bug
                     </button>
+                    <span class="mx-2 w-px h-5 bg-gray-600 inline-block"></span>
+                    <span class="text-xs text-gray-400" x-text="currentUser"></span>
+                    <button @click="logout()" class="text-xs text-gray-500 hover:text-red-400 transition ml-1" title="Logout">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -60,6 +67,10 @@
                         class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
                         Report Bug
                     </button>
+                </div>
+                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-700 mt-1 pt-2">
+                    <span class="text-xs text-gray-400" x-text="currentUser"></span>
+                    <button @click="logout()" class="text-xs text-red-400 hover:text-red-300">Logout</button>
                 </div>
             </div>
         </div>
@@ -508,6 +519,7 @@ function qaDashboard() {
         allTests: [],
         bugs: [],
         mobileNav: false,
+        currentUser: '',
         health: { api: 'error', database: 'error' },
         testerName: localStorage.getItem('qa_tester_name') || 'Anne',
         openPhases: [1],
@@ -521,11 +533,20 @@ function qaDashboard() {
         activityLog: [],
 
         async init() {
+            // Auth gate -- redirect to login if no token
+            if (!QAAuth.requireAuth()) return;
+            const user = QAAuth.getUserInfo();
+            if (user) {
+                this.currentUser = user.firstName || user.username;
+                this.testerName = user.firstName || user.username;
+            }
             await this.loadAll();
             // Health check every 30s
             setInterval(() => this.checkHealth(), 30000);
-            // Watch tester name changes
-            this.$watch('testerName', (val) => localStorage.setItem('qa_tester_name', val));
+        },
+
+        logout() {
+            QAAuth.logout();
         },
 
         async loadAll() {
