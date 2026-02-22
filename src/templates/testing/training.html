@@ -490,12 +490,14 @@
             <a href="/testing">Dashboard</a>
             <a href="/training" class="active">Training</a>
             <a href="/how-to-report-bugs">How to Report</a>
+            <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener" style="color:#60a5fa;" title="Message Angel on Telegram">Need Help?</a>
         </div>
     </div>
     <div class="helix-nav-mobile">
         <a href="/testing">Dashboard</a>
         <a href="/training" class="active">Training</a>
         <a href="/how-to-report-bugs">How to Report</a>
+        <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener" style="color:#60a5fa;">Need Help? (Telegram)</a>
     </div>
 </nav>
 
@@ -544,6 +546,120 @@
                 <p style="margin-top: 8px;">2. BUG-009 (Invoice Details button) has been marked <strong>"Fixed"</strong> and assigned to you. Please test it: open a job with an invoice, click the Details button. If it works, change the status to <strong>"Verified."</strong> If it's still broken, change it back to <strong>"Open"</strong> and add a comment.</p>
                 <p style="margin-top: 8px;">3. Read the <a href="/how-to-report-bugs" style="color: #4ade80; text-decoration: underline;">How to Report Bugs</a> guide -- it shows you step-by-step how to use the new bug form with examples for each type of problem.</p>
             </div>
+        </div>
+    </section>
+
+    <!-- Test Scenarios: Real workflows Anne can execute -->
+    <section>
+        <h2><span class="num">0</span> Your Test Scenarios</h2>
+        <p class="section-subtitle">These are real workflows on the live Camper & Tour system. Follow each one step-by-step.</p>
+
+        <div class="whats-new" style="border-color: #22c55e;">
+            <span class="whats-new-badge" style="background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3);">Test Credentials</span>
+            <p>The camper system has 3 test users. Log in at <strong>/camper</strong> using any of these:</p>
+            <div class="login-box">
+                <span class="label">Counter Staff:</span> <span class="value">pam / helix_pass</span> (reception, check-in, payments)<br>
+                <span class="label">Mechanic:</span> <span class="value">ralph / helix_pass</span> (work logs, inspections)<br>
+                <span class="label">Manager:</span> <span class="value">nino / helix_pass</span> (approvals, invoices, everything)
+            </div>
+        </div>
+
+        <!-- Scenario 1 -->
+        <div class="task-card" style="margin-top: 24px;">
+            <h4 style="color: #818cf8;">Scenario 1: Customer Check-In (as Pam)</h4>
+            <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: A campervan arrives. Register the customer and vehicle.</p>
+            <p>1. Log in as <strong>pam</strong>. You should see the Camper Dashboard.</p>
+            <p>2. Click <strong>Check-In</strong> in the nav.</p>
+            <p>3. Search for an existing vehicle by plate (try <strong>ZH-123456</strong> -- Angelo's MAX). If found, confirm the details are correct.</p>
+            <p>4. Now try a NEW customer: enter a made-up name, phone, email, and plate number.</p>
+            <p>5. Fill in: mileage in, vehicle condition notes (e.g., "scratch on left side").</p>
+            <p>6. Describe the problem: "Water leak from bathroom window seal"</p>
+            <p>7. Submit. A new service job should be created automatically.</p>
+            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p>- Did the customer and vehicle get saved?</p>
+            <p>- Did a new job appear on the Jobs page?</p>
+            <p>- Is the job status "Quoted" or "Open"?</p>
+            <p>- Can you find the customer in the Customers page?</p>
+        </div>
+
+        <!-- Scenario 2 -->
+        <div class="task-card" style="margin-top: 16px;">
+            <h4 style="color: #818cf8;">Scenario 2: Create a Quotation (as Pam or Nino)</h4>
+            <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: Give the customer a price estimate before starting work.</p>
+            <p>1. Go to <strong>Jobs</strong> and click on any job.</p>
+            <p>2. Look for a <strong>Quotation</strong> section or button.</p>
+            <p>3. Add line items:</p>
+            <p style="padding-left: 20px;">- "Seal replacement" -- 2 hours labor at EUR 45/hr = EUR 90</p>
+            <p style="padding-left: 20px;">- "Window seal kit" -- 1 unit at EUR 35</p>
+            <p>4. Check: Does the system calculate <strong>VAT at 22%</strong> (IVA)?</p>
+            <p>5. Check: Does it show a <strong>25% deposit</strong> amount?</p>
+            <p>6. Send the quotation.</p>
+            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p>- Do the totals add up correctly? (subtotal + 22% IVA = total)</p>
+            <p>- Is the deposit 25% of the total?</p>
+            <p>- Did the job status change to "Quoted"?</p>
+        </div>
+
+        <!-- Scenario 3 -->
+        <div class="task-card" style="margin-top: 16px;">
+            <h4 style="color: #818cf8;">Scenario 3: Mechanic Logs Work (as Ralph)</h4>
+            <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: A mechanic works on a job and logs their hours.</p>
+            <p>1. Log out, then log in as <strong>ralph</strong>.</p>
+            <p>2. Go to <strong>Jobs</strong>. Find a job with status "In Progress" or "Approved".</p>
+            <p>3. Open the job details.</p>
+            <p>4. Add a <strong>work log entry</strong>: "Removed old seal, cleaned frame, applied new sealant" -- 2.5 hours.</p>
+            <p>5. Try adding another entry: "Waiting for sealant to cure" -- 0.5 hours.</p>
+            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p>- Can Ralph see the work log entries after saving?</p>
+            <p>- Can Ralph edit or delete a work log? (He should NOT be able to -- audit trail!)</p>
+            <p>- Do the total hours add up correctly?</p>
+        </div>
+
+        <!-- Scenario 4 -->
+        <div class="task-card" style="margin-top: 16px;">
+            <h4 style="color: #818cf8;">Scenario 4: Inspection and Invoice (as Nino)</h4>
+            <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: Manager inspects, approves, and generates the final invoice.</p>
+            <p>1. Log out, then log in as <strong>nino</strong>.</p>
+            <p>2. Find a job that is ready for inspection (status "Inspection" or "Completed").</p>
+            <p>3. Run the <strong>inspection</strong> -- pass or fail it.</p>
+            <p>4. If passed, look for an <strong>Invoice</strong> button or section.</p>
+            <p>5. Generate the invoice.</p>
+            <p>6. Check the <strong>Invoices</strong> page -- does the new invoice appear?</p>
+            <p>7. Click the invoice <strong>Details</strong> button (this was BUG-009!).</p>
+            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p>- Does the invoice show the deposit already paid?</p>
+            <p>- Is the "Amount Due" = total minus deposit?</p>
+            <p>- Does the Details button actually open? (BUG-009 fix)</p>
+            <p>- Can you record a payment?</p>
+        </div>
+
+        <!-- Scenario 5 -->
+        <div class="task-card" style="margin-top: 16px;">
+            <h4 style="color: #818cf8;">Scenario 5: The Full Loop (all roles)</h4>
+            <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: Walk one job through the entire lifecycle from arrival to pickup.</p>
+            <p>This is the big one. Do scenarios 1-4 in sequence on the SAME job:</p>
+            <p>1. <strong>Pam</strong> checks in a new customer + vehicle</p>
+            <p>2. <strong>Pam/Nino</strong> creates a quotation with line items</p>
+            <p>3. Customer "accepts" the quote, deposit is recorded</p>
+            <p>4. <strong>Ralph</strong> logs work hours across multiple entries</p>
+            <p>5. <strong>Nino</strong> inspects and approves the work</p>
+            <p>6. <strong>Pam</strong> logs the mileage out and vehicle condition</p>
+            <p>7. <strong>Nino</strong> generates the final invoice</p>
+            <p>8. Payment is recorded, job status goes to "Invoiced"</p>
+            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p>- Does the job status move correctly through each stage?</p>
+            <p>- Expected flow: <strong>Quoted &rarr; Approved &rarr; In Progress &rarr; Inspection &rarr; Completed &rarr; Invoiced</strong></p>
+            <p>- Are all the numbers consistent? (quote total = invoice total)</p>
+            <p>- Can you find this job in every relevant page? (Jobs, Invoices, Customer history)</p>
+        </div>
+
+        <div class="task-card" style="margin-top: 16px; border-color: #eab308;">
+            <h4 style="color: #eab308;">When Something Breaks</h4>
+            <p>That's the point! You're here to find the breaks. When you hit one:</p>
+            <p>1. Note which scenario and which step you were on</p>
+            <p>2. Screenshot the error or unexpected behavior</p>
+            <p>3. Go to the <a href="/testing" style="color: #4ade80; text-decoration: underline;">QA Dashboard</a> and click <strong>Report Bug</strong></p>
+            <p>4. Or message Angel directly: <a href="https://t.me/BigKingFisher" target="_blank" style="color: #60a5fa; text-decoration: underline;">Telegram @BigKingFisher</a></p>
         </div>
     </section>
 
