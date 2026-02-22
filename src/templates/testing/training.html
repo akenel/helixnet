@@ -445,6 +445,26 @@
         }
         footer strong { color: #64748b; }
 
+        /* Shared Nav */
+        .helix-nav { background: #1e293b; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 50; }
+        .helix-nav-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 48px; }
+        .helix-nav-brand { color: #f8fafc; font-weight: 700; font-size: 1em; text-decoration: none; }
+        .helix-nav-links { display: flex; gap: 4px; }
+        .helix-nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.85em; font-weight: 500; padding: 6px 14px; border-radius: 8px; transition: all 0.2s; }
+        .helix-nav-links a:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
+        .helix-nav-links a.active { color: #818cf8; background: rgba(99,102,241,0.12); }
+        .helix-nav-toggle { display: none; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; }
+        .helix-nav-toggle:hover { color: #f8fafc; }
+        .helix-nav-mobile { display: none; position: absolute; top: 48px; left: 0; right: 0; background: #1e293b; padding: 8px 24px 12px; border-bottom: 1px solid #334155; flex-direction: column; gap: 2px; }
+        .helix-nav-mobile.open { display: flex; }
+        .helix-nav-mobile a { color: #94a3b8; text-decoration: none; font-size: 0.9em; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
+        .helix-nav-mobile a:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
+        .helix-nav-mobile a.active { color: #818cf8; background: rgba(99,102,241,0.12); }
+        @media (max-width: 640px) {
+            .helix-nav-links { display: none; }
+            .helix-nav-toggle { display: block; }
+        }
+
         /* Responsive */
         @media (max-width: 640px) {
             .hero h1 { font-size: 1.8em; }
@@ -456,6 +476,28 @@
     </style>
 </head>
 <body>
+
+<!-- Shared Nav -->
+<nav class="helix-nav">
+    <div class="helix-nav-inner">
+        <a href="/testing" class="helix-nav-brand">HelixNet QA</a>
+        <button class="helix-nav-toggle" onclick="document.querySelector('.helix-nav-mobile').classList.toggle('open')" aria-label="Menu">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        <div class="helix-nav-links">
+            <a href="/testing">Dashboard</a>
+            <a href="/training" class="active">Training</a>
+            <a href="/how-to-report-bugs">How to Report</a>
+        </div>
+    </div>
+    <div class="helix-nav-mobile">
+        <a href="/testing">Dashboard</a>
+        <a href="/training" class="active">Training</a>
+        <a href="/how-to-report-bugs">How to Report</a>
+    </div>
+</nav>
 
 <!-- Hero -->
 <div class="hero">
