@@ -83,8 +83,28 @@ class BugReportRead(BaseModel):
     screenshot_data: Optional[str] = None
     browser_info: Optional[str] = None
     reported_by: str
+    commits: list[BugCommitRead] = []
     created_at: datetime
     updated_at: datetime
+
+
+class BugCommitCreate(BaseModel):
+    """Link a git commit to a bug."""
+    sha: str = Field(..., min_length=7, max_length=40, description="Git commit SHA")
+    message: str = Field(..., min_length=3, max_length=200, description="Commit message (first ~50 chars)")
+    committed_at: Optional[datetime] = Field(None, description="When the commit was made (defaults to now)")
+    actor: str = Field(default="Tigs", min_length=1, max_length=100, description="Who is linking this commit")
+
+
+class BugCommitRead(BaseModel):
+    """Git commit linked to a bug."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    sha: str
+    message: str
+    committed_at: datetime
+    created_at: datetime
 
 
 class BugActivityRead(BaseModel):

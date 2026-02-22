@@ -12,16 +12,19 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.db.database import get_db_session
 from src.db.models.qa_test_result_model import (
     QATestResultModel, TestStatus,
     QABugReportModel, BugSeverity, BugStatus,
     QABugActivityModel, BugActivityType,
+    QABugCommitModel,
 )
 from src.schemas.qa_schema import (
     TestResultUpdate, TestResultRead,
     BugReportCreate, BugReportUpdate, BugReportRead, BugActivityRead,
+    BugCommitCreate, BugCommitRead,
     DashboardSummary, PhaseProgress,
 )
 from src.core.keycloak_auth import require_roles
@@ -298,7 +301,9 @@ async def list_bugs(
 ):
     """List all bug reports, newest first."""
     result = await db.execute(
-        select(QABugReportModel).order_by(QABugReportModel.created_at.desc())
+        select(QABugReportModel)
+        .options(selectinload(QABugReportModel.commits))
+        .order_by(QABugReportModel.created_at.desc())
     )
     return result.scalars().all()
 
@@ -312,7 +317,9 @@ async def update_bug(
 ):
     """Update a bug report -- auto-creates activity log entries for tracked changes."""
     result = await db.execute(
-        select(QABugReportModel).where(QABugReportModel.id == bug_id)
+        select(QABugReportModel)
+        .options(selectinload(QABugReportModel.commits))
+        .where(QABugReportModel.id == bug_id)
     )
     bug = result.scalar_one_or_none()
     if not bug:
@@ -406,6 +413,58 @@ async def get_bug_activities(
         .order_by(QABugActivityModel.created_at.desc())
     )
     return result.scalars().all()
+
+
+@router.post("/bugs/{bug_id}/commits", response_model=BugCommitRead, status_code=status.HTTP_201_CREATED)
+async def add_bug_commit(
+    bug_id: UUID,
+    commit: BugCommitCreate,
+    current_user: dict = Depends(require_qa_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Link a git commit to a bug report."""
+    bug_result = await db.execute(
+        select(QABugReportModel).where(QABugReportModel.id == bug_id)
+    )
+    bug = bug_result.scalar_one_or_none()
+    if not bug:
+        raise HTTPException(status_code=404, detail="Bug report not found")
+
+    # Check for duplicate SHA on this bug
+    existing = await db.execute(
+        select(QABugCommitModel).where(
+            QABugCommitModel.bug_id == bug_id,
+            QABugCommitModel.sha == commit.sha,
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail=f"Commit {commit.sha} already linked to this bug")
+
+    new_commit = QABugCommitModel(
+        bug_id=bug_id,
+        sha=commit.sha,
+        message=commit.message[:200],
+        committed_at=commit.committed_at or datetime.now(timezone.utc),
+    )
+    db.add(new_commit)
+
+    # Also update the legacy git_sha field to the latest commit
+    bug.git_sha = commit.sha
+    bug.updated_at = datetime.now(timezone.utc)
+
+    # Activity log entry
+    db.add(QABugActivityModel(
+        bug_id=bug_id,
+        activity_type=BugActivityType.GIT_LINKED,
+        actor=commit.actor,
+        new_value=f"{commit.sha[:7]} {commit.message[:50]}",
+    ))
+
+    await db.commit()
+    await db.refresh(new_commit)
+
+    logger.info(f"BUG-{bug.bug_number:03d}: commit {commit.sha[:7]} linked by {commit.actor}")
+    return new_commit
 
 
 # ================================================================

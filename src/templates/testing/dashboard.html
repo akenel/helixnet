@@ -306,7 +306,11 @@
                                     <template x-if="bug.assigned_to">
                                         <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded" x-text="'Assigned: ' + bug.assigned_to"></span>
                                     </template>
-                                    <template x-if="bug.git_sha">
+                                    <template x-if="bug.commits && bug.commits.length > 0">
+                                        <span class="text-xs font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded"
+                                            x-text="bug.commits.length + (bug.commits.length === 1 ? ' commit' : ' commits') + ' -- ' + bug.commits[bug.commits.length - 1].sha.substring(0, 7)"></span>
+                                    </template>
+                                    <template x-if="(!bug.commits || bug.commits.length === 0) && bug.git_sha">
                                         <span class="text-xs font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded" x-text="'Fix: ' + bug.git_sha.substring(0, 7)"></span>
                                     </template>
                                 </div>
@@ -443,9 +447,32 @@
 
                 <template x-if="editingBugId">
                     <div>
-                        <label class="text-sm font-medium text-gray-700">Fix Commit (git SHA)</label>
-                        <input type="text" x-model="bugForm.git_sha" placeholder="e.g. 1fe510a" maxlength="40"
-                            class="w-full mt-1 px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                        <label class="text-sm font-medium text-gray-700">Fix Commits</label>
+                        <!-- Existing commits list -->
+                        <template x-if="bugCommits.length > 0">
+                            <div class="mt-1 space-y-1">
+                                <template x-for="c in bugCommits" :key="c.id">
+                                    <div class="flex items-center text-xs bg-gray-50 rounded px-2 py-1.5 font-mono">
+                                        <span class="text-amber-700 font-bold mr-2" x-text="c.sha.substring(0, 7)"></span>
+                                        <span class="text-gray-700 truncate flex-1" x-text="c.message.substring(0, 50)"></span>
+                                        <span class="text-gray-400 ml-2 whitespace-nowrap" x-text="new Date(c.committed_at).toLocaleDateString()"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template x-if="bugCommits.length === 0">
+                            <p class="text-xs text-gray-400 mt-1">No commits linked yet.</p>
+                        </template>
+                        <!-- Add new commit -->
+                        <div class="mt-2 flex gap-2">
+                            <input type="text" x-model="newCommitSha" placeholder="SHA (e.g. 1fe510a)" maxlength="40"
+                                class="w-28 px-2 py-1.5 text-xs font-mono border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                            <input type="text" x-model="newCommitMsg" placeholder="Commit message (first 50 chars)" maxlength="200"
+                                class="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                            <button @click="addBugCommit()" type="button"
+                                class="bg-gray-700 hover:bg-gray-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                                :disabled="!newCommitSha || !newCommitMsg">+ Add</button>
+                        </div>
                     </div>
                 </template>
 
@@ -537,6 +564,9 @@ function qaDashboard() {
         showBugForm: false,
         editingBugId: null,
         bugForm: { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' },
+        bugCommits: [],
+        newCommitSha: '',
+        newCommitMsg: '',
         showActivityModal: false,
         activeBug: null,
         activityLog: [],
@@ -669,6 +699,9 @@ function qaDashboard() {
                 git_sha: bug.git_sha || '',
                 comment: '',
             };
+            this.bugCommits = bug.commits || [];
+            this.newCommitSha = '';
+            this.newCommitMsg = '';
             this.showBugForm = true;
         },
 
@@ -757,6 +790,29 @@ function qaDashboard() {
                 this.showBugs = true;
             } catch (e) {
                 showToast('Failed to ' + (this.editingBugId ? 'update' : 'submit') + ' bug: ' + e.message, 'error');
+            }
+        },
+
+        async addBugCommit() {
+            if (!this.newCommitSha || !this.newCommitMsg || !this.editingBugId) return;
+            try {
+                const commit = await API.post('/api/v1/testing/bugs/' + this.editingBugId + '/commits', {
+                    sha: this.newCommitSha,
+                    message: this.newCommitMsg,
+                    actor: this.testerName || 'Tigs',
+                });
+                this.bugCommits.push(commit);
+                // Also update the bug in the list
+                const idx = this.bugs.findIndex(b => b.id === this.editingBugId);
+                if (idx >= 0) {
+                    if (!this.bugs[idx].commits) this.bugs[idx].commits = [];
+                    this.bugs[idx].commits.push(commit);
+                }
+                this.newCommitSha = '';
+                this.newCommitMsg = '';
+                showToast('Commit linked', 'success');
+            } catch (e) {
+                showToast('Failed to link commit: ' + e.message, 'error');
             }
         },
 

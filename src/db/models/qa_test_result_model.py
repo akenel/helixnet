@@ -244,6 +244,11 @@ class QABugReportModel(Base):
         cascade="all, delete-orphan",
         order_by="QABugActivityModel.created_at",
     )
+    commits: Mapped[list["QABugCommitModel"]] = relationship(
+        back_populates="bug",
+        cascade="all, delete-orphan",
+        order_by="QABugCommitModel.committed_at",
+    )
 
 
 # ================================================================
@@ -299,5 +304,53 @@ class QABugActivityModel(Base):
     # Relationship
     bug: Mapped["QABugReportModel"] = relationship(
         back_populates="activities",
+        foreign_keys=[bug_id],
+    )
+
+
+# ================================================================
+# QA Bug Commit Tracking (one bug → many commits)
+# ================================================================
+class QABugCommitModel(Base):
+    """Git commits linked to a bug fix -- full traceability."""
+    __tablename__ = "qa_bug_commits"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        index=True,
+        default=uuid.uuid4,
+    )
+    bug_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("qa_bug_reports.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    sha: Mapped[str] = mapped_column(
+        String(40),
+        nullable=False,
+        comment="Git commit SHA (short or full)",
+    )
+    message: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+        comment="First ~50 chars of commit message",
+    )
+    committed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        comment="When the commit was made",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    # Relationship
+    bug: Mapped["QABugReportModel"] = relationship(
+        back_populates="commits",
         foreign_keys=[bug_id],
     )
