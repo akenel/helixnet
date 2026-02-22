@@ -510,12 +510,12 @@
 
 <div class="container">
 
-    <!-- What's New: Anne's Login -->
+    <!-- What's New: Login Required -->
     <section>
         <div class="whats-new">
-            <span class="whats-new-badge">New -- Feb 22, 2026</span>
-            <h3>You Have Your Own Login Now</h3>
-            <p>You now have a real account in <strong>Keycloak</strong> (our login system). This means the QA Dashboard knows who you are. When you log in, your name appears on bugs you report, comments you leave, and verifications you make.</p>
+            <span class="whats-new-badge">Updated -- Feb 22, 2026</span>
+            <h3>The Dashboard Now Requires Login</h3>
+            <p>The QA Dashboard is now behind a real login. When you open <strong>/testing</strong>, you'll be redirected to a login page. This is <strong>Keycloak</strong>, our authentication system. It knows who you are and what you're allowed to do.</p>
 
             <div class="login-box">
                 <span class="label">Username:</span> <span class="value">anne</span><br>
@@ -523,14 +523,26 @@
                 <span class="label">Role:</span> <span class="value">camper-qa-tester</span>
             </div>
 
-            <p>Your role gives you access to the <strong>QA Dashboard</strong>, <strong>Bug Tracker</strong>, and this <strong>Training Guide</strong>. You do NOT have access to business data (vehicles, jobs, invoices) -- that's intentional. Testers test the system, they don't manage the business data.</p>
+            <h4 style="color: #f8fafc; margin: 20px 0 10px;">How to Log In (step by step)</h4>
+            <p>1. Go to the <a href="/testing" style="color: #4ade80; text-decoration: underline;">QA Dashboard</a>. You'll see a login page with a blue <strong>"Log In"</strong> button.</p>
+            <p>2. Click <strong>Log In</strong>. Keycloak's login form appears.</p>
+            <p>3. Enter <strong>anne</strong> as username and <strong>helix_pass</strong> as password. Click <strong>Sign In</strong>.</p>
+            <p>4. You're back on the dashboard. Your name appears in the top-right corner of the nav bar.</p>
 
-            <p class="note">If the login page does not appear or you get an error, tell Angel. It might mean the server needs a restart -- not your fault.</p>
+            <h4 style="color: #f8fafc; margin: 20px 0 10px;">What to Know</h4>
+            <p><strong>Session expires after 30 minutes.</strong> If you see "Session expired" or get sent back to the login page, just log in again. Your work (bugs, tests) is saved -- you don't lose anything.</p>
+            <p><strong>Logout button</strong> is in the top-right of the nav bar (small door icon). Use it when you're done for the day.</p>
+            <p><strong>Training and How to Report pages are public</strong> -- they don't require login. Only the dashboard (where you mark tests and file bugs) needs it.</p>
+
+            <p>Your role gives you access to the <strong>QA Dashboard</strong> and <strong>Bug Tracker</strong>. You do NOT have access to business data (vehicles, jobs, invoices) -- that's intentional. Testers test the system, they don't manage the business data.</p>
+
+            <p class="note">If the login page does not appear, if you get a blank screen, or if you see an error after clicking Log In, screenshot it and send to Angel on Telegram. It might mean the server needs a restart -- not your fault.</p>
 
             <div class="task-card">
                 <h4>Your Morning Tasks</h4>
-                <p>1. BUG-009 (Invoice Details button) has been marked <strong>"Fixed"</strong> and assigned to you. Please test it: open a job with an invoice, click the Details button. If it works, change the status to <strong>"Verified."</strong> If it's still broken, change it back to <strong>"Open"</strong> and add a comment saying what happened.</p>
-                <p style="margin-top: 8px;">2. Read the <a href="/how-to-report-bugs" style="color: #4ade80; text-decoration: underline;">How to Report Bugs</a> guide -- it shows you step-by-step how to use the new bug form with examples for each type of problem.</p>
+                <p>1. <strong>Log in</strong> to the <a href="/testing" style="color: #4ade80; text-decoration: underline;">QA Dashboard</a> using your credentials above. Confirm your name shows in the nav bar.</p>
+                <p style="margin-top: 8px;">2. BUG-009 (Invoice Details button) has been marked <strong>"Fixed"</strong> and assigned to you. Please test it: open a job with an invoice, click the Details button. If it works, change the status to <strong>"Verified."</strong> If it's still broken, change it back to <strong>"Open"</strong> and add a comment.</p>
+                <p style="margin-top: 8px;">3. Read the <a href="/how-to-report-bugs" style="color: #4ade80; text-decoration: underline;">How to Report Bugs</a> guide -- it shows you step-by-step how to use the new bug form with examples for each type of problem.</p>
             </div>
         </div>
     </section>
@@ -783,6 +795,10 @@
         <div class="faq-item">
             <div class="q">What if the login doesn't work?</div>
             <p class="a">Tell Angel immediately. It could be a server issue, not something you did wrong. Your username is <strong>anne</strong> and password is <strong>helix_pass</strong>. If it shows an error page or a blank screen, take a screenshot and send it on Telegram.</p>
+        </div>
+        <div class="faq-item">
+            <div class="q">What if I get sent back to the login page while working?</div>
+            <p class="a">Your session expires after about 30 minutes of inactivity. Just log in again. Your bugs, test results, and comments are all saved on the server -- nothing is lost. Think of it like a door that locks behind you after a while. You still have the key.</p>
         </div>
         <div class="faq-item">
             <div class="q">What if I don't understand something?</div>

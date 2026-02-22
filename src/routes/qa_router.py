@@ -27,9 +27,9 @@ from src.schemas.qa_schema import (
 from src.core.keycloak_auth import require_roles
 
 
-def require_qa_tester():
-    """QA tester role required."""
-    return require_roles(["camper-qa-tester"])
+def require_qa_access():
+    """QA dashboard access -- testers, managers, and admins."""
+    return require_roles(["camper-qa-tester", "camper-manager", "camper-admin"])
 
 logger = logging.getLogger("helix.qa_router")
 
@@ -48,7 +48,7 @@ templates = Jinja2Templates(directory=str(templates_dir))
 # ================================================================
 @router.get("/summary", response_model=DashboardSummary)
 async def get_summary(
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Overall testing progress stats."""
@@ -112,7 +112,7 @@ async def get_summary(
 # ================================================================
 @router.get("/phases", response_model=list[PhaseProgress])
 async def get_phases(
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Per-phase progress breakdown."""
@@ -183,7 +183,7 @@ async def get_phases(
 async def list_tests(
     phase: int | None = None,
     status_filter: str | None = None,
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """List all test items. Filter by phase or status."""
@@ -208,7 +208,7 @@ async def list_tests(
 async def update_test(
     test_id: UUID,
     update: TestResultUpdate,
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Mark a test as pass/fail/skip/blocked with optional notes."""
@@ -234,7 +234,7 @@ async def update_test(
 
 @router.post("/tests/reset", status_code=status.HTTP_200_OK)
 async def reset_all_tests(
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Reset all tests to pending for a new test cycle."""
@@ -257,7 +257,7 @@ async def reset_all_tests(
 @router.post("/bugs", response_model=BugReportRead, status_code=status.HTTP_201_CREATED)
 async def create_bug(
     bug: BugReportCreate,
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """File a new bug report."""
@@ -293,7 +293,7 @@ async def create_bug(
 
 @router.get("/bugs", response_model=list[BugReportRead])
 async def list_bugs(
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """List all bug reports, newest first."""
@@ -307,7 +307,7 @@ async def list_bugs(
 async def update_bug(
     bug_id: UUID,
     update: BugReportUpdate,
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Update a bug report -- auto-creates activity log entries for tracked changes."""
@@ -390,7 +390,7 @@ async def update_bug(
 @router.get("/bugs/{bug_id}/activities", response_model=list[BugActivityRead])
 async def get_bug_activities(
     bug_id: UUID,
-    current_user: dict = Depends(require_qa_tester()),
+    current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Get the activity log for a bug report, newest first."""
