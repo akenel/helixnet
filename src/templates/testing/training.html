@@ -379,6 +379,62 @@
             margin: 0;
         }
 
+        /* What's New Banner */
+        .whats-new {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin: 32px 0;
+        }
+        .whats-new-badge {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .whats-new h3 {
+            color: #4ade80;
+            font-size: 1.15em;
+            margin: 0 0 12px;
+        }
+        .whats-new p { color: #d1fae5; font-size: 0.92em; }
+        .whats-new .login-box {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em;
+            line-height: 2;
+        }
+        .whats-new .login-box .label { color: #64748b; }
+        .whats-new .login-box .value { color: #4ade80; font-weight: 600; }
+        .whats-new .note {
+            color: #94a3b8;
+            font-size: 0.85em;
+            font-style: italic;
+            margin-top: 12px;
+            margin-bottom: 0;
+        }
+
+        /* Task card */
+        .task-card {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0 0;
+        }
+        .task-card h4 { color: #eab308; font-size: 0.95em; margin: 0 0 8px; }
+        .task-card p { color: #fef3c7; font-size: 0.88em; margin: 0; }
+
         /* Footer */
         footer {
             text-align: center;
@@ -411,6 +467,30 @@
 </div>
 
 <div class="container">
+
+    <!-- What's New: Anne's Login -->
+    <section>
+        <div class="whats-new">
+            <span class="whats-new-badge">New -- Feb 22, 2026</span>
+            <h3>You Have Your Own Login Now</h3>
+            <p>You now have a real account in <strong>Keycloak</strong> (our login system). This means the QA Dashboard knows who you are. When you log in, your name appears on bugs you report, comments you leave, and verifications you make.</p>
+
+            <div class="login-box">
+                <span class="label">Username:</span> <span class="value">anne</span><br>
+                <span class="label">Password:</span> <span class="value">helix_pass</span><br>
+                <span class="label">Role:</span> <span class="value">camper-qa-tester</span>
+            </div>
+
+            <p>Your role gives you access to the <strong>QA Dashboard</strong>, <strong>Bug Tracker</strong>, and this <strong>Training Guide</strong>. You do NOT have access to business data (vehicles, jobs, invoices) -- that's intentional. Testers test the system, they don't manage the business data.</p>
+
+            <p class="note">If the login page does not appear or you get an error, tell Angel. It might mean the server needs a restart -- not your fault.</p>
+
+            <div class="task-card">
+                <h4>Your Morning Task</h4>
+                <p>BUG-009 (Invoice Details button) has been marked <strong>"Fixed"</strong> and assigned to you. Please test it: open a job with an invoice, click the Details button. If it works, change the status to <strong>"Verified."</strong> If it's still broken, change it back to <strong>"Open"</strong> and add a comment saying what happened.</p>
+            </div>
+        </div>
+    </section>
 
     <!-- Section 1: The 3 Places -->
     <section>
@@ -654,6 +734,14 @@
             <p class="a">It's the unique ID of the exact code change that fixed the bug. Like a receipt number -- it proves WHAT was changed and WHEN. Example: <code style="color:#818cf8">1fe510a</code></p>
         </div>
         <div class="faq-item">
+            <div class="q">Why do I need to log in now?</div>
+            <p class="a">Before, the QA dashboard was open to everyone. Now it knows who you are. When you report a bug, your name is on it. When you verify a fix, the developer knows YOU confirmed it. It also means only people with the right role can access testing -- no accidental edits from other users.</p>
+        </div>
+        <div class="faq-item">
+            <div class="q">What if the login doesn't work?</div>
+            <p class="a">Tell Angel immediately. It could be a server issue, not something you did wrong. Your username is <strong>anne</strong> and password is <strong>helix_pass</strong>. If it shows an error page or a blank screen, take a screenshot and send it on Telegram.</p>
+        </div>
+        <div class="faq-item">
             <div class="q">What if I don't understand something?</div>
             <p class="a">Ask. There are no stupid questions in software engineering. The only stupid thing is staying confused and not asking.</p>
         </div>
@@ -662,7 +750,7 @@
 </div>
 
 <footer>
-    <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; February 21, 2026</p>
+    <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; Updated February 22, 2026</p>
     <p>For <strong>Anne</strong> -- the quality gate of HelixNet</p>
     <p style="margin-top: 12px; color: #334155;">"The developer says fixed. The tester says verified. The tester has the final word."</p>
 </footer>
