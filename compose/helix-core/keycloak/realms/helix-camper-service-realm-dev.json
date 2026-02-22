@@ -51,6 +51,10 @@
         "description": "Accountant - Financial access, invoicing, quotation review, revenue reporting."
       },
       {
+        "name": "camper-qa-tester",
+        "description": "QA tester - Testing dashboard, bug reporting, test execution, verification."
+      },
+      {
         "name": "default-roles-kc-camper-service-realm-dev",
         "description": "Default roles for kc-camper-service-realm-dev",
         "composite": true
@@ -105,6 +109,13 @@
       "realmRoles": ["camper-hr", "default-roles-kc-camper-service-realm-dev"],
       "attributes": {
         "description": ["Human resources. Staff records, work hours, training."]
+      }
+    },
+    {
+      "name": "QA Testers",
+      "realmRoles": ["camper-qa-tester", "default-roles-kc-camper-service-realm-dev"],
+      "attributes": {
+        "description": ["Quality assurance testers. Bug reporting, test execution, verification."]
       }
     }
   ],
@@ -385,6 +396,28 @@
       },
       "realmRoles": ["camper-hr", "default-roles-kc-camper-service-realm-dev"],
       "groups": ["/HR"]
+    },
+    {
+      "username": "anne",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "anne@helixnet.test",
+      "firstName": "Anne",
+      "lastName": "Muthoni",
+      "attributes": {
+        "title": ["QA Tester"],
+        "language": ["en"],
+        "notes": ["Quality gate. The tester has the final word."]
+      },
+      "realmRoles": ["camper-qa-tester", "default-roles-kc-camper-service-realm-dev"],
+      "groups": ["/QA Testers"]
     }
   ],
   "browserSecurityHeaders": {

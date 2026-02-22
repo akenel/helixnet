@@ -110,3 +110,8 @@ node_modules/
 docs/business/postcards/**/arc/
 # Raw photos from Telegram (large, unprocessed)
 docs/business/postcards/**/raw/
+
+# ====================================================================
+# 🔑 KEYCLOAK MIGRATIONS - Local state tracking
+# ====================================================================
+scripts/kc-migrations/.applied
