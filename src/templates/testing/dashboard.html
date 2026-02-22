@@ -237,6 +237,9 @@
                                             'bg-blue-50 text-blue-700': bug.status === 'verified',
                                             'bg-gray-50 text-gray-600': bug.status === 'wont_fix'
                                         }" x-text="bug.status.replace('_', ' ')"></span>
+                                    <template x-if="bug.category">
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" x-text="bug.category"></span>
+                                    </template>
                                 </div>
                                 <h4 class="text-sm font-semibold text-gray-800">
                                     <span class="text-indigo-600 font-mono" x-text="'BUG-' + String(bug.bug_number).padStart(3, '0')"></span>
@@ -306,21 +309,38 @@
                         class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
                 </div>
 
-                <div>
-                    <label class="text-sm font-medium text-gray-700">Description *</label>
-                    <textarea x-model="bugForm.description" rows="3" placeholder="What happened? What did you expect?"
-                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200"></textarea>
+                <!-- Category + Severity row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Bug Type</label>
+                        <select x-model="bugForm.category" @change="updateDescriptionTemplate()"
+                            class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                            <option value="functional">Something doesn't work</option>
+                            <option value="cosmetic">Looks wrong</option>
+                            <option value="performance">Too slow / freezes</option>
+                            <option value="data">Wrong data shown</option>
+                            <option value="security">Login / access issue</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Severity</label>
+                        <select x-model="bugForm.severity"
+                            class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
                 </div>
 
+                <!-- Guided description -->
                 <div>
-                    <label class="text-sm font-medium text-gray-700">Severity</label>
-                    <select x-model="bugForm.severity"
-                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
-                        <option value="low">Low</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="high">High</option>
-                        <option value="critical">Critical</option>
-                    </select>
+                    <label class="text-sm font-medium text-gray-700">Description *</label>
+                    <p class="text-xs text-gray-400 mt-0.5 mb-1" x-text="descriptionHint()"></p>
+                    <textarea x-model="bugForm.description" rows="6"
+                        :placeholder="descriptionPlaceholder()"
+                        class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200 font-mono leading-relaxed"></textarea>
                 </div>
 
                 <div>
@@ -463,7 +483,7 @@ function qaDashboard() {
         showBugs: false,
         showBugForm: false,
         editingBugId: null,
-        bugForm: { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' },
+        bugForm: { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' },
         showActivityModal: false,
         activeBug: null,
         activityLog: [],
@@ -579,6 +599,7 @@ function qaDashboard() {
                 title: bug.title,
                 description: bug.description,
                 severity: bug.severity,
+                category: bug.category || 'functional',
                 test_result_id: bug.test_result_id || '',
                 browser_info: bug.browser_info || '',
                 screenshot_data: bug.screenshot_data || '',
@@ -591,8 +612,37 @@ function qaDashboard() {
 
         openNewBugForm() {
             this.editingBugId = null;
-            this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
+            this.bugForm = { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
             this.showBugForm = true;
+        },
+
+        descriptionPlaceholder() {
+            const templates = {
+                functional: 'What I did:\n(e.g. clicked the Save button on the job form)\n\nWhat happened:\n(e.g. nothing happened, no error shown)\n\nWhat I expected:\n(e.g. the job should be saved and I should see a success message)',
+                cosmetic: 'What looks wrong:\n(e.g. the text is cut off, button is too small)\n\nWhere on the page:\n(e.g. top right corner of the job details page)\n\nWhat it should look like:\n(e.g. the full text should be visible)',
+                performance: 'What is slow:\n(e.g. loading the vehicle list takes 30+ seconds)\n\nWhen it happens:\n(e.g. every time, only when there are many vehicles)\n\nHow long I waited:\n(e.g. 45 seconds before giving up)',
+                data: 'What data is wrong:\n(e.g. the invoice total shows 0.00 but there are items)\n\nWhat it should show:\n(e.g. the sum of all line items)\n\nWhich record:\n(e.g. Job #47, Invoice for customer Rossi)',
+                security: 'What happened:\n(e.g. I could not log in, got a blank page)\n\nError message (if any):\n(e.g. "Access Denied" or "403 Forbidden")\n\nWhat I was trying to access:\n(e.g. the QA Dashboard at /testing)',
+            };
+            return templates[this.bugForm.category] || templates.functional;
+        },
+
+        descriptionHint() {
+            const hints = {
+                functional: 'Answer the 3 questions: What did you do? What happened? What should have happened?',
+                cosmetic: 'Describe what looks wrong, where it is, and what it should look like.',
+                performance: 'Tell us what is slow, when it happens, and how long you waited.',
+                data: 'Tell us what data is wrong, what it should be, and which record.',
+                security: 'Describe the access problem, any error message, and what you were trying to reach.',
+            };
+            return hints[this.bugForm.category] || hints.functional;
+        },
+
+        updateDescriptionTemplate() {
+            // Only pre-fill if description is empty or still a template
+            if (!this.bugForm.description || this.bugForm.description.startsWith('What ') || this.bugForm.description.startsWith('What I')) {
+                this.bugForm.description = '';
+            }
         },
 
         async submitBug() {
@@ -604,6 +654,7 @@ function qaDashboard() {
                         title: this.bugForm.title,
                         description: this.bugForm.description,
                         severity: this.bugForm.severity,
+                        category: this.bugForm.category,
                         screenshot_data: this.bugForm.screenshot_data || null,
                         assigned_to: this.bugForm.assigned_to || null,
                         git_sha: this.bugForm.git_sha || null,
@@ -618,6 +669,7 @@ function qaDashboard() {
                         title: this.bugForm.title,
                         description: this.bugForm.description,
                         severity: this.bugForm.severity,
+                        category: this.bugForm.category,
                         reported_by: this.testerName || 'Anne',
                         browser_info: this.bugForm.browser_info || navigator.userAgent,
                     };
@@ -632,7 +684,7 @@ function qaDashboard() {
                 }
                 this.showBugForm = false;
                 this.editingBugId = null;
-                this.bugForm = { title: '', description: '', severity: 'medium', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
+                this.bugForm = { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
                 // Reload bugs + summary
                 const [bugs, summary] = await Promise.all([
                     API.get('/api/v1/testing/bugs'),

@@ -40,6 +40,15 @@ class BugStatus(HelixEnum):
     WONT_FIX = "wont_fix"
 
 
+class BugCategory(HelixEnum):
+    """Bug classification -- what kind of problem is it."""
+    FUNCTIONAL = "functional"       # Something doesn't work (buttons, forms, logic)
+    COSMETIC = "cosmetic"           # Looks wrong (layout, colors, text)
+    PERFORMANCE = "performance"     # Too slow, freezes, timeouts
+    DATA = "data"                   # Wrong data shown, missing data, bad calculations
+    SECURITY = "security"           # Access issues, login problems, permissions
+
+
 class BugActivityType(HelixEnum):
     """What kind of activity happened on a bug."""
     STATUS_CHANGE = "status_change"
@@ -164,6 +173,14 @@ class QABugReportModel(Base):
         default=BugSeverity.MEDIUM,
         index=True,
         comment="Bug severity level",
+    )
+    category: Mapped[BugCategory | None] = mapped_column(
+        SQLEnum(BugCategory, name="qa_bug_category", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
+        nullable=True,
+        default=BugCategory.FUNCTIONAL,
+        index=True,
+        comment="Bug classification: functional, cosmetic, performance, data, security",
     )
     status: Mapped[BugStatus] = mapped_column(
         SQLEnum(BugStatus, name="qa_bug_status", create_constraint=True,
