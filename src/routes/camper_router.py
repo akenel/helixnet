@@ -21,6 +21,7 @@ from uuid import UUID
 from typing import Optional
 from pathlib import Path
 import io
+import asyncio
 
 from src.db.database import get_db_session
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleStatus
@@ -2257,13 +2258,29 @@ async def upload_document(
     """Upload file to MinIO and create tracking record"""
     from src.services.minio_service import minio_service
 
+    # Read file content into memory so we know the size (file.size can be -1 or None)
+    content = await file.read()
+    file_size = len(content)
+
     # Build MinIO object key
     object_key = f"camper-documents/{entity_type}/{entity_id}/{file.filename}"
 
-    # Upload to MinIO
-    minio_key = await minio_service.upload_file_stream_async(file, object_key)
-    if not minio_key:
-        raise HTTPException(status_code=500, detail="File upload to MinIO failed")
+    # Upload to MinIO using sync method with known size
+    loop = asyncio.get_running_loop()
+    try:
+        result = await loop.run_in_executor(
+            None,
+            minio_service.client.put_object,
+            minio_service.bucket_name,
+            object_key,
+            io.BytesIO(content),
+            file_size,
+            file.content_type or "application/octet-stream",
+        )
+        minio_key = result.object_name
+    except Exception as e:
+        logger.error(f"MinIO upload failed for {object_key}: {e}")
+        raise HTTPException(status_code=500, detail="File upload to storage failed")
 
     # Create DB record
     doc = CamperDocumentModel(
@@ -2271,7 +2288,7 @@ async def upload_document(
         entity_id=entity_id,
         file_name=file.filename,
         file_type=file.content_type or "application/octet-stream",
-        file_size=file.size or 0,
+        file_size=file_size,
         minio_object_key=minio_key,
         description=description,
         uploaded_by=current_user['username'],
@@ -2307,10 +2324,11 @@ async def list_documents(
 @router.get("/documents/{doc_id}/download")
 async def download_document(
     doc_id: UUID,
+    inline: bool = False,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_camper_role()),
 ):
-    """Stream file from MinIO"""
+    """Stream file from MinIO. Use ?inline=true to view in browser (images, PDFs)."""
     from src.services.minio_service import minio_service
 
     result = await db.execute(
@@ -2324,10 +2342,11 @@ async def download_document(
     if not file_data:
         raise HTTPException(status_code=404, detail="File not found in storage")
 
+    disposition = "inline" if inline else "attachment"
     return StreamingResponse(
         io.BytesIO(file_data),
         media_type=doc.file_type,
-        headers={"Content-Disposition": f'attachment; filename="{doc.file_name}"'}
+        headers={"Content-Disposition": f'{disposition}; filename="{doc.file_name}"'}
     )
 
 

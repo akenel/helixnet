@@ -457,14 +457,43 @@
                     <template x-if="documents.length > 0">
                         <div class="space-y-2">
                             <template x-for="doc in documents" :key="doc.id">
-                                <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2">
-                                    <div>
-                                        <span class="text-sm font-medium text-gray-900" x-text="doc.file_name"></span>
-                                        <span class="text-xs text-gray-500 ml-2" x-text="(doc.file_size / 1024).toFixed(0) + ' KB'"></span>
+                                <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <div class="flex items-center space-x-3 min-w-0">
+                                        <!-- Thumbnail for images -->
+                                        <template x-if="doc.file_type && doc.file_type.startsWith('image/')">
+                                            <img :src="'/api/v1/camper/documents/' + doc.id + '/download?inline=true'"
+                                                 class="w-10 h-10 rounded object-cover border border-gray-200 flex-shrink-0"
+                                                 :alt="doc.file_name">
+                                        </template>
+                                        <template x-if="!doc.file_type || !doc.file_type.startsWith('image/')">
+                                            <div class="w-10 h-10 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                        </template>
+                                        <div class="min-w-0">
+                                            <span class="text-sm font-medium text-gray-900 truncate block" x-text="doc.file_name"></span>
+                                            <span class="text-xs text-gray-500" x-text="(doc.file_size / 1024).toFixed(0) + ' KB'"></span>
+                                        </div>
                                     </div>
-                                    <a :href="'/api/v1/camper/documents/' + doc.id + '/download'"
-                                       class="text-amber-600 hover:text-amber-700 text-sm font-medium"
-                                       target="_blank" x-text="t('common.download')">Scarica</a>
+                                    <div class="flex items-center space-x-2 flex-shrink-0">
+                                        <!-- View (opens inline in new tab) -->
+                                        <a :href="'/api/v1/camper/documents/' + doc.id + '/download?inline=true'"
+                                           class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                           target="_blank">View</a>
+                                        <!-- Download -->
+                                        <a :href="'/api/v1/camper/documents/' + doc.id + '/download'"
+                                           class="text-amber-600 hover:text-amber-700 text-sm font-medium"
+                                           target="_blank" x-text="t('common.download')">Scarica</a>
+                                        <!-- Delete (manager/admin only) -->
+                                        <template x-if="user.isManager || user.isAdmin">
+                                            <button @click="deleteDocument(doc.id, doc.file_name)"
+                                                    class="text-red-500 hover:text-red-700 text-sm font-medium">
+                                                Delete
+                                            </button>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -754,6 +783,17 @@
                     showToast(t('job_detail.toast_upload_error') + e.message, 'error');
                 } finally {
                     this.uploading = false;
+                }
+            },
+
+            async deleteDocument(docId, fileName) {
+                if (!confirm('Delete "' + fileName + '"? This cannot be undone.')) return;
+                try {
+                    await API.delete('/api/v1/camper/documents/' + docId);
+                    this.documents = this.documents.filter(d => d.id !== docId);
+                    showToast('Document deleted', 'success');
+                } catch (e) {
+                    showToast('Delete failed: ' + e.message, 'error');
                 }
             }
         }
