@@ -87,7 +87,8 @@ class QATestResultModel(Base):
         comment="Detailed test instructions",
     )
     status: Mapped[TestStatus] = mapped_column(
-        SQLEnum(TestStatus, name="qa_test_status", create_constraint=True),
+        SQLEnum(TestStatus, name="qa_test_status", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=TestStatus.PENDING,
         index=True,
@@ -157,14 +158,16 @@ class QABugReportModel(Base):
         comment="What happened and what was expected",
     )
     severity: Mapped[BugSeverity] = mapped_column(
-        SQLEnum(BugSeverity, name="qa_bug_severity", create_constraint=True),
+        SQLEnum(BugSeverity, name="qa_bug_severity", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=BugSeverity.MEDIUM,
         index=True,
         comment="Bug severity level",
     )
     status: Mapped[BugStatus] = mapped_column(
-        SQLEnum(BugStatus, name="qa_bug_status", create_constraint=True),
+        SQLEnum(BugStatus, name="qa_bug_status", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=BugStatus.OPEN,
         index=True,
@@ -246,7 +249,8 @@ class QABugActivityModel(Base):
         index=True,
     )
     activity_type: Mapped[BugActivityType] = mapped_column(
-        SQLEnum(BugActivityType, name="qa_bug_activity_type", create_constraint=True),
+        SQLEnum(BugActivityType, name="qa_bug_activity_type", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
         nullable=False,
     )
     actor: Mapped[str] = mapped_column(
