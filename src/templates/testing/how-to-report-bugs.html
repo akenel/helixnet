@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Report Bugs - HelixNet QA Guide</title>
+    <link rel="stylesheet" href="/static/vendor/fonts.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+
+        /* Nav */
+        .top-nav {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .top-nav a { color: #94a3b8; text-decoration: none; font-size: 0.85em; transition: color 0.2s; }
+        .top-nav a:hover { color: #f8fafc; }
+        .top-nav .brand { color: #f8fafc; font-weight: 700; font-size: 1em; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1a2e 100%);
+            padding: 60px 24px 40px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        .hero h1 { font-size: 2.2em; font-weight: 800; color: #f8fafc; margin-bottom: 12px; }
+        .hero h1 span { color: #f87171; }
+        .hero p { color: #94a3b8; font-size: 1.05em; max-width: 550px; margin: 0 auto; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+
+        /* Category Tabs */
+        .cat-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 24px 24px 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .cat-tab {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            background: #1e293b;
+            color: #94a3b8;
+        }
+        .cat-tab:hover { border-color: #475569; color: #e2e8f0; }
+        .cat-tab.active { border-color: #f87171; color: #f87171; background: rgba(248, 113, 113, 0.1); }
+
+        /* Walkthrough Section */
+        .walkthrough { padding: 40px 0 60px; display: none; }
+        .walkthrough.active { display: block; }
+
+        .wt-header { margin-bottom: 32px; }
+        .wt-header h2 { font-size: 1.5em; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+        .wt-header .subtitle { color: #64748b; font-size: 0.95em; }
+
+        /* Step */
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 32px;
+            align-items: flex-start;
+        }
+        .step-num {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1em;
+            flex-shrink: 0;
+            border: 3px solid;
+        }
+        .step-num.red { background: rgba(248, 113, 113, 0.15); border-color: #f87171; color: #f87171; }
+        .step-num.blue { background: rgba(99, 102, 241, 0.15); border-color: #6366f1; color: #6366f1; }
+        .step-num.green { background: rgba(34, 197, 94, 0.15); border-color: #22c55e; color: #22c55e; }
+        .step-num.amber { background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #f59e0b; }
+
+        .step-content { flex: 1; }
+        .step-content h3 { font-size: 1.1em; font-weight: 700; color: #f8fafc; margin-bottom: 6px; }
+        .step-content p { color: #cbd5e1; font-size: 0.92em; margin-bottom: 8px; }
+
+        /* Mock UI elements */
+        .mock-ui {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 12px 0;
+        }
+        .mock-field { margin-bottom: 12px; }
+        .mock-field:last-child { margin-bottom: 0; }
+        .mock-label { font-size: 0.78em; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .mock-input {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.88em;
+            color: #4ade80;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.6;
+            width: 100%;
+        }
+        .mock-select {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.88em;
+            color: #e2e8f0;
+            width: 100%;
+        }
+        .mock-highlight {
+            background: rgba(248, 113, 113, 0.1);
+            border: 2px solid #f87171;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 12px 0;
+        }
+        .mock-highlight .mock-label { color: #f87171; }
+
+        /* Tip box */
+        .tip {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 16px 0;
+        }
+        .tip-label { font-size: 0.78em; font-weight: 700; color: #4ade80; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .tip p { color: #d1fae5; font-size: 0.88em; margin: 0; }
+
+        /* Warning box */
+        .warn {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 16px 0;
+        }
+        .warn-label { font-size: 0.78em; font-weight: 700; color: #f59e0b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .warn p { color: #fef3c7; font-size: 0.88em; margin: 0; }
+
+        /* Example box */
+        .example-box {
+            background: #1e293b;
+            border-left: 4px solid #6366f1;
+            border-radius: 0 10px 10px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .example-box .ex-label { font-size: 0.78em; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .example-box .ex-title { color: #f8fafc; font-weight: 600; font-size: 0.92em; }
+        .example-box .ex-desc { color: #94a3b8; font-size: 0.85em; font-family: 'JetBrains Mono', monospace; white-space: pre-line; line-height: 1.7; margin-top: 8px; }
+
+        /* Quick ref table */
+        .ref-table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 20px 0; font-size: 0.88em; }
+        .ref-table th { background: #1e293b; color: #64748b; font-size: 0.75em; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 10px 14px; text-align: left; border-bottom: 1px solid #334155; }
+        .ref-table td { padding: 10px 14px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+        .ref-table tr:hover td { background: rgba(99, 102, 241, 0.04); }
+        .ref-table .cat-name { color: #f87171; font-weight: 600; }
+
+        /* Footer */
+        footer { text-align: center; padding: 40px 24px; color: #475569; font-size: 0.85em; border-top: 1px solid #1e293b; }
+        footer strong { color: #64748b; }
+
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 1.6em; }
+            .hero { padding: 40px 20px 30px; }
+            .step { flex-direction: column; gap: 12px; }
+            .cat-tabs { gap: 6px; }
+            .cat-tab { font-size: 0.75em; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav">
+    <span class="brand">HelixNet QA</span>
+    <div style="display:flex; gap:20px;">
+        <a href="/testing">Dashboard</a>
+        <a href="/training">Training Guide</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <h1>How to Report <span>Bugs</span></h1>
+    <p>Pick the bug type below. Follow the steps. Better reports = faster fixes.</p>
+</div>
+
+<!-- Category Tabs -->
+<div class="cat-tabs" id="tabs">
+    <div class="cat-tab active" onclick="showTab('functional')">Something Doesn't Work</div>
+    <div class="cat-tab" onclick="showTab('cosmetic')">Looks Wrong</div>
+    <div class="cat-tab" onclick="showTab('performance')">Too Slow</div>
+    <div class="cat-tab" onclick="showTab('data')">Wrong Data</div>
+    <div class="cat-tab" onclick="showTab('security')">Login / Access</div>
+</div>
+
+<div class="container">
+
+    <!-- ======================= FUNCTIONAL ======================= -->
+    <div class="walkthrough active" id="wt-functional">
+        <div class="wt-header">
+            <h2>Something Doesn't Work</h2>
+            <p class="subtitle">A button, form, or feature is broken. The most common bug type.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-num red">1</div>
+            <div class="step-content">
+                <h3>Click "Report Bug" (red button, top right)</h3>
+                <p>The bug form opens. First, give it a short title -- what broke in a few words.</p>
+                <div class="mock-ui">
+                    <div class="mock-field">
+                        <div class="mock-label">Title</div>
+                        <div class="mock-input">Save button on job form does nothing</div>
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-label">Good title tip</div>
+                    <p>Say WHAT is broken and WHERE. "Save button on job form" is better than "button broken".</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num blue">2</div>
+            <div class="step-content">
+                <h3>Set Bug Type to "Something doesn't work"</h3>
+                <p>This tells the developer it's a functional issue -- something that should work but doesn't.</p>
+                <div class="mock-ui">
+                    <div class="mock-field" style="display: flex; gap: 12px;">
+                        <div style="flex:1">
+                            <div class="mock-label">Bug Type</div>
+                            <div class="mock-select">Something doesn't work</div>
+                        </div>
+                        <div style="flex:1">
+                            <div class="mock-label">Severity</div>
+                            <div class="mock-select">High</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="warn">
+                    <div class="warn-label">Severity guide</div>
+                    <p><strong>Critical</strong> = nobody can work (app crashes, data lost)<br>
+                    <strong>High</strong> = important feature broken (can't save, can't submit)<br>
+                    <strong>Medium</strong> = something wrong but there's a workaround<br>
+                    <strong>Low</strong> = minor annoyance, not blocking anyone</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num green">3</div>
+            <div class="step-content">
+                <h3>Fill in the description -- answer the 3 questions</h3>
+                <p>The form shows you prompts. Just fill in the blanks. This is the most important part.</p>
+                <div class="mock-highlight">
+                    <div class="mock-label">Description -- answer all 3</div>
+                    <div class="mock-input" style="white-space: pre-line;">What I did:
+Opened job #47, changed the mechanic name, clicked Save
+
+What happened:
+Nothing. The button turned grey for a second then nothing changed.
+
+What I expected:
+The job should save and show a green "Saved" message.</div>
+                </div>
+                <div class="tip">
+                    <div class="tip-label">Why this matters</div>
+                    <p>Without "What I did", the developer can't reproduce the bug. Without "What happened", they don't know what's wrong. Without "What I expected", they don't know what right looks like.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num amber">4</div>
+            <div class="step-content">
+                <h3>Add a screenshot (if you can)</h3>
+                <p>A picture is worth a thousand words. Three ways to add one:</p>
+                <p><strong>Easiest:</strong> Press the Print Screen key on your keyboard, then Ctrl+V in the screenshot area.<br>
+                <strong>Or:</strong> Drag an image from your files into the box.<br>
+                <strong>Or:</strong> Click "Choose File" and pick an image.</p>
+                <div class="tip">
+                    <div class="tip-label">Screenshot tip</div>
+                    <p>If you see an error message on screen, ALWAYS screenshot it. The exact error text helps the developer find the problem 10x faster.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num green">5</div>
+            <div class="step-content">
+                <h3>Click "Submit Bug" -- done!</h3>
+                <p>The bug gets a number (BUG-011, BUG-012, etc.) and appears in the list. The developer will see it and start working on it.</p>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <div class="ex-label">Full example -- functional bug</div>
+            <div class="ex-title">Title: Invoice Details button not working</div>
+            <div class="ex-desc">What I did:
+Opened job #31 which has an invoice. Clicked the "Details" button next to the invoice.
+
+What happened:
+A popup appeared for less than a second then disappeared. I could not read anything.
+
+What I expected:
+The invoice details should open and stay visible so I can read the amount and items.</div>
+        </div>
+    </div>
+
+    <!-- ======================= COSMETIC ======================= -->
+    <div class="walkthrough" id="wt-cosmetic">
+        <div class="wt-header">
+            <h2>Looks Wrong</h2>
+            <p class="subtitle">Layout broken, text cut off, colors wrong, things overlapping. It works, but it looks bad.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-num red">1</div>
+            <div class="step-content">
+                <h3>Give it a clear title</h3>
+                <p>Say what looks wrong and where you see it.</p>
+                <div class="mock-ui">
+                    <div class="mock-field">
+                        <div class="mock-label">Title</div>
+                        <div class="mock-input">Customer name cut off in vehicle list table</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num blue">2</div>
+            <div class="step-content">
+                <h3>Set Bug Type to "Looks wrong"</h3>
+                <p>Severity for cosmetic bugs is usually <strong>Low</strong> or <strong>Medium</strong>. Only use High if it makes the page unusable.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num green">3</div>
+            <div class="step-content">
+                <h3>Describe what looks wrong, where, and what it should look like</h3>
+                <div class="mock-highlight">
+                    <div class="mock-label">Description</div>
+                    <div class="mock-input" style="white-space: pre-line;">What looks wrong:
+The customer name column is too narrow. Names like "Sebastiano Cassisa" get cut to "Sebastiano C..."
+
+Where on the page:
+The vehicle list page, in the table, third column from left.
+
+What it should look like:
+The full name should be visible, or at least show the full name when I hover over it.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num amber">4</div>
+            <div class="step-content">
+                <h3>Screenshot is VERY important for cosmetic bugs</h3>
+                <p>The developer needs to SEE what you see. A screenshot saves 10 minutes of guessing.</p>
+                <div class="warn">
+                    <div class="warn-label">Always screenshot cosmetic bugs</div>
+                    <p>For cosmetic issues, a screenshot is almost required. Without it, "it looks wrong" means nothing -- the developer needs to see exactly what you see on YOUR screen.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <div class="ex-label">Full example -- cosmetic bug</div>
+            <div class="ex-title">Title: Dashboard greeting shows wrong time of day</div>
+            <div class="ex-desc">What looks wrong:
+The dashboard says "Good Morning" but it is 3pm in the afternoon.
+
+Where on the page:
+Top of the main dashboard, the greeting banner.
+
+What it should look like:
+It should say "Good Afternoon" after 12pm.</div>
+        </div>
+    </div>
+
+    <!-- ======================= PERFORMANCE ======================= -->
+    <div class="walkthrough" id="wt-performance">
+        <div class="wt-header">
+            <h2>Too Slow / Freezes</h2>
+            <p class="subtitle">Pages take too long to load, buttons freeze, spinners that never stop.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-num red">1</div>
+            <div class="step-content">
+                <h3>Say what is slow in the title</h3>
+                <div class="mock-ui">
+                    <div class="mock-field">
+                        <div class="mock-label">Title</div>
+                        <div class="mock-input">Vehicle list takes 30+ seconds to load</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num blue">2</div>
+            <div class="step-content">
+                <h3>Set Bug Type to "Too slow / freezes"</h3>
+                <p>Severity: <strong>High</strong> if it blocks work. <strong>Medium</strong> if it's annoying but you can wait.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num green">3</div>
+            <div class="step-content">
+                <h3>Tell us what is slow, when it happens, and how long</h3>
+                <div class="mock-highlight">
+                    <div class="mock-label">Description</div>
+                    <div class="mock-input" style="white-space: pre-line;">What is slow:
+Loading the vehicle list page.
+
+When it happens:
+Every time I open it. Tried 3 times.
+
+How long I waited:
+About 30-40 seconds each time. The spinner just keeps spinning.</div>
+                </div>
+                <div class="tip">
+                    <div class="tip-label">Timing tip</div>
+                    <p>Count "one Mississippi, two Mississippi" or look at a clock. "30 seconds" is much more useful than "a long time".</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <div class="ex-label">Full example -- performance bug</div>
+            <div class="ex-title">Title: Calendar page freezes when switching months</div>
+            <div class="ex-desc">What is slow:
+The calendar page. When I click the arrow to go to next month, the whole page freezes.
+
+When it happens:
+Every time I click next month. Going back also freezes.
+
+How long I waited:
+About 15 seconds. The page unfreezes by itself but it's very annoying.</div>
+        </div>
+    </div>
+
+    <!-- ======================= DATA ======================= -->
+    <div class="walkthrough" id="wt-data">
+        <div class="wt-header">
+            <h2>Wrong Data Shown</h2>
+            <p class="subtitle">Numbers don't add up, wrong information displayed, missing records.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-num red">1</div>
+            <div class="step-content">
+                <h3>Say what data is wrong in the title</h3>
+                <div class="mock-ui">
+                    <div class="mock-field">
+                        <div class="mock-label">Title</div>
+                        <div class="mock-input">Invoice total shows 0.00 but there are 3 items</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num blue">2</div>
+            <div class="step-content">
+                <h3>Set Bug Type to "Wrong data shown"</h3>
+                <p>Data bugs are usually <strong>High</strong> or <strong>Critical</strong> -- wrong data means wrong business decisions.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num green">3</div>
+            <div class="step-content">
+                <h3>Tell us what data is wrong, what it should be, and which record</h3>
+                <div class="mock-highlight">
+                    <div class="mock-label">Description</div>
+                    <div class="mock-input" style="white-space: pre-line;">What data is wrong:
+The invoice total shows EUR 0.00
+
+What it should show:
+It should show EUR 350.00 (100 + 150 + 100 for the 3 line items)
+
+Which record:
+Job #47 for customer Mario Rossi, invoice dated Feb 20.</div>
+                </div>
+                <div class="warn">
+                    <div class="warn-label">Be specific about which record</div>
+                    <p>Always include the job number, customer name, date, or any other way to find the exact record. "An invoice" is not enough -- we need to find the SAME one you're looking at.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <div class="ex-label">Full example -- data bug</div>
+            <div class="ex-title">Title: Customer phone number showing on wrong vehicle</div>
+            <div class="ex-desc">What data is wrong:
+Vehicle AB123CD shows phone number +39 328 111 2222, but that is Nino's number, not the vehicle owner's.
+
+What it should show:
+It should show +39 333 444 5555 (the owner's real number).
+
+Which record:
+Vehicle AB123CD in the vehicle list, owner column.</div>
+        </div>
+    </div>
+
+    <!-- ======================= SECURITY ======================= -->
+    <div class="walkthrough" id="wt-security">
+        <div class="wt-header">
+            <h2>Login / Access Issue</h2>
+            <p class="subtitle">Can't log in, locked out, seeing things you shouldn't, permission errors.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-num red">1</div>
+            <div class="step-content">
+                <h3>Say what access problem you have</h3>
+                <div class="mock-ui">
+                    <div class="mock-field">
+                        <div class="mock-label">Title</div>
+                        <div class="mock-input">Cannot log in -- page shows "Invalid credentials"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num blue">2</div>
+            <div class="step-content">
+                <h3>Set Bug Type to "Login / access issue"</h3>
+                <p>These are usually <strong>High</strong> or <strong>Critical</strong> -- if you can't get in, you can't work.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num green">3</div>
+            <div class="step-content">
+                <h3>Describe the problem, any error message, and what you were trying to access</h3>
+                <div class="mock-highlight">
+                    <div class="mock-label">Description</div>
+                    <div class="mock-input" style="white-space: pre-line;">What happened:
+I typed my username (anne) and password, clicked Login, and got a red error message.
+
+Error message:
+"Invalid user credentials"
+
+What I was trying to access:
+The QA Dashboard at /testing</div>
+                </div>
+                <div class="warn">
+                    <div class="warn-label">Important for security bugs</div>
+                    <p><strong>Always copy the exact error message</strong> -- don't paraphrase. "Invalid credentials" and "Access denied" are different problems with different fixes. Screenshot the error if you can.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num amber">4</div>
+            <div class="step-content">
+                <h3>Also tell Angel on Telegram</h3>
+                <p>If you can't log in at all, you might not be able to submit a bug report either. Send a message on Telegram with a screenshot and Angel will fix it directly.</p>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <div class="ex-label">Full example -- security bug</div>
+            <div class="ex-title">Title: Getting 403 Forbidden when opening QA dashboard</div>
+            <div class="ex-desc">What happened:
+I logged in successfully but when I click on the QA Dashboard, I see a white page with "403 Forbidden".
+
+Error message:
+"403 Forbidden - You do not have permission to access this resource"
+
+What I was trying to access:
+The QA Dashboard at /testing. I was logged in as "anne".</div>
+        </div>
+    </div>
+
+    <!-- ======================= QUICK REFERENCE ======================= -->
+    <section style="padding: 40px 0; border-top: 1px solid #1e293b;">
+        <h2 style="font-size: 1.3em; font-weight: 700; color: #f8fafc; margin-bottom: 20px;">Quick Reference: Which Bug Type?</h2>
+        <table class="ref-table">
+            <thead>
+                <tr><th>If you see...</th><th>Choose</th><th>Severity</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Button/form/feature doesn't work</td><td class="cat-name">Something doesn't work</td><td>High</td></tr>
+                <tr><td>Text cut off, wrong colors, ugly layout</td><td class="cat-name">Looks wrong</td><td>Low-Medium</td></tr>
+                <tr><td>Page takes forever, spinner won't stop</td><td class="cat-name">Too slow / freezes</td><td>Medium-High</td></tr>
+                <tr><td>Wrong number, missing data, bad total</td><td class="cat-name">Wrong data shown</td><td>High-Critical</td></tr>
+                <tr><td>Can't log in, 403 error, locked out</td><td class="cat-name">Login / access issue</td><td>High-Critical</td></tr>
+                <tr><td>Not sure what type it is</td><td class="cat-name">Something doesn't work</td><td>Medium</td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip" style="margin-top: 24px;">
+            <div class="tip-label">Not sure? Just pick "Something doesn't work"</div>
+            <p>If you can't decide which type, just use "Something doesn't work" and Medium severity. The developer can re-classify it. A slightly wrong category is much better than no bug report at all.</p>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; February 22, 2026</p>
+    <p>For <strong>Anne</strong> -- better reports = faster fixes</p>
+</footer>
+
+<script>
+function showTab(cat) {
+    document.querySelectorAll('.walkthrough').forEach(w => w.classList.remove('active'));
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('wt-' + cat).classList.add('active');
+    // Find and activate the clicked tab
+    const tabs = document.querySelectorAll('.cat-tab');
+    const names = ['functional', 'cosmetic', 'performance', 'data', 'security'];
+    tabs[names.indexOf(cat)].classList.add('active');
+    // Scroll to top of walkthrough
+    document.getElementById('wt-' + cat).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+
+</body>
+</html>

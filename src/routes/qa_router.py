@@ -420,3 +420,10 @@ async def training_guide():
     """Serve the training guide -- How Code Gets To You."""
     training_file = templates_dir / "testing" / "training.html"
     return FileResponse(training_file, media_type="text/html")
+
+
+@html_router.get("/how-to-report-bugs", response_class=HTMLResponse)
+async def how_to_report_bugs():
+    """Serve the interactive bug reporting walkthrough."""
+    guide_file = templates_dir / "testing" / "how-to-report-bugs.html"
+    return FileResponse(guide_file, media_type="text/html")
