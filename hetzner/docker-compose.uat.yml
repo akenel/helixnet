@@ -144,6 +144,27 @@ services:
       retries: 5
 
 # -------------------------------------------------------------
+# MINIO -- Object Storage (documents, photos)
+# -------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: helix_user
+      MINIO_ROOT_PASSWORD: helix_pass
+    volumes:
+      - minio_data:/data
+    networks:
+      - helixnet
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# -------------------------------------------------------------
 # HELIX-PLATFORM -- FastAPI Application
 # -------------------------------------------------------------
   helix-platform:
@@ -168,6 +189,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/healthz', timeout=5)\""]
       interval: 30s
@@ -183,6 +206,7 @@ volumes:
   keycloak_data:
   caddy_data:
   caddy_config:
+  minio_data:
 
 # -------------------------------------------------------------
 # NETWORK -- Single flat network for UAT (no edge/core split)
