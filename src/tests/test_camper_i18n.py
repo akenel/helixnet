@@ -1,52 +1,131 @@
 """
 Test: Camper & Tour i18n dictionary consistency.
 Verifies every IT key has an EN counterpart and vice versa.
-Run: pytest src/tests/test_camper_i18n.py -v --noconftest
+Run: pytest src/tests/test_camper_i18n.py -v
 """
 import json
-import subprocess
+import re
 from pathlib import Path
 
-DICT_PATH = Path(__file__).resolve().parents[2] / "src" / "static" / "camper-i18n.js"
+DICT_PATH = Path(__file__).resolve().parents[1] / "static" / "camper-i18n.js"
 
-# Small Node script that loads the JS file and dumps the structure as JSON
-_NODE_SCRIPT = """
-const fs = require('fs');
-const code = fs.readFileSync(process.argv[1], 'utf8');
-const CAMPER_STRINGS = (new Function(code + '; return CAMPER_STRINGS;'))();
-function collectKeys(obj, prefix) {
-    let keys = [];
-    for (const [k, v] of Object.entries(obj)) {
-        const path = prefix ? prefix + '.' + k : k;
-        if (v && typeof v === 'object' && !Array.isArray(v)) {
-            keys = keys.concat(collectKeys(v, path));
-        } else {
-            keys.push({path, type: Array.isArray(v) ? 'array' : typeof v, value: String(v)});
-        }
+
+def _js_to_json(js_text: str) -> str:
+    """Convert a JavaScript object literal to valid JSON.
+
+    Handles:
+    - Single-line // comments
+    - Multi-line /* */ comments
+    - Single-quoted strings -> double-quoted
+    - Trailing commas before } or ]
+    - Unquoted object keys
+    """
+    # Remove single-line comments (but not inside strings)
+    text = re.sub(r'//[^\n]*', '', js_text)
+    # Remove multi-line comments
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+
+    # Convert single-quoted strings to double-quoted
+    # Walk char by char to handle escapes correctly
+    result = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch == "'":
+            # Start of single-quoted string -- convert to double-quoted
+            result.append('"')
+            i += 1
+            while i < len(text) and text[i] != "'":
+                if text[i] == '\\' and i + 1 < len(text):
+                    next_ch = text[i + 1]
+                    if next_ch == "'":
+                        # \' in JS single-quoted string -> just ' in double-quoted
+                        result.append("'")
+                        i += 2
+                    elif next_ch in ('"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'):
+                        # Valid JSON escapes -- keep as-is
+                        result.append(text[i])
+                        result.append(next_ch)
+                        i += 2
+                    else:
+                        # Unknown escape -- drop the backslash
+                        result.append(next_ch)
+                        i += 2
+                elif text[i] == '"':
+                    # Escape double quotes inside the string
+                    result.append('\\"')
+                    i += 1
+                else:
+                    result.append(text[i])
+                    i += 1
+            result.append('"')
+            i += 1  # skip closing '
+        elif ch == '"':
+            # Already double-quoted string -- pass through
+            result.append(ch)
+            i += 1
+            while i < len(text) and text[i] != '"':
+                if text[i] == '\\' and i + 1 < len(text):
+                    result.append(text[i])
+                    result.append(text[i + 1])
+                    i += 2
+                else:
+                    result.append(text[i])
+                    i += 1
+            if i < len(text):
+                result.append(text[i])
+                i += 1
+        else:
+            result.append(ch)
+            i += 1
+
+    text = ''.join(result)
+
+    # Quote unquoted object keys: word_chars followed by :
+    text = re.sub(r'(?<=[\{,\n])\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:', r' "\1":', text)
+
+    # Remove trailing commas (before } or ])
+    text = re.sub(r',\s*([}\]])', r'\1', text)
+
+    return text
+
+
+def _load_dictionary() -> dict:
+    """Parse the JS dictionary file in pure Python (no Node.js needed)."""
+    raw = DICT_PATH.read_text(encoding='utf-8')
+
+    # Extract the object literal: everything between first { and last }
+    first_brace = raw.index('{')
+    last_brace = raw.rindex('}')
+    obj_text = raw[first_brace:last_brace + 1]
+
+    json_text = _js_to_json(obj_text)
+    data = json.loads(json_text)
+
+    # Flatten nested dicts into dotted key paths
+    def collect_keys(obj, prefix=''):
+        keys = []
+        for k, v in obj.items():
+            path = f"{prefix}.{k}" if prefix else k
+            if isinstance(v, dict):
+                keys.extend(collect_keys(v, path))
+            else:
+                keys.append({
+                    'path': path,
+                    'type': 'array' if isinstance(v, list) else type(v).__name__,
+                    'value': str(v),
+                })
+        return keys
+
+    return {
+        'langs': list(data.keys()),
+        'it': collect_keys(data.get('it', {})),
+        'en': collect_keys(data.get('en', {})),
     }
-    return keys;
-}
-const result = {
-    langs: Object.keys(CAMPER_STRINGS),
-    it: collectKeys(CAMPER_STRINGS.it, ''),
-    en: collectKeys(CAMPER_STRINGS.en, ''),
-};
-console.log(JSON.stringify(result));
-"""
-
-
-def _load_dictionary():
-    """Use Node.js to parse the JS dictionary and return structured key info."""
-    result = subprocess.run(
-        ["node", "-e", _NODE_SCRIPT, str(DICT_PATH)],
-        capture_output=True, text=True, timeout=10
-    )
-    assert result.returncode == 0, f"Node parse failed:\n{result.stderr}"
-    return json.loads(result.stdout)
 
 
 def test_dictionary_parses():
-    """The JS dictionary file can be parsed by Node."""
+    """The JS dictionary file can be parsed without Node.js."""
     data = _load_dictionary()
     assert "it" in data["langs"]
     assert "en" in data["langs"]
@@ -78,7 +157,7 @@ def test_no_empty_translations():
     empties = []
     for lang in ["it", "en"]:
         for entry in data[lang]:
-            if entry["type"] == "string" and entry["value"].strip() == "":
+            if entry["type"] == "str" and entry["value"].strip() == "":
                 empties.append(f"{lang}.{entry['path']}")
 
     assert not empties, f"Empty translations found:\n  " + "\n  ".join(empties)
@@ -87,8 +166,8 @@ def test_no_empty_translations():
 def test_en_differs_from_it():
     """At least some EN values differ from IT (i.e. not just a copy)."""
     data = _load_dictionary()
-    it_map = {e["path"]: e["value"] for e in data["it"] if e["type"] == "string"}
-    en_map = {e["path"]: e["value"] for e in data["en"] if e["type"] == "string"}
+    it_map = {e["path"]: e["value"] for e in data["it"] if e["type"] == "str"}
+    en_map = {e["path"]: e["value"] for e in data["en"] if e["type"] == "str"}
 
     common = set(it_map) & set(en_map)
     different = sum(1 for k in common if it_map[k] != en_map[k])
