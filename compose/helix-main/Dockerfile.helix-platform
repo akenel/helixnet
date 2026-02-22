@@ -7,7 +7,7 @@ WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1 \
     PATH="/app/venv/bin:${PATH}" \
-    PYTHONPATH="/app:${PYTHONPATH}"
+    PYTHONPATH="/app"
 
 # networking defaults
 ENV POSTGRES_HOST=postgres
