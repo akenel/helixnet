@@ -42,26 +42,26 @@ class TestResultRead(BaseModel):
 # ================================================================
 class BugReportCreate(BaseModel):
     """Create a new bug report."""
-    title: str = Field(..., max_length=200, description="Bug title")
-    description: str = Field(..., description="What happened and what was expected")
+    title: str = Field(..., min_length=3, max_length=200, description="Bug title")
+    description: str = Field(..., min_length=10, description="What happened and what was expected")
     severity: BugSeverity = Field(default=BugSeverity.MEDIUM, description="Bug severity")
     test_result_id: Optional[UUID] = Field(None, description="Link to the test that found this bug")
     screenshot_data: Optional[str] = Field(None, description="Screenshot as base64 data URL")
     browser_info: Optional[str] = Field(None, max_length=200, description="Browser/device info")
-    reported_by: str = Field(default="Anne", max_length=100, description="Who reported this")
+    reported_by: str = Field(default="Anne", min_length=1, max_length=100, description="Who reported this")
 
 
 class BugReportUpdate(BaseModel):
     """Update a bug report."""
-    title: Optional[str] = Field(None, max_length=200)
-    description: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=3, max_length=200)
+    description: Optional[str] = Field(None, min_length=10)
     severity: Optional[BugSeverity] = None
     status: Optional[BugStatus] = None
     assigned_to: Optional[str] = Field(None, max_length=100, description="Assign to someone (empty string to unassign)")
-    git_sha: Optional[str] = Field(None, max_length=40, description="Git commit SHA that fixes this bug")
+    git_sha: Optional[str] = Field(None, min_length=7, max_length=40, description="Git commit SHA that fixes this bug")
     screenshot_data: Optional[str] = Field(None, description="Screenshot as base64 data URL")
-    comment: Optional[str] = Field(None, description="Activity comment (logged in activity trail)")
-    actor: str = Field(default="Anne", max_length=100, description="Who is making this update")
+    comment: Optional[str] = Field(None, min_length=1, description="Activity comment (logged in activity trail)")
+    actor: str = Field(default="Anne", min_length=1, max_length=100, description="Who is making this update")
 
 
 class BugReportRead(BaseModel):
