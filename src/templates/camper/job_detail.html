@@ -459,11 +459,11 @@
                             <template x-for="doc in documents" :key="doc.id">
                                 <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <div class="flex items-center space-x-3 min-w-0">
-                                        <!-- Thumbnail for images -->
+                                        <!-- Thumbnail for images (loaded via JS with auth token) -->
                                         <template x-if="doc.file_type && doc.file_type.startsWith('image/')">
-                                            <img :src="'/api/v1/camper/documents/' + doc.id + '/download?inline=true'"
+                                            <img x-init="loadThumbnail($el, doc.id)"
                                                  class="w-10 h-10 rounded object-cover border border-gray-200 flex-shrink-0"
-                                                 :alt="doc.file_name">
+                                                 :alt="doc.file_name" src="">
                                         </template>
                                         <template x-if="!doc.file_type || !doc.file_type.startsWith('image/')">
                                             <div class="w-10 h-10 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
@@ -478,14 +478,13 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center space-x-2 flex-shrink-0">
-                                        <!-- View (opens inline in new tab) -->
-                                        <a :href="'/api/v1/camper/documents/' + doc.id + '/download?inline=true'"
-                                           class="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                                           target="_blank">View</a>
-                                        <!-- Download -->
-                                        <a :href="'/api/v1/camper/documents/' + doc.id + '/download'"
-                                           class="text-amber-600 hover:text-amber-700 text-sm font-medium"
-                                           target="_blank" x-text="t('common.download')">Scarica</a>
+                                        <!-- View (fetches with auth, opens blob in new tab) -->
+                                        <button @click="viewDocument(doc.id)"
+                                           class="text-blue-600 hover:text-blue-700 text-sm font-medium cursor-pointer bg-transparent border-0">View</button>
+                                        <!-- Download (fetches with auth, triggers save dialog) -->
+                                        <button @click="downloadDocument(doc.id, doc.file_name)"
+                                           class="text-amber-600 hover:text-amber-700 text-sm font-medium cursor-pointer bg-transparent border-0"
+                                           x-text="t('common.download')">Scarica</button>
                                         <!-- Delete (manager/admin only) -->
                                         <template x-if="user.isManager || user.isAdmin">
                                             <button @click="deleteDocument(doc.id, doc.file_name)"
@@ -783,6 +782,53 @@
                     showToast(t('job_detail.toast_upload_error') + e.message, 'error');
                 } finally {
                     this.uploading = false;
+                }
+            },
+
+            async loadThumbnail(imgEl, docId) {
+                try {
+                    const token = CamperAuth.getToken();
+                    const resp = await fetch('/api/v1/camper/documents/' + docId + '/download?inline=true', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (resp.ok) {
+                        const blob = await resp.blob();
+                        imgEl.src = URL.createObjectURL(blob);
+                    }
+                } catch (e) { /* thumbnail failed -- not critical */ }
+            },
+
+            async viewDocument(docId) {
+                try {
+                    const token = CamperAuth.getToken();
+                    const resp = await fetch('/api/v1/camper/documents/' + docId + '/download?inline=true', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (!resp.ok) throw new Error('Failed to load file');
+                    const blob = await resp.blob();
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                } catch (e) {
+                    showToast('View failed: ' + e.message, 'error');
+                }
+            },
+
+            async downloadDocument(docId, fileName) {
+                try {
+                    const token = CamperAuth.getToken();
+                    const resp = await fetch('/api/v1/camper/documents/' + docId + '/download', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (!resp.ok) throw new Error('Failed to download file');
+                    const blob = await resp.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    showToast('Download failed: ' + e.message, 'error');
                 }
             },
 
