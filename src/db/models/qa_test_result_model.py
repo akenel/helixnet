@@ -7,14 +7,14 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Integer, Text, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-import enum
 from .base import Base
+from src.core.constants import HelixEnum
 
 
 # ================================================================
-# Enums
+# Enums (HelixEnum = case-insensitive, lowercase values)
 # ================================================================
-class TestStatus(str, enum.Enum):
+class TestStatus(HelixEnum):
     """Status of a single test item."""
     PENDING = "pending"
     PASS = "pass"
@@ -23,7 +23,7 @@ class TestStatus(str, enum.Enum):
     BLOCKED = "blocked"
 
 
-class BugSeverity(str, enum.Enum):
+class BugSeverity(HelixEnum):
     """Bug severity levels."""
     CRITICAL = "critical"
     HIGH = "high"
@@ -31,7 +31,7 @@ class BugSeverity(str, enum.Enum):
     LOW = "low"
 
 
-class BugStatus(str, enum.Enum):
+class BugStatus(HelixEnum):
     """Bug lifecycle status."""
     OPEN = "open"
     IN_PROGRESS = "in_progress"
@@ -40,7 +40,7 @@ class BugStatus(str, enum.Enum):
     WONT_FIX = "wont_fix"
 
 
-class BugActivityType(str, enum.Enum):
+class BugActivityType(HelixEnum):
     """What kind of activity happened on a bug."""
     STATUS_CHANGE = "status_change"
     ASSIGNED = "assigned"
