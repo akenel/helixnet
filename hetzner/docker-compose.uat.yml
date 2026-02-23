@@ -3,7 +3,7 @@
 # File: hetzner/docker-compose.uat.yml
 # -------------------------------------------------------------
 # Services: Caddy | Postgres | Keycloak | Redis | RabbitMQ |
-#           helix-platform
+#           helix-platform | telegram-tigs
 # Target: Hetzner CX32 (4 vCPU / 8GB RAM) -- EUR 7.59/mo
 # =============================================================
 # Usage:
@@ -199,6 +199,33 @@ services:
       start_period: 60s
 
 # -------------------------------------------------------------
+# TELEGRAM-TIGS -- Personal AI Co-pilot Bot
+# -------------------------------------------------------------
+# Long-polling (no webhook needed, no domain required).
+# Bridges Telegram <-> Claude API with CLAUDE.md context.
+# Voice transcription via faster-whisper (local).
+# Will only start if TELEGRAM_BOT_TOKEN is set in uat.env.
+# -------------------------------------------------------------
+  telegram-tigs:
+    build:
+      context: ../
+      dockerfile: compose/helix-main/Dockerfile.telegram-tigs
+    image: telegram-tigs:latest
+    container_name: telegram-tigs
+    restart: unless-stopped
+    env_file:
+      - ./uat.env
+    volumes:
+      - telegram_data:/data
+      - ../src:/app/src:ro
+      - ../CLAUDE.md:/app/CLAUDE.md:ro
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+# -------------------------------------------------------------
 # NAMED VOLUMES
 # -------------------------------------------------------------
 volumes:
@@ -207,6 +234,7 @@ volumes:
   caddy_data:
   caddy_config:
   minio_data:
+  telegram_data:
 
 # -------------------------------------------------------------
 # NETWORK -- Single flat network for UAT (no edge/core split)

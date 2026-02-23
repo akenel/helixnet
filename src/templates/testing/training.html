@@ -423,6 +423,7 @@
             margin-top: 12px;
             margin-bottom: 0;
         }
+        .task-margin { margin-top: 8px; }
 
         /* Task card */
         .task-card {
@@ -460,6 +461,13 @@
         .helix-nav-mobile a { color: #94a3b8; text-decoration: none; font-size: 0.9em; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
         .helix-nav-mobile a:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
         .helix-nav-mobile a.active { color: #818cf8; background: rgba(99,102,241,0.12); }
+        .telegram-link { color: #60a5fa; }
+        .telegram-mobile { color: #60a5fa; }
+        .whats-new-h4 { color: #f8fafc; margin: 20px 0 10px; }
+        .whats-new-h4--link { color: #4ade80; text-decoration: underline; }
+        .task-card-link { color: #4ade80; text-decoration: underline; }
+        .code-inline { color: #f97316; }
+        .code-inline--blue { color: #818cf8; }
         @media (max-width: 640px) {
             .helix-nav-links { display: none; }
             .helix-nav-toggle { display: block; }
@@ -490,14 +498,14 @@
             <a href="/testing">Dashboard</a>
             <a href="/training" class="active">Training</a>
             <a href="/how-to-report-bugs">How to Report</a>
-            <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener" style="color:#60a5fa;" title="Message Angel on Telegram">Need Help?</a>
+            <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener" class="telegram-link" title="Message Angel on Telegram">Need Help?</a>
         </div>
     </div>
     <div class="helix-nav-mobile">
         <a href="/testing">Dashboard</a>
         <a href="/training" class="active">Training</a>
         <a href="/how-to-report-bugs">How to Report</a>
-        <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener" style="color:#60a5fa;">Need Help? (Telegram)</a>
+        <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener" class="telegram-mobile">Need Help? (Telegram)</a>
     </div>
 </nav>
 
@@ -525,13 +533,13 @@
                 <span class="label">Role:</span> <span class="value">camper-qa-tester</span>
             </div>
 
-            <h4 style="color: #f8fafc; margin: 20px 0 10px;">How to Log In (step by step)</h4>
+            <h4 class="whats-new-h4">How to Log In (step by step)</h4>
             <p>1. Go to the <a href="/testing" style="color: #4ade80; text-decoration: underline;">QA Dashboard</a>. You'll see a login page with a blue <strong>"Log In"</strong> button.</p>
             <p>2. Click <strong>Log In</strong>. Keycloak's login form appears.</p>
             <p>3. Enter <strong>anne</strong> as username and <strong>helix_pass</strong> as password. Click <strong>Sign In</strong>.</p>
             <p>4. You're back on the dashboard. Your name appears in the top-right corner of the nav bar.</p>
 
-            <h4 style="color: #f8fafc; margin: 20px 0 10px;">What to Know</h4>
+            <h4 class="whats-new-h4">What to Know</h4>
             <p><strong>Session expires after 30 minutes.</strong> If you see "Session expired" or get sent back to the login page, just log in again. Your work (bugs, tests) is saved -- you don't lose anything.</p>
             <p><strong>Logout button</strong> is in the top-right of the nav bar (small door icon). Use it when you're done for the day.</p>
             <p><strong>Training and How to Report pages are public</strong> -- they don't require login. Only the dashboard (where you mark tests and file bugs) needs it.</p>
@@ -554,7 +562,7 @@
         <h2><span class="num">0</span> Your Test Scenarios</h2>
         <p class="section-subtitle">These are real workflows on the live Camper & Tour system. Follow each one step-by-step.</p>
 
-        <div class="whats-new" style="border-color: #22c55e;">
+        <div class="whats-new whats-new-success">
             <span class="whats-new-badge" style="background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3);">Test Credentials</span>
             <p>The camper system has 3 test users. Log in at <strong>/camper</strong> using any of these:</p>
             <div class="login-box">
@@ -565,7 +573,7 @@
         </div>
 
         <!-- Scenario 1 -->
-        <div class="task-card" style="margin-top: 24px;">
+        <div class="task-card task-card-top">
             <h4 style="color: #818cf8;">Scenario 1: Customer Check-In (as Pam)</h4>
             <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: A campervan arrives. Register the customer and vehicle.</p>
             <p>1. Log in as <strong>pam</strong>. You should see the Camper Dashboard.</p>
@@ -575,7 +583,7 @@
             <p>5. Fill in: mileage in, vehicle condition notes (e.g., "scratch on left side").</p>
             <p>6. Describe the problem: "Water leak from bathroom window seal"</p>
             <p>7. Submit. A new service job should be created automatically.</p>
-            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p class="task-margin"><strong>What to check:</strong></p>
             <p>- Did the customer and vehicle get saved?</p>
             <p>- Did a new job appear on the Jobs page?</p>
             <p>- Is the job status "Quoted" or "Open"?</p>
@@ -583,25 +591,25 @@
         </div>
 
         <!-- Scenario 2 -->
-        <div class="task-card" style="margin-top: 16px;">
+        <div class="task-card task-card-space">
             <h4 style="color: #818cf8;">Scenario 2: Create a Quotation (as Pam or Nino)</h4>
             <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: Give the customer a price estimate before starting work.</p>
             <p>1. Go to <strong>Jobs</strong> and click on any job.</p>
             <p>2. Look for a <strong>Quotation</strong> section or button.</p>
             <p>3. Add line items:</p>
-            <p style="padding-left: 20px;">- "Seal replacement" -- 2 hours labor at EUR 45/hr = EUR 90</p>
-            <p style="padding-left: 20px;">- "Window seal kit" -- 1 unit at EUR 35</p>
+            <p class="task-indent">- "Seal replacement" -- 2 hours labor at EUR 45/hr = EUR 90</p>
+            <p class="task-indent">- "Window seal kit" -- 1 unit at EUR 35</p>
             <p>4. Check: Does the system calculate <strong>VAT at 22%</strong> (IVA)?</p>
             <p>5. Check: Does it show a <strong>25% deposit</strong> amount?</p>
             <p>6. Send the quotation.</p>
-            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p class="task-margin"><strong>What to check:</strong></p>
             <p>- Do the totals add up correctly? (subtotal + 22% IVA = total)</p>
             <p>- Is the deposit 25% of the total?</p>
             <p>- Did the job status change to "Quoted"?</p>
         </div>
 
         <!-- Scenario 3 -->
-        <div class="task-card" style="margin-top: 16px;">
+        <div class="task-card task-card-space">
             <h4 style="color: #818cf8;">Scenario 3: Mechanic Logs Work (as Ralph)</h4>
             <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: A mechanic works on a job and logs their hours.</p>
             <p>1. Log out, then log in as <strong>ralph</strong>.</p>
@@ -609,14 +617,14 @@
             <p>3. Open the job details.</p>
             <p>4. Add a <strong>work log entry</strong>: "Removed old seal, cleaned frame, applied new sealant" -- 2.5 hours.</p>
             <p>5. Try adding another entry: "Waiting for sealant to cure" -- 0.5 hours.</p>
-            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p class="task-margin"><strong>What to check:</strong></p>
             <p>- Can Ralph see the work log entries after saving?</p>
             <p>- Can Ralph edit or delete a work log? (He should NOT be able to -- audit trail!)</p>
             <p>- Do the total hours add up correctly?</p>
         </div>
 
         <!-- Scenario 4 -->
-        <div class="task-card" style="margin-top: 16px;">
+        <div class="task-card task-card-space">
             <h4 style="color: #818cf8;">Scenario 4: Inspection and Invoice (as Nino)</h4>
             <p style="color: #94a3b8; font-size: 0.85em; margin-bottom: 12px;">Goal: Manager inspects, approves, and generates the final invoice.</p>
             <p>1. Log out, then log in as <strong>nino</strong>.</p>
@@ -626,7 +634,7 @@
             <p>5. Generate the invoice.</p>
             <p>6. Check the <strong>Invoices</strong> page -- does the new invoice appear?</p>
             <p>7. Click the invoice <strong>Details</strong> button (this was BUG-009!).</p>
-            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p class="task-margin"><strong>What to check:</strong></p>
             <p>- Does the invoice show the deposit already paid?</p>
             <p>- Is the "Amount Due" = total minus deposit?</p>
             <p>- Does the Details button actually open? (BUG-009 fix)</p>
@@ -646,7 +654,7 @@
             <p>6. <strong>Pam</strong> logs the mileage out and vehicle condition</p>
             <p>7. <strong>Nino</strong> generates the final invoice</p>
             <p>8. Payment is recorded, job status goes to "Invoiced"</p>
-            <p style="margin-top: 12px;"><strong>What to check:</strong></p>
+            <p class="task-margin"><strong>What to check:</strong></p>
             <p>- Does the job status move correctly through each stage?</p>
             <p>- Expected flow: <strong>Quoted &rarr; Approved &rarr; In Progress &rarr; Inspection &rarr; Completed &rarr; Invoiced</strong></p>
             <p>- Are all the numbers consistent? (quote total = invoice total)</p>
@@ -690,7 +698,7 @@
         </div>
 
         <div class="flow-diagram">
-            <p style="color: #64748b; font-size: 0.85em; margin-bottom: 16px;">Every change follows this path:</p>
+            <p class="flow-diagram-label">Every change follows this path:</p>
             <div class="flow-row">
                 <span class="flow-box flow-dev">Workshop</span>
                 <span class="flow-arrow">&#x2192;</span>
@@ -809,7 +817,7 @@
             <p class="quote">"The developer says fixed. The tester says verified. The tester has the final word."</p>
         </div>
 
-        <div class="pipeline" style="margin-top:24px">
+        <div class="pipeline pipeline-top">
             <div class="pipeline-step">
                 <div class="pipeline-line">
                     <div class="pipeline-dot dot-kenya" style="font-size:14px; font-weight:700;">1</div>
@@ -927,7 +935,7 @@
 <footer>
     <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; Updated February 22, 2026</p>
     <p>For <strong>Anne</strong> -- the quality gate of HelixNet</p>
-    <p style="margin-top: 12px; color: #334155;">"The developer says fixed. The tester says verified. The tester has the final word."</p>
+    <p class="footer-quote">"The developer says fixed. The tester says verified. The tester has the final word."</p>
 </footer>
 
 </body>

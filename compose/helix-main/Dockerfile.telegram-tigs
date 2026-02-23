@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+# ffmpeg needed by faster-whisper for audio processing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY compose/helix-main/telegram-tigs-requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY src/ /app/src/
+COPY CLAUDE.md /app/CLAUDE.md
+
+ENV PYTHONPATH="/app"
+
+CMD ["python", "-m", "src.services.telegram_tigs_bot"]

@@ -1,0 +1,23 @@
+# --------------------------------------------
+# Telegram Tigs Bot Dependencies
+# --------------------------------------------
+
+# --- Telegram Bot ---
+aiogram>=3.4,<4.0
+
+# --- Claude API ---
+anthropic>=0.40
+
+# --- Voice Transcription ---
+faster-whisper>=1.0
+
+# --- Database (same Postgres as platform) ---
+asyncpg>=0.29
+sqlalchemy>=2.0
+
+# --- HTTP Client ---
+aiohttp
+httpx>=0.25
+
+# --- Config ---
+python-dotenv
