@@ -217,7 +217,7 @@
             isCounter() { return this.hasRole('isotto-counter') || this.isManager(); },
             logout() {
                 this.clearToken();
-                const keycloakUrl = 'https://keycloak.helix.local';
+                const keycloakUrl = window.location.origin;
                 const realm = 'kc-isotto-print-realm-dev';
                 const redirectUri = encodeURIComponent(window.location.origin + '/print-shop');
                 window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?post_logout_redirect_uri=${redirectUri}&client_id=isotto_print_web`;

@@ -64,7 +64,8 @@
     });
 
     function loginWithKeycloak() {
-        const keycloakUrl = 'https://keycloak.helix.local';
+        // Use current origin for both local (helix.local) and public (Hetzner IP) access
+        const keycloakUrl = window.location.origin;
         const realm = 'kc-isotto-print-realm-dev';
         const clientId = 'isotto_print_web';
         const redirectUri = window.location.origin + '/print-shop/callback';
