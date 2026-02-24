@@ -18,6 +18,8 @@ from src.db.models.isotto_order_model import (
     IsottoOrderModel, ProductType, OrderStatus,
     ColorMode, DuplexMode, Lamination,
 )
+from src.db.models.isotto_invoice_model import IsottoInvoiceModel, IsottoPaymentStatus
+from src.db.models.isotto_activity_model import IsottoOrderActivityModel, IsottoActivityType
 
 logger = logging.getLogger(__name__)
 
@@ -317,6 +319,302 @@ async def seed_isotto_data(db: AsyncSession) -> None:
     )
 
     db.add_all([pizza_planet, camper_tent, caffe_cards, piccolo_menu, puntatipa_cards, colorclean, wax_labels])
+    await db.flush()  # Get order IDs assigned
+
+    # ================================================================
+    # INVOICES (for INVOICED orders)
+    # ================================================================
+
+    # Invoice 1: Pizza Planet postcards -- PAID in full (cash)
+    inv_pizza = IsottoInvoiceModel(
+        invoice_number="INV-20260203-0001",
+        order_id=pizza_planet.id,
+        customer_id=angel.id,
+        line_items=[
+            {"description": "Pizza Planet 4-UP Postcards x200", "quantity": 1,
+             "unit_price": "50.00", "line_total": "50.00"},
+        ],
+        subtotal=Decimal("50.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("11.00"),
+        total=Decimal("61.00"),
+        deposit_applied=Decimal("0.00"),
+        amount_due=Decimal("0.00"),
+        payment_status=IsottoPaymentStatus.PAID,
+        payment_method="contanti",
+        paid_at=datetime(2026, 2, 3, 17, 30, tzinfo=timezone.utc),
+        due_date=date(2026, 2, 17),
+        created_by="Famous",
+        notes="Pagato al ritiro. Contanti.",
+    )
+
+    # Invoice 2: Camper & Tour tent cards -- PAID (card)
+    inv_camper = IsottoInvoiceModel(
+        invoice_number="INV-20260126-0001",
+        order_id=camper_tent.id,
+        customer_id=angel.id,
+        line_items=[
+            {"description": "Camper & Tour A4 Tent Cards x50", "quantity": 1,
+             "unit_price": "15.00", "line_total": "15.00"},
+        ],
+        subtotal=Decimal("15.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("3.30"),
+        total=Decimal("18.30"),
+        deposit_applied=Decimal("0.00"),
+        amount_due=Decimal("0.00"),
+        payment_status=IsottoPaymentStatus.PAID,
+        payment_method="carta",
+        paid_at=datetime(2026, 1, 26, 16, 30, tzinfo=timezone.utc),
+        due_date=date(2026, 2, 9),
+        created_by="Famous",
+        notes="Nino ha pagato con carta al ritiro.",
+    )
+
+    # Invoice 3: Caffe Maltese -- PENDING (order ready but not picked up yet)
+    inv_caffe = IsottoInvoiceModel(
+        invoice_number="INV-20260210-0001",
+        order_id=caffe_cards.id,
+        customer_id=carmello.id,
+        line_items=[
+            {"description": "Biglietti da visita Caffe Maltese x500", "quantity": 1,
+             "unit_price": "35.00", "line_total": "35.00"},
+            {"description": "Laminazione opaca", "quantity": 1,
+             "unit_price": "8.00", "line_total": "8.00"},
+        ],
+        subtotal=Decimal("43.00"),
+        vat_rate=Decimal("22.00"),
+        vat_amount=Decimal("9.46"),
+        total=Decimal("52.46"),
+        deposit_applied=Decimal("10.00"),
+        amount_due=Decimal("42.46"),
+        payment_status=IsottoPaymentStatus.DEPOSIT_PAID,
+        payment_method=None,
+        due_date=date(2026, 2, 24),
+        created_by="Famous",
+        notes="Acconto EUR 10 pagato alla conferma ordine.",
+    )
+
+    db.add_all([inv_pizza, inv_camper, inv_caffe])
+    await db.flush()
+
+    # ================================================================
+    # ORDER ACTIVITIES (realistic timeline for each order)
+    # ================================================================
+    activities = []
+
+    # -- Pizza Planet order lifecycle --
+    activities.extend([
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quoted", new_value="approved",
+            created_at=datetime(2026, 2, 3, 9, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.PROOF_APPROVED,
+            actor="Angelo Kenel", new_value="approved",
+            comment="QR code verifica OK - Google Maps PLACE link corretto",
+            created_at=datetime(2026, 2, 3, 10, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="approved", new_value="in_production",
+            created_at=datetime(2026, 2, 3, 10, 30, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.COMMENT,
+            actor="Famous", comment="250gsm caricata. Inizio stampa lotto A4 portrait.",
+            created_at=datetime(2026, 2, 3, 11, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="in_production", new_value="quality_check",
+            created_at=datetime(2026, 2, 3, 14, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quality_check", new_value="ready",
+            created_at=datetime(2026, 2, 3, 15, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="ready", new_value="picked_up",
+            created_at=datetime(2026, 2, 3, 17, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.INVOICE_CREATED,
+            actor="Famous", new_value="INV-20260203-0001",
+            comment="Fattura generata al ritiro",
+            created_at=datetime(2026, 2, 3, 17, 15, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.PAYMENT,
+            actor="Famous", new_value="paid",
+            comment="Pagamento contanti EUR 61.00",
+            created_at=datetime(2026, 2, 3, 17, 30, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=pizza_planet.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="picked_up", new_value="invoiced",
+            created_at=datetime(2026, 2, 3, 17, 30, tzinfo=timezone.utc),
+        ),
+    ])
+
+    # -- Camper & Tour order lifecycle --
+    activities.extend([
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quoted", new_value="approved",
+            created_at=datetime(2026, 1, 26, 10, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.PROOF_APPROVED,
+            actor="Angelo Kenel", new_value="approved",
+            comment="Nino approva il design. Primo UAT dal vivo!",
+            created_at=datetime(2026, 1, 26, 11, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="approved", new_value="in_production",
+            created_at=datetime(2026, 1, 26, 11, 30, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="in_production", new_value="ready",
+            created_at=datetime(2026, 1, 26, 14, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="ready", new_value="picked_up",
+            created_at=datetime(2026, 1, 26, 16, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.PAYMENT,
+            actor="Famous", new_value="paid",
+            comment="Pagamento carta EUR 18.30",
+            created_at=datetime(2026, 1, 26, 16, 30, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=camper_tent.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="picked_up", new_value="invoiced",
+            created_at=datetime(2026, 1, 26, 16, 30, tzinfo=timezone.utc),
+        ),
+    ])
+
+    # -- Caffe Maltese order lifecycle --
+    activities.extend([
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quoted", new_value="approved",
+            created_at=datetime(2026, 2, 3, 9, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.ASSIGNED,
+            actor="Famous", new_value="Marco Designer",
+            comment="Marco si occupa del design biglietti",
+            created_at=datetime(2026, 2, 3, 9, 30, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.PROOF_APPROVED,
+            actor="Carmello Ferrante", new_value="approved",
+            created_at=datetime(2026, 2, 5, 10, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Marco Designer", old_value="approved", new_value="in_production",
+            created_at=datetime(2026, 2, 5, 11, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.COMMENT,
+            actor="Marco Designer",
+            comment="350gsm con laminazione opaca. Risultato eccellente.",
+            created_at=datetime(2026, 2, 9, 15, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Marco Designer", old_value="in_production", new_value="quality_check",
+            created_at=datetime(2026, 2, 10, 10, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quality_check", new_value="ready",
+            created_at=datetime(2026, 2, 10, 12, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=caffe_cards.id, activity_type=IsottoActivityType.INVOICE_CREATED,
+            actor="Famous", new_value="INV-20260210-0001",
+            comment="Fattura generata. Acconto EUR 10 applicato.",
+            created_at=datetime(2026, 2, 10, 12, 15, tzinfo=timezone.utc),
+        ),
+    ])
+
+    # -- Piccolo Bistratto order (still in production) --
+    activities.extend([
+        IsottoOrderActivityModel(
+            order_id=piccolo_menu.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quoted", new_value="approved",
+            created_at=datetime(2026, 2, 10, 9, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=piccolo_menu.id, activity_type=IsottoActivityType.PROOF_APPROVED,
+            actor="Giovanni Russo", new_value="approved",
+            comment="Giovanni e Jonathan hanno visto il menu. Tutto OK.",
+            created_at=datetime(2026, 2, 10, 14, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=piccolo_menu.id, activity_type=IsottoActivityType.ASSIGNED,
+            actor="Famous", new_value="Luca Operator",
+            created_at=datetime(2026, 2, 12, 7, 30, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=piccolo_menu.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Luca Operator", old_value="approved", new_value="in_production",
+            created_at=datetime(2026, 2, 12, 8, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=piccolo_menu.id, activity_type=IsottoActivityType.COMMENT,
+            actor="Luca Operator",
+            comment="Foto del cibo risaltano bene su 300gsm glossy. Laminazione domani.",
+            created_at=datetime(2026, 2, 13, 16, 0, tzinfo=timezone.utc),
+        ),
+    ])
+
+    # -- Color Clean order (in production) --
+    activities.extend([
+        IsottoOrderActivityModel(
+            order_id=colorclean.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="quoted", new_value="approved",
+            created_at=datetime(2026, 2, 11, 9, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=colorclean.id, activity_type=IsottoActivityType.PROOF_APPROVED,
+            actor="Angelo Kenel", new_value="approved",
+            created_at=datetime(2026, 2, 11, 10, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=colorclean.id, activity_type=IsottoActivityType.STATUS_CHANGE,
+            actor="Famous", old_value="approved", new_value="in_production",
+            created_at=datetime(2026, 2, 13, 8, 0, tzinfo=timezone.utc),
+        ),
+        IsottoOrderActivityModel(
+            order_id=colorclean.id, activity_type=IsottoActivityType.COMMENT,
+            actor="Famous",
+            comment="Stesso lotto della Pizza Planet. Stessa carta, stessa configurazione.",
+            created_at=datetime(2026, 2, 13, 8, 30, tzinfo=timezone.utc),
+        ),
+    ])
+
+    # -- PuntaTipa (still quoted, minimal activity) --
+    activities.append(
+        IsottoOrderActivityModel(
+            order_id=puntatipa_cards.id, activity_type=IsottoActivityType.COMMENT,
+            actor="Famous",
+            comment="In attesa risposta da Maria. Stampante dell'hotel era rotta.",
+            created_at=datetime(2026, 2, 13, 11, 0, tzinfo=timezone.utc),
+        )
+    )
+
+    db.add_all(activities)
     await db.commit()
 
     logger.info("ISOTTO Sport seeding completed!")
@@ -329,3 +627,5 @@ async def seed_isotto_data(db: AsyncSession) -> None:
     logger.info("    - PuntaTipa hotel postcards (QUOTED)")
     logger.info("    - Color Clean 4-UP postcards (IN_PRODUCTION)")
     logger.info("    - UFA wax seal labels (QUOTED)")
+    logger.info("  - 3 invoices (2 paid, 1 deposit_paid)")
+    logger.info("  - 35 activity trail entries")

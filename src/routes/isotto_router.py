@@ -767,6 +767,7 @@ async def get_dashboard(
         select(func.count()).where(
             IsottoInvoiceModel.payment_status.in_([
                 IsottoPaymentStatus.PENDING,
+                IsottoPaymentStatus.DEPOSIT_PAID,
                 IsottoPaymentStatus.PARTIAL,
                 IsottoPaymentStatus.OVERDUE,
             ])

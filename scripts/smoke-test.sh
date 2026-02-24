@@ -219,8 +219,80 @@ else
     warn "Skipping Camper API tests (no token)"
 fi
 
-# ── 7. Server Logs Check ──────────────────────────────────
-section "7. Server Logs (last 30 lines)"
+# ── 7. ISOTTO Print Shop API ──────────────────────────────
+section "7. ISOTTO Print Shop API"
+
+# Get ISOTTO token (separate Keycloak realm)
+ISOTTO_TOKEN_RESPONSE=$($CURL -X POST "$KC_URL/realms/kc-isotto-print-realm-dev/protocol/openid-connect/token" \
+    -d "client_id=isotto_print_web" \
+    -d "grant_type=password" \
+    -d "username=famousguy" \
+    -d "password=helix_pass" 2>/dev/null)
+
+ISOTTO_TOKEN=$(echo "$ISOTTO_TOKEN_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || echo "")
+
+if [[ -n "$ISOTTO_TOKEN" && "$ISOTTO_TOKEN" != "" ]]; then
+    pass "ISOTTO Keycloak token obtained"
+
+    # HTML pages
+    check_status "Print Shop login page" "$BASE/print-shop"
+    check_status "Print Shop dashboard" "$BASE/print-shop/dashboard"
+    check_status "Print Shop orders page" "$BASE/print-shop/orders"
+    check_status "Print Shop customers page" "$BASE/print-shop/customers"
+    check_status "Print Shop invoices page" "$BASE/print-shop/invoices"
+
+    # Save original TOKEN, swap in ISOTTO_TOKEN for check functions
+    ORIG_TOKEN="$TOKEN"
+    TOKEN="$ISOTTO_TOKEN"
+
+    # API endpoints
+    check_json_array "GET /print-shop/customers" "$BASE/api/v1/print-shop/customers"
+    check_json_array "GET /print-shop/orders" "$BASE/api/v1/print-shop/orders"
+    check_json_array "GET /print-shop/invoices" "$BASE/api/v1/print-shop/invoices"
+
+    # Dashboard summary (object response)
+    ISOTTO_DASH=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/dashboard")
+    if echo "$ISOTTO_DASH" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'orders_in_production' in d" 2>/dev/null; then
+        PENDING_INV=$(echo "$ISOTTO_DASH" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('pending_invoices', '?'))" 2>/dev/null)
+        pass "GET /print-shop/dashboard (pending_invoices: $PENDING_INV)"
+    else
+        fail "GET /print-shop/dashboard (bad response)"
+    fi
+
+    # Test order activities (pick first non-quoted order -- those have activity trails)
+    ISOTTO_ORDER_ID=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/orders?status_filter=in_production" | \
+        python3 -c "import sys,json; orders=json.load(sys.stdin); print(orders[0]['id'] if orders else '')" 2>/dev/null)
+    if [[ -n "$ISOTTO_ORDER_ID" ]]; then
+        check_json_array "GET /print-shop/orders/{id}/activities" "$BASE/api/v1/print-shop/orders/$ISOTTO_ORDER_ID/activities"
+    else
+        warn "No ISOTTO orders found -- skipping activity trail test"
+    fi
+
+    # Test invoice detail (pick first invoice)
+    ISOTTO_INV_ID=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/invoices" | \
+        python3 -c "import sys,json; invs=json.load(sys.stdin); print(invs[0]['id'] if invs else '')" 2>/dev/null)
+    if [[ -n "$ISOTTO_INV_ID" ]]; then
+        ISOTTO_INV_BODY=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/invoices/$ISOTTO_INV_ID")
+        if echo "$ISOTTO_INV_BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'invoice_number' in d" 2>/dev/null; then
+            INV_NUM=$(echo "$ISOTTO_INV_BODY" | python3 -c "import sys,json; print(json.load(sys.stdin)['invoice_number'])" 2>/dev/null)
+            pass "GET /print-shop/invoices/{id} ($INV_NUM)"
+        else
+            fail "GET /print-shop/invoices/{id} (bad response)"
+        fi
+    else
+        warn "No ISOTTO invoices found -- skipping invoice detail test"
+    fi
+
+    # Restore original token
+    TOKEN="$ORIG_TOKEN"
+else
+    fail "ISOTTO Keycloak token FAILED -- skipping print shop tests"
+    # Still check HTML pages (they don't need auth, just serve HTML)
+    check_status "Print Shop login page" "$BASE/print-shop"
+fi
+
+# ── 8. Server Logs Check ──────────────────────────────────
+section "8. Server Logs (last 30 lines)"
 if command -v docker &>/dev/null; then
     RECENT_ERRORS=$(docker logs helix-platform --tail 30 2>&1 | grep -ci "500\|traceback\|error.*exception" || true)
     if [[ "$RECENT_ERRORS" -eq 0 ]]; then
