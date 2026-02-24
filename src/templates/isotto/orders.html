@@ -12,19 +12,19 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F5A8;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
-                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Ordini</a>
-                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -33,8 +33,8 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header + New Order -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Ordini</h2>
-            <a href="/print-shop/orders/new" class="btn-primary" x-show="user.isCounter">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="orders.title">Ordini</h2>
+            <a href="/print-shop/orders/new" class="btn-primary" x-show="user.isCounter" data-i18n="orders.new_order">
                 + Nuovo Ordine
             </a>
         </div>
@@ -43,61 +43,56 @@
         <div class="card mb-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="orders.filter_status">Stato</label>
                     <select x-model="filters.status" @change="loadOrders()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
-                        <option value="quoted">Preventivato</option>
-                        <option value="approved">Approvato</option>
-                        <option value="in_production">In Produzione</option>
-                        <option value="quality_check">Controllo Qualita</option>
-                        <option value="ready">Pronto Ritiro</option>
-                        <option value="picked_up">Ritirato</option>
-                        <option value="invoiced">Fatturato</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
+                        <template x-for="(label, key) in ORDER_STATUS_LABELS" :key="key">
+                            <option :value="key" x-text="label"></option>
+                        </template>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipo Prodotto</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="orders.filter_type">Tipo Prodotto</label>
                     <select x-model="filters.product_type" @change="loadOrders()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
                         <template x-for="(label, key) in PRODUCT_TYPE_LABELS" :key="key">
                             <option :value="key" x-text="label"></option>
                         </template>
                     </select>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca (n. ordine o titolo)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="orders.filter_search">Cerca (n. ordine o titolo)</label>
                     <input type="text" x-model="filters.search" @input.debounce.300ms="loadOrders()"
-                           class="input-field text-sm py-2" placeholder="ORD-... o titolo...">
+                           class="input-field text-sm py-2" placeholder="ORD-... o titolo..." data-i18n-placeholder="orders.search_placeholder">
                 </div>
             </div>
         </div>
 
         <!-- Order Count -->
-        <p class="text-sm text-gray-500 mb-3" x-show="!loading">
-            <span x-text="orders.length"></span> ordini trovati
+        <p class="text-sm text-gray-500 mb-3" x-show="!loading" x-text="t('orders.count', {count: orders.length})">
         </p>
 
         <!-- Orders Table -->
         <div class="card overflow-x-auto">
             <template x-if="loading">
-                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('common.loading')"></p>
             </template>
 
             <template x-if="!loading && orders.length === 0">
-                <p class="text-center text-gray-500 py-8">Nessun ordine trovato.</p>
+                <p class="text-center text-gray-500 py-8" x-text="t('orders.no_results')"></p>
             </template>
 
             <table class="min-w-full" x-show="!loading && orders.length > 0">
                 <thead>
                     <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                        <th class="pb-3 pr-4">N. Ordine</th>
-                        <th class="pb-3 pr-4">Cliente</th>
-                        <th class="pb-3 pr-4">Titolo</th>
-                        <th class="pb-3 pr-4">Tipo</th>
-                        <th class="pb-3 pr-4">Quantita</th>
-                        <th class="pb-3 pr-4">Stato</th>
-                        <th class="pb-3 pr-4">Totale</th>
-                        <th class="pb-3">Data</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_order_number">N. Ordine</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_customer">Cliente</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_title">Titolo</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_type">Tipo</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_quantity">Quantita</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_status">Stato</th>
+                        <th class="pb-3 pr-4" data-i18n="orders.th_total">Totale</th>
+                        <th class="pb-3" data-i18n="orders.th_date">Data</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,7 +165,7 @@
                     if (this.filters.search) url += '&search=' + encodeURIComponent(this.filters.search);
                     this.orders = await API.get(url);
                 } catch (e) {
-                    showToast('Errore caricamento ordini: ' + e.message, 'error');
+                    showToast(t('orders.load_error', {message: e.message}), 'error');
                 } finally {
                     this.loading = false;
                 }

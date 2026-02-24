@@ -11,12 +11,12 @@
                 <span class="text-5xl">&#x1F5A8;</span>
             </div>
             <h1 class="text-4xl font-extrabold text-white mb-2">ISOTTO Sport</h1>
-            <p class="text-xl text-white opacity-90">Gestione Stampa - Trapani dal 1968</p>
+            <p class="text-xl text-white opacity-90" data-i18n="login.heading">Gestione Stampa - Trapani dal 1968</p>
         </div>
 
         <!-- Login Card -->
         <div class="bg-white rounded-2xl shadow-2xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center" data-i18n="login.title">
                 Accesso Staff
             </h2>
 
@@ -26,22 +26,22 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                 </svg>
-                <span>Accedi</span>
+                <span data-i18n="login.button">Accedi</span>
             </button>
 
             <div class="mt-6 text-center text-sm text-gray-600">
-                <p>Usa le tue credenziali ISOTTO Sport</p>
+                <p data-i18n="login.credentials">Usa le tue credenziali ISOTTO Sport</p>
                 <p class="mt-2 text-xs text-gray-500">
-                    Demo: famousguy / helix_pass (Admin)<br>
-                    giulia_f / helix_pass (Accettazione)<br>
-                    luca_p / helix_pass (Operatore)
+                    <span data-i18n="login.demo_admin">Demo: famousguy / helix_pass (Admin)</span><br>
+                    <span data-i18n="login.demo_counter">giulia_f / helix_pass (Accettazione)</span><br>
+                    <span data-i18n="login.demo_operator">luca_p / helix_pass (Operatore)</span>
                 </p>
             </div>
         </div>
 
         <div class="mt-6 text-center text-white text-sm">
-            <p class="opacity-75">Autenticazione sicura via Keycloak</p>
-            <p class="opacity-75 mt-1">Largo Franchi, 3 - 91100 Trapani</p>
+            <p class="opacity-75" data-i18n="login.secure_auth">Autenticazione sicura via Keycloak</p>
+            <p class="opacity-75 mt-1" data-i18n="login.address">Largo Franchi, 3 - 91100 Trapani</p>
         </div>
     </div>
 </div>
@@ -58,7 +58,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
         if (error) {
-            showToast('Login fallito: ' + error, 'error');
+            showToast(t('login.login_failed', {error: error}), 'error');
             window.history.replaceState({}, document.title, '/print-shop');
         }
     });

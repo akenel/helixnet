@@ -12,19 +12,19 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F5A8;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
-                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Ordini</a>
-                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -32,39 +32,39 @@
 
     <main class="max-w-4xl mx-auto px-4 py-6">
         <!-- Back link -->
-        <a href="/print-shop/orders" class="text-blue-600 hover:text-blue-700 text-sm mb-4 inline-block">&larr; Torna agli ordini</a>
+        <a href="/print-shop/orders" class="text-blue-600 hover:text-blue-700 text-sm mb-4 inline-block"><span>&larr;</span> <span data-i18n="order_detail.back">Torna agli ordini</span></a>
 
         <!-- Loading -->
         <template x-if="loading">
             <div class="card text-center py-12">
-                <p class="text-gray-500">Caricamento...</p>
+                <p class="text-gray-500" data-i18n="common.loading">Caricamento...</p>
             </div>
         </template>
 
         <!-- CREATE MODE -->
         <template x-if="!loading && createMode">
             <div class="card">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Nuovo Preventivo</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6" data-i18n="order_detail.new_quote">Nuovo Preventivo</h2>
                 <form @submit.prevent="createOrder()">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Titolo *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="order_detail.title_label">Titolo</span> *</label>
                             <input type="text" x-model="newOrder.title" class="input-field" required
-                                   placeholder="Es: Pizza Planet 4-UP Postcards">
+                                   placeholder="Es: Pizza Planet 4-UP Postcards" data-i18n-placeholder="order_detail.title_placeholder">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.description_label">Descrizione</label>
                             <textarea x-model="newOrder.description" class="input-field" rows="3"
-                                      placeholder="Dettagli del lavoro di stampa..."></textarea>
+                                      placeholder="Dettagli del lavoro di stampa..." data-i18n-placeholder="order_detail.description_placeholder"></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente (ID) *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="order_detail.customer_id_label">Cliente (ID)</span> *</label>
                             <input type="text" x-model="newOrder.customer_id" class="input-field" required
-                                   placeholder="UUID del cliente">
-                            <p class="text-xs text-gray-400 mt-1">Cerca il cliente nella sezione Clienti</p>
+                                   placeholder="UUID del cliente" data-i18n-placeholder="order_detail.customer_id_placeholder">
+                            <p class="text-xs text-gray-400 mt-1" data-i18n="order_detail.customer_id_hint">Cerca il cliente nella sezione Clienti</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Prodotto</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.product_type_label">Tipo Prodotto</label>
                             <select x-model="newOrder.product_type" class="input-field">
                                 <template x-for="(label, key) in PRODUCT_TYPE_LABELS" :key="key">
                                     <option :value="key" x-text="label"></option>
@@ -72,41 +72,41 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantita</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.quantity_label">Quantita</label>
                             <input type="number" x-model.number="newOrder.quantity" class="input-field" min="0">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Prezzo Unitario</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.unit_price_label">Prezzo Unitario</label>
                             <input type="number" x-model.number="newOrder.unit_price" class="input-field" min="0" step="0.01">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Totale</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.total_label">Totale</label>
                             <input type="number" x-model.number="newOrder.total_price" class="input-field" min="0" step="0.01">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Grammatura Carta (gsm)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.paper_weight_label">Grammatura Carta (gsm)</label>
                             <input type="number" x-model.number="newOrder.paper_weight_gsm" class="input-field" min="0" placeholder="250">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Formato</label>
-                            <input type="text" x-model="newOrder.size_description" class="input-field" placeholder="A4 landscape, 210x99mm...">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.format_label">Formato</label>
+                            <input type="text" x-model="newOrder.size_description" class="input-field" placeholder="A4 landscape, 210x99mm..." data-i18n-placeholder="order_detail.format_placeholder">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Copie per Foglio</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.copies_per_sheet_label">Copie per Foglio</label>
                             <input type="number" x-model.number="newOrder.copies_per_sheet" class="input-field" min="1" placeholder="4">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Cliente</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.customer_notes_label">Note Cliente</label>
                             <textarea x-model="newOrder.customer_notes" class="input-field" rows="2"
-                                      placeholder="Richieste specifiche del cliente..."></textarea>
+                                      placeholder="Richieste specifiche del cliente..." data-i18n-placeholder="order_detail.customer_notes_placeholder"></textarea>
                         </div>
                     </div>
                     <div class="flex space-x-3">
                         <button type="submit" class="btn-primary" :disabled="saving">
-                            <span x-show="!saving">Crea Preventivo</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" x-text="t('order_detail.create_quote_btn')">Crea Preventivo</span>
+                            <span x-show="saving" x-text="t('common.saving')">Salvataggio...</span>
                         </button>
-                        <a href="/print-shop/orders" class="btn-secondary">Annulla</a>
+                        <a href="/print-shop/orders" class="btn-secondary" data-i18n="common.cancel">Annulla</a>
                     </div>
                 </form>
             </div>
@@ -133,22 +133,22 @@
 
                 <!-- Preventivo (Quote) Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Preventivo</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="order_detail.quote_title">Preventivo</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500 block">Quantita</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.quantity_label">Quantita</span>
                             <span class="font-semibold" x-text="order.quantity"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Prezzo Unitario</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.unit_price_label">Prezzo Unitario</span>
                             <span class="font-semibold" x-text="formatPrice(order.unit_price)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Totale</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.total_label">Totale</span>
                             <span class="font-bold text-lg text-blue-600" x-text="formatPrice(order.total_price)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Consegna Stimata</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.estimated_delivery">Consegna Stimata</span>
                             <span class="font-semibold" x-text="formatDate(order.estimated_completion)"></span>
                         </div>
                     </div>
@@ -156,44 +156,44 @@
 
                 <!-- Dettagli Stampa (Print Details) -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Dettagli Stampa</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="order_detail.print_details">Dettagli Stampa</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500 block">Grammatura</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.paper_weight">Grammatura</span>
                             <span class="font-semibold" x-text="order.paper_weight_gsm ? order.paper_weight_gsm + ' gsm' : '-'"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Colore</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.color">Colore</span>
                             <span class="font-semibold" x-text="COLOR_MODE_LABELS[order.color_mode] || '-'"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Fronte/Retro</span>
-                            <span class="font-semibold" x-text="order.duplex ? 'Si (' + (order.duplex_mode === 'short_edge' ? 'Lato Corto' : 'Lato Lungo') + ')' : 'No'"></span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.duplex">Fronte/Retro</span>
+                            <span class="font-semibold" x-text="order.duplex ? t('common.yes') + ' (' + (order.duplex_mode === 'short_edge' ? t('order_detail.duplex_short') : t('order_detail.duplex_long')) + ')' : t('common.no')"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Plastificazione</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.lamination">Plastificazione</span>
                             <span class="font-semibold" x-text="LAMINATION_LABELS[order.lamination] || '-'"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Formato</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.format">Formato</span>
                             <span class="font-semibold" x-text="order.size_description || '-'"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Copie per Foglio</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.copies_sheet">Copie per Foglio</span>
                             <span class="font-semibold" x-text="order.copies_per_sheet || '-'"></span>
                         </div>
                     </div>
 
                     <template x-if="order.cutting_instructions">
                         <div class="mt-4">
-                            <span class="text-gray-500 block text-sm">Istruzioni Taglio</span>
+                            <span class="text-gray-500 block text-sm" data-i18n="order_detail.cutting_instructions">Istruzioni Taglio</span>
                             <p class="text-sm text-gray-700 whitespace-pre-line" x-text="order.cutting_instructions"></p>
                         </div>
                     </template>
 
                     <template x-if="order.finishing_notes">
                         <div class="mt-4">
-                            <span class="text-gray-500 block text-sm">Note Finitura</span>
+                            <span class="text-gray-500 block text-sm" data-i18n="order_detail.finishing_notes">Note Finitura</span>
                             <p class="text-sm text-gray-700 whitespace-pre-line" x-text="order.finishing_notes"></p>
                         </div>
                     </template>
@@ -201,35 +201,35 @@
 
                 <!-- Produzione (Production) -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Produzione</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="order_detail.production_title">Produzione</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500 block">Assegnato a</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.assigned_to">Assegnato a</span>
                             <template x-if="editing && user.isManager">
-                                <input type="text" x-model="editData.assigned_to" class="input-field text-sm py-2" placeholder="Nome operatore">
+                                <input type="text" x-model="editData.assigned_to" class="input-field text-sm py-2" placeholder="Nome operatore" data-i18n-placeholder="order_detail.operator_placeholder">
                             </template>
                             <template x-if="!editing || !user.isManager">
-                                <span class="font-semibold" x-text="order.assigned_to || 'Non assegnato'"></span>
+                                <span class="font-semibold" x-text="order.assigned_to || t('order_detail.not_assigned')"></span>
                             </template>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Inizio Produzione</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.production_start">Inizio Produzione</span>
                             <span class="font-semibold" x-text="formatDateTime(order.production_started_at)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Completato</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.completed">Completato</span>
                             <span class="font-semibold" x-text="formatDateTime(order.completed_at)"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Prova Approvata</span>
-                            <span class="font-semibold" x-text="order.proof_approved ? 'Si (' + formatDateTime(order.proof_approved_at) + ')' : 'No'"></span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.proof_approved">Prova Approvata</span>
+                            <span class="font-semibold" x-text="order.proof_approved ? t('common.yes') + ' (' + formatDateTime(order.proof_approved_at) + ')' : t('common.no')"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">File Artwork</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.artwork_files">File Artwork</span>
                             <span class="font-semibold text-xs" x-text="order.artwork_files || '-'"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block">Ritirato</span>
+                            <span class="text-gray-500 block" data-i18n="order_detail.picked_up">Ritirato</span>
                             <span class="font-semibold" x-text="formatDateTime(order.picked_up_at)"></span>
                         </div>
                     </div>
@@ -237,10 +237,10 @@
 
                 <!-- Note Section -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Note</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="order_detail.notes_title">Note</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Cliente</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.customer_notes">Note Cliente</label>
                             <template x-if="editing">
                                 <textarea x-model="editData.customer_notes" class="input-field text-sm" rows="3"></textarea>
                             </template>
@@ -249,7 +249,7 @@
                             </template>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Note Produzione</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.production_notes">Note Produzione</label>
                             <template x-if="editing">
                                 <textarea x-model="editData.production_notes" class="input-field text-sm" rows="3"></textarea>
                             </template>
@@ -262,19 +262,19 @@
 
                 <!-- Activity Timeline -->
                 <div class="card mb-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Attivita</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="order_detail.activity_title">Attivita</h3>
 
                     <!-- Add Comment -->
                     <div class="flex gap-2 mb-4">
                         <input type="text" x-model="newComment" class="input-field flex-1 text-sm py-2"
-                               placeholder="Aggiungi un commento..."
+                               placeholder="Aggiungi un commento..." data-i18n-placeholder="order_detail.comment_placeholder"
                                @keydown.enter="addComment()">
-                        <button @click="addComment()" class="btn-primary text-sm px-4" :disabled="!newComment.trim()">Invia</button>
+                        <button @click="addComment()" class="btn-primary text-sm px-4" :disabled="!newComment.trim()" data-i18n="common.send">Invia</button>
                     </div>
 
                     <!-- Timeline -->
                     <template x-if="activities.length === 0">
-                        <p class="text-gray-400 text-sm text-center py-4">Nessuna attivita registrata.</p>
+                        <p class="text-gray-400 text-sm text-center py-4" data-i18n="order_detail.no_activity">Nessuna attivita registrata.</p>
                     </template>
                     <div class="space-y-3">
                         <template x-for="a in activities" :key="a.id">
@@ -294,29 +294,29 @@
                                     </template>
                                     <template x-if="a.activity_type === 'status_change'">
                                         <p class="text-gray-700">
-                                            Stato: <span class="line-through text-gray-400" x-text="ORDER_STATUS_LABELS[a.old_value] || a.old_value || '-'"></span>
+                                            <span x-text="t('order_detail.activity_status')"></span> <span class="line-through text-gray-400" x-text="ORDER_STATUS_LABELS[a.old_value] || a.old_value || '-'"></span>
                                             &rarr; <span class="font-semibold" x-text="ORDER_STATUS_LABELS[a.new_value] || a.new_value"></span>
                                         </p>
                                     </template>
                                     <template x-if="a.activity_type === 'assigned'">
                                         <p class="text-gray-700">
-                                            Assegnato: <span class="line-through text-gray-400" x-text="a.old_value || 'nessuno'"></span>
-                                            &rarr; <span class="font-semibold" x-text="a.new_value || 'nessuno'"></span>
+                                            <span x-text="t('order_detail.activity_assigned')"></span> <span class="line-through text-gray-400" x-text="a.old_value || t('order_detail.activity_nobody')"></span>
+                                            &rarr; <span class="font-semibold" x-text="a.new_value || t('order_detail.activity_nobody')"></span>
                                         </p>
                                     </template>
                                     <template x-if="a.activity_type === 'payment'">
                                         <p class="text-gray-700">
-                                            Pagamento: <span class="font-semibold" x-text="a.new_value"></span>
+                                            <span x-text="t('order_detail.activity_payment')"></span> <span class="font-semibold" x-text="a.new_value"></span>
                                             <template x-if="a.comment"><span class="text-gray-500" x-text="' (' + a.comment + ')'"></span></template>
                                         </p>
                                     </template>
                                     <template x-if="a.activity_type === 'invoice_created'">
                                         <p class="text-gray-700">
-                                            Fattura creata: <span class="font-semibold font-mono" x-text="a.new_value"></span>
+                                            <span x-text="t('order_detail.activity_invoice')"></span> <span class="font-semibold font-mono" x-text="a.new_value"></span>
                                         </p>
                                     </template>
                                     <template x-if="a.activity_type === 'proof_approved'">
-                                        <p class="text-gray-700">Prova approvata</p>
+                                        <p class="text-gray-700" x-text="t('order_detail.activity_proof')">Prova approvata</p>
                                     </template>
                                     <p class="text-xs text-gray-400 mt-0.5">
                                         <span x-text="a.actor"></span> &middot; <span x-text="formatDateTime(a.created_at)"></span>
@@ -331,43 +331,43 @@
                 <div class="card flex flex-wrap gap-3">
                     <!-- Edit/Save -->
                     <template x-if="!editing && user.isOperator">
-                        <button @click="startEditing()" class="btn-secondary">Modifica</button>
+                        <button @click="startEditing()" class="btn-secondary" x-text="t('order_detail.edit_btn')">Modifica</button>
                     </template>
                     <template x-if="editing">
                         <button @click="saveOrder()" class="btn-primary" :disabled="saving">
-                            <span x-show="!saving">Salva Modifiche</span>
-                            <span x-show="saving">Salvataggio...</span>
+                            <span x-show="!saving" x-text="t('order_detail.save_btn')">Salva Modifiche</span>
+                            <span x-show="saving" x-text="t('common.saving')">Salvataggio...</span>
                         </button>
                     </template>
                     <template x-if="editing">
-                        <button @click="cancelEditing()" class="btn-secondary">Annulla</button>
+                        <button @click="cancelEditing()" class="btn-secondary" x-text="t('common.cancel')">Annulla</button>
                     </template>
 
                     <!-- Status Actions -->
                     <template x-if="order.status === 'quoted'">
-                        <button @click="approveOrder()" class="btn-success">Approva Preventivo</button>
+                        <button @click="approveOrder()" class="btn-success" x-text="t('order_detail.approve_btn')">Approva Preventivo</button>
                     </template>
                     <template x-if="order.status === 'approved' && user.isOperator">
-                        <button @click="advanceStatus('in_production')" class="btn-primary">Avvia Produzione</button>
+                        <button @click="advanceStatus('in_production')" class="btn-primary" x-text="t('order_detail.start_production_btn')">Avvia Produzione</button>
                     </template>
                     <template x-if="order.status === 'in_production' && user.isOperator">
-                        <button @click="advanceStatus('quality_check')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200">Controllo Qualita</button>
+                        <button @click="advanceStatus('quality_check')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200" x-text="t('order_detail.quality_check_btn')">Controllo Qualita</button>
                     </template>
                     <template x-if="(order.status === 'in_production' || order.status === 'quality_check') && user.isOperator">
-                        <button @click="completeOrder()" class="btn-success">Pronto per Ritiro</button>
+                        <button @click="completeOrder()" class="btn-success" x-text="t('order_detail.ready_btn')">Pronto per Ritiro</button>
                     </template>
                     <template x-if="order.status === 'ready'">
-                        <button @click="advanceStatus('picked_up')" class="btn-primary">Ritirato</button>
+                        <button @click="advanceStatus('picked_up')" class="btn-primary" x-text="t('order_detail.picked_up_btn')">Ritirato</button>
                     </template>
                     <template x-if="(order.status === 'picked_up' || order.status === 'ready') && user.isManager">
-                        <button @click="showInvoiceModal = true" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200">Genera Fattura</button>
+                        <button @click="showInvoiceModal = true" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200" x-text="t('order_detail.generate_invoice_btn')">Genera Fattura</button>
                     </template>
                 </div>
 
                 <!-- Invoice Generation Modal -->
                 <div x-show="showInvoiceModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6" @click.outside="showInvoiceModal = false">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">Genera Fattura</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4" data-i18n="order_detail.invoice_modal_title">Genera Fattura</h3>
 
                         <div class="space-y-4">
                             <!-- Auto-generated line item from order -->
@@ -380,52 +380,52 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Scadenza Pagamento *</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="order_detail.due_date_label">Scadenza Pagamento</span> *</label>
                                 <input type="date" x-model="invoiceData.due_date" class="input-field text-sm">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Acconto Applicato</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.deposit_label">Acconto Applicato</label>
                                 <input type="number" x-model.number="invoiceData.deposit_applied" class="input-field text-sm" min="0" step="0.01">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="order_detail.notes_label">Note</label>
                                 <textarea x-model="invoiceData.notes" class="input-field text-sm" rows="2"></textarea>
                             </div>
 
                             <!-- Totals preview -->
                             <div class="bg-blue-50 rounded-lg p-3 text-sm space-y-1">
                                 <div class="flex justify-between">
-                                    <span>Subtotale:</span>
+                                    <span data-i18n="order_detail.subtotal">Subtotale:</span>
                                     <span x-text="formatPrice(order.total_price)"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span>IVA 22%:</span>
+                                    <span data-i18n="order_detail.vat_22">IVA 22%:</span>
                                     <span x-text="formatPrice(order.total_price * 0.22)"></span>
                                 </div>
                                 <div class="flex justify-between font-bold text-base">
-                                    <span>Totale:</span>
+                                    <span data-i18n="order_detail.total">Totale:</span>
                                     <span x-text="formatPrice(order.total_price * 1.22)"></span>
                                 </div>
                                 <template x-if="invoiceData.deposit_applied > 0">
                                     <div class="flex justify-between text-green-700">
-                                        <span>Acconto:</span>
+                                        <span data-i18n="order_detail.deposit">Acconto:</span>
                                         <span x-text="'-' + formatPrice(invoiceData.deposit_applied)"></span>
                                     </div>
                                 </template>
                                 <div class="flex justify-between font-bold text-lg border-t pt-1">
-                                    <span>Da Pagare:</span>
+                                    <span data-i18n="order_detail.amount_due">Da Pagare:</span>
                                     <span x-text="formatPrice(order.total_price * 1.22 - (invoiceData.deposit_applied || 0))"></span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end gap-3 mt-6">
-                            <button @click="showInvoiceModal = false" class="btn-secondary">Annulla</button>
+                            <button @click="showInvoiceModal = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
                             <button @click="generateInvoice()" class="btn-primary" :disabled="saving || !invoiceData.due_date">
-                                <span x-show="!saving">Crea Fattura</span>
-                                <span x-show="saving">Creazione...</span>
+                                <span x-show="!saving" x-text="t('order_detail.create_invoice_btn')">Crea Fattura</span>
+                                <span x-show="saving" x-text="t('common.creating')">Creazione...</span>
                             </button>
                         </div>
                     </div>
@@ -495,7 +495,7 @@
                     } catch (e) { this.customerName = '?'; }
                     await this.loadActivities();
                 } catch (e) {
-                    showToast('Errore caricamento ordine: ' + e.message, 'error');
+                    showToast(t('order_detail.load_error', {message: e.message}), 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -516,15 +516,15 @@
                     await API.post('/api/v1/print-shop/orders/' + this.order.id + '/comment', { comment: this.newComment.trim() });
                     this.newComment = '';
                     await this.loadActivities();
-                    showToast('Commento aggiunto.', 'success');
+                    showToast(t('order_detail.comment_added'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
             async generateInvoice() {
                 if (!this.invoiceData.due_date) {
-                    showToast('Scadenza pagamento obbligatoria.', 'warning');
+                    showToast(t('order_detail.due_date_required'), 'warning');
                     return;
                 }
                 this.saving = true;
@@ -542,13 +542,13 @@
                         notes: this.invoiceData.notes || null
                     };
                     const invoice = await API.post('/api/v1/print-shop/invoices', payload);
-                    showToast('Fattura creata: ' + invoice.invoice_number, 'success');
+                    showToast(t('order_detail.invoice_created', {number: invoice.invoice_number}), 'success');
                     this.showInvoiceModal = false;
                     // Reload order (status changed to invoiced) + activities
                     this.order = await API.get('/api/v1/print-shop/orders/' + this.order.id);
                     await this.loadActivities();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -556,16 +556,16 @@
 
             async createOrder() {
                 if (!this.newOrder.title || !this.newOrder.customer_id) {
-                    showToast('Titolo e cliente sono obbligatori.', 'warning');
+                    showToast(t('order_detail.title_required'), 'warning');
                     return;
                 }
                 this.saving = true;
                 try {
                     const created = await API.post('/api/v1/print-shop/orders', this.newOrder);
-                    showToast('Preventivo creato: ' + created.order_number, 'success');
+                    showToast(t('order_detail.quote_created', {number: created.order_number}), 'success');
                     window.location.href = '/print-shop/orders/' + created.id;
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -593,9 +593,9 @@
                 try {
                     this.order = await API.put('/api/v1/print-shop/orders/' + this.order.id, this.editData);
                     this.editing = false;
-                    showToast('Modifiche salvate!', 'success');
+                    showToast(t('order_detail.changes_saved'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }
@@ -605,9 +605,9 @@
                 try {
                     this.order = await API.post('/api/v1/print-shop/orders/' + this.order.id + '/approve');
                     await this.loadActivities();
-                    showToast('Preventivo approvato!', 'success');
+                    showToast(t('order_detail.quote_approved'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
@@ -615,9 +615,9 @@
                 try {
                     this.order = await API.patch('/api/v1/print-shop/orders/' + this.order.id + '/status', { status: newStatus });
                     await this.loadActivities();
-                    showToast('Stato aggiornato: ' + ORDER_STATUS_LABELS[newStatus], 'success');
+                    showToast(t('order_detail.status_updated', {status: ORDER_STATUS_LABELS[newStatus]}), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             },
 
@@ -625,9 +625,9 @@
                 try {
                     this.order = await API.post('/api/v1/print-shop/orders/' + this.order.id + '/complete');
                     await this.loadActivities();
-                    showToast('Ordine completato - pronto per ritiro!', 'success');
+                    showToast(t('order_detail.order_completed'), 'success');
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 }
             }
         }

@@ -12,19 +12,19 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F5A8;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
-                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
-                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Fatture</a>
-                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
-                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
                 </div>
             </div>
         </div>
@@ -32,32 +32,32 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
-        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">Fatture</a>
-        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.orders">Ordini</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Fatture</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6" data-i18n="invoices.title">Fatture</h2>
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Da Incassare</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="invoices.to_collect">Da Incassare</p>
                 <p class="text-3xl font-bold text-red-600" x-text="summary.pending"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Parziali</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="invoices.partial">Parziali</p>
                 <p class="text-3xl font-bold text-amber-600" x-text="summary.partial"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Pagate</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="invoices.paid">Pagate</p>
                 <p class="text-3xl font-bold text-green-600" x-text="summary.paid"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Totale Fatture</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="invoices.total_invoices">Totale Fatture</p>
                 <p class="text-3xl font-bold text-blue-600" x-text="invoices.length"></p>
             </div>
         </div>
@@ -66,51 +66,49 @@
         <div class="card mb-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato Pagamento</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="invoices.filter_status">Stato Pagamento</label>
                     <select x-model="filters.status" @change="loadInvoices()" class="input-field text-sm py-2">
-                        <option value="">Tutti</option>
-                        <option value="pending">Da Pagare</option>
-                        <option value="deposit_paid">Acconto Pagato</option>
-                        <option value="partial">Parziale</option>
-                        <option value="paid">Pagata</option>
-                        <option value="overdue">Scaduta</option>
+                        <option value="" data-i18n="common.all">Tutti</option>
+                        <template x-for="(label, key) in PAYMENT_STATUS_LABELS" :key="key">
+                            <option :value="key" x-text="label"></option>
+                        </template>
                     </select>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca cliente</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="invoices.filter_customer">Cerca cliente</label>
                     <input type="text" x-model="filters.search" @input.debounce.300ms="filterByCustomer()"
-                           class="input-field text-sm py-2" placeholder="Nome cliente...">
+                           class="input-field text-sm py-2" placeholder="Nome cliente..." data-i18n-placeholder="invoices.customer_placeholder">
                 </div>
             </div>
         </div>
 
         <!-- Invoice Count -->
         <p class="text-sm text-gray-500 mb-3" x-show="!loading">
-            <span x-text="filteredInvoices.length"></span> fatture trovate
+            <span x-text="t('invoices.count', {count: filteredInvoices.length})"></span>
         </p>
 
         <!-- Invoices Table -->
         <div class="card overflow-x-auto">
             <template x-if="loading">
-                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+                <p class="text-center text-gray-500 py-8" data-i18n="common.loading">Caricamento...</p>
             </template>
 
             <template x-if="!loading && filteredInvoices.length === 0">
-                <p class="text-center text-gray-500 py-8">Nessuna fattura trovata.</p>
+                <p class="text-center text-gray-500 py-8" data-i18n="invoices.no_results">Nessuna fattura trovata.</p>
             </template>
 
             <table class="min-w-full" x-show="!loading && filteredInvoices.length > 0">
                 <thead>
                     <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                        <th class="pb-3 pr-4">N. Fattura</th>
-                        <th class="pb-3 pr-4">Cliente</th>
-                        <th class="pb-3 pr-4">Subtotale</th>
-                        <th class="pb-3 pr-4">IVA</th>
-                        <th class="pb-3 pr-4">Totale</th>
-                        <th class="pb-3 pr-4">Da Pagare</th>
-                        <th class="pb-3 pr-4">Stato</th>
-                        <th class="pb-3 pr-4">Scadenza</th>
-                        <th class="pb-3">Azioni</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_invoice_number">N. Fattura</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_customer">Cliente</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_subtotal">Subtotale</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_vat">IVA</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_total">Totale</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_due">Da Pagare</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_status">Stato</th>
+                        <th class="pb-3 pr-4" data-i18n="invoices.th_due_date">Scadenza</th>
+                        <th class="pb-3" data-i18n="invoices.th_actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,12 +132,12 @@
                             <td class="py-3 pr-4 text-sm text-gray-500" x-text="formatDate(inv.due_date)"></td>
                             <td class="py-3">
                                 <template x-if="inv.payment_status !== 'paid'">
-                                    <button @click="openPaymentModal(inv)" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                                    <button @click="openPaymentModal(inv)" class="text-green-600 hover:text-green-700 text-sm font-medium" x-text="t('invoices.collect_btn')">
                                         Incassa
                                     </button>
                                 </template>
                                 <template x-if="inv.payment_status === 'paid'">
-                                    <span class="text-gray-400 text-sm">Saldata</span>
+                                    <span class="text-gray-400 text-sm" x-text="t('invoices.settled_btn')">Saldata</span>
                                 </template>
                             </td>
                         </tr>
@@ -152,35 +150,35 @@
     <!-- Payment Modal -->
     <div x-show="showPaymentModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.outside="showPaymentModal = false">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Registra Pagamento</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-4" data-i18n="invoices.record_payment">Registra Pagamento</h3>
 
             <div class="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
                 <p class="font-mono text-gray-600" x-text="paymentInvoice?.invoice_number"></p>
-                <p class="text-lg font-bold text-gray-900">Da pagare: <span class="text-red-600" x-text="formatPrice(paymentInvoice?.amount_due)"></span></p>
+                <p class="text-lg font-bold text-gray-900"><span data-i18n="invoices.amount_due_label">Da pagare:</span> <span class="text-red-600" x-text="formatPrice(paymentInvoice?.amount_due)"></span></p>
             </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Metodo di Pagamento *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="invoices.payment_method_label">Metodo di Pagamento</span> *</label>
                     <select x-model="paymentData.payment_method" class="input-field text-sm">
-                        <option value="">Seleziona...</option>
-                        <option value="contanti">Contanti</option>
-                        <option value="carta">Carta</option>
-                        <option value="bonifico">Bonifico</option>
+                        <option value="" data-i18n="invoices.method_select">Seleziona...</option>
+                        <option value="contanti" data-i18n="invoices.method_cash">Contanti</option>
+                        <option value="carta" data-i18n="invoices.method_card">Carta</option>
+                        <option value="bonifico" data-i18n="invoices.method_transfer">Bonifico</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Importo (vuoto = saldo completo)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="invoices.amount_label">Importo (vuoto = saldo completo)</label>
                     <input type="number" x-model.number="paymentData.amount" class="input-field text-sm" min="0" step="0.01"
-                           :placeholder="'Max: ' + (paymentInvoice?.amount_due || 0)">
+                           :placeholder="t('invoices.amount_placeholder', {amount: paymentInvoice?.amount_due || 0})">
                 </div>
             </div>
 
             <div class="flex justify-end gap-3 mt-6">
-                <button @click="showPaymentModal = false" class="btn-secondary">Annulla</button>
+                <button @click="showPaymentModal = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
                 <button @click="recordPayment()" class="btn-success" :disabled="!paymentData.payment_method || saving">
-                    <span x-show="!saving">Conferma Pagamento</span>
-                    <span x-show="saving">Registrazione...</span>
+                    <span x-show="!saving" x-text="t('invoices.confirm_payment')">Conferma Pagamento</span>
+                    <span x-show="saving" x-text="t('common.registering')">Registrazione...</span>
                 </button>
             </div>
         </div>
@@ -188,14 +186,6 @@
 </div>
 
 <script>
-    const PAYMENT_STATUS_LABELS = {
-        'pending': 'Da Pagare',
-        'deposit_paid': 'Acconto',
-        'partial': 'Parziale',
-        'paid': 'Pagata',
-        'overdue': 'Scaduta'
-    };
-
     function invoiceListData() {
         return {
             user: { username: '', isManager: false, isCounter: false },
@@ -246,7 +236,7 @@
                     this.filterByCustomer();
                     this.updateSummary();
                 } catch (e) {
-                    showToast('Errore caricamento fatture: ' + e.message, 'error');
+                    showToast(t('invoices.load_error', {message: e.message}), 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -280,7 +270,7 @@
 
             async recordPayment() {
                 if (!this.paymentData.payment_method) {
-                    showToast('Seleziona un metodo di pagamento.', 'warning');
+                    showToast(t('invoices.select_method'), 'warning');
                     return;
                 }
                 this.saving = true;
@@ -292,11 +282,11 @@
                         payload.amount = this.paymentData.amount;
                     }
                     await API.patch('/api/v1/print-shop/invoices/' + this.paymentInvoice.id + '/payment', payload);
-                    showToast('Pagamento registrato!', 'success');
+                    showToast(t('invoices.payment_recorded'), 'success');
                     this.showPaymentModal = false;
                     await this.loadInvoices();
                 } catch (e) {
-                    showToast('Errore: ' + e.message, 'error');
+                    showToast(t('common.error') + ': ' + e.message, 'error');
                 } finally {
                     this.saving = false;
                 }

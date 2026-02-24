@@ -12,17 +12,17 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-2xl">&#x1F5A8;</span>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
-                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
                     </div>
                 </div>
 
                 <!-- Nav Links -->
                 <div class="hidden md:flex items-center space-x-2">
-                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Cruscotto</a>
-                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
-                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
-                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -30,7 +30,7 @@
                         <p class="text-sm font-semibold text-gray-900" x-text="user.username"></p>
                         <p class="text-xs text-gray-500" x-text="user.roles.filter(r => r.startsWith('isotto-')).join(', ')"></p>
                     </div>
-                    <button @click="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                    <button @click="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition" data-i18n="common.logout">
                         Esci
                     </button>
                 </div>
@@ -40,43 +40,43 @@
 
     <!-- Mobile Nav -->
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
-        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">Cruscotto</a>
-        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
-        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
-        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.orders">Ordini</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Welcome -->
         <div class="card mb-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white">
-            <h2 class="text-2xl font-bold mb-1" x-text="`Buongiorno, ${user.firstName || user.username}!`"></h2>
-            <p class="opacity-90">Ecco la situazione di oggi.</p>
+            <h2 class="text-2xl font-bold mb-1" x-text="t('dashboard.greeting', {name: user.firstName || user.username})"></h2>
+            <p class="opacity-90" data-i18n="dashboard.today_summary">Ecco la situazione di oggi.</p>
         </div>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">In Produzione</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.in_production">In Produzione</p>
                 <p class="text-3xl font-bold text-amber-600" x-text="stats.orders_in_production"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">In Attesa Approvazione</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.pending_approval">In Attesa Approvazione</p>
                 <p class="text-3xl font-bold text-gray-600" x-text="stats.orders_pending_approval"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Pronti per Ritiro</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.ready_pickup">Pronti per Ritiro</p>
                 <p class="text-3xl font-bold text-green-600" x-text="stats.orders_ready"></p>
             </div>
             <a href="/print-shop/invoices?status_filter=pending" class="card hover:shadow-xl transition">
-                <p class="text-sm text-gray-600 font-medium">Fatture in Attesa</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.pending_invoices">Fatture in Attesa</p>
                 <p class="text-3xl font-bold text-red-600" x-text="stats.pending_invoices"></p>
             </a>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Fatturato Mese</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.revenue_month">Fatturato Mese</p>
                 <p class="text-2xl font-bold text-emerald-600" x-text="formatPrice(stats.revenue_this_month)"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600 font-medium">Completati Oggi</p>
+                <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.completed_today">Completati Oggi</p>
                 <p class="text-3xl font-bold text-blue-600" x-text="stats.orders_completed_today"></p>
             </div>
         </div>
@@ -84,24 +84,24 @@
         <!-- Active Orders -->
         <div class="card mb-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900">Ordini Attivi</h3>
-                <a href="/print-shop/orders" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Vedi tutti &rarr;</a>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.active_orders">Ordini Attivi</h3>
+                <a href="/print-shop/orders" class="text-blue-600 hover:text-blue-700 text-sm font-medium" data-i18n-html="dashboard.view_all">Vedi tutti &rarr;</a>
             </div>
 
             <template x-if="activeOrders.length === 0">
-                <p class="text-gray-500 text-center py-8">Nessun ordine attivo al momento.</p>
+                <p class="text-gray-500 text-center py-8" x-text="t('dashboard.no_active')">Nessun ordine attivo al momento.</p>
             </template>
 
             <div class="overflow-x-auto" x-show="activeOrders.length > 0">
                 <table class="min-w-full">
                     <thead>
                         <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
-                            <th class="pb-3 pr-4">Ordine</th>
-                            <th class="pb-3 pr-4">Cliente</th>
-                            <th class="pb-3 pr-4">Titolo</th>
-                            <th class="pb-3 pr-4">Tipo</th>
-                            <th class="pb-3 pr-4">Stato</th>
-                            <th class="pb-3">Totale</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_order">Ordine</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_customer">Cliente</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_title">Titolo</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_type">Tipo</th>
+                            <th class="pb-3 pr-4" data-i18n="dashboard.th_status">Stato</th>
+                            <th class="pb-3" data-i18n="dashboard.th_total">Totale</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,20 +126,20 @@
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <a href="/print-shop/orders/new" class="card hover:shadow-xl transition text-center py-6" x-show="user.isCounter">
                 <span class="text-4xl block mb-2">&#x1F4DD;</span>
-                <h3 class="text-lg font-bold text-gray-900">Nuovo Ordine</h3>
-                <p class="text-sm text-gray-500">Crea preventivo</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.new_order">Nuovo Ordine</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.create_quote">Crea preventivo</p>
             </a>
 
             <a href="/print-shop/customers" class="card hover:shadow-xl transition text-center py-6">
                 <span class="text-4xl block mb-2">&#x1F465;</span>
-                <h3 class="text-lg font-bold text-gray-900">Cerca Cliente</h3>
-                <p class="text-sm text-gray-500">Gestione clienti</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.search_customer">Cerca Cliente</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.manage_customers">Gestione clienti</p>
             </a>
 
             <a href="/print-shop/orders?status_filter=ready" class="card hover:shadow-xl transition text-center py-6">
                 <span class="text-4xl block mb-2">&#x1F4E6;</span>
-                <h3 class="text-lg font-bold text-gray-900">Pronti</h3>
-                <p class="text-sm text-gray-500">Ordini da ritirare</p>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="dashboard.ready">Pronti</h3>
+                <p class="text-sm text-gray-500" data-i18n="dashboard.orders_pickup">Ordini da ritirare</p>
             </a>
         </div>
     </main>
@@ -169,7 +169,7 @@
                     if (tokenFromUrl) {
                         IsottoAuth.setToken(tokenFromUrl);
                         window.history.replaceState({}, document.title, '/print-shop/dashboard');
-                        showToast('Login effettuato!', 'success');
+                        showToast(t('dashboard.login_success'), 'success');
                     }
                 }
 
@@ -181,7 +181,7 @@
 
                 const userInfo = IsottoAuth.getUserInfo();
                 if (!userInfo || userInfo.roles.length === 0) {
-                    showToast('Accesso non autorizzato.', 'error');
+                    showToast(t('dashboard.unauthorized'), 'error');
                     setTimeout(() => IsottoAuth.logout(), 2000);
                     return;
                 }
@@ -228,8 +228,8 @@
             },
 
             logout() {
-                if (confirm('Vuoi uscire?')) {
-                    showToast('Disconnessione...', 'info');
+                if (confirm(t('dashboard.confirm_logout'))) {
+                    showToast(t('dashboard.disconnecting'), 'info');
                     setTimeout(() => IsottoAuth.logout(), 500);
                 }
             }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" id="isotto-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -106,8 +106,68 @@
 
     {% block content %}{% endblock %}
 
+    <!-- i18n translations -->
+    <script src="/static/isotto-i18n.js?v=20260224"></script>
+
     <!-- Global JavaScript utilities -->
     <script>
+        // ===== i18n: Language Detection =====
+        // Priority: 1) ?lang=xx URL param  2) localStorage  3) Keycloak locale  4) default 'it'
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const urlLang = params.get('lang');
+            if (urlLang && ISOTTO_STRINGS[urlLang]) {
+                localStorage.setItem('isotto_lang', urlLang);
+            }
+            let lang = localStorage.getItem('isotto_lang');
+            if (!lang) {
+                try {
+                    const token = sessionStorage.getItem('isotto_token');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                        if (payload.locale && ISOTTO_STRINGS[payload.locale]) {
+                            lang = payload.locale;
+                        }
+                    }
+                } catch (e) { /* ignore parse errors */ }
+            }
+            lang = lang || 'it';
+            window._isottoLang = ISOTTO_STRINGS[lang] ? lang : 'it';
+            document.documentElement.lang = window._isottoLang === 'it' ? 'it' : 'en';
+        })();
+
+        // Switch language and reload
+        function switchLanguage(newLang) {
+            if (ISOTTO_STRINGS[newLang]) {
+                localStorage.setItem('isotto_lang', newLang);
+                window.location.reload();
+            }
+        }
+
+        // Translation helper: t('nav.dashboard') => translated string
+        function t(key, replacements) {
+            const lang = window._isottoLang || 'it';
+            const keys = key.split('.');
+            let val = ISOTTO_STRINGS[lang];
+            for (const k of keys) {
+                if (val && typeof val === 'object' && k in val) {
+                    val = val[k];
+                } else {
+                    // Fallback to Italian
+                    let fb = ISOTTO_STRINGS.it;
+                    for (const fk of keys) {
+                        if (fb && typeof fb === 'object' && fk in fb) fb = fb[fk]; else return key;
+                    }
+                    return typeof fb === 'string' ? fb : key;
+                }
+            }
+            if (replacements && typeof val === 'string') {
+                for (const [rk, rv] of Object.entries(replacements)) {
+                    val = val.replace('{' + rk + '}', rv);
+                }
+            }
+            return val;
+        }
         // JWT token management for ISOTTO Sport
         const IsottoAuth = {
             getToken() {
@@ -183,11 +243,11 @@
                     const response = await fetch(endpoint, config);
                     if (response.status === 401) {
                         IsottoAuth.logout();
-                        throw new Error('Sessione scaduta. Effettua il login.');
+                        throw new Error(t('system.session_expired'));
                     }
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
-                        throw new Error(error.detail || `Errore ${response.status}`);
+                        throw new Error(error.detail || t('system.error_status', {status: response.status}));
                     }
                     if (response.status === 204) return null;
                     return await response.json();
@@ -206,7 +266,8 @@
         // Config
         const IsottoConfig = {
             currency: 'EUR',
-            locale: 'it-IT',
+            lang: window._isottoLang || 'it',
+            locale: (window._isottoLang === 'en') ? 'en-GB' : 'it-IT',
             vat_rate: 22
         };
 
@@ -218,59 +279,28 @@
             }).format(amount);
         }
 
-        // Date formatting
+        // Date formatting (locale-aware)
         function formatDate(dateStr) {
             if (!dateStr) return '-';
-            return new Date(dateStr).toLocaleDateString('it-IT', {
+            return new Date(dateStr).toLocaleDateString(IsottoConfig.locale, {
                 day: '2-digit', month: '2-digit', year: 'numeric'
             });
         }
 
         function formatDateTime(dateStr) {
             if (!dateStr) return '-';
-            return new Date(dateStr).toLocaleString('it-IT', {
+            return new Date(dateStr).toLocaleString(IsottoConfig.locale, {
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             });
         }
 
-        // Status labels (Italian)
-        const ORDER_STATUS_LABELS = {
-            'quoted': 'Preventivato',
-            'approved': 'Approvato',
-            'in_production': 'In Produzione',
-            'quality_check': 'Controllo Qualita',
-            'ready': 'Pronto Ritiro',
-            'picked_up': 'Ritirato',
-            'invoiced': 'Fatturato',
-            'cancelled': 'Annullato'
-        };
-
-        const PRODUCT_TYPE_LABELS = {
-            'postcard': 'Cartolina',
-            'business_card': 'Biglietto da Visita',
-            'flyer': 'Volantino',
-            'brochure': 'Brochure',
-            'banner': 'Banner',
-            'poster': 'Poster',
-            'tshirt': 'T-Shirt',
-            'sticker': 'Adesivo',
-            'label': 'Etichetta',
-            'menu': 'Menu',
-            'custom': 'Personalizzato'
-        };
-
-        const COLOR_MODE_LABELS = {
-            'cmyk': 'CMYK (Colori)',
-            'bw': 'B/N',
-            'spot': 'Spot'
-        };
-
-        const LAMINATION_LABELS = {
-            'none': 'Nessuna',
-            'matte': 'Opaca',
-            'glossy': 'Lucida'
-        };
+        // Status labels (from i18n dictionary)
+        const ORDER_STATUS_LABELS = ISOTTO_STRINGS[IsottoConfig.lang].status.order;
+        const PRODUCT_TYPE_LABELS = ISOTTO_STRINGS[IsottoConfig.lang].status.product_type;
+        const COLOR_MODE_LABELS = ISOTTO_STRINGS[IsottoConfig.lang].status.color_mode;
+        const LAMINATION_LABELS = ISOTTO_STRINGS[IsottoConfig.lang].status.lamination;
+        const PAYMENT_STATUS_LABELS = ISOTTO_STRINGS[IsottoConfig.lang].status.payment;
 
         // Toast notification
         function showToast(message, type = 'info') {
@@ -299,23 +329,51 @@
     <footer class="helix-status-bar" id="helix-status">
         <div class="status-section">
             <span class="pulse ok" id="status-pulse"></span>
-            <span id="status-text">Sistema OK</span>
+            <span id="status-text" data-i18n="system.ok">Sistema OK</span>
             <span class="divider">|</span>
             <span id="status-time">--:--</span>
         </div>
         <div class="status-section">
-            <span id="status-screen">{% block page_name %}ISOTTO Sport - Gestione Stampa{% endblock %}</span>
+            <span id="status-screen">{% block page_name %}ISOTTO Sport{% endblock %}</span>
+            <span class="divider">|</span>
+            <select id="lang-switch" onchange="switchLanguage(this.value)"
+                style="background:#1e3a5f;color:#93c5fd;border:1px solid #2563eb;border-radius:3px;font-size:12px;padding:1px 4px;cursor:pointer;font-family:inherit;">
+                <option value="it" style="background:#1e3a5f;">IT</option>
+                <option value="en" style="background:#1e3a5f;">EN</option>
+            </select>
             <span class="divider">|</span>
             <span id="status-user">--</span>
         </div>
     </footer>
 
     <script>
+        // ===== i18n: data-i18n attribute handler =====
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-i18n]').forEach(function(el) {
+                const key = el.getAttribute('data-i18n');
+                const val = t(key);
+                if (val !== key) el.textContent = val;
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+                const key = el.getAttribute('data-i18n-placeholder');
+                const val = t(key);
+                if (val !== key) el.placeholder = val;
+            });
+            document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+                const key = el.getAttribute('data-i18n-html');
+                const val = t(key);
+                if (val !== key) el.innerHTML = val;
+            });
+            // Set language switcher to current language
+            const langSwitch = document.getElementById('lang-switch');
+            if (langSwitch) langSwitch.value = window._isottoLang || 'it';
+        });
+
         (function() {
             function updateStatusBar() {
                 const now = new Date();
                 document.getElementById('status-time').textContent =
-                    now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    now.toLocaleTimeString(IsottoConfig.locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 const user = IsottoAuth.getUserInfo();
                 if (user) {
                     document.getElementById('status-user').textContent = user.username;
@@ -328,14 +386,14 @@
                     const statusText = document.getElementById('status-text');
                     if (response.ok) {
                         pulse.className = 'pulse ok';
-                        statusText.textContent = 'Sistema OK';
+                        statusText.textContent = t('system.ok');
                     } else {
                         pulse.className = 'pulse warn';
-                        statusText.textContent = 'Degradato';
+                        statusText.textContent = t('system.degraded');
                     }
                 } catch (e) {
                     document.getElementById('status-pulse').className = 'pulse error';
-                    document.getElementById('status-text').textContent = 'Offline';
+                    document.getElementById('status-text').textContent = t('system.offline');
                 }
             }
             updateStatusBar();
