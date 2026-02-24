@@ -283,6 +283,73 @@ if [[ -n "$ISOTTO_TOKEN" && "$ISOTTO_TOKEN" != "" ]]; then
         warn "No ISOTTO invoices found -- skipping invoice detail test"
     fi
 
+    # ── 7b. Sprint 2-3: Catalog, Suppliers, POs, Artworks, Print Queue ──
+
+    # New HTML pages
+    check_status "Print Shop catalog page" "$BASE/print-shop/catalog"
+    check_status "Print Shop suppliers page" "$BASE/print-shop/suppliers"
+    check_status "Print Shop purchase orders page" "$BASE/print-shop/purchase-orders"
+    check_status "Print Shop artworks page" "$BASE/print-shop/artworks"
+    check_status "Print Shop print queue page" "$BASE/print-shop/print-queue"
+
+    # Catalog API -- suppliers
+    check_json_array "GET /catalog/suppliers" "$BASE/api/v1/print-shop/catalog/suppliers"
+
+    # Catalog API -- products
+    check_json_array "GET /catalog/products" "$BASE/api/v1/print-shop/catalog/products"
+
+    # Catalog API -- stock (pick first product, check stock entries)
+    CATALOG_PRODUCT_ID=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/catalog/products" | \
+        python3 -c "import sys,json; p=json.load(sys.stdin); print(p[0]['id'] if p else '')" 2>/dev/null)
+    if [[ -n "$CATALOG_PRODUCT_ID" ]]; then
+        check_json_array "GET /catalog/products/{id}/stock" "$BASE/api/v1/print-shop/catalog/products/$CATALOG_PRODUCT_ID/stock"
+    else
+        warn "No catalog products found -- skipping stock test"
+    fi
+
+    # Catalog API -- purchase orders
+    check_json_array "GET /catalog/purchase-orders" "$BASE/api/v1/print-shop/catalog/purchase-orders"
+
+    # Catalog API -- artworks
+    check_json_array "GET /catalog/artworks" "$BASE/api/v1/print-shop/catalog/artworks"
+
+    # Line items (pick team order -- the one with is_team_order=true)
+    TEAM_ORDER_ID=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/orders" | \
+        python3 -c "import sys,json; orders=json.load(sys.stdin); print(next((o['id'] for o in orders if o.get('is_team_order')), orders[0]['id'] if orders else ''))" 2>/dev/null)
+    if [[ -n "$TEAM_ORDER_ID" ]]; then
+        check_json_array "GET /orders/{id}/items (line items)" "$BASE/api/v1/print-shop/orders/$TEAM_ORDER_ID/items"
+
+        # Size summary (object response)
+        SIZE_SUMMARY=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/orders/$TEAM_ORDER_ID/size-summary")
+        if echo "$SIZE_SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total_items' in d" 2>/dev/null; then
+            TOTAL_ITEMS=$(echo "$SIZE_SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total_items'])" 2>/dev/null)
+            pass "GET /orders/{id}/size-summary (${TOTAL_ITEMS} items)"
+        else
+            fail "GET /orders/{id}/size-summary (bad response)"
+        fi
+
+        # Previews endpoint (object response)
+        PREVIEWS=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/orders/$TEAM_ORDER_ID/previews")
+        if echo "$PREVIEWS" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total' in d" 2>/dev/null; then
+            PREVIEW_COUNT=$(echo "$PREVIEWS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total'])" 2>/dev/null)
+            pass "GET /orders/{id}/previews (${PREVIEW_COUNT} previews)"
+        else
+            fail "GET /orders/{id}/previews (bad response)"
+        fi
+    else
+        warn "No ISOTTO orders found -- skipping line items/size/preview tests"
+    fi
+
+    # Print queue (object response)
+    PRINT_QUEUE=$($CURL -H "Authorization: Bearer $ISOTTO_TOKEN" "$BASE/api/v1/print-shop/print-queue")
+    if echo "$PRINT_QUEUE" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total_items' in d" 2>/dev/null; then
+        PQ_ITEMS=$(echo "$PRINT_QUEUE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total_items'])" 2>/dev/null)
+        PQ_ORDERS=$(echo "$PRINT_QUEUE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total_orders'])" 2>/dev/null)
+        pass "GET /print-queue (${PQ_ITEMS} items, ${PQ_ORDERS} orders)"
+    else
+        fail "GET /print-queue (bad response)"
+    fi
+
     # Restore original token
     TOKEN="$ORIG_TOKEN"
 else
