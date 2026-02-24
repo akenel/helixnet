@@ -5,6 +5,22 @@
 {% block content %}
 <div class="p-6 bg-white shadow-2xl rounded-xl">
             
+    <!-- Quick Navigation -->
+    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+        <a href="/backlog" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-md no-underline">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Backlog Board
+        </a>
+        <a href="/testing" class="inline-flex items-center bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition shadow-md no-underline">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            QA Dashboard
+        </a>
+    </div>
+
     <!-- Job List View -->
     <div id="jobListView">
         <div class="flex justify-between items-center mb-6">

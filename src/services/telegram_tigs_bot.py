@@ -36,6 +36,9 @@ from src.services.telegram_tigs_tools import (
     check_bugs,
     get_bug_detail,
     server_status,
+    check_backlog,
+    get_backlog_item_detail,
+    update_backlog_status,
 )
 
 # ---------------------------------------------------------------------------
@@ -250,6 +253,8 @@ async def cmd_start(message: types.Message):
         "Tigs online. Text me, send voice, or use commands:\n\n"
         "/bugs - QA bug summary\n"
         "/bug 10 - Details for BUG-010\n"
+        "/backlog - Backlog summary\n"
+        "/bl 5 - Backlog item BL-005\n"
         "/status - Server health\n"
         "/clear - Reset conversation\n"
     )
@@ -287,6 +292,39 @@ async def cmd_bug(message: types.Message):
 
     await message.answer(f"Looking up BUG-{bug_num:03d}...")
     result = await get_bug_detail(bug_num)
+    await message.answer(result)
+
+
+@dp.message(Command("backlog"))
+async def cmd_backlog(message: types.Message):
+    if not is_authorized(message):
+        return
+    await message.answer("Checking backlog...")
+    result = await check_backlog()
+    await message.answer(result)
+
+
+@dp.message(Command("bl"))
+async def cmd_bl(message: types.Message):
+    if not is_authorized(message):
+        return
+    text = message.text or ""
+    parts = text.strip().split()
+    item_num = None
+    if len(parts) >= 2:
+        try:
+            item_num = int(parts[1])
+        except ValueError:
+            pass
+    if item_num is None:
+        try:
+            item_num = int(text.replace("/bl", "").strip())
+        except ValueError:
+            await message.answer("Usage: /bl 5")
+            return
+
+    await message.answer(f"Looking up BL-{item_num:03d}...")
+    result = await get_backlog_item_detail(item_num)
     await message.answer(result)
 
 

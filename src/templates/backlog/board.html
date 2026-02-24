@@ -159,6 +159,39 @@
                                         <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded" x-text="tag.trim()"></span>
                                     </template>
                                 </div>
+                                <!-- Quick status buttons -->
+                                <div class="mt-2 flex gap-1" @click.stop>
+                                    <template x-if="item.status === 'pending'">
+                                        <button @click="quickStatusChange(item, 'in_progress')"
+                                            class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 transition font-medium">
+                                            Start
+                                        </button>
+                                    </template>
+                                    <template x-if="item.status === 'in_progress'">
+                                        <div class="flex gap-1">
+                                            <button @click="quickStatusChange(item, 'done')"
+                                                class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded hover:bg-green-200 transition font-medium">
+                                                Done
+                                            </button>
+                                            <button @click="quickStatusChange(item, 'blocked')"
+                                                class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded hover:bg-red-200 transition font-medium">
+                                                Block
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template x-if="item.status === 'blocked'">
+                                        <button @click="quickStatusChange(item, 'in_progress')"
+                                            class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 transition font-medium">
+                                            Unblock
+                                        </button>
+                                    </template>
+                                    <template x-if="item.status === 'done'">
+                                        <button @click="quickStatusChange(item, 'in_progress')"
+                                            class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded hover:bg-amber-200 transition font-medium">
+                                            Reopen
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                         </template>
                         <div x-show="itemsByStatus(col.status).length === 0"
@@ -541,6 +574,19 @@ function backlogBoard() {
                 showToast('Save failed: ' + e.message, 'error');
             } finally {
                 this.saving = false;
+            }
+        },
+
+        async quickStatusChange(item, newStatus) {
+            try {
+                await API.put(`/api/v1/backlog/items/${item.id}`, {
+                    status: newStatus,
+                    actor: this.currentUser || 'Angel',
+                });
+                showToast(`BL-${String(item.item_number).padStart(3, '0')} -> ${this.statusLabel(newStatus)}`, 'success');
+                await Promise.all([this.loadSummary(), this.loadItems()]);
+            } catch (e) {
+                showToast('Status change failed: ' + e.message, 'error');
             }
         },
 

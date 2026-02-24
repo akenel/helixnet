@@ -107,6 +107,111 @@ async def get_bug_detail(bug_number: int) -> str:
         return f"Error querying bug {bug_number}: {e}"
 
 
+async def check_backlog() -> str:
+    """Get backlog summary: total, pending, in_progress, blocked, done."""
+    try:
+        conn = await _get_pg_connection()
+        try:
+            rows = await conn.fetch("""
+                SELECT status, COUNT(*) AS cnt
+                FROM backlog_items
+                WHERE status != 'archived'
+                GROUP BY status
+            """)
+            counts = {r['status']: r['cnt'] for r in rows}
+            total = sum(counts.values())
+            return (
+                f"Backlog: {total} items\n"
+                f"  Pending: {counts.get('pending', 0)}\n"
+                f"  In Progress: {counts.get('in_progress', 0)}\n"
+                f"  Blocked: {counts.get('blocked', 0)}\n"
+                f"  Done: {counts.get('done', 0)}"
+            )
+        finally:
+            await conn.close()
+    except Exception as e:
+        logger.error(f"check_backlog failed: {e}")
+        return f"Error querying backlog: {e}"
+
+
+async def get_backlog_item_detail(item_number: int) -> str:
+    """Get details for a backlog item by number (e.g. BL-005)."""
+    try:
+        conn = await _get_pg_connection()
+        try:
+            item = await conn.fetchrow("""
+                SELECT item_number, title, description, item_type, status,
+                       priority, assigned_to, due_date, tags,
+                       blocked_reason, created_by, created_at, updated_at
+                FROM backlog_items
+                WHERE item_number = $1
+            """, item_number)
+
+            if not item:
+                return f"BL-{item_number:03d} not found."
+
+            lines = [
+                f"BL-{item['item_number']:03d}: {item['title']}",
+                f"Type: {item['item_type']} | Status: {item['status']} | Priority: {item['priority']}",
+                f"Assigned: {item['assigned_to'] or 'unassigned'}",
+                f"Created by: {item['created_by']} on {item['created_at'].strftime('%Y-%m-%d')}",
+            ]
+            if item['due_date']:
+                lines.append(f"Due: {item['due_date']}")
+            if item['tags']:
+                lines.append(f"Tags: {item['tags']}")
+            if item['blocked_reason']:
+                lines.append(f"BLOCKED: {item['blocked_reason']}")
+            if item['description']:
+                desc = item['description'][:200]
+                if len(item['description']) > 200:
+                    desc += "..."
+                lines.append(f"Description: {desc}")
+            return "\n".join(lines)
+        finally:
+            await conn.close()
+    except Exception as e:
+        logger.error(f"get_backlog_item_detail failed: {e}")
+        return f"Error querying backlog item {item_number}: {e}"
+
+
+async def update_backlog_status(item_number: int, new_status: str) -> str:
+    """Change the status of a backlog item."""
+    valid = ('pending', 'in_progress', 'blocked', 'done', 'archived')
+    if new_status not in valid:
+        return f"Invalid status '{new_status}'. Must be one of: {', '.join(valid)}"
+    try:
+        conn = await _get_pg_connection()
+        try:
+            item = await conn.fetchrow(
+                "SELECT id, item_number, title, status FROM backlog_items WHERE item_number = $1",
+                item_number,
+            )
+            if not item:
+                return f"BL-{item_number:03d} not found."
+
+            old_status = item['status']
+            if old_status == new_status:
+                return f"BL-{item_number:03d} is already {new_status}."
+
+            await conn.execute(
+                "UPDATE backlog_items SET status = $1, updated_at = NOW() WHERE item_number = $2",
+                new_status, item_number,
+            )
+            # Log activity
+            await conn.execute("""
+                INSERT INTO backlog_activities (id, item_id, activity_type, actor, old_value, new_value, created_at)
+                VALUES (gen_random_uuid(), $1, 'status_change', 'Tigs', $2, $3, NOW())
+            """, item['id'], old_status, new_status)
+
+            return f"BL-{item_number:03d} ({item['title']}): {old_status} -> {new_status}"
+        finally:
+            await conn.close()
+    except Exception as e:
+        logger.error(f"update_backlog_status failed: {e}")
+        return f"Error updating BL-{item_number:03d}: {e}"
+
+
 async def server_status() -> str:
     """Check if the HelixNet platform is healthy."""
     try:
@@ -156,6 +261,48 @@ TOOL_DEFINITIONS = [
             "required": [],
         },
     },
+    {
+        "name": "check_backlog",
+        "description": "Get backlog summary showing item counts by status (pending, in_progress, blocked, done).",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "get_backlog_item_detail",
+        "description": "Get details for a specific backlog item by number (e.g. 5 for BL-005). Returns title, type, status, priority, description, and assigned person.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "item_number": {
+                    "type": "integer",
+                    "description": "The backlog item number (e.g. 5 for BL-005)",
+                }
+            },
+            "required": ["item_number"],
+        },
+    },
+    {
+        "name": "update_backlog_status",
+        "description": "Change the status of a backlog item. Valid statuses: pending, in_progress, blocked, done, archived.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "item_number": {
+                    "type": "integer",
+                    "description": "The backlog item number (e.g. 5 for BL-005)",
+                },
+                "new_status": {
+                    "type": "string",
+                    "description": "New status: pending, in_progress, blocked, done, or archived",
+                    "enum": ["pending", "in_progress", "blocked", "done", "archived"],
+                },
+            },
+            "required": ["item_number", "new_status"],
+        },
+    },
 ]
 
 # Map tool names to functions
@@ -163,4 +310,7 @@ TOOL_HANDLERS = {
     "check_bugs": lambda **kwargs: check_bugs(),
     "get_bug_detail": lambda **kwargs: get_bug_detail(kwargs["bug_number"]),
     "server_status": lambda **kwargs: server_status(),
+    "check_backlog": lambda **kwargs: check_backlog(),
+    "get_backlog_item_detail": lambda **kwargs: get_backlog_item_detail(kwargs["item_number"]),
+    "update_backlog_status": lambda **kwargs: update_backlog_status(kwargs["item_number"], kwargs["new_status"]),
 }
