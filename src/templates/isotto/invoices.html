@@ -1,0 +1,307 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Fatture - ISOTTO Sport{% endblock %}
+{% block page_name %}Fatture{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="invoiceListData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Fatture</h2>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Da Incassare</p>
+                <p class="text-3xl font-bold text-red-600" x-text="summary.pending"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Parziali</p>
+                <p class="text-3xl font-bold text-amber-600" x-text="summary.partial"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Pagate</p>
+                <p class="text-3xl font-bold text-green-600" x-text="summary.paid"></p>
+            </div>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Totale Fatture</p>
+                <p class="text-3xl font-bold text-blue-600" x-text="invoices.length"></p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Stato Pagamento</label>
+                    <select x-model="filters.status" @change="loadInvoices()" class="input-field text-sm py-2">
+                        <option value="">Tutti</option>
+                        <option value="pending">Da Pagare</option>
+                        <option value="deposit_paid">Acconto Pagato</option>
+                        <option value="partial">Parziale</option>
+                        <option value="paid">Pagata</option>
+                        <option value="overdue">Scaduta</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Cerca cliente</label>
+                    <input type="text" x-model="filters.search" @input.debounce.300ms="filterByCustomer()"
+                           class="input-field text-sm py-2" placeholder="Nome cliente...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Count -->
+        <p class="text-sm text-gray-500 mb-3" x-show="!loading">
+            <span x-text="filteredInvoices.length"></span> fatture trovate
+        </p>
+
+        <!-- Invoices Table -->
+        <div class="card overflow-x-auto">
+            <template x-if="loading">
+                <p class="text-center text-gray-500 py-8">Caricamento...</p>
+            </template>
+
+            <template x-if="!loading && filteredInvoices.length === 0">
+                <p class="text-center text-gray-500 py-8">Nessuna fattura trovata.</p>
+            </template>
+
+            <table class="min-w-full" x-show="!loading && filteredInvoices.length > 0">
+                <thead>
+                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                        <th class="pb-3 pr-4">N. Fattura</th>
+                        <th class="pb-3 pr-4">Cliente</th>
+                        <th class="pb-3 pr-4">Subtotale</th>
+                        <th class="pb-3 pr-4">IVA</th>
+                        <th class="pb-3 pr-4">Totale</th>
+                        <th class="pb-3 pr-4">Da Pagare</th>
+                        <th class="pb-3 pr-4">Stato</th>
+                        <th class="pb-3 pr-4">Scadenza</th>
+                        <th class="pb-3">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="inv in filteredInvoices" :key="inv.id">
+                        <tr class="border-b hover:bg-blue-50 transition">
+                            <td class="py-3 pr-4 text-sm font-mono text-gray-700" x-text="inv.invoice_number"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="customerMap[inv.customer_id] || '...'"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700" x-text="formatPrice(inv.subtotal)"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-500" x-text="formatPrice(inv.vat_amount)"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="formatPrice(inv.total)"></td>
+                            <td class="py-3 pr-4 text-sm font-bold" :class="inv.amount_due > 0 ? 'text-red-600' : 'text-green-600'" x-text="formatPrice(inv.amount_due)"></td>
+                            <td class="py-3 pr-4">
+                                <span class="badge"
+                                      :class="{
+                                          'bg-red-100 text-red-800': inv.payment_status === 'pending' || inv.payment_status === 'overdue',
+                                          'bg-amber-100 text-amber-800': inv.payment_status === 'partial' || inv.payment_status === 'deposit_paid',
+                                          'bg-green-100 text-green-800': inv.payment_status === 'paid'
+                                      }"
+                                      x-text="PAYMENT_STATUS_LABELS[inv.payment_status] || inv.payment_status"></span>
+                            </td>
+                            <td class="py-3 pr-4 text-sm text-gray-500" x-text="formatDate(inv.due_date)"></td>
+                            <td class="py-3">
+                                <template x-if="inv.payment_status !== 'paid'">
+                                    <button @click="openPaymentModal(inv)" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                                        Incassa
+                                    </button>
+                                </template>
+                                <template x-if="inv.payment_status === 'paid'">
+                                    <span class="text-gray-400 text-sm">Saldata</span>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Payment Modal -->
+    <div x-show="showPaymentModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.outside="showPaymentModal = false">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Registra Pagamento</h3>
+
+            <div class="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                <p class="font-mono text-gray-600" x-text="paymentInvoice?.invoice_number"></p>
+                <p class="text-lg font-bold text-gray-900">Da pagare: <span class="text-red-600" x-text="formatPrice(paymentInvoice?.amount_due)"></span></p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Metodo di Pagamento *</label>
+                    <select x-model="paymentData.payment_method" class="input-field text-sm">
+                        <option value="">Seleziona...</option>
+                        <option value="contanti">Contanti</option>
+                        <option value="carta">Carta</option>
+                        <option value="bonifico">Bonifico</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Importo (vuoto = saldo completo)</label>
+                    <input type="number" x-model.number="paymentData.amount" class="input-field text-sm" min="0" step="0.01"
+                           :placeholder="'Max: ' + (paymentInvoice?.amount_due || 0)">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button @click="showPaymentModal = false" class="btn-secondary">Annulla</button>
+                <button @click="recordPayment()" class="btn-success" :disabled="!paymentData.payment_method || saving">
+                    <span x-show="!saving">Conferma Pagamento</span>
+                    <span x-show="saving">Registrazione...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const PAYMENT_STATUS_LABELS = {
+        'pending': 'Da Pagare',
+        'deposit_paid': 'Acconto',
+        'partial': 'Parziale',
+        'paid': 'Pagata',
+        'overdue': 'Scaduta'
+    };
+
+    function invoiceListData() {
+        return {
+            user: { username: '', isManager: false, isCounter: false },
+            invoices: [],
+            filteredInvoices: [],
+            customerMap: {},
+            filters: { status: '', search: '' },
+            summary: { pending: 0, partial: 0, paid: 0 },
+            loading: true,
+            saving: false,
+            showPaymentModal: false,
+            paymentInvoice: null,
+            paymentData: { payment_method: '', amount: null },
+
+            init() {
+                const token = IsottoAuth.getToken();
+                if (!token) { window.location.href = '/print-shop'; return; }
+                const userInfo = IsottoAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isManager: IsottoAuth.isManager(),
+                    isCounter: IsottoAuth.isCounter()
+                };
+
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('status_filter')) this.filters.status = params.get('status_filter');
+
+                this.loadCustomers();
+                this.loadInvoices();
+            },
+
+            async loadCustomers() {
+                try {
+                    const customers = await API.get('/api/v1/print-shop/customers');
+                    customers.forEach(c => { this.customerMap[c.id] = c.company_name || c.name; });
+                } catch (e) {
+                    console.error('Customer load failed:', e);
+                }
+            },
+
+            async loadInvoices() {
+                this.loading = true;
+                try {
+                    let url = '/api/v1/print-shop/invoices?limit=200';
+                    if (this.filters.status) url += '&status_filter=' + this.filters.status;
+                    this.invoices = await API.get(url);
+                    this.filterByCustomer();
+                    this.updateSummary();
+                } catch (e) {
+                    showToast('Errore caricamento fatture: ' + e.message, 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            filterByCustomer() {
+                if (!this.filters.search.trim()) {
+                    this.filteredInvoices = this.invoices;
+                    return;
+                }
+                const q = this.filters.search.toLowerCase();
+                this.filteredInvoices = this.invoices.filter(inv => {
+                    const name = (this.customerMap[inv.customer_id] || '').toLowerCase();
+                    return name.includes(q) || inv.invoice_number.toLowerCase().includes(q);
+                });
+            },
+
+            updateSummary() {
+                this.summary = {
+                    pending: this.invoices.filter(i => i.payment_status === 'pending' || i.payment_status === 'overdue').length,
+                    partial: this.invoices.filter(i => i.payment_status === 'partial' || i.payment_status === 'deposit_paid').length,
+                    paid: this.invoices.filter(i => i.payment_status === 'paid').length
+                };
+            },
+
+            openPaymentModal(invoice) {
+                this.paymentInvoice = invoice;
+                this.paymentData = { payment_method: '', amount: null };
+                this.showPaymentModal = true;
+            },
+
+            async recordPayment() {
+                if (!this.paymentData.payment_method) {
+                    showToast('Seleziona un metodo di pagamento.', 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    const payload = {
+                        payment_method: this.paymentData.payment_method
+                    };
+                    if (this.paymentData.amount && this.paymentData.amount > 0) {
+                        payload.amount = this.paymentData.amount;
+                    }
+                    await API.patch('/api/v1/print-shop/invoices/' + this.paymentInvoice.id + '/payment', payload);
+                    showToast('Pagamento registrato!', 'success');
+                    this.showPaymentModal = false;
+                    await this.loadInvoices();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

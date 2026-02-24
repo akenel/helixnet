@@ -11,6 +11,8 @@ from uuid import UUID
 from typing import Optional
 
 from src.db.models.isotto_order_model import ProductType, OrderStatus, ColorMode, DuplexMode, Lamination
+from src.db.models.isotto_invoice_model import IsottoPaymentStatus
+from src.db.models.isotto_activity_model import IsottoActivityType
 
 
 # ================================================================
@@ -167,6 +169,92 @@ class PrintOrderRead(BaseModel):
 
 
 # ================================================================
+# INVOICE SCHEMAS
+# ================================================================
+
+class IsottoInvoiceLineItem(BaseModel):
+    """Single line item in an invoice"""
+    description: str = Field(..., max_length=500)
+    quantity: int = Field(..., ge=1)
+    unit_price: Decimal = Field(..., ge=0)
+    line_total: Decimal = Field(..., ge=0)
+
+
+class IsottoInvoiceCreate(BaseModel):
+    """Schema for creating an invoice from a completed order"""
+    order_id: UUID
+    line_items: list[IsottoInvoiceLineItem] = Field(..., min_length=1)
+    due_date: date
+    deposit_applied: Decimal = Field(default=Decimal("0.00"), ge=0)
+    notes: Optional[str] = None
+
+
+class IsottoInvoiceUpdate(BaseModel):
+    """Schema for updating invoice (payment, notes)"""
+    payment_status: Optional[IsottoPaymentStatus] = None
+    payment_method: Optional[str] = Field(None, max_length=50)
+    paid_at: Optional[datetime] = None
+    notes: Optional[str] = None
+    deposit_applied: Optional[Decimal] = Field(None, ge=0)
+
+
+class IsottoInvoiceRead(BaseModel):
+    """Schema for reading invoice (includes all DB fields)"""
+    id: UUID
+    invoice_number: str
+    order_id: UUID
+    customer_id: UUID
+    line_items: list[dict]
+    subtotal: Decimal
+    vat_rate: Decimal
+    vat_amount: Decimal
+    total: Decimal
+    currency: str
+    deposit_applied: Decimal
+    amount_due: Decimal
+    payment_status: IsottoPaymentStatus
+    payment_method: Optional[str] = None
+    paid_at: Optional[datetime] = None
+    due_date: date
+    pdf_url: Optional[str] = None
+    notes: Optional[str] = None
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class IsottoPaymentRecord(BaseModel):
+    """Schema for recording a payment on an invoice"""
+    payment_method: str = Field(..., max_length=50, description="contanti, carta, bonifico")
+    amount: Optional[Decimal] = Field(None, ge=0, description="Partial payment amount (None = full)")
+
+
+# ================================================================
+# ACTIVITY SCHEMA
+# ================================================================
+
+class IsottoOrderActivityRead(BaseModel):
+    """Schema for reading order activity trail entries"""
+    id: UUID
+    order_id: UUID
+    activity_type: IsottoActivityType
+    actor: str
+    old_value: Optional[str] = None
+    new_value: Optional[str] = None
+    comment: Optional[str] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class IsottoOrderCommentCreate(BaseModel):
+    """Schema for adding a comment to an order"""
+    comment: str = Field(..., min_length=1, max_length=2000)
+
+
+# ================================================================
 # DASHBOARD SCHEMA
 # ================================================================
 
@@ -178,3 +266,5 @@ class IsottoDashboardSummary(BaseModel):
     orders_completed_today: int = Field(description="Orders finished today")
     orders_in_quality_check: int = Field(description="Orders in quality check")
     total_orders: int = Field(description="All-time order count")
+    pending_invoices: int = Field(default=0, description="Invoices awaiting payment")
+    revenue_this_month: Decimal = Field(default=Decimal("0.00"), description="Revenue from paid invoices this month")

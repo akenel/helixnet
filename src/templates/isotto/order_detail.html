@@ -19,6 +19,7 @@
                 <div class="hidden md:flex items-center space-x-2">
                     <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cruscotto</a>
                     <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
                     <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -259,6 +260,73 @@
                     </div>
                 </div>
 
+                <!-- Activity Timeline -->
+                <div class="card mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Attivita</h3>
+
+                    <!-- Add Comment -->
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" x-model="newComment" class="input-field flex-1 text-sm py-2"
+                               placeholder="Aggiungi un commento..."
+                               @keydown.enter="addComment()">
+                        <button @click="addComment()" class="btn-primary text-sm px-4" :disabled="!newComment.trim()">Invia</button>
+                    </div>
+
+                    <!-- Timeline -->
+                    <template x-if="activities.length === 0">
+                        <p class="text-gray-400 text-sm text-center py-4">Nessuna attivita registrata.</p>
+                    </template>
+                    <div class="space-y-3">
+                        <template x-for="a in activities" :key="a.id">
+                            <div class="flex items-start gap-3 text-sm border-l-2 pl-3 py-1"
+                                 :class="{
+                                    'border-blue-400': a.activity_type === 'status_change',
+                                    'border-green-400': a.activity_type === 'comment',
+                                    'border-amber-400': a.activity_type === 'assigned',
+                                    'border-purple-400': a.activity_type === 'payment',
+                                    'border-emerald-400': a.activity_type === 'invoice_created',
+                                    'border-teal-400': a.activity_type === 'proof_approved',
+                                    'border-gray-300': !['status_change','comment','assigned','payment','invoice_created','proof_approved'].includes(a.activity_type)
+                                 }">
+                                <div class="flex-1">
+                                    <template x-if="a.activity_type === 'comment'">
+                                        <p class="text-gray-700" x-text="a.comment"></p>
+                                    </template>
+                                    <template x-if="a.activity_type === 'status_change'">
+                                        <p class="text-gray-700">
+                                            Stato: <span class="line-through text-gray-400" x-text="ORDER_STATUS_LABELS[a.old_value] || a.old_value || '-'"></span>
+                                            &rarr; <span class="font-semibold" x-text="ORDER_STATUS_LABELS[a.new_value] || a.new_value"></span>
+                                        </p>
+                                    </template>
+                                    <template x-if="a.activity_type === 'assigned'">
+                                        <p class="text-gray-700">
+                                            Assegnato: <span class="line-through text-gray-400" x-text="a.old_value || 'nessuno'"></span>
+                                            &rarr; <span class="font-semibold" x-text="a.new_value || 'nessuno'"></span>
+                                        </p>
+                                    </template>
+                                    <template x-if="a.activity_type === 'payment'">
+                                        <p class="text-gray-700">
+                                            Pagamento: <span class="font-semibold" x-text="a.new_value"></span>
+                                            <template x-if="a.comment"><span class="text-gray-500" x-text="' (' + a.comment + ')'"></span></template>
+                                        </p>
+                                    </template>
+                                    <template x-if="a.activity_type === 'invoice_created'">
+                                        <p class="text-gray-700">
+                                            Fattura creata: <span class="font-semibold font-mono" x-text="a.new_value"></span>
+                                        </p>
+                                    </template>
+                                    <template x-if="a.activity_type === 'proof_approved'">
+                                        <p class="text-gray-700">Prova approvata</p>
+                                    </template>
+                                    <p class="text-xs text-gray-400 mt-0.5">
+                                        <span x-text="a.actor"></span> &middot; <span x-text="formatDateTime(a.created_at)"></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="card flex flex-wrap gap-3">
                     <!-- Edit/Save -->
@@ -291,9 +359,76 @@
                     <template x-if="order.status === 'ready'">
                         <button @click="advanceStatus('picked_up')" class="btn-primary">Ritirato</button>
                     </template>
-                    <template x-if="order.status === 'picked_up' && user.isManager">
-                        <button @click="advanceStatus('invoiced')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200">Fatturato</button>
+                    <template x-if="(order.status === 'picked_up' || order.status === 'ready') && user.isManager">
+                        <button @click="showInvoiceModal = true" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-all duration-200">Genera Fattura</button>
                     </template>
+                </div>
+
+                <!-- Invoice Generation Modal -->
+                <div x-show="showInvoiceModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6" @click.outside="showInvoiceModal = false">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Genera Fattura</h3>
+
+                        <div class="space-y-4">
+                            <!-- Auto-generated line item from order -->
+                            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+                                <p class="font-semibold" x-text="order.title"></p>
+                                <p class="text-gray-600">
+                                    <span x-text="order.quantity"></span> x <span x-text="formatPrice(order.unit_price)"></span>
+                                    = <span class="font-bold" x-text="formatPrice(order.total_price)"></span>
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Scadenza Pagamento *</label>
+                                <input type="date" x-model="invoiceData.due_date" class="input-field text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Acconto Applicato</label>
+                                <input type="number" x-model.number="invoiceData.deposit_applied" class="input-field text-sm" min="0" step="0.01">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                                <textarea x-model="invoiceData.notes" class="input-field text-sm" rows="2"></textarea>
+                            </div>
+
+                            <!-- Totals preview -->
+                            <div class="bg-blue-50 rounded-lg p-3 text-sm space-y-1">
+                                <div class="flex justify-between">
+                                    <span>Subtotale:</span>
+                                    <span x-text="formatPrice(order.total_price)"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>IVA 22%:</span>
+                                    <span x-text="formatPrice(order.total_price * 0.22)"></span>
+                                </div>
+                                <div class="flex justify-between font-bold text-base">
+                                    <span>Totale:</span>
+                                    <span x-text="formatPrice(order.total_price * 1.22)"></span>
+                                </div>
+                                <template x-if="invoiceData.deposit_applied > 0">
+                                    <div class="flex justify-between text-green-700">
+                                        <span>Acconto:</span>
+                                        <span x-text="'-' + formatPrice(invoiceData.deposit_applied)"></span>
+                                    </div>
+                                </template>
+                                <div class="flex justify-between font-bold text-lg border-t pt-1">
+                                    <span>Da Pagare:</span>
+                                    <span x-text="formatPrice(order.total_price * 1.22 - (invoiceData.deposit_applied || 0))"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button @click="showInvoiceModal = false" class="btn-secondary">Annulla</button>
+                            <button @click="generateInvoice()" class="btn-primary" :disabled="saving || !invoiceData.due_date">
+                                <span x-show="!saving">Crea Fattura</span>
+                                <span x-show="saving">Creazione...</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </template>
@@ -306,6 +441,10 @@
             user: { username: '', isAdmin: false, isManager: false, isOperator: false, isDesigner: false, isCounter: false },
             order: {},
             customerName: '...',
+            activities: [],
+            newComment: '',
+            showInvoiceModal: false,
+            invoiceData: { due_date: '', deposit_applied: 0, notes: '' },
             loading: true,
             editing: false,
             saving: false,
@@ -354,10 +493,64 @@
                         const customer = await API.get('/api/v1/print-shop/customers/' + this.order.customer_id);
                         this.customerName = customer.company_name || customer.name;
                     } catch (e) { this.customerName = '?'; }
+                    await this.loadActivities();
                 } catch (e) {
                     showToast('Errore caricamento ordine: ' + e.message, 'error');
                 } finally {
                     this.loading = false;
+                }
+            },
+
+            async loadActivities() {
+                if (!this.order.id) return;
+                try {
+                    this.activities = await API.get('/api/v1/print-shop/orders/' + this.order.id + '/activities');
+                } catch (e) {
+                    console.error('Activities load failed:', e);
+                }
+            },
+
+            async addComment() {
+                if (!this.newComment.trim()) return;
+                try {
+                    await API.post('/api/v1/print-shop/orders/' + this.order.id + '/comment', { comment: this.newComment.trim() });
+                    this.newComment = '';
+                    await this.loadActivities();
+                    showToast('Commento aggiunto.', 'success');
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                }
+            },
+
+            async generateInvoice() {
+                if (!this.invoiceData.due_date) {
+                    showToast('Scadenza pagamento obbligatoria.', 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    const payload = {
+                        order_id: this.order.id,
+                        line_items: [{
+                            description: this.order.title,
+                            quantity: this.order.quantity || 1,
+                            unit_price: this.order.unit_price || this.order.total_price,
+                            line_total: this.order.total_price
+                        }],
+                        due_date: this.invoiceData.due_date,
+                        deposit_applied: this.invoiceData.deposit_applied || 0,
+                        notes: this.invoiceData.notes || null
+                    };
+                    const invoice = await API.post('/api/v1/print-shop/invoices', payload);
+                    showToast('Fattura creata: ' + invoice.invoice_number, 'success');
+                    this.showInvoiceModal = false;
+                    // Reload order (status changed to invoiced) + activities
+                    this.order = await API.get('/api/v1/print-shop/orders/' + this.order.id);
+                    await this.loadActivities();
+                } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
                 }
             },
 
@@ -411,6 +604,7 @@
             async approveOrder() {
                 try {
                     this.order = await API.post('/api/v1/print-shop/orders/' + this.order.id + '/approve');
+                    await this.loadActivities();
                     showToast('Preventivo approvato!', 'success');
                 } catch (e) {
                     showToast('Errore: ' + e.message, 'error');
@@ -420,6 +614,7 @@
             async advanceStatus(newStatus) {
                 try {
                     this.order = await API.patch('/api/v1/print-shop/orders/' + this.order.id + '/status', { status: newStatus });
+                    await this.loadActivities();
                     showToast('Stato aggiornato: ' + ORDER_STATUS_LABELS[newStatus], 'success');
                 } catch (e) {
                     showToast('Errore: ' + e.message, 'error');
@@ -429,6 +624,7 @@
             async completeOrder() {
                 try {
                     this.order = await API.post('/api/v1/print-shop/orders/' + this.order.id + '/complete');
+                    await this.loadActivities();
                     showToast('Ordine completato - pronto per ritiro!', 'success');
                 } catch (e) {
                     showToast('Errore: ' + e.message, 'error');

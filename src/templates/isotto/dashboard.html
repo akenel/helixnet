@@ -21,6 +21,7 @@
                 <div class="hidden md:flex items-center space-x-2">
                     <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">Cruscotto</a>
                     <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Ordini</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Fatture</a>
                     <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Clienti</a>
                 </div>
 
@@ -41,6 +42,7 @@
     <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
         <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">Cruscotto</a>
         <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Ordini</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Fatture</a>
         <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap">Clienti</a>
     </div>
 
@@ -52,7 +54,7 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div class="card">
                 <p class="text-sm text-gray-600 font-medium">In Produzione</p>
                 <p class="text-3xl font-bold text-amber-600" x-text="stats.orders_in_production"></p>
@@ -64,6 +66,14 @@
             <div class="card">
                 <p class="text-sm text-gray-600 font-medium">Pronti per Ritiro</p>
                 <p class="text-3xl font-bold text-green-600" x-text="stats.orders_ready"></p>
+            </div>
+            <a href="/print-shop/invoices?status_filter=pending" class="card hover:shadow-xl transition">
+                <p class="text-sm text-gray-600 font-medium">Fatture in Attesa</p>
+                <p class="text-3xl font-bold text-red-600" x-text="stats.pending_invoices"></p>
+            </a>
+            <div class="card">
+                <p class="text-sm text-gray-600 font-medium">Fatturato Mese</p>
+                <p class="text-2xl font-bold text-emerald-600" x-text="formatPrice(stats.revenue_this_month)"></p>
             </div>
             <div class="card">
                 <p class="text-sm text-gray-600 font-medium">Completati Oggi</p>
@@ -145,7 +155,8 @@
             stats: {
                 orders_in_production: 0, orders_pending_approval: 0,
                 orders_ready: 0, orders_completed_today: 0,
-                orders_in_quality_check: 0, total_orders: 0
+                orders_in_quality_check: 0, total_orders: 0,
+                pending_invoices: 0, revenue_this_month: 0
             },
             activeOrders: [],
             customerMap: {},

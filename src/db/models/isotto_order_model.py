@@ -234,6 +234,15 @@ class IsottoOrderModel(Base):
 
     # Relationships
     customer: Mapped["IsottoCustomerModel"] = relationship(back_populates="orders")
+    activities: Mapped[list["IsottoOrderActivityModel"]] = relationship(
+        back_populates="order",
+        cascade="all, delete-orphan",
+        order_by="IsottoOrderActivityModel.created_at.desc()",
+    )
+    invoices: Mapped[list["IsottoInvoiceModel"]] = relationship(
+        back_populates="order",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self):
         return f"<IsottoOrder(number='{self.order_number}', title='{self.title}', status={self.status})>"
