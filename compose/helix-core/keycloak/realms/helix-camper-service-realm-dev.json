@@ -138,7 +138,8 @@
         "https://camperandtour.helix.local/*",
         "http://localhost:8000/*",
         "http://localhost:3000/*",
-        "http://206.189.30.236:8081/*"
+        "http://206.189.30.236:8081/*",
+        "https://46.62.138.218/*"
       ],
       "webOrigins": [
         "https://helix.local",
@@ -147,6 +148,7 @@
         "http://localhost:8000",
         "http://localhost:3000",
         "http://206.189.30.236:8081",
+        "https://46.62.138.218",
         "+"
       ],
       "defaultClientScopes": ["email", "profile", "roles", "web-origins"],
