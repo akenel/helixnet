@@ -290,8 +290,13 @@ async def create_bug(
     )
     db.add(new_bug)
     await db.commit()
-    await db.refresh(new_bug)
-    return new_bug
+    # Re-query with eager load so commits serializes in async mode
+    result = await db.execute(
+        select(QABugReportModel)
+        .options(selectinload(QABugReportModel.commits))
+        .where(QABugReportModel.id == new_bug.id)
+    )
+    return result.scalar_one()
 
 
 @router.get("/bugs", response_model=list[BugReportRead])
