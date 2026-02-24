@@ -1,0 +1,447 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Artwork - ISOTTO Sport{% endblock %}
+{% block page_name %}Artwork Gallery{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="artworksData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.artworks">Artwork</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.orders">Ordini</a>
+        <a href="/print-shop/catalog" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.catalog">Catalogo</a>
+        <a href="/print-shop/suppliers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.suppliers">Fornitori</a>
+        <a href="/print-shop/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/print-shop/artworks" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap" data-i18n="nav.artworks">Artwork</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900" x-text="t('artwork.title')">Artwork Gallery</h2>
+            <button @click="showUploadForm = !showUploadForm" class="btn-primary text-sm" x-text="'+ ' + t('artwork.upload')">+ Carica Artwork</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card mb-6">
+            <div class="flex flex-wrap gap-4 items-center">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" x-model="filterReusable" @change="loadArtworks()" class="w-5 h-5 text-blue-600 rounded">
+                    <span class="text-sm font-medium text-gray-700" x-text="t('artwork.reusable_only')">Solo Riutilizzabili</span>
+                </label>
+                <input type="text" x-model="searchText" @input.debounce.300ms="loadArtworks()"
+                       class="input-field text-sm py-2 w-64" :placeholder="t('artwork.search_placeholder')">
+            </div>
+        </div>
+
+        <!-- Upload / New Artwork Form -->
+        <template x-if="showUploadForm">
+            <div class="card mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('artwork.new_artwork_title')">Nuovo Artwork</h3>
+                <form @submit.prevent="createArtwork()">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span x-text="t('artwork.field_title')">Titolo</span> *</label>
+                            <input type="text" x-model="newArtwork.title" class="input-field" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_customer')">Cliente</label>
+                            <input type="text" x-model="newArtwork.customer_id" class="input-field" :placeholder="t('artwork.customer_placeholder')">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_order')">ID Ordine</label>
+                            <input type="text" x-model="newArtwork.order_id" class="input-field" :placeholder="t('artwork.order_placeholder')">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span x-text="t('artwork.field_print_method')">Metodo Stampa</span> *</label>
+                            <select x-model="newArtwork.print_method" class="input-field" required>
+                                <option value="" x-text="t('artwork.select_method')">Seleziona...</option>
+                                <template x-for="(label, key) in PRINT_METHOD_LABELS" :key="key">
+                                    <option :value="key" x-text="label"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_color_count')">N. Colori</label>
+                            <input type="number" x-model.number="newArtwork.color_count" class="input-field" min="0">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_width')">Largh. (cm)</label>
+                                <input type="number" x-model.number="newArtwork.width_cm" class="input-field" min="0" step="0.1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_height')">Alt. (cm)</label>
+                                <input type="number" x-model.number="newArtwork.height_cm" class="input-field" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_file_url')">URL File</label>
+                            <input type="text" x-model="newArtwork.file_url" class="input-field" :placeholder="t('artwork.file_url_placeholder')">
+                        </div>
+                        <div class="flex items-center pt-6">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" x-model="newArtwork.is_reusable" class="w-5 h-5 text-blue-600 rounded">
+                                <span class="text-sm font-medium text-gray-700" x-text="t('artwork.field_reusable')">Riutilizzabile</span>
+                            </label>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_notes')">Note</label>
+                            <textarea x-model="newArtwork.notes" class="input-field" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="btn-primary" :disabled="saving" x-text="saving ? t('common.saving') : t('common.save')">Salva</button>
+                        <button type="button" @click="showUploadForm = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+
+        <!-- Loading -->
+        <template x-if="loading">
+            <div class="card text-center py-12">
+                <p class="text-gray-500" data-i18n="common.loading">Caricamento...</p>
+            </div>
+        </template>
+
+        <!-- Artwork Count -->
+        <template x-if="!loading">
+            <p class="text-sm text-gray-500 mb-4" x-text="t('artwork.count', {count: artworks.length})"></p>
+        </template>
+
+        <!-- Artwork Card Grid -->
+        <template x-if="!loading && artworks.length > 0">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <template x-for="a in artworks" :key="a.id">
+                    <div class="card hover:shadow-xl transition-shadow cursor-pointer" @click="openDetail(a)">
+                        <!-- Thumbnail -->
+                        <div class="w-full h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                            <template x-if="a.file_url">
+                                <img :src="a.file_url" :alt="a.title" class="w-full h-full object-cover rounded-lg">
+                            </template>
+                            <template x-if="!a.file_url">
+                                <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </template>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="font-bold text-gray-900 text-lg mb-2 truncate" x-text="a.title"></h3>
+
+                        <!-- Badges row -->
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <!-- Print method badge -->
+                            <span class="badge bg-purple-100 text-purple-800" x-text="PRINT_METHOD_LABELS[a.print_method] || a.print_method"></span>
+
+                            <!-- Approved badge -->
+                            <template x-if="a.is_approved">
+                                <span class="badge bg-green-100 text-green-800">
+                                    &#x2713; <span x-text="t('artwork.approved')">Approvato</span>
+                                </span>
+                            </template>
+
+                            <!-- Reusable badge -->
+                            <template x-if="a.is_reusable">
+                                <span class="badge bg-blue-100 text-blue-800" x-text="t('artwork.reusable')">Riutilizzabile</span>
+                            </template>
+                        </div>
+
+                        <!-- Dimensions -->
+                        <template x-if="a.width_cm || a.height_cm">
+                            <p class="text-xs text-gray-500 mb-1">
+                                <span x-text="t('artwork.dimensions')">Dimensioni</span>:
+                                <span x-text="(a.width_cm || '?') + ' x ' + (a.height_cm || '?') + ' cm'"></span>
+                            </p>
+                        </template>
+
+                        <!-- Color count -->
+                        <template x-if="a.color_count">
+                            <p class="text-xs text-gray-500">
+                                <span x-text="t('artwork.field_color_count')">Colori</span>:
+                                <span x-text="a.color_count"></span>
+                            </p>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- No results -->
+        <template x-if="!loading && artworks.length === 0">
+            <div class="card text-center py-12">
+                <p class="text-gray-400" x-text="t('artwork.no_results')">Nessun artwork trovato.</p>
+            </div>
+        </template>
+
+        <!-- Detail Modal -->
+        <div x-show="showDetailModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6" @click.outside="showDetailModal = false">
+                <template x-if="selectedArtwork">
+                    <div>
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900" x-text="selectedArtwork.title"></h3>
+                                <p class="text-sm text-gray-500 mt-1" x-text="t('artwork.created_date') + ': ' + formatDate(selectedArtwork.created_at)"></p>
+                            </div>
+                            <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                        </div>
+
+                        <!-- Large Thumbnail -->
+                        <div class="w-full h-56 bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                            <template x-if="selectedArtwork.file_url">
+                                <img :src="selectedArtwork.file_url" :alt="selectedArtwork.title" class="w-full h-full object-contain rounded-lg">
+                            </template>
+                            <template x-if="!selectedArtwork.file_url">
+                                <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </template>
+                        </div>
+
+                        <!-- Info Grid -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <span class="text-xs text-gray-500 block" x-text="t('artwork.field_customer')">Cliente</span>
+                                <span class="text-sm font-medium" x-text="selectedArtwork.customer_id || '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500 block" x-text="t('artwork.field_order')">Ordine</span>
+                                <template x-if="selectedArtwork.order_id">
+                                    <a :href="'/print-shop/orders/' + selectedArtwork.order_id" class="text-sm font-medium text-blue-600 hover:underline" x-text="selectedArtwork.order_id"></a>
+                                </template>
+                                <template x-if="!selectedArtwork.order_id">
+                                    <span class="text-sm">-</span>
+                                </template>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500 block" x-text="t('artwork.field_print_method')">Metodo Stampa</span>
+                                <span class="badge bg-purple-100 text-purple-800" x-text="PRINT_METHOD_LABELS[selectedArtwork.print_method] || selectedArtwork.print_method"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500 block" x-text="t('artwork.field_color_count')">N. Colori</span>
+                                <span class="text-sm font-medium" x-text="selectedArtwork.color_count || '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500 block" x-text="t('artwork.dimensions')">Dimensioni</span>
+                                <span class="text-sm font-medium" x-text="selectedArtwork.width_cm || selectedArtwork.height_cm ? (selectedArtwork.width_cm || '?') + ' x ' + (selectedArtwork.height_cm || '?') + ' cm' : '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500 block" x-text="t('artwork.field_file_url')">File URL</span>
+                                <template x-if="selectedArtwork.file_url">
+                                    <a :href="selectedArtwork.file_url" target="_blank" class="text-sm text-blue-600 hover:underline truncate block" x-text="selectedArtwork.file_url"></a>
+                                </template>
+                                <template x-if="!selectedArtwork.file_url">
+                                    <span class="text-sm">-</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Switches -->
+                        <div class="flex flex-wrap gap-6 mb-4 py-3 border-t border-b">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" x-model="selectedArtwork.is_approved" class="w-5 h-5 text-green-600 rounded">
+                                <span class="text-sm font-medium text-gray-700" x-text="t('artwork.approved')">Approvato</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" x-model="selectedArtwork.is_reusable" class="w-5 h-5 text-blue-600 rounded">
+                                <span class="text-sm font-medium text-gray-700" x-text="t('artwork.reusable')">Riutilizzabile</span>
+                            </label>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('artwork.field_notes')">Note</label>
+                            <textarea x-model="selectedArtwork.notes" class="input-field text-sm" rows="3"></textarea>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-between">
+                            <button @click="deleteArtwork(selectedArtwork.id)" class="btn-danger text-sm" x-text="t('common.delete')">Elimina</button>
+                            <div class="flex space-x-3">
+                                <button @click="showDetailModal = false" class="btn-secondary text-sm" data-i18n="common.cancel">Annulla</button>
+                                <button @click="updateArtwork()" class="btn-primary text-sm" :disabled="saving" x-text="saving ? t('common.saving') : t('common.save')">Salva</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+const PRINT_METHOD_LABELS = (() => {
+    const lang = window._isottoLang || 'it';
+    return (ISOTTO_STRINGS[lang] && ISOTTO_STRINGS[lang].status && ISOTTO_STRINGS[lang].status.print_method) || {
+        screen_print: 'Serigrafia', dtg: 'DTG', embroidery: 'Ricamo',
+        vinyl: 'Vinile', sublimation: 'Sublimazione', transfer: 'Transfer'
+    };
+})();
+
+function artworksData() {
+    return {
+        user: { username: '', isManager: false, isDesigner: false },
+        artworks: [],
+        loading: true,
+        saving: false,
+        showUploadForm: false,
+        showDetailModal: false,
+        selectedArtwork: null,
+        filterReusable: false,
+        searchText: '',
+        newArtwork: {
+            title: '',
+            customer_id: '',
+            order_id: '',
+            print_method: '',
+            color_count: null,
+            width_cm: null,
+            height_cm: null,
+            file_url: '',
+            is_reusable: false,
+            notes: ''
+        },
+
+        init() {
+            const token = IsottoAuth.getToken();
+            if (!token) { window.location.href = '/print-shop'; return; }
+            const userInfo = IsottoAuth.getUserInfo();
+            if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+            this.user = {
+                ...userInfo,
+                isManager: IsottoAuth.isManager(),
+                isDesigner: IsottoAuth.isDesigner()
+            };
+            this.loadArtworks();
+        },
+
+        async loadArtworks() {
+            this.loading = true;
+            try {
+                let url = '/api/v1/print-shop/catalog/artworks?';
+                if (this.filterReusable) url += 'reusable=true&';
+                if (this.searchText.trim()) url += 'search=' + encodeURIComponent(this.searchText.trim()) + '&';
+                this.artworks = await API.get(url);
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async createArtwork() {
+            if (!this.newArtwork.title || !this.newArtwork.print_method) {
+                showToast(t('artwork.title_method_required'), 'warning');
+                return;
+            }
+            this.saving = true;
+            try {
+                const payload = { ...this.newArtwork };
+                // Clean up empty optional fields
+                if (!payload.customer_id) delete payload.customer_id;
+                if (!payload.order_id) delete payload.order_id;
+                if (!payload.file_url) delete payload.file_url;
+                if (!payload.notes) delete payload.notes;
+                if (!payload.color_count) delete payload.color_count;
+                if (!payload.width_cm) delete payload.width_cm;
+                if (!payload.height_cm) delete payload.height_cm;
+
+                await API.post('/api/v1/print-shop/catalog/artworks', payload);
+                showToast(t('artwork.created'), 'success');
+                this.showUploadForm = false;
+                this.newArtwork = {
+                    title: '', customer_id: '', order_id: '', print_method: '',
+                    color_count: null, width_cm: null, height_cm: null,
+                    file_url: '', is_reusable: false, notes: ''
+                };
+                await this.loadArtworks();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        openDetail(artwork) {
+            // Deep copy to allow editing without affecting grid until save
+            this.selectedArtwork = JSON.parse(JSON.stringify(artwork));
+            this.showDetailModal = true;
+        },
+
+        async updateArtwork() {
+            if (!this.selectedArtwork) return;
+            this.saving = true;
+            try {
+                const payload = {
+                    title: this.selectedArtwork.title,
+                    print_method: this.selectedArtwork.print_method,
+                    color_count: this.selectedArtwork.color_count,
+                    width_cm: this.selectedArtwork.width_cm,
+                    height_cm: this.selectedArtwork.height_cm,
+                    file_url: this.selectedArtwork.file_url,
+                    is_approved: this.selectedArtwork.is_approved,
+                    is_reusable: this.selectedArtwork.is_reusable,
+                    notes: this.selectedArtwork.notes
+                };
+                await API.put('/api/v1/print-shop/catalog/artworks/' + this.selectedArtwork.id, payload);
+                showToast(t('artwork.updated'), 'success');
+                this.showDetailModal = false;
+                await this.loadArtworks();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async deleteArtwork(id) {
+            if (!confirm(t('artwork.confirm_delete'))) return;
+            try {
+                await API.delete('/api/v1/print-shop/catalog/artworks/' + id);
+                showToast(t('artwork.deleted'), 'success');
+                this.showDetailModal = false;
+                await this.loadArtworks();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

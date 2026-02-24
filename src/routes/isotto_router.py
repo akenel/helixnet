@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, delete
 from datetime import datetime, date, timezone
 from decimal import Decimal
 from uuid import UUID
@@ -25,12 +25,17 @@ from src.db.models.isotto_customer_model import IsottoCustomerModel
 from src.db.models.isotto_order_model import IsottoOrderModel, OrderStatus, ProductType
 from src.db.models.isotto_activity_model import IsottoOrderActivityModel, IsottoActivityType
 from src.db.models.isotto_invoice_model import IsottoInvoiceModel, IsottoPaymentStatus
+from src.db.models.isotto_order_line_item_model import IsottoOrderLineItemModel, LineItemStatus
+from src.db.models.isotto_catalog_model import IsottoCatalogProductModel
+from src.db.models.isotto_catalog_stock_model import IsottoCatalogStockModel
 from src.schemas.isotto_schema import (
     IsottoCustomerCreate, IsottoCustomerUpdate, IsottoCustomerRead,
     PrintOrderCreate, PrintOrderUpdate, PrintOrderRead, PrintOrderStatusUpdate,
     IsottoDashboardSummary,
     IsottoInvoiceCreate, IsottoInvoiceUpdate, IsottoInvoiceRead, IsottoPaymentRecord,
     IsottoOrderActivityRead, IsottoOrderCommentCreate,
+    IsottoLineItemCreate, IsottoLineItemUpdate, IsottoLineItemRead, IsottoLineItemStatusUpdate,
+    IsottoRosterImport, IsottoSizeSummary, IsottoSizeSummaryItem,
 )
 from src.core.keycloak_auth import require_roles
 
@@ -460,6 +465,308 @@ async def complete_order(
 
 
 # ================================================================
+# ORDER LINE ITEM ENDPOINTS
+# ================================================================
+
+@router.post("/orders/{order_id}/items", response_model=IsottoLineItemRead, status_code=status.HTTP_201_CREATED)
+async def create_line_item(
+    order_id: UUID,
+    item: IsottoLineItemCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Add a line item to an order"""
+    # Verify order exists
+    order_result = await db.execute(
+        select(IsottoOrderModel).where(IsottoOrderModel.id == order_id)
+    )
+    order = order_result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Print order not found")
+
+    # Verify catalog product if provided
+    if item.catalog_product_id:
+        product_result = await db.execute(
+            select(IsottoCatalogProductModel).where(IsottoCatalogProductModel.id == item.catalog_product_id)
+        )
+        if not product_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Catalog product not found")
+
+    new_item = IsottoOrderLineItemModel(
+        order_id=order_id,
+        **item.model_dump(),
+    )
+    db.add(new_item)
+    await db.commit()
+    await db.refresh(new_item)
+
+    logger.info(f"ISOTTO line item added to order {order.order_number}: {new_item.name_text or 'unnamed'} by {current_user['username']}")
+    return new_item
+
+
+@router.get("/orders/{order_id}/items", response_model=list[IsottoLineItemRead])
+async def list_line_items(
+    order_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """List all line items for an order (sorted by sort_order)"""
+    # Verify order exists
+    order_result = await db.execute(
+        select(IsottoOrderModel).where(IsottoOrderModel.id == order_id)
+    )
+    if not order_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Print order not found")
+
+    result = await db.execute(
+        select(IsottoOrderLineItemModel)
+        .where(IsottoOrderLineItemModel.order_id == order_id)
+        .order_by(IsottoOrderLineItemModel.sort_order)
+    )
+    return result.scalars().all()
+
+
+@router.put("/orders/{order_id}/items/{item_id}", response_model=IsottoLineItemRead)
+async def update_line_item(
+    order_id: UUID,
+    item_id: UUID,
+    item_update: IsottoLineItemUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Update a line item"""
+    result = await db.execute(
+        select(IsottoOrderLineItemModel).where(
+            IsottoOrderLineItemModel.id == item_id,
+            IsottoOrderLineItemModel.order_id == order_id,
+        )
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Line item not found")
+
+    update_data = item_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(item, field, value)
+
+    item.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(item)
+
+    logger.info(f"ISOTTO line item updated: {item.name_text or item.id} by {current_user['username']}")
+    return item
+
+
+@router.delete("/orders/{order_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_line_item(
+    order_id: UUID,
+    item_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Delete a line item"""
+    result = await db.execute(
+        select(IsottoOrderLineItemModel).where(
+            IsottoOrderLineItemModel.id == item_id,
+            IsottoOrderLineItemModel.order_id == order_id,
+        )
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Line item not found")
+
+    await db.delete(item)
+    await db.commit()
+
+    logger.info(f"ISOTTO line item deleted: {item_id} from order {order_id} by {current_user['username']}")
+
+
+@router.patch("/orders/{order_id}/items/{item_id}/status", response_model=IsottoLineItemRead)
+async def update_line_item_status(
+    order_id: UUID,
+    item_id: UUID,
+    status_update: IsottoLineItemStatusUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_isotto_operator_or_above()),
+):
+    """Advance line item status (operator+)"""
+    result = await db.execute(
+        select(IsottoOrderLineItemModel).where(
+            IsottoOrderLineItemModel.id == item_id,
+            IsottoOrderLineItemModel.order_id == order_id,
+        )
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Line item not found")
+
+    old_status = item.status
+    item.status = status_update.status
+    item.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(item)
+
+    logger.info(f"ISOTTO line item {item_id}: {old_status.value} -> {status_update.status.value} by {current_user['username']}")
+    return item
+
+
+# ================================================================
+# ROSTER IMPORT (THE KILLER FEATURE)
+# ================================================================
+
+@router.post("/orders/{order_id}/roster", response_model=list[IsottoLineItemRead], status_code=status.HTTP_201_CREATED)
+async def import_roster(
+    order_id: UUID,
+    roster_data: IsottoRosterImport,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Bulk create line items from a roster (THE KILLER FEATURE for team orders)"""
+    # Verify order exists
+    order_result = await db.execute(
+        select(IsottoOrderModel).where(IsottoOrderModel.id == order_id)
+    )
+    order = order_result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Print order not found")
+
+    # Verify catalog product if provided
+    if roster_data.catalog_product_id:
+        product_result = await db.execute(
+            select(IsottoCatalogProductModel).where(IsottoCatalogProductModel.id == roster_data.catalog_product_id)
+        )
+        if not product_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Catalog product not found")
+
+    # Get current max sort_order
+    existing_items = await db.execute(
+        select(func.max(IsottoOrderLineItemModel.sort_order))
+        .where(IsottoOrderLineItemModel.order_id == order_id)
+    )
+    max_sort = existing_items.scalar() or 0
+
+    # Create line items from roster
+    created_items = []
+    for i, entry in enumerate(roster_data.roster):
+        item = IsottoOrderLineItemModel(
+            order_id=order_id,
+            catalog_product_id=roster_data.catalog_product_id,
+            sort_order=max_sort + i + 1,
+            color=entry.color or roster_data.color,
+            size=entry.size,
+            name_text=entry.name_text,
+            number_text=entry.number_text,
+            custom_text=entry.custom_text,
+            font_name=roster_data.font_name,
+            text_color=roster_data.text_color,
+            artwork_placement=roster_data.artwork_placement,
+            unit_price=roster_data.unit_price,
+            notes=entry.notes,
+        )
+        db.add(item)
+        created_items.append(item)
+
+    # Auto-mark order as team order
+    if not order.is_team_order:
+        order.is_team_order = True
+        order.updated_at = datetime.now(timezone.utc)
+
+    await db.commit()
+
+    # Refresh all items to get IDs
+    for item in created_items:
+        await db.refresh(item)
+
+    username = current_user['username']
+    await log_activity(db, order_id, IsottoActivityType.COMMENT, username,
+                       comment=f"Roster imported: {len(created_items)} items")
+    await db.commit()
+
+    logger.info(f"ISOTTO roster imported: {len(created_items)} items for order {order.order_number} by {username}")
+    return created_items
+
+
+# ================================================================
+# SIZE AGGREGATION
+# ================================================================
+
+@router.get("/orders/{order_id}/size-summary", response_model=IsottoSizeSummary)
+async def get_size_summary(
+    order_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Get size aggregation for an order (sizes + counts + stock comparison)"""
+    # Verify order exists
+    order_result = await db.execute(
+        select(IsottoOrderModel).where(IsottoOrderModel.id == order_id)
+    )
+    if not order_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Print order not found")
+
+    # Get all line items for this order (exclude cancelled)
+    items_result = await db.execute(
+        select(IsottoOrderLineItemModel)
+        .where(
+            IsottoOrderLineItemModel.order_id == order_id,
+            IsottoOrderLineItemModel.status != LineItemStatus.CANCELLED,
+        )
+    )
+    items = items_result.scalars().all()
+
+    if not items:
+        return IsottoSizeSummary(
+            order_id=order_id,
+            total_items=0,
+            sizes=[],
+            colors={},
+        )
+
+    # Aggregate sizes
+    size_counts: dict[str, int] = {}
+    color_counts: dict[str, int] = {}
+    catalog_product_id = None
+
+    for item in items:
+        if item.size:
+            size_counts[item.size] = size_counts.get(item.size, 0) + 1
+        if item.color:
+            color_counts[item.color] = color_counts.get(item.color, 0) + 1
+        if item.catalog_product_id:
+            catalog_product_id = item.catalog_product_id
+
+    # Get stock levels if we have a catalog product
+    stock_by_size: dict[str, int] = {}
+    if catalog_product_id:
+        stock_result = await db.execute(
+            select(IsottoCatalogStockModel)
+            .where(IsottoCatalogStockModel.product_id == catalog_product_id)
+        )
+        for stock in stock_result.scalars().all():
+            key = stock.size
+            stock_by_size[key] = stock_by_size.get(key, 0) + max(0, stock.quantity_on_hand - stock.quantity_reserved)
+
+    # Build size summary items
+    size_summary = []
+    for size, count in sorted(size_counts.items()):
+        available = stock_by_size.get(size, 0)
+        need_to_order = max(0, count - available)
+        size_summary.append(IsottoSizeSummaryItem(
+            size=size,
+            count=count,
+            stock_available=available,
+            need_to_order=need_to_order,
+        ))
+
+    return IsottoSizeSummary(
+        order_id=order_id,
+        total_items=len(items),
+        sizes=size_summary,
+        colors=color_counts,
+    )
+
+
+# ================================================================
 # ORDER ACTIVITY ENDPOINTS
 # ================================================================
 
@@ -800,6 +1107,165 @@ async def get_dashboard(
 
 
 # ================================================================
+# PREVIEW GENERATION ENDPOINTS
+# ================================================================
+
+@router.post("/orders/{order_id}/previews")
+async def generate_order_previews(
+    order_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Generate preview PNGs for all line items in an order"""
+    from src.services.isotto_preview_service import generate_order_previews as gen_previews
+
+    # Verify order exists
+    order_result = await db.execute(
+        select(IsottoOrderModel).where(IsottoOrderModel.id == order_id)
+    )
+    if not order_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    result = await gen_previews(db, order_id)
+    logger.info(f"ISOTTO previews generated for order {order_id}: {result['generated']}/{result['total']} by {current_user['username']}")
+    return result
+
+
+@router.get("/orders/{order_id}/previews")
+async def get_order_previews(
+    order_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Get preview info for all line items in an order"""
+    items_result = await db.execute(
+        select(IsottoOrderLineItemModel)
+        .where(IsottoOrderLineItemModel.order_id == order_id)
+        .order_by(IsottoOrderLineItemModel.sort_order)
+    )
+    items = items_result.scalars().all()
+
+    previews = []
+    for item in items:
+        previews.append({
+            "item_id": str(item.id),
+            "sort_order": item.sort_order,
+            "name_text": item.name_text,
+            "number_text": item.number_text,
+            "size": item.size,
+            "color": item.color,
+            "status": item.status.value if item.status else "pending",
+            "preview_image_url": item.preview_image_url,
+            "unit_price": float(item.unit_price) if item.unit_price else 0,
+        })
+
+    return {"order_id": str(order_id), "previews": previews, "total": len(previews)}
+
+
+# ================================================================
+# PRINT QUEUE ENDPOINTS
+# ================================================================
+
+@router.get("/print-queue")
+async def get_print_queue(
+    status_filter: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """
+    Get all line items ready for printing (STOCK_RECEIVED, PRINTING, QUALITY_CHECK).
+    Grouped by order for the operator's workflow view.
+    """
+    # Default: show items that are actionable
+    statuses = [LineItemStatus.STOCK_RECEIVED, LineItemStatus.PRINTING, LineItemStatus.QUALITY_CHECK]
+
+    if status_filter:
+        try:
+            statuses = [LineItemStatus(status_filter)]
+        except ValueError:
+            pass
+
+    items_result = await db.execute(
+        select(IsottoOrderLineItemModel)
+        .where(IsottoOrderLineItemModel.status.in_(statuses))
+        .order_by(
+            IsottoOrderLineItemModel.order_id,
+            IsottoOrderLineItemModel.sort_order,
+        )
+    )
+    items = items_result.scalars().all()
+
+    # Group by order
+    orders_map = {}
+    for item in items:
+        oid = str(item.order_id)
+        if oid not in orders_map:
+            orders_map[oid] = {"order_id": oid, "items": []}
+        orders_map[oid]["items"].append({
+            "item_id": str(item.id),
+            "sort_order": item.sort_order,
+            "name_text": item.name_text,
+            "number_text": item.number_text,
+            "size": item.size,
+            "color": item.color,
+            "status": item.status.value,
+            "preview_image_url": item.preview_image_url,
+            "artwork_placement": item.artwork_placement,
+            "notes": item.notes,
+        })
+
+    # Enrich with order info
+    order_ids = list(orders_map.keys())
+    if order_ids:
+        orders_result = await db.execute(
+            select(IsottoOrderModel).where(IsottoOrderModel.id.in_(order_ids))
+        )
+        for order in orders_result.scalars().all():
+            oid = str(order.id)
+            if oid in orders_map:
+                orders_map[oid]["order_number"] = order.order_number
+                orders_map[oid]["title"] = order.title
+                orders_map[oid]["team_name"] = order.team_name
+                orders_map[oid]["status"] = order.status.value
+
+    return {
+        "queue": list(orders_map.values()),
+        "total_items": len(items),
+        "total_orders": len(orders_map),
+    }
+
+
+@router.patch("/print-queue/bulk-status")
+async def bulk_update_print_queue_status(
+    item_ids: list[UUID],
+    new_status: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_isotto_role()),
+):
+    """Bulk status update for print queue items (operator advances multiple items)"""
+    try:
+        target_status = LineItemStatus(new_status)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
+
+    updated = 0
+    for item_id in item_ids:
+        result = await db.execute(
+            select(IsottoOrderLineItemModel).where(IsottoOrderLineItemModel.id == item_id)
+        )
+        item = result.scalar_one_or_none()
+        if item:
+            item.status = target_status
+            item.updated_at = datetime.now(timezone.utc)
+            updated += 1
+
+    await db.commit()
+
+    logger.info(f"ISOTTO print queue bulk update: {updated} items -> {new_status} by {current_user['username']}")
+    return {"updated": updated, "new_status": new_status}
+
+
+# ================================================================
 # HTML WEB UI ROUTES (Famous Guy's Team Interface)
 # ================================================================
 
@@ -906,3 +1372,15 @@ async def isotto_invoices_page(request: Request):
 async def isotto_customers_page(request: Request):
     """Customer lookup - search and manage profiles"""
     return templates.TemplateResponse("isotto/customers.html", {"request": request})
+
+
+@html_router.get("/print-shop/orders/{order_id}/previews", response_class=HTMLResponse, name="isotto_preview_gallery")
+async def isotto_preview_gallery_page(request: Request, order_id: str):
+    """Preview gallery - review personalization previews before production"""
+    return templates.TemplateResponse("isotto/preview_gallery.html", {"request": request})
+
+
+@html_router.get("/print-shop/print-queue", response_class=HTMLResponse, name="isotto_print_queue")
+async def isotto_print_queue_page(request: Request):
+    """Print queue - operator workflow for production"""
+    return templates.TemplateResponse("isotto/print_queue.html", {"request": request})

@@ -1,0 +1,547 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Ordini di Acquisto - ISOTTO Sport{% endblock %}
+{% block page_name %}Ordini Acquisto{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="purchaseOrdersData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.artworks">Artwork</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.orders">Ordini</a>
+        <a href="/print-shop/catalog" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.catalog">Catalogo</a>
+        <a href="/print-shop/suppliers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.suppliers">Fornitori</a>
+        <a href="/print-shop/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/print-shop/artworks" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.artworks">Artwork</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900" x-text="t('po.title')">Ordini di Acquisto</h2>
+            <button @click="showNewForm = !showNewForm" class="btn-primary text-sm" x-show="user.isManager" x-text="t('po.new_po')">+ Nuovo OdA</button>
+        </div>
+
+        <!-- New PO Form -->
+        <template x-if="showNewForm">
+            <div class="card mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4" x-text="t('po.new_po_title')">Nuovo Ordine di Acquisto</h3>
+                <form @submit.prevent="createPurchaseOrder()">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- Supplier select -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span x-text="t('po.supplier_label')">Fornitore</span> *</label>
+                            <select x-model="newPO.supplier_id" class="input-field" required>
+                                <option value="" x-text="t('po.select_supplier')">Seleziona fornitore...</option>
+                                <template x-for="s in suppliers" :key="s.id">
+                                    <option :value="s.id" x-text="s.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <!-- Expected delivery -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('po.expected_delivery')">Consegna Prevista</label>
+                            <input type="date" x-model="newPO.expected_delivery_date" class="input-field">
+                        </div>
+                        <!-- Notes -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="t('po.notes_label')">Note</label>
+                            <input type="text" x-model="newPO.notes" class="input-field" :placeholder="t('po.notes_placeholder')">
+                        </div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-sm font-bold text-gray-700" x-text="t('po.line_items')">Articoli</h4>
+                            <button type="button" @click="addLineItem()" class="text-blue-600 hover:text-blue-700 text-sm font-medium" x-text="t('po.add_line')">+ Aggiungi Riga</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b text-left text-gray-500">
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_product_code')">Codice</th>
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_product_name')">Prodotto</th>
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_color')">Colore</th>
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_size')">Taglia</th>
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_quantity')">Qty</th>
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_unit_price')">Prezzo Unit.</th>
+                                        <th class="pb-2 pr-2 font-medium" x-text="t('po.th_line_total')">Totale</th>
+                                        <th class="pb-2 w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, idx) in newPO.line_items" :key="idx">
+                                        <tr class="border-b">
+                                            <td class="py-2 pr-2">
+                                                <input type="text" x-model="item.product_code" class="input-field text-sm py-1.5 px-2" :placeholder="t('po.ph_code')">
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="text" x-model="item.product_name" class="input-field text-sm py-1.5 px-2" required :placeholder="t('po.ph_name')">
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="text" x-model="item.color" class="input-field text-sm py-1.5 px-2" :placeholder="t('po.ph_color')">
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="text" x-model="item.size" class="input-field text-sm py-1.5 px-2" :placeholder="t('po.ph_size')">
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="number" x-model.number="item.quantity" @input="recalcTotals()" class="input-field text-sm py-1.5 px-2 w-20" min="1" required>
+                                            </td>
+                                            <td class="py-2 pr-2">
+                                                <input type="number" x-model.number="item.unit_price" @input="recalcTotals()" class="input-field text-sm py-1.5 px-2 w-24" min="0" step="0.01" required>
+                                            </td>
+                                            <td class="py-2 pr-2 text-sm font-semibold text-gray-700" x-text="formatPrice((item.quantity || 0) * (item.unit_price || 0))"></td>
+                                            <td class="py-2">
+                                                <button type="button" @click="removeLineItem(idx)" class="text-red-500 hover:text-red-700" x-show="newPO.line_items.length > 1">&times;</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Totals -->
+                        <div class="flex justify-end mt-3">
+                            <div class="text-sm text-right space-y-1">
+                                <p><span class="text-gray-500" x-text="t('po.subtotal')">Subtotale:</span> <span class="font-semibold" x-text="formatPrice(newPOSubtotal)"></span></p>
+                                <p><span class="text-gray-500" x-text="t('po.vat_22')">IVA 22%:</span> <span class="font-semibold" x-text="formatPrice(newPOVat)"></span></p>
+                                <p class="text-base"><span class="text-gray-700 font-bold" x-text="t('po.total')">Totale:</span> <span class="font-bold text-blue-700" x-text="formatPrice(newPOTotal)"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button type="submit" class="btn-primary" :disabled="saving" x-text="saving ? t('common.saving') : t('common.save')">Salva</button>
+                        <button type="button" @click="showNewForm = false; resetNewPO()" class="btn-secondary" x-text="t('common.cancel')">Annulla</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+
+        <!-- Filters -->
+        <div class="card mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('po.filter_status')">Stato</label>
+                    <select x-model="statusFilter" @change="loadPurchaseOrders()" class="input-field text-sm py-2">
+                        <option value="" x-text="t('common.all')">Tutti</option>
+                        <template x-for="(label, key) in PO_STATUS_LABELS" :key="key">
+                            <option :value="key" x-text="label"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('po.filter_supplier')">Fornitore</label>
+                    <select x-model="supplierFilter" @change="loadPurchaseOrders()" class="input-field text-sm py-2">
+                        <option value="" x-text="t('common.all')">Tutti</option>
+                        <template x-for="s in suppliers" :key="s.id">
+                            <option :value="s.id" x-text="s.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <p class="text-sm text-gray-500" x-show="!loading" x-text="t('po.count', {count: purchaseOrders.length})"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PO Table -->
+        <div class="card overflow-x-auto">
+            <template x-if="loading">
+                <p class="text-center text-gray-500 py-8" x-text="t('common.loading')">Caricamento...</p>
+            </template>
+
+            <template x-if="!loading && purchaseOrders.length === 0">
+                <p class="text-center text-gray-500 py-8" x-text="t('po.no_results')">Nessun ordine di acquisto trovato.</p>
+            </template>
+
+            <table class="min-w-full" x-show="!loading && purchaseOrders.length > 0">
+                <thead>
+                    <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                        <th class="pb-3 pr-4" x-text="t('po.th_po_number')">N. OdA</th>
+                        <th class="pb-3 pr-4" x-text="t('po.th_supplier')">Fornitore</th>
+                        <th class="pb-3 pr-4" x-text="t('po.th_items_count')">Articoli</th>
+                        <th class="pb-3 pr-4" x-text="t('po.th_total')">Totale</th>
+                        <th class="pb-3 pr-4" x-text="t('po.th_status')">Stato</th>
+                        <th class="pb-3 pr-4" x-text="t('po.th_expected_delivery')">Consegna Prevista</th>
+                        <th class="pb-3" x-text="t('po.th_created')">Creato</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="po in purchaseOrders" :key="po.id">
+                        <tr class="border-b hover:bg-blue-50 cursor-pointer transition" @click="openDetail(po)">
+                            <td class="py-3 pr-4 text-sm font-mono font-bold text-blue-600" x-text="po.po_number"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="supplierMap[po.supplier_id] || '...'"></td>
+                            <td class="py-3 pr-4 text-sm text-gray-700" x-text="po.line_items ? po.line_items.length : (po.items_count || 0)"></td>
+                            <td class="py-3 pr-4 text-sm font-semibold text-gray-900" x-text="formatPrice(po.total || 0)"></td>
+                            <td class="py-3 pr-4">
+                                <span class="badge" :class="poStatusClass(po.status)" x-text="PO_STATUS_LABELS[po.status] || po.status"></span>
+                            </td>
+                            <td class="py-3 pr-4 text-sm text-gray-500" x-text="formatDate(po.expected_delivery_date)"></td>
+                            <td class="py-3 text-sm text-gray-500" x-text="formatDate(po.created_at)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div x-show="showDetailModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6" @click.outside="showDetailModal = false">
+            <template x-if="selectedPO">
+                <div>
+                    <!-- Header -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900" x-text="selectedPO.po_number"></h3>
+                            <p class="text-sm text-gray-500" x-text="supplierMap[selectedPO.supplier_id] || ''"></p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="badge text-sm" :class="poStatusClass(selectedPO.status)" x-text="PO_STATUS_LABELS[selectedPO.status] || selectedPO.status"></span>
+                            <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- Line Items Table -->
+                    <div class="overflow-x-auto mb-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b text-left text-gray-500">
+                                    <th class="pb-2 pr-2 font-medium" x-text="t('po.th_product_code')">Codice</th>
+                                    <th class="pb-2 pr-2 font-medium" x-text="t('po.th_product_name')">Prodotto</th>
+                                    <th class="pb-2 pr-2 font-medium" x-text="t('po.th_color')">Colore</th>
+                                    <th class="pb-2 pr-2 font-medium" x-text="t('po.th_size')">Taglia</th>
+                                    <th class="pb-2 pr-2 font-medium text-right" x-text="t('po.th_quantity')">Qty</th>
+                                    <th class="pb-2 pr-2 font-medium text-right" x-text="t('po.th_unit_price')">Prezzo Unit.</th>
+                                    <th class="pb-2 font-medium text-right" x-text="t('po.th_line_total')">Totale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="item in (selectedPO.line_items || [])" :key="item.id || item.product_code">
+                                    <tr class="border-b">
+                                        <td class="py-2 pr-2 font-mono text-gray-600" x-text="item.product_code || '-'"></td>
+                                        <td class="py-2 pr-2 font-semibold text-gray-800" x-text="item.product_name"></td>
+                                        <td class="py-2 pr-2 text-gray-600" x-text="item.color || '-'"></td>
+                                        <td class="py-2 pr-2 text-gray-600" x-text="item.size || '-'"></td>
+                                        <td class="py-2 pr-2 text-right" x-text="item.quantity"></td>
+                                        <td class="py-2 pr-2 text-right" x-text="formatPrice(item.unit_price || 0)"></td>
+                                        <td class="py-2 text-right font-semibold" x-text="formatPrice((item.quantity || 0) * (item.unit_price || 0))"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div class="flex justify-end">
+                            <div class="text-sm space-y-1 text-right">
+                                <p><span class="text-gray-500" x-text="t('po.subtotal')">Subtotale:</span> <span class="font-semibold" x-text="formatPrice(selectedPO.subtotal || 0)"></span></p>
+                                <p><span class="text-gray-500" x-text="t('po.vat_22')">IVA 22%:</span> <span class="font-semibold" x-text="formatPrice(selectedPO.vat_amount || 0)"></span></p>
+                                <p class="text-base border-t pt-1 mt-1"><span class="text-gray-700 font-bold" x-text="t('po.total')">Totale:</span> <span class="font-bold text-blue-700" x-text="formatPrice(selectedPO.total || 0)"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                        <div>
+                            <span class="text-gray-500" x-text="t('po.expected_delivery')">Consegna Prevista:</span>
+                            <span class="font-semibold ml-1" x-text="formatDate(selectedPO.expected_delivery_date)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500" x-text="t('po.actual_delivery')">Consegna Effettiva:</span>
+                            <span class="font-semibold ml-1" x-text="formatDate(selectedPO.actual_delivery_date)"></span>
+                        </div>
+                    </div>
+
+                    <!-- Related Orders -->
+                    <template x-if="selectedPO.related_order_ids && selectedPO.related_order_ids.length > 0">
+                        <div class="mb-4">
+                            <h4 class="text-sm font-bold text-gray-700 mb-1" x-text="t('po.related_orders')">Ordini Collegati</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="orderId in selectedPO.related_order_ids" :key="orderId">
+                                    <a :href="'/print-shop/orders/' + orderId" class="text-sm text-blue-600 hover:text-blue-800 underline" x-text="'#' + orderId"></a>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Notes -->
+                    <template x-if="selectedPO.notes">
+                        <div class="mb-4">
+                            <h4 class="text-sm font-bold text-gray-700 mb-1" x-text="t('po.notes_label')">Note</h4>
+                            <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-3" x-text="selectedPO.notes"></p>
+                        </div>
+                    </template>
+
+                    <!-- Status Advancement Buttons -->
+                    <template x-if="user.isManager">
+                        <div class="border-t pt-4 mt-4">
+                            <h4 class="text-sm font-bold text-gray-700 mb-3" x-text="t('po.advance_status')">Avanza Stato</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <!-- draft -> sent -->
+                                <template x-if="selectedPO.status === 'draft'">
+                                    <button @click="updatePOStatus(selectedPO.id, 'sent')" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition" :disabled="saving">
+                                        <span x-text="t('po.action_send')">Invia al Fornitore</span>
+                                    </button>
+                                </template>
+                                <!-- sent -> confirmed -->
+                                <template x-if="selectedPO.status === 'sent'">
+                                    <button @click="updatePOStatus(selectedPO.id, 'confirmed')" class="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition" :disabled="saving">
+                                        <span x-text="t('po.action_confirm')">Conferma Ordine</span>
+                                    </button>
+                                </template>
+                                <!-- confirmed -> shipped -->
+                                <template x-if="selectedPO.status === 'confirmed'">
+                                    <button @click="updatePOStatus(selectedPO.id, 'shipped')" class="px-4 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 transition" :disabled="saving">
+                                        <span x-text="t('po.action_shipped')">Segna Spedito</span>
+                                    </button>
+                                </template>
+                                <!-- shipped -> partial_received or received -->
+                                <template x-if="selectedPO.status === 'shipped'">
+                                    <div class="flex gap-2">
+                                        <button @click="updatePOStatus(selectedPO.id, 'partial_received')" class="px-4 py-2 rounded-lg text-sm font-medium bg-purple-100 text-purple-800 hover:bg-purple-200 transition" :disabled="saving">
+                                            <span x-text="t('po.action_partial')">Ricevuto Parziale</span>
+                                        </button>
+                                        <button @click="updatePOStatus(selectedPO.id, 'received')" class="px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200 transition" :disabled="saving">
+                                            <span x-text="t('po.action_received')">Ricevuto Completo</span>
+                                        </button>
+                                    </div>
+                                </template>
+                                <!-- partial_received -> received -->
+                                <template x-if="selectedPO.status === 'partial_received'">
+                                    <button @click="updatePOStatus(selectedPO.id, 'received')" class="px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200 transition" :disabled="saving">
+                                        <span x-text="t('po.action_received')">Ricevuto Completo</span>
+                                    </button>
+                                </template>
+                                <!-- Cancel button (available for draft, sent, confirmed) -->
+                                <template x-if="['draft', 'sent', 'confirmed'].includes(selectedPO.status)">
+                                    <button @click="updatePOStatus(selectedPO.id, 'cancelled')" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-500 hover:bg-red-200 transition" :disabled="saving">
+                                        <span x-text="t('po.action_cancel')">Annulla OdA</span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Close -->
+                    <div class="flex justify-end mt-4">
+                        <button @click="showDetailModal = false" class="btn-secondary" x-text="t('common.close')">Chiudi</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+<script>
+function purchaseOrdersData() {
+    const PO_STATUS_LABELS = {
+        draft: t('po.status_draft'),
+        sent: t('po.status_sent'),
+        confirmed: t('po.status_confirmed'),
+        shipped: t('po.status_shipped'),
+        partial_received: t('po.status_partial'),
+        received: t('po.status_received'),
+        cancelled: t('po.status_cancelled'),
+    };
+
+    function poStatusClass(status) {
+        const classes = {
+            draft: 'bg-gray-100 text-gray-800',
+            sent: 'bg-blue-100 text-blue-800',
+            confirmed: 'bg-indigo-100 text-indigo-800',
+            shipped: 'bg-amber-100 text-amber-800',
+            partial_received: 'bg-purple-100 text-purple-800',
+            received: 'bg-green-100 text-green-800',
+            cancelled: 'bg-red-100 text-red-500',
+        };
+        return classes[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    return {
+        user: { username: '', isManager: false },
+        purchaseOrders: [],
+        suppliers: [],
+        supplierMap: {},
+        loading: true,
+        saving: false,
+        statusFilter: '',
+        supplierFilter: '',
+        showNewForm: false,
+        showDetailModal: false,
+        selectedPO: null,
+        PO_STATUS_LABELS: PO_STATUS_LABELS,
+        newPO: {
+            supplier_id: '',
+            expected_delivery_date: '',
+            notes: '',
+            line_items: [
+                { product_code: '', product_name: '', color: '', size: '', quantity: 1, unit_price: 0 }
+            ]
+        },
+
+        get newPOSubtotal() {
+            return this.newPO.line_items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unit_price || 0)), 0);
+        },
+        get newPOVat() {
+            return this.newPOSubtotal * 0.22;
+        },
+        get newPOTotal() {
+            return this.newPOSubtotal + this.newPOVat;
+        },
+
+        poStatusClass: poStatusClass,
+
+        init() {
+            const token = IsottoAuth.getToken();
+            if (!token) { window.location.href = '/print-shop'; return; }
+            const userInfo = IsottoAuth.getUserInfo();
+            if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+            this.user = { ...userInfo, isManager: IsottoAuth.isManager() };
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('status_filter')) this.statusFilter = params.get('status_filter');
+            if (params.get('supplier_id')) this.supplierFilter = params.get('supplier_id');
+
+            this.loadSuppliers();
+            this.loadPurchaseOrders();
+        },
+
+        async loadSuppliers() {
+            try {
+                this.suppliers = await API.get('/api/v1/print-shop/catalog/suppliers?active_only=true');
+                this.suppliers.forEach(s => { this.supplierMap[s.id] = s.name; });
+            } catch (e) {
+                console.error('Supplier load failed:', e);
+            }
+        },
+
+        async loadPurchaseOrders() {
+            this.loading = true;
+            try {
+                let url = '/api/v1/print-shop/catalog/purchase-orders?limit=200';
+                if (this.statusFilter) url += '&status=' + this.statusFilter;
+                if (this.supplierFilter) url += '&supplier_id=' + this.supplierFilter;
+                this.purchaseOrders = await API.get(url);
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        addLineItem() {
+            this.newPO.line_items.push({ product_code: '', product_name: '', color: '', size: '', quantity: 1, unit_price: 0 });
+        },
+
+        removeLineItem(idx) {
+            this.newPO.line_items.splice(idx, 1);
+        },
+
+        recalcTotals() {
+            // Triggers Alpine reactivity for computed totals via getter
+        },
+
+        resetNewPO() {
+            this.newPO = {
+                supplier_id: '',
+                expected_delivery_date: '',
+                notes: '',
+                line_items: [
+                    { product_code: '', product_name: '', color: '', size: '', quantity: 1, unit_price: 0 }
+                ]
+            };
+        },
+
+        async createPurchaseOrder() {
+            if (!this.newPO.supplier_id) {
+                showToast(t('po.select_supplier_required'), 'warning');
+                return;
+            }
+            if (this.newPO.line_items.length === 0 || !this.newPO.line_items[0].product_name) {
+                showToast(t('po.add_items_required'), 'warning');
+                return;
+            }
+            this.saving = true;
+            try {
+                const payload = {
+                    supplier_id: this.newPO.supplier_id,
+                    expected_delivery_date: this.newPO.expected_delivery_date || null,
+                    notes: this.newPO.notes || null,
+                    line_items: this.newPO.line_items.filter(i => i.product_name).map(i => ({
+                        product_code: i.product_code || null,
+                        product_name: i.product_name,
+                        color: i.color || null,
+                        size: i.size || null,
+                        quantity: i.quantity,
+                        unit_price: i.unit_price
+                    }))
+                };
+                await API.post('/api/v1/print-shop/catalog/purchase-orders', payload);
+                showToast(t('po.created'), 'success');
+                this.showNewForm = false;
+                this.resetNewPO();
+                await this.loadPurchaseOrders();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        openDetail(po) {
+            this.selectedPO = { ...po };
+            this.showDetailModal = true;
+        },
+
+        async updatePOStatus(poId, newStatus) {
+            this.saving = true;
+            try {
+                await API.patch('/api/v1/print-shop/catalog/purchase-orders/' + poId + '/status', { status: newStatus });
+                showToast(t('po.status_updated'), 'success');
+                this.showDetailModal = false;
+                await this.loadPurchaseOrders();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

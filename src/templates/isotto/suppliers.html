@@ -1,0 +1,283 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Fornitori - ISOTTO Sport{% endblock %}
+{% block page_name %}Fornitori{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="suppliersData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.artworks">Artwork</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="supplier.title">Fornitori</h2>
+            <button @click="showNewForm = !showNewForm" class="btn-primary text-sm" x-show="user.isManager" x-text="t('supplier.new_supplier')">+ Nuovo Fornitore</button>
+        </div>
+
+        <!-- New Supplier Form -->
+        <template x-if="showNewForm">
+            <div class="card mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="supplier.new_supplier_title">Nuovo Fornitore</h3>
+                <form @submit.prevent="createSupplier()">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="supplier.name_label">Nome</span> *</label>
+                            <input type="text" x-model="newSupplier.name" class="input-field" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="supplier.code_label">Codice</span> *</label>
+                            <input type="text" x-model="newSupplier.code" class="input-field" required maxlength="20" placeholder="ROLY">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.contact_label">Contatto</label>
+                            <input type="text" x-model="newSupplier.contact_person" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.phone_label">Telefono</label>
+                            <input type="text" x-model="newSupplier.phone" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.email_label">Email</label>
+                            <input type="email" x-model="newSupplier.email" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.website_label">Sito Web</label>
+                            <input type="text" x-model="newSupplier.website" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.lead_time_label">Tempi Consegna (gg)</label>
+                            <input type="number" x-model.number="newSupplier.default_lead_time_days" class="input-field" min="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.min_order_label">Ordine Minimo (EUR)</label>
+                            <input type="number" x-model.number="newSupplier.min_order_amount" class="input-field" min="0" step="0.01">
+                        </div>
+                        <div class="flex items-center pt-6">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" x-model="newSupplier.is_preferred" class="w-5 h-5 text-blue-600 rounded">
+                                <span class="text-sm font-medium text-gray-700" data-i18n="supplier.preferred">Preferito</span>
+                            </label>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="supplier.notes_label">Note</label>
+                            <textarea x-model="newSupplier.notes" class="input-field" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="btn-primary" :disabled="saving" x-text="saving ? t('common.saving') : t('common.save')">Salva</button>
+                        <button type="button" @click="showNewForm = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+
+        <!-- Suppliers Table -->
+        <div class="card">
+            <template x-if="loading">
+                <div class="text-center py-8">
+                    <p class="text-gray-500" data-i18n="common.loading">Caricamento...</p>
+                </div>
+            </template>
+
+            <template x-if="!loading && suppliers.length === 0">
+                <div class="text-center py-8">
+                    <p class="text-gray-400" data-i18n="supplier.no_suppliers">Nessun fornitore trovato.</p>
+                </div>
+            </template>
+
+            <template x-if="!loading && suppliers.length > 0">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b text-left text-gray-500">
+                                <th class="pb-3 font-medium" data-i18n="supplier.th_code">Codice</th>
+                                <th class="pb-3 font-medium" data-i18n="supplier.th_name">Nome</th>
+                                <th class="pb-3 font-medium" data-i18n="supplier.th_contact">Contatto</th>
+                                <th class="pb-3 font-medium" data-i18n="supplier.th_lead_time">Consegna</th>
+                                <th class="pb-3 font-medium" data-i18n="supplier.th_min_order">Min. Ordine</th>
+                                <th class="pb-3 font-medium" data-i18n="supplier.th_status">Stato</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="s in suppliers" :key="s.id">
+                                <tr class="border-b hover:bg-gray-50 cursor-pointer" @click="editingSupplier = {...s}; showEditModal = true">
+                                    <td class="py-3 font-mono font-bold text-blue-600" x-text="s.code"></td>
+                                    <td class="py-3">
+                                        <span class="font-semibold" x-text="s.name"></span>
+                                        <template x-if="s.is_preferred">
+                                            <span class="ml-1 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full" x-text="t('supplier.preferred')">Preferito</span>
+                                        </template>
+                                    </td>
+                                    <td class="py-3">
+                                        <span x-text="s.contact_person || '-'"></span>
+                                        <template x-if="s.phone">
+                                            <span class="text-xs text-gray-400 block" x-text="s.phone"></span>
+                                        </template>
+                                    </td>
+                                    <td class="py-3" x-text="s.default_lead_time_days + ' ' + t('supplier.days')"></td>
+                                    <td class="py-3" x-text="s.min_order_amount ? formatPrice(s.min_order_amount) : '-'"></td>
+                                    <td class="py-3">
+                                        <span class="badge" :class="s.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-500'"
+                                              x-text="s.is_active ? t('supplier.active') : t('supplier.inactive')"></span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+        </div>
+
+        <!-- Edit Modal -->
+        <div x-show="showEditModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6" @click.outside="showEditModal = false">
+                <h3 class="text-xl font-bold text-gray-900 mb-4" data-i18n="supplier.edit_title">Modifica Fornitore</h3>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.name_label">Nome</label>
+                            <input type="text" x-model="editingSupplier.name" class="input-field text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.contact_label">Contatto</label>
+                            <input type="text" x-model="editingSupplier.contact_person" class="input-field text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.phone_label">Telefono</label>
+                            <input type="text" x-model="editingSupplier.phone" class="input-field text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.email_label">Email</label>
+                            <input type="email" x-model="editingSupplier.email" class="input-field text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.lead_time_label">Tempi Consegna (gg)</label>
+                            <input type="number" x-model.number="editingSupplier.default_lead_time_days" class="input-field text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.min_order_label">Min. Ordine (EUR)</label>
+                            <input type="number" x-model.number="editingSupplier.min_order_amount" class="input-field text-sm" step="0.01">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="supplier.notes_label">Note</label>
+                        <textarea x-model="editingSupplier.notes" class="input-field text-sm" rows="2"></textarea>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" x-model="editingSupplier.is_preferred" class="w-4 h-4 text-blue-600 rounded">
+                            <span class="text-sm" data-i18n="supplier.preferred">Preferito</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" x-model="editingSupplier.is_active" class="w-4 h-4 text-green-600 rounded">
+                            <span class="text-sm" data-i18n="supplier.active">Attivo</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button @click="showEditModal = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
+                    <button @click="updateSupplier()" class="btn-primary" :disabled="saving" x-text="saving ? t('common.saving') : t('common.save')">Salva</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function suppliersData() {
+    return {
+        user: { username: '', isManager: false },
+        suppliers: [],
+        loading: true,
+        saving: false,
+        showNewForm: false,
+        showEditModal: false,
+        editingSupplier: {},
+        newSupplier: {
+            name: '', code: '', contact_person: '', phone: '', email: '',
+            website: '', default_lead_time_days: 14, min_order_amount: null,
+            is_preferred: false, notes: ''
+        },
+
+        init() {
+            const token = IsottoAuth.getToken();
+            if (!token) { window.location.href = '/print-shop'; return; }
+            const userInfo = IsottoAuth.getUserInfo();
+            if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+            this.user = { ...userInfo, isManager: IsottoAuth.isManager() };
+            this.loadSuppliers();
+        },
+
+        async loadSuppliers() {
+            try {
+                this.suppliers = await API.get('/api/v1/print-shop/catalog/suppliers?active_only=false');
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async createSupplier() {
+            if (!this.newSupplier.name || !this.newSupplier.code) {
+                showToast(t('supplier.name_code_required'), 'warning');
+                return;
+            }
+            this.saving = true;
+            try {
+                await API.post('/api/v1/print-shop/catalog/suppliers', this.newSupplier);
+                showToast(t('supplier.created'), 'success');
+                this.showNewForm = false;
+                this.newSupplier = { name: '', code: '', contact_person: '', phone: '', email: '', website: '', default_lead_time_days: 14, min_order_amount: null, is_preferred: false, notes: '' };
+                await this.loadSuppliers();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async updateSupplier() {
+            this.saving = true;
+            try {
+                await API.put('/api/v1/print-shop/catalog/suppliers/' + this.editingSupplier.id, this.editingSupplier);
+                showToast(t('supplier.updated'), 'success');
+                this.showEditModal = false;
+                await this.loadSuppliers();
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

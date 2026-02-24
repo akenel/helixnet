@@ -211,6 +211,16 @@ class IsottoOrderModel(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # Team order fields
+    is_team_order: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False,
+        comment="True for personalized team orders (roster of players)"
+    )
+    team_name: Mapped[str | None] = mapped_column(
+        String(200), nullable=True,
+        comment="Team name: 'ASD Trapani Calcio'"
+    )
+
     # Notes
     customer_notes: Mapped[str | None] = mapped_column(
         Text, nullable=True, comment="What the customer requested"
@@ -242,6 +252,11 @@ class IsottoOrderModel(Base):
     invoices: Mapped[list["IsottoInvoiceModel"]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
+    )
+    line_items: Mapped[list["IsottoOrderLineItemModel"]] = relationship(
+        back_populates="order",
+        cascade="all, delete-orphan",
+        order_by="IsottoOrderLineItemModel.sort_order",
     )
 
     def __repr__(self):

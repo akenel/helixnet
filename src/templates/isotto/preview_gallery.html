@@ -1,0 +1,303 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Anteprime - ISOTTO Sport{% endblock %}
+{% block page_name %}Anteprime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="previewGalleryData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.artworks">Artwork</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto no-print">
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap" data-i18n="nav.orders">Ordini</a>
+        <a href="/print-shop/catalog" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.catalog">Catalogo</a>
+        <a href="/print-shop/suppliers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.suppliers">Fornitori</a>
+        <a href="/print-shop/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/print-shop/artworks" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.artworks">Artwork</a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Back link -->
+        <a :href="'/print-shop/orders/' + orderId" class="text-blue-600 hover:text-blue-700 text-sm mb-4 inline-block no-print">
+            <span>&larr;</span> <span x-text="t('preview.back_to_order')">Torna all'ordine</span>
+        </a>
+
+        <!-- Page Header -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">
+                    <span x-text="t('preview.title')">Anteprime</span>
+                    <template x-if="orderInfo.order_number">
+                        <span class="text-gray-400 font-mono text-lg ml-2" x-text="orderInfo.order_number"></span>
+                    </template>
+                </h2>
+                <template x-if="orderInfo.title">
+                    <p class="text-sm text-gray-500 mt-1" x-text="orderInfo.title"></p>
+                </template>
+            </div>
+            <div class="flex gap-3 no-print">
+                <button @click="generatePreviews()" class="btn-primary text-sm" :disabled="generating">
+                    <template x-if="!generating">
+                        <span x-text="t('preview.generate_btn')">Genera Anteprime</span>
+                    </template>
+                    <template x-if="generating">
+                        <span class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <span x-text="t('preview.generating')">Generazione...</span>
+                        </span>
+                    </template>
+                </button>
+                <template x-if="user.isManager && previews.length > 0">
+                    <button @click="approveAll()" class="btn-success text-sm" x-text="t('preview.approve_all_btn')">Approva Tutti</button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <template x-if="loading">
+            <div class="card text-center py-12">
+                <p class="text-gray-500" data-i18n="common.loading">Caricamento...</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template x-if="!loading && previews.length === 0">
+            <div class="card text-center py-12">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p class="text-gray-400 text-lg mb-2" x-text="t('preview.no_previews')">Nessuna anteprima disponibile.</p>
+                <p class="text-gray-400 text-sm" x-text="t('preview.generate_hint')">Clicca "Genera Anteprime" per creare le anteprime di personalizzazione.</p>
+            </div>
+        </template>
+
+        <!-- Preview Count -->
+        <template x-if="!loading && previews.length > 0">
+            <p class="text-sm text-gray-500 mb-4" x-text="t('preview.count', {count: previews.length})"></p>
+        </template>
+
+        <!-- Preview Grid -->
+        <template x-if="!loading && previews.length > 0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 preview-grid">
+                <template x-for="item in previews" :key="item.id">
+                    <div class="card hover:shadow-xl transition-shadow preview-card">
+                        <!-- Preview Image -->
+                        <div class="w-full h-48 bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                            <template x-if="item.preview_image_url">
+                                <img :src="item.preview_image_url" :alt="(item.name_text || '') + ' ' + (item.number_text || '')"
+                                     class="w-full h-full object-cover rounded-lg">
+                            </template>
+                            <template x-if="!item.preview_image_url">
+                                <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                          d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                </svg>
+                            </template>
+                        </div>
+
+                        <!-- Name + Number -->
+                        <div class="mb-2">
+                            <h3 class="font-bold text-gray-900 text-lg truncate" x-text="item.name_text || '-'"></h3>
+                            <template x-if="item.number_text">
+                                <p class="text-2xl font-mono font-bold text-gray-700" x-text="'#' + item.number_text"></p>
+                            </template>
+                        </div>
+
+                        <!-- Badges Row -->
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <!-- Size badge -->
+                            <template x-if="item.size">
+                                <span class="badge bg-blue-100 text-blue-800 font-mono" x-text="item.size"></span>
+                            </template>
+
+                            <!-- Color badge -->
+                            <template x-if="item.color">
+                                <span class="badge bg-gray-100 text-gray-800" x-text="item.color"></span>
+                            </template>
+
+                            <!-- Status badge -->
+                            <span class="badge" :class="statusBadgeClass(item.status)"
+                                  x-text="LINE_ITEM_STATUS_LABELS[item.status] || item.status"></span>
+                        </div>
+
+                        <!-- Unit Price -->
+                        <p class="text-sm font-semibold text-gray-600" x-text="formatPrice(item.unit_price)"></p>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </main>
+</div>
+
+<script>
+    const LINE_ITEM_STATUS_LABELS = ISOTTO_STRINGS[window._isottoLang || 'it'].status.line_item || {
+        pending: 'In Attesa', stock_ordered: 'Ordinato', stock_received: 'Ricevuto',
+        printing: 'In Stampa', quality_check: 'Controllo', done: 'Completato', cancelled: 'Annullato'
+    };
+
+    function previewGalleryData() {
+        return {
+            user: { username: '', isAdmin: false, isManager: false, isOperator: false, isDesigner: false, isCounter: false },
+            orderInfo: {},
+            previews: [],
+            orderId: '',
+            loading: true,
+            generating: false,
+
+            init() {
+                const token = IsottoAuth.getToken();
+                if (!token) { window.location.href = '/print-shop'; return; }
+                const userInfo = IsottoAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isAdmin: IsottoAuth.isAdmin(),
+                    isManager: IsottoAuth.isManager(),
+                    isOperator: IsottoAuth.isOperator(),
+                    isDesigner: IsottoAuth.isDesigner(),
+                    isCounter: IsottoAuth.isCounter()
+                };
+
+                // Extract order_id from URL path: /print-shop/orders/{id}/previews
+                const parts = window.location.pathname.split('/');
+                const previewIdx = parts.indexOf('previews');
+                if (previewIdx > 0) {
+                    this.orderId = parts[previewIdx - 1];
+                }
+
+                if (!this.orderId) {
+                    showToast(t('preview.no_order_id'), 'error');
+                    this.loading = false;
+                    return;
+                }
+
+                this.loadOrderInfo();
+                this.loadPreviews();
+            },
+
+            async loadOrderInfo() {
+                try {
+                    this.orderInfo = await API.get('/api/v1/print-shop/orders/' + this.orderId);
+                } catch (e) {
+                    console.error('Order info load failed:', e);
+                }
+            },
+
+            async loadPreviews() {
+                this.loading = true;
+                try {
+                    this.previews = await API.get('/api/v1/print-shop/orders/' + this.orderId + '/previews');
+                } catch (e) {
+                    showToast(t('preview.load_error', {message: e.message}), 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async generatePreviews() {
+                this.generating = true;
+                try {
+                    await API.post('/api/v1/print-shop/orders/' + this.orderId + '/previews', {});
+                    showToast(t('preview.generated'), 'success');
+                    await this.loadPreviews();
+                } catch (e) {
+                    showToast(t('common.error') + ': ' + e.message, 'error');
+                } finally {
+                    this.generating = false;
+                }
+            },
+
+            approveAll() {
+                showToast(t('preview.approve_coming_soon'), 'info');
+            },
+
+            statusBadgeClass(status) {
+                const map = {
+                    pending: 'bg-gray-100 text-gray-800',
+                    stock_ordered: 'bg-amber-100 text-amber-800',
+                    stock_received: 'bg-blue-100 text-blue-800',
+                    printing: 'bg-purple-100 text-purple-800',
+                    quality_check: 'bg-indigo-100 text-indigo-800',
+                    done: 'bg-green-100 text-green-800',
+                    cancelled: 'bg-gray-200 text-gray-500'
+                };
+                return map[status] || 'bg-gray-100 text-gray-800';
+            }
+        }
+    }
+</script>
+
+<!-- Print-friendly CSS -->
+<style>
+    @media print {
+        .no-print,
+        nav,
+        .helix-status-bar,
+        button,
+        a.text-blue-600 {
+            display: none !important;
+        }
+
+        body {
+            padding-bottom: 0 !important;
+            background: white !important;
+        }
+
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb;
+            break-inside: avoid;
+        }
+
+        .preview-grid {
+            display: block !important;
+        }
+
+        .preview-card {
+            display: inline-block;
+            width: 48%;
+            vertical-align: top;
+            margin: 1%;
+            page-break-inside: avoid;
+        }
+
+        .preview-card .w-full.h-48 {
+            height: 120px !important;
+        }
+    }
+</style>
+{% endblock %}

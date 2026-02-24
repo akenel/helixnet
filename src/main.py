@@ -43,7 +43,9 @@ from src.routes.hr_router import router as hr_router
 from src.routes.camper_router import router as camper_router, html_router as camper_html_router
 from src.services.camper_seeding_service import seed_camper_data
 from src.routes.isotto_router import router as isotto_router, html_router as isotto_html_router
+from src.routes.isotto_catalog_router import router as isotto_catalog_router, html_router as isotto_catalog_html_router
 from src.services.isotto_seeding_service import seed_isotto_data
+from src.services.isotto_catalog_seeding_service import seed_isotto_catalog_data
 from src.routes.qa_router import router as qa_router, html_router as qa_html_router
 from src.services.qa_seeding_service import seed_qa_checklist
 from src.routes.backlog_router import router as backlog_router, html_router as backlog_html_router
@@ -167,6 +169,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"ISOTTO Sport seeding encountered an issue: {e}", exc_info=True)
 
+    # --- Seed ISOTTO Catalog Data (Suppliers, Products, Stock) ---
+    try:
+        logger.info("Seeding ISOTTO Sport catalog data...")
+        async with get_db_session_context() as db:
+            await seed_isotto_catalog_data(db)
+        logger.info("ISOTTO Sport catalog seeding completed successfully.")
+    except Exception as e:
+        logger.warning(f"ISOTTO Sport catalog seeding encountered an issue: {e}", exc_info=True)
+
     # --- Seed QA Testing Checklist (Anne's 46-item dashboard) ---
     try:
         logger.info("Seeding QA testing checklist...")
@@ -266,6 +277,8 @@ app.include_router(camper_router, tags=["Camper & Tour - Service Management"])
 app.include_router(camper_html_router, tags=["Camper & Tour - Web UI"])
 app.include_router(isotto_router, tags=["ISOTTO Sport - Print Shop"])
 app.include_router(isotto_html_router, tags=["ISOTTO Sport - Print Shop UI"])
+app.include_router(isotto_catalog_router, tags=["ISOTTO Sport - Catalog"])
+app.include_router(isotto_catalog_html_router, tags=["ISOTTO Sport - Catalog UI"])
 app.include_router(qa_router, tags=["QA Testing Dashboard"])
 app.include_router(qa_html_router, tags=["QA Testing Dashboard - Web UI"])
 app.include_router(backlog_router, tags=["Backlog - Unified Board"])

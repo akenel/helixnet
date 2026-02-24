@@ -1,0 +1,333 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Catalogo - ISOTTO Sport{% endblock %}
+{% block page_name %}Catalogo Prodotti{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="catalogData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.artworks">Artwork</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Header + Filters -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900" data-i18n="catalog.title">Catalogo Prodotti</h2>
+            <div class="flex flex-wrap gap-3 items-center">
+                <select x-model="filterCategory" @change="loadProducts()" class="input-field text-sm py-2 w-auto">
+                    <option value="" x-text="t('common.all') + ' ' + t('catalog.categories')">Tutte le Categorie</option>
+                    <template x-for="(label, key) in MERCH_CATEGORY_LABELS" :key="key">
+                        <option :value="key" x-text="label"></option>
+                    </template>
+                </select>
+                <select x-model="filterSupplier" @change="loadProducts()" class="input-field text-sm py-2 w-auto">
+                    <option value="" x-text="t('common.all') + ' ' + t('catalog.suppliers')">Tutti i Fornitori</option>
+                    <template x-for="s in suppliers" :key="s.id">
+                        <option :value="s.id" x-text="s.name"></option>
+                    </template>
+                </select>
+                <input type="text" x-model="searchText" @input.debounce.300ms="loadProducts()" class="input-field text-sm py-2 w-64"
+                       :placeholder="t('catalog.search_placeholder')">
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <template x-if="loading">
+            <div class="card text-center py-12">
+                <p class="text-gray-500" data-i18n="common.loading">Caricamento...</p>
+            </div>
+        </template>
+
+        <!-- Product Count -->
+        <template x-if="!loading">
+            <p class="text-sm text-gray-500 mb-4" x-text="t('catalog.count', {count: products.length})"></p>
+        </template>
+
+        <!-- Product Grid -->
+        <template x-if="!loading && products.length > 0">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <template x-for="p in products" :key="p.id">
+                    <div class="card hover:shadow-xl transition-shadow cursor-pointer" @click="selectedProduct = p; showDetailModal = true; loadStock(p.id)">
+                        <!-- Category badge -->
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="badge bg-blue-100 text-blue-800" x-text="MERCH_CATEGORY_LABELS[p.category] || p.category"></span>
+                            <template x-if="p.has_sample_in_store">
+                                <span class="badge bg-green-100 text-green-800" x-text="t('catalog.sample_badge')">In Negozio</span>
+                            </template>
+                        </div>
+
+                        <!-- Product name -->
+                        <h3 class="font-bold text-gray-900 text-lg mb-1" x-text="p.name"></h3>
+                        <p class="text-xs text-gray-400 mb-2" x-text="p.supplier_product_code ? t('catalog.code') + ': ' + p.supplier_product_code : ''"></p>
+
+                        <!-- Colors -->
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <template x-for="color in (p.available_colors || []).slice(0, 6)" :key="color">
+                                <span class="inline-block w-5 h-5 rounded-full border border-gray-300"
+                                      :style="'background-color:' + getColorHex(color)"
+                                      :title="color"></span>
+                            </template>
+                            <template x-if="(p.available_colors || []).length > 6">
+                                <span class="text-xs text-gray-400 self-center" x-text="'+' + ((p.available_colors || []).length - 6)"></span>
+                            </template>
+                        </div>
+
+                        <!-- Sizes -->
+                        <p class="text-xs text-gray-500 mb-3" x-text="(p.available_sizes || []).join(' / ')"></p>
+
+                        <!-- Pricing -->
+                        <div class="flex justify-between items-end mt-auto pt-2 border-t">
+                            <div>
+                                <span class="text-xs text-gray-400" x-text="t('catalog.retail')"></span>
+                                <span class="block text-lg font-bold text-blue-600" x-text="formatPrice(p.retail_base_price)"></span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-gray-400" x-text="t('catalog.cost')"></span>
+                                <span class="block text-sm text-gray-600" x-text="formatPrice(p.supplier_unit_price)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Personalization markup -->
+                        <p class="text-xs text-amber-600 mt-1" x-text="'+' + formatPrice(p.personalization_markup) + ' ' + t('catalog.per_personalization')"></p>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- No results -->
+        <template x-if="!loading && products.length === 0">
+            <div class="card text-center py-12">
+                <p class="text-gray-400" data-i18n="catalog.no_results">Nessun prodotto trovato.</p>
+            </div>
+        </template>
+
+        <!-- Product Detail Modal -->
+        <div x-show="showDetailModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6" @click.outside="showDetailModal = false">
+                <template x-if="selectedProduct">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="badge bg-blue-100 text-blue-800 mb-2" x-text="MERCH_CATEGORY_LABELS[selectedProduct.category]"></span>
+                                <h3 class="text-2xl font-bold text-gray-900" x-text="selectedProduct.name"></h3>
+                                <p class="text-sm text-gray-500" x-text="selectedProduct.supplier_product_code ? t('catalog.supplier_code') + ': ' + selectedProduct.supplier_product_code : ''"></p>
+                            </div>
+                            <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                        </div>
+
+                        <template x-if="selectedProduct.description">
+                            <p class="text-sm text-gray-600 mb-4" x-text="selectedProduct.description"></p>
+                        </template>
+
+                        <!-- Pricing grid -->
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="bg-blue-50 rounded-lg p-3 text-center">
+                                <span class="text-xs text-gray-500 block" x-text="t('catalog.retail')"></span>
+                                <span class="text-xl font-bold text-blue-600" x-text="formatPrice(selectedProduct.retail_base_price)"></span>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <span class="text-xs text-gray-500 block" x-text="t('catalog.cost')"></span>
+                                <span class="text-xl font-bold text-gray-700" x-text="formatPrice(selectedProduct.supplier_unit_price)"></span>
+                            </div>
+                            <div class="bg-amber-50 rounded-lg p-3 text-center">
+                                <span class="text-xs text-gray-500 block" x-text="t('catalog.personalization')"></span>
+                                <span class="text-xl font-bold text-amber-600" x-text="'+' + formatPrice(selectedProduct.personalization_markup)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Colors + Sizes -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-700 mb-2" x-text="t('catalog.available_colors')"></h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="color in (selectedProduct.available_colors || [])" :key="color">
+                                        <span class="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs">
+                                            <span class="w-3 h-3 rounded-full border" :style="'background-color:' + getColorHex(color)"></span>
+                                            <span x-text="color"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-700 mb-2" x-text="t('catalog.available_sizes')"></h4>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="size in (selectedProduct.available_sizes || [])" :key="size">
+                                        <span class="bg-gray-100 px-2 py-1 rounded text-xs font-mono" x-text="size"></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Print methods -->
+                        <template x-if="selectedProduct.recommended_print_methods && selectedProduct.recommended_print_methods.length > 0">
+                            <div class="mb-4">
+                                <h4 class="font-semibold text-sm text-gray-700 mb-2" x-text="t('catalog.print_methods')"></h4>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="method in selectedProduct.recommended_print_methods" :key="method">
+                                        <span class="badge bg-purple-100 text-purple-800" x-text="PRINT_METHOD_LABELS[method] || method"></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Stock levels -->
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-sm text-gray-700 mb-2" x-text="t('catalog.stock_levels')"></h4>
+                            <template x-if="stockLoading">
+                                <p class="text-sm text-gray-400" data-i18n="common.loading">Caricamento...</p>
+                            </template>
+                            <template x-if="!stockLoading && stockEntries.length === 0">
+                                <p class="text-sm text-gray-400" x-text="t('catalog.no_stock')"></p>
+                            </template>
+                            <template x-if="!stockLoading && stockEntries.length > 0">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b text-left text-gray-500">
+                                                <th class="pb-2 font-medium" x-text="t('catalog.th_color')"></th>
+                                                <th class="pb-2 font-medium" x-text="t('catalog.th_size')"></th>
+                                                <th class="pb-2 font-medium text-right" x-text="t('catalog.th_on_hand')"></th>
+                                                <th class="pb-2 font-medium text-right" x-text="t('catalog.th_reserved')"></th>
+                                                <th class="pb-2 font-medium text-right" x-text="t('catalog.th_available')"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="s in stockEntries" :key="s.id">
+                                                <tr class="border-b">
+                                                    <td class="py-2">
+                                                        <span class="inline-flex items-center gap-1">
+                                                            <span class="w-3 h-3 rounded-full border" :style="'background-color:' + getColorHex(s.color)"></span>
+                                                            <span x-text="s.color"></span>
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-2 font-mono" x-text="s.size"></td>
+                                                    <td class="py-2 text-right" x-text="s.quantity_on_hand"></td>
+                                                    <td class="py-2 text-right" x-text="s.quantity_reserved"></td>
+                                                    <td class="py-2 text-right font-bold" :class="(s.quantity_on_hand - s.quantity_reserved) > 0 ? 'text-green-600' : 'text-red-600'"
+                                                        x-text="Math.max(0, s.quantity_on_hand - s.quantity_reserved)"></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Tags -->
+                        <template x-if="selectedProduct.tags">
+                            <div class="flex flex-wrap gap-1">
+                                <template x-for="tag in selectedProduct.tags.split(',')" :key="tag">
+                                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs" x-text="tag.trim()"></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+const MERCH_CATEGORY_LABELS = ISOTTO_STRINGS[window._isottoLang || 'it'].status.merch_category || {
+    tshirt: 'T-Shirt', polo: 'Polo', hoodie: 'Hoodie', jacket: 'Giacca',
+    cap: 'Cappellino', bag: 'Borsa', mug: 'Tazza', apron: 'Grembiule',
+    vest: 'Gilet', accessory: 'Accessorio', custom: 'Personalizzato'
+};
+
+const PRINT_METHOD_LABELS = ISOTTO_STRINGS[window._isottoLang || 'it'].status.print_method || {
+    screen_print: 'Serigrafia', dtg: 'DTG', embroidery: 'Ricamo',
+    vinyl: 'Vinile', sublimation: 'Sublimazione', transfer: 'Transfer'
+};
+
+function getColorHex(name) {
+    const map = {
+        white: '#ffffff', black: '#1a1a1a', navy: '#001f3f', red: '#dc2626',
+        grey: '#9ca3af', royal_blue: '#1d4ed8', dark_green: '#166534',
+        sky_blue: '#38bdf8', yellow: '#fbbf24', orange: '#f97316'
+    };
+    return map[name] || '#d1d5db';
+}
+
+function catalogData() {
+    return {
+        user: { username: '', isManager: false },
+        products: [],
+        suppliers: [],
+        stockEntries: [],
+        selectedProduct: null,
+        loading: true,
+        stockLoading: false,
+        showDetailModal: false,
+        filterCategory: '',
+        filterSupplier: '',
+        searchText: '',
+
+        init() {
+            const token = IsottoAuth.getToken();
+            if (!token) { window.location.href = '/print-shop'; return; }
+            const userInfo = IsottoAuth.getUserInfo();
+            if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+            this.user = { ...userInfo, isManager: IsottoAuth.isManager() };
+            this.loadSuppliers();
+            this.loadProducts();
+        },
+
+        async loadSuppliers() {
+            try {
+                this.suppliers = await API.get('/api/v1/print-shop/catalog/suppliers');
+            } catch (e) { console.error('Failed to load suppliers:', e); }
+        },
+
+        async loadProducts() {
+            this.loading = true;
+            try {
+                let url = '/api/v1/print-shop/catalog/products?';
+                if (this.filterCategory) url += 'category=' + this.filterCategory + '&';
+                if (this.filterSupplier) url += 'supplier_id=' + this.filterSupplier + '&';
+                if (this.searchText) url += 'search=' + encodeURIComponent(this.searchText) + '&';
+                this.products = await API.get(url);
+            } catch (e) {
+                showToast(t('common.error') + ': ' + e.message, 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async loadStock(productId) {
+            this.stockLoading = true;
+            this.stockEntries = [];
+            try {
+                this.stockEntries = await API.get('/api/v1/print-shop/catalog/products/' + productId + '/stock');
+            } catch (e) { console.error('Failed to load stock:', e); }
+            finally { this.stockLoading = false; }
+        }
+    }
+}
+</script>
+{% endblock %}

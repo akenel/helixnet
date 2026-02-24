@@ -19,8 +19,12 @@
                 <div class="hidden md:flex items-center space-x-2">
                     <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
                     <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
                     <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
                     <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.artworks">Artwork</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600" x-text="user.username"></span>
@@ -260,6 +264,193 @@
                     </div>
                 </div>
 
+                <!-- Line Items Section (Team Orders / Personalized Items) -->
+                <template x-if="order.is_team_order || lineItems.length > 0">
+                    <div class="card mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900" x-text="t('line_items.title')">Articoli Personalizzati</h3>
+                                <template x-if="order.team_name">
+                                    <p class="text-sm text-gray-500" x-text="order.team_name"></p>
+                                </template>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="showRosterModal = true" class="btn-primary text-sm" x-text="t('line_items.import_roster')">Importa Rosa</button>
+                                <button @click="showAddItemModal = true" class="btn-secondary text-sm" x-text="t('line_items.add_item')">+ Articolo</button>
+                            </div>
+                        </div>
+
+                        <!-- Size Summary -->
+                        <template x-if="sizeSummary && sizeSummary.sizes && sizeSummary.sizes.length > 0">
+                            <div class="bg-blue-50 rounded-lg p-3 mb-4">
+                                <h4 class="font-semibold text-sm text-blue-800 mb-2" x-text="t('line_items.size_summary')">Riepilogo Taglie</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="s in sizeSummary.sizes" :key="s.size">
+                                        <span class="bg-white px-3 py-1 rounded-lg text-sm shadow-sm">
+                                            <span class="font-mono font-bold" x-text="s.size"></span>
+                                            <span class="text-gray-500">x</span>
+                                            <span class="font-bold" x-text="s.count"></span>
+                                            <template x-if="s.need_to_order > 0">
+                                                <span class="text-red-500 text-xs ml-1" x-text="'(' + t('line_items.to_order') + ': ' + s.need_to_order + ')'"></span>
+                                            </template>
+                                        </span>
+                                    </template>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-2" x-text="t('line_items.total_items') + ': ' + sizeSummary.total_items"></p>
+                            </div>
+                        </template>
+
+                        <!-- Items Table -->
+                        <template x-if="lineItems.length > 0">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b text-left text-gray-500">
+                                            <th class="pb-2 font-medium">#</th>
+                                            <th class="pb-2 font-medium" x-text="t('line_items.th_name')">Nome</th>
+                                            <th class="pb-2 font-medium" x-text="t('line_items.th_number')">Numero</th>
+                                            <th class="pb-2 font-medium" x-text="t('line_items.th_size')">Taglia</th>
+                                            <th class="pb-2 font-medium" x-text="t('line_items.th_color')">Colore</th>
+                                            <th class="pb-2 font-medium" x-text="t('line_items.th_status')">Stato</th>
+                                            <th class="pb-2 font-medium text-right" x-text="t('line_items.th_price')">Prezzo</th>
+                                            <th class="pb-2 font-medium"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="(item, idx) in lineItems" :key="item.id">
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="py-2 text-gray-400" x-text="idx + 1"></td>
+                                                <td class="py-2 font-semibold" x-text="item.name_text || '-'"></td>
+                                                <td class="py-2 font-mono" x-text="item.number_text || '-'"></td>
+                                                <td class="py-2">
+                                                    <span class="bg-gray-100 px-2 py-0.5 rounded font-mono text-xs" x-text="item.size || '-'"></span>
+                                                </td>
+                                                <td class="py-2" x-text="item.color || '-'"></td>
+                                                <td class="py-2">
+                                                    <span class="badge" :class="'badge-' + item.status.replace('_','-')"
+                                                          x-text="LINE_ITEM_STATUS_LABELS[item.status] || item.status"></span>
+                                                </td>
+                                                <td class="py-2 text-right" x-text="formatPrice(item.unit_price)"></td>
+                                                <td class="py-2 text-right">
+                                                    <button @click="deleteLineItem(item.id)" class="text-red-400 hover:text-red-600 text-xs" title="Elimina">&times;</button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="border-t font-bold">
+                                            <td colspan="6" class="py-2 text-right" x-text="t('line_items.total')">Totale:</td>
+                                            <td class="py-2 text-right text-blue-600" x-text="formatPrice(lineItems.reduce((sum, i) => sum + parseFloat(i.unit_price || 0), 0))"></td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </template>
+
+                        <template x-if="lineItems.length === 0">
+                            <p class="text-gray-400 text-sm text-center py-4" x-text="t('line_items.no_items')">Nessun articolo personalizzato.</p>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Add Item Modal -->
+                <div x-show="showAddItemModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.outside="showAddItemModal = false">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4" x-text="t('line_items.add_item')">Aggiungi Articolo</h3>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.th_name')">Nome</label>
+                                    <input type="text" x-model="newItem.name_text" class="input-field text-sm" placeholder="ROSSI">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.th_number')">Numero</label>
+                                    <input type="text" x-model="newItem.number_text" class="input-field text-sm" placeholder="10">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.th_size')">Taglia</label>
+                                    <input type="text" x-model="newItem.size" class="input-field text-sm" placeholder="L">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.th_color')">Colore</label>
+                                    <input type="text" x-model="newItem.color" class="input-field text-sm" placeholder="white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.th_price')">Prezzo</label>
+                                <input type="number" x-model.number="newItem.unit_price" class="input-field text-sm" step="0.01" min="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.notes')">Note</label>
+                                <input type="text" x-model="newItem.notes" class="input-field text-sm">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-4">
+                            <button @click="showAddItemModal = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
+                            <button @click="addLineItem()" class="btn-primary" :disabled="saving" x-text="saving ? t('common.saving') : t('common.save')">Salva</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roster Import Modal -->
+                <div x-show="showRosterModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6" @click.outside="showRosterModal = false">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4" x-text="t('line_items.import_roster')">Importa Rosa</h3>
+                        <p class="text-sm text-gray-500 mb-4" x-text="t('line_items.roster_hint')">Inserisci i dati del roster (un giocatore per riga).</p>
+
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.default_color')">Colore Default</label>
+                                <input type="text" x-model="rosterImport.color" class="input-field text-sm" placeholder="white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.th_price')">Prezzo Unitario</label>
+                                <input type="number" x-model.number="rosterImport.unit_price" class="input-field text-sm" step="0.01" min="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('line_items.placement')">Posizione</label>
+                                <select x-model="rosterImport.artwork_placement" class="input-field text-sm">
+                                    <option value="back" x-text="t('line_items.placement_back')">Retro</option>
+                                    <option value="front" x-text="t('line_items.placement_front')">Fronte</option>
+                                    <option value="left_sleeve" x-text="t('line_items.placement_left_sleeve')">Manica Sx</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Roster entries -->
+                        <div class="space-y-2 mb-4">
+                            <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500">
+                                <div class="col-span-4" x-text="t('line_items.th_name')">Nome</div>
+                                <div class="col-span-2" x-text="t('line_items.th_number')">Numero</div>
+                                <div class="col-span-2" x-text="t('line_items.th_size')">Taglia</div>
+                                <div class="col-span-3" x-text="t('line_items.notes')">Note</div>
+                                <div class="col-span-1"></div>
+                            </div>
+                            <template x-for="(entry, idx) in rosterImport.roster" :key="idx">
+                                <div class="grid grid-cols-12 gap-2">
+                                    <input type="text" x-model="entry.name_text" class="col-span-4 input-field text-sm py-1" placeholder="ROSSI">
+                                    <input type="text" x-model="entry.number_text" class="col-span-2 input-field text-sm py-1" placeholder="10">
+                                    <input type="text" x-model="entry.size" class="col-span-2 input-field text-sm py-1" placeholder="L">
+                                    <input type="text" x-model="entry.notes" class="col-span-3 input-field text-sm py-1" placeholder="">
+                                    <button @click="rosterImport.roster.splice(idx, 1)" class="col-span-1 text-red-400 hover:text-red-600 text-center">&times;</button>
+                                </div>
+                            </template>
+                        </div>
+                        <button @click="rosterImport.roster.push({name_text:'', number_text:'', size:'', notes:''})"
+                                class="text-blue-600 hover:text-blue-700 text-sm font-medium" x-text="'+ ' + t('line_items.add_player')">+ Aggiungi Giocatore</button>
+
+                        <div class="flex justify-between items-center mt-6">
+                            <span class="text-sm text-gray-500" x-text="rosterImport.roster.length + ' ' + t('line_items.players')"></span>
+                            <div class="flex gap-3">
+                                <button @click="showRosterModal = false" class="btn-secondary" data-i18n="common.cancel">Annulla</button>
+                                <button @click="importRoster()" class="btn-primary" :disabled="saving || rosterImport.roster.length === 0"
+                                        x-text="saving ? t('common.saving') : t('line_items.import_btn')">Importa</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Activity Timeline -->
                 <div class="card mb-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4" data-i18n="order_detail.activity_title">Attivita</h3>
@@ -436,15 +627,29 @@
 </div>
 
 <script>
+    const LINE_ITEM_STATUS_LABELS = ISOTTO_STRINGS[window._isottoLang || 'it'].status.line_item || {
+        pending: 'In Attesa', stock_ordered: 'Stock Ordinato', stock_received: 'Stock Ricevuto',
+        printing: 'In Stampa', quality_check: 'Controllo', done: 'Completato', cancelled: 'Annullato'
+    };
+
     function orderDetailData() {
         return {
             user: { username: '', isAdmin: false, isManager: false, isOperator: false, isDesigner: false, isCounter: false },
             order: {},
             customerName: '...',
             activities: [],
+            lineItems: [],
+            sizeSummary: null,
             newComment: '',
             showInvoiceModal: false,
+            showAddItemModal: false,
+            showRosterModal: false,
             invoiceData: { due_date: '', deposit_applied: 0, notes: '' },
+            newItem: { name_text: '', number_text: '', size: '', color: '', unit_price: 0, notes: '' },
+            rosterImport: {
+                color: 'white', unit_price: 0, artwork_placement: 'back',
+                roster: [{name_text:'', number_text:'', size:'', notes:''}]
+            },
             loading: true,
             editing: false,
             saving: false,
@@ -455,7 +660,8 @@
                 product_type: 'postcard',
                 quantity: 0, unit_price: 0, total_price: 0,
                 paper_weight_gsm: 250, size_description: '',
-                copies_per_sheet: null, customer_notes: ''
+                copies_per_sheet: null, customer_notes: '',
+                is_team_order: false, team_name: ''
             },
 
             init() {
@@ -494,11 +700,79 @@
                         this.customerName = customer.company_name || customer.name;
                     } catch (e) { this.customerName = '?'; }
                     await this.loadActivities();
+                    await this.loadLineItems();
                 } catch (e) {
                     showToast(t('order_detail.load_error', {message: e.message}), 'error');
                 } finally {
                     this.loading = false;
                 }
+            },
+
+            async loadLineItems() {
+                if (!this.order.id) return;
+                try {
+                    this.lineItems = await API.get('/api/v1/print-shop/orders/' + this.order.id + '/items');
+                    if (this.lineItems.length > 0) {
+                        await this.loadSizeSummary();
+                    }
+                } catch (e) { console.error('Line items load failed:', e); }
+            },
+
+            async loadSizeSummary() {
+                if (!this.order.id) return;
+                try {
+                    this.sizeSummary = await API.get('/api/v1/print-shop/orders/' + this.order.id + '/size-summary');
+                } catch (e) { console.error('Size summary load failed:', e); }
+            },
+
+            async addLineItem() {
+                this.saving = true;
+                try {
+                    await API.post('/api/v1/print-shop/orders/' + this.order.id + '/items', this.newItem);
+                    showToast(t('line_items.item_added'), 'success');
+                    this.showAddItemModal = false;
+                    this.newItem = { name_text: '', number_text: '', size: '', color: '', unit_price: 0, notes: '' };
+                    await this.loadLineItems();
+                } catch (e) {
+                    showToast(t('common.error') + ': ' + e.message, 'error');
+                } finally { this.saving = false; }
+            },
+
+            async deleteLineItem(itemId) {
+                try {
+                    await API.delete('/api/v1/print-shop/orders/' + this.order.id + '/items/' + itemId);
+                    await this.loadLineItems();
+                    showToast(t('line_items.item_deleted'), 'success');
+                } catch (e) {
+                    showToast(t('common.error') + ': ' + e.message, 'error');
+                }
+            },
+
+            async importRoster() {
+                const validEntries = this.rosterImport.roster.filter(e => e.name_text && e.size);
+                if (validEntries.length === 0) {
+                    showToast(t('line_items.roster_empty'), 'warning');
+                    return;
+                }
+                this.saving = true;
+                try {
+                    const payload = {
+                        color: this.rosterImport.color,
+                        unit_price: this.rosterImport.unit_price,
+                        artwork_placement: this.rosterImport.artwork_placement,
+                        roster: validEntries
+                    };
+                    await API.post('/api/v1/print-shop/orders/' + this.order.id + '/roster', payload);
+                    showToast(t('line_items.roster_imported', {count: validEntries.length}), 'success');
+                    this.showRosterModal = false;
+                    this.rosterImport.roster = [{name_text:'', number_text:'', size:'', notes:''}];
+                    // Reload order (may have been marked as team order)
+                    this.order = await API.get('/api/v1/print-shop/orders/' + this.order.id);
+                    await this.loadLineItems();
+                    await this.loadActivities();
+                } catch (e) {
+                    showToast(t('common.error') + ': ' + e.message, 'error');
+                } finally { this.saving = false; }
             },
 
             async loadActivities() {

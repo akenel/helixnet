@@ -70,6 +70,12 @@ from .camper_supplier_model import CamperSupplierModel
 # ISOTTO Sport Print Shop (Via Buscaino, Trapani - since 1968)
 from .isotto_customer_model import IsottoCustomerModel
 from .isotto_order_model import IsottoOrderModel, ProductType, OrderStatus, ColorMode, DuplexMode, Lamination
+from .isotto_supplier_model import IsottoSupplierModel
+from .isotto_catalog_model import IsottoCatalogProductModel, IsottoMerchCategory, IsottoPrintMethod
+from .isotto_catalog_stock_model import IsottoCatalogStockModel
+from .isotto_order_line_item_model import IsottoOrderLineItemModel, LineItemStatus
+from .isotto_purchase_order_model import IsottoPurchaseOrderModel, IsottoPOStatus
+from .isotto_artwork_model import IsottoArtworkModel
 
 # QA Testing Dashboard (Anne's Testing Checklist)
 from .qa_test_result_model import QATestResultModel, TestStatus, QABugReportModel, BugSeverity, BugStatus, QABugActivityModel, BugActivityType
@@ -197,6 +203,16 @@ __all__ = [
     "ColorMode",
     "DuplexMode",
     "Lamination",
+    "IsottoSupplierModel",
+    "IsottoCatalogProductModel",
+    "IsottoMerchCategory",
+    "IsottoPrintMethod",
+    "IsottoCatalogStockModel",
+    "IsottoOrderLineItemModel",
+    "LineItemStatus",
+    "IsottoPurchaseOrderModel",
+    "IsottoPOStatus",
+    "IsottoArtworkModel",
     # QA Testing Dashboard
     "QATestResultModel",
     "TestStatus",

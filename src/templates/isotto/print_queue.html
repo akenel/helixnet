@@ -1,0 +1,434 @@
+{% extends "isotto/base.html" %}
+
+{% block title %}Coda di Stampa - ISOTTO Sport{% endblock %}
+{% block page_name %}Coda di Stampa{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="printQueueData()">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl">&#x1F5A8;</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="brand.name">ISOTTO Sport</h1>
+                        <p class="text-xs text-gray-500" data-i18n="brand.subtitle">Gestione Stampa</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="/print-shop/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.dashboard">Cruscotto</a>
+                    <a href="/print-shop/orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.orders">Ordini</a>
+                    <a href="/print-shop/catalog" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.catalog">Catalogo</a>
+                    <a href="/print-shop/suppliers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.suppliers">Fornitori</a>
+                    <a href="/print-shop/purchase-orders" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+                    <a href="/print-shop/invoices" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.invoices">Fatture</a>
+                    <a href="/print-shop/customers" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.customers">Clienti</a>
+                    <a href="/print-shop/artworks" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100" data-i18n="nav.artworks">Artwork</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600" x-text="user.username"></span>
+                    <button @click="IsottoAuth.logout()" class="text-red-600 hover:text-red-700 text-sm" data-i18n="common.logout">Esci</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="md:hidden bg-white border-b px-4 py-2 flex space-x-2 overflow-x-auto">
+        <a href="/print-shop/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.dashboard">Cruscotto</a>
+        <a href="/print-shop/orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.orders">Ordini</a>
+        <a href="/print-shop/catalog" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.catalog">Catalogo</a>
+        <a href="/print-shop/suppliers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.suppliers">Fornitori</a>
+        <a href="/print-shop/purchase-orders" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.purchase_orders">Ordini Acquisto</a>
+        <a href="/print-shop/invoices" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.invoices">Fatture</a>
+        <a href="/print-shop/customers" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.customers">Clienti</a>
+        <a href="/print-shop/artworks" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-50 whitespace-nowrap" data-i18n="nav.artworks">Artwork</a>
+    </div>
+
+    <!-- Bulk Action Bar (fixed below nav when items selected) -->
+    <div x-show="selectedItems.size > 0" x-cloak
+         class="sticky top-16 z-10 bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+            <span class="text-sm font-semibold" x-text="selectedItems.size + ' ' + t('print_queue.items_selected')"></span>
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Advance to printing (from stock_received) -->
+                <button @click="advanceSelected('printing')"
+                        class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+                        x-text="t('print_queue.advance_print')">
+                </button>
+                <!-- Advance to quality_check (from printing) -->
+                <button @click="advanceSelected('quality_check')"
+                        class="bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+                        x-text="t('print_queue.advance_qc')">
+                </button>
+                <!-- Advance to done (from quality_check) -->
+                <button @click="advanceSelected('done')"
+                        class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+                        x-text="t('print_queue.advance_done')">
+                </button>
+                <!-- Deselect all -->
+                <button @click="deselectAll()"
+                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+                        x-text="t('print_queue.deselect')">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Page Header -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900" x-text="t('print_queue.title')">Coda di Stampa</h2>
+                <p class="text-sm text-gray-500 mt-1" x-text="t('print_queue.subtitle')">Gestione produzione articoli personalizzati</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Summary badges -->
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                      x-text="totalItems + ' ' + t('print_queue.badge_items')"></span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
+                      x-text="totalOrders + ' ' + t('print_queue.badge_orders')"></span>
+            </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="card mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1" x-text="t('print_queue.filter_status')">Filtra per Stato</label>
+                    <select x-model="statusFilter" @change="loadQueue()" class="input-field text-sm py-2 w-48">
+                        <option value="" x-text="t('common.all')">Tutti</option>
+                        <option value="stock_received" x-text="LINE_ITEM_STATUS_LABELS.stock_received">Ricevuto</option>
+                        <option value="printing" x-text="LINE_ITEM_STATUS_LABELS.printing">In Stampa</option>
+                        <option value="quality_check" x-text="LINE_ITEM_STATUS_LABELS.quality_check">Controllo</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button @click="loadQueue()" class="btn-secondary text-sm py-2" x-text="t('print_queue.refresh')">Aggiorna</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <template x-if="loading">
+            <div class="card text-center py-12">
+                <p class="text-gray-500" x-text="t('common.loading')">Caricamento...</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template x-if="!loading && queue.length === 0">
+            <div class="card text-center py-16">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-gray-400 text-lg font-medium" x-text="t('print_queue.empty_title')">Coda vuota</p>
+                <p class="text-gray-400 text-sm mt-1" x-text="t('print_queue.empty_subtitle')">Nessun articolo nella coda di stampa.</p>
+                <a href="/print-shop/orders" class="inline-block mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    &larr; <span x-text="t('print_queue.back_to_orders')">Torna agli ordini</span>
+                </a>
+            </div>
+        </template>
+
+        <!-- Order Groups -->
+        <template x-if="!loading && queue.length > 0">
+            <div class="space-y-4">
+                <template x-for="group in queue" :key="group.order_id">
+                    <div class="card overflow-hidden">
+                        <!-- Order Group Header (collapsible) -->
+                        <div class="flex items-center justify-between cursor-pointer py-2"
+                             @click="toggleOrder(group.order_id)">
+                            <div class="flex items-center gap-3">
+                                <!-- Expand/Collapse chevron -->
+                                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                                     :class="{'rotate-90': expandedOrders.has(group.order_id)}"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                                <!-- Order info -->
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono text-sm text-gray-500" x-text="group.order_number"></span>
+                                        <span class="font-bold text-gray-900" x-text="group.title"></span>
+                                        <template x-if="group.team_name">
+                                            <span class="text-sm text-gray-500">(<span x-text="group.team_name"></span>)</span>
+                                        </template>
+                                    </div>
+                                    <p class="text-xs text-gray-400" x-text="group.customer_name || ''"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <!-- Select all in this order -->
+                                <button @click.stop="selectAll(group.order_id)"
+                                        class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                        x-text="t('print_queue.select_all')">Seleziona Tutti</button>
+                                <!-- Item count badge -->
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
+                                      x-text="group.items.length + ' ' + t('print_queue.badge_items')"></span>
+                            </div>
+                        </div>
+
+                        <!-- Expanded: Items Table -->
+                        <div x-show="expandedOrders.has(group.order_id)" x-collapse>
+                            <div class="border-t mt-2 pt-3 overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th class="pb-2 pr-2 w-8">
+                                                <input type="checkbox"
+                                                       :checked="isOrderFullySelected(group.order_id)"
+                                                       @change="$event.target.checked ? selectAll(group.order_id) : deselectOrder(group.order_id)"
+                                                       class="w-4 h-4 text-blue-600 rounded">
+                                            </th>
+                                            <th class="pb-2 pr-3 w-8">#</th>
+                                            <th class="pb-2 pr-3" x-text="t('print_queue.th_name')">Nome</th>
+                                            <th class="pb-2 pr-3" x-text="t('print_queue.th_number')">Numero</th>
+                                            <th class="pb-2 pr-3" x-text="t('print_queue.th_size')">Taglia</th>
+                                            <th class="pb-2 pr-3" x-text="t('print_queue.th_color')">Colore</th>
+                                            <th class="pb-2 pr-3" x-text="t('print_queue.th_placement')">Posizione</th>
+                                            <th class="pb-2 pr-3" x-text="t('print_queue.th_status')">Stato</th>
+                                            <th class="pb-2" x-text="t('print_queue.th_notes')">Note</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="(item, idx) in group.items" :key="item.id">
+                                            <tr class="border-b hover:bg-gray-50 transition"
+                                                :class="{'bg-blue-50': selectedItems.has(item.id)}">
+                                                <td class="py-2 pr-2">
+                                                    <input type="checkbox"
+                                                           :checked="selectedItems.has(item.id)"
+                                                           @change="toggleItem(item.id)"
+                                                           class="w-4 h-4 text-blue-600 rounded">
+                                                </td>
+                                                <td class="py-2 pr-3 text-gray-400" x-text="idx + 1"></td>
+                                                <td class="py-2 pr-3 font-semibold" x-text="item.name_text || '-'"></td>
+                                                <td class="py-2 pr-3 font-mono" x-text="item.number_text || '-'"></td>
+                                                <td class="py-2 pr-3">
+                                                    <span class="bg-gray-100 px-2 py-0.5 rounded font-mono text-xs" x-text="item.size || '-'"></span>
+                                                </td>
+                                                <td class="py-2 pr-3" x-text="item.color || '-'"></td>
+                                                <td class="py-2 pr-3 text-xs text-gray-600" x-text="item.artwork_placement || '-'"></td>
+                                                <td class="py-2 pr-3">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                                          :class="itemStatusClass(item.status)"
+                                                          x-text="LINE_ITEM_STATUS_LABELS[item.status] || item.status"></span>
+                                                </td>
+                                                <td class="py-2 text-xs text-gray-500 max-w-xs truncate" x-text="item.notes || ''"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Order-level completion toast suggestion -->
+                            <template x-if="isOrderAllDone(group)">
+                                <div class="mt-3 bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p class="text-sm text-green-800" x-text="t('print_queue.all_items_done')">
+                                        Tutti gli articoli di questo ordine sono completati.
+                                    </p>
+                                    <a :href="'/print-shop/orders/' + group.order_id"
+                                       class="ml-auto text-sm font-medium text-green-700 hover:text-green-800 whitespace-nowrap"
+                                       x-text="t('print_queue.advance_order')">Avanza Ordine &rarr;</a>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </main>
+</div>
+
+<script>
+    const LINE_ITEM_STATUS_LABELS = ISOTTO_STRINGS[window._isottoLang || 'it'].status.line_item || {
+        pending: 'In Attesa', stock_ordered: 'Ordinato', stock_received: 'Ricevuto',
+        printing: 'In Stampa', quality_check: 'Controllo', done: 'Completato', cancelled: 'Annullato'
+    };
+
+    function itemStatusClass(status) {
+        const classes = {
+            pending: 'bg-gray-100 text-gray-800',
+            stock_ordered: 'bg-yellow-100 text-yellow-800',
+            stock_received: 'bg-blue-100 text-blue-800',
+            printing: 'bg-amber-100 text-amber-800',
+            quality_check: 'bg-purple-100 text-purple-800',
+            done: 'bg-green-100 text-green-800',
+            cancelled: 'bg-red-100 text-red-500',
+        };
+        return classes[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    function printQueueData() {
+        return {
+            user: { username: '', isOperator: false, isManager: false },
+            queue: [],
+            totalItems: 0,
+            totalOrders: 0,
+            loading: true,
+            statusFilter: '',
+            selectedItems: new Set(),
+            expandedOrders: new Set(),
+
+            init() {
+                const token = IsottoAuth.getToken();
+                if (!token) { window.location.href = '/print-shop'; return; }
+                const userInfo = IsottoAuth.getUserInfo();
+                if (!userInfo || userInfo.roles.length === 0) { IsottoAuth.logout(); return; }
+                this.user = {
+                    ...userInfo,
+                    isOperator: IsottoAuth.isOperator(),
+                    isManager: IsottoAuth.isManager()
+                };
+
+                // Check URL params for default filter
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('status')) this.statusFilter = params.get('status');
+
+                this.loadQueue();
+            },
+
+            async loadQueue() {
+                this.loading = true;
+                try {
+                    let url = '/api/v1/print-shop/print-queue';
+                    if (this.statusFilter) url += '?status=' + encodeURIComponent(this.statusFilter);
+                    const data = await API.get(url);
+
+                    // API returns grouped data: { orders: [...], total_items, total_orders }
+                    // Each order group: { order_id, order_number, title, team_name, customer_name, items: [...] }
+                    if (Array.isArray(data)) {
+                        // Flat list of items -- group by order
+                        this.queue = this._groupByOrder(data);
+                        this.totalItems = data.length;
+                        this.totalOrders = this.queue.length;
+                    } else if (data && data.orders) {
+                        this.queue = data.orders;
+                        this.totalItems = data.total_items || 0;
+                        this.totalOrders = data.total_orders || 0;
+                    } else {
+                        this.queue = [];
+                        this.totalItems = 0;
+                        this.totalOrders = 0;
+                    }
+
+                    // Auto-expand all order groups
+                    this.queue.forEach(g => this.expandedOrders.add(g.order_id));
+                } catch (e) {
+                    showToast(t('print_queue.load_error', { message: e.message }), 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            // Fallback grouping if API returns a flat list
+            _groupByOrder(items) {
+                const map = {};
+                items.forEach(item => {
+                    const oid = item.order_id;
+                    if (!map[oid]) {
+                        map[oid] = {
+                            order_id: oid,
+                            order_number: item.order_number || '?',
+                            title: item.order_title || '',
+                            team_name: item.team_name || null,
+                            customer_name: item.customer_name || '',
+                            items: []
+                        };
+                    }
+                    map[oid].items.push(item);
+                });
+                return Object.values(map);
+            },
+
+            toggleOrder(orderId) {
+                if (this.expandedOrders.has(orderId)) {
+                    this.expandedOrders.delete(orderId);
+                } else {
+                    this.expandedOrders.add(orderId);
+                }
+                // Force Alpine reactivity
+                this.expandedOrders = new Set(this.expandedOrders);
+            },
+
+            toggleItem(itemId) {
+                if (this.selectedItems.has(itemId)) {
+                    this.selectedItems.delete(itemId);
+                } else {
+                    this.selectedItems.add(itemId);
+                }
+                // Force Alpine reactivity
+                this.selectedItems = new Set(this.selectedItems);
+            },
+
+            selectAll(orderId) {
+                const group = this.queue.find(g => g.order_id === orderId);
+                if (group) {
+                    group.items.forEach(item => this.selectedItems.add(item.id));
+                    this.selectedItems = new Set(this.selectedItems);
+                }
+            },
+
+            deselectOrder(orderId) {
+                const group = this.queue.find(g => g.order_id === orderId);
+                if (group) {
+                    group.items.forEach(item => this.selectedItems.delete(item.id));
+                    this.selectedItems = new Set(this.selectedItems);
+                }
+            },
+
+            isOrderFullySelected(orderId) {
+                const group = this.queue.find(g => g.order_id === orderId);
+                if (!group || group.items.length === 0) return false;
+                return group.items.every(item => this.selectedItems.has(item.id));
+            },
+
+            deselectAll() {
+                this.selectedItems = new Set();
+            },
+
+            async advanceSelected(newStatus) {
+                if (this.selectedItems.size === 0) return;
+
+                const itemIds = Array.from(this.selectedItems);
+                try {
+                    await API.patch('/api/v1/print-shop/print-queue/bulk-status', {
+                        item_ids: itemIds,
+                        new_status: newStatus
+                    });
+
+                    const statusLabel = LINE_ITEM_STATUS_LABELS[newStatus] || newStatus;
+                    showToast(t('print_queue.status_updated', { count: itemIds.length, status: statusLabel }), 'success');
+
+                    this.selectedItems = new Set();
+                    await this.loadQueue();
+
+                    // Check if any order now has all items done
+                    this.queue.forEach(group => {
+                        if (this.isOrderAllDone(group)) {
+                            showToast(
+                                t('print_queue.order_all_done', { order: group.order_number }),
+                                'info'
+                            );
+                        }
+                    });
+                } catch (e) {
+                    showToast(t('common.error') + ': ' + e.message, 'error');
+                }
+            },
+
+            isOrderAllDone(group) {
+                return group.items.length > 0 && group.items.every(item => item.status === 'done');
+            },
+
+            itemStatusClass(status) {
+                return itemStatusClass(status);
+            }
+        }
+    }
+</script>
+{% endblock %}
