@@ -1,0 +1,632 @@
+{% extends "backlog/base.html" %}
+
+{% block title %}Backlog Board{% endblock %}
+
+{% block extra_head %}
+<style>
+    [x-cloak] { display: none !important; }
+    .kanban-col { min-height: 200px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="backlogBoard()" x-init="init()">
+
+    <!-- Top Nav -->
+    <nav class="bg-slate-800 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-12">
+                <a href="/backlog" class="text-white font-bold text-base no-underline flex items-center space-x-2">
+                    <span>HelixNet Backlog</span>
+                </a>
+
+                <!-- Hamburger (mobile) -->
+                <button class="sm:hidden text-gray-400 hover:text-white p-1" @click="mobileNav = !mobileNav">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path x-show="!mobileNav" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path x-show="mobileNav" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+
+                <!-- Desktop links -->
+                <div class="hidden sm:flex items-center space-x-1">
+                    <a href="/backlog" class="text-indigo-400 bg-indigo-500/15 text-sm font-medium px-3 py-1.5 rounded-lg no-underline">Board</a>
+                    <a href="/testing" class="text-gray-400 hover:text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 no-underline transition">QA Dashboard</a>
+                    <span class="mx-2 w-px h-5 bg-gray-600 inline-block"></span>
+                    <button @click="openCreateModal()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
+                        + New Item
+                    </button>
+                    <span class="mx-2 w-px h-5 bg-gray-600 inline-block"></span>
+                    <span class="text-xs text-gray-400" x-text="currentUser"></span>
+                    <button @click="logout()" class="text-xs text-gray-500 hover:text-red-400 transition ml-1" title="Logout">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div x-show="mobileNav" x-cloak class="sm:hidden pb-3 border-t border-gray-700 mt-1 space-y-1">
+                <a href="/backlog" class="block text-indigo-400 text-sm font-medium px-3 py-2 rounded-lg no-underline">Board</a>
+                <a href="/testing" class="block text-gray-400 hover:text-white text-sm font-medium px-3 py-2 rounded-lg no-underline">QA Dashboard</a>
+                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-700 mt-2 pt-3">
+                    <button @click="openCreateModal(); mobileNav = false"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
+                        + New Item
+                    </button>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-xs text-gray-400" x-text="currentUser"></span>
+                        <button @click="logout()" class="text-xs text-red-400 hover:text-red-300">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
+            <div class="bg-white rounded-xl shadow p-3 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Total</p>
+                <p class="text-2xl font-bold text-gray-900" x-text="summary.total">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-3 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Pending</p>
+                <p class="text-2xl font-bold text-slate-600" x-text="summary.pending">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-3 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">In Progress</p>
+                <p class="text-2xl font-bold text-blue-600" x-text="summary.in_progress">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-3 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Blocked</p>
+                <p class="text-2xl font-bold text-red-600" x-text="summary.blocked">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-3 text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase">Done</p>
+                <p class="text-2xl font-bold text-green-600" x-text="summary.done">0</p>
+            </div>
+        </div>
+
+        <!-- Filters + View Toggle -->
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+            <select x-model="filterType" @change="loadItems()" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
+                <option value="">All Types</option>
+                <option value="dev_task">Dev Task</option>
+                <option value="bug_fix">Bug Fix</option>
+                <option value="camper_job">Camper Job</option>
+                <option value="business_ops">Business Ops</option>
+            </select>
+            <select x-model="filterPriority" @change="loadItems()" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
+                <option value="">All Priorities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <select x-model="filterAssigned" @change="loadItems()" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
+                <option value="">All Assignees</option>
+                <template x-for="name in assignees" :key="name">
+                    <option :value="name" x-text="name"></option>
+                </template>
+            </select>
+            <div class="ml-auto flex items-center space-x-1">
+                <button @click="viewMode = 'board'" class="text-sm px-3 py-1.5 rounded-lg transition"
+                    :class="viewMode === 'board' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'">
+                    Board
+                </button>
+                <button @click="viewMode = 'list'" class="text-sm px-3 py-1.5 rounded-lg transition"
+                    :class="viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'">
+                    List
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- KANBAN BOARD VIEW -->
+        <!-- ============================================================ -->
+        <div x-show="viewMode === 'board'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <template x-for="col in kanbanColumns" :key="col.status">
+                <div class="bg-gray-100 rounded-xl p-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold uppercase tracking-wide" :class="col.titleColor" x-text="col.label"></h3>
+                        <span class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full"
+                            x-text="itemsByStatus(col.status).length"></span>
+                    </div>
+                    <div class="space-y-2 kanban-col">
+                        <template x-for="item in itemsByStatus(col.status)" :key="item.id">
+                            <div @click="openDetailModal(item)"
+                                class="bg-white rounded-lg shadow-sm p-3 cursor-pointer hover:shadow-md transition border-l-4"
+                                :class="priorityBorderColor(item.priority)">
+                                <div class="flex items-start justify-between mb-1">
+                                    <span class="text-xs font-mono text-gray-400" x-text="'BL-' + String(item.item_number).padStart(3, '0')"></span>
+                                    <span class="text-xs font-medium px-1.5 py-0.5 rounded"
+                                        :class="typeBadgeColor(item.item_type)"
+                                        x-text="typeLabel(item.item_type)"></span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-900 mb-2 leading-tight" x-text="item.title"></p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs px-1.5 py-0.5 rounded font-medium"
+                                        :class="priorityBadgeColor(item.priority)"
+                                        x-text="item.priority"></span>
+                                    <span x-show="item.assigned_to" class="text-xs text-gray-500" x-text="item.assigned_to"></span>
+                                </div>
+                                <div x-show="item.tags" class="mt-2 flex flex-wrap gap-1">
+                                    <template x-for="tag in (item.tags || '').split(',').filter(t => t.trim())" :key="tag">
+                                        <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded" x-text="tag.trim()"></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="itemsByStatus(col.status).length === 0"
+                            class="text-center text-xs text-gray-400 py-8">
+                            No items
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- LIST VIEW -->
+        <!-- ============================================================ -->
+        <div x-show="viewMode === 'list'" class="bg-white rounded-xl shadow overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">#</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Title</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Priority</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Assigned</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Updated</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <template x-for="item in filteredItems" :key="item.id">
+                        <tr @click="openDetailModal(item)" class="hover:bg-gray-50 cursor-pointer transition">
+                            <td class="px-4 py-3 text-xs font-mono text-gray-400" x-text="'BL-' + String(item.item_number).padStart(3, '0')"></td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs font-medium px-1.5 py-0.5 rounded"
+                                    :class="typeBadgeColor(item.item_type)"
+                                    x-text="typeLabel(item.item_type)"></span>
+                            </td>
+                            <td class="px-4 py-3 font-medium text-gray-900" x-text="item.title"></td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs px-1.5 py-0.5 rounded font-medium"
+                                    :class="priorityBadgeColor(item.priority)"
+                                    x-text="item.priority"></span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs px-1.5 py-0.5 rounded font-medium"
+                                    :class="statusBadgeColor(item.status)"
+                                    x-text="statusLabel(item.status)"></span>
+                            </td>
+                            <td class="px-4 py-3 text-gray-500" x-text="item.assigned_to || '-'"></td>
+                            <td class="px-4 py-3 text-xs text-gray-400 hidden sm:table-cell" x-text="timeAgo(item.updated_at)"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <div x-show="filteredItems.length === 0" class="text-center text-gray-400 py-12">
+                No items match your filters
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- CREATE / EDIT MODAL -->
+    <!-- ============================================================ -->
+    <div x-show="showModal" x-cloak
+        class="fixed inset-0 z-50 overflow-y-auto"
+        @keydown.escape.window="closeModal()">
+        <div class="flex items-start justify-center min-h-screen px-4 pt-16 pb-8">
+            <div class="fixed inset-0 bg-black/50" @click="closeModal()"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl z-10">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between px-6 py-4 border-b">
+                    <h2 class="text-lg font-bold text-gray-900" x-text="editingItem ? 'BL-' + String(editingItem.item_number).padStart(3, '0') + ' - Edit' : 'New Backlog Item'"></h2>
+                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input type="text" x-model="form.title" maxlength="200"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="What needs to be done?">
+                    </div>
+
+                    <!-- Type + Priority + Status (grid) -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <select x-model="form.item_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="dev_task">Dev Task</option>
+                                <option value="bug_fix">Bug Fix</option>
+                                <option value="camper_job">Camper Job</option>
+                                <option value="business_ops">Business Ops</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <select x-model="form.priority" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div x-show="editingItem">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select x-model="form.status" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="blocked">Blocked</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Assigned + Due Date -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+                            <input type="text" x-model="form.assigned_to" maxlength="100"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                placeholder="Angel, Anne, Tigs...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                            <input type="date" x-model="form.due_date"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Estimated Hours + Tags -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Hours</label>
+                            <input type="number" x-model="form.estimated_hours" min="0" step="0.5"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                            <input type="text" x-model="form.tags" maxlength="500"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                placeholder="postcard,isotto,urgent">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea x-model="form.description" rows="3"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            placeholder="Details, context, acceptance criteria..."></textarea>
+                    </div>
+
+                    <!-- Blocked Reason (only when status=blocked) -->
+                    <div x-show="form.status === 'blocked'">
+                        <label class="block text-sm font-medium text-red-700 mb-1">Blocked Reason</label>
+                        <input type="text" x-model="form.blocked_reason"
+                            class="w-full border border-red-300 rounded-lg px-3 py-2 text-sm bg-red-50"
+                            placeholder="Why is this blocked?">
+                    </div>
+
+                    <!-- Comment (edit only) -->
+                    <div x-show="editingItem">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Add Comment</label>
+                        <input type="text" x-model="form.comment"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            placeholder="Leave a note...">
+                    </div>
+
+                    <!-- Activity Trail (edit only) -->
+                    <div x-show="editingItem && activities.length > 0">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 border-t pt-4">Activity Trail</h3>
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                            <template x-for="act in activities" :key="act.id">
+                                <div class="flex items-start space-x-2 text-xs">
+                                    <span class="text-gray-400 whitespace-nowrap" x-text="timeAgo(act.created_at)"></span>
+                                    <span class="font-medium text-gray-700" x-text="act.actor"></span>
+                                    <span class="text-gray-500" x-text="activityText(act)"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-between px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                    <div>
+                        <button x-show="editingItem" @click="archiveItem()"
+                            class="text-xs text-red-500 hover:text-red-700 transition">
+                            Archive
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button @click="closeModal()" class="text-sm text-gray-500 hover:text-gray-700 transition">Cancel</button>
+                        <button @click="saveItem()" :disabled="saving"
+                            class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium px-5 py-2 rounded-lg transition">
+                            <span x-text="saving ? 'Saving...' : (editingItem ? 'Update' : 'Create')"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function backlogBoard() {
+    return {
+        // State
+        items: [],
+        summary: { total: 0, pending: 0, in_progress: 0, blocked: 0, done: 0, archived: 0 },
+        viewMode: 'board',
+        mobileNav: false,
+        currentUser: '',
+        showModal: false,
+        editingItem: null,
+        activities: [],
+        saving: false,
+
+        // Filters
+        filterType: '',
+        filterPriority: '',
+        filterAssigned: '',
+
+        // Form
+        form: {},
+
+        // Kanban column config
+        kanbanColumns: [
+            { status: 'pending',     label: 'Pending',     titleColor: 'text-slate-600' },
+            { status: 'in_progress', label: 'In Progress', titleColor: 'text-blue-600' },
+            { status: 'blocked',     label: 'Blocked',     titleColor: 'text-red-600' },
+            { status: 'done',        label: 'Done',        titleColor: 'text-green-600' },
+        ],
+
+        // Computed
+        get filteredItems() {
+            return this.items.filter(i => i.status !== 'archived');
+        },
+        get assignees() {
+            const names = new Set();
+            this.items.forEach(i => { if (i.assigned_to) names.add(i.assigned_to); });
+            return [...names].sort();
+        },
+
+        // Methods
+        async init() {
+            if (!BacklogAuth.requireAuth()) return;
+            const user = BacklogAuth.getUserInfo();
+            this.currentUser = user ? user.username : '';
+            await Promise.all([this.loadSummary(), this.loadItems()]);
+        },
+
+        async loadSummary() {
+            try {
+                this.summary = await API.get('/api/v1/backlog/summary');
+            } catch (e) {
+                console.error('Failed to load summary:', e);
+            }
+        },
+
+        async loadItems() {
+            try {
+                let url = '/api/v1/backlog/items?';
+                if (this.filterType) url += `item_type=${this.filterType}&`;
+                if (this.filterPriority) url += `priority=${this.filterPriority}&`;
+                if (this.filterAssigned) url += `assigned_to=${encodeURIComponent(this.filterAssigned)}&`;
+                this.items = await API.get(url);
+            } catch (e) {
+                console.error('Failed to load items:', e);
+                showToast('Failed to load backlog items', 'error');
+            }
+        },
+
+        itemsByStatus(status) {
+            return this.items.filter(i => i.status === status);
+        },
+
+        openCreateModal() {
+            this.editingItem = null;
+            this.activities = [];
+            this.form = {
+                title: '',
+                description: '',
+                item_type: 'dev_task',
+                priority: 'medium',
+                status: 'pending',
+                assigned_to: '',
+                due_date: '',
+                estimated_hours: '',
+                tags: '',
+                blocked_reason: '',
+                comment: '',
+                created_by: this.currentUser || 'Angel',
+            };
+            this.showModal = true;
+        },
+
+        async openDetailModal(item) {
+            this.editingItem = item;
+            this.form = {
+                title: item.title,
+                description: item.description || '',
+                item_type: item.item_type,
+                priority: item.priority,
+                status: item.status,
+                assigned_to: item.assigned_to || '',
+                due_date: item.due_date || '',
+                estimated_hours: item.estimated_hours || '',
+                tags: item.tags || '',
+                blocked_reason: item.blocked_reason || '',
+                comment: '',
+            };
+            this.showModal = true;
+            // Load activities
+            try {
+                this.activities = await API.get(`/api/v1/backlog/items/${item.id}/activities`);
+            } catch (e) {
+                this.activities = [];
+            }
+        },
+
+        closeModal() {
+            this.showModal = false;
+            this.editingItem = null;
+            this.activities = [];
+        },
+
+        async saveItem() {
+            if (!this.form.title || this.form.title.trim().length < 3) {
+                showToast('Title must be at least 3 characters', 'warning');
+                return;
+            }
+            this.saving = true;
+            try {
+                if (this.editingItem) {
+                    // Update
+                    const payload = {
+                        title: this.form.title,
+                        description: this.form.description || null,
+                        item_type: this.form.item_type,
+                        status: this.form.status,
+                        priority: this.form.priority,
+                        assigned_to: this.form.assigned_to || '',
+                        due_date: this.form.due_date || null,
+                        estimated_hours: this.form.estimated_hours ? parseFloat(this.form.estimated_hours) : null,
+                        tags: this.form.tags || '',
+                        blocked_reason: this.form.blocked_reason || '',
+                        comment: this.form.comment || null,
+                        actor: this.currentUser || 'Angel',
+                    };
+                    await API.put(`/api/v1/backlog/items/${this.editingItem.id}`, payload);
+                    showToast(`BL-${String(this.editingItem.item_number).padStart(3, '0')} updated`, 'success');
+                } else {
+                    // Create
+                    const payload = {
+                        title: this.form.title,
+                        description: this.form.description || null,
+                        item_type: this.form.item_type,
+                        priority: this.form.priority,
+                        assigned_to: this.form.assigned_to || null,
+                        due_date: this.form.due_date || null,
+                        estimated_hours: this.form.estimated_hours ? parseFloat(this.form.estimated_hours) : null,
+                        tags: this.form.tags || null,
+                        created_by: this.form.created_by || 'Angel',
+                    };
+                    await API.post('/api/v1/backlog/items', payload);
+                    showToast('Item created', 'success');
+                }
+                this.closeModal();
+                await Promise.all([this.loadSummary(), this.loadItems()]);
+            } catch (e) {
+                showToast('Save failed: ' + e.message, 'error');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async archiveItem() {
+            if (!this.editingItem) return;
+            try {
+                await API.del(`/api/v1/backlog/items/${this.editingItem.id}`);
+                showToast(`BL-${String(this.editingItem.item_number).padStart(3, '0')} archived`, 'success');
+                this.closeModal();
+                await Promise.all([this.loadSummary(), this.loadItems()]);
+            } catch (e) {
+                showToast('Archive failed: ' + e.message, 'error');
+            }
+        },
+
+        logout() {
+            BacklogAuth.logout();
+        },
+
+        // ============================================================
+        // Display helpers
+        // ============================================================
+        typeLabel(t) {
+            const map = { dev_task: 'Dev', bug_fix: 'Bug', camper_job: 'Camper', business_ops: 'Biz' };
+            return map[t] || t;
+        },
+        typeBadgeColor(t) {
+            const map = {
+                dev_task: 'bg-blue-100 text-blue-700',
+                bug_fix: 'bg-red-100 text-red-700',
+                camper_job: 'bg-green-100 text-green-700',
+                business_ops: 'bg-purple-100 text-purple-700',
+            };
+            return map[t] || 'bg-gray-100 text-gray-700';
+        },
+        priorityBadgeColor(p) {
+            const map = {
+                critical: 'bg-red-100 text-red-700',
+                high: 'bg-orange-100 text-orange-700',
+                medium: 'bg-amber-100 text-amber-700',
+                low: 'bg-gray-100 text-gray-500',
+            };
+            return map[p] || 'bg-gray-100 text-gray-500';
+        },
+        priorityBorderColor(p) {
+            const map = {
+                critical: 'border-red-500',
+                high: 'border-orange-500',
+                medium: 'border-amber-400',
+                low: 'border-gray-300',
+            };
+            return map[p] || 'border-gray-300';
+        },
+        statusBadgeColor(s) {
+            const map = {
+                pending: 'bg-slate-100 text-slate-600',
+                in_progress: 'bg-blue-100 text-blue-700',
+                blocked: 'bg-red-100 text-red-700',
+                done: 'bg-green-100 text-green-700',
+                archived: 'bg-gray-100 text-gray-400',
+            };
+            return map[s] || 'bg-gray-100 text-gray-500';
+        },
+        statusLabel(s) {
+            const map = { pending: 'Pending', in_progress: 'In Progress', blocked: 'Blocked', done: 'Done', archived: 'Archived' };
+            return map[s] || s;
+        },
+        activityText(act) {
+            if (act.activity_type === 'status_change') return `changed status: ${act.old_value} -> ${act.new_value}`;
+            if (act.activity_type === 'priority_change') return `changed priority: ${act.old_value} -> ${act.new_value}`;
+            if (act.activity_type === 'assigned') return `assigned to ${act.new_value || 'nobody'}`;
+            if (act.activity_type === 'comment') return act.comment;
+            return act.activity_type;
+        },
+        timeAgo(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - d) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+            return d.toLocaleDateString();
+        },
+    };
+}
+</script>
+{% endblock %}

@@ -46,6 +46,8 @@ from src.routes.isotto_router import router as isotto_router, html_router as iso
 from src.services.isotto_seeding_service import seed_isotto_data
 from src.routes.qa_router import router as qa_router, html_router as qa_html_router
 from src.services.qa_seeding_service import seed_qa_checklist
+from src.routes.backlog_router import router as backlog_router, html_router as backlog_html_router
+from src.services.backlog_seeding_service import seed_backlog_data
 
 # ================================================================
 # 🌍 Global Configuration
@@ -174,6 +176,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"QA testing checklist seeding encountered an issue: {e}", exc_info=True)
 
+    # --- Seed Backlog Items (Unified Board) ---
+    try:
+        logger.info("Seeding backlog items...")
+        async with get_db_session_context() as db:
+            await seed_backlog_data(db)
+        logger.info("Backlog seeding completed.")
+    except Exception as e:
+        logger.warning(f"Backlog seeding encountered an issue: {e}", exc_info=True)
+
     # --- Keycloak Realm Health Check ---
     try:
         realm_status = await check_keycloak_realms()
@@ -257,6 +268,8 @@ app.include_router(isotto_router, tags=["ISOTTO Sport - Print Shop"])
 app.include_router(isotto_html_router, tags=["ISOTTO Sport - Print Shop UI"])
 app.include_router(qa_router, tags=["QA Testing Dashboard"])
 app.include_router(qa_html_router, tags=["QA Testing Dashboard - Web UI"])
+app.include_router(backlog_router, tags=["Backlog - Unified Board"])
+app.include_router(backlog_html_router, tags=["Backlog - Web UI"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")
 logger.info(f"🔗 API base path: {settings.API_V1_STR}")

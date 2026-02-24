@@ -74,6 +74,9 @@ from .isotto_order_model import IsottoOrderModel, ProductType, OrderStatus, Colo
 # QA Testing Dashboard (Anne's Testing Checklist)
 from .qa_test_result_model import QATestResultModel, TestStatus, QABugReportModel, BugSeverity, BugStatus, QABugActivityModel, BugActivityType
 
+# Backlog (Unified Board -- dev tasks, bug fixes, camper jobs, business ops)
+from .backlog_model import BacklogItemModel, BacklogItemType, BacklogStatus, BacklogPriority, BacklogActivityModel, BacklogActivityType
+
 __all__ = [
     "Base",
     "UserModel",
@@ -200,4 +203,11 @@ __all__ = [
     "BugStatus",
     "QABugActivityModel",
     "BugActivityType",
+    # Backlog (Unified Board)
+    "BacklogItemModel",
+    "BacklogItemType",
+    "BacklogStatus",
+    "BacklogPriority",
+    "BacklogActivityModel",
+    "BacklogActivityType",
 ]
