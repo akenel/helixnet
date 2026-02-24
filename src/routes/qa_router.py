@@ -569,15 +569,6 @@ async def training_guide():
     return FileResponse(training_file, media_type="text/html")
 
 
-@html_router.get("/training/istqb-syllabus", response_class=HTMLResponse)
-async def istqb_syllabus():
-    """Serve the ISTQB CTFL Syllabus PDF."""
-    pdf_path = Path(__file__).resolve().parent.parent.parent / "docs" / "training" / "ISTQB_CTFL_Syllabus_v4.0.1.pdf"
-    if not pdf_path.exists():
-        raise HTTPException(status_code=404, detail="ISTQB syllabus not found")
-    return FileResponse(pdf_path, media_type="application/pdf", filename="ISTQB_CTFL_Syllabus_v4.0.1.pdf")
-
-
 @html_router.get("/how-to-report-bugs", response_class=HTMLResponse)
 async def how_to_report_bugs():
     """Serve the interactive bug reporting walkthrough."""
