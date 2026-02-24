@@ -172,6 +172,28 @@
                 <p class="text-sm text-gray-500" data-i18n="dashboard.quick_invoices_desc">Gestione fatture</p>
             </a>
         </div>
+
+        <!-- QA Tester Quick Links (visible to camper-qa-tester role) -->
+        <div class="mt-6" x-show="user.roles.includes('camper-qa-tester')">
+            <h3 class="text-lg font-bold text-gray-900 mb-3">QA Testing</h3>
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="/testing" class="card hover:shadow-xl transition text-center py-6 border-2 border-indigo-100">
+                    <span class="text-4xl block mb-2">&#x1F41B;</span>
+                    <h3 class="text-lg font-bold text-indigo-700">Bug Reports</h3>
+                    <p class="text-sm text-gray-500">View and manage bugs</p>
+                </a>
+                <a href="/backlog" class="card hover:shadow-xl transition text-center py-6 border-2 border-indigo-100">
+                    <span class="text-4xl block mb-2">&#x1F4CB;</span>
+                    <h3 class="text-lg font-bold text-indigo-700">Backlog</h3>
+                    <p class="text-sm text-gray-500">Tasks and priorities</p>
+                </a>
+                <a href="/training" class="card hover:shadow-xl transition text-center py-6 border-2 border-indigo-100">
+                    <span class="text-4xl block mb-2">&#x1F393;</span>
+                    <h3 class="text-lg font-bold text-indigo-700">Training</h3>
+                    <p class="text-sm text-gray-500">QA testing guides</p>
+                </a>
+            </div>
+        </div>
     </main>
 </div>
 
