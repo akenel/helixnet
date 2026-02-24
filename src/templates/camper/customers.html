@@ -170,6 +170,15 @@
                                         <input type="text" x-model="editCustomer.city" class="input-field text-sm py-2">
                                     </div>
                                     <div>
+                                        <label class="text-gray-500" x-text="t('customers.label_language')">Lingua</label>
+                                        <select x-model="editCustomer.language" class="input-field text-sm py-2">
+                                            <option value="it" x-text="t('customers.lang_it')">Italiano</option>
+                                            <option value="en" x-text="t('customers.lang_en')">English</option>
+                                            <option value="de" x-text="t('customers.lang_de')">Deutsch</option>
+                                            <option value="fr" x-text="t('customers.lang_fr')">Francais</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label class="text-gray-500" x-text="t('customers.label_tax_id')">Codice Fiscale / P.IVA</label>
                                         <input type="text" x-model="editCustomer.tax_id" class="input-field text-sm py-2">
                                     </div>
@@ -329,6 +338,7 @@
                     phone: customer.phone || '',
                     email: customer.email || '',
                     city: customer.city || '',
+                    language: customer.language || 'it',
                     tax_id: customer.tax_id || '',
                     notes: customer.notes || ''
                 };

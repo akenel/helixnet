@@ -121,8 +121,10 @@
                         <span class="font-medium" x-text="vehicle.color || '-'"></span>
                     </div>
                     <div>
-                        <span class="text-gray-500" x-text="t('checkin.last_updated')">Ultimo aggiornamento:</span>
-                        <span class="font-medium" x-text="formatDate(vehicle.updated_at)"></span>
+                        <span class="text-gray-500" x-text="t('customers.label_language')">Lingua:</span>
+                        <span class="font-medium px-2 py-0.5 rounded text-white text-xs"
+                              :class="{'bg-green-600': customer?.language === 'it', 'bg-blue-600': customer?.language === 'en', 'bg-yellow-600': customer?.language === 'de', 'bg-purple-600': customer?.language === 'fr', 'bg-gray-400': !customer?.language}"
+                              x-text="customer ? {it:'Italiano', en:'English', de:'Deutsch', fr:'Francais'}[customer.language] || customer.language : '-'"></span>
                     </div>
                 </div>
 
@@ -259,6 +261,7 @@
             searching: false,
             searchResults: null,
             vehicle: null,
+            customer: null,
             notFound: false,
             showRegister: false,
             saving: false,
@@ -304,6 +307,7 @@
                         this.newVehicle.registration_plate = this.searchPlate.trim().toUpperCase();
                     } else if (results.length === 1) {
                         this.vehicle = results[0];
+                        await this.fetchCustomer(results[0].owner_id);
                     } else {
                         this.searchResults = results;
                     }
@@ -314,9 +318,17 @@
                 }
             },
 
-            selectVehicle(v) {
+            async selectVehicle(v) {
                 this.vehicle = v;
                 this.searchResults = null;
+                await this.fetchCustomer(v.owner_id);
+            },
+
+            async fetchCustomer(customerId) {
+                if (!customerId) { this.customer = null; return; }
+                try {
+                    this.customer = await API.get('/api/v1/camper/customers/' + customerId);
+                } catch (e) { this.customer = null; }
             },
 
             async checkInVehicle() {
