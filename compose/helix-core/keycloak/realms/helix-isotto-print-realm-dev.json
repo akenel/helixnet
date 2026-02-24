@@ -344,8 +344,8 @@
   "supportedLocales": ["en", "de", "fr", "it"],
   "defaultLocale": "it",
   "attributes": {
-    "frontendUrl": "https://keycloak.helix.local",
-    "adminUrl": "https://keycloak.helix.local",
+    "frontendUrl": "",
+    "adminUrl": "",
     "cibaBackchannelTokenDeliveryMode": "poll",
     "cibaExpiresIn": "120",
     "cibaAuthRequestedUserHint": "login_hint",
