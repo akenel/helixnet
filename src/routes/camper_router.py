@@ -144,6 +144,34 @@ async def _enrich_job_response(job: CamperServiceJobModel, db: AsyncSession) -> 
 # VEHICLE ENDPOINTS
 # ================================================================
 
+async def _sync_vehicle_owner(vehicle: CamperVehicleModel, db: AsyncSession):
+    """Sync denormalized owner fields from linked customer record.
+
+    Vehicles store owner_name/phone/email as snapshots, but the customer
+    record is the source of truth. This keeps them in sync on every read.
+    """
+    if not vehicle.owner_id:
+        return
+    result = await db.execute(
+        select(CamperCustomerModel).where(CamperCustomerModel.id == vehicle.owner_id)
+    )
+    customer = result.scalar_one_or_none()
+    if not customer:
+        return
+    changed = False
+    if customer.name and customer.name != vehicle.owner_name:
+        vehicle.owner_name = customer.name
+        changed = True
+    if customer.phone and customer.phone != vehicle.owner_phone:
+        vehicle.owner_phone = customer.phone
+        changed = True
+    if customer.email and customer.email != vehicle.owner_email:
+        vehicle.owner_email = customer.email
+        changed = True
+    if changed:
+        await db.commit()
+
+
 @router.post("/vehicles", response_model=VehicleRead, status_code=status.HTTP_201_CREATED)
 async def create_vehicle(
     vehicle: VehicleCreate,
@@ -222,7 +250,10 @@ async def search_vehicles(
             )
         ).order_by(CamperVehicleModel.registration_plate).limit(20)
     )
-    return result.scalars().all()
+    vehicles = result.scalars().all()
+    for v in vehicles:
+        await _sync_vehicle_owner(v, db)
+    return vehicles
 
 
 @router.get("/vehicles/plate/{plate}", response_model=VehicleRead)
@@ -240,6 +271,7 @@ async def get_vehicle_by_plate(
     vehicle = result.scalar_one_or_none()
     if not vehicle:
         raise HTTPException(status_code=404, detail=f"No vehicle found with plate '{plate}'")
+    await _sync_vehicle_owner(vehicle, db)
     return vehicle
 
 
@@ -256,6 +288,7 @@ async def get_vehicle(
     vehicle = result.scalar_one_or_none()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
+    await _sync_vehicle_owner(vehicle, db)
     return vehicle
 
 
