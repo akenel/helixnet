@@ -1,0 +1,28 @@
+<!-- HelixNet Platform Navigation -- shared across all apps -->
+<nav class="bg-slate-900 text-xs" id="platform-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-8">
+        <a href="/backlog" class="text-gray-300 font-bold no-underline hover:text-white transition">HelixNet</a>
+        <div class="flex items-center space-x-1">
+            <a href="/testing" class="text-gray-400 hover:text-white px-2 py-1 rounded no-underline transition"
+                id="pnav-qa">QA</a>
+            <a href="/backlog" class="text-gray-400 hover:text-white px-2 py-1 rounded no-underline transition"
+                id="pnav-backlog">Backlog</a>
+            <a href="/camper/dashboard" class="text-gray-400 hover:text-white px-2 py-1 rounded no-underline transition"
+                id="pnav-camper">Camper</a>
+        </div>
+    </div>
+</nav>
+<script>
+    // Highlight active app in platform nav
+    (function() {
+        const path = window.location.pathname;
+        let activeId = null;
+        if (path.startsWith('/testing') || path.startsWith('/training') || path.startsWith('/how-to-report')) activeId = 'pnav-qa';
+        else if (path.startsWith('/backlog')) activeId = 'pnav-backlog';
+        else if (path.startsWith('/camper')) activeId = 'pnav-camper';
+        if (activeId) {
+            const el = document.getElementById(activeId);
+            if (el) { el.className = 'text-white bg-slate-700 px-2 py-1 rounded no-underline font-medium'; }
+        }
+    })();
+</script>
