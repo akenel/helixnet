@@ -264,6 +264,20 @@ class ServiceJobStatusUpdate(BaseModel):
     status: JobStatus
 
 
+class ServiceJobActivityRead(BaseModel):
+    """Schema for reading a service job activity log entry."""
+    id: UUID
+    job_id: UUID
+    activity_type: str
+    actor: str
+    old_value: Optional[str] = None
+    new_value: Optional[str] = None
+    comment: Optional[str] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ServiceJobRead(BaseModel):
     """Schema for reading service job (includes DB fields)"""
     id: UUID

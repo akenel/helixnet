@@ -56,7 +56,7 @@ from .equipment_acquisition_model import EquipmentAcquisitionModel, AcquisitionT
 from .camper_vehicle_model import CamperVehicleModel, VehicleType, VehicleStatus
 from .camper_customer_model import CamperCustomerModel, CustomerLanguage
 from .camper_bay_model import CamperBayModel, BayType
-from .camper_service_job_model import CamperServiceJobModel, JobType, JobStatus
+from .camper_service_job_model import CamperServiceJobModel, JobType, JobStatus, ServiceJobActivityModel, ServiceJobActivityType
 from .camper_work_log_model import CamperWorkLogModel, LogType
 from .camper_quotation_model import CamperQuotationModel, QuotationStatus
 from .camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
@@ -168,6 +168,8 @@ __all__ = [
     "CamperServiceJobModel",
     "JobType",
     "JobStatus",
+    "ServiceJobActivityModel",
+    "ServiceJobActivityType",
     "CamperWorkLogModel",
     "LogType",
     "CamperQuotationModel",

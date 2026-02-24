@@ -27,7 +27,7 @@ from src.db.database import get_db_session
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleStatus
 from src.db.models.camper_customer_model import CamperCustomerModel
 from src.db.models.camper_bay_model import CamperBayModel
-from src.db.models.camper_service_job_model import CamperServiceJobModel, JobStatus
+from src.db.models.camper_service_job_model import CamperServiceJobModel, JobStatus, ServiceJobActivityModel, ServiceJobActivityType
 from src.db.models.camper_work_log_model import CamperWorkLogModel, LogType
 from src.db.models.camper_quotation_model import CamperQuotationModel, QuotationStatus
 from src.db.models.camper_purchase_order_model import CamperPurchaseOrderModel, CamperPOStatus
@@ -41,7 +41,7 @@ from src.schemas.camper_schema import (
     VehicleCreate, VehicleUpdate, VehicleRead, VehicleStatusUpdate,
     CamperCustomerCreate, CamperCustomerUpdate, CamperCustomerRead,
     BayCreate, BayUpdate, BayResponse,
-    ServiceJobCreate, ServiceJobUpdate, ServiceJobRead, ServiceJobStatusUpdate,
+    ServiceJobCreate, ServiceJobUpdate, ServiceJobRead, ServiceJobStatusUpdate, ServiceJobActivityRead,
     WorkLogCreate, WorkLogResponse, WaitStart, WaitEnd,
     QuotationCreate, QuotationUpdate, QuotationRead,
     PurchaseOrderCreate, PurchaseOrderUpdate, PurchaseOrderRead, POStatusUpdate,
@@ -170,6 +170,27 @@ async def _sync_vehicle_owner(vehicle: CamperVehicleModel, db: AsyncSession):
         changed = True
     if changed:
         await db.commit()
+
+
+async def _log_job_activity(
+    db: AsyncSession,
+    job_id,
+    activity_type: ServiceJobActivityType,
+    actor: str,
+    old_value: str = None,
+    new_value: str = None,
+    comment: str = None,
+):
+    """Append an immutable activity entry to a service job's audit trail."""
+    activity = ServiceJobActivityModel(
+        job_id=job_id,
+        activity_type=activity_type,
+        actor=actor,
+        old_value=old_value,
+        new_value=new_value,
+        comment=comment,
+    )
+    db.add(activity)
 
 
 @router.post("/vehicles", response_model=VehicleRead, status_code=status.HTTP_201_CREATED)
@@ -603,6 +624,9 @@ async def create_job(
     job_data["status"] = JobStatus.QUOTED
     new_job = CamperServiceJobModel(**job_data)
     db.add(new_job)
+    await db.flush()  # get the ID before logging activity
+    await _log_job_activity(db, new_job.id, ServiceJobActivityType.STATUS_CHANGE,
+                            current_user['username'], None, 'quoted', f"Job created: {job_number}")
     await db.commit()
     await db.refresh(new_job)
 
@@ -691,20 +715,31 @@ async def update_job(
                 detail=f"Conflitto: il lavoro è stato modificato da un altro utente alle {job.updated_at.strftime('%H:%M:%S')}. Ricarica la pagina."
             )
 
+    # Track changes for activity log
+    old_assigned = job.assigned_to
+    old_status = job.status
+
     for field, value in update_data.items():
         setattr(job, field, value)
 
     # Auto-transition: assigning a mechanic to a quoted/approved job starts work
     if "assigned_to" in update_data and update_data["assigned_to"]:
-        if job.status in (JobStatus.QUOTED, JobStatus.APPROVED):
-            old_status = job.status
+        if old_status in (JobStatus.QUOTED, JobStatus.APPROVED):
             job.status = JobStatus.IN_PROGRESS
             if not job.started_at:
                 job.started_at = datetime.now(timezone.utc)
+            await _log_job_activity(db, job.id, ServiceJobActivityType.STATUS_CHANGE,
+                                    current_user['username'], old_status.value, 'in_progress',
+                                    f"Auto-started: mechanic {update_data['assigned_to']} assigned")
             logger.info(
                 f"Job {job.job_number}: {old_status.value} -> in_progress "
                 f"(auto, mechanic assigned: {update_data['assigned_to']})"
             )
+
+    # Log assignment change
+    if "assigned_to" in update_data and update_data.get("assigned_to") != old_assigned:
+        await _log_job_activity(db, job.id, ServiceJobActivityType.ASSIGNED,
+                                current_user['username'], old_assigned, update_data.get("assigned_to"))
 
     job.updated_at = datetime.now(timezone.utc)
     await db.commit()
@@ -739,11 +774,65 @@ async def update_job_status(
     elif status_update.status == JobStatus.COMPLETED and not job.completed_at:
         job.completed_at = datetime.now(timezone.utc)
 
+    await _log_job_activity(db, job.id, ServiceJobActivityType.STATUS_CHANGE,
+                            current_user['username'], old_status.value, status_update.status.value)
     await db.commit()
     await db.refresh(job)
 
     logger.info(f"Job {job.job_number}: {old_status.value} -> {status_update.status.value} by {current_user['username']}")
     return await _enrich_job_response(job, db)
+
+
+@router.get("/jobs/{job_id}/activities", response_model=list[ServiceJobActivityRead])
+async def get_job_activities(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Get the full activity trail for a service job -- newest first."""
+    # Verify job exists
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    if not job_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Service job not found")
+
+    result = await db.execute(
+        select(ServiceJobActivityModel)
+        .where(ServiceJobActivityModel.job_id == job_id)
+        .order_by(ServiceJobActivityModel.created_at.desc())
+    )
+    return result.scalars().all()
+
+
+@router.post("/jobs/{job_id}/comment", response_model=ServiceJobActivityRead)
+async def add_job_comment(
+    job_id: UUID,
+    comment: dict,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_camper_role()),
+):
+    """Add a comment to a service job's activity trail."""
+    job_result = await db.execute(
+        select(CamperServiceJobModel).where(CamperServiceJobModel.id == job_id)
+    )
+    if not job_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Service job not found")
+
+    text = comment.get("text", "").strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="Comment text is required")
+
+    activity = ServiceJobActivityModel(
+        job_id=job_id,
+        activity_type=ServiceJobActivityType.COMMENT,
+        actor=current_user['username'],
+        comment=text,
+    )
+    db.add(activity)
+    await db.commit()
+    await db.refresh(activity)
+    return activity
 
 
 @router.post("/jobs/{job_id}/approve", response_model=ServiceJobRead)
@@ -768,6 +857,8 @@ async def approve_job(
 
     job.status = JobStatus.APPROVED
     job.updated_at = datetime.now(timezone.utc)
+    await _log_job_activity(db, job.id, ServiceJobActivityType.STATUS_CHANGE,
+                            current_user['username'], 'quoted', 'approved', 'Quote approved by customer')
     await db.commit()
     await db.refresh(job)
 
@@ -798,6 +889,7 @@ async def complete_job(
             detail=f"Cannot complete job in {job.status.value} status"
         )
 
+    old_status = job.status.value
     job.status = JobStatus.COMPLETED
     job.completed_at = datetime.now(timezone.utc)
     job.updated_at = datetime.now(timezone.utc)
@@ -814,6 +906,9 @@ async def complete_job(
     job.actual_labor_cost = Decimal(str(job.actual_hours)) * labor_rate
     job.actual_total = job.actual_labor_cost + job.actual_parts_cost
 
+    await _log_job_activity(db, job.id, ServiceJobActivityType.STATUS_CHANGE,
+                            current_user['username'], old_status, 'completed',
+                            f"Hours: {job.actual_hours}, Parts: {job.actual_parts_cost} EUR, Total: {job.actual_total} EUR")
     await db.commit()
     await db.refresh(job)
 
@@ -847,6 +942,8 @@ async def submit_for_inspection(
 
     job.status = JobStatus.INSPECTION
     job.updated_at = datetime.now(timezone.utc)
+    await _log_job_activity(db, job.id, ServiceJobActivityType.STATUS_CHANGE,
+                            current_user['username'], 'in_progress', 'inspection', 'Submitted for manager inspection')
     await db.commit()
     await db.refresh(job)
 
@@ -884,6 +981,9 @@ async def pass_inspection(
     if result_data.notes:
         job.inspection_notes = result_data.notes
 
+    await _log_job_activity(db, job.id, ServiceJobActivityType.INSPECTION,
+                            current_user['username'], 'inspection', 'completed',
+                            f"PASSED. {result_data.notes or ''}")
     await db.commit()
     await db.refresh(job)
 
@@ -949,6 +1049,9 @@ async def fail_inspection(
     if result_data.notes:
         job.inspection_notes = result_data.notes
 
+    await _log_job_activity(db, job.id, ServiceJobActivityType.INSPECTION,
+                            current_user['username'], 'inspection', 'in_progress',
+                            f"FAILED. {result_data.notes or 'No notes'}")
     await db.commit()
     await db.refresh(job)
 
@@ -1553,6 +1656,9 @@ async def record_deposit(
     job.deposit_paid_at = datetime.now(timezone.utc)
     job.updated_at = datetime.now(timezone.utc)
 
+    await _log_job_activity(db, job.id, ServiceJobActivityType.DEPOSIT,
+                            current_user['username'], None, f"{deposit.amount:.2f} EUR",
+                            f"Deposit received ({deposit.payment_method}). Total paid: {new_total:.2f} EUR")
     await db.commit()
     await db.refresh(job)
 

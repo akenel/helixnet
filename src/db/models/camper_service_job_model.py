@@ -308,6 +308,74 @@ class CamperServiceJobModel(Base):
     purchase_orders: Mapped[list["CamperPurchaseOrderModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
     invoices: Mapped[list["CamperInvoiceModel"]] = relationship(back_populates="job", cascade="all, delete-orphan")
     work_logs: Mapped[list["CamperWorkLogModel"]] = relationship(back_populates="job", cascade="all, delete-orphan", order_by="CamperWorkLogModel.logged_at")
+    activities: Mapped[list["ServiceJobActivityModel"]] = relationship(back_populates="job", cascade="all, delete-orphan", order_by="ServiceJobActivityModel.created_at")
 
     def __repr__(self):
         return f"<CamperServiceJob(number='{self.job_number}', title='{self.title}', status={self.status})>"
+
+
+class ServiceJobActivityType(HelixEnum):
+    """What happened to the job."""
+    STATUS_CHANGE = "status_change"
+    ASSIGNED = "assigned"
+    COMMENT = "comment"
+    INSPECTION = "inspection"
+    DEPOSIT = "deposit"
+    QUOTATION = "quotation"
+
+
+class ServiceJobActivityModel(Base):
+    """Append-only audit trail for service jobs.
+    Every status change, assignment, inspection, deposit, comment -- timestamped, attributed.
+    Same proven pattern as QABugActivityModel.
+    """
+    __tablename__ = "camper_service_job_activities"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        index=True,
+        default=uuid.uuid4,
+    )
+    job_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("camper_service_jobs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    activity_type: Mapped[ServiceJobActivityType] = mapped_column(
+        SQLEnum(ServiceJobActivityType, name="service_job_activity_type", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+    )
+    actor: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        comment="Who performed this action",
+    )
+    old_value: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="Previous value (old status, old assignee)",
+    )
+    new_value: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="New value (new status, new assignee)",
+    )
+    comment: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Comment text or additional context",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    # Relationship
+    job: Mapped["CamperServiceJobModel"] = relationship(
+        back_populates="activities",
+        foreign_keys=[job_id],
+    )
