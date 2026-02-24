@@ -447,7 +447,7 @@
         footer strong { color: #64748b; }
 
         /* Shared Nav */
-        .helix-nav { background: #1e293b; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 50; }
+        .helix-nav { background: #1e293b; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 40; }
         .helix-nav-inner { max-width: 800px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 48px; }
         .helix-nav-brand { color: #f8fafc; font-weight: 700; font-size: 1em; text-decoration: none; }
         .helix-nav-links { display: flex; gap: 4px; }
@@ -481,9 +481,67 @@
             .flow-row { gap: 8px; }
             .flow-box { font-size: 0.75em; padding: 8px 12px; }
         }
+        /* ISTQB Reference Card */
+        .istqb-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 14px;
+            padding: 28px 24px;
+            margin-top: 24px;
+        }
+        .istqb-card h3 { color: #a5b4fc; margin: 0 0 12px; font-size: 1.05em; }
+        .istqb-card p { color: #c7d2fe; font-size: 0.9em; margin: 0 0 16px; }
+        .istqb-card .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 640px) { .istqb-card .concept-grid { grid-template-columns: 1fr; } }
+        .istqb-card .concept {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .istqb-card .concept .term { color: #818cf8; font-weight: 600; font-size: 0.85em; margin-bottom: 4px; }
+        .istqb-card .concept .meaning { color: #94a3b8; font-size: 0.82em; line-height: 1.5; }
+        .istqb-card .pdf-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            text-decoration: none;
+            font-size: 0.88em;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            transition: all 0.2s;
+        }
+        .istqb-card .pdf-link:hover { background: rgba(99, 102, 241, 0.35); color: #c7d2fe; }
+        .istqb-card .pdf-note { color: #64748b; font-size: 0.8em; font-style: italic; margin-top: 10px; }
     </style>
 </head>
 <body>
+
+<!-- Platform Nav (inline -- this page is not Jinja2) -->
+<nav style="background:#0f172a;font-size:12px;" id="platform-nav">
+    <div style="max-width:800px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:32px;">
+        <a href="/backlog" style="color:#d1d5db;font-weight:700;text-decoration:none;">HelixNet</a>
+        <div style="display:flex;align-items:center;gap:4px;">
+            <a href="/testing" id="pnav-qa" style="color:#9ca3af;text-decoration:none;padding:4px 8px;border-radius:4px;">QA</a>
+            <a href="/backlog" id="pnav-backlog" style="color:#9ca3af;text-decoration:none;padding:4px 8px;border-radius:4px;">Backlog</a>
+            <a href="/camper/dashboard" id="pnav-camper" style="color:#9ca3af;text-decoration:none;padding:4px 8px;border-radius:4px;">Camper</a>
+        </div>
+    </div>
+</nav>
+<script>
+    (function() {
+        var el = document.getElementById('pnav-qa');
+        if (el) { el.style.color = '#fff'; el.style.background = '#334155'; el.style.fontWeight = '500'; }
+    })();
+</script>
 
 <!-- Shared Nav -->
 <nav class="helix-nav">
@@ -891,9 +949,63 @@
         </table>
     </section>
 
-    <!-- Section 6: FAQ -->
+    <!-- Section 6: ISTQB Reference -->
     <section>
-        <h2><span class="num">5</span> Questions You Might Have</h2>
+        <h2><span class="num">5</span> Testing Principles (ISTQB)</h2>
+        <p class="section-subtitle">The international standard for software testing -- your reference dictionary</p>
+
+        <p style="color:#94a3b8;font-size:0.92em;margin-bottom:20px;">
+            ISTQB (International Software Testing Qualifications Board) is the global standard for software testing.
+            You don't need to read the whole thing -- but knowing these core principles makes you a sharper tester.
+            Think of it as a dictionary you check when you need the right word.
+        </p>
+
+        <div class="istqb-card">
+            <h3>7 Testing Principles -- The Short Version</h3>
+            <p>These are the rules professional testers live by. You're already doing most of them.</p>
+
+            <div class="concept-grid">
+                <div class="concept">
+                    <div class="term">1. Testing shows bugs exist</div>
+                    <div class="meaning">Testing finds problems. It can never prove there are ZERO problems. Keep looking.</div>
+                </div>
+                <div class="concept">
+                    <div class="term">2. You can't test everything</div>
+                    <div class="meaning">Focus on the risky parts. Test what matters most to the user first.</div>
+                </div>
+                <div class="concept">
+                    <div class="term">3. Test early</div>
+                    <div class="meaning">The earlier you find a bug, the cheaper it is to fix. Don't wait until the end.</div>
+                </div>
+                <div class="concept">
+                    <div class="term">4. Bugs cluster together</div>
+                    <div class="meaning">Most bugs hide in a few modules. If you found one bug somewhere, look harder there.</div>
+                </div>
+                <div class="concept">
+                    <div class="term">5. Pesticide paradox</div>
+                    <div class="meaning">Running the same tests over and over stops finding new bugs. Change your tests.</div>
+                </div>
+                <div class="concept">
+                    <div class="term">6. Testing depends on context</div>
+                    <div class="meaning">How you test a banking app vs a postcard website is different. Know what matters here.</div>
+                </div>
+                <div class="concept">
+                    <div class="term">7. "No bugs" doesn't mean good software</div>
+                    <div class="meaning">A bug-free app that nobody can use is still broken. Usability matters.</div>
+                </div>
+            </div>
+
+            <a href="/training/istqb-syllabus" target="_blank" class="pdf-link">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path d="M4 18h12a2 2 0 002-2V6l-4-4H6a2 2 0 00-2 2v12a2 2 0 002 2zm8-14l3 3h-3V4zM8 12h4v2H8v-2z"/></svg>
+                ISTQB CTFL Syllabus v4.0.1 (PDF)
+            </a>
+            <p class="pdf-note">Use this as a reference, not a textbook. Look up terms when you need them. The best way to learn testing is by testing.</p>
+        </div>
+    </section>
+
+    <!-- Section 7: FAQ -->
+    <section>
+        <h2><span class="num">6</span> Questions You Might Have</h2>
         <p class="section-subtitle">The questions everyone asks but nobody asks</p>
 
         <div class="faq-item">
@@ -933,7 +1045,7 @@
 </div>
 
 <footer>
-    <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; Updated February 22, 2026</p>
+    <p>Written by <strong>Angel</strong> and <strong>Tigs</strong> &middot; Updated February 24, 2026</p>
     <p>For <strong>Anne</strong> -- the quality gate of HelixNet</p>
     <p class="footer-quote">"The developer says fixed. The tester says verified. The tester has the final word."</p>
 </footer>

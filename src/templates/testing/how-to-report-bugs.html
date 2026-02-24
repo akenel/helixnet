@@ -198,6 +198,24 @@
 </head>
 <body>
 
+<!-- Platform Nav (inline -- this page is not Jinja2) -->
+<nav style="background:#0f172a;font-size:12px;" id="platform-nav">
+    <div style="max-width:800px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:32px;">
+        <a href="/backlog" style="color:#d1d5db;font-weight:700;text-decoration:none;">HelixNet</a>
+        <div style="display:flex;align-items:center;gap:4px;">
+            <a href="/testing" id="pnav-qa" style="color:#9ca3af;text-decoration:none;padding:4px 8px;border-radius:4px;">QA</a>
+            <a href="/backlog" id="pnav-backlog" style="color:#9ca3af;text-decoration:none;padding:4px 8px;border-radius:4px;">Backlog</a>
+            <a href="/camper/dashboard" id="pnav-camper" style="color:#9ca3af;text-decoration:none;padding:4px 8px;border-radius:4px;">Camper</a>
+        </div>
+    </div>
+</nav>
+<script>
+    (function() {
+        var el = document.getElementById('pnav-qa');
+        if (el) { el.style.color = '#fff'; el.style.background = '#334155'; el.style.fontWeight = '500'; }
+    })();
+</script>
+
 <nav class="helix-nav">
     <div class="helix-nav-inner">
         <a href="/testing" class="helix-nav-brand">HelixNet QA</a>
