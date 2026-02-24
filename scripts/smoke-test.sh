@@ -13,10 +13,18 @@
 set -euo pipefail
 
 # ── Configuration ──────────────────────────────────────────
-if [[ "${1:-local}" == "hetzner" ]]; then
+TARGET="${1:-local}"
+if [[ "$TARGET" == "hetzner" ]]; then
+    # Running ON the Hetzner server (via ssh)
+    # Traefik listens on 443 inside the server
+    BASE="https://localhost"
+    KC_URL="https://localhost"
+    ENV_NAME="HETZNER"
+elif [[ "$TARGET" == "hetzner-remote" ]]; then
+    # Running FROM local machine through SSH tunnel / public IP
     BASE="https://46.62.138.218:8081"
     KC_URL="https://46.62.138.218:8081"
-    ENV_NAME="HETZNER"
+    ENV_NAME="HETZNER (remote)"
 else
     BASE="https://helix.local"
     KC_URL="https://keycloak.helix.local"
