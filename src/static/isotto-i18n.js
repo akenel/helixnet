@@ -125,7 +125,7 @@ it: {
             sublimation: 'Sublimazione',
             transfer: 'Transfer',
         },
-        line_item: {
+        line_items: {
             pending: 'In Attesa',
             stock_ordered: 'Ordinato',
             stock_received: 'Ricevuto',
@@ -429,7 +429,7 @@ it: {
         updated: 'Fornitore aggiornato!',
         load_error: 'Errore caricamento fornitori: {message}',
     },
-    line_item: {
+    line_items: {
         title: 'Articoli Personalizzati',
         add_item: '+ Aggiungi Articolo',
         import_roster: 'Importa Rosa',
@@ -754,7 +754,7 @@ en: {
             sublimation: 'Sublimation',
             transfer: 'Transfer',
         },
-        line_item: {
+        line_items: {
             pending: 'Pending',
             stock_ordered: 'Ordered',
             stock_received: 'Received',
@@ -1043,7 +1043,7 @@ en: {
         updated: 'Supplier updated!',
         load_error: 'Error loading suppliers: {message}',
     },
-    line_item: {
+    line_items: {
         title: 'Personalized Items',
         add_item: '+ Add Item',
         import_roster: 'Import Roster',
