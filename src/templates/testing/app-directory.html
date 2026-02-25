@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Directory - HelixNet Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+
+        /* Shared Nav */
+        .helix-nav { background: #1e293b; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 50; }
+        .helix-nav-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 48px; }
+        .helix-nav-brand { color: #f8fafc; font-weight: 700; font-size: 1em; text-decoration: none; }
+        .helix-nav-links { display: flex; gap: 4px; }
+        .helix-nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.85em; font-weight: 500; padding: 6px 14px; border-radius: 8px; transition: all 0.2s; }
+        .helix-nav-links a:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
+        .helix-nav-links a.active { color: #818cf8; background: rgba(129,140,248,0.12); }
+        .helix-nav-toggle { display: none; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; }
+        .helix-nav-toggle:hover { color: #f8fafc; }
+        .helix-nav-mobile { display: none; position: absolute; top: 48px; left: 0; right: 0; background: #1e293b; padding: 8px 24px 12px; border-bottom: 1px solid #334155; flex-direction: column; gap: 2px; }
+        .helix-nav-mobile.open { display: flex; }
+        .helix-nav-mobile a { color: #94a3b8; text-decoration: none; font-size: 0.9em; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
+        .helix-nav-mobile a:hover { color: #f8fafc; background: rgba(255,255,255,0.06); }
+        .helix-nav-mobile a.active { color: #818cf8; background: rgba(129,140,248,0.12); }
+        @media (max-width: 640px) {
+            .helix-nav-links { display: none; }
+            .helix-nav-toggle { display: block; }
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1a2e 100%);
+            padding: 60px 24px 40px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        .hero h1 { font-size: 2.2em; font-weight: 800; color: #f8fafc; margin-bottom: 12px; }
+        .hero h1 span { color: #818cf8; }
+        .hero p { color: #94a3b8; font-size: 1.05em; max-width: 600px; margin: 0 auto; }
+
+        /* Content */
+        .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+        /* How it works */
+        .how-it-works {
+            padding: 40px 0 20px;
+        }
+        .how-it-works h2 {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 16px;
+        }
+        .how-it-works p {
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+        .how-it-works .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .step {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .step .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(129,140,248,0.15);
+            color: #818cf8;
+            font-weight: 700;
+            font-size: 0.9em;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .step h3 { font-size: 0.95em; font-weight: 600; color: #f8fafc; margin-bottom: 6px; }
+        .step p { font-size: 0.82em; color: #94a3b8; line-height: 1.5; }
+
+        /* App Cards */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px 0;
+        }
+        @media (max-width: 640px) {
+            .apps-grid { grid-template-columns: 1fr; }
+        }
+        .app-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.2s;
+        }
+        .app-card:hover {
+            border-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .app-card .app-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .app-card .app-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            flex-shrink: 0;
+        }
+        .app-card h3 { font-size: 1.15em; font-weight: 700; color: #f8fafc; }
+        .app-card .app-subtitle { font-size: 0.8em; color: #94a3b8; margin-top: 2px; }
+        .app-card .app-desc { font-size: 0.88em; color: #94a3b8; margin-bottom: 16px; line-height: 1.6; }
+
+        .app-links { list-style: none; margin-bottom: 16px; }
+        .app-links li { margin-bottom: 6px; }
+        .app-links a {
+            color: #93c5fd;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .app-links a:hover { background: rgba(147,197,253,0.1); color: #bfdbfe; }
+        .app-links .link-label {
+            display: inline-block;
+            width: 80px;
+            color: #64748b;
+            font-size: 0.78em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Accent colors per app */
+        .app-qa .app-icon { background: rgba(129,140,248,0.15); }
+        .app-backlog .app-icon { background: rgba(129,140,248,0.15); }
+        .app-camper .app-icon { background: rgba(251,191,36,0.15); }
+        .app-isotto .app-icon { background: rgba(96,165,250,0.15); }
+
+        /* Credentials box */
+        .cred-box {
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 0.8em;
+            color: #86efac;
+        }
+        .cred-box code {
+            background: rgba(34,197,94,0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95em;
+        }
+
+        /* Accounts section */
+        .accounts-section {
+            padding: 20px 0 40px;
+        }
+        .accounts-section h2 {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 16px;
+        }
+        .accounts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            margin-bottom: 16px;
+        }
+        .accounts-table th {
+            background: #334155;
+            color: #e2e8f0;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 16px;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .accounts-table td {
+            padding: 10px 16px;
+            border-top: 1px solid #334155;
+            color: #cbd5e1;
+        }
+        .accounts-table td:first-child { font-weight: 600; color: #f8fafc; }
+        .accounts-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.82em;
+            font-weight: 600;
+        }
+        .role-admin { background: rgba(239,68,68,0.15); color: #fca5a5; }
+        .role-manager { background: rgba(251,191,36,0.15); color: #fcd34d; }
+        .role-operator { background: rgba(96,165,250,0.15); color: #93c5fd; }
+        .role-designer { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+        .role-counter { background: rgba(34,197,94,0.15); color: #86efac; }
+        .role-mechanic { background: rgba(96,165,250,0.15); color: #93c5fd; }
+        .role-tester { background: rgba(34,197,94,0.15); color: #86efac; }
+        .role-auditor { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+        /* Tips */
+        .tip-box {
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.2);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            font-size: 0.88em;
+            color: #fcd34d;
+        }
+        .tip-box strong { color: #fbbf24; }
+
+        /* Section divider */
+        .section-divider {
+            border: none;
+            border-top: 1px solid #334155;
+            margin: 10px 0;
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 30px 24px 40px;
+            color: #475569;
+            font-size: 0.8em;
+            border-top: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav class="helix-nav">
+        <div class="helix-nav-inner">
+            <a href="/testing" class="helix-nav-brand">HelixNet QA</a>
+            <button class="helix-nav-toggle" onclick="document.querySelector('.helix-nav-mobile').classList.toggle('open')">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div class="helix-nav-links">
+                <a href="/testing">Dashboard</a>
+                <a href="/training">Training</a>
+                <a href="/how-to-report-bugs">How to Report</a>
+                <a href="/app-directory" class="active">App Directory</a>
+            </div>
+        </div>
+        <div class="helix-nav-mobile">
+            <a href="/testing">Dashboard</a>
+            <a href="/training">Training</a>
+            <a href="/how-to-report-bugs">How to Report</a>
+            <a href="/app-directory" class="active">App Directory</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>HelixNet <span>App Directory</span></h1>
+        <p>All the apps, all the URLs, all the test accounts -- one page. Bookmark this.</p>
+    </section>
+
+    <div class="container">
+
+        <!-- How it works -->
+        <section class="how-it-works">
+            <h2>How to Use This Platform</h2>
+            <p>HelixNet runs 4 apps on one platform. Each app has its own login, its own Keycloak realm (or shared realm), and its own set of roles. The top navigation bar on every page lets you jump between apps.</p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Pick an App</h3>
+                    <p>Choose the app you need to test from the cards below.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Login</h3>
+                    <p>Click the login link. Use the test account for the role you want to verify.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Test</h3>
+                    <p>Follow the testing checklist for that app. Report bugs via Telegram.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <h3>Switch Apps</h3>
+                    <p>Use the platform nav bar at the top to jump between apps.</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong>Password for ALL accounts:</strong> <code>helix_pass</code> -- every user, every app, no exceptions.<br>
+                <strong>Language:</strong> Camper and ISOTTO default to Italian. Add <code>?lang=en</code> to any URL for English.<br>
+                <strong>Certificate warning:</strong> First visit will show a security warning (self-signed cert). Accept it once -- it's safe.
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <!-- App Cards -->
+        <div class="apps-grid">
+
+            <!-- QA / Testing -->
+            <div class="app-card app-qa">
+                <div class="app-header">
+                    <div class="app-icon">&#x1F41B;</div>
+                    <div>
+                        <h3>QA / Testing</h3>
+                        <div class="app-subtitle">Bug tracking, test results, training</div>
+                    </div>
+                </div>
+                <p class="app-desc">File bugs, track test results, view training materials. Shared Keycloak realm with Backlog.</p>
+                <ul class="app-links">
+                    <li><span class="link-label">Login</span> <a href="/testing/login">/testing/login</a></li>
+                    <li><span class="link-label">Dashboard</span> <a href="/testing">/testing</a></li>
+                    <li><span class="link-label">Training</span> <a href="/training">/training</a></li>
+                    <li><span class="link-label">Bug Guide</span> <a href="/how-to-report-bugs">/how-to-report-bugs</a></li>
+                </ul>
+                <div class="cred-box">Users: <code>anne</code> (tester), <code>nino</code> (manager)</div>
+            </div>
+
+            <!-- Backlog -->
+            <div class="app-card app-backlog">
+                <div class="app-header">
+                    <div class="app-icon">&#x1F4CB;</div>
+                    <div>
+                        <h3>Backlog</h3>
+                        <div class="app-subtitle">Unified task board for all apps</div>
+                    </div>
+                </div>
+                <p class="app-desc">Kanban board + list view. Tracks dev tasks, bug fixes, business ops across HelixNet, Camper, and ISOTTO.</p>
+                <ul class="app-links">
+                    <li><span class="link-label">Login</span> <a href="/backlog/login">/backlog/login</a></li>
+                    <li><span class="link-label">Board</span> <a href="/backlog">/backlog</a></li>
+                </ul>
+                <div class="cred-box">Users: <code>anne</code> (tester), <code>nino</code> (manager)</div>
+            </div>
+
+            <!-- Camper & Tour -->
+            <div class="app-card app-camper">
+                <div class="app-header">
+                    <div class="app-icon">&#x1F69C;</div>
+                    <div>
+                        <h3>Camper & Tour</h3>
+                        <div class="app-subtitle">Vehicle service management</div>
+                    </div>
+                </div>
+                <p class="app-desc">Full workshop management: check-in, jobs, customers, appointments, bay timeline, quotations, invoices. 5-role RBAC.</p>
+                <ul class="app-links">
+                    <li><span class="link-label">Login</span> <a href="/camper">/camper</a></li>
+                    <li><span class="link-label">Dashboard</span> <a href="/camper/dashboard">/camper/dashboard</a></li>
+                    <li><span class="link-label">Check-in</span> <a href="/camper/checkin">/camper/checkin</a></li>
+                    <li><span class="link-label">Jobs</span> <a href="/camper/jobs">/camper/jobs</a></li>
+                    <li><span class="link-label">Customers</span> <a href="/camper/customers">/camper/customers</a></li>
+                    <li><span class="link-label">Quotes</span> <a href="/camper/quotations">/camper/quotations</a></li>
+                    <li><span class="link-label">Invoices</span> <a href="/camper/invoices">/camper/invoices</a></li>
+                    <li><span class="link-label">Calendar</span> <a href="/camper/calendar">/camper/calendar</a></li>
+                    <li><span class="link-label">Bays</span> <a href="/camper/bay-timeline">/camper/bay-timeline</a></li>
+                </ul>
+                <div class="cred-box">Users: <code>nino</code> (manager), <code>maximo</code> (mechanic), <code>sebastino</code> (admin)</div>
+            </div>
+
+            <!-- ISOTTO Sport -->
+            <div class="app-card app-isotto">
+                <div class="app-header">
+                    <div class="app-icon">&#x1F5A8;</div>
+                    <div>
+                        <h3>ISOTTO Sport</h3>
+                        <div class="app-subtitle">Print &amp; merch management</div>
+                    </div>
+                </div>
+                <p class="app-desc">Print shop operations: orders, catalog, suppliers, purchase orders, invoicing, artwork, print queue. 5-role RBAC.</p>
+                <ul class="app-links">
+                    <li><span class="link-label">Login</span> <a href="/print-shop">/print-shop</a></li>
+                    <li><span class="link-label">Dashboard</span> <a href="/print-shop/dashboard">/print-shop/dashboard</a></li>
+                    <li><span class="link-label">Orders</span> <a href="/print-shop/orders">/print-shop/orders</a></li>
+                    <li><span class="link-label">Catalog</span> <a href="/print-shop/catalog">/print-shop/catalog</a></li>
+                    <li><span class="link-label">Suppliers</span> <a href="/print-shop/suppliers">/print-shop/suppliers</a></li>
+                    <li><span class="link-label">POs</span> <a href="/print-shop/purchase-orders">/print-shop/purchase-orders</a></li>
+                    <li><span class="link-label">Invoices</span> <a href="/print-shop/invoices">/print-shop/invoices</a></li>
+                    <li><span class="link-label">Customers</span> <a href="/print-shop/customers">/print-shop/customers</a></li>
+                    <li><span class="link-label">Artworks</span> <a href="/print-shop/artworks">/print-shop/artworks</a></li>
+                    <li><span class="link-label">Queue</span> <a href="/print-shop/print-queue">/print-shop/print-queue</a></li>
+                </ul>
+                <div class="cred-box">Users: <code>famousguy</code> (admin), <code>marco_d</code> (designer), <code>luca_p</code> (operator), <code>giulia_f</code> (counter)</div>
+            </div>
+
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Test Accounts -->
+        <section class="accounts-section">
+            <h2>All Test Accounts</h2>
+
+            <h3 style="font-size:0.95em; font-weight:600; color:#94a3b8; margin-bottom:10px; margin-top:20px;">QA + Backlog (shared realm)</h3>
+            <table class="accounts-table">
+                <thead>
+                    <tr><th>Username</th><th>Role</th><th>Access</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>anne</td><td><span class="role-badge role-tester">Tester</span></td><td>QA dashboard, file bugs, run tests</td></tr>
+                    <tr><td>nino</td><td><span class="role-badge role-manager">Manager</span></td><td>Full QA + Backlog access</td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="font-size:0.95em; font-weight:600; color:#94a3b8; margin-bottom:10px; margin-top:24px;">Camper & Tour</h3>
+            <table class="accounts-table">
+                <thead>
+                    <tr><th>Username</th><th>Role</th><th>Access</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>sebastino</td><td><span class="role-badge role-admin">Admin</span></td><td>Full access + admin features</td></tr>
+                    <tr><td>nino</td><td><span class="role-badge role-manager">Manager</span></td><td>Everything except admin</td></tr>
+                    <tr><td>maximo</td><td><span class="role-badge role-mechanic">Mechanic</span></td><td>Jobs, work logs, schedule</td></tr>
+                    <tr><td>miguel</td><td><span class="role-badge role-counter">Counter</span></td><td>Check-in, customers, quotes</td></tr>
+                    <tr><td>camper-auditor</td><td><span class="role-badge role-auditor">Auditor</span></td><td>View everything, edit nothing</td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="font-size:0.95em; font-weight:600; color:#94a3b8; margin-bottom:10px; margin-top:24px;">ISOTTO Sport</h3>
+            <table class="accounts-table">
+                <thead>
+                    <tr><th>Username</th><th>Role</th><th>Access</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>famousguy</td><td><span class="role-badge role-admin">Admin</span></td><td>Full control -- owner & master printer</td></tr>
+                    <tr><td>angel</td><td><span class="role-badge role-admin">Admin</span></td><td>Full control -- platform architect</td></tr>
+                    <tr><td>marco_d</td><td><span class="role-badge role-designer">Designer</span></td><td>Artwork, pre-press, proofs</td></tr>
+                    <tr><td>luca_p</td><td><span class="role-badge role-operator">Operator</span></td><td>Production, order status, print queue</td></tr>
+                    <tr><td>giulia_f</td><td><span class="role-badge role-counter">Counter</span></td><td>Order intake, customers, basic read</td></tr>
+                </tbody>
+            </table>
+
+            <div class="tip-box" style="margin-top:20px;">
+                <strong>Testing Checklists:</strong><br>
+                Camper: <code>docs/testing/ANNE-TESTING-CHECKLIST.md</code><br>
+                ISOTTO: <code>docs/testing/ISOTTO-TESTING-CHECKLIST.md</code><br>
+                Follow these step-by-step for thorough coverage.
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="page-footer">
+        HelixNet Platform -- Built in Sicily, tested everywhere.<br>
+        Questions? Telegram @BigKingFisher
+    </footer>
+
+</body>
+</html>

@@ -19,7 +19,7 @@
     (function() {
         const path = window.location.pathname;
         let activeId = null;
-        if (path.startsWith('/testing') || path.startsWith('/training') || path.startsWith('/how-to-report')) activeId = 'pnav-qa';
+        if (path.startsWith('/testing') || path.startsWith('/training') || path.startsWith('/how-to-report') || path.startsWith('/app-directory')) activeId = 'pnav-qa';
         else if (path.startsWith('/backlog')) activeId = 'pnav-backlog';
         else if (path.startsWith('/camper')) activeId = 'pnav-camper';
         else if (path.startsWith('/print-shop')) activeId = 'pnav-isotto';
