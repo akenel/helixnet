@@ -99,6 +99,7 @@ Full story: `/field-notes-with-leo-dec5.md`
 6. **No emojis unless asked** - Keep it clean
 7. **Read before edit** - Always read files before modifying
 8. **Check the music library** - 90+ tracks in sunrise-chain
+9. **No shortcut libraries or bundled subsets** - This is an enterprise app, not a toy. Use full, production-grade, industry-standard libraries. A bundled 20KB Tailwind subset silently broke every nav bar style we added -- hours of debugging for a 5-minute "shortcut." If a library exists as a CDN or full package, use the real thing. Never bundle a stripped-down subset and hope it has what you need. Same applies to Alpine.js, fonts, or any dependency. Shortcuts backfire.
 
 ---
 
