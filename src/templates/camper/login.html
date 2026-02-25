@@ -65,7 +65,7 @@
 
     function loginWithKeycloak() {
         // Use current origin for both local (helix.local) and public (DO IP) access
-        const keycloakUrl = window.location.origin;
+        const keycloakUrl = window.location.hostname === 'helix.local' ? 'https://keycloak.helix.local' : window.location.origin;
         const realm = 'kc-camper-service-realm-dev';
         const clientId = 'camper_service_web';
         const redirectUri = window.location.origin + '/camper/callback';
