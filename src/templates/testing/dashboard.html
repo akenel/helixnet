@@ -253,18 +253,25 @@
 
         <!-- Bug Reports Section -->
         <div class="bg-white rounded-xl shadow mt-8 overflow-hidden">
-            <button @click="showBugs = !showBugs"
-                class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
-                <div class="flex items-center space-x-3">
+            <div class="flex items-center justify-between p-4">
+                <button @click="showBugs = !showBugs"
+                    class="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-2 py-1 -mx-2 transition">
                     <span class="text-lg font-bold text-red-700">Bug Reports</span>
                     <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium" x-text="bugs.length + ' total'"></span>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
-                    :class="showBugs ? 'rotate-180' : ''"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                        :class="showBugs ? 'rotate-180' : ''"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <select x-model="filterApp" @change="loadBugs(); loadSummary()"
+                    class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
+                    <option value="">All Apps</option>
+                    <option value="helixnet">HelixNet</option>
+                    <option value="camper">Camper</option>
+                    <option value="isotto">ISOTTO</option>
+                </select>
+            </div>
 
             <div x-show="showBugs" x-transition class="border-t">
                 <template x-if="bugs.length === 0">
@@ -578,6 +585,7 @@ function qaDashboard() {
         testerName: localStorage.getItem('qa_tester_name') || 'Anne',
         openPhases: [1],
         notesOpen: null,
+        filterApp: '',
         showBugs: false,
         showBugForm: false,
         editingBugId: null,
@@ -609,10 +617,10 @@ function qaDashboard() {
         async loadAll() {
             try {
                 const [summary, phases, tests, bugs] = await Promise.all([
-                    API.get('/api/v1/testing/summary'),
+                    API.get('/api/v1/testing/summary' + (this.filterApp ? '?application=' + this.filterApp : '')),
                     API.get('/api/v1/testing/phases'),
                     API.get('/api/v1/testing/tests'),
-                    API.get('/api/v1/testing/bugs'),
+                    API.get('/api/v1/testing/bugs' + (this.filterApp ? '?application=' + this.filterApp : '')),
                 ]);
                 this.summary = summary;
                 this.phases = phases;
@@ -622,6 +630,22 @@ function qaDashboard() {
             } catch (e) {
                 console.error('Failed to load dashboard:', e);
                 showToast('Failed to load dashboard data', 'error');
+            }
+        },
+
+        async loadBugs() {
+            try {
+                this.bugs = await API.get('/api/v1/testing/bugs' + (this.filterApp ? '?application=' + this.filterApp : ''));
+            } catch (e) {
+                console.error('Failed to load bugs:', e);
+            }
+        },
+
+        async loadSummary() {
+            try {
+                this.summary = await API.get('/api/v1/testing/summary' + (this.filterApp ? '?application=' + this.filterApp : ''));
+            } catch (e) {
+                console.error('Failed to load summary:', e);
             }
         },
 
@@ -726,7 +750,7 @@ function qaDashboard() {
 
         openNewBugForm() {
             this.editingBugId = null;
-            this.bugForm = { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
+            this.bugForm = { title: '', description: '', severity: 'medium', category: 'functional', application: this.filterApp || 'helixnet', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
             this.showBugForm = true;
         },
 
@@ -800,11 +824,11 @@ function qaDashboard() {
                 }
                 this.showBugForm = false;
                 this.editingBugId = null;
-                this.bugForm = { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
-                // Reload bugs + summary
+                this.bugForm = { title: '', description: '', severity: 'medium', category: 'functional', application: 'helixnet', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' };
+                // Reload bugs + summary (respect app filter)
                 const [bugs, summary] = await Promise.all([
-                    API.get('/api/v1/testing/bugs'),
-                    API.get('/api/v1/testing/summary'),
+                    API.get('/api/v1/testing/bugs' + (this.filterApp ? '?application=' + this.filterApp : '')),
+                    API.get('/api/v1/testing/summary' + (this.filterApp ? '?application=' + this.filterApp : '')),
                 ]);
                 this.bugs = bugs;
                 this.summary = summary;
