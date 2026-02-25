@@ -1,14 +1,16 @@
 <!-- HelixNet Platform Navigation -- shared across all apps -->
 <nav class="bg-slate-900 text-xs" id="platform-nav">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-8">
-        <a href="/backlog" class="text-gray-300 font-bold no-underline hover:text-white transition">HelixNet</a>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-9">
+        <a href="/backlog" class="text-white font-bold no-underline hover:text-indigo-300 transition text-sm">HelixNet</a>
         <div class="flex items-center space-x-1">
-            <a href="/testing" class="text-gray-400 hover:text-white px-2 py-1 rounded no-underline transition"
-                id="pnav-qa">QA</a>
-            <a href="/backlog" class="text-gray-400 hover:text-white px-2 py-1 rounded no-underline transition"
-                id="pnav-backlog">Backlog</a>
-            <a href="/camper/dashboard" class="text-gray-400 hover:text-white px-2 py-1 rounded no-underline transition"
-                id="pnav-camper">Camper</a>
+            <a href="/testing" id="pnav-qa"
+                class="text-gray-300 hover:text-white hover:bg-white/10 px-2.5 py-1 rounded no-underline transition font-medium">QA</a>
+            <a href="/backlog" id="pnav-backlog"
+                class="text-gray-300 hover:text-white hover:bg-white/10 px-2.5 py-1 rounded no-underline transition font-medium">Backlog</a>
+            <a href="/camper/dashboard" id="pnav-camper"
+                class="text-gray-300 hover:text-white hover:bg-white/10 px-2.5 py-1 rounded no-underline transition font-medium">Camper</a>
+            <a href="/print-shop/dashboard" id="pnav-isotto"
+                class="text-gray-300 hover:text-white hover:bg-white/10 px-2.5 py-1 rounded no-underline transition font-medium">ISOTTO</a>
         </div>
     </div>
 </nav>
@@ -20,9 +22,10 @@
         if (path.startsWith('/testing') || path.startsWith('/training') || path.startsWith('/how-to-report')) activeId = 'pnav-qa';
         else if (path.startsWith('/backlog')) activeId = 'pnav-backlog';
         else if (path.startsWith('/camper')) activeId = 'pnav-camper';
+        else if (path.startsWith('/print-shop')) activeId = 'pnav-isotto';
         if (activeId) {
             const el = document.getElementById(activeId);
-            if (el) { el.className = 'text-white bg-slate-700 px-2 py-1 rounded no-underline font-medium'; }
+            if (el) { el.className = 'text-white bg-indigo-600 px-2.5 py-1 rounded no-underline font-medium transition'; }
         }
     })();
 </script>
