@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from src.db.models.backlog_model import (
     BacklogItemType, BacklogStatus, BacklogPriority,
 )
+from src.core.constants import HelixApplication
 
 
 # ================================================================
@@ -19,6 +20,7 @@ class BacklogItemCreate(BaseModel):
     title: str = Field(..., min_length=3, max_length=200, description="Item title")
     description: Optional[str] = Field(None, description="Detailed description")
     item_type: BacklogItemType = Field(default=BacklogItemType.DEV_TASK, description="Type of work")
+    application: HelixApplication = Field(default=HelixApplication.HELIXNET, description="Which app: helixnet, camper, isotto")
     priority: BacklogPriority = Field(default=BacklogPriority.MEDIUM, description="Priority level")
     assigned_to: Optional[str] = Field(None, max_length=100, description="Assigned to")
     due_date: Optional[date] = Field(None, description="Target completion date")
@@ -32,6 +34,7 @@ class BacklogItemUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=3, max_length=200)
     description: Optional[str] = Field(None)
     item_type: Optional[BacklogItemType] = None
+    application: Optional[HelixApplication] = None
     status: Optional[BacklogStatus] = None
     priority: Optional[BacklogPriority] = None
     assigned_to: Optional[str] = Field(None, max_length=100, description="Assign to someone (empty string to unassign)")
@@ -50,6 +53,7 @@ class BacklogItemRead(BaseModel):
     id: UUID
     item_number: int
     item_type: BacklogItemType
+    application: HelixApplication
     status: BacklogStatus
     priority: BacklogPriority
     title: str
@@ -94,3 +98,4 @@ class BacklogSummary(BaseModel):
     archived: int
     by_type: dict[str, int] = {}
     by_priority: dict[str, int] = {}
+    by_application: dict[str, int] = {}

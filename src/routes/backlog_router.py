@@ -23,6 +23,7 @@ from src.schemas.backlog_schema import (
     BacklogItemCreate, BacklogItemUpdate, BacklogItemRead,
     BacklogActivityRead, BacklogSummary,
 )
+from src.core.constants import HelixApplication
 from src.core.keycloak_auth import require_roles
 
 
@@ -48,36 +49,58 @@ templates = Jinja2Templates(directory=str(templates_dir))
 # ================================================================
 @router.get("/summary", response_model=BacklogSummary)
 async def get_summary(
+    application: str | None = None,
     current_user: dict = Depends(require_backlog_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Backlog overview counts by status, type, priority."""
+    # Build optional application filter
+    app_filter = []
+    if application:
+        try:
+            app_enum = HelixApplication(application)
+            app_filter.append(BacklogItemModel.application == app_enum)
+        except ValueError:
+            pass
+
     # Counts by status
-    status_result = await db.execute(
-        select(
-            BacklogItemModel.status,
-            func.count().label("cnt"),
-        ).group_by(BacklogItemModel.status)
-    )
+    status_query = select(
+        BacklogItemModel.status,
+        func.count().label("cnt"),
+    ).group_by(BacklogItemModel.status)
+    for f in app_filter:
+        status_query = status_query.where(f)
+    status_result = await db.execute(status_query)
     status_counts = {row.status.value: row.cnt for row in status_result}
 
     # Counts by type
-    type_result = await db.execute(
-        select(
-            BacklogItemModel.item_type,
-            func.count().label("cnt"),
-        ).group_by(BacklogItemModel.item_type)
-    )
+    type_query = select(
+        BacklogItemModel.item_type,
+        func.count().label("cnt"),
+    ).group_by(BacklogItemModel.item_type)
+    for f in app_filter:
+        type_query = type_query.where(f)
+    type_result = await db.execute(type_query)
     type_counts = {row.item_type.value: row.cnt for row in type_result}
 
     # Counts by priority
-    priority_result = await db.execute(
-        select(
-            BacklogItemModel.priority,
-            func.count().label("cnt"),
-        ).group_by(BacklogItemModel.priority)
-    )
+    priority_query = select(
+        BacklogItemModel.priority,
+        func.count().label("cnt"),
+    ).group_by(BacklogItemModel.priority)
+    for f in app_filter:
+        priority_query = priority_query.where(f)
+    priority_result = await db.execute(priority_query)
     priority_counts = {row.priority.value: row.cnt for row in priority_result}
+
+    # Counts by application (always unfiltered -- shows distribution)
+    app_result = await db.execute(
+        select(
+            BacklogItemModel.application,
+            func.count().label("cnt"),
+        ).group_by(BacklogItemModel.application)
+    )
+    app_counts = {row.application.value: row.cnt for row in app_result}
 
     total = sum(status_counts.values())
 
@@ -90,6 +113,7 @@ async def get_summary(
         archived=status_counts.get("archived", 0),
         by_type=type_counts,
         by_priority=priority_counts,
+        by_application=app_counts,
     )
 
 
@@ -99,6 +123,7 @@ async def get_summary(
 @router.get("/items", response_model=list[BacklogItemRead])
 async def list_items(
     item_type: str | None = None,
+    application: str | None = None,
     status_filter: str | None = None,
     priority: str | None = None,
     assigned_to: str | None = None,
@@ -112,6 +137,13 @@ async def list_items(
         try:
             t = BacklogItemType(item_type)
             query = query.where(BacklogItemModel.item_type == t)
+        except ValueError:
+            pass
+
+    if application:
+        try:
+            a = HelixApplication(application)
+            query = query.where(BacklogItemModel.application == a)
         except ValueError:
             pass
 
@@ -158,6 +190,7 @@ async def create_item(
         title=item.title,
         description=item.description,
         item_type=item.item_type,
+        application=item.application,
         priority=item.priority,
         assigned_to=item.assigned_to,
         due_date=item.due_date,
@@ -263,6 +296,8 @@ async def update_item(
         item.description = update.description
     if update.item_type is not None:
         item.item_type = update.item_type
+    if update.application is not None:
+        item.application = update.application
     if update.due_date is not None:
         item.due_date = update.due_date
     if update.estimated_hours is not None:

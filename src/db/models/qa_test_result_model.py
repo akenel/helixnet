@@ -8,7 +8,7 @@ from sqlalchemy import String, DateTime, Integer, Text, ForeignKey
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .base import Base
-from src.core.constants import HelixEnum
+from src.core.constants import HelixEnum, HelixApplication
 
 
 # ================================================================
@@ -181,6 +181,14 @@ class QABugReportModel(Base):
         default=BugCategory.FUNCTIONAL,
         index=True,
         comment="Bug classification: functional, cosmetic, performance, data, security",
+    )
+    application: Mapped[HelixApplication] = mapped_column(
+        SQLEnum(HelixApplication, name="helix_application", create_constraint=True,
+               values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=HelixApplication.HELIXNET,
+        index=True,
+        comment="Which app: helixnet, camper, isotto",
     )
     status: Mapped[BugStatus] = mapped_column(
         SQLEnum(BugStatus, name="qa_bug_status", create_constraint=True,

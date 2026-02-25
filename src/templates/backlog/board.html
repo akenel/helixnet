@@ -91,6 +91,12 @@
 
         <!-- Filters + View Toggle -->
         <div class="flex flex-wrap items-center gap-3 mb-4">
+            <select x-model="filterApp" @change="loadItems(); loadSummary()" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
+                <option value="">All Apps</option>
+                <option value="helixnet">HelixNet</option>
+                <option value="camper">Camper</option>
+                <option value="isotto">ISOTTO</option>
+            </select>
             <select x-model="filterType" @change="loadItems()" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white">
                 <option value="">All Types</option>
                 <option value="dev_task">Dev Task</option>
@@ -140,7 +146,12 @@
                                 class="bg-white rounded-lg shadow-sm p-3 cursor-pointer hover:shadow-md transition border-l-4"
                                 :class="priorityBorderColor(item.priority)">
                                 <div class="flex items-start justify-between mb-1">
-                                    <span class="text-xs font-mono text-gray-400" x-text="'BL-' + String(item.item_number).padStart(3, '0')"></span>
+                                    <div class="flex items-center space-x-1">
+                                        <span class="text-xs font-mono text-gray-400" x-text="'BL-' + String(item.item_number).padStart(3, '0')"></span>
+                                        <span class="text-xs font-medium px-1.5 py-0.5 rounded"
+                                            :class="appBadgeColor(item.application)"
+                                            x-text="appLabel(item.application)"></span>
+                                    </div>
                                     <span class="text-xs font-medium px-1.5 py-0.5 rounded"
                                         :class="typeBadgeColor(item.item_type)"
                                         x-text="typeLabel(item.item_type)"></span>
@@ -209,6 +220,7 @@
                 <thead class="bg-gray-50 border-b">
                     <tr>
                         <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">#</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">App</th>
                         <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Type</th>
                         <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Title</th>
                         <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Priority</th>
@@ -221,6 +233,11 @@
                     <template x-for="item in filteredItems" :key="item.id">
                         <tr @click="openDetailModal(item)" class="hover:bg-gray-50 cursor-pointer transition">
                             <td class="px-4 py-3 text-xs font-mono text-gray-400" x-text="'BL-' + String(item.item_number).padStart(3, '0')"></td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs font-medium px-1.5 py-0.5 rounded"
+                                    :class="appBadgeColor(item.application)"
+                                    x-text="appLabel(item.application)"></span>
+                            </td>
                             <td class="px-4 py-3">
                                 <span class="text-xs font-medium px-1.5 py-0.5 rounded"
                                     :class="typeBadgeColor(item.item_type)"
@@ -276,8 +293,8 @@
                             placeholder="What needs to be done?">
                     </div>
 
-                    <!-- Type + Priority + Status (grid) -->
-                    <div class="grid grid-cols-3 gap-3">
+                    <!-- Type + App + Priority + Status (grid) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                             <select x-model="form.item_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
@@ -285,6 +302,14 @@
                                 <option value="bug_fix">Bug Fix</option>
                                 <option value="camper_job">Camper Job</option>
                                 <option value="business_ops">Business Ops</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">App</label>
+                            <select x-model="form.application" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="helixnet">HelixNet</option>
+                                <option value="camper">Camper</option>
+                                <option value="isotto">ISOTTO</option>
                             </select>
                         </div>
                         <div>
@@ -417,6 +442,7 @@ function backlogBoard() {
         saving: false,
 
         // Filters
+        filterApp: '',
         filterType: '',
         filterPriority: '',
         filterAssigned: '',
@@ -452,7 +478,9 @@ function backlogBoard() {
 
         async loadSummary() {
             try {
-                this.summary = await API.get('/api/v1/backlog/summary');
+                let url = '/api/v1/backlog/summary';
+                if (this.filterApp) url += `?application=${this.filterApp}`;
+                this.summary = await API.get(url);
             } catch (e) {
                 console.error('Failed to load summary:', e);
             }
@@ -461,6 +489,7 @@ function backlogBoard() {
         async loadItems() {
             try {
                 let url = '/api/v1/backlog/items?';
+                if (this.filterApp) url += `application=${this.filterApp}&`;
                 if (this.filterType) url += `item_type=${this.filterType}&`;
                 if (this.filterPriority) url += `priority=${this.filterPriority}&`;
                 if (this.filterAssigned) url += `assigned_to=${encodeURIComponent(this.filterAssigned)}&`;
@@ -482,6 +511,7 @@ function backlogBoard() {
                 title: '',
                 description: '',
                 item_type: 'dev_task',
+                application: this.filterApp || 'helixnet',
                 priority: 'medium',
                 status: 'pending',
                 assigned_to: '',
@@ -501,6 +531,7 @@ function backlogBoard() {
                 title: item.title,
                 description: item.description || '',
                 item_type: item.item_type,
+                application: item.application || 'helixnet',
                 priority: item.priority,
                 status: item.status,
                 assigned_to: item.assigned_to || '',
@@ -538,6 +569,7 @@ function backlogBoard() {
                         title: this.form.title,
                         description: this.form.description || null,
                         item_type: this.form.item_type,
+                        application: this.form.application,
                         status: this.form.status,
                         priority: this.form.priority,
                         assigned_to: this.form.assigned_to || '',
@@ -556,6 +588,7 @@ function backlogBoard() {
                         title: this.form.title,
                         description: this.form.description || null,
                         item_type: this.form.item_type,
+                        application: this.form.application,
                         priority: this.form.priority,
                         assigned_to: this.form.assigned_to || null,
                         due_date: this.form.due_date || null,
@@ -607,6 +640,18 @@ function backlogBoard() {
         // ============================================================
         // Display helpers
         // ============================================================
+        appLabel(a) {
+            const map = { helixnet: 'HelixNet', camper: 'Camper', isotto: 'ISOTTO' };
+            return map[a] || a;
+        },
+        appBadgeColor(a) {
+            const map = {
+                helixnet: 'bg-indigo-100 text-indigo-700',
+                camper: 'bg-green-100 text-green-700',
+                isotto: 'bg-orange-100 text-orange-700',
+            };
+            return map[a] || 'bg-gray-100 text-gray-700';
+        },
         typeLabel(t) {
             const map = { dev_task: 'Dev', bug_fix: 'Bug', camper_job: 'Camper', business_ops: 'Biz' };
             return map[t] || t;

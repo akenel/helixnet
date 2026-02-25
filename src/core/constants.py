@@ -37,6 +37,13 @@ class HelixEnum(str, Enum):
         return None
 
 
+class HelixApplication(HelixEnum):
+    """Which application/module this item belongs to."""
+    HELIXNET = "helixnet"
+    CAMPER = "camper"
+    ISOTTO = "isotto"
+
+
 class UserRoles(HelixEnum):
     """Defines the organizational roles for a user."""
     ADMIN = "admin"

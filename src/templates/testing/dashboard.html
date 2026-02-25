@@ -291,6 +291,13 @@
                                     <template x-if="bug.category">
                                         <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" x-text="bug.category"></span>
                                     </template>
+                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full"
+                                        :class="{
+                                            'bg-indigo-100 text-indigo-700': bug.application === 'helixnet',
+                                            'bg-green-100 text-green-700': bug.application === 'camper',
+                                            'bg-orange-100 text-orange-700': bug.application === 'isotto'
+                                        }"
+                                        x-text="({'helixnet':'HelixNet','camper':'Camper','isotto':'ISOTTO'})[bug.application] || bug.application"></span>
                                 </div>
                                 <h4 class="text-sm font-semibold text-gray-800">
                                     <span class="text-indigo-600 font-mono" x-text="'BUG-' + String(bug.bug_number).padStart(3, '0')"></span>
@@ -364,8 +371,8 @@
                         class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
                 </div>
 
-                <!-- Category + Severity row -->
-                <div class="grid grid-cols-2 gap-3">
+                <!-- Category + Severity + App row -->
+                <div class="grid grid-cols-3 gap-3">
                     <div>
                         <label class="text-sm font-medium text-gray-700">Bug Type</label>
                         <select x-model="bugForm.category" @change="updateDescriptionTemplate()"
@@ -385,6 +392,15 @@
                             <option value="medium" selected>Medium</option>
                             <option value="high">High</option>
                             <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">App</label>
+                        <select x-model="bugForm.application"
+                            class="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200">
+                            <option value="helixnet">HelixNet</option>
+                            <option value="camper">Camper</option>
+                            <option value="isotto">ISOTTO</option>
                         </select>
                     </div>
                 </div>
@@ -563,7 +579,7 @@ function qaDashboard() {
         showBugs: false,
         showBugForm: false,
         editingBugId: null,
-        bugForm: { title: '', description: '', severity: 'medium', category: 'functional', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' },
+        bugForm: { title: '', description: '', severity: 'medium', category: 'functional', application: 'helixnet', test_result_id: '', browser_info: '', screenshot_data: '', assigned_to: '', git_sha: '', comment: '' },
         bugCommits: [],
         newCommitSha: '',
         newCommitMsg: '',
@@ -692,6 +708,7 @@ function qaDashboard() {
                 description: bug.description,
                 severity: bug.severity,
                 category: bug.category || 'functional',
+                application: bug.application || 'helixnet',
                 test_result_id: bug.test_result_id || '',
                 browser_info: bug.browser_info || '',
                 screenshot_data: bug.screenshot_data || '',
@@ -750,6 +767,7 @@ function qaDashboard() {
                         description: this.bugForm.description,
                         severity: this.bugForm.severity,
                         category: this.bugForm.category,
+                        application: this.bugForm.application,
                         screenshot_data: this.bugForm.screenshot_data || null,
                         assigned_to: this.bugForm.assigned_to || null,
                         git_sha: this.bugForm.git_sha || null,
@@ -765,6 +783,7 @@ function qaDashboard() {
                         description: this.bugForm.description,
                         severity: this.bugForm.severity,
                         category: this.bugForm.category,
+                        application: this.bugForm.application,
                         reported_by: this.testerName || 'Anne',
                         browser_info: this.bugForm.browser_info || navigator.userAgent,
                     };

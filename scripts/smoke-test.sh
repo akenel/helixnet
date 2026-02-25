@@ -144,12 +144,13 @@ fi
 section "4. QA Testing API"
 if [[ -n "$TOKEN" ]]; then
     check_json_array "GET /testing/bugs" "$BASE/api/v1/testing/bugs"
+    check_json_array "GET /testing/bugs?application=helixnet" "$BASE/api/v1/testing/bugs?application=helixnet"
     check_json_array "GET /testing/tests" "$BASE/api/v1/testing/tests"
 
     # Summary is an object, not array
     SUMMARY=$($CURL -H "Authorization: Bearer $TOKEN" "$BASE/api/v1/testing/summary")
-    if echo "$SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total_tests' in d or 'total_bugs' in d" 2>/dev/null; then
-        pass "GET /testing/summary (valid)"
+    if echo "$SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total_tests' in d and 'bugs_by_application' in d" 2>/dev/null; then
+        pass "GET /testing/summary (valid, has bugs_by_application)"
     else
         fail "GET /testing/summary (bad response)"
     fi
@@ -161,10 +162,11 @@ fi
 section "5. Backlog API"
 if [[ -n "$TOKEN" ]]; then
     check_json_array "GET /backlog/items" "$BASE/api/v1/backlog/items"
+    check_json_array "GET /backlog/items?application=helixnet" "$BASE/api/v1/backlog/items?application=helixnet"
 
     SUMMARY=$($CURL -H "Authorization: Bearer $TOKEN" "$BASE/api/v1/backlog/summary")
-    if echo "$SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total' in d" 2>/dev/null; then
-        pass "GET /backlog/summary (valid)"
+    if echo "$SUMMARY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'total' in d and 'by_application' in d" 2>/dev/null; then
+        pass "GET /backlog/summary (valid, has by_application)"
     else
         fail "GET /backlog/summary (bad response)"
     fi

@@ -27,6 +27,7 @@ from src.schemas.qa_schema import (
     BugCommitCreate, BugCommitRead,
     DashboardSummary, PhaseProgress,
 )
+from src.core.constants import HelixApplication
 from src.core.keycloak_auth import require_roles
 
 
@@ -51,11 +52,21 @@ templates = Jinja2Templates(directory=str(templates_dir))
 # ================================================================
 @router.get("/summary", response_model=DashboardSummary)
 async def get_summary(
+    application: str | None = None,
     current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """Overall testing progress stats."""
-    # Test counts by status
+    # Build optional application filter for bugs
+    bug_app_filter = []
+    if application:
+        try:
+            app_enum = HelixApplication(application)
+            bug_app_filter.append(QABugReportModel.application == app_enum)
+        except ValueError:
+            pass
+
+    # Test counts by status (tests are not app-scoped)
     result = await db.execute(
         select(
             QATestResultModel.status,
@@ -73,28 +84,40 @@ async def get_summary(
     completed = total - pending
     percent = (completed / total * 100) if total > 0 else 0
 
-    # Bug counts
-    bug_total = await db.execute(
-        select(func.count()).select_from(QABugReportModel)
-    )
+    # Bug counts (filtered by app if specified)
+    bug_total_q = select(func.count()).select_from(QABugReportModel)
+    for f in bug_app_filter:
+        bug_total_q = bug_total_q.where(f)
+    bug_total = await db.execute(bug_total_q)
     total_bugs = bug_total.scalar() or 0
 
-    bug_open = await db.execute(
-        select(func.count()).select_from(QABugReportModel).where(
-            QABugReportModel.status.in_([BugStatus.OPEN, BugStatus.IN_PROGRESS])
-        )
+    bug_open_q = select(func.count()).select_from(QABugReportModel).where(
+        QABugReportModel.status.in_([BugStatus.OPEN, BugStatus.IN_PROGRESS])
     )
+    for f in bug_app_filter:
+        bug_open_q = bug_open_q.where(f)
+    bug_open = await db.execute(bug_open_q)
     open_bugs = bug_open.scalar() or 0
 
-    bug_critical = await db.execute(
-        select(func.count()).select_from(QABugReportModel).where(
-            and_(
-                QABugReportModel.severity == BugSeverity.CRITICAL,
-                QABugReportModel.status.in_([BugStatus.OPEN, BugStatus.IN_PROGRESS]),
-            )
+    bug_critical_q = select(func.count()).select_from(QABugReportModel).where(
+        and_(
+            QABugReportModel.severity == BugSeverity.CRITICAL,
+            QABugReportModel.status.in_([BugStatus.OPEN, BugStatus.IN_PROGRESS]),
         )
     )
+    for f in bug_app_filter:
+        bug_critical_q = bug_critical_q.where(f)
+    bug_critical = await db.execute(bug_critical_q)
     critical_bugs = bug_critical.scalar() or 0
+
+    # Bugs by application (always unfiltered)
+    app_result = await db.execute(
+        select(
+            QABugReportModel.application,
+            func.count().label("cnt"),
+        ).group_by(QABugReportModel.application)
+    )
+    app_counts = {row.application.value: row.cnt for row in app_result}
 
     return DashboardSummary(
         total_tests=total,
@@ -107,6 +130,7 @@ async def get_summary(
         total_bugs=total_bugs,
         open_bugs=open_bugs,
         critical_bugs=critical_bugs,
+        bugs_by_application=app_counts,
     )
 
 
@@ -283,6 +307,8 @@ async def create_bug(
         title=bug.title,
         description=bug.description,
         severity=bug.severity,
+        category=bug.category,
+        application=bug.application,
         test_result_id=bug.test_result_id,
         screenshot_data=bug.screenshot_data,
         browser_info=bug.browser_info,
@@ -301,15 +327,23 @@ async def create_bug(
 
 @router.get("/bugs", response_model=list[BugReportRead])
 async def list_bugs(
+    application: str | None = None,
     current_user: dict = Depends(require_qa_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
     """List all bug reports, newest first."""
-    result = await db.execute(
+    query = (
         select(QABugReportModel)
         .options(selectinload(QABugReportModel.commits))
         .order_by(QABugReportModel.created_at.desc())
     )
+    if application:
+        try:
+            a = HelixApplication(application)
+            query = query.where(QABugReportModel.application == a)
+        except ValueError:
+            pass
+    result = await db.execute(query)
     return result.scalars().all()
 
 
@@ -382,6 +416,10 @@ async def update_bug(
         bug.description = update.description
     if update.severity is not None:
         bug.severity = update.severity
+    if update.category is not None:
+        bug.category = update.category
+    if update.application is not None:
+        bug.application = update.application
     if update.screenshot_data is not None:
         bug.screenshot_data = update.screenshot_data
 
