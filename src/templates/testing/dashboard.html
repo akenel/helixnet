@@ -6,16 +6,16 @@
 <div class="min-h-screen bg-gray-50" x-data="qaDashboard()" x-init="init()">
 
     <!-- Top Nav -->
-    <nav class="bg-slate-800 shadow-lg sticky top-0 z-50">
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-12">
                 <!-- Brand -->
-                <a href="/testing" class="text-white font-bold text-base no-underline flex items-center space-x-2">
+                <a href="/testing" class="text-gray-900 font-bold text-base no-underline flex items-center space-x-2">
                     <span>HelixNet QA</span>
                 </a>
 
                 <!-- Hamburger (mobile) -->
-                <button class="sm:hidden text-gray-400 hover:text-white p-1" @click="mobileNav = !mobileNav">
+                <button class="sm:hidden text-gray-500 hover:text-indigo-600 p-1" @click="mobileNav = !mobileNav">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path x-show="!mobileNav" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         <path x-show="mobileNav" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -24,12 +24,12 @@
 
                 <!-- Desktop links -->
                 <div class="hidden sm:flex items-center space-x-1">
-                    <a href="/testing" class="text-indigo-400 bg-indigo-500/15 text-sm font-medium px-3 py-1.5 rounded-lg no-underline">Dashboard</a>
-                    <a href="/training" class="text-gray-400 hover:text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 no-underline transition">Training</a>
-                    <a href="/how-to-report-bugs" class="text-gray-400 hover:text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 no-underline transition">How to Report</a>
-                    <span class="mx-2 w-px h-5 bg-gray-600 inline-block"></span>
+                    <a href="/testing" class="text-indigo-700 bg-indigo-100 text-sm font-medium px-3 py-1.5 rounded-lg no-underline">Dashboard</a>
+                    <a href="/training" class="text-gray-600 hover:text-indigo-600 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-gray-100 no-underline transition">Training</a>
+                    <a href="/how-to-report-bugs" class="text-gray-600 hover:text-indigo-600 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-gray-100 no-underline transition">How to Report</a>
+                    <span class="mx-2 w-px h-5 bg-gray-300 inline-block"></span>
                     <!-- Health indicators -->
-                    <div class="flex items-center space-x-2 text-xs text-gray-400">
+                    <div class="flex items-center space-x-2 text-xs text-gray-500">
                         <span class="flex items-center">
                             <span class="w-2 h-2 rounded-full mr-1" :class="health.api === 'ok' ? 'bg-green-500' : 'bg-red-500'"></span>
                             API
@@ -44,13 +44,13 @@
                         Report Bug
                     </button>
                     <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener"
-                        class="text-gray-400 hover:text-blue-400 text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-white/5 no-underline transition ml-1"
+                        class="text-gray-500 hover:text-blue-600 text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-gray-100 no-underline transition ml-1"
                         title="Message Angel on Telegram if you're stuck">
                         Need Help?
                     </a>
-                    <span class="mx-2 w-px h-5 bg-gray-600 inline-block"></span>
-                    <span class="text-xs text-gray-400" x-text="currentUser"></span>
-                    <button @click="logout()" class="text-xs text-gray-500 hover:text-red-400 transition ml-1" title="Logout">
+                    <span class="mx-2 w-px h-5 bg-gray-300 inline-block"></span>
+                    <span class="text-xs text-gray-500" x-text="currentUser"></span>
+                    <button @click="logout()" class="text-xs text-gray-400 hover:text-red-500 transition ml-1" title="Logout">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
@@ -59,12 +59,12 @@
             </div>
 
             <!-- Mobile menu -->
-            <div x-show="mobileNav" x-cloak class="sm:hidden pb-3 border-t border-gray-700 mt-1 space-y-1">
-                <a href="/testing" class="block text-indigo-400 text-sm font-medium px-3 py-2 rounded-lg no-underline">Dashboard</a>
-                <a href="/training" class="block text-gray-400 hover:text-white text-sm font-medium px-3 py-2 rounded-lg no-underline">Training</a>
-                <a href="/how-to-report-bugs" class="block text-gray-400 hover:text-white text-sm font-medium px-3 py-2 rounded-lg no-underline">How to Report</a>
-                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-700 mt-2 pt-3">
-                    <div class="flex items-center space-x-3 text-xs text-gray-400">
+            <div x-show="mobileNav" x-cloak class="sm:hidden pb-3 border-t border-gray-200 mt-1 space-y-1">
+                <a href="/testing" class="block text-indigo-700 bg-indigo-100 text-sm font-medium px-3 py-2 rounded-lg no-underline">Dashboard</a>
+                <a href="/training" class="block text-gray-600 hover:text-indigo-600 text-sm font-medium px-3 py-2 rounded-lg no-underline">Training</a>
+                <a href="/how-to-report-bugs" class="block text-gray-600 hover:text-indigo-600 text-sm font-medium px-3 py-2 rounded-lg no-underline">How to Report</a>
+                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-200 mt-2 pt-3">
+                    <div class="flex items-center space-x-3 text-xs text-gray-500">
                         <span class="flex items-center"><span class="w-2 h-2 rounded-full mr-1" :class="health.api === 'ok' ? 'bg-green-500' : 'bg-red-500'"></span>API</span>
                         <span class="flex items-center"><span class="w-2 h-2 rounded-full mr-1" :class="health.database === 'ok' ? 'bg-green-500' : 'bg-red-500'"></span>DB</span>
                     </div>
@@ -73,12 +73,12 @@
                         Report Bug
                     </button>
                 </div>
-                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-700 mt-1 pt-2">
-                    <span class="text-xs text-gray-400" x-text="currentUser"></span>
+                <div class="flex items-center justify-between px-3 py-2 border-t border-gray-200 mt-1 pt-2">
+                    <span class="text-xs text-gray-500" x-text="currentUser"></span>
                     <div class="flex items-center space-x-3">
                         <a href="https://t.me/BigKingFisher" target="_blank" rel="noopener"
-                            class="text-xs text-blue-400 hover:text-blue-300 no-underline">Need Help?</a>
-                        <button @click="logout()" class="text-xs text-red-400 hover:text-red-300">Logout</button>
+                            class="text-xs text-blue-600 hover:text-blue-700 no-underline">Need Help?</a>
+                        <button @click="logout()" class="text-xs text-red-500 hover:text-red-700">Logout</button>
                     </div>
                 </div>
             </div>
