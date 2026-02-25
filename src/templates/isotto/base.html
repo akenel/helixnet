@@ -109,7 +109,7 @@
     {% block content %}{% endblock %}
 
     <!-- i18n translations -->
-    <script src="/static/isotto-i18n.js?v=20260224"></script>
+    <script src="/static/isotto-i18n.js?v=20260225"></script>
 
     <!-- Global JavaScript utilities -->
     <script>
@@ -370,6 +370,32 @@
             const langSwitch = document.getElementById('lang-switch');
             if (langSwitch) langSwitch.value = window._isottoLang || 'it';
         });
+
+        // Translate status bar page name + document title
+        (function() {
+            const screenEl = document.getElementById('status-screen');
+            if (screenEl) {
+                const pageI18nMap = {
+                    'Cruscotto': 'page_title.dashboard',
+                    'Ordini': 'page_title.orders',
+                    'Clienti': 'page_title.customers',
+                    'Fatture': 'page_title.invoices',
+                    'Fornitori': 'page_title.suppliers',
+                    'Catalogo Prodotti': 'page_title.catalog',
+                    'Dettaglio Ordine': 'page_title.order_detail',
+                    'Ordini Acquisto': 'page_title.purchase_orders',
+                    'Artwork Gallery': 'page_title.artworks',
+                    'Anteprime': 'page_title.preview_gallery',
+                    'Coda di Stampa': 'page_title.print_queue',
+                };
+                const key = pageI18nMap[screenEl.textContent.trim()];
+                if (key) {
+                    const translated = t(key);
+                    screenEl.textContent = translated;
+                    document.title = translated + ' - ' + t('brand.name') + ' ' + t('page_title.suffix');
+                }
+            }
+        })();
 
         (function() {
             function updateStatusBar() {
