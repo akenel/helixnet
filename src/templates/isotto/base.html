@@ -349,27 +349,48 @@
     </footer>
 
     <script>
-        // ===== i18n: data-i18n attribute handler =====
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        // ===== i18n: translate a single element =====
+        function applyI18n(el) {
+            if (el.hasAttribute('data-i18n')) {
                 const key = el.getAttribute('data-i18n');
                 const val = t(key);
                 if (val !== key) el.textContent = val;
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+            }
+            if (el.hasAttribute('data-i18n-placeholder')) {
                 const key = el.getAttribute('data-i18n-placeholder');
                 const val = t(key);
                 if (val !== key) el.placeholder = val;
-            });
-            document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+            }
+            if (el.hasAttribute('data-i18n-html')) {
                 const key = el.getAttribute('data-i18n-html');
                 const val = t(key);
                 if (val !== key) el.innerHTML = val;
-            });
+            }
+        }
+
+        // ===== i18n: initial sweep on DOMContentLoaded =====
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-i18n]').forEach(applyI18n);
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(applyI18n);
+            document.querySelectorAll('[data-i18n-html]').forEach(applyI18n);
             // Set language switcher to current language
             const langSwitch = document.getElementById('lang-switch');
             if (langSwitch) langSwitch.value = window._isottoLang || 'it';
         });
+
+        // ===== i18n: MutationObserver for Alpine.js dynamic content =====
+        (function() {
+            const observer = new MutationObserver(function(mutations) {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType !== 1) continue;
+                        applyI18n(node);
+                        node.querySelectorAll('[data-i18n], [data-i18n-placeholder], [data-i18n-html]').forEach(applyI18n);
+                    }
+                }
+            });
+            observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+        })();
 
         // Translate status bar page name + document title
         (function() {
