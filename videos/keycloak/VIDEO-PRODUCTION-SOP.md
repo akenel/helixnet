@@ -248,6 +248,16 @@ Use when: no voiceover, viewer needs context for each scene.
 
 See Phase 3B below for the scene title card workflow.
 
+**Option D: Organic Recording + Post-Production (BUG-020 Method)**
+```
+No Puppeteer. Record OBS while working naturally.
+Map raw video (extract frames every 10s) → Extract segments → Create title cards →
+Stitch (cards + segments) → Record voiceover (Telegram) → Normalize + limit audio →
+Merge → Generate SRT (Whisper) → YouTube kit
+```
+Use when: fixing real bugs live, authentic workflow recordings.
+Full SOP: `videos/bug-fixes/BUG-FIX-VIDEO-SOP.md`
+
 ### 3.6 Verify Final
 
 - Play the full video start to finish
@@ -551,6 +561,10 @@ POST-PRODUCTION (Simple Stitch):
 POST-PRODUCTION (Scene Title Cards):
   Strip → Trim → Re-encode → Map scenes → Generate cards → Split → Stitch → Music
 
+POST-PRODUCTION (Organic / BUG-020 Method):
+  Map raw (frames every 10s) → Extract segments → Title cards → Stitch →
+  Voiceover (Telegram .ogg) → Trim → loudnorm → alimiter=0.95 → Merge → Whisper SRT
+
 MUSIC (royalty-free only for YouTube!):
   Music-only: volume=0.40 | Under voice: volume=0.12
   Fade in 2s → Fade out 3.5s → Two-step method (process audio, then mux)
@@ -569,6 +583,12 @@ COMMANDS:
   STITCH:   ffmpeg -f concat -safe 0 -i list.txt -c copy output.mp4
   MUSIC-1:  ffmpeg -i music.mp3 -af "atrim=0:DUR,volume=0.40,afade=in:d=2,afade=out:st=X:d=3.5" -c:a aac -ar 48000 music.m4a
   MUSIC-2:  ffmpeg -i video.mp4 -i music.m4a -c:v copy -c:a copy -shortest FINAL.mp4
+  FRAMES:   ffmpeg -i raw.mp4 -vf fps=1/10 /tmp/frames/frame-%04d.jpg
+  VOICE-1:  ffmpeg -i voice.ogg -ss 29 -to 503 trimmed.wav
+  VOICE-2:  ffmpeg -i trimmed.wav -af "loudnorm=I=-16:TP=-1.5:LRA=11" -ar 48000 normalized.wav
+  VOICE-3:  ffmpeg -i normalized.wav -af "alimiter=limit=0.95" -ar 48000 limited.wav
+  MERGE:    ffmpeg -i silent.mp4 -i limited.wav -c:v copy -c:a aac -b:a 128k -ar 48000 FINAL.mp4
+  WHISPER:  whisper limited.wav --model base --language en --output_format srt
 ```
 
 ---
@@ -585,6 +605,7 @@ COMMANDS:
 | Feb 15 | CT EP2 - Quote to Invoice | 1 | Clean run. YouTube kit + post-production in one session. |
 | Feb 16 | CT EP3 - The Full Lifecycle | 3 | Take 1: broken logout + quotation error. Take 2: logout fixed, quotation still broken. Take 3: GOLD. Fixed Alpine.js row clicks, re-encode trim for intro card. Chrome translate hack for English. |
 | Feb 16 | CT EP4 - The Workshop Floor | 2 | Take 1: empty appointments (stale seed data). Take 2: same seed issue but walk-in + bay timeline GOLD. Baked-in pipeline, 1:38 final. Tags file added to SOP. |
+| Feb 26 | BUG-020 - Button Styling Fix | 1 | ORGANIC METHOD (no Puppeteer). OBS screen capture while fixing real bug. 19:24 raw -> 7:55 final. Frame mapping (116 frames), multi-segment extraction (4 segments), title cards as section dividers, Telegram voiceover, Whisper SRT. First YouTube upload. youtu.be/ROJOV_v-sbA |
 
 ---
 
@@ -624,6 +645,27 @@ COMMANDS:
 - **Fix:** Fetch entity IDs from the API with the session token, then `page.goto()` directly
 - **Rule:** For Alpine.js apps, never click table rows in Puppeteer -- navigate by URL
 
+### Organic Recording Method for Bug Fixes (Feb 26, 2026)
+- Scripted Puppeteer method is overkill for real bug fixes
+- New method: just record OBS while you work, cut the good parts in post
+- Extract frames every 10s to map raw video before cutting
+- Cut multiple segments from scattered timestamps, stitch with title cards
+- BUG-020: 19:24 raw -> 7:55 final (41% kept). First YouTube upload.
+- **Rule:** Real bug fixes = organic recording. Repeatable demos = Puppeteer scripts.
+- Full SOP: `videos/bug-fixes/BUG-FIX-VIDEO-SOP.md`
+
+### Loudnorm Needs a Limiter (Feb 26, 2026)
+- `loudnorm=I=-16:TP=-1.5` pushes peaks to exactly 0.0dB -- causes clipping
+- **Fix:** Always chain with `alimiter=limit=0.95` as a second step
+- Two-pass: normalize first, then limit
+- **Rule:** Never use loudnorm without alimiter
+
+### Generated Audio Is Not Music (Feb 26, 2026)
+- Tried sine wave ambient pad (A minor chord) -- "just a buzz"
+- **Fix:** Either royalty-free music OR human voiceover. Nothing generated.
+- Voiceover via Telegram voice message works great
+- Create mobile HTML cue sheet for narrator to read on phone
+
 ### Clean Folders Make YouTube Loading Faster (Feb 15, 2026)
 - After post-production, folders had 10+ files mixed together
 - Raw recordings, intermediates, frames, debug files -- all in one place
@@ -641,3 +683,6 @@ COMMANDS:
 
 *"Bake the intro into the script. One file in, one file out."*
 *The CT Method -- Feb 15, 2026 -- PuntaTipa Room 101*
+
+*"No scripts, no fakes, just a human and an AI fixing bugs in a real system."*
+*The BUG-020 Method -- Feb 26, 2026 -- PuntaTipa Room 101*

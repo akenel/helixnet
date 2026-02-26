@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px; height: 720px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: white;
+  overflow: hidden;
+}
+.left {
+  width: 55%;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 50px 40px 50px 60px;
+}
+.right {
+  width: 45%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  font-size: 18px; font-weight: 700;
+  color: #ef4444;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+.bug-number {
+  font-size: 90px; font-weight: 900;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.title {
+  font-size: 36px; font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+.subtitle {
+  font-size: 20px;
+  color: #64748b;
+  line-height: 1.4;
+}
+.subtitle span {
+  color: #22c55e;
+  font-weight: 600;
+}
+/* Code block on right side */
+.code-panel {
+  background: #0d1117;
+  border: 2px solid #30363d;
+  border-radius: 16px;
+  padding: 30px 24px;
+  width: 440px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.code-header {
+  display: flex; gap: 8px; margin-bottom: 20px;
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; }
+.dot.y { background: #febc2e; }
+.dot.g { background: #28c840; }
+.code-file {
+  font-family: monospace;
+  font-size: 14px;
+  color: #8b949e;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #21262d;
+}
+.code-line {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 18px;
+  padding: 4px 0;
+  line-height: 1.6;
+}
+.code-old {
+  color: #f85149;
+  background: rgba(248,81,73,0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: line-through;
+}
+.code-new {
+  color: #3fb950;
+  background: rgba(63,185,80,0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.arrow {
+  color: #f59e0b;
+  font-size: 24px;
+  text-align: center;
+  padding: 6px 0;
+}
+.result {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #21262d;
+  display: flex; align-items: center; gap: 12px;
+}
+.check {
+  width: 32px; height: 32px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+}
+.result-text {
+  font-size: 16px;
+  color: #8b949e;
+}
+.result-text strong { color: #e2e8f0; }
+</style></head><body>
+  <div class="left">
+    <div class="badge">LIVE BUG FIX</div>
+    <div class="bug-number">BUG-020</div>
+    <div class="title">Button Styling Broken<br>in Production</div>
+    <div class="subtitle">
+      <span>One line fix</span> -- found, fixed, deployed<br>
+      Human + AI working together in real time
+    </div>
+  </div>
+  <div class="right">
+    <div class="code-panel">
+      <div class="code-header">
+        <div class="dot r"></div>
+        <div class="dot y"></div>
+        <div class="dot g"></div>
+      </div>
+      <div class="code-file">src/templates/isotto/base.html:17</div>
+      <div class="code-line"><span class="code-old">&lt;style&gt;</span></div>
+      <div class="arrow">&#8595;</div>
+      <div class="code-line"><span class="code-new">&lt;style type="text/tailwindcss"&gt;</span></div>
+      <div class="result">
+        <div class="check">&#10003;</div>
+        <div class="result-text"><strong>52 passed</strong>, 0 failed</div>
+      </div>
+    </div>
+  </div>
+</body></html>

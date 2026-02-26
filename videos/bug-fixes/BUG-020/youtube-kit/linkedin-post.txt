@@ -1,0 +1,37 @@
+One line of code.
+
+That's all it took to fix a production bug that broke every single button in our client's app.
+
+No background colors. No hover effects. No rounded corners. Just sad, naked HTML sitting there doing nothing.
+
+The culprit?
+
+<style>
+
+Should have been:
+
+<style type="text/tailwindcss">
+
+The Tailwind CDN needs that type attribute to process @apply directives. Without it, every .btn-primary, .btn-secondary, and .btn-success class gets silently ignored. No errors. No warnings. Just... nothing.
+
+I recorded the entire fix live. No scripts, no staging, no second takes.
+
+What you'll see in 8 minutes:
+-- The bug report in our QA dashboard
+-- Finding the root cause with Claude Code (AI co-pilot)
+-- The one-line fix
+-- Git push, deploy to production, 52 smoke tests passing
+-- Buttons working again on live
+-- Bug closed in the tracker
+
+The whole cycle. Find it, fix it, ship it, verify it.
+
+This is how we build software at HelixNet -- a human and an AI fixing real bugs in a real system used by real people in Sicily.
+
+No magic. Just good tools and good process.
+
+https://youtu.be/ROJOV_v-sbA
+
+Tech stack for the curious: FastAPI, Jinja2, Tailwind CSS (CDN), Keycloak OIDC, Docker, Hetzner Cloud.
+
+#webdev #bugfix #tailwindcss #livecoding #aicoding #claudecode #fastapi #devops #softwareengineering

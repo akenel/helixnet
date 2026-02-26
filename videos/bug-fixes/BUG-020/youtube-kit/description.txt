@@ -1,0 +1,28 @@
+A real bug fix captured live on screen. No scripts, no staging -- just a developer and an AI co-pilot (Claude Code) finding, fixing, deploying, and verifying a CSS bug on a production system.
+
+The bug: All buttons in ISOTTO Sport (a print shop management app) lost their styling -- no background colors, no hover effects, no rounded corners. Every .btn-primary, .btn-secondary, and .btn-success rendered as plain unstyled HTML.
+
+The fix: One line change in base.html
+- Before: <style>
+- After: <style type="text/tailwindcss">
+
+The Tailwind CDN script needs type="text/tailwindcss" to process @apply directives. Without it, all custom button classes were silently ignored.
+
+0:00 Intro
+0:08 Login to ISOTTO Sport
+0:40 QA Dashboard -- 12 Open Bugs
+1:10 BUG-020 -- Button Styling Broken
+2:28 Step 2: The Fix
+2:55 Code Change in VS Code
+3:15 Deploy to Production
+4:21 Step 3: Deployed -- 52 Passed
+4:24 AFTER -- Buttons Fixed
+7:06 Step 4: Verified
+7:49 Outro
+
+Tech stack: FastAPI, Jinja2, Tailwind CSS (CDN), Keycloak OIDC, Docker, Hetzner Cloud
+
+Built with HelixNet -- an open platform for Swiss SMEs
+AI co-pilot: Claude Code by Anthropic
+
+#bugfix #tailwindcss #webdev #livecoding #aicoding #claudecode #fastapi #devops

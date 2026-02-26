@@ -1,0 +1,308 @@
+1
+00:00:00,000 --> 00:00:10,000
+This is bug 20. A real bug fixed captured live, me and the Claude CLI working together.
+
+2
+00:00:10,000 --> 00:00:20,000
+So let's start. I'm going to show you that we sign in as the end user or maybe as the tester.
+
+3
+00:00:20,000 --> 00:00:26,000
+In this case, it doesn't really matter. We can both look at the bug reports.
+
+4
+00:00:26,000 --> 00:00:37,000
+This is the ISO or ISO TOW sport, the print shop management system. We build for a client in Trapani Sicily.
+
+5
+00:00:37,000 --> 00:00:46,000
+And I'm logging in to the live server. The dashboard looks fine at first glance, but the buttons are broken.
+
+6
+00:00:46,000 --> 00:00:50,000
+Let me show you in the QA dashboard.
+
+7
+00:00:51,000 --> 00:01:05,000
+We have a QA testing system and AN is our tester, 47 test cases, 12 open bugs, and we track everything.
+
+8
+00:01:05,000 --> 00:01:13,000
+Here's bug 20. Button style, lane broken, no hover, no backgrounds.
+
+9
+00:01:14,000 --> 00:01:23,000
+You'll see that in the screenshot that I previously took in the system by using it.
+
+10
+00:01:23,000 --> 00:01:31,000
+And here it is. We're looking at bug 20. We're going to click on it and we're going to take a look at that previous screen.
+
+11
+00:01:31,000 --> 00:01:37,000
+We look at the description. These bugs are actually created by the LLM.
+
+12
+00:01:38,000 --> 00:01:43,000
+They, he put them together and reported them for me, so I didn't have to create everything.
+
+13
+00:01:43,000 --> 00:01:48,000
+He knew about these issues. And it's true. I had mentioned them before.
+
+14
+00:01:48,000 --> 00:01:55,000
+So right there you see it's just plain text. We're not getting the tailwind styling.
+
+15
+00:01:55,000 --> 00:01:59,000
+So those buttons need to be fixed.
+
+16
+00:01:59,000 --> 00:02:06,000
+And I think you can see that quite clearly. It's actually at the top there's another problem where the variable names are put in.
+
+17
+00:02:06,000 --> 00:02:13,000
+It's not the actual values. So there's actually two bugs reported in the screenshot.
+
+18
+00:02:13,000 --> 00:02:17,000
+But we're only going to fix the one bug for now to keep it simple.
+
+19
+00:02:17,000 --> 00:02:27,000
+And that's just the styling on the buttons.
+
+20
+00:02:27,000 --> 00:02:31,000
+Now we're going to go into the fix.
+
+21
+00:02:31,000 --> 00:02:37,000
+So basically I could have just said bug 20 fix it. But I put a little bit extra description in.
+
+22
+00:02:37,000 --> 00:02:41,000
+You can see that on the left. That's the actual command.
+
+23
+00:02:41,000 --> 00:02:46,000
+So I'm just pressing enter there and he's going to begin the process.
+
+24
+00:02:46,000 --> 00:02:52,000
+The LLM we're now in the Claude CLI and he's executing that command.
+
+25
+00:02:52,000 --> 00:02:58,000
+Which basically says go look at bug 20 and fix it.
+
+26
+00:03:02,000 --> 00:03:10,000
+There it is. One line the style tag. He found that in the HTML.
+
+27
+00:03:10,000 --> 00:03:19,000
+So the tailwind CDN script could process the add apply directives but it had a problem with the type.
+
+28
+00:03:19,000 --> 00:03:25,000
+And without all the buttons classes were just ignored.
+
+29
+00:03:25,000 --> 00:03:30,000
+So there'd be a get push, a deploy to the hairdresser, our production server.
+
+30
+00:03:30,000 --> 00:03:37,000
+Then the smoke test runs automatically with 52 checks.
+
+31
+00:03:37,000 --> 00:03:41,000
+We'll see that shortly.
+
+32
+00:03:41,000 --> 00:03:48,000
+So on the aside I'm sort of looking around and on the right side with the browser.
+
+33
+00:03:48,000 --> 00:03:52,000
+Just fooling around there. And now I'm going to sign in.
+
+34
+00:03:52,000 --> 00:03:57,000
+And I need to sign into the correct realm because we've got two realms here.
+
+35
+00:03:57,000 --> 00:04:03,000
+There's a realm for the camper app and the famous guy is not working at the camper place.
+
+36
+00:04:03,000 --> 00:04:09,000
+Famous guy works at the Isoto print shop.
+
+37
+00:04:09,000 --> 00:04:18,000
+So we're actually fixing bugs for two different applications all within the same toolkit.
+
+38
+00:04:19,000 --> 00:04:23,000
+And there you see it. 52 past zero failed.
+
+39
+00:04:23,000 --> 00:04:25,000
+Herzner is green.
+
+40
+00:04:25,000 --> 00:04:32,000
+So now we're into the sports system printing system.
+
+41
+00:04:32,000 --> 00:04:39,000
+We're going to look at an order.
+
+42
+00:04:39,000 --> 00:04:42,000
+This is data that we have in the system.
+
+43
+00:04:42,000 --> 00:04:47,000
+This is our UAT system. This is what the end users will see.
+
+44
+00:04:47,000 --> 00:04:50,000
+So we're just trying to make sure everything is working properly.
+
+45
+00:04:50,000 --> 00:04:53,000
+And we see those buttons are fixed now.
+
+46
+00:04:53,000 --> 00:04:56,000
+The full tailwind styling.
+
+47
+00:04:56,000 --> 00:05:03,000
+Very mobile, friendly, easy to read.
+
+48
+00:05:03,000 --> 00:05:08,000
+So that is generally the fix.
+
+49
+00:05:08,000 --> 00:05:14,000
+But we're going to look a little bit closer at the order detail.
+
+50
+00:05:14,000 --> 00:05:20,000
+This is a real real order for a local football team.
+
+51
+00:05:20,000 --> 00:05:26,000
+And we're going to scroll down and there are the buttons.
+
+52
+00:05:26,000 --> 00:05:33,000
+And I'm just showing you there's some different buttons at the top for this testing tool.
+
+53
+00:05:33,000 --> 00:05:38,000
+And here we're looking at the bug report again.
+
+54
+00:05:38,000 --> 00:05:42,000
+We're going to go to bug number 20.
+
+55
+00:05:42,000 --> 00:05:49,000
+Just to see that it's been updated correctly.
+
+56
+00:05:49,000 --> 00:05:52,000
+So it says that it's open still there.
+
+57
+00:05:52,000 --> 00:06:05,000
+But that's because there hasn't been a proper refresh done yet.
+
+58
+00:06:05,000 --> 00:06:18,000
+So I'm trying to log out and log back in as a different user.
+
+59
+00:06:18,000 --> 00:06:27,000
+So now I'm logged in as the actual end user, the famous guy who works at this sports place.
+
+60
+00:06:27,000 --> 00:06:31,000
+That does a lot of printing for sporting events and stuff.
+
+61
+00:06:31,000 --> 00:06:38,000
+I'm going to sign in as him and look at the same orders and make sure the buttons look correct for him too.
+
+62
+00:06:38,000 --> 00:06:43,000
+So a little bit of overkill on the checking, but it doesn't hurt.
+
+63
+00:06:43,000 --> 00:06:48,000
+You sure don't want to deliver two-year end users something that doesn't work.
+
+64
+00:06:48,000 --> 00:06:50,000
+So you can test it yourself.
+
+65
+00:06:50,000 --> 00:06:58,000
+In this case, we're also signing in into the UAT test system and showing that the buttons are working.
+
+66
+00:06:58,000 --> 00:07:08,000
+Here we're just going to do a quick update and we press send and save changes.
+
+67
+00:07:08,000 --> 00:07:11,000
+So everything is verified.
+
+68
+00:07:11,000 --> 00:07:18,000
+Now the LLM can update the bug in our QA system, status change to fix, commit the Sean link.
+
+69
+00:07:18,000 --> 00:07:22,000
+Everything is tracked, activity trail, audit logs, the works.
+
+70
+00:07:22,000 --> 00:07:27,000
+Let's go back now and take a look.
+
+71
+00:07:27,000 --> 00:07:31,000
+There you see, it's actually updated.
+
+72
+00:07:31,000 --> 00:07:35,000
+It tells us when it was assigned, the comments, the opened.
+
+73
+00:07:35,000 --> 00:07:42,000
+So there's a little bit of a trail of what, you know, statuses and has been changed along the way.
+
+74
+00:07:42,000 --> 00:07:45,000
+And that's how we build software.
+
+75
+00:07:45,000 --> 00:07:49,000
+No scripts, no fakes, just a human and an AI.
+
+76
+00:07:49,000 --> 00:07:52,000
+Fixing bugs in a real system.
+
+77
+00:07:52,000 --> 00:07:54,000
+Thanks for watching.
+
