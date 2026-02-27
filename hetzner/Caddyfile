@@ -1,3 +1,4 @@
+# HelixNet -- port 443
 :443 {
 	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
 
@@ -16,4 +17,11 @@
 	handle {
 		reverse_proxy helix-platform:8000
 	}
+}
+
+# BorrowHood -- port 8443 (DEV Challenge)
+:8443 {
+	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
+
+	reverse_proxy borrowhood:8000
 }

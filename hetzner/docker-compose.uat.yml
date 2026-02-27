@@ -28,6 +28,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8443:8443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./certs:/etc/caddy/certs:ro
@@ -37,6 +38,8 @@ services:
       - helixnet
     depends_on:
       helix-platform:
+        condition: service_healthy
+      borrowhood:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "caddy", "version"]
@@ -224,6 +227,37 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+# -------------------------------------------------------------
+# BORROWHOOD -- Community Rental Platform (DEV Challenge)
+# -------------------------------------------------------------
+# Separate FastAPI app on port 8443 via Caddy.
+# Uses same Postgres instance, separate borrowhood database.
+# Public URL: https://46.62.138.218:8443/
+# -------------------------------------------------------------
+  borrowhood:
+    build:
+      context: ../BorrowHood
+      dockerfile: Dockerfile
+    image: borrowhood:latest
+    container_name: borrowhood
+    restart: unless-stopped
+    env_file:
+      - ./borrowhood.env
+    volumes:
+      - ../BorrowHood/src:/app/src
+      - ../BorrowHood/seed_data:/app/seed_data
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 # -------------------------------------------------------------
 # NAMED VOLUMES
