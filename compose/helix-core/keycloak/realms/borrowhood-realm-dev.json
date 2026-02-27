@@ -1,0 +1,726 @@
+{
+  "realm": "borrowhood",
+  "enabled": true,
+  "displayName": "BorrowHood - Community Sharing Platform",
+  "displayNameHtml": "<div class='kc-logo-text'><span>BorrowHood</span></div>",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": true,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@borrowhood.local",
+    "fromDisplayName": "BorrowHood",
+    "encryption": "none",
+    "auth": false
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "bh-member",
+        "description": "Basic community member. Can browse, rent items, leave reviews, manage own workshop profile."
+      },
+      {
+        "name": "bh-lender",
+        "description": "Verified lender. Can list items for rent/sale/service, manage listings, view rental requests."
+      },
+      {
+        "name": "bh-moderator",
+        "description": "Community moderator. Can review reports, suspend listings, issue warnings to users."
+      },
+      {
+        "name": "bh-admin",
+        "description": "Platform administrator. Full control over users, listings, reports, and system settings."
+      },
+      {
+        "name": "bh-operator",
+        "description": "Neighborhood operator. Manages a BorrowHood chapter, approves lenders, monitors activity."
+      },
+      {
+        "name": "bh-qa-tester",
+        "description": "QA tester. Testing dashboard, bug reporting, test execution, verification."
+      },
+      {
+        "name": "default-roles-borrowhood",
+        "description": "Default roles for borrowhood realm",
+        "composite": true
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "Members",
+      "realmRoles": [
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "attributes": {
+        "description": [
+          "Community members who borrow and browse."
+        ]
+      }
+    },
+    {
+      "name": "Lenders",
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "attributes": {
+        "description": [
+          "Verified lenders who list items and manage workshops."
+        ]
+      }
+    },
+    {
+      "name": "Moderators",
+      "realmRoles": [
+        "bh-moderator",
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "attributes": {
+        "description": [
+          "Community moderators who handle reports and content."
+        ]
+      }
+    },
+    {
+      "name": "Operators",
+      "realmRoles": [
+        "bh-operator",
+        "bh-moderator",
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "attributes": {
+        "description": [
+          "Neighborhood operators who manage local BorrowHood chapters."
+        ]
+      }
+    },
+    {
+      "name": "Admins",
+      "realmRoles": [
+        "bh-admin",
+        "bh-operator",
+        "bh-moderator",
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "attributes": {
+        "description": [
+          "Platform administrators with full system access."
+        ]
+      }
+    },
+    {
+      "name": "QA Testers",
+      "realmRoles": [
+        "bh-qa-tester",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "attributes": {
+        "description": [
+          "Quality assurance testers for BorrowHood platform."
+        ]
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "borrowhood-web",
+      "name": "BorrowHood Web Application (Public)",
+      "description": "Frontend web application for community sharing platform",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "https://borrowhood.helix.local/*",
+        "https://helix.local/*",
+        "http://localhost:8000/*",
+        "http://localhost:3000/*",
+        "https://46.62.138.218/*",
+        "https://46.62.138.218:8443/*"
+      ],
+      "webOrigins": [
+        "https://borrowhood.helix.local",
+        "https://helix.local",
+        "http://localhost:8000",
+        "http://localhost:3000",
+        "https://46.62.138.218",
+        "https://46.62.138.218:8443",
+        "+"
+      ],
+      "defaultClientScopes": [
+        "email",
+        "profile",
+        "roles",
+        "web-origins"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access"
+      ]
+    },
+    {
+      "clientId": "borrowhood-api",
+      "name": "BorrowHood Service Account (Backend API)",
+      "description": "Service account for backend API operations",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "secret": "helix_pass",
+      "bearerOnly": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "email",
+        "profile",
+        "roles",
+        "web-origins"
+      ],
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false"
+      }
+    },
+    {
+      "clientId": "admin-cli",
+      "enabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "sally",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "sally@borrowhood.test",
+      "firstName": "Sally",
+      "lastName": "Baker",
+      "attributes": {
+        "display_name": [
+          "Sally Baker"
+        ],
+        "workshop_name": [
+          "Sally's Kitchen"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "en",
+          "it"
+        ],
+        "notes": [
+          "Pastry chef with 200 cookie cutters. The original neighborhood lender."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "mike",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "mike@borrowhood.test",
+      "firstName": "Mike",
+      "lastName": "Kenel",
+      "attributes": {
+        "display_name": [
+          "Mike Kenel"
+        ],
+        "workshop_name": [
+          "Mike's Tool Shed"
+        ],
+        "city": [
+          "Stans"
+        ],
+        "language": [
+          "de",
+          "en"
+        ],
+        "notes": [
+          "Mechanic with 500 inherited tools. Albert's eldest son."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "angel",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "angel@borrowhood.test",
+      "firstName": "Angelo",
+      "lastName": "Kenel",
+      "attributes": {
+        "display_name": [
+          "Angelo Kenel"
+        ],
+        "workshop_name": [
+          "The Black Wolf Workshop"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "en",
+          "de",
+          "fr",
+          "it"
+        ],
+        "notes": [
+          "Platform architect. The builder. Swiss-Canadian in Sicily."
+        ]
+      },
+      "realmRoles": [
+        "bh-admin",
+        "bh-operator",
+        "bh-moderator",
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Admins"
+      ]
+    },
+    {
+      "username": "nino",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "nino@borrowhood.test",
+      "firstName": "Nino",
+      "lastName": "Cassisa",
+      "attributes": {
+        "display_name": [
+          "Nino Cassisa"
+        ],
+        "workshop_name": [
+          "Camper & Tour Trapani"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Camper & Tour operator. Neighborhood champion for Trapani west."
+        ]
+      },
+      "realmRoles": [
+        "bh-operator",
+        "bh-moderator",
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Operators"
+      ]
+    },
+    {
+      "username": "maria",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "maria@borrowhood.test",
+      "firstName": "Maria",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Maria Ferretti"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "72-year-old master gardener. Lends tools but doesn't use computers. Grandson manages profile."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "marco",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "marco@borrowhood.test",
+      "firstName": "Marco",
+      "lastName": "Moretti",
+      "attributes": {
+        "display_name": [
+          "Marco Moretti"
+        ],
+        "workshop_name": [
+          "Bottega del Legno"
+        ],
+        "city": [
+          "Erice"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Master woodworker. Offers tools and training sessions."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "jake",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "jake@borrowhood.test",
+      "firstName": "Jake",
+      "lastName": "Chen",
+      "attributes": {
+        "display_name": [
+          "Jake Chen"
+        ],
+        "workshop_name": [
+          "Jake's Maker Space"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "en",
+          "zh"
+        ],
+        "notes": [
+          "Electronics wizard with 3D printer. Rents digital assets too."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "rosa",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "rosa@borrowhood.test",
+      "firstName": "Rosa",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Rosa Ferretti"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "84-year-old. No computer. Grandson Marco manages her profile. Has vintage sewing machines."
+        ]
+      },
+      "realmRoles": [
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Members"
+      ]
+    },
+    {
+      "username": "dave",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "dave@borrowhood.test",
+      "firstName": "Dave",
+      "lastName": "Thompson",
+      "attributes": {
+        "display_name": [
+          "Dave Thompson"
+        ],
+        "workshop_name": [
+          "Dave's Sports Locker"
+        ],
+        "city": [
+          "Marsala"
+        ],
+        "language": [
+          "en"
+        ],
+        "notes": [
+          "Sports gear lender. Bikes, surfboards, camping gear."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "luna",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "luna@borrowhood.test",
+      "firstName": "Luna",
+      "lastName": "Greco",
+      "attributes": {
+        "display_name": [
+          "Luna Greco"
+        ],
+        "workshop_name": [
+          "Luna's Art Studio"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en",
+          "es"
+        ],
+        "notes": [
+          "Artist and pottery teacher. Offers both tools and training."
+        ]
+      },
+      "realmRoles": [
+        "bh-moderator",
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Moderators"
+      ]
+    },
+    {
+      "username": "anne",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "anne@helixnet.test",
+      "firstName": "Anne",
+      "lastName": "Muthoni",
+      "attributes": {
+        "display_name": [
+          "Anne Muthoni"
+        ],
+        "language": [
+          "en"
+        ],
+        "notes": [
+          "QA tester. The quality gate. Her word is final."
+        ]
+      },
+      "realmRoles": [
+        "bh-qa-tester",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/QA Testers"
+      ]
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 1800,
+  "accessTokenLifespanForImplicitFlow": 1800,
+  "ssoSessionIdleTimeout": 3600,
+  "ssoSessionMaxLifespan": 43200,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "requiredCredentials": [
+    "password"
+  ],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "webAuthnPolicyRpEntityName": "keycloak",
+  "webAuthnPolicySignatureAlgorithms": [
+    "ES256"
+  ],
+  "webAuthnPolicyRpId": "",
+  "webAuthnPolicyAttestationConveyancePreference": "not specified",
+  "webAuthnPolicyAuthenticatorAttachment": "not specified",
+  "webAuthnPolicyRequireResidentKey": "not specified",
+  "webAuthnPolicyUserVerificationRequirement": "not specified",
+  "webAuthnPolicyCreateTimeout": 0,
+  "webAuthnPolicyAvoidSameAuthenticatorRegister": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "it"
+  ],
+  "defaultLocale": "en",
+  "attributes": {
+    "frontendUrl": "",
+    "adminUrl": "",
+    "cibaBackchannelTokenDeliveryMode": "poll",
+    "cibaExpiresIn": "120",
+    "cibaAuthRequestedUserHint": "login_hint",
+    "cibaInterval": "5",
+    "parRequestUriLifespan": "60",
+    "clientOfflineSessionIdleTimeout": "0",
+    "clientOfflineSessionMaxLifespan": "0",
+    "clientSessionIdleTimeout": "0",
+    "clientSessionMaxLifespan": "0"
+  }
+}
