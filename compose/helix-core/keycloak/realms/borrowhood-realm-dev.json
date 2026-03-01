@@ -654,6 +654,986 @@
       "groups": [
         "/QA Testers"
       ]
+    },
+    {
+      "username": "sofia",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "sofia@borrowhood.test",
+      "firstName": "Sofia",
+      "lastName": "Ferraro",
+      "attributes": {
+        "display_name": [
+          "Sofia Ferraro"
+        ],
+        "workshop_name": [
+          "Luce di Sicilia"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Professional photographer. Camera and studio equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "giuseppe",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "giuseppe@borrowhood.test",
+      "firstName": "Giuseppe",
+      "lastName": "Russo",
+      "attributes": {
+        "display_name": [
+          "Giuseppe Russo"
+        ],
+        "workshop_name": [
+          "Elettrica Russo"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Licensed electrician. 20 years in the trade. Specialty tool rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "chiara",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "chiara@borrowhood.test",
+      "firstName": "Chiara",
+      "lastName": "Lombardi",
+      "attributes": {
+        "display_name": [
+          "Chiara Lombardi"
+        ],
+        "workshop_name": [
+          "Sapori di Chiara"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Chef trained in Palermo and Rome. Cooking classes and equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "luca",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "luca@borrowhood.test",
+      "firstName": "Luca",
+      "lastName": "Di Maggio",
+      "attributes": {
+        "display_name": [
+          "Luca Di Maggio"
+        ],
+        "workshop_name": [
+          "Idraulica Di Maggio"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Third-generation plumber. Specialty plumbing tool rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "francesca",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "francesca@borrowhood.test",
+      "firstName": "Francesca",
+      "lastName": "Vitale",
+      "attributes": {
+        "display_name": [
+          "Francesca Vitale"
+        ],
+        "workshop_name": [
+          "Fiori di Francesca"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Florist and event decorator. Wedding and event equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "paolo",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "paolo@borrowhood.test",
+      "firstName": "Paolo",
+      "lastName": "Costa",
+      "attributes": {
+        "display_name": [
+          "Paolo Costa"
+        ],
+        "workshop_name": [
+          "Colori di Paolo"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "House painter and decorator. 25 years experience. Professional equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "carmen",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "carmen@borrowhood.test",
+      "firstName": "Carmen",
+      "lastName": "Romano",
+      "attributes": {
+        "display_name": [
+          "Carmen Romano"
+        ],
+        "workshop_name": [
+          "Sartoria Carmen"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en",
+          "es"
+        ],
+        "notes": [
+          "Seamstress since 16. Industrial sewing machines and tailoring services."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "roberto",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "roberto@borrowhood.test",
+      "firstName": "Roberto",
+      "lastName": "Di Stefano",
+      "attributes": {
+        "display_name": [
+          "Roberto Di Stefano"
+        ],
+        "workshop_name": [
+          "Il Pescatore Roberto"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Fisherman for 35 years. Fishing gear and boat equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "elena",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "elena@borrowhood.test",
+      "firstName": "Elena",
+      "lastName": "Rossi",
+      "attributes": {
+        "display_name": [
+          "Elena Rossi"
+        ],
+        "workshop_name": [
+          "Yoga con Elena"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en",
+          "de"
+        ],
+        "notes": [
+          "Certified yoga instructor. Group equipment and retreat supplies rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "matteo",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "matteo@borrowhood.test",
+      "firstName": "Matteo",
+      "lastName": "Bruno",
+      "attributes": {
+        "display_name": [
+          "Matteo Bruno"
+        ],
+        "workshop_name": [
+          "Falegnameria Matteo"
+        ],
+        "city": [
+          "Erice"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Carpenter and furniture maker. Power tool and workshop time rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "valentina",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "valentina@borrowhood.test",
+      "firstName": "Valentina",
+      "lastName": "Serra",
+      "attributes": {
+        "display_name": [
+          "Valentina Serra"
+        ],
+        "workshop_name": [
+          "Dolci di Valentina"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Pastry chef specializing in Sicilian sweets. Professional baking equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "antonio",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "antonio@borrowhood.test",
+      "firstName": "Antonio",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Antonio Ferretti"
+        ],
+        "workshop_name": [
+          "Officina Antonio"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Auto mechanic 28 years. European car specialist. Garage equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "giulia",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "giulia@borrowhood.test",
+      "firstName": "Giulia",
+      "lastName": "La Rosa",
+      "attributes": {
+        "display_name": [
+          "Giulia La Rosa"
+        ],
+        "workshop_name": [
+          "Studio Giulia Design"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en",
+          "fr"
+        ],
+        "notes": [
+          "Interior designer. Professional renovation tool rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "tommaso",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "tommaso@borrowhood.test",
+      "firstName": "Tommaso",
+      "lastName": "Amato",
+      "attributes": {
+        "display_name": [
+          "Tommaso Amato"
+        ],
+        "workshop_name": [
+          "Oliveto Amato"
+        ],
+        "city": [
+          "Erice"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Fourth-generation olive farmer. Harvest equipment and oil pressing demos."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "alessia",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "alessia@borrowhood.test",
+      "firstName": "Alessia",
+      "lastName": "Colombo",
+      "attributes": {
+        "display_name": [
+          "Alessia Colombo"
+        ],
+        "workshop_name": [
+          "Musica con Alessia"
+        ],
+        "city": [
+          "Trapani"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Conservatory-trained music teacher. Piano and guitar rental for students."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "marcoferretti",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "marcoferretti@borrowhood.test",
+      "firstName": "Marco",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Marco Ferretti"
+        ],
+        "workshop_name": [
+          "Saldatura Ferretti"
+        ],
+        "city": [
+          "Alcamo"
+        ],
+        "language": [
+          "it"
+        ],
+        "notes": [
+          "Welder and metalworker. 30 years. MIG, TIG, plasma cutting."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "giovanni",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "giovanni@borrowhood.test",
+      "firstName": "Giovanni",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Giovanni Ferretti"
+        ],
+        "workshop_name": [
+          "Mobili di Giovanni"
+        ],
+        "city": [
+          "Castellammare del Golfo"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Furniture restorer and maker. 20 years."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "fabio",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "fabio@borrowhood.test",
+      "firstName": "Fabio",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Fabio Ferretti"
+        ],
+        "workshop_name": [
+          "Avventura Sicilia"
+        ],
+        "city": [
+          "San Vito lo Capo"
+        ],
+        "language": [
+          "it",
+          "en",
+          "de"
+        ],
+        "notes": [
+          "Outdoor guide. Camping, climbing, hiking gear rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "andrea",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "andrea@borrowhood.test",
+      "firstName": "Andrea",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Andrea Ferretti"
+        ],
+        "workshop_name": [
+          "Blu Trapani Watersports"
+        ],
+        "city": [
+          "Custonaci"
+        ],
+        "language": [
+          "it",
+          "en",
+          "de"
+        ],
+        "notes": [
+          "Kitesurf and windsurf instructor. Water sports equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "lorenzo",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "lorenzo@borrowhood.test",
+      "firstName": "Lorenzo",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Lorenzo Ferretti"
+        ],
+        "workshop_name": [
+          "TechLab Lorenzo"
+        ],
+        "city": [
+          "Favignana"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "IT consultant. Computer and networking equipment rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "pietro",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "pietro@borrowhood.test",
+      "firstName": "Pietro",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Pietro Ferretti"
+        ],
+        "workshop_name": [
+          "SkyView Sicilia"
+        ],
+        "city": [
+          "Scopello"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Licensed drone pilot and aerial photographer. Drone rental and services."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "sara",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "sara@borrowhood.test",
+      "firstName": "Sara",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Sara Ferretti"
+        ],
+        "workshop_name": [
+          "Pedala Sicilia"
+        ],
+        "city": [
+          "Castellammare del Golfo"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Cycling enthusiast and bike mechanic. Road, mountain, and e-bike rental."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    },
+    {
+      "username": "vittorio",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "helix_pass",
+          "temporary": false
+        }
+      ],
+      "email": "vittorio@borrowhood.test",
+      "firstName": "Vittorio",
+      "lastName": "Ferretti",
+      "attributes": {
+        "display_name": [
+          "Vittorio Ferretti"
+        ],
+        "workshop_name": [
+          "Marina Vittorio"
+        ],
+        "city": [
+          "Bonagia"
+        ],
+        "language": [
+          "it",
+          "en"
+        ],
+        "notes": [
+          "Marine mechanic and boat rental. Water sports gear."
+        ]
+      },
+      "realmRoles": [
+        "bh-lender",
+        "bh-member",
+        "default-roles-borrowhood"
+      ],
+      "groups": [
+        "/Lenders"
+      ]
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "github",
+      "displayName": "GitHub",
+      "providerId": "github",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "Ov23libQ1UlS1cYCWQQy",
+        "clientSecret": "151f746d0393dc71c18b138220f336bfc94d9ddb",
+        "defaultScope": "user:email read:user",
+        "syncMode": "IMPORT"
+      }
+    }
+  ],
+  "identityProviderMappers": [
+    {
+      "name": "github-username",
+      "identityProviderAlias": "github",
+      "identityProviderMapper": "github-user-attribute-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "jsonField": "login",
+        "userAttribute": "github_username"
+      }
+    },
+    {
+      "name": "github-avatar",
+      "identityProviderAlias": "github",
+      "identityProviderMapper": "github-user-attribute-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "jsonField": "avatar_url",
+        "userAttribute": "avatar_url"
+      }
     }
   ],
   "browserSecurityHeaders": {
