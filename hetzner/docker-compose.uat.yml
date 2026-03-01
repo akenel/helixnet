@@ -28,7 +28,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8443:8443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./certs:/etc/caddy/certs:ro
@@ -37,8 +36,6 @@ services:
     networks:
       - helixnet
     depends_on:
-      helix-platform:
-        condition: service_healthy
       borrowhood:
         condition: service_healthy
     healthcheck:
@@ -231,9 +228,9 @@ services:
 # -------------------------------------------------------------
 # BORROWHOOD -- Community Rental Platform (DEV Challenge)
 # -------------------------------------------------------------
-# Separate FastAPI app on port 8443 via Caddy.
+# Separate FastAPI app, served on port 443 via Caddy.
 # Uses same Postgres instance, separate borrowhood database.
-# Public URL: https://46.62.138.218:8443/
+# Public URL: https://46.62.138.218/
 # -------------------------------------------------------------
   borrowhood:
     build:

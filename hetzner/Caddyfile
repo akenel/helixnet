@@ -1,7 +1,8 @@
-# HelixNet -- port 443
+# BorrowHood -- port 443 (DEV Weekend Challenge)
 :443 {
 	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
 
+	# Keycloak auth paths (BorrowHood needs these for OIDC login)
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -11,17 +12,9 @@
 	handle /js/* {
 		reverse_proxy keycloak:8080
 	}
-	handle /admin/* {
-		reverse_proxy keycloak:8080
-	}
+
+	# BorrowHood app (default)
 	handle {
-		reverse_proxy helix-platform:8000
+		reverse_proxy borrowhood:8000
 	}
-}
-
-# BorrowHood -- port 8443 (DEV Challenge)
-:8443 {
-	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
-
-	reverse_proxy borrowhood:8000
 }
