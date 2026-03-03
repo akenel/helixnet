@@ -226,6 +226,31 @@ services:
         condition: service_healthy
 
 # -------------------------------------------------------------
+# LIBRETRANSLATE -- Self-hosted Translation API
+# -------------------------------------------------------------
+# Translates user-generated content on-demand (items, reviews,
+# help posts). Only loads en + it to save RAM (~300MB).
+# API: POST /translate  { q, source, target }
+# Health: GET /languages
+# -------------------------------------------------------------
+  libretranslate:
+    image: libretranslate/libretranslate:v1.6.3
+    container_name: libretranslate
+    restart: unless-stopped
+    environment:
+      - LT_LOAD_ONLY=en,it
+      - LT_DISABLE_WEB_UI=true
+      - LT_UPDATE_MODELS=true
+    networks:
+      - helixnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/languages || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+# -------------------------------------------------------------
 # BORROWHOOD -- Community Rental Platform (DEV Challenge)
 # -------------------------------------------------------------
 # Separate FastAPI app, served on port 443 via Caddy.
@@ -241,6 +266,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./borrowhood.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ../BorrowHood/src:/app/src
       - ../BorrowHood/seed_data:/app/seed_data
