@@ -1,29 +1,33 @@
 #!/bin/bash
-# readme.sh -- Read any .md or .txt file aloud (neural TTS via Piper)
+# readme.sh -- Grace Hopper reads your files aloud (neural TTS via Piper)
 #
-# Usage: readme.sh PLOT.md              (default: Grace -- British female, smooth neural)
-#        readme.sh PLOT.md --american   (American female)
+# Usage: readme.sh PLOT.md              (default: Grace Hopper -- British English)
+#        readme.sh PLOT.md --italian    (Grace Hopper -- Italian)
+#        readme.sh PLOT.md --american   (Grace Hopper -- American English)
 #        readme.sh PLOT.md --slow       (slower speed)
 #        readme.sh PLOT.md --save       (save WAV to same directory as input file)
-#        readme.sh PLOT.md --save --american
 #        readme.sh --stop               (stop current reading)
 #        readme.sh --test               (quick test sentence)
-#        readme.sh --robot PLOT.md      (fallback to spd-say if Piper unavailable)
+#        readme.sh --test --italian     (test Italian voice)
 #
-# Default voice: Grace (en_GB-alba-medium) -- smooth British female, neural TTS
-# Think Grace Hopper briefing you on your own plot files.
+# One voice. One name. 3 languages (more coming).
+# Grace Hopper -- named after the Admiral who said
+# "It's easier to ask forgiveness than permission."
 
 VENV="/home/angel/repos/helixnet/.venv"
 VOICES="/home/angel/.local/share/piper-voices"
 
-# Voice presets (Piper models)
-VOICE="$VOICES/en_GB-alba-medium.onnx"       # Grace -- British female (default)
-VOICE_NAME="Grace"
+# Grace Hopper -- one voice, many languages
+VOICE="$VOICES/en_GB-alba-medium.onnx"
+LANG="English"
 SPEED="1.0"
 SAVE=false
 ROBOT=false
 
 FILE=""
+DO_TEST=false
+
+# First pass: collect all flags
 for arg in "$@"; do
     case "$arg" in
         --stop)
@@ -31,42 +35,37 @@ for arg in "$@"; do
             echo "Stopped."
             exit 0
             ;;
-        --american)
+        --italian|--it)
+            VOICE="$VOICES/it_IT-paola-medium.onnx"
+            LANG="Italiano"
+            ;;
+        --american|--us)
             VOICE="$VOICES/en_US-lessac-medium.onnx"
-            VOICE_NAME="Lessac"
+            LANG="American"
             ;;
-        --slow)
-            SPEED="1.3"
-            ;;
-        --fast)
-            SPEED="0.8"
-            ;;
-        --save)
-            SAVE=true
-            ;;
-        --robot)
-            ROBOT=true
-            ;;
-        --test)
-            echo "Testing voice... ($VOICE_NAME, neural TTS)"
-            echo "Hello Angel. I am Grace, your reader. Give me a markdown file and I will read it to you while you eat lunch, walk around, or just close your eyes and listen. Smooth, clear, no robot. Not bad for a free tool." | \
-                "$VENV/bin/piper" --model "$VOICE" --length-scale "$SPEED" --output-raw 2>/dev/null | \
-                aplay -r 22050 -f S16_LE -t raw -c 1 2>/dev/null
-            exit 0
-            ;;
+        --slow)   SPEED="1.3" ;;
+        --fast)   SPEED="0.8" ;;
+        --save)   SAVE=true ;;
+        --robot)  ROBOT=true ;;
+        --test)   DO_TEST=true ;;
         --voices)
-            echo "Voice presets (Piper neural TTS):"
+            echo "Grace Hopper -- Neural TTS Reader"
             echo ""
-            echo "  (default)    Grace -- British female, smooth neural (en_GB-alba-medium)"
-            echo "  --american   Lessac -- American female, clear neural (en_US-lessac-medium)"
+            echo "  Languages:"
+            echo "    (default)    English (British)     en_GB-alba-medium"
+            echo "    --italian    Italiano              it_IT-paola-medium"
+            echo "    --american   English (American)    en_US-lessac-medium"
             echo ""
-            echo "Options:"
-            echo "  --slow       Slower reading speed"
-            echo "  --fast       Faster reading speed"
-            echo "  --save       Save WAV file next to the input file"
-            echo "  --robot      Use spd-say fallback (no Piper needed)"
+            echo "  Options:"
+            echo "    --slow       Slower reading speed"
+            echo "    --fast       Faster reading speed"
+            echo "    --save       Save WAV file next to the input file"
+            echo "    --robot      Use spd-say fallback (no Piper needed)"
             echo ""
-            echo "Stop:   --stop  or  Ctrl+C"
+            echo "  Stop:   --stop  or  Ctrl+C"
+            echo ""
+            echo "  \"It's easier to ask forgiveness than permission.\""
+            echo "                                    -- Grace Hopper"
             exit 0
             ;;
         *)
@@ -77,10 +76,24 @@ for arg in "$@"; do
     esac
 done
 
+# Handle --test after all flags are parsed (so --italian --test works)
+if [ "$DO_TEST" = true ]; then
+    if [ "$LANG" = "Italiano" ]; then
+        TEST_TEXT="Buongiorno Angelo. Sono Grace Hopper, la tua lettrice. Dammi un file e te lo leggo io, mentre mangi, cammini, o semplicemente chiudi gli occhi e ascolti. Non male per uno strumento gratuito."
+    else
+        TEST_TEXT="Hello Angel. I am Grace Hopper, your reader. Give me a markdown file and I will read it to you while you eat lunch, walk around, or just close your eyes and listen. Smooth, clear, no robot. Not bad for a free tool."
+    fi
+    echo "Grace Hopper ($LANG)"
+    echo "$TEST_TEXT" | \
+        "$VENV/bin/piper" --model "$VOICE" --length-scale "$SPEED" --output-raw 2>/dev/null | \
+        aplay -r 22050 -f S16_LE -t raw -c 1 2>/dev/null
+    exit 0
+fi
+
 if [ -z "$FILE" ]; then
-    echo "readme.sh -- Read files aloud (neural TTS)"
+    echo "Grace Hopper -- Neural TTS Reader"
     echo ""
-    echo "Usage: readme.sh <file> [--american|--slow|--fast|--save|--robot|--stop|--test|--voices]"
+    echo "Usage: readme.sh <file> [--italian|--american|--slow|--fast|--save|--stop|--test|--voices]"
     exit 1
 fi
 
@@ -110,7 +123,7 @@ WORDS=$(echo "$TEXT" | wc -w)
 
 # Robot mode fallback (spd-say)
 if [ "$ROBOT" = true ]; then
-    echo "Reading: $FILE ($WORDS words, voice: spd-say robot)"
+    echo "Grace Hopper ($LANG, robot fallback) -- $WORDS words"
     echo "Ctrl+C to stop."
     echo ""
     echo "$TEXT" | spd-say -e -w -r -25 -p 50 -l en-GB-X-RP -y Annie
@@ -125,13 +138,13 @@ if [ ! -f "$VOICE" ]; then
     exit 1
 fi
 
-echo "Reading: $FILE ($WORDS words, voice: $VOICE_NAME)"
+echo "Grace Hopper ($LANG) -- $WORDS words"
 
 if [ "$SAVE" = true ]; then
-    # Save to WAV file next to the input
     DIR=$(dirname "$FILE")
     BASE=$(basename "$FILE" | sed 's/\.[^.]*$//')
-    OUT="$DIR/${BASE}-${VOICE_NAME,,}.wav"
+    LANG_TAG=$(echo "$LANG" | tr '[:upper:]' '[:lower:]')
+    OUT="$DIR/${BASE}-grace-${LANG_TAG}.wav"
     echo "Saving to: $OUT"
     echo "$TEXT" | "$VENV/bin/piper" --model "$VOICE" --length-scale "$SPEED" --output_file "$OUT" 2>/dev/null
     echo "Saved: $OUT ($(du -h "$OUT" | cut -f1))"
