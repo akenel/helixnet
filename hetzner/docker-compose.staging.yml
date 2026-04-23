@@ -1,0 +1,45 @@
+# =============================================================
+# LA PIAZZA STAGING -- additive overlay for Hetzner UAT stack
+# Sits alongside prod on the same host + network.
+# =============================================================
+# Design: share postgres + keycloak + minio + mailhog + caddy,
+# isolate app container + DB schema + KC realm + secrets.
+#
+# Usage from /opt/helixnet/hetzner on the server:
+#   docker compose -f docker-compose.uat.yml -f docker-compose.staging.yml up -d borrowhood_staging
+#   docker compose -f docker-compose.uat.yml -f docker-compose.staging.yml build borrowhood_staging
+#   docker compose -f docker-compose.uat.yml -f docker-compose.staging.yml logs -f borrowhood_staging
+# =============================================================
+
+services:
+
+  borrowhood_staging:
+    image: borrowhood:staging
+    build:
+      context: ../BorrowHood
+      dockerfile: Dockerfile
+    container_name: borrowhood_staging
+    restart: unless-stopped
+    env_file:
+      - ./.env.staging
+    environment:
+      BH_ENVIRONMENT: staging
+      BH_TELEGRAM_ENABLED: "false"
+      BH_EMAIL_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    networks:
+      - helixnet
+    # Resource limits: starve-proofing so a runaway staging can't
+    # OOM the box and take prod down with it.
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s

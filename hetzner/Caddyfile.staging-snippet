@@ -1,0 +1,30 @@
+# Snippet to append to hetzner/Caddyfile for staging.
+# Copy these blocks below the existing `lapiazza.app, borrowhood.duckdns.org` block.
+
+staging.lapiazza.app {
+	# MinIO media proxy -- same bucket (files are unguessable URLs)
+	handle /media/* {
+		uri strip_prefix /media
+		reverse_proxy minio:9000
+	}
+
+	# Keycloak auth paths (staging uses the same Keycloak instance,
+	# but the app points at the borrowhood-staging realm via env var)
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+
+	# Staging app
+	handle {
+		reverse_proxy borrowhood_staging:8000
+	}
+
+	# Exclude from search engines -- staging is not for humans to Google
+	header X-Robots-Tag "noindex, nofollow"
+}
