@@ -7,12 +7,22 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test --config=tests/playwright.config.ts",
+    "test:e2e:dev": "playwright test --config=tests/playwright.config.ts --project=dev",
+    "test:e2e:staging": "playwright test --config=tests/playwright.config.ts --project=staging",
+    "test:e2e:prod": "playwright test --config=tests/playwright.config.ts --project=prod",
+    "test:e2e:ui": "playwright test --config=tests/playwright.config.ts --ui",
+    "test:e2e:report": "playwright show-report tests/playwright-report"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "puppeteer": "^24.36.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "qrcode": "^1.5.4"
   }
 }

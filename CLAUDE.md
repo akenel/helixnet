@@ -100,6 +100,7 @@ Full story: `/field-notes-with-leo-dec5.md`
 7. **Read before edit** - Always read files before modifying
 8. **Check the music library** - 90+ tracks in sunrise-chain
 9. **No shortcut libraries or bundled subsets** - This is an enterprise app, not a toy. Use full, production-grade, industry-standard libraries. A bundled 20KB Tailwind subset silently broke every nav bar style we added -- hours of debugging for a 5-minute "shortcut." If a library exists as a CDN or full package, use the real thing. Never bundle a stripped-down subset and hope it has what you need. Same applies to Alpine.js, fonts, or any dependency. Shortcuts backfire.
+10. **Stories are first-class artifacts** - The Great Escape narrative is brand, not noise. Story commits (`story:` prefix) belong in the log alongside `feat:` and `fix:`. When auditing repo health, do NOT treat story commits as filler or low-signal. They are deliverables -- the thing that makes this *Angel's* town square in Sicily and not yet-another-FastAPI-app. The Mar 11 -> May 10 stretch had 3 code commits but a quarter of operator work (AXA, MAX roof, Easter postcards, ISOTTO templates). Measure the whole drive, not just `git log`.
 
 ---
 

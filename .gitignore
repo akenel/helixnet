@@ -115,3 +115,12 @@ docs/business/postcards/**/raw/
 # 🔑 KEYCLOAK MIGRATIONS - Local state tracking
 # ====================================================================
 scripts/kc-migrations/.applied
+
+# ====================================================================
+# 🧪 PLAYWRIGHT E2E TEST ARTIFACTS
+# ====================================================================
+test-results/
+playwright-report/
+tests/playwright-report/
+tests/test-results/
+.auth/
