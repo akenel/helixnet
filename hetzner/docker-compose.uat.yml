@@ -97,6 +97,7 @@ services:
       QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY: "true"
     volumes:
       - keycloak_data:/opt/keycloak/data
+      - /opt/helixnet/BorrowHood/keycloak/themes/lapiazza:/opt/keycloak/themes/lapiazza:ro
     networks:
       - helixnet
     depends_on:
@@ -224,6 +225,21 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+# -------------------------------------------------------------
+# MAILHOG -- Email Testing (catches all SMTP from Keycloak)
+# -------------------------------------------------------------
+# Keycloak sends verification/reset emails to mailhog:1025.
+# Web UI on port 8025 (internal only -- access via SSH tunnel).
+#   ssh -L 8025:localhost:8025 root@46.62.138.218
+#   Then open http://localhost:8025 in browser.
+# -------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    restart: unless-stopped
+    networks:
+      - helixnet
 
 # -------------------------------------------------------------
 # LIBRETRANSLATE -- Self-hosted Translation API

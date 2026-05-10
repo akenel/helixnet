@@ -185,3 +185,9 @@ videos/**/post-production/
 # 📚 THIRD-PARTY TRAINING MATERIAL (copyright, retrievable elsewhere)
 # ====================================================================
 docs/training/*.pdf
+
+# ====================================================================
+# 🗄️ SERVER-SIDE CRUFT (Hetzner local backups + manual edits)
+# ====================================================================
+backups/
+hetzner/Caddyfile.bak
