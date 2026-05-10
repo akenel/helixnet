@@ -5,6 +5,14 @@
 .env.*
 !*.env.example # Keep the template file if it exists
 
+# Hetzner deploy env files (real secrets, NEVER commit)
+hetzner/borrowhood.env
+hetzner/.env.staging
+hetzner/uat.env
+hetzner/prod.env
+# Templates with placeholders ARE tracked (no leading dot, suffix .template)
+!hetzner/*.template
+
 # SSH Keys (Avoid accidental commit from any directory)
 **/id_ed25519
 **/id_ed25519.pub

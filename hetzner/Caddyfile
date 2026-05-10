@@ -1,8 +1,15 @@
-# BorrowHood -- port 443 (DEV Weekend Challenge)
-:443 {
-	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
+# La Piazza -- lapiazza.app + www redirect
+# Also keep borrowhood.duckdns.org working (no downtime)
 
-	# Keycloak auth paths (BorrowHood needs these for OIDC login)
+lapiazza.app, borrowhood.duckdns.org {
+
+	# MinIO media proxy -- public read for item photos, avatars, videos
+	handle /media/* {
+		uri strip_prefix /media
+		reverse_proxy minio:9000
+	}
+
+	# Keycloak auth paths (OIDC login)
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -13,8 +20,12 @@
 		reverse_proxy keycloak:8080
 	}
 
-	# BorrowHood app (default)
+	# App (default)
 	handle {
 		reverse_proxy borrowhood:8000
 	}
+}
+
+www.lapiazza.app {
+	redir https://lapiazza.app{uri} permanent
 }
