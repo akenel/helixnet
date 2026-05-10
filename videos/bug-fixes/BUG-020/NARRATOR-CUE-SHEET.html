@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BUG-020 Narrator Cue Sheet</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; max-width: 800px; margin: 0 auto;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: 28px; color: #f59e0b;
+    border-bottom: 2px solid #334155;
+    padding-bottom: 12px; margin-bottom: 24px;
+  }
+  .instructions {
+    background: #1e293b; border-radius: 12px;
+    padding: 20px; margin-bottom: 24px;
+    border-left: 4px solid #3b82f6;
+  }
+  .instructions h2 { color: #3b82f6; font-size: 18px; margin-bottom: 8px; }
+  .instructions p { color: #94a3b8; font-size: 15px; }
+
+  .cue {
+    background: #1e293b; border-radius: 12px;
+    padding: 20px; margin-bottom: 16px;
+    border-left: 4px solid #334155;
+    transition: border-color 0.2s;
+  }
+  .cue:hover { border-color: #f59e0b; }
+  .cue.card { border-left-color: #8b5cf6; }
+  .cue.action { border-left-color: #22c55e; }
+  .cue.key { border-left-color: #ef4444; }
+
+  .time {
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 20px; font-weight: 700;
+    color: #f59e0b;
+    margin-bottom: 4px;
+  }
+  .screen {
+    font-size: 16px; color: #94a3b8;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+  .say {
+    font-size: 20px; color: #f1f5f9;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .note {
+    font-size: 13px; color: #64748b;
+    margin-top: 6px;
+  }
+  .divider {
+    border: none; border-top: 1px solid #334155;
+    margin: 24px 0;
+  }
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: #94a3b8;
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<h1>BUG-020 -- Narrator Cue Sheet</h1>
+
+<div class="instructions">
+  <h2>How to Record</h2>
+  <p>1. Open BUG-020-SILENT.mp4 in VLC on laptop</p>
+  <p>2. Open this page on your phone (or print it)</p>
+  <p>3. Hit play on VLC, start recording in Telegram voice message</p>
+  <p>4. Watch the video and narrate -- use the cues below as a guide</p>
+  <p>5. Don't rush. Pauses are fine. Natural is better than scripted.</p>
+  <p>6. We'll trim the start/end silence later in post</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> Title card (pause or read)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Action on screen</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Key moment (emphasize)</div>
+</div>
+
+<hr class="divider">
+
+<!-- INTRO -->
+<div class="cue card">
+  <div class="time">0:00 -- 0:05</div>
+  <div class="screen">Title card: ISOTTO SPORT / BUG-020 / Button Styling Broken</div>
+  <div class="say">"This is BUG-020. A real bug fix, captured live. Me and my AI co-pilot, working together on screen."</div>
+</div>
+
+<!-- THE BUG CARD -->
+<div class="cue card">
+  <div class="time">0:05 -- 0:08</div>
+  <div class="screen">Card: STEP 1 -- THE BUG</div>
+  <div class="say">(let the card breathe -- or say "Step one. The bug.")</div>
+</div>
+
+<!-- ISOTTO LOGIN -->
+<div class="cue action">
+  <div class="time">0:08 -- 0:30</div>
+  <div class="screen">ISOTTO login page, then Keycloak login as famousguy</div>
+  <div class="say">"This is ISOTTO Sport -- a print shop management system we built for a client in Trapani, Sicily. I'm logging in on the live server."</div>
+</div>
+
+<!-- ISOTTO DASHBOARD -->
+<div class="cue action">
+  <div class="time">0:30 -- 0:40</div>
+  <div class="screen">ISOTTO Dashboard -- "Good morning, Famous!"</div>
+  <div class="say">"Dashboard looks fine at first glance. But the buttons are broken. Let me show you in the QA dashboard."</div>
+</div>
+
+<!-- QA LOGIN + DASHBOARD -->
+<div class="cue action">
+  <div class="time">0:40 -- 1:10</div>
+  <div class="screen">Switch to QA Testing app, login as Anne, QA Dashboard loads</div>
+  <div class="say">"We have a QA testing system. Anne is our tester. 47 test cases, 12 open bugs. We track everything."</div>
+</div>
+
+<!-- BUG LIST + BUG-020 -->
+<div class="cue key">
+  <div class="time">1:10 -- 1:50</div>
+  <div class="screen">Bug list, BUG-020 visible with screenshot, scrolling through bugs</div>
+  <div class="say">"Here's BUG-020. Button styling broken -- no hover, no background, no rounded corners. All the .btn-primary, .btn-secondary classes are rendering as plain HTML. Look at that screenshot..."</div>
+</div>
+
+<!-- ANNOTATED SCREENSHOT -->
+<div class="cue key">
+  <div class="time">1:50 -- 2:28</div>
+  <div class="screen">Annotated screenshot overlay showing broken ISOTTO buttons with red annotations</div>
+  <div class="say">"See those annotations? The buttons are just plain text. No styling at all. And the variable names are showing raw instead of values. That's two bugs in one screenshot."</div>
+</div>
+
+<!-- THE FIX CARD -->
+<div class="cue card">
+  <div class="time">2:28 -- 2:31</div>
+  <div class="screen">Card: STEP 2 -- THE FIX (shows old code crossed out, new code in green)</div>
+  <div class="say">"Step two. The fix."</div>
+</div>
+
+<!-- VS CODE SPLIT SCREEN -->
+<div class="cue action">
+  <div class="time">2:31 -- 2:55</div>
+  <div class="screen">Split screen: VS Code terminal (left) + QA Dashboard (right). You're typing to Tigs.</div>
+  <div class="say">"Now I'm talking to my AI co-pilot -- Tiger -- in VS Code. I tell him: 'BUG-020 is ready. Fix it. Tell me when I can refresh the browser.'"</div>
+</div>
+
+<!-- THE ACTUAL FIX -->
+<div class="cue key">
+  <div class="time">2:55 -- 3:15</div>
+  <div class="screen">VS Code shows the diff: line 17, &lt;style&gt; changed to &lt;style type="text/tailwindcss"&gt;</div>
+  <div class="say">"And there it is. One line. The style tag needed type='text/tailwindcss' so Tailwind's CDN script could process the @apply directives. Without it, all the button classes were just... ignored."</div>
+</div>
+
+<!-- DEPLOY -->
+<div class="cue action">
+  <div class="time">3:15 -- 4:00</div>
+  <div class="screen">Git push, SSH deploy to Hetzner, smoke test running</div>
+  <div class="say">"Git push. Deploy to Hetzner -- our production server. Then the smoke test runs automatically. 52 checks."</div>
+</div>
+
+<!-- SMOKE TEST RESULT -->
+<div class="cue key">
+  <div class="time">4:00 -- 4:21</div>
+  <div class="screen">Terminal: "52 passed, 0 failed. Hetzner is green." + browser showing file listing</div>
+  <div class="say">"52 passed, zero failed. Hetzner is green. Now let's see if the buttons actually work."</div>
+  <div class="note">The browser on the right shows file:/// for a second -- ignore it, that's just mid-refresh</div>
+</div>
+
+<!-- DEPLOYED CARD -->
+<div class="cue card">
+  <div class="time">4:21 -- 4:24</div>
+  <div class="screen">Card: STEP 3 -- DEPLOYED -- 52 passed, 0 failed</div>
+  <div class="say">(brief pause)</div>
+</div>
+
+<!-- ISOTTO AFTER - ORDERS -->
+<div class="cue key">
+  <div class="time">4:24 -- 5:00</div>
+  <div class="screen">ISOTTO Orders page -- full screen Firefox, properly styled buttons visible</div>
+  <div class="say">"And look at that. The Orders page. The '+ New Order' button -- blue, rounded, proper Tailwind styling. The status badges are colored. Everything is rendering correctly now."</div>
+</div>
+
+<!-- ORDER DETAIL -->
+<div class="cue action">
+  <div class="time">5:00 -- 6:00</div>
+  <div class="screen">Order Detail page -- ASD Trapani Calcio Team Kit, scrolling down to buttons</div>
+  <div class="say">"Order detail. ASD Trapani Calcio Team Kit -- that's a real order for a local football team. Scroll down and there are the buttons: Save Changes, Cancel, Start Production. All styled. All working."</div>
+</div>
+
+<!-- BROWSING AROUND -->
+<div class="cue action">
+  <div class="time">6:00 -- 7:06</div>
+  <div class="screen">More ISOTTO pages -- Dashboard, other orders, different user login</div>
+  <div class="say">"I'm just clicking around now, checking everything. Different pages, different users. The fix is global -- every button in the system is rendering correctly."</div>
+  <div class="note">You can go quiet here and just let the screen speak. Or narrate what you see.</div>
+</div>
+
+<!-- VERIFIED CARD -->
+<div class="cue card">
+  <div class="time">7:06 -- 7:09</div>
+  <div class="screen">Card: STEP 4 -- VERIFIED</div>
+  <div class="say">"Step four. Verified."</div>
+</div>
+
+<!-- BUG CLOSED -->
+<div class="cue key">
+  <div class="time">7:09 -- 7:29</div>
+  <div class="screen">VS Code: Claude updating bug via API, psql showing git_linked + a76118f</div>
+  <div class="say">"Tiger updates the bug in our QA system -- status changed to fixed, commit SHA linked. Everything is tracked. Activity trail, audit log, the works."</div>
+</div>
+
+<!-- QA DASHBOARD FINAL -->
+<div class="cue action">
+  <div class="time">7:29 -- 7:49</div>
+  <div class="screen">QA Dashboard showing BUG-020 as "fixed" with screenshot and commit SHA</div>
+  <div class="say">"And there it is in the QA dashboard. BUG-020, status: fixed. Commit a76118f. From bug report to verified fix -- one session, one line of code."</div>
+</div>
+
+<!-- OUTRO -->
+<div class="cue card">
+  <div class="time">7:49 -- 7:55</div>
+  <div class="screen">Outro: BUG-020 FIXED -- "Human + AI, real teamwork, real code, real time"</div>
+  <div class="say">"That's how we build software. No scripts, no fakes. Just a human and an AI, fixing real bugs on a real system. Thanks for watching."</div>
+</div>
+
+<hr class="divider">
+
+<div class="instructions">
+  <h2>After Recording</h2>
+  <p>1. Send the Telegram voice message (.ogg) -- any length is fine</p>
+  <p>2. Tigs will trim the start/end silence</p>
+  <p>3. Tigs will normalize volume and sync to video</p>
+  <p>4. Final output: BUG-020 with your voice + video = YouTube ready</p>
+</div>
+
+</body>
+</html>

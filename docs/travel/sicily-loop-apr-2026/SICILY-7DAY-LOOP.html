@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sicily 7-Day Loop — April 2026 (v2 PATCHED)</title>
+<style>
+  @page { size: A4; margin: 15mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a2a3a;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f7f9fb;
+  }
+  h1 {
+    color: #005f87;
+    border-bottom: 3px solid #00a8cc;
+    padding-bottom: 8px;
+    font-size: 22pt;
+    margin-bottom: 4px;
+  }
+  .patch-badge {
+    display: inline-block;
+    background: #2e7d32;
+    color: white;
+    font-size: 9pt;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  h2 {
+    color: #005f87;
+    border-left: 5px solid #e07b00;
+    padding-left: 10px;
+    margin-top: 28px;
+    font-size: 16pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #0b4f6c;
+    margin-top: 16px;
+    font-size: 12pt;
+  }
+  .crew-header {
+    background: linear-gradient(135deg, #005f87 0%, #00a8cc 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  .crew-header p { margin: 4px 0; }
+  .crew-header strong { color: #ffd9b3; }
+  .day-card {
+    background: white;
+    border: 1px solid #cdd9e0;
+    border-left: 6px solid #e07b00;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    page-break-inside: avoid;
+  }
+  .day-card.done {
+    border-left-color: #2e7d32;
+    background: #f3faf3;
+  }
+  .day-card h2 { margin-top: 0; border: none; padding: 0; color: #b8530a; }
+  .day-card.done h2 { color: #1b5e20; }
+  .done-stamp {
+    display: inline-block;
+    background: #2e7d32;
+    color: white;
+    font-size: 10pt;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .route-bar {
+    background: #e8f4f8;
+    border: 1px solid #b8dce6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 10pt;
+    margin: 8px 0 14px 0;
+  }
+  .route-bar strong { color: #005f87; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+    background: white;
+  }
+  th, td {
+    border: 1px solid #cdd9e0;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 10.5pt;
+  }
+  th {
+    background: #005f87;
+    color: white;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: #f4f8fa; }
+  ul.checklist { list-style: none; padding-left: 0; }
+  ul.checklist li {
+    padding: 4px 0 4px 28px;
+    position: relative;
+  }
+  ul.checklist li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #005f87;
+    border-radius: 3px;
+    background: white;
+  }
+  ul.checklist li.done {
+    color: #555;
+    text-decoration: line-through;
+  }
+  ul.checklist li.done::before {
+    background: #2e7d32;
+    border-color: #2e7d32;
+  }
+  ul.checklist li.done::after {
+    content: "✓";
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    color: white;
+    font-weight: bold;
+    font-size: 12pt;
+    line-height: 1;
+  }
+  .scorecard-box {
+    background: #fff9ef;
+    border: 1px solid #f0d9a8;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 10px 0;
+  }
+  .star-row {
+    font-size: 16pt;
+    letter-spacing: 4px;
+    color: #cdd9e0;
+    user-select: none;
+  }
+  .star-row.filled-4 { color: #e07b00; }
+  .star-row.filled-5 { color: #f39c12; }
+  .star-row.filled-2 { color: #aab; }
+  .notes-box {
+    background: #fdfdfd;
+    border: 1px dashed #aab;
+    min-height: 80px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 4px;
+  }
+  .notes-box.filled {
+    background: #f8f5ea;
+    border-style: solid;
+    border-color: #e07b00;
+    font-style: italic;
+    color: #4a3a1a;
+  }
+  .notes-box .line {
+    border-bottom: 1px solid #dde3e8;
+    height: 22px;
+  }
+  .warning {
+    background: #fff3e0;
+    border-left: 4px solid #e07b00;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 4px;
+  }
+  .warning strong { color: #b8530a; }
+  .gps {
+    font-family: "Courier New", monospace;
+    background: #e8f4f8;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10pt;
+  }
+  .footer-quote {
+    text-align: center;
+    font-style: italic;
+    color: #668;
+    margin: 40px 0 10px 0;
+    font-size: 10.5pt;
+  }
+  .big-chart-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px dotted #cdd9e0;
+  }
+  .patch-log {
+    background: #fff9ef;
+    border: 1px solid #f0d9a8;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-top: 30px;
+    font-size: 10pt;
+  }
+  @media print {
+    body { background: white; padding: 0; }
+    .day-card { page-break-inside: avoid; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Sicily 7-Day Loop — April 2026 <span class="patch-badge">v2 PATCHED</span></h1>
+
+<div class="crew-header">
+  <p><strong>Crew:</strong> Angel + Sylvie</p>
+  <p><strong>Vehicle:</strong> MAX — 2.2m camper</p>
+  <p><strong>Start:</strong> ~10km from Palermo &nbsp;·&nbsp; <strong>End:</strong> Trapani (home)</p>
+  <p><strong>Style:</strong> Parked by 18:00. No campgrounds. Scenic sostas only.</p>
+  <p><strong>Slow-starter rule:</strong> No departures before 10:30. She drives the lunch-to-3pm shift.</p>
+</div>
+
+<h2>Pre-Departure Checklist</h2>
+<ul class="checklist">
+  <li class="done">Fresh water tank filled</li>
+  <li class="done">Grey water discharged</li>
+  <li>Black / toilet cassette emptied</li>
+  <li>Fuel topped up (Palermo prices &lt; autostrada)</li>
+  <li>Gas bottle checked</li>
+  <li>park4night app open + offline maps cached</li>
+  <li>Phone + camper chargers in</li>
+  <li>Coffee + moka loaded</li>
+  <li>Wine provisioned (min. 3 bottles)</li>
+  <li>Cash — €100 small bills for sostas</li>
+  <li>Swimwear + towels accessible (not buried)</li>
+  <li>Warm layer for Etna night (Day 2 — patched)</li>
+</ul>
+
+<h2>Route Overview (v2 — post Day 1)</h2>
+<table>
+  <tr><th>Day</th><th>Leg</th><th>Km</th><th>Sleep</th></tr>
+  <tr style="background:#e8f5e9;"><td>1 ✓</td><td>Palermo → <strong>Catania</strong> (parked)</td><td>210</td><td>Catania — DONE</td></tr>
+  <tr><td>2</td><td>Catania → <strong>Etna (Nicolosi)</strong></td><td>45</td><td>700m, warmer than Sapienza</td></tr>
+  <tr><td>3</td><td>Etna → Taormina → <strong>Giardini Naxos</strong></td><td>85</td><td>Black sand, Etna view</td></tr>
+  <tr><td>4</td><td>Naxos → Ortigia → <strong>Marina di Ragusa</strong></td><td>180</td><td>Best beach sosta on island</td></tr>
+  <tr><td>5</td><td>Marina di Ragusa → <strong>Agrigento / San Leone</strong></td><td>175</td><td>Valley of Temples sunset</td></tr>
+  <tr><td>6</td><td>→ Scala dei Turchi → Selinunte → <strong>Trapani</strong></td><td>200</td><td>Home base</td></tr>
+  <tr><td>7</td><td>Trapani + optional Cefalù</td><td>—</td><td>Rest / bonus</td></tr>
+</table>
+
+<!-- DAY 1 DONE -->
+<div class="day-card done">
+  <h2>Day 1 — Palermo → Catania <span class="done-stamp">DONE ✓</span></h2>
+  <div class="route-bar"><strong>Route:</strong> A19 east &nbsp;·&nbsp; <strong>~210 km</strong> &nbsp;·&nbsp; <strong>~2h40</strong> &nbsp;·&nbsp; <strong>Weather:</strong> rain Palermo → dry east</div>
+
+  <h3>What actually happened</h3>
+  <ul class="checklist">
+    <li class="done">Coffee + rainbows at the start</li>
+    <li class="done">Water fill + grey dump sorted before rolling</li>
+    <li class="done">A19 east, escaped the Palermo rain</li>
+    <li class="done">Parked safe in Catania</li>
+    <li class="done">Light sprinkle around 6pm, clear by 10pm</li>
+    <li class="done">Sylvie tired — not a romantic night, but a safe one</li>
+  </ul>
+
+  <div class="scorecard-box">
+    <strong>Day 1 Scorecard</strong>
+    <div class="big-chart-row"><span>Weather escape</span><span class="star-row filled-4">★ ★ ★ ★ ☆</span></div>
+    <div class="big-chart-row"><span>Drive vibe</span><span class="star-row filled-4">★ ★ ★ ★ ☆</span></div>
+    <div class="big-chart-row"><span>Water / grey logistics</span><span class="star-row filled-5">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Sleep quality</span><span class="star-row">★ ★ ★ ★ ★ <em style="font-size:9pt;color:#888;">(fill in AM)</em></span></div>
+    <div class="big-chart-row"><span>Romance</span><span class="star-row filled-2">★ ★ ☆ ☆ ☆</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box filled">
+    First real move of the trip. Rain in Palermo, rainbows over the pull-out.
+    Water sorted early, A19 did its job. Sylvie tired, Catania parked and dry by 10pm.
+    A safe park-up is a win. Can't win them all.
+  </div>
+</div>
+
+<!-- DAY 2 PATCHED -->
+<div class="day-card">
+  <h2>Day 2 — Catania → Etna (Nicolosi) <span class="patch-badge">PATCHED</span></h2>
+  <div class="route-bar"><strong>A18 / SS121 → SP92</strong> &nbsp;·&nbsp; <strong>~45 km</strong> &nbsp;·&nbsp; <strong>~1h</strong> &nbsp;·&nbsp; Shortest drive day — slow morning</div>
+
+  <h3>Why the flip</h3>
+  <p>Sylvie tired + already east = drop the long day, do Etna tomorrow as a slow morning. Short drive, warmer nap, volcano dessert.</p>
+
+  <h3>Plan</h3>
+  <ul class="checklist">
+    <li>Slowest coffee of the trip — she earned it</li>
+    <li>Fuel up in Catania plain BEFORE climbing (no stations on SP92)</li>
+    <li>Roll when she's ready (11:30–12:00 fine)</li>
+    <li>Climb SP92 via Nicolosi — 2.2m no issue</li>
+    <li>Optional: cable car / jeep tour up to crater from Rifugio Sapienza</li>
+    <li>Lava fields walk — easy, otherworldly</li>
+  </ul>
+
+  <h3>Park-up</h3>
+  <p><strong>Primary:</strong> Nicolosi sosta area — <span class="gps">~37.6150, 15.0280</span> — 700m, warmer<br>
+  <strong>Alternate:</strong> Rifugio Sapienza (1900m) — crater-proximate, COLD, layers mandatory</p>
+
+  <div class="warning">
+    <strong>⚠ Etna rules:</strong> Top up fuel in Catania plain before SP92. Weather shifts fast at altitude — real jacket even if sunny at base.
+  </div>
+
+  <div class="scorecard-box">
+    <strong>Day 2 Scorecard</strong>
+    <div class="big-chart-row"><span>Slow morning</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Etna views</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Drive up</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Cold endurance</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Sleep quality</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Romance reset</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box">
+    <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+  </div>
+</div>
+
+<!-- DAY 3 PATCHED -->
+<div class="day-card">
+  <h2>Day 3 — Etna → Taormina → Giardini Naxos <span class="patch-badge">PATCHED</span></h2>
+  <div class="route-bar"><strong>SP92 down → A18 north</strong> &nbsp;·&nbsp; <strong>~85 km</strong> &nbsp;·&nbsp; <strong>~1h40</strong></div>
+
+  <h3>Plan</h3>
+  <ul class="checklist">
+    <li>Etna crater walk (guided tour from Sapienza if weather holds)</li>
+    <li>Descend slow — volcano vibes are enough</li>
+    <li>Taormina shuttle from Lumbi or Porta Catania lot</li>
+    <li>NEVER drive camper into Taormina</li>
+    <li>Greek theatre + Corso Umberto, 2–3hrs</li>
+    <li>Descend to Naxos by 17:30</li>
+  </ul>
+
+  <h3>Park-up</h3>
+  <p><strong>Primary:</strong> Camper Area La Pineta, Giardini Naxos — <span class="gps">37.8280, 15.2780</span><br>
+  <strong>Notes:</strong> Black volcanic sand, Etna view across bay, flat</p>
+
+  <div class="scorecard-box">
+    <strong>Day 3 Scorecard</strong>
+    <div class="big-chart-row"><span>Etna morning</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Taormina</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Beach (black sand)</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Etna-view aperitivo</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Sleep quality</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box">
+    <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+  </div>
+</div>
+
+<!-- DAY 4 PATCHED -->
+<div class="day-card">
+  <h2>Day 4 — Giardini Naxos → Ortigia → Marina di Ragusa <span class="patch-badge">PATCHED</span></h2>
+  <div class="route-bar"><strong>A18 south → Siracusa → SP25</strong> &nbsp;·&nbsp; <strong>~180 km</strong> &nbsp;·&nbsp; <strong>~2h40 + Ortigia stop</strong></div>
+
+  <h3>Plan</h3>
+  <ul class="checklist">
+    <li>Beach swim at Naxos before rolling</li>
+    <li>Depart ~11:00</li>
+    <li>Ortigia (Siracusa) — park at Talete (camper OK, ~€1/hr)</li>
+    <li>Walk the island, seafood lunch by the water</li>
+    <li>Sylvie drives lunch shift west</li>
+    <li>Arrive Marina di Ragusa by 17:30</li>
+  </ul>
+
+  <h3>Park-up</h3>
+  <p><strong>Primary:</strong> Area Sosta Marina di Ragusa — <span class="gps">36.7825, 14.5478</span><br>
+  <strong>Notes:</strong> Best camper-beach sosta on the island. CS on site. Beachfront.</p>
+
+  <div class="scorecard-box">
+    <strong>Day 4 Scorecard</strong>
+    <div class="big-chart-row"><span>Naxos morning swim</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Ortigia vibe</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Beach (Marina)</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Food / wine</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Sleep quality</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box">
+    <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+  </div>
+</div>
+
+<!-- DAY 5 -->
+<div class="day-card">
+  <h2>Day 5 — Marina di Ragusa → Agrigento (San Leone)</h2>
+  <div class="route-bar"><strong>SS115 west via Gela</strong> &nbsp;·&nbsp; <strong>~175 km</strong> &nbsp;·&nbsp; <strong>~2h30</strong></div>
+
+  <h3>Plan</h3>
+  <ul class="checklist">
+    <li>Slow Marina di Ragusa beach morning</li>
+    <li>Optional: Ragusa Ibla detour — park Superiore, walk 340 steps down</li>
+    <li>Granita + brioche breakfast</li>
+    <li>SS115 west through Vittoria / Comiso wine country (visual only)</li>
+    <li>Gela pass-through, lunch en route</li>
+    <li>Arrive San Leone / Agrigento by 17:00</li>
+  </ul>
+
+  <h3>Park-up</h3>
+  <p><strong>Primary:</strong> Area Sosta Valle dei Templi — <span class="gps">37.2900, 13.5850</span><br>
+  <strong>Alternate:</strong> San Leone beachfront sostas<br>
+  <strong>Golden hour:</strong> 18:00–19:30 — Valley of Temples best photography window</p>
+
+  <div class="scorecard-box">
+    <strong>Day 5 Scorecard</strong>
+    <div class="big-chart-row"><span>Marina morning</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Ragusa Ibla detour</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Valle dei Templi</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Golden hour</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Sleep quality</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box">
+    <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+  </div>
+</div>
+
+<!-- DAY 6 -->
+<div class="day-card">
+  <h2>Day 6 — Agrigento → Scala dei Turchi → Selinunte → Trapani</h2>
+  <div class="route-bar"><strong>SS115 west</strong> &nbsp;·&nbsp; <strong>~200 km</strong> &nbsp;·&nbsp; <strong>2h45 + stops</strong></div>
+
+  <h3>Plan</h3>
+  <ul class="checklist">
+    <li>Valley of Temples if missed yesterday (opens 08:30)</li>
+    <li>Roll by 11:00</li>
+    <li>Scala dei Turchi — park TOP lot on SS115, walk down</li>
+    <li>Selinunte ruins (2h) — one of the best Greek sites</li>
+    <li>Lunch Sciacca or Castelvetrano</li>
+    <li>17:30 — Trapani home</li>
+  </ul>
+
+  <div class="warning">
+    <strong>⚠ Scala dei Turchi:</strong> swim access tightens yearly. Check signs on arrival.
+  </div>
+
+  <div class="scorecard-box">
+    <strong>Day 6 Scorecard</strong>
+    <div class="big-chart-row"><span>Scala dei Turchi</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Selinunte</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Coast road</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Food / wine</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Home feeling</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box">
+    <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+  </div>
+</div>
+
+<!-- DAY 7 -->
+<div class="day-card">
+  <h2>Day 7 — Trapani + Optional Cefalù</h2>
+  <div class="route-bar">Rest day / optional northern loop if weather cooperates</div>
+
+  <h3>Options</h3>
+  <ul class="checklist">
+    <li>Cefalù day trip (northern coast, skipped on Day 1)</li>
+    <li>San Vito Lo Capo beach</li>
+    <li>Erice hilltop</li>
+    <li>Just stay parked in Trapani and decompress</li>
+  </ul>
+
+  <div class="scorecard-box">
+    <strong>Day 7 Scorecard</strong>
+    <div class="big-chart-row"><span>Rest quality</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Weather payoff</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+    <div class="big-chart-row"><span>Love tank</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  </div>
+
+  <h3>Notes</h3>
+  <div class="notes-box">
+    <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+  </div>
+</div>
+
+<!-- OVERALL -->
+<h2>Overall Trip Scorecard</h2>
+<div class="scorecard-box">
+  <div class="big-chart-row"><span>Beaches</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  <div class="big-chart-row"><span>Food + wine</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  <div class="big-chart-row"><span>Drive enjoyment</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  <div class="big-chart-row"><span>Sosta quality</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  <div class="big-chart-row"><span>Weather luck</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+  <div class="big-chart-row"><span>Romance</span><span class="star-row">★ ★ ★ ★ ★</span></div>
+</div>
+
+<h3>Would do again?</h3>
+<ul class="checklist">
+  <li>Yes, exactly like this</li>
+  <li>No</li>
+  <li>Yes but with tweaks</li>
+</ul>
+
+<h3>Best moment</h3>
+<div class="notes-box">
+  <div class="line"></div><div class="line"></div>
+</div>
+
+<h3>Worst moment</h3>
+<div class="notes-box">
+  <div class="line"></div><div class="line"></div>
+</div>
+
+<h3>Lesson for next trip</h3>
+<div class="notes-box">
+  <div class="line"></div><div class="line"></div>
+</div>
+
+<!-- QUICK REF -->
+<h2>Quick Reference</h2>
+
+<h3>Emergency Numbers</h3>
+<table>
+  <tr><th>Service</th><th>Number</th></tr>
+  <tr><td>Emergency (all Italy)</td><td>112</td></tr>
+  <tr><td>Roadside assistance (ACI)</td><td>803 116</td></tr>
+  <tr><td>Coast Guard</td><td>1530</td></tr>
+</table>
+
+<h3>CS (Camper Service) Reference</h3>
+<table>
+  <tr><th>Sosta</th><th>CS Available?</th></tr>
+  <tr><td>Cefalù Plaia</td><td>Yes</td></tr>
+  <tr><td>Catania area</td><td>Check park4night</td></tr>
+  <tr><td>Nicolosi (Etna)</td><td>Yes</td></tr>
+  <tr><td>Giardini Naxos La Pineta</td><td>Yes</td></tr>
+  <tr><td>Marina di Ragusa</td><td><strong>Yes — reliable</strong></td></tr>
+  <tr><td>San Leone Agrigento</td><td>Yes</td></tr>
+</table>
+
+<h3>2.2m Width Reminders</h3>
+<ul class="checklist">
+  <li>Historic centers = ZTL = walk in. Never drive in.</li>
+  <li>Park OUTSIDE: Taormina, Ortigia, Ragusa Ibla, Cefalù centro</li>
+  <li>SP roads interior Ragusa province tight after dark</li>
+  <li>A19 / A18 / A29 autostrade — no width issue</li>
+  <li>Use "truck" pumps at fuel stations where available</li>
+</ul>
+
+<div class="patch-log">
+  <strong>Patch Log</strong>
+  <ul style="margin: 8px 0 0 16px; padding: 0;">
+    <li><strong>v1</strong> (Apr 15 AM) — Initial plan: Palermo → Fontane Bianche → Marina di Ragusa → Etna → Naxos → Agrigento → Trapani</li>
+    <li><strong>v2</strong> (Apr 15 PM, Catania parked) — Flipped: Day 1 ended Catania (not Fontane Bianche). Shortened Day 2 to Catania → Etna (45km) for slow-starter morning. Dropped Fontane Bianche (Ortigia still hit on Day 4).</li>
+  </ul>
+</div>
+
+<div class="footer-quote">
+  "Casa è dove parcheggi." — Home is where you park it.<br>
+  "The best itinerary is the one she's still smiling on."<br>
+  "A safe park-up is a win. Can't win them all."
+</div>
+
+</body>
+</html>

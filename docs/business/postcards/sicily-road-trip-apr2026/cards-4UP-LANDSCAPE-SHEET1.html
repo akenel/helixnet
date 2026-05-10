@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Sicily Road Trip — Sheet 1 · Cards 01–04 · Duplex</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sheet { width: 297mm; height: 210mm; position: relative; padding: 3mm; page-break-after: always; }
+  .sheet:last-child { page-break-after: auto; }
+  .grid { width: 100%; height: 100%; display: grid; grid-template-columns: 142.5mm 142.5mm; grid-template-rows: 99mm 99mm; column-gap: 6mm; row-gap: 6mm; }
+  .tile { width: 142.5mm; height: 99mm; position: relative; overflow: hidden; background: #ffffff; }
+
+  /* FRONT */
+  .front .photo-zone { position: absolute; top: 0; left: 0; right: 0; height: 70mm; overflow: hidden; }
+  .front .photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .front .ufa-mark { position: absolute; top: 4mm; left: 6mm; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 6.5pt; font-weight: 700; letter-spacing: 2.5px; color: #ffffff; z-index: 3; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
+  .front .card-number { position: absolute; top: 4mm; right: 6mm; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 7pt; font-weight: 700; letter-spacing: 2.5px; color: #ffffff; z-index: 3; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+  .front .band { position: absolute; left: 0; right: 0; bottom: 0; height: 29mm; background: #ffffff; padding: 4.5mm 7mm 4mm 7mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .front .quote-it { font-family: Georgia, 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 13pt; line-height: 1.18; color: #1a1a1a; }
+  .front .quote-en { font-family: Georgia, 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: 8.5pt; line-height: 1.3; margin-top: 1.5mm; color: #777777; }
+  .front .accent-line { height: 0.3mm; background: #d8a050; margin-top: 2mm; }
+  .front .meta-strip { display: flex; justify-content: space-between; align-items: center; color: #555555; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 5.8pt; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2mm; }
+
+  /* BACK */
+  .back { background: #fdfaf3; }
+  .back .header { position: absolute; top: 0; left: 0; right: 0; height: 9mm; padding: 2.6mm 7mm; border-bottom: 0.3mm solid #d8a050; display: flex; justify-content: space-between; align-items: center; color: #1a1a1a; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 6.5pt; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .back .header .right { color: #8a6a30; }
+  .back .body { position: absolute; top: 9mm; bottom: 14mm; left: 0; right: 0; display: flex; }
+  .back .message-side { width: 71mm; padding: 5mm 6mm 4mm 7mm; border-right: 0.2mm solid #d8c89a; display: flex; flex-direction: column; justify-content: space-around; }
+  .back .message-line { height: 0.18mm; background: #c9b888; }
+  .back .address-side { flex: 1; padding: 3.5mm 7mm 4mm 6mm; position: relative; }
+  .back .stamp-box { position: absolute; top: 3mm; right: 7mm; width: 18mm; height: 21mm; border: 0.4mm dashed #b09060; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #1a1a1a; font-family: 'Helvetica Neue', Helvetica, sans-serif; text-align: center; line-height: 1.2; }
+  .back .stamp-box .ufa { font-size: 10pt; font-weight: 900; letter-spacing: 1px; color: #1a1a1a; }
+  .back .stamp-box .star { font-size: 7pt; color: #d8a050; margin: 0.5mm 0; letter-spacing: 0.5mm; }
+  .back .stamp-box .label { font-size: 5pt; font-weight: 700; letter-spacing: 1px; color: #555; }
+  .back .address-block { margin-top: 26mm; }
+  .back .to-label { font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 5.5pt; font-weight: 700; color: #8a6a30; letter-spacing: 1.5px; margin-bottom: 3mm; text-transform: uppercase; }
+  .back .address-line { height: 0.18mm; background: #c9b888; margin-bottom: 4mm; }
+  .back .footer { position: absolute; bottom: 0; left: 0; right: 0; height: 14mm; border-top: 0.3mm solid #d8a050; padding: 2.5mm 8mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #1a1a1a; font-family: Georgia, 'Playfair Display', serif; }
+  .back .footer .it { font-style: italic; font-weight: 700; font-size: 10pt; line-height: 1.2; color: #1a1a1a; }
+  .back .footer .en { font-style: italic; font-weight: 400; font-size: 7.5pt; line-height: 1.3; color: #555; margin-top: 0.8mm; }
+</style>
+</head>
+<body>
+
+<!-- =================== PAGE 1: FRONTS (Cards 01–04) =================== -->
+<div class="sheet">
+  <div class="grid">
+
+    <!-- Card 01 — Panama Beach (TOP-LEFT) -->
+    <div class="tile front">
+      <div class="photo-zone">
+        <img class="photo" src="images/photo-01-panama-beach.jpg" alt="Panama Beach">
+        <div class="ufa-mark">UFA · SICILY ROAD TRIP</div>
+        <div class="card-number">01 / 08</div>
+      </div>
+      <div class="band">
+        <div>
+          <div class="quote-it">&ldquo;Paradiso senza prenotazione.&rdquo;</div>
+          <div class="quote-en">Heaven without reservation.</div>
+          <div class="accent-line"></div>
+        </div>
+        <div class="meta-strip">
+          <span>Panama Beach · Sicilia</span>
+          <span>Gio · 23 Aprile 2026 · Pomeriggio</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 02 — Licata Vendesi (TOP-RIGHT) -->
+    <div class="tile front">
+      <div class="photo-zone">
+        <img class="photo" src="images/photo-02-licata-vendesi.jpg" alt="Licata Vendesi">
+        <div class="ufa-mark">UFA · SICILY ROAD TRIP</div>
+        <div class="card-number">02 / 08</div>
+      </div>
+      <div class="band">
+        <div>
+          <div class="quote-it">&ldquo;Vendesi. Per chi sa vedere.&rdquo;</div>
+          <div class="quote-en">For sale. For those who know how to see.</div>
+          <div class="accent-line"></div>
+        </div>
+        <div class="meta-strip">
+          <span>Licata · Sicilia</span>
+          <span>Ven · 24 Aprile 2026 · Pomeriggio</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 03 — Taormina (BOTTOM-LEFT) -->
+    <div class="tile front">
+      <div class="photo-zone">
+        <img class="photo" src="images/photo-03-taormina.jpg" alt="Taormina · Isola Bella">
+        <div class="ufa-mark">UFA · SICILY ROAD TRIP</div>
+        <div class="card-number">03 / 08</div>
+      </div>
+      <div class="band">
+        <div>
+          <div class="quote-it">&ldquo;Guidai come un asso.&rdquo;</div>
+          <div class="quote-en">I drove like an ace.</div>
+          <div class="accent-line"></div>
+        </div>
+        <div class="meta-strip">
+          <span>Taormina · Isola Bella</span>
+          <span>Dom · 26 Aprile 2026 · 14:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 04 — La Focetta Sicula (BOTTOM-RIGHT) -->
+    <div class="tile front">
+      <div class="photo-zone">
+        <img class="photo" src="images/photo-04-la-focetta.jpg" alt="La Focetta Sicula">
+        <div class="ufa-mark">UFA · SICILY ROAD TRIP</div>
+        <div class="card-number">04 / 08</div>
+      </div>
+      <div class="band">
+        <div>
+          <div class="quote-it">&ldquo;Ogni cancello è una scelta.&rdquo;</div>
+          <div class="quote-en">Every gate is a choice.</div>
+          <div class="accent-line"></div>
+        </div>
+        <div class="meta-strip">
+          <span>Santa Teresa di Riva · Messina</span>
+          <span>Dom · 26 Aprile 2026</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =================== PAGE 2: BACKS (4 IDENTICAL) =================== -->
+<div class="sheet">
+  <div class="grid">
+
+    <div class="tile back">
+      <div class="header">
+        <span>UFA · Sicily Road Trip</span>
+        <span class="right">April · 2026</span>
+      </div>
+      <div class="body">
+        <div class="message-side">
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+        </div>
+        <div class="address-side">
+          <div class="stamp-box">
+            <div class="ufa">UFA</div>
+            <div class="star">★ ★</div>
+            <div class="label">WOLF</div>
+          </div>
+          <div class="address-block">
+            <div class="to-label">To</div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="it">&ldquo;Oh che bella giornata!&rdquo;</div>
+        <div class="en">&ldquo;Oh what a beautiful day!&rdquo; — Albert Kenel · 1930–2020</div>
+      </div>
+    </div>
+
+    <div class="tile back">
+      <div class="header">
+        <span>UFA · Sicily Road Trip</span>
+        <span class="right">April · 2026</span>
+      </div>
+      <div class="body">
+        <div class="message-side">
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+        </div>
+        <div class="address-side">
+          <div class="stamp-box">
+            <div class="ufa">UFA</div>
+            <div class="star">★ ★</div>
+            <div class="label">WOLF</div>
+          </div>
+          <div class="address-block">
+            <div class="to-label">To</div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="it">&ldquo;Oh che bella giornata!&rdquo;</div>
+        <div class="en">&ldquo;Oh what a beautiful day!&rdquo; — Albert Kenel · 1930–2020</div>
+      </div>
+    </div>
+
+    <div class="tile back">
+      <div class="header">
+        <span>UFA · Sicily Road Trip</span>
+        <span class="right">April · 2026</span>
+      </div>
+      <div class="body">
+        <div class="message-side">
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+        </div>
+        <div class="address-side">
+          <div class="stamp-box">
+            <div class="ufa">UFA</div>
+            <div class="star">★ ★</div>
+            <div class="label">WOLF</div>
+          </div>
+          <div class="address-block">
+            <div class="to-label">To</div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="it">&ldquo;Oh che bella giornata!&rdquo;</div>
+        <div class="en">&ldquo;Oh what a beautiful day!&rdquo; — Albert Kenel · 1930–2020</div>
+      </div>
+    </div>
+
+    <div class="tile back">
+      <div class="header">
+        <span>UFA · Sicily Road Trip</span>
+        <span class="right">April · 2026</span>
+      </div>
+      <div class="body">
+        <div class="message-side">
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+          <div class="message-line"></div>
+        </div>
+        <div class="address-side">
+          <div class="stamp-box">
+            <div class="ufa">UFA</div>
+            <div class="star">★ ★</div>
+            <div class="label">WOLF</div>
+          </div>
+          <div class="address-block">
+            <div class="to-label">To</div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+            <div class="address-line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="it">&ldquo;Oh che bella giornata!&rdquo;</div>
+        <div class="en">&ldquo;Oh what a beautiful day!&rdquo; — Albert Kenel · 1930–2020</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Card Back · Sicily Road Trip</title>
+<style>
+  @page { size: 142.5mm 99mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; background: #2a2a2a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card-back { width: 142.5mm; height: 99mm; position: relative; background: #fdfaf3; overflow: hidden; }
+  .header { position: absolute; top: 0; left: 0; right: 0; height: 9mm; padding: 2.6mm 7mm; border-bottom: 0.3mm solid #d8a050; display: flex; justify-content: space-between; align-items: center; color: #1a1a1a; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 6.5pt; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .header .right { color: #8a6a30; }
+  .body { position: absolute; top: 9mm; bottom: 14mm; left: 0; right: 0; display: flex; }
+  .message-side { width: 71mm; padding: 5mm 6mm 4mm 7mm; border-right: 0.2mm solid #d8c89a; display: flex; flex-direction: column; justify-content: space-around; }
+  .message-line { height: 0.18mm; background: #c9b888; }
+  .address-side { flex: 1; padding: 3.5mm 7mm 4mm 6mm; position: relative; }
+  .stamp-box { position: absolute; top: 3mm; right: 7mm; width: 18mm; height: 21mm; border: 0.4mm dashed #b09060; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #1a1a1a; font-family: 'Helvetica Neue', Helvetica, sans-serif; text-align: center; line-height: 1.2; }
+  .stamp-box .ufa { font-size: 10pt; font-weight: 900; letter-spacing: 1px; color: #1a1a1a; }
+  .stamp-box .star { font-size: 7pt; color: #d8a050; margin: 0.5mm 0; letter-spacing: 0.5mm; }
+  .stamp-box .label { font-size: 5pt; font-weight: 700; letter-spacing: 1px; color: #555; }
+  .address-block { margin-top: 26mm; }
+  .to-label { font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 5.5pt; font-weight: 700; color: #8a6a30; letter-spacing: 1.5px; margin-bottom: 3mm; text-transform: uppercase; }
+  .address-line { height: 0.18mm; background: #c9b888; margin-bottom: 4mm; }
+  .footer { position: absolute; bottom: 0; left: 0; right: 0; height: 14mm; border-top: 0.3mm solid #d8a050; padding: 2.5mm 8mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #1a1a1a; font-family: Georgia, 'Playfair Display', serif; }
+  .footer .it { font-style: italic; font-weight: 700; font-size: 10pt; line-height: 1.2; color: #1a1a1a; }
+  .footer .en { font-style: italic; font-weight: 400; font-size: 7.5pt; line-height: 1.3; color: #555; margin-top: 0.8mm; }
+</style>
+</head>
+<body>
+  <div class="card-back">
+    <div class="header">
+      <span>UFA · Sicily Road Trip</span>
+      <span class="right">April · 2026</span>
+    </div>
+    <div class="body">
+      <div class="message-side">
+        <div class="message-line"></div>
+        <div class="message-line"></div>
+        <div class="message-line"></div>
+        <div class="message-line"></div>
+        <div class="message-line"></div>
+      </div>
+      <div class="address-side">
+        <div class="stamp-box">
+          <div class="ufa">UFA</div>
+          <div class="star">★ ★</div>
+          <div class="label">WOLF</div>
+        </div>
+        <div class="address-block">
+          <div class="to-label">To</div>
+          <div class="address-line"></div>
+          <div class="address-line"></div>
+          <div class="address-line"></div>
+          <div class="address-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="it">&ldquo;Oh che bella giornata!&rdquo;</div>
+      <div class="en">&ldquo;Oh what a beautiful day!&rdquo; — Albert Kenel · 1930–2020</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Card 05 — Double Rainbow · Palermo</title>
+<style>
+  @page { size: 142.5mm 99mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; background: #2a2a2a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card { width: 142.5mm; height: 99mm; position: relative; overflow: hidden; background: #ffffff; }
+  .photo-zone { position: absolute; top: 0; left: 0; right: 0; height: 70mm; overflow: hidden; }
+  .photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ufa-mark { position: absolute; top: 4mm; left: 6mm; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 6.5pt; font-weight: 700; letter-spacing: 2.5px; color: #ffffff; z-index: 3; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
+  .card-number { position: absolute; top: 4mm; right: 6mm; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 7pt; font-weight: 700; letter-spacing: 2.5px; color: #ffffff; z-index: 3; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+  .band { position: absolute; left: 0; right: 0; bottom: 0; height: 29mm; background: #ffffff; padding: 4.5mm 7mm 4mm 7mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .quote-it { font-family: Georgia, 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 13pt; line-height: 1.18; color: #1a1a1a; }
+  .quote-en { font-family: Georgia, 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: 8.5pt; line-height: 1.3; margin-top: 1.5mm; color: #777777; }
+  .accent-line { height: 0.3mm; background: #d8a050; margin-top: 2mm; }
+  .meta-strip { display: flex; justify-content: space-between; align-items: center; color: #555555; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 5.8pt; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2mm; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="photo-zone">
+      <img class="photo" src="images/photo-05-rainbow.jpg" alt="Double Rainbow · Palermo Q8 Lookout">
+      <div class="ufa-mark">UFA · SICILY ROAD TRIP</div>
+      <div class="card-number">05 / 08</div>
+    </div>
+    <div class="band">
+      <div>
+        <div class="quote-it">&ldquo;Niente arcobaleno senza pioggia.&rdquo;</div>
+        <div class="quote-en">No rainbow without rain.</div>
+        <div class="accent-line"></div>
+      </div>
+      <div class="meta-strip">
+        <span>Palermo · Q8 Lookout</span>
+        <span>Mer · 15 Aprile 2026 · Mattina</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

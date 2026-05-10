@@ -124,3 +124,56 @@ playwright-report/
 tests/playwright-report/
 tests/test-results/
 .auth/
+
+# ====================================================================
+# 🎙️ WHISPER TRANSCRIPTS (personal voice notes named "* -- audio_*")
+# ====================================================================
+# These are voice memos from Telegram, transcribed by Whisper.
+# They're personal scratch -- never committed.
+* -- audio_*.json
+* -- audio_*.srt
+* -- audio_*.tsv
+* -- audio_*.txt
+* -- audio_*.vtt
+
+# ====================================================================
+# 📋 KDE/NAUTILUS DUPLICATE FILES (file manager copy-button residue)
+# ====================================================================
+* (copy).*
+* (another copy).*
+* ([0-9]rd copy).*
+* ([0-9]nd copy).*
+* ([0-9]th copy).*
+
+# ====================================================================
+# 📥 PARTIAL DOWNLOAD ORPHANS
+# ====================================================================
+*.mp4.part
+*.crdownload
+*.opdownload
+
+# ====================================================================
+# 🌐 BORROWHOOD IS ITS OWN GIT REPO -- never commit from helixnet
+# ====================================================================
+/BorrowHood/
+
+# ====================================================================
+# 🎬 VIDEO PIPELINE BINARIES
+# Per CLAUDE.md: MP4s go to GDrive, not GitHub.
+# Scoped to videos/ only -- assets/comics/**/*.mp4 are deliberate.
+# ====================================================================
+videos/**/*.mp4
+videos/**/*.m4a
+videos/**/*.ogg
+videos/**/*.wav
+videos/**/*.mp3
+
+# Intermediate generation artifacts (mirrors the postcards/**/arc/ rule above)
+videos/**/arc/
+videos/**/frames/
+videos/**/post-production/
+
+# ====================================================================
+# 📚 THIRD-PARTY TRAINING MATERIAL (copyright, retrievable elsewhere)
+# ====================================================================
+docs/training/*.pdf

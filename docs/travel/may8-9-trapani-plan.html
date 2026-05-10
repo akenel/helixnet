@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trapani Plan · Fri–Sat May 8–9, 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #fdfaf3;
+    font-family: Georgia, 'Playfair Display', serif;
+    color: #1a1a1a;
+    line-height: 1.55;
+  }
+  body {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 36px 80px 36px;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 3px solid #d8a050;
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-left .label {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10pt;
+    letter-spacing: 3px;
+    color: #8a6a30;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .header-left h1 {
+    font-family: Georgia, serif;
+    font-size: 26pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.1;
+  }
+  .header-left .subtitle {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 11pt;
+    color: #555;
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border: 2px solid #2C3E50;
+    background: #fff;
+    color: #2C3E50;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+  .btn:hover { background: #2C3E50; color: #fff; }
+  .btn.primary { background: #8B0000; color: #fff; border-color: #8B0000; }
+  .btn.primary:hover { background: #6b0000; border-color: #6b0000; }
+  #save-indicator {
+    display: inline-block;
+    margin-left: 12px;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10pt;
+    color: #2d8c2d;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    font-style: italic;
+  }
+  #save-indicator.show { opacity: 1; }
+
+  /* DAY SECTIONS */
+  .day-section {
+    margin-top: 36px;
+  }
+  .day-header {
+    background: linear-gradient(90deg, #8B0000, #C0392B);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .day-header h2 {
+    font-family: Georgia, serif;
+    font-size: 18pt;
+    font-weight: 700;
+  }
+  .day-header .badge {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9.5pt;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.18);
+    padding: 5px 12px;
+    border-radius: 12px;
+  }
+
+  .day-body {
+    background: #fff;
+    border: 1px solid #d8c89a;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 20px 22px;
+  }
+
+  /* TASK */
+  .task {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed #d8c89a;
+  }
+  .task:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  .task-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .task-checkbox {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: #2d8c2d;
+    flex-shrink: 0;
+  }
+  .task-content {
+    flex: 1;
+  }
+  .task-content .when {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9pt;
+    font-weight: 700;
+    color: #8a6a30;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .task-content .title {
+    font-family: Georgia, serif;
+    font-size: 14pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.3;
+  }
+  .task-content .desc {
+    font-size: 11pt;
+    color: #555;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .task.done .task-content .title {
+    text-decoration: line-through;
+    color: #999;
+  }
+  .task.done .task-content .desc {
+    color: #aaa;
+  }
+  .task-comment {
+    margin-top: 8px;
+    margin-left: 34px;
+  }
+  .task-comment textarea {
+    width: 100%;
+    min-height: 50px;
+    padding: 10px 12px;
+    font-family: Georgia, serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    background: #fff8e9;
+    border: 1px solid #d8c89a;
+    border-radius: 4px;
+    resize: vertical;
+    line-height: 1.45;
+  }
+  .task-comment textarea:focus {
+    outline: none;
+    border-color: #d8a050;
+    background: #fff;
+  }
+  .task-comment label {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9pt;
+    color: #8a6a30;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* TIPS BOX */
+  .tips {
+    background: #fff5e5;
+    border: 2px solid #d8a050;
+    border-radius: 6px;
+    padding: 22px 26px;
+    margin: 36px 0;
+  }
+  .tips h2 {
+    font-family: Georgia, serif;
+    color: #8B0000;
+    font-size: 17pt;
+    margin-bottom: 12px;
+  }
+  .tips ul {
+    margin-left: 22px;
+  }
+  .tips li {
+    margin-bottom: 8px;
+    font-size: 12pt;
+  }
+
+  /* FREE NOTES */
+  .free-notes {
+    margin-top: 36px;
+    background: #fff;
+    border: 1px solid #d8c89a;
+    border-radius: 6px;
+    padding: 20px 22px;
+  }
+  .free-notes h2 {
+    font-family: Georgia, serif;
+    font-size: 16pt;
+    color: #2C3E50;
+    margin-bottom: 10px;
+  }
+  .free-notes textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 12px 14px;
+    font-family: Georgia, serif;
+    font-size: 12pt;
+    color: #1a1a1a;
+    background: #fff8e9;
+    border: 1px solid #d8c89a;
+    border-radius: 4px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .free-notes textarea:focus {
+    outline: none;
+    border-color: #d8a050;
+    background: #fff;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #d8c89a;
+    color: #888;
+    font-size: 10pt;
+    font-style: italic;
+    text-align: center;
+  }
+  .footer .quote {
+    font-family: Georgia, serif;
+    font-size: 11.5pt;
+    color: #1a1a1a;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* PRINT */
+  @media print {
+    body {
+      background: white;
+      max-width: none;
+      padding: 15mm;
+      font-size: 10pt;
+    }
+    .header-actions, #save-indicator { display: none !important; }
+    .day-header {
+      background: #8B0000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .task-comment textarea, .free-notes textarea {
+      background: #fff8e9 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .day-section { page-break-inside: avoid; }
+    .tips { page-break-inside: avoid; }
+    .btn { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="label">Trapani · Fri–Sat Plan</div>
+    <h1>May 8–9, 2026</h1>
+    <div class="subtitle">Friday reset · Saturday MAX swap + Flora dinner · for Angel &amp; Sylvie</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" onclick="saveAll()">💾 Save</button>
+    <button class="btn primary" onclick="window.print()">🖨️ Print / PDF</button>
+    <span id="save-indicator">✓ saved</span>
+  </div>
+</div>
+
+<!-- ============ FRIDAY ============ -->
+<div class="day-section">
+  <div class="day-header">
+    <h2>Friday · May 8</h2>
+    <span class="badge">Reset Day · Trapani</span>
+  </div>
+  <div class="day-body">
+
+    <div class="task" id="task-fri-1">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-1">
+        <div class="task-content">
+          <div class="when">Now → 11am</div>
+          <div class="title">Coffee outside · Sylvie warming up in van</div>
+          <div class="desc">Cool morning, sweater on, parked safe. She's reset. You're settled. Two adults, two coffees, no pressure. Stay outside until ~10:30, then bring her a fresh coffee or pastry — no words, no agenda. She decides if she wants to talk.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Notes / how it went</label>
+        <textarea data-id="fri-1" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-fri-2">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-2">
+        <div class="task-content">
+          <div class="when">Optional · while waiting</div>
+          <div class="title">Re-read BHT Beckenried reply once (no decisions)</div>
+          <div class="desc">Open `may8-beckenried-bht.html` in Firefox if I generated it. Read once, slow, no actions today. Just let it land. Beckenried strategy waits until back in Switzerland.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Notes</label>
+        <textarea data-id="fri-2" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-fri-3">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-3">
+        <div class="task-content">
+          <div class="when">~11am – noon</div>
+          <div class="title">Camper &amp; Tour visit · confirm Saturday handover</div>
+          <div class="desc">Drive Monster to Sebastiano/Nino. Ask: <strong>exact handover time tomorrow</strong>, what's been done, anything still pending. See MAX with your eyes. 30 min max — they're working. Public space resets moods if Sylvie's still cool.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>What time? Anything pending?</label>
+        <textarea data-id="fri-3" placeholder="MAX pickup time tomorrow: ___ ; pending items: ___"></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-fri-4">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-4">
+        <div class="task-content">
+          <div class="when">~12:30 – 2pm</div>
+          <div class="title">Lunch out · neutral territory</div>
+          <div class="desc">Walk somewhere, eat, no pressure. Sylvie reset means lunch out is good — public food, no van, no agenda. Pizza, pasta, focaccia — whatever feels easy.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Where did you go? How was it?</label>
+        <textarea data-id="fri-4" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-fri-5">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-5">
+        <div class="task-content">
+          <div class="when">Afternoon · 2 – 5pm</div>
+          <div class="title">Mental pack list · Monster → MAX</div>
+          <div class="desc">Don't physically move stuff yet. Walk through the Monster, make a mental (or written) list: what goes to MAX, what stays in Monster, what gets thrown out, what's wedged where. Tomorrow's move is faster if today's list is solid.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Pack list / surprises found</label>
+        <textarea data-id="fri-5" placeholder="Categories: kitchen / clothes / electronics / tools / sentimentals / trash..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-fri-6">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-6">
+        <div class="task-content">
+          <div class="when">Optional · 1 hour</div>
+          <div class="title">ONE small productive thing (pick one)</div>
+          <div class="desc">a) Email Felix asking for his brother's contact (fiduciary intro for later). b) Draft 5 fiduciary questions list. c) Small La Piazza tweak. d) Skip entirely. <strong>Pick ONE or skip.</strong> Don't do multiple.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Which one? Done?</label>
+        <textarea data-id="fri-6" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-fri-7">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="fri-7">
+        <div class="task-content">
+          <div class="when">Evening · off-switch by 8pm</div>
+          <div class="title">Simple dinner · music · early sleep</div>
+          <div class="desc">No big decisions. No laptop after 8pm. Tomorrow is a long day — MAX swap + Flora dinner = energy spend. Bank rest tonight. Music from the sunrise-chain library is fine.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>What did you eat / listen to?</label>
+        <textarea data-id="fri-7" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ SATURDAY ============ -->
+<div class="day-section">
+  <div class="day-header">
+    <h2>Saturday · May 9</h2>
+    <span class="badge">⚠ LOADED · MAX swap + Flora 7:30pm</span>
+  </div>
+  <div class="day-body">
+
+    <div class="task" id="task-sat-1">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-1">
+        <div class="task-content">
+          <div class="when">Morning · 8 – 9:30am</div>
+          <div class="title">Light start · coffee · prep mentality</div>
+          <div class="desc">Don't rush. Coffee, light breakfast, mental prep. Today's the move. Hydrate (you'll be lifting stuff). Sylvie should also rest mode this morning — afternoon will demand her.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Notes</label>
+        <textarea data-id="sat-1" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-2">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-2">
+        <div class="task-content">
+          <div class="when">~10am</div>
+          <div class="title">Drive Monster to Camper &amp; Tour · MAX handover</div>
+          <div class="desc">At the time confirmed yesterday with Sebastiano/Nino. <strong>Bring all paperwork (rental contract, insurance, your ID).</strong> Walk around MAX with Nino — note anything new (scratches, stove install, roof check). Sign whatever you need to sign.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Handover notes / new scratches / receipts</label>
+        <textarea data-id="sat-2" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-3">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-3">
+        <div class="task-content">
+          <div class="when">~10:30am – 2pm</div>
+          <div class="title">★ THE BIG MOVE · Monster → MAX</div>
+          <div class="desc">Physical labor. Move clothes, kitchen, electronics, tools, sentimentals. Use yesterday's mental list. <strong>Two passes:</strong> first pass = essentials only, second pass = sweep for what's left. Throw out trash as you go. Stay hydrated. Take a 15-min sit-break halfway.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Surprises / what got tossed / what wouldn't fit</label>
+        <textarea data-id="sat-3" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-4">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-4">
+        <div class="task-content">
+          <div class="when">~2pm</div>
+          <div class="title">Hand Monster keys back · settle MAX</div>
+          <div class="desc"><strong>Important: keep Monster keys until MAX is verified working.</strong> Test MAX engine, lights, brakes, gas. Make sure stove install fires up. THEN hand Monster keys back. Take photos of MAX condition (insurance + your records).</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>MAX status / any issues found</label>
+        <textarea data-id="sat-4" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-5">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-5">
+        <div class="task-content">
+          <div class="when">~2:30 – 4pm</div>
+          <div class="title">⚠ DECISION POINT · Flora tonight or push?</div>
+          <div class="desc">If MAX move went smoothly + you both have energy → keep Flora 7:30pm. <strong>If anything's off (Sylvie wrecked, MAX issue, you're drained)</strong> → text Flora NOW (not at 6pm) to push to Sunday. Better to delay than show up at 7:30 zombie.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Decision: dinner tonight or push? Why?</label>
+        <textarea data-id="sat-5" placeholder="Energy check: ___ / decision: ___"></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-6">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-6">
+        <div class="task-content">
+          <div class="when">~4 – 5:30pm</div>
+          <div class="title">Wine · flowers · clean up · shower</div>
+          <div class="desc">Pickup: <strong>Nero d'Avola</strong> at any decent enoteca + <strong>small bouquet</strong> at a fioraio. €15-25 total. Both fresh today, not yesterday. Then shower in MAX (or wherever), change into something not road-trip clothes. Sylvie too — give her time and space.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>What did you bring? Where from?</label>
+        <textarea data-id="sat-6" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-7">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-7">
+        <div class="task-content">
+          <div class="when">~6:30 – 7pm</div>
+          <div class="title">Drive MAX to Flora's near McDonald's</div>
+          <div class="desc">First real drive with all your stuff in MAX. Take it easy on the corners — load is heavier, balance is different. Park in Flora's lot. Walk the last 30 seconds.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>How did MAX drive loaded?</label>
+        <textarea data-id="sat-7" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-8">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-8">
+        <div class="task-content">
+          <div class="when">7:30pm</div>
+          <div class="title">Dinner at Flora's</div>
+          <div class="desc">Be a guest, not a salesman. Don't pitch La Piazza tonight. Ask about her — 120sqm apartment, the sublet idea, her life. Let her host. <strong>Don't drink heavy</strong> — Sunday recovery + driving back to MAX in the lot. Two glasses max.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>Stories / what came up / anything to follow up on?</label>
+        <textarea data-id="sat-8" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+    <div class="task" id="task-sat-9">
+      <div class="task-row">
+        <input type="checkbox" class="task-checkbox" data-id="sat-9">
+        <div class="task-content">
+          <div class="when">After dinner</div>
+          <div class="title">Sleep in MAX · Flora's lot</div>
+          <div class="desc">First night in MAX after upgrades. Verify locking, ventilation, water, lights. McDonald's nearby = morning bathroom + coffee backup. Set alarm for whenever feels right Sunday.</div>
+        </div>
+      </div>
+      <div class="task-comment">
+        <label>How did MAX sleep? Anything to fix?</label>
+        <textarea data-id="sat-9" placeholder="Add notes here..."></textarea>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ TIG TIPS ============ -->
+<div class="tips">
+  <h2>★ Tig Tips · Don't Forget</h2>
+  <ul>
+    <li><strong>Saturday is LOADED.</strong> MAX swap + Flora dinner same day. If MAX move drags past 4pm, push Flora to Sunday — text early, not panicked at 6pm.</li>
+    <li><strong>Buy wine + flowers Saturday DAYTIME</strong>, not Saturday night when shops are closed.</li>
+    <li><strong>Today (Friday) is light.</strong> Don't overload it. Sylvie's reset day. Save energy for tomorrow.</li>
+    <li><strong>Confirm MAX pickup TIME today</strong> with Sebastiano/Nino — don't show up random Saturday morning.</li>
+    <li><strong>Keep Monster keys</strong> until MAX is verified working. Insurance overlap matters. Test before returning.</li>
+    <li><strong>Don't drink heavy at Flora's</strong> — Sunday morning matters, plus you're driving back to MAX in her lot.</li>
+    <li><strong>Bring paperwork Saturday</strong> for the swap: rental contract, insurance docs, your ID.</li>
+    <li><strong>Tonight = simple dinner, music, early sleep.</strong> Bank energy for the move.</li>
+    <li><strong>UniCredit card lands Tuesday May 12</strong> — don't forget. Confirm bank branch + hours when you have a quiet moment.</li>
+  </ul>
+</div>
+
+<!-- ============ FREE NOTES ============ -->
+<div class="free-notes">
+  <h2>Free Notes · Anything Else</h2>
+  <textarea id="free-notes" placeholder="Anything that doesn't fit a task — surprises, conversations, things to remember, ideas for later, what worked, what didn't..."></textarea>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<div class="footer">
+  <div class="quote">"Casa è dove parcheggi."</div>
+  Home is where you park it.
+  <br><br>
+  <em>For Angel &amp; Sylvie · Generated 8 May 2026 · Tigs · Trapani</em>
+</div>
+
+<script>
+  const STORAGE_KEY = 'trapani-plan-may-8-9-2026';
+
+  function loadState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const state = JSON.parse(raw);
+      // Checkboxes
+      document.querySelectorAll('.task-checkbox').forEach(cb => {
+        const id = cb.dataset.id;
+        if (state.checkboxes && state.checkboxes[id]) {
+          cb.checked = true;
+          cb.closest('.task').classList.add('done');
+        }
+      });
+      // Comments
+      document.querySelectorAll('.task-comment textarea').forEach(ta => {
+        const id = ta.dataset.id;
+        if (state.comments && state.comments[id]) {
+          ta.value = state.comments[id];
+        }
+      });
+      // Free notes
+      const freeNotes = document.getElementById('free-notes');
+      if (state.freeNotes) freeNotes.value = state.freeNotes;
+    } catch (e) {
+      console.error('Failed to load state', e);
+    }
+  }
+
+  function saveAll() {
+    const state = {
+      checkboxes: {},
+      comments: {},
+      freeNotes: '',
+      savedAt: new Date().toISOString()
+    };
+    document.querySelectorAll('.task-checkbox').forEach(cb => {
+      state.checkboxes[cb.dataset.id] = cb.checked;
+    });
+    document.querySelectorAll('.task-comment textarea').forEach(ta => {
+      state.comments[ta.dataset.id] = ta.value;
+    });
+    state.freeNotes = document.getElementById('free-notes').value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    showSaved();
+  }
+
+  function showSaved() {
+    const indicator = document.getElementById('save-indicator');
+    indicator.classList.add('show');
+    setTimeout(() => indicator.classList.remove('show'), 1800);
+  }
+
+  // Auto-save on any change
+  document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+
+    document.querySelectorAll('.task-checkbox').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const taskEl = cb.closest('.task');
+        if (cb.checked) taskEl.classList.add('done');
+        else taskEl.classList.remove('done');
+        saveAll();
+      });
+    });
+
+    document.querySelectorAll('.task-comment textarea, #free-notes').forEach(ta => {
+      let saveTimeout;
+      ta.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveAll, 600);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,211 @@
+ ▐▛███▜▌   Claude Code v2.1.50
+▝▜█████▛▘  Opus 4.6 · Claude Max
+  ▘▘ ▝▝    ~/repos/helixnet
+
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Plan to implement                                                                                                 │
+│                                                                                                                   │
+│ Plan: Unified Backlog Module                                                                                      │
+│                                                                                                                   │
+│ Context                                                                                                           │
+│                                                                                                                   │
+│ Angel needs one board to track everything: dev tasks, camper shop work, business ops, bug fixes. Not Jira --      │
+│ something clean and practical for a small team (Angel + Anne + Tigs). Kanban board as default view with toggle to │
+│  list/table view.                                                                                                 │
+│                                                                                                                   │
+│ Architecture                                                                                                      │
+│                                                                                                                   │
+│ Follows existing HelixNet patterns exactly:                                                                       │
+│ - Model + Schema + Router (API + HTML) + Templates                                                                │
+│ - Same auth as QA dashboard (camper-manager, camper-admin, camper-qa-tester)                                      │
+│ - Alpine.js + Tailwind CSS (same as every other module)                                                           │
+│ - Activity trail pattern from QA bug reports (append-only audit log)                                              │
+│                                                                                                                   │
+│ What Gets Built                                                                                                   │
+│                                                                                                                   │
+│ New files                                                                                                         │
+│                                                                                                                   │
+│ ┌──────────────────────────────────┬─────────────────────────────────────────────────────┐                        │
+│ │               File               │                       Purpose                       │                        │
+│ ├──────────────────────────────────┼─────────────────────────────────────────────────────┤                        │
+│ │ src/db/models/backlog_model.py   │ BacklogItem, BacklogActivity, BacklogComment models │                        │
+│ ├──────────────────────────────────┼─────────────────────────────────────────────────────┤                        │
+│ │ src/schemas/backlog_schema.py    │ Create, Read, Update, Summary schemas               │                        │
+│ ├──────────────────────────────────┼─────────────────────────────────────────────────────┤                        │
+│ │ src/routes/backlog_router.py     │ API endpoints + HTML page routes                    │                        │
+│ ├──────────────────────────────────┼─────────────────────────────────────────────────────┤                        │
+│ │ src/templates/backlog/base.html  │ Base template (dark nav, same style as QA)          │                        │
+│ ├──────────────────────────────────┼─────────────────────────────────────────────────────┤                        │
+│ │ src/templates/backlog/board.html │ Main page: Kanban + List toggle                     │                        │
+│ └──────────────────────────────────┴─────────────────────────────────────────────────────┘                        │
+│                                                                                                                   │
+│ Modified files                                                                                                    │
+│                                                                                                                   │
+│ ┌─────────────┬───────────────────────────────────────────────┐                                                   │
+│ │    File     │                    Change                     │                                                   │
+│ ├─────────────┼───────────────────────────────────────────────┤                                                   │
+│ │ src/main.py │ Register backlog_router + backlog_html_router │                                                   │
+│ └─────────────┴───────────────────────────────────────────────┘                                                   │
+│                                                                                                                   │
+│ Data Model                                                                                                        │
+│                                                                                                                   │
+│ BacklogItem                                                                                                       │
+│                                                                                                                   │
+│ backlog_items                                                                                                     │
+│   id              UUID PK                                                                                         │
+│   item_number     int (unique, auto-increment like BUG-001 -> BL-001)                                             │
+│   item_type       enum: dev_task, bug_fix, camper_job, business_ops                                               │
+│   status          enum: pending, in_progress, blocked, done, archived                                             │
+│   priority        enum: low, medium, high, critical                                                               │
+│   title           varchar(200)                                                                                    │
+│   description     text                                                                                            │
+│   assigned_to     varchar(100) nullable                                                                           │
+│   due_date        date nullable                                                                                   │
+│   estimated_hours float nullable                                                                                  │
+│   blocked_reason  text nullable (why is this blocked)                                                             │
+│   tags            varchar(500) nullable (comma-separated: "postcard,isotto,urgent")                               │
+│   created_by      varchar(100)                                                                                    │
+│   created_at      timestamp                                                                                       │
+│   updated_at      timestamp                                                                                       │
+│                                                                                                                   │
+│ No epic/hierarchy in v1. Keep it flat. Tags handle grouping.                                                      │
+│ No FK links to bugs/camper jobs in v1 -- just mention them in description. Simpler.                               │
+│                                                                                                                   │
+│ BacklogActivity (append-only audit trail)                                                                         │
+│                                                                                                                   │
+│ backlog_activities                                                                                                │
+│   id              UUID PK                                                                                         │
+│   item_id         UUID FK -> backlog_items                                                                        │
+│   activity_type   enum: status_change, assigned, comment, priority_change                                         │
+│   actor           varchar(100)                                                                                    │
+│   old_value       varchar(200) nullable                                                                           │
+│   new_value       varchar(200) nullable                                                                           │
+│   comment         text nullable                                                                                   │
+│   created_at      timestamp                                                                                       │
+│                                                                                                                   │
+│ Same pattern as QABugActivityModel. Proven, works.                                                                │
+│                                                                                                                   │
+│ BacklogComment (separate from activity for richer comments)                                                       │
+│                                                                                                                   │
+│ Not in v1. Use the activity trail comment type instead. One less table, one less model. Add later if needed.      │
+│                                                                                                                   │
+│ API Endpoints                                                                                                     │
+│                                                                                                                   │
+│ GET    /api/v1/backlog/summary          -> counts by status, type, priority                                       │
+│ GET    /api/v1/backlog/items            -> list (filters: type, status, priority, assigned_to)                    │
+│ POST   /api/v1/backlog/items            -> create new item                                                        │
+│ GET    /api/v1/backlog/items/{id}       -> single item + activities                                               │
+│ PUT    /api/v1/backlog/items/{id}       -> update (auto-logs activity for status/assignment/priority changes)     │
+│ DELETE /api/v1/backlog/items/{id}       -> soft delete (set status=archived)                                      │
+│ GET    /api/v1/backlog/items/{id}/activities -> activity log                                                      │
+│                                                                                                                   │
+│ HTML Pages                                                                                                        │
+│                                                                                                                   │
+│ GET    /backlog                         -> board.html (main page)                                                 │
+│                                                                                                                   │
+│ One page does everything: Kanban board, list view toggle, create/edit modal, activity sidebar.                    │
+│                                                                                                                   │
+│ UI Design (board.html)                                                                                            │
+│                                                                                                                   │
+│ Top bar                                                                                                           │
+│                                                                                                                   │
+│ - Summary cards: Total | Pending | In Progress | Blocked | Done                                                   │
+│ - Filter row: Type dropdown, Priority dropdown, Assigned dropdown                                                 │
+│ - View toggle: [Board] [List] buttons                                                                             │
+│ - [+ New Item] button                                                                                             │
+│                                                                                                                   │
+│ Kanban view (default)                                                                                             │
+│                                                                                                                   │
+│ - 4 columns: Pending | In Progress | Blocked | Done                                                               │
+│ - Cards show: BL-NNN, title, type badge, priority color, assigned name                                            │
+│ - Click card -> opens detail/edit modal                                                                           │
+│ - Status change: dropdown on card OR drag (drag is nice-to-have, click-to-change is v1)                           │
+│                                                                                                                   │
+│ List view (toggle)                                                                                                │
+│                                                                                                                   │
+│ - Sortable table: #, Type, Title, Priority, Status, Assigned, Due, Updated                                        │
+│ - Click row -> same detail/edit modal                                                                             │
+│                                                                                                                   │
+│ Detail/Edit modal                                                                                                 │
+│                                                                                                                   │
+│ - Title, description, type, priority, status, assigned_to, due_date, estimated_hours, blocked_reason, tags        │
+│ - Activity timeline below (same pattern as QA bug activity view)                                                  │
+│ - Comment input to add notes                                                                                      │
+│                                                                                                                   │
+│ Priority colors (consistent with QA)                                                                              │
+│                                                                                                                   │
+│ - Critical: red                                                                                                   │
+│ - High: orange                                                                                                    │
+│ - Medium: amber                                                                                                   │
+│ - Low: gray                                                                                                       │
+│                                                                                                                   │
+│ Type badges                                                                                                       │
+│                                                                                                                   │
+│ - dev_task: blue                                                                                                  │
+│ - bug_fix: red                                                                                                    │
+│ - camper_job: green                                                                                               │
+│ - business_ops: purple                                                                                            │
+│                                                                                                                   │
+│ Auth                                                                                                              │
+│                                                                                                                   │
+│ Reuse existing QA access pattern:                                                                                 │
+│ def require_backlog_access():                                                                                     │
+│     return require_roles(["camper-qa-tester", "camper-manager", "camper-admin"])                                  │
+│                                                                                                                   │
+│ Same roles that can see bugs can see the backlog. No new Keycloak migration needed.                               │
+│                                                                                                                   │
+│ Seed Data                                                                                                         │
+│                                                                                                                   │
+│ Pre-populate with recent real work so the board isn't empty:                                                      │
+│                                                                                                                   │
+│ ┌────────┬──────────────┬──────────────────────────────────────┬─────────────┬──────────┐                         │
+│ │   #    │     Type     │                Title                 │   Status    │ Priority │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-001 │ dev_task     │ HelixEnum migration (all models)     │ done        │ high     │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-002 │ bug_fix      │ BUG-010 upload images (MinIO + auth) │ done        │ high     │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-003 │ dev_task     │ Multi-commit tracking for bugs       │ done        │ medium   │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-004 │ dev_task     │ Tigs Telegram bot                    │ done        │ medium   │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-005 │ business_ops │ Pizza Planet postcard print run      │ pending     │ medium   │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-006 │ business_ops │ Color Clean card set                 │ pending     │ medium   │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-007 │ business_ops │ Piccolo Bistratto card set           │ pending     │ low      │                         │
+│ ├────────┼──────────────┼──────────────────────────────────────┼─────────────┼──────────┤                         │
+│ │ BL-008 │ dev_task     │ Unified backlog module               │ in_progress │ high     │                         │
+│ └────────┴──────────────┴──────────────────────────────────────┴─────────────┴──────────┘                         │
+│                                                                                                                   │
+│ Build Order                                                                                                       │
+│                                                                                                                   │
+│ 1. backlog_model.py -- models + enums                                                                             │
+│ 2. backlog_schema.py -- Pydantic schemas                                                                          │
+│ 3. backlog_router.py -- API + HTML routes                                                                         │
+│ 4. backlog/base.html -- base template                                                                             │
+│ 5. backlog/board.html -- main page (Kanban + List + modals)                                                       │
+│ 6. main.py -- register routers                                                                                    │
+│ 7. Create table on Hetzner + seed data                                                                            │
+│ 8. Deploy and verify                                                                                              │
+│                                                                                                                   │
+│ Verification                                                                                                      │
+│                                                                                                                   │
+│ 1. Open /backlog -> see Kanban board with seed data                                                               │
+│ 2. Toggle to List view -> see same items in table                                                                 │
+│ 3. Click [+ New Item] -> create a new business_ops item                                                           │
+│ 4. Click a card -> edit status, add comment -> verify activity trail                                              │
+│ 5. Filter by type=dev_task -> only see dev items                                                                  │
+│ 6. Check /api/v1/backlog/summary -> correct counts                                                                │
+│                                                                                                                   │
+│ What's NOT in v1                                                                                                  │
+│                                                                                                                   │
+│ - No drag-and-drop (click to change status is fine)                                                               │
+│ - No epics/hierarchy (flat list with tags)                                                                        │
+│ - No FK links to bugs/camper jobs (describe in text)                                                              │
+│ - No sprint planning / velocity / burndown                                                                        │
+│ - No file attachments                                                                                             │
+│ - No email notifications                                                                                          │
+│ - No Tigs bot integration (add later: /backlog command)                                                           │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
