@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LP CLI — Architecture Design (Review)</title>
+<title>LP CLI — Architecture Design (Draft 2 / Stage 2 Review)</title>
 <style>
-  /* === Reset + base === */
   *, *::before, *::after { box-sizing: border-box; }
   html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   body {
@@ -15,7 +14,6 @@
     color: #222;
     background: #f6f7fa;
   }
-  /* === Header === */
   header.doc-head {
     background: linear-gradient(135deg, #2C3E50 0%, #1a2530 100%);
     color: #fff;
@@ -46,7 +44,18 @@
     letter-spacing: .04em;
     margin-left: .5rem;
   }
-  /* === Top sign-off bar === */
+  .stage-pill {
+    display: inline-block;
+    background: #C0392B;
+    color: #fff;
+    padding: .1rem .5rem;
+    border-radius: .25rem;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-left: .5rem;
+  }
   .signoff-bar {
     background: #fff;
     border-bottom: 1px solid #e1e4e8;
@@ -63,6 +72,7 @@
     font-weight: 600;
     color: #1a2530;
     cursor: pointer;
+    flex-wrap: wrap;
   }
   .signoff-bar input[type=checkbox] {
     width: 22px;
@@ -74,293 +84,294 @@
     color: #555;
     margin-left: auto;
   }
-  /* === Layout === */
   .layout {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0;
-    max-width: 1100px;
-    margin: 0 auto;
   }
-  @media (min-width: 900px) {
-    .layout {
-      grid-template-columns: 240px 1fr;
-    }
+  @media (min-width: 920px) {
+    .layout { grid-template-columns: 240px 1fr; }
+    nav.toc { position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; }
   }
-  /* === Sidebar TOC === */
   nav.toc {
     background: #fff;
+    padding: 1rem 1rem 1rem 1.25rem;
     border-right: 1px solid #e1e4e8;
-    padding: 1rem .75rem;
-  }
-  @media (min-width: 900px) {
-    nav.toc {
-      position: sticky;
-      top: 56px;
-      height: calc(100vh - 56px);
-      overflow-y: auto;
-    }
-  }
-  nav.toc h3 {
-    margin: 0 0 .5rem 0;
-    font-size: .75rem;
-    text-transform: uppercase;
-    color: #555;
-    letter-spacing: .08em;
-  }
-  nav.toc ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  nav.toc li {
-    margin-bottom: .15rem;
-  }
-  nav.toc a {
-    display: block;
-    padding: .35rem .5rem;
-    color: #2C3E50;
-    text-decoration: none;
     font-size: .85rem;
-    border-radius: 4px;
-    line-height: 1.3;
   }
-  nav.toc a:hover {
-    background: #f6f7fa;
-    color: #C0392B;
-  }
-  /* === Main content === */
+  nav.toc h3 { margin: 0 0 .5rem 0; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: #888; }
+  nav.toc ul { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 0 0 .25rem 0; }
+  nav.toc a { color: #2C3E50; text-decoration: none; padding: .25rem 0; display: block; }
+  nav.toc a:hover { color: #C0392B; }
+  nav.toc .toc-stage { font-size: .7rem; color: #888; text-transform: uppercase; margin-top: .8rem; margin-bottom: .2rem; padding-top: .5rem; border-top: 1px dashed #e1e4e8; }
   main.content {
     padding: 1.25rem;
-    max-width: 800px;
+    max-width: 900px;
   }
-  section.card {
-    background: #fff;
-    border: 1px solid #e1e4e8;
+  .changelog-card {
+    background: linear-gradient(135deg, #fff5e6 0%, #fffaf0 100%);
+    border: 2px solid #f3b54a;
     border-radius: 8px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .changelog-card h3 {
+    margin: 0 0 .5rem 0;
+    color: #8B4500;
+    font-size: 1.05rem;
+  }
+  .changelog-card ul { margin: .4rem 0 0 0; padding-left: 1.25rem; }
+  .changelog-card li { margin: .25rem 0; }
+  .changelog-card .tag {
+    display: inline-block;
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: .05rem .35rem;
+    border-radius: .2rem;
+    margin-right: .3rem;
+    letter-spacing: .03em;
+  }
+  .tag-confirmed { background: #27ae60; color: #fff; }
+  .tag-added { background: #2980b9; color: #fff; }
+  .tag-moved { background: #8e44ad; color: #fff; }
+  .tag-renamed { background: #d35400; color: #fff; }
+  .tag-q { background: #c0392b; color: #fff; }
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     margin-bottom: 1.25rem;
     overflow: hidden;
   }
-  section.card > header {
-    background: #fafbfc;
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #e1e4e8;
+  .card > header {
+    background: #fafafa;
+    border-bottom: 1px solid #ecedef;
+    padding: .8rem 1rem;
     display: flex;
     align-items: center;
     gap: .65rem;
   }
-  section.card > header h2 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #1a2530;
-    flex-grow: 1;
-  }
-  section.card > header .num {
+  .card > header .num {
     background: #C0392B;
     color: #fff;
-    font-weight: 700;
-    font-size: .8rem;
-    width: 26px;
-    height: 26px;
-    display: flex;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    font-size: .85rem;
+    font-weight: 700;
     flex-shrink: 0;
   }
-  section.card > .body {
+  .card > header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #1a2530;
+    line-height: 1.3;
+  }
+  .card .body {
     padding: 1rem;
     font-size: .92rem;
   }
-  section.card > .body p { margin: 0 0 .85rem 0; }
-  section.card > .body p:last-child { margin-bottom: 0; }
-  section.card > .body h3 {
-    color: #2C3E50;
-    margin-top: 1.25rem;
-    margin-bottom: .5rem;
-    font-size: 1rem;
-  }
-  section.card > .body h3:first-child { margin-top: 0; }
-  /* === Code blocks === */
-  pre, code {
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    font-size: .82rem;
-  }
-  code {
-    background: #f0f1f4;
+  .card .body h3 { margin: 1rem 0 .4rem 0; font-size: 1rem; color: #2C3E50; }
+  .card .body h3:first-child { margin-top: 0; }
+  .card .body p { margin: .5rem 0; }
+  .card .body ul, .card .body ol { margin: .5rem 0; padding-left: 1.3rem; }
+  .card .body li { margin: .25rem 0; }
+  .card .body code {
+    background: #f1f3f5;
     padding: .1rem .3rem;
     border-radius: 3px;
-    color: #C0392B;
+    font-size: .87em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: #c7254e;
+    word-break: break-word;
   }
-  pre {
-    background: #1a2530;
-    color: #e8e8e8;
-    padding: .85rem 1rem;
-    border-radius: 6px;
+  .card .body pre {
+    background: #2C3E50;
+    color: #f8f8f2;
+    padding: .8rem 1rem;
+    border-radius: 5px;
     overflow-x: auto;
-    line-height: 1.4;
-    margin: .75rem 0;
+    font-size: .8rem;
+    line-height: 1.5;
+    border-left: 3px solid #C0392B;
   }
-  pre code {
-    background: none;
-    color: inherit;
-    padding: 0;
-  }
-  /* === Tables === */
-  table {
-    border-collapse: collapse;
+  .card .body pre code { background: transparent; color: inherit; padding: 0; }
+  .card .body table {
     width: 100%;
+    border-collapse: collapse;
     margin: .75rem 0;
-    font-size: .88rem;
+    font-size: .87rem;
   }
-  th, td {
-    padding: .45rem .55rem;
+  .card .body table th, .card .body table td {
+    padding: .5rem .65rem;
     text-align: left;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid #ecedef;
     vertical-align: top;
   }
-  th {
-    background: #f6f7fa;
-    font-weight: 600;
+  .card .body table th {
+    background: #fafafa;
+    font-weight: 700;
     color: #1a2530;
-    border-bottom: 2px solid #C0392B;
   }
-  tr:hover td { background: #fafbfc; }
-  /* === Lists === */
-  ul, ol { padding-left: 1.5rem; }
-  ul li, ol li { margin-bottom: .25rem; }
-  /* === Section review widget === */
+  .callout {
+    background: #f8f9fa;
+    border-left: 4px solid #C0392B;
+    padding: .6rem .85rem;
+    margin: .85rem 0;
+    font-size: .87rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout.success { background: #f0f9f4; border-left-color: #27ae60; }
+  .callout.danger  { background: #fdf2f0; border-left-color: #C0392B; }
+  .callout.warning { background: #fef9e7; border-left-color: #f3b54a; }
+  .callout.info    { background: #eaf3fa; border-left-color: #2980b9; }
   .review {
-    border-top: 1px dashed #e1e4e8;
-    padding: .85rem 1rem;
     background: #fafbfc;
+    border-top: 2px dashed #dde1e6;
+    padding: .8rem 1rem;
   }
   .review label {
     display: flex;
     align-items: center;
-    gap: .5rem;
-    font-size: .85rem;
+    gap: .6rem;
     font-weight: 600;
-    color: #2C3E50;
-    margin-bottom: .5rem;
+    color: #1a2530;
     cursor: pointer;
+    margin-bottom: .5rem;
   }
-  .review label input {
-    width: 18px;
-    height: 18px;
-    accent-color: #4CAF50;
+  .review input[type=checkbox] {
+    width: 20px;
+    height: 20px;
+    accent-color: #27ae60;
   }
   .review textarea {
     width: 100%;
-    min-height: 60px;
-    padding: .5rem;
-    border: 1px solid #d1d4d8;
+    min-height: 70px;
+    padding: .5rem .65rem;
+    border: 1px solid #dde1e6;
     border-radius: 4px;
     font-family: inherit;
-    font-size: .85rem;
-    line-height: 1.4;
-    resize: vertical;
-  }
-  .review textarea:focus {
-    outline: none;
-    border-color: #C0392B;
-    box-shadow: 0 0 0 2px rgba(192, 57, 43, .15);
-  }
-  /* === Highlights === */
-  .callout {
-    border-left: 4px solid #f3b54a;
-    background: #fff8e6;
-    padding: .65rem .85rem;
-    margin: .85rem 0;
-    border-radius: 0 4px 4px 0;
     font-size: .9rem;
+    resize: vertical;
+    background: #fff;
   }
-  .callout.danger { border-color: #C0392B; background: #fdf2f1; }
-  .callout.success { border-color: #4CAF50; background: #f0f9f1; }
-  .callout strong { color: #1a2530; }
-  /* === Master notes footer === */
+  .review textarea:focus { outline: 2px solid #2980b9; outline-offset: -1px; border-color: #2980b9; }
+  .decision {
+    background: #f0f9f4;
+    border: 1px solid #c4e2cf;
+    border-radius: 5px;
+    padding: .5rem .75rem;
+    margin: .5rem 0;
+    font-size: .87rem;
+  }
+  .decision::before {
+    content: "✓ DECIDED — ";
+    font-weight: 700;
+    color: #1e7f3d;
+    letter-spacing: .02em;
+  }
+  .question {
+    background: #fdf2f0;
+    border: 1px solid #f0c1ba;
+    border-radius: 5px;
+    padding: .5rem .75rem;
+    margin: .5rem 0;
+    font-size: .87rem;
+  }
+  .question::before {
+    content: "? OPEN — ";
+    font-weight: 700;
+    color: #a93226;
+    letter-spacing: .02em;
+  }
+  .stage1-note {
+    background: #fff8e1;
+    border-left: 3px solid #f3b54a;
+    padding: .45rem .7rem;
+    margin: .65rem 0;
+    font-size: .82rem;
+    color: #6a4500;
+    border-radius: 0 3px 3px 0;
+    font-style: italic;
+  }
+  .stage1-note::before {
+    content: "📝 Your stage-1 note: ";
+    font-weight: 700;
+    font-style: normal;
+    color: #8B4500;
+  }
   footer.master {
     background: #fff;
-    border-top: 4px solid #C0392B;
-    padding: 1.5rem 1.25rem;
-    margin-top: 2rem;
+    margin: 0 1.25rem 1.25rem 1.25rem;
+    padding: 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    max-width: 900px;
   }
-  footer.master h2 {
-    margin: 0 0 .85rem 0;
-    color: #1a2530;
-  }
+  footer.master h2 { margin: 0 0 .5rem 0; color: #1a2530; font-size: 1.1rem; }
   footer.master textarea {
     width: 100%;
-    min-height: 140px;
-    padding: .75rem;
-    border: 1px solid #d1d4d8;
-    border-radius: 6px;
+    min-height: 120px;
+    padding: .65rem;
+    border: 1px solid #dde1e6;
+    border-radius: 4px;
     font-family: inherit;
-    font-size: .95rem;
-    line-height: 1.5;
+    font-size: .92rem;
     resize: vertical;
   }
   .export-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
     margin-top: 1rem;
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
   }
   .export-bar button {
     background: #2C3E50;
     color: #fff;
     border: none;
-    padding: .55rem 1rem;
+    padding: .55rem .9rem;
     border-radius: 4px;
-    cursor: pointer;
     font-size: .85rem;
     font-weight: 600;
+    cursor: pointer;
   }
   .export-bar button:hover { background: #1a2530; }
   .export-bar button.danger { background: #C0392B; }
-  .export-bar button.danger:hover { background: #962d22; }
-  /* === Print styles === */
+  .export-bar button.danger:hover { background: #8B0000; }
   @media print {
+    .signoff-bar, nav.toc, .export-bar { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    .card, .changelog-card, footer.master { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
     body { background: #fff; }
-    .signoff-bar, nav.toc, .export-bar, footer.master h2 + p { display: none; }
-    .layout { grid-template-columns: 1fr; max-width: 100%; }
-    main.content { padding: 0; max-width: 100%; }
-    section.card {
-      border: none;
-      page-break-inside: avoid;
-      box-shadow: none;
-    }
-    section.card > header { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
-    section.card > header .num { background: #C0392B !important; color: #fff !important; -webkit-print-color-adjust: exact; }
-    pre { background: #f0f0f0 !important; color: #1a2530 !important; -webkit-print-color-adjust: exact; }
-    .review textarea, footer.master textarea {
-      min-height: 80px;
-      border: 1px solid #999;
-    }
-    .review input[type=checkbox] + label::after,
-    .signoff-bar input[type=checkbox] + label::after {
-      content: ' [ ] ';
-    }
+    .review textarea, footer.master textarea { background: #f8f8f8; border: 1px solid #aaa; }
+    .review input[type=checkbox] + span::before, .signoff-bar input[type=checkbox] + span::before { content: ''; }
+    .review input[type=checkbox] + label::after, .signoff-bar input[type=checkbox] + label::after { content: ' [ ] '; }
   }
 </style>
 </head>
 <body>
 
 <header class="doc-head">
-  <h1>LP CLI — Architecture Design <span class="status-badge">Review</span></h1>
+  <h1>LP CLI — Architecture Design <span class="status-badge">Draft 2</span><span class="stage-pill">Stage 2 Review</span></h1>
   <div class="meta">
     <div><b>Authors:</b> Angel + Tigs</div>
     <div><b>Date opened:</b> 2026-05-13 (night-shift design session)</div>
-    <div><b>Last revised:</b> 2026-05-13 — YAML-as-source pivot + A/B/C/D answers locked</div>
-    <div><b>Source MD:</b> <code>docs/design/lp-cli-architecture.md</code></div>
+    <div><b>Draft 2 written:</b> 2026-05-13 — Stage-1 feedback folded in, Stage-2 questions added</div>
+    <div><b>Review stages:</b> 4 expected (Stage 1 ✓ → <b>Stage 2 (you are here)</b> → Stage 3 → Stage 4 → Build)</div>
+    <div><b>Source MD:</b> <code>docs/design/lp-cli-architecture.md</code> &nbsp;|&nbsp; <b>Draft 1 archived:</b> <code>lp-cli-architecture-draft-1.{html,md}</code></div>
   </div>
 </header>
 
 <div class="signoff-bar">
   <label>
     <input type="checkbox" id="overall-signoff" data-key="signoff-overall">
-    <span>★ I, Angel, have reviewed this design and approve it for v1 build</span>
-    <span class="progress" id="progress-display">0 / 15 sections reviewed</span>
+    <span>★ Stage 2 review complete — proceed to Draft 3</span>
+    <span class="progress" id="progress-display">0 / 18 sections reviewed</span>
   </label>
 </div>
 
@@ -369,36 +380,75 @@
 <nav class="toc">
   <h3>Contents</h3>
   <ul>
-    <li><a href="#s1">1. TL;DR</a></li>
-    <li><a href="#s2">2. ★ Design Pivot</a></li>
-    <li><a href="#s3">3. Why not overkill</a></li>
-    <li><a href="#s4">4. 3 Abstractions</a></li>
-    <li><a href="#s5">5. YAML Schema</a></li>
-    <li><a href="#s6">6. CLI Surface</a></li>
-    <li><a href="#s7">7. Directory Structure</a></li>
+    <li><a href="#changelog">Draft 2 Changelog</a></li>
+    <li class="toc-stage">Stage 1 sections (refined)</li>
+    <li><a href="#s1">1. TL;DR + REST surface</a></li>
+    <li><a href="#s2">2. ★ Pivot + env naming</a></li>
+    <li><a href="#s3">3. Why not overkill (multi-app)</a></li>
+    <li><a href="#s4">4. 3 Abstractions + KC</a></li>
+    <li><a href="#s5">5. YAML Schema + timestamps</a></li>
+    <li><a href="#s6">6. CLI Surface (now <code>lpr</code>)</a></li>
+    <li><a href="#s7">7. Directory (multi-app)</a></li>
     <li><a href="#s8">8. Dependencies</a></li>
     <li><a href="#s9">9. Audit Log</a></li>
-    <li><a href="#s10">10. Safety Mechanisms</a></li>
-    <li><a href="#s11">11. v1 Milestone</a></li>
-    <li><a href="#s12">12. v2+ Expansion</a></li>
-    <li><a href="#s13">13. Questions Resolved</a></li>
-    <li><a href="#s14">14. Extra Questions (post-design)</a></li>
-    <li><a href="#s15">15. ★ Ready to Build</a></li>
+    <li><a href="#s10">10. Safety + KeePass roadmap</a></li>
+    <li><a href="#s11">11. v1 + scrambling note</a></li>
+    <li><a href="#s12">12. v2+ (diff promoted to v1)</a></li>
+    <li><a href="#s13">13. Stage-1 Q's resolved</a></li>
+    <li><a href="#s14">14. 5 extras — all confirmed</a></li>
+    <li><a href="#s15">15. Status: not yet ready to build</a></li>
+    <li class="toc-stage">Stage 2 new sections</li>
+    <li><a href="#s16">16. ★ Stage 2 NEW questions</a></li>
+    <li><a href="#s17">17. Review roadmap (3 → 4 → build)</a></li>
+    <li><a href="#s18">18. Glossary + naming conv.</a></li>
   </ul>
 </nav>
 
 <main class="content">
 
-<!-- ─────────── SECTION 1 ─────────── -->
+<!-- CHANGELOG -->
+<div class="changelog-card" id="changelog">
+  <h3>📋 What changed from Draft 1 → Draft 2</h3>
+  <p style="margin:.3rem 0 .6rem 0;">Your 15 stage-1 notes folded in. Each one ended up in one of three buckets:</p>
+  <ul>
+    <li><span class="tag tag-confirmed">decided</span> CLI name: <code>lp-rotate</code> → <code>lpr</code> (your sec-6 note)</li>
+    <li><span class="tag tag-confirmed">decided</span> All 5 extras from section 14 approved (<code>import</code>, DR doc, Telegram notify, validate, staging-soft-check)</li>
+    <li><span class="tag tag-moved">moved</span> Multi-env diff (<code>lpr diff prod staging</code>) → moved from v2-deferred into v1 scope (your sec-12 ask)</li>
+    <li><span class="tag tag-added">added</span> Timestamps in YAML: <code>last_rotated_at</code>, <code>next_rotation_due</code>, <code>rotation_interval_days</code> (your sec-5 ask)</li>
+    <li><span class="tag tag-added">added</span> Multi-app directory layout: <code>/opt/secrets/&lt;app&gt;/&lt;env&gt;.yaml</code> for La Piazza + POS + Camper&amp;Tour + ISOTTO + lang + music (your sec-3 ask)</li>
+    <li><span class="tag tag-added">added</span> Env naming convention: <code>dev</code> / <code>stg</code> / <code>uat</code> / <code>prod</code> + variable-name standard (your sec-2 ask)</li>
+    <li><span class="tag tag-added">added</span> Stage-1 notes echoed back inline so you can see what I read</li>
+    <li><span class="tag tag-q">new q</span> 9 new Stage-2 questions in section 16 (REST-first vs CLI-first, KC realm tie-in, scrambling, KeePass deep dive, real-prod cleanup, etc.)</li>
+    <li><span class="tag tag-renamed">recast</span> "Ready to Build" → "Status: not yet ready" — your call: at least 3-4 review rounds before code</li>
+  </ul>
+</div>
+
+<!-- SECTION 1 -->
 <section class="card" id="s1">
-  <header><span class="num">1</span><h2>TL;DR</h2></header>
+  <header><span class="num">1</span><h2>TL;DR + REST surface preview</h2></header>
   <div class="body">
-    <p>Build a declarative, idiot-proof CLI for managing La Piazza's operational state. <strong>The secrets rotation tool is the first concrete build</strong> — but the architecture must generalize so the same pattern eventually handles AI model swaps, payment provider switches, URL routing changes, feature flags, anything the platform exposes that needs to change at runtime.</p>
+    <p>Build a declarative, idiot-proof tool for managing operational state across all our apps (La Piazza, POS, Camper&amp;Tour, ISOTTO, language tools, music player). <strong>Secrets rotation is the first concrete build.</strong> Architecture generalizes to AI model swaps, URL routing, feature flags, anything that changes at runtime.</p>
     <p>Pattern: <strong>Resource + Provider + Test, driven by YAML.</strong></p>
-    <pre><code>   declarative YAML ──→ CLI (interactive, paranoid) ──→ apply changes ──→ verify
-                                  │
-                                  └──→ eventually wrapped as REST API
-                                       (same logic, different surface)</code></pre>
+    <pre><code>   YAML  ──→  shared library (Resource + Provider + Test)
+              │
+              ├──→  CLI surface     (v1)     # lpr apply --app lapiazza --env prod
+              └──→  REST API surface (v2/v3) # POST /apps/lapiazza/envs/prod/apply</code></pre>
+    <div class="stage1-note">same logic keep it simple to get the idea of routes URLs for each CLI command maybe think REST API first but skip CLI .. yagni</div>
+    <p><strong>How I read it:</strong> design the REST surface <em>on paper</em> alongside each CLI command (1:1 mapping), so v2 wrap is mechanical. But build the CLI first because that's what one wolf at a kitchen table can use today. The shared library is the actual thing — CLI &amp; REST are skins.</p>
+    <table>
+      <thead><tr><th>CLI command (v1)</th><th>REST equivalent (v2/v3 paper-only for now)</th></tr></thead>
+      <tbody>
+        <tr><td><code>lpr list --app lapiazza --env prod</code></td><td><code>GET /apps/lapiazza/envs/prod/secrets</code></td></tr>
+        <tr><td><code>lpr apply --app lapiazza --env prod</code></td><td><code>POST /apps/lapiazza/envs/prod/apply</code></td></tr>
+        <tr><td><code>lpr apply --dry-run</code></td><td><code>POST /apps/lapiazza/envs/prod/apply?dry_run=true</code></td></tr>
+        <tr><td><code>lpr rollback --env prod</code></td><td><code>POST /apps/lapiazza/envs/prod/rollback</code></td></tr>
+        <tr><td><code>lpr diff prod staging</code></td><td><code>GET /apps/lapiazza/diff?a=prod&amp;b=staging</code></td></tr>
+        <tr><td><code>lpr validate --env prod</code></td><td><code>POST /apps/lapiazza/envs/prod/validate</code></td></tr>
+        <tr><td><code>lpr import --env prod --from .env</code></td><td><code>POST /apps/lapiazza/envs/prod/import</code></td></tr>
+        <tr><td><code>lpr status</code></td><td><code>GET /status</code></td></tr>
+      </tbody>
+    </table>
+    <p class="callout info"><strong>v1 commitment:</strong> CLI only. <strong>Paper commitment:</strong> every command maps cleanly to one REST route. So v2 wrap = wiring + auth, not redesign.</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-1"><span>I reviewed section 1</span></label>
@@ -406,18 +456,40 @@
   </div>
 </section>
 
-<!-- ─────────── SECTION 2 ─────────── -->
+<!-- SECTION 2 -->
 <section class="card" id="s2">
-  <header><span class="num">2</span><h2>★ Design Pivot — YAML is source, env is generated output</h2></header>
+  <header><span class="num">2</span><h2>★ Design Pivot + Env naming convention</h2></header>
   <div class="body">
     <div class="callout danger"><strong>Original design:</strong> the tool edits <code>borrowhood.env</code> in place. Env file is BOTH source of truth and runtime config.</div>
-    <div class="callout success"><strong>Pivoted design:</strong> the env file is a <strong>generated output</strong>, not a source of truth. The source is a YAML file (per environment) that lives OFF the git repo. The tool reads YAML → generates env file → deploys.</div>
-    <h3>Why the pivot is better</h3>
+    <div class="callout success"><strong>Pivoted design (kept from Draft 1):</strong> the env file is a <strong>generated output</strong>. The source is YAML, off-repo, per-env per-app.</div>
+
+    <h3>NEW in Draft 2 — Env naming convention</h3>
+    <div class="stage1-note">so for testing we do a stage env and a list and the names like DEV or dv and create a naming convention for expected variables ... later we have a POS running and we need the fragmented names</div>
+    <p><strong>Standard env codes across ALL apps (locked):</strong></p>
+    <table>
+      <thead><tr><th>Code</th><th>Long name</th><th>When</th><th>Where it runs</th></tr></thead>
+      <tbody>
+        <tr><td><code>dev</code></td><td>Development</td><td>Your laptop, daily work</td><td>helix.local (docker on HP laptop)</td></tr>
+        <tr><td><code>stg</code></td><td>Staging</td><td>Pre-prod checkpoint, every change must pass</td><td>staging.&lt;app&gt;.app (Hetzner ephemeral)</td></tr>
+        <tr><td><code>uat</code></td><td>User Acceptance</td><td>Tester sign-off (optional, deeper testing rounds)</td><td>uat.&lt;app&gt;.app (Hetzner, when needed)</td></tr>
+        <tr><td><code>prod</code></td><td>Production</td><td>Real users, real money</td><td>&lt;app&gt;.app (Hetzner)</td></tr>
+      </tbody>
+    </table>
+    <p>Same 4 codes for La Piazza, POS, Camper&amp;Tour, ISOTTO, every app. No fragmentation.</p>
+
+    <h3>Variable naming convention (proposed)</h3>
+    <p>Today we have a mess of prefixes: <code>BH_*</code> (BorrowHood), <code>KC_*</code> (Keycloak), <code>HELIX_*</code>, etc.</p>
+    <div class="decision">v1 keeps existing prefixes — YAML schema is prefix-agnostic. Renames happen in the La Piazza rebrand sweep (task #25), not here.</div>
+    <p>Proposed future state (after rebrand sweep):</p>
+    <pre><code>&lt;APP&gt;_&lt;CATEGORY&gt;_&lt;KEY&gt;
+example: LAPIAZZA_DB_URL, POS_OAUTH_CLIENT_SECRET, CAMPER_TELEGRAM_TOKEN</code></pre>
+
+    <h3>Why the YAML pivot is better (unchanged from Draft 1)</h3>
     <ul>
-      <li>Single source of truth (the YAML). No drift between human-edited file and runtime config.</li>
-      <li>Architecturally impossible to commit secrets to git (env files are generated, gitignored; YAML lives outside repo).</li>
-      <li>Per-environment files (<code>prod.yaml</code>, <code>staging.yaml</code>, future <code>preprod.yaml</code>, <code>uat.yaml</code>) are the same shape.</li>
-      <li>Rollback is symmetric: <code>prod.previous.yaml</code> always exists as the last working version.</li>
+      <li>Single source of truth (the YAML).</li>
+      <li>Architecturally impossible to commit secrets to git.</li>
+      <li>Per-environment, per-app files all share the same shape.</li>
+      <li>Rollback is symmetric.</li>
       <li>Diff-able and dry-runnable.</li>
     </ul>
   </div>
@@ -427,24 +499,26 @@
   </div>
 </section>
 
-<!-- ─────────── SECTION 3 ─────────── -->
+<!-- SECTION 3 -->
 <section class="card" id="s3">
-  <header><span class="num">3</span><h2>Why this isn't overkill</h2></header>
+  <header><span class="num">3</span><h2>Why this isn't overkill — and multi-app is the real reason</h2></header>
   <div class="body">
-    <p>Industry has bigger off-the-shelf options. Honest map:</p>
+    <div class="stage1-note">but we have pos and the camper and tour and isoto apps and language apps and music players etc i have tons of apps beyond la piazza and thats why i want this IMHO</div>
+    <p><strong>This note flipped the math.</strong> 9 secrets × 1 app is borderline overkill. 9 secrets × 5+ apps × 2-4 envs each = 90-180 secrets. Manual rotation is impossible at that scale; the tool is the only way through.</p>
+    <p>App inventory (as you described):</p>
     <table>
-      <thead><tr><th>Tool</th><th>What it does</th><th>Right for us?</th></tr></thead>
+      <thead><tr><th>App</th><th>Status</th><th>Envs needed</th><th>Est secrets</th></tr></thead>
       <tbody>
-        <tr><td>HashiCorp Vault</td><td>Centralized secret store, audit, rotation</td><td>Overkill — needs ops effort to run/secure</td></tr>
-        <tr><td>Mozilla sops</td><td>Encrypts YAML at rest with age/PGP keys</td><td>Easy v2 upgrade for us</td></tr>
-        <tr><td>Doppler / Infisical</td><td>SaaS secret manager</td><td>$10-30/mo per dev, external dependency</td></tr>
-        <tr><td>AWS Secrets Manager</td><td>Cloud-native</td><td>We're on Hetzner</td></tr>
-        <tr><td>k8s Secrets + ESO</td><td>Declarative k8s pattern</td><td>We use docker-compose</td></tr>
-        <tr><td>Manual nano edits</td><td>Where solo-dev mistakes live</td><td>What we did until today — broken</td></tr>
-        <tr><td><strong>Our LP CLI</strong></td><td><strong>Tiny YAML-driven CLI, audit, dry-run</strong></td><td><strong>Right-sized for 1 wolf + 1 town square</strong></td></tr>
+        <tr><td>La Piazza (BorrowHood today)</td><td>Live on Hetzner</td><td>dev/stg/prod</td><td>~9</td></tr>
+        <tr><td>POS</td><td>Codebase exists, not yet hosted</td><td>dev/stg/prod</td><td>~7</td></tr>
+        <tr><td>Camper &amp; Tour</td><td>Postcards live, app pipeline TBD</td><td>dev/prod</td><td>~5</td></tr>
+        <tr><td>ISOTTO</td><td>Print partner, mostly static</td><td>dev/prod</td><td>~3</td></tr>
+        <tr><td>Language apps</td><td>Not yet built</td><td>dev/prod</td><td>~5</td></tr>
+        <tr><td>Music player (Swing)</td><td>Self-hosted</td><td>dev/prod</td><td>~4</td></tr>
+        <tr><td><strong>Total potential</strong></td><td></td><td></td><td><strong>~33 secrets × N envs</strong></td></tr>
       </tbody>
     </table>
-    <p><strong>Verdict:</strong> not reinventing the wheel — building the right size wheel for our scale. v2 with sops/age gets us to "production-grade for small team" without throwing away anything.</p>
+    <p>Industry-tool comparison still holds (Vault overkill, Doppler $$$, sops fine for v2). <strong>What changes:</strong> multi-app justification is rock-solid now.</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-3"><span>I reviewed section 3</span></label>
@@ -452,24 +526,32 @@
   </div>
 </section>
 
-<!-- ─────────── SECTION 4 ─────────── -->
+<!-- SECTION 4 -->
 <section class="card" id="s4">
-  <header><span class="num">4</span><h2>The 3 Abstractions: Resource + Provider + Test</h2></header>
+  <header><span class="num">4</span><h2>The 3 Abstractions: Resource + Provider + Test (+ KC realm note)</h2></header>
   <div class="body">
     <h3>Resource</h3>
-    <p>A thing managed declaratively. v1 implements only <code>secret</code>. Future: <code>ai_model</code>, <code>route</code>, <code>feature_flag</code>, <code>quota</code>.</p>
+    <p>A thing managed declaratively. v1 implements only <code>secret</code>. Future: <code>ai_model</code>, <code>route</code>, <code>feature_flag</code>, <code>quota</code>, <code>kc_realm</code>, <code>kc_client</code>.</p>
     <h3>Provider</h3>
-    <p>Code that knows how to read, write, test, and rotate a specific resource type. One provider per resource type.</p>
     <pre><code>class SecretProvider:
     def current(name) -> str         # read current value
     def apply(name, new_value)       # set new value
     def test(name) -> bool           # verify it works
     def history(name) -> list        # rotation log</code></pre>
     <h3>Test</h3>
-    <p>Small functions that verify state. Decoupled from Providers so they can be reused.</p>
     <pre><code>def test_asyncpg_connect_docker_network(env_file: Path) -> bool
 def test_oidc_discovery_returns_200(realm_url: str) -> bool
 def test_telegram_bot_getme(token: str) -> bool</code></pre>
+
+    <h3>NEW in Draft 2 — Keycloak tie-in</h3>
+    <div class="stage1-note">how are we tying this into the keycloak realms and naming conventions and maybe time to think about real prod system will only real email address and real people and delete o[ld test users]</div>
+    <p>Two separate concerns:</p>
+    <ol>
+      <li><strong>KC client secrets</strong> (e.g., <code>BH_OIDC_CLIENT_SECRET</code>) — these ARE already in scope as <code>secret</code> resources in v1. Rotation = ALTER in KC admin + update env. Provider has an <code>apply_extra: [kc_client_secret_rotate]</code> recipe.</li>
+      <li><strong>KC realm/user management</strong> (create realms, seed personas, delete test users for real prod) — this is a future resource type (<code>kc_realm</code>, <code>kc_user</code>) for v2+. Not v1 scope.</li>
+    </ol>
+    <p><strong>Real-prod cleanup of demo users:</strong> excellent point but it's a separate sweep (likely tracked as its own task). The LP CLI can <em>eventually</em> do it (<code>lpr kc cleanup --env prod --keep-only-real</code>) but not in v1.</p>
+    <div class="callout warning"><strong>KC realm naming convention proposal:</strong> <code>&lt;app&gt;-&lt;env&gt;</code> → e.g., <code>lapiazza-prod</code>, <code>lapiazza-staging</code>, <code>pos-prod</code>, <code>camper-prod</code>. Today we have <code>borrowhood</code> and <code>borrowhood-staging</code> — those get renamed in the La Piazza rebrand sweep.</div>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-4"><span>I reviewed section 4</span></label>
@@ -477,23 +559,39 @@ def test_telegram_bot_getme(token: str) -> bool</code></pre>
   </div>
 </section>
 
-<!-- ─────────── SECTION 5 ─────────── -->
+<!-- SECTION 5 -->
 <section class="card" id="s5">
-  <header><span class="num">5</span><h2>The YAML Schema (post-pivot)</h2></header>
+  <header><span class="num">5</span><h2>YAML Schema + timestamps (NEW)</h2></header>
   <div class="body">
-    <p><strong>Location: NOT in the git repo.</strong> Lives at <code>/opt/helixnet/secrets/&lt;env&gt;.yaml</code> on Hetzner, chmod 700 on directory, 600 on each file, owned by root.</p>
-    <p><strong>One YAML per environment.</strong> Rollback pair: before any apply, current snapshots to <code>&lt;env&gt;.previous.yaml</code>.</p>
-    <pre><code># /opt/helixnet/secrets/prod.yaml
+    <p><strong>Location: NOT in the git repo.</strong> Lives at <code>/opt/secrets/&lt;app&gt;/&lt;env&gt;.yaml</code> on Hetzner, chmod 700 dir, 600 each file, owned by root.</p>
+    <p><strong>One YAML per app per environment.</strong></p>
+
+    <h3>NEW in Draft 2 — Rotation timestamps</h3>
+    <div class="stage1-note">we need the next rotation dates or some date and time info — like last changed or something</div>
+    <p>Three new fields per secret, all optional (tool sets <code>last_rotated_at</code> automatically on apply):</p>
+    <ul>
+      <li><code>last_rotated_at</code> — ISO timestamp, written by tool on every successful apply</li>
+      <li><code>rotation_interval_days</code> — how often the secret should be rotated (e.g., 365 for annual, 90 for quarterly)</li>
+      <li><code>next_rotation_due</code> — computed by tool = <code>last_rotated_at + rotation_interval_days</code> (denormalized for easy human read)</li>
+    </ul>
+    <p><code>lpr status</code> queries these and shows red rows for overdue, yellow for due-soon.</p>
+
+    <h3>Full schema example</h3>
+    <pre><code># /opt/secrets/lapiazza/prod.yaml
 version: 1
-env_name: prod
+app: lapiazza
+env: prod
 generated_env_file: /opt/helixnet/hetzner/lapiazza.env
-app_container: borrowhood
+app_container: borrowhood          # docker compose service name
 hetzner_host: 46.62.138.218
 
 secrets:
   - id: flask-secret-key
     env_var: BH_SECRET_KEY
     value: &lt;actual value&gt;
+    last_rotated_at: 2026-02-15T10:30:00Z
+    rotation_interval_days: 365
+    next_rotation_due: 2027-02-15T10:30:00Z
     rotation:
       sources: [generate, paste]
       generator: openssl_rand_base64_32
@@ -507,6 +605,9 @@ secrets:
         user: lapiazza_app
         password: &lt;hex value&gt;
         database: borrowhood
+    last_rotated_at: 2026-05-12T14:00:00Z
+    rotation_interval_days: 365
+    next_rotation_due: 2027-05-12T14:00:00Z
     rotation:
       sources: [generate, paste]
       generator: openssl_rand_hex_32
@@ -522,20 +623,26 @@ secrets:
   </div>
 </section>
 
-<!-- ─────────── SECTION 6 ─────────── -->
+<!-- SECTION 6 -->
 <section class="card" id="s6">
-  <header><span class="num">6</span><h2>CLI Surface</h2></header>
+  <header><span class="num">6</span><h2>CLI Surface — now <code>lpr</code></h2></header>
   <div class="body">
-    <h3>Modes</h3>
+    <div class="stage1-note">LPR apply or lpr rollback but lpr shortening cli name rest is great</div>
+    <div class="decision">CLI binary renamed: <code>lp-rotate</code> → <code>lpr</code> everywhere. Python file: <code>scripts/lpr.py</code>.</div>
+
+    <h3>Modes (Draft 2)</h3>
     <ul>
-      <li><code>lp-rotate</code> — fully interactive (menu walk)</li>
-      <li><code>lp-rotate apply --env prod --secret db-password</code> — single-secret targeted</li>
-      <li><code>lp-rotate apply --env prod --dry-run</code> — show diff, no changes</li>
-      <li><code>lp-rotate list --env prod</code> — show all secrets with last-rotated dates</li>
-      <li><code>lp-rotate status</code> — overdue/incomplete summary</li>
-      <li><code>lp-rotate rollback --env prod</code> — swap previous → current, redeploy</li>
-      <li><code>lp-rotate validate --env prod</code> — schema check, no changes</li>
+      <li><code>lpr</code> — fully interactive (menu walk; asks for app, env, action)</li>
+      <li><code>lpr apply --app lapiazza --env prod --secret db-password</code> — single-secret targeted</li>
+      <li><code>lpr apply --app lapiazza --env prod --dry-run</code> — show diff, no changes</li>
+      <li><code>lpr list --app lapiazza --env prod</code> — show all secrets with last-rotated + next-due dates</li>
+      <li><code>lpr status</code> — overdue/incomplete summary across ALL apps + envs</li>
+      <li><code>lpr rollback --app lapiazza --env prod</code> — swap previous → current, redeploy</li>
+      <li><code>lpr validate --app lapiazza --env prod</code> — schema check, no changes</li>
+      <li><code>lpr diff --app lapiazza prod staging</code> — multi-env diff (was v2, now v1)</li>
+      <li><code>lpr import --app lapiazza --env prod --from /opt/helixnet/hetzner/borrowhood.env</code> — bootstrap YAML from existing env</li>
     </ul>
+    <p>Default app: if <code>--app</code> omitted, prompts interactively (or reads <code>~/.lpr.toml</code> for a default).</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-6"><span>I reviewed section 6</span></label>
@@ -543,25 +650,43 @@ secrets:
   </div>
 </section>
 
-<!-- ─────────── SECTION 7 ─────────── -->
+<!-- SECTION 7 -->
 <section class="card" id="s7">
-  <header><span class="num">7</span><h2>Directory Structure</h2></header>
+  <header><span class="num">7</span><h2>Directory Structure — Multi-app (NEW)</h2></header>
   <div class="body">
+    <div class="stage1-note">looks ok but example for stg or UAT or test env for examples</div>
+    <p>Draft 2 layout supports many apps × many envs, all in one place:</p>
     <pre><code># OFF-REPO (server only, chmod 700, root):
-/opt/helixnet/secrets/
-├── prod.yaml                    ← source of truth
-├── prod.previous.yaml           ← rollback target
-├── staging.yaml
-└── staging.previous.yaml
+/opt/secrets/
+├── lapiazza/
+│   ├── dev.yaml                ← (optional — local dev mostly uses helix.local docker)
+│   ├── stg.yaml                ← staging.lapiazza.app
+│   ├── stg.previous.yaml       ← rollback target
+│   ├── uat.yaml                ← (optional, when running deeper test rounds)
+│   ├── prod.yaml               ← lapiazza.app (live)
+│   └── prod.previous.yaml      ← rollback target (proven life-saver 2026-05-12)
+├── pos/
+│   ├── dev.yaml
+│   ├── stg.yaml
+│   └── prod.yaml
+├── camper/
+│   ├── dev.yaml
+│   └── prod.yaml
+├── isotto/
+│   └── prod.yaml
+├── language-apps/
+│   └── prod.yaml
+└── music/
+    └── prod.yaml
 
 # IN-REPO (the tool):
 helixnet/scripts/
-├── lp_rotate.py                 ← Typer CLI entry
+├── lpr.py                      ← Typer CLI entry
 └── lp/
     ├── cli.py
     ├── manifest.py
     ├── providers/secret_provider.py
-    ├── recipes/{edit_env,alter_user,restart_container}.py
+    ├── recipes/{edit_env,alter_user,restart_container,kc_client_secret_rotate}.py
     ├── tests/{asyncpg,oidc,telegram,paypal,resend,ollama,healthz}.py
     ├── generators.py
     ├── audit.py
@@ -569,8 +694,11 @@ helixnet/scripts/
 
 # GENERATED (server, gitignored):
 /opt/helixnet/hetzner/
-└── lapiazza.env                 ← from prod.yaml</code></pre>
-    <div class="callout"><strong>Rule:</strong> nothing in <code>/opt/helixnet/secrets/</code> ever touches git. Nothing in git ever contains real secret values.</div>
+├── lapiazza.env                ← from /opt/secrets/lapiazza/prod.yaml
+├── lapiazza-staging.env        ← from /opt/secrets/lapiazza/stg.yaml
+├── pos.env                     ← from /opt/secrets/pos/prod.yaml
+└── ... (one generated env per app+env)</code></pre>
+    <div class="callout"><strong>Rule:</strong> nothing in <code>/opt/secrets/</code> ever touches git. Nothing in git ever contains real secret values.</div>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-7"><span>I reviewed section 7</span></label>
@@ -578,7 +706,7 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 8 ─────────── -->
+<!-- SECTION 8 -->
 <section class="card" id="s8">
   <header><span class="num">8</span><h2>Dependencies (Python only — per CLAUDE rule #11)</h2></header>
   <div class="body">
@@ -588,9 +716,10 @@ helixnet/scripts/
       <li><code>PyYAML</code> ≥ 6 — YAML parser</li>
       <li><code>asyncpg</code> ≥ 0.29 — DB test</li>
       <li><code>httpx</code> ≥ 0.27 — OIDC/Telegram/PayPal/Resend tests</li>
+      <li><code>deepdiff</code> ≥ 7 — for <code>lpr diff</code> (added in Draft 2 since diff is now v1)</li>
     </ul>
-    <p>SSH wrapper: shell out to <code>ssh root@host</code>. No paramiko. (Per A/B/C/D Q1.)</p>
-    <p>Python 3.11+. ~6 small libraries. FastAPI-adjacent stack.</p>
+    <p>SSH wrapper: shell out to <code>ssh root@host</code>. No paramiko.</p>
+    <p>Python 3.11+. 6 small libraries. FastAPI-adjacent stack (so wrapping as REST in v2 reuses the same dependency tree).</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-8"><span>I reviewed section 8</span></label>
@@ -598,13 +727,19 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 9 ─────────── -->
+<!-- SECTION 9 -->
 <section class="card" id="s9">
   <header><span class="num">9</span><h2>Audit Log Format</h2></header>
   <div class="body">
-    <p><code>~/.lp-rotation-log.jsonl</code> — one JSON per line, append-only:</p>
-    <pre><code>{"ts":"2026-05-13T08:14:22Z","env":"prod","secret_id":"db-password","actor":"angel","source":"paste","steps":["edit_env","pretest","alter_user","restart"],"test":"PASS","outcome":"complete","duration_s":42}</code></pre>
-    <p>Query examples: "when did we last rotate X?" → grep + tail. "Anything failed lately?" → grep failed. Five lines of code, immense future value.</p>
+    <p><code>~/.lpr-log.jsonl</code> — one JSON per line, append-only:</p>
+    <pre><code>{"ts":"2026-05-13T08:14:22Z","app":"lapiazza","env":"prod","secret_id":"db-password","actor":"angel","source":"paste","steps":["edit_env","pretest","alter_user","restart"],"test":"PASS","outcome":"complete","duration_s":42}</code></pre>
+    <div class="stage1-note">does this null out my concerns that we have not dates in the yamls to identify edit times and logging details of changes and diffs etc</div>
+    <p><strong>Short answer: NO, they complement each other.</strong></p>
+    <ul>
+      <li><strong>YAML timestamps</strong> = current state snapshot ("when was X last rotated, when is next due"). Easy human read.</li>
+      <li><strong>Audit log</strong> = full history with diffs, who/what/when, including failures. The forensic trail.</li>
+    </ul>
+    <p>YAML answers "what's the state now?" — log answers "what happened over time?". Both are cheap to have.</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-9"><span>I reviewed section 9</span></label>
@@ -612,9 +747,9 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 10 ─────────── -->
+<!-- SECTION 10 -->
 <section class="card" id="s10">
-  <header><span class="num">10</span><h2>Safety Mechanisms (Paranoia in Code, Not Discipline)</h2></header>
+  <header><span class="num">10</span><h2>Safety Mechanisms + KeePass roadmap</h2></header>
   <div class="body">
     <ol>
       <li>Backup before any state-changing step (timestamped)</li>
@@ -626,6 +761,20 @@ helixnet/scripts/
       <li>KeePass as single source of truth (tool never tries to store)</li>
       <li>Append-only audit log of every action including failures</li>
     </ol>
+
+    <h3>NEW in Draft 2 — KeePass integration roadmap</h3>
+    <div class="stage1-note">eventually have the v2 keepass api working to assist and make it hands free and just done or error etc occurs maybe v2.4 or v3 or v4 unless its super easy would and should be the end goal</div>
+    <table>
+      <thead><tr><th>Version</th><th>KeePass integration level</th></tr></thead>
+      <tbody>
+        <tr><td>v1</td><td>Manual paste from KeePass. Tool prompts, you copy from KP, paste hidden.</td></tr>
+        <tr><td>v1.5</td><td>Manual YAML backup attached to KeePass entry as periodic ritual (your sec-D ask).</td></tr>
+        <tr><td>v2</td><td>Read from KeePass via <code>keepassxc-cli</code> wrapper — semi-hands-free (still need master password unlock).</td></tr>
+        <tr><td>v3</td><td>Write to KeePass on rotation: tool updates the KP entry's password field automatically.</td></tr>
+        <tr><td>v4</td><td>Full hands-free: scheduled rotation, KeePass sync, alerts on overdue.</td></tr>
+      </tbody>
+    </table>
+    <p>End goal: zero manual paste. But every version stays usable on its own.</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-10"><span>I reviewed section 10</span></label>
@@ -633,22 +782,41 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 11 ─────────── -->
+<!-- SECTION 11 -->
 <section class="card" id="s11">
-  <header><span class="num">11</span><h2>v1 Milestone Scope</h2></header>
+  <header><span class="num">11</span><h2>v1 Milestone Scope + Scrambling note</h2></header>
   <div class="body">
-    <p>What gets built first (only what's needed for 9 prod secrets):</p>
+    <p>What gets built first (only what's needed for La Piazza's 9 prod secrets, but the tool is multi-app ready):</p>
     <ol>
-      <li>CLI entry + Typer commands</li>
-      <li>Manifest loader + Pydantic schema</li>
+      <li>CLI entry + Typer commands (with <code>--app</code> + <code>--env</code> required everywhere)</li>
+      <li>Manifest loader + Pydantic schema (with timestamp fields)</li>
       <li>SecretProvider</li>
-      <li>Recipes: edit_env (generate_env_from_yaml), restart_container, alter_user</li>
+      <li>Recipes: <code>edit_env</code> (generate_env_from_yaml), <code>restart_container</code>, <code>alter_user</code></li>
       <li>Tests: asyncpg_docker_network, oidc_discovery, telegram_getme, paypal_sandbox_oauth, resend_api_me, ollama_models_list, app_healthz</li>
-      <li>Generators: openssl_rand_hex_32, openssl_rand_base64_32</li>
+      <li>Generators: <code>openssl_rand_hex_32</code>, <code>openssl_rand_base64_32</code></li>
       <li>Audit log writer</li>
+      <li><strong>NEW in v1:</strong> <code>lpr diff</code> command (promoted from v2)</li>
+      <li><strong>NEW in v1:</strong> <code>lpr import</code> command (your sec-14 approval)</li>
+      <li><strong>NEW in v1:</strong> Telegram notify hook (your sec-14 approval)</li>
+      <li><strong>NEW in v1:</strong> <code>lpr validate</code> (your sec-14 approval)</li>
+      <li><strong>NEW in v1:</strong> Staging-soft-check warning (your sec-14 approval)</li>
       <li>Manifest YAML seeded from current prod state</li>
     </ol>
-    <p>Estimated: ~680 LOC across <code>scripts/lp/</code>. Single focused session ~10h.</p>
+    <p>Estimated: ~755 LOC (up from 680 in Draft 1 due to extras + diff). Single focused session ~10-12h, or two 6h sessions.</p>
+
+    <h3>NEW in Draft 2 — Your scrambling question</h3>
+    <div class="stage1-note">since we are asking for a pw should we not scramble it so what you see in the yaml is not the actual pw but a derived value of kind of a algorithm is applied and the actual hex value [is recovered at runtime]</div>
+    <p><strong>This is the right instinct.</strong> You're describing encryption at rest. Two paths:</p>
+    <table>
+      <thead><tr><th>Approach</th><th>How</th><th>Trade-off</th></tr></thead>
+      <tbody>
+        <tr><td><strong>v1 — chmod + offline</strong></td><td>YAML lives off-repo, chmod 600 root, never leaves Hetzner</td><td>Simple. Plain text if you SSH in as root. Adequate for solo + 1 server.</td></tr>
+        <tr><td><strong>v1.5 — sops + age</strong></td><td>Encrypt YAML at rest with age key. Tool decrypts in-memory only.</td><td>~50 LOC addition. Industry standard. You unlock once per session with age private key.</td></tr>
+        <tr><td><strong>"Custom scramble"</strong></td><td>Hand-rolled obfuscation algorithm</td><td><strong>Don't do this.</strong> Either it's a real cipher (use sops) or it's security theater. No middle ground.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>My lean:</strong> v1 chmod 600 root only, v1.5 sops/age before we have 5+ apps × 4 envs = ~30+ files of secrets sitting in plain text. That's the "real prod" gate.</p>
+    <p>Open question in section 16 for your call: should v1 ship with sops/age built-in, or strictly chmod 600?</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-11"><span>I reviewed section 11</span></label>
@@ -656,20 +824,23 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 12 ─────────── -->
+<!-- SECTION 12 -->
 <section class="card" id="s12">
-  <header><span class="num">12</span><h2>v2+ Deferred (Architecture Allows But Not Built)</h2></header>
+  <header><span class="num">12</span><h2>v2+ Deferred (Draft 2 — multi-env diff promoted out)</h2></header>
   <div class="body">
+    <div class="stage1-note">Multi-env diff (lp-rotate diff prod staging) need it i think simple why not just asking</div>
+    <div class="decision">Multi-env diff moved OUT of v2-deferred and INTO v1 scope. Section 11 now lists it.</div>
+    <p>Remaining v2+ deferred items:</p>
     <ul>
-      <li>Encryption at rest for YAMLs (sops / age)</li>
-      <li>Other resource types (ai_model, route, feature_flag)</li>
-      <li>REST API wrapper for the same Provider classes</li>
-      <li>KC admin REST API integration for IDP secret updates</li>
-      <li>Multi-env diff (<code>lp-rotate diff prod staging</code>)</li>
-      <li>KeePass backup API</li>
-      <li>Non-interactive mode (<code>--yes</code> flag)</li>
+      <li>Encryption at rest for YAMLs (sops / age) — pending your sec-16 Q5 call</li>
+      <li>Other resource types (<code>ai_model</code>, <code>route</code>, <code>feature_flag</code>, <code>kc_realm</code>, <code>kc_user</code>)</li>
+      <li>REST API wrapper for the same Provider classes (paper-designed in sec-1)</li>
+      <li>KeePass read API (v2), write API (v3), hands-free (v4)</li>
+      <li>Non-interactive mode (<code>--yes</code> flag) — already half-built since CLI has dry-run</li>
       <li>Concurrency / locking (v1 trusts solo operator)</li>
       <li>Web UI</li>
+      <li>Scheduled rotation (cron-like) — v3+</li>
+      <li>Globals.yaml + per-env overlay (shared values across envs) — v2</li>
     </ul>
   </div>
   <div class="review">
@@ -678,9 +849,9 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 13 ─────────── -->
+<!-- SECTION 13 -->
 <section class="card" id="s13">
-  <header><span class="num">13</span><h2>Original 6 Questions — Resolved</h2></header>
+  <header><span class="num">13</span><h2>Stage-1 Q's — Resolved</h2></header>
   <div class="body">
     <table>
       <thead><tr><th>Q</th><th>Decision</th></tr></thead>
@@ -691,18 +862,14 @@ helixnet/scripts/
         <tr><td>Dry-run mode</td><td><strong>YES</strong></td></tr>
         <tr><td>Logging + audit log</td><td><strong>YES both</strong></td></tr>
         <tr><td>pytest for safety-critical recipes</td><td><strong>YES</strong></td></tr>
-      </tbody>
-    </table>
-    <h3>Post-pivot 4 questions — also resolved</h3>
-    <table>
-      <thead><tr><th>Q</th><th>Decision</th></tr></thead>
-      <tbody>
-        <tr><td>A. Encryption at rest for YAMLs</td><td><strong>v1 plain at 600 root</strong>. Defer encryption to v2.</td></tr>
+        <tr><td>A. Encryption at rest for YAMLs</td><td><strong>v1 plain at 600 root.</strong> Re-opened in sec-16 Q5 (sops/age earlier?)</td></tr>
         <tr><td>B. Always show diff on apply</td><td><strong>YES</strong>, interactive confirm. <code>--yes</code> for non-interactive.</td></tr>
         <tr><td>C. Staged file (prod.staged.yaml)</td><td><strong>NO</strong>. Direct edit + dry-run is enough.</td></tr>
-        <tr><td>D. KeePass backup cadence</td><td><strong>Manual</strong> for v1.</td></tr>
+        <tr><td>D. KeePass backup cadence</td><td><strong>Manual for v1.</strong> v2+ adds KP API integration (sec-10 roadmap).</td></tr>
       </tbody>
     </table>
+    <div class="stage1-note">we need to ask more questions about keepass power features IMHO</div>
+    <p>→ See section 16, Q6 (KeePass deep dive). Drop your KP wishlist there.</p>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-13"><span>I reviewed section 13</span></label>
@@ -710,59 +877,158 @@ helixnet/scripts/
   </div>
 </section>
 
-<!-- ─────────── SECTION 14 ─────────── -->
+<!-- SECTION 14 -->
 <section class="card" id="s14">
-  <header><span class="num">14</span><h2>Extra questions (last-pass before code)</h2></header>
+  <header><span class="num">14</span><h2>5 Stage-1 extras — All Confirmed</h2></header>
   <div class="body">
-    <ol>
-      <li><strong>YAML seed/import tool</strong> — first run needs to bootstrap prod.yaml from existing env. Add <code>lp-rotate import --env prod --from /opt/helixnet/hetzner/borrowhood.env</code>? <em>My lean: YES, ~30 LOC.</em></li>
-      <li><strong>Disaster recovery doc</strong> — "if Hetzner dies, cold-start procedure." One-page runbook. <em>Yes, after v1 code.</em></li>
-      <li><strong>Telegram notify on apply</strong> — wire ops bot to ping you on every rotation. <em>~15 LOC. Yes.</em></li>
-      <li><strong>Validate-only mode</strong> — <code>lp-rotate validate --env prod</code> checks YAML schema without applying. <em>Yes, ~10 LOC.</em></li>
-      <li><strong>Staging-before-prod soft check</strong> — warn (not block) if no recent staging apply. <em>Yes, ~20 LOC.</em></li>
-    </ol>
-    <p><strong>If you approve all 5, v1 grows by ~75 LOC to ~755 total. Still in one session.</strong></p>
+    <div class="stage1-note">1 yes, 2 yes 3 yes 4 yes 5 yes</div>
+    <p>Locked in. All 5 are in v1 scope (sec 11 reflects this):</p>
+    <table>
+      <thead><tr><th>#</th><th>Extra</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>lpr import --env prod --from .env</code></td><td>v1, ~30 LOC ✓</td></tr>
+        <tr><td>2</td><td>Disaster recovery doc</td><td>v1, after code lands ✓</td></tr>
+        <tr><td>3</td><td>Telegram notify on apply</td><td>v1, ~15 LOC ✓</td></tr>
+        <tr><td>4</td><td><code>lpr validate --env prod</code></td><td>v1, ~10 LOC ✓</td></tr>
+        <tr><td>5</td><td>Staging-before-prod soft check</td><td>v1, ~20 LOC ✓</td></tr>
+      </tbody>
+    </table>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-14"><span>I reviewed section 14</span></label>
-    <textarea data-key="note-14" placeholder="Notes on these 5 extras..."></textarea>
+    <textarea data-key="note-14" placeholder="Notes on this section..."></textarea>
   </div>
 </section>
 
-<!-- ─────────── SECTION 15 ─────────── -->
+<!-- SECTION 15 -->
 <section class="card" id="s15">
-  <header><span class="num">15</span><h2>★ Ready to Build</h2></header>
+  <header><span class="num">15</span><h2>Status: NOT yet ready to build</h2></header>
   <div class="body">
-    <p>All design questions resolved. Architecture locked.</p>
-    <h3>Build order (~10h)</h3>
-    <ol>
-      <li>Pydantic schema for the YAML</li>
-      <li>Manifest loader</li>
-      <li>Recipe: generate_env_from_yaml</li>
-      <li>Recipe: restart_container</li>
-      <li>CLI: apply --dry-run</li>
-      <li>CLI: apply (full with diff confirmation)</li>
-      <li>Tests: asyncpg_docker_network, app_healthz</li>
-      <li>Recipe: alter_user</li>
-      <li>Remaining provider tests (5)</li>
-      <li>Audit log writer</li>
-      <li>Rollback path</li>
-      <li>pytest unit tests</li>
-    </ol>
-    <h3>Acceptance criteria</h3>
+    <div class="stage1-note">lets redisplay and review html v2 draft 2 with the confirmations like stage two or three this is first review we need at least 3 to 4 imho tigs</div>
+    <div class="callout warning"><strong>Status changed from Draft 1.</strong> "Ready to Build" recast as "Draft 2 / Stage 2 — under review." 9 new questions in section 16 must be answered before we lock and code.</div>
+    <h3>Where we are vs. where we're going</h3>
+    <table>
+      <thead><tr><th>Stage</th><th>What it produces</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Stage 1</td><td>Draft 1 — original design + first review notes</td><td>✓ Complete (your 15 notes)</td></tr>
+        <tr><td><strong>Stage 2 (here)</strong></td><td>Draft 2 — feedback folded + new questions</td><td><strong>↑ You are reviewing this now</strong></td></tr>
+        <tr><td>Stage 3</td><td>Draft 3 — Stage 2 Q's resolved + final layout</td><td>Pending</td></tr>
+        <tr><td>Stage 4</td><td>Draft 4 — final lock + build sign-off</td><td>Pending</td></tr>
+        <tr><td>Build</td><td>v1 code (~755 LOC, ~10-12h)</td><td>Blocked on Stage 4</td></tr>
+      </tbody>
+    </table>
+    <h3>Acceptance criteria (will reach when build starts)</h3>
     <ul>
-      <li><code>lp-rotate list</code> shows all secrets</li>
-      <li><code>--dry-run</code> shows diff without changes</li>
-      <li><code>apply</code> works end-to-end with auto-rollback on test failure</li>
-      <li><code>rollback</code> restores from previous YAML</li>
+      <li><code>lpr list --app lapiazza --env prod</code> shows all secrets with last-rotated + next-due</li>
+      <li><code>lpr apply --dry-run</code> shows diff without changes</li>
+      <li><code>lpr apply</code> works end-to-end with auto-rollback on test failure</li>
+      <li><code>lpr rollback</code> restores from previous YAML</li>
+      <li><code>lpr diff prod staging</code> highlights drift</li>
       <li>pytest passes</li>
       <li>First real use: finishes the stuck DB password rotation from 2026-05-12</li>
     </ul>
-    <div class="callout success"><strong>Sign off below to greenlight v1 build.</strong></div>
   </div>
   <div class="review">
     <label><input type="checkbox" data-key="rev-15"><span>I reviewed section 15</span></label>
-    <textarea data-key="note-15" placeholder="Final notes / sign-off comments..."></textarea>
+    <textarea data-key="note-15" placeholder="Notes on this section..."></textarea>
+  </div>
+</section>
+
+<!-- SECTION 16 — NEW STAGE 2 QUESTIONS -->
+<section class="card" id="s16">
+  <header><span class="num">16</span><h2>★ Stage 2 NEW questions (9)</h2></header>
+  <div class="body">
+    <p>These came out of your stage-1 notes. Please answer in the textarea (or use the per-question hint if it's a yes/no).</p>
+
+    <div class="question"><strong>Q1. REST surface — design fully now or just sketch?</strong><br>
+    Your note: "think REST API first but skip CLI ... yagni". I read this as "design the routes on paper, build CLI first." Section 1 has the 1:1 table. <strong>Confirm? Or do you want v1 to ship REST too?</strong></div>
+
+    <div class="question"><strong>Q2. Env naming standard — confirm <code>dev / stg / uat / prod</code>?</strong><br>
+    Same 4 codes across every app. Section 2 has the table. Any code you'd swap? (Common alternatives: <code>test</code> instead of <code>uat</code>, <code>local</code> instead of <code>dev</code>.)</div>
+
+    <div class="question"><strong>Q3. Variable naming standard — confirm <code>&lt;APP&gt;_&lt;CATEGORY&gt;_&lt;KEY&gt;</code> for future?</strong><br>
+    Example: <code>LAPIAZZA_DB_URL</code>, <code>POS_OAUTH_CLIENT_SECRET</code>. v1 keeps existing prefixes (BH_*, KC_*); rename happens in rebrand sweep. <strong>OK?</strong></div>
+
+    <div class="question"><strong>Q4. Multi-app — single CLI for all apps, or one CLI per app?</strong><br>
+    Draft 2 assumes ONE <code>lpr</code> with <code>--app</code> flag. Alternative: <code>lpr-lapiazza</code>, <code>lpr-pos</code>, etc. I lean single CLI — your call.</div>
+
+    <div class="question"><strong>Q5. Scrambling / encryption — sops+age in v1 or v1.5?</strong><br>
+    sops/age adds ~50 LOC to v1. Trade-off: more setup (you need an age key), but YAML can be safely committed to a private encrypted backup. <strong>v1 = plain chmod 600, or v1 = sops/age from day one?</strong></div>
+
+    <div class="question"><strong>Q6. KeePass deep dive — what power features do you want?</strong><br>
+    Section 10 has a v1 → v4 ladder. Tell me what's missing. Examples: (a) auto-attach YAML to KP entry on every apply, (b) read passwords from KP via <code>keepassxc-cli</code> (no manual paste), (c) write new password to KP entry on rotation, (d) detect drift between KP and YAML, (e) periodic KP backup to cloud. Rank or scratch.</div>
+
+    <div class="question"><strong>Q7. KC realm tie-in — when?</strong><br>
+    KC client secrets (<code>BH_OIDC_CLIENT_SECRET</code>) ARE in v1 as regular secrets. KC realm/user management (<code>lpr kc cleanup</code> etc.) is v2+. <strong>Confirm split? Anything KC-related you want in v1?</strong></div>
+
+    <div class="question"><strong>Q8. Real-prod cleanup of demo users — tracked here or separate?</strong><br>
+    Your note: "real prod system will only real email address and real people and delete o[ld test users]". This is its own task (a one-shot sweep, not a CLI feature). I'd track it as task #26 in the main backlog, not in LP CLI. <strong>OK?</strong></div>
+
+    <div class="question"><strong>Q9. Timestamp fields — confirm 3 fields per secret?</strong><br>
+    <code>last_rotated_at</code> (auto-set by tool) + <code>rotation_interval_days</code> (you set) + <code>next_rotation_due</code> (computed). Section 5 has the example. <strong>OK, or want different field names / defaults?</strong></div>
+
+    <p style="margin-top:1rem; font-size:.85rem; color:#666;"><em>Answer in the textarea below — just "Q1 yes, Q2 yes, Q3 ..." style works fine.</em></p>
+  </div>
+  <div class="review">
+    <label><input type="checkbox" data-key="rev-16"><span>I reviewed section 16 (the 9 new questions)</span></label>
+    <textarea data-key="note-16" placeholder="Q1: ...&#10;Q2: ...&#10;Q3: ...&#10;Q4: ...&#10;Q5: ...&#10;Q6: ...&#10;Q7: ...&#10;Q8: ...&#10;Q9: ..."></textarea>
+  </div>
+</section>
+
+<!-- SECTION 17 — REVIEW ROADMAP -->
+<section class="card" id="s17">
+  <header><span class="num">17</span><h2>Review roadmap — Draft 2 → 3 → 4 → Build</h2></header>
+  <div class="body">
+    <p>You said: "<em>this is first review we need at least 3 to 4 imho tigs</em>". Here's how each stage closes out.</p>
+    <table>
+      <thead><tr><th>Stage</th><th>Output</th><th>What I need from you</th><th>What I produce</th></tr></thead>
+      <tbody>
+        <tr><td>Stage 1 (done)</td><td>Draft 1 PDF</td><td>Per-section notes ✓</td><td>This Draft 2 ✓</td></tr>
+        <tr><td><strong>Stage 2 (now)</strong></td><td>Draft 2 PDF</td><td>Answers to sec-16's 9 questions + any redlines</td><td>Draft 3 with sec-16 decisions folded in + glossary locked</td></tr>
+        <tr><td>Stage 3</td><td>Draft 3 PDF</td><td>Final structural review — sample YAML for ALL 9 secrets shown, you eyeball</td><td>Draft 4 — locked schema, code skeleton outline</td></tr>
+        <tr><td>Stage 4</td><td>Draft 4 PDF</td><td>Build sign-off ("greenlight")</td><td>v1 code shipped (~10-12h focused session)</td></tr>
+      </tbody>
+    </table>
+    <div class="callout info"><strong>Why 4 rounds matter:</strong> The 2026-05-12 partial rotation failed because we built a tool from incomplete design (ALTER USER without REASSIGN OWNED). 4 rounds = no more "found a hole halfway through the build." We measure twice, cut once.</div>
+  </div>
+  <div class="review">
+    <label><input type="checkbox" data-key="rev-17"><span>I reviewed section 17</span></label>
+    <textarea data-key="note-17" placeholder="Notes on the roadmap..."></textarea>
+  </div>
+</section>
+
+<!-- SECTION 18 — GLOSSARY -->
+<section class="card" id="s18">
+  <header><span class="num">18</span><h2>Glossary + naming conventions (reference)</h2></header>
+  <div class="body">
+    <h3>Terms</h3>
+    <table>
+      <thead><tr><th>Term</th><th>Means</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Resource</strong></td><td>A managed thing (v1: just <code>secret</code>). Future: <code>ai_model</code>, <code>route</code>, <code>kc_realm</code>, etc.</td></tr>
+        <tr><td><strong>Provider</strong></td><td>The code that knows how to read/write/test one Resource type.</td></tr>
+        <tr><td><strong>Test</strong></td><td>A small function that verifies a Resource's state in the real world.</td></tr>
+        <tr><td><strong>Recipe</strong></td><td>A reusable step inside an apply (e.g., <code>alter_user</code>, <code>restart_container</code>).</td></tr>
+        <tr><td><strong>Manifest</strong></td><td>The YAML file. One per app per env.</td></tr>
+        <tr><td><strong>Generated env</strong></td><td>The runtime <code>.env</code> file the tool spits out from the manifest. Gitignored.</td></tr>
+        <tr><td><strong>App</strong></td><td>One of: lapiazza, pos, camper, isotto, language-apps, music.</td></tr>
+        <tr><td><strong>Env</strong></td><td>One of: <code>dev</code>, <code>stg</code>, <code>uat</code>, <code>prod</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Naming conventions (locked in Draft 2)</h3>
+    <ul>
+      <li><strong>CLI binary:</strong> <code>lpr</code></li>
+      <li><strong>YAML location:</strong> <code>/opt/secrets/&lt;app&gt;/&lt;env&gt;.yaml</code></li>
+      <li><strong>Generated env location:</strong> <code>/opt/helixnet/hetzner/&lt;app&gt;[-&lt;env&gt;].env</code></li>
+      <li><strong>KC realm naming (future, after rebrand):</strong> <code>&lt;app&gt;-&lt;env&gt;</code> → <code>lapiazza-prod</code>, etc.</li>
+      <li><strong>Env var prefix (future):</strong> <code>&lt;APP&gt;_&lt;CATEGORY&gt;_&lt;KEY&gt;</code> → <code>LAPIAZZA_DB_URL</code>, etc. (v1 keeps existing.)</li>
+      <li><strong>Audit log location:</strong> <code>~/.lpr-log.jsonl</code></li>
+    </ul>
+  </div>
+  <div class="review">
+    <label><input type="checkbox" data-key="rev-18"><span>I reviewed section 18</span></label>
+    <textarea data-key="note-18" placeholder="Notes on glossary / naming..."></textarea>
   </div>
 </section>
 
@@ -770,22 +1036,22 @@ helixnet/scripts/
 </div>
 
 <footer class="master">
-  <h2>Master Notes</h2>
-  <p>Overall comments, redlines, things to change before v1 code starts:</p>
-  <textarea data-key="master-notes" placeholder="Overall notes here. Everything is saved to localStorage automatically."></textarea>
+  <h2>Master Notes (Draft 2)</h2>
+  <p>Overall comments, redlines, anything missed:</p>
+  <textarea data-key="master-notes" placeholder="Master notes for Draft 2 review. All input is saved to localStorage automatically."></textarea>
   <div class="export-bar">
     <button onclick="exportNotes()">Export all notes as JSON</button>
     <button onclick="window.print()">Print / Save as PDF</button>
-    <button onclick="copyTelegram()">Copy a Telegram-friendly summary</button>
+    <button onclick="copyTelegram()">Copy Telegram summary</button>
     <button class="danger" onclick="if(confirm('Clear all your local notes + checkboxes? This cannot be undone.')) clearAll()">Clear all</button>
   </div>
 </footer>
 
 <script>
-  // === Persistence ===
-  const LS_PREFIX = 'lp-design-2026-05-13:';
+  // Bumped prefix so Draft 1 + Draft 2 reviews don't clash
+  const LS_PREFIX = 'lp-design-d2-2026-05-13:';
+  const TOTAL_SECTIONS = 18;
 
-  // Restore state on load
   document.querySelectorAll('[data-key]').forEach(el => {
     const k = LS_PREFIX + el.dataset.key;
     const v = localStorage.getItem(k);
@@ -795,7 +1061,6 @@ helixnet/scripts/
     }
   });
 
-  // Save on change
   document.querySelectorAll('[data-key]').forEach(el => {
     el.addEventListener('change', () => save(el));
     el.addEventListener('input', () => save(el));
@@ -809,26 +1074,26 @@ helixnet/scripts/
   }
 
   function updateProgress() {
-    const total = 15;
     let done = 0;
-    for (let i = 1; i <= 15; i++) {
+    for (let i = 1; i <= TOTAL_SECTIONS; i++) {
       if (localStorage.getItem(LS_PREFIX + 'rev-' + i) === '1') done++;
     }
-    document.getElementById('progress-display').textContent = done + ' / ' + total + ' sections reviewed';
+    document.getElementById('progress-display').textContent = done + ' / ' + TOTAL_SECTIONS + ' sections reviewed';
   }
 
   updateProgress();
 
-  // === Export ===
   function exportNotes() {
     const data = {
       doc: 'lp-cli-architecture',
+      draft: 2,
+      stage: 'Stage 2 Review',
       reviewed_at: new Date().toISOString(),
       overall_signoff: localStorage.getItem(LS_PREFIX + 'signoff-overall') === '1',
       sections: {},
       master_notes: localStorage.getItem(LS_PREFIX + 'master-notes') || ''
     };
-    for (let i = 1; i <= 15; i++) {
+    for (let i = 1; i <= TOTAL_SECTIONS; i++) {
       data.sections['section_' + i] = {
         reviewed: localStorage.getItem(LS_PREFIX + 'rev-' + i) === '1',
         notes: localStorage.getItem(LS_PREFIX + 'note-' + i) || ''
@@ -837,15 +1102,15 @@ helixnet/scripts/
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'lp-design-review-' + new Date().toISOString().slice(0,10) + '.json';
+    a.download = 'lp-design-review-draft2-' + new Date().toISOString().slice(0,10) + '.json';
     a.click();
   }
 
   function copyTelegram() {
     let total = 0, done = 0;
-    let lines = ['LP CLI Design Review — ' + new Date().toISOString().slice(0,16)];
+    let lines = ['LP CLI Design — Draft 2 / Stage 2 Review — ' + new Date().toISOString().slice(0,16)];
     lines.push('');
-    for (let i = 1; i <= 15; i++) {
+    for (let i = 1; i <= TOTAL_SECTIONS; i++) {
       total++;
       const reviewed = localStorage.getItem(LS_PREFIX + 'rev-' + i) === '1';
       const note = localStorage.getItem(LS_PREFIX + 'note-' + i) || '';
@@ -858,7 +1123,7 @@ helixnet/scripts/
     lines.push('');
     lines.push('Progress: ' + done + ' / ' + total + ' sections reviewed');
     const signoff = localStorage.getItem(LS_PREFIX + 'signoff-overall') === '1';
-    lines.push('Overall sign-off: ' + (signoff ? 'YES' : 'pending'));
+    lines.push('Stage 2 sign-off (proceed to Draft 3): ' + (signoff ? 'YES' : 'pending'));
     const master = localStorage.getItem(LS_PREFIX + 'master-notes') || '';
     if (master.trim()) {
       lines.push('');
@@ -869,7 +1134,6 @@ helixnet/scripts/
     navigator.clipboard.writeText(text).then(() => {
       alert('Copied to clipboard. Paste into Telegram or wherever.');
     }, () => {
-      // Fallback: show in a textarea
       const ta = document.createElement('textarea');
       ta.value = text;
       ta.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:9999;padding:1rem;background:#fff;color:#000;font-family:monospace;';
