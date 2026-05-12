@@ -610,15 +610,93 @@ REST API wrapper (eventually):
 5. ~~**Logging + audit log**~~ → **YES both**. Python `logging` to stderr + JSONL audit to `~/.lp-rotation-log.jsonl`.
 6. ~~**pytest unit tests for safety-critical recipes**~~ → **YES**. edit_env, alter_user, asyncpg_docker_network, generate_env_from_yaml all get tests.
 
-## New open questions (post-pivot)
+## New questions — RESOLVED (Angel signoff 2026-05-13)
 
-A. **Encryption at rest for the YAML files?** v1 is plain text at chmod 600 root-only on server. v2 candidates: `sops` with `age` keys, or KeePass attachment. **My lean: defer to v2.** Plain at 600 is no worse than current env files; the architectural win (no git-leak path) is already in place.
+A. ~~Encryption at rest for YAMLs~~ → **v1 = plain text at chmod 600 root-only. Encryption deferred to v2.** Same risk profile as current env files; the structural win (no git-leak path) is already in place. v2 candidates if/when: sops/age.
 
-B. **Should the YAML diff against the deployed env be shown on every apply?** Yes — that's the dry-run output and the pre-apply confirmation. ~30 LOC.
+B. ~~Always show diff on apply~~ → **YES.** Every `apply` shows the diff first and asks `apply? [y/N]`. `--yes` flag for non-interactive use. `--dry-run` shows diff and exits without prompting.
 
-C. **Two-stage rotation: prod.staged.yaml for "prepared but not applied"?** Could let Angel edit and review the change over hours/days before applying. Or just keep it simple: edit `prod.yaml` directly, the dry-run shows the diff, you commit when ready. **My lean: simple direct edit + dry-run is enough for v1.** Two-stage adds complexity without proportional gain.
+C. ~~Staged file (`prod.staged.yaml`)~~ → **NO.** Direct edit of `prod.yaml` + dry-run + diff-then-confirm is enough. Two-stage adds complexity without commensurate value at solo-operator scale.
 
-D. **Backup cadence to KeePass?** Manual for v1 (Angel exports the YAML to KeePass attachment periodically). v2 could include `lp-rotate backup --to-keepass` if there's an API.
+D. ~~KeePass backup cadence~~ → **MANUAL for v1.** Angel periodically exports the YAML to a KeePass attachment. Future: `lp-rotate backup --to-keepass` if a useful API exists.
+
+---
+
+## ★ READY TO BUILD
+
+All design questions resolved. The architecture is locked. Next session = code.
+
+### Scope of v1 implementation
+
+```
+scripts/lp_rotate.py              ← Typer CLI entry
+scripts/lp/__init__.py
+scripts/lp/cli.py                 ← apply / dry-run / list / status / rollback commands
+scripts/lp/manifest.py            ← YAML loader + Pydantic schema validation
+scripts/lp/providers/secret_provider.py
+scripts/lp/recipes/edit_env.py    ← (rename: generate_env_from_yaml.py post-pivot)
+scripts/lp/recipes/alter_user.py
+scripts/lp/recipes/restart_container.py
+scripts/lp/tests/asyncpg_docker_network.py
+scripts/lp/tests/oidc_discovery.py
+scripts/lp/tests/telegram_getme.py
+scripts/lp/tests/paypal_sandbox_oauth.py
+scripts/lp/tests/resend_api_me.py
+scripts/lp/tests/ollama_models_list.py
+scripts/lp/tests/app_healthz.py
+scripts/lp/generators.py
+scripts/lp/audit.py
+scripts/lp/ssh.py                 ← shell-out wrapper
+tests/lp/test_*.py                ← pytest for safety-critical paths
+```
+
+Plus initial YAML files (on server, not in git):
+- `/opt/helixnet/secrets/prod.yaml` (seeded from current env state)
+- `/opt/helixnet/secrets/staging.yaml` (same)
+
+### Build order (recommended single session, ~10h)
+
+1. Pydantic schema for the YAML (validation enforces correctness)
+2. Manifest loader (`scripts/lp/manifest.py`)
+3. Recipe: `generate_env_from_yaml` (the core build artifact)
+4. Recipe: `restart_container` (shell out to docker compose)
+5. CLI: `apply --env <env> --dry-run` (no state change, prove the pipeline)
+6. CLI: `apply --env <env>` (full apply with diff confirmation)
+7. Tests: `asyncpg_docker_network`, `app_healthz`
+8. Recipe: `alter_user` (DB-password-specific)
+9. Tests: the remaining provider tests (Telegram, PayPal, Resend, Ollama, OIDC)
+10. Audit log writer
+11. Rollback path (`lp-rotate rollback --env <env>` — swaps current/previous, applies)
+12. pytest unit tests for safety-critical recipes
+
+### Acceptance criteria for v1 done
+
+- [ ] `lp-rotate list --env prod` shows all 9 secrets with last-rotated dates
+- [ ] `lp-rotate apply --env prod --dry-run` shows the diff between deployed env and what prod.yaml would generate, exits without changes
+- [ ] `lp-rotate apply --env prod` confirms the diff, applies (regenerates env, alters Postgres for DB secrets, restarts container), runs tests, records audit log
+- [ ] `lp-rotate apply --env prod` correctly auto-rolls-back on any test failure
+- [ ] `lp-rotate rollback --env prod` restores from `prod.previous.yaml`
+- [ ] pytest passes on the safety-critical recipes
+- [ ] The first real use is finishing the prod DB password rotation that's been hanging since 2026-05-12
+
+### Build deferred from v1 to v2+
+
+- Encryption at rest for YAMLs (sops/age)
+- Other resource types (ai_model, route, feature_flag)
+- REST API wrapper
+- KC admin REST API integration for IDP secret updates (v1: tool tells user to do it manually in KC UI + confirm)
+- Multi-env diff (`lp-rotate diff prod staging`)
+- KeePass backup API
+- `lp-rotate apply --yes` non-interactive mode (v1 is interactive only)
+- Concurrency locking (v1 trusts solo operator)
+- Web UI
+
+---
+
+*Signed off. Ready for the build session.*
+
+*"Be water, my friend." — Bruce Lee*
+
 
 ---
 
