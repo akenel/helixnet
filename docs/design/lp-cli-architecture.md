@@ -2,7 +2,28 @@
 
 **Author:** Angel + Tigs
 **Date opened:** 2026-05-13 (night-shift design session)
+**Last revised:** 2026-05-13 — design pivot: YAML is source of truth, env is generated output
 **Status:** ★ DESIGN — not yet implemented. Review + redline before any code.
+
+---
+
+## ★ DESIGN PIVOT (2026-05-13, late night session)
+
+**Original design:** the tool edits `borrowhood.env` in place. The env file is BOTH source of truth and runtime config.
+
+**Pivoted design:** the env file is a **generated output**, not a source of truth. The source is a YAML file (per environment) that lives OFF the git repo. The tool reads YAML → generates env file → deploys.
+
+**Why the pivot is better:**
+
+- Single source of truth (the YAML). No drift between human-edited file and runtime config.
+- Architecturally impossible to commit secrets to git (env files are generated artifacts, gitignored; YAML lives outside the repo entirely).
+- Per-environment files (`prod.yaml`, `staging.yaml`, future `preprod.yaml`, `uat.yaml`) are the same shape — same tool handles all.
+- Rollback is symmetric: `prod.previous.yaml` always exists as the last working version. One-command revert.
+- Diff-able and dry-runnable: edit YAML, run `lp-rotate apply --dry-run`, see what would change.
+
+The Resource + Provider + Test abstractions below stay the same. What changes is how state is read and applied — YAML in, env file out, then deploy.
+
+---
 
 ---
 
@@ -86,9 +107,96 @@ For tonight's design, we enumerate the tests needed by the 9 secrets.
 
 ---
 
-## The YAML schema
+## The YAML schema — REVISED (post-pivot)
 
-The single source of truth for what can be rotated. Lives in `config/lp-secrets-manifest.yaml`.
+**Location: NOT in the git repo.** Lives at `/opt/helixnet/secrets/<env>.yaml` on the Hetzner server, chmod 700 on the directory, chmod 600 on each file, owned by root.
+
+**One YAML per environment.** `prod.yaml` holds prod secrets. `staging.yaml` holds staging secrets. Same schema, different values.
+
+**Rollback pair:** before any apply, the current file is snapshotted to `<env>.previous.yaml`. To roll back: `cp prod.previous.yaml prod.yaml && lp-rotate apply --env prod`.
+
+**The schema (example: `/opt/helixnet/secrets/prod.yaml`):**
+
+```yaml
+# /opt/helixnet/secrets/prod.yaml
+# La Piazza prod environment -- secrets source of truth
+# Permissions: chmod 600, owned by root
+# Backup: replicated to KeePass attachment monthly
+version: 1
+env_name: prod
+generated_env_file: /opt/helixnet/hetzner/lapiazza.env  # OUTPUT path
+app_container: borrowhood                                # to restart after apply
+hetzner_host: 46.62.138.218
+compose_files: ["hetzner/docker-compose.uat.yml"]
+compose_env_file: hetzner/uat.env
+
+secrets:
+  - id: flask-secret-key
+    env_var: BH_SECRET_KEY
+    value: <the actual value, plain text>
+    rotation:
+      sources: [generate, paste]
+      generator: openssl_rand_base64_32
+      test: app_healthz
+      severity: critical
+      side_effects: "Invalidates all logged-in user sessions"
+
+  - id: db-password
+    env_var: BH_DATABASE_URL
+    composite:                      # the URL is built from parts
+      template: "postgresql+asyncpg://{user}:{password}@postgres:5432/{database}"
+      parts:
+        user: lapiazza_app
+        password: <the actual hex value>
+        database: borrowhood
+    rotation:
+      sources: [generate, paste]
+      generator: openssl_rand_hex_32           # URL-safe
+      apply_extra: [alter_user]                # ALSO run ALTER USER in Postgres
+      db_admin_role: helix_user                # who to use for ALTER USER
+      test: asyncpg_connect_docker_network
+      severity: critical
+
+  - id: kc-client-secret
+    env_var: BH_KC_CLIENT_SECRET
+    value: <the actual value>
+    rotation:
+      sources: [paste]                          # provider-issued only
+      paste_url: https://lapiazza.app/admin/master/console/#/borrowhood/clients
+      paste_instructions: "KC admin UI -> Clients -> borrowhood-web -> Credentials -> Regenerate"
+      test: oidc_discovery_200
+      test_url: https://lapiazza.app/realms/borrowhood/.well-known/openid-configuration
+      severity: high
+
+  # ... 6 more secret entries (paypal, resend, telegram, ollama, github, google)
+
+# Future resource types -- co-exist in the same file:
+# ai_models:
+#   - id: bh-ollama-model
+#     env_var: BH_OLLAMA_MODEL
+#     value: gemma3:12b
+#     options: [gemma3:12b, gemma3:27b, llama3.1:70b]
+#     test: ollama_inference_roundtrip
+#
+# routes:
+#   - id: caddy-route-staging
+#     ...
+```
+
+**Key point:** the YAML contains BOTH the secret values AND the metadata for how to rotate them. It's a self-describing file. The tool reads it, generates the env file:
+
+```
+# /opt/helixnet/hetzner/lapiazza.env  -- GENERATED, do not hand-edit
+# Generated from: /opt/helixnet/secrets/prod.yaml at 2026-05-13T08:14:22Z
+# To change: edit the YAML and run `lp-rotate apply --env prod`
+
+BH_SECRET_KEY=<from yaml>
+BH_DATABASE_URL=postgresql+asyncpg://lapiazza_app:<password from yaml>@postgres:5432/borrowhood
+BH_KC_CLIENT_SECRET=<from yaml>
+# ... etc
+```
+
+A header comment in the generated file makes it obvious that hand-editing is wrong — the next `apply` would overwrite hand-edits silently.
 
 ```yaml
 # config/lp-secrets-manifest.yaml
@@ -340,13 +448,19 @@ $ python -m lp_rotate --diff prod staging
 
 ---
 
-## Directory structure
+## Directory structure — REVISED (post-pivot)
 
 ```
+# OFF-REPO (on Hetzner server only, chmod 700, root):
+/opt/helixnet/secrets/
+├── prod.yaml                          ← prod source of truth (per env, ONE file)
+├── prod.previous.yaml                 ← last working version (rollback target)
+├── staging.yaml                       
+├── staging.previous.yaml
+└── (future) preprod.yaml, uat.yaml, regression.yaml
+
+# IN-REPO (the tool itself):
 helixnet/
-├── config/
-│   ├── lp-secrets-manifest.yaml      ← all rotatable secrets
-│   └── (future) lp-models-manifest.yaml, lp-routes-manifest.yaml
 ├── scripts/
 │   ├── lp_rotate.py                   ← entry point (Typer CLI)
 │   └── lp/                            ← package
@@ -375,13 +489,20 @@ helixnet/
 │       │   └── ollama_models_list.py
 │       ├── generators.py               ← openssl_rand_hex_32 etc.
 │       ├── audit.py                    ← rotation log writer
-│       └── ssh.py                      ← Hetzner SSH wrapper
+│       └── ssh.py                      ← Hetzner SSH wrapper (shell-out, no paramiko)
 └── docs/
     ├── design/
     │   └── lp-cli-architecture.md     ← this file
     └── runbooks/
         └── secret-rotation.md          ← user-facing how-to (existing)
+
+# GENERATED (on Hetzner server, NOT in git):
+/opt/helixnet/hetzner/
+├── lapiazza.env                       ← generated from prod.yaml
+└── lapiazza-staging.env               ← generated from staging.yaml
 ```
+
+**Rule: nothing in `/opt/helixnet/secrets/` ever touches the git repo. Nothing in the git repo ever contains real secret values.** The repo holds: the tool, the schemas, the documentation. Nothing else.
 
 ---
 
@@ -480,19 +601,24 @@ REST API wrapper (eventually):
 
 ---
 
-## Open questions for redline
+## Open questions — RESOLVED (2026-05-13 design session)
 
-1. **SSH wrapper**: paramiko library OR shell out to `ssh root@host`? Paramiko = pure Python but more deps. Shell out = simpler but loses some type safety. **My lean: shell out for v1**, paramiko later if we want connection pooling.
+1. ~~**SSH wrapper**: paramiko vs shell-out~~ → **SHELL OUT** to `ssh`. Pure simplicity. Revisit only if we ever need connection pooling.
+2. ~~**YAML or Python config?**~~ → **YAML** (off-repo, per environment).
+3. ~~**Env var overrides on top of YAML**~~ → **NO**. Two sources of truth = drift bug. The YAML is the only truth.
+4. ~~**Dry-run mode**~~ → **YES**. `lp-rotate apply --env prod --dry-run` prints the diff between current and YAML-derived, doesn't apply.
+5. ~~**Logging + audit log**~~ → **YES both**. Python `logging` to stderr + JSONL audit to `~/.lp-rotation-log.jsonl`.
+6. ~~**pytest unit tests for safety-critical recipes**~~ → **YES**. edit_env, alter_user, asyncpg_docker_network, generate_env_from_yaml all get tests.
 
-2. **YAML or Python config?** The YAML is human-readable but has no IDE autocomplete or type safety. Pure-Python config (a `manifest.py` returning Pydantic models) gives both. **My lean: YAML for v1** because non-Python operators (future Anne, future Flora) can read/edit it.
+## New open questions (post-pivot)
 
-3. **Where do environment overrides go?** Some values (e.g., `hetzner_host`) might want to come from env vars rather than the YAML. **My lean: YAML defaults + env var override** (e.g., `LP_HETZNER_HOST=...` overrides the YAML value).
+A. **Encryption at rest for the YAML files?** v1 is plain text at chmod 600 root-only on server. v2 candidates: `sops` with `age` keys, or KeePass attachment. **My lean: defer to v2.** Plain at 600 is no worse than current env files; the architectural win (no git-leak path) is already in place.
 
-4. **Should the tool also support DRY RUN mode?** `--dry-run` = print what WOULD happen, don't change state. **My lean: yes**. ~10 LOC, great for first-time use.
+B. **Should the YAML diff against the deployed env be shown on every apply?** Yes — that's the dry-run output and the pre-apply confirmation. ~30 LOC.
 
-5. **Logging**: Python `logging` module to stderr + the JSONL audit log to file. **My lean: yes both**.
+C. **Two-stage rotation: prod.staged.yaml for "prepared but not applied"?** Could let Angel edit and review the change over hours/days before applying. Or just keep it simple: edit `prod.yaml` directly, the dry-run shows the diff, you commit when ready. **My lean: simple direct edit + dry-run is enough for v1.** Two-stage adds complexity without proportional gain.
 
-6. **Tests**: Should the v1 build include pytest unit tests for the recipes? **My lean: yes for the safety-critical ones** (edit_env, alter_user, asyncpg_docker_network). Mock the network calls; test the file-edit logic.
+D. **Backup cadence to KeePass?** Manual for v1 (Angel exports the YAML to KeePass attachment periodically). v2 could include `lp-rotate backup --to-keepass` if there's an API.
 
 ---
 
