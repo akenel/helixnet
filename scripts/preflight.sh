@@ -305,6 +305,29 @@ else
     fail "0.24" "Free disk: ${free_gb}GB (deploy will fail)"
 fi
 
+# 0.26 -- pg_trgm Postgres extension installed on prod DB (the May 12 CI gotcha)
+# The app uses similarity() for fuzzy search. Without pg_trgm, search 500s.
+if docker exec -i postgres psql -U helix_user -d borrowhood -tAc "SELECT 1 FROM pg_extension WHERE extname='pg_trgm'" | grep -q 1; then
+    pass "0.26" "pg_trgm extension installed on prod DB (gotcha #4 guarded)"
+else
+    fail "0.26" "pg_trgm extension MISSING on prod DB -- search-with-fuzzy will 500"
+fi
+
+# 0.27 -- pg_trgm on staging DB too
+if docker exec -i postgres psql -U helix_user -d borrowhood_staging -tAc "SELECT 1 FROM pg_extension WHERE extname='pg_trgm'" | grep -q 1; then
+    pass "0.27" "pg_trgm extension installed on staging DB"
+else
+    warn "0.27" "pg_trgm extension MISSING on staging DB -- search tests will fail"
+fi
+
+# 0.28 -- pip check (dependency conflicts)
+# Inside the BorrowHood container -- verify no missing/conflicting deps
+if docker exec borrowhood pip check > /dev/null 2>&1; then
+    pass "0.28" "pip check: no dependency conflicts in prod container"
+else
+    warn "0.28" "pip check found dependency conflicts in prod container -- inspect with: docker exec borrowhood pip check"
+fi
+
 # 0.25 -- recent prod 500s in logs
 # grep -c returns 0 lines but exit 1 when no match; force exit 0 so we get a clean int
 err_count=$(docker logs --since 30m borrowhood 2>&1 | grep -c "Internal Server Error\|Traceback" 2>/dev/null || true)
