@@ -23,6 +23,13 @@ BACKUP_DIR=/opt/backup-2026-05-10
 mkdir -p "$BACKUP_DIR"
 BACKUP_FILE="$BACKUP_DIR/borrowhood.env.before-rotation-$(date +%Y%m%d-%H%M%S)"
 
+# ── DB rotation state (used by auto-rollback) ─────────────────
+DB_ROTATED=0
+DB_OLD_USER=""
+DB_OLD_PASS=""
+DOCKER_NETWORK="${DOCKER_NETWORK:-hetzner_helixnet}"
+PG_CONTAINER="${PG_CONTAINER:-postgres}"
+
 # ── output helpers ───────────────────────────────────────────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -95,12 +102,61 @@ rotate() {
     UPDATED_COUNT=$((UPDATED_COUNT + 1))
 }
 
-# ── helper: Postgres password is special (embedded in DATABASE_URL) ──
+# ── helper: asyncpg test via docker network (REAL auth path) ──
+# Returns "OK" / "AUTH_FAIL" / "OTHER:<reason>"
+test_asyncpg() {
+    local url="$1"
+    docker run --rm --network "$DOCKER_NETWORK" \
+        -e TEST_URL="$url" \
+        python:3.12-slim sh -c '
+            pip install -q asyncpg 2>&1 >/dev/null
+            python -c "
+import asyncio, asyncpg, os
+async def t():
+    url = os.environ[\"TEST_URL\"].replace(\"postgresql+asyncpg\", \"postgresql\")
+    try:
+        conn = await asyncpg.connect(url, timeout=5)
+        await conn.close()
+        print(\"OK\")
+    except asyncpg.InvalidPasswordError:
+        print(\"AUTH_FAIL\")
+    except Exception as e:
+        print(f\"OTHER:{type(e).__name__}\")
+asyncio.run(t())
+"' 2>/dev/null | tail -1
+}
+
+# ── helper: ALTER USER in Postgres (returns 0 on success) ──
+psql_alter_user() {
+    local pg_user="$1"
+    local pg_pass="$2"
+    # Hex passwords are quote-safe; warn if not pure hex
+    if ! [[ "$pg_pass" =~ ^[a-fA-F0-9]+$ ]]; then
+        printf "  ${YELLOW}WARN:${NC} password is not pure hex; psql quoting may fail.\n" >&2
+    fi
+    echo "ALTER USER $pg_user WITH PASSWORD '$pg_pass';" | \
+        docker exec -i "$PG_CONTAINER" psql -U helix_user -d postgres 2>&1 | \
+        grep -q "ALTER ROLE"
+}
+
+# ── helper: Postgres password rotation (HARDENED) ──
+# Pre-test → ALTER USER → update env → post-test → rollback on failure.
 rotate_db_password() {
     printf "${BLUE}──── BH_DATABASE_URL (Postgres password) ────${NC}\n"
-    printf "  Special: password is embedded inside the connection URL.\n"
-    printf "  Format: postgresql+asyncpg://<user>:<password>@postgres:5432/<db>\n"
-    printf "  paste NEW password only -- script rebuilds the URL: "
+    printf "  Special: password is in URL + must also ALTER USER in Postgres.\n"
+    printf "  ${YELLOW}TIP: use hex-only password (openssl rand -hex 32) for safe quoting.${NC}\n"
+
+    # Extract current user + host_port_db + OLD password from env
+    local current_url
+    current_url=$(grep "^BH_DATABASE_URL=" "$ENV_FILE" | cut -d= -f2-)
+    local user host_port_db old_pass
+    user=$(echo "$current_url" | sed -E 's|^postgresql\+asyncpg://([^:]+):.*|\1|')
+    host_port_db=$(echo "$current_url" | sed -E 's|^postgresql\+asyncpg://[^:]+:[^@]+@(.*)|\1|')
+    old_pass=$(echo "$current_url" | sed -E 's|^postgresql\+asyncpg://[^:]+:([^@]+)@.*|\1|')
+
+    printf "  current user:     %s\n" "$user"
+    printf "  current pw chars: %d\n" "${#old_pass}"
+    printf "  paste NEW password (Enter = skip): "
     read -rs new_pass
     printf "\n"
 
@@ -110,22 +166,85 @@ rotate_db_password() {
         return
     fi
 
-    # Extract the existing user + db from the current URL (preserve them)
-    local current_url
-    current_url=$(grep "^BH_DATABASE_URL=" "$ENV_FILE" | cut -d= -f2-)
-    # Pattern: postgresql+asyncpg://USER:OLD_PASS@HOST:PORT/DB
-    local user host_port_db
-    user=$(echo "$current_url" | sed -E 's|^postgresql\+asyncpg://([^:]+):.*|\1|')
-    host_port_db=$(echo "$current_url" | sed -E 's|^postgresql\+asyncpg://[^:]+:[^@]+@(.*)|\1|')
+    # Step 1: PRE-TEST -- verify current env actually authenticates (sanity)
+    printf "  ${BLUE}pre-test:${NC} verifying current env+Postgres are aligned..."
+    local pre
+    pre=$(test_asyncpg "$current_url")
+    if [ "$pre" != "OK" ]; then
+        printf " ${RED}FAIL ($pre)${NC}\n"
+        printf "  ${RED}ABORT:${NC} current env doesn't authenticate. System is already broken.\n"
+        printf "  Fix the existing state first; don't rotate on top of broken auth.\n\n"
+        return
+    fi
+    printf " ${GREEN}OK${NC}\n"
 
+    # Step 2: ALTER USER in Postgres
+    printf "  ${BLUE}altering:${NC} ALTER USER $user WITH PASSWORD ..."
+    if ! psql_alter_user "$user" "$new_pass"; then
+        printf " ${RED}FAIL${NC}\n"
+        printf "  ${RED}ABORT:${NC} ALTER USER failed. Env unchanged. Postgres unchanged.\n\n"
+        return
+    fi
+    printf " ${GREEN}done${NC}\n"
+
+    # Step 3: Update env file
     local new_url="postgresql+asyncpg://${user}:${new_pass}@${host_port_db}"
     update_key_value "BH_DATABASE_URL" "$new_url"
-    printf "  ${GREEN}updated${NC} BH_DATABASE_URL (password %d chars)\n" "${#new_pass}"
-    printf "  ${YELLOW}NEXT STEP (manual):${NC} apply the same password to Postgres itself:\n"
-    printf "      docker exec -it postgres psql -U helix_user -d postgres\n"
-    printf "      ALTER USER %s WITH PASSWORD '<paste new password>';\n" "$user"
-    printf "      \\\\q\n\n"
+
+    # Step 4: POST-TEST -- verify new password works
+    printf "  ${BLUE}post-test:${NC} asyncpg connect with new password..."
+    local post
+    post=$(test_asyncpg "$new_url")
+    if [ "$post" != "OK" ]; then
+        printf " ${RED}FAIL ($post)${NC}\n"
+        printf "  ${RED}AUTO-ROLLBACK:${NC} restoring env + ALTER USER back to old password\n"
+        cp "$BACKUP_FILE" "$ENV_FILE"
+        chmod 600 "$ENV_FILE"
+        psql_alter_user "$user" "$old_pass" && \
+            printf "    ${GREEN}rolled back${NC}\n\n" || \
+            printf "    ${RED}ROLLBACK FAILED${NC} -- manual recovery needed\n\n"
+        return
+    fi
+    printf " ${GREEN}OK${NC}\n"
+
+    # Success: save state for end-of-script auto-rollback on health-check fail
+    DB_ROTATED=1
+    DB_OLD_USER="$user"
+    DB_OLD_PASS="$old_pass"
+
+    printf "  ${GREEN}updated${NC} env + Postgres aligned (%d chars)\n\n" "${#new_pass}"
     UPDATED_COUNT=$((UPDATED_COUNT + 1))
+}
+
+# ── helper: end-of-script auto-rollback (called on health-check fail) ──
+auto_rollback() {
+    printf "\n  ${RED}AUTO-ROLLBACK STARTING${NC}\n"
+    cp "$BACKUP_FILE" "$ENV_FILE"
+    chmod 600 "$ENV_FILE"
+    printf "    env restored from %s\n" "$BACKUP_FILE"
+
+    if [ "$DB_ROTATED" = "1" ]; then
+        printf "    ALTER USER $DB_OLD_USER back to old password..."
+        psql_alter_user "$DB_OLD_USER" "$DB_OLD_PASS" && \
+            printf " ${GREEN}done${NC}\n" || \
+            printf " ${RED}FAILED${NC} -- manual recovery needed\n"
+    fi
+
+    printf "    restarting container with restored env...\n"
+    cd /opt/helixnet
+    docker compose -f hetzner/docker-compose.uat.yml \
+        --env-file hetzner/uat.env \
+        up -d --force-recreate borrowhood 2>&1 | tail -3
+    sleep 30
+
+    local code
+    code=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 10 https://lapiazza.app/)
+    if [ "$code" = "200" ]; then
+        printf "    ${GREEN}rollback complete -- lapiazza.app -> 200${NC}\n"
+    else
+        printf "    ${RED}rollback INCOMPLETE -- lapiazza.app -> $code${NC}\n"
+        printf "    Manual: docker logs borrowhood | tail -50\n"
+    fi
 }
 
 # ── The 9 La Piazza prod secrets (in severity order) ────────────────
@@ -167,15 +286,17 @@ if [[ "$restart_yn" =~ ^[Yy]$ ]]; then
     if [ "$code" == "200" ]; then
         printf "    ${GREEN}https://lapiazza.app/ -> 200 OK${NC}\n"
     else
-        printf "    ${RED}https://lapiazza.app/ -> %s${NC} -- check logs: docker logs borrowhood\n" "$code"
-        printf "    ${YELLOW}Rollback:${NC} cp $BACKUP_FILE $ENV_FILE && docker compose ... up -d --force-recreate borrowhood\n"
+        printf "    ${RED}https://lapiazza.app/ -> %s${NC}\n" "$code"
+        printf "    Logs (last 30 lines):\n"
+        docker logs borrowhood 2>&1 | tail -30 | sed 's/^/      /'
+        auto_rollback
         exit 1
     fi
     code_oidc=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 10 https://lapiazza.app/realms/borrowhood/.well-known/openid-configuration)
     if [ "$code_oidc" == "200" ]; then
         printf "    ${GREEN}OIDC discovery -> 200 OK${NC}\n"
     else
-        printf "    ${RED}OIDC discovery -> %s${NC} -- KC client secret may be wrong\n" "$code_oidc"
+        printf "    ${YELLOW}OIDC discovery -> %s${NC} -- KC client secret may be wrong (not auto-rolled, recoverable)\n" "$code_oidc"
     fi
 fi
 
