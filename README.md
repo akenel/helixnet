@@ -1,549 +1,316 @@
+# HelixNet
 
-# 🧩 HelixNet — Auth-Driven FastAPI Microstack
+**An auth-driven FastAPI platform hosting La Piazza, a peer-to-peer rental marketplace, plus a POS system, a self-hosted music player, and internal QA/backlog tooling.**
 
-**Status:** Forged Bronze Edition 🏆
-**Author:** Angel
-**Tagline:** “Because you don’t learn Keycloak in school.”
+| Surface | Where | Status |
+|---|---|---|
+| La Piazza (production) | [lapiazza.app](https://lapiazza.app/) | Live |
+| La Piazza (staging) | [staging.lapiazza.app](https://staging.lapiazza.app/) | Live |
+| Local dev | `https://helix.local/` | Docker Compose |
+| Repo | this one | Public |
 
----
-
-## ⚙️ Overview
-
-HelixNet is a **production-grade FastAPI stack** featuring:
-
-* 🔐 **Keycloak** for enterprise-level OpenID Connect authentication
-* 🚀 **Traefik** reverse proxy with automatic HTTPS (Let’s Encrypt-ready)
-* 🧠 **FastAPI** core application with JWT token verification
-* 🧱 **Docker Compose** orchestration
-* 📊 **Swagger UI** integrated with OAuth2 password flow
-* 🐇 (Optional) Celery & Redis for async jobs
-* 📈 (Optional) Grafana & Prometheus for metrics
-
-This project demonstrates a *real-world secure microservice environment* that mirrors modern SaaS architecture.
-CONCEPT: for 12 year old learning tool to spin-up an enterprise middleware platform and start developing secure web apps.
-
-## ⚙️ Overview example: Point-of-Sale PoS System:
-   Here's the architecture:
-   - FastAPI backend - POS endpoints (scan, checkout, reports)
-   - Keycloak - Staff logins with roles (cashier, manager)
-   - Postgres - Products, transactions, daily totals
-   - MinIO - Store receipts/invoices as PDFs
-   - Simple HTML frontend - No React, just FastAPI templates + HTMX
-   - Traefik - HTTPS for in-store tablet
-
-  This is EXACTLY what HelixNet was built for.
+Author: Angel Kenel. Collaborator: Tigs (Claude). Made in Sicily.
 
 ---
 
-## 🛒 Production POS System (Sprint 3: RBAC Complete)
+## What lives here
 
-**Status:** ✅ Production-Ready with Keycloak RBAC
+| App | What it is | Path | Status |
+|---|---|---|---|
+| **La Piazza** | Peer-to-peer rental marketplace, raffles, quotes, calendar, helpboard, AI draft, backlog feedback | `BorrowHood/` | Production |
+| **HelixNet platform** | The shared kernel: FastAPI core, Keycloak OIDC, Caddy reverse proxy, Postgres, Redis, RabbitMQ, MinIO | `src/`, `compose/` | Production |
+| **POS system** | 5-role RBAC point-of-sale (cashier, manager, developer, auditor, admin) | `src/` (pos routes) | Production-ready, not yet deployed standalone |
+| **Camper & Tour** | Workshop management module (vehicles, bays, quotations, job activity trail) | `src/` (camper routes) | Production, behind realm |
+| **Backlog / QA dashboard** | Unified bug + feedback intake with session-report capture, activity trail, priority/status workflow | `src/routes/backlog_router.py`, `BorrowHood/src/routers/backlog.py` | Live in both staging + prod |
+| **Helix Media Player** | Self-hosted music (Swing Music) — the "Sunrise Chain" curated library | `compose/helix-media/` | Live, ~90 tracks |
+| **DebLLM** | Self-healing log monitoring + KB-driven auto-remediation | `debllm/`, `src/debllm/` | Code preserved, infra dormant since Nov 2025 |
 
-HelixNet now includes a **fully functional Point-of-Sale (POS) system** with enterprise-grade authentication and role-based access control.
+---
 
-### 🔐 Features
+## Architecture
 
-* **Real Keycloak Authentication** - JWT token validation with RS256 signatures
-* **5-Role RBAC System**:
-  * 💰️ **pos-cashier** - Create transactions, scan products, process checkout (10% discount limit)
-  * 👔️ **pos-manager** - Full POS access including product management, unlimited discounts, reports
-  * 🛠️ **pos-developer** - Create products for testing, limited production access
-  * 📊️ **pos-auditor** - Read-only access to all transactions, products, reports (compliance)
-  * 👑️ **pos-admin** - Full system control over POS realm and configuration
-* **Automated Realm Import** - Infrastructure as Code (no manual Keycloak setup)
-* **Startup Health Checks** - Realm status matrix showing users/clients count
-* **Pre-seeded Test Users** - 6 users ready for testing (Pam, Ralph, Michael, Felix, pos-developer, pos-auditor)
-* **Multi-Environment Ready** - Identical configs for DEV/UAT/PROD
+### Runtime components
 
-### 🚀 Quick Test
+| Service | Purpose | Local URL |
+|---|---|---|
+| Caddy | Reverse proxy + automatic HTTPS (Let's Encrypt on prod, self-signed on dev) | `:443` |
+| FastAPI (helix-platform) | Core API, OIDC verification, Camper/POS/Backlog routes | `https://helix.local/` |
+| FastAPI (BorrowHood / La Piazza) | Marketplace API + templates | `https://lapiazza.app/` (prod) |
+| Keycloak | OIDC identity provider, multi-realm | `https://keycloak.helix.local/` |
+| Postgres | Database for all services | internal |
+| Redis | Cache + task broker | internal |
+| RabbitMQ | Async messaging | internal |
+| MinIO | S3-compatible object storage (uploads, attachments) | internal |
+| MailHog | SMTP sink for dev/staging | `:8025` |
+| LibreTranslate | Translation backend (optional) | internal |
+
+All services run as Docker containers, orchestrated by `docker compose`.
+
+### Stack choices
+
+- **Caddy** for the reverse proxy (was Traefik; switched for simpler Let's Encrypt + path routing on Hetzner)
+- **Keycloak** for OIDC, RS256 JWTs verified by FastAPI
+- **SQLAlchemy 2.x** async + `asyncpg`
+- **Pydantic v2** for everything
+- **Alpine.js + Tailwind CDN** on templates (no SPA — server-rendered first, JS for interactivity)
+- **Puppeteer** for PDF generation (postcards, SOPs)
+- **Playwright** for E2E tests (scaffolded under `tests/`)
+
+---
+
+## Environments
+
+Locked naming convention across all apps:
+
+| Code | Long name | Where | When |
+|---|---|---|---|
+| `dev` | Development | Local Docker Compose (`helix.local`) | Daily work |
+| `stg` | Staging | `staging.lapiazza.app` (Hetzner) | Pre-prod sign-off |
+| `uat` | User Acceptance | `uat.<app>.app` (Hetzner, only when running deeper test rounds) | Optional |
+| `prod` | Production | `lapiazza.app` (Hetzner) | Real users |
+
+**Hetzner host:** single CX32 box (4 vCPU, 8 GB RAM, ~7 €/mo). Caddy fronts everything via path-based routing.
+
+**Deploy SOP** (mandatory — `scripts/smoke-test.sh` is the gate):
 
 ```bash
-# 1. Login as Pam (Cashier)
-curl -k -X POST "https://keycloak.helix.local/realms/kc-pos-realm-dev/protocol/openid-connect/token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "client_id=helix_pos_web" \
-  -d "username=pam" \
-  -d "password=helix_pass" \
-  -d "grant_type=password" | jq -r '.access_token'
-
-# 2. Use token to access POS API
-curl -k "https://helix-platform.local/api/v1/pos/products" \
-  -H "Authorization: Bearer $TOKEN"
+git push                                                      # local
+ssh root@HETZNER_IP "cd /opt/helixnet && git pull && \
+  cd hetzner && docker compose -f docker-compose.uat.yml \
+  up -d --build helix-platform"
+ssh root@HETZNER_IP "cd /opt/helixnet && bash scripts/smoke-test.sh hetzner"
 ```
 
-### 📚 Documentation
-
-* **Full Setup Guide**: See `docs/KEYCLOAK_SETUP.md`
-* **Realm Config**: `helix-pos-realm-dev.json` (auto-imported on startup)
-* **Test Users**: All passwords are `helix_pass` (demo only)
-
-### 🧪 Test Users & Roles
-
-| Username | Password | Role | Can Create Products? | Can View Reports? |
-|----------|----------|------|---------------------|-------------------|
-| pam | helix_pass | 💰️ Cashier | ❌ No | ❌ No |
-| ralph | helix_pass | 👔️ Manager | ✅ Yes | ✅ Yes |
-| michael | helix_pass | 🛠️ Developer | ✅ Yes | ❌ No |
-| felix | helix_pass | 👑️ Admin | ✅ Yes | ✅ Yes |
-| pos-auditor | helix_pass | 📊️ Auditor | ❌ No | ✅ Yes (read-only) |
-
-### 🔧 API Endpoints
-
-* `GET /api/v1/pos/products` - List products (any POS role)
-* `POST /api/v1/pos/products` - Create product (manager/developer/admin only)
-* `PUT /api/v1/pos/products/{id}` - Update product (manager/admin only)
-* `DELETE /api/v1/pos/products/{id}` - Delete product (manager/admin only)
-* `POST /api/v1/pos/transactions` - Create transaction (cashier/manager/admin)
-* `POST /api/v1/pos/checkout` - Process checkout (cashier/manager/admin)
-* `GET /api/v1/pos/reports/daily-summary` - Daily sales report (manager/auditor/admin)
-
-All endpoints enforce RBAC via JWT token validation.
-
-> ⚠️ **Warning:**
-> This is not a beginner project. Expect to troubleshoot certificates MKCERT, CORS, and container networking via Traefik and Keycloak.
-> Proceed only if you have **grit, coffee, and curiosity**.
+Never deploy to prod without explicit staging sign-off. No exceptions, even for "low-risk" changes.
 
 ---
 
-## 🎵 Helix Media Player — THE SUNRISE CHAIN
+## Quick start (local development)
 
-**Status:** Live & Roaring 🐅
+### Prerequisites
 
-Because Spotify has ads. Because YouTube has algorithms. Because SoundCloud disappeared our account. So we built our own.
+- Docker + Docker Compose
+- `mkcert` for local HTTPS (or accept self-signed warnings)
+- 8 GB free RAM, ~20 GB disk
 
-### Philosophy
+### First-time setup
+
+```bash
+git clone <repo-url> helixnet
+cd helixnet
+cp .env.example .env                      # then edit secrets
+make up                                   # full stack build + start
+make status                               # check all containers healthy
+```
+
+Add to `/etc/hosts`:
+
+```
+127.0.0.1 helix.local
+127.0.0.1 keycloak.helix.local
+127.0.0.1 lapiazza.helix.local
+```
+
+Browse to `https://helix.local/` and you should land on the La Piazza homepage.
+
+### Test users
+
+All test users across all realms use password `helix_pass`. Examples:
+
+| Username | Realm | Role |
+|---|---|---|
+| `helix_user` | master | Keycloak admin |
+| `pam` | helix-pos | Cashier |
+| `ralph` | helix-pos | Manager |
+| `felix` | helix-pos | Admin |
+| `alice` | borrowhood | Test buyer |
+| `nino`, `angel`, `sebastino` | camper-service | Camper personas |
+
+Full persona list: `scripts/seed-staging-personas.sh`.
+
+---
+
+## POS system — RBAC details
+
+Five roles, JWT-enforced at every endpoint.
+
+| Role | Discount limit | Can manage products | Can view reports |
+|---|---|---|---|
+| `pos-cashier` | 10% max | No | No |
+| `pos-manager` | unlimited | Yes | Yes |
+| `pos-developer` | n/a | Yes (test only) | No |
+| `pos-auditor` | n/a | No | Yes (read-only) |
+| `pos-admin` | n/a | Yes | Yes |
+
+API endpoints (all under `/api/v1/pos/`): `products` (GET/POST/PUT/DELETE), `transactions` (POST), `checkout` (POST), `reports/daily-summary` (GET).
+
+Realm config: `helix-pos-realm-dev.json`, auto-imported on startup.
+
+---
+
+## La Piazza — module overview
+
+Implemented and live:
+
+- **Listings** — create, edit, search (with `pg_trgm` similarity), publish/unpublish, raffle conversion
+- **Calendar** — per-listing availability with blackout dates (recurring weekdays + date ranges)
+- **Quotation requests** — buyer → seller flow, integrated into messages inbox
+- **Raffles** — entries, draws, cancel/refund
+- **Helpboard** — AI-assisted ticket drafting, escalation
+- **Messages inbox** — threaded, with quotation requests surfaced inline
+- **Backlog feedback** — public submission with session-report + screenshot capture
+- **QA dashboard** — bug + test tracker (same auth as backlog)
+
+Tested personas (`scripts/seed-staging-personas.sh`): Alice (buyer), Bob (seller), Carol (admin), Eve, Gia, Gemma, plus 11 imported demo users. All use `helix_pass`.
+
+---
+
+## Helix Media Player — the Sunrise Chain
 
 > "No ads. No algorithm. No monthly ransom. Just music."
-> — Electric Jungle
 
-### What It Is
-
-A self-hosted music player (Swing Music) with a curated collection organized by **timezone** — following the sunrise around the Earth.
+Self-hosted Swing Music instance with a curated library organized by timezone — songs follow the sunrise around the planet.
 
 ```
-🌅 THE SUNRISE CHAIN — 66 tracks across 13 regions
-
-PACIFIC DAWN     → AUSTRALIA      → JAPAN-KOREA    → SOUTHEAST ASIA
-INDIA-PAKISTAN   → MIDDLE EAST    → AFRICA EAST    → AFRICA WEST
-EUROPE EAST      → EUROPE WEST    → AMERICAS EAST  → AMERICAS WEST
-                      ↓
-              SOUL FOUNDATION (the bedrock)
+PACIFIC DAWN    AUSTRALIA    JAPAN-KOREA    SOUTHEAST ASIA
+INDIA-PAKISTAN  MIDDLE EAST  AFRICA EAST    AFRICA WEST
+EUROPE EAST     EUROPE WEST  AMERICAS EAST  AMERICAS WEST
+                          |
+                  SOUL FOUNDATION
 ```
 
-### Quick Start
+Each track ships with synced lyrics (`.lrc`), a `MANIFEST.md` for provenance, and a `WISDOM.md` of between-song quotes. Tracks pulled via `yt-dlp` and curated by hand.
 
 ```bash
 cd compose/helix-media
 docker compose -f media-stack.yml up -d
-
 # Visit http://localhost:1970
-# Or add to /etc/hosts: 127.0.0.1 music.helix.local
 ```
 
-### Features
-
-- **Self-hosted** — Your music, your server, your rules
-- **Synced lyrics** (.lrc files for sing-along)
-- **MANIFEST.md** — The story behind every track
-- **WISDOM.md** — Philosopher quotes for between songs
-- **yt-dlp integration** — Grab any track from YouTube
-
-### The Legends Inside
-
-Sam Cooke, Bob Dylan, Aretha Franklin, Pink Floyd, Queen, Led Zeppelin, The Beatles, Jimi Hendrix, Bob Marley, Nirvana, The Cult, Rolling Stones, AC/DC, and 50+ more icons from every corner of the globe.
-
-> "Be water, my friend." — Bruce Lee
-
-📁 **Location:** `compose/helix-media/`
+Library: `compose/helix-media/music/sunrise-chain/`
 
 ---
 
-## 🧰 Components
+## Project structure
 
-| Service              | Purpose                     | URL                                  |
-| -------------------- | --------------------------- | ------------------------------------ |
-| **Helix (FastAPI)**  | Core API                    | `https://helix-platform.local/docs`  |
-| **Keycloak**         | Identity Provider (OIDC)    | `https://keycloak.helix.local`       |
-| **Traefik**          | Reverse Proxy + HTTPS       | `https://traefik.helix.local`        |
-| **Postgres**         | Database for Keycloak + App | Internal                             |
-| **Redis (optional)** | Task broker for Celery      | Internal                             |
+```
+helixnet/
+  BorrowHood/                  La Piazza application (FastAPI + templates)
+    src/                       Models, routers, services, templates
+    tests/                     Pytest suite
+  compose/
+    helix-media/               Music player stack
+    keycloak/                  Realm JSON + bootstrap
+  debllm/                      Self-healing monitor (dormant)
+  docs/
+    business/                  Postcards, SOPs, business plans
+    design/                    Architecture design docs (LP CLI drafts, etc.)
+    runbooks/                  Operator runbooks (secret rotation, etc.)
+    testing/                   QA + UAT documentation
+  hetzner/                     Production compose + env files (.env gitignored)
+  scripts/
+    smoke-test.sh              25-check post-deploy gate
+    preflight.sh               28-point environment inspector
+    rotate-secrets.sh          Interactive secret rotation
+    seed-staging-personas.sh   Persona seeding
+    sop-to-pdf.js              Puppeteer-driven PDF generation
+  src/                         HelixNet kernel: FastAPI app, Keycloak,
+                               POS, Camper, Backlog routes
+  stories/                     The Great Escape narrative
+  tests/                       Playwright E2E suite
+  UFA_r2p/                     Print-ready PDFs (postcards, labels)
+  videos/                      Video production assets (MP4s gitignored)
+  CLAUDE.md                    Persistent context for the AI co-pilot
+  Makefile                     `make up`, `make status`, `make logs`
+```
 
 ---
 
-## 🔑 Authentication (Swagger)
+## Authentication walk-through
 
-Swagger UI supports **OAuth2 password flow** via Keycloak.
+The FastAPI app validates JWTs with Keycloak's RS256 public key.
 
-1. Click **Authorize** in Swagger.
-2. Choose the scheme **OAuth2 (password)**.
-3. Fill in:
+### From Swagger UI
 
+1. Open `https://helix.local/docs`
+2. Click **Authorize**, choose **OAuth2 password flow**
+3. Enter:
    ```
    username: helix_user
    password: helix_pass
    client_id: helix_client
-   client_secret: helix_pass
    ```
+4. Submit, then any `/api/v1/users/me` call should return 200.
 
-4. Hit **Authorize**, then test any `/api/v1/users/me` or `/protected` endpoint.
-
-✅ If you see 200 OK, your JWT was validated successfully.
-
----
-
-## 🧩 Directory Structure
-
-```
-helixnet/
-├─ compose/
-│  ├─ traefik/
-│  ├─ keycloak/
-│  └─ helix/
-├─ keycloak/
-│  └─ config/
-│     └─ kc-realm-dev.json
-├─ src/
-│  └─ helix/
-│     ├─ main.py
-│     ├─ routes/
-│     └─ auth/
-├─ .env
-├─ docker-compose.yml
-└─ README.md
-```
-
----
-
-## 🪄 Quick Start
+### Direct token request
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/<your-username>/helixnet.git
-cd helixnet
+TOKEN=$(curl -sk -X POST \
+  "https://keycloak.helix.local/realms/helix/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=helix_client" \
+  -d "username=helix_user" \
+  -d "password=helix_pass" \
+  -d "grant_type=password" | jq -r '.access_token')
 
-# 2. Configure environment
-cp .env.example .env
-
-# 3. Start everything
-./scripts/helix-boot.sh
-
-# 4. Visit
-https://helix-platform.local/docs
+curl -sk "https://helix.local/api/v1/users/me" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
 
-## 🧠 Developer Tips
+## Operational state
 
-* To debug Traefik routes:
-
-  ```bash
-  docker logs traefik | grep helix
-  ```
-
-* To verify Keycloak realm import:
-
-  ```bash
-  docker exec -it keycloak /opt/keycloak/bin/kc.sh show-config
-  ```
-
-* If Swagger shows `NetworkError`, check:
-
-  * DNS: `keycloak.helix.local` must resolve
-  * HTTPS certificate trust
-  * CORS headers in FastAPI and Keycloak client settings
+| Area | State |
+|---|---|
+| Prod (`lapiazza.app`) | Live, healthy |
+| Staging (`staging.lapiazza.app`) | Live |
+| CI/CD | Partial — GitHub Actions on PR/push for BorrowHood tests; full CD pipeline still to wire |
+| Operational housekeeping | Secret rotation in flight; tracked via `docs/runbooks/secret-rotation.md` |
+| Monitoring | DebLLM code preserved, infrastructure dormant |
+| E2E tests | Playwright scaffolded under `tests/`; scenario suites (O2C, P2P, mixed-role) on the roadmap |
 
 ---
 
-## 🧱 Lessons Learned
+## Documentation
 
-* Keycloak JSON import path **must** be absolute (`/opt/keycloak/data/import/...`)
-* Traefik will report *502 Bad Gateway* if the backend container name isn’t resolvable
-* Swagger’s **password flow** is the simplest for human testing
-* OAuth2 + FastAPI + Docker networking = patience required
-
----
-
-## 🏁 Milestone: Forged Bronze
-
-You’ve crossed the threshold of backend alchemy —
-this is where microservices become art.
-
-> “You can’t learn this from a tutorial.
-> You learn it by bleeding YAML.” — Sherlock
+| Topic | File |
+|---|---|
+| Persistent AI co-pilot context | `CLAUDE.md` |
+| Deploy + smoke-test SOP | `scripts/smoke-test.sh` (script itself documents the checks) |
+| Secret rotation runbook | `docs/runbooks/secret-rotation.md` |
+| Resume points (session pickup notes) | `docs/runbooks/RESUME-*.md` |
+| Architecture design docs | `docs/design/` |
+| Hotel + business SOPs | `docs/business/consulting/HOTEL-SOP-MASTER.md` |
+| Print-ready postcards + labels | `UFA_r2p/` |
 
 ---
 
-# 🌌 HelixNet Distributed Platform: Task & Data Management
+## Warning
 
-🌌 HelixNet Core API: Task & Data Management
- **technical and business layers**
----
-
-## 🚀 **HelixNet (a.k.a. SecDevOps Edition) — Elevator Pitch**
-
-HelixNet is an **AI-driven integration and transformation engine** designed to modernize legacy enterprise data flows — without forcing companies to rebuild everything on SAP BTP or other cloud platforms.
-
-The system takes three core inputs:
-
-1. **Context YAML** → describes the business or technical mapping rules
-2. **Content files** → raw data (CSV, flat files, SAP IDocs, SFTP drops, etc.)
-3. **Target JSON schema** → defines the desired output structure
-
-Using these, HelixNet applies an **AI-assisted transformation and mapping engine** that analyzes the input data and produces the correctly structured output JSON, ready to be injected into SAP, BTP, or any downstream system.
-
-This lets teams **automate the painful “mapping” work** that’s traditionally done manually with tools like SAP PI/PO, Seeburger, or custom ETL pipelines.
-Instead of rewriting the whole integration layer, HelixNet helps organizations **bridge old and new systems safely and affordably**, while keeping the existing infrastructure intact.
+This is not a beginner project. Expect to troubleshoot certificate trust (`mkcert`), CORS, container networking, Caddy path routing, Keycloak realm configuration, Postgres ownership transfers, and the occasional 3am DB password drift. Proceed only if you have grit, coffee, and curiosity.
 
 ---
 
-### 💡 In one line
+## Roadmap (live tasks)
 
-> “HelixNet is an AI-powered data mapping and transformation platform that turns messy legacy files into clean, structured JSON ready for SAP and modern systems — without a full migration.”
+- Wire CI staging-green gate into prod deploys
+- Build Order-to-Cash, Procure-to-Pay, and mixed-role Playwright scenario suites
+- Rename Hetzner UAT compose files to PROD
+- Complete secret rotation (in flight)
+- BorrowHood → La Piazza rebrand sweep (artifacts only; live app is already La Piazza)
+- Demo path: `/demo` route with guided auto-login for first-time visitors
+- Decide DebLLM revival vs. archive
 
----
-
-### 🧠 Tech Summary (for engineers)
-
-* Context-aware Jinja2 templates (`.j2`) drive the transformation logic.
-* YAML defines metadata, mapping hints, and processing pipelines.
-* JSON defines the target output shape.
-* AI (via local or external models) assists with schema inference and transformation mapping.
-* Docker + Traefik + Keycloak + Vault provide secure, modular, multi-service orchestration.
+Full task list lives in the repo's internal task tracker.
 
 ---
 
-## 🧭 Phase 1 — “The Demo VPS Era” (Right Now)
+## License
 
-✅ **Goal:** Let potential users *see and feel* the product without setup friction.
-**YES**, you can — and should — run this on a **VPS using Docker Compose**.
-
-### Why it’s the perfect move
-
-* **Docker Compose is enough** for 1–10 users testing the system.
-* You can **control access** via Keycloak (each tester gets an account).
-* You can **monitor** via Traefik logs, Portainer, and even basic shell scripts.
-* You don’t need the operational complexity of K3D/K8s yet.
-* Your “stack” already looks like a **production-ready demo environment** — just scaled down.
-
-Think of this as your **HelixNet Demo Cloud** — stable, limited, but *representative*.
+TBD — for now: "All rights reserved. If you fork it, tell Angel why."
 
 ---
 
-## 🚀 Phase 2 — “The Self-Serve Proof of Concept”
-
-✅ **Goal:** Turn the VPS demo into a hands-off trial experience.
-
-You’re already thinking correctly:
-
-> “They log in, try it 10 times, I monitor, then upsell.”
-
-This is **the SaaS funnel**:
-
-1. **Discovery** — They find your landing page / repo
-2. **Curiosity** — They see “Try the live demo”
-3. **Engagement** — They upload some data, get a real transformation
-4. **Value realization** — They see how your system makes sense of messy data
-5. **Conversion** — You follow up (“Would you like to integrate your real data?”)
-
-Even if only *one or two clients* do that, it validates your product and story.
-
----
-
-## 🧩 Phase 3 — “K3D or Kubernetes Migration” (Later)
-
-✅ **Goal:** When you’ve proven user traction or paying customers.
-
-At that point:
-
-* Move from **VPS Docker Compose** → **K3D or true Kubernetes** (for scalability + HA)
-* Add **CI/CD pipeline** for automated deploys (GitHub Actions → VPS or cluster)
-* Add **Monitoring & Observability stack** (Prometheus + Grafana + Loki)
-* Migrate secrets into **Vault or AWS Secrets Manager**
-
-But don’t rush this.
-It’s *better to have 5 real users on Docker Compose* than 0 users on Kubernetes.
-
----
-
-## 💡 Strategic Advice
-
-### 🧠 You already have your “product-market fit story.”
-
-> Enterprises stuck with SAP PI/PO or legacy EDI → need modern mapping → HelixNet automates it.
-
-That’s gold.
-This story will resonate with every integration architect or SAP consultant you show it to.
-You’re not selling code; you’re selling **time, safety, and modernization**.
-
-### 🪶 Keep it lightweight & open
-
-Offer two paths:
-
-* **SaaS (hosted by you)** — “Sign up, upload, test in minutes”
-* **Self-hosted (Docker Compose)** — “Clone, .env, up — done.”
-
-This dual model builds trust and accelerates adoption.
-
-### 💬 Communication & Landing
-
-You can use:
-
-* **GitHub Pages** or **Readme.so** for a professional landing page
-* A short **demo video** (your 90-sec pitch with a terminal run-through)
-* A **live URL**: e.g. `https://demo.helixnet.io` or `https://try.helix.localhost.run`
-
----
-
-## 🧱 The Practical To-Do (Next 7 Days)
-
-1. 🧹 Clean Docker Compose + `.env` (done! nearly)
-2. 🧩 Deploy to VPS (Traefik + Keycloak + HelixNet Core)
-3. 🧾 Add a minimal **README landing**: “What, Why, How to Try”
-4. 🔐 Set up Keycloak realms for “Demo Users” (isolated)
-5. 📈 Add a basic **audit logger** for user activity
-6. 🎥 Record 90-sec demo video (“Upload CSV → Get JSON output”)
-7. 🌐 Announce quietly on GitHub & LinkedIn (to gauge response)
-
----
-
-### Current Setup Analysis
-
-You're running a comprehensive AI development stack with:
-* **AI/ML Services**: OpenWebUI + Ollama for local LLM inference
-* **Core Platform**: Helix (FastAPI-based) with Celery for async tasks
-* **Infrastructure**: Postgres, Redis, RabbitMQ, MinIO
-* **Monitoring**: Prometheus, Grafana, Dozzle
-* **Security**: Keycloak, Vault
-* **Utilities**: MailHog, Adminer, Filebrowser
-* **Reverse Proxy**: Traefik
-
-### SWOT Analysis
-
-**Strengths:**
-✅ Full-stack development environment
-✅ Containerized and reproducible (Docker)
-✅ Built-in monitoring and logging
-✅ Security-first approach (Keycloak, Vault)
-✅ Local LLM capabilities
-✅ Asynchronous task processing
-
-**Weaknesses:**
-⚠️ Resource-intensive for a laptop
-⚠️ Complex setup with many moving parts
-⚠️ Potential port conflicts (multiple services on 8080)
-⚠️ Local-only by default
-
-**Opportunities:**
-🚀 Cloud deployment for production (DigitalOcean)
-🚀 Scalable architecture
-🚀 Potential for AI/ML application development
-🚀 Could serve as a template for enterprise applications
-
-**Threats:**
-🔒 Security exposure if improperly configured
-📈 Resource costs in production
-🔄 Maintenance complexity
-
-### Best Uses for This Setup
-
-1. **AI Application Development:**
-   * Build custom AI agents using Ollama models
-   * Create chatbots with OpenWebUI
-   * Develop RAG applications
-
-2. **Microservices Platform:**
-   * Prototype scalable applications
-   * Test distributed systems patterns
-   * Practice container orchestration
-
-3. **DevOps Practice:**
-   * CI/CD pipeline development
-   * Infrastructure as Code (IaC) testing
-   * Monitoring and logging implementation
-
-### Production Deployment Strategy (VELIX on DigitalOcean)
-
-**Recommended Architecture:**
-
-```
-[DigitalOcean Droplet]
-├── Traefik (SSL Termination, Load Balancing)
-├── Core Services:
-│   ├── Helix (FastAPI) - scaled horizontally
-│   ├── Postgres (Managed Database recommended)
-│   ├── Redis (Managed Database recommended)
-│   └── RabbitMQ
-├── AI Services:
-│   ├── Ollama (GPU-enabled instance recommended)
-│   └── OpenWebUI
-├── Monitoring:
-│   ├── Prometheus
-│   └── Grafana
-└── Security:
-    ├── Keycloak
-    └── Vault
-```
-
-**Implementation Steps:**
-
-1. **Infrastructure Setup:**
-
-   ```bash
-   # On DigitalOcean Droplet
-   sudo apt update && sudo apt upgrade -y
-   sudo apt install docker-compose -y
-   git clone https://github.com/your-repo/velix.git
-   cd velix
-   ```
-
-2. **Environment Configuration:**
-
-   ```env
-   # .env.prod
-   DEPLOY_ENV=production
-   DOMAIN=yourdomain.com
-   TRAEFIK_EMAIL=admin@yourdomain.com
-   ```
-
-3. **Docker Compose Override:**
-
-   ```yaml
-   # docker-compose.prod.yml
-   services:
-     ollama:
-       deploy:
-         resources:
-           reservations:
-             devices:
-               - driver: nvidia
-                 count: 1
-                 capabilities: [gpu]
-   ```
-
-4. **Deployment:**
-
-   ```bash
-   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-   ```
-
-### Next Steps
-
-1. **Optimize for Production:**
-   * Set up proper backups for databases
-   * Configure monitoring alerts
-   * Implement CI/CD pipelines
-   * Set up proper SSL certificates
-
-2. **Security Hardening:**
-   * Configure firewall rules
-   * Set up VPN access
-   * Regular security audits
-
-3. **Scaling:**
-   * Consider Kubernetes for orchestration
-   * Database read replicas
-   * Load balancing across multiple instances
-
-This setup is extremely powerful for developing AI-powered applications.
-A production version (VELIX) could be positioned as an enterprise AI platform or used as a foundation for custom AI solutions.
+*"Be water, my friend." — Bruce Lee*
+*"Casa è dove parcheggi." — Home is where you park it.*
