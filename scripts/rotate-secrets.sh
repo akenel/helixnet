@@ -54,11 +54,36 @@ printf "  Backup at:  %s\n" "$BACKUP_FILE"
 printf "  Started:    %s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 printf "\n  ${YELLOW}For each key: paste the new value from KeePass and press Enter.${NC}\n"
 printf "  ${YELLOW}Press Enter on an empty line to SKIP that key.${NC}\n"
-printf "  ${YELLOW}Values are hidden as you paste -- nothing is echoed.${NC}\n"
+printf "  ${YELLOW}You will see one * per character pasted; the value itself stays hidden.${NC}\n"
 printf "\n"
 
 UPDATED_COUNT=0
 SKIPPED_COUNT=0
+
+# ── helper: hidden-input read that shows a * per keystroke (progress feedback) ──
+# Result is placed in the global READ_RESULT variable (bash can't easily return strings).
+# Handles backspace (DEL/BS) for correction. Enter terminates input.
+read_with_dots() {
+    READ_RESULT=""
+    local char
+    while IFS= read -r -s -n 1 char; do
+        # Empty char == newline pressed (read -n 1 swallows the \n itself)
+        if [ -z "$char" ]; then
+            break
+        fi
+        # Backspace (DEL 0x7f or BS 0x08): erase one char + one star
+        if [ "$char" = $'\x7f' ] || [ "$char" = $'\b' ]; then
+            if [ -n "$READ_RESULT" ]; then
+                READ_RESULT="${READ_RESULT%?}"
+                printf "\b \b"
+            fi
+            continue
+        fi
+        READ_RESULT="${READ_RESULT}${char}"
+        printf "*"
+    done
+    printf "\n"
+}
 
 # ── helper: update one key in place using awk (handles special chars) ──
 update_key_value() {
@@ -87,9 +112,8 @@ rotate() {
     printf "  ${desc}\n"
     printf "  current length: %s chars\n" "$current_len"
     printf "  paste new value (Enter = skip): "
-    # -s = silent (no echo), -r = raw (don't interpret backslashes)
-    read -rs new_val
-    printf "\n"
+    read_with_dots
+    local new_val="$READ_RESULT"
 
     if [ -z "$new_val" ]; then
         printf "  ${YELLOW}skipped${NC}\n\n"
@@ -157,8 +181,8 @@ rotate_db_password() {
     printf "  current user:     %s\n" "$user"
     printf "  current pw chars: %d\n" "${#old_pass}"
     printf "  paste NEW password (Enter = skip): "
-    read -rs new_pass
-    printf "\n"
+    read_with_dots
+    local new_pass="$READ_RESULT"
 
     if [ -z "$new_pass" ]; then
         printf "  ${YELLOW}skipped${NC}\n\n"
