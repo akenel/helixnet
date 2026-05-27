@@ -30,6 +30,16 @@ elif [[ "$TARGET" == "hetzner-remote" ]]; then
     KC_URL="https://46.62.138.218"
     ENV_NAME="HETZNER (remote)"
     APP_MODE="borrowhood"
+elif [[ "$TARGET" == "prod" ]]; then
+    # Prod via the public host. Use this instead of the 'hetzner' (localhost)
+    # target -- Caddy only serves TLS for the real SNI, so https://localhost
+    # fails the handshake (curl exit 35) and aborts under set -e.
+    BASE="https://lapiazza.app"
+    KC_URL="https://lapiazza.app"
+    REALM="borrowhood"
+    CONTAINER="borrowhood"
+    ENV_NAME="PROD"
+    APP_MODE="borrowhood"
 elif [[ "$TARGET" == "staging" ]]; then
     # Staging on Hetzner -- reachable publicly; Caddy path-routes /realms/*.
     # Runs the same checks against the borrowhood-staging realm + container so
