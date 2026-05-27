@@ -16,6 +16,7 @@ set -euo pipefail
 TARGET="${1:-local}"
 REALM="borrowhood"          # Keycloak realm to mint the test token against
 CONTAINER="borrowhood"      # docker container name for the log/health section
+DEMO_LOGIN_EXPECT="200"     # /demo-login: 200 when BH_DEBUG=true, 404 when off
 if [[ "$TARGET" == "hetzner" ]]; then
     # Running ON the Hetzner server (via ssh)
     # Caddy listens on 443, routes to BorrowHood
@@ -37,6 +38,7 @@ elif [[ "$TARGET" == "staging" ]]; then
     KC_URL="https://staging.lapiazza.app"
     REALM="borrowhood-staging"
     CONTAINER="borrowhood_staging"
+    DEMO_LOGIN_EXPECT="404"   # staging runs BH_DEBUG=false -> demo-login disabled
     ENV_NAME="STAGING"
     APP_MODE="borrowhood"
 else
@@ -179,8 +181,12 @@ if [[ "$APP_MODE" == "borrowhood" ]]; then
     check_status "Members page" "$BASE/members"
     check_status "Helpboard page" "$BASE/helpboard"
     check_status "Terms page" "$BASE/terms"
-    check_status "Demo login page" "$BASE/demo-login"
-    check_status "Onboarding page" "$BASE/onboarding"
+    # Demo login is a debug-only route: 200 when BH_DEBUG=true (local, prod),
+    # 404 when debug is off (staging). Expect per-env so a healthy staging is green.
+    check_status "Demo login page" "$BASE/demo-login" "$DEMO_LOGIN_EXPECT"
+    # Onboarding is auth-gated: an anonymous visitor is redirected to /login (302)
+    # on every env. (Following the redirect would land on the login page.)
+    check_status "Onboarding page (auth redirect)" "$BASE/onboarding" "302"
 
     # Auth-required pages should redirect (307)
     check_status "Testing dashboard (auth redirect)" "$BASE/testing" "307"
@@ -222,7 +228,7 @@ if [[ "$APP_MODE" == "borrowhood" ]]; then
         fail "GET /api/v1/badges/catalog (bad response)"
     fi
 
-    USERS_BODY=$($CURL "$BASE/api/v1/users" 2>/dev/null)
+    USERS_BODY=$($CURL "$BASE/api/v1/users/" 2>/dev/null)
     if echo "$USERS_BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'items' in d or isinstance(d, list)" 2>/dev/null; then
         USER_COUNT=$(echo "$USERS_BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('total', len(d)) if isinstance(d, dict) else len(d))")
         pass "GET /api/v1/users ($USER_COUNT users)"
