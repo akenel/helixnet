@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LPCX — La Piazza Compute Exchange</title>
+
+<!-- FULL libraries only. No bundled subsets. (CLAUDE.md rule 9) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/uplot@1.6.31/dist/uPlot.min.css">
+<script src="https://unpkg.com/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','ui-monospace','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1200px 600px at 80% -10%, #14213055, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.6); border: 1px solid rgba(30,41,59,0.9); }
+  .pulse-dot { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.82)} }
+  ::-webkit-scrollbar { width:8px;height:8px } ::-webkit-scrollbar-thumb { background:#1e293b;border-radius:8px }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+</style>
+</head>
+
+<body class="font-sans text-slate-200 min-h-screen antialiased" x-data="lpcx()" x-init="boot()">
+
+<!-- top bar -->
+<header class="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center gap-4">
+    <div class="flex items-center gap-2.5">
+      <div class="w-2.5 h-2.5 rounded-full bg-brand pulse-dot"></div>
+      <div class="leading-none">
+        <div class="font-extrabold tracking-tight text-[15px]">La Piazza <span class="text-brand">Compute Exchange</span></div>
+        <div class="text-[10px] text-slate-500 font-mono mt-0.5 tracking-wider">LPCX · WORKBENCH-AND-INFERENCE MARKETPLACE</div>
+      </div>
+    </div>
+    <nav class="ml-6 hidden sm:flex items-center gap-1 bg-slate-900/70 p-1 rounded-lg border border-slate-800">
+      <template x-for="v in views" :key="v.id">
+        <button @click="view=v.id" class="px-3.5 py-1.5 rounded-md text-xs font-semibold transition"
+          :class="view===v.id ? 'bg-brand text-white shadow' : 'text-slate-400 hover:text-slate-200'" x-text="v.label"></button>
+      </template>
+    </nav>
+    <div class="ml-auto flex items-center gap-4">
+      <div class="flex items-center gap-1.5 text-xs font-mono" :class="connected ? 'text-emerald-400' : 'text-amber-400'">
+        <span class="w-2 h-2 rounded-full pulse-dot" :class="connected?'bg-emerald-400':'bg-amber-400'"></span>
+        <span x-text="connected ? 'SSE · LIVE' : 'connecting…'"></span>
+      </div>
+      <div class="text-xs font-mono text-slate-500 tabular-nums" x-text="clock"></div>
+      <template x-if="me"><span class="text-xs font-mono text-slate-300">@<span x-text="me.username"></span></span></template>
+      <template x-if="!me"><a href="/backlog/login" class="text-xs font-semibold text-brand hover:underline">Log in via LP</a></template>
+    </div>
+  </div>
+  <div class="h-px grad-rule"></div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-6">
+
+  <!-- ============================ REQUESTER ============================ -->
+  <section x-show="view==='requester'" class="space-y-5">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-bold">Requester Console</h1>
+        <p class="text-sm text-slate-500">Submit jobs to the shared brain, watch them live, kill in one click.</p>
+      </div>
+      <div class="card rounded-xl px-5 py-3 flex items-center gap-3">
+        <div class="text-[11px] uppercase tracking-wider text-slate-500">Credits</div>
+        <div class="font-mono text-2xl font-bold" x-text="credits ? credits.balance : '—'"></div>
+        <div class="text-[10px] text-slate-500 font-mono" x-show="credits" x-text="'1 cr = '+(credits?credits.credit_tokens:0)+' tok'"></div>
+      </div>
+    </div>
+
+    <div class="card rounded-xl p-5 flex flex-wrap items-center gap-3">
+      <!-- brain selector: shared (sponsored, counts against ceiling) vs BYO (your own) -->
+      <div class="flex items-center gap-1 bg-slate-900/70 p-1 rounded-lg border border-slate-800">
+        <button @click="brainMode='shared'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="brainMode==='shared'?'bg-brand text-white':'text-slate-400 hover:text-slate-200'">Shared brain</button>
+        <button @click="brainMode='byo'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="brainMode==='byo'?'bg-emerald-600 text-white':'text-slate-400 hover:text-slate-200'">BYO brain</button>
+      </div>
+      <input x-show="brainMode==='byo'" x-model="byoEndpoint" placeholder="http://my-ollama:11434" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 w-56">
+      <button @click="submit(1)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 disabled:cursor-not-allowed transition">▶ Submit pdf-render job</button>
+      <button @click="submit(10)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition">⚡ Burst ×10</button>
+      <span class="text-xs text-slate-500 font-mono" x-show="!token">log in via LP to submit · the live feed below works without login</span>
+      <span class="text-xs text-emerald-400 font-mono" x-show="brainMode==='byo'">BYO = off the shared quota, 0 shared credits</span>
+      <span class="ml-auto text-xs font-mono text-slate-500" x-text="'shared brain '+brain.active+'/'+brain.cap+' slots · '+brain.rejections+' rejected'"></span>
+    </div>
+
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-2.5 border-b border-slate-800 text-xs font-mono text-slate-400">my jobs</div>
+      <div class="divide-y divide-slate-800/70 max-h-[420px] overflow-y-auto">
+        <template x-for="j in myJobs()" :key="j.id">
+          <div class="px-4 py-3 flex items-center gap-3 text-sm">
+            <span class="font-mono text-slate-500 w-16">CJ-<span x-text="String(j.job_number).padStart(3,'0')"></span></span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide" :class="pill(j.status)" x-text="j.status"></span>
+            <div class="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden max-w-xs">
+              <div class="h-full rounded-full transition-all duration-500" :class="barColor(j.status)" :style="`width:${j.progress}%`"></div>
+            </div>
+            <span class="font-mono text-xs text-slate-400 w-24 text-right" x-text="j.tokens+' tok'"></span>
+            <span class="font-mono text-xs text-brand w-16 text-right" x-text="j.credits_burned+' cr'"></span>
+            <button @click="kill(j.id)" x-show="['running','queued'].includes(j.status)" class="text-xs px-2 py-1 rounded border border-rose-500/40 text-rose-300 hover:bg-rose-500/10">✕ kill</button>
+            <span x-show="j.reject_reason" class="text-[10px] text-rose-400 font-mono" x-text="j.reject_reason"></span>
+          </div>
+        </template>
+        <template x-if="myJobs().length===0">
+          <div class="px-4 py-8 text-center text-sm text-slate-600">no jobs yet — submit one above</div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ADMIN ============================ -->
+  <section x-show="view==='admin'" class="space-y-5" style="display:none">
+    <div>
+      <h1 class="text-xl font-bold">Square Admin</h1>
+      <p class="text-sm text-slate-500">The shared sponsored brain, live. Watch the ceiling.</p>
+    </div>
+
+    <!-- SHARED BRAIN LOAD gauge -->
+    <div class="card rounded-xl p-5 border-l-2" :class="bs().tank">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full pulse-dot" :class="bs().dot"></span>
+          <span class="font-semibold text-sm">Shared Brain · Ollama Turbo <span class="text-slate-500 font-mono text-xs">(sponsored by Angel)</span></span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-800" :class="bs().txt" x-text="bs().label"></span>
+        </div>
+        <div class="font-mono text-sm"><span class="font-bold tabular-nums" :class="bs().txt" x-text="brain.active"></span><span class="text-slate-500"> / <span x-text="brain.cap"></span> slots · <span x-text="brain.users"></span> users</span></div>
+      </div>
+      <div class="flex justify-between text-xs font-mono text-slate-400 mb-1.5"><span>quota consumed</span><span :class="bs().txt" x-text="brain.load_pct+'%'"></span></div>
+      <div class="h-4 rounded-full bg-slate-800 overflow-hidden relative">
+        <div class="h-full bg-gradient-to-r transition-all duration-500" :class="bs().bar" :style="`width:${brain.load_pct}%`"></div>
+        <div class="absolute top-0 bottom-0 w-px bg-rose-300/70" style="left:86%"></div>
+      </div>
+      <div class="flex justify-between text-[10px] font-mono text-slate-600 mt-1">
+        <span x-text="'peak '+brain.peak+' slots'"></span>
+        <span class="text-rose-400/70">↑ throttle wall</span>
+        <span x-text="'1 cr ≈ €'+brain.euro_per_credit"></span>
+      </div>
+      <div x-ref="loadChart" class="h-[120px] w-full mt-4"></div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <template x-for="m in adminTiles()" :key="m.label">
+        <div class="card rounded-xl p-5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500" x-text="m.label"></div>
+          <div class="font-mono text-3xl font-bold mt-1 tabular-nums" :class="m.cls" x-text="m.val"></div>
+          <div class="text-xs text-slate-500 mt-1" x-text="m.sub"></div>
+        </div>
+      </template>
+    </div>
+
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-2.5 border-b border-slate-800 text-xs font-mono text-slate-400">recent jobs (all users)</div>
+      <div class="divide-y divide-slate-800/70 max-h-80 overflow-y-auto">
+        <template x-for="j in jobs" :key="j.id">
+          <div class="px-4 py-2.5 flex items-center gap-3 text-sm">
+            <span class="font-mono text-slate-500 w-16">CJ-<span x-text="String(j.job_number).padStart(3,'0')"></span></span>
+            <span class="text-slate-400 w-20 truncate" x-text="j.owner"></span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide" :class="pill(j.status)" x-text="j.status"></span>
+            <div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full" :class="barColor(j.status)" :style="`width:${j.progress}%`"></div></div>
+            <span class="font-mono text-xs text-brand w-14 text-right" x-text="j.credits_burned+' cr'"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mt-10 pt-5 border-t border-slate-800 text-center text-xs text-slate-600 font-mono">
+    We host the square, not the model. · live SSE telemetry · controls = audited POST · Keycloak-scoped · credit = brain tokens ÷ <span x-text="brain.credit_tokens"></span>
+  </footer>
+</main>
+
+<script>
+function lpcx() {
+  return {
+    views: [ {id:'requester',label:'Requester'}, {id:'admin',label:'Square Admin'} ],
+    view: 'requester',
+    clock: '', connected: false,
+    token: null, me: null, credits: null,
+    brainMode: 'shared', byoEndpoint: '',
+    brain: {active:0,users:0,cap:50,load_pct:0,peak:0,rejections:0,tokens_total:0,jobs_served:0,euro_per_credit:0,credit_tokens:1000},
+    jobs: [],
+    loadHist: [], loadChartU: null,
+
+    boot() {
+      this.token = this.loadToken();
+      this.me = this.decodeUser();
+      this.tickClock(); setInterval(()=>this.tickClock(), 1000);
+      this.connect();
+      this.refreshCredits();
+      this.$nextTick(()=>this.buildChart());
+    },
+    tickClock(){ this.clock = new Date().toLocaleTimeString('en-GB'); },
+
+    loadToken() {
+      if (location.hash.includes('token=')) {
+        const t = location.hash.split('token=')[1].split('&')[0];
+        if (t) { sessionStorage.setItem('compute_token', t); history.replaceState({}, document.title, location.pathname); }
+      }
+      return sessionStorage.getItem('compute_token') || sessionStorage.getItem('backlog_token');
+    },
+    decodeUser() {
+      if (!this.token) return null;
+      try {
+        const p = JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+        if (p.exp * 1000 <= Date.now()) { this.token = null; return null; }
+        return { username: p.preferred_username || 'unknown' };
+      } catch(e) { return null; }
+    },
+
+    connect() {
+      const es = new EventSource('/api/v1/compute/stream');
+      es.onopen = () => this.connected = true;
+      es.onerror = () => this.connected = false;
+      es.onmessage = (e) => {
+        try {
+          const d = JSON.parse(e.data);
+          if (d.brain) { this.brain = d.brain; this.pushChart(d.brain.load_pct); }
+          if (d.jobs) this.jobs = d.jobs;
+        } catch(_) {}
+      };
+    },
+
+    async refreshCredits() {
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/credits', { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) this.credits = await r.json();
+      } catch(_) {}
+    },
+    async submit(n) {
+      if (!this.token) return;
+      const body = { template:'pdf-render', node:'lp-hetzner-0', brain_mode:this.brainMode };
+      if (this.brainMode==='byo' && this.byoEndpoint) body.byo_endpoint = this.byoEndpoint;
+      for (let i=0; i<n; i++) {
+        fetch('/api/v1/compute/jobs', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+          body: JSON.stringify(body),
+        }).catch(()=>{});
+      }
+      setTimeout(()=>this.refreshCredits(), 1500);
+    },
+    async kill(id) {
+      if (!this.token) return;
+      fetch(`/api/v1/compute/jobs/${id}/kill`, { method:'POST', headers:{'Authorization':'Bearer '+this.token} }).catch(()=>{});
+    },
+
+    myJobs() { return this.me ? this.jobs.filter(j => j.owner === this.me.username) : []; },
+
+    pill(s) {
+      return {
+        running:'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
+        queued:'bg-slate-500/15 text-slate-300 border border-slate-600',
+        done:'bg-sky-500/15 text-sky-300 border border-sky-500/30',
+        killed:'bg-rose-500/15 text-rose-300 border border-rose-500/30',
+        failed:'bg-rose-500/15 text-rose-300 border border-rose-500/30',
+        rejected:'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+      }[s] || 'bg-slate-700 text-slate-300';
+    },
+    barColor(s) {
+      if (s==='killed'||s==='failed'||s==='rejected') return 'bg-rose-600';
+      if (s==='done') return 'bg-sky-500';
+      return 'bg-gradient-to-r from-brand to-rose-400';
+    },
+    bs() {
+      const l = this.brain.load_pct;
+      if (l >= 86) return {bar:'from-rose-600 to-rose-400', txt:'text-rose-400', dot:'bg-rose-400', tank:'border-rose-500/50', label:'NEAR LIMIT — throttling'};
+      if (l >= 65) return {bar:'from-amber-500 to-orange-400', txt:'text-amber-400', dot:'bg-amber-400', tank:'border-amber-500/40', label:'heating up'};
+      return {bar:'from-emerald-500 to-brand', txt:'text-emerald-400', dot:'bg-emerald-400', tank:'border-slate-800', label:'healthy'};
+    },
+    adminTiles() {
+      return [
+        {label:'Brain slots', val:this.brain.active+'/'+this.brain.cap, sub:'concurrent now', cls:this.bs().txt},
+        {label:'Jobs served', val:this.brain.jobs_served, sub:'completed inferences', cls:'text-white'},
+        {label:'Rejections', val:this.brain.rejections, sub:'hit the ceiling', cls:this.brain.rejections>0?'text-rose-400':'text-slate-300'},
+        {label:'Tokens total', val:(this.brain.tokens_total/1000).toFixed(1)+'k', sub:'shared-brain work', cls:'text-brand'},
+      ];
+    },
+
+    buildChart() {
+      try {
+        this.loadHist = Array.from({length:40}, ()=>0);
+        if (!this.$refs.loadChart || !window.uPlot) return;
+        const el = this.$refs.loadChart;
+        const opts = {
+          width: el.clientWidth || 600, height: 120,
+          cursor:{show:false}, legend:{show:false}, scales:{x:{time:false}, y:{range:[0,100]}},
+          axes:[{show:false},{stroke:'#475569', grid:{stroke:'#1e293b'}, size:30}],
+          series:[ {}, { stroke:'#C0392B', width:2, fill:'#C0392B22', points:{show:false} } ],
+          padding:[8,4,2,2],
+        };
+        this.loadChartU = new uPlot(opts, [this.loadHist.map((_,i)=>i), this.loadHist.slice()], el);
+        window.addEventListener('resize', ()=>{ if(this.loadChartU) this.loadChartU.setSize({width:el.clientWidth, height:120}); });
+      } catch(e) { console.warn('uPlot init skipped', e); }
+    },
+    pushChart(v) {
+      if (!this.loadChartU) return;
+      this.loadHist.push(v); if (this.loadHist.length>40) this.loadHist.shift();
+      this.loadChartU.setData([ this.loadHist.map((_,i)=>i), this.loadHist.slice() ]);
+    },
+  };
+}
+</script>
+</body>
+</html>

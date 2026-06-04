@@ -88,9 +88,14 @@ class ComputeJobModel(Base):
         String(100), nullable=False, default="lp-hetzner-0",
         comment="Provider workbench the job ran on",
     )
+    brain_mode: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="shared", index=True,
+        comment="'shared' = sponsored brain (counts against ceiling + credits); "
+                "'byo' = bring-your-own brain (off the shared quota, free of shared credits)",
+    )
     brain_model: Mapped[str] = mapped_column(
         String(80), nullable=False, default="ollama/turbo",
-        comment="Which shared-brain model served the inference",
+        comment="Which model served the inference (shared model or BYO model name)",
     )
     reject_reason: Mapped[str | None] = mapped_column(
         String(200), nullable=True,

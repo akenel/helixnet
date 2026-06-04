@@ -62,14 +62,16 @@ _kill: set[str] = set()
 # ================================================================
 # Brain step -- one inference. Simulated by default.
 # ================================================================
-async def _brain_step(prompt: str) -> int:
-    """Return tokens consumed for one step."""
-    if LPCX_REAL_BRAIN:
+async def _brain_step(prompt: str, endpoint: str | None = None, model: str | None = None) -> int:
+    """Return tokens consumed for one step. `endpoint` set => BYO brain target."""
+    url = endpoint or OLLAMA_URL
+    mdl = model or OLLAMA_MODEL
+    if LPCX_REAL_BRAIN or endpoint:
         import httpx
         async with httpx.AsyncClient(timeout=60.0) as client:
             r = await client.post(
-                f"{OLLAMA_URL}/api/generate",
-                json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
+                f"{url}/api/generate",
+                json={"model": mdl, "prompt": prompt, "stream": False},
             )
             r.raise_for_status()
             d = r.json()
@@ -82,17 +84,24 @@ async def _brain_step(prompt: str) -> int:
 # ================================================================
 # Background job runner
 # ================================================================
-async def run_job(job_id: UUID, owner: str, job_number: int, node: str) -> None:
-    admitted, reason = await brain_guard.admit(owner)
-    if not admitted:
-        async with AsyncSessionLocal() as db:
-            job = await db.get(ComputeJobModel, job_id)
-            if job:
-                job.status = ComputeJobStatus.REJECTED
-                job.reject_reason = reason
-                await db.commit()
-        logger.info(f"CJ-{job_number:03d} rejected: {reason}")
-        return
+async def run_job(
+    job_id: UUID, owner: str, job_number: int, node: str,
+    brain_mode: str = "shared", byo_endpoint: str | None = None, byo_model: str | None = None,
+) -> None:
+    byo = brain_mode == "byo"
+    # BYO brain bypasses the shared ceiling entirely -- it's the escape valve when
+    # the sponsored brain is full. Shared jobs must pass admission.
+    if not byo:
+        admitted, reason = await brain_guard.admit(owner)
+        if not admitted:
+            async with AsyncSessionLocal() as db:
+                job = await db.get(ComputeJobModel, job_id)
+                if job:
+                    job.status = ComputeJobStatus.REJECTED
+                    job.reject_reason = reason
+                    await db.commit()
+            logger.info(f"CJ-{job_number:03d} rejected: {reason}")
+            return
 
     try:
         async with AsyncSessionLocal() as db:
@@ -111,25 +120,38 @@ async def run_job(job_id: UUID, owner: str, job_number: int, node: str) -> None:
                     await db.commit()
                     logger.info(f"CJ-{job_number:03d} killed at {job.progress}%")
                     return
-                toks = await _brain_step(f"{node}:{job_number}:step{step}")
+                toks = await _brain_step(
+                    f"{node}:{job_number}:step{step}",
+                    endpoint=byo_endpoint if byo else None,
+                    model=byo_model if byo else None,
+                )
                 total_tokens += toks
-                await brain_guard.record_use(toks)
+                if not byo:
+                    await brain_guard.record_use(toks)   # only shared brain quota
                 job.tokens = total_tokens
                 job.progress = min(100, round(step / steps * 100))
-                job.credits_burned = credits_for_tokens(total_tokens)
+                # BYO runs on your own dime -> no shared credits burned
+                job.credits_burned = 0 if byo else credits_for_tokens(total_tokens)
                 await db.commit()
 
-            # settle: debit requester, credit the provider node
             job.progress = 100
             job.status = ComputeJobStatus.DONE
-            credits = credits_for_tokens(total_tokens)
-            note = verifiable_note(job_number, total_tokens, credits)
-            await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
-                              job_id=job_id, counterparty=node, note=note)
-            await post_ledger(db, node, ComputeLedgerKind.EARN, credits,
-                              job_id=job_id, counterparty=owner, note=note)
-            await db.commit()
-            logger.info(f"CJ-{job_number:03d} done: {total_tokens} tok -> {credits} cr")
+            if byo:
+                await post_ledger(db, owner, ComputeLedgerKind.SPEND, 0,
+                                  job_id=job_id, counterparty="byo",
+                                  note=f"CJ-{job_number:03d} · {total_tokens} tok on BYO brain (off shared quota)")
+                await db.commit()
+                logger.info(f"CJ-{job_number:03d} done (BYO): {total_tokens} tok, 0 shared cr")
+            else:
+                # settle: debit requester, credit the provider node
+                credits = credits_for_tokens(total_tokens)
+                note = verifiable_note(job_number, total_tokens, credits)
+                await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
+                                  job_id=job_id, counterparty=node, note=note)
+                await post_ledger(db, node, ComputeLedgerKind.EARN, credits,
+                                  job_id=job_id, counterparty=owner, note=note)
+                await db.commit()
+                logger.info(f"CJ-{job_number:03d} done: {total_tokens} tok -> {credits} cr")
     except Exception as e:  # noqa: BLE001
         logger.exception(f"CJ-{job_number:03d} failed")
         async with AsyncSessionLocal() as db:
@@ -139,7 +161,8 @@ async def run_job(job_id: UUID, owner: str, job_number: int, node: str) -> None:
                 job.reject_reason = str(e)[:200]
                 await db.commit()
     finally:
-        await brain_guard.release(owner)
+        if not byo:
+            await brain_guard.release(owner)
         _kill.discard(str(job_id))
 
 
@@ -204,14 +227,18 @@ async def submit_job(
         select(func.coalesce(func.max(ComputeJobModel.job_number), 0))
     )).scalar() + 1
 
+    byo = payload.brain_mode == "byo"
     job = ComputeJobModel(
         job_number=next_num,
         template=payload.template,
         node=payload.node,
         owner=owner,
         status=ComputeJobStatus.QUEUED,
+        brain_mode=payload.brain_mode,
+        brain_model=(payload.byo_model or "byo") if byo else "ollama/turbo",
     )
-    if balance <= 0:
+    # Shared brain needs credits; BYO is on your own dime (no shared-credit gate).
+    if not byo and balance <= 0:
         job.status = ComputeJobStatus.REJECTED
         job.reject_reason = "no credits"
     db.add(job)
@@ -219,7 +246,11 @@ async def submit_job(
     await db.refresh(job)
 
     if job.status != ComputeJobStatus.REJECTED:
-        asyncio.create_task(run_job(job.id, owner, job.job_number, job.node))
+        asyncio.create_task(run_job(
+            job.id, owner, job.job_number, job.node,
+            brain_mode=payload.brain_mode,
+            byo_endpoint=payload.byo_endpoint, byo_model=payload.byo_model,
+        ))
 
     return ComputeJobRead.model_validate(job)
 

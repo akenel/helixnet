@@ -2,6 +2,7 @@
 # Purpose: LPCX request/response shapes.
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -10,6 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field
 class ComputeJobCreate(BaseModel):
     template: str = Field(default="pdf-render", max_length=80)
     node: str = Field(default="lp-hetzner-0", max_length=100)
+    brain_mode: Literal["shared", "byo"] = "shared"
+    byo_endpoint: str | None = Field(default=None, max_length=300)
+    byo_model: str | None = Field(default=None, max_length=80)
 
 
 class ComputeJobRead(BaseModel):
@@ -24,6 +28,7 @@ class ComputeJobRead(BaseModel):
     credits_burned: int
     owner: str
     node: str
+    brain_mode: str
     brain_model: str
     reject_reason: str | None = None
     created_at: datetime
