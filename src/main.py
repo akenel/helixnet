@@ -50,6 +50,8 @@ from src.routes.qa_router import router as qa_router, html_router as qa_html_rou
 from src.services.qa_seeding_service import seed_qa_checklist
 from src.routes.backlog_router import router as backlog_router, html_router as backlog_html_router
 from src.services.backlog_seeding_service import seed_backlog_data
+from src.routes.compute_router import router as compute_router, html_router as compute_html_router
+from src.services.compute_seeding_service import seed_compute_data
 
 # ================================================================
 # 🌍 Global Configuration
@@ -196,6 +198,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Backlog seeding encountered an issue: {e}", exc_info=True)
 
+    # --- Seed LPCX compute starter grants ---
+    try:
+        logger.info("Seeding LPCX compute starter grants...")
+        async with get_db_session_context() as db:
+            await seed_compute_data(db)
+        logger.info("LPCX compute seeding completed.")
+    except Exception as e:
+        logger.warning(f"LPCX compute seeding encountered an issue: {e}", exc_info=True)
+
     # --- Keycloak Realm Health Check ---
     try:
         realm_status = await check_keycloak_realms()
@@ -283,6 +294,8 @@ app.include_router(qa_router, tags=["QA Testing Dashboard"])
 app.include_router(qa_html_router, tags=["QA Testing Dashboard - Web UI"])
 app.include_router(backlog_router, tags=["Backlog - Unified Board"])
 app.include_router(backlog_html_router, tags=["Backlog - Web UI"])
+app.include_router(compute_router, tags=["Compute - LPCX"])
+app.include_router(compute_html_router, tags=["Compute - Web UI"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")
 logger.info(f"🔗 API base path: {settings.API_V1_STR}")

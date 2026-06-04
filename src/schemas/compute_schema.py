@@ -1,0 +1,56 @@
+# File: src/schemas/compute_schema.py
+# Purpose: LPCX request/response shapes.
+
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class ComputeJobCreate(BaseModel):
+    template: str = Field(default="pdf-render", max_length=80)
+    node: str = Field(default="lp-hetzner-0", max_length=100)
+
+
+class ComputeJobRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    job_number: int
+    template: str
+    status: str
+    progress: int
+    tokens: int
+    credits_burned: int
+    owner: str
+    node: str
+    brain_model: str
+    reject_reason: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class CreditBalance(BaseModel):
+    account: str
+    balance: int
+    credit_tokens: int          # 1 credit = this many tokens
+    euro_per_credit: float      # shadow price (reporting only)
+
+
+class BrainLoad(BaseModel):
+    active: int                 # in-flight inference slots
+    users: int                  # distinct users on the brain now
+    cap: int                    # the ceiling
+    load_pct: int
+    peak: int
+    tokens_total: int
+    jobs_served: int
+    rejections: int
+    euro_per_credit: float
+    credit_tokens: int
+
+
+class ComputeSummary(BaseModel):
+    total_jobs: int
+    by_status: dict[str, int]
+    brain: BrainLoad

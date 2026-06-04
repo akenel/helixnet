@@ -49,35 +49,37 @@ def euro_per_credit() -> float:
 # For local beta + the stress test, in-process is exactly what we want to watch.
 # ================================================================
 class BrainGuard:
+    """Models the shared sponsored brain. The ceiling is CONCURRENT INFERENCE SLOTS
+    (LPCX_BRAIN_CAP): the flat-rate brain can only serve so many at once before the
+    sponsor's quota throttles. At the ceiling, admission is REFUSED -- the wall."""
+
     def __init__(self, cap: int):
         self.cap = cap
-        self._active: dict[str, int] = {}   # account -> in-flight job count
+        self._active_slots = 0              # in-flight inference slots
+        self._users: dict[str, int] = {}    # account -> in-flight jobs (for display)
         self._tokens_total = 0
         self._jobs_served = 0
         self._rejections = 0
-        self._peak_users = 0
+        self._peak_slots = 0
         self._lock = asyncio.Lock()
 
     async def admit(self, account: str) -> tuple[bool, str]:
-        """Try to put `account` on the shared brain. Distinct concurrent users is
-        what the ceiling counts -- a user already on the brain may queue more work."""
         async with self._lock:
-            if account in self._active:
-                self._active[account] += 1
-                return True, "ok"
-            if len(self._active) >= self.cap:
+            if self._active_slots >= self.cap:
                 self._rejections += 1
-                return False, f"shared brain at ceiling ({self.cap} concurrent users)"
-            self._active[account] = 1
-            self._peak_users = max(self._peak_users, len(self._active))
+                return False, f"shared brain at ceiling ({self.cap} concurrent slots)"
+            self._active_slots += 1
+            self._users[account] = self._users.get(account, 0) + 1
+            self._peak_slots = max(self._peak_slots, self._active_slots)
             return True, "ok"
 
     async def release(self, account: str) -> None:
         async with self._lock:
-            if account in self._active:
-                self._active[account] -= 1
-                if self._active[account] <= 0:
-                    del self._active[account]
+            self._active_slots = max(0, self._active_slots - 1)
+            if account in self._users:
+                self._users[account] -= 1
+                if self._users[account] <= 0:
+                    del self._users[account]
 
     async def record_use(self, tokens: int) -> None:
         async with self._lock:
@@ -85,12 +87,12 @@ class BrainGuard:
             self._jobs_served += 1
 
     def load(self) -> dict:
-        users = len(self._active)
         return {
-            "users": users,
+            "active": self._active_slots,
+            "users": len(self._users),
             "cap": self.cap,
-            "load_pct": round(min(100, users / self.cap * 100)) if self.cap else 0,
-            "peak_users": self._peak_users,
+            "load_pct": round(min(100, self._active_slots / self.cap * 100)) if self.cap else 0,
+            "peak": self._peak_slots,
             "tokens_total": self._tokens_total,
             "jobs_served": self._jobs_served,
             "rejections": self._rejections,
