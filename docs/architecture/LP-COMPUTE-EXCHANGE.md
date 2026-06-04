@@ -273,7 +273,10 @@ building the whole market.
    one template: `pdf-render` (Puppeteer postcard, the thing we already do).
 3. Requester flow: log in → see balance → "run pdf-render job" → job runs in an
    ephemeral container → ledger debits → review prompt.
-4. Brain = our existing Ollama/Claude key. No change.
+4. **Brain = Angel's sponsored Ollama Turbo key** (flat ~$30/mo, several models to
+   pick from — NOT a metered frontier API). **Free to beta users.** Because it's
+   flat-rate, no per-token euro bleed: credits during beta **ration the shared
+   brain fairly**, they don't pass through a cost.
 5. **Thin live dashboard:** one SSE feed pushing job status + progress + credits;
    one Alpine console tile (full CDN Tailwind/Alpine, uPlot sparkline) with a
    working **[kill]** POST. Proves the real-time loop end to end on one job.
@@ -303,8 +306,21 @@ building the whole market.
 - **Abuse:** what stops someone renting muscle to mine crypto / do something
   illegal? → template allowlist + reputation + the throwaway VM has no persistent
   outbound by default.
-- **Brain billing passthrough:** if Johnny uses our Claude key, his token cost is
-  real euros to us → credits must price that in, or require BYO-key for paid Brains.
+- **Brain billing passthrough:** ~~if Johnny uses our Claude key, his token cost is
+  real euros to us → credits must price that in~~ **RESOLVED for beta:** Angel
+  sponsors a **flat-rate Ollama Turbo key** as a free shared brain. Flat $30/mo, no
+  per-token bleed, several models. So credits don't pass through euros — they just
+  **ration the shared brain fairly** so one heavy user can't burn the whole quota.
+  Paid/BYO-key frontier Brains are a *later* tier, not beta.
+- **The sponsored-brain ceiling (the real beta limit):** Angel carries the brain
+  **for the first ~50 users, or until the Turbo quota starts rate-limiting/failing**
+  — whichever comes first. That ceiling is the beta's natural stopping line. When we
+  hit it, the next move is: (a) tighter SOP contexts to fit more users under the cap,
+  (b) a second sponsored key, or (c) flip on BYO-key / paid tier. Watch the Turbo
+  usage; the dashboard should surface "shared brain load" so we see the wall coming.
+- **Ollama Turbo ToS:** confirm sharing one key across many users is within the
+  subscription terms before announcing publicly. Low risk for a private ~50-user
+  beta; needs a real answer before scale.
 
 ---
 

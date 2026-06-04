@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LPCX — Live Operator Console (Mockup)</title>
+
+<!-- FULL libraries only. No bundled subsets. (CLAUDE.md rule 9) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/uplot@1.6.31/dist/uPlot.min.css">
+<script src="https://unpkg.com/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          brand: '#C0392B',      // HelixNet red
+          branddark: '#8B0000',  // accent rule
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  body { background: radial-gradient(1200px 600px at 80% -10%, #14213055, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.6); border: 1px solid rgba(30,41,59,0.9); }
+  .pulse-dot { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1);} 50% { opacity:.35; transform:scale(.82);} }
+  .ticker { transition: color .25s ease; }
+  .flash { color:#fff !important; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#1e293b; border-radius:8px; }
+  .uplot, .u-wrap { width:100% !important; }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent); }
+</style>
+</head>
+
+<body class="font-sans text-slate-200 min-h-screen antialiased" x-data="lpcx()" x-init="boot()">
+
+<!-- honesty banner -->
+<div class="bg-amber-500/10 border-b border-amber-500/30 text-amber-300 text-xs font-mono text-center py-1.5 tracking-wide">
+  ◢ SIMULATED FEED — static mockup, fake SSE stream. No backend. Design preview only. ◣
+</div>
+
+<!-- top bar -->
+<header class="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center gap-4">
+    <div class="flex items-center gap-2.5">
+      <div class="w-2.5 h-2.5 rounded-full bg-brand pulse-dot"></div>
+      <div class="leading-none">
+        <div class="font-extrabold tracking-tight text-[15px]">La Piazza <span class="text-brand">Compute Exchange</span></div>
+        <div class="text-[10px] text-slate-500 font-mono mt-0.5 tracking-wider">LPCX · WORKBENCH-AND-INFERENCE MARKETPLACE</div>
+      </div>
+    </div>
+
+    <!-- view switcher -->
+    <nav class="ml-6 hidden sm:flex items-center gap-1 bg-slate-900/70 p-1 rounded-lg border border-slate-800">
+      <template x-for="v in views" :key="v.id">
+        <button @click="view=v.id"
+          class="px-3.5 py-1.5 rounded-md text-xs font-semibold transition"
+          :class="view===v.id ? 'bg-brand text-white shadow' : 'text-slate-400 hover:text-slate-200'"
+          x-text="v.label"></button>
+      </template>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-4">
+      <div class="flex items-center gap-1.5 text-xs font-mono"
+           :class="connected ? 'text-emerald-400' : 'text-rose-400'">
+        <span class="w-2 h-2 rounded-full pulse-dot" :class="connected?'bg-emerald-400':'bg-rose-400'"></span>
+        <span x-text="connected ? 'SSE · LIVE' : 'RECONNECTING'"></span>
+      </div>
+      <div class="text-xs font-mono text-slate-500 tabular-nums" x-text="clock"></div>
+    </div>
+  </div>
+  <div class="h-px grad-rule"></div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-6">
+
+  <!-- ============================ REQUESTER ============================ -->
+  <section x-show="view==='requester'" class="space-y-5">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-bold">Requester Console</h1>
+        <p class="text-sm text-slate-500">Johnny · watch your job, control it in real time.</p>
+      </div>
+      <div class="card rounded-xl px-5 py-3 flex items-center gap-3">
+        <div class="text-[11px] uppercase tracking-wider text-slate-500">Credit balance</div>
+        <div class="font-mono text-2xl font-bold ticker" :class="creditFlash&&'flash'"
+             x-text="credits.toFixed(0)"></div>
+        <div class="text-xs text-rose-400 font-mono" x-show="job.status==='running'">▼ live</div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5">
+      <!-- the job -->
+      <div class="card rounded-xl p-5 lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-sm font-semibold">job · <span x-text="job.name"></span></span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide"
+                  :class="pill(job.status)" x-text="job.status"></span>
+          </div>
+          <div class="text-xs text-slate-500 font-mono">id 7f3a-c91</div>
+        </div>
+
+        <!-- progress -->
+        <div class="mb-1.5 flex justify-between text-xs font-mono text-slate-400">
+          <span>progress</span><span x-text="job.progress.toFixed(0)+'%'"></span>
+        </div>
+        <div class="h-3 rounded-full bg-slate-800 overflow-hidden mb-5">
+          <div class="h-full rounded-full transition-all duration-500"
+               :class="job.status==='killed' ? 'bg-rose-600' : job.status==='paused' ? 'bg-amber-500' : 'bg-gradient-to-r from-brand to-rose-400'"
+               :style="`width:${job.progress}%`"></div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <div class="bg-slate-900/60 rounded-lg p-3 border border-slate-800">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500">Tokens</div>
+            <div class="font-mono text-lg font-bold tabular-nums" x-text="job.tokens.toLocaleString()"></div>
+          </div>
+          <div class="bg-slate-900/60 rounded-lg p-3 border border-slate-800">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500">Credits burned</div>
+            <div class="font-mono text-lg font-bold tabular-nums text-brand" x-text="job.creditsBurned.toFixed(0)"></div>
+          </div>
+          <div class="bg-slate-900/60 rounded-lg p-3 border border-slate-800">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500">Brain</div>
+            <div class="font-mono text-sm font-bold mt-1">Ollama · turbo</div>
+          </div>
+        </div>
+
+        <!-- controls -->
+        <div class="flex gap-3">
+          <button @click="pauseJob()" :disabled="job.status!=='running'"
+            class="flex-1 py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition">
+            ⏸ Pause
+          </button>
+          <button @click="resumeJob()" x-show="job.status==='paused'"
+            class="flex-1 py-2.5 rounded-lg font-semibold text-sm border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 transition">
+            ▶ Resume
+          </button>
+          <button @click="killJob()" :disabled="job.status==='killed'||job.status==='done'"
+            class="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 disabled:cursor-not-allowed transition">
+            ✕ Kill job
+          </button>
+        </div>
+      </div>
+
+      <!-- live log -->
+      <div class="card rounded-xl p-0 overflow-hidden flex flex-col">
+        <div class="px-4 py-2.5 border-b border-slate-800 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+          <span class="text-xs font-mono text-slate-400">~ live log stream</span>
+        </div>
+        <div class="flex-1 p-3 font-mono text-[11px] leading-relaxed overflow-y-auto max-h-72 space-y-0.5" id="logbox">
+          <template x-for="(line,i) in log" :key="i">
+            <div class="flex gap-2">
+              <span class="text-slate-600 shrink-0" x-text="line.t"></span>
+              <span :class="line.c" x-text="line.m"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PROVIDER ============================ -->
+  <section x-show="view==='provider'" class="space-y-5" style="display:none">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-bold">Provider Console</h1>
+        <p class="text-sm text-slate-500">Frank · your idle GPU, earning while you sleep.</p>
+      </div>
+      <div class="card rounded-xl px-5 py-3 flex items-center gap-5">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Earned today</div>
+          <div class="font-mono text-2xl font-bold text-brand tabular-nums ticker" :class="earnFlash&&'flash'"
+               x-text="node.earnedToday.toFixed(0)"></div>
+        </div>
+        <div class="h-10 w-px bg-slate-800"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full pulse-dot" :class="nodePill().dot"></span>
+          <span class="font-bold text-sm uppercase tracking-wide" :class="nodePill().text" x-text="node.status"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5">
+      <!-- gpu telemetry -->
+      <div class="card rounded-xl p-5 lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-mono text-sm font-semibold">node · rtx-4090 · frank-bonagia</span>
+          <span class="text-xs font-mono" :class="node.temp>75?'text-rose-400':'text-slate-400'"
+                x-text="node.temp.toFixed(0)+'°C'"></span>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <div class="flex justify-between text-xs font-mono text-slate-400 mb-1.5">
+              <span>GPU utilization</span><span x-text="node.gpu.toFixed(0)+'%'"></span>
+            </div>
+            <div class="h-2.5 rounded-full bg-slate-800 overflow-hidden mb-4">
+              <div class="h-full bg-gradient-to-r from-emerald-500 to-brand transition-all duration-700" :style="`width:${node.gpu}%`"></div>
+            </div>
+            <div class="flex justify-between text-xs font-mono text-slate-400 mb-1.5">
+              <span>VRAM</span><span x-text="node.vramUsed.toFixed(1)+' / '+node.vramTotal+' GB'"></span>
+            </div>
+            <div class="h-2.5 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-700" :style="`width:${(node.vramUsed/node.vramTotal*100)}%`"></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs font-mono text-slate-400 mb-1.5">utilization · last 60s</div>
+            <div x-ref="gpuChart" class="h-[88px] w-full"></div>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center justify-between bg-slate-900/60 rounded-lg p-3 border border-slate-800">
+          <div class="text-sm">Renting to <span class="font-semibold text-white" x-text="node.renter"></span>
+            <span class="text-slate-500 font-mono text-xs">· pdf-render</span></div>
+          <div class="font-mono text-brand font-bold ticker" :class="earnFlash&&'flash'">+<span x-text="node.earned.toFixed(0)"></span> cr ▲</div>
+        </div>
+      </div>
+
+      <!-- provider controls -->
+      <div class="card rounded-xl p-5 flex flex-col gap-3">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-1">Node controls</div>
+        <button @click="drain()" :disabled="node.status!=='online'"
+          class="w-full py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition text-left px-4">
+          ⏷ Drain <span class="text-xs font-normal text-slate-500 block">finish current, accept no new</span>
+        </button>
+        <button @click="toggleOnline()"
+          class="w-full py-2.5 rounded-lg font-semibold text-sm border transition text-left px-4"
+          :class="node.status==='offline' ? 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10' : 'border-rose-500/40 text-rose-300 hover:bg-rose-500/10'"
+          x-text="node.status==='offline' ? '⏼ Go online' : '⏼ Go offline'"></button>
+        <button class="w-full py-2.5 rounded-lg font-semibold text-sm border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-left px-4">
+          € Set price <span class="text-xs font-normal text-slate-500 block">currently 0.8 cr / GPU-min</span>
+        </button>
+        <button class="w-full py-2.5 rounded-lg font-semibold text-sm border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-left px-4">
+          ▦ Templates <span class="text-xs font-normal text-slate-500 block">3 allowed · pdf-render, sd-xl, blender</span>
+        </button>
+        <div class="mt-auto pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
+          <span>reputation</span>
+          <span class="text-amber-400">★ 4.9 · 212 jobs</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ADMIN ============================ -->
+  <section x-show="view==='admin'" class="space-y-5" style="display:none">
+    <div>
+      <h1 class="text-xl font-bold">Square Admin</h1>
+      <p class="text-sm text-slate-500">The whole marketplace, one pane of glass.</p>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <template x-for="m in adminTiles()" :key="m.label">
+        <div class="card rounded-xl p-5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500" x-text="m.label"></div>
+          <div class="font-mono text-3xl font-bold mt-1 tabular-nums" :class="m.cls" x-text="m.val"></div>
+          <div class="text-xs text-slate-500 mt-1" x-text="m.sub"></div>
+        </div>
+      </template>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5">
+      <div class="card rounded-xl p-5 lg:col-span-2">
+        <div class="flex justify-between text-xs font-mono text-slate-400 mb-3">
+          <span>credit throughput · cr/min</span>
+          <span class="text-brand" x-text="admin.throughput.toFixed(0)+' cr/min'"></span>
+        </div>
+        <div x-ref="adminChart" class="h-[180px] w-full"></div>
+      </div>
+      <div class="card rounded-xl p-5">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">Node trust map</div>
+        <div class="space-y-2.5 font-mono text-xs">
+          <template x-for="n in nodes" :key="n.id">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full" :class="n.up?'bg-emerald-400':'bg-slate-600'"></span>
+              <span class="text-slate-300 w-28 truncate" x-text="n.id"></span>
+              <div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-emerald-500 to-brand" :style="`width:${n.load}%`"></div>
+              </div>
+              <span class="text-amber-400 w-8 text-right" x-text="'★'+n.rep"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mt-10 pt-5 border-t border-slate-800 text-center text-xs text-slate-600 font-mono">
+    We host the square, not the model. · SSE telemetry (read-only) · controls = audited POST · Keycloak-scoped
+  </footer>
+</main>
+
+<script>
+function lpcx() {
+  return {
+    views: [
+      { id:'requester', label:'Requester' },
+      { id:'provider',  label:'Provider' },
+      { id:'admin',     label:'Square Admin' },
+    ],
+    view: 'requester',
+    clock: '',
+    connected: true,
+    creditFlash:false, earnFlash:false,
+
+    // requester
+    credits: 312,
+    job: { name:'pdf-render', status:'running', progress:74, tokens:1840, creditsBurned:38 },
+    log: [
+      {t:'12:04:01', m:'cert accepted · vm spun from template pdf-render', c:'text-slate-400'},
+      {t:'12:04:02', m:'brain attached · ollama/turbo', c:'text-sky-400'},
+      {t:'12:04:09', m:'rendering page 1/2...', c:'text-slate-300'},
+    ],
+
+    // provider
+    node: { status:'online', temp:47, gpu:71, vramUsed:6.2, vramTotal:8, renter:'Johnny', earned:38, earnedToday:214 },
+    gpuHist: [],
+
+    // admin
+    admin: { nodesOnline:18, jobsInFlight:7, ledgerToday:4820, disputes:0, throughput:62 },
+    earnHist: [],
+    nodes: [
+      {id:'frank-bonagia',  up:true,  load:71, rep:'4.9'},
+      {id:'nino-trapani',   up:true,  load:44, rep:'4.8'},
+      {id:'kevin-baglio',   up:true,  load:88, rep:'5.0'},
+      {id:'paulo-maltese',  up:true,  load:19, rep:'4.6'},
+      {id:'sebastino-cs',   up:false, load:0,  rep:'4.7'},
+    ],
+
+    gpuChartU:null, adminChartU:null,
+
+    boot() {
+      this.tickClock();
+      setInterval(()=>this.tickClock(), 1000);
+      setInterval(()=>this.tick(), 1500);
+      // build sparklines once Alpine has painted refs
+      this.$nextTick(()=>this.buildCharts());
+    },
+
+    tickClock() {
+      const d = new Date();
+      this.clock = d.toLocaleTimeString('en-GB');
+    },
+
+    pill(s) {
+      return {
+        running:'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
+        paused: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+        killed: 'bg-rose-500/15 text-rose-300 border border-rose-500/30',
+        done:   'bg-sky-500/15 text-sky-300 border border-sky-500/30',
+        queued: 'bg-slate-500/15 text-slate-300 border border-slate-600',
+      }[s] || 'bg-slate-700 text-slate-300';
+    },
+    nodePill() {
+      return {
+        online:  {dot:'bg-emerald-400', text:'text-emerald-400'},
+        draining:{dot:'bg-amber-400',   text:'text-amber-400'},
+        offline: {dot:'bg-slate-500',   text:'text-slate-500'},
+      }[this.node.status];
+    },
+
+    jitter(v, amt, lo, hi) {
+      let n = v + (Math.random()-0.5)*amt;
+      return Math.max(lo, Math.min(hi, n));
+    },
+    flashVal(key) { this[key]=true; setTimeout(()=>this[key]=false, 250); },
+
+    tick() {
+      // --- requester job ---
+      if (this.job.status === 'running') {
+        this.job.progress = Math.min(100, this.job.progress + Math.random()*4);
+        const dt = Math.floor(Math.random()*120)+40;
+        this.job.tokens += dt;
+        const dc = +(dt/60).toFixed(0);
+        this.job.creditsBurned += dc;
+        this.credits = Math.max(0, this.credits - dc);
+        this.flashVal('creditFlash');
+        this.pushLog((['rendering page 2/2...','embedding fonts','rasterizing 300dpi','wax-seal layer','flattening pdf'])[Math.floor(Math.random()*5)], 'text-slate-300');
+        if (this.job.progress >= 100) {
+          this.job.status = 'done'; this.job.progress = 100;
+          this.pushLog('job complete · pdf written · vm wiped', 'text-emerald-400');
+        }
+      }
+
+      // --- provider node ---
+      if (this.node.status === 'online') {
+        this.node.gpu = this.jitter(this.node.gpu, 14, 35, 99);
+        this.node.temp = this.jitter(this.node.temp, 3, 42, 78);
+        this.node.vramUsed = +this.jitter(this.node.vramUsed, 0.4, 3.5, 7.8).toFixed(1);
+        const e = Math.floor(Math.random()*3)+1;
+        this.node.earned += e; this.node.earnedToday += e;
+        this.flashVal('earnFlash');
+      } else if (this.node.status === 'draining') {
+        this.node.gpu = Math.max(0, this.node.gpu - 8);
+        if (this.node.gpu <= 1) { this.node.status='offline'; this.node.gpu=0; this.node.vramUsed=0.2; }
+      } else { this.node.gpu = 0; }
+      this.pushSpark(this.gpuChartU, this.gpuHist, this.node.gpu);
+
+      // --- admin ---
+      this.admin.throughput = this.jitter(this.admin.throughput, 18, 20, 140);
+      this.admin.ledgerToday += Math.floor(Math.random()*30);
+      this.admin.jobsInFlight = Math.max(1, Math.round(this.jitter(this.admin.jobsInFlight, 2, 2, 14)));
+      this.pushSpark(this.adminChartU, this.earnHist, this.admin.throughput);
+    },
+
+    pushLog(m, c) {
+      const t = new Date().toLocaleTimeString('en-GB');
+      this.log.push({t, m, c});
+      if (this.log.length > 40) this.log.shift();
+      this.$nextTick(()=>{ const b=document.getElementById('logbox'); if(b) b.scrollTop=b.scrollHeight; });
+    },
+
+    // controls
+    pauseJob()  { if(this.job.status==='running'){ this.job.status='paused'; this.pushLog('⏸ paused by requester','text-amber-400'); } },
+    resumeJob() { if(this.job.status==='paused'){ this.job.status='running'; this.pushLog('▶ resumed','text-emerald-400'); } },
+    killJob()   { if(['running','paused'].includes(this.job.status)){ this.job.status='killed'; this.pushLog('✕ KILL · POST /compute/jobs/7f3a/kill · vm destroyed','text-rose-400'); } },
+    drain()      { if(this.node.status==='online'){ this.node.status='draining'; } },
+    toggleOnline(){ this.node.status = this.node.status==='offline' ? 'online' : 'offline'; if(this.node.status==='online'){ this.node.gpu=55; this.node.vramUsed=4.0; } },
+
+    adminTiles() {
+      return [
+        {label:'Nodes online', val:this.admin.nodesOnline, sub:'+3 this hour', cls:'text-emerald-400'},
+        {label:'Jobs in flight', val:this.admin.jobsInFlight, sub:'across the square', cls:'text-white'},
+        {label:'Ledger today', val:this.admin.ledgerToday.toLocaleString()+' cr', sub:'credits settled', cls:'text-brand'},
+        {label:'Disputes', val:this.admin.disputes, sub:'all clear', cls:'text-slate-300'},
+      ];
+    },
+
+    // ---- uPlot sparklines (full lib, fail-safe) ----
+    buildCharts() {
+      try {
+        const seed = Array.from({length:40}, (_,i)=> 50 + Math.sin(i/4)*20);
+        this.gpuHist = seed.slice();
+        this.earnHist = seed.map(v=>v+10);
+        this.gpuChartU   = this.mkSpark(this.$refs.gpuChart,   this.gpuHist,  '#C0392B', 88);
+        this.adminChartU = this.mkSpark(this.$refs.adminChart, this.earnHist, '#34d399', 180);
+        window.addEventListener('resize', ()=>{
+          if(this.gpuChartU)   this.gpuChartU.setSize({width:this.$refs.gpuChart.clientWidth,   height:88});
+          if(this.adminChartU) this.adminChartU.setSize({width:this.$refs.adminChart.clientWidth,height:180});
+        });
+      } catch(e) { console.warn('uPlot init skipped:', e); }
+    },
+    mkSpark(el, data, color, h) {
+      if(!el || !window.uPlot) return null;
+      const xs = data.map((_,i)=>i);
+      const opts = {
+        width: el.clientWidth || 320, height: h,
+        cursor:{show:false}, legend:{show:false},
+        scales:{x:{time:false}},
+        axes:[{show:false},{show:false}],
+        series:[ {}, { stroke:color, width:2, fill:color+'22', points:{show:false} } ],
+        padding:[8,2,2,2],
+      };
+      return new uPlot(opts, [xs, data.slice()], el);
+    },
+    pushSpark(u, hist, val) {
+      if(!u) return;
+      hist.push(val); if(hist.length>40) hist.shift();
+      u.setData([ hist.map((_,i)=>i), hist.slice() ]);
+    },
+  };
+}
+</script>
+</body>
+</html>
