@@ -156,7 +156,78 @@ the square keeps on the stranger.
 
 ---
 
-## 5. THE "SIMPLE RULE" INVARIANTS (binary defaults that kill the cons)
+## 5. THE DASHBOARD — REAL-TIME MONITOR & CONTROL
+
+A marketplace you can't see into earns no trust, and trust is the product. So
+every actor gets a **live operator console**: watch it happen, and hit a button
+to change it — in real time.
+
+**Two consoles + an admin view, all from our existing stack:**
+
+```
+  REQUESTER CONSOLE (Johnny)            PROVIDER CONSOLE (Frank)              SQUARE ADMIN (us)
+  ──────────────────────────           ────────────────────────             ─────────────────
+  ┌────────────────────────┐           ┌────────────────────────┐           • nodes online
+  │ Credits: 312  ▼ live    │          │ Node: ONLINE ● 47°C     │           • jobs in flight
+  │ ─────────────────────── │          │ GPU 71% ▕████▍   ▏ live  │          • ledger volume/day
+  │ JOB pdf-render  RUNNING │          │ VRAM 6.2/8 GB           │           • dispute / refund
+  │  ▕███████▍       ▏ 74%  │          │ ─────────────────────── │          • node trust map
+  │  tokens 1,840 · 38 cr   │          │ Renting to: Johnny      │
+  │  [ ⏸ pause ] [ ✕ kill ] │          │  +38 cr  ▲ ticking      │           (read-only +
+  │ ─────────────────────── │          │ ─────────────────────── │            god-mode controls)
+  │ ~ live log stream ~     │          │ [ drain ] [ go offline ]│
+  │ > rendering page 2/2... │          │ [ price ] [ templates ] │
+  └────────────────────────┘           └────────────────────────┘
+```
+
+**Requester sees:** credit balance ticking down, each job's status (queued →
+running → done), live progress bar, tokens + credits burned so far, streaming
+log. **Controls:** pause / kill the job. One button, instant.
+
+**Provider sees:** node up/down, GPU temp + utilization + VRAM as live gauges,
+who's renting right now, credits earned ticking up, today's earnings.
+**Controls:** **drain** (finish current jobs, accept no new), **go offline**, set
+price, toggle which templates the node allows. One button, audited.
+
+### Transport (consistent, boring, correct)
+
+| Direction | Mechanism | Why |
+|---|---|---|
+| **Telemetry push** (metrics, job status, logs) | **Server-Sent Events (SSE)** | One-way, dead simple in FastAPI (`StreamingResponse`), auto-reconnect built in, sails through Caddy/Traefik. No WebSocket complexity for read-only data. |
+| **Control actions** (kill, drain, pause, price) | **REST POST** | Idempotent, returns a result, and every action lands in the append-only activity trail (same pattern as QA/backlog). |
+| **Interactive console** (live shell into the VM) | WebSocket — *later* | Only if/when we want a real terminal. Not in MVP. |
+
+Where the numbers come from: the **provider agent daemon** reads node telemetry
+(`nvidia-smi` / DCGM) and heartbeats it to the Square; the Square fans it out to
+the right dashboards over SSE. Job status comes from the job state machine. The
+**ledger is the single source of truth for money** — the dashboard *displays* it,
+never computes it client-side.
+
+### Stack (full libraries only — no subsets, ever)
+
+- **Jinja + full CDN Tailwind + CDN Alpine.js + Google Fonts.** Same stack as the
+  other 4 LP apps. Alpine `x-data` component holds an `EventSource` for the SSE
+  feed and re-renders reactively. **No bundled Tailwind subset** — that broke every
+  nav once and it will break a dashboard worse.
+- **Charts: uPlot** (tiny, fast, open source) for live sparklines/gauges — built
+  for streaming data. Chart.js as the fallback if we want prettier defaults. Both
+  via full CDN, never a stripped build.
+- **Design language:** operator-console dark mode, metric tiles up top, status
+  pills (green = running, amber = draining, red = error), live sparklines, brand
+  red accent `#8B0000`, bold red for the money numbers. Latest "ops dashboard"
+  look — Grafana/Vercel-console energy, but ours.
+
+### Dashboard invariants (the simple rules)
+
+- Telemetry is **read-only push.** A dashboard can never mutate state by watching.
+- Every control is **one POST, logged, reversible.** Kill ≠ destroy data; it stops
+  the job and the VM is wiped as designed.
+- The dashboard shows **one truth** (ledger + job state). No client-side money math.
+- Auth = **Keycloak**, same roles. You only ever see *your* jobs / *your* node.
+
+---
+
+## 6. THE "SIMPLE RULE" INVARIANTS (binary defaults that kill the cons)
 
 We don't solve hard distributed-systems problems. We **rule them out of existence**
 with a default. One choice, not three.
@@ -172,7 +243,7 @@ with a default. One choice, not three.
 
 ---
 
-## 6. WHAT WE REUSE (this is why it's days, not years)
+## 7. WHAT WE REUSE (this is why it's days, not years)
 
 | Need | We already have it |
 |---|---|
@@ -191,7 +262,7 @@ Everything else is our existing LEGO.
 
 ---
 
-## 7. MVP — THE 1-2 DAY VERTICAL SLICE (honest scope)
+## 8. MVP — THE 1-2 DAY VERTICAL SLICE (honest scope)
 
 Build the thinnest end-to-end thread that actually settles a real trade. Resist
 building the whole market.
@@ -203,7 +274,10 @@ building the whole market.
 3. Requester flow: log in → see balance → "run pdf-render job" → job runs in an
    ephemeral container → ledger debits → review prompt.
 4. Brain = our existing Ollama/Claude key. No change.
-5. Smoke check + console sweep green. Human-verify one real postcard end to end.
+5. **Thin live dashboard:** one SSE feed pushing job status + progress + credits;
+   one Alpine console tile (full CDN Tailwind/Alpine, uPlot sparkline) with a
+   working **[kill]** POST. Proves the real-time loop end to end on one job.
+6. Smoke check + console sweep green. Human-verify one real postcard end to end.
 
 **Explicitly NOT in the slice (later phases):**
 - Third-party providers / real strangers' GPUs (needs the SSH-CA + agent daemon
@@ -220,7 +294,7 @@ building the whole market.
 
 ---
 
-## 8. OPEN QUESTIONS (park, don't block)
+## 9. OPEN QUESTIONS (park, don't block)
 
 - **SSH-CA scope:** short-lived certs (minutes), one VM, auto-revoke on job end.
   Needs a clean design before any non-LP node joins.
