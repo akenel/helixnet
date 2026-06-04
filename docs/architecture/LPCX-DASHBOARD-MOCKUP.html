@@ -264,6 +264,37 @@
       <p class="text-sm text-slate-500">The whole marketplace, one pane of glass.</p>
     </div>
 
+    <!-- SHARED BRAIN LOAD — the sponsored Ollama Turbo fuel tank -->
+    <div class="card rounded-xl p-5 border-l-2" :class="brainState().tank">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full pulse-dot" :class="brainState().bar.includes('rose')?'bg-rose-400':brainState().bar.includes('amber')?'bg-amber-400':'bg-emerald-400'"></span>
+          <span class="font-semibold text-sm">Shared Brain · Ollama Turbo <span class="text-slate-500 font-mono text-xs">(sponsored by Angel)</span></span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-800" :class="brainState().txt" x-text="brainState().label"></span>
+        </div>
+        <div class="font-mono text-sm">
+          <span class="font-bold tabular-nums" :class="brainState().txt" x-text="admin.brainUsers"></span><span class="text-slate-500"> / <span x-text="admin.brainCap"></span> users</span>
+        </div>
+      </div>
+      <!-- fuel tank -->
+      <div class="flex justify-between text-xs font-mono text-slate-400 mb-1.5">
+        <span>quota consumed</span><span :class="brainState().txt" x-text="admin.brainLoad+'%'"></span>
+      </div>
+      <div class="h-4 rounded-full bg-slate-800 overflow-hidden relative">
+        <div class="h-full bg-gradient-to-r transition-all duration-700" :class="brainState().bar" :style="`width:${admin.brainLoad}%`"></div>
+        <!-- the wall marker at 86% -->
+        <div class="absolute top-0 bottom-0 w-px bg-rose-300/70" style="left:86%"></div>
+      </div>
+      <div class="flex justify-between text-[10px] font-mono text-slate-600 mt-1">
+        <span>0</span>
+        <span class="text-rose-400/70">↑ throttle wall</span>
+        <span>flat $30/mo · several models</span>
+      </div>
+      <p class="text-xs text-slate-500 mt-2" x-show="admin.brainLoad>=86" x-transition>
+        ◢ Beta ceiling approaching. Next move: tighter SOP contexts · second sponsored key · or flip BYO-key tier.
+      </p>
+    </div>
+
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <template x-for="m in adminTiles()" :key="m.label">
         <div class="card rounded-xl p-5">
@@ -332,7 +363,8 @@ function lpcx() {
     gpuHist: [],
 
     // admin
-    admin: { nodesOnline:18, jobsInFlight:7, ledgerToday:4820, disputes:0, throughput:62 },
+    admin: { nodesOnline:18, jobsInFlight:7, ledgerToday:4820, disputes:0, throughput:62,
+             brainUsers:23, brainCap:50, brainLoad:61 },  // sponsored Ollama Turbo quota
     earnHist: [],
     nodes: [
       {id:'frank-bonagia',  up:true,  load:71, rep:'4.9'},
@@ -416,6 +448,17 @@ function lpcx() {
       this.admin.ledgerToday += Math.floor(Math.random()*30);
       this.admin.jobsInFlight = Math.max(1, Math.round(this.jitter(this.admin.jobsInFlight, 2, 2, 14)));
       this.pushSpark(this.adminChartU, this.earnHist, this.admin.throughput);
+      // shared sponsored brain — creeps toward the wall
+      this.admin.brainLoad = +this.jitter(this.admin.brainLoad, 4, 38, 99).toFixed(0);
+      if (Math.random() < 0.18 && this.admin.brainUsers < this.admin.brainCap)
+        this.admin.brainUsers++;
+    },
+
+    brainState() {
+      const l = this.admin.brainLoad;
+      if (l >= 86) return {bar:'from-rose-600 to-rose-400', txt:'text-rose-400', tank:'border-rose-500/50', label:'NEAR LIMIT — throttling soon'};
+      if (l >= 65) return {bar:'from-amber-500 to-orange-400', txt:'text-amber-400', tank:'border-amber-500/40', label:'heating up'};
+      return {bar:'from-emerald-500 to-brand', txt:'text-emerald-400', tank:'border-slate-800', label:'healthy'};
     },
 
     pushLog(m, c) {
