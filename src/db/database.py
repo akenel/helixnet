@@ -37,6 +37,9 @@ from src.db.models import (  # noqa: F401
     # QA Testing Dashboard
     QATestResultModel,
     QABugReportModel,
+    # LPCX -- La Piazza Compute Exchange
+    ComputeJobModel,
+    ComputeLedgerModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

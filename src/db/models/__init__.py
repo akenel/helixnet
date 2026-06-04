@@ -83,6 +83,9 @@ from .qa_test_result_model import QATestResultModel, TestStatus, QABugReportMode
 # Backlog (Unified Board -- dev tasks, bug fixes, camper jobs, business ops)
 from .backlog_model import BacklogItemModel, BacklogItemType, BacklogStatus, BacklogPriority, BacklogActivityModel, BacklogActivityType
 
+# LPCX -- La Piazza Compute Exchange (jobs + credit ledger)
+from .compute_model import ComputeJobModel, ComputeJobStatus, ComputeLedgerModel, ComputeLedgerKind
+
 __all__ = [
     "Base",
     "UserModel",
@@ -228,4 +231,9 @@ __all__ = [
     "BacklogPriority",
     "BacklogActivityModel",
     "BacklogActivityType",
+    # LPCX -- La Piazza Compute Exchange
+    "ComputeJobModel",
+    "ComputeJobStatus",
+    "ComputeLedgerModel",
+    "ComputeLedgerKind",
 ]
