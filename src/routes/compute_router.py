@@ -2,17 +2,12 @@
 # Purpose: LPCX -- La Piazza Compute Exchange. API + HTML.
 # Auth: Keycloak RBAC, same roles as QA/backlog.
 #
-# A submitted job is admitted against the shared-brain ceiling (BrainGuard), then a
-# background runner ticks progress, consumes brain tokens, debits credits, settles
-# the ledger, and wipes. Kill is a flag the runner polls. The brain is SIMULATED by
-# default (LPCX_REAL_BRAIN=1 hits local Ollama) so the ceiling -- not tinyllama CPU --
-# is the wall we study under load.
+# v2: submit INSERTS the job (queued) and PUBLISHES it to RabbitMQ. A dedicated
+# aio-pika consumer (src/compute/consumer.py) runs it -- the web process does no
+# execution. Kill = a DB flag the consumer polls. The gauge is derived from the DB.
 
-import asyncio
 import json
 import logging
-import os
-import random
 from pathlib import Path
 from uuid import UUID
 
@@ -23,18 +18,16 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db_session, AsyncSessionLocal
-from src.db.models.compute_model import (
-    ComputeJobModel, ComputeJobStatus, ComputeLedgerKind,
-)
+from src.db.models.compute_model import ComputeJobModel, ComputeJobStatus
 from src.schemas.compute_schema import (
     ComputeJobCreate, ComputeJobRead, CreditBalance, BrainLoad, ComputeSummary,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.compute_service import (
-    brain_guard, credit_balance, post_ledger, ensure_starter_grant,
-    credits_for_tokens, verifiable_note, euro_per_credit,
+    credit_balance, ensure_starter_grant, brain_load, euro_per_credit,
     LPCX_CREDIT_TOKENS,
 )
+from src.compute.queue import publish_job
 
 
 def require_compute_access():
@@ -50,116 +43,8 @@ html_router = APIRouter(tags=["Compute - Web UI"])
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
 
-# Brain mode
-LPCX_REAL_BRAIN = os.getenv("LPCX_REAL_BRAIN", "0") == "1"
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "tinyllama:latest")
-
-# In-process kill flags (job_id str). Single-process; Redis at multi-worker scale.
-_kill: set[str] = set()
 
 
-# ================================================================
-# Brain step -- one inference. Simulated by default.
-# ================================================================
-async def _brain_step(prompt: str, endpoint: str | None = None, model: str | None = None) -> int:
-    """Return tokens consumed for one step. `endpoint` set => BYO brain target."""
-    url = endpoint or OLLAMA_URL
-    mdl = model or OLLAMA_MODEL
-    if LPCX_REAL_BRAIN or endpoint:
-        import httpx
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            r = await client.post(
-                f"{url}/api/generate",
-                json={"model": mdl, "prompt": prompt, "stream": False},
-            )
-            r.raise_for_status()
-            d = r.json()
-            return int(d.get("prompt_eval_count", 0)) + int(d.get("eval_count", 0))
-    # simulated brain: realistic latency + token count, no CPU melt
-    await asyncio.sleep(0.3 + random.random() * 0.6)
-    return random.randint(40, 160)
-
-
-# ================================================================
-# Background job runner
-# ================================================================
-async def _patch(job_id: UUID, **fields) -> None:
-    """Short-lived session: hold a DB connection only for the write, never across
-    the brain call. Keeps the 15-slot pool free under load."""
-    async with AsyncSessionLocal() as db:
-        job = await db.get(ComputeJobModel, job_id)
-        if job:
-            for k, v in fields.items():
-                setattr(job, k, v)
-            await db.commit()
-
-
-async def _execute(job_id: UUID, owner: str, node: str, byo: bool,
-                   byo_endpoint: str | None, byo_model: str | None) -> None:
-    await _patch(job_id, status=ComputeJobStatus.RUNNING)
-    total = 0
-    steps = 6
-    for step in range(1, steps + 1):
-        if str(job_id) in _kill:
-            await _patch(job_id, status=ComputeJobStatus.KILLED, reject_reason="killed by requester")
-            return
-        toks = await _brain_step(
-            f"{node}:step{step}",
-            endpoint=byo_endpoint if byo else None,
-            model=byo_model if byo else None,
-        )
-        total += toks
-        if not byo:
-            await brain_guard.record_use(toks)
-        await _patch(job_id,
-                     tokens=total,
-                     progress=min(100, round(step / steps * 100)),
-                     credits_burned=0 if byo else credits_for_tokens(total))
-
-    # settle in one short session
-    async with AsyncSessionLocal() as db:
-        job = await db.get(ComputeJobModel, job_id)
-        if not job:
-            return
-        job.status = ComputeJobStatus.DONE
-        job.progress = 100
-        if byo:
-            await post_ledger(db, owner, ComputeLedgerKind.SPEND, 0, job_id=job_id,
-                              counterparty="byo",
-                              note=f"CJ-{job.job_number:03d} · {total} tok on BYO brain (off shared quota)")
-            logger.info(f"CJ-{job.job_number:03d} done (BYO): {total} tok, 0 shared cr")
-        else:
-            credits = credits_for_tokens(total)
-            note = verifiable_note(job.job_number, total, credits)
-            await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
-                              job_id=job_id, counterparty=node, note=note)
-            await post_ledger(db, node, ComputeLedgerKind.EARN, credits,
-                              job_id=job_id, counterparty=owner, note=note)
-            logger.info(f"CJ-{job.job_number:03d} done: {total} tok -> {credits} cr")
-        await db.commit()
-
-
-async def run_job(
-    job_id: UUID, owner: str, node: str,
-    brain_mode: str = "shared", byo_endpoint: str | None = None, byo_model: str | None = None,
-) -> None:
-    byo = brain_mode == "byo"
-    try:
-        if byo:
-            # BYO bypasses the shared queue entirely -- the escape valve.
-            await _execute(job_id, owner, node, byo=True,
-                           byo_endpoint=byo_endpoint, byo_model=byo_model)
-        else:
-            # WAIT YOUR TURN: queue for a shared-brain slot (FIFO), then run.
-            async with brain_guard.slot():
-                await _execute(job_id, owner, node, byo=False,
-                               byo_endpoint=None, byo_model=None)
-    except Exception as e:  # noqa: BLE001
-        logger.exception("job failed")
-        await _patch(job_id, status=ComputeJobStatus.FAILED, reject_reason=str(e)[:200])
-    finally:
-        _kill.discard(str(job_id))
 
 
 # ================================================================
@@ -179,8 +64,11 @@ async def get_credits(
 
 
 @router.get("/brain", response_model=BrainLoad)
-async def get_brain(current_user: dict = Depends(require_compute_access())):
-    return BrainLoad(**brain_guard.load())
+async def get_brain(
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    return BrainLoad(**await brain_load(db))
 
 
 @router.get("/jobs", response_model=list[ComputeJobRead])
@@ -238,11 +126,15 @@ async def submit_job(
     await db.refresh(job)
 
     if job.status != ComputeJobStatus.REJECTED:
-        asyncio.create_task(run_job(
-            job.id, owner, job.node,
-            brain_mode=payload.brain_mode,
-            byo_endpoint=payload.byo_endpoint, byo_model=payload.byo_model,
-        ))
+        # Hand off to RabbitMQ -- the consumer executes it. No work in the web process.
+        await publish_job({
+            "job_id": str(job.id),
+            "owner": owner,
+            "node": job.node,
+            "brain_mode": payload.brain_mode,
+            "byo_endpoint": payload.byo_endpoint,
+            "byo_model": payload.byo_model,
+        })
 
     return ComputeJobRead.model_validate(job)
 
@@ -257,7 +149,8 @@ async def kill_job(
     if not job:
         raise HTTPException(status_code=404, detail="job not found")
     if job.status in (ComputeJobStatus.RUNNING, ComputeJobStatus.QUEUED):
-        _kill.add(str(job_id))
+        job.kill_requested = True          # cross-process: the consumer polls this
+        await db.commit()
         return {"ok": True, "job_id": str(job_id), "status": "kill requested"}
     return {"ok": False, "job_id": str(job_id), "status": f"job already {job.status.value}"}
 
@@ -272,15 +165,16 @@ async def get_summary(
         select(ComputeJobModel.status, func.count().label("cnt")).group_by(ComputeJobModel.status)
     )
     by_status = {row.status.value: row.cnt for row in rows}
-    return ComputeSummary(total_jobs=total, by_status=by_status, brain=BrainLoad(**brain_guard.load()))
+    return ComputeSummary(total_jobs=total, by_status=by_status, brain=BrainLoad(**await brain_load(db)))
 
 
 # ================================================================
 # SSE -- live telemetry feed (read-only aggregate; the real backing for the
-# dashboard's gauge + job list). Polls DB + BrainGuard once a second.
+# dashboard's gauge + job list). Polls the DB once a second.
 # ================================================================
 @router.get("/stream")
 async def stream(request: Request):
+    import asyncio  # local: only the stream loop needs it
     async def gen():
         # tell the client the cadence + a hello so EventSource opens cleanly
         yield "retry: 2000\n\n"
@@ -293,7 +187,8 @@ async def stream(request: Request):
                 )
                 jobs = [ComputeJobRead.model_validate(j).model_dump(mode="json")
                         for j in rows.scalars().all()]
-            payload = {"brain": brain_guard.load(), "jobs": jobs}
+                brain = await brain_load(db)
+            payload = {"brain": brain, "jobs": jobs}
             yield f"data: {json.dumps(payload, default=str)}\n\n"
             await asyncio.sleep(1.0)
 

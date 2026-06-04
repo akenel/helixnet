@@ -125,6 +125,27 @@ services:
       retries: 5
       start_period: 40s
 # -------------------------------------------------------------
+# 🧠 LPCX Consumer 🐇 aio-pika (executes compute jobs off the queue)
+# -------------------------------------------------------------
+  lpcx-consumer:
+    <<: *base
+    container_name: lpcx-consumer
+    working_dir: /app
+    entrypoint: ["/app/venv/bin/python", "-m", "src.compute.consumer"]
+    environment:
+      SERVICE_TYPE: lpcx-consumer
+      LPCX_BRAIN_CAP: "50"
+    volumes:
+      - ../../src:/app/src
+    # No cross-file depends_on (rabbitmq/postgres live in core-stack); aio-pika
+    # connect_robust retries until the broker is reachable.
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f src.compute.consumer || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+# -------------------------------------------------------------
 # 🗂️ NAMED VOLUMES
 # -------------------------------------------------------------
 volumes:

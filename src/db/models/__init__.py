@@ -76,6 +76,8 @@ from .isotto_catalog_stock_model import IsottoCatalogStockModel
 from .isotto_order_line_item_model import IsottoOrderLineItemModel, LineItemStatus
 from .isotto_purchase_order_model import IsottoPurchaseOrderModel, IsottoPOStatus
 from .isotto_artwork_model import IsottoArtworkModel
+from .isotto_activity_model import IsottoOrderActivityModel  # referenced by IsottoOrderModel relationship
+from .isotto_invoice_model import IsottoInvoiceModel  # referenced by IsottoOrderModel relationship
 
 # QA Testing Dashboard (Anne's Testing Checklist)
 from .qa_test_result_model import QATestResultModel, TestStatus, QABugReportModel, BugSeverity, BugStatus, QABugActivityModel, BugActivityType
@@ -216,6 +218,8 @@ __all__ = [
     "IsottoPurchaseOrderModel",
     "IsottoPOStatus",
     "IsottoArtworkModel",
+    "IsottoOrderActivityModel",
+    "IsottoInvoiceModel",
     # QA Testing Dashboard
     "QATestResultModel",
     "TestStatus",

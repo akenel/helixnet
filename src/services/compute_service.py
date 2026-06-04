@@ -12,10 +12,8 @@
 #   against the sponsor's quota. We model the ceiling with LPCX_BRAIN_CAP distinct
 #   concurrent users. At the cap, new users are REJECTED -- that's "how it blows".
 
-import asyncio
 import math
 import os
-from contextlib import asynccontextmanager
 
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -49,60 +47,35 @@ def euro_per_credit() -> float:
 # uvicorn workers this state is per-worker. Real multi-worker impl -> Redis.
 # For local beta + the stress test, in-process is exactly what we want to watch.
 # ================================================================
-class BrainGuard:
-    """Models the shared sponsored brain as N concurrent inference SLOTS
-    (LPCX_BRAIN_CAP). WAIT-YOUR-TURN (FIFO): when all slots are busy, jobs queue and
-    wait -- they are NOT rejected. Credits are the separate economic governor; the
-    queue is the concurrency governor. (In-process for now; RabbitMQ in v2 makes this
-    durable + cross-worker.)"""
-
-    def __init__(self, cap: int):
-        self.cap = cap
-        self._sem = asyncio.Semaphore(cap)
-        self._active = 0       # slots in use
-        self._waiting = 0      # jobs in the queue waiting their turn
-        self._tokens_total = 0
-        self._jobs_served = 0
-        self._peak = 0
-        self._lock = asyncio.Lock()
-
-    @asynccontextmanager
-    async def slot(self):
-        """Acquire a brain slot, waiting in line if the brain is full."""
-        async with self._lock:
-            self._waiting += 1
-        await self._sem.acquire()
-        async with self._lock:
-            self._waiting -= 1
-            self._active += 1
-            self._peak = max(self._peak, self._active)
-        try:
-            yield
-        finally:
-            self._sem.release()
-            async with self._lock:
-                self._active -= 1
-                self._jobs_served += 1
-
-    async def record_use(self, tokens: int) -> None:
-        async with self._lock:
-            self._tokens_total += tokens
-
-    def load(self) -> dict:
-        return {
-            "active": self._active,
-            "waiting": self._waiting,
-            "cap": self.cap,
-            "load_pct": round(min(100, self._active / self.cap * 100)) if self.cap else 0,
-            "peak": self._peak,
-            "tokens_total": self._tokens_total,
-            "jobs_served": self._jobs_served,
-            "euro_per_credit": round(euro_per_credit(), 6),
-            "credit_tokens": LPCX_CREDIT_TOKENS,
-        }
-
-
-brain_guard = BrainGuard(LPCX_BRAIN_CAP)
+# In v2 the brain ceiling is enforced by the aio-pika consumer's prefetch_count
+# (= LPCX_BRAIN_CAP concurrent slots) and the durable RabbitMQ queue is the FIFO
+# wait line. So the gauge is DERIVED FROM THE DB (durable, cross-process, accurate),
+# not an in-process counter:
+#   active  = jobs RUNNING (in a consumer slot)
+#   waiting = jobs QUEUED  (in the RabbitMQ line, not yet picked up)
+async def brain_load(db: AsyncSession) -> dict:
+    from src.db.models.compute_model import ComputeJobModel  # local import: avoid cycle
+    rows = await db.execute(
+        select(ComputeJobModel.status, func.count().label("c")).group_by(ComputeJobModel.status)
+    )
+    counts = {row.status.value: row.c for row in rows}
+    active = counts.get("running", 0)
+    waiting = counts.get("queued", 0)
+    done = counts.get("done", 0)
+    toks = (await db.execute(
+        select(func.coalesce(func.sum(ComputeJobModel.tokens), 0))
+    )).scalar() or 0
+    cap = LPCX_BRAIN_CAP
+    return {
+        "active": active,
+        "waiting": waiting,
+        "cap": cap,
+        "load_pct": round(min(100, active / cap * 100)) if cap else 0,
+        "tokens_total": int(toks),
+        "jobs_served": done,
+        "euro_per_credit": round(euro_per_credit(), 6),
+        "credit_tokens": LPCX_CREDIT_TOKENS,
+    }
 
 
 # ================================================================

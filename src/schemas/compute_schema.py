@@ -43,13 +43,12 @@ class CreditBalance(BaseModel):
 
 
 class BrainLoad(BaseModel):
-    active: int                 # in-flight inference slots
-    waiting: int                # jobs queued, waiting their turn (FIFO)
-    cap: int                    # the ceiling (number of slots)
+    active: int                 # jobs running in a consumer slot
+    waiting: int                # jobs queued in RabbitMQ, waiting their turn (FIFO)
+    cap: int                    # the ceiling (consumer prefetch = slots)
     load_pct: int
-    peak: int
     tokens_total: int
-    jobs_served: int
+    jobs_served: int            # jobs done
     euro_per_credit: float
     credit_tokens: int
 

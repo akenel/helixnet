@@ -5,7 +5,7 @@
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Integer, BigInteger, Text, ForeignKey, Identity
+from sqlalchemy import String, DateTime, Integer, BigInteger, Boolean, Text, ForeignKey, Identity
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base
@@ -101,7 +101,11 @@ class ComputeJobModel(Base):
     )
     reject_reason: Mapped[str | None] = mapped_column(
         String(200), nullable=True,
-        comment="If rejected: why (e.g. brain at ceiling, no credits)",
+        comment="If rejected/killed: why (e.g. no credits, killed by requester)",
+    )
+    kill_requested: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False,
+        comment="Cross-process kill flag -- the consumer polls this between steps",
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
