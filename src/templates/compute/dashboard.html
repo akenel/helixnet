@@ -88,7 +88,7 @@
       <button @click="submit(10)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition">⚡ Burst ×10</button>
       <span class="text-xs text-slate-500 font-mono" x-show="!token">log in via LP to submit · the live feed below works without login</span>
       <span class="text-xs text-emerald-400 font-mono" x-show="brainMode==='byo'">BYO = off the shared quota, 0 shared credits</span>
-      <span class="ml-auto text-xs font-mono text-slate-500" x-text="'shared brain '+brain.active+'/'+brain.cap+' slots · '+brain.rejections+' rejected'"></span>
+      <span class="ml-auto text-xs font-mono text-slate-500" x-text="'shared brain '+brain.active+'/'+brain.cap+' slots · '+brain.waiting+' waiting in queue'"></span>
     </div>
 
     <div class="card rounded-xl overflow-hidden">
@@ -129,7 +129,7 @@
           <span class="font-semibold text-sm">Shared Brain · Ollama Turbo <span class="text-slate-500 font-mono text-xs">(sponsored by Angel)</span></span>
           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-800" :class="bs().txt" x-text="bs().label"></span>
         </div>
-        <div class="font-mono text-sm"><span class="font-bold tabular-nums" :class="bs().txt" x-text="brain.active"></span><span class="text-slate-500"> / <span x-text="brain.cap"></span> slots · <span x-text="brain.users"></span> users</span></div>
+        <div class="font-mono text-sm"><span class="font-bold tabular-nums" :class="bs().txt" x-text="brain.active"></span><span class="text-slate-500"> / <span x-text="brain.cap"></span> slots · <span x-text="brain.waiting"></span> waiting</span></div>
       </div>
       <div class="flex justify-between text-xs font-mono text-slate-400 mb-1.5"><span>quota consumed</span><span :class="bs().txt" x-text="brain.load_pct+'%'"></span></div>
       <div class="h-4 rounded-full bg-slate-800 overflow-hidden relative">
@@ -278,7 +278,7 @@ function lpcx() {
       return [
         {label:'Brain slots', val:this.brain.active+'/'+this.brain.cap, sub:'concurrent now', cls:this.bs().txt},
         {label:'Jobs served', val:this.brain.jobs_served, sub:'completed inferences', cls:'text-white'},
-        {label:'Rejections', val:this.brain.rejections, sub:'hit the ceiling', cls:this.brain.rejections>0?'text-rose-400':'text-slate-300'},
+        {label:'In queue', val:this.brain.waiting, sub:'waiting their turn (FIFO)', cls:this.brain.waiting>0?'text-amber-400':'text-slate-300'},
         {label:'Tokens total', val:(this.brain.tokens_total/1000).toFixed(1)+'k', sub:'shared-brain work', cls:'text-brand'},
       ];
     },

@@ -8,6 +8,81 @@ the trade in **credits**, not cash.
 
 ---
 
+## EXECUTION MODEL v2 — QUEUE-ORCHESTRATED (the correct one)
+
+> v1 (built first, then load-tested) spawned a background task per submit, counted
+> the brain ceiling in-process, and minted a sequential job number with `max()+1`.
+> The stress test blew it apart at **12 concurrent submits** (unique-key race on the
+> sequential number) and would next have starved the **15-connection DB pool** because
+> each task held a connection across the brain call. v1 is a toy. v2 is the real model.
+
+**Three corrections (Angel, 2026-06-05):**
+
+1. **Job identity = the UUID we already have, not a sequential number.** `job.id`
+   (uuid4) is generated in Python, zero DB contention, no round-trip. We do NOT need
+   "CJ-001" for correctness — that's cosmetic. Minting a sequential number per submit
+   adds a DB round-trip *and* a race for nothing. Identity is the UUID; any display
+   label is derived (short UUID, or a DB-owned IDENTITY column that costs us nothing).
+
+2. **Sequencing belongs in a QUEUE, not in the web process.** "Only one context at a
+   time" — the brain handles N contexts at once where N = our concurrency budget. So
+   jobs go into **RabbitMQ**; a bounded pool of **workers** (consumer prefetch = N)
+   pulls them one at a time. The queue *is* the rationing. No `asyncio.create_task`
+   storm in the API, no in-process counter (which dies on restart and isn't shared
+   across workers anyway).
+
+3. **Be deliberate about what crosses the queue, per job.** The message carries only
+   `{job_id, owner, template, node, brain_mode, byo_endpoint?}` — **never** the user's
+   Keycloak token, and **never** a BYO secret/key in plaintext (pass a reference to a
+   secret store; local Ollama has no key so beta is fine). Don't log the payload raw.
+
+### The diagram
+
+```
+  SUBMIT  (thin + fast)            RABBITMQ                     WORKERS  (= brain slots)
+  ────────────────────            ──────────                    ────────────────────────
+  POST /compute/jobs              [ lpcx.jobs ]                 K concurrent consumers
+   1. validate + credit check      ░░░░░░░  depth = backlog      (prefetch = brain capacity N)
+   2. INSERT job (id=UUID,    ──▶   bounded: MAX_BACKLOG    ──▶   pull ONE job  ──▶  BRAIN
+      status=queued)               reject publish if full        run: brain→tick→ledger        (borrowed:
+   3. publish {job_id,owner,…}                                   ack; release slot              Ollama
+   4. return job  (NO brain work)                                kill via DB flag (cross-proc)   Turbo)
+        │                               │                               │
+        └────────── SSE feed reads queue depth + unacked + DB counts ───┘
+            gauge:  in-flight / N  (the slots)   +   backlog / MAX_BACKLOG  (the wait)
+```
+
+### What changes from v1
+
+| Concern | v1 (toy, blew up) | v2 (queue-orchestrated) |
+|---|---|---|
+| Job identity | sequential `max()+1` → **race** | **`id` UUID4** (free, race-free) |
+| Execution | `asyncio.create_task` in API (unbounded) | RabbitMQ → bounded worker pool |
+| Brain ceiling | in-process counter (per-worker, lost on restart) | **worker concurrency N** + bounded queue (durable, shared) |
+| DB connection | held across brain I/O → pool starves at 15 | held only during DB ops; brain I/O outside the txn |
+| Kill | in-process `set()` (doesn't cross processes) | **DB column `kill_requested`**, worker polls between steps |
+| Reject-at-ceiling | counter rejects | publish refused when `backlog ≥ MAX_BACKLOG` |
+| Gauge source | in-memory counters | RabbitMQ mgmt API (queue depth, consumers, unacked) + DB |
+
+### Infra: enable RabbitMQ
+
+`rabbitmq` is not in the local stack (the worker entrypoint waits for it and times
+out). Plan: add a `rabbitmq:3-management` service to the compose, wire the existing
+`worker`/`beat` (Celery) to it as broker, and let the worker host the LPCX consumer.
+Reusing Celery = least new machinery; a dedicated `aio-pika` consumer is the
+alternative if we want finer control. **Decision needed (below).**
+
+### Open decisions before we build v2
+
+- **Display label:** drop "CJ-001" and show short UUID, or let the DB own a cheap
+  IDENTITY column for cosmetics only? (Identity is the UUID either way.)
+- **Worker runtime:** reuse the existing **Celery** worker+beat (already running) on a
+  RabbitMQ broker, or stand up a dedicated **aio-pika** consumer in the worker container?
+- **Ceiling shape:** pure queue (excess *waits*) vs bounded backlog (excess *rejected*
+  with "shared brain full"). Recommend bounded backlog so the wall stays visible.
+
+---
+
 ## 0. THE CRUX (read this first)
 
 The whole idea lives or dies on one distinction. Get this right and everything

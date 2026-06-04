@@ -5,7 +5,7 @@
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Integer, Text, ForeignKey
+from sqlalchemy import String, DateTime, Integer, BigInteger, Text, ForeignKey, Identity
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base
@@ -48,11 +48,13 @@ class ComputeJobModel(Base):
         default=uuid.uuid4,
     )
     job_number: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
+        Identity(start=1),
         nullable=False,
         unique=True,
         index=True,
-        comment="Human-readable job number (CJ-001)",
+        comment="DB-assigned display number (CJ-001) -- atomic, race-free. The real "
+                "identity is id (UUID); this is cosmetic only.",
     )
     template: Mapped[str] = mapped_column(
         String(80),

@@ -84,85 +84,81 @@ async def _brain_step(prompt: str, endpoint: str | None = None, model: str | Non
 # ================================================================
 # Background job runner
 # ================================================================
+async def _patch(job_id: UUID, **fields) -> None:
+    """Short-lived session: hold a DB connection only for the write, never across
+    the brain call. Keeps the 15-slot pool free under load."""
+    async with AsyncSessionLocal() as db:
+        job = await db.get(ComputeJobModel, job_id)
+        if job:
+            for k, v in fields.items():
+                setattr(job, k, v)
+            await db.commit()
+
+
+async def _execute(job_id: UUID, owner: str, node: str, byo: bool,
+                   byo_endpoint: str | None, byo_model: str | None) -> None:
+    await _patch(job_id, status=ComputeJobStatus.RUNNING)
+    total = 0
+    steps = 6
+    for step in range(1, steps + 1):
+        if str(job_id) in _kill:
+            await _patch(job_id, status=ComputeJobStatus.KILLED, reject_reason="killed by requester")
+            return
+        toks = await _brain_step(
+            f"{node}:step{step}",
+            endpoint=byo_endpoint if byo else None,
+            model=byo_model if byo else None,
+        )
+        total += toks
+        if not byo:
+            await brain_guard.record_use(toks)
+        await _patch(job_id,
+                     tokens=total,
+                     progress=min(100, round(step / steps * 100)),
+                     credits_burned=0 if byo else credits_for_tokens(total))
+
+    # settle in one short session
+    async with AsyncSessionLocal() as db:
+        job = await db.get(ComputeJobModel, job_id)
+        if not job:
+            return
+        job.status = ComputeJobStatus.DONE
+        job.progress = 100
+        if byo:
+            await post_ledger(db, owner, ComputeLedgerKind.SPEND, 0, job_id=job_id,
+                              counterparty="byo",
+                              note=f"CJ-{job.job_number:03d} · {total} tok on BYO brain (off shared quota)")
+            logger.info(f"CJ-{job.job_number:03d} done (BYO): {total} tok, 0 shared cr")
+        else:
+            credits = credits_for_tokens(total)
+            note = verifiable_note(job.job_number, total, credits)
+            await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
+                              job_id=job_id, counterparty=node, note=note)
+            await post_ledger(db, node, ComputeLedgerKind.EARN, credits,
+                              job_id=job_id, counterparty=owner, note=note)
+            logger.info(f"CJ-{job.job_number:03d} done: {total} tok -> {credits} cr")
+        await db.commit()
+
+
 async def run_job(
-    job_id: UUID, owner: str, job_number: int, node: str,
+    job_id: UUID, owner: str, node: str,
     brain_mode: str = "shared", byo_endpoint: str | None = None, byo_model: str | None = None,
 ) -> None:
     byo = brain_mode == "byo"
-    # BYO brain bypasses the shared ceiling entirely -- it's the escape valve when
-    # the sponsored brain is full. Shared jobs must pass admission.
-    if not byo:
-        admitted, reason = await brain_guard.admit(owner)
-        if not admitted:
-            async with AsyncSessionLocal() as db:
-                job = await db.get(ComputeJobModel, job_id)
-                if job:
-                    job.status = ComputeJobStatus.REJECTED
-                    job.reject_reason = reason
-                    await db.commit()
-            logger.info(f"CJ-{job_number:03d} rejected: {reason}")
-            return
-
     try:
-        async with AsyncSessionLocal() as db:
-            job = await db.get(ComputeJobModel, job_id)
-            if not job:
-                return
-            job.status = ComputeJobStatus.RUNNING
-            await db.commit()
-
-            total_tokens = 0
-            steps = 6
-            for step in range(1, steps + 1):
-                if str(job_id) in _kill:
-                    job.status = ComputeJobStatus.KILLED
-                    job.reject_reason = "killed by requester"
-                    await db.commit()
-                    logger.info(f"CJ-{job_number:03d} killed at {job.progress}%")
-                    return
-                toks = await _brain_step(
-                    f"{node}:{job_number}:step{step}",
-                    endpoint=byo_endpoint if byo else None,
-                    model=byo_model if byo else None,
-                )
-                total_tokens += toks
-                if not byo:
-                    await brain_guard.record_use(toks)   # only shared brain quota
-                job.tokens = total_tokens
-                job.progress = min(100, round(step / steps * 100))
-                # BYO runs on your own dime -> no shared credits burned
-                job.credits_burned = 0 if byo else credits_for_tokens(total_tokens)
-                await db.commit()
-
-            job.progress = 100
-            job.status = ComputeJobStatus.DONE
-            if byo:
-                await post_ledger(db, owner, ComputeLedgerKind.SPEND, 0,
-                                  job_id=job_id, counterparty="byo",
-                                  note=f"CJ-{job_number:03d} · {total_tokens} tok on BYO brain (off shared quota)")
-                await db.commit()
-                logger.info(f"CJ-{job_number:03d} done (BYO): {total_tokens} tok, 0 shared cr")
-            else:
-                # settle: debit requester, credit the provider node
-                credits = credits_for_tokens(total_tokens)
-                note = verifiable_note(job_number, total_tokens, credits)
-                await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
-                                  job_id=job_id, counterparty=node, note=note)
-                await post_ledger(db, node, ComputeLedgerKind.EARN, credits,
-                                  job_id=job_id, counterparty=owner, note=note)
-                await db.commit()
-                logger.info(f"CJ-{job_number:03d} done: {total_tokens} tok -> {credits} cr")
+        if byo:
+            # BYO bypasses the shared queue entirely -- the escape valve.
+            await _execute(job_id, owner, node, byo=True,
+                           byo_endpoint=byo_endpoint, byo_model=byo_model)
+        else:
+            # WAIT YOUR TURN: queue for a shared-brain slot (FIFO), then run.
+            async with brain_guard.slot():
+                await _execute(job_id, owner, node, byo=False,
+                               byo_endpoint=None, byo_model=None)
     except Exception as e:  # noqa: BLE001
-        logger.exception(f"CJ-{job_number:03d} failed")
-        async with AsyncSessionLocal() as db:
-            job = await db.get(ComputeJobModel, job_id)
-            if job:
-                job.status = ComputeJobStatus.FAILED
-                job.reject_reason = str(e)[:200]
-                await db.commit()
+        logger.exception("job failed")
+        await _patch(job_id, status=ComputeJobStatus.FAILED, reject_reason=str(e)[:200])
     finally:
-        if not byo:
-            await brain_guard.release(owner)
         _kill.discard(str(job_id))
 
 
@@ -223,13 +219,9 @@ async def submit_job(
     await ensure_starter_grant(db, owner)
     balance = await credit_balance(db, owner)
 
-    next_num = (await db.execute(
-        select(func.coalesce(func.max(ComputeJobModel.job_number), 0))
-    )).scalar() + 1
-
     byo = payload.brain_mode == "byo"
+    # job_number is DB-assigned (IDENTITY) -- atomic, race-free, no app round-trip.
     job = ComputeJobModel(
-        job_number=next_num,
         template=payload.template,
         node=payload.node,
         owner=owner,
@@ -237,17 +229,17 @@ async def submit_job(
         brain_mode=payload.brain_mode,
         brain_model=(payload.byo_model or "byo") if byo else "ollama/turbo",
     )
-    # Shared brain needs credits; BYO is on your own dime (no shared-credit gate).
+    # Shared brain needs credits (economic governor); BYO is on your own dime.
     if not byo and balance <= 0:
         job.status = ComputeJobStatus.REJECTED
-        job.reject_reason = "no credits"
+        job.reject_reason = "no credits -- earn more (the system teaches efficient SOP use)"
     db.add(job)
     await db.commit()
     await db.refresh(job)
 
     if job.status != ComputeJobStatus.REJECTED:
         asyncio.create_task(run_job(
-            job.id, owner, job.job_number, job.node,
+            job.id, owner, job.node,
             brain_mode=payload.brain_mode,
             byo_endpoint=payload.byo_endpoint, byo_model=payload.byo_model,
         ))
