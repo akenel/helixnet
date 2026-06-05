@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if profile %}{{ profile.username }} · La Bottega{% else %}{{ slug }} · La Bottega{% endif %}</title>
+{% if profile %}
+<meta property="og:title" content="{{ profile.username }} — {{ profile.tagline or 'La Bottega profile' }}">
+<meta property="og:description" content="{{ (profile.bio or '')[:200] }}">
+<meta property="og:type" content="profile">
+<meta name="description" content="{{ (profile.bio or '')[:200] }}">
+{% endif %}
+<!-- FULL libraries only. No bundled subsets. (CLAUDE.md rule 9) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','ui-monospace','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1100px 600px at 50% -15%, #1f2a44, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.65); border: 1px solid rgba(30,41,59,0.9); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased">
+
+<div class="max-w-2xl mx-auto px-5 py-10">
+
+  {% if profile %}
+  <!-- profile card -->
+  <div class="card rounded-2xl overflow-hidden">
+    <div class="h-1.5 grad-rule"></div>
+    <div class="p-7">
+      <div class="flex items-start gap-5">
+        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-branddark flex items-center justify-center text-3xl font-extrabold text-white shrink-0">
+          {{ (profile.username[0] | upper) if profile.username else '?' }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <h1 class="text-2xl font-extrabold tracking-tight">@{{ profile.username }}</h1>
+          {% if profile.tagline %}<p class="text-brand font-semibold mt-1">{{ profile.tagline }}</p>{% endif %}
+          {% if profile.completeness %}
+          <div class="mt-2 inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Bottega {{ profile.completeness }}% complete
+          </div>{% endif %}
+        </div>
+      </div>
+
+      {% if profile.bio %}
+      <p class="mt-6 text-[15px] leading-relaxed text-slate-300">{{ profile.bio }}</p>
+      {% endif %}
+
+      {% if profile.skills %}
+      <div class="mt-6">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Skills</div>
+        <div class="flex flex-wrap gap-2">
+          {% for s in profile.skills %}
+          <span class="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800/80 border border-slate-700 text-slate-300">{{ s }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if profile.categories %}
+      <div class="mt-5">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Offers</div>
+        <div class="flex flex-wrap gap-2">
+          {% for c in profile.categories %}
+          <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand/15 border border-brand/30 text-brand">{{ c }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="text-center mt-6 text-xs text-slate-600 font-mono">
+    this is my Bottega · built from a CV in 30 seconds · <a href="/compute/bottega" class="text-brand hover:underline">make yours</a>
+  </div>
+
+  {% else %}
+  <!-- no profile yet -->
+  <div class="card rounded-2xl p-10 text-center">
+    <div class="text-5xl mb-4">🧬</div>
+    <h1 class="text-xl font-bold">@{{ slug }} hasn't built a Bottega yet</h1>
+    <p class="text-sm text-slate-500 mt-2">A Bottega is a profile built from your CV in 30 seconds — bio, skills, the lot.</p>
+    <a href="/compute/bottega" class="inline-block mt-5 px-5 py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white">Build your Bottega</a>
+  </div>
+  {% endif %}
+
+  <footer class="mt-10 text-center text-xs text-slate-600 font-mono">
+    La <span class="text-brand">Bottega</span> · we host the square, not the model
+  </footer>
+</div>
+</body>
+</html>

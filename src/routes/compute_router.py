@@ -400,6 +400,28 @@ async def compute_bottega(request: Request):
     return templates.TemplateResponse("compute/bottega.html", {"request": request})
 
 
+@html_router.get("/u/{slug}", response_class=HTMLResponse)
+async def public_profile(slug: str, request: Request,
+                         db: AsyncSession = Depends(get_db_session)):
+    """Public, shareable Bottega profile page (no login). The thing you send a recruiter."""
+    from src.db.models.bottega_model import BottegaProfileModel
+    row = (await db.execute(
+        select(BottegaProfileModel).where(BottegaProfileModel.username == slug)
+    )).scalar_one_or_none()
+    profile = None
+    if row and row.status == "applied":
+        profile = {
+            "username": row.username,
+            "bio": row.bio,
+            "tagline": row.tagline,
+            "skills": json.loads(row.skills or "[]"),
+            "categories": json.loads(row.categories or "[]"),
+            "completeness": row.completeness,
+        }
+    return templates.TemplateResponse(
+        "compute/profile.html", {"request": request, "slug": slug, "profile": profile})
+
+
 @html_router.get("/compute/callback")
 async def compute_oauth_callback(request: Request, code: str = None,
                                  state: str = None, error: str = None):
