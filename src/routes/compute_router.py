@@ -17,23 +17,41 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import os
+
+from fastapi import Header
+
 from src.db.database import get_db_session, AsyncSessionLocal
 from src.db.models.compute_model import (
     ComputeJobModel, ComputeJobStatus, ComputeTemplateModel,
-    ComputeNodeModel, ComputeNodeStatus,
+    ComputeNodeModel, ComputeNodeStatus, ComputeLedgerKind,
 )
 from src.schemas.compute_schema import (
     ComputeJobCreate, ComputeJobRead, CreditBalance, BrainLoad, ComputeSummary,
     ComputeTemplateRead, TransferRequest, GrantRequest, LedgerEntryRead,
-    NodeRead, NodeRegister, NodeStatusUpdate,
+    NodeRead, NodeRegister, NodeStatusUpdate, WorkerResult,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.compute_service import (
     credit_balance, ensure_starter_grant, brain_load, euro_per_credit,
     ledger_history, transfer_credits, grant_credits,
+    credits_for_tokens, node_owner, post_ledger,
     LPCX_CREDIT_TOKENS,
 )
 from src.compute.queue import publish_job
+from src.compute.recipes import RECIPES
+
+# Remote worker contract -- a shared node token, and which nodes are PULL nodes
+# (jobs targeting them are NOT enqueued locally; a remote worker pulls them).
+LPCX_NODE_TOKEN = os.getenv("LPCX_NODE_TOKEN", "")
+LPCX_PULL_NODES = set(filter(None, os.getenv("LPCX_PULL_NODES", "do-staging-0").split(",")))
+
+
+async def require_node(x_node_token: str = Header(default="")):
+    """Authenticate a remote worker by its node token (revocable, scoped)."""
+    if not LPCX_NODE_TOKEN or x_node_token != LPCX_NODE_TOKEN:
+        raise HTTPException(status_code=401, detail="bad or missing node token")
+    return True
 
 
 def require_compute_access():
@@ -277,6 +295,7 @@ async def submit_job(
         status=ComputeJobStatus.QUEUED,
         brain_mode=payload.brain_mode,
         brain_model=(payload.byo_model or "byo") if byo else "ollama/turbo",
+        inputs=json.dumps(payload.inputs or {}),
     )
     if tmpl is None:
         job.status = ComputeJobStatus.REJECTED
@@ -296,17 +315,118 @@ async def submit_job(
     await db.refresh(job)
 
     if job.status != ComputeJobStatus.REJECTED:
-        # Hand off to RabbitMQ -- the consumer executes it. No work in the web process.
-        await publish_job({
-            "job_id": str(job.id),
-            "owner": owner,
-            "node": job.node,
-            "brain_mode": payload.brain_mode,
-            "byo_endpoint": payload.byo_endpoint,
-            "byo_model": payload.byo_model,
-        })
+        if job.node in LPCX_PULL_NODES:
+            # Remote worker pulls this via /worker/next -- do NOT enqueue locally.
+            pass
+        else:
+            # Hand off to RabbitMQ -- the consumer executes it. No work in the web process.
+            await publish_job({
+                "job_id": str(job.id),
+                "owner": owner,
+                "node": job.node,
+                "brain_mode": payload.brain_mode,
+                "byo_endpoint": payload.byo_endpoint,
+                "byo_model": payload.byo_model,
+            })
 
     return ComputeJobRead.model_validate(job)
+
+
+# ================================================================
+# Remote worker contract (pull-based) -- the genie on a leash.
+# Worker dials OUT, pulls a fully-resolved job, runs it, posts the result.
+# No inbound ports on the broker; DB/queue never exposed; worker stays dumb.
+# ================================================================
+@router.get("/worker/next")
+async def worker_next(node: str, _=Depends(require_node),
+                      db: AsyncSession = Depends(get_db_session)):
+    """Hand the calling worker its next queued job for `node`, fully resolved
+    (system + prompt already filled from the recipe + inputs). Allowlist is HERE,
+    broker-side: a job whose template isn't a known recipe is failed, not run."""
+    job = (await db.execute(
+        select(ComputeJobModel).where(
+            ComputeJobModel.node == node,
+            ComputeJobModel.status == ComputeJobStatus.QUEUED,
+        ).order_by(ComputeJobModel.job_number.asc()).limit(1)
+    )).scalar_one_or_none()
+    if not job:
+        return {"job": None}
+
+    recipe = RECIPES.get(job.template)
+    if not recipe:
+        job.status = ComputeJobStatus.FAILED
+        job.reject_reason = f"no recipe for template '{job.template}' (not on the allowlist)"
+        await db.commit()
+        return {"job": None}
+
+    try:
+        ctx = json.loads(job.inputs or "{}")
+    except Exception:  # noqa: BLE001
+        ctx = {}
+    safe: dict = {}
+    for inp in recipe["inputs"]:
+        v = ctx.get(inp["name"])
+        safe[inp["name"]] = v if v not in (None, "") else inp.get("default", "")
+    try:
+        prompt = recipe["prompt"].format(**safe)
+    except Exception as e:  # noqa: BLE001
+        job.status = ComputeJobStatus.FAILED
+        job.reject_reason = f"bad inputs: {e}"
+        await db.commit()
+        return {"job": None}
+
+    job.status = ComputeJobStatus.RUNNING
+    job.progress = 10
+    await db.commit()
+    return {"job": {
+        "job_id": str(job.id),
+        "job_number": job.job_number,
+        "template": job.template,
+        "system": recipe["system"],
+        "prompt": prompt,
+        "json_mode": recipe["output"] == "json",
+    }}
+
+
+@router.post("/worker/result")
+async def worker_result(body: WorkerResult, _=Depends(require_node),
+                        db: AsyncSession = Depends(get_db_session)):
+    """Worker returns the result. Broker stores it (untrusted), settles the ledger
+    at the fair price, marks done. Idempotent -- a re-post of a settled job is a no-op."""
+    job = await db.get(ComputeJobModel, body.job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="unknown job")
+    if job.status in (ComputeJobStatus.DONE, ComputeJobStatus.KILLED):
+        return {"ok": True, "note": "already settled"}
+
+    if body.error:
+        job.status = ComputeJobStatus.FAILED
+        job.reject_reason = body.error[:200]
+        await db.commit()
+        return {"ok": True, "failed": True}
+
+    job.output = (body.output or "")[:200000]   # store untrusted output (cap size)
+    job.output_type = body.output_type
+    job.tokens = body.tokens
+    job.status = ComputeJobStatus.DONE
+    job.progress = 100
+
+    # Fair price = max(recipe value, tokens) -- same rule as the local runner.
+    token_cr = credits_for_tokens(body.tokens) if body.tokens else 0
+    est = (await db.execute(
+        select(ComputeTemplateModel.est_credits).where(ComputeTemplateModel.slug == job.template)
+    )).scalar_one_or_none() or 0
+    credits = max(est, token_cr)
+    job.credits_burned = credits
+    provider = await node_owner(db, job.node)   # the machine owner earns
+    note = (f"CJ-{job.job_number:03d} · {job.template} · {body.tokens} tok "
+            f"→ {credits} cr (remote {job.node})")
+    await post_ledger(db, job.owner, ComputeLedgerKind.SPEND, -credits,
+                      job_id=job.id, counterparty=provider, note=note)
+    await post_ledger(db, provider, ComputeLedgerKind.EARN, credits,
+                      job_id=job.id, counterparty=job.owner, note=note)
+    await db.commit()
+    return {"ok": True, "credits": credits}
 
 
 @router.post("/jobs/{job_id}/kill")

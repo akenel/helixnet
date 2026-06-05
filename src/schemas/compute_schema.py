@@ -14,6 +14,27 @@ class ComputeJobCreate(BaseModel):
     brain_mode: Literal["shared", "byo"] = "shared"
     byo_endpoint: str | None = Field(default=None, max_length=300)
     byo_model: str | None = Field(default=None, max_length=80)
+    inputs: dict = Field(default_factory=dict)   # recipe inputs (for real-output jobs)
+
+
+# --- Worker contract (pull-based remote node) ---
+class WorkerJob(BaseModel):
+    """What the broker hands a remote worker: a fully-resolved job. The worker is
+    dumb -- it does NOT decide what to run, it runs exactly this."""
+    job_id: UUID
+    job_number: int
+    template: str
+    system: str
+    prompt: str
+    json_mode: bool = False
+
+
+class WorkerResult(BaseModel):
+    job_id: UUID
+    output: str = ""
+    output_type: str = "text"
+    tokens: int = 0
+    error: str | None = None
 
 
 class ComputeJobRead(BaseModel):
@@ -31,6 +52,8 @@ class ComputeJobRead(BaseModel):
     brain_mode: str
     brain_model: str
     reject_reason: str | None = None
+    output: str | None = None
+    output_type: str | None = None
     queue_position: int = 0     # FIFO place in line when queued (0 = n/a)
     created_at: datetime
     updated_at: datetime

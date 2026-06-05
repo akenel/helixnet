@@ -110,6 +110,18 @@ class ComputeJobModel(Base):
         String(200), nullable=True,
         comment="If rejected/killed: why (e.g. no credits, killed by requester)",
     )
+    inputs: Mapped[str] = mapped_column(
+        Text, nullable=False, default="{}",
+        comment="JSON recipe inputs (so a remote worker can be handed a resolved job)",
+    )
+    output: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="The job result (untrusted -- sanitize on display)",
+    )
+    output_type: Mapped[str | None] = mapped_column(
+        String(16), nullable=True,
+        comment="json | markdown | text",
+    )
     kill_requested: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False,
         comment="Cross-process kill flag -- the consumer polls this between steps",
