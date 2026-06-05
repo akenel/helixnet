@@ -95,14 +95,26 @@ async def execute_job(job_id: UUID, owner: str, node: str,
                                   note=f"CJ-{job.job_number:03d} · {total} tok on BYO brain (off shared quota)")
                 logger.info(f"CJ-{job.job_number:03d} done (BYO): {total} tok")
             else:
-                credits = credits_for_tokens(total)
-                note = verifiable_note(job.job_number, total, credits)
+                # FAIR PRICE: the recipe's listed value (est_credits) is the floor --
+                # a job is worth what it makes, not just its raw token count. Charge the
+                # higher of the recipe price or the actual brain tokens used.
+                token_cr = credits_for_tokens(total)
+                from sqlalchemy import select as _select
+                from src.db.models.compute_model import ComputeTemplateModel
+                est = (await db.execute(
+                    _select(ComputeTemplateModel.est_credits)
+                    .where(ComputeTemplateModel.slug == job.template)
+                )).scalar_one_or_none() or 0
+                credits = max(est, token_cr)
+                job.credits_burned = credits
+                note = (f"CJ-{job.job_number:03d} · {job.template} · {total} tok "
+                        f"(price {est} cr, tokens {token_cr} cr) → {credits} cr")
                 provider = await node_owner(db, node)   # the machine owner earns
                 await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
                                   job_id=job_id, counterparty=provider, note=note)
                 await post_ledger(db, provider, ComputeLedgerKind.EARN, credits,
                                   job_id=job_id, counterparty=owner, note=f"{note} on {node}")
-                logger.info(f"CJ-{job.job_number:03d} done: {total} tok -> {credits} cr -> @{provider}")
+                logger.info(f"CJ-{job.job_number:03d} done: {total} tok, est {est} -> {credits} cr -> @{provider}")
             await db.commit()
     except Exception as e:  # noqa: BLE001
         logger.exception("job execution failed")
