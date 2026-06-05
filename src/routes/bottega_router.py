@@ -16,6 +16,8 @@ from src.db.database import get_db_session
 from src.db.models.bottega_model import BottegaProfileModel, BottegaProfileHistoryModel
 from src.core.keycloak_auth import require_roles
 from src.services.bottega_service import extract_text, cv_to_bio, generate_cv, slugify
+from src.services.compute_service import credit_balance, post_ledger, ensure_starter_grant
+from src.db.models.compute_model import ComputeLedgerKind
 from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
 
 logger = logging.getLogger("helix.bottega_router")
@@ -88,10 +90,20 @@ async def recipes(current_user: dict = Depends(require_bottega_access())):
 
 @router.post("/recipes/{slug}/run")
 async def recipes_run(slug: str, request: Request,
-                      current_user: dict = Depends(require_bottega_access())):
-    """Generic recipe runner -- one endpoint executes any recipe in the registry."""
+                      current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    """Generic recipe runner -- one endpoint executes any recipe. UNIFIED ECONOMY:
+    a recipe run is charged its fair price (est_credits) through the same ledger as
+    jobs, so making things costs the same everywhere."""
     if slug not in RECIPES:
         raise HTTPException(status_code=404, detail=f"unknown recipe '{slug}'")
+    owner = current_user["username"]
+    price = int(RECIPES[slug].get("est_credits", 1))
+    await ensure_starter_grant(db, owner)
+    bal = await credit_balance(db, owner)
+    if bal < price:
+        raise HTTPException(status_code=402,
+                            detail=f"not enough credits -- '{slug}' costs {price}, you have {bal}")
     form = await request.form()
     raw: dict = {}
     for inp in RECIPES[slug]["inputs"]:
@@ -103,9 +115,17 @@ async def recipes_run(slug: str, request: Request,
         else:
             raw[name] = form.get(name)
     try:
-        return await run_recipe(slug, raw)
+        result = await run_recipe(slug, raw)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    # charge the fair price (only after a successful run) -- same ledger as jobs
+    note = f"recipe · {slug}"
+    await post_ledger(db, owner, ComputeLedgerKind.SPEND, -price, counterparty="la-bottega", note=note)
+    await post_ledger(db, "la-bottega", ComputeLedgerKind.EARN, price, counterparty=owner, note=note)
+    await db.commit()
+    result["charged"] = price
+    result["balance"] = await credit_balance(db, owner)
+    return result
 
 
 @router.get("/me")

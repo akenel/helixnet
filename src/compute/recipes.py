@@ -77,6 +77,39 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    "product-posting": {
+        "slug": "product-posting", "title": "Product Posting", "emoji": "\U0001F6CD️",
+        "category": "listing", "est_credits": 1,
+        "inputs": [
+            {"name": "name", "type": "text", "label": "Product name"},
+            {"name": "kind", "type": "select", "label": "Type",
+             "options": ["physical", "digital"], "default": "physical"},
+            {"name": "pitch", "type": "text", "label": "One-liner -- what it is / does"},
+        ],
+        "system": "You write punchy, honest marketplace listings. Output clean Markdown.",
+        "prompt": (
+            "Write a La Piazza listing for a {kind} product named \"{name}\". Pitch: "
+            "\"{pitch}\". Include: a catchy title (## heading), a 2-3 sentence description, "
+            "3-5 bullet benefits, and a suggested price range. Honest -- no invented claims."
+        ),
+        "output": "markdown",
+    },
+    "event-posting": {
+        "slug": "event-posting", "title": "Event Posting", "emoji": "\U0001F4E3",
+        "category": "listing", "est_credits": 1,
+        "inputs": [
+            {"name": "what", "type": "text", "label": "Event (e.g. 'protest + free coffee & hot dogs')"},
+            {"name": "where", "type": "text", "label": "Location (e.g. City Hall)"},
+            {"name": "price", "type": "text", "label": "Entry (e.g. 10 EUR, or free)"},
+        ],
+        "system": "You write warm, inviting event postings. Output clean Markdown.",
+        "prompt": (
+            "Write a La Piazza event posting. Event: \"{what}\". Location: \"{where}\". "
+            "Entry: \"{price}\". Include a catchy title (## heading), the when/where/price "
+            "stated clearly, a warm 2-3 sentence invite, and a one-line call to action. Keep it real."
+        ),
+        "output": "markdown",
+    },
 }
 
 
