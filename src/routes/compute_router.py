@@ -54,14 +54,18 @@ async def require_node(x_node_token: str = Header(default="")):
     return True
 
 
+LP_ROLES = ["lapiazza-user", "lapiazza-admin"]   # La Piazza's own door
+LP_ADMIN = ["lapiazza-admin"]
+
+
 def require_compute_access():
-    """Compute access -- same roles as QA/backlog dashboards."""
-    return require_roles(["camper-qa-tester", "camper-manager", "camper-admin"])
+    """Compute access -- La Piazza members (camper roles kept for back-compat)."""
+    return require_roles(["camper-qa-tester", "camper-manager", "camper-admin", *LP_ROLES])
 
 
 def require_compute_admin():
     """Granting credits -- managers + admins only."""
-    return require_roles(["camper-manager", "camper-admin"])
+    return require_roles(["camper-manager", "camper-admin", *LP_ADMIN])
 
 
 logger = logging.getLogger("helix.compute_router")
@@ -555,7 +559,7 @@ async def compute_oauth_callback(request: Request, code: str = None,
     nxt = state if (state and state.startswith("/compute")) else "/compute/bottega"
     if error or not code:
         return RedirectResponse(url=f"{nxt}?login_error=1")
-    realm, client_id = "kc-camper-service-realm-dev", "camper_service_web"
+    realm, client_id = "lapiazza-realm-dev", "lapiazza_web"
     fp = request.headers.get("x-forwarded-proto", "https")
     fh = request.headers.get("x-forwarded-host") or request.headers.get("host", "helix.local")
     redirect_uri = f"{fp}://{fh}/compute/callback"

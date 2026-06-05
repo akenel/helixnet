@@ -482,7 +482,7 @@ function lpcx() {
       const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent(location.pathname);
-      location.href = `${kc}/realms/kc-camper-service-realm-dev/protocol/openid-connect/auth?client_id=camper_service_web&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
+      location.href = `${kc}/realms/lapiazza-realm-dev/protocol/openid-connect/auth?client_id=lapiazza_web&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
     },
     decodeUser() {
       if (!this.token) return null;
@@ -490,7 +490,7 @@ function lpcx() {
         const p = JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
         if (p.exp * 1000 <= Date.now()) { this.token = null; return null; }
         const roles = (p.realm_access?.roles || []);
-        this.isAdmin = roles.some(r => r.includes('camper-manager') || r.includes('camper-admin'));
+        this.isAdmin = roles.some(r => r.includes('camper-manager') || r.includes('camper-admin') || r.includes('lapiazza-admin'));
         return { username: p.preferred_username || 'unknown' };
       } catch(e) { return null; }
     },

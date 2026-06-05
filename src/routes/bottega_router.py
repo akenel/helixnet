@@ -25,7 +25,8 @@ router = APIRouter(prefix="/api/v1/compute/bottega", tags=["Bottega - Onboarding
 
 
 def require_bottega_access():
-    return require_roles(["camper-qa-tester", "camper-manager", "camper-admin"])
+    return require_roles(["camper-qa-tester", "camper-manager", "camper-admin",
+                          "lapiazza-user", "lapiazza-admin"])
 
 
 # Placeholder taxonomy -- snap to La Piazza's real listing categories later.
