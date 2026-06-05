@@ -9,8 +9,16 @@
 import json
 import logging
 import os
+import re
 
 logger = logging.getLogger("helix.bottega")
+
+
+def slugify(s: str) -> str:
+    """username/handle -> url-safe slug (lowercase, hyphens, alnum only)."""
+    s = re.sub(r"\s+", "-", (s or "").strip().lower())
+    s = re.sub(r"[^a-z0-9-]", "", s)
+    return s.strip("-")[:80] or "user"
 
 # Brain config -- Turbo if a key is set, else local Ollama.
 BH_OLLAMA_KEY = os.getenv("BH_OLLAMA_KEY", "")

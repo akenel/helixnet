@@ -14,7 +14,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db_session, AsyncSessionLocal
@@ -406,12 +406,14 @@ async def public_profile(slug: str, request: Request,
     """Public, shareable Bottega profile page (no login). The thing you send a recruiter."""
     from src.db.models.bottega_model import BottegaProfileModel
     row = (await db.execute(
-        select(BottegaProfileModel).where(BottegaProfileModel.username == slug)
+        select(BottegaProfileModel).where(
+            or_(BottegaProfileModel.slug == slug, BottegaProfileModel.username == slug))
     )).scalar_one_or_none()
     profile = None
     if row and row.status == "applied":
         profile = {
             "username": row.username,
+            "slug": row.slug or row.username,
             "bio": row.bio,
             "tagline": row.tagline,
             "skills": json.loads(row.skills or "[]"),

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.database import get_db_session
 from src.db.models.bottega_model import BottegaProfileModel, BottegaProfileHistoryModel
 from src.core.keycloak_auth import require_roles
-from src.services.bottega_service import extract_text, cv_to_bio, generate_cv
+from src.services.bottega_service import extract_text, cv_to_bio, generate_cv, slugify
 from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
 
 logger = logging.getLogger("helix.bottega_router")
@@ -39,10 +39,12 @@ class Proposal(BaseModel):
     tagline: str = ""
     skills: list[str] = []
     categories: list[str] = []
+    slug: str | None = None   # optional public handle (e.g. thesapspecialist)
 
 
 class ProfileView(BaseModel):
     username: str
+    slug: str | None = None
     bio: str | None = None
     tagline: str | None = None
     skills: list[str] = []
@@ -56,10 +58,20 @@ def _view(p: BottegaProfileModel | None) -> ProfileView | None:
     if not p:
         return None
     return ProfileView(
-        username=p.username, bio=p.bio, tagline=p.tagline,
+        username=p.username, slug=p.slug, bio=p.bio, tagline=p.tagline,
         skills=json.loads(p.skills or "[]"), categories=json.loads(p.categories or "[]"),
         source=p.source, status=p.status, completeness=p.completeness,
     )
+
+
+async def _unique_slug(db: AsyncSession, desired: str, username: str) -> str:
+    """Slugify + guarantee uniqueness (append a suffix if another user owns it)."""
+    base = slugify(desired)
+    taken = (await db.execute(
+        select(BottegaProfileModel).where(
+            BottegaProfileModel.slug == base, BottegaProfileModel.username != username)
+    )).scalar_one_or_none()
+    return f"{base}-{slugify(username)[:6]}" if taken else base
 
 
 async def _get(db: AsyncSession, username: str) -> BottegaProfileModel | None:
@@ -164,9 +176,13 @@ async def apply(payload: Proposal,
             source="cv", status="applied", completeness=70,
         )
         db.add(profile)
+    # handle/slug: custom if given, else slugified username (kept once set)
+    if payload.slug or not profile.slug:
+        profile.slug = await _unique_slug(db, payload.slug or username, username)
     await db.commit()
     await db.refresh(profile)
-    return {"profile": _view(profile), "points": profile.completeness}
+    return {"profile": _view(profile), "points": profile.completeness,
+            "slug": profile.slug, "url": f"/u/{profile.slug}"}
 
 
 @router.post("/undo")

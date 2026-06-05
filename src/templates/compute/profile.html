@@ -38,10 +38,10 @@
     <div class="p-7">
       <div class="flex items-start gap-5">
         <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-branddark flex items-center justify-center text-3xl font-extrabold text-white shrink-0">
-          {{ (profile.username[0] | upper) if profile.username else '?' }}
+          {{ ((profile.slug or profile.username)[0] | upper) if (profile.slug or profile.username) else '?' }}
         </div>
         <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-extrabold tracking-tight">@{{ profile.username }}</h1>
+          <h1 class="text-2xl font-extrabold tracking-tight">@{{ profile.slug or profile.username }}</h1>
           {% if profile.tagline %}<p class="text-brand font-semibold mt-1">{{ profile.tagline }}</p>{% endif %}
           {% if profile.completeness %}
           <div class="mt-2 inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">

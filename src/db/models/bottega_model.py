@@ -21,6 +21,10 @@ class BottegaProfileModel(Base):
         String(100), nullable=False, unique=True, index=True,
         comment="Keycloak username this profile belongs to",
     )
+    slug: Mapped[str | None] = mapped_column(
+        String(80), nullable=True, unique=True, index=True,
+        comment="Public handle for /u/<slug>; defaults to slugified username",
+    )
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     tagline: Mapped[str | None] = mapped_column(String(200), nullable=True)
     skills: Mapped[str | None] = mapped_column(
