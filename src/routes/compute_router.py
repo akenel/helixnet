@@ -12,7 +12,7 @@ from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -398,3 +398,33 @@ async def compute_faq(request: Request):
 @html_router.get("/compute/bottega", response_class=HTMLResponse)
 async def compute_bottega(request: Request):
     return templates.TemplateResponse("compute/bottega.html", {"request": request})
+
+
+@html_router.get("/compute/callback")
+async def compute_oauth_callback(request: Request, code: str = None,
+                                 state: str = None, error: str = None):
+    """La Bottega's own login-return: exchange the code, then send the user BACK to
+    the page they started on (state) -- not the backlog board."""
+    import httpx
+    nxt = state if (state and state.startswith("/compute")) else "/compute/bottega"
+    if error or not code:
+        return RedirectResponse(url=f"{nxt}?login_error=1")
+    realm, client_id = "kc-camper-service-realm-dev", "camper_service_web"
+    fp = request.headers.get("x-forwarded-proto", "https")
+    fh = request.headers.get("x-forwarded-host") or request.headers.get("host", "helix.local")
+    redirect_uri = f"{fp}://{fh}/compute/callback"
+    token_endpoint = f"http://keycloak:8080/realms/{realm}/protocol/openid-connect/token"
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            r = await client.post(token_endpoint, data={
+                "grant_type": "authorization_code", "client_id": client_id,
+                "code": code, "redirect_uri": redirect_uri,
+            })
+            if r.status_code != 200:
+                logger.error(f"compute callback token exchange failed: {r.status_code} {r.text[:200]}")
+                return RedirectResponse(url=f"{nxt}?login_error=token")
+            at = r.json().get("access_token")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"compute callback error: {e}")
+        return RedirectResponse(url=f"{nxt}?login_error=exch")
+    return RedirectResponse(url=f"{nxt}#token={at}")
