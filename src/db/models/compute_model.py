@@ -5,7 +5,7 @@
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Integer, BigInteger, Boolean, Text, ForeignKey, Identity
+from sqlalchemy import String, DateTime, Integer, BigInteger, Boolean, Float, Text, ForeignKey, Identity
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base
@@ -33,6 +33,13 @@ class ComputeLedgerKind(HelixEnum):
     SPEND = "spend"       # requester paid for a job
     EARN = "earn"         # provider earned for lending the workbench
     ADJUST = "adjust"     # manual correction
+
+
+class ComputeNodeStatus(HelixEnum):
+    """A workbench's availability."""
+    ONLINE = "online"       # accepting jobs
+    DRAINING = "draining"   # finish current, take no new
+    OFFLINE = "offline"     # not accepting
 
 
 # ================================================================
@@ -149,6 +156,44 @@ class ComputeTemplateModel(Base):
     enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, index=True,
         comment="Disabled templates can't be submitted (admin off-switch)",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc), nullable=False,
+    )
+
+
+# ================================================================
+# Workbench Node -- a machine someone lends to the square. The owner EARNS
+# credits when jobs run on their node. (Lend your idle GPU, get paid.)
+# ================================================================
+class ComputeNodeModel(Base):
+    __tablename__ = "compute_nodes"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4,
+    )
+    slug: Mapped[str] = mapped_column(
+        String(64), nullable=False, unique=True, index=True,
+        comment="Node id used by jobs (e.g. 'frank-rtx4090')",
+    )
+    owner: Mapped[str] = mapped_column(
+        String(100), nullable=False, index=True,
+        comment="Keycloak username of the machine owner -- earns the credits",
+    )
+    label: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    gpu: Mapped[str] = mapped_column(
+        String(80), nullable=False, default="CPU",
+        comment="Hardware blurb (e.g. 'RTX 4090')",
+    )
+    status: Mapped[ComputeNodeStatus] = mapped_column(
+        SQLEnum(ComputeNodeStatus, name="compute_node_status", create_constraint=True,
+                values_callable=lambda x: [e.value for e in x]),
+        nullable=False, default=ComputeNodeStatus.ONLINE, index=True,
+    )
+    reputation: Mapped[float] = mapped_column(
+        Float, nullable=False, default=5.0,
+        comment="Stars (review system is a later block; display-only for now)",
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

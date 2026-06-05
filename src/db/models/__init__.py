@@ -88,7 +88,7 @@ from .backlog_model import BacklogItemModel, BacklogItemType, BacklogStatus, Bac
 # LPCX -- La Piazza Compute Exchange (jobs + credit ledger + template catalog)
 from .compute_model import (
     ComputeJobModel, ComputeJobStatus, ComputeLedgerModel, ComputeLedgerKind,
-    ComputeTemplateModel,
+    ComputeTemplateModel, ComputeNodeModel, ComputeNodeStatus,
 )
 
 __all__ = [
@@ -244,4 +244,6 @@ __all__ = [
     "ComputeLedgerModel",
     "ComputeLedgerKind",
     "ComputeTemplateModel",
+    "ComputeNodeModel",
+    "ComputeNodeStatus",
 ]

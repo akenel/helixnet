@@ -85,6 +85,12 @@
           <option :value="t.slug" x-text="t.emoji+'  '+t.title+'  ·  ~'+t.est_credits+' cr'"></option>
         </template>
       </select>
+      <!-- node picker: which workbench runs it (its owner earns) -->
+      <select x-model="selectedNode" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-200">
+        <template x-for="n in nodes.filter(n=>n.status==='online')" :key="n.slug">
+          <option :value="n.slug" x-text="'🖥 '+n.slug+' ('+n.gpu+') · @'+n.owner"></option>
+        </template>
+      </select>
       <!-- brain selector: shared (sponsored, counts against ceiling) vs BYO (your own) -->
       <div class="flex items-center gap-1 bg-slate-900/70 p-1 rounded-lg border border-slate-800">
         <button @click="brainMode='shared'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="brainMode==='shared'?'bg-brand text-white':'text-slate-400 hover:text-slate-200'">Shared brain</button>
@@ -198,6 +204,50 @@
     </div>
   </section>
 
+  <!-- ============================ PROVIDER ============================ -->
+  <section x-show="view==='provider'" class="space-y-5" style="display:none">
+    <div>
+      <h1 class="text-xl font-bold">Provider Console</h1>
+      <p class="text-sm text-slate-500">Lend your idle machine to the square. Jobs that run on it earn you credits.</p>
+    </div>
+
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-4 py-2.5 border-b border-slate-800 text-xs font-mono text-slate-400">my nodes</div>
+      <div class="divide-y divide-slate-800/70">
+        <template x-for="n in myNodes()" :key="n.slug">
+          <div class="px-4 py-3 flex flex-wrap items-center gap-3 text-sm">
+            <div class="flex-1 min-w-[180px]">
+              <div class="font-mono font-semibold">🖥 <span x-text="n.slug"></span></div>
+              <div class="text-xs text-slate-500" x-text="n.label+' · '+n.gpu+' · ★'+n.reputation"></div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                  :class="n.status==='online'?'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30':n.status==='draining'?'bg-amber-500/15 text-amber-300 border border-amber-500/30':'bg-slate-600/30 text-slate-400 border border-slate-600'"
+                  x-text="n.status"></span>
+            <div class="text-right">
+              <div class="font-mono text-brand font-bold" x-text="'+'+n.earned+' cr'"></div>
+              <div class="text-[10px] text-slate-500" x-text="'earned · '+n.running+' running'"></div>
+            </div>
+            <div class="flex gap-1">
+              <button @click="setNodeStatus(n.slug,'online')" class="text-xs px-2 py-1 rounded border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10">online</button>
+              <button @click="setNodeStatus(n.slug,'draining')" class="text-xs px-2 py-1 rounded border border-amber-500/40 text-amber-300 hover:bg-amber-500/10">drain</button>
+              <button @click="setNodeStatus(n.slug,'offline')" class="text-xs px-2 py-1 rounded border border-rose-500/40 text-rose-300 hover:bg-rose-500/10">offline</button>
+            </div>
+          </div>
+        </template>
+        <template x-if="myNodes().length===0"><div class="px-4 py-8 text-center text-sm text-slate-600">no nodes yet — register one below</div></template>
+      </div>
+    </div>
+
+    <div class="card rounded-xl p-5 max-w-md">
+      <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">Register a node</div>
+      <input x-model="regSlug" placeholder="slug (e.g. my-rig)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-2 font-mono">
+      <input x-model="regLabel" placeholder="label (e.g. My gaming PC)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-2">
+      <input x-model="regGpu" placeholder="gpu (e.g. RTX 4070)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-3">
+      <button @click="registerNode()" :disabled="!token||!regSlug" class="w-full py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 transition">＋ Register node</button>
+      <div class="text-xs mt-2 font-mono" :class="walletMsgOk?'text-emerald-400':'text-rose-400'" x-text="providerMsg"></div>
+    </div>
+  </section>
+
   <!-- ============================ WALLET ============================ -->
   <section x-show="view==='wallet'" class="space-y-5" style="display:none">
     <div class="flex flex-wrap items-end justify-between gap-3">
@@ -259,12 +309,14 @@
 <script>
 function lpcx() {
   return {
-    views: [ {id:'requester',label:'Requester'}, {id:'wallet',label:'Wallet'}, {id:'admin',label:'Square Admin'} ],
+    views: [ {id:'requester',label:'Requester'}, {id:'provider',label:'Provider'}, {id:'wallet',label:'Wallet'}, {id:'admin',label:'Square Admin'} ],
     view: 'requester',
     clock: '', connected: false,
     token: null, me: null, credits: null,
     brainMode: 'shared', byoEndpoint: '',
     templates: [], selectedTemplate: 'print-card',
+    nodes: [], selectedNode: 'lp-hetzner-0',
+    regSlug: '', regLabel: '', regGpu: '', providerMsg: '',
     isAdmin: false, ledger: [],
     xferTo: '', xferAmount: null, xferNote: '', walletMsg: '', walletMsgOk: false,
     grantTo: '', grantAmount: null, grantNote: '',
@@ -279,8 +331,44 @@ function lpcx() {
       this.connect();
       this.refreshCredits();
       this.fetchTemplates();
+      this.fetchNodes();
       this.fetchLedger();
       this.$nextTick(()=>this.buildChart());
+    },
+    async fetchNodes() {
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/nodes', { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) {
+          this.nodes = await r.json();
+          const online = this.nodes.filter(n=>n.status==='online');
+          if (online.length && !online.find(n=>n.slug===this.selectedNode)) this.selectedNode = online[0].slug;
+        }
+      } catch(_) {}
+    },
+    myNodes() { return this.me ? this.nodes.filter(n=>n.owner===this.me.username) : []; },
+    async setNodeStatus(slug, st) {
+      if (!this.token) return;
+      try {
+        const r = await fetch(`/api/v1/compute/nodes/${slug}/status`, {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+          body: JSON.stringify({ status: st }),
+        });
+        if (r.ok) this.fetchNodes();
+      } catch(_) {}
+    },
+    async registerNode() {
+      if (!this.token) return;
+      this.providerMsg = '';
+      try {
+        const r = await fetch('/api/v1/compute/nodes', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+          body: JSON.stringify({ slug:this.regSlug, label:this.regLabel||null, gpu:this.regGpu||'CPU' }),
+        });
+        const d = await r.json();
+        if (r.ok) { this.walletMsgOk=true; this.providerMsg='registered '+d.slug; this.regSlug=this.regLabel=this.regGpu=''; this.fetchNodes(); }
+        else { this.walletMsgOk=false; this.providerMsg=d.detail||('error '+r.status); }
+      } catch(e) { this.walletMsgOk=false; this.providerMsg='failed'; }
     },
     async fetchLedger() {
       if (!this.token) return;
@@ -367,7 +455,7 @@ function lpcx() {
     },
     async submit(n) {
       if (!this.token) return;
-      const body = { template:this.selectedTemplate, node:'lp-hetzner-0', brain_mode:this.brainMode };
+      const body = { template:this.selectedTemplate, node:this.selectedNode, brain_mode:this.brainMode };
       if (this.brainMode==='byo' && this.byoEndpoint) body.byo_endpoint = this.byoEndpoint;
       for (let i=0; i<n; i++) {
         fetch('/api/v1/compute/jobs', {

@@ -14,7 +14,7 @@ from src.db.models.compute_model import (
     ComputeJobModel, ComputeJobStatus, ComputeLedgerKind,
 )
 from src.services.compute_service import (
-    post_ledger, credits_for_tokens, verifiable_note,
+    post_ledger, credits_for_tokens, verifiable_note, node_owner,
 )
 
 logger = logging.getLogger("lpcx.runner")
@@ -97,11 +97,12 @@ async def execute_job(job_id: UUID, owner: str, node: str,
             else:
                 credits = credits_for_tokens(total)
                 note = verifiable_note(job.job_number, total, credits)
+                provider = await node_owner(db, node)   # the machine owner earns
                 await post_ledger(db, owner, ComputeLedgerKind.SPEND, -credits,
-                                  job_id=job_id, counterparty=node, note=note)
-                await post_ledger(db, node, ComputeLedgerKind.EARN, credits,
-                                  job_id=job_id, counterparty=owner, note=note)
-                logger.info(f"CJ-{job.job_number:03d} done: {total} tok -> {credits} cr")
+                                  job_id=job_id, counterparty=provider, note=note)
+                await post_ledger(db, provider, ComputeLedgerKind.EARN, credits,
+                                  job_id=job_id, counterparty=owner, note=f"{note} on {node}")
+                logger.info(f"CJ-{job.job_number:03d} done: {total} tok -> {credits} cr -> @{provider}")
             await db.commit()
     except Exception as e:  # noqa: BLE001
         logger.exception("job execution failed")

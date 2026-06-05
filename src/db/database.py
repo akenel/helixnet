@@ -41,6 +41,7 @@ from src.db.models import (  # noqa: F401
     ComputeJobModel,
     ComputeLedgerModel,
     ComputeTemplateModel,
+    ComputeNodeModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

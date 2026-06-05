@@ -144,6 +144,16 @@ async def ledger_history(db: AsyncSession, account: str, limit: int = 25) -> lis
     return list(rows.scalars().all())
 
 
+async def node_owner(db: AsyncSession, slug: str) -> str:
+    """Who earns when a job runs on this node. Falls back to the slug itself if the
+    node isn't registered (backward-compat)."""
+    from src.db.models.compute_model import ComputeNodeModel  # local: avoid cycle
+    row = (await db.execute(
+        select(ComputeNodeModel.owner).where(ComputeNodeModel.slug == slug)
+    )).scalar_one_or_none()
+    return row or slug
+
+
 async def account_exists(db: AsyncSession, account: str) -> bool:
     n = (await db.execute(
         select(func.count()).select_from(ComputeLedgerModel)

@@ -18,10 +18,14 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db_session, AsyncSessionLocal
-from src.db.models.compute_model import ComputeJobModel, ComputeJobStatus, ComputeTemplateModel
+from src.db.models.compute_model import (
+    ComputeJobModel, ComputeJobStatus, ComputeTemplateModel,
+    ComputeNodeModel, ComputeNodeStatus,
+)
 from src.schemas.compute_schema import (
     ComputeJobCreate, ComputeJobRead, CreditBalance, BrainLoad, ComputeSummary,
     ComputeTemplateRead, TransferRequest, GrantRequest, LedgerEntryRead,
+    NodeRead, NodeRegister, NodeStatusUpdate,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.compute_service import (
@@ -121,6 +125,86 @@ async def get_brain(
     return BrainLoad(**await brain_load(db))
 
 
+@router.get("/nodes", response_model=list[NodeRead])
+async def list_nodes(
+    mine: bool = False,
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Workbench nodes, each with live earnings (sum credits_burned of done jobs on
+    it) + jobs running now."""
+    q = select(ComputeNodeModel).order_by(ComputeNodeModel.reputation.desc())
+    if mine:
+        q = q.where(ComputeNodeModel.owner == current_user["username"])
+    nodes = (await db.execute(q)).scalars().all()
+
+    # per-node earned + running, in two grouped queries
+    earned_rows = await db.execute(
+        select(ComputeJobModel.node, func.coalesce(func.sum(ComputeJobModel.credits_burned), 0))
+        .where(ComputeJobModel.status == ComputeJobStatus.DONE)
+        .group_by(ComputeJobModel.node)
+    )
+    earned = {n: int(c) for n, c in earned_rows}
+    run_rows = await db.execute(
+        select(ComputeJobModel.node, func.count())
+        .where(ComputeJobModel.status == ComputeJobStatus.RUNNING)
+        .group_by(ComputeJobModel.node)
+    )
+    running = {n: int(c) for n, c in run_rows}
+
+    out = []
+    for n in nodes:
+        r = NodeRead.model_validate(n)
+        r.earned = earned.get(n.slug, 0)
+        r.running = running.get(n.slug, 0)
+        out.append(r)
+    return out
+
+
+@router.post("/nodes", response_model=NodeRead, status_code=status.HTTP_201_CREATED)
+async def register_node(
+    payload: NodeRegister,
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Lend your machine to the square. You become the owner -> you earn."""
+    exists = (await db.execute(
+        select(ComputeNodeModel).where(ComputeNodeModel.slug == payload.slug)
+    )).scalar_one_or_none()
+    if exists:
+        raise HTTPException(status_code=409, detail=f"node '{payload.slug}' already registered")
+    node = ComputeNodeModel(
+        slug=payload.slug, owner=current_user["username"],
+        label=payload.label or payload.slug, gpu=payload.gpu,
+        status=ComputeNodeStatus.ONLINE,
+    )
+    db.add(node)
+    await db.commit()
+    await db.refresh(node)
+    return NodeRead.model_validate(node)
+
+
+@router.post("/nodes/{slug}/status", response_model=NodeRead)
+async def set_node_status(
+    slug: str,
+    payload: NodeStatusUpdate,
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Owner toggles their node online / draining / offline."""
+    node = (await db.execute(
+        select(ComputeNodeModel).where(ComputeNodeModel.slug == slug)
+    )).scalar_one_or_none()
+    if not node:
+        raise HTTPException(status_code=404, detail="node not found")
+    if node.owner != current_user["username"]:
+        raise HTTPException(status_code=403, detail="not your node")
+    node.status = ComputeNodeStatus(payload.status)
+    await db.commit()
+    await db.refresh(node)
+    return NodeRead.model_validate(node)
+
+
 @router.get("/templates", response_model=list[ComputeTemplateRead])
 async def list_templates(
     current_user: dict = Depends(require_compute_access()),
@@ -179,6 +263,11 @@ async def submit_job(
         )
     )).scalar_one_or_none()
 
+    # Node must be a registered, online workbench.
+    node_row = (await db.execute(
+        select(ComputeNodeModel).where(ComputeNodeModel.slug == payload.node)
+    )).scalar_one_or_none()
+
     byo = payload.brain_mode == "byo"
     # job_number is DB-assigned (IDENTITY) -- atomic, race-free, no app round-trip.
     job = ComputeJobModel(
@@ -192,6 +281,12 @@ async def submit_job(
     if tmpl is None:
         job.status = ComputeJobStatus.REJECTED
         job.reject_reason = f"unknown template '{payload.template}' -- pick one from the catalog"
+    elif node_row is None:
+        job.status = ComputeJobStatus.REJECTED
+        job.reject_reason = f"unknown node '{payload.node}'"
+    elif node_row.status != ComputeNodeStatus.ONLINE:
+        job.status = ComputeJobStatus.REJECTED
+        job.reject_reason = f"node '{payload.node}' is {node_row.status.value} -- pick an online node"
     # Shared brain needs credits (economic governor); BYO is on your own dime.
     elif not byo and balance <= 0:
         job.status = ComputeJobStatus.REJECTED

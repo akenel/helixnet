@@ -66,6 +66,29 @@ class GrantRequest(BaseModel):
     note: str | None = Field(None, max_length=200)
 
 
+class NodeRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    slug: str
+    owner: str
+    label: str
+    gpu: str
+    status: str
+    reputation: float
+    earned: int = 0      # credits earned via jobs on this node (computed)
+    running: int = 0     # jobs running on it now (computed)
+
+
+class NodeRegister(BaseModel):
+    slug: str = Field(..., min_length=2, max_length=64, pattern=r"^[a-z0-9][a-z0-9-]*$")
+    label: str = Field("", max_length=120)
+    gpu: str = Field("CPU", max_length=80)
+
+
+class NodeStatusUpdate(BaseModel):
+    status: str = Field(..., pattern=r"^(online|draining|offline)$")
+
+
 class LedgerEntryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

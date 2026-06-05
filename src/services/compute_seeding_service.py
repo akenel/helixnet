@@ -6,7 +6,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.models.compute_model import ComputeTemplateModel
+from src.db.models.compute_model import ComputeTemplateModel, ComputeNodeModel, ComputeNodeStatus
 from src.services.compute_service import ensure_starter_grant
 
 logger = logging.getLogger("helix.compute_seeding")
@@ -47,3 +47,22 @@ async def seed_compute_data(db: AsyncSession) -> None:
     if added:
         await db.commit()
     logger.info(f"LPCX template catalog: {added} new, {len(SEED_TEMPLATES)} total")
+
+    # Seed workbench nodes (slug, owner, label, gpu)
+    node_existing = set((await db.execute(select(ComputeNodeModel.slug))).scalars().all())
+    SEED_NODES = [
+        ("lp-hetzner-0", "angel", "Hetzner UAT box", "CPU (CX32)", 5.0),
+        ("lp-loadtest", "angel", "Load-test rig", "CPU", 5.0),
+        ("frank-rtx4090", "frank", "Frank's gaming rig", "RTX 4090", 4.9),
+        ("nino-trapani", "nino", "Nino's workstation", "RTX 3080", 4.8),
+    ]
+    nadded = 0
+    for slug, owner, label, gpu, rep in SEED_NODES:
+        if slug in node_existing:
+            continue
+        db.add(ComputeNodeModel(slug=slug, owner=owner, label=label, gpu=gpu,
+                                reputation=rep, status=ComputeNodeStatus.ONLINE))
+        nadded += 1
+    if nadded:
+        await db.commit()
+    logger.info(f"LPCX nodes: {nadded} new, {len(SEED_NODES)} total")
