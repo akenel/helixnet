@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Bottega — pick a recipe</title>
+<!-- FULL libraries only. No bundled subsets. (CLAUDE.md rule 9) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','ui-monospace','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1200px 600px at 80% -10%, #14213055, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.6); border: 1px solid rgba(30,41,59,0.9); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  pre { white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased" x-data="bottega()" x-init="boot()">
+
+<header class="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800">
+  <div class="max-w-5xl mx-auto px-5 h-16 flex items-center gap-3">
+    <div class="w-2.5 h-2.5 rounded-full bg-brand"></div>
+    <div class="leading-none">
+      <div class="font-extrabold tracking-tight text-[15px]">La <span class="text-brand">Bottega</span></div>
+      <div class="text-[10px] text-slate-500 font-mono mt-0.5 tracking-wider">THE WORKSHOP · PICK A RECIPE</div>
+    </div>
+    <a href="/compute" class="ml-auto text-xs font-semibold text-slate-400 hover:text-brand">← exchange</a>
+    <template x-if="me"><span class="text-xs font-mono text-slate-300">@<span x-text="me"></span></span></template>
+    <template x-if="!me"><a href="/backlog/login" class="text-xs font-semibold text-brand hover:underline">Log in</a></template>
+  </div>
+  <div class="h-px grad-rule"></div>
+</header>
+
+<main class="max-w-5xl mx-auto px-5 py-8 space-y-6">
+
+  <!-- onboarding nudge (tasteful) -->
+  <div class="card rounded-xl p-4 flex items-center gap-3 border-l-2 border-brand/50">
+    <span class="text-xl">🧬</span>
+    <div class="flex-1 text-sm">
+      <span class="font-semibold">New here?</span>
+      <span class="text-slate-400">Drop your CV and we'll build your Bottega — bio, skills, the lot. 30 seconds. Recommended.</span>
+    </div>
+    <button @click="pick(recipes.find(r=>r.slug==='cv-to-bio'))" class="text-xs px-3 py-1.5 rounded-lg bg-brand/90 hover:bg-brand text-white font-semibold">Load my CV</button>
+  </div>
+
+  <!-- the menu -->
+  <div x-show="!active">
+    <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">the menu</div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <template x-for="r in recipes" :key="r.slug">
+        <button @click="pick(r)" class="card rounded-xl p-5 text-left hover:border-brand/50 transition">
+          <div class="text-2xl mb-2" x-text="r.emoji"></div>
+          <div class="font-semibold" x-text="r.title"></div>
+          <div class="text-[11px] text-slate-500 font-mono mt-1" x-text="r.category+' · ~'+r.est_credits+' cr'"></div>
+        </button>
+      </template>
+      <template x-if="recipes.length===0"><div class="text-sm text-slate-600 px-2">loading menu…</div></template>
+    </div>
+  </div>
+
+  <!-- run a recipe -->
+  <div x-show="active" class="grid lg:grid-cols-2 gap-5">
+    <div class="card rounded-xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="font-semibold"><span x-text="active?.emoji"></span> <span x-text="active?.title"></span></div>
+        <button @click="active=null;output=null;err=''" class="text-xs text-slate-500 hover:text-slate-300">← menu</button>
+      </div>
+      <template x-for="inp in active?.inputs||[]" :key="inp.name">
+        <div class="mb-3">
+          <label class="text-xs text-slate-400 block mb-1" x-text="inp.label"></label>
+          <template x-if="inp.type==='file'">
+            <input type="file" :x-ref="inp.name" @change="files[inp.name]=$event.target.files[0]" class="w-full text-sm text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:rounded file:border-0 file:bg-slate-800 file:text-slate-200">
+          </template>
+          <template x-if="inp.type==='text'">
+            <input type="text" @input="fields[inp.name]=$event.target.value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </template>
+          <template x-if="inp.type==='select'">
+            <select @change="fields[inp.name]=$event.target.value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <template x-for="o in inp.options" :key="o"><option :value="o" x-text="o"></option></template>
+            </select>
+          </template>
+        </div>
+      </template>
+      <button @click="run()" :disabled="!token||busy" class="w-full py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 transition" x-text="busy?'running…':'▶ Run recipe'"></button>
+      <div class="text-xs mt-2 text-rose-400 font-mono" x-text="err"></div>
+      <div class="text-xs mt-2 text-slate-500" x-show="!token">log in to run</div>
+    </div>
+
+    <div class="card rounded-xl p-5">
+      <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">output</div>
+      <template x-if="!output"><div class="text-sm text-slate-600">run a recipe to see the result</div></template>
+      <!-- json output (e.g. cv-to-bio) -->
+      <template x-if="output && output.output_type==='json'">
+        <div class="space-y-3 text-sm">
+          <div><div class="text-[10px] uppercase text-slate-500">bio</div><div x-text="output.result.bio"></div></div>
+          <div><div class="text-[10px] uppercase text-slate-500">tagline</div><div class="text-brand" x-text="output.result.tagline"></div></div>
+          <div><div class="text-[10px] uppercase text-slate-500">skills</div><div class="font-mono text-xs" x-text="(output.result.skills||[]).join(' · ')"></div></div>
+          <div><div class="text-[10px] uppercase text-slate-500">categories</div><div class="font-mono text-xs" x-text="(output.result.categories||[]).join(' · ')"></div></div>
+        </div>
+      </template>
+      <!-- markdown/text output (cv-generate, cover-letter) -->
+      <template x-if="output && output.output_type!=='json'">
+        <pre class="text-xs text-slate-300 max-h-[460px] overflow-y-auto" x-text="output.result"></pre>
+      </template>
+    </div>
+  </div>
+
+  <footer class="pt-4 text-center text-xs text-slate-600 font-mono">
+    procedure-as-code · every recipe is a menu entry, not an app · we host the square, not the model
+  </footer>
+</main>
+
+<script>
+function bottega() {
+  return {
+    token: null, me: null,
+    recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
+    boot() {
+      this.token = this.loadToken(); this.me = this.decodeUser();
+      this.fetchMenu();
+    },
+    loadToken() {
+      if (location.hash.includes('token=')) { const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t); history.replaceState({},document.title,location.pathname);} }
+      return sessionStorage.getItem('compute_token') || sessionStorage.getItem('backlog_token');
+    },
+    decodeUser() { if(!this.token) return null; try { const p=JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); return p.preferred_username||null; } catch(e){return null;} },
+    async fetchMenu() {
+      if (!this.token) return;
+      try { const r=await fetch('/api/v1/compute/bottega/recipes',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.recipes=await r.json(); } catch(_){}
+    },
+    pick(r) { if(!r) return; this.active=r; this.files={}; this.fields={}; this.output=null; this.err=''; },
+    async run() {
+      if (!this.token || !this.active) return;
+      this.busy=true; this.err=''; this.output=null;
+      const fd = new FormData();
+      for (const inp of this.active.inputs) {
+        if (inp.type==='file' && this.files[inp.name]) fd.append(inp.name, this.files[inp.name]);
+        else if (inp.type!=='file') fd.append(inp.name, this.fields[inp.name] ?? (inp.default||''));
+      }
+      try {
+        const r = await fetch('/api/v1/compute/bottega/recipes/'+this.active.slug+'/run', {
+          method:'POST', headers:{'Authorization':'Bearer '+this.token}, body: fd });
+        const d = await r.json();
+        if (r.ok) this.output = d; else this.err = d.detail || ('error '+r.status);
+      } catch(e) { this.err = 'failed'; }
+      this.busy=false;
+    },
+  };
+}
+</script>
+</body>
+</html>

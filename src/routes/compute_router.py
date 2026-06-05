@@ -393,3 +393,8 @@ async def compute_dashboard(request: Request):
 @html_router.get("/compute/help", response_class=HTMLResponse)
 async def compute_faq(request: Request):
     return templates.TemplateResponse("compute/faq.html", {"request": request})
+
+
+@html_router.get("/compute/bottega", response_class=HTMLResponse)
+async def compute_bottega(request: Request):
+    return templates.TemplateResponse("compute/bottega.html", {"request": request})

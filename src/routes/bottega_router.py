@@ -7,7 +7,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +16,7 @@ from src.db.database import get_db_session
 from src.db.models.bottega_model import BottegaProfileModel, BottegaProfileHistoryModel
 from src.core.keycloak_auth import require_roles
 from src.services.bottega_service import extract_text, cv_to_bio, generate_cv
+from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
 
 logger = logging.getLogger("helix.bottega_router")
 router = APIRouter(prefix="/api/v1/compute/bottega", tags=["Bottega - Onboarding"])
@@ -65,6 +66,34 @@ async def _get(db: AsyncSession, username: str) -> BottegaProfileModel | None:
     return (await db.execute(
         select(BottegaProfileModel).where(BottegaProfileModel.username == username)
     )).scalar_one_or_none()
+
+
+@router.get("/recipes")
+async def recipes(current_user: dict = Depends(require_bottega_access())):
+    """The Chinese menu -- every recipe + its input spec. Adding one = a dict entry."""
+    return recipe_menu()
+
+
+@router.post("/recipes/{slug}/run")
+async def recipes_run(slug: str, request: Request,
+                      current_user: dict = Depends(require_bottega_access())):
+    """Generic recipe runner -- one endpoint executes any recipe in the registry."""
+    if slug not in RECIPES:
+        raise HTTPException(status_code=404, detail=f"unknown recipe '{slug}'")
+    form = await request.form()
+    raw: dict = {}
+    for inp in RECIPES[slug]["inputs"]:
+        name = inp["name"]
+        if inp["type"] == "file":
+            up = form.get(name)
+            if up is not None and hasattr(up, "read"):
+                raw[name] = (up.filename or "upload", await up.read())
+        else:
+            raw[name] = form.get(name)
+    try:
+        return await run_recipe(slug, raw)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/me")
