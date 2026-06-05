@@ -56,6 +56,27 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    # A real, output-producing recipe -- no file needed (procedure-as-code: one entry).
+    "music-playlist": {
+        "slug": "music-playlist", "title": "Music Playlist", "emoji": "\U0001F3B5",
+        "category": "media", "est_credits": 2,
+        "inputs": [
+            {"name": "vibe", "type": "text",
+             "label": "Mood / vibe / occasion (e.g. 'sunrise drive, soulful')"},
+            {"name": "count", "type": "select", "label": "Tracks",
+             "options": ["10", "12", "15", "20"], "default": "12"},
+        ],
+        "system": "You are a tasteful music curator. Output clean Markdown only.",
+        "prompt": (
+            "Curate a {count}-track playlist for this vibe: \"{vibe}\". Begin with a short "
+            "playlist title as a markdown heading. Then a numbered list; each item: "
+            "**Artist — Song**, then a YouTube link formatted exactly as "
+            "[▶ play](https://www.youtube.com/results?search_query=ARTIST+SONG) with spaces "
+            "replaced by +. Mix well-known tracks with a couple of discoveries; no repeated "
+            "artists. End with one short line on the mood."
+        ),
+        "output": "markdown",
+    },
 }
 
 
