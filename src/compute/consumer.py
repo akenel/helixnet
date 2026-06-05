@@ -14,13 +14,15 @@ import aio_pika
 
 from src.compute.queue import AMQP_URL, QUEUE_NAME
 from src.compute.runner import execute_job
+from src.compute.fairness import fair_brain
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("lpcx.consumer")
 
-# N concurrent inference slots = the shared-brain ceiling. Excess waits in the queue.
-PREFETCH = int(os.getenv("LPCX_BRAIN_CAP", "50"))
+# Prefetch HIGH so messages from ALL users get pulled (no head-of-line blocking);
+# the FairBrain gate -- not prefetch -- enforces the global cap + per-user fairness.
+PREFETCH = int(os.getenv("LPCX_PREFETCH", "500"))
 
 
 async def _handle(message: aio_pika.abc.AbstractIncomingMessage) -> None:
@@ -28,14 +30,20 @@ async def _handle(message: aio_pika.abc.AbstractIncomingMessage) -> None:
     # already marks FAILED for its own errors).
     async with message.process(requeue=False):
         data = json.loads(message.body.decode())
-        await execute_job(
-            UUID(data["job_id"]),
-            data["owner"],
-            data.get("node", "lp-hetzner-0"),
-            data.get("brain_mode", "shared"),
-            data.get("byo_endpoint"),
-            data.get("byo_model"),
-        )
+        job_id = UUID(data["job_id"])
+        owner = data["owner"]
+        node = data.get("node", "lp-hetzner-0")
+        brain_mode = data.get("brain_mode", "shared")
+        byo_endpoint = data.get("byo_endpoint")
+        byo_model = data.get("byo_model")
+
+        if brain_mode == "byo":
+            # BYO is off the shared brain -> no fairness gate, no global cap.
+            await execute_job(job_id, owner, node, brain_mode, byo_endpoint, byo_model)
+        else:
+            # Wait for a fair slot (global cap + dynamic per-user cap), then run.
+            async with fair_brain.slot(owner):
+                await execute_job(job_id, owner, node, brain_mode, byo_endpoint, byo_model)
 
 
 def _load_all_models() -> None:

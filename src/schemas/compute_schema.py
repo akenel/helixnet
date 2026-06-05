@@ -63,6 +63,8 @@ class BrainLoad(BaseModel):
     jobs_served: int            # jobs done
     euro_per_credit: float
     credit_tokens: int
+    by_user: dict[str, int] = {}    # owner -> running slots (the live fair split)
+    cap_per_user: int = 0           # current dynamic per-user cap (total // active users)
 
 
 class ComputeSummary(BaseModel):

@@ -151,6 +151,27 @@
       <div x-ref="loadChart" class="h-[120px] w-full mt-4"></div>
     </div>
 
+    <!-- FAIR SHARE: per-user running slots vs the dynamic cap -->
+    <div class="card rounded-xl p-5" x-show="Object.keys(brain.by_user||{}).length">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs uppercase tracking-wider text-slate-500">Fair share · who's on the brain</span>
+        <span class="text-xs font-mono text-slate-400">cap/user now: <span class="text-brand font-bold" x-text="brain.cap_per_user"></span> · <span x-text="Object.keys(brain.by_user||{}).length"></span> active</span>
+      </div>
+      <div class="space-y-2">
+        <template x-for="[user,n] in Object.entries(brain.by_user||{})" :key="user">
+          <div class="flex items-center gap-3 text-sm">
+            <span class="font-mono text-slate-300 w-28 truncate" x-text="'@'+user"></span>
+            <div class="flex-1 h-2.5 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-brand transition-all duration-500"
+                   :style="`width:${Math.min(100, n/brain.cap*100)}%`"></div>
+            </div>
+            <span class="font-mono text-xs w-20 text-right" :class="n>brain.cap_per_user ? 'text-amber-400' : 'text-slate-400'"
+                  x-text="n+' / '+brain.cap_per_user"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <template x-for="m in adminTiles()" :key="m.label">
         <div class="card rounded-xl p-5">
@@ -191,7 +212,7 @@ function lpcx() {
     token: null, me: null, credits: null,
     brainMode: 'shared', byoEndpoint: '',
     templates: [], selectedTemplate: 'print-card',
-    brain: {active:0,waiting:0,cap:50,load_pct:0,tokens_total:0,jobs_served:0,euro_per_credit:0,credit_tokens:1000},
+    brain: {active:0,waiting:0,cap:50,load_pct:0,tokens_total:0,jobs_served:0,euro_per_credit:0,credit_tokens:1000,by_user:{},cap_per_user:0},
     jobs: [],
     loadHist: [], loadChartU: null,
 

@@ -54,7 +54,7 @@ def euro_per_credit() -> float:
 #   active  = jobs RUNNING (in a consumer slot)
 #   waiting = jobs QUEUED  (in the RabbitMQ line, not yet picked up)
 async def brain_load(db: AsyncSession) -> dict:
-    from src.db.models.compute_model import ComputeJobModel  # local import: avoid cycle
+    from src.db.models.compute_model import ComputeJobModel, ComputeJobStatus  # local import: avoid cycle
     rows = await db.execute(
         select(ComputeJobModel.status, func.count().label("c")).group_by(ComputeJobModel.status)
     )
@@ -65,7 +65,16 @@ async def brain_load(db: AsyncSession) -> dict:
     toks = (await db.execute(
         select(func.coalesce(func.sum(ComputeJobModel.tokens), 0))
     )).scalar() or 0
+    # per-user running breakdown -- shows the fair split live
+    urows = await db.execute(
+        select(ComputeJobModel.owner, func.count().label("c"))
+        .where(ComputeJobModel.status == ComputeJobStatus.RUNNING)
+        .group_by(ComputeJobModel.owner)
+        .order_by(func.count().desc())
+    )
+    by_user = {row.owner: row.c for row in urows}
     cap = LPCX_BRAIN_CAP
+    active_users = max(1, len(by_user))
     return {
         "active": active,
         "waiting": waiting,
@@ -75,6 +84,8 @@ async def brain_load(db: AsyncSession) -> dict:
         "jobs_served": done,
         "euro_per_credit": round(euro_per_credit(), 6),
         "credit_tokens": LPCX_CREDIT_TOKENS,
+        "by_user": by_user,
+        "cap_per_user": max(1, cap // active_users),
     }
 
 
