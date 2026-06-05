@@ -357,8 +357,19 @@ async def stream(request: Request):
                 )
                 jobs = [ComputeJobRead.model_validate(j).model_dump(mode="json")
                         for j in rows.scalars().all()]
+                # FIFO position among all QUEUED jobs (1-based). Approximate ETA --
+                # fairness can let a less-busy user jump ahead; it's your place in line.
+                qrows = (await db.execute(
+                    select(ComputeJobModel.id)
+                    .where(ComputeJobModel.status == ComputeJobStatus.QUEUED)
+                    .order_by(ComputeJobModel.created_at.asc())
+                )).all()
+                pos = {str(r[0]): i + 1 for i, r in enumerate(qrows)}
+                for d in jobs:
+                    if d["status"] == "queued":
+                        d["queue_position"] = pos.get(d["id"], 0)
                 brain = await brain_load(db)
-            payload = {"brain": brain, "jobs": jobs}
+            payload = {"brain": brain, "jobs": jobs, "queue_total": len(pos)}
             yield f"data: {json.dumps(payload, default=str)}\n\n"
             await asyncio.sleep(1.0)
 

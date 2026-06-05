@@ -31,6 +31,7 @@ class ComputeJobRead(BaseModel):
     brain_mode: str
     brain_model: str
     reject_reason: str | None = None
+    queue_position: int = 0     # FIFO place in line when queued (0 = n/a)
     created_at: datetime
     updated_at: datetime
 

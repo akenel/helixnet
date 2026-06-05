@@ -114,6 +114,7 @@
             <div class="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden max-w-xs">
               <div class="h-full rounded-full transition-all duration-500" :class="barColor(j.status)" :style="`width:${j.progress}%`"></div>
             </div>
+            <span class="font-mono text-[11px] text-amber-300 w-20 text-right" x-show="j.status==='queued'&&j.queue_position" x-text="'≈ #'+j.queue_position+' in line'"></span>
             <span class="font-mono text-xs text-slate-400 w-24 text-right" x-text="j.tokens+' tok'"></span>
             <span class="font-mono text-xs text-brand w-16 text-right" x-text="j.credits_burned+' cr'"></span>
             <button @click="kill(j.id)" x-show="['running','queued'].includes(j.status)" class="text-xs px-2 py-1 rounded border border-rose-500/40 text-rose-300 hover:bg-rose-500/10">✕ kill</button>
@@ -197,6 +198,7 @@
             <span class="text-slate-400 w-20 truncate" x-text="j.owner"></span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide" :class="pill(j.status)" x-text="j.status"></span>
             <div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full" :class="barColor(j.status)" :style="`width:${j.progress}%`"></div></div>
+            <span class="font-mono text-[11px] text-amber-300 w-16 text-right" x-show="j.status==='queued'&&j.queue_position" x-text="'#'+j.queue_position"></span>
             <span class="font-mono text-xs text-brand w-14 text-right" x-text="j.credits_burned+' cr'"></span>
           </div>
         </template>
