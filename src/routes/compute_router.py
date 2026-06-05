@@ -406,7 +406,8 @@ async def worker_result(body: WorkerResult, _=Depends(require_node),
         return {"ok": True, "failed": True}
 
     job.output = (body.output or "")[:200000]   # store untrusted output (cap size)
-    job.output_type = body.output_type
+    _recipe = RECIPES.get(job.template)          # type is authoritative from the recipe,
+    job.output_type = _recipe["output"] if _recipe else body.output_type   # not the worker
     job.tokens = body.tokens
     job.status = ComputeJobStatus.DONE
     job.progress = 100
