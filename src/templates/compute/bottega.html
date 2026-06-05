@@ -62,17 +62,24 @@
 
   <!-- the menu -->
   <div x-show="!active">
-    <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">the menu</div>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <template x-for="r in recipes" :key="r.slug">
-        <button @click="pick(r)" class="card rounded-xl p-5 text-left hover:border-brand/50 transition">
-          <div class="text-2xl mb-2" x-text="r.emoji"></div>
-          <div class="font-semibold" x-text="r.title"></div>
-          <div class="text-[11px] text-slate-500 font-mono mt-1" x-text="r.category+' · ~'+r.est_credits+' cr'"></div>
-        </button>
-      </template>
-      <template x-if="recipes.length===0"><div class="text-sm text-slate-600 px-2">loading menu…</div></template>
-    </div>
+    <div class="text-2xl font-bold">What do you want to make?</div>
+    <div class="text-sm text-slate-500 mt-1 mb-7">Pick a card. Answer a couple of questions. Get the thing.</div>
+    <template x-for="c in cats" :key="c.key">
+      <div x-show="inCat(c.key).length" class="mb-8">
+        <div class="text-sm font-semibold text-slate-300 mb-1" x-text="c.label"></div>
+        <div class="text-xs text-slate-500 mb-3" x-text="c.hint"></div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <template x-for="r in inCat(c.key)" :key="r.slug">
+            <button @click="pick(r)" class="card rounded-xl p-5 text-left hover:border-brand/50 transition">
+              <div class="text-2xl mb-2" x-text="r.emoji"></div>
+              <div class="font-semibold" x-text="r.title"></div>
+              <div class="text-[11px] text-slate-500 font-mono mt-1" x-text="'~'+r.est_credits+' credits'"></div>
+            </button>
+          </template>
+        </div>
+      </div>
+    </template>
+    <template x-if="recipes.length===0"><div class="text-sm text-slate-600 px-2">loading menu…</div></template>
   </div>
 
   <!-- run a recipe -->
@@ -142,6 +149,12 @@ function bottega() {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
     saveMsg: '', saving: false, handle: '', savedUrl: '',
+    cats: [
+      { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
+      { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
+      { key:'media',    label:'🎬 Make Media',        hint:'playlists and more' },
+    ],
+    inCat(k) { return this.recipes.filter(r => r.category === k); },
     boot() {
       this.token = this.loadToken(); this.me = this.decodeUser();
       this.fetchMenu();
