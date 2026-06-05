@@ -198,6 +198,59 @@
     </div>
   </section>
 
+  <!-- ============================ WALLET ============================ -->
+  <section x-show="view==='wallet'" class="space-y-5" style="display:none">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-bold">Wallet</h1>
+        <p class="text-sm text-slate-500">Credits flow both ways. Spend them, earn them, pass them to a neighbour.</p>
+      </div>
+      <div class="card rounded-xl px-5 py-3 flex items-center gap-3">
+        <div class="text-[11px] uppercase tracking-wider text-slate-500">Balance</div>
+        <div class="font-mono text-2xl font-bold" x-text="credits ? credits.balance : '—'"></div>
+        <div class="text-[10px] text-slate-500 font-mono" x-show="credits" x-text="'≈ €'+(credits?(credits.balance*credits.euro_per_credit).toFixed(3):0)"></div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5">
+      <!-- send credits -->
+      <div class="card rounded-xl p-5">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">Send credits to a neighbour</div>
+        <input x-model="xferTo" placeholder="username (e.g. nino)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-2">
+        <input x-model.number="xferAmount" type="number" min="1" placeholder="amount" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-2 font-mono">
+        <input x-model="xferNote" placeholder="note (optional)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-3">
+        <button @click="sendCredits()" :disabled="!token||!xferTo||!xferAmount" class="w-full py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 disabled:cursor-not-allowed transition">→ Send</button>
+        <div class="text-xs mt-2 font-mono" :class="walletMsgOk?'text-emerald-400':'text-rose-400'" x-text="walletMsg"></div>
+      </div>
+
+      <!-- admin grant -->
+      <div class="card rounded-xl p-5" x-show="isAdmin">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">Grant credits <span class="text-amber-400">(admin)</span></div>
+        <input x-model="grantTo" placeholder="username" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-2">
+        <input x-model.number="grantAmount" type="number" min="1" placeholder="amount" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-2 font-mono">
+        <input x-model="grantNote" placeholder="reason (e.g. translated the menu)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-3">
+        <button @click="doGrant()" :disabled="!grantTo||!grantAmount" class="w-full py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 transition">＋ Grant</button>
+      </div>
+
+      <!-- history -->
+      <div class="card rounded-xl overflow-hidden" :class="isAdmin?'lg:col-span-1':'lg:col-span-2'">
+        <div class="px-4 py-2.5 border-b border-slate-800 text-xs font-mono text-slate-400 flex justify-between">
+          <span>credit history</span><button @click="fetchLedger()" class="text-slate-500 hover:text-slate-300">↻</button>
+        </div>
+        <div class="divide-y divide-slate-800/70 max-h-80 overflow-y-auto">
+          <template x-for="(e,i) in ledger" :key="i">
+            <div class="px-4 py-2.5 flex items-center gap-3 text-sm">
+              <span class="font-mono text-lg font-bold w-16 text-right" :class="e.amount>=0?'text-emerald-400':'text-rose-400'" x-text="(e.amount>=0?'+':'')+e.amount"></span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-800 text-slate-400" x-text="e.kind"></span>
+              <span class="flex-1 text-xs text-slate-400 truncate" x-text="e.note"></span>
+            </div>
+          </template>
+          <template x-if="ledger.length===0"><div class="px-4 py-8 text-center text-sm text-slate-600">no activity yet</div></template>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <footer class="mt-10 pt-5 border-t border-slate-800 text-center text-xs text-slate-600 font-mono">
     We host the square, not the model. · live SSE telemetry · controls = audited POST · Keycloak-scoped · credit = brain tokens ÷ <span x-text="brain.credit_tokens"></span>
   </footer>
@@ -206,12 +259,15 @@
 <script>
 function lpcx() {
   return {
-    views: [ {id:'requester',label:'Requester'}, {id:'admin',label:'Square Admin'} ],
+    views: [ {id:'requester',label:'Requester'}, {id:'wallet',label:'Wallet'}, {id:'admin',label:'Square Admin'} ],
     view: 'requester',
     clock: '', connected: false,
     token: null, me: null, credits: null,
     brainMode: 'shared', byoEndpoint: '',
     templates: [], selectedTemplate: 'print-card',
+    isAdmin: false, ledger: [],
+    xferTo: '', xferAmount: null, xferNote: '', walletMsg: '', walletMsgOk: false,
+    grantTo: '', grantAmount: null, grantNote: '',
     brain: {active:0,waiting:0,cap:50,load_pct:0,tokens_total:0,jobs_served:0,euro_per_credit:0,credit_tokens:1000,by_user:{},cap_per_user:0},
     jobs: [],
     loadHist: [], loadChartU: null,
@@ -223,7 +279,40 @@ function lpcx() {
       this.connect();
       this.refreshCredits();
       this.fetchTemplates();
+      this.fetchLedger();
       this.$nextTick(()=>this.buildChart());
+    },
+    async fetchLedger() {
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/ledger?limit=25', { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) this.ledger = await r.json();
+      } catch(_) {}
+    },
+    async sendCredits() {
+      if (!this.token) return;
+      this.walletMsg = '';
+      try {
+        const r = await fetch('/api/v1/compute/credits/transfer', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+          body: JSON.stringify({ to_account:this.xferTo, amount:this.xferAmount, note:this.xferNote||null }),
+        });
+        const d = await r.json();
+        if (r.ok) { this.walletMsgOk=true; this.walletMsg='sent — balance '+d.balance; this.xferTo=''; this.xferAmount=null; this.xferNote=''; this.refreshCredits(); this.fetchLedger(); }
+        else { this.walletMsgOk=false; this.walletMsg=d.detail||('error '+r.status); }
+      } catch(e) { this.walletMsgOk=false; this.walletMsg='failed'; }
+    },
+    async doGrant() {
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/credits/grant', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+          body: JSON.stringify({ account:this.grantTo, amount:this.grantAmount, note:this.grantNote||null }),
+        });
+        const d = await r.json();
+        if (r.ok) { this.walletMsgOk=true; this.walletMsg='granted '+this.grantAmount+' to @'+this.grantTo; this.grantTo=''; this.grantAmount=null; this.grantNote=''; this.refreshCredits(); this.fetchLedger(); }
+        else { this.walletMsgOk=false; this.walletMsg=d.detail||('error '+r.status); }
+      } catch(e) { this.walletMsgOk=false; this.walletMsg='failed'; }
     },
     async fetchTemplates() {
       if (!this.token) return;
@@ -250,6 +339,8 @@ function lpcx() {
       try {
         const p = JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
         if (p.exp * 1000 <= Date.now()) { this.token = null; return null; }
+        const roles = (p.realm_access?.roles || []);
+        this.isAdmin = roles.some(r => r.includes('camper-manager') || r.includes('camper-admin'));
         return { username: p.preferred_username || 'unknown' };
       } catch(e) { return null; }
     },

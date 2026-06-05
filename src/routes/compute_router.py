@@ -21,11 +21,12 @@ from src.db.database import get_db_session, AsyncSessionLocal
 from src.db.models.compute_model import ComputeJobModel, ComputeJobStatus, ComputeTemplateModel
 from src.schemas.compute_schema import (
     ComputeJobCreate, ComputeJobRead, CreditBalance, BrainLoad, ComputeSummary,
-    ComputeTemplateRead,
+    ComputeTemplateRead, TransferRequest, GrantRequest, LedgerEntryRead,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.compute_service import (
     credit_balance, ensure_starter_grant, brain_load, euro_per_credit,
+    ledger_history, transfer_credits, grant_credits,
     LPCX_CREDIT_TOKENS,
 )
 from src.compute.queue import publish_job
@@ -34,6 +35,11 @@ from src.compute.queue import publish_job
 def require_compute_access():
     """Compute access -- same roles as QA/backlog dashboards."""
     return require_roles(["camper-qa-tester", "camper-manager", "camper-admin"])
+
+
+def require_compute_admin():
+    """Granting credits -- managers + admins only."""
+    return require_roles(["camper-manager", "camper-admin"])
 
 
 logger = logging.getLogger("helix.compute_router")
@@ -62,6 +68,49 @@ async def get_credits(
         account=account, balance=balance,
         credit_tokens=LPCX_CREDIT_TOKENS, euro_per_credit=round(euro_per_credit(), 6),
     )
+
+
+@router.get("/ledger", response_model=list[LedgerEntryRead])
+async def my_ledger(
+    limit: int = 25,
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """The caller's credit trail (in + out) -- append-only, verifiable."""
+    rows = await ledger_history(db, current_user["username"], limit)
+    return [LedgerEntryRead.model_validate(r) for r in rows]
+
+
+@router.post("/credits/transfer")
+async def transfer(
+    payload: TransferRequest,
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Pay credits to a neighbour. The earn loop: credits come IN to them."""
+    sender = current_user["username"]
+    await ensure_starter_grant(db, sender)
+    try:
+        await transfer_credits(db, sender, payload.to_account, payload.amount, payload.note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True, "balance": await credit_balance(db, sender)}
+
+
+@router.post("/credits/grant")
+async def grant(
+    payload: GrantRequest,
+    current_user: dict = Depends(require_compute_admin()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Admin/manager rewards a contribution or tops up an account."""
+    try:
+        await grant_credits(db, payload.account, payload.amount,
+                            by=current_user["username"], note=payload.note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True, "account": payload.account,
+            "balance": await credit_balance(db, payload.account)}
 
 
 @router.get("/brain", response_model=BrainLoad)

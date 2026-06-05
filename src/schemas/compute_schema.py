@@ -54,6 +54,28 @@ class CreditBalance(BaseModel):
     euro_per_credit: float      # shadow price (reporting only)
 
 
+class TransferRequest(BaseModel):
+    to_account: str = Field(..., min_length=1, max_length=100)
+    amount: int = Field(..., gt=0)
+    note: str | None = Field(None, max_length=200)
+
+
+class GrantRequest(BaseModel):
+    account: str = Field(..., min_length=1, max_length=100)
+    amount: int = Field(..., gt=0)
+    note: str | None = Field(None, max_length=200)
+
+
+class LedgerEntryRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    kind: str
+    amount: int
+    counterparty: str | None = None
+    note: str | None = None
+    created_at: datetime
+
+
 class BrainLoad(BaseModel):
     active: int                 # jobs running in a consumer slot
     waiting: int                # jobs queued in RabbitMQ, waiting their turn (FIFO)

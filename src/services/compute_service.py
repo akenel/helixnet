@@ -133,6 +133,57 @@ async def ensure_starter_grant(db: AsyncSession, account: str) -> int:
     return await credit_balance(db, account)
 
 
+async def ledger_history(db: AsyncSession, account: str, limit: int = 25) -> list:
+    """The account's credit trail (newest first) -- in and out."""
+    rows = await db.execute(
+        select(ComputeLedgerModel)
+        .where(ComputeLedgerModel.account == account)
+        .order_by(ComputeLedgerModel.created_at.desc())
+        .limit(limit)
+    )
+    return list(rows.scalars().all())
+
+
+async def account_exists(db: AsyncSession, account: str) -> bool:
+    n = (await db.execute(
+        select(func.count()).select_from(ComputeLedgerModel)
+        .where(ComputeLedgerModel.account == account)
+    )).scalar() or 0
+    return n > 0
+
+
+async def transfer_credits(db: AsyncSession, sender: str, recipient: str,
+                           amount: int, note: str | None = None) -> None:
+    """Peer transfer: sender -> recipient. Atomic (both rows in one commit).
+    NOTE: balance check is read-then-write -- a tiny overdraft race exists under
+    concurrent transfers; acceptable for beta (prod: row-lock a balance row)."""
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+    if sender == recipient:
+        raise ValueError("can't transfer to yourself")
+    if not await account_exists(db, recipient):
+        raise ValueError(f"unknown recipient '{recipient}'")
+    if await credit_balance(db, sender) < amount:
+        raise ValueError("insufficient credits")
+    tag = (note or "transfer").strip()[:160]
+    await post_ledger(db, sender, ComputeLedgerKind.SPEND, -amount,
+                      counterparty=recipient, note=f"→ @{recipient}: {tag}")
+    await post_ledger(db, recipient, ComputeLedgerKind.EARN, amount,
+                      counterparty=sender, note=f"← @{sender}: {tag}")
+    await db.commit()
+
+
+async def grant_credits(db: AsyncSession, account: str, amount: int,
+                        by: str, note: str | None = None) -> None:
+    """Admin/system grant -- rewards a contribution or tops up."""
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+    tag = (note or "grant").strip()[:160]
+    await post_ledger(db, account, ComputeLedgerKind.GRANT, amount,
+                      counterparty=by, note=f"grant by @{by}: {tag}")
+    await db.commit()
+
+
 def verifiable_note(job_number: int, tokens: int, credits: int) -> str:
     """Self-documenting ledger note so the row recomputes: tokens / rate = credits."""
     return f"CJ-{job_number:03d} · {tokens} tok ÷ {LPCX_CREDIT_TOKENS} = {credits} cr"
