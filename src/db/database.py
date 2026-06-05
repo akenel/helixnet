@@ -42,6 +42,8 @@ from src.db.models import (  # noqa: F401
     ComputeLedgerModel,
     ComputeTemplateModel,
     ComputeNodeModel,
+    BottegaProfileModel,
+    BottegaProfileHistoryModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

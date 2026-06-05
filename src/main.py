@@ -52,6 +52,7 @@ from src.routes.backlog_router import router as backlog_router, html_router as b
 from src.services.backlog_seeding_service import seed_backlog_data
 from src.routes.compute_router import router as compute_router, html_router as compute_html_router
 from src.services.compute_seeding_service import seed_compute_data
+from src.routes.bottega_router import router as bottega_router
 
 # ================================================================
 # 🌍 Global Configuration
@@ -296,6 +297,7 @@ app.include_router(backlog_router, tags=["Backlog - Unified Board"])
 app.include_router(backlog_html_router, tags=["Backlog - Web UI"])
 app.include_router(compute_router, tags=["Compute - LPCX"])
 app.include_router(compute_html_router, tags=["Compute - Web UI"])
+app.include_router(bottega_router, tags=["Bottega - Onboarding"])
 
 logger.info(f"🖥️ FastAPI app initialized → {settings.PROJECT_NAME} v{settings.PROJECT_APP_VERSION}")
 logger.info(f"🔗 API base path: {settings.API_V1_STR}")

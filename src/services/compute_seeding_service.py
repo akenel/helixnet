@@ -25,6 +25,7 @@ SEED_TEMPLATES = [
     ("2d-to-3d", "2D → 3D Model", "Turn a 2D image into a printable 3D model file (the steampunk-submarine job).", "modeling", "\U0001F9CA", 8),
     ("doc-summary", "Doc Summary", "Summarize a document into a tight brief -- the SOP way, low token cost.", "text", "\U0001F4DD", 1),
     ("image-gen", "Image Generation", "Text-to-image generation from a short prompt.", "media", "\U0001F3A8", 4),
+    ("cv-to-bio", "CV → Bio", "Drop your CV (PDF/Word) -> we build your Bottega: bio, tagline, skills, categories. The onboarding Pulse Check.", "text", "\U0001F9EC", 2),
 ]
 
 
