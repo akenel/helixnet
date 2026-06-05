@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ComputeJobCreate(BaseModel):
-    template: str = Field(default="pdf-render", max_length=80)
+    template: str = Field(default="print-card", max_length=80)
     node: str = Field(default="lp-hetzner-0", max_length=100)
     brain_mode: Literal["shared", "byo"] = "shared"
     byo_endpoint: str | None = Field(default=None, max_length=300)
@@ -33,6 +33,18 @@ class ComputeJobRead(BaseModel):
     reject_reason: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class ComputeTemplateRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    slug: str
+    title: str
+    description: str | None = None
+    category: str
+    emoji: str
+    est_credits: int
+    enabled: bool
 
 
 class CreditBalance(BaseModel):

@@ -54,6 +54,7 @@
         <span x-text="connected ? 'SSE · LIVE' : 'connecting…'"></span>
       </div>
       <div class="text-xs font-mono text-slate-500 tabular-nums" x-text="clock"></div>
+      <a href="/compute/faq" class="text-xs font-semibold text-slate-400 hover:text-brand transition">Help / FAQ</a>
       <template x-if="me"><span class="text-xs font-mono text-slate-300">@<span x-text="me.username"></span></span></template>
       <template x-if="!me"><a href="/backlog/login" class="text-xs font-semibold text-brand hover:underline">Log in via LP</a></template>
     </div>
@@ -78,13 +79,19 @@
     </div>
 
     <div class="card rounded-xl p-5 flex flex-wrap items-center gap-3">
+      <!-- template catalog picker (the SOP allowlist) -->
+      <select x-model="selectedTemplate" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-200">
+        <template x-for="t in templates" :key="t.slug">
+          <option :value="t.slug" x-text="t.emoji+'  '+t.title+'  ·  ~'+t.est_credits+' cr'"></option>
+        </template>
+      </select>
       <!-- brain selector: shared (sponsored, counts against ceiling) vs BYO (your own) -->
       <div class="flex items-center gap-1 bg-slate-900/70 p-1 rounded-lg border border-slate-800">
         <button @click="brainMode='shared'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="brainMode==='shared'?'bg-brand text-white':'text-slate-400 hover:text-slate-200'">Shared brain</button>
         <button @click="brainMode='byo'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="brainMode==='byo'?'bg-emerald-600 text-white':'text-slate-400 hover:text-slate-200'">BYO brain</button>
       </div>
       <input x-show="brainMode==='byo'" x-model="byoEndpoint" placeholder="http://my-ollama:11434" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 w-56">
-      <button @click="submit(1)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 disabled:cursor-not-allowed transition">▶ Submit pdf-render job</button>
+      <button @click="submit(1)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 disabled:cursor-not-allowed transition">▶ Run</button>
       <button @click="submit(10)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition">⚡ Burst ×10</button>
       <span class="text-xs text-slate-500 font-mono" x-show="!token">log in via LP to submit · the live feed below works without login</span>
       <span class="text-xs text-emerald-400 font-mono" x-show="brainMode==='byo'">BYO = off the shared quota, 0 shared credits</span>
@@ -183,7 +190,8 @@ function lpcx() {
     clock: '', connected: false,
     token: null, me: null, credits: null,
     brainMode: 'shared', byoEndpoint: '',
-    brain: {active:0,users:0,cap:50,load_pct:0,peak:0,rejections:0,tokens_total:0,jobs_served:0,euro_per_credit:0,credit_tokens:1000},
+    templates: [], selectedTemplate: 'print-card',
+    brain: {active:0,waiting:0,cap:50,load_pct:0,tokens_total:0,jobs_served:0,euro_per_credit:0,credit_tokens:1000},
     jobs: [],
     loadHist: [], loadChartU: null,
 
@@ -193,7 +201,19 @@ function lpcx() {
       this.tickClock(); setInterval(()=>this.tickClock(), 1000);
       this.connect();
       this.refreshCredits();
+      this.fetchTemplates();
       this.$nextTick(()=>this.buildChart());
+    },
+    async fetchTemplates() {
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/templates', { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) {
+          this.templates = await r.json();
+          if (this.templates.length && !this.templates.find(t => t.slug === this.selectedTemplate))
+            this.selectedTemplate = this.templates[0].slug;
+        }
+      } catch(_) {}
     },
     tickClock(){ this.clock = new Date().toLocaleTimeString('en-GB'); },
 
@@ -235,7 +255,7 @@ function lpcx() {
     },
     async submit(n) {
       if (!this.token) return;
-      const body = { template:'pdf-render', node:'lp-hetzner-0', brain_mode:this.brainMode };
+      const body = { template:this.selectedTemplate, node:'lp-hetzner-0', brain_mode:this.brainMode };
       if (this.brainMode==='byo' && this.byoEndpoint) body.byo_endpoint = this.byoEndpoint;
       for (let i=0; i<n; i++) {
         fetch('/api/v1/compute/jobs', {

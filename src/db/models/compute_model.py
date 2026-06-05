@@ -122,6 +122,41 @@ class ComputeJobModel(Base):
 
 
 # ================================================================
+# Template Catalog -- the approved SOP allowlist (safety by construction).
+# Users run TEMPLATES, not free-form prompts. submit rejects anything not here.
+# ================================================================
+class ComputeTemplateModel(Base):
+    __tablename__ = "compute_templates"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4,
+    )
+    slug: Mapped[str] = mapped_column(
+        String(64), nullable=False, unique=True, index=True,
+        comment="Allowlist key used by submit (e.g. 'print-card')",
+    )
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    category: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="general",
+        comment="print, media, modeling, text",
+    )
+    emoji: Mapped[str] = mapped_column(String(8), nullable=False, default="\U0001F9F0")
+    est_credits: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=2,
+        comment="Estimated credits (actual is metered by tokens used)",
+    )
+    enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, index=True,
+        comment="Disabled templates can't be submitted (admin off-switch)",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc), nullable=False,
+    )
+
+
+# ================================================================
 # Credit Ledger (append-only) -- who owes who, what settled
 # ================================================================
 class ComputeLedgerModel(Base):

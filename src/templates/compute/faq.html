@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LPCX — Help & FAQ</title>
+<!-- FULL libraries only. No bundled subsets. (CLAUDE.md rule 9) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','ui-monospace','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1200px 600px at 80% -10%, #14213055, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.6); border: 1px solid rgba(30,41,59,0.9); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  .q { scroll-margin-top: 5rem; }
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased">
+
+<header class="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800">
+  <div class="max-w-4xl mx-auto px-5 h-16 flex items-center gap-3">
+    <div class="w-2.5 h-2.5 rounded-full bg-brand"></div>
+    <div class="leading-none">
+      <div class="font-extrabold tracking-tight text-[15px]">La Piazza <span class="text-brand">Compute Exchange</span></div>
+      <div class="text-[10px] text-slate-500 font-mono mt-0.5 tracking-wider">HELP &amp; FAQ</div>
+    </div>
+    <a href="/compute" class="ml-auto text-xs font-semibold text-brand hover:underline">← back to console</a>
+  </div>
+  <div class="h-px grad-rule"></div>
+</header>
+
+<main class="max-w-4xl mx-auto px-5 py-8 space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-bold">How LPCX works</h1>
+    <p class="text-sm text-slate-400 mt-1">The square hosts the trade, not the model. Here's the deal in plain terms.</p>
+  </div>
+
+  <!-- quick nav -->
+  <div class="card rounded-xl p-4 flex flex-wrap gap-2 text-xs font-mono">
+    <a href="#credit" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What's a credit?</a>
+    <a href="#sop" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What's an SOP?</a>
+    <a href="#templates" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Templates</a>
+    <a href="#queue" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Wait your turn</a>
+    <a href="#byo" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">BYO brain</a>
+    <a href="#earn" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Earning credits</a>
+    <a href="#rules" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Acceptable use</a>
+  </div>
+
+  <section id="credit" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> What's a credit, and what's it worth?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      A credit is pegged to one thing: <strong>brain work, measured in tokens.</strong>
+      <span class="font-mono text-brand">1 credit = 1,000 tokens.</span> That's it.
+    </p>
+    <ul class="text-sm text-slate-400 mt-3 space-y-1.5 list-disc list-inside">
+      <li><strong>Verifiable</strong> — the model reports the tokens it used; every ledger row recomputes as <span class="font-mono">credits = ceil(tokens ÷ 1000)</span>. The ledger is append-only.</li>
+      <li><strong>Stable</strong> — it's pegged to real work, so it can't inflate. Not a speculative coin.</li>
+      <li><strong>Easy</strong> — one division. A kid can audit it.</li>
+    </ul>
+    <p class="text-sm text-slate-400 mt-3">New here? You start with <span class="font-mono text-emerald-400">300 credits</span> (300,000 tokens of free brain).</p>
+  </section>
+
+  <section id="sop" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> What's an SOP, and why do I care?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      An SOP — <strong>Standard Operating Procedure</strong> — is doing the same job the same way every time, with tight, consistent context.
+      It's the difference between a 4-star and a 5-star result: <em>consistency.</em>
+    </p>
+    <p class="text-sm text-slate-400 mt-3 leading-relaxed">
+      Here's the part that hits your wallet: every token you send is re-read by the brain on <em>every step</em> of its answer.
+      A bloated 50,000-token prompt is re-read 50,000 times. A tight SOP-shaped prompt (~2,000 tokens) gets the <strong>same result for ~25× less</strong>.
+      <span class="text-brand font-semibold">Sloppy, fat context burns your credits. Tight SOPs stretch them.</span> The system rewards doing it right.
+    </p>
+  </section>
+
+  <section id="templates" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> Why do I pick a template instead of typing whatever I want?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      Because templates <strong>are</strong> the SOPs — proven, tight, known-cost jobs: print a card, make a Locandina, curate a playlist, turn a 2D image into a 3D print.
+      You pick from the catalog; you don't free-type a 10-page prompt. That keeps your costs low, your results consistent, and the platform safe.
+      <span class="text-slate-400">Got a new kind of job? Make your own SOP, refine it, and it becomes a template.</span>
+    </p>
+  </section>
+
+  <section id="queue" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> "Wait your turn" — what's the queue?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      The shared brain has a fixed number of slots. If they're all busy, your job <strong>waits in line, first-in-first-out</strong> — it isn't thrown away.
+      If nobody's waiting, you go straight through. Ten people ahead of you? You're number eleven. Simple and fair.
+    </p>
+  </section>
+
+  <section id="byo" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> What's "BYO brain"?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      Bring Your Own brain. If the shared brain is full — or you just want to use your own model endpoint — flip to <strong>BYO</strong> and point it at your endpoint.
+      BYO jobs run <strong>off the shared quota and cost zero shared credits</strong> (you're on your own dime). It's the escape valve when the line is long.
+    </p>
+  </section>
+
+  <section id="earn" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> I blew my credits. Now what?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      You earn more. Lend your idle machine to the network, contribute skills, help a neighbour — credits come back through work, not a monthly ransom.
+      No money required; the square balances itself. <span class="text-slate-400">And next time, you'll use tighter SOPs. Fool me once…</span>
+    </p>
+  </section>
+
+  <section id="rules" class="card rounded-xl p-6 q border-l-2 border-brand/60">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> Acceptable use</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      LPCX runs <strong>approved templates only</strong> — it's a creative, practical toolbox (cards, posters, playlists, 3D prints, summaries), not a do-anything machine.
+    </p>
+    <ul class="text-sm text-slate-400 mt-3 space-y-1.5 list-disc list-inside">
+      <li>No weapons, harm, or anything illegal. No abuse of the shared brain or other people's machines.</li>
+      <li>Don't try to jailbreak the templates into doing something they're not for.</li>
+      <li>Be a good neighbour — others are in the queue with you.</li>
+    </ul>
+    <p class="text-xs text-slate-500 mt-3 font-mono">Abuse → your access goes. This is a town square, not a back alley.</p>
+  </section>
+
+  <footer class="pt-4 text-center text-xs text-slate-600 font-mono">
+    We host the square, not the model. · <a href="/compute" class="text-brand hover:underline">back to the console</a>
+  </footer>
+</main>
+</body>
+</html>

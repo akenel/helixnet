@@ -67,7 +67,7 @@ async def get_token(client: httpx.AsyncClient, kc: str, realm: str, client_id: s
 
 async def submit_one(client: httpx.AsyncClient, base: str, user: str, token: str,
                      brain_mode: str, byo_endpoint: str | None) -> Result:
-    body = {"template": "pdf-render", "node": "lp-loadtest", "brain_mode": brain_mode}
+    body = {"template": "print-card", "node": "lp-loadtest", "brain_mode": brain_mode}
     if brain_mode == "byo" and byo_endpoint:
         body["byo_endpoint"] = byo_endpoint
     t0 = time.perf_counter()

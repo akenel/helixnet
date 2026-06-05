@@ -40,6 +40,7 @@ from src.db.models import (  # noqa: F401
     # LPCX -- La Piazza Compute Exchange
     ComputeJobModel,
     ComputeLedgerModel,
+    ComputeTemplateModel,
 )
 
 logger = logging.getLogger("app/db/database.py 🪵️")

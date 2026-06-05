@@ -18,9 +18,10 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db_session, AsyncSessionLocal
-from src.db.models.compute_model import ComputeJobModel, ComputeJobStatus
+from src.db.models.compute_model import ComputeJobModel, ComputeJobStatus, ComputeTemplateModel
 from src.schemas.compute_schema import (
     ComputeJobCreate, ComputeJobRead, CreditBalance, BrainLoad, ComputeSummary,
+    ComputeTemplateRead,
 )
 from src.core.keycloak_auth import require_roles
 from src.services.compute_service import (
@@ -71,6 +72,20 @@ async def get_brain(
     return BrainLoad(**await brain_load(db))
 
 
+@router.get("/templates", response_model=list[ComputeTemplateRead])
+async def list_templates(
+    current_user: dict = Depends(require_compute_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """The approved SOP catalog -- the allowlist users pick from."""
+    rows = await db.execute(
+        select(ComputeTemplateModel)
+        .where(ComputeTemplateModel.enabled == True)  # noqa: E712
+        .order_by(ComputeTemplateModel.est_credits, ComputeTemplateModel.slug)
+    )
+    return [ComputeTemplateRead.model_validate(t) for t in rows.scalars().all()]
+
+
 @router.get("/jobs", response_model=list[ComputeJobRead])
 async def list_jobs(
     mine: bool = False,
@@ -107,6 +122,14 @@ async def submit_job(
     await ensure_starter_grant(db, owner)
     balance = await credit_balance(db, owner)
 
+    # ALLOWLIST (safety by construction): only enabled catalog templates may run.
+    tmpl = (await db.execute(
+        select(ComputeTemplateModel).where(
+            ComputeTemplateModel.slug == payload.template,
+            ComputeTemplateModel.enabled == True,  # noqa: E712
+        )
+    )).scalar_one_or_none()
+
     byo = payload.brain_mode == "byo"
     # job_number is DB-assigned (IDENTITY) -- atomic, race-free, no app round-trip.
     job = ComputeJobModel(
@@ -117,8 +140,11 @@ async def submit_job(
         brain_mode=payload.brain_mode,
         brain_model=(payload.byo_model or "byo") if byo else "ollama/turbo",
     )
+    if tmpl is None:
+        job.status = ComputeJobStatus.REJECTED
+        job.reject_reason = f"unknown template '{payload.template}' -- pick one from the catalog"
     # Shared brain needs credits (economic governor); BYO is on your own dime.
-    if not byo and balance <= 0:
+    elif not byo and balance <= 0:
         job.status = ComputeJobStatus.REJECTED
         job.reject_reason = "no credits -- earn more (the system teaches efficient SOP use)"
     db.add(job)
@@ -206,3 +232,9 @@ async def stream(request: Request):
 @html_router.get("/compute/dashboard", response_class=HTMLResponse)
 async def compute_dashboard(request: Request):
     return templates.TemplateResponse("compute/dashboard.html", {"request": request})
+
+
+@html_router.get("/compute/faq", response_class=HTMLResponse)
+@html_router.get("/compute/help", response_class=HTMLResponse)
+async def compute_faq(request: Request):
+    return templates.TemplateResponse("compute/faq.html", {"request": request})
