@@ -476,7 +476,8 @@ async def stream(request: Request):
                 rows = await db.execute(
                     select(ComputeJobModel).order_by(ComputeJobModel.created_at.desc()).limit(12)
                 )
-                jobs = [ComputeJobRead.model_validate(j).model_dump(mode="json")
+                jobs = [{**ComputeJobRead.model_validate(j).model_dump(mode="json"),
+                         "output": None}  # keep SSE lean; UI fetches output via GET /jobs/{id}
                         for j in rows.scalars().all()]
                 # FIFO position among all QUEUED jobs (1-based). Approximate ETA --
                 # fairness can let a less-busy user jump ahead; it's your place in line.

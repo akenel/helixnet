@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.31/dist/uPlot.min.css">
 <script src="https://unpkg.com/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
 
 <script>
@@ -27,6 +28,13 @@
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.82)} }
   ::-webkit-scrollbar { width:8px;height:8px } ::-webkit-scrollbar-thumb { background:#1e293b;border-radius:8px }
   .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  [x-cloak] { display:none !important; }
+  .md { font-size:13px; line-height:1.55; }
+  .md h1,.md h2,.md h3 { font-weight:700; color:#e2e8f0; margin:.6em 0 .3em; }
+  .md h1{font-size:1.15rem} .md h2{font-size:1.05rem}
+  .md ul,.md ol { padding-left:1.2em; margin:.4em 0; } .md li { margin:.25em 0; }
+  .md a { color:#C0392B; text-decoration:none; } .md a:hover { text-decoration:underline; }
+  .md p { margin:.5em 0; } .md strong { color:#f1f5f9; }
 </style>
 </head>
 
@@ -97,6 +105,21 @@
         <button @click="brainMode='byo'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition" :class="brainMode==='byo'?'bg-emerald-600 text-white':'text-slate-400 hover:text-slate-200'">BYO brain</button>
       </div>
       <input x-show="brainMode==='byo'" x-model="byoEndpoint" placeholder="http://my-ollama:11434" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 w-56">
+
+      <!-- recipe inputs: only when the chosen template is a real (output-producing) recipe -->
+      <div x-show="recipeOf()" class="w-full flex flex-wrap items-end gap-3 pt-1">
+        <template x-for="inp in (recipeOf()?.inputs||[]).filter(i=>i.type!=='file')" :key="inp.name">
+          <div class="flex flex-col gap-1">
+            <label class="text-[10px] uppercase tracking-wider text-slate-500" x-text="inp.label"></label>
+            <select x-show="inp.type==='select'" x-model="jobInputs[inp.name]" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200">
+              <template x-for="o in (inp.options||[])" :key="o"><option :value="o" x-text="o"></option></template>
+            </select>
+            <input x-show="inp.type!=='select'" x-model="jobInputs[inp.name]" :placeholder="inp.label" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 w-72">
+          </div>
+        </template>
+        <span x-show="(recipeOf()?.inputs||[]).some(i=>i.type==='file')" class="text-[11px] text-amber-400/80 font-mono self-center">📎 file-input recipes run in <a href="/compute/bottega" class="underline">La Bottega</a></span>
+      </div>
+
       <button @click="submit(1)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm bg-brand/90 hover:bg-brand text-white disabled:opacity-30 disabled:cursor-not-allowed transition">▶ Run</button>
       <button @click="submit(10)" :disabled="!token" class="px-4 py-2.5 rounded-lg font-semibold text-sm border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition">⚡ Burst ×10</button>
       <span class="text-xs text-slate-500 font-mono" x-show="!token">log in via LP to submit · the live feed below works without login</span>
@@ -118,6 +141,7 @@
             <span class="font-mono text-xs text-slate-400 w-24 text-right" x-text="j.tokens+' tok'"></span>
             <span class="font-mono text-xs text-brand w-16 text-right" x-text="j.credits_burned+' cr'"></span>
             <button @click="kill(j.id)" x-show="['running','queued'].includes(j.status)" class="text-xs px-2 py-1 rounded border border-rose-500/40 text-rose-300 hover:bg-rose-500/10">✕ kill</button>
+            <button @click="viewJob(j)" x-show="j.status==='done'" class="text-xs px-2 py-1 rounded border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10">view output</button>
             <span x-show="j.reject_reason" class="text-[10px] text-rose-400 font-mono" x-text="j.reject_reason"></span>
           </div>
         </template>
@@ -308,6 +332,34 @@
   </footer>
 </main>
 
+<!-- output viewer -->
+<div x-show="viewing" x-cloak @click.self="viewing=null" @keydown.escape.window="viewing=null"
+     class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+  <div class="card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+    <div class="h-1 grad-rule"></div>
+    <div class="px-5 py-3 flex items-center justify-between border-b border-slate-800">
+      <div class="font-mono text-sm text-slate-300">
+        CJ-<span x-text="viewing && String(viewing.job_number).padStart(3,'0')"></span>
+        · <span class="text-slate-200" x-text="viewing && viewing.template"></span>
+        · <span class="text-slate-500" x-text="viewing && ('ran on '+viewing.node)"></span>
+      </div>
+      <button @click="viewing=null" class="text-slate-500 hover:text-slate-200 text-lg leading-none">✕</button>
+    </div>
+    <div class="p-5 overflow-y-auto">
+      <template x-if="viewing && viewing.output && viewing.output_type==='json'">
+        <pre class="text-xs text-slate-300 whitespace-pre-wrap break-words" x-text="viewing.output"></pre>
+      </template>
+      <template x-if="viewing && viewing.output && viewing.output_type!=='json'">
+        <div class="md text-slate-300" x-html="renderMd(viewing.output)"></div>
+      </template>
+      <template x-if="viewing && !viewing.output">
+        <div class="text-sm text-slate-600">no output stored for this job</div>
+      </template>
+    </div>
+  </div>
+</div>
+
+
 <script>
 function lpcx() {
   return {
@@ -317,6 +369,7 @@ function lpcx() {
     token: null, me: null, credits: null,
     brainMode: 'shared', byoEndpoint: '',
     templates: [], selectedTemplate: 'print-card',
+    recipes: [], jobInputs: {}, viewing: null,
     nodes: [], selectedNode: 'lp-hetzner-0',
     regSlug: '', regLabel: '', regGpu: '', providerMsg: '',
     isAdmin: false, ledger: [],
@@ -333,6 +386,7 @@ function lpcx() {
       this.connect();
       this.refreshCredits();
       this.fetchTemplates();
+      this.fetchRecipes();
       this.fetchNodes();
       this.fetchLedger();
       this.$nextTick(()=>this.buildChart());
@@ -461,9 +515,26 @@ function lpcx() {
         if (r.ok) this.credits = await r.json();
       } catch(_) {}
     },
+    async fetchRecipes() {
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/bottega/recipes', { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) this.recipes = await r.json();
+      } catch(_) {}
+    },
+    recipeOf() { return this.recipes.find(r => r.slug === this.selectedTemplate) || null; },
+    renderMd(s) { try { return window.marked ? marked.parse(s||'') : (s||''); } catch(e){ return s||''; } },
+    async viewJob(j) {
+      this.viewing = j;   // show immediately
+      try {               // then fetch the full record (output isn't in the SSE feed)
+        const r = await fetch('/api/v1/compute/jobs/'+j.id, { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) this.viewing = await r.json();
+      } catch(_) {}
+    },
     async submit(n) {
       if (!this.token) return;
-      const body = { template:this.selectedTemplate, node:this.selectedNode, brain_mode:this.brainMode };
+      const body = { template:this.selectedTemplate, node:this.selectedNode, brain_mode:this.brainMode,
+                     inputs: this.recipeOf() ? this.jobInputs : {} };
       if (this.brainMode==='byo' && this.byoEndpoint) body.byo_endpoint = this.byoEndpoint;
       for (let i=0; i<n; i++) {
         fetch('/api/v1/compute/jobs', {
