@@ -12,7 +12,7 @@ from pathlib import Path
 from datetime import datetime 
 
 from fastapi import FastAPI, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -313,8 +313,13 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 # 🖥️ HTML Views (Dashboard, Login, Form Submission)
 # ================================================================
 @app.get("/", tags=["🧭 Web UI"], response_class=HTMLResponse)
+async def home(request: Request):
+    """La Piazza front door -- the public landing page."""
+    return templates.TemplateResponse("home.html", {"request": request})
+
+@app.get("/jobs", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def dashboard(request: Request):
-    """Render main dashboard page."""
+    """Render the job queue dashboard (the original engine view)."""
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
 @app.get("/login", tags=["🔑 Web UI"], response_class=HTMLResponse)
@@ -322,7 +327,7 @@ async def login_page(request: Request):
     """Render login page."""
     return templates.TemplateResponse("login.html", {"request": request})
 
-@app.get("/submit-form", tags=["📨 Web UI"], response_class=HTMLResponse)
-async def submit_form_page(request: Request):
-    """Render form submission page."""
-    return templates.TemplateResponse("submit_form.html", {"request": request})
+@app.get("/submit-form", tags=["📨 Web UI"])
+async def submit_form_page():
+    """The August-2025 submit form grew up -- send people to its real self, La Bottega."""
+    return RedirectResponse(url="/compute/bottega", status_code=307)

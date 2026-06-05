@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Piazza — the square where ideas become things</title>
+<meta name="description" content="La Piazza: drop your CV and get a profile in 30 seconds, make postcards, postings, playlists. No ads, no algorithm, your data stays yours. Built solo, in the open.">
+<meta property="og:title" content="La Piazza — the square where ideas become things">
+<meta property="og:description" content="Drop your CV → get your Bottega in 30 seconds. A workshop and a marketplace. No ads. No algorithm. Your data stays yours.">
+<meta property="og:type" content="website">
+<!-- FULL libraries only. No bundled subsets. (CLAUDE.md rule 9) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','ui-monospace','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1200px 680px at 50% -18%, #1f2a44, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.6); border: 1px solid rgba(30,41,59,0.9); transition: all .15s ease; }
+  .card:hover { border-color: rgba(192,57,43,0.5); transform: translateY(-2px); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  .glow { text-shadow: 0 0 40px rgba(192,57,43,0.35); }
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased">
+
+<div class="max-w-3xl mx-auto px-5 py-14 sm:py-20">
+
+  <!-- hero -->
+  <div class="text-center">
+    <div class="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-slate-500 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> La Piazza · live
+    </div>
+    <h1 class="text-5xl sm:text-6xl font-black tracking-tight leading-[1.05]">
+      The square where<br><span class="text-brand glow">ideas become things.</span>
+    </h1>
+    <p class="mt-6 text-lg text-slate-400 max-w-xl mx-auto leading-relaxed">
+      An imagination machine. Drop your CV and get a profile in 30 seconds. Make a poster, a posting,
+      a playlist. List it, sell it, share it. Built by one person, in the open.
+    </p>
+
+    <!-- hero CTA -->
+    <div class="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="/compute/bottega" class="px-7 py-3.5 rounded-xl font-bold bg-brand hover:bg-branddark text-white text-[15px] shadow-lg shadow-brand/20">
+        🧬 Drop your CV → build your Bottega
+      </a>
+      <a href="/compute" class="px-7 py-3.5 rounded-xl font-semibold bg-slate-800/70 hover:bg-slate-700/70 border border-slate-700 text-slate-200 text-[15px]">
+        ⚡ Enter the Compute Exchange
+      </a>
+    </div>
+  </div>
+
+  <!-- the doors -->
+  <div class="grid sm:grid-cols-2 gap-4 mt-16">
+    <a href="/compute/bottega" class="card rounded-2xl overflow-hidden block">
+      <div class="h-1 grad-rule"></div>
+      <div class="p-6">
+        <div class="text-3xl">🔧</div>
+        <h2 class="text-lg font-bold mt-3">La Bottega — the workshop</h2>
+        <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+          A Chinese menu of makers: CV → bio, tailored CV, cover letter, product &amp; event postings,
+          music playlists. Pick a dish, give a few words, get the thing.
+        </p>
+        <div class="mt-3 text-xs font-mono text-brand">open the workshop →</div>
+      </div>
+    </a>
+    <a href="/compute" class="card rounded-2xl overflow-hidden block">
+      <div class="h-1 grad-rule"></div>
+      <div class="p-6">
+        <div class="text-3xl">⚡</div>
+        <h2 class="text-lg font-bold mt-3">Compute Exchange — the shared brain</h2>
+        <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+          A fair, verifiable compute marketplace. Submit work, watch it run live, lend your
+          machine and earn. Credit = brain tokens. We host the square, not the model.
+        </p>
+        <div class="mt-3 text-xs font-mono text-brand">enter the exchange →</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- values strip -->
+  <div class="mt-12 card rounded-2xl p-6">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+      <div><div class="text-xl font-bold text-slate-100">No ads</div><div class="text-[11px] text-slate-500 font-mono mt-1">ever</div></div>
+      <div><div class="text-xl font-bold text-slate-100">No algorithm</div><div class="text-[11px] text-slate-500 font-mono mt-1">you choose</div></div>
+      <div><div class="text-xl font-bold text-slate-100">No ransom</div><div class="text-[11px] text-slate-500 font-mono mt-1">no monthly lock-in</div></div>
+      <div><div class="text-xl font-bold text-brand">Your data</div><div class="text-[11px] text-slate-500 font-mono mt-1">stays yours</div></div>
+    </div>
+  </div>
+
+  <!-- story -->
+  <div class="mt-8 text-center">
+    <p class="text-sm text-slate-500">
+      There's a story behind this — escape, a camper named MAX, a town square in Sicily.
+      <a href="/compute/faq" class="text-brand hover:underline">Why La Piazza exists →</a>
+    </p>
+  </div>
+
+  <!-- footer -->
+  <footer class="mt-16 pt-8 border-t border-slate-800/70 text-center">
+    <div class="text-sm font-mono text-slate-400">
+      La <span class="text-brand font-bold">Piazza</span> · we host the square, not the model
+    </div>
+    <div class="mt-3 text-[11px] font-mono text-slate-600">
+      built solo, in the open · Sicily → the world
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
