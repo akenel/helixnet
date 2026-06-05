@@ -104,6 +104,11 @@
           <div><div class="text-[10px] uppercase text-slate-500">tagline</div><div class="text-brand" x-text="output.result.tagline"></div></div>
           <div><div class="text-[10px] uppercase text-slate-500">skills</div><div class="font-mono text-xs" x-text="(output.result.skills||[]).join(' · ')"></div></div>
           <div><div class="text-[10px] uppercase text-slate-500">categories</div><div class="font-mono text-xs" x-text="(output.result.categories||[]).join(' · ')"></div></div>
+          <div x-show="active && active.slug==='cv-to-bio'" class="pt-3 border-t border-slate-800 flex items-center gap-2">
+            <button @click="saveProfile()" :disabled="saving||!token" class="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-30 disabled:cursor-not-allowed" x-text="saving?'saving…':'✓ Save to my profile'"></button>
+            <button @click="undoProfile()" class="px-3 py-2 rounded-lg text-sm border border-slate-700 text-slate-300 hover:bg-slate-800">↩ Undo</button>
+          </div>
+          <div class="text-xs font-mono" :class="(saveMsg.startsWith('✓')||saveMsg.startsWith('↩'))?'text-emerald-400':'text-rose-400'" x-text="saveMsg"></div>
         </div>
       </template>
       <!-- markdown/text output (cv-generate, cover-letter) -->
@@ -123,6 +128,7 @@ function bottega() {
   return {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
+    saveMsg: '', saving: false,
     boot() {
       this.token = this.loadToken(); this.me = this.decodeUser();
       this.fetchMenu();
@@ -158,6 +164,30 @@ function bottega() {
         if (r.ok) this.output = d; else this.err = d.detail || ('error '+r.status);
       } catch(e) { this.err = 'failed'; }
       this.busy=false;
+    },
+    async saveProfile() {
+      if (!this.token || !this.output || this.output.output_type!=='json') return;
+      this.saving=true; this.saveMsg='';
+      const r = this.output.result || {};
+      try {
+        const res = await fetch('/api/v1/compute/bottega/apply', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+          body: JSON.stringify({ bio:r.bio||'', tagline:r.tagline||'', skills:r.skills||[], categories:r.categories||[] }),
+        });
+        const d = await res.json();
+        if (res.ok) this.saveMsg = '✓ Saved to your profile — '+(d.points||0)+' pts. (Undo if you change your mind.)';
+        else this.saveMsg = d.detail || ('error '+res.status);
+      } catch(e) { this.saveMsg = 'failed'; }
+      this.saving=false;
+    },
+    async undoProfile() {
+      if (!this.token) return;
+      this.saveMsg='';
+      try {
+        const res = await fetch('/api/v1/compute/bottega/undo', { method:'POST', headers:{'Authorization':'Bearer '+this.token} });
+        if (res.ok) this.saveMsg = '↩ Reverted to your previous profile.';
+        else { const d=await res.json().catch(()=>({})); this.saveMsg = d.detail || 'nothing to undo'; }
+      } catch(e) { this.saveMsg = 'undo failed'; }
     },
   };
 }
