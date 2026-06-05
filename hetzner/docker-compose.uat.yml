@@ -200,6 +200,36 @@ services:
       start_period: 60s
 
 # -------------------------------------------------------------
+# LPCX CONSUMER -- aio-pika worker that executes compute jobs off RabbitMQ
+# -------------------------------------------------------------
+  lpcx-consumer:
+    image: helix-platform:latest
+    container_name: lpcx-consumer
+    restart: unless-stopped
+    working_dir: /app
+    entrypoint: ["/app/venv/bin/python", "-m", "src.compute.consumer"]
+    env_file:
+      - ./uat.env
+    environment:
+      SERVICE_TYPE: lpcx-consumer
+      LPCX_BRAIN_CAP: "50"
+    volumes:
+      - ../src:/app/src
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f src.compute.consumer || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+# -------------------------------------------------------------
 # TELEGRAM-TIGS -- Personal AI Co-pilot Bot
 # -------------------------------------------------------------
 # Long-polling (no webhook needed, no domain required).
