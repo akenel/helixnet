@@ -26,6 +26,7 @@ SEED_TEMPLATES = [
     ("doc-summary", "Doc Summary", "Summarize a document into a tight brief -- the SOP way, low token cost.", "text", "\U0001F4DD", 1),
     ("image-gen", "Image Generation", "Text-to-image generation from a short prompt.", "media", "\U0001F3A8", 4),
     ("cv-to-bio", "CV → Bio", "Drop your CV (PDF/Word) -> we build your Bottega: bio, tagline, skills, categories. The onboarding Pulse Check.", "text", "\U0001F9EC", 2),
+    ("cv-generate", "CV Generator", "Turn your CV into a polished, role-tailored CV -- even a career pivot. Re-frames transferable skills, names the gaps.", "text", "\U0001F4C4", 2),
 ]
 
 

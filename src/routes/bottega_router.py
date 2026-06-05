@@ -7,7 +7,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.database import get_db_session
 from src.db.models.bottega_model import BottegaProfileModel, BottegaProfileHistoryModel
 from src.core.keycloak_auth import require_roles
-from src.services.bottega_service import extract_text, cv_to_bio
+from src.services.bottega_service import extract_text, cv_to_bio, generate_cv
 
 logger = logging.getLogger("helix.bottega_router")
 router = APIRouter(prefix="/api/v1/compute/bottega", tags=["Bottega - Onboarding"])
@@ -88,6 +88,22 @@ async def generate(file: UploadFile = File(...),
         "current": _view(await _get(db, current_user["username"])),
         "proposed": result,
     }
+
+
+@router.post("/generate-cv")
+async def generate_cv_ep(file: UploadFile = File(...),
+                         target_role: str = Form(""),
+                         style: str = Form("concise"),
+                         current_user: dict = Depends(require_bottega_access()),
+                         db: AsyncSession = Depends(get_db_session)):
+    """Recipe cv-generate: source CV (+ optional target role) -> tailored CV Markdown.
+    Supports career pivots (re-frames transferable experience, names the gaps)."""
+    data = await file.read()
+    text = extract_text(file.filename or "cv", data)
+    if len(text.strip()) < 20:
+        raise HTTPException(status_code=400, detail="couldn't read any text from that file")
+    md = await generate_cv(text, target_role, style)
+    return {"target_role": target_role or None, "cv_markdown": md}
 
 
 @router.post("/apply")
