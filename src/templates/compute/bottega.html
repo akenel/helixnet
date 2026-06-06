@@ -74,15 +74,21 @@
         <div class="font-semibold">📓 My Blueprint <span class="text-slate-500 text-sm" x-text="'('+folder.length+')'"></span></div>
         <button @click="showFolder=false" class="text-xs text-slate-500 hover:text-slate-300">✕ close</button>
       </div>
-      <template x-if="folder.length===0"><div class="text-sm text-slate-600">nothing saved yet — run something and hit "Save to Blueprint".</div></template>
+      <div class="flex items-center gap-2 mb-3">
+        <input x-model="q" type="text" placeholder="search your history…" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm">
+        <button @click="sortDesc=!sortDesc" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 shrink-0" x-text="sortDesc?'↓ newest':'↑ oldest'"></button>
+      </div>
+      <template x-if="folder.length===0"><div class="text-sm text-slate-600">nothing yet — onboard, or run something and save it.</div></template>
       <div class="divide-y divide-slate-800/70">
-        <template x-for="s in folder" :key="s.id">
+        <template x-for="s in filteredFolder()" :key="s.id">
           <button @click="loadSession(s.id)" class="w-full text-left py-2.5 hover:bg-slate-800/40 px-2 rounded flex items-center gap-3">
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0" :class="kindClass(s.slug)" x-text="kindLabel(s.slug)"></span>
             <span class="text-sm text-slate-200 flex-1 truncate" x-text="s.title"></span>
             <span x-show="s.version>1" class="text-[10px] font-mono text-amber-400" x-text="'v'+s.version"></span>
-            <span class="text-[11px] text-slate-600 font-mono" x-text="(s.created_at||'').slice(0,10)"></span>
+            <span class="text-[11px] text-slate-600 font-mono shrink-0" x-text="(s.created_at||'').slice(0,10)"></span>
           </button>
         </template>
+        <template x-if="folder.length>0 && filteredFolder().length===0"><div class="text-sm text-slate-600 py-2">no match for "<span x-text="q"></span>"</div></template>
       </div>
     </div>
 
@@ -189,7 +195,7 @@ function bottega() {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
     saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false,
-    savedMsg: '', showFolder: false, folder: [],
+    savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true,
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
@@ -245,6 +251,14 @@ function bottega() {
       try { const r=await fetch('/api/v1/compute/bottega/sessions',{headers:{'Authorization':'Bearer '+this.token}});
         if(r.ok){ this.folder=await r.json(); this.showFolder=true; } } catch(e){}
     },
+    filteredFolder() {
+      let f = this.folder;
+      const q = (this.q||'').toLowerCase().trim();
+      if (q) f = f.filter(s => ((s.title||'')+' '+(s.slug||'')+' '+JSON.stringify(s.inputs||{})).toLowerCase().includes(q));
+      return [...f].sort((a,b)=>{ const d=(a.created_at||'').localeCompare(b.created_at||''); return this.sortDesc?-d:d; });
+    },
+    kindLabel(slug) { return slug==='blueprint-archive'?'archive':(slug==='mentor-session'?'mentor':(slug||'note')); },
+    kindClass(slug) { return slug==='blueprint-archive'?'bg-emerald-900/60 text-emerald-300':(slug==='mentor-session'?'bg-amber-900/50 text-amber-300':'bg-slate-800 text-slate-400'); },
     async loadSession(id) {
       try { const r=await fetch('/api/v1/compute/bottega/sessions/'+id,{headers:{'Authorization':'Bearer '+this.token}});
         if(r.ok){ const s=await r.json(); this.active={slug:s.slug,title:s.title,inputs:[]};
