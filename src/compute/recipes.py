@@ -136,6 +136,45 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    # The body half -- a private, calibrated workout. No app integrations (privacy = a feature).
+    "workout-plan": {
+        "slug": "workout-plan", "title": "Workout Plan", "emoji": "\U0001F3CB️",
+        "category": "body", "est_credits": 2,
+        "inputs": [
+            {"name": "equipment", "type": "select", "label": "What do you have?",
+             "options": ["Just my body (no equipment)", "Resistance bands", "Dumbbells",
+                         "Kettlebell", "Full gym"]},
+            {"name": "goal", "type": "select", "label": "Your goal",
+             "options": ["Lose fat, keep muscle", "Build muscle",
+                         "General fitness & energy", "Get better at a sport"]},
+            {"name": "days", "type": "select", "label": "Days per week",
+             "options": ["3", "4", "5"]},
+            {"name": "minutes", "type": "select", "label": "Minutes per session",
+             "options": ["20", "30", "45", "60"]},
+            {"name": "likes", "type": "text", "label": "What do you enjoy, or a sport you play? (optional)"},
+            {"name": "limits", "type": "text", "label": "Any injuries or limits? (e.g. left shoulder)"},
+            {"name": "day", "type": "text", "label": "Which day of your 30? (e.g. 2)"},
+        ],
+        "system": (
+            "You are a kind, expert strength coach for everyday people of ANY age (picture a "
+            "69-year-old with no gym). Calibrate to the person: use ONLY the equipment they "
+            "have; respect their injuries (pain-free range, and tell them to see a doctor for a "
+            "real injury); leave 2 reps in the tank; never overdo it. Philosophy: 20 minutes a "
+            "day beats nothing; lose fat while KEEPING muscle (don't over-do cardio/jogging); "
+            "build the habit over 30 days until it's automatic; bodyweight works if that's all "
+            "they have -- no excuses. Diet is 70-80% of it -- mention it briefly. Use plain, warm, "
+            "encouraging language anyone could follow. Output clean Markdown."
+        ),
+        "prompt": (
+            "Build DAY {day} of a 30-day plan: a {minutes}-minute session, {days}x per week, "
+            "goal '{goal}', using ONLY: {equipment}. They enjoy/play: '{likes}'. Injuries/limits "
+            "to respect: '{limits}'. Give a short ## title, a quick warm-up, the main workout "
+            "(each line: exercise - sets x reps - one-line how-to), an optional finisher, a short "
+            "cooldown, and one encouraging line. Keep it safe and genuinely doable. Note where to "
+            "go a little heavier or easier next time. No equipment they don't have."
+        ),
+        "output": "markdown",
+    },
 }
 
 
