@@ -20,6 +20,8 @@ RECIPES: dict[str, dict] = {
             "Do not invent facts.\n\nCV:\n{file}"
         ),
         "output": "json",
+        # The response contract (the "XSD"): these fields, these defaults. Gaps get filled.
+        "output_schema": {"bio": "", "tagline": "", "skills": [], "categories": []},
     },
     "cv-generate": {
         "slug": "cv-generate", "title": "CV Generator", "emoji": "\U0001F4C4",
@@ -212,6 +214,15 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
         try:
             result = json.loads(out)
         except json.JSONDecodeError:
+            result = {}
+        schema = r.get("output_schema")
+        if isinstance(schema, dict):
+            # Enforce the contract: every field present, defaults fill the gaps.
+            # Fill the gaps before they happen -- never blank, never missing a key.
+            parsed = result if isinstance(result, dict) else {}
+            result = {k: (parsed[k] if parsed.get(k) not in (None, "") else d)
+                      for k, d in schema.items()}
+        elif not isinstance(result, dict):
             result = {"raw": out}
         return {"slug": slug, "output_type": "json", "result": result}
     return {"slug": slug, "output_type": r["output"], "result": out.strip()}
