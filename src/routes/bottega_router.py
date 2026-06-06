@@ -242,6 +242,14 @@ async def recipes_run(slug: str, request: Request,
     await post_ledger(db, owner, ComputeLedgerKind.SPEND, -price, counterparty="la-bottega", note=note)
     await post_ledger(db, "la-bottega", ComputeLedgerKind.EARN, price, counterparty=owner, note=note)
     await db.commit()
+    # Auto-save the structured intakes to the Blueprint spine -- the dashboard reads these
+    # (the person-schema slices, not throwaway). One row per run; the dashboard takes latest.
+    if slug in ("body-intake", "story-intake") and result.get("output_type") == "json":
+        db.add(BottegaSessionModel(
+            username=owner, slug=slug, title=RECIPES[slug].get("title", slug),
+            inputs=json.dumps({k: v for k, v in raw.items() if isinstance(v, str)}),
+            output=json.dumps(result.get("result", {})), output_type="json", tags="intake"))
+        await db.commit()
     result["charged"] = price
     result["balance"] = await credit_balance(db, owner)
     return result
@@ -315,6 +323,44 @@ async def get_session(session_id: str,
 async def me(current_user: dict = Depends(require_bottega_access()),
              db: AsyncSession = Depends(get_db_session)):
     return {"profile": _view(await _get(db, current_user["username"]))}
+
+
+@router.get("/me/dashboard")
+async def me_dashboard(current_user: dict = Depends(require_bottega_access()),
+                       db: AsyncSession = Depends(get_db_session)):
+    """The member's rebuild hub: profile + the person-schema slices (body/spirit) + the journey
+    (workouts, mentors). Aggregated from the profile + the Blueprint spine. Read-only."""
+    user = current_user["username"]
+    rows = (await db.execute(
+        select(BottegaSessionModel).where(BottegaSessionModel.username == user)
+        .order_by(BottegaSessionModel.created_at.desc()).limit(200))).scalars().all()
+
+    def _parse(s):
+        out = s.output or ""
+        if s.output_type == "json":
+            try:
+                out = json.loads(out)
+            except Exception:  # noqa: BLE001
+                out = {}
+        return {"id": str(s.id), "slug": s.slug, "title": s.title,
+                "created_at": s.created_at.isoformat() if s.created_at else "", "output": out}
+
+    def latest(slug):
+        return next((_parse(s) for s in rows if s.slug == slug), None)
+
+    def all_of(slug):
+        return [_parse(s) for s in rows if s.slug == slug]
+
+    return {
+        "username": user,
+        "profile": _view(await _get(db, user)),
+        "body": latest("body-intake"),
+        "spirit": latest("story-intake"),
+        "workouts": all_of("workout-plan"),
+        "mentors": all_of("mentor-session"),
+        "archive": latest("blueprint-archive"),
+        "total": len(rows),
+    }
 
 
 @router.post("/generate")

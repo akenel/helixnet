@@ -526,6 +526,12 @@ async def compute_bottega(request: Request):
     return templates.TemplateResponse("compute/bottega.html", {"request": request})
 
 
+@html_router.get("/compute/me", response_class=HTMLResponse)
+async def compute_me(request: Request):
+    """The member's rebuild dashboard -- mind/body/spirit in one tabbed hub."""
+    return templates.TemplateResponse("compute/me.html", {"request": request})
+
+
 @html_router.get("/u/{slug}", response_class=HTMLResponse)
 async def public_profile(slug: str, request: Request,
                          db: AsyncSession = Depends(get_db_session)):
