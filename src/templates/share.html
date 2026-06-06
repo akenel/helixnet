@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }} · La Piazza</title>
+<meta name="description" content="{{ snippet }}">
+<!-- Open Graph: this is what makes Telegram/WhatsApp/X render a postcard preview -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ snippet }}">
+<meta property="og:image" content="{{ base_url }}{{ cover }}">
+<meta property="og:url" content="{{ base_url }}/s/{{ serial }}">
+<meta property="og:site_name" content="La Piazza">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ snippet }}">
+<meta name="twitter:image" content="{{ base_url }}{{ cover }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1100px 600px at 50% -12%, #1f2a44, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.7); border: 1px solid rgba(30,41,59,0.9); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  .md h1,.md h2{font-weight:800;margin:1rem 0 .5rem;color:#f1f5f9}
+  .md h2{font-size:1.25rem}.md h3{font-weight:700;margin:.8rem 0 .3rem;color:#e2e8f0}
+  .md p{margin:.5rem 0;line-height:1.6}.md ul,.md ol{margin:.5rem 0 .5rem 1.2rem;list-style:disc}
+  .md li{margin:.2rem 0}.md strong{color:#f8fafc}.md a{color:#C0392B}
+  .md table{width:100%;border-collapse:collapse;margin:.6rem 0}.md td,.md th{border:1px solid #334155;padding:4px 8px;font-size:.85rem}
+  .md blockquote{border-left:3px solid #C0392B;padding-left:12px;color:#94a3b8;font-style:italic;margin:.6rem 0}
+</style>
+</head>
+<body class="font-sans text-slate-300 min-h-screen antialiased">
+<div class="max-w-2xl mx-auto px-5 py-10">
+
+  <!-- the postcard -->
+  <div class="card rounded-2xl overflow-hidden">
+    <!-- cover -->
+    <div class="relative">
+      <img src="{{ cover }}" alt="La Piazza" class="w-full h-56 object-cover object-center bg-slate-900">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#060910] via-transparent to-transparent"></div>
+      <div class="absolute bottom-3 left-5 right-5">
+        <h1 class="text-2xl sm:text-3xl font-black text-white drop-shadow-lg">{{ title }}</h1>
+      </div>
+    </div>
+    <div class="h-1 grad-rule"></div>
+
+    <!-- serial / byline (Banksy-style serialization) -->
+    <div class="px-6 pt-4 flex items-center justify-between text-[11px] font-mono text-slate-500">
+      <span>№ {{ serial }}{% if version > 1 %} · v{{ version }}{% endif %}</span>
+      <span>{{ created }}</span>
+    </div>
+
+    <!-- the asked + answer -->
+    <div class="px-6 py-5">
+      {% if inputs %}
+      <div class="text-xs text-slate-500 mb-4 pb-3 border-b border-slate-800">
+        {% for k, v in inputs.items() %}{% if v and k not in ['source','raw'] %}<span class="uppercase text-[10px] text-slate-600">{{ k }}</span> <span class="text-slate-300">{{ v }}</span>&nbsp;&nbsp;{% endif %}{% endfor %}
+      </div>
+      {% endif %}
+      <div class="md text-slate-300" id="content"></div>
+    </div>
+
+    <!-- footer -->
+    <div class="px-6 py-4 border-t border-slate-800/70 flex items-center justify-between">
+      <span class="text-xs text-slate-500">Made on <a href="/" class="text-brand font-semibold">La Piazza</a> — the square where ideas become things</span>
+      <a href="/get-started" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand hover:bg-branddark text-white">Make your own →</a>
+    </div>
+  </div>
+
+</div>
+
+<script id="raw" type="text/plain">{{ content }}</script>
+<script>
+  const raw = document.getElementById('raw').textContent;
+  document.getElementById('content').innerHTML = window.marked ? marked.parse(raw) : raw.replace(/\n/g,'<br>');
+</script>
+</body>
+</html>

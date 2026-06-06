@@ -322,6 +322,35 @@ async def get_started_page(request: Request):
     """The one-motion door: name + CV -> account + Bottega + logged in."""
     return templates.TemplateResponse("get_started.html", {"request": request})
 
+@app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
+async def share_page(session_id: str, request: Request):
+    """Public postcard for a shared output -- OG image (the Wolf) so Telegram/WhatsApp/X
+    render a real preview card, not dry text. The session id IS the share token."""
+    import json as _json
+    from uuid import UUID as _UUID
+    from src.db.models.bottega_model import BottegaSessionModel
+    s = None
+    try:
+        async with get_db_session_context() as db:
+            s = await db.get(BottegaSessionModel, _UUID(session_id))
+    except Exception:  # noqa: BLE001
+        s = None
+    if s is None:
+        return HTMLResponse("<h1 style='font-family:sans-serif;color:#888;text-align:center;margin-top:20vh'>Not found</h1>", status_code=404)
+    inputs = {}
+    try:
+        inputs = _json.loads(s.inputs or "{}")
+    except Exception:  # noqa: BLE001
+        inputs = {}
+    content = s.output or ""
+    snippet = " ".join(content.replace("#", "").replace("*", "").split())[:155]
+    return templates.TemplateResponse("share.html", {
+        "request": request, "title": s.title or "La Piazza", "inputs": inputs,
+        "content": content, "snippet": snippet, "version": s.version or 1,
+        "serial": str(s.id)[:8].upper(), "created": s.created_at.strftime("%d %b %Y") if s.created_at else "",
+        "cover": "/static/lapiazza-wolf.png", "base_url": str(request.base_url).rstrip("/"),
+    })
+
 @app.get("/jobs", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Render the job queue dashboard (the original engine view)."""

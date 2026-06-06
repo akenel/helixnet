@@ -195,7 +195,7 @@ function bottega() {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
     saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false,
-    savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true,
+    savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
@@ -232,8 +232,14 @@ function bottega() {
         + (q ? '## Asked\n'+q+'\n\n## Answer\n' : '') + body + '\n';
     },
     copyOut() { navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
-    shareTg() { window.open('https://t.me/share/url?url='+encodeURIComponent(location.origin)+'&text='+encodeURIComponent(this._text().slice(0,3500)),'_blank'); },
-    shareWa() { window.open('https://wa.me/?text='+encodeURIComponent(this._text().slice(0,3500)),'_blank'); },
+    async _shareUrl() {  // ensure the output is saved so it has a postcard page with a cover
+      if (!this.savedId) await this.saveSession();
+      return this.savedId ? (location.origin + '/s/' + this.savedId) : location.origin;
+    },
+    async shareTg() { const u=await this._shareUrl(); const t=(this.output&&this.output.recipe)||'La Piazza';
+      window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
+    async shareWa() { const u=await this._shareUrl(); const t=((this.output&&this.output.recipe)||'La Piazza')+' — ';
+      window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
     downloadOut() { const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=((this.active&&this.active.slug)||'la-piazza')+'-'+Date.now()+'.md'; a.click(); },
     async saveSession() {
       if (!this.output || !this.token) return; this.saving=true;
@@ -243,7 +249,7 @@ function bottega() {
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
         body:JSON.stringify({slug:this.output.slug||(this.active&&this.active.slug)||'session',title,inputs:i,
           output:(typeof this.output.result==='string'?this.output.result:JSON.stringify(this.output.result)),output_type:this.output.output_type})});
-        if(r.ok){ this.savedMsg='✓ Saved'; setTimeout(()=>this.savedMsg='',2000); } } catch(e){}
+        if(r.ok){ const d=await r.json(); this.savedId=d.id; this.savedMsg='✓ Saved'; setTimeout(()=>this.savedMsg='',2000); } } catch(e){}
       this.saving=false;
     },
     async openFolder() {
@@ -283,8 +289,8 @@ function bottega() {
         const r = await fetch('/api/v1/compute/bottega/recipes/'+this.active.slug+'/run', {
           method:'POST', headers:{'Authorization':'Bearer '+this.token}, body: fd });
         const d = await r.json();
-        if (r.ok) this.output = { ...d, recipe: this.active.title, slug: this.active.slug,
-                                  inputs: {...this.fields}, asked_at: new Date().toISOString() };
+        if (r.ok) { this.savedId = null; this.output = { ...d, recipe: this.active.title, slug: this.active.slug,
+                                  inputs: {...this.fields}, asked_at: new Date().toISOString() }; }
         else this.err = d.detail || ('error '+r.status);
       } catch(e) { this.err = 'failed'; }
       this.busy=false;
