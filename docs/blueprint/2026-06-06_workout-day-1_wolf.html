@@ -17,11 +17,26 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
   h2{font-size:1.1rem;margin:0 0 10px;color:var(--brand)}
   .warn{background:#fff4f2;border:1px solid #f3c7bf}.warn h2{color:#a8341f}
-  .kpi{background:#0b1120;color:#fff;border:0}.kpi h2{color:#ffd9d2}
-  .kpi label{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:#9fb0c0;margin-bottom:3px}
-  .kpi .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
-  .kpi input{width:100%;border:1px solid #2a3a55;background:#0f1830;color:#fff;border-radius:8px;padding:10px;font-size:1rem;font-family:inherit}
-  .kpi .sub{font-size:.8rem;color:#9fb0c0;margin:10px 0 4px;font-weight:700}
+  .kpi h2{color:var(--brand)}
+  .kpi .field{margin-bottom:14px}
+  .kpi label{display:block;font-size:.78rem;font-weight:700;color:var(--soft);margin-bottom:6px}
+  .kpi .sub{font-size:.8rem;color:var(--soft);margin:8px 0 10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+  .kpi .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .numin{width:100%;border:2px solid var(--line);background:#fbfaf8;color:var(--ink);border-radius:10px;padding:13px;font-size:1.15rem;font-family:inherit;text-align:center;font-weight:600}
+  .numin:focus{outline:2px solid var(--brand);background:#fff}
+  .scalerow{display:flex;flex-wrap:wrap;gap:6px}
+  .scalerow label{position:relative;min-width:40px;height:44px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--line);border-radius:9px;background:#fbfaf8;color:var(--ink);cursor:pointer;font-weight:700;font-size:1.05rem;flex:1}
+  .scalerow label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
+  .scalerow input{position:absolute;opacity:0;width:0;height:0}
+  .timer{text-align:center}
+  .timer .tcfg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;font-size:.85rem;color:var(--soft);align-items:center}
+  .timer .tcfg input{width:56px;border:1.5px solid var(--line);background:#fbfaf8;border-radius:8px;padding:7px;text-align:center;font-size:1rem;font-family:inherit;font-weight:700}
+  .tphase{display:inline-block;padding:5px 18px;border-radius:20px;margin-bottom:8px;font-size:1.05rem;font-weight:800;letter-spacing:.05em;color:var(--soft);background:#f0eee9}
+  .tphase.prep{color:#fff;background:#b8860b}.tphase.work{color:#fff;background:var(--brand)}.tphase.rest{color:#fff;background:var(--go)}.tphase.done{color:#fff;background:#0b1120}
+  .tcount{font-size:4.2rem;font-weight:900;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+  .tround{color:var(--soft);font-size:.9rem;margin:4px 0 16px}
+  .tbtn{background:var(--brand);color:#fff;border:0;border-radius:12px;padding:13px 28px;font-weight:800;font-size:1.05rem;cursor:pointer;margin:0 4px}
+  .tbtn.ghost{background:#fbfaf8;color:var(--ink);border:1.5px solid var(--line)}
   .ex{border-bottom:1px solid var(--line);padding:14px 0}.ex:last-child{border-bottom:0}
   .ex .top{display:flex;align-items:flex-start;gap:12px}
   .cb{width:28px;height:28px;flex:0 0 28px;margin:2px 0 0;accent-color:var(--brand);cursor:pointer}
@@ -60,22 +75,38 @@
 
   <div class="card kpi">
     <h2>📊 Body KPIs — Day 1 baseline</h2>
-    <div class="sub">Vitals (how am I today?)</div>
-    <div class="grid">
-      <div><label>Weight (kg)</label><input class="flog" data-k="wt" inputmode="decimal"></div>
-      <div><label>Energy 1–10</label><input class="flog" data-k="en" inputmode="numeric"></div>
-      <div><label>Mood 1–10</label><input class="flog" data-k="mo" inputmode="numeric"></div>
-      <div><label>Sleep (hrs)</label><input class="flog" data-k="sl" inputmode="decimal"></div>
-      <div><label>Shoulder 1–5</label><input class="flog" data-k="sh" inputmode="numeric"></div>
+    <div class="sub">Vitals — tap the scales, type the numbers</div>
+    <div class="grid" style="margin-bottom:6px">
+      <div class="field"><label>Weight (kg)</label><input class="numin flog" data-k="wt" inputmode="decimal"></div>
+      <div class="field"><label>Sleep (hrs)</label><input class="numin flog" data-k="sl" inputmode="decimal"></div>
     </div>
-    <div class="sub" style="margin-top:14px">Can-I? benchmarks — the fun ones (max in one go) 🔥</div>
-    <div class="grid">
-      <div><label>Push-ups</label><input class="flog" data-k="pu" inputmode="numeric" placeholder="≥1!"></div>
-      <div><label>Burpees</label><input class="flog" data-k="bu" inputmode="numeric" placeholder="≥1!"></div>
-      <div><label>Squats in a row</label><input class="flog" data-k="sq" inputmode="numeric" placeholder="aim 10"></div>
-      <div><label>Plank (sec)</label><input class="flog" data-k="pl" inputmode="numeric" placeholder="bonus"></div>
+    <div class="field"><label>Energy — tap 1 (flat) → 10 (great)</label>
+      <div class="scalerow"><label>1<input type="radio" name="k-en" value="1"></label><label>2<input type="radio" name="k-en" value="2"></label><label>3<input type="radio" name="k-en" value="3"></label><label>4<input type="radio" name="k-en" value="4"></label><label>5<input type="radio" name="k-en" value="5"></label><label>6<input type="radio" name="k-en" value="6"></label><label>7<input type="radio" name="k-en" value="7"></label><label>8<input type="radio" name="k-en" value="8"></label><label>9<input type="radio" name="k-en" value="9"></label><label>10<input type="radio" name="k-en" value="10"></label></div>
     </div>
-    <p class="scale" style="color:#9fb0c0;margin:12px 0 0">Re-test weekly. Watching them climb IS the rebuild.</p>
+    <div class="field"><label>Mood — tap 1 → 10</label>
+      <div class="scalerow"><label>1<input type="radio" name="k-mo" value="1"></label><label>2<input type="radio" name="k-mo" value="2"></label><label>3<input type="radio" name="k-mo" value="3"></label><label>4<input type="radio" name="k-mo" value="4"></label><label>5<input type="radio" name="k-mo" value="5"></label><label>6<input type="radio" name="k-mo" value="6"></label><label>7<input type="radio" name="k-mo" value="7"></label><label>8<input type="radio" name="k-mo" value="8"></label><label>9<input type="radio" name="k-mo" value="9"></label><label>10<input type="radio" name="k-mo" value="10"></label></div>
+    </div>
+    <div class="field"><label>Shoulder — tap 1 (sore) → 5 (great)</label>
+      <div class="scalerow"><label>1<input type="radio" name="k-sh" value="1"></label><label>2<input type="radio" name="k-sh" value="2"></label><label>3<input type="radio" name="k-sh" value="3"></label><label>4<input type="radio" name="k-sh" value="4"></label><label>5<input type="radio" name="k-sh" value="5"></label></div>
+    </div>
+    <div class="sub" style="margin-top:6px">Can-I? benchmarks — max in one go 🔥</div>
+    <div class="grid">
+      <div class="field"><label>Push-ups (≥1!)</label><input class="numin flog" data-k="pu" inputmode="numeric"></div>
+      <div class="field"><label>Burpees (≥1!)</label><input class="numin flog" data-k="bu" inputmode="numeric"></div>
+      <div class="field"><label>Squats in a row (10)</label><input class="numin flog" data-k="sq" inputmode="numeric"></div>
+      <div class="field"><label>Plank (sec)</label><input class="numin flog" data-k="pl" inputmode="numeric"></div>
+    </div>
+    <p class="scale" style="margin:12px 0 0">Re-test weekly. Watching them climb IS the rebuild.</p>
+  </div>
+
+  <div class="card timer">
+    <h2>⏱️ Interval Timer <span class="scale" style="font-weight:400">· open in Chrome for this</span></h2>
+    <div class="tcfg">Prep <input id="tPrep" type="number" value="10">s · Work <input id="tWork" type="number" value="45">s · Rest <input id="tRest" type="number" value="15">s · Rounds <input id="tRounds" type="number" value="3"></div>
+    <div class="tphase" id="tPhase">READY</div>
+    <div class="tcount" id="tCount">--</div>
+    <div class="tround" id="tRound">set it &amp; hit start — beeps + buzzes on each change</div>
+    <button class="tbtn" id="tStart">▶ Start</button>
+    <button class="tbtn ghost" id="tReset">⟲ Reset</button>
   </div>
 
   <div class="card warn">
@@ -151,7 +182,7 @@
   // Progressive enhancement only: native controls already work everywhere.
   // This just remembers your answers if you close & reopen (needs JS — Chrome etc.).
   try {
-    const KEY='wolf-workout-2026-06-06-v4';
+    const KEY='wolf-workout-2026-06-06-v5';
     const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
     const persist=()=>localStorage.setItem(KEY,JSON.stringify(saved));
     document.querySelectorAll('.ex').forEach((ex,i)=>{
@@ -162,7 +193,35 @@
       const c=ex.querySelector('.cmt'); if(c){ if(saved[id+'.cmt'])c.value=saved[id+'.cmt']; c.addEventListener('input',()=>{saved[id+'.cmt']=c.value;persist();}); }
     });
     document.querySelectorAll('.flog').forEach(inp=>{ const k=inp.getAttribute('data-k'); if(saved[k])inp.value=saved[k]; inp.addEventListener('input',()=>{saved[k]=inp.value;persist();}); });
+    // KPI tap-scales (energy/mood/shoulder)
+    document.querySelectorAll('.scalerow input').forEach(r=>{ const k=r.name; if(saved[k]===r.value)r.checked=true; r.addEventListener('change',()=>{saved[k]=r.value;persist();}); });
   } catch(e){}
+
+  // ⏱️ Interval timer — prep → work → rest → repeat, with beep + vibrate
+  (function(){
+    const $=id=>document.getElementById(id); let timer=null;
+    function tone(f,d){ try{ const C=window.AudioContext||window.webkitAudioContext; if(!C)return; const c=new C(),o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination);o.frequency.value=f;o.start();g.gain.setValueAtTime(.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.stop(c.currentTime+d);}catch(e){} }
+    function buzz(p){ try{navigator.vibrate&&navigator.vibrate(p);}catch(e){} }
+    function set(phase,t,round,rounds){ const ph=$('tPhase'); ph.textContent=phase; ph.className='tphase '+phase.toLowerCase().replace(/[^a-z]/g,''); $('tCount').textContent=(t>=0?t:''); $('tRound').textContent=rounds?('Round '+round+' / '+rounds):''; }
+    function stop(){ if(timer)clearInterval(timer); timer=null; $('tStart').textContent='▶ Start'; }
+    function start(){
+      if(timer){ stop(); $('tPhase').textContent='PAUSED'; return; }
+      const prep=+$('tPrep').value||0, work=+$('tWork').value||45, rest=+$('tRest').value||15, rounds=Math.max(1,+$('tRounds').value||1);
+      let phase=prep>0?'PREP':'WORK', t=prep>0?prep:work, round=1;
+      $('tStart').textContent='⏸ Pause'; tone(660,.15); set(phase,t,round,rounds);
+      timer=setInterval(()=>{
+        t--;
+        if(t<=0){
+          if(phase==='PREP'){ phase='WORK'; t=work; tone(880,.25); buzz(250); }
+          else if(phase==='WORK'){ if(round>=rounds){ set('DONE 🎉',-1,round,0); tone(523,.6); buzz([200,120,200,120,300]); stop(); return; } phase='REST'; t=rest; tone(440,.25); buzz(200); }
+          else { round++; phase='WORK'; t=work; tone(880,.25); buzz(250); }
+        } else if(t<=3){ tone(440,.08); }
+        set(phase,t,round,rounds);
+      },1000);
+    }
+    $('tStart')&&$('tStart').addEventListener('click',start);
+    $('tReset')&&$('tReset').addEventListener('click',()=>{ stop(); $('tPhase').textContent='READY'; $('tPhase').className='tphase'; $('tCount').textContent='--'; $('tRound').textContent='set it & hit start'; });
+  })();
 </script>
 </body>
 </html>
