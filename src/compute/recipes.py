@@ -295,7 +295,11 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
     prompt = r["prompt"].format(**ctx)
     out_schema = r.get("output_schema") if r["output"] == "json" else None
     js = _json_schema(out_schema, r["inputs"]) if isinstance(out_schema, dict) else None
-    out = await _brain_chat(r["system"], prompt, json_mode=(r["output"] == "json"), schema=js)
+    # Per-job brain: a recipe MAY name its own model as data (e.g. "model": "deepseek-r1:14b").
+    # Absent -> the default brain (BIO_MODEL on Turbo, LOCAL_MODEL on local). Procedure-as-code:
+    # the model is just another field in the dict, no new code to switch it.
+    out = await _brain_chat(r["system"], prompt, json_mode=(r["output"] == "json"),
+                            schema=js, model=r.get("model"))
     if r["output"] == "json":
         try:
             result = json.loads(out)

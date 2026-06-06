@@ -11,6 +11,8 @@ import logging
 import os
 import re
 
+from src.llm import run_llm, turbo_or_local
+
 logger = logging.getLogger("helix.bottega")
 
 
@@ -20,12 +22,11 @@ def slugify(s: str) -> str:
     s = re.sub(r"[^a-z0-9-]", "", s)
     return s.strip("-")[:80] or "user"
 
-# Brain config -- Turbo if a key is set, else local Ollama.
-BH_OLLAMA_KEY = os.getenv("BH_OLLAMA_KEY", "")
-OLLAMA_TURBO_URL = os.getenv("OLLAMA_TURBO_URL", "https://ollama.com")
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
-LOCAL_MODEL = os.getenv("OLLAMA_MODEL", "tinyllama:latest")
-BIO_MODEL = os.getenv("LPCX_BIO_MODEL", "gpt-oss:120b")  # Turbo model; override per env
+# Brain config -- DEFAULT model names. Backend selection (Turbo vs local Ollama,
+# URL + auth) lives in src.llm.targets.turbo_or_local; here we own only the default
+# model for each backend. A recipe may override the model per-job (see _brain_chat).
+LOCAL_MODEL = os.getenv("OLLAMA_MODEL", "tinyllama:latest")     # dev fallback
+BIO_MODEL = os.getenv("LPCX_BIO_MODEL", "gpt-oss:120b")         # Turbo model; override per env
 
 
 def extract_text(filename: str, data: bytes) -> str:
@@ -64,30 +65,19 @@ def _prompt(cv_text: str, categories: list[str]) -> str:
 
 
 async def _brain_chat(system: str, user: str, json_mode: bool = False,
-                      schema: dict | None = None) -> str:
+                      schema: dict | None = None, model: str | None = None) -> str:
     """Shared brain call -- the seed of the procedure-as-code recipe runner.
-    Every template recipe routes through here. Turbo if BH_OLLAMA_KEY, else local.
+    Every template recipe routes through here, now via the single src.llm wrapper.
+    Turbo if BH_OLLAMA_KEY, else local (backend chosen by turbo_or_local).
+
     schema = the outbound Service Interface (a JSON Schema) -- defined up front and
-    ENFORCED on the model (Ollama structured outputs), so the mapping can't drift."""
-    import httpx
-    use_turbo = bool(BH_OLLAMA_KEY)
-    url = (OLLAMA_TURBO_URL if use_turbo else OLLAMA_URL).rstrip("/")
-    model = BIO_MODEL if use_turbo else LOCAL_MODEL
-    headers = {"Authorization": f"Bearer {BH_OLLAMA_KEY}"} if use_turbo else {}
-    body = {
-        "model": model,
-        "messages": [{"role": "system", "content": system},
-                     {"role": "user", "content": user}],
-        "stream": False,
-    }
-    if schema is not None:
-        body["format"] = schema          # enforce the outbound SI structure on the model
-    elif json_mode:
-        body["format"] = "json"
-    async with httpx.AsyncClient(timeout=180.0) as client:
-        r = await client.post(f"{url}/api/chat", json=body, headers=headers)
-        r.raise_for_status()
-        return r.json().get("message", {}).get("content", "")
+    ENFORCED on the model (Ollama structured outputs), so the mapping can't drift.
+    model  = optional per-job override (the recipe names its own brain as DATA);
+             None keeps the default (BIO_MODEL on Turbo, LOCAL_MODEL on local)."""
+    target = turbo_or_local(model, model) if model else turbo_or_local(BIO_MODEL, LOCAL_MODEL)
+    res = await run_llm(user, target=target, system=system,
+                        json_mode=json_mode, schema=schema)
+    return res.text
 
 
 async def cv_to_bio(cv_text: str, categories: list[str] | None = None) -> dict:
