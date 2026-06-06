@@ -142,6 +142,16 @@
     <div class="card rounded-xl p-5">
       <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">output</div>
       <template x-if="!output"><div class="text-sm text-slate-600">run a recipe to see the result</div></template>
+      <!-- cover shot: every output wears a cover when displayed (Wolf for now; themed when we have an image key) -->
+      <template x-if="output">
+        <div class="-mx-5 -mt-5 mb-4 px-5 py-3.5 flex items-center gap-3 border-b border-slate-800" style="background:linear-gradient(180deg,rgba(192,57,43,0.14),transparent)">
+          <img src="/static/lapiazza-wolf.png" class="h-9 w-9 object-contain shrink-0" alt="La Piazza">
+          <div class="min-w-0">
+            <div class="text-sm font-bold text-slate-100 truncate" x-text="(output.recipe||'La Piazza')"></div>
+            <div class="text-[10px] font-mono text-slate-500">La Piazza · the workshop</div>
+          </div>
+        </div>
+      </template>
       <!-- you asked (the question, never lost) -->
       <template x-if="output && output.inputs && Object.values(output.inputs).some(v=>v)">
         <div class="text-xs mb-4 pb-3 border-b border-slate-800">
@@ -241,11 +251,13 @@ function bottega() {
       window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
     async shareWa() { const u=await this._shareUrl(); const t=((this.output&&this.output.recipe)||'La Piazza')+' — ';
       window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
-    _fname() {  // readable, timestamped, descriptive -- never "same name" again
+    _fname() {  // human-readable: music-playlist_rock-70s-classics_Jun-6-2026_1-17pm.md
       const o=this.output||{}, i=o.inputs||{};
       const slug=(o.slug||(this.active&&this.active.slug)||'la-piazza');
       const d=o.asked_at?new Date(o.asked_at):new Date(); const p=n=>String(n).padStart(2,'0');
-      const ts=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes());
+      const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let h=d.getHours(); const ap=h>=12?'pm':'am'; h=h%12||12;
+      const ts=M[d.getMonth()]+'-'+d.getDate()+'-'+d.getFullYear()+'_'+h+'-'+p(d.getMinutes())+ap;
       const hint=((i.mentor||i.vibe||i.name||i.what||i.job||'')+'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,28);
       return slug+(hint?('_'+hint):'')+'_'+ts+'.md';
     },
