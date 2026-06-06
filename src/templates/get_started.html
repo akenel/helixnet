@@ -28,7 +28,7 @@
   <div class="text-center mb-8">
     <a href="/" class="text-xs font-mono text-slate-500 hover:text-slate-300">← La Piazza</a>
     <h1 class="text-3xl font-black tracking-tight mt-3">Welcome to La <span class="text-brand">Piazza</span></h1>
-    <p class="text-slate-400 mt-2">Tell us your name. Drop your CV. <b class="text-slate-200">You're in</b> — with a Bottega built for you in 30 seconds.</p>
+    <p class="text-slate-400 mt-2">Tell us your name. Say what you do — in your own words. <b class="text-slate-200">You're in</b>, with a Bottega built for you in 30 seconds. <span class="text-slate-500">No CV required.</span></p>
   </div>
 
   <!-- the form -->
@@ -48,14 +48,23 @@
         <input x-model="password" type="password" placeholder="at least 6 characters" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200">
       </div>
       <div>
-        <label class="text-xs uppercase tracking-wider text-slate-500">Your CV <span class="text-slate-600 normal-case">(PDF, Word, or text)</span></label>
-        <input @change="file=$event.target.files[0]" type="file" accept=".pdf,.docx,.txt" class="w-full mt-1 text-sm text-slate-300">
+        <label class="text-xs uppercase tracking-wider text-slate-500">Tell us about yourself</label>
+        <textarea x-model="about" rows="4" placeholder="I'm a cook with 25 years in the kitchen — I have an apartment to rent in Trapani and I sell homemade preserves… (a sentence or two is plenty)"
+          class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 text-sm resize-none"></textarea>
+        <p class="text-[11px] text-slate-600 mt-1">No CV needed. A few honest sentences and we'll build the rest.</p>
       </div>
-      <button @click="submit()" :disabled="busy||!name||!password||!file"
+      <div class="flex items-center gap-3 text-[11px] text-slate-600">
+        <div class="flex-1 h-px bg-slate-800"></div> or, if you have one, drop a CV <div class="flex-1 h-px bg-slate-800"></div>
+      </div>
+      <div>
+        <input @change="file=$event.target.files[0]" type="file" accept=".pdf,.docx,.txt" class="w-full text-sm text-slate-300">
+      </div>
+      <button @click="submit()" :disabled="busy||!name||!password||(!about.trim()&&!file)"
         class="w-full py-3 rounded-xl font-bold bg-brand hover:bg-branddark text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
-        x-text="busy?'Building your Bottega…':'🧬 Build my Bottega →'"></button>
+        x-text="busy?buildMsg:'🧬 Build my Bottega →'"></button>
       <p x-show="err" x-cloak class="text-sm text-rose-400 text-center" x-text="err"></p>
       <p class="text-[11px] text-slate-600 text-center">No spam. Your data stays yours. One motion and you're a member.</p>
+      <p class="text-xs text-center text-slate-500 pt-1">Already have a Bottega? <button @click="login()" class="text-brand hover:underline font-semibold">Log in →</button></p>
     </div>
   </div>
 
@@ -76,19 +85,30 @@
 <script>
 function getStarted() {
   return {
-    name:'', email:'', password:'', file:null, busy:false, err:'', done:null,
+    name:'', email:'', password:'', about:'', file:null, busy:false, err:'', done:null,
+    buildMsg:'Building your Bottega…',
     async submit() {
       this.busy=true; this.err='';
+      const msgs=['Reading your story…','Finding your gifts…','Choosing your House…','Writing your bio…','Almost there…'];
+      let i=0; this.buildMsg=msgs[0];
+      const tick=setInterval(()=>{ i=(i+1)%msgs.length; this.buildMsg=msgs[i]; }, 2600);
       const fd=new FormData();
       fd.append('name',this.name); fd.append('email',this.email);
-      fd.append('password',this.password); fd.append('file',this.file);
+      fd.append('password',this.password); fd.append('about',this.about);
+      if (this.file) fd.append('file',this.file);
       try {
         const r=await fetch('/api/v1/compute/bottega/get-started',{method:'POST',body:fd});
         const d=await r.json();
         if (r.ok) { this.done=d; setTimeout(()=>{ location.href='/compute/bottega#token='+d.token; }, 2200); }
         else { this.err=d.detail||'something went sideways — try again'; }
       } catch(e){ this.err='couldn\'t reach the square — try again'; }
-      this.busy=false;
+      clearInterval(tick); this.busy=false;
+    },
+    login() {
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const redirect = encodeURIComponent(location.origin + '/compute/callback');
+      const state = encodeURIComponent('/compute/bottega');
+      location.href = `${kc}/realms/lapiazza-realm-dev/protocol/openid-connect/auth?client_id=lapiazza_web&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
     },
   };
 }

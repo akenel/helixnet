@@ -134,15 +134,21 @@ async def _member_token(c: httpx.AsyncClient, username: str, password: str) -> s
 
 @router.post("/get-started")
 async def get_started(name: str = Form(...), email: str = Form(""), password: str = Form(...),
-                      file: UploadFile = File(...), db: AsyncSession = Depends(get_db_session)):
-    """PUBLIC. The whole onboarding in one breath: tell us your name, drop your CV,
-    and you walk out WITH a Bottega -- account created, profile built, logged in.
-    No chicken-and-egg: the account is the empty room, the CV furnishes it, one motion."""
+                      about: str = Form(""), file: UploadFile = File(None),
+                      db: AsyncSession = Depends(get_db_session)):
+    """PUBLIC. The whole onboarding in one breath: tell us your name, and EITHER drop a
+    CV OR just say what you do -- you walk out WITH a Bottega (account + profile + logged
+    in). No CV required (most real people don't have one ready); a few honest sentences
+    are enough. The account is the empty room, your words furnish it, one motion."""
     if len(password) < 6:
         raise HTTPException(status_code=400, detail="pick a password of at least 6 characters")
-    text = extract_text(file.filename or "cv", await file.read())
+    if file is not None and getattr(file, "filename", ""):
+        text = extract_text(file.filename, await file.read())
+    else:
+        text = (about or "").strip()
     if len(text.strip()) < 20:
-        raise HTTPException(status_code=400, detail="couldn't read your CV -- try a PDF or Word file")
+        raise HTTPException(status_code=400,
+                            detail="tell us a little more about what you do (a sentence or two), or drop a CV")
     proposal = await cv_to_bio(text, DEFAULT_CATEGORIES)   # bio/tagline/skills/categories
     async with httpx.AsyncClient(verify=False, timeout=30.0) as c:
         tok = await _kc_admin_token(c)
