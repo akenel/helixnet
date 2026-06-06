@@ -55,7 +55,8 @@ def main(
                 "name": "lp-postgres", "type": "grafana-postgresql-datasource", "access": "proxy",
                 "url": pg_host, "database": pg_db, "user": pg_user,
                 "secureJsonData": {"password": pg_pass},
-                "jsonData": {"sslmode": "disable", "postgresVersion": 1700},
+                "jsonData": {"sslmode": "disable", "postgresVersion": 1700,
+                             "database": pg_db},   # GF12 wants the db HERE, not top-level
             })
             r.raise_for_status()
             ds_uid = r.json()["datasource"]["uid"]
