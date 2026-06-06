@@ -54,7 +54,15 @@ def main():
     if not KEY:
         print("no brain key (LPCX_BRAIN_KEY / BH_OLLAMA_KEY)", file=sys.stderr)
         sys.exit(1)
-    result = classify(people)
+    result = {}
+    batch = 30
+    for i in range(0, len(people), batch):
+        chunk = people[i:i + batch]
+        try:
+            result.update(classify(chunk))
+            print(f"  classified {min(i+batch,len(people))}/{len(people)}", file=sys.stderr)
+        except Exception as e:  # noqa: BLE001
+            print(f"  batch @{i} failed: {e}", file=sys.stderr)
     print(json.dumps(result, indent=0))
 
 
