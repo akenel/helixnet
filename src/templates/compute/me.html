@@ -58,6 +58,7 @@
       <div class="tab" :class="tab==='body'&&'on'" @click="tab='body'">🏋️ Body</div>
       <div class="tab" :class="tab==='mind'&&'on'" @click="tab='mind'">🧠 Mind</div>
       <div class="tab" :class="tab==='spirit'&&'on'" @click="tab='spirit'">✨ Spirit</div>
+      <div class="tab" :class="tab==='inbox'&&'on'" @click="tab='inbox'">📬 Inbox <span x-show="inbox.unread" x-cloak class="ml-1 inline-flex items-center justify-center text-[10px] font-bold bg-brand text-white rounded-full w-4 h-4" x-text="inbox.unread"></span></div>
     </div>
 
     <!-- HOME -->
@@ -159,20 +160,36 @@
         </a>
       </template>
     </div>
+
+    <!-- INBOX -->
+    <div x-show="tab==='inbox'" class="space-y-3">
+      <template x-if="!(inbox.items||[]).length"><div class="card rounded-xl p-5 text-center text-sm text-slate-500">No messages yet. When someone reaches out, it lands here. 📬</div></template>
+      <template x-for="it in (inbox.items||[])" :key="it.id">
+        <div class="card rounded-xl p-4 cursor-pointer" :class="(it.kind==='message' && !it.read) && 'border-brand/60'" @click="markRead(it)">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-semibold text-sm truncate" x-text="it.title"></span>
+            <span class="text-[11px] font-mono text-slate-600 shrink-0" x-text="(it.created_at||'').slice(0,10)"></span>
+          </div>
+          <p class="text-sm text-slate-300 mt-1 whitespace-pre-line" x-text="it.body"></p>
+        </div>
+      </template>
+    </div>
   </div>
 </div>
 
 <script>
 function rebuild() {
   return {
-    token:null, username:'', d:{}, tab:'home',
-    async boot(){ this.token=this.loadToken(); this.username=this.decodeUser()||''; if(this.token) await this.load(); },
+    token:null, username:'', d:{}, tab:'home', inbox:{items:[],unread:0},
+    async boot(){ this.token=this.loadToken(); this.username=this.decodeUser()||''; if(this.token){ await this.load(); await this.loadInbox(); } },
     loadToken(){
       if (location.hash.includes('token=')) { const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t); localStorage.setItem('compute_token',t); history.replaceState({},document.title,location.pathname);} }
       return sessionStorage.getItem('compute_token') || localStorage.getItem('compute_token');
     },
     decodeUser(){ if(!this.token)return null; try{const p=JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); if(p.exp*1000<=Date.now()){this.token=null;return null;} return p.preferred_username;}catch(e){return null;} },
     async load(){ try{ const r=await fetch('/api/v1/compute/bottega/me/dashboard',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.d=await r.json(); }catch(e){} },
+    async loadInbox(){ try{ const r=await fetch('/api/v1/compute/bottega/me/inbox',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.inbox=await r.json(); }catch(e){} },
+    async markRead(it){ if(it.kind!=='message'||it.read) return; it.read=true; this.inbox.unread=Math.max(0,(this.inbox.unread||0)-1); try{ await fetch('/api/v1/compute/bottega/me/inbox/'+it.id+'/read',{method:'POST',headers:{'Authorization':'Bearer '+this.token}}); }catch(e){} },
     homeCards(){ return [
       {k:'p',icon:'👤',label:'Profile',done:!!(this.d.profile&&this.d.profile.bio),status:(this.d.profile&&this.d.profile.bio)?'built ✓':'drop your CV →',href:'/compute/bottega'},
       {k:'b',icon:'🩺',label:'Body Setup',done:!!this.d.body,status:this.d.body?'set ✓':'calibrate →',href:'/compute/bottega'},

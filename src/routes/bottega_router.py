@@ -363,6 +363,73 @@ async def me_dashboard(current_user: dict = Depends(require_bottega_access()),
     }
 
 
+# ===== Blocks C + D: notifications + messages (the dark-workshop social layer, on the spine) =====
+class Message(BaseModel):
+    to: str
+    body: str
+    subject: str = ""
+
+
+def _inbox_brief(s: BottegaSessionModel) -> dict:
+    try:
+        inp = json.loads(s.inputs or "{}")
+    except Exception:  # noqa: BLE001
+        inp = {}
+    return {"id": str(s.id), "kind": s.slug, "title": s.title, "from": inp.get("from", ""),
+            "read": bool(inp.get("read", False)), "body": s.output,
+            "created_at": s.created_at.isoformat() if s.created_at else ""}
+
+
+@router.post("/message")
+async def send_message(m: Message, current_user: dict = Depends(require_bottega_access()),
+                       db: AsyncSession = Depends(get_db_session)):
+    """Send a member a message (+ a notification). The equalizer's nudge runs through here too."""
+    sender = current_user["username"]
+    db.add(BottegaSessionModel(
+        username=m.to, slug="message", title=(m.subject or f"Message from {sender}")[:160],
+        inputs=json.dumps({"from": sender, "read": False}), output=(m.body or "")[:8000],
+        output_type="text", tags="message"))
+    db.add(BottegaSessionModel(
+        username=m.to, slug="notification", title=f"💬 {sender}",
+        inputs=json.dumps({"read": False}), output=(m.subject or (m.body or "")[:80]),
+        output_type="text", tags="notification"))
+    await db.commit()
+    return {"sent": True, "to": m.to}
+
+
+@router.get("/me/inbox")
+async def me_inbox(current_user: dict = Depends(require_bottega_access()),
+                   db: AsyncSession = Depends(get_db_session)):
+    """My messages + notifications (newest first) + unread count."""
+    user = current_user["username"]
+    rows = (await db.execute(
+        select(BottegaSessionModel)
+        .where(BottegaSessionModel.username == user,
+               BottegaSessionModel.slug.in_(["message", "notification"]))
+        .order_by(BottegaSessionModel.created_at.desc()).limit(100))).scalars().all()
+    items = [_inbox_brief(s) for s in rows]
+    unread = sum(1 for i in items if i["kind"] == "message" and not i["read"])
+    return {"items": items, "unread": unread}
+
+
+@router.post("/me/inbox/{item_id}/read")
+async def mark_read(item_id: str, current_user: dict = Depends(require_bottega_access()),
+                    db: AsyncSession = Depends(get_db_session)):
+    try:
+        s = await db.get(BottegaSessionModel, UUID(item_id))
+    except Exception:  # noqa: BLE001
+        s = None
+    if s and s.username == current_user["username"]:
+        try:
+            inp = json.loads(s.inputs or "{}")
+        except Exception:  # noqa: BLE001
+            inp = {}
+        inp["read"] = True
+        s.inputs = json.dumps(inp)
+        await db.commit()
+    return {"ok": True}
+
+
 @router.post("/generate")
 async def generate(file: UploadFile = File(...),
                    current_user: dict = Depends(require_bottega_access()),
