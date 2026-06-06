@@ -107,3 +107,35 @@ async def test_local_no_auth_json_mode_only_user_turn():
     assert b["format"] == "json"                        # json_mode, no schema
     assert b["messages"] == [{"role": "user", "content": "p"}]   # no system turn
     assert _FakeClient.captured["headers"] == {}        # local => no auth
+
+
+# --- per-job model: the recipe runner threads "model" through to the brain ---------
+
+@pytest.mark.asyncio
+async def test_recipe_threads_per_job_model(monkeypatch):
+    """The 'decide' recipe names its own brain (deepseek-r1:14b); a default recipe
+    passes model=None. This is the BYO-brain contract, end to end through run_recipe."""
+    import src.compute.recipes as rc
+
+    seen = []
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        seen.append(model)
+        return '{"x":1}' if json_mode else "## The Call\nDo it."
+
+    monkeypatch.setattr(rc, "_brain_chat", fake_brain)
+
+    # 'decide' carries a per-job model -> it must reach the brain unchanged
+    out = await rc.run_recipe("decide", {"decision": "take the contract or not"})
+    assert seen[-1] == "deepseek-r1:14b"
+    assert out["output_type"] == "markdown"
+
+    # a recipe with no "model" key -> default brain (None)
+    await rc.run_recipe("music-playlist", {"vibe": "sunrise drive", "count": "10"})
+    assert seen[-1] is None
+
+
+def test_menu_does_not_leak_model():
+    """menu() is the public surface -- it must not expose the internal brain choice."""
+    import src.compute.recipes as rc
+    assert all("model" not in entry for entry in rc.menu())

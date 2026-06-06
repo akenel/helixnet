@@ -261,6 +261,35 @@ RECIPES: dict[str, dict] = {
         "output_schema": {"childhood": "", "passion": "", "dreams": [], "the_why": "",
                           "one_liner": "", "elevator_22s": ""},
     },
+    # --- BYO-brain proof: this recipe names its OWN model (a reasoning model) as DATA.
+    # The runner threads "model" straight through to the brain; nothing else changes.
+    # Default recipes omit "model" and get the house brain. (commit 1f36ffa)
+    "decide": {
+        "slug": "decide", "title": "Think It Through", "emoji": "\U0001F9ED",  # compass
+        "category": "coaching", "est_credits": 3,    # reasoning model => more brain-tokens
+        "model": "deepseek-r1:14b",                   # per-job brain: a reasoning model, not the default
+        "inputs": [
+            {"name": "decision", "type": "text",
+             "label": "The decision or problem you're stuck on"},
+            {"name": "options", "type": "text",
+             "label": "The options you're weighing (optional)"},
+            {"name": "constraints", "type": "text",
+             "label": "What matters most — time, money, risk, people? (optional)"},
+        ],
+        "system": (
+            "You are a clear-eyed reasoning partner. Think step by step, weigh the trade-offs "
+            "honestly, surface the hidden assumptions and the real risks, and DO NOT flatter. "
+            "Never invent facts about the person's situation. Output clean Markdown."
+        ),
+        "prompt": (
+            "Help me think through this decision:\n\"{decision}\"\n\n"
+            "Options I'm weighing: {options}\nWhat matters to me / constraints: {constraints}\n\n"
+            "Reason it through: lay out the real trade-offs, name the assumptions and the risks, "
+            "then give a '## The Call' section — a clear recommendation, why, and the ONE thing "
+            "that would flip it. Be honest, not comforting."
+        ),
+        "output": "markdown",
+    },
 }
 
 
