@@ -133,7 +133,15 @@
       </template>
       <!-- markdown/text output (cv-generate, cover-letter) -->
       <template x-if="output && output.output_type!=='json'">
-        <div class="md text-slate-300 max-h-[460px] overflow-y-auto" x-html="renderMd(output.result)"></div>
+        <div>
+          <div class="md text-slate-300 max-h-[460px] overflow-y-auto" x-html="renderMd(output.result)"></div>
+          <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800">
+            <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
+            <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
+            <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
+            <button @click="downloadOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">💾 Save (.md)</button>
+          </div>
+        </div>
       </template>
     </div>
   </div>
@@ -148,7 +156,7 @@ function bottega() {
   return {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
-    saveMsg: '', saving: false, handle: '', savedUrl: '',
+    saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false,
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
@@ -177,6 +185,11 @@ function bottega() {
     },
     pick(r) { if(!r) return; this.active=r; this.files={}; this.fields={}; this.output=null; this.err=''; this.saveMsg=''; this.savedUrl=''; },
     renderMd(s) { try { return window.marked ? marked.parse(s||'') : (s||''); } catch(e){ return s||''; } },
+    _text() { const r=this.output&&this.output.result; return typeof r==='string'?r:JSON.stringify(r,null,2); },
+    copyOut() { navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
+    shareTg() { window.open('https://t.me/share/url?url='+encodeURIComponent(location.origin)+'&text='+encodeURIComponent(this._text().slice(0,3500)),'_blank'); },
+    shareWa() { window.open('https://wa.me/?text='+encodeURIComponent(this._text().slice(0,3500)),'_blank'); },
+    downloadOut() { const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=((this.active&&this.active.slug)||'la-piazza')+'-'+Date.now()+'.md'; a.click(); },
     loadCV() {
       const r = this.recipes.find(x=>x.slug==='cv-to-bio');
       if (!r) return;
