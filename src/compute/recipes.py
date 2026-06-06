@@ -171,7 +171,9 @@ RECIPES: dict[str, dict] = {
              "options": ["20", "30", "45", "60"]},
             {"name": "likes", "type": "text", "label": "What do you enjoy, or a sport you play? (optional)"},
             {"name": "limits", "type": "text", "label": "Any injuries or limits? (e.g. left shoulder)"},
-            {"name": "day", "type": "text", "label": "Which day of your 30? (e.g. 2)"},
+            {"name": "week", "type": "select", "label": "Where are you in the 4-week plan?",
+             "options": ["Week 1 — learn it", "Week 2 — repeat it", "Week 3 — tighten it",
+                         "Week 4 — the test"]},
         ],
         "system": (
             "You are a kind, expert strength coach for everyday people of ANY age (picture a "
@@ -184,7 +186,9 @@ RECIPES: dict[str, dict] = {
             "encouraging language anyone could follow. Output clean Markdown."
         ),
         "prompt": (
-            "Build DAY {day} of a 30-day plan: a {minutes}-minute session, {days}x per week, "
+            "Build a session for '{week}' of a 4-week plan (wk1 learn the moves, wk2 repeat to "
+            "build the habit, wk3 tighten & add a little, wk4 is the test): a {minutes}-minute "
+            "session, {days}x per week, "
             "goal '{goal}', using ONLY: {equipment}. They enjoy/play: '{likes}'. Injuries/limits "
             "to respect: '{limits}'. Give a short ## title, a quick warm-up, the main workout "
             "(each line: exercise - sets x reps - one-line how-to), an optional finisher, a short "
