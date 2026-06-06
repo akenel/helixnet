@@ -34,6 +34,10 @@ services:
       - ./uat.env
     environment:
       SERVICE_TYPE: platform
+      # Dedicated staging auth realm (own frontendUrl=staging-bottega.lapiazza.app).
+      # Keeps staging login isolated from prod's lapiazza-realm-dev (gotcha #3).
+      LP_REALM: lapiazza-realm-staging
+      LP_CLIENT: lapiazza_web
     volumes:
       # Independent worktree at the fix commit, read-only so staging can't mutate it.
       - ${HELIX_STAGING_SRC:-/opt/helix-staging-tree/src}:/app/src:ro
