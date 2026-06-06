@@ -161,8 +161,8 @@
           </template>
         </div>
       </template>
-      <!-- json output (e.g. cv-to-bio) -->
-      <template x-if="output && output.output_type==='json'">
+      <!-- json output: cv-to-bio (custom render + Save to profile) -->
+      <template x-if="output && output.output_type==='json' && active && active.slug==='cv-to-bio'">
         <div class="space-y-3 text-sm">
           <div><div class="text-[10px] uppercase text-slate-500">bio</div><div x-text="output.result.bio"></div></div>
           <div><div class="text-[10px] uppercase text-slate-500">tagline</div><div class="text-brand" x-text="output.result.tagline"></div></div>
@@ -177,6 +177,17 @@
           </div>
           <div class="text-xs font-mono" :class="(saveMsg.startsWith('✓')||saveMsg.startsWith('↩'))?'text-emerald-400':'text-rose-400'" x-text="saveMsg"></div>
           <a x-show="savedUrl" :href="savedUrl" target="_blank" class="block text-xs text-brand hover:underline font-mono" x-text="'→ view your page: '+savedUrl"></a>
+        </div>
+      </template>
+      <!-- json output: generic (body-intake, story-intake, any structured recipe) -->
+      <template x-if="output && output.output_type==='json' && !(active && active.slug==='cv-to-bio')">
+        <div class="space-y-3 text-sm">
+          <template x-for="[k,v] in Object.entries(output.result||{})" :key="k">
+            <div x-show="v && (!Array.isArray(v) || v.length)">
+              <div class="text-[10px] uppercase tracking-wider text-slate-500" x-text="k.replace(/_/g,' ')"></div>
+              <div class="text-slate-200" x-text="Array.isArray(v) ? v.join(' · ') : v"></div>
+            </div>
+          </template>
         </div>
       </template>
       <!-- markdown/text output (cv-generate, cover-letter) -->
@@ -213,6 +224,7 @@ function bottega() {
       { key:'media',    label:'🎬 Make Media',        hint:'playlists and more' },
       { key:'coaching', label:'🕰️ Ask a Master',      hint:'the dead teach the living — a real mentor session for what you face' },
       { key:'body',     label:'🏋️ Get in Shape',      hint:'a private, calibrated workout — your gear, your goal, 20–60 min, day by day' },
+      { key:'spirit',   label:'✨ Your Story',         hint:'find your why — childhood, passion, dreams, your one-liner & 22-second pitch' },
     ],
     inCat(k) { return this.recipes.filter(r => r.category === k); },
     boot() {

@@ -63,9 +63,12 @@ def _prompt(cv_text: str, categories: list[str]) -> str:
     )
 
 
-async def _brain_chat(system: str, user: str, json_mode: bool = False) -> str:
+async def _brain_chat(system: str, user: str, json_mode: bool = False,
+                      schema: dict | None = None) -> str:
     """Shared brain call -- the seed of the procedure-as-code recipe runner.
-    Every template recipe routes through here. Turbo if BH_OLLAMA_KEY, else local."""
+    Every template recipe routes through here. Turbo if BH_OLLAMA_KEY, else local.
+    schema = the outbound Service Interface (a JSON Schema) -- defined up front and
+    ENFORCED on the model (Ollama structured outputs), so the mapping can't drift."""
     import httpx
     use_turbo = bool(BH_OLLAMA_KEY)
     url = (OLLAMA_TURBO_URL if use_turbo else OLLAMA_URL).rstrip("/")
@@ -77,7 +80,9 @@ async def _brain_chat(system: str, user: str, json_mode: bool = False) -> str:
                      {"role": "user", "content": user}],
         "stream": False,
     }
-    if json_mode:
+    if schema is not None:
+        body["format"] = schema          # enforce the outbound SI structure on the model
+    elif json_mode:
         body["format"] = "json"
     async with httpx.AsyncClient(timeout=180.0) as client:
         r = await client.post(f"{url}/api/chat", json=body, headers=headers)

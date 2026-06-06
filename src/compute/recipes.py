@@ -7,6 +7,22 @@ import json
 
 from src.services.bottega_service import _brain_chat, extract_text
 
+
+def _json_schema(output_schema: dict, inputs: list | None = None) -> dict:
+    """The outbound Service Interface FOR THE MODEL -- only the fields the mapping must
+    actually transform. Fields that match a SELECT input are PASS-THROUGH (the user already
+    gave us the value), so we don't ask the model for them. That keeps the model's contract
+    small and free-typed = reliable. (SAP message mapping: pass-through fields vs value-mapped
+    fields. The model maps only what needs mapping; we own + fill the rest.)"""
+    passthrough = {i["name"] for i in (inputs or []) if i.get("type") == "select"}
+    props: dict = {}
+    for k, d in output_schema.items():
+        if k in passthrough:
+            continue
+        props[k] = ({"type": "array", "items": {"type": "string"}} if isinstance(d, list)
+                    else {"type": "string"})
+    return {"type": "object", "properties": props, "required": list(props)}
+
 # Each input: {name, type: file|text|select, label, options?, default?}
 RECIPES: dict[str, dict] = {
     "cv-to-bio": {
@@ -177,6 +193,70 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    # Structured intake -- fills the BODY slice of the person schema (calibration). JSON + defaults.
+    "body-intake": {
+        "slug": "body-intake", "title": "Body Setup", "emoji": "\U0001FA7A",
+        "category": "body", "est_credits": 1,
+        "inputs": [
+            {"name": "equipment", "type": "select", "label": "Main equipment",
+             "options": ["Just my body", "Resistance bands", "Dumbbells", "Kettlebell", "Full gym"]},
+            {"name": "extras", "type": "text", "label": "Anything else you've got? (stool, mat, a stick, bench…)"},
+            {"name": "goal", "type": "select", "label": "Goal",
+             "options": ["Lose fat, keep muscle", "Build muscle", "General fitness & energy", "Get better at a sport"]},
+            {"name": "sport", "type": "text", "label": "A sport you play or want to improve? (optional)"},
+            {"name": "days", "type": "select", "label": "Days per week", "options": ["3", "4", "5"]},
+            {"name": "minutes", "type": "select", "label": "Minutes per session", "options": ["20", "30", "45", "60"]},
+            {"name": "injuries", "type": "text", "label": "Injuries or limits? (e.g. left shoulder, bad back)"},
+            {"name": "alcohol", "type": "text", "label": "Do you drink? what & how much? (private — honest, it's just us)"},
+        ],
+        "system": (
+            "You are a kind coach AND a careful data mapper. Turn a person's answers into a clean, "
+            "calibrated body profile as STRICT JSON. Normalize honestly, fill sensible defaults for "
+            "blanks, never invent. Respect privacy and NEVER judge -- especially on alcohol; encourage "
+            "honesty gently. Also write a warm 1-2 sentence summary the member can confirm or correct."
+        ),
+        "prompt": (
+            "Body setup. Equipment: '{equipment}' plus extras '{extras}'. Goal: '{goal}'. Sport: "
+            "'{sport}'. Days/week: '{days}'. Minutes: '{minutes}'. Injuries/limits: '{injuries}'. "
+            "Alcohol (private): '{alcohol}'. Return JSON with EXACTLY these keys: sport (their "
+            "sport, or 'none'), injuries (a list of short strings from the injuries text), alcohol "
+            "(a short honest private note, or 'none stated'), summary (a warm 1-2 sentence "
+            "calibration -- what we understood + how we'll tailor it). No judgment, no invention."
+        ),
+        "output": "json",
+        # Select fields match the input names -> they pass through + carry the enum domain.
+        # Sensible defaults (not blanks) so a gap reads cleanly. We own the schema.
+        "output_schema": {"equipment": "not set", "goal": "not set", "days": "3",
+                          "minutes": "30", "sport": "none", "injuries": [],
+                          "alcohol": "none stated", "summary": ""},
+    },
+    # Structured intake -- fills the SPIRIT slice (the why). Gives them their essence back.
+    "story-intake": {
+        "slug": "story-intake", "title": "Your Story", "emoji": "✨",
+        "category": "spirit", "est_credits": 1,
+        "inputs": [
+            {"name": "childhood", "type": "text",
+             "label": "What did you love as a kid — what were you good at before the world said otherwise?"},
+            {"name": "passion", "type": "text", "label": "What lights you up now? What could you talk about for hours?"},
+            {"name": "dreams", "type": "text", "label": "If it couldn't fail — what would you build, make, or become?"},
+            {"name": "proud", "type": "text", "label": "Something you're quietly proud of? (optional)"},
+        ],
+        "system": (
+            "You are a warm, wise listener who finds the through-line in a person's story and gives "
+            "them honest words for it. Use ONLY what they tell you -- never flatter, never invent. "
+            "Output STRICT JSON. Give them their essence back with dignity, in their own voice."
+        ),
+        "prompt": (
+            "From their words: childhood '{childhood}', passion '{passion}', dreams '{dreams}', "
+            "proud of '{proud}'. Produce JSON keys: childhood, passion, dreams (list), the_why (the "
+            "honest through-line -- what they're really FOR), one_liner (<=80 chars, their essence in "
+            "their voice), elevator_22s (a real first-person ~60-word spoken pitch, warm and true, "
+            "about 22 seconds to say aloud). Only from their words. Dignified, never flattering."
+        ),
+        "output": "json",
+        "output_schema": {"childhood": "", "passion": "", "dreams": [], "the_why": "",
+                          "one_liner": "", "elevator_22s": ""},
+    },
 }
 
 
@@ -209,7 +289,9 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
         else:
             ctx[name] = (val if val not in (None, "") else inp.get("default", ""))
     prompt = r["prompt"].format(**ctx)
-    out = await _brain_chat(r["system"], prompt, json_mode=(r["output"] == "json"))
+    out_schema = r.get("output_schema") if r["output"] == "json" else None
+    js = _json_schema(out_schema, r["inputs"]) if isinstance(out_schema, dict) else None
+    out = await _brain_chat(r["system"], prompt, json_mode=(r["output"] == "json"), schema=js)
     if r["output"] == "json":
         try:
             result = json.loads(out)
@@ -222,6 +304,11 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
             parsed = result if isinstance(result, dict) else {}
             result = {k: (parsed[k] if parsed.get(k) not in (None, "") else d)
                       for k, d in schema.items()}
+            # The user's own structured choices are authoritative -- pass selects straight
+            # through (never ask the AI to re-guess what the human already told us).
+            for inp in r["inputs"]:
+                if inp["type"] == "select" and inp["name"] in result and ctx.get(inp["name"]):
+                    result[inp["name"]] = ctx[inp["name"]]
         elif not isinstance(result, dict):
             result = {"raw": out}
         return {"slug": slug, "output_type": "json", "result": result}
