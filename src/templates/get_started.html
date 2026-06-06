@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Started · La Piazza</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1100px 600px at 50% -15%, #1f2a44, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.65); border: 1px solid rgba(30,41,59,0.9); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  [x-cloak]{display:none!important}
+  input[type=file]::file-selector-button{margin-right:12px;border:0;background:#1e293b;color:#e2e8f0;padding:8px 14px;border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased" x-data="getStarted()">
+<div class="max-w-lg mx-auto px-5 py-12">
+
+  <div class="text-center mb-8">
+    <a href="/" class="text-xs font-mono text-slate-500 hover:text-slate-300">← La Piazza</a>
+    <h1 class="text-3xl font-black tracking-tight mt-3">Welcome to La <span class="text-brand">Piazza</span></h1>
+    <p class="text-slate-400 mt-2">Tell us your name. Drop your CV. <b class="text-slate-200">You're in</b> — with a Bottega built for you in 30 seconds.</p>
+  </div>
+
+  <!-- the form -->
+  <div x-show="!done" class="card rounded-2xl overflow-hidden">
+    <div class="h-1 grad-rule"></div>
+    <div class="p-7 space-y-4">
+      <div>
+        <label class="text-xs uppercase tracking-wider text-slate-500">Your name</label>
+        <input x-model="name" type="text" placeholder="Flora Ferrara" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200">
+      </div>
+      <div>
+        <label class="text-xs uppercase tracking-wider text-slate-500">Email <span class="text-slate-600 normal-case">(to find your way back)</span></label>
+        <input x-model="email" type="email" placeholder="you@example.com" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200">
+      </div>
+      <div>
+        <label class="text-xs uppercase tracking-wider text-slate-500">Password</label>
+        <input x-model="password" type="password" placeholder="at least 6 characters" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200">
+      </div>
+      <div>
+        <label class="text-xs uppercase tracking-wider text-slate-500">Your CV <span class="text-slate-600 normal-case">(PDF, Word, or text)</span></label>
+        <input @change="file=$event.target.files[0]" type="file" accept=".pdf,.docx,.txt" class="w-full mt-1 text-sm text-slate-300">
+      </div>
+      <button @click="submit()" :disabled="busy||!name||!password||!file"
+        class="w-full py-3 rounded-xl font-bold bg-brand hover:bg-branddark text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
+        x-text="busy?'Building your Bottega…':'🧬 Build my Bottega →'"></button>
+      <p x-show="err" x-cloak class="text-sm text-rose-400 text-center" x-text="err"></p>
+      <p class="text-[11px] text-slate-600 text-center">No spam. Your data stays yours. One motion and you're a member.</p>
+    </div>
+  </div>
+
+  <!-- success -->
+  <div x-show="done" x-cloak class="card rounded-2xl overflow-hidden text-center">
+    <div class="h-1 grad-rule"></div>
+    <div class="p-9">
+      <div class="text-5xl mb-3">🎉</div>
+      <h2 class="text-2xl font-bold">Welcome, <span class="text-brand" x-text="name"></span>!</h2>
+      <p class="text-slate-400 mt-2" x-show="done">Your Bottega is built. Taking you to your workshop…</p>
+      <p class="text-sm text-slate-300 mt-4" x-text="done && done.profile && done.profile.tagline"></p>
+      <a :href="'/compute/bottega#token='+(done&&done.token)" class="inline-block mt-6 px-5 py-2.5 rounded-lg font-semibold bg-brand/90 hover:bg-brand text-white">Enter your Bottega →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function getStarted() {
+  return {
+    name:'', email:'', password:'', file:null, busy:false, err:'', done:null,
+    async submit() {
+      this.busy=true; this.err='';
+      const fd=new FormData();
+      fd.append('name',this.name); fd.append('email',this.email);
+      fd.append('password',this.password); fd.append('file',this.file);
+      try {
+        const r=await fetch('/api/v1/compute/bottega/get-started',{method:'POST',body:fd});
+        const d=await r.json();
+        if (r.ok) { this.done=d; setTimeout(()=>{ location.href='/compute/bottega#token='+d.token; }, 2200); }
+        else { this.err=d.detail||'something went sideways — try again'; }
+      } catch(e){ this.err='couldn\'t reach the square — try again'; }
+      this.busy=false;
+    },
+  };
+}
+</script>
+</body>
+</html>

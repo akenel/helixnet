@@ -317,6 +317,11 @@ async def home(request: Request):
     """La Piazza front door -- the public landing page."""
     return templates.TemplateResponse("home.html", {"request": request})
 
+@app.get("/get-started", tags=["🧭 Web UI"], response_class=HTMLResponse)
+async def get_started_page(request: Request):
+    """The one-motion door: name + CV -> account + Bottega + logged in."""
+    return templates.TemplateResponse("get_started.html", {"request": request})
+
 @app.get("/jobs", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Render the job queue dashboard (the original engine view)."""

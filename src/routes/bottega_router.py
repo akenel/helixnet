@@ -7,10 +7,13 @@ import json
 import logging
 from datetime import datetime, timezone
 
+import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.config import settings
 
 from src.db.database import get_db_session
 from src.db.models.bottega_model import (
@@ -83,6 +86,82 @@ async def _get(db: AsyncSession, username: str) -> BottegaProfileModel | None:
     return (await db.execute(
         select(BottegaProfileModel).where(BottegaProfileModel.username == username)
     )).scalar_one_or_none()
+
+
+# ===== The one-motion Get Started: name + CV -> account + Bottega + auto-login =====
+LP_REALM = "lapiazza-realm-dev"
+LP_CLIENT = "lapiazza_web"
+
+
+async def _kc_admin_token(c: httpx.AsyncClient) -> str:
+    r = await c.post(f"{settings.KEYCLOAK_SERVER_URL}/realms/master/protocol/openid-connect/token",
+                     data={"grant_type": "password", "client_id": "admin-cli",
+                           "username": settings.KEYCLOAK_ADMIN_USER,
+                           "password": settings.KEYCLOAK_ADMIN_PASSWORD.get_secret_value()})
+    r.raise_for_status()
+    return r.json()["access_token"]
+
+
+async def _create_member(c: httpx.AsyncClient, tok: str, name: str, email: str, password: str) -> str:
+    """Create a La Piazza member (the empty room). Returns the unique username."""
+    h = {"Authorization": f"Bearer {tok}"}
+    base = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{LP_REALM}"
+    uname = root = slugify(name) or "member"
+    n = 0
+    while (await c.get(f"{base}/users", headers=h, params={"username": uname, "exact": "true"})).json():
+        n += 1
+        uname = f"{root}{n}"
+    parts = name.strip().split()
+    (await c.post(f"{base}/users", headers=h, json={
+        "username": uname, "email": email or f"{uname}@lapiazza.local", "enabled": True,
+        "emailVerified": True, "firstName": (parts[0] if parts else name)[:60],
+        "lastName": (" ".join(parts[1:]) or "LaPiazza")[:60], "requiredActions": [],
+        "credentials": [{"type": "password", "value": password, "temporary": False}],
+    })).raise_for_status()
+    uid = (await c.get(f"{base}/users", headers=h, params={"username": uname, "exact": "true"})).json()[0]["id"]
+    role = (await c.get(f"{base}/roles/lapiazza-user", headers=h)).json()
+    await c.post(f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[role])
+    return uname
+
+
+async def _member_token(c: httpx.AsyncClient, username: str, password: str) -> str:
+    r = await c.post(f"{settings.KEYCLOAK_SERVER_URL}/realms/{LP_REALM}/protocol/openid-connect/token",
+                     data={"grant_type": "password", "client_id": LP_CLIENT, "username": username,
+                           "password": password, "scope": "openid profile"})
+    r.raise_for_status()
+    return r.json()["access_token"]
+
+
+@router.post("/get-started")
+async def get_started(name: str = Form(...), email: str = Form(""), password: str = Form(...),
+                      file: UploadFile = File(...), db: AsyncSession = Depends(get_db_session)):
+    """PUBLIC. The whole onboarding in one breath: tell us your name, drop your CV,
+    and you walk out WITH a Bottega -- account created, profile built, logged in.
+    No chicken-and-egg: the account is the empty room, the CV furnishes it, one motion."""
+    if len(password) < 6:
+        raise HTTPException(status_code=400, detail="pick a password of at least 6 characters")
+    text = extract_text(file.filename or "cv", await file.read())
+    if len(text.strip()) < 20:
+        raise HTTPException(status_code=400, detail="couldn't read your CV -- try a PDF or Word file")
+    proposal = await cv_to_bio(text, DEFAULT_CATEGORIES)   # bio/tagline/skills/categories
+    async with httpx.AsyncClient(verify=False, timeout=30.0) as c:
+        tok = await _kc_admin_token(c)
+        try:
+            username = await _create_member(c, tok, name, email, password)
+        except httpx.HTTPStatusError as e:
+            code = 409 if e.response.status_code == 409 else 400
+            raise HTTPException(status_code=code, detail="couldn't create your account (name/email may be taken)")
+        slug = await _unique_slug(db, slugify(name), username)
+        profile = BottegaProfileModel(
+            username=username, bio=proposal.get("bio"), tagline=proposal.get("tagline"),
+            skills=json.dumps(proposal.get("skills", [])),
+            categories=json.dumps(proposal.get("categories", [])),
+            source="cv", status="applied", completeness=70, slug=slug)
+        db.add(profile)
+        await db.commit()
+        await db.refresh(profile)
+        token = await _member_token(c, username, password)   # auto-login: you're in
+    return {"username": username, "slug": slug, "token": token, "profile": _view(profile)}
 
 
 @router.get("/recipes")
