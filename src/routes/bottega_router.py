@@ -5,6 +5,7 @@
 
 import json
 import logging
+import re
 from datetime import datetime, timezone
 
 import httpx
@@ -132,6 +133,23 @@ async def _member_token(c: httpx.AsyncClient, username: str, password: str) -> s
     return r.json()["access_token"]
 
 
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+_PHONE_RE = re.compile(r"(?<!\w)(?:\+\d{1,3}[\s.\-]?)?(?:\(?\d{2,4}\)?[\s.\-]?){2,4}\d{2,3}(?!\w)")
+_URL_RE = re.compile(r"https?://[^\s)>\]]+")
+
+
+def _scan_clues(text: str) -> dict:
+    """Scan any input for clues worth keeping for later: emails, phones, links.
+    (Skills + categories come from cv_to_bio.) This is the metadata the archive remembers."""
+    emails = sorted(set(_EMAIL_RE.findall(text)))[:10]
+    phones = []
+    for m in _PHONE_RE.findall(text):
+        if 7 <= len(re.sub(r"\D", "", m)) <= 15:
+            phones.append(re.sub(r"\s+", " ", m).strip())
+    links = [u for u in sorted(set(_URL_RE.findall(text))) if "lapiazza" not in u][:10]
+    return {"emails": emails, "phones": sorted(set(phones))[:10], "links": links}
+
+
 @router.post("/get-started")
 async def get_started(name: str = Form(...), email: str = Form(""), password: str = Form(...),
                       about: str = Form(""), file: UploadFile = File(None),
@@ -143,9 +161,9 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
     if len(password) < 6:
         raise HTTPException(status_code=400, detail="pick a password of at least 6 characters")
     if file is not None and getattr(file, "filename", ""):
-        text = extract_text(file.filename, await file.read())
+        source, text = "cv", extract_text(file.filename, await file.read())
     else:
-        text = (about or "").strip()
+        source, text = "about", (about or "").strip()
     if len(text.strip()) < 20:
         raise HTTPException(status_code=400,
                             detail="tell us a little more about what you do (a sentence or two), or drop a CV")
@@ -164,6 +182,19 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
             categories=json.dumps(proposal.get("categories", [])),
             source="cv", status="applied", completeness=70, slug=slug)
         db.add(profile)
+        # Block A: archive the raw input + scanned clues into the Blueprint Folder.
+        # The first entry in the member's history -- the clues kept for later.
+        clues = _scan_clues(text)
+        db.add(BottegaSessionModel(
+            username=username, slug="blueprint-archive",
+            title=f"Onboarding archive · {name}"[:160],
+            inputs=json.dumps({"raw": text[:8000], "source": source}),
+            output=json.dumps({
+                "bio": proposal.get("bio"), "tagline": proposal.get("tagline"),
+                "skills": proposal.get("skills", []), "categories": proposal.get("categories", []),
+                "emails": clues["emails"] or ([email] if email else []),
+                "phones": clues["phones"], "links": clues["links"], "chars": len(text)}),
+            output_type="json", tags="archive,onboarding"))
         await db.commit()
         await db.refresh(profile)
         token = await _member_token(c, username, password)   # auto-login: you're in
