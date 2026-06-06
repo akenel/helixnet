@@ -113,6 +113,15 @@
     <div class="card rounded-xl p-5">
       <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">output</div>
       <template x-if="!output"><div class="text-sm text-slate-600">run a recipe to see the result</div></template>
+      <!-- you asked (the question, never lost) -->
+      <template x-if="output && output.inputs && Object.values(output.inputs).some(v=>v)">
+        <div class="text-xs mb-4 pb-3 border-b border-slate-800">
+          <div class="text-slate-500"><span class="text-brand font-semibold" x-text="output.recipe"></span> · <span x-text="(output.asked_at||'').slice(0,16).replace('T',' ')"></span></div>
+          <template x-for="[k,v] in Object.entries(output.inputs||{})" :key="k">
+            <div x-show="v" class="mt-1"><span class="text-slate-600 uppercase text-[10px]" x-text="k"></span> <span class="text-slate-300" x-text="v"></span></div>
+          </template>
+        </div>
+      </template>
       <!-- json output (e.g. cv-to-bio) -->
       <template x-if="output && output.output_type==='json'">
         <div class="space-y-3 text-sm">
@@ -185,7 +194,13 @@ function bottega() {
     },
     pick(r) { if(!r) return; this.active=r; this.files={}; this.fields={}; this.output=null; this.err=''; this.saveMsg=''; this.savedUrl=''; },
     renderMd(s) { try { return window.marked ? marked.parse(s||'') : (s||''); } catch(e){ return s||''; } },
-    _text() { const r=this.output&&this.output.result; return typeof r==='string'?r:JSON.stringify(r,null,2); },
+    _text() {
+      const o=this.output||{}, r=o.result;
+      const body = typeof r==='string'?r:JSON.stringify(r,null,2);
+      const q = Object.entries(o.inputs||{}).filter(([k,v])=>v).map(([k,v])=>'**'+k+':** '+v).join('\n');
+      return '# '+(o.recipe||'La Piazza')+'\n_'+((o.asked_at||'').slice(0,16).replace('T',' '))+'_\n\n'
+        + (q ? '## Asked\n'+q+'\n\n## Answer\n' : '') + body + '\n';
+    },
     copyOut() { navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
     shareTg() { window.open('https://t.me/share/url?url='+encodeURIComponent(location.origin)+'&text='+encodeURIComponent(this._text().slice(0,3500)),'_blank'); },
     shareWa() { window.open('https://wa.me/?text='+encodeURIComponent(this._text().slice(0,3500)),'_blank'); },
@@ -208,7 +223,9 @@ function bottega() {
         const r = await fetch('/api/v1/compute/bottega/recipes/'+this.active.slug+'/run', {
           method:'POST', headers:{'Authorization':'Bearer '+this.token}, body: fd });
         const d = await r.json();
-        if (r.ok) this.output = d; else this.err = d.detail || ('error '+r.status);
+        if (r.ok) this.output = { ...d, recipe: this.active.title, slug: this.active.slug,
+                                  inputs: {...this.fields}, asked_at: new Date().toISOString() };
+        else this.err = d.detail || ('error '+r.status);
       } catch(e) { this.err = 'failed'; }
       this.busy=false;
     },
