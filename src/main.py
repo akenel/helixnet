@@ -320,7 +320,8 @@ async def home(request: Request):
 @app.get("/get-started", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def get_started_page(request: Request):
     """The one-motion door: name + CV -> account + Bottega + logged in."""
-    return templates.TemplateResponse("get_started.html", {"request": request})
+    _s = get_settings()
+    return templates.TemplateResponse("get_started.html", {"request": request, "lp_realm": _s.LP_REALM, "lp_client": _s.LP_CLIENT})
 
 @app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def share_page(session_id: str, request: Request):

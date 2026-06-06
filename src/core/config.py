@@ -39,8 +39,12 @@ class Settings(BaseSettings):
     HX_SUPER_PASSWORD: str
     KEYCLOAK_EXTERNAL_URL: str
     KEYCLOAK_DEV_REALM: str
-    KEYCLOAK_REALM: str 
+    KEYCLOAK_REALM: str
     KEYCLOAK_MASTER_REALM: str = "master"
+    # La Piazza (Bottega) auth realm + public client. Env-driven so staging can
+    # point at its own dedicated realm (lapiazza-realm-staging) without code edits.
+    LP_REALM: str = "lapiazza-realm-dev"
+    LP_CLIENT: str = "lapiazza_web"
 # Seeder superuser
     HX_SUPER_NAME:  str = "helix_user"
     HX_SUPER_EMAIL: EmailStr 

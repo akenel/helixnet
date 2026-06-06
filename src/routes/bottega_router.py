@@ -90,8 +90,8 @@ async def _get(db: AsyncSession, username: str) -> BottegaProfileModel | None:
 
 
 # ===== The one-motion Get Started: name + CV -> account + Bottega + auto-login =====
-LP_REALM = "lapiazza-realm-dev"
-LP_CLIENT = "lapiazza_web"
+LP_REALM = settings.LP_REALM
+LP_CLIENT = settings.LP_CLIENT
 
 
 async def _kc_admin_token(c: httpx.AsyncClient) -> str:

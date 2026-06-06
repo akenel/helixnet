@@ -196,7 +196,7 @@ function rebuild() {
       {k:'s',icon:'✨',label:'Your Story',done:!!this.d.spirit,status:this.d.spirit?'told ✓':'tell it →',href:'/compute/bottega'},
       {k:'w',icon:'🏋️',label:'Workouts',done:(this.d.workouts||[]).length>0,status:((this.d.workouts||[]).length||'0')+' done',href:'/compute/bottega'},
     ]; },
-    login(){ const kc=location.hostname==='helix.local'?'https://keycloak.helix.local':location.origin; const redirect=encodeURIComponent(location.origin+'/compute/callback'); const state=encodeURIComponent('/compute/me'); location.href=`${kc}/realms/lapiazza-realm-dev/protocol/openid-connect/auth?client_id=lapiazza_web&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`; },
+    login(){ const kc=location.hostname==='helix.local'?'https://keycloak.helix.local':location.origin; const redirect=encodeURIComponent(location.origin+'/compute/callback'); const state=encodeURIComponent('/compute/me'); location.href=`${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`; },
   };
 }
 </script>

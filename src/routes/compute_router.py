@@ -32,6 +32,7 @@ from src.schemas.compute_schema import (
     NodeRead, NodeRegister, NodeStatusUpdate, WorkerResult,
 )
 from src.core.keycloak_auth import require_roles
+from src.core.config import settings
 from src.services.compute_service import (
     credit_balance, ensure_starter_grant, brain_load, euro_per_credit,
     ledger_history, transfer_credits, grant_credits,
@@ -512,7 +513,7 @@ async def stream(request: Request):
 @html_router.get("/compute", response_class=HTMLResponse)
 @html_router.get("/compute/dashboard", response_class=HTMLResponse)
 async def compute_dashboard(request: Request):
-    return templates.TemplateResponse("compute/dashboard.html", {"request": request})
+    return templates.TemplateResponse("compute/dashboard.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
 
 
 @html_router.get("/compute/faq", response_class=HTMLResponse)
@@ -523,13 +524,13 @@ async def compute_faq(request: Request):
 
 @html_router.get("/compute/bottega", response_class=HTMLResponse)
 async def compute_bottega(request: Request):
-    return templates.TemplateResponse("compute/bottega.html", {"request": request})
+    return templates.TemplateResponse("compute/bottega.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
 
 
 @html_router.get("/compute/me", response_class=HTMLResponse)
 async def compute_me(request: Request):
     """The member's rebuild dashboard -- mind/body/spirit in one tabbed hub."""
-    return templates.TemplateResponse("compute/me.html", {"request": request})
+    return templates.TemplateResponse("compute/me.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
 
 
 @html_router.get("/u/{slug}", response_class=HTMLResponse)
@@ -565,7 +566,7 @@ async def compute_oauth_callback(request: Request, code: str = None,
     nxt = state if (state and state.startswith("/compute")) else "/compute/bottega"
     if error or not code:
         return RedirectResponse(url=f"{nxt}?login_error=1")
-    realm, client_id = "lapiazza-realm-dev", "lapiazza_web"
+    realm, client_id = settings.LP_REALM, settings.LP_CLIENT
     fp = request.headers.get("x-forwarded-proto", "https")
     fh = request.headers.get("x-forwarded-host") or request.headers.get("host", "helix.local")
     redirect_uri = f"{fp}://{fh}/compute/callback"
