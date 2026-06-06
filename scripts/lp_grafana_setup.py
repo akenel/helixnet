@@ -22,7 +22,8 @@ def panel(title, sql, ptype, x, y, w, h, ds_uid, unit=None):
         "title": title, "type": ptype,
         "gridPos": {"x": x, "y": y, "w": w, "h": h},
         "datasource": {"type": "postgres", "uid": ds_uid},
-        "targets": [{"format": "table", "rawSql": sql, "rawQuery": True, "refId": "A",
+        "targets": [{"format": "table", "rawSql": sql, "rawQuery": True,
+                     "editorMode": "code", "refId": "A",
                      "datasource": {"type": "postgres", "uid": ds_uid}}],
         "fieldConfig": {"defaults": {}, "overrides": []},
     }
