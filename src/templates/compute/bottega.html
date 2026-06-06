@@ -241,7 +241,15 @@ function bottega() {
       window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
     async shareWa() { const u=await this._shareUrl(); const t=((this.output&&this.output.recipe)||'La Piazza')+' — ';
       window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
-    downloadOut() { const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=((this.active&&this.active.slug)||'la-piazza')+'-'+Date.now()+'.md'; a.click(); },
+    _fname() {  // readable, timestamped, descriptive -- never "same name" again
+      const o=this.output||{}, i=o.inputs||{};
+      const slug=(o.slug||(this.active&&this.active.slug)||'la-piazza');
+      const d=o.asked_at?new Date(o.asked_at):new Date(); const p=n=>String(n).padStart(2,'0');
+      const ts=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes());
+      const hint=((i.mentor||i.vibe||i.name||i.what||i.job||'')+'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,28);
+      return slug+(hint?('_'+hint):'')+'_'+ts+'.md';
+    },
+    downloadOut() { const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=this._fname(); a.click(); },
     async saveSession() {
       if (!this.output || !this.token) return; this.saving=true;
       const i=this.output.inputs||{}; const hint=i.mentor||i.vibe||i.name||i.what||i.job||'';
