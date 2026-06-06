@@ -21,10 +21,10 @@ def panel(title, sql, ptype, x, y, w, h, ds_uid, unit=None):
     p = {
         "title": title, "type": ptype,
         "gridPos": {"x": x, "y": y, "w": w, "h": h},
-        "datasource": {"type": "postgres", "uid": ds_uid},
+        "datasource": {"type": "grafana-postgresql-datasource", "uid": ds_uid},
         "targets": [{"format": "table", "rawSql": sql, "rawQuery": True,
                      "editorMode": "code", "refId": "A",
-                     "datasource": {"type": "postgres", "uid": ds_uid}}],
+                     "datasource": {"type": "grafana-postgresql-datasource", "uid": ds_uid}}],
         "fieldConfig": {"defaults": {}, "overrides": []},
     }
     if unit:
@@ -52,7 +52,7 @@ def main(
             typer.secho(f"  = datasource lp-postgres exists ({ds_uid})", fg="bright_black")
         else:
             r = c.post(f"{base}/api/datasources", json={
-                "name": "lp-postgres", "type": "postgres", "access": "proxy",
+                "name": "lp-postgres", "type": "grafana-postgresql-datasource", "access": "proxy",
                 "url": pg_host, "database": pg_db, "user": pg_user,
                 "secureJsonData": {"password": pg_pass},
                 "jsonData": {"sslmode": "disable", "postgresVersion": 1700},
