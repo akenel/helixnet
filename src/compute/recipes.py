@@ -4,8 +4,30 @@
 #   recipe. Adding use #4..#100 = a new dict entry, not an engineering project.
 
 import json
+import re
 
 from src.services.bottega_service import _brain_chat, extract_text
+
+# Reasoning models (DeepSeek-R1 et al.) emit their chain-of-thought inside
+# <think>...</think> before the real answer. We never want that in the product
+# output. No-op for non-reasoning models (no tags present).
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
+
+
+def _strip_think(text: str) -> str:
+    """Remove reasoning-model think blocks, defensively.
+
+    Handles: well-formed <think>...</think>; a lone </think> (opener lost) ->
+    keep only what follows it; a lone <think> (reasoning truncated, no answer) ->
+    drop it. Leaves ordinary output untouched."""
+    if not text:
+        return text
+    out = _THINK_RE.sub("", text)
+    if "</think>" in out:                 # opener dropped -> answer is after the close
+        out = out.rsplit("</think>", 1)[-1]
+    if "<think>" in out:                  # truncated reasoning, never closed
+        out = out.split("<think>", 1)[0]
+    return out.strip()
 
 
 def _json_schema(output_schema: dict, inputs: list | None = None) -> dict:
@@ -329,6 +351,7 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
     # the model is just another field in the dict, no new code to switch it.
     out = await _brain_chat(r["system"], prompt, json_mode=(r["output"] == "json"),
                             schema=js, model=r.get("model"))
+    out = _strip_think(out)               # drop reasoning-model <think> blocks before use
     if r["output"] == "json":
         try:
             result = json.loads(out)

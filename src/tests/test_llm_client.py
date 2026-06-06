@@ -139,3 +139,34 @@ def test_menu_does_not_leak_model():
     """menu() is the public surface -- it must not expose the internal brain choice."""
     import src.compute.recipes as rc
     assert all("model" not in entry for entry in rc.menu())
+
+
+# --- reasoning-model <think> stripping --------------------------------------------
+
+def test_strip_think_cases():
+    from src.compute.recipes import _strip_think
+    # well-formed block removed, answer kept
+    assert _strip_think("<think>weighing it</think>## The Call\nDo it.") == "## The Call\nDo it."
+    # multiline + case-insensitive
+    assert _strip_think("<THINK>\na\nb\n</THINK>\n\nAnswer") == "Answer"
+    # lone closing tag (opener lost) -> keep what's after it
+    assert _strip_think("reasoning...\n</think>\nFinal") == "Final"
+    # truncated reasoning, never closed -> nothing usable
+    assert _strip_think("<think>still thinking") == ""
+    # ordinary output untouched
+    assert _strip_think("just a normal answer") == "just a normal answer"
+    assert _strip_think("") == ""
+
+
+@pytest.mark.asyncio
+async def test_run_recipe_strips_think(monkeypatch):
+    """A reasoning model's <think> block must never reach the recipe result."""
+    import src.compute.recipes as rc
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        return "<think>weigh contract vs no contract, money vs risk</think>## The Call\nTake it."
+
+    monkeypatch.setattr(rc, "_brain_chat", fake_brain)
+    out = await rc.run_recipe("decide", {"decision": "take the contract?"})
+    assert "<think>" not in out["result"] and "</think>" not in out["result"]
+    assert out["result"] == "## The Call\nTake it."
