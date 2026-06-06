@@ -22,7 +22,7 @@ def panel(title, sql, ptype, x, y, w, h, ds_uid, unit=None):
         "title": title, "type": ptype,
         "gridPos": {"x": x, "y": y, "w": w, "h": h},
         "datasource": {"type": "postgres", "uid": ds_uid},
-        "targets": [{"format": "table", "rawSql": sql, "refId": "A",
+        "targets": [{"format": "table", "rawSql": sql, "rawQuery": True, "refId": "A",
                      "datasource": {"type": "postgres", "uid": ds_uid}}],
         "fieldConfig": {"defaults": {}, "overrides": []},
     }
@@ -71,20 +71,23 @@ def main(
             panel("Jobs per node", "select node as metric, count(*) as value "
                   "from compute_jobs group by node order by value desc", "barchart",
                   12, 0, 12, 8, ds_uid),
+            panel("Who earned what (credits per node)", "select node as metric, "
+                  "sum(credits_burned) as value from compute_jobs where status='done' "
+                  "group by node order by value desc", "barchart", 0, 8, 12, 8, ds_uid),
             panel("Jobs over time", "select date_trunc('minute',created_at) as time, "
-                  "count(*) as jobs from compute_jobs group by 1 order by 1",
-                  "timeseries", 0, 8, 12, 8, ds_uid),
+                  "count(*) as jobs from compute_jobs where $__timeFilter(created_at) "
+                  "group by 1 order by 1", "timeseries", 12, 8, 12, 8, ds_uid),
             panel("Credits spent over time", "select date_trunc('hour',created_at) as time, "
                   "sum(case when kind='spend' then -amount else 0 end) as credits_spent "
-                  "from compute_ledger group by 1 order by 1", "timeseries",
-                  12, 8, 12, 8, ds_uid),
+                  "from compute_ledger where $__timeFilter(created_at) group by 1 order by 1",
+                  "timeseries", 0, 16, 24, 7, ds_uid),
         ]
         dash = {
             "dashboard": {
                 "uid": "lpcx-business", "title": "LPCX -- La Piazza Compute Exchange",
                 "tags": ["la-piazza", "lpcx"], "timezone": "browser",
                 "refresh": "10s", "schemaVersion": 39, "panels": panels,
-                "time": {"from": "now-6h", "to": "now"},
+                "time": {"from": "now-2d", "to": "now"},
             },
             "overwrite": True,
         }
