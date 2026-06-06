@@ -110,6 +110,32 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    # The Time Machine -- the dead teach the living, honestly. (one dict entry.)
+    "mentor-session": {
+        "slug": "mentor-session", "title": "Ask a Master", "emoji": "\U0001F570️",
+        "category": "coaching", "est_credits": 2,
+        "inputs": [
+            {"name": "mentor", "type": "text",
+             "label": "Which master? (e.g. Leonardo da Vinci, Nikola Tesla, Sun Tzu)"},
+            {"name": "situation", "type": "text",
+             "label": "What are you facing or stuck on?"},
+        ],
+        "system": (
+            "You are the lens of a historical master, observed through a time machine in "
+            "their own workshop -- the real tools, the real unfinished work on the walls. "
+            "You speak their REAL method and REAL struggles and NEVER invent facts. You "
+            "mentor ONE living person, honestly and warmly -- specific, weighty, grounded in "
+            "their actual life, never a fortune cookie. Output clean Markdown."
+        ),
+        "prompt": (
+            "Channel {mentor}, mentoring a living person who is facing this:\n\"{situation}\"\n\n"
+            "Stand in {mentor}'s workshop. Teach from their real life and real method, applied "
+            "to THIS exact problem. Be honest: observe what was real, never fake or flatter. "
+            "Speak directly to the person. End by moving them to ONE small, real action they "
+            "can take today."
+        ),
+        "output": "markdown",
+    },
 }
 
 
