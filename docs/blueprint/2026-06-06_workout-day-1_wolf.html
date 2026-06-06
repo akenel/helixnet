@@ -5,125 +5,150 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🐺 Workout Day 1 · La Piazza Blueprint</title>
 <style>
-  :root{ --brand:#C0392B; --ink:#1f2933; --soft:#5b6b7b; --line:#e2e8ee; --bg:#f7f5f1; --card:#fff; }
+  :root{ --brand:#C0392B; --ink:#1f2933; --soft:#5b6b7b; --line:#e6e2db; --bg:#f7f5f1; --card:#fff; --go:#2e7d54; }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.5;padding:0 0 60px}
-  .wrap{max-width:680px;margin:0 auto;padding:16px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.55;padding:0 0 70px}
+  .wrap{max-width:720px;margin:0 auto;padding:14px}
   header{background:#0b1120;color:#fff;padding:22px 16px;text-align:center}
-  header .t{font-size:1.5rem;font-weight:900}
+  header .t{font-size:1.55rem;font-weight:900}.header .t b{color:#ff6b5b}
   header .t b{color:#ff6b5b}
   header .s{color:#9fb0c0;font-size:.85rem;margin-top:4px}
+  .pill{display:inline-block;background:#1b2740;color:#cfe;border-radius:20px;padding:3px 12px;font-size:.78rem;margin:3px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-  h2{font-size:1.05rem;margin:0 0 10px;color:var(--brand);display:flex;align-items:center;gap:8px}
-  .warn{background:#fff4f2;border:1px solid #f3c7bf;border-radius:14px;padding:14px 16px;margin:14px 0}
-  .warn h2{color:#a8341f}
-  ul.ck{list-style:none;padding:0;margin:0}
-  ul.ck li{padding:10px 4px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-size:1.02rem}
-  ul.ck li:last-child{border-bottom:0}
-  ul.ck li .box{flex:0 0 26px;height:26px;border:2px solid var(--brand);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;transition:.12s}
-  ul.ck li.done .box{background:var(--brand)}
-  ul.ck li.done .lbl{opacity:.5;text-decoration:line-through}
-  ul.ck li .lbl small{color:var(--soft);display:block;font-size:.82rem;text-decoration:none}
-  table{width:100%;border-collapse:collapse;font-size:.92rem}
-  th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:middle}
-  th{background:#f0eee9;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;color:var(--soft)}
-  td .reps{font-weight:700;color:var(--brand);white-space:nowrap}
-  input.log{width:100%;border:0;background:#fbfaf8;border-radius:6px;padding:7px;font-size:.95rem;font-family:inherit}
-  input.log:focus{outline:2px solid var(--brand);background:#fff}
-  .pill{display:inline-block;background:#0b1120;color:#fff;border-radius:20px;padding:3px 12px;font-size:.8rem;margin:2px}
-  .foot{text-align:center;color:var(--soft);font-size:.85rem;margin-top:20px;font-style:italic}
+  h2{font-size:1.1rem;margin:0 0 10px;color:var(--brand)}
+  .warn{background:#fff4f2;border:1px solid #f3c7bf}.warn h2{color:#a8341f}
+  .kpi{background:#0b1120;color:#fff;border:0}.kpi h2{color:#ffd9d2}
+  .kpi label{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:#9fb0c0;margin-bottom:3px}
+  .kpi .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .kpi input{width:100%;border:1px solid #2a3a55;background:#0f1830;color:#fff;border-radius:8px;padding:9px;font-size:1rem;font-family:inherit}
+  .kpi .sub{font-size:.8rem;color:#9fb0c0;margin:10px 0 4px;font-weight:700}
+  .ex{border-bottom:1px solid var(--line);padding:14px 0}.ex:last-child{border-bottom:0}
+  .ex .top{display:flex;align-items:flex-start;gap:12px}
+  .ex .box{flex:0 0 28px;height:28px;border:2px solid var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;cursor:pointer;transition:.12s;user-select:none}
+  .ex.done .box{background:var(--brand)}
+  .ex .nm{font-weight:800;font-size:1.05rem}
+  .ex.done .nm{opacity:.55;text-decoration:line-through}
+  .ex .reps{color:var(--brand);font-weight:700;font-size:.9rem}
+  .ex .desc{font-size:.95rem;margin:6px 0 0 40px;color:#384450}
+  .ex .why{font-size:.86rem;color:var(--soft);margin:4px 0 0 40px}
+  .ex .row{margin:8px 0 0 40px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .yt{display:inline-flex;align-items:center;gap:5px;background:#ff0000;color:#fff;text-decoration:none;font-weight:700;font-size:.82rem;padding:5px 11px;border-radius:7px}
+  .flora{font-size:.84rem;color:var(--go);background:#eaf6ef;border-radius:7px;padding:4px 9px}
+  .note{margin:8px 0 0 40px}.note input{width:100%;border:1px solid var(--line);background:#fbfaf8;border-radius:7px;padding:8px;font-size:.92rem;font-family:inherit}
+  .note input:focus{outline:2px solid var(--brand);background:#fff}
+  textarea.fb{width:100%;min-height:90px;border:1px solid var(--line);background:#fbfaf8;border-radius:8px;padding:10px;font-size:.95rem;font-family:inherit}
   .scale{font-size:.9rem;color:var(--soft)}
+  .printbtn{position:fixed;bottom:14px;right:14px;background:var(--brand);color:#fff;border:0;border-radius:30px;padding:12px 20px;font-weight:700;font-size:.95rem;box-shadow:0 4px 14px rgba(192,57,43,.4);cursor:pointer;z-index:50}
+  .foot{text-align:center;color:var(--soft);font-size:.85rem;margin-top:20px;font-style:italic}
+  @media print{ .printbtn,header .pill{display:none} body{background:#fff} .card{break-inside:avoid;box-shadow:none} .yt{color:#ff0000;background:none;padding:0} }
 </style>
 </head>
 <body>
 <header>
   <div class="t">🐺 Workout · <b>Day 1</b></div>
-  <div class="s">La Piazza Blueprint · the Black Wolf, 62 · Sat June 6 2026 · full-body, shoulder-smart</div>
-  <div style="margin-top:8px"><span class="pill">⏱ 20 express</span><span class="pill">45 full</span><span class="pill">60 max</span><span class="pill">💡 2 reps in the tank</span></div>
+  <div class="s">La Piazza Blueprint · the body half of the rebuild · full-body, shoulder-smart · for the Wolf AND for Flora</div>
+  <div style="margin-top:8px"><span class="pill">⏱ 20 express</span><span class="pill">45 full</span><span class="pill">60 max</span><span class="pill">💡 2 reps in the tank</span><span class="pill">🩹 pain-free only</span></div>
 </header>
 <div class="wrap">
 
-  <div class="warn">
-    <h2>⚠️ Shoulder Commandments — read first</h2>
+  <!-- KPIs -->
+  <div class="card kpi">
+    <h2>📊 Body KPIs — Day 1 baseline</h2>
+    <div class="sub">Vitals (how am I today?)</div>
+    <div class="grid">
+      <div><label>Weight (kg)</label><input class="log" data-k="wt"></div>
+      <div><label>Energy 1–10</label><input class="log" data-k="en"></div>
+      <div><label>Mood 1–10</label><input class="log" data-k="mo"></div>
+      <div><label>Sleep (hrs)</label><input class="log" data-k="sl"></div>
+      <div><label>Shoulder 1–5</label><input class="log" data-k="sh"></div>
+    </div>
+    <div class="sub" style="margin-top:14px">Can-I? benchmarks — the fun ones (max in one go) 🔥</div>
+    <div class="grid">
+      <div><label>Push-ups</label><input class="log" data-k="pu" placeholder="≥1!"></div>
+      <div><label>Burpees</label><input class="log" data-k="bu" placeholder="≥1!"></div>
+      <div><label>Squats in a row</label><input class="log" data-k="sq" placeholder="aim 10"></div>
+      <div><label>Plank (sec)</label><input class="log" data-k="pl" placeholder="bonus"></div>
+    </div>
+    <p class="scale" style="color:#9fb0c0;margin:12px 0 0">Re-test these every week. Watching them climb IS the rebuild. *Everybody has a body — keep it in check.*</p>
+  </div>
+
+  <div class="card warn">
+    <h2>⚠️ Shoulder rules — read first</h2>
     <ol style="margin:0;padding-left:20px">
-      <li><b>Pain-free range only.</b> Stretch/burn = fine. Sharp pinch = stop, no ego.</li>
-      <li><b>Neutral grip</b> (palms facing) for anything overhead.</li>
-      <li>No behind-the-neck, no heavy flat bench, no wide grip.</li>
+      <li><b>Pain-free range only.</b> Stretch/burn = good. Sharp pinch = stop, no ego.</li>
+      <li><b>Neutral grip</b> (palms facing) overhead. No behind-neck, no heavy flat bench.</li>
       <li>Warm it first (broom), feed it every session (face pulls).</li>
-      <li><i>Smart-training plan, not medical advice — real injury? get it looked at.</i></li>
+      <li><i>Smart-training, not medical advice. Real injury? Get it looked at.</i></li>
     </ol>
   </div>
 
+  <!-- WARM-UP -->
   <div class="card">
     <h2>🔥 Warm-up · 5–8 min</h2>
-    <ul class="ck">
-      <li><span class="box">✓</span><span class="lbl">Easy movement 2–3 min<small>march / step-ups / bike — until warm</small></span></li>
-      <li><span class="box">✓</span><span class="lbl">Broom shoulder pass-throughs · 2×10<small>wide grip, slow, pain-free arc — the Leonardo move</small></span></li>
-      <li><span class="box">✓</span><span class="lbl">Band pull-aparts · 2×15<small>wake the rear delts + rotator cuff</small></span></li>
-      <li><span class="box">✓</span><span class="lbl">Bodyweight squats 2×10 + hip hinges 1×10<small>grease knees & hips</small></span></li>
-    </ul>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Easy movement</span> <span class="reps">2–3 min</span><div class="desc">March on the spot, step-ups, or the bike — just get the blood moving and a light sweat going.</div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Broomstick shoulder pass-throughs</span> <span class="reps">2 × 10</span><div class="desc">Hold a broom wide with both hands, slowly raise it up over your head and back behind you, then return. Like Leonardo's measured motion.</div><div class="why"><b>Why:</b> opens & warms the shoulder safely before you load it.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=EydWRWn_juo" target="_blank">▶ Watch how</a><span class="flora">Flora: narrow your grip if tight, never force</span></div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Band pull-aparts</span> <span class="reps">2 × 15</span><div class="desc">Hold a band in front, arms straight, pull it apart across your chest, squeeze your shoulder blades together.</div><div class="why"><b>Why:</b> the daily "shoulder vitamin" — wakes the rotator cuff, fixes the hunch.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=osRimvxXlKQ" target="_blank">▶ Watch how</a><span class="flora">Flora: a towel works too, small range is fine</span></div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Bodyweight squats + hip hinges</span> <span class="reps">2×10 + 1×10</span><div class="desc">Squats: sit down & stand up, no weight. Hinges: soft knees, push hips back, hands slide down thighs.</div><div class="why"><b>Why:</b> greases the knees & hips for the real lifts.</div></div></div></div>
   </div>
 
+  <!-- WORKOUT -->
   <div class="card">
     <h2>💪 The Workout · full body</h2>
-    <p class="scale">Straight sets · 2 sec down / 1 up · rest 60–90 sec · 2 reps in reserve.</p>
-    <table>
-      <tr><th>Exercise</th><th>Sets×Reps</th><th>Note</th></tr>
-      <tr><td><b>1. Goblet Squat</b><br><small>1 DB at chest</small></td><td class="reps">3 × 10</td><td>legs + core, knee-friendly</td></tr>
-      <tr><td><b>2. Romanian Deadlift</b><br><small>DBs, light</small></td><td class="reps">3 × 10</td><td>did deadlifts yesterday — keep LIGHT, or swap Glute Bridge</td></tr>
-      <tr><td><b>3. One-Arm DB Row</b><br><small>hand on bench</small></td><td class="reps">3 × 10/side</td><td>your favourite, shoulder-friendly</td></tr>
-      <tr><td><b>4. Neutral-Grip OH Press</b><br><small>palms facing</small></td><td class="reps">2–3 × 8</td><td>pain-free range only · pinch? skip → more face pulls</td></tr>
-      <tr><td><b>5. Face Pulls / Pull-Aparts</b></td><td class="reps">3 × 15</td><td>👈 the shoulder-saver — never skip</td></tr>
-      <tr><td><b>6. DB Floor Press</b><br><small>optional</small></td><td class="reps">2 × 10</td><td>floor protects the shoulder · skip if it complains</td></tr>
-    </table>
+    <p class="scale">Straight sets · slow down / controlled up · rest 60–90 sec · leave 2 reps in the tank.</p>
+
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">1. Goblet Squat</span> <span class="reps">3 × 10</span><div class="desc">Hold one dumbbell at your chest with both hands. Sit down like into a chair, stand back up tall.</div><div class="why"><b>Works:</b> legs, glutes, core. <b>Why:</b> the king of staying strong getting off chairs & floors — independence itself.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=9KzZD_n2r64" target="_blank">▶ Watch how</a><span class="flora">Flora: no weight — just sit-to-stand from a real chair. That counts.</span></div><div class="note"><input class="log" data-k="n1" placeholder="weight / how it felt…"></div></div></div></div>
+
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">2. Romanian Deadlift (RDL)</span> <span class="reps">3 × 10</span><div class="desc">Dumbbells in hands, soft knees, push your hips BACK (not down), lower the weights along your legs till you feel the hamstrings stretch, then stand tall.</div><div class="why"><b>Works:</b> hamstrings, glutes, low back. <b>Why:</b> trains the hinge that protects your back when you lift things. <i>(You deadlifted yesterday — keep these LIGHT.)</i></div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=hQgFixeXdZo" target="_blank">▶ Watch how</a><span class="flora">Flora: no/light weight, hands sliding down thighs, small range</span></div><div class="note"><input class="log" data-k="n2" placeholder="weight / how it felt…"></div></div></div></div>
+
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">3. One-Arm Dumbbell Row</span> <span class="reps">3 × 10 / side</span><div class="desc">One hand & knee on the bench. Other hand pulls the dumbbell up to your hip — like pull-starting a lawnmower.</div><div class="why"><b>Works:</b> back, lats. <b>Why:</b> pulling strength & posture — balances all the front-of-body stuff.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=gfUg6qWohTk" target="_blank">▶ Watch how</a><span class="flora">Flora: light, brace on a sturdy chair or table</span></div><div class="note"><input class="log" data-k="n3" placeholder="weight / how it felt…"></div></div></div></div>
+
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">4. Neutral-Grip Overhead Press</span> <span class="reps">2–3 × 8</span><div class="desc">Dumbbells at shoulder height, <b>palms facing each other</b>. Press up only as high as feels good, lower slowly.</div><div class="why"><b>Works:</b> shoulders, triceps. <b>Why:</b> overhead strength (top shelves) — neutral grip is the shoulder-safe way. <b>Stop at any pinch.</b></div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=1WOecdL8nrI" target="_blank">▶ Watch how</a><span class="flora">Flora: seated, light, tiny range</span></div><div class="note"><input class="log" data-k="n4" placeholder="weight / shoulder ok?…"></div></div></div></div>
+
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">5. Face Pulls</span> <span class="reps">3 × 15</span><div class="desc">Anchor a band at face height. Pull both ends toward your face, elbows high & wide, squeeze the back of your shoulders.</div><div class="why"><b>Works:</b> rear shoulders + rotator cuff. <b>Why:</b> 👈 <b>THE shoulder-saver</b> — undoes the phone/desk hunch. Never skip.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=ljgqer1ZpXg" target="_blank">▶ Watch how</a><span class="flora">Flora: light band, slow — this one's gold for everyone</span></div><div class="note"><input class="log" data-k="n5" placeholder="how it felt…"></div></div></div></div>
+
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">6. Dumbbell Floor Press</span> <span class="reps">2 × 10 · optional</span><div class="desc">Lie on the floor (knees bent), a dumbbell in each hand, press straight up. The floor stops your elbows — that's what protects the shoulder.</div><div class="why"><b>Works:</b> chest, triceps. <b>Why:</b> chest strength without the risk of a full bench press. Skip if the shoulder complains.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=lNdi7VEf2Ew" target="_blank">▶ Watch how</a><span class="flora">Flora: skip, or very light</span></div><div class="note"><input class="log" data-k="n6" placeholder="weight / how it felt…"></div></div></div></div>
   </div>
 
+  <!-- FINISHER -->
   <div class="card">
     <h2>⚡ Finisher · optional, 5–8 min</h2>
-    <ul class="ck">
-      <li><span class="box">✓</span><span class="lbl">Modified burpees · 3×8<small>step back (no jump), drop push-up if shoulder says no</small></span></li>
-      <li><span class="box">✓</span><span class="lbl">DB swings · 3×12<small>hip-hinge, kettlebell motion with a dumbbell</small></span></li>
-      <li><span class="box">✓</span><span class="lbl">Farmer's carry · 3×30 sec<small>a DB each hand, walk the room</small></span></li>
-    </ul>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Modified Burpee</span> <span class="reps">3 × 8</span><div class="desc">Step (don't jump) back into a plank, step back in, stand up. No push-up needed.</div><div class="why"><b>Why:</b> the ultimate "can I get up off the floor" test — functional gold.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=iUL2tndomms" target="_blank">▶ Watch how</a><span class="flora">Flora: hands on a counter/chair (incline) instead of the floor</span></div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Dumbbell Swing</span> <span class="reps">3 × 12</span><div class="desc">Hinge at the hips (like the RDL) and swing the dumbbell to chest height using your HIPS, not your arms.</div><div class="why"><b>Why:</b> power & conditioning, easy on the joints.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=wqUKvSouuFI" target="_blank">▶ Watch how</a><span class="flora">Flora: optional, light, small swing</span></div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Farmer's Carry</span> <span class="reps">3 × 30 sec</span><div class="desc">A dumbbell in each hand, stand tall, walk the room. Grip hard, brace the belly.</div><div class="why"><b>Why:</b> the most real-life exercise there is (carrying the shopping) — grip strength predicts a long life.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=z7E_YU9P1jU" target="_blank">▶ Watch how</a><span class="flora">Flora: lighter, shorter walk — groceries count</span></div></div></div></div>
   </div>
 
+  <!-- COOL DOWN -->
   <div class="card">
     <h2>🧘 Cool-down · 5 min</h2>
-    <ul class="ck">
-      <li><span class="box">✓</span><span class="lbl">Broom pass-throughs · 2×10</span></li>
-      <li><span class="box">✓</span><span class="lbl">Hamstring + hip-flexor + gentle chest/shoulder stretch</span></li>
-      <li><span class="box">✓</span><span class="lbl">2 min slow breathing<small>long exhales — the windpipe feeling, vagus down</small></span></li>
-    </ul>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Broom pass-throughs · 2×10</span><div class="desc">Same as the warm-up — finish the shoulder where you started it.</div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">Stretch</span><div class="desc">Hamstrings, hip-flexors, gentle chest/shoulder — hold each 20–30 sec, breathe into it.</div></div></div></div>
+    <div class="ex"><div class="top"><span class="box">✓</span><div><span class="nm">2 min slow breathing</span><div class="desc">Long exhales — the windpipe feeling. Bring the engine down before you climb the stairs.</div></div></div></div>
   </div>
 
+  <!-- FEEDBACK -->
   <div class="card">
-    <h2>📋 Log it — Day 1 baseline</h2>
-    <table>
-      <tr><th>Exercise</th><th>Weight</th><th>Done</th><th>Shoulder 1–5</th><th>Felt</th></tr>
-      <tr><td>Goblet Squat</td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td></tr>
-      <tr><td>RDL</td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td></tr>
-      <tr><td>One-Arm Row</td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td></tr>
-      <tr><td>OH Press</td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td></tr>
-      <tr><td>Face Pulls</td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td></tr>
-      <tr><td>Finisher</td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td><td><input class="log"></td></tr>
-    </table>
-    <p class="scale" style="margin-top:10px">Report to Tigs after: what felt strong · what the shoulder said · energy 1–10 · did 20/45/60. → tunes Day 2.</p>
+    <h2>📝 After the workout — talk to Tigs</h2>
+    <p class="scale">Fill this, then hit <b>Print → Save as PDF</b> and send it back. That's the loop: recipe → do it in the real world → report → we tune Day 2.</p>
+    <p style="margin:6px 0 3px;font-weight:700;font-size:.9rem">Which version did you do? <span class="scale">(20 / 45 / 60 min)</span></p>
+    <input class="log" data-k="fdur" style="width:100%;border:1px solid var(--line);background:#fbfaf8;border-radius:7px;padding:8px;font-family:inherit">
+    <p style="margin:12px 0 3px;font-weight:700;font-size:.9rem">How did it go? What felt strong, what did the shoulder say, energy after, what should change for Day 2?</p>
+    <textarea class="fb log" data-k="fnotes" placeholder="Your feedback here, Wolf…"></textarea>
   </div>
 
-  <div class="foot">Day 1 of the body blueprint · 2 reps in the tank · pain-free range · log everything.<br>"Warm it, feed it, don't force it." — A presto, Wolf. 🐺💪</div>
+  <div class="foot">Day 1 of the body blueprint · 2 reps in the tank · pain-free range · log everything.<br>"Warm it, feed it, don't force it." · Everybody has a body — keep it in check. 🐺💪</div>
 </div>
 
+<button class="printbtn" onclick="window.print()">🖨️ Print / Save as PDF</button>
 <script>
-  // tappable checkboxes, persisted for the session
-  const KEY='wolf-workout-2026-06-06';
+  const KEY='wolf-workout-2026-06-06-v2';
   const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
-  document.querySelectorAll('ul.ck li').forEach((li,i)=>{
-    if(saved['c'+i]) li.classList.add('done');
-    li.addEventListener('click',()=>{ li.classList.toggle('done'); saved['c'+i]=li.classList.contains('done'); localStorage.setItem(KEY,JSON.stringify(saved)); });
+  document.querySelectorAll('.ex').forEach((ex,i)=>{
+    if(saved['c'+i]) ex.classList.add('done');
+    ex.querySelector('.box').addEventListener('click',()=>{ ex.classList.toggle('done'); saved['c'+i]=ex.classList.contains('done'); localStorage.setItem(KEY,JSON.stringify(saved)); });
   });
-  document.querySelectorAll('input.log').forEach((inp,i)=>{
-    if(saved['i'+i]) inp.value=saved['i'+i];
-    inp.addEventListener('input',()=>{ saved['i'+i]=inp.value; localStorage.setItem(KEY,JSON.stringify(saved)); });
+  document.querySelectorAll('input.log,textarea.log').forEach(inp=>{
+    const k=inp.getAttribute('data-k'); if(saved[k]) inp.value=saved[k];
+    inp.addEventListener('input',()=>{ saved[k]=inp.value; localStorage.setItem(KEY,JSON.stringify(saved)); });
   });
 </script>
 </body>

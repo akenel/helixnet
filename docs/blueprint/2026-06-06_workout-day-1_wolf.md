@@ -1,82 +1,50 @@
 # 🐺 La Piazza Blueprint — Workout · DAY 1
 
-**Athlete:** Angel (the Black Wolf) · 62 · getting back in (not fresh — deadlifts + bent-over rows already this week)
-**Date:** Saturday, June 6 2026 · afternoon watch
-**Goal:** full-body, sustainable, **protect the shoulder**, drop the 10kg over time
-**Room:** hobby room — bench, power rack/box, dumbbells, bodyweight, a broom/dowel *(no kettlebells — we sub with DBs)*
-**Time:** 20 min express · **45 min full** · 60 min max
-**Rule of the day:** *leave 2 reps in the tank. Never grind to failure. Measured motion — like Leonardo's hand.*
+**For:** Angel (the Black Wolf), 62, getting back in — **and built so Flora could do it too.**
+**Date:** Sat June 6 2026 · **Time:** 20 min express / 45 full / 60 max · **Rule:** *2 reps in the tank, pain-free range only.*
+**Use the HTML version** (`2026-06-06_workout-day-1_wolf.html`) on your phone — tappable, with how-to videos, then **Print → Save as PDF** and send the feedback back.
+
+> *Everybody has a body — keep it in check. This is the body half of the rebuild, as a recipe.*
 
 ---
 
-## ⚠️ The Shoulder Commandments (read first)
-1. **Pain-free range ONLY.** A stretch or a burn is fine. A *sharp pinch* = stop that movement, no ego.
-2. **Neutral grip beats overhand** for anything overhead (palms facing each other).
-3. **No** behind-the-neck, **no** heavy flat bench, **no** wide-grip pressing.
-4. **Warm it first** (the broom), **feed it every session** (face pulls / band pull-aparts — these heal shoulders).
-5. *This is a smart-training plan, not medical advice. If it's a real injury and not just stiffness, get it looked at.*
+## 📊 Body KPIs — Day 1 baseline (re-test weekly)
+**Vitals:** weight (kg) · energy 1–10 · mood 1–10 · sleep (hrs) · shoulder 1–5
+**Can-I? benchmarks (the fun ones, max in one go):** push-ups (**≥1!**) · burpees (**≥1!**) · squats in a row (**aim 10**) · plank (sec, bonus)
+*Watching these climb IS the rebuild. Flora's version: 1 wall push-up, 5 sit-to-stands.*
+
+## ⚠️ Shoulder rules
+Pain-free range only (sharp pinch = stop). Neutral grip overhead. No behind-neck / heavy flat bench. Warm it (broom), feed it (face pulls). *Not medical advice — real injury, get it seen.*
 
 ---
 
-## 🔥 Warm-up (5–8 min) — wake the body, bulletproof the shoulder
-- [ ] **Easy movement** 2–3 min — march/step-ups/bike until warm
-- [ ] **Broom shoulder pass-throughs** 2 × 10 — wide grip, slow, pain-free arc *(the Leonardo move)*
-- [ ] **Band pull-aparts** (or doorway stretch) 2 × 15 — wake the rear delts + rotator cuff
-- [ ] **Bodyweight squats** 2 × 10 · **Hip hinges** 1 × 10 — grease knees & hips
+## 🔥 Warm-up · 5–8 min
+- **Easy movement** 2–3 min — march/step-ups/bike till warm
+- **Broomstick shoulder pass-throughs** 2×10 — broom wide, raise over head & behind, slow. *Warms the shoulder safely.* ▶ https://www.youtube.com/watch?v=EydWRWn_juo · *Flora: narrow grip if tight*
+- **Band pull-aparts** 2×15 — pull a band apart across your chest, squeeze shoulder blades. *The shoulder vitamin.* ▶ https://www.youtube.com/watch?v=osRimvxXlKQ · *Flora: a towel works*
+- **Bodyweight squats 2×10 + hip hinges 1×10** — grease knees & hips
+
+## 💪 The Workout · full body (straight sets, rest 60–90s)
+1. **Goblet Squat** · 3×10 — 1 DB at chest, sit-to-stand. *Legs/core; staying strong off chairs & floors.* ▶ https://www.youtube.com/watch?v=9KzZD_n2r64 · *Flora: sit-to-stand from a chair, no weight*
+2. **Romanian Deadlift** · 3×10 (LIGHT — deadlifted yesterday) — hips back, weights down the legs, feel hamstrings, stand tall. *The hinge that protects your back.* ▶ https://www.youtube.com/watch?v=hQgFixeXdZo · *Flora: no/light weight, small range*
+3. **One-Arm DB Row** · 3×10/side — hand+knee on bench, pull DB to hip like a lawnmower. *Back/posture.* ▶ https://www.youtube.com/watch?v=gfUg6qWohTk · *Flora: brace on a chair, light*
+4. **Neutral-Grip Overhead Press** · 2–3×8 — palms FACING, press pain-free range only. *Shoulder-safe overhead strength. Stop at any pinch.* ▶ https://www.youtube.com/watch?v=1WOecdL8nrI · *Flora: seated, light, tiny range*
+5. **Face Pulls** · 3×15 — band at face height, pull to face, elbows high, squeeze rear shoulders. 👈 **THE shoulder-saver, never skip.** ▶ https://www.youtube.com/watch?v=ljgqer1ZpXg · *Flora: gold for everyone*
+6. **DB Floor Press** · 2×10 (optional) — on the floor, press up; floor protects the shoulder. ▶ https://www.youtube.com/watch?v=lNdi7VEf2Ew · *Flora: skip or very light*
+
+## ⚡ Finisher (optional)
+- **Modified Burpee** 3×8 — step (no jump) back to plank, step in, stand. *Can-I-get-off-the-floor gold.* ▶ https://www.youtube.com/watch?v=iUL2tndomms · *Flora: hands on a counter (incline)*
+- **DB Swing** 3×12 — hinge, swing to chest with HIPS. ▶ https://www.youtube.com/watch?v=wqUKvSouuFI
+- **Farmer's Carry** 3×30s — a DB each hand, walk tall. *Grip = longevity.* ▶ https://www.youtube.com/watch?v=z7E_YU9P1jU
+
+## 🧘 Cool-down · 5 min
+Broom pass-throughs 2×10 · stretch hamstrings/hips/chest · 2 min slow breathing (long exhales).
 
 ---
 
-## 💪 The Workout — full body, shoulder-smart
-*Straight sets. Controlled tempo (2 sec down, 1 up). Rest 60–90 sec. 2 reps in reserve.*
-
-| # | Exercise | Sets × Reps | Notes |
-|---|----------|-------------|-------|
-| 1 | **Goblet Squat** (1 DB at chest) | 3 × 10 | legs + core, knee-friendly, shoulder-neutral |
-| 2 | **Romanian Deadlift** (DBs, light) | 3 × 10 | hinge + hamstrings. *You hit deadlifts yesterday — keep these LIGHT, or swap for Glute Bridge if the back's tired* |
-| 3 | **One-Arm DB Row** (hand on bench) | 3 × 10 / side | back/lats, your favourite, shoulder-friendly |
-| 4 | **Neutral-Grip DB Overhead Press** | 2–3 × 8 | shoulder-SAFE press — palms facing, **pain-free range only**, stop if it pinches. Cranky shoulder? skip → extra face pulls |
-| 5 | **Face Pulls / Band Pull-Aparts** | 3 × 15 | 👈 **the shoulder-saver — never skip these** |
-| 6 | *(optional)* **DB Floor Press** | 2 × 10 | chest, but the floor stops the bottom range = shoulder-protective. Skip if it complains |
+## 📝 After — feedback to Tigs (the loop)
+Which version (20/45/60)? · What felt strong? · What did the shoulder say? · Energy after (1–10)? · Change for Day 2?
+→ *Recipe → do it in the real world → report → we tune Day 2.* That's the Wolf rebuild.
 
 ---
-
-## ⚡ Finisher (optional, 5–8 min) — only if you've got gas
-Pick one, 3 rounds:
-- [ ] **Modified Burpees** — step back (no jump), drop the push-up if the shoulder says no · 3 × 8
-- [ ] **DB Swings** (hip-hinge, the kettlebell motion with a dumbbell) · 3 × 12
-- [ ] **Farmer's Carry** (a DB each hand, walk the room) · 3 × 30 sec
-
----
-
-## 🧘 Cool-down (5 min) — bring it down
-- [ ] **Broom pass-throughs** again 2 × 10
-- [ ] Hamstring + hip-flexor + gentle chest/shoulder stretch
-- [ ] **2 min slow breathing** — long exhales (the windpipe feeling, vagus down)
-
----
-
-## ⏱️ Time-pressed?
-- **20 min express:** Warm-up → #1 Goblet Squat → #3 Row → #5 Face Pulls → breathe.
-- **45 min full:** everything above, straight sets.
-- **60 min max:** add the finisher + one extra set on #1 and #3.
-
----
-
-## 📋 LOG IT (chalkboard → blueprint)
-*Fill this in as you go — it's Day 1, the baseline. We progress from here.*
-
-| Exercise | Weight | Sets×Reps done | Shoulder (1–5, 5=great) | Felt |
-|----------|--------|----------------|--------------------------|------|
-| Goblet Squat | | | | |
-| RDL | | | | |
-| One-Arm Row | | | | |
-| OH Press | | | | |
-| Face Pulls | | | | |
-| Finisher | | | | |
-
-**Report back to Tigs after:** what felt strong, what the shoulder said, energy 1–10, did 20/45/60. → That's how we tune Day 2.
-
----
-*Day 1 of the body blueprint. 2 reps in the tank, pain-free range, log everything.*
-*"If one seal fails, check all the seals" — same for the shoulder: warm it, feed it, don't force it.*
-*A presto, Wolf. 🐺💪*
+*"Warm it, feed it, don't force it." · A presto, Wolf. 🐺💪*
