@@ -13,7 +13,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db_session
-from src.db.models.bottega_model import BottegaProfileModel, BottegaProfileHistoryModel
+from src.db.models.bottega_model import (
+    BottegaProfileModel, BottegaProfileHistoryModel, BottegaSessionModel)
+from uuid import UUID
 from src.core.keycloak_auth import require_roles
 from src.services.bottega_service import extract_text, cv_to_bio, generate_cv, slugify
 from src.services.compute_service import credit_balance, post_ledger, ensure_starter_grant
@@ -127,6 +129,70 @@ async def recipes_run(slug: str, request: Request,
     result["charged"] = price
     result["balance"] = await credit_balance(db, owner)
     return result
+
+
+# ===== Blueprint Folder: a user's saved sessions (their cutover list) =====
+class SaveSession(BaseModel):
+    slug: str
+    title: str
+    inputs: dict = {}
+    output: str = ""
+    output_type: str = "markdown"
+    tags: str | None = None
+    parent_id: str | None = None
+
+
+@router.post("/sessions")
+async def save_session(body: SaveSession,
+                       current_user: dict = Depends(require_bottega_access()),
+                       db: AsyncSession = Depends(get_db_session)):
+    """Save a session to my Blueprint Folder. parent_id => a new version (edit-and-rerun)."""
+    version, parent = 1, None
+    if body.parent_id:
+        try:
+            parent = UUID(body.parent_id)
+            prev = await db.get(BottegaSessionModel, parent)
+            if prev and prev.username == current_user["username"]:
+                version = (prev.version or 1) + 1
+        except Exception:  # noqa: BLE001
+            parent = None
+    s = BottegaSessionModel(
+        username=current_user["username"], slug=body.slug, title=body.title[:160],
+        inputs=json.dumps(body.inputs or {}), output=(body.output or "")[:200000],
+        output_type=body.output_type, tags=body.tags, version=version, parent_id=parent)
+    db.add(s)
+    await db.commit()
+    await db.refresh(s)
+    return {"id": str(s.id), "version": s.version, "saved": True}
+
+
+@router.get("/sessions")
+async def list_sessions(current_user: dict = Depends(require_bottega_access()),
+                        db: AsyncSession = Depends(get_db_session)):
+    """My Blueprint Folder -- newest first (lean: titles + questions, no full output)."""
+    rows = (await db.execute(
+        select(BottegaSessionModel)
+        .where(BottegaSessionModel.username == current_user["username"])
+        .order_by(BottegaSessionModel.created_at.desc()).limit(100))).scalars().all()
+    return [{"id": str(s.id), "slug": s.slug, "title": s.title,
+             "inputs": json.loads(s.inputs or "{}"), "version": s.version,
+             "created_at": s.created_at.isoformat()} for s in rows]
+
+
+@router.get("/sessions/{session_id}")
+async def get_session(session_id: str,
+                      current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    try:
+        s = await db.get(BottegaSessionModel, UUID(session_id))
+    except Exception:  # noqa: BLE001
+        s = None
+    if not s or s.username != current_user["username"]:
+        raise HTTPException(status_code=404, detail="not found")
+    return {"id": str(s.id), "slug": s.slug, "title": s.title,
+            "inputs": json.loads(s.inputs or "{}"), "output": s.output,
+            "output_type": s.output_type, "version": s.version,
+            "created_at": s.created_at.isoformat()}
 
 
 @router.get("/me")

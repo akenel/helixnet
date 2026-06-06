@@ -90,7 +90,7 @@ from .compute_model import (
     ComputeJobModel, ComputeJobStatus, ComputeLedgerModel, ComputeLedgerKind,
     ComputeTemplateModel, ComputeNodeModel, ComputeNodeStatus,
 )
-from .bottega_model import BottegaProfileModel, BottegaProfileHistoryModel
+from .bottega_model import BottegaProfileModel, BottegaProfileHistoryModel, BottegaSessionModel
 
 __all__ = [
     "Base",
