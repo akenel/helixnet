@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script>
   tailwind.config = { theme: { extend: {
@@ -247,7 +248,7 @@ function bottega() {
       try { const r=await fetch('/api/v1/compute/bottega/recipes',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.recipes=await r.json(); } catch(_){}
     },
     pick(r) { if(!r) return; this.active=r; this.files={}; this.fields={}; this.output=null; this.err=''; this.saveMsg=''; this.savedUrl=''; },
-    renderMd(s) { try { return window.marked ? marked.parse(s||'') : (s||''); } catch(e){ return s||''; } },
+    renderMd(s) { try { const h = window.marked ? marked.parse(s||'') : (s||''); return window.DOMPurify ? DOMPurify.sanitize(h) : ''; } catch(e){ return ''; } },
     _text() {
       const o=this.output||{}, r=o.result;
       const body = typeof r==='string'?r:JSON.stringify(r,null,2);
