@@ -44,6 +44,7 @@ const ANON_PAGES = [
     '/',
     '/get-started',
     '/compute/bottega',
+    '/compute/legends',
     '/compute',
     '/compute/me',
     '/compute/faq',

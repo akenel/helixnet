@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Legends · La Piazza</title>
+<meta name="description" content="Pick a master. Ask them anything. You could be on this wall someday.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme:{ extend:{
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    colors:{ brand:'#C0392B', branddark:'#8B0000' } } } };
+</script>
+<style>
+  body{ background:radial-gradient(1100px 600px at 50% -12%, #1f2a44, transparent), #060910; }
+  .card{ background:rgba(15,23,42,.65); border:1px solid rgba(30,41,59,.9); }
+  .card:hover{ border-color:rgba(192,57,43,.5); }
+  .grad-rule{ background:linear-gradient(90deg,#8B0000,#C0392B,transparent); }
+  .md{ font-size:15px; line-height:1.65; color:#cbd5e1; }
+  .md h1,.md h2,.md h3{ color:#f1f5f9; font-weight:800; margin:.8rem 0 .3rem; } .md h2{font-size:1.15rem}
+  .md p{ margin:.5rem 0; } .md ul,.md ol{ margin:.5rem 0 .5rem 1.2rem; list-style:disc; } .md li{margin:.2rem 0}
+  .md strong{ color:#f8fafc; } .md a{ color:#C0392B; } .md table{width:100%;border-collapse:collapse;margin:.5rem 0}
+  .md td,.md th{ border:1px solid #334155; padding:4px 8px; font-size:.85rem; }
+  .av{ background:linear-gradient(135deg,#C0392B,#8B0000); }
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased">
+{% include "_lapiazza_nav.html" %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-5 py-8" x-data="legends()" x-init="init()">
+
+  <!-- header -->
+  <div class="text-center mb-7">
+    <h1 class="text-3xl sm:text-4xl font-black text-white">The Legends</h1>
+    <p class="text-slate-400 mt-1">Pick a master. Ask them anything. <span class="text-brand font-semibold">You could be on this wall someday.</span></p>
+  </div>
+
+  <!-- not logged in -->
+  <div x-show="!token" class="card rounded-2xl p-10 text-center max-w-md mx-auto">
+    <div class="text-4xl mb-3">🐺</div>
+    <p class="text-slate-300 mb-5">Log in to ask the masters.</p>
+    <button @click="login()" class="px-5 py-2.5 rounded-lg font-bold text-sm bg-brand hover:bg-branddark text-white">Log in</button>
+  </div>
+
+  <template x-if="token">
+  <div>
+    <!-- breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-slate-500 mb-4" x-show="view!=='houses'">
+      <button @click="view='houses'" class="hover:text-slate-300">← All Houses</button>
+      <span x-show="house" class="text-slate-600">/</span>
+      <span x-show="house" class="text-slate-300" x-text="house"></span>
+    </div>
+
+    <!-- HOUSES -->
+    <div x-show="view==='houses'">
+      <div x-show="loading" class="text-center text-slate-500 py-10">Gathering the legends…</div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <template x-for="h in houses" :key="h.name">
+          <button @click="openHouse(h.name)" class="card rounded-xl p-4 text-left transition" x-show="h.count>0">
+            <div class="font-extrabold text-white" x-text="h.name"></div>
+            <div class="text-[12px] text-slate-400 mt-1 leading-snug" x-text="h.desc"></div>
+            <div class="text-[11px] font-mono text-brand mt-2" x-text="h.count + ' masters'"></div>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- PEOPLE -->
+    <div x-show="view==='people'">
+      <div x-show="loading" class="text-center text-slate-500 py-10">Loading…</div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <template x-for="p in pageItems()" :key="p.name">
+          <button @click="select(p)" class="card rounded-xl p-4 text-left flex gap-3 transition">
+            <div class="av w-11 h-11 rounded-lg flex items-center justify-center text-lg font-black text-white shrink-0" x-text="(p.name||'?').charAt(0).toUpperCase()"></div>
+            <div class="min-w-0">
+              <div class="font-bold text-white truncate" x-text="p.name"></div>
+              <div class="text-[12px] text-brand truncate" x-text="p.workshop || p.tagline"></div>
+              <div class="text-[12px] text-slate-400 mt-1 line-clamp-2" x-text="(p.bio||'').slice(0,120)"></div>
+            </div>
+          </button>
+        </template>
+      </div>
+      <!-- pager -->
+      <div class="flex items-center justify-center gap-4 mt-5 text-sm" x-show="people.length>perPage">
+        <button @click="page=Math.max(0,page-1)" :disabled="page===0" class="px-3 py-1.5 rounded-lg card disabled:opacity-30">← Prev</button>
+        <span class="text-slate-500 font-mono" x-text="(page+1)+' / '+Math.ceil(people.length/perPage)"></span>
+        <button @click="page=Math.min(Math.ceil(people.length/perPage)-1,page+1)" :disabled="(page+1)>=Math.ceil(people.length/perPage)" class="px-3 py-1.5 rounded-lg card disabled:opacity-30">Next →</button>
+      </div>
+    </div>
+
+    <!-- ASK -->
+    <div x-show="view==='ask'" x-cloak>
+      <div class="card rounded-2xl overflow-hidden">
+        <div class="h-1 grad-rule"></div>
+        <div class="p-6">
+          <div class="flex gap-4 items-start">
+            <div class="av w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-black text-white shrink-0" x-text="(selected?.name||'?').charAt(0).toUpperCase()"></div>
+            <div class="min-w-0">
+              <h2 class="text-xl font-black text-white" x-text="selected?.name"></h2>
+              <div class="text-brand text-sm font-semibold" x-text="selected?.tagline || selected?.workshop"></div>
+            </div>
+          </div>
+          <p class="text-[13px] text-slate-400 mt-3" x-show="selected?.bio" x-text="selected?.bio"></p>
+
+          <label class="block text-[11px] uppercase tracking-wider text-slate-500 mt-5 mb-1">What are you facing?</label>
+          <textarea x-model="question" rows="3" placeholder="Ask your master anything…"
+            class="w-full px-3 py-2 rounded-lg bg-[#070d18] border border-slate-700 text-slate-100 text-sm"></textarea>
+          <div class="flex items-center gap-3 mt-3">
+            <button @click="ask()" :disabled="busy || !question.trim()"
+              class="px-5 py-2.5 rounded-lg font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-30"
+              x-text="busy ? 'Asking…' : ('Ask ' + (selected?.name||'').split(' ')[0])"></button>
+            <span class="text-xs text-red-400" x-text="err"></span>
+          </div>
+
+          <div x-show="answer" class="mt-6 pt-5 border-t border-slate-800">
+            <div class="md" id="answerMd"></div>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-xs text-slate-600 mt-5">These are example masters. <a href="/get-started" class="text-brand hover:underline">Build your Bottega</a> and earn your place on the wall.</p>
+    </div>
+  </div>
+  </template>
+</div>
+
+<script>
+function legends(){
+  return {
+    token:null, houses:[], people:[], house:null, view:'houses',
+    page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false,
+    init(){
+      // capture token from callback hash, else localStorage
+      if(location.hash.indexOf('token=')>-1){
+        try{ this.token = new URLSearchParams(location.hash.slice(1)).get('token');
+          localStorage.setItem('compute_token', this.token); history.replaceState(null,'',location.pathname); }catch(e){}
+      }
+      if(!this.token){ try{ this.token = localStorage.getItem('compute_token'); }catch(e){} }
+      if(this.token) this.loadHouses();
+    },
+    hdr(){ return { 'Authorization':'Bearer '+this.token }; },
+    async loadHouses(){
+      this.loading=true;
+      try{ const r=await fetch('/api/v1/compute/bottega/legends/houses',{headers:this.hdr()});
+        if(r.status===401||r.status===403){ this.token=null; return; }
+        const d=await r.json(); this.houses=d.houses||[]; }catch(e){ this.err='could not load'; }
+      this.loading=false;
+    },
+    async openHouse(name){
+      this.house=name; this.view='people'; this.page=0; this.loading=true; this.people=[];
+      try{ const r=await fetch('/api/v1/compute/bottega/legends?house='+encodeURIComponent(name),{headers:this.hdr()});
+        const d=await r.json(); this.people=d.legends||[]; }catch(e){ this.err='could not load'; }
+      this.loading=false;
+    },
+    pageItems(){ const s=this.page*this.perPage; return this.people.slice(s,s+this.perPage); },
+    select(p){ this.selected=p; this.question=''; this.answer=''; this.err=''; this.view='ask'; window.scrollTo(0,0); },
+    async ask(){
+      if(!this.question.trim()) return;
+      this.busy=true; this.err=''; this.answer='';
+      try{
+        const body=new URLSearchParams({ mentor:this.selected.name, situation:this.question });
+        const r=await fetch('/api/v1/compute/bottega/recipes/mentor-session/run',{ method:'POST',
+          headers:{ 'Authorization':'Bearer '+this.token, 'Content-Type':'application/x-www-form-urlencoded' }, body });
+        const d=await r.json();
+        if(r.ok){ this.answer=d.result||''; this.$nextTick(()=>{ const el=document.getElementById('answerMd');
+          if(el){ const h=window.marked?marked.parse(this.answer):this.answer; el.innerHTML=window.DOMPurify?DOMPurify.sanitize(h):''; } }); }
+        else { this.err=d.detail||('error '+r.status); }
+      }catch(e){ this.err='failed — try again'; }
+      this.busy=false;
+    },
+    login(){
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const redirect = encodeURIComponent(location.origin + '/compute/callback');
+      const state = encodeURIComponent('/compute/legends');
+      location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
+    },
+  };
+}
+</script>
+</body>
+</html>

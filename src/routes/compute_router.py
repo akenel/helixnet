@@ -533,6 +533,12 @@ async def compute_me(request: Request):
     return templates.TemplateResponse("compute/me.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
 
 
+@html_router.get("/compute/legends", response_class=HTMLResponse)
+async def compute_legends(request: Request):
+    """Legends-3: the gallery -- browse Houses -> people -> pick a master -> Ask a Master."""
+    return templates.TemplateResponse("compute/legends.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
+
+
 @html_router.get("/u/{slug}", response_class=HTMLResponse)
 async def public_profile(slug: str, request: Request,
                          db: AsyncSession = Depends(get_db_session)):
