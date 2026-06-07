@@ -398,12 +398,18 @@ async def share_page(session_id: str, request: Request):
     if not cover:
         cover = "/static/lapiazza-wolf.png"
 
+    # behind Caddy, uvicorn sees http -> force the real scheme/host so og:image is HTTPS
+    # (WhatsApp/Telegram drop mixed-content images, which is why the card showed no picture)
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+    base_url = f"{proto}://{host}"
+    og_image = cover if cover.startswith("http") else f"{base_url}{cover}"
     return templates.TemplateResponse("share.html", {
         "request": request, "title": title, "inputs": inputs,
         "content": content, "snippet": desc, "version": version,
         "serial": str(sid)[:8].upper(),
         "created": created_dt.strftime("%d %b %Y") if created_dt else "",
-        "cover": cover, "base_url": str(request.base_url).rstrip("/"),
+        "cover": cover, "base_url": base_url, "og_image": og_image,
     })
 
 @app.get("/jobs", tags=["🧭 Web UI"], response_class=HTMLResponse)
