@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Headless test of the full auction flow before recording.
- * Tests: Dave creates auction -> Sally bids -> Rosa outbids -> Sally wins -> Dave ends auction
+ * Tests: George creates auction -> Sally bids -> Rosa outbids -> Sally wins -> George ends auction
  *
  * Uses demo login (ROPC) to get bh_session cookie. fetch() inside page.evaluate()
  * automatically includes the httponly cookie on same-origin requests.
@@ -54,16 +54,24 @@ async function apiCall(page, method, path, body) {
   await page.goto(BASE, { waitUntil: 'networkidle2', timeout: 15000 });
   await sleep(500);
 
-  // ── Step 0: Login as Dave, get item ID, cleanup ──
+  // ── Step 0: Login as George, get item ID, cleanup ──
   console.log('Step 0: Cleanup + setup...');
-  await demoLogin(page, 'dave');
+  await demoLogin(page, 'george');
 
-  // Get Dave's items to find the bike
-  const itemsResp = await apiCall(page, 'GET', '/api/v1/items?owner=me&limit=50');
-  const bikeItem = (itemsResp.data || []).find(i => i.slug === BIKE_SLUG);
+  // Get George's Mountain Bike -- paginate through items until found
+  let bikeItem = null;
+  let offset = 0;
+  const pageSize = 100;
+  while (!bikeItem) {
+    const resp = await apiCall(page, 'GET', `/api/v1/items?limit=${pageSize}&offset=${offset}`);
+    const items = Array.isArray(resp.data) ? resp.data : [];
+    bikeItem = items.find(i => i.slug === BIKE_SLUG);
+    if (!bikeItem && items.length < pageSize) break; // no more pages
+    offset += pageSize;
+    if (offset > 2000) break; // safety limit
+  }
   if (!bikeItem) {
-    console.error('FATAL: Mountain Bike item not found for Dave!');
-    console.error('Items response:', JSON.stringify(itemsResp));
+    console.error('FATAL: Mountain Bike item not found!');
     await browser.close();
     process.exit(1);
   }
@@ -80,8 +88,8 @@ async function apiCall(page, method, path, body) {
     }
   }
 
-  // ── Step 1: Dave creates auction listing ──
-  console.log('Step 1: Dave creates auction listing...');
+  // ── Step 1: George creates auction listing ──
+  console.log('Step 1: George creates auction listing...');
   const auctionEnd = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
   const createResp = await apiCall(page, 'POST', '/api/v1/listings', {
@@ -141,9 +149,9 @@ async function apiCall(page, method, path, body) {
   const summary = summaryResp.data;
   console.log(`  Summary: ${summary?.total_bids} bids, current=EUR ${summary?.current_price}, reserve_met=${summary?.reserve_met}`);
 
-  // ── Step 5: Dave ends the auction ──
-  console.log('Step 5: Dave ends auction...');
-  await demoLogin(page, 'dave');
+  // ── Step 5: George ends the auction ──
+  console.log('Step 5: George ends auction...');
+  await demoLogin(page, 'george');
 
   const endResp = await apiCall(page, 'POST', `/api/v1/bids/${listingId}/end`);
   console.log(`  End: HTTP ${endResp.status}, winner=${endResp.data?.winner_id}, amount=${endResp.data?.winning_amount}, reserve_met=${endResp.data?.reserve_met}`);

@@ -191,3 +191,20 @@ docs/training/*.pdf
 # ====================================================================
 backups/
 hetzner/Caddyfile.bak
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
+
+# La Piazza X posting tool — local post tracking
+docs/business/marketing/twitter/.post-state.json
+
+# Local test scratch (holds keys/secrets — NEVER commit)
+tests/tmp/
+
+# Blueprint media — heavy binaries live in GDrive, not git (keep the .md notes)
+docs/blueprint/*.png
+docs/blueprint/*.jpeg
+docs/blueprint/*.jpg
+docs/blueprint/*.pdf
+docs/blueprint/*.html

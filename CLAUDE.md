@@ -63,7 +63,7 @@ Full story: `/field-notes-with-leo-dec5.md`
 | ISOTTO Sport | Print + merch partner, Via Buscaino area, since 1968, WhatsApp +39 349 972 9418, Famous Guy knows his stuff |
 | Mixology Trapani | Beverage wholesale, Via M. Buscaino 15, Tel 0923 390052, FB @mixologytp |
 | Marcello Virzi | Sales Manager, Tenute Parrinello winery (since 1936), Marsala - meeting end of week |
-| Kevin Galilee | World passport holder, insane in a good way, camping/shower host near HQ |
+| Kevin Galalae | World passport holder, insane in a good way, camping/shower host near HQ |
 | Color Clean | Lavanderia, Via Virgilio 105/107, www.colorclean.it, colorclean.tp@gmail.com, loved tent card + review |
 | Pizza Planet | Ciccio's place, Via Asmara 35 Bonagia (TP), 38°03'51"N 12°35'49"E, forno a legna dal 2000, closed Mondays |
 | Piccolo Bistratto | Giovanni's place, Jonathan the chef, Paolo (friend), wants card set |
@@ -391,6 +391,19 @@ ClientName-ISOTTO/
 
 ### Test Users (POS)
 - Pam (cashier), Ralph (manager), Michael (developer), Felix (admin)
+
+### La Piazza / Bottega -- ON MAIN (merged 2026-06-07)
+- The whole La Piazza body of work (Bottega town square, Blueprint/Rebuild engine,
+  recipes as procedure-as-code, structured intakes, BYO-brain) is **merged into `main`**.
+  The `feat/lp-compute-exchange` branch has been **deleted** (local + remote) -- `main`
+  is the single trunk now. Work directly on `main`, or branch fresh (`feat/<name>`) for
+  multi-block features and merge back when human-green.
+- **BYO-brain:** `src/llm/` (`run_llm` + `ModelTarget`) is the ONE place an LLM call
+  happens; the model is DATA -- a recipe names its own brain via a `model` field, default
+  is Turbo (`BH_OLLAMA_KEY`) else local Ollama. Reasoning-model `<think>` blocks are
+  stripped in the recipe runner.
+- **Test gate:** `make test` runs pytest INSIDE the `helix-platform` container (the real
+  app env -- the host `.venv` is the aux toolbox with no fastapi). Use it before promoting.
 
 ---
 
