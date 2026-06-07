@@ -301,6 +301,50 @@ async def legends_classify(current_user: dict = Depends(require_bottega_access()
     return {"classified": len(hmap), "of": len(cast)}
 
 
+@router.get("/legends/questions")
+async def legend_questions(name: str, current_user: dict = Depends(require_bottega_access()),
+                           db: AsyncSession = Depends(get_db_session)):
+    """Legends-4: 3 starter questions to ask THIS master (AI, lazily cached per master on the spine)."""
+    from src.services.bottega_service import _brain_chat
+    name = (name or "").strip()
+    if not name:
+        return {"questions": []}
+    row = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == "system",
+        BottegaSessionModel.slug == "legend-questions"))).scalar_one_or_none()
+    try:
+        cache = json.loads(row.output) if row and row.output else {}
+    except Exception:  # noqa: BLE001
+        cache = {}
+    if cache.get(name):
+        return {"questions": cache[name][:3], "cached": True}
+    qs: list = []
+    try:
+        raw = await _brain_chat(
+            "Suggest what a person would bring to a historical master for mentoring. Respond with "
+            'ONLY JSON: {"questions":["...","...","..."]} -- exactly 3 short, specific, first-person '
+            "questions someone would actually ask THIS master (grounded in their real craft).",
+            f"Master: {name}", json_mode=True)
+        raw = re.sub(r"<think>.*?</think>", "", raw or "", flags=re.S)
+        a, b = raw.find("{"), raw.rfind("}")
+        if a >= 0 and b > a:
+            qs = [str(q).strip() for q in json.loads(raw[a:b + 1]).get("questions", []) if str(q).strip()][:3]
+    except Exception:  # noqa: BLE001
+        logger.warning("legend_questions gen failed for %s", name, exc_info=True)
+    if not qs:
+        qs = ["What's the one thing you wish someone had taught you early?",
+              "What mistake should I avoid that you learned the hard way?",
+              "Where should I even start?"]
+    cache[name] = qs
+    if row:
+        row.output = json.dumps(cache)
+    else:
+        db.add(BottegaSessionModel(username="system", slug="legend-questions", title="Legend Questions",
+                                   inputs="{}", output=json.dumps(cache), output_type="json", tags="legends,questions"))
+    await db.commit()
+    return {"questions": qs}
+
+
 @router.post("/recipes/{slug}/run")
 async def recipes_run(slug: str, request: Request,
                       current_user: dict = Depends(require_bottega_access()),

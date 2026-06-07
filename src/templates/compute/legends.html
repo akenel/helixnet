@@ -107,6 +107,15 @@
           </div>
           <p class="text-[13px] text-slate-400 mt-3" x-show="selected?.bio" x-text="selected?.bio"></p>
 
+          <div x-show="suggested.length" class="mt-5">
+            <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2">Try asking</div>
+            <div class="flex flex-col gap-2">
+              <template x-for="q in suggested" :key="q">
+                <button @click="question=q" class="text-left text-[13px] px-3 py-2 rounded-lg card text-slate-300 hover:text-white transition" x-text="'“'+q+'”'"></button>
+              </template>
+            </div>
+          </div>
+
           <label class="block text-[11px] uppercase tracking-wider text-slate-500 mt-5 mb-1">What are you facing?</label>
           <textarea x-model="question" rows="3" placeholder="Ask your master anything…"
             class="w-full px-3 py-2 rounded-lg bg-[#070d18] border border-slate-700 text-slate-100 text-sm"></textarea>
@@ -132,7 +141,7 @@
 function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
-    page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false,
+    page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[],
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -157,7 +166,9 @@ function legends(){
       this.loading=false;
     },
     pageItems(){ const s=this.page*this.perPage; return this.people.slice(s,s+this.perPage); },
-    select(p){ this.selected=p; this.question=''; this.answer=''; this.err=''; this.view='ask'; window.scrollTo(0,0); },
+    select(p){ this.selected=p; this.question=''; this.answer=''; this.err=''; this.suggested=[]; this.view='ask'; window.scrollTo(0,0);
+      fetch('/api/v1/compute/bottega/legends/questions?name='+encodeURIComponent(p.name),{headers:this.hdr()})
+        .then(r=>r.json()).then(d=>{ if(this.selected&&this.selected.name===p.name) this.suggested=d.questions||[]; }).catch(()=>{}); },
     async ask(){
       if(!this.question.trim()) return;
       this.busy=true; this.err=''; this.answer='';
