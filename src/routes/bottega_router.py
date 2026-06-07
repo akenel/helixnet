@@ -692,15 +692,33 @@ async def feedback(f: Feedback, current_user: dict = Depends(require_bottega_acc
     body = (f.body or "").strip()
     desc = (f"{body}\n\n— filed from Bottega by {user}" if body
             else f"Filed from Bottega by {user}")
+    # Gamification: filing feedback EARNS a small credit -- contribution counts (good or bad),
+    # but capped so it can't be farmed (up to FEEDBACK_DAILY_CAP rewarded per user per day).
+    FEEDBACK_REWARD, FEEDBACK_DAILY_CAP = 2, 5
+    start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    prior = (await db.execute(select(func.count(BacklogItemModel.id)).where(
+        BacklogItemModel.created_by == user,
+        BacklogItemModel.tags.like("%feedback%"),
+        BacklogItemModel.created_at >= start))).scalar() or 0
+    rewarded = prior < FEEDBACK_DAILY_CAP
+
     item = BacklogItemModel(
         item_number=next_number, title=title[:200], description=desc,
         item_type=item_type, application=HelixApplication.HELIXNET,
         priority=BacklogPriority.MEDIUM, created_by=user,
         tags=f"bottega,feedback,{kind}")
     db.add(item)
+    if rewarded:
+        await ensure_starter_grant(db, user)
+        await post_ledger(db, user, ComputeLedgerKind.EARN, FEEDBACK_REWARD,
+                          counterparty="la-bottega", note="feedback reward")
+        await post_ledger(db, "la-bottega", ComputeLedgerKind.SPEND, -FEEDBACK_REWARD,
+                          counterparty=user, note="feedback reward")
     await db.commit()
-    logger.info(f"BL-{next_number:03d} filed from Bottega by {user}: {title}")
-    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}"}
+    bal = await credit_balance(db, user)
+    logger.info(f"BL-{next_number:03d} filed from Bottega by {user}: {title} (rewarded={rewarded})")
+    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}",
+            "rewarded": rewarded, "credits_earned": FEEDBACK_REWARD if rewarded else 0, "balance": bal}
 
 
 @router.post("/generate")

@@ -102,7 +102,7 @@
       body:JSON.stringify({kind:kind,title:t,body:(body.value||'').trim()})})
     .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
     .then(function(res){
-      if(res.ok&&res.j.ok){msg.textContent='Filed as '+res.j.ref+' — thank you! 🐺';msg.className='lpfb-msg ok';
+      if(res.ok&&res.j.ok){msg.textContent='Filed as '+res.j.ref+(res.j.credits_earned?(' · +'+res.j.credits_earned+' credits 🪙'):'')+' — thank you! 🐺';msg.className='lpfb-msg ok';
         send.textContent='Sent ✓';setTimeout(hide,1400);}
       else{msg.textContent=(res.j&&res.j.detail)?res.j.detail:'Something went wrong — try again.';
         msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})
