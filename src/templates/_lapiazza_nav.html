@@ -28,3 +28,84 @@
   </div>
 </nav>
 <script>(function(){var p=location.pathname;document.querySelectorAll('.lp-nav [data-nav]').forEach(function(a){var d=a.getAttribute('data-nav');var on=(d==='workshop'&&p.indexOf('/compute/bottega')===0)||(d==='me'&&p.indexOf('/compute/me')===0)||(d==='exchange'&&(p==='/compute'||p==='/compute/dashboard'))||(d==='faq'&&(p.indexOf('/compute/faq')===0||p.indexOf('/compute/help')===0));if(on)a.classList.add('active');});})();</script>
+
+<!-- Feedback widget (Block G) — the seatback card, built in. Files into the Backlog board.
+     Self-contained vanilla JS; only shows when a member is logged in (compute_token). -->
+<style>
+  .lpfb-btn{position:fixed;right:18px;bottom:18px;z-index:70;display:none;align-items:center;gap:7px;
+    padding:10px 15px;border:none;border-radius:999px;background:#C0392B;color:#fff;font:700 14px Inter,system-ui,sans-serif;
+    cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+  .lpfb-btn:hover{background:#8B0000}
+  .lpfb-ov{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+    background:rgba(2,6,12,.7);backdrop-filter:blur(3px);padding:16px;font-family:Inter,system-ui,sans-serif}
+  .lpfb-card{width:100%;max-width:430px;background:#0b1220;border:1px solid rgba(48,63,84,.8);border-radius:14px;
+    padding:22px;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .lpfb-card h3{margin:0 0 4px;font-size:18px;font-weight:900;color:#f1f5f9}
+  .lpfb-card p.sub{margin:0 0 16px;font-size:13px;color:#94a3b8}
+  .lpfb-kinds{display:flex;gap:8px;margin-bottom:14px}
+  .lpfb-kind{flex:1;text-align:center;padding:9px 0;border:1px solid rgba(48,63,84,.9);border-radius:9px;
+    background:rgba(15,23,42,.6);color:#cbd5e1;font-size:13px;font-weight:600;cursor:pointer}
+  .lpfb-kind.on{border-color:#C0392B;background:rgba(192,57,43,.2);color:#fff}
+  .lpfb-card input,.lpfb-card textarea{width:100%;box-sizing:border-box;margin-bottom:12px;padding:10px 12px;
+    background:#070d18;border:1px solid rgba(48,63,84,.9);border-radius:9px;color:#f1f5f9;font-size:14px;font-family:inherit}
+  .lpfb-card textarea{min-height:90px;resize:vertical}
+  .lpfb-row{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+  .lpfb-msg{flex:1;font-size:13px;min-height:18px}
+  .lpfb-msg.ok{color:#34d399}.lpfb-msg.err{color:#f87171}
+  .lpfb-cancel{padding:9px 14px;border:1px solid rgba(48,63,84,.9);border-radius:9px;background:transparent;color:#94a3b8;font-weight:600;cursor:pointer}
+  .lpfb-send{padding:9px 18px;border:none;border-radius:9px;background:#C0392B;color:#fff;font-weight:700;cursor:pointer}
+  .lpfb-send:disabled{opacity:.5;cursor:default}
+</style>
+<button class="lpfb-btn" id="lpfb-open">💬 Feedback</button>
+<div class="lpfb-ov" id="lpfb-ov">
+  <div class="lpfb-card" role="dialog" aria-modal="true" aria-label="Send feedback">
+    <h3>Send feedback</h3>
+    <p class="sub">Spot a bug or have an idea? It goes straight to the workbench.</p>
+    <div class="lpfb-kinds" id="lpfb-kinds">
+      <div class="lpfb-kind on" data-kind="bug">🐛 Bug</div>
+      <div class="lpfb-kind" data-kind="idea">💡 Idea</div>
+      <div class="lpfb-kind" data-kind="other">💬 Other</div>
+    </div>
+    <input id="lpfb-title" type="text" maxlength="200" placeholder="Short title (what's up?)" />
+    <textarea id="lpfb-body" maxlength="4000" placeholder="Details — what happened, what you expected, steps…"></textarea>
+    <div class="lpfb-row">
+      <span class="lpfb-msg" id="lpfb-msg"></span>
+      <button class="lpfb-cancel" id="lpfb-cancel">Cancel</button>
+      <button class="lpfb-send" id="lpfb-send">Send</button>
+    </div>
+  </div>
+</div>
+<script>(function(){
+  var tok=null;try{tok=localStorage.getItem('compute_token');}catch(e){}
+  if(!tok)return;  // only for logged-in members
+  var open=document.getElementById('lpfb-open'),ov=document.getElementById('lpfb-ov'),
+    title=document.getElementById('lpfb-title'),body=document.getElementById('lpfb-body'),
+    msg=document.getElementById('lpfb-msg'),send=document.getElementById('lpfb-send'),
+    cancel=document.getElementById('lpfb-cancel'),kinds=document.getElementById('lpfb-kinds'),kind='bug';
+  open.style.display='flex';
+  function show(){ov.style.display='flex';setTimeout(function(){title.focus();},50);}
+  function hide(){ov.style.display='none';}
+  function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';}
+  open.onclick=function(){reset();show();};
+  cancel.onclick=hide;
+  ov.onclick=function(e){if(e.target===ov)hide();};
+  kinds.onclick=function(e){var k=e.target.closest('.lpfb-kind');if(!k)return;
+    kind=k.getAttribute('data-kind');
+    [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c===k);});};
+  send.onclick=function(){
+    var t=(title.value||'').trim();
+    if(t.length<3){msg.textContent='Give it a short title (3+ characters).';msg.className='lpfb-msg err';return;}
+    send.disabled=true;send.textContent='Sending…';msg.textContent='';msg.className='lpfb-msg';
+    fetch('/api/v1/compute/bottega/feedback',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+      body:JSON.stringify({kind:kind,title:t,body:(body.value||'').trim()})})
+    .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+    .then(function(res){
+      if(res.ok&&res.j.ok){msg.textContent='Filed as '+res.j.ref+' — thank you! 🐺';msg.className='lpfb-msg ok';
+        send.textContent='Sent ✓';setTimeout(hide,1400);}
+      else{msg.textContent=(res.j&&res.j.detail)?res.j.detail:'Something went wrong — try again.';
+        msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})
+    .catch(function(){msg.textContent='Network error — try again.';msg.className='lpfb-msg err';
+      send.disabled=false;send.textContent='Send';});
+  };
+})();</script>

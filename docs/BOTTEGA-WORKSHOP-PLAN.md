@@ -39,7 +39,7 @@ spine once; everything else is a view.
 | **D** | **Messages** | System→member first (Tigs talks to you), member↔member later. `message` events. | planned |
 | **E** | **Grafana — the works** | Off the spine + ledger: platform (signups/day, active members, recipes run, top recipes, credit flow) and per-member activity. Reuses `scripts/lp_grafana_setup.py`. | planned |
 | **F** | **Teams** | Keycloak groups → shared Bottega/resources, team roster. Mirror of La Piazza groups. | planned |
-| **G** | **Backlog / Feedback in Bottega** | A feedback/issue widget *inside* the workshop that files into the existing Backlog (BL) module — log issues, fixes, track changes. The seatback feature, built in. | planned |
+| **G** | **Backlog / Feedback in Bottega** | A feedback/issue widget *inside* the workshop that files into the existing Backlog (BL) module — log issues, fixes, track changes. The seatback feature, built in. | ✅ **DONE** — floating widget in the shared nav (logged-in members only) → `POST /api/v1/compute/bottega/feedback` → real `BacklogItemModel` on `/backlog` (bug→`bug_fix`, idea/other→`business_ops`, tagged `bottega,feedback,*`). No new table — files into the existing spine. |
 
 ---
 
