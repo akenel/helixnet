@@ -42,6 +42,7 @@
 </style>
 </head>
 <body class="font-sans text-slate-300 min-h-screen antialiased">
+{% include "_lapiazza_nav.html" %}
 <div class="max-w-2xl mx-auto px-5 py-10">
 
   <!-- the postcard -->
@@ -77,6 +78,25 @@
       <span class="text-xs text-slate-500">Made on <a href="/" class="text-brand font-semibold">La Piazza</a> — the square where ideas become things</span>
       <a href="/get-started" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand hover:bg-branddark text-white">Make your own →</a>
     </div>
+  </div>
+
+  <!-- the doorway (Share-L): turn a viewer into a member. A pitch, not a dead-end. -->
+  <div class="mt-8 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/12 to-transparent p-6 sm:p-7 text-center">
+    <h2 class="text-xl sm:text-2xl font-black text-white">This was made on La Piazza.</h2>
+    <p class="mt-2 text-[15px] text-slate-300 max-w-md mx-auto">
+      Your own <span class="text-white font-semibold">workshop</span> where AI mentors help you build —
+      then a <span class="text-white font-semibold">square</span> to show it off.
+    </p>
+    <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
+      <span class="px-2.5 py-1 rounded-lg bg-slate-800/70 border border-slate-700">🎁 Give</span>
+      <span class="px-2.5 py-1 rounded-lg bg-slate-800/70 border border-slate-700">🔑 Rent</span>
+      <span class="px-2.5 py-1 rounded-lg bg-slate-800/70 border border-slate-700">🛠️ Sell your skills</span>
+      <span class="px-2.5 py-1 rounded-lg bg-slate-800/70 border border-slate-700">❓ Ask</span>
+      <span class="px-2.5 py-1 rounded-lg bg-slate-800/70 border border-slate-700">🎟️ Host</span>
+      <span class="px-2.5 py-1 rounded-lg bg-slate-800/70 border border-slate-700">📚 Teach</span>
+    </div>
+    <a href="/get-started" class="inline-block mt-5 px-6 py-3 rounded-xl font-bold bg-brand hover:bg-branddark text-white shadow-lg shadow-brand/20">Make your own — free →</a>
+    <div class="mt-3 text-xs text-slate-500">30 seconds · 300 free credits to start · <a href="/get-started" class="text-brand hover:underline">Already a member? Log in</a></div>
   </div>
 
 </div>
