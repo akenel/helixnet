@@ -289,9 +289,10 @@ RECIPES: dict[str, dict] = {
     "decide": {
         "slug": "decide", "title": "Think It Through", "emoji": "\U0001F9ED",  # compass
         "category": "coaching", "est_credits": 3,    # reasoning model => more brain-tokens
-        # Per-job brain MUST be one Ollama Turbo serves (every deployed env has BH_OLLAMA_KEY).
-        # deepseek-r1:14b is local-only -> Turbo 404s. gpt-oss:120b reasons + is Turbo-served.
-        "model": "gpt-oss:120b",
+        # Brain as data: a Turbo model AND a local-dev fallback. The runner uses the right one
+        # per backend, and if a model isn't served it falls back to the house brain (no 500).
+        "model": "gpt-oss:120b",            # Turbo brain (every deployed env has BH_OLLAMA_KEY)
+        "model_local": "deepseek-r1:14b",   # local-dev reasoning brain (if pulled), else house default
         "inputs": [
             {"name": "decision", "type": "text",
              "label": "The decision or problem you're stuck on"},
@@ -352,7 +353,7 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
     # Absent -> the default brain (BIO_MODEL on Turbo, LOCAL_MODEL on local). Procedure-as-code:
     # the model is just another field in the dict, no new code to switch it.
     out = await _brain_chat(r["system"], prompt, json_mode=(r["output"] == "json"),
-                            schema=js, model=r.get("model"))
+                            schema=js, model=r.get("model"), model_local=r.get("model_local"))
     out = _strip_think(out)               # drop reasoning-model <think> blocks before use
     if r["output"] == "json":
         try:

@@ -11,6 +11,8 @@ import logging
 import os
 import re
 
+import httpx
+
 from src.llm import run_llm, turbo_or_local
 
 logger = logging.getLogger("helix.bottega")
@@ -64,20 +66,42 @@ def _prompt(cv_text: str, categories: list[str]) -> str:
     )
 
 
-async def _brain_chat(system: str, user: str, json_mode: bool = False,
-                      schema: dict | None = None, model: str | None = None) -> str:
-    """Shared brain call -- the seed of the procedure-as-code recipe runner.
-    Every template recipe routes through here, now via the single src.llm wrapper.
-    Turbo if BH_OLLAMA_KEY, else local (backend chosen by turbo_or_local).
+class BrainUnavailable(Exception):
+    """The model backend failed (model not served, outage, timeout). Surfaced to the
+    user as a friendly 'try again' -- never a raw 500 to the face."""
 
-    schema = the outbound Service Interface (a JSON Schema) -- defined up front and
-    ENFORCED on the model (Ollama structured outputs), so the mapping can't drift.
-    model  = optional per-job override (the recipe names its own brain as DATA);
-             None keeps the default (BIO_MODEL on Turbo, LOCAL_MODEL on local)."""
-    target = turbo_or_local(model, model) if model else turbo_or_local(BIO_MODEL, LOCAL_MODEL)
-    res = await run_llm(user, target=target, system=system,
-                        json_mode=json_mode, schema=schema)
-    return res.text
+
+async def _brain_chat(system: str, user: str, json_mode: bool = False,
+                      schema: dict | None = None, model: str | None = None,
+                      model_local: str | None = None) -> str:
+    """Shared brain call -- the seed of the procedure-as-code recipe runner. RESILIENT:
+    routes through the single src.llm wrapper; if the pinned model isn't served (404) it
+    falls back ONCE to the house brain; any total failure raises BrainUnavailable so the
+    caller shows a friendly message instead of a 500.
+
+    schema       = the outbound Service Interface (a JSON Schema), ENFORCED on the model.
+    model        = the recipe's Turbo brain (DATA); default BIO_MODEL.
+    model_local  = the local-Ollama fallback brain; default LOCAL_MODEL.
+    A recipe can now name BOTH (turbo + local) so its model need not exist on both backends."""
+    primary = turbo_or_local(model or BIO_MODEL, model_local or LOCAL_MODEL)
+    house = turbo_or_local(BIO_MODEL, LOCAL_MODEL)
+    try:
+        res = await run_llm(user, target=primary, system=system, json_mode=json_mode, schema=schema)
+        return res.text
+    except httpx.HTTPStatusError as e:
+        code = e.response.status_code if e.response is not None else 0
+        # 404 = this backend doesn't serve the pinned model -> fall back to the house brain once.
+        if code == 404 and primary.model != house.model:
+            logger.warning("brain '%s' unavailable (404); falling back to house brain '%s'",
+                           primary.model, house.model)
+            try:
+                res = await run_llm(user, target=house, system=system, json_mode=json_mode, schema=schema)
+                return res.text
+            except Exception as e2:  # noqa: BLE001
+                raise BrainUnavailable(str(e2)) from e2
+        raise BrainUnavailable(f"brain returned {code}") from e
+    except (httpx.TimeoutException, httpx.TransportError) as e:
+        raise BrainUnavailable(str(e)) from e
 
 
 _TEASER_SYSTEM = (

@@ -24,7 +24,8 @@ from src.db.models.backlog_model import (
 from src.core.constants import HelixApplication
 from uuid import UUID
 from src.core.keycloak_auth import require_roles
-from src.services.bottega_service import extract_text, cv_to_bio, generate_cv, slugify
+from src.services.bottega_service import (
+    extract_text, cv_to_bio, generate_cv, slugify, BrainUnavailable)
 from src.services.compute_service import credit_balance, post_ledger, ensure_starter_grant
 from src.db.models.compute_model import ComputeLedgerKind
 from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
@@ -240,6 +241,9 @@ async def recipes_run(slug: str, request: Request,
         result = await run_recipe(slug, raw)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except BrainUnavailable:
+        raise HTTPException(status_code=503,
+                            detail="This recipe's brain is busy right now — give it a moment and try again. (We're on it.)")
     # charge the fair price (only after a successful run) -- same ledger as jobs
     note = f"recipe · {slug}"
     await post_ledger(db, owner, ComputeLedgerKind.SPEND, -price, counterparty="la-bottega", note=note)
