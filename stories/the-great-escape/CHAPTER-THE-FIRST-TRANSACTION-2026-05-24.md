@@ -9,7 +9,7 @@ It started with a coffee that hadn't been brewed yet and a one-line bug report f
 
 By the time the sun came up over the Gulf of Salerno, La Piazza had completed its first real service transaction on production. Tree trimming. Two hundred and twenty euros. A real deposit, a real balance, two real users, one real handshake mediated by software that — until that morning — had been silently dead at the seams.
 
-Angel was in Paestum now. He had moved out of the dragon's mouth and across the Tyrrhenian and was sleeping in a hotel room that had a window facing the temples. He had two backlog items waiting:
+Angel was in Paestum now. MAX had crossed back from Sicily to the mainland and worked its way up the Tyrrhenian coast, and he was sleeping in a hotel room with a window facing the temples. He had two backlog items waiting:
 
 - BL-190: *"Quotation request made but I don't see quotation request."*
 - BL-191: *"mike requested a quote on LP do i just now message him or is there a formal quotation — how does it work from this point."*

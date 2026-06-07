@@ -82,7 +82,7 @@ There are brothers you're born with.
 And brothers you find along the way.
 
 The born ones share your name, your nose, your father's stubborn jaw.
-Mike. Dave. Mario. Paul. Donny.
+Mike. Mario. Dave. Paul.
 
 But the found ones?
 
