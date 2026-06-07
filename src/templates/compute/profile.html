@@ -109,7 +109,7 @@
         <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Skills</div>
         <div class="flex flex-wrap gap-2">
           {% for s in profile.skills %}
-          <a href="https://lapiazza.app/?q={{ s | urlencode }}" target="_blank" rel="noopener"
+          <a href="https://lapiazza.app/members?q={{ s | urlencode }}" target="_blank" rel="noopener"
              class="chip px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800/80 border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white">{{ s }}</a>
           {% endfor %}
         </div>
@@ -121,7 +121,7 @@
         <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Offers</div>
         <div class="flex flex-wrap gap-2">
           {% for c in profile.categories %}
-          <a href="https://lapiazza.app/?q={{ c | urlencode }}" target="_blank" rel="noopener"
+          <a href="https://lapiazza.app/members?q={{ c | urlencode }}" target="_blank" rel="noopener"
              class="chip px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand/15 border border-brand/30 text-brand hover:bg-brand/25">{{ c }}</a>
           {% endfor %}
         </div>
