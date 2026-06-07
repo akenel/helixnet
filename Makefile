@@ -4,7 +4,7 @@
 # ===================================================================
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help up core-up main-up llm-up down status lazy clean nuke nuke-all logs links
+.PHONY: help up core-up main-up llm-up test down status lazy clean nuke nuke-all logs links
 
 # --- Environment Configuration ---
 SCRIPTS_DIR := scripts
@@ -12,6 +12,7 @@ MODULES_DIR := $(SCRIPTS_DIR)/modules
 COMPOSE_CORE := compose/helix-core/core-stack.yml
 COMPOSE_MAIN := compose/helix-main/main-stack.yml
 COMPOSE_LLM := compose/helix-llm/llm-stack.yml
+TEST_SVC := helix-platform
 
 # --- Default Target ---
 help:
@@ -31,6 +32,10 @@ help:
 	@echo "  make lazy        | Lazydocker UI"
 	@echo "  make logs        | Stream helix-platform logs"
 	@echo "  make links       | Show access URLs"
+	@echo ""
+	@echo " Testing:"
+	@echo "  make test        | Run pytest inside helix-platform (the real app env)"
+	@echo "  make test PYTEST_ARGS='-k llm'  | Pass extra args to pytest"
 	@echo ""
 	@echo " 🦁 LEO (Watch the Lion Work):"
 	@echo "  make leo         | Real-time git monitor (2s refresh)"
@@ -69,6 +74,22 @@ main-up:
 llm-up:
 	@echo "Starting LLM Stack (Ollama, OpenWebUI)..."
 	@docker compose -f $(COMPOSE_LLM) up -d
+
+# ===================================================================
+# TESTING
+# ===================================================================
+# Tests run INSIDE the helix-platform container -- the real app env (fastapi,
+# full config, email-validator). The .venv on the host is the aux toolbox (no
+# fastapi), so host pytest can't run the full suite. Code is bind-mounted
+# (../../src:/app/src), so this always tests the live tree. pyproject.toml is
+# NOT mounted, so we pass -o asyncio_mode=auto on the CLI. pytest deps are
+# installed on first run (image stays lean -- no test deps baked into prod).
+test:
+	@docker ps --format '{{.Names}}' | grep -q '^$(TEST_SVC)$$' || { echo "❌ $(TEST_SVC) not running -- run 'make up' first"; exit 1; }
+	@echo "🧪 Running pytest inside $(TEST_SVC) (the real app env)..."
+	@docker exec -w /app $(TEST_SVC) sh -c '\
+		python -m pytest --version >/dev/null 2>&1 || pip install -q -r src/tests/requirements-test.txt; \
+		python -m pytest src/tests -o asyncio_mode=auto $(PYTEST_ARGS)'
 
 # ===================================================================
 # UTILITIES
