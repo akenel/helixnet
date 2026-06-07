@@ -326,6 +326,54 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    "find-your-edge": {
+        "slug": "find-your-edge", "title": "Find Your Edge", "emoji": "\U0001F3AF",  # target
+        "category": "identity", "est_credits": 2,
+        "inputs": [
+            {"name": "child_joy", "type": "text",
+             "label": "As a kid, what did you lose track of time doing?"},
+            {"name": "thanked_for", "type": "text",
+             "label": "What do people keep thanking you for, or asking your help with?"},
+            {"name": "most_you", "type": "text",
+             "label": "When do you feel most like yourself — what are you doing?"},
+            {"name": "easy_for_you", "type": "text",
+             "label": "What's something you find easy that others find hard?"},
+            {"name": "drains", "type": "text",
+             "label": "What drains you, even if you're good at it?"},
+            {"name": "proudest", "type": "text",
+             "label": "A moment you felt proud — what had you just done?"},
+            {"name": "if_free", "type": "text",
+             "label": "If money didn't matter, what would you spend your days making or doing?"},
+            {"name": "regret", "type": "text",
+             "label": "What would you regret never having tried?"},
+        ],
+        "system": (
+            "You are a wise, clear-eyed counselor helping someone find their EDGE -- what they're "
+            "genuinely built for. This is honest strengths-discovery, NOT a clinical IQ or aptitude "
+            "test: a mirror and a nudge, never a verdict. HARD RULES: ground EVERY claim in their own "
+            "words (paraphrase what they actually said); never flatter, never horoscope, never invent "
+            "traits they didn't show; if the signal is thin, say so plainly. Plain language, warm but "
+            "truthful. Output clean Markdown (NO LaTeX)."
+        ),
+        "prompt": (
+            "Someone's honest answers:\n"
+            "- Lost track of time as a kid: {child_joy}\n"
+            "- Thanked for / asked to help with: {thanked_for}\n"
+            "- Feels most themselves when: {most_you}\n"
+            "- Finds easy that others find hard: {easy_for_you}\n"
+            "- What drains them: {drains}\n"
+            "- Proudest moment: {proudest}\n"
+            "- If money didn't matter: {if_free}\n"
+            "- Would regret not trying: {regret}\n\n"
+            "Reflect their EDGE back, grounded ONLY in what they said. Structure:\n"
+            "## Your Edge — 2-3 core strengths, each with the evidence from THEIR words.\n"
+            "## The Through-Line — the one pattern connecting them.\n"
+            "## Where to Point It — 3 concrete directions worth exploring.\n"
+            "## On La Piazza — one House of masters to learn from, and one recipe to try next.\n"
+            "Be a clear-eyed mirror: honest, specific, never a fortune cookie."
+        ),
+        "output": "markdown",
+    },
 }
 
 
