@@ -80,6 +80,28 @@ async def _brain_chat(system: str, user: str, json_mode: bool = False,
     return res.text
 
 
+_TEASER_SYSTEM = (
+    "You write the og:description for a La Piazza share card -- the line or two a stranger "
+    "sees when this link is shared on WhatsApp, Telegram, or X. Make it irresistible: "
+    "concrete, warm, and specific to THIS output, so the reader wants to click and make "
+    "their own. Plain text only -- no hashtags, no quotation marks, no emojis, no markdown. "
+    "One or two sentences, 200-300 characters, never more than 300."
+)
+
+
+async def share_teaser(title: str, content: str) -> str:
+    """The meat & potatoes (Share-1): an irresistible 200-300 char teaser for the share
+    card's og:description. Returns '' on any failure so the caller falls back (never blank)."""
+    body = " ".join((content or "").split())[:2000]
+    user = f"Title: {title}\n\nOutput:\n{body}\n\nWrite the share teaser now."
+    try:
+        text = await _brain_chat(_TEASER_SYSTEM, user)
+    except Exception:  # noqa: BLE001
+        logger.warning("share_teaser: brain call failed", exc_info=True)
+        return ""
+    return " ".join((text or "").split()).strip().strip('"').strip()[:300]
+
+
 async def cv_to_bio(cv_text: str, categories: list[str] | None = None) -> dict:
     """Recipe: CV text -> {bio, tagline, skills[], categories[]}."""
     categories = categories or []

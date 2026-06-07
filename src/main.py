@@ -323,39 +323,106 @@ async def get_started_page(request: Request):
     _s = get_settings()
     return templates.TemplateResponse("get_started.html", {"request": request, "lp_realm": _s.LP_REALM, "lp_client": _s.LP_CLIENT})
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serve the Lupo wolf as the favicon so every page has a brand mark (was a 404)."""
+    return RedirectResponse(url="/static/lapiazza-wolf.png")
+
 @app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def share_page(session_id: str, request: Request):
-    """Public postcard for a shared output -- OG image (the Wolf) so Telegram/WhatsApp/X
-    render a real preview card, not dry text. The session id IS the share token."""
-    import json as _json
+    """Public postcard for a shared output. Share-1 (BL-010): a *meaty* og:description
+    (Ollama Turbo teaser, cached on the session) + a guaranteed-image ladder (object
+    image -> Lupo Wolf default) so every share lands gorgeous on WhatsApp/Telegram/X --
+    never dry, never imageless. The session id IS the share token (Share-2 serializes it)."""
+    import json as _json, re as _re, logging as _logging
     from uuid import UUID as _UUID
     from src.db.models.bottega_model import BottegaSessionModel
-    s = None
+    from src.services.bottega_service import share_teaser
+    _log = _logging.getLogger("helix.share")
+
     try:
+        sid = _UUID(session_id)
+    except Exception:  # noqa: BLE001
+        sid = None
+
+    title = content = ""
+    inputs: dict = {}
+    version = 1
+    created_dt = None
+    found = False
+    if sid is not None:
         async with get_db_session_context() as db:
-            s = await db.get(BottegaSessionModel, _UUID(session_id))
-    except Exception:  # noqa: BLE001
-        s = None
-    if s is None:
+            s = await db.get(BottegaSessionModel, sid)
+            if s is not None:
+                found = True
+                title = s.title or "La Piazza"
+                content = s.output or ""
+                version = s.version or 1
+                created_dt = s.created_at
+                try:
+                    inputs = _json.loads(s.inputs or "{}")
+                except Exception:  # noqa: BLE001
+                    inputs = {}
+    if not found:
         return HTMLResponse("<h1 style='font-family:sans-serif;color:#888;text-align:center;margin-top:20vh'>Not found</h1>", status_code=404)
-    inputs = {}
-    try:
-        inputs = _json.loads(s.inputs or "{}")
-    except Exception:  # noqa: BLE001
-        inputs = {}
-    content = s.output or ""
-    snippet = " ".join(content.replace("#", "").replace("*", "").split())[:155]
+
+    # --- meaty og:description: cached teaser -> generate (Turbo) + cache -> snippet fallback ---
+    og = inputs.get("_og") if isinstance(inputs.get("_og"), dict) else {}
+    desc = (og or {}).get("d") or ""
+    if not desc:
+        desc = await share_teaser(title, content)
+        if desc:
+            try:
+                async with get_db_session_context() as db:
+                    s2 = await db.get(BottegaSessionModel, sid)
+                    if s2 is not None:
+                        try:
+                            inp = _json.loads(s2.inputs or "{}")
+                        except Exception:  # noqa: BLE001
+                            inp = {}
+                        meta = inp.get("_og") if isinstance(inp.get("_og"), dict) else {}
+                        meta["d"] = desc
+                        inp["_og"] = meta
+                        s2.inputs = _json.dumps(inp)
+                        await db.commit()
+            except Exception:  # noqa: BLE001
+                _log.warning("share_page: could not cache teaser", exc_info=True)
+    if not desc:
+        desc = " ".join(content.replace("#", "").replace("*", "").split())[:155]
+
+    # --- guaranteed-image ladder: explicit object image -> Lupo Wolf default ---
+    _IMG_RE = _re.compile(r"(https?://\S+\.(?:png|jpe?g|webp|gif)(?:\?\S+)?|/media/\S+)", _re.I)
+    cover = (og or {}).get("img") or ""
+    if not cover:
+        for v in inputs.values():
+            if isinstance(v, str):
+                m = _IMG_RE.search(v)
+                if m:
+                    cover = m.group(1)
+                    break
+    if not cover:
+        cover = "/static/lapiazza-wolf.png"
+
+    # behind Caddy, uvicorn sees http -> force the real scheme/host so og:image is HTTPS
+    # (WhatsApp/Telegram drop mixed-content images, which is why the card showed no picture)
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+    base_url = f"{proto}://{host}"
+    og_image = cover if cover.startswith("http") else f"{base_url}{cover}"
     return templates.TemplateResponse("share.html", {
-        "request": request, "title": s.title or "La Piazza", "inputs": inputs,
-        "content": content, "snippet": snippet, "version": s.version or 1,
-        "serial": str(s.id)[:8].upper(), "created": s.created_at.strftime("%d %b %Y") if s.created_at else "",
-        "cover": "/static/lapiazza-wolf.png", "base_url": str(request.base_url).rstrip("/"),
+        "request": request, "title": title, "inputs": inputs,
+        "content": content, "snippet": desc, "version": version,
+        "serial": str(sid)[:8].upper(), "share_url": f"{base_url}/s/{sid}",
+        "created": created_dt.strftime("%d %b %Y") if created_dt else "",
+        "cover": cover, "base_url": base_url, "og_image": og_image,
     })
 
-@app.get("/jobs", tags=["🧭 Web UI"], response_class=HTMLResponse)
-async def dashboard(request: Request):
-    """Render the job queue dashboard (the original engine view)."""
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+@app.get("/jobs", tags=["🧭 Web UI"], include_in_schema=False)
+async def dashboard():
+    """Legacy job-queue view -> retired. The modern, auth'd jobs UI is the Exchange at
+    /compute (real schema + KC auth). The old mock-auth dashboard.js called the removed
+    /api/v1/jobs; rather than rewrite an orphan to duplicate /compute, redirect there."""
+    return RedirectResponse(url="/compute")
 
 @app.get("/login", tags=["🔑 Web UI"], response_class=HTMLResponse)
 async def login_page(request: Request):

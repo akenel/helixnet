@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import settings
@@ -19,6 +19,9 @@ from src.core.config import settings
 from src.db.database import get_db_session
 from src.db.models.bottega_model import (
     BottegaProfileModel, BottegaProfileHistoryModel, BottegaSessionModel)
+from src.db.models.backlog_model import (
+    BacklogItemModel, BacklogItemType, BacklogPriority)
+from src.core.constants import HelixApplication
 from uuid import UUID
 from src.core.keycloak_auth import require_roles
 from src.services.bottega_service import extract_text, cv_to_bio, generate_cv, slugify
@@ -428,6 +431,43 @@ async def mark_read(item_id: str, current_user: dict = Depends(require_bottega_a
         s.inputs = json.dumps(inp)
         await db.commit()
     return {"ok": True}
+
+
+# ===== Block G: Feedback widget -> files into the Backlog (BL) board =====
+class Feedback(BaseModel):
+    kind: str = "other"      # bug | idea | other
+    title: str
+    body: str = ""
+
+
+@router.post("/feedback")
+async def feedback(f: Feedback, current_user: dict = Depends(require_bottega_access()),
+                   db: AsyncSession = Depends(get_db_session)):
+    """The seatback card, built in. A member reports a bug/idea from inside the workshop;
+    it lands as a real item on the existing Backlog board (/backlog) for Angel to triage."""
+    title = (f.title or "").strip()
+    if len(title) < 3:
+        raise HTTPException(status_code=400, detail="give it a short title (3+ characters)")
+    user = current_user["username"]
+    kind = (f.kind or "other").lower()
+    if kind not in ("bug", "idea", "other"):
+        kind = "other"
+    item_type = BacklogItemType.BUG_FIX if kind == "bug" else BacklogItemType.BUSINESS_OPS
+    # next BL number -- same scheme as backlog_router.create_item
+    next_number = (await db.execute(
+        select(func.coalesce(func.max(BacklogItemModel.item_number), 0)))).scalar() + 1
+    body = (f.body or "").strip()
+    desc = (f"{body}\n\n— filed from Bottega by {user}" if body
+            else f"Filed from Bottega by {user}")
+    item = BacklogItemModel(
+        item_number=next_number, title=title[:200], description=desc,
+        item_type=item_type, application=HelixApplication.HELIXNET,
+        priority=BacklogPriority.MEDIUM, created_by=user,
+        tags=f"bottega,feedback,{kind}")
+    db.add(item)
+    await db.commit()
+    logger.info(f"BL-{next_number:03d} filed from Bottega by {user}: {title}")
+    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}"}
 
 
 @router.post("/generate")
