@@ -211,6 +211,15 @@ async def recipes(current_user: dict = Depends(require_bottega_access())):
     return recipe_menu()
 
 
+@router.get("/legends")
+async def legends(q: str = "", current_user: dict = Depends(require_bottega_access())):
+    """Legends-1: the Ask-a-Master cast, read from the Square via the square_bridge interface
+    (read-only marketplace DB today; the marketplace API key later -- consumer unchanged)."""
+    from src.services.square_bridge import list_legends
+    items = await list_legends(q=q or None)
+    return {"legends": items, "count": len(items)}
+
+
 @router.post("/recipes/{slug}/run")
 async def recipes_run(slug: str, request: Request,
                       current_user: dict = Depends(require_bottega_access()),
