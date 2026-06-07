@@ -289,7 +289,9 @@ RECIPES: dict[str, dict] = {
     "decide": {
         "slug": "decide", "title": "Think It Through", "emoji": "\U0001F9ED",  # compass
         "category": "coaching", "est_credits": 3,    # reasoning model => more brain-tokens
-        "model": "deepseek-r1:14b",                   # per-job brain: a reasoning model, not the default
+        # Per-job brain MUST be one Ollama Turbo serves (every deployed env has BH_OLLAMA_KEY).
+        # deepseek-r1:14b is local-only -> Turbo 404s. gpt-oss:120b reasons + is Turbo-served.
+        "model": "gpt-oss:120b",
         "inputs": [
             {"name": "decision", "type": "text",
              "label": "The decision or problem you're stuck on"},
