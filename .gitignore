@@ -208,3 +208,6 @@ docs/blueprint/*.jpeg
 docs/blueprint/*.jpg
 docs/blueprint/*.pdf
 docs/blueprint/*.html
+
+# console-sweep run artifacts (regenerated each run)
+tests/e2e/*-report.json

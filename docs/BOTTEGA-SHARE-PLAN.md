@@ -25,6 +25,34 @@ defenses are **self-healing** so Angel rarely has to dig by hand.
 
 ---
 
+## The two hands + the 5 W's (north star)
+
+La Piazza is **two houses / departments, left hand washes the right**:
+- **Bottega = the Workshop / the bench (PRODUCTION)** — where you *become* someone (CV, body,
+  story, skills, AI mentors) and where the bench is *monitored* (body on the bench? working out?
+  eating right? best reviews? — the `/compute/me` self-dashboard). This hand **ACQUIRES**: the share is born here.
+- **La Piazza / the Square (SALES)** — where you *trade* (give/rent/sell/teach/host). This hand **TRANSACTS + RETAINS**.
+- The share **borrows a member's real, personal work** as the billboard (the soul of "BorrowHood") —
+  a person, personalized, beats a generic listing. **Bottega pulls them in; the Square keeps them.**
+- **Keystone:** they run on separate identities today (BL-014) — `lapiazza.app/u/<slug>` 404s. "One
+  washes the other" is literally true only once ONE identity flows through both hands (one realm / sync / merge).
+
+**Structure everything by the 5 W's + H:**
+| | maps to |
+|---|---|
+| **WHO** | the profile / identity — the storefront `/u/<slug>` |
+| **WHAT** | offers, skills, listings — give/rent/sell/teach/host |
+| **WHY** | purpose, goal, the dream, the 30-day arc — the onboarding heart |
+| **WHERE** | location — city / proximity / HQ |
+| **WHEN** | timing — events, schedules, availability, the journey |
+| **HOW** | the recipes — procedure-as-code, the Workshop engine |
+
+**Onboarding = the "Chinese menu":** "What do you want?" is the hardest question — many know "what
+they DON'T want" better. Walk the W's and let people *pick from a menu* (wants AND don't-wants),
+never a blank prompt. (Feeds the Onboard block.)
+
+---
+
 ## North Star
 
 - **Reward activation, not attention.** A click is noise and spoofable; a soul actually
