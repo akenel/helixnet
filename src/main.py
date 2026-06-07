@@ -407,7 +407,7 @@ async def share_page(session_id: str, request: Request):
     return templates.TemplateResponse("share.html", {
         "request": request, "title": title, "inputs": inputs,
         "content": content, "snippet": desc, "version": version,
-        "serial": str(sid)[:8].upper(),
+        "serial": str(sid)[:8].upper(), "share_url": f"{base_url}/s/{sid}",
         "created": created_dt.strftime("%d %b %Y") if created_dt else "",
         "cover": cover, "base_url": base_url, "og_image": og_image,
     })
