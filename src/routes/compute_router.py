@@ -553,8 +553,17 @@ async def public_profile(slug: str, request: Request,
             "categories": json.loads(row.categories or "[]"),
             "completeness": row.completeness,
         }
+    # storefront first-view (BL-013): per-slug hue for a unique banner/avatar palette,
+    # https base for a guaranteed OG image so the profile itself unfurls beautifully.
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+    base_url = f"{proto}://{host}"
+    hue = (sum(ord(c) for c in (slug or "x")) * 37) % 360
     return templates.TemplateResponse(
-        "compute/profile.html", {"request": request, "slug": slug, "profile": profile})
+        "compute/profile.html", {"request": request, "slug": slug, "profile": profile,
+                                 "base_url": base_url, "hue": hue,
+                                 "og_image": f"{base_url}/static/lapiazza-wolf.png",
+                                 "share_url": f"{base_url}/u/{slug}"})
 
 
 @html_router.get("/compute/callback")
