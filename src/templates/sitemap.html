@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Map · La Piazza</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['"JetBrains Mono"','monospace']},colors:{brand:'#C0392B',branddark:'#8B0000'}}}};</script>
+<style>
+  body{background:radial-gradient(1100px 600px at 50% -12%, #1f2a44, transparent), #060910;}
+  .card{background:rgba(15,23,42,.65);border:1px solid rgba(30,41,59,.9);}
+  .card:hover{border-color:rgba(192,57,43,.5);}
+  .grad-rule{background:linear-gradient(90deg,#8B0000,#C0392B,transparent);}
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased">
+{% include "_lapiazza_nav.html" %}
+
+<div class="max-w-3xl mx-auto px-4 sm:px-5 py-8">
+  <div class="mb-6">
+    <h1 class="text-3xl font-black text-white">🗺️ Site Map</h1>
+    <p class="text-slate-400 mt-1">Every room in this house — La Piazza · Bottega. (The Square marketplace lives at <a href="https://lapiazza.app" class="text-brand hover:underline" target="_blank" rel="noopener">lapiazza.app</a> with its own map.)</p>
+  </div>
+
+  {% for area in areas %}
+  <div class="mb-6">
+    <h2 class="text-sm font-bold text-brand uppercase tracking-wider mb-2">{{ area.title }}</h2>
+    <div class="grid sm:grid-cols-2 gap-2">
+      {% for lk in area.links %}
+      <a href="{{ lk.p }}" class="card rounded-xl px-4 py-3 block transition">
+        <div class="font-semibold text-white text-[15px]">{{ lk.l }}</div>
+        <div class="text-[12px] text-slate-400">{{ lk.d }}</div>
+        <div class="text-[11px] font-mono text-slate-600 mt-1">{{ lk.p }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- auto-listing: every page route, so nothing is hidden (never drifts) -->
+  <div class="mt-8 pt-5 border-t border-slate-800">
+    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">All pages ({{ pages|length }})</h2>
+    <div class="flex flex-wrap gap-2">
+      {% for p in pages %}
+      <a href="{{ p }}" class="text-[12px] font-mono px-2.5 py-1 rounded-lg border {{ 'border-brand/40 text-brand' if p in curated else 'border-slate-700 text-slate-400 hover:text-white' }}">{{ p }}</a>
+      {% endfor %}
+    </div>
+    <p class="text-[11px] text-slate-600 mt-3">Auto-generated from the live route table — add a page, it shows up here. Red = on a journey above. <a href="/docs" class="text-brand hover:underline">API routes →</a></p>
+  </div>
+
+  <footer class="mt-8 text-center text-xs text-slate-600 font-mono">
+    La <a href="/" class="text-brand hover:underline">Piazza</a> · we host the square, not the model
+  </footer>
+</div>
+</body>
+</html>

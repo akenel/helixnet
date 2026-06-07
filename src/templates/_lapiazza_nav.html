@@ -24,11 +24,12 @@
       <a href="/compute" class="lp-link" data-nav="exchange">⚡ <span class="lp-hide-sm">Exchange</span></a>
       <a href="/compute/me" class="lp-link" data-nav="me">🐺 <span class="lp-hide-sm">You</span></a>
       <a href="/compute/faq" class="lp-link lp-hide-sm" data-nav="faq">FAQ</a>
+      <a href="/sitemap" class="lp-link" data-nav="map" title="Site map">🗺️</a>
       <a href="/get-started" class="lp-cta">Get&nbsp;Started</a>
     </div>
   </div>
 </nav>
-<script>(function(){var p=location.pathname;document.querySelectorAll('.lp-nav [data-nav]').forEach(function(a){var d=a.getAttribute('data-nav');var on=(d==='workshop'&&p.indexOf('/compute/bottega')===0)||(d==='legends'&&p.indexOf('/compute/legends')===0)||(d==='me'&&p.indexOf('/compute/me')===0)||(d==='exchange'&&(p==='/compute'||p==='/compute/dashboard'))||(d==='faq'&&(p.indexOf('/compute/faq')===0||p.indexOf('/compute/help')===0));if(on)a.classList.add('active');});})();</script>
+<script>(function(){var p=location.pathname;document.querySelectorAll('.lp-nav [data-nav]').forEach(function(a){var d=a.getAttribute('data-nav');var on=(d==='workshop'&&p.indexOf('/compute/bottega')===0)||(d==='legends'&&p.indexOf('/compute/legends')===0)||(d==='me'&&p.indexOf('/compute/me')===0)||(d==='exchange'&&(p==='/compute'||p==='/compute/dashboard'))||(d==='faq'&&(p.indexOf('/compute/faq')===0||p.indexOf('/compute/help')===0))||(d==='map'&&p.indexOf('/sitemap')===0);if(on)a.classList.add('active');});})();</script>
 
 <!-- Feedback widget (Block G) — the seatback card, built in. Files into the Backlog board.
      Self-contained vanilla JS; only shows when a member is logged in (compute_token). -->
@@ -102,7 +103,7 @@
       body:JSON.stringify({kind:kind,title:t,body:(body.value||'').trim()})})
     .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
     .then(function(res){
-      if(res.ok&&res.j.ok){msg.textContent='Filed as '+res.j.ref+(res.j.credits_earned?(' · +'+res.j.credits_earned+' credits 🪙'):'')+' — thank you! 🐺';msg.className='lpfb-msg ok';
+      if(res.ok&&res.j.ok){msg.innerHTML='Filed as <a href="/backlog" target="_blank" style="color:inherit;text-decoration:underline">'+res.j.ref+'</a>'+(res.j.credits_earned?(' · +'+res.j.credits_earned+' credits 🪙'):'')+' — thank you! 🐺';msg.className='lpfb-msg ok';
         send.textContent='Sent ✓';setTimeout(hide,1400);}
       else{msg.textContent=(res.j&&res.j.detail)?res.j.detail:'Something went wrong — try again.';
         msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})

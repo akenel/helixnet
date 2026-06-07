@@ -328,6 +328,45 @@ async def favicon():
     """Serve the Lupo wolf as the favicon so every page has a brand mark (was a 404)."""
     return RedirectResponse(url="/static/lapiazza-wolf.png")
 
+@app.get("/sitemap", tags=["🧭 Web UI"], response_class=HTMLResponse)
+async def sitemap_page(request: Request):
+    """The town map: curated journeys + an auto-listing of every page route (never drifts)."""
+    areas = [
+        {"title": "🚪 Front door", "links": [
+            {"p": "/", "l": "Home", "d": "the landing page"},
+            {"p": "/get-started", "l": "Get Started", "d": "one-motion onboarding (CV or a sentence)"},
+            {"p": "/compute/faq", "l": "FAQ", "d": "why La Piazza exists"}]},
+        {"title": "🔧 The Workshop", "links": [
+            {"p": "/compute/bottega", "l": "Workshop", "d": "run recipes — the Chinese menu"},
+            {"p": "/compute", "l": "Exchange", "d": "the compute exchange / jobs"},
+            {"p": "/compute/me", "l": "You", "d": "your rebuild dashboard (body/mind/spirit)"}]},
+        {"title": "🎭 Legends", "links": [
+            {"p": "/compute/legends", "l": "Legends gallery", "d": "browse masters by House → Ask a Master"}]},
+        {"title": "🐺 Your storefront & shares", "links": [
+            {"p": "/u/thesapsuperstarter", "l": "/u/<slug>", "d": "a public profile (storefront)"},
+            {"p": "/s/343a727c-ae3e-41f3-b8ba-ab9c3c75df71", "l": "/s/<id>", "d": "a shared output postcard"}]},
+        {"title": "🗒️ Backlog / QA", "links": [
+            {"p": "/backlog", "l": "Backlog board", "d": "kanban + list + activity trail (testers)"},
+            {"p": "/docs", "l": "API docs", "d": "the OpenAPI explorer (dev)"}]},
+        {"title": "✅ Testing", "links": [
+            {"p": "/static/uat-bottega.html", "l": "UAT script", "d": "hand-test checklist (saves progress)"}]},
+    ]
+    curated = {lk["p"].split("?")[0] for a in areas for lk in a["links"]}
+    pages = []
+    for r in request.app.routes:
+        methods = getattr(r, "methods", None) or set()
+        path = getattr(r, "path", "") or ""
+        if "GET" not in methods or not path:
+            continue
+        if path.startswith("/api") or path.startswith("/health") or path in (
+                "/openapi.json", "/docs", "/redoc", "/docs/oauth2-redirect",
+                "/sitemap", "/favicon.ico") or path == "/{full_path:path}":
+            continue
+        pages.append(path)
+    pages = sorted(set(pages))
+    return templates.TemplateResponse("sitemap.html", {
+        "request": request, "areas": areas, "pages": pages, "curated": curated})
+
 @app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def share_page(session_id: str, request: Request):
     """Public postcard for a shared output. Share-1 (BL-010): a *meaty* og:description
