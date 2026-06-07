@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import logging
+import re
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -19,6 +20,41 @@ from src.core.config import settings
 logger = logging.getLogger("helix.square_bridge")
 
 _engine = None
+
+# Legends-2: the fixed House taxonomy (the model ASSIGNS into these; it doesn't invent houses).
+HOUSES = [
+    ("The Forge", "engineers, inventors, makers"),
+    ("The Atelier", "artists, designers, architects, filmmakers"),
+    ("The Lyceum", "scientists, mathematicians, philosophers"),
+    ("The Strategoi", "strategists, leaders, warriors"),
+    ("The Scriptorium", "writers, poets, storytellers"),
+    ("The Agora", "merchants, entrepreneurs, builders of commerce"),
+    ("The Hearth", "everyday masters: cooks, gardeners, craftspeople"),
+    ("The Observatory", "explorers, navigators, astronomers"),
+    ("The Conservatory", "musicians, composers, performers"),
+    ("The Sanctuary", "healers, teachers, spiritual guides"),
+]
+HOUSE_NAMES = [h[0] for h in HOUSES]
+DEFAULT_HOUSE = "The Hearth"
+
+
+def _norm(s: str | None) -> str:
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def apply_houses(legends: list[dict], hmap: dict) -> list[dict]:
+    """Enrich each legend with its House + dedupe by canonical person (keep the richest bio).
+    hmap: {legend_name: {"house":.., "canonical":..}}. Empty hmap => all default house, dedupe by name."""
+    seen: dict[str, dict] = {}
+    for lg in legends:
+        meta = hmap.get(lg["name"]) or {}
+        house = meta.get("house") if meta.get("house") in HOUSE_NAMES else DEFAULT_HOUSE
+        canon = meta.get("canonical") or lg["name"]
+        out = {**lg, "house": house, "canonical": canon}
+        key = _norm(canon)
+        if key and (key not in seen or len(out["bio"]) > len(seen[key]["bio"])):
+            seen[key] = out
+    return sorted(seen.values(), key=lambda x: x["name"])
 
 
 def _ro_engine():

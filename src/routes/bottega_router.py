@@ -211,13 +211,94 @@ async def recipes(current_user: dict = Depends(require_bottega_access())):
     return recipe_menu()
 
 
+async def _house_map(db: AsyncSession) -> dict:
+    """Load the cached {name: {house, canonical}} map from the spine (Legends-2)."""
+    row = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == "system",
+        BottegaSessionModel.slug == "legend-houses"))).scalar_one_or_none()
+    try:
+        return json.loads(row.output) if row and row.output else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 @router.get("/legends")
-async def legends(q: str = "", current_user: dict = Depends(require_bottega_access())):
-    """Legends-1: the Ask-a-Master cast, read from the Square via the square_bridge interface
-    (read-only marketplace DB today; the marketplace API key later -- consumer unchanged)."""
-    from src.services.square_bridge import list_legends
-    items = await list_legends(q=q or None)
-    return {"legends": items, "count": len(items)}
+async def legends(q: str = "", house: str = "",
+                  current_user: dict = Depends(require_bottega_access()),
+                  db: AsyncSession = Depends(get_db_session)):
+    """Legends-1/2: the Ask-a-Master cast (read via square_bridge), enriched with Houses +
+    de-duplicated by canonical person (cached map from the spine). Optional q / house filter."""
+    from src.services.square_bridge import list_legends, apply_houses
+    cast = await list_legends(q=q or None, limit=500)
+    enriched = apply_houses(cast, await _house_map(db))
+    if house:
+        enriched = [lg for lg in enriched if lg["house"] == house]
+    return {"legends": enriched, "count": len(enriched)}
+
+
+@router.get("/legends/houses")
+async def legends_houses(current_user: dict = Depends(require_bottega_access()),
+                         db: AsyncSession = Depends(get_db_session)):
+    """The Houses + a live count each (for the picker drill-down)."""
+    from src.services.square_bridge import list_legends, apply_houses, HOUSES
+    enriched = apply_houses(await list_legends(limit=500), await _house_map(db))
+    counts: dict = {}
+    for lg in enriched:
+        counts[lg["house"]] = counts.get(lg["house"], 0) + 1
+    return {"houses": [{"name": n, "desc": d, "count": counts.get(n, 0)} for n, d in HOUSES],
+            "total": len(enriched)}
+
+
+@router.post("/legends/classify")
+async def legends_classify(current_user: dict = Depends(require_bottega_access()),
+                           db: AsyncSession = Depends(get_db_session)):
+    """Legends-2 one-time pass: AI assigns each legend a House + canonical name (dedupe),
+    cached on the spine. Idempotent (re-runnable). Batched to keep prompts sane."""
+    from src.services.square_bridge import list_legends, HOUSES, HOUSE_NAMES
+    from src.services.bottega_service import _brain_chat
+    cast = await list_legends(limit=500)
+    if not cast:
+        raise HTTPException(status_code=503, detail="couldn't read the cast from the Square")
+    houses_txt = "; ".join(f"{n} ({d})" for n, d in HOUSES)
+
+    def _parse(raw: str) -> dict:
+        raw = re.sub(r"<think>.*?</think>", "", raw or "", flags=re.S)
+        raw = re.sub(r"```(?:json)?", "", raw).strip()
+        a, b = raw.find("{"), raw.rfind("}")
+        return json.loads(raw[a:b + 1]) if a >= 0 and b > a else {}
+
+    hmap: dict = {}
+    BATCH = 40
+    for i in range(0, len(cast), BATCH):
+        chunk = cast[i:i + BATCH]
+        listing = "\n".join(f"- {c['name']} — {(c.get('tagline') or '')[:80]}" for c in chunk)
+        sys = ("Assign each historical figure/master to EXACTLY ONE House and give their canonical "
+               "real-person name so duplicates merge (e.g. 'Ada King, Countess of Lovelace' and "
+               "'Ada Lovelace' both -> 'Ada Lovelace'). Respond with ONLY JSON of the form "
+               '{"assignments":[{"name":"<as given>","house":"<one House name>","canonical":"<real name>"}]}. '
+               f"Use these EXACT House names: {houses_txt}.")
+        usr = f"Classify:\n{listing}"
+        try:
+            data = _parse(await _brain_chat(sys, usr, json_mode=True))
+            for a in data.get("assignments", []):
+                nm = a.get("name")
+                if nm:
+                    h = a.get("house")
+                    hmap[nm] = {"house": h if h in HOUSE_NAMES else None,
+                                "canonical": a.get("canonical") or nm}
+        except Exception:  # noqa: BLE001
+            logger.warning("legends classify batch %d failed", i, exc_info=True)
+    row = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == "system",
+        BottegaSessionModel.slug == "legend-houses"))).scalar_one_or_none()
+    payload = json.dumps(hmap)
+    if row:
+        row.output = payload
+    else:
+        db.add(BottegaSessionModel(username="system", slug="legend-houses", title="Legend Houses",
+                                   inputs="{}", output=payload, output_type="json", tags="legends,houses"))
+    await db.commit()
+    return {"classified": len(hmap), "of": len(cast)}
 
 
 @router.post("/recipes/{slug}/run")
