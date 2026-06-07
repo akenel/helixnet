@@ -417,10 +417,12 @@ async def share_page(session_id: str, request: Request):
         "cover": cover, "base_url": base_url, "og_image": og_image,
     })
 
-@app.get("/jobs", tags=["🧭 Web UI"], response_class=HTMLResponse)
-async def dashboard(request: Request):
-    """Render the job queue dashboard (the original engine view)."""
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+@app.get("/jobs", tags=["🧭 Web UI"], include_in_schema=False)
+async def dashboard():
+    """Legacy job-queue view -> retired. The modern, auth'd jobs UI is the Exchange at
+    /compute (real schema + KC auth). The old mock-auth dashboard.js called the removed
+    /api/v1/jobs; rather than rewrite an orphan to duplicate /compute, redirect there."""
+    return RedirectResponse(url="/compute")
 
 @app.get("/login", tags=["🔑 Web UI"], response_class=HTMLResponse)
 async def login_page(request: Request):

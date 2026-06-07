@@ -29,7 +29,11 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-const BASE_URL = (process.argv[2] || process.env.BOTTEGA_BASE_URL || 'https://staging-bottega.lapiazza.app').replace(/\/$/, '');
+const _DEFAULT_BASE = 'https://staging-bottega.lapiazza.app';
+const BASE_URL = (process.argv[2] || process.env.BOTTEGA_BASE_URL || _DEFAULT_BASE).replace(/\/$/, '');
+if (!process.argv[2] && !process.env.BOTTEGA_BASE_URL) {
+    console.log('\x1b[33m⚠  No target URL passed — DEFAULTING to staging. Pass a URL (e.g. https://bottega.lapiazza.app) to target prod.\x1b[0m');
+}
 
 const IGNORED_WARNINGS = [
     'cdn.tailwindcss.com should not be used in production',
