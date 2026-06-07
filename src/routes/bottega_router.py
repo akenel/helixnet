@@ -460,6 +460,101 @@ async def get_session(session_id: str,
             "created_at": s.created_at.isoformat()}
 
 
+# ===== Cards CRUD: every saved output is a card you can preview/edit/delete/pin =====
+def _tags_set(tags: str | None) -> set:
+    return {t.strip() for t in (tags or "").split(",") if t.strip()}
+
+
+def _tags_str(s: set) -> str | None:
+    return ",".join(sorted(s)) or None
+
+
+async def _own_session(db: AsyncSession, session_id: str, username: str) -> BottegaSessionModel:
+    try:
+        s = await db.get(BottegaSessionModel, UUID(session_id))
+    except Exception:  # noqa: BLE001
+        s = None
+    if not s or s.username != username:
+        raise HTTPException(status_code=404, detail="not found")
+    return s
+
+
+class EditSession(BaseModel):
+    title: str | None = None
+    output: str | None = None
+    tags: str | None = None
+
+
+@router.patch("/sessions/{session_id}")
+async def edit_session(session_id: str, body: EditSession,
+                       current_user: dict = Depends(require_bottega_access()),
+                       db: AsyncSession = Depends(get_db_session)):
+    """Edit a card in place (tune the output the way you want it)."""
+    s = await _own_session(db, session_id, current_user["username"])
+    if body.title is not None:
+        s.title = body.title[:160]
+    if body.output is not None:
+        s.output = body.output[:200000]
+    if body.tags is not None:
+        s.tags = body.tags
+    await db.commit()
+    await db.refresh(s)
+    return {"id": str(s.id), "saved": True, "version": s.version}
+
+
+@router.delete("/sessions/{session_id}")
+async def delete_session(session_id: str,
+                         current_user: dict = Depends(require_bottega_access()),
+                         db: AsyncSession = Depends(get_db_session)):
+    """Delete a card from the Blueprint."""
+    s = await _own_session(db, session_id, current_user["username"])
+    await db.delete(s)
+    await db.commit()
+    return {"deleted": True}
+
+
+@router.post("/sessions/{session_id}/pin")
+async def pin_session(session_id: str,
+                      current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    """Pin this card as the CANONICAL one for its type (e.g. 'my story'). Unpins its siblings
+    -- so the dashboard + the masters read this one. One pinned per (user, slug)."""
+    user = current_user["username"]
+    s = await _own_session(db, session_id, user)
+    sibs = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == user, BottegaSessionModel.slug == s.slug))).scalars().all()
+    for x in sibs:
+        t = _tags_set(x.tags)
+        t.discard("pinned")
+        x.tags = _tags_str(t)
+    t = _tags_set(s.tags)
+    t.add("pinned")
+    s.tags = _tags_str(t)
+    await db.commit()
+    return {"pinned": True, "slug": s.slug}
+
+
+@router.get("/cards")
+async def cards(current_user: dict = Depends(require_bottega_access()),
+                db: AsyncSession = Depends(get_db_session)):
+    """The Blueprint as cards, grouped by type, newest first; the pinned one is canonical.
+    Excludes inbox plumbing (message/notification). Each card carries its Markdown + serial."""
+    rows = (await db.execute(
+        select(BottegaSessionModel)
+        .where(BottegaSessionModel.username == current_user["username"],
+               BottegaSessionModel.slug.notin_(["message", "notification"]))
+        .order_by(BottegaSessionModel.created_at.desc()).limit(300))).scalars().all()
+    groups: dict = {}
+    for s in rows:
+        groups.setdefault(s.slug, []).append({
+            "id": str(s.id), "slug": s.slug, "title": s.title, "output": s.output or "",
+            "output_type": s.output_type or "markdown", "version": s.version or 1,
+            "serial": str(s.id)[:8].upper(),
+            "created_at": s.created_at.strftime("%d %b %Y") if s.created_at else "",
+            "pinned": "pinned" in _tags_set(s.tags)})
+    return {"groups": [{"slug": k, "count": len(v), "cards": v} for k, v in groups.items()]}
+
+
 @router.get("/me")
 async def me(current_user: dict = Depends(require_bottega_access()),
              db: AsyncSession = Depends(get_db_session)):
