@@ -323,6 +323,11 @@ async def get_started_page(request: Request):
     _s = get_settings()
     return templates.TemplateResponse("get_started.html", {"request": request, "lp_realm": _s.LP_REALM, "lp_client": _s.LP_CLIENT})
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serve the Lupo wolf as the favicon so every page has a brand mark (was a 404)."""
+    return RedirectResponse(url="/static/lapiazza-wolf.png")
+
 @app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def share_page(session_id: str, request: Request):
     """Public postcard for a shared output. Share-1 (BL-010): a *meaty* og:description
