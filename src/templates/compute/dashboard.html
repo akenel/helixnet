@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.31/dist/uPlot.min.css">
 <script src="https://unpkg.com/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
 
 <script>
@@ -39,6 +40,7 @@
 </head>
 
 <body class="font-sans text-slate-200 min-h-screen antialiased" x-data="lpcx()" x-init="boot()">
+{% include "_lapiazza_nav.html" %}
 
 <!-- top bar -->
 <header class="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800">
@@ -482,7 +484,7 @@ function lpcx() {
       const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent(location.pathname);
-      location.href = `${kc}/realms/lapiazza-realm-dev/protocol/openid-connect/auth?client_id=lapiazza_web&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
+      location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
     },
     decodeUser() {
       if (!this.token) return null;
@@ -523,7 +525,7 @@ function lpcx() {
       } catch(_) {}
     },
     recipeOf() { return this.recipes.find(r => r.slug === this.selectedTemplate) || null; },
-    renderMd(s) { try { return window.marked ? marked.parse(s||'') : (s||''); } catch(e){ return s||''; } },
+    renderMd(s) { try { const h = window.marked ? marked.parse(s||'') : (s||''); return window.DOMPurify ? DOMPurify.sanitize(h) : ''; } catch(e){ return ''; } },
     async viewJob(j) {
       this.viewing = j;   // show immediately
       try {               // then fetch the full record (output isn't in the SSE feed)

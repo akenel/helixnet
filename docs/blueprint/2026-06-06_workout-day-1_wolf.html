@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐺 Workout Day 1 · La Piazza Blueprint</title>
+<style>
+  :root{ --brand:#C0392B; --ink:#1f2933; --soft:#5b6b7b; --line:#e6e2db; --bg:#f7f5f1; --card:#fff; --go:#2e7d54; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.55;padding:0 0 80px}
+  .wrap{max-width:720px;margin:0 auto;padding:14px}
+  header{background:#0b1120;color:#fff;padding:22px 16px;text-align:center}
+  header .t{font-size:1.55rem;font-weight:900}
+  header .t b{color:#ff6b5b}
+  header .s{color:#9fb0c0;font-size:.85rem;margin-top:4px}
+  .pill{display:inline-block;background:#1b2740;color:#cfe;border-radius:20px;padding:3px 12px;font-size:.78rem;margin:3px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  h2{font-size:1.1rem;margin:0 0 10px;color:var(--brand)}
+  .warn{background:#fff4f2;border:1px solid #f3c7bf}.warn h2{color:#a8341f}
+  .kpi h2{color:var(--brand)}
+  .kpi .field{margin-bottom:14px}
+  .kpi label{display:block;font-size:.78rem;font-weight:700;color:var(--soft);margin-bottom:6px}
+  .kpi .sub{font-size:.8rem;color:var(--soft);margin:8px 0 10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+  .kpi .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .numin{width:100%;border:2px solid var(--line);background:#fbfaf8;color:var(--ink);border-radius:10px;padding:13px;font-size:1.15rem;font-family:inherit;text-align:center;font-weight:600}
+  .numin:focus{outline:2px solid var(--brand);background:#fff}
+  .scalerow{display:flex;flex-wrap:wrap;gap:6px}
+  .scalerow label{position:relative;min-width:40px;height:44px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--line);border-radius:9px;background:#fbfaf8;color:var(--ink);cursor:pointer;font-weight:700;font-size:1.05rem;flex:1}
+  .scalerow label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
+  .scalerow input{position:absolute;opacity:0;width:0;height:0}
+  .timer{text-align:center}
+  .timer .tcfg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;font-size:.85rem;color:var(--soft);align-items:center}
+  .timer .tcfg input{width:56px;border:1.5px solid var(--line);background:#fbfaf8;border-radius:8px;padding:7px;text-align:center;font-size:1rem;font-family:inherit;font-weight:700}
+  .tphase{display:inline-block;padding:5px 18px;border-radius:20px;margin-bottom:8px;font-size:1.05rem;font-weight:800;letter-spacing:.05em;color:var(--soft);background:#f0eee9}
+  .tphase.prep{color:#fff;background:#b8860b}.tphase.work{color:#fff;background:var(--brand)}.tphase.rest{color:#fff;background:var(--go)}.tphase.done{color:#fff;background:#0b1120}
+  .tcount{font-size:4.2rem;font-weight:900;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+  .tround{color:var(--soft);font-size:.9rem;margin:4px 0 16px}
+  .tbtn{background:var(--brand);color:#fff;border:0;border-radius:12px;padding:13px 28px;font-weight:800;font-size:1.05rem;cursor:pointer;margin:0 4px}
+  .tbtn.ghost{background:#fbfaf8;color:var(--ink);border:1.5px solid var(--line)}
+  .ex{border-bottom:1px solid var(--line);padding:14px 0}.ex:last-child{border-bottom:0}
+  .ex .top{display:flex;align-items:flex-start;gap:12px}
+  .cb{width:28px;height:28px;flex:0 0 28px;margin:2px 0 0;accent-color:var(--brand);cursor:pointer}
+  .ex .nm{font-weight:800;font-size:1.05rem}
+  .ex .reps{color:var(--brand);font-weight:700;font-size:.9rem}
+  .ex:has(.cb:checked) .nm{opacity:.55;text-decoration:line-through}
+  .ex .desc{font-size:.95rem;margin:6px 0 0 40px;color:#384450}
+  .ex .why{font-size:.86rem;color:var(--soft);margin:4px 0 0 40px}
+  .ex .row{margin:8px 0 0 40px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .yt{display:inline-flex;align-items:center;gap:5px;background:#ff0000;color:#fff;text-decoration:none;font-weight:700;font-size:.82rem;padding:6px 12px;border-radius:7px}
+  .flora{font-size:.84rem;color:var(--go);background:#eaf6ef;border-radius:7px;padding:4px 9px}
+  .fbk{margin:9px 0 0 40px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .rate{font-size:.85rem;padding:7px 12px;border:1px solid var(--line);border-radius:16px;cursor:pointer;background:#fbfaf8;color:var(--soft);user-select:none;display:inline-flex;align-items:center;gap:5px}
+  .rate input{margin:0;accent-color:var(--brand);width:16px;height:16px}
+  .rate:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
+  .cmt{display:block;width:calc(100% - 40px);margin:9px 0 0 40px;border:1px solid var(--line);background:#fbfaf8;border-radius:8px;padding:9px;font-size:.95rem;font-family:inherit;resize:vertical;line-height:1.4}
+  .cmt:focus{outline:2px solid var(--brand);background:#fff}
+  textarea.fb{width:100%;min-height:90px;border:1px solid var(--line);background:#fbfaf8;border-radius:8px;padding:10px;font-size:.95rem;font-family:inherit}
+  input.flog{width:100%;border:1px solid var(--line);background:#fbfaf8;border-radius:7px;padding:9px;font-family:inherit}
+  .scale{font-size:.9rem;color:var(--soft)}
+  .printbtn{position:fixed;bottom:14px;right:14px;background:var(--brand);color:#fff;border:0;border-radius:30px;padding:13px 22px;font-weight:700;font-size:.95rem;box-shadow:0 4px 14px rgba(192,57,43,.4);cursor:pointer;z-index:50}
+  .tip{background:#eef4fb;border:1px solid #cfe0f2;border-radius:10px;padding:10px 14px;font-size:.86rem;color:#33526e;margin:0 0 14px}
+  .foot{text-align:center;color:var(--soft);font-size:.85rem;margin-top:20px;font-style:italic}
+  @media print{ .printbtn,header .pill,.tip{display:none} body{background:#fff} .card{break-inside:avoid;box-shadow:none} *{-webkit-print-color-adjust:exact;print-color-adjust:exact} }
+</style>
+</head>
+<body>
+<header>
+  <div class="t">🐺 Workout · <b>Day 1</b></div>
+  <div class="s">La Piazza Blueprint · the body half · check off · rate · comment · then save as PDF</div>
+  <div style="margin-top:8px"><span class="pill">⏱ 20 express</span><span class="pill">45 full</span><span class="pill">60 max</span><span class="pill">💡 2 reps in the tank</span><span class="pill">🩹 pain-free only</span></div>
+</header>
+<div class="wrap">
+
+  <div class="tip">📱 <b>On your phone:</b> the boxes, ratings & comments all work right here — tap away. To send it back: your phone's menu → <b>Print → Save as PDF</b> (or open in Chrome for the button below). Take the phone, leave the laptop. 💪</div>
+
+  <div class="card kpi">
+    <h2>📊 Body KPIs — Day 1 baseline</h2>
+    <div class="sub">Vitals — tap the scales, type the numbers</div>
+    <div class="grid" style="margin-bottom:6px">
+      <div class="field"><label>Weight (kg)</label><input class="numin flog" data-k="wt" inputmode="decimal"></div>
+      <div class="field"><label>Sleep (hrs)</label><input class="numin flog" data-k="sl" inputmode="decimal"></div>
+    </div>
+    <div class="field"><label>Energy — tap 1 (flat) → 10 (great)</label>
+      <div class="scalerow"><label>1<input type="radio" name="k-en" value="1"></label><label>2<input type="radio" name="k-en" value="2"></label><label>3<input type="radio" name="k-en" value="3"></label><label>4<input type="radio" name="k-en" value="4"></label><label>5<input type="radio" name="k-en" value="5"></label><label>6<input type="radio" name="k-en" value="6"></label><label>7<input type="radio" name="k-en" value="7"></label><label>8<input type="radio" name="k-en" value="8"></label><label>9<input type="radio" name="k-en" value="9"></label><label>10<input type="radio" name="k-en" value="10"></label></div>
+    </div>
+    <div class="field"><label>Mood — tap 1 → 10</label>
+      <div class="scalerow"><label>1<input type="radio" name="k-mo" value="1"></label><label>2<input type="radio" name="k-mo" value="2"></label><label>3<input type="radio" name="k-mo" value="3"></label><label>4<input type="radio" name="k-mo" value="4"></label><label>5<input type="radio" name="k-mo" value="5"></label><label>6<input type="radio" name="k-mo" value="6"></label><label>7<input type="radio" name="k-mo" value="7"></label><label>8<input type="radio" name="k-mo" value="8"></label><label>9<input type="radio" name="k-mo" value="9"></label><label>10<input type="radio" name="k-mo" value="10"></label></div>
+    </div>
+    <div class="field"><label>Shoulder — tap 1 (sore) → 5 (great)</label>
+      <div class="scalerow"><label>1<input type="radio" name="k-sh" value="1"></label><label>2<input type="radio" name="k-sh" value="2"></label><label>3<input type="radio" name="k-sh" value="3"></label><label>4<input type="radio" name="k-sh" value="4"></label><label>5<input type="radio" name="k-sh" value="5"></label></div>
+    </div>
+    <div class="sub" style="margin-top:6px">Can-I? benchmarks — max in one go 🔥</div>
+    <div class="grid">
+      <div class="field"><label>Push-ups (≥1!)</label><input class="numin flog" data-k="pu" inputmode="numeric"></div>
+      <div class="field"><label>Burpees (≥1!)</label><input class="numin flog" data-k="bu" inputmode="numeric"></div>
+      <div class="field"><label>Squats in a row (10)</label><input class="numin flog" data-k="sq" inputmode="numeric"></div>
+      <div class="field"><label>Plank (sec)</label><input class="numin flog" data-k="pl" inputmode="numeric"></div>
+    </div>
+    <p class="scale" style="margin:12px 0 0">Re-test weekly. Watching them climb IS the rebuild.</p>
+  </div>
+
+  <div class="card timer">
+    <h2>⏱️ Interval Timer <span class="scale" style="font-weight:400">· open in Chrome for this</span></h2>
+    <div class="tcfg">Prep <input id="tPrep" type="number" value="10">s · Work <input id="tWork" type="number" value="45">s · Rest <input id="tRest" type="number" value="15">s · Rounds <input id="tRounds" type="number" value="3"></div>
+    <div class="tphase" id="tPhase">READY</div>
+    <div class="tcount" id="tCount">--</div>
+    <div class="tround" id="tRound">set it &amp; hit start — beeps + buzzes on each change</div>
+    <button class="tbtn" id="tStart">▶ Start</button>
+    <button class="tbtn ghost" id="tReset">⟲ Reset</button>
+  </div>
+
+  <div class="card warn">
+    <h2>⚠️ Shoulder rules — read first</h2>
+    <ol style="margin:0;padding-left:20px">
+      <li><b>Pain-free range only.</b> Stretch/burn = good. Sharp pinch = stop, no ego.</li>
+      <li><b>Neutral grip</b> (palms facing) overhead. No behind-neck, no heavy flat bench.</li>
+      <li>Warm it first (broom), feed it every session (face pulls).</li>
+      <li><i>Smart-training, not medical advice. Real injury? Get it looked at.</i></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>🔥 Warm-up · 5–8 min</h2>
+    <div class="ex" data-id="wu-move"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Easy movement</span> <span class="reps">2–3 min</span><div class="desc">March on the spot, step-ups, or the bike — get the blood moving and a light sweat going.</div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-wu-move" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-wu-move" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-wu-move" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-wu-move" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="wu-move" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="wu-broom"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Broomstick shoulder pass-throughs</span> <span class="reps">2 × 10</span><div class="desc">Broom wide in both hands, slowly raise it up over your head and back behind you, then return. Leonardo's measured motion.</div><div class="why"><b>Why:</b> opens & warms the shoulder safely before you load it.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=EydWRWn_juo" target="_blank">▶ Watch how</a><span class="flora">Flora: narrow grip if tight</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-wu-broom" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-wu-broom" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-wu-broom" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-wu-broom" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="wu-broom" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="wu-band"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Band pull-aparts</span> <span class="reps">2 × 15</span><div class="desc">Hold a band in front, arms straight, pull it apart across your chest, squeeze your shoulder blades.</div><div class="why"><b>Why:</b> the daily "shoulder vitamin" — wakes the rotator cuff, fixes the hunch.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=osRimvxXlKQ" target="_blank">▶ Watch how</a><span class="flora">Flora: a towel works too</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-wu-band" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-wu-band" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-wu-band" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-wu-band" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="wu-band" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="wu-squat"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Bodyweight squats + hip hinges</span> <span class="reps">2×10 + 1×10</span><div class="desc">Squats: sit down & stand up, no weight. Hinges: soft knees, push hips back, hands slide down thighs.</div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-wu-squat" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-wu-squat" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-wu-squat" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-wu-squat" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="wu-squat" placeholder="comment / question…"></textarea></div>
+  </div>
+
+  <div class="card">
+    <h2>💪 The Workout · full body</h2>
+    <p class="scale">Straight sets · slow down / controlled up · rest 60–90 sec · 2 reps in the tank.</p>
+    <div class="ex" data-id="w-goblet"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">1. Goblet Squat</span> <span class="reps">3 × 10</span><div class="desc">Hold one dumbbell at your chest with both hands. Sit down like into a chair, stand back up tall.</div><div class="why"><b>Works:</b> legs, glutes, core. <b>Why:</b> staying strong getting off chairs & floors — independence itself.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=9KzZD_n2r64" target="_blank">▶ Watch how</a><span class="flora">Flora: no weight — sit-to-stand from a chair</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-w-goblet" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-w-goblet" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-w-goblet" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-w-goblet" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="w-goblet" placeholder="weight / comment / question…"></textarea></div>
+    <div class="ex" data-id="w-rdl"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">2. Romanian Deadlift (RDL)</span> <span class="reps">3 × 10</span><div class="desc">Dumbbells in hands, soft knees, push hips BACK (not down), lower the weights down your legs till the hamstrings stretch, stand tall.</div><div class="why"><b>Works:</b> hamstrings, glutes, low back. <b>Why:</b> the hinge that protects your back. <i>Deadlifted yesterday — keep LIGHT.</i></div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=hQgFixeXdZo" target="_blank">▶ Watch how</a><span class="flora">Flora: light/no weight, small range</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-w-rdl" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-w-rdl" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-w-rdl" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-w-rdl" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="w-rdl" placeholder="weight / comment / question…"></textarea></div>
+    <div class="ex" data-id="w-row"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">3. One-Arm Dumbbell Row</span> <span class="reps">3 × 10 / side</span><div class="desc">One hand & knee on the bench. Other hand pulls the dumbbell up to your hip — like pull-starting a lawnmower.</div><div class="why"><b>Works:</b> back, lats. <b>Why:</b> pulling strength & posture.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=gfUg6qWohTk" target="_blank">▶ Watch how</a><span class="flora">Flora: light, brace on a chair</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-w-row" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-w-row" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-w-row" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-w-row" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="w-row" placeholder="weight / comment / question…"></textarea></div>
+    <div class="ex" data-id="w-ohp"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">4. Neutral-Grip Overhead Press</span> <span class="reps">2–3 × 8</span><div class="desc">Dumbbells at shoulder height, <b>palms facing each other</b>. Press up only as high as feels good, lower slowly.</div><div class="why"><b>Works:</b> shoulders, triceps. <b>Why:</b> shoulder-safe overhead strength. <b>Stop at any pinch.</b></div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=1WOecdL8nrI" target="_blank">▶ Watch how</a><span class="flora">Flora: seated, light, tiny range</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-w-ohp" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-w-ohp" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-w-ohp" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-w-ohp" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="w-ohp" placeholder="weight / shoulder ok? / question…"></textarea></div>
+    <div class="ex" data-id="w-facepull"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">5. Face Pulls</span> <span class="reps">3 × 15</span><div class="desc">Anchor a band at face height. Pull both ends toward your face, elbows high & wide, squeeze the back of your shoulders.</div><div class="why"><b>Works:</b> rear shoulders + rotator cuff. <b>Why:</b> 👈 <b>THE shoulder-saver.</b> Never skip.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=ljgqer1ZpXg" target="_blank">▶ Watch how</a><span class="flora">Flora: light band — gold for everyone</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-w-facepull" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-w-facepull" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-w-facepull" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-w-facepull" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="w-facepull" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="w-floor"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">6. Dumbbell Floor Press</span> <span class="reps">2 × 10 · optional</span><div class="desc">Lie on the floor (knees bent), a dumbbell in each hand, press straight up. The floor stops your elbows — that protects the shoulder.</div><div class="why"><b>Works:</b> chest, triceps. <b>Why:</b> chest strength without the bench-press shoulder risk.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=lNdi7VEf2Ew" target="_blank">▶ Watch how</a><span class="flora">Flora: skip or very light</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-w-floor" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-w-floor" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-w-floor" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-w-floor" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="w-floor" placeholder="weight / comment / question…"></textarea></div>
+  </div>
+
+  <div class="card">
+    <h2>⚡ Finisher · optional, 5–8 min</h2>
+    <div class="ex" data-id="f-burpee"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Modified Burpee</span> <span class="reps">3 × 8</span><div class="desc">Step (don't jump) back into a plank, step back in, stand. No push-up needed.</div><div class="why"><b>Why:</b> the ultimate "can I get up off the floor" test.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=iUL2tndomms" target="_blank">▶ Watch how</a><span class="flora">Flora: hands on a counter (incline)</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-f-burpee" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-f-burpee" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-f-burpee" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-f-burpee" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="f-burpee" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="f-swing"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Dumbbell Swing</span> <span class="reps">3 × 12</span><div class="desc">Hinge at the hips (like the RDL) and swing the dumbbell to chest height using your HIPS, not your arms.</div><div class="why"><b>Why:</b> power & conditioning, easy on the joints.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=wqUKvSouuFI" target="_blank">▶ Watch how</a></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-f-swing" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-f-swing" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-f-swing" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-f-swing" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="f-swing" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="f-carry"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Farmer's Carry</span> <span class="reps">3 × 30 sec</span><div class="desc">A dumbbell in each hand, stand tall, walk the room. Grip hard, brace the belly.</div><div class="why"><b>Why:</b> the most real-life exercise there is — grip strength predicts a long life.</div><div class="row"><a class="yt" href="https://www.youtube.com/watch?v=z7E_YU9P1jU" target="_blank">▶ Watch how</a><span class="flora">Flora: lighter, shorter walk</span></div></div></div>
+      <div class="fbk"><label class="rate"><input type="radio" name="r-f-carry" value="easy">😌 easy</label><label class="rate"><input type="radio" name="r-f-carry" value="hard">😤 hard</label><label class="rate"><input type="radio" name="r-f-carry" value="just">👌 just right</label><label class="rate"><input type="radio" name="r-f-carry" value="other">✏️ other</label></div><textarea class="cmt" rows="2" data-id="f-carry" placeholder="comment / question…"></textarea></div>
+  </div>
+
+  <div class="card">
+    <h2>🧘 Cool-down · 5 min</h2>
+    <div class="ex" data-id="cd-broom"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Broom pass-throughs · 2×10</span><div class="desc">Finish the shoulder where you started it.</div></div></div><textarea class="cmt" rows="2" data-id="cd-broom" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="cd-stretch"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">Stretch</span><div class="desc">Hamstrings, hip-flexors, gentle chest/shoulder — hold each 20–30 sec, breathe in.</div></div></div><textarea class="cmt" rows="2" data-id="cd-stretch" placeholder="comment / question…"></textarea></div>
+    <div class="ex" data-id="cd-breathe"><div class="top"><input type="checkbox" class="cb"><div><span class="nm">2 min slow breathing</span><div class="desc">Long exhales — the windpipe feeling. Bring the engine down.</div></div></div><textarea class="cmt" rows="2" data-id="cd-breathe" placeholder="comment / question…"></textarea></div>
+  </div>
+
+  <div class="card">
+    <h2>📝 Overall — talk to Tigs</h2>
+    <p class="scale">Fill this, then <b>Print → Save as PDF</b> and send it back. Recipe → do it for real → report → we tune Day 2.</p>
+    <p style="margin:8px 0 3px;font-weight:700;font-size:.9rem">Version done? <span class="scale">(20 / 45 / 60 min)</span></p>
+    <input class="flog" data-k="fdur">
+    <p style="margin:12px 0 3px;font-weight:700;font-size:.9rem">How did it go overall? Energy after, what to change for Day 2?</p>
+    <textarea class="fb flog" data-k="fnotes" placeholder="Your feedback here, Wolf…"></textarea>
+  </div>
+
+  <div class="foot">Day 1 of the body blueprint · check off · rate · comment · save as PDF · save to Blueprint.<br>"Warm it, feed it, don't force it." 🐺💪</div>
+</div>
+
+<button class="printbtn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+<script>
+  // Progressive enhancement only: native controls already work everywhere.
+  // This just remembers your answers if you close & reopen (needs JS — Chrome etc.).
+  try {
+    const KEY='wolf-workout-2026-06-06-v5';
+    const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+    const persist=()=>localStorage.setItem(KEY,JSON.stringify(saved));
+    document.querySelectorAll('.ex').forEach((ex,i)=>{
+      const id=ex.getAttribute('data-id')||('ex'+i);
+      const cb=ex.querySelector('.cb');
+      if(cb){ if(saved[id+'.done'])cb.checked=true; cb.addEventListener('change',()=>{saved[id+'.done']=cb.checked;persist();}); }
+      ex.querySelectorAll('.rate input').forEach(r=>{ if(saved[id+'.rate']===r.value)r.checked=true; r.addEventListener('change',()=>{saved[id+'.rate']=r.value;persist();}); });
+      const c=ex.querySelector('.cmt'); if(c){ if(saved[id+'.cmt'])c.value=saved[id+'.cmt']; c.addEventListener('input',()=>{saved[id+'.cmt']=c.value;persist();}); }
+    });
+    document.querySelectorAll('.flog').forEach(inp=>{ const k=inp.getAttribute('data-k'); if(saved[k])inp.value=saved[k]; inp.addEventListener('input',()=>{saved[k]=inp.value;persist();}); });
+    // KPI tap-scales (energy/mood/shoulder)
+    document.querySelectorAll('.scalerow input').forEach(r=>{ const k=r.name; if(saved[k]===r.value)r.checked=true; r.addEventListener('change',()=>{saved[k]=r.value;persist();}); });
+  } catch(e){}
+
+  // ⏱️ Interval timer — prep → work → rest → repeat, with beep + vibrate
+  (function(){
+    const $=id=>document.getElementById(id); let timer=null;
+    function tone(f,d){ try{ const C=window.AudioContext||window.webkitAudioContext; if(!C)return; const c=new C(),o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination);o.frequency.value=f;o.start();g.gain.setValueAtTime(.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.stop(c.currentTime+d);}catch(e){} }
+    function buzz(p){ try{navigator.vibrate&&navigator.vibrate(p);}catch(e){} }
+    function set(phase,t,round,rounds){ const ph=$('tPhase'); ph.textContent=phase; ph.className='tphase '+phase.toLowerCase().replace(/[^a-z]/g,''); $('tCount').textContent=(t>=0?t:''); $('tRound').textContent=rounds?('Round '+round+' / '+rounds):''; }
+    function stop(){ if(timer)clearInterval(timer); timer=null; $('tStart').textContent='▶ Start'; }
+    function start(){
+      if(timer){ stop(); $('tPhase').textContent='PAUSED'; return; }
+      const prep=+$('tPrep').value||0, work=+$('tWork').value||45, rest=+$('tRest').value||15, rounds=Math.max(1,+$('tRounds').value||1);
+      let phase=prep>0?'PREP':'WORK', t=prep>0?prep:work, round=1;
+      $('tStart').textContent='⏸ Pause'; tone(660,.15); set(phase,t,round,rounds);
+      timer=setInterval(()=>{
+        t--;
+        if(t<=0){
+          if(phase==='PREP'){ phase='WORK'; t=work; tone(880,.25); buzz(250); }
+          else if(phase==='WORK'){ if(round>=rounds){ set('DONE 🎉',-1,round,0); tone(523,.6); buzz([200,120,200,120,300]); stop(); return; } phase='REST'; t=rest; tone(440,.25); buzz(200); }
+          else { round++; phase='WORK'; t=work; tone(880,.25); buzz(250); }
+        } else if(t<=3){ tone(440,.08); }
+        set(phase,t,round,rounds);
+      },1000);
+    }
+    $('tStart')&&$('tStart').addEventListener('click',start);
+    $('tReset')&&$('tReset').addEventListener('click',()=>{ stop(); $('tPhase').textContent='READY'; $('tPhase').className='tphase'; $('tCount').textContent='--'; $('tRound').textContent='set it & hit start'; });
+  })();
+</script>
+</body>
+</html>

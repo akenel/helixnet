@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Rebuild · La Piazza</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    colors: { brand:'#C0392B', branddark:'#8B0000' },
+  } } };
+</script>
+<style>
+  body { background: radial-gradient(1100px 600px at 50% -12%, #1f2a44, transparent), #060910; }
+  .card { background: rgba(15,23,42,0.6); border: 1px solid rgba(30,41,59,0.9); }
+  .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
+  [x-cloak]{display:none!important}
+  .tab{padding:10px 14px;font-weight:700;font-size:.92rem;color:#94a3b8;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+  .tab.on{color:#fff;border-bottom-color:#C0392B}
+  .md h2{font-size:1.05rem;font-weight:800;margin:.6rem 0 .3rem;color:#f1f5f9}
+  .md h3{font-weight:700;margin:.5rem 0 .2rem}.md p{margin:.3rem 0;line-height:1.5}
+  .md ul{margin:.3rem 0 .3rem 1.1rem;list-style:disc}.md table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .md td,.md th{border:1px solid #334155;padding:3px 7px}.md strong{color:#f8fafc}
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased" x-data="rebuild()" x-init="boot()">
+{% include "_lapiazza_nav.html" %}
+<div class="max-w-3xl mx-auto px-5 py-8">
+
+  <!-- not logged in -->
+  <div x-show="!token" x-cloak class="card rounded-2xl p-8 text-center mt-6">
+    <div class="text-5xl mb-3">🐺</div>
+    <h1 class="text-2xl font-black">Your Rebuild</h1>
+    <p class="text-slate-400 mt-2">Mind, body, spirit — one place, one journey. Log in to see yours.</p>
+    <button @click="login()" class="mt-5 px-6 py-3 rounded-xl font-bold bg-brand hover:bg-branddark text-white">Log in</button>
+    <p class="mt-3 text-sm text-slate-500">New here? <a href="/get-started" class="text-brand">Start your Bottega →</a></p>
+  </div>
+
+  <!-- logged in -->
+  <div x-show="token" x-cloak>
+    <!-- header -->
+    <div class="flex items-center gap-4 mb-5">
+      <div class="text-4xl">🐺</div>
+      <div class="min-w-0">
+        <h1 class="text-2xl font-black truncate" x-text="(d.profile && (d.profile.slug)) || username"></h1>
+        <p class="text-slate-400 text-sm truncate" x-text="(d.profile && d.profile.tagline) || 'your rebuild, one day at a time'"></p>
+      </div>
+    </div>
+
+    <!-- tabs -->
+    <div class="flex gap-1 border-b border-slate-800 mb-5 overflow-x-auto">
+      <div class="tab" :class="tab==='home'&&'on'" @click="tab='home'">📊 Home</div>
+      <div class="tab" :class="tab==='body'&&'on'" @click="tab='body'">🏋️ Body</div>
+      <div class="tab" :class="tab==='mind'&&'on'" @click="tab='mind'">🧠 Mind</div>
+      <div class="tab" :class="tab==='spirit'&&'on'" @click="tab='spirit'">✨ Spirit</div>
+      <div class="tab" :class="tab==='inbox'&&'on'" @click="tab='inbox'">📬 Inbox <span x-show="inbox.unread" x-cloak class="ml-1 inline-flex items-center justify-center text-[10px] font-bold bg-brand text-white rounded-full w-4 h-4" x-text="inbox.unread"></span></div>
+    </div>
+
+    <!-- HOME -->
+    <div x-show="tab==='home'" class="space-y-4">
+      <div class="card rounded-xl p-5" x-show="d.profile && d.profile.bio">
+        <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">about you</div>
+        <p class="text-slate-200 text-sm" x-text="d.profile && d.profile.bio"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <template x-for="c in homeCards()" :key="c.k">
+          <a :href="c.href" class="card rounded-xl p-4 block hover:border-brand/50">
+            <div class="text-2xl" x-text="c.icon"></div>
+            <div class="font-bold mt-1 text-sm" x-text="c.label"></div>
+            <div class="text-xs mt-1" :class="c.done?'text-emerald-400':'text-slate-500'" x-text="c.status"></div>
+          </a>
+        </template>
+      </div>
+      <p class="text-center text-xs text-slate-600" x-text="d.total ? (d.total+' things in your Blueprint') : ''"></p>
+    </div>
+
+    <!-- BODY -->
+    <div x-show="tab==='body'" class="space-y-4">
+      <template x-if="d.body && d.body.output">
+        <div class="card rounded-xl p-5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">your setup</div>
+          <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+            <div><span class="text-slate-500 text-xs">goal</span><div x-text="d.body.output.goal"></div></div>
+            <div><span class="text-slate-500 text-xs">cadence</span><div x-text="(d.body.output.days||'?')+'×/wk · '+(d.body.output.minutes||'?')+' min'"></div></div>
+            <div><span class="text-slate-500 text-xs">equipment</span><div x-text="d.body.output.equipment"></div></div>
+            <div><span class="text-slate-500 text-xs">watch</span><div x-text="(d.body.output.injuries||[]).join(', ')||'—'"></div></div>
+          </div>
+          <p class="text-sm text-slate-300 mt-3 pt-3 border-t border-slate-800" x-text="d.body.output.summary"></p>
+        </div>
+      </template>
+      <template x-if="!(d.body && d.body.output)">
+        <a href="/compute/bottega" class="card rounded-xl p-5 block text-center hover:border-brand/50">
+          <div class="text-3xl">🩺</div><div class="font-bold mt-2">Do your Body Setup</div>
+          <div class="text-xs text-slate-500 mt-1">2 minutes — so your workouts fit your gear & body</div>
+        </a>
+      </template>
+      <div class="card rounded-xl p-5">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">your workouts <span x-text="'('+(d.workouts||[]).length+')'"></span></div>
+          <a href="/compute/bottega" class="text-xs text-brand">+ new workout</a>
+        </div>
+        <template x-if="!(d.workouts||[]).length"><div class="text-sm text-slate-600">no workouts yet — make Day 1 in the workshop 🏋️</div></template>
+        <div class="divide-y divide-slate-800/70">
+          <template x-for="w in (d.workouts||[])" :key="w.id">
+            <div class="py-2 flex items-center justify-between"><span class="text-sm text-slate-200 truncate" x-text="w.title"></span><span class="text-[11px] font-mono text-slate-600" x-text="(w.created_at||'').slice(0,10)"></span></div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIND -->
+    <div x-show="tab==='mind'" class="space-y-4">
+      <template x-if="(d.mentors||[]).length">
+        <div class="card rounded-xl p-5">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">masters you've met</div>
+          <div class="divide-y divide-slate-800/70">
+            <template x-for="m in d.mentors" :key="m.id">
+              <div class="py-2 flex items-center justify-between"><span class="text-sm text-slate-200 truncate" x-text="m.title"></span><span class="text-[11px] font-mono text-slate-600" x-text="(m.created_at||'').slice(0,10)"></span></div>
+            </template>
+          </div>
+        </div>
+      </template>
+      <a href="/compute/bottega" class="card rounded-xl p-5 block text-center hover:border-brand/50">
+        <div class="text-3xl">🕰️</div><div class="font-bold mt-2">Ask a Master</div>
+        <div class="text-xs text-slate-500 mt-1">the dead teach the living — a real mentor session for what you face</div>
+      </a>
+    </div>
+
+    <!-- SPIRIT -->
+    <div x-show="tab==='spirit'" class="space-y-4">
+      <template x-if="d.spirit && d.spirit.output">
+        <div class="space-y-4">
+          <div class="card rounded-xl p-5 text-center">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">your one-liner</div>
+            <p class="text-lg font-bold text-brand" x-text="d.spirit.output.one_liner"></p>
+          </div>
+          <div class="card rounded-xl p-5">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">your 22-second pitch</div>
+            <p class="text-sm text-slate-200 italic" x-text="d.spirit.output.elevator_22s"></p>
+          </div>
+          <div class="card rounded-xl p-5">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">your why</div>
+            <p class="text-sm text-slate-300" x-text="d.spirit.output.the_why"></p>
+            <template x-if="(d.spirit.output.dreams||[]).length">
+              <div class="mt-3 pt-3 border-t border-slate-800"><div class="text-[10px] uppercase text-slate-500 mb-1">dreams</div>
+                <ul class="list-disc ml-5 text-sm text-slate-300"><template x-for="dr in d.spirit.output.dreams" :key="dr"><li x-text="dr"></li></template></ul></div>
+            </template>
+          </div>
+        </div>
+      </template>
+      <template x-if="!(d.spirit && d.spirit.output)">
+        <a href="/compute/bottega" class="card rounded-xl p-5 block text-center hover:border-brand/50">
+          <div class="text-3xl">✨</div><div class="font-bold mt-2">Tell Your Story</div>
+          <div class="text-xs text-slate-500 mt-1">find your why — your one-liner & 22-second pitch</div>
+        </a>
+      </template>
+    </div>
+
+    <!-- INBOX -->
+    <div x-show="tab==='inbox'" class="space-y-3">
+      <template x-if="!(inbox.items||[]).length"><div class="card rounded-xl p-5 text-center text-sm text-slate-500">No messages yet. When someone reaches out, it lands here. 📬</div></template>
+      <template x-for="it in (inbox.items||[])" :key="it.id">
+        <div class="card rounded-xl p-4 cursor-pointer" :class="(it.kind==='message' && !it.read) && 'border-brand/60'" @click="markRead(it)">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-semibold text-sm truncate" x-text="it.title"></span>
+            <span class="text-[11px] font-mono text-slate-600 shrink-0" x-text="(it.created_at||'').slice(0,10)"></span>
+          </div>
+          <p class="text-sm text-slate-300 mt-1 whitespace-pre-line" x-text="it.body"></p>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<script>
+function rebuild() {
+  return {
+    token:null, username:'', d:{}, tab:'home', inbox:{items:[],unread:0},
+    async boot(){ this.token=this.loadToken(); this.username=this.decodeUser()||''; if(this.token){ await this.load(); await this.loadInbox(); } },
+    loadToken(){
+      if (location.hash.includes('token=')) { const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t); localStorage.setItem('compute_token',t); history.replaceState({},document.title,location.pathname);} }
+      return sessionStorage.getItem('compute_token') || localStorage.getItem('compute_token');
+    },
+    decodeUser(){ if(!this.token)return null; try{const p=JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); if(p.exp*1000<=Date.now()){this.token=null;return null;} return p.preferred_username;}catch(e){return null;} },
+    async load(){ try{ const r=await fetch('/api/v1/compute/bottega/me/dashboard',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.d=await r.json(); }catch(e){} },
+    async loadInbox(){ try{ const r=await fetch('/api/v1/compute/bottega/me/inbox',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.inbox=await r.json(); }catch(e){} },
+    async markRead(it){ if(it.kind!=='message'||it.read) return; it.read=true; this.inbox.unread=Math.max(0,(this.inbox.unread||0)-1); try{ await fetch('/api/v1/compute/bottega/me/inbox/'+it.id+'/read',{method:'POST',headers:{'Authorization':'Bearer '+this.token}}); }catch(e){} },
+    homeCards(){ return [
+      {k:'p',icon:'👤',label:'Profile',done:!!(this.d.profile&&this.d.profile.bio),status:(this.d.profile&&this.d.profile.bio)?'built ✓':'drop your CV →',href:'/compute/bottega'},
+      {k:'b',icon:'🩺',label:'Body Setup',done:!!this.d.body,status:this.d.body?'set ✓':'calibrate →',href:'/compute/bottega'},
+      {k:'s',icon:'✨',label:'Your Story',done:!!this.d.spirit,status:this.d.spirit?'told ✓':'tell it →',href:'/compute/bottega'},
+      {k:'w',icon:'🏋️',label:'Workouts',done:(this.d.workouts||[]).length>0,status:((this.d.workouts||[]).length||'0')+' done',href:'/compute/bottega'},
+    ]; },
+    login(){ const kc=location.hostname==='helix.local'?'https://keycloak.helix.local':location.origin; const redirect=encodeURIComponent(location.origin+'/compute/callback'); const state=encodeURIComponent('/compute/me'); location.href=`${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`; },
+  };
+}
+</script>
+</body>
+</html>

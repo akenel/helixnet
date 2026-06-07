@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script>
   tailwind.config = { theme: { extend: {
@@ -33,6 +34,7 @@
 </style>
 </head>
 <body class="font-sans text-slate-200 min-h-screen antialiased" x-data="bottega()" x-init="boot()">
+{% include "_lapiazza_nav.html" %}
 
 <header class="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800">
   <div class="max-w-5xl mx-auto px-5 h-16 flex items-center gap-3">
@@ -62,8 +64,36 @@
 
   <!-- the menu -->
   <div x-show="!active">
-    <div class="text-2xl font-bold">What do you want to make?</div>
+    <div class="flex items-center justify-between">
+      <div class="text-2xl font-bold">What do you want to make?</div>
+      <button @click="openFolder()" x-show="token" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:border-brand/50 hover:text-brand">📓 My Blueprint</button>
+    </div>
     <div class="text-sm text-slate-500 mt-1 mb-7">Pick a card. Answer a couple of questions. Get the thing.</div>
+
+    <!-- My Blueprint folder (saved sessions) -->
+    <div x-show="showFolder" class="card rounded-xl p-5 mb-7">
+      <div class="flex items-center justify-between mb-3">
+        <div class="font-semibold">📓 My Blueprint <span class="text-slate-500 text-sm" x-text="'('+folder.length+')'"></span></div>
+        <button @click="showFolder=false" class="text-xs text-slate-500 hover:text-slate-300">✕ close</button>
+      </div>
+      <div class="flex items-center gap-2 mb-3">
+        <input x-model="q" type="text" placeholder="search your history…" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm">
+        <button @click="sortDesc=!sortDesc" class="text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 shrink-0" x-text="sortDesc?'↓ newest':'↑ oldest'"></button>
+      </div>
+      <template x-if="folder.length===0"><div class="text-sm text-slate-600">nothing yet — onboard, or run something and save it.</div></template>
+      <div class="divide-y divide-slate-800/70">
+        <template x-for="s in filteredFolder()" :key="s.id">
+          <button @click="loadSession(s.id)" class="w-full text-left py-2.5 hover:bg-slate-800/40 px-2 rounded flex items-center gap-3">
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0" :class="kindClass(s.slug)" x-text="kindLabel(s.slug)"></span>
+            <span class="text-sm text-slate-200 flex-1 truncate" x-text="s.title"></span>
+            <span x-show="s.version>1" class="text-[10px] font-mono text-amber-400" x-text="'v'+s.version"></span>
+            <span class="text-[11px] text-slate-600 font-mono shrink-0" x-text="(s.created_at||'').slice(0,10)"></span>
+          </button>
+        </template>
+        <template x-if="folder.length>0 && filteredFolder().length===0"><div class="text-sm text-slate-600 py-2">no match for "<span x-text="q"></span>"</div></template>
+      </div>
+    </div>
+
     <template x-for="c in cats" :key="c.key">
       <div x-show="inCat(c.key).length" class="mb-8">
         <div class="text-sm font-semibold text-slate-300 mb-1" x-text="c.label"></div>
@@ -113,8 +143,27 @@
     <div class="card rounded-xl p-5">
       <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">output</div>
       <template x-if="!output"><div class="text-sm text-slate-600">run a recipe to see the result</div></template>
-      <!-- json output (e.g. cv-to-bio) -->
-      <template x-if="output && output.output_type==='json'">
+      <!-- cover shot: every output wears a cover when displayed (Wolf for now; themed when we have an image key) -->
+      <template x-if="output">
+        <div class="-mx-5 -mt-5 mb-4 px-5 py-3.5 flex items-center gap-3 border-b border-slate-800" style="background:linear-gradient(180deg,rgba(192,57,43,0.14),transparent)">
+          <img src="/static/lapiazza-wolf.png" class="h-9 w-9 object-contain shrink-0" alt="La Piazza">
+          <div class="min-w-0">
+            <div class="text-sm font-bold text-slate-100 truncate" x-text="(output.recipe||'La Piazza')"></div>
+            <div class="text-[10px] font-mono text-slate-500">La Piazza · the workshop</div>
+          </div>
+        </div>
+      </template>
+      <!-- you asked (the question, never lost) -->
+      <template x-if="output && output.inputs && Object.values(output.inputs).some(v=>v)">
+        <div class="text-xs mb-4 pb-3 border-b border-slate-800">
+          <div class="text-slate-500"><span class="text-brand font-semibold" x-text="output.recipe"></span> · <span x-text="(output.asked_at||'').slice(0,16).replace('T',' ')"></span></div>
+          <template x-for="[k,v] in Object.entries(output.inputs||{})" :key="k">
+            <div x-show="v" class="mt-1"><span class="text-slate-600 uppercase text-[10px]" x-text="k"></span> <span class="text-slate-300" x-text="v"></span></div>
+          </template>
+        </div>
+      </template>
+      <!-- json output: cv-to-bio (custom render + Save to profile) -->
+      <template x-if="output && output.output_type==='json' && active && active.slug==='cv-to-bio'">
         <div class="space-y-3 text-sm">
           <div><div class="text-[10px] uppercase text-slate-500">bio</div><div x-text="output.result.bio"></div></div>
           <div><div class="text-[10px] uppercase text-slate-500">tagline</div><div class="text-brand" x-text="output.result.tagline"></div></div>
@@ -131,9 +180,29 @@
           <a x-show="savedUrl" :href="savedUrl" target="_blank" class="block text-xs text-brand hover:underline font-mono" x-text="'→ view your page: '+savedUrl"></a>
         </div>
       </template>
+      <!-- json output: generic (body-intake, story-intake, any structured recipe) -->
+      <template x-if="output && output.output_type==='json' && !(active && active.slug==='cv-to-bio')">
+        <div class="space-y-3 text-sm">
+          <template x-for="[k,v] in Object.entries(output.result||{})" :key="k">
+            <div x-show="v && (!Array.isArray(v) || v.length)">
+              <div class="text-[10px] uppercase tracking-wider text-slate-500" x-text="k.replace(/_/g,' ')"></div>
+              <div class="text-slate-200" x-text="Array.isArray(v) ? v.join(' · ') : v"></div>
+            </div>
+          </template>
+        </div>
+      </template>
       <!-- markdown/text output (cv-generate, cover-letter) -->
       <template x-if="output && output.output_type!=='json'">
-        <div class="md text-slate-300 max-h-[460px] overflow-y-auto" x-html="renderMd(output.result)"></div>
+        <div>
+          <div class="md text-slate-300 max-h-[460px] overflow-y-auto" x-html="renderMd(output.result)"></div>
+          <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800">
+            <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
+            <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
+            <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
+            <button @click="downloadOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download (.md)</button>
+            <button @click="saveSession()" :disabled="saving||!token" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand/90 hover:bg-brand text-white disabled:opacity-40" x-text="savedMsg||'📓 Save to Blueprint'"></button>
+          </div>
+        </div>
       </template>
     </div>
   </div>
@@ -148,11 +217,15 @@ function bottega() {
   return {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
-    saveMsg: '', saving: false, handle: '', savedUrl: '',
+    saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false,
+    savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
       { key:'media',    label:'🎬 Make Media',        hint:'playlists and more' },
+      { key:'coaching', label:'🕰️ Ask a Master',      hint:'the dead teach the living — a real mentor session for what you face' },
+      { key:'body',     label:'🏋️ Get in Shape',      hint:'a private, calibrated workout — your gear, your goal, 20–60 min, day by day' },
+      { key:'spirit',   label:'✨ Your Story',         hint:'find your why — childhood, passion, dreams, your one-liner & 22-second pitch' },
     ],
     inCat(k) { return this.recipes.filter(r => r.category === k); },
     boot() {
@@ -168,14 +241,70 @@ function bottega() {
       const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent(location.pathname);
-      location.href = `${kc}/realms/lapiazza-realm-dev/protocol/openid-connect/auth?client_id=lapiazza_web&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
+      location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
     },
     async fetchMenu() {
       if (!this.token) return;
       try { const r=await fetch('/api/v1/compute/bottega/recipes',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.recipes=await r.json(); } catch(_){}
     },
     pick(r) { if(!r) return; this.active=r; this.files={}; this.fields={}; this.output=null; this.err=''; this.saveMsg=''; this.savedUrl=''; },
-    renderMd(s) { try { return window.marked ? marked.parse(s||'') : (s||''); } catch(e){ return s||''; } },
+    renderMd(s) { try { const h = window.marked ? marked.parse(s||'') : (s||''); return window.DOMPurify ? DOMPurify.sanitize(h) : ''; } catch(e){ return ''; } },
+    _text() {
+      const o=this.output||{}, r=o.result;
+      const body = typeof r==='string'?r:JSON.stringify(r,null,2);
+      const q = Object.entries(o.inputs||{}).filter(([k,v])=>v).map(([k,v])=>'**'+k+':** '+v).join('\n');
+      return '# '+(o.recipe||'La Piazza')+'\n_'+((o.asked_at||'').slice(0,16).replace('T',' '))+'_\n\n'
+        + (q ? '## Asked\n'+q+'\n\n## Answer\n' : '') + body + '\n';
+    },
+    copyOut() { navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
+    async _shareUrl() {  // ensure the output is saved so it has a postcard page with a cover
+      if (!this.savedId) await this.saveSession();
+      return this.savedId ? (location.origin + '/s/' + this.savedId) : location.origin;
+    },
+    async shareTg() { const u=await this._shareUrl(); const t=(this.output&&this.output.recipe)||'La Piazza';
+      window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
+    async shareWa() { const u=await this._shareUrl(); const t=((this.output&&this.output.recipe)||'La Piazza')+' — ';
+      window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
+    _fname() {  // sorts chronologically: 2026-06-06_1317_🐺angel_music-playlist_rock-70s.md
+      const o=this.output||{}, i=o.inputs||{};
+      const slug=(o.slug||(this.active&&this.active.slug)||'la-piazza');
+      const d=o.asked_at?new Date(o.asked_at):new Date(); const p=n=>String(n).padStart(2,'0');
+      const dt=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes());
+      const who=(this.me||'guest'), avatar=(this.avatar||'🐺');
+      const hint=((i.mentor||i.vibe||i.name||i.what||i.job||'')+'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
+      return dt+'_'+avatar+who+'_'+slug+(hint?('_'+hint):'')+'.md';
+    },
+    downloadOut() { const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=this._fname(); a.click(); },
+    async saveSession() {
+      if (!this.output || !this.token) return; this.saving=true;
+      const i=this.output.inputs||{}; const hint=i.mentor||i.vibe||i.name||i.what||i.job||'';
+      const title=((this.output.recipe||'Session')+(hint?(' — '+hint):'')).slice(0,140);
+      try { const r=await fetch('/api/v1/compute/bottega/sessions',{method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+        body:JSON.stringify({slug:this.output.slug||(this.active&&this.active.slug)||'session',title,inputs:i,
+          output:(typeof this.output.result==='string'?this.output.result:JSON.stringify(this.output.result)),output_type:this.output.output_type})});
+        if(r.ok){ const d=await r.json(); this.savedId=d.id; this.savedMsg='✓ Saved'; setTimeout(()=>this.savedMsg='',2000); } } catch(e){}
+      this.saving=false;
+    },
+    async openFolder() {
+      if(!this.token) return;
+      try { const r=await fetch('/api/v1/compute/bottega/sessions',{headers:{'Authorization':'Bearer '+this.token}});
+        if(r.ok){ this.folder=await r.json(); this.showFolder=true; } } catch(e){}
+    },
+    filteredFolder() {
+      let f = this.folder;
+      const q = (this.q||'').toLowerCase().trim();
+      if (q) f = f.filter(s => ((s.title||'')+' '+(s.slug||'')+' '+JSON.stringify(s.inputs||{})).toLowerCase().includes(q));
+      return [...f].sort((a,b)=>{ const d=(a.created_at||'').localeCompare(b.created_at||''); return this.sortDesc?-d:d; });
+    },
+    kindLabel(slug) { return slug==='blueprint-archive'?'archive':(slug==='mentor-session'?'mentor':(slug||'note')); },
+    kindClass(slug) { return slug==='blueprint-archive'?'bg-emerald-900/60 text-emerald-300':(slug==='mentor-session'?'bg-amber-900/50 text-amber-300':'bg-slate-800 text-slate-400'); },
+    async loadSession(id) {
+      try { const r=await fetch('/api/v1/compute/bottega/sessions/'+id,{headers:{'Authorization':'Bearer '+this.token}});
+        if(r.ok){ const s=await r.json(); this.active={slug:s.slug,title:s.title,inputs:[]};
+          this.output={output_type:s.output_type,result:s.output,recipe:s.title,slug:s.slug,inputs:s.inputs,asked_at:s.created_at};
+          this.showFolder=false; } } catch(e){}
+    },
     loadCV() {
       const r = this.recipes.find(x=>x.slug==='cv-to-bio');
       if (!r) return;
@@ -194,7 +323,9 @@ function bottega() {
         const r = await fetch('/api/v1/compute/bottega/recipes/'+this.active.slug+'/run', {
           method:'POST', headers:{'Authorization':'Bearer '+this.token}, body: fd });
         const d = await r.json();
-        if (r.ok) this.output = d; else this.err = d.detail || ('error '+r.status);
+        if (r.ok) { this.savedId = null; this.output = { ...d, recipe: this.active.title, slug: this.active.slug,
+                                  inputs: {...this.fields}, asked_at: new Date().toISOString() }; }
+        else this.err = d.detail || ('error '+r.status);
       } catch(e) { this.err = 'failed'; }
       this.busy=false;
     },

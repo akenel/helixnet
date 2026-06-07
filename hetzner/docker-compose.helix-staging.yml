@@ -1,0 +1,66 @@
+# =============================================================
+# HELIX-PLATFORM STAGING -- additive overlay for the Hetzner UAT stack
+# A second helix-platform instance for staging template/UI changes
+# BEFORE they touch the live bottega.lapiazza.app container.
+# =============================================================
+# Why this exists: prod `helix-platform` volume-mounts /opt/helixnet/src,
+# so a plain `git pull` would change prod immediately. Staging instead
+# mounts an INDEPENDENT git worktree (checked out at the fix commit) so
+# /opt/helixnet stays on the old commit until human sign-off.
+#
+# Setup on the server (from /opt/helixnet):
+#   git fetch origin
+#   git worktree add /opt/helix-staging-tree <fix-commit-sha>
+#
+# Usage (from /opt/helixnet/hetzner -- uat.env lives here):
+#   docker compose -f docker-compose.uat.yml -f docker-compose.helix-staging.yml up -d helix-platform-staging
+#   docker compose -f docker-compose.uat.yml -f docker-compose.helix-staging.yml logs -f helix-platform-staging
+#
+# Verify (localhost-only, no public hostname -- avoids touching prod Caddy):
+#   curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8099/compute/bottega
+#
+# Teardown after promotion:
+#   docker compose -f docker-compose.uat.yml -f docker-compose.helix-staging.yml down helix-platform-staging
+#   git worktree remove /opt/helix-staging-tree
+# =============================================================
+
+services:
+
+  helix-platform-staging:
+    image: helix-platform:latest          # reuse the built image; code comes from the mounted worktree
+    container_name: helix-platform-staging
+    restart: unless-stopped
+    env_file:
+      - ./uat.env
+    environment:
+      SERVICE_TYPE: platform
+      # Dedicated staging auth realm (own frontendUrl=staging-bottega.lapiazza.app).
+      # Keeps staging login isolated from prod's lapiazza-realm-dev (gotcha #3).
+      LP_REALM: lapiazza-realm-staging
+      LP_CLIENT: lapiazza_web
+    volumes:
+      # Independent worktree at the fix commit, read-only so staging can't mutate it.
+      - ${HELIX_STAGING_SRC:-/opt/helix-staging-tree/src}:/app/src:ro
+    ports:
+      # localhost-only: reachable for curl/SSH-tunnel verification, NOT publicly exposed.
+      - "127.0.0.1:8099:8000"
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    # Starve-proofing: a runaway staging can't OOM the box and take prod down.
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/healthz', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

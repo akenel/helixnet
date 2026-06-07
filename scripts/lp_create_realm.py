@@ -18,10 +18,8 @@ import typer
 
 app = typer.Typer(add_completion=False)
 
-REALM = "lapiazza-realm-dev"
-CLIENT = "lapiazza_web"
 ROLES = ["lapiazza-user", "lapiazza-admin"]
-REDIRECTS = [
+DEFAULT_REDIRECTS = [
     "https://helix.local/*",
     "https://bottega.lapiazza.app/*",
     "http://localhost:8000/*",
@@ -44,7 +42,14 @@ def main(
     admin_pass: str = typer.Option("helix_pass"),
     lp_user: str = typer.Option("angel", help="La Piazza member to create"),
     lp_pass: str = typer.Option("helix_pass"),
+    realm: str = typer.Option("lapiazza-realm-dev", help="Realm id to build"),
+    client: str = typer.Option("lapiazza_web", help="Public client id"),
+    display_name: str = typer.Option("La Piazza", help="Realm display name"),
+    frontend_url: str = typer.Option("", help="Pin realm attributes.frontendUrl (required for a non-default hostname, e.g. staging)"),
+    redirect: list[str] = typer.Option(None, help="Override redirect URIs (repeatable); defaults to the prod set"),
 ):
+    REALM, CLIENT = realm, client
+    REDIRECTS = redirect if redirect else DEFAULT_REDIRECTS
     kc = kc_url.rstrip("/")
     with httpx.Client(verify=False, timeout=30.0) as c:
         tok = _admin_token(c, kc, admin_user, admin_pass)
@@ -52,13 +57,25 @@ def main(
         base = f"{kc}/admin/realms"
 
         # 1) realm --------------------------------------------------------------
+        realm_body = {
+            "realm": REALM, "enabled": True, "registrationAllowed": True,
+            "displayName": display_name,
+            "displayNameHtml": f"<b>{display_name}</b>",
+            "loginTheme": "keycloak",
+        }
+        if frontend_url:
+            # frontendUrl must be pinned per-realm when the realm is reached via a
+            # non-default hostname (KC_HOSTNAME_URL is the prod host) -- else OIDC
+            # discovery returns the wrong host and login cookies land on the wrong domain.
+            realm_body["attributes"] = {"frontendUrl": frontend_url.rstrip("/")}
         if c.get(f"{base}/{REALM}", headers=h).status_code == 404:
-            c.post(base, headers=h, json={
-                "realm": REALM, "enabled": True, "displayName": "La Piazza",
-                "displayNameHtml": "<b>La Piazza</b>",
-                "loginTheme": "keycloak",
-            }).raise_for_status()
-            typer.secho(f"  + realm {REALM} created (displayName 'La Piazza')", fg="green")
+            c.post(base, headers=h, json=realm_body).raise_for_status()
+            typer.secho(f"  + realm {REALM} created (displayName '{display_name}'"
+                        + (f", frontendUrl {frontend_url})" if frontend_url else ")"), fg="green")
+        elif frontend_url:
+            # idempotent: ensure frontendUrl is set on an existing realm too
+            c.put(f"{base}/{REALM}", headers=h, json=realm_body).raise_for_status()
+            typer.secho(f"  = realm {REALM} updated (frontendUrl {frontend_url})", fg="bright_black")
         else:
             typer.secho(f"  = realm {REALM} already exists", fg="bright_black")
 
