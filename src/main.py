@@ -330,42 +330,62 @@ async def favicon():
 
 @app.get("/sitemap", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def sitemap_page(request: Request):
-    """The town map: curated journeys + an auto-listing of every page route (never drifts)."""
-    areas = [
-        {"title": "🚪 Front door", "links": [
-            {"p": "/", "l": "Home", "d": "the landing page"},
+    """The app directory: La Piazza/Bottega (the flagship) + the other apps on the platform —
+    POS, Camper & Tour (repairs), ISOTTO (printing), Backlog/QA — each its own. Every GET page
+    route is auto-bucketed under its app, so the map never drifts."""
+    apps = [
+        {"icon": "🏛️", "name": "La Piazza · La Bottega", "tag": "the Square (market) + the Workshop — the flagship",
+         "prefixes": ["/compute", "/get-started", "/u/", "/s/"], "links": [
+            {"p": "/", "l": "Home", "d": "the front door"},
             {"p": "/get-started", "l": "Get Started", "d": "one-motion onboarding (CV or a sentence)"},
+            {"p": "/compute/bottega", "l": "🔧 Workshop", "d": "run recipes — the Chinese menu"},
+            {"p": "/compute/legends", "l": "🎭 Legends", "d": "browse masters → Ask a Master"},
+            {"p": "/compute/me", "l": "🐺 You", "d": "your rebuild dashboard (body/mind/spirit)"},
+            {"p": "/compute", "l": "⚡ Exchange", "d": "the compute exchange / jobs"},
             {"p": "/compute/faq", "l": "FAQ", "d": "why La Piazza exists"}]},
-        {"title": "🔧 The Workshop", "links": [
-            {"p": "/compute/bottega", "l": "Workshop", "d": "run recipes — the Chinese menu"},
-            {"p": "/compute", "l": "Exchange", "d": "the compute exchange / jobs"},
-            {"p": "/compute/me", "l": "You", "d": "your rebuild dashboard (body/mind/spirit)"}]},
-        {"title": "🎭 Legends", "links": [
-            {"p": "/compute/legends", "l": "Legends gallery", "d": "browse masters by House → Ask a Master"}]},
-        {"title": "🐺 Your storefront & shares", "links": [
-            {"p": "/u/thesapsuperstarter", "l": "/u/<slug>", "d": "a public profile (storefront)"},
-            {"p": "/s/343a727c-ae3e-41f3-b8ba-ab9c3c75df71", "l": "/s/<id>", "d": "a shared output postcard"}]},
-        {"title": "🗒️ Backlog / QA", "links": [
-            {"p": "/backlog", "l": "Backlog board", "d": "kanban + list + activity trail (testers)"},
-            {"p": "/docs", "l": "API docs", "d": "the OpenAPI explorer (dev)"}]},
-        {"title": "✅ Testing", "links": [
-            {"p": "/static/uat-bottega.html", "l": "UAT script", "d": "hand-test checklist (saves progress)"}]},
+        {"icon": "🛒", "name": "POS", "tag": "point-of-sale app", "prefixes": ["/pos"], "links": [
+            {"p": "/pos/dashboard", "l": "POS Dashboard", "d": "checkout · products · reports · cash"}]},
+        {"icon": "🚐", "name": "Camper & Tour", "tag": "vehicle repairs & service app", "prefixes": ["/camper"], "links": [
+            {"p": "/camper/dashboard", "l": "Repairs Dashboard", "d": "jobs · customers · bays · quotations · invoices"}]},
+        {"icon": "🖨️", "name": "ISOTTO", "tag": "print-shop app", "prefixes": ["/print-shop"], "links": [
+            {"p": "/print-shop/dashboard", "l": "Print Shop Dashboard", "d": "orders · catalog · artworks · suppliers"}]},
     ]
-    curated = {lk["p"].split("?")[0] for a in areas for lk in a["links"]}
-    pages = []
+    # Shared services — EVERY app plugs into these, exactly like every app uses Keycloak.
+    # The Backlog (BL) is a PLATFORM SERVICE, not an app: every app's 💬 feedback lands on the one board.
+    services = [
+        {"icon": "🔐", "name": "Keycloak — Auth", "tag": "ONE login for every app (the unified realm + SSO)",
+         "prefixes": ["/login"], "links": [
+            {"p": "/login", "l": "Login", "d": "one identity across all apps — log in once, in everywhere"}]},
+        {"icon": "🗒️", "name": "Backlog (BL)", "tag": "the shared tracker — every app's 💬 feedback lands here",
+         "prefixes": ["/backlog"], "links": [
+            {"p": "/backlog", "l": "Backlog board", "d": "kanban + list + activity; all apps feed it"}]},
+        {"icon": "✅", "name": "QA / Testing", "tag": "the shared QA dashboard", "prefixes": ["/testing"], "links": [
+            {"p": "/testing", "l": "QA Dashboard", "d": "bugs · tests · results"}]},
+        {"icon": "🛠️", "name": "API & Docs", "tag": "one backend, all apps", "prefixes": ["/docs"], "links": [
+            {"p": "/docs", "l": "API docs", "d": "the OpenAPI explorer (dev)"}]},
+    ]
+    EXCLUDE = {"/openapi.json", "/redoc", "/docs/oauth2-redirect", "/sitemap",
+               "/favicon.ico", "/{full_path:path}", "/"}
+    routes = set()
     for r in request.app.routes:
         methods = getattr(r, "methods", None) or set()
         path = getattr(r, "path", "") or ""
-        if "GET" not in methods or not path:
+        if "GET" not in methods or not path or path.startswith("/api") \
+                or path.startswith("/health") or path in EXCLUDE:
             continue
-        if path.startswith("/api") or path.startswith("/health") or path in (
-                "/openapi.json", "/docs", "/redoc", "/docs/oauth2-redirect",
-                "/sitemap", "/favicon.ico") or path == "/{full_path:path}":
-            continue
-        pages.append(path)
-    pages = sorted(set(pages))
+        routes.add(path)
+    groups = apps + services
+    other = []
+    for path in sorted(routes):
+        for g in groups:
+            if any(path == pre.rstrip("/") or path.startswith(pre) for pre in g["prefixes"]):
+                g.setdefault("all", []).append(path)
+                break
+        else:
+            other.append(path)
+    curated = {lk["p"].split("?")[0] for g in groups for lk in g["links"]}
     return templates.TemplateResponse("sitemap.html", {
-        "request": request, "areas": areas, "pages": pages, "curated": curated})
+        "request": request, "apps": apps, "services": services, "other": other, "curated": curated})
 
 @app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def share_page(session_id: str, request: Request):

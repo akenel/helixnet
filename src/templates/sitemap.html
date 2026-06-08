@@ -19,36 +19,58 @@
 {% include "_lapiazza_nav.html" %}
 
 <div class="max-w-3xl mx-auto px-4 sm:px-5 py-8">
-  <div class="mb-6">
-    <h1 class="text-3xl font-black text-white">🗺️ Site Map</h1>
-    <p class="text-slate-400 mt-1">Every room in this house — La Piazza · Bottega. (The Square marketplace lives at <a href="https://lapiazza.app" class="text-brand hover:underline" target="_blank" rel="noopener">lapiazza.app</a> with its own map.)</p>
+  <div class="mb-7">
+    <h1 class="text-3xl font-black text-white">🗺️ App Directory</h1>
+    <p class="text-slate-400 mt-1">One platform, many apps — all sharing <b class="text-slate-200">one login</b> (Keycloak) and <b class="text-slate-200">one Backlog</b>. Pick an app, or a shared service.</p>
   </div>
 
-  {% for area in areas %}
-  <div class="mb-6">
-    <h2 class="text-sm font-bold text-brand uppercase tracking-wider mb-2">{{ area.title }}</h2>
+  {% macro group(g) %}
+  <div class="card rounded-xl p-4 mb-3">
+    <div class="flex items-baseline gap-2 mb-2 flex-wrap">
+      <span class="text-xl">{{ g.icon }}</span>
+      <span class="font-bold text-white text-[16px]">{{ g.name }}</span>
+      <span class="text-[12px] text-slate-500">— {{ g.tag }}</span>
+    </div>
     <div class="grid sm:grid-cols-2 gap-2">
-      {% for lk in area.links %}
-      <a href="{{ lk.p }}" class="card rounded-xl px-4 py-3 block transition">
-        <div class="font-semibold text-white text-[15px]">{{ lk.l }}</div>
-        <div class="text-[12px] text-slate-400">{{ lk.d }}</div>
-        <div class="text-[11px] font-mono text-slate-600 mt-1">{{ lk.p }}</div>
+      {% for lk in g.links %}
+      <a href="{{ lk.p }}" class="rounded-lg px-3 py-2 block border border-slate-800 hover:border-brand/50 transition">
+        <div class="font-semibold text-slate-100 text-[14px]">{{ lk.l }}</div>
+        <div class="text-[11px] text-slate-400">{{ lk.d }}</div>
+        <div class="text-[10px] font-mono text-slate-600 mt-0.5">{{ lk.p }}</div>
       </a>
       {% endfor %}
     </div>
+    {% if g.all %}
+    <details class="mt-2">
+      <summary class="text-[11px] text-slate-500 cursor-pointer hover:text-slate-300">all {{ g.all|length }} pages in this app →</summary>
+      <div class="flex flex-wrap gap-1.5 mt-2">
+        {% for p in g.all %}
+        <a href="{{ p }}" class="text-[11px] font-mono px-2 py-0.5 rounded border {{ 'border-brand/40 text-brand' if p in curated else 'border-slate-700 text-slate-400 hover:text-white' }}">{{ p }}</a>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
   </div>
-  {% endfor %}
+  {% endmacro %}
 
-  <!-- auto-listing: every page route, so nothing is hidden (never drifts) -->
-  <div class="mt-8 pt-5 border-t border-slate-800">
-    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">All pages ({{ pages|length }})</h2>
-    <div class="flex flex-wrap gap-2">
-      {% for p in pages %}
-      <a href="{{ p }}" class="text-[12px] font-mono px-2.5 py-1 rounded-lg border {{ 'border-brand/40 text-brand' if p in curated else 'border-slate-700 text-slate-400 hover:text-white' }}">{{ p }}</a>
+  <h2 class="text-sm font-bold text-brand uppercase tracking-wider mb-2">🏠 Apps</h2>
+  {% for g in apps %}{{ group(g) }}{% endfor %}
+
+  <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-2 mt-7">🔌 Shared services
+    <span class="text-slate-500 normal-case font-normal">— every app plugs into these</span></h2>
+  {% for g in services %}{{ group(g) }}{% endfor %}
+
+  {% if other %}
+  <div class="mt-7 pt-4 border-t border-slate-800">
+    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Other / unfiled ({{ other|length }})</h2>
+    <div class="flex flex-wrap gap-1.5">
+      {% for p in other %}
+      <a href="{{ p }}" class="text-[11px] font-mono px-2 py-0.5 rounded border border-slate-700 text-slate-400 hover:text-white">{{ p }}</a>
       {% endfor %}
     </div>
-    <p class="text-[11px] text-slate-600 mt-3">Auto-generated from the live route table — add a page, it shows up here. Red = on a journey above. <a href="/docs" class="text-brand hover:underline">API routes →</a></p>
+    <p class="text-[11px] text-slate-600 mt-3">Auto-bucketed from the live route table — add a page, it lands under its app. <a href="/docs" class="text-brand hover:underline">API →</a></p>
   </div>
+  {% endif %}
 
   <footer class="mt-8 text-center text-xs text-slate-600 font-mono">
     La <a href="/" class="text-brand hover:underline">Piazza</a> · we host the square, not the model
