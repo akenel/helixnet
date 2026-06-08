@@ -792,6 +792,56 @@ async def apply(payload: Proposal,
             "slug": profile.slug, "url": f"/u/{profile.slug}"}
 
 
+@router.get("/square-profile")
+async def square_profile(current_user: dict = Depends(require_bottega_access()),
+                         db: AsyncSession = Depends(get_db_session)):
+    """State-2: does this member already have a La Piazza (Square) profile we can import from?
+    Drives the 'Welcome back — build your Bottega from your La Piazza profile' banner."""
+    from src.services.square_bridge import get_square_profile
+    sub = current_user.get("sub")
+    sq = await get_square_profile(sub) if sub else None
+    existing = await _get(db, current_user["username"])
+    return {"found": bool(sq), "has_bottega": bool(existing and existing.status == "applied"),
+            "square": sq}
+
+
+@router.post("/import-from-square")
+async def import_from_square(current_user: dict = Depends(require_bottega_access()),
+                            db: AsyncSession = Depends(get_db_session)):
+    """State-2: seed the member's Bottega FROM their existing Square profile -- the BL-014 payoff.
+    A returning La Piazza member never faces a blank workshop; their storefront seeds the bench."""
+    from src.services.square_bridge import get_square_profile
+    sub = current_user.get("sub")
+    sq = await get_square_profile(sub) if sub else None
+    if not sq:
+        raise HTTPException(status_code=404, detail="no La Piazza profile found to import")
+    username = current_user["username"]
+    bio = sq["bio"] or ((f"{sq['display_name']} — {sq['workshop']}").strip(" —")
+                        if sq["workshop"] else sq["display_name"])
+    tagline = sq["tagline"] or ""
+    existing = await _get(db, username)
+    if existing:
+        db.add(BottegaProfileHistoryModel(
+            username=username, snapshot=json.dumps(_view(existing).model_dump()),
+            reason="pre-import snapshot (from Square)"))
+        existing.bio, existing.tagline = bio, tagline
+        existing.source, existing.status = "square-import", "applied"
+        existing.completeness = min(100, max(existing.completeness, 60))
+        profile = existing
+    else:
+        profile = BottegaProfileModel(
+            username=username, bio=bio, tagline=tagline, skills="[]", categories="[]",
+            source="square-import", status="applied", completeness=60)
+        db.add(profile)
+    if not profile.slug:
+        profile.slug = await _unique_slug(db, sq["slug"] or username, username)
+    await db.commit()
+    await db.refresh(profile)
+    return {"imported": True, "profile": _view(profile), "slug": profile.slug,
+            "url": f"/u/{profile.slug}",
+            "from": {"display_name": sq["display_name"], "city": sq["city"]}}
+
+
 @router.post("/undo")
 async def undo(current_user: dict = Depends(require_bottega_access()),
                db: AsyncSession = Depends(get_db_session)):

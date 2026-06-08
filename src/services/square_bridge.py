@@ -91,3 +91,22 @@ async def list_legends(q: str | None = None, limit: int = 400) -> list[dict]:
         {"name": r[0], "workshop": r[1] or "", "tagline": r[2] or "", "bio": r[3] or "", "ref": r[4]}
         for r in rows
     ]
+
+
+async def get_square_profile(keycloak_id: str | None) -> dict | None:
+    """State-2 import: read a member's existing Square (marketplace) profile by their KC sub,
+    so the Bottega can be seeded from it. Returns None if no profile / on error."""
+    if not keycloak_id:
+        return None
+    try:
+        async with _ro_engine().connect() as conn:
+            row = (await conn.execute(text(
+                "SELECT display_name, slug, workshop_name, tagline, bio, city "
+                "FROM bh_user WHERE keycloak_id = :kid LIMIT 1"), {"kid": keycloak_id})).fetchone()
+    except Exception:  # noqa: BLE001
+        logger.warning("square_bridge.get_square_profile failed", exc_info=True)
+        return None
+    if not row:
+        return None
+    return {"display_name": row[0] or "", "slug": row[1] or "", "workshop": row[2] or "",
+            "tagline": row[3] or "", "bio": row[4] or "", "city": row[5] or ""}
