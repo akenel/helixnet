@@ -21,6 +21,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>
@@ -59,7 +60,7 @@
 
     <!-- serial / byline (Banksy-style serialization) -->
     <div class="px-6 pt-4 flex items-center justify-between text-[11px] font-mono text-slate-500">
-      <span>№ {{ serial }}{% if version > 1 %} · v{{ version }}{% endif %}</span>
+      <span>№ {{ serial }}{% if version > 1 %} · v{{ version }}{% endif %}{% if creator %} · by @{{ creator }}{% endif %}</span>
       <span>{{ created }}</span>
     </div>
 
@@ -71,6 +72,17 @@
       </div>
       {% endif %}
       <div class="md text-slate-300" id="content"></div>
+    </div>
+
+    <!-- Banksy beat: provenance + QR. Authenticity, NOT surveillance — the QR opens THIS exact
+         canonical artifact and tracks nothing about whoever scans it. We sign the work, not the viewer. -->
+    <div class="px-6 py-4 border-t border-slate-800/70 flex items-center gap-4">
+      <div id="qr" class="bg-white p-1.5 rounded-lg shrink-0 leading-none" title="Scan to open the original"></div>
+      <div class="text-[11px] text-slate-400 leading-relaxed min-w-0">
+        <div class="text-emerald-400 font-bold">✓ Authentic on La Piazza</div>
+        <div class="font-mono text-slate-300">№ {{ serial }}{% if creator %} · @{{ creator }}{% endif %}{% if created %} · {{ created }}{% endif %}</div>
+        <div class="text-slate-600">Scan to open this exact original. We sign the work, not the viewer. 🐺</div>
+      </div>
     </div>
 
     <!-- footer -->
@@ -106,6 +118,9 @@
   const raw = document.getElementById('raw').textContent;
   const html = window.marked ? marked.parse(raw) : raw.replace(/\n/g,'<br>');
   document.getElementById('content').innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : '';
+  // QR -> the canonical artifact URL (provenance, no tracking). Client-side render, no external call.
+  try { new QRCode(document.getElementById('qr'), { text: {{ share_url|tojson }}, width: 80, height: 80,
+    colorDark: '#0b1220', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
 </script>
 </body>
 </html>
