@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Piazza · UAT Test Sheet · 8 June 2026</title>
+<style>
+  :root{ --red:#C0392B; --dark:#2C3E50; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#222;background:#f4f6f8;margin:0;line-height:1.5}
+  .wrap{max-width:820px;margin:0 auto;padding:16px}
+  header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  h1{margin:0;font-size:21px;color:var(--dark)} h1 b{color:var(--red)}
+  .meta{font-size:13px;color:#667;margin-top:4px}
+  .meta input{border:none;border-bottom:1px dashed #aab;font-size:13px;padding:2px 4px;min-width:120px}
+  .bar{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .prog{font-weight:700;color:var(--dark);font-size:14px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:14px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
+  h2{font-size:15px;color:#fff;background:var(--dark);padding:9px 14px;border-radius:8px;margin:18px 0 10px}
+  .test{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+  .test.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:24px;height:24px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .tt{font-weight:700;color:var(--dark);font-size:15px}
+  .tt .id{color:var(--red);font-family:ui-monospace,monospace;font-size:13px;margin-right:6px}
+  .steps{font-size:13.5px;color:#445;margin:6px 0 0 34px}
+  .steps a{color:var(--red);font-weight:600;word-break:break-all}
+  .rate{margin:8px 0 0 34px;display:flex;gap:6px;flex-wrap:wrap}
+  .rate label{font-size:12.5px;padding:5px 11px;border:1px solid #ccd;border-radius:999px;cursor:pointer;user-select:none}
+  .rate input{display:none}
+  .rate input:checked + span{font-weight:700}
+  .rate label:has(input:checked){border-color:var(--red);background:#fcf1f0}
+  textarea{width:100%;margin:8px 0 0;border:1px solid #ccd;border-radius:8px;padding:9px;font:inherit;font-size:13.5px;min-height:46px;resize:vertical}
+  .linknote{width:100%;margin-top:6px;border:1px solid #ccd;border-radius:8px;padding:8px;font:inherit;font-size:13px}
+  .tip{font-size:12px;color:#778;background:#fff;border-radius:8px;padding:10px 14px;margin-top:14px;border-left:3px solid var(--red)}
+  footer{text-align:center;color:#99a;font-size:11px;padding:18px 0}
+  @media print{ body{background:#fff} button,.tip{display:none} .test,header{box-shadow:none;break-inside:avoid} }
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1>🐺 La <b>Piazza</b> — UAT Test Sheet</h1>
+  <div class="meta">Monday, 8 June 2026 · <b>Staging</b> · Tester: <input id="tester" placeholder="your name"> · Logged in as: <input id="asuser" placeholder="e.g. mike"></div>
+  <div class="bar">
+    <span class="prog" id="prog">0 / 0 done</span>
+    <button onclick="window.print()">🖨️ Print / Save PDF</button>
+    <button class="ghost" onclick="if(confirm('Clear all answers?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
+  <div class="meta" style="margin-top:8px">Tap ✅ to strike off · rate each · drop a note, a link, or a screenshot filename. Saves as you go.</div>
+</header>
+
+<!-- sections rendered by JS from the TESTS list so it's easy to extend -->
+<div id="sheet"></div>
+
+<div class="tip">📲 <b>On your phone:</b> open in Chrome/Safari, fill it in (it auto-saves on this device), then use the browser menu → <b>Print → Save as PDF</b> and send it back. Every link opens the real staging page.</div>
+<footer>La Piazza · UAT · we host the square, not the model · 🐺</footer>
+
+<script>
+const KEY = 'lp-uat-2026-06-08';
+const B = 'https://staging-bottega.lapiazza.app', S = 'https://staging.lapiazza.app';
+// [section, [ {id, title, steps(html)} ... ] ]
+const TESTS = [
+ ["🔑 Login & SSO — one identity everywhere", [
+   {id:'1.1', t:'Log in once, be everywhere', s:`Open <a href="${B}/get-started">${B}/get-started</a> → "Already a member? Log in" → <b>mike / helix_pass</b>. Then open <a href="${S}/">${S}</a> — you should be <b>mike</b> there too, <b>no second password</b>.`},
+   {id:'1.2', t:'Logout works', s:`Top-right shows <b>👤 @you + Logout</b>. Click Logout → you're signed out, "Get Started" returns.`},
+ ]],
+ ["🧑‍🤝‍🧑 Demo switcher — the 16 users", [
+   {id:'2.1', t:'Switch between demo users', s:`Open <a href="${S}/demo-login">${S}/demo-login</a> → click any face (mike, sally, alice, angel…) → you're now them. Switch a few.`},
+ ]],
+ ["🧭 Navigation — the two-way hallway", [
+   {id:'3.1', t:'Square ⇄ Workshop both ways', s:`From the Square nav: <b>🔧 Workshop</b> opens the Bottega. From the Bottega nav: <b>🏪 Square</b> opens the marketplace. Both should stay on <b>staging</b> (not jump to prod).`},
+   {id:'3.2', t:'App directory / site map', s:`Open <a href="${B}/sitemap">${B}/sitemap</a> — apps (La Piazza, POS, Camper, ISOTTO) + shared services (Keycloak, Backlog). Tap around.`},
+ ]],
+ ["🔧 The Workshop — recipes", [
+   {id:'4.1', t:'CV → Bio', s:`<a href="${B}/compute/bottega">${B}/compute/bottega</a> → "Load my CV" (or 👤 About You → CV→Bio). Upload a CV → bio/skills built. Never "failed".`},
+   {id:'4.2', t:'Your Story (one-liner + 22s)', s:`✨ Your Story → answer the 4 prompts → Run. Check the one-liner + 22-second pitch read like YOU. Then <b>Save / Share</b> buttons appear (the toolbar).`},
+   {id:'4.3', t:'Find Your Edge', s:`🎯 Find Your Edge → the 8 questions → a grounded strengths card (no horoscope, no raw **).`},
+   {id:'4.4', t:'Save loads back clean', s:`📓 My Blueprint → open a saved Story → it renders clean (bio · tagline · skills), NOT a wall of characters.`},
+ ]],
+ ["📋 Daily One-Pager — your task sheet", [
+   {id:'5.1', t:'The phase header', s:`<a href="${B}/compute/today">${B}/compute/today</a> → header shows local date + <b>Phase 1 · Day X of 30 · Week W of 4</b> + "X of Y done".`},
+   {id:'5.2', t:'Add / check / move / note', s:`Add a Top-10 task → tap ⬜ to ✅ → 📝 add a note → → move one to tomorrow → 🗑️ delete one. Filter All/To-do/Done.`},
+ ]],
+ ["🎭 Legends — context-aware mentors", [
+   {id:'6.1', t:'The master knows you', s:`<a href="${B}/compute/legends">${B}/compute/legends</a> → pick a House → a master → ask "look at who I am and advise me". The answer should fit YOUR life (work/body/journey), in their voice — not "I can't see your screen".`},
+   {id:'6.2', t:'Picked-for-you suggestions', s:`On a master, the "Try asking — picked for you ✨" chips should fit your situation (not generic).`},
+   {id:'6.3', t:'See & edit the wrapper', s:`Tap "📋 What [master] knows about you" → the context shows + is editable. Edit it → ask → the answer reflects your edit.`},
+ ]],
+ ["🎟️ Shares — the Banksy beat", [
+   {id:'7.1', t:'QR + provenance on a share', s:`Run any recipe → Save → Share → open the <b>/s/</b> link. Check: <b>QR code</b> + "✓ Authentic on La Piazza · № · by @you · date". Scan the QR with your phone → it opens the same page.`},
+   {id:'7.2', t:'Unfurl has an image', s:`Paste a /s/ link (or <a href="${S}/">${S}</a>) into Telegram/WhatsApp → the preview shows the <b>La Piazza Wolf card</b> (not the old BorrowHood logo). Add <code>?v=9</code> to bust cache if needed.`},
+ ]],
+ ["🏪 The Square — item + audience", [
+   {id:'8.1', t:'Publish → photo unfurls', s:`Create/publish an item with a photo. Share its link → the preview shows <b>your photo</b>. (Drafts stay private — no preview, by design.)`},
+   {id:'8.2', t:'Who-Viewed panel', s:`As Mike: open <a href="${S}/items/ux-debugging-help-10-hours">Alice's item</a>. Then switch to <b>Alice</b> (/demo-login) → open her item → "👁️ Who's been looking" should list <b>Mike</b> (views · last-seen · 💬 Say hi), with the old views in "anonymous".`},
+ ]],
+];
+
+function render(){
+  let html='', n=0;
+  TESTS.forEach((sec,si)=>{
+    html += `<h2>${sec[0]}</h2>`;
+    sec[1].forEach(t=>{ n++;
+      html += `<div class="test" data-k="${t.id}">
+        <div class="top"><input type="checkbox" data-c="${t.id}">
+          <div><div class="tt"><span class="id">T${t.id}</span>${t.t}</div></div></div>
+        <div class="steps">${t.s}</div>
+        <div class="rate">
+          ${['✅ works','⚠️ minor issue','❌ broken','💡 idea'].map((lbl,i)=>
+            `<label><input type="radio" name="r-${t.id}" value="${lbl}"><span>${lbl}</span></label>`).join('')}
+        </div>
+        <textarea data-n="${t.id}" placeholder="What happened? What you expected? Steps…"></textarea>
+        <input class="linknote" data-l="${t.id}" placeholder="🔗 paste a link, or a screenshot filename (e.g. bug-T8.2.png)">
+      </div>`;
+    });
+  });
+  document.getElementById('sheet').innerHTML = html;
+  document.getElementById('prog').dataset.total = n;
+  load(); wire(); count();
+}
+function wire(){
+  document.querySelectorAll('input,textarea').forEach(el=>{
+    el.addEventListener('input',()=>{ save(); count(); });
+    el.addEventListener('change',()=>{ save(); count(); });
+  });
+}
+function count(){
+  const done=[...document.querySelectorAll('input[data-c]')].filter(c=>c.checked).length;
+  const tot=document.getElementById('prog').dataset.total;
+  document.getElementById('prog').textContent = `${done} / ${tot} done`;
+  document.querySelectorAll('.test').forEach(t=>{ const c=t.querySelector('input[data-c]'); t.classList.toggle('done', c&&c.checked); });
+}
+function save(){
+  const d={tester:val('#tester'),asuser:val('#asuser'),items:{}};
+  document.querySelectorAll('.test').forEach(t=>{ const k=t.dataset.k;
+    d.items[k]={done:t.querySelector('[data-c]').checked,
+      rate:(t.querySelector(`[name="r-${k}"]:checked`)||{}).value||'',
+      note:t.querySelector('[data-n]').value, link:t.querySelector('[data-l]').value}; });
+  localStorage.setItem(KEY, JSON.stringify(d));
+}
+function load(){
+  let d; try{ d=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ d={}; }
+  if(d.tester) setv('#tester',d.tester); if(d.asuser) setv('#asuser',d.asuser);
+  Object.entries(d.items||{}).forEach(([k,v])=>{
+    const t=document.querySelector(`.test[data-k="${k}"]`); if(!t)return;
+    t.querySelector('[data-c]').checked=!!v.done;
+    if(v.rate){ const r=t.querySelector(`[name="r-${k}"][value="${CSS.escape(v.rate)}"]`); if(r)r.checked=true; }
+    t.querySelector('[data-n]').value=v.note||''; t.querySelector('[data-l]').value=v.link||'';
+  });
+}
+const val=s=>{const e=document.querySelector(s);return e?e.value:''};
+const setv=(s,v)=>{const e=document.querySelector(s);if(e)e.value=v};
+render();
+</script>
+</body></html>
