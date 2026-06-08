@@ -387,6 +387,27 @@ async def sitemap_page(request: Request):
     return templates.TemplateResponse("sitemap.html", {
         "request": request, "apps": apps, "services": services, "other": other, "curated": curated})
 
+@app.get("/og/{name}", include_in_schema=False)
+async def og_card(name: str):
+    """Serve a serialized OG card from MinIO (the artifact vault) — used as og:image by shares.
+    Falls back to a bundled static copy so an unfurl bot never gets a 404."""
+    from fastapi.responses import Response
+    safe = name.replace("..", "").lstrip("/")
+    data = None
+    try:
+        from src.services.minio_service import minio_service
+        data = minio_service.download_artifact(f"cards/{safe}")
+    except Exception:  # noqa: BLE001
+        data = None
+    if not data:
+        fp = Path(__file__).parent / "static" / "og" / safe
+        if fp.exists():
+            data = fp.read_bytes()
+    if not data:
+        return Response(status_code=404)
+    return Response(content=data, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=86400"})
+
 @app.get("/s/{session_id}", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def share_page(session_id: str, request: Request):
     """Public postcard for a shared output. Share-1 (BL-010): a *meaty* og:description

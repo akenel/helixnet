@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1200px;height:630px;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#fff;
+    background:radial-gradient(900px 520px at 80% -12%, #3a1212, transparent),
+               radial-gradient(760px 520px at 6% 116%, #1f2a44, transparent), #060910;
+    display:flex;align-items:center;padding:72px 84px;position:relative}
+  .left{flex:1}
+  .kicker{font-size:21px;letter-spacing:.34em;color:#C0392B;font-weight:800;text-transform:uppercase}
+  h1{font-size:94px;font-weight:900;line-height:1;margin:16px 0 24px;letter-spacing:-.02em}
+  h1 b{color:#C0392B}
+  .tag{font-size:30px;color:#cbd5e1;font-weight:500;line-height:1.34;max-width:690px}
+  .tag b{color:#fff;font-weight:700}
+  .wolf{width:300px;height:300px;object-fit:contain;margin-left:36px;
+    filter:drop-shadow(0 12px 44px rgba(192,57,43,.45))}
+  .foot{position:absolute;left:84px;bottom:52px;font-size:20px;color:#94a3b8;font-weight:600}
+  .foot b{color:#e2e8f0}
+  .serial{position:absolute;right:74px;bottom:52px;font-size:15px;color:#64748b;
+    font-family:'JetBrains Mono',monospace;letter-spacing:.12em}
+</style></head>
+<body>
+  <div class="left">
+    <div class="kicker">No fees · No middlemen</div>
+    <h1>La <b>Piazza</b></h1>
+    <div class="tag">Items, skills, events, raffles, help — <b>all from your neighbors.</b><br>Borrow it. Learn it. Make it. Win it. Meet at it.</div>
+  </div>
+  <img class="wolf" src="{{WOLF}}">
+  <div class="foot">🐺 <b>lapiazza.app</b> · the neighborhood that builds together</div>
+  <div class="serial">№ {{SERIAL}}</div>
+</body></html>
