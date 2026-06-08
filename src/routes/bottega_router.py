@@ -309,6 +309,29 @@ async def legend_questions(name: str, current_user: dict = Depends(require_botte
     name = (name or "").strip()
     if not name:
         return {"questions": []}
+    # Personalized (the pre-call): if we know the person, suggest questions that bridge THIS master
+    # to THEIR real situation (cookie-seller -> cookie questions). Fresh, not cached. Newcomers -> generic.
+    try:
+        portrait = await _build_portrait(db, current_user["username"])
+    except Exception:  # noqa: BLE001
+        portrait = ""
+    if portrait and not portrait.startswith("A newcomer"):
+        try:
+            raw = await _brain_chat(
+                "Suggest what THIS specific person would bring to THIS historical master. Respond "
+                'ONLY JSON: {"questions":["q1","q2","q3"]} -- exactly 3 short, first-person questions '
+                "that connect the master's real craft/wisdom to the person's ACTUAL situation, work, "
+                "or goal. Hand-picked for this person, never generic.",
+                f"Master: {name}\nThe person: {portrait}", json_mode=True)
+            raw = re.sub(r"<think>.*?</think>", "", raw or "", flags=re.S)
+            a, b = raw.find("{"), raw.rfind("}")
+            if a >= 0 and b > a:
+                pq = [str(q).strip() for q in json.loads(raw[a:b + 1]).get("questions", [])
+                      if str(q).strip()][:3]
+                if pq:
+                    return {"questions": pq, "personalized": True}
+        except Exception:  # noqa: BLE001
+            logger.warning("personalized legend_questions failed for %s", name, exc_info=True)
     row = (await db.execute(select(BottegaSessionModel).where(
         BottegaSessionModel.username == "system",
         BottegaSessionModel.slug == "legend-questions"))).scalar_one_or_none()
