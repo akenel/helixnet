@@ -15,7 +15,20 @@
   .lp-who{padding:6px 8px;color:#cbd5e1;font-size:13px;font-weight:700;white-space:nowrap}
   #lp-logout{color:#94a3b8}
   @media(max-width:560px){.lp-hide-sm{display:none}}
+  .lp-webview{display:none;background:#7c2d12;color:#fff;font:600 13px/1.4 Inter,system-ui,sans-serif;padding:10px 30px 10px 14px;text-align:center;position:relative;z-index:65}
+  .lp-webview b{color:#fdba74}
+  .lp-webview .x{position:absolute;right:10px;top:8px;color:#fdba74;cursor:pointer;font-weight:700}
 </style>
+<!-- Door: WhatsApp/IG/FB in-app browsers BLOCK Google sign-in (disallowed_useragent) — the #1
+     funnel killer. Detect the webview and nudge "open in a real browser". -->
+<div class="lp-webview" id="lp-webview">
+  📲 To sign in with Google, open this in your browser: tap the <b>⋮</b> menu (top-right) → <b>“Open in Chrome / Safari”</b>. Or just sign up with email 👇
+  <span class="x" id="lp-webview-x">✕</span>
+</div>
+<script>(function(){var ua=navigator.userAgent||'';
+  if(/(WhatsApp|Instagram|FBAN|FBAV|FB_IAB|Line\/|MicroMessenger|GSA\/)/i.test(ua)){
+    var b=document.getElementById('lp-webview');if(b){b.style.display='block';
+      var x=document.getElementById('lp-webview-x');if(x)x.onclick=function(){b.style.display='none';};}}})();</script>
 <nav class="lp-nav">
   <div class="lp-nav-in">
     <a href="/" class="lp-logo">La <b>Piazza</b></a>
