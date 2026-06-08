@@ -47,6 +47,10 @@
       <template x-if="!ph">
         <button @click="askStart()" class="mt-2 text-[12px] text-brand hover:underline">⚙️ set your Day 1 to see your progress →</button>
       </template>
+      <div x-show="tasks.length" class="mt-3 text-[13px] text-slate-300 font-semibold">
+        ✅ <b class="text-emerald-400" x-text="doneAll()"></b> of <b x-text="totalAll()"></b> done
+        <span class="text-slate-400" x-text="(totalAll()>0&&doneAll()===totalAll())?'— all clear! 🏆':(doneAll()>0?'— keep going 💪':'— let\'s go 🐺')"></span>
+      </div>
     </div>
 
     <!-- ===== DAY SWITCHER + TOOLS ===== -->
@@ -175,6 +179,8 @@ function day(){
     inSec(s){ return this.tasks.filter(t=>t.section===s); },
     count(s){ return this.inSec(s).length; },
     doneCount(s){ return this.inSec(s).filter(t=>t.status==='done').length; },
+    totalAll(){ return this.tasks.length; },
+    doneAll(){ return this.tasks.filter(t=>t.status==='done').length; },
     shown(s){ let f=this.inSec(s); if(this.filter==='open')f=f.filter(t=>t.status!=='done'); if(this.filter==='done')f=f.filter(t=>t.status==='done'); return f; },
 
     async add(section){ const v=(section==='top10'?this.newTop:this.newBonus).trim(); if(!v)return;
