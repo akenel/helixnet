@@ -412,6 +412,14 @@ async def _build_portrait(db: AsyncSession, username: str) -> str:
     return " ".join(parts)
 
 
+@router.get("/portrait")
+async def portrait(current_user: dict = Depends(require_bottega_access()),
+                   db: AsyncSession = Depends(get_db_session)):
+    """The plain-language context a master/coach reads about you -- shown + EDITABLE in the UI.
+    Transparency: the wrapper isn't buried; it's yours to see and steer before you ask."""
+    return {"portrait": await _build_portrait(db, current_user["username"])}
+
+
 @router.post("/recipes/{slug}/run")
 async def recipes_run(slug: str, request: Request,
                       current_user: dict = Depends(require_bottega_access()),
@@ -438,8 +446,9 @@ async def recipes_run(slug: str, request: Request,
                 raw[name] = (up.filename or "upload", await up.read())
         else:
             raw[name] = form.get(name)
-    portrait = ""
-    if slug in ("mentor-session", "find-your-edge", "decide"):
+    # Transparency: if the user edited the visible wrapper, THEIR text wins; else auto-build it.
+    portrait = (form.get("portrait") or "").strip()
+    if not portrait and slug in ("mentor-session", "find-your-edge", "decide"):
         try:
             portrait = await _build_portrait(db, owner)
         except Exception:  # noqa: BLE001

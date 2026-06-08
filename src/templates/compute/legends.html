@@ -116,6 +116,17 @@
             </div>
           </div>
 
+          <!-- Transparency: the ACTUAL context handed to the master -- visible + editable, never buried -->
+          <div class="mt-5" x-show="portrait">
+            <button @click="showWrapper=!showWrapper" class="text-[11px] uppercase tracking-wider text-slate-500 hover:text-slate-300 flex items-center gap-1.5">
+              <span x-text="showWrapper?'▾':'▸'"></span> 📋 What <span x-text="(selected?.name||'they').split(' ')[0]"></span> knows about you
+            </button>
+            <div x-show="showWrapper" x-cloak class="mt-2">
+              <textarea x-model="portrait" rows="5" class="w-full px-3 py-2 rounded-lg bg-[#070d18] border border-slate-700 text-slate-300 text-[12px] leading-relaxed"></textarea>
+              <p class="text-[10px] text-slate-600 mt-1">This is the context we hand the master — it's yours. Edit it, and they'll answer based on this.</p>
+            </div>
+          </div>
+
           <label class="block text-[11px] uppercase tracking-wider text-slate-500 mt-5 mb-1">What are you facing?</label>
           <textarea x-model="question" rows="3" placeholder="Ask your master anything…"
             class="w-full px-3 py-2 rounded-lg bg-[#070d18] border border-slate-700 text-slate-100 text-sm"></textarea>
@@ -141,7 +152,7 @@
 function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
-    page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[],
+    page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], portrait:'', showWrapper:false,
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -166,14 +177,16 @@ function legends(){
       this.loading=false;
     },
     pageItems(){ const s=this.page*this.perPage; return this.people.slice(s,s+this.perPage); },
-    select(p){ this.selected=p; this.question=''; this.answer=''; this.err=''; this.suggested=[]; this.view='ask'; window.scrollTo(0,0);
+    select(p){ this.selected=p; this.question=''; this.answer=''; this.err=''; this.suggested=[]; this.portrait=''; this.showWrapper=false; this.view='ask'; window.scrollTo(0,0);
       fetch('/api/v1/compute/bottega/legends/questions?name='+encodeURIComponent(p.name),{headers:this.hdr()})
-        .then(r=>r.json()).then(d=>{ if(this.selected&&this.selected.name===p.name) this.suggested=d.questions||[]; }).catch(()=>{}); },
+        .then(r=>r.json()).then(d=>{ if(this.selected&&this.selected.name===p.name) this.suggested=d.questions||[]; }).catch(()=>{});
+      fetch('/api/v1/compute/bottega/portrait',{headers:this.hdr()})
+        .then(r=>r.json()).then(d=>{ this.portrait=d.portrait||''; }).catch(()=>{}); },
     async ask(){
       if(!this.question.trim()) return;
       this.busy=true; this.err=''; this.answer='';
       try{
-        const body=new URLSearchParams({ mentor:this.selected.name, situation:this.question });
+        const body=new URLSearchParams({ mentor:this.selected.name, situation:this.question, portrait:this.portrait });
         const r=await fetch('/api/v1/compute/bottega/recipes/mentor-session/run',{ method:'POST',
           headers:{ 'Authorization':'Bearer '+this.token, 'Content-Type':'application/x-www-form-urlencoded' }, body });
         const d=await r.json();
