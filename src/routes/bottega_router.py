@@ -78,13 +78,19 @@ def _view(p: BottegaProfileModel | None) -> ProfileView | None:
 
 
 async def _unique_slug(db: AsyncSession, desired: str, username: str) -> str:
-    """Slugify + guarantee uniqueness (append a suffix if another user owns it)."""
-    base = slugify(desired)
-    taken = (await db.execute(
-        select(BottegaProfileModel).where(
-            BottegaProfileModel.slug == base, BottegaProfileModel.username != username)
-    )).scalar_one_or_none()
-    return f"{base}-{slugify(username)[:6]}" if taken else base
+    """Slugify + guarantee uniqueness. Loops -2, -3 … until the slug is actually free, so two
+    members with the same name (or a leftover/orphan profile) can't collide -> 500 on signup."""
+    base = slugify(desired) or "member"
+    candidate, n = base, 1
+    while True:
+        clash = (await db.execute(
+            select(BottegaProfileModel).where(
+                BottegaProfileModel.slug == candidate, BottegaProfileModel.username != username)
+        )).scalar_one_or_none()
+        if not clash:
+            return candidate
+        n += 1
+        candidate = f"{base}-{n}"
 
 
 async def _get(db: AsyncSession, username: str) -> BottegaProfileModel | None:
