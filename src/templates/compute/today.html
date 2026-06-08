@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="La Piazza"><meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="{{ request.headers.get('x-forwarded-proto','https') }}://{{ request.headers.get('x-forwarded-host') or request.url.netloc }}/og/lapiazza-og-v3.png">
 <title>Today · La Piazza</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
