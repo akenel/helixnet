@@ -104,6 +104,20 @@ passwords and Google logins keep working across the move. Plan:
 
 ---
 
+## Recon 2026-06-08 — READY TO EXECUTE (no architectural blockers)
+- **Marketplace source is on the box:** `/opt/helixnet/BorrowHood` (compose build context `../BorrowHood`). Rebuildable: `docker compose -f docker-compose.uat.yml -f docker-compose.staging.yml build borrowhood_staging`.
+- **Realm is config-driven (env):** `BH_KC_REALM` / `BH_KC_CLIENT_ID` / `BH_KC_CLIENT_SECRET`. Repoint = change env + recreate. (staging today: `BH_KC_REALM=borrowhood-staging`, client `borrowhood-web` confidential w/ secret.)
+- **⚠️ PREREQUISITE:** `borrowhood_staging` is currently **unhealthy** (Up 2d). Fix that FIRST — do not migrate onto a broken foundation.
+- **Do NOT run tired.** This moves real logins; the prod cutover touches ~315 live `lapiazza.app` users. Execute rested, top-of-session, rollback-ready.
+
+**Wake-up-and-execute order (staging first, prod gated):**
+1. Fix `borrowhood_staging` health (whatever's red) so the baseline is green.
+2. Add the `borrowhood-web` client to `lapiazza-realm-staging` (confidential, secret, staging.lapiazza.app redirect URIs).
+3. Import `borrowhood-staging` users into `lapiazza-realm-staging` (KC partial export/import; preserve `id`+`username`+credential hashes+federated links). Only ~11 users on staging = low risk.
+4. Flip `borrowhood_staging` env `BH_KC_REALM` -> `lapiazza-realm-staging` (+ the new client secret); recreate.
+5. **Test SSO:** log into staging Bottega -> land authed on staging Square (same realm session); both `/u/<slug>` resolve; `bh_user.keycloak_id` still joins. Human-green.
+6. ONLY THEN, rested + signed off: repeat on prod (`borrowhood` -> `lapiazza-realm-dev`), keep the old realm hot as rollback.
+
 ## Phased runbook (dev → staging → prod, with rollback)
 **Phase 0 — Audit (before touching anything):**
 - Count prod `borrowhood` users; list dual-realm collisions by email; confirm `bh_user.keycloak_id`
