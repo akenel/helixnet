@@ -183,8 +183,8 @@
       <!-- json output: generic (body-intake, story-intake, any structured recipe) -->
       <template x-if="output && output.output_type==='json' && !(active && active.slug==='cv-to-bio')">
         <div class="space-y-3 text-sm">
-          <template x-for="[k,v] in Object.entries(output.result||{})" :key="k">
-            <div x-show="v && (!Array.isArray(v) || v.length)">
+          <template x-for="[k,v] in Object.entries(resObj())" :key="k">
+            <div x-show="v && (!Array.isArray(v) || v.length) && !['emails','phones','links','chars','char','source'].includes(k)">
               <div class="text-[10px] uppercase tracking-wider text-slate-500" x-text="k.replace(/_/g,' ')"></div>
               <div class="text-slate-200" x-text="Array.isArray(v) ? v.join(' · ') : v"></div>
             </div>
@@ -257,6 +257,8 @@ function bottega() {
     },
     pick(r) { if(!r) return; this.active=r; this.files={}; this.fields={}; this.output=null; this.err=''; this.saveMsg=''; this.savedUrl=''; },
     renderMd(s) { try { const h = window.marked ? marked.parse(s||'') : (s||''); return window.DOMPurify ? DOMPurify.sanitize(h) : ''; } catch(e){ return ''; } },
+    // Loaded JSON sessions store the result as TEXT -> parse it so we render the object, not its letters.
+    resObj() { let r = this.output && this.output.result; if (typeof r === 'string') { try { r = JSON.parse(r); } catch(e) { return {}; } } return (r && typeof r === 'object' && !Array.isArray(r)) ? r : {}; },
     _text() {
       const o=this.output||{}, r=o.result;
       const body = typeof r==='string' ? r
