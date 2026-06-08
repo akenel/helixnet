@@ -7,6 +7,7 @@ const { execSync } = require('child_process');
 const SQUARE = 'https://staging.lapiazza.app';
 const TITLE = 'Need Help Moving a Garage - 20 hands for a 1000lb crane';
 const BODY = "Moving my whole garage before a relocation. There's a 1000-lb car crane that needs about 20 hands to lift safely - fit folks welcome. Saturday morning. My sister Sally is baking cookies for the crew.";
+const COVER = __dirname + '/../../stories/dream-weavers/cards/ep02-garage-cover.png';
 const FRAMES = '/tmp/ep2rec';
 const OUTDIR = '/home/angel/Videos/dream-weavers';
 const OUT = `${OUTDIR}/ep02-playthrough.mp4`;
@@ -32,23 +33,21 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
 
   await page.goto(SQUARE + '/helpboard', { waitUntil: 'networkidle2', timeout: 30000 });
   await client.send('Page.startScreencast', { format: 'jpeg', quality: 80, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
-  await sleep(3500);                                            // dwell: the board (neighbours helping neighbours)
-
-  await clickByAttr(page, '@click', 'showCreate = true'); await sleep(2200);   // open New Post
-  await clickByAttr(page, '@click', "help_type = 'need'"); await sleep(1400);   // I need help
-  await page.type('input[x-model="newPost.title"]', TITLE, { delay: 45 }); await sleep(700);
-  await page.type('textarea[x-model="newPost.body"]', BODY, { delay: 18 }); await sleep(900);
-  await page.evaluate(() => { const s = document.querySelector('select[x-model="newPost.category"]'); if (s) { s.selectedIndex = 1; s.dispatchEvent(new Event('change', { bubbles: true })); } }); await sleep(700);
-  await page.select('select[x-model="newPost.urgency"]', 'urgent').catch(() => {}); await sleep(1500);
-  await clickByAttr(page, '@click', 'submitPost'); await sleep(3500);           // post -> modal closes
-  // dwell on the board with the fresh post at the top
-  await page.waitForFunction(t => document.body.innerText.includes(t.slice(0, 30)), { timeout: 10000, polling: 400 }, TITLE).catch(() => {});
-  await sleep(3000);
-  await page.evaluate(() => window.scrollTo({ top: 250, behavior: 'smooth' })); await sleep(2500);
-  // open the post -> the crew can reply
-  await page.evaluate(t => { const el = [...document.querySelectorAll('h3,h2,a,div')].find(x => x.textContent.trim().startsWith(t.slice(0, 25))); if (el) el.click(); }, TITLE);
-  await sleep(3500);
-  await page.evaluate(() => window.scrollTo({ top: 200, behavior: 'smooth' })); await sleep(2500);
+  await sleep(4000);                                            // dwell: the board (neighbours helping neighbours)
+  await page.evaluate(() => window.scrollTo({ top: 300, behavior: 'smooth' })); await sleep(4000);  // Mike's post + its cover in the list
+  await page.evaluate(() => window.scrollTo({ top: 680, behavior: 'smooth' })); await sleep(4000);  // the community: other needs + offers
+  await page.evaluate(() => window.scrollTo({ top: 1000, behavior: 'smooth' })); await sleep(3500);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2000);
+  // open Mike's garage post (the one with the cover photo)
+  await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('*')].filter(el => (el.getAttribute('@click') || '').startsWith('openPost'));
+    const card = cards.find(c => c.textContent.includes('Garage Moving Day')) || cards[0];
+    if (card) card.click();
+  });
+  await sleep(5000);                                            // dwell: the post detail + the big cover
+  await page.evaluate(() => window.scrollTo({ top: 340, behavior: 'smooth' })); await sleep(4500);  // cover + the ask
+  await page.evaluate(() => window.scrollTo({ top: 720, behavior: 'smooth' })); await sleep(4500);  // the reply area (the crew can answer)
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2500);
 
   await client.send('Page.stopScreencast'); await sleep(400);
   await browser.close();
@@ -65,6 +64,6 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
   console.log(`captured ${frames.length} frames over ${(frames[frames.length - 1].t - frames[0].t).toFixed(1)}s -> encoding…`);
   const RAW = `${FRAMES}/raw.mp4`;
   execSync(`ffmpeg -y -loglevel error -f concat -safe 0 -i ${FRAMES}/list.txt -vf "fps=24,format=yuv420p,scale=1920:1080" -c:v libx264 -preset medium -crf 20 "${RAW}"`, { stdio: 'inherit' });
-  execSync(`ffmpeg -y -loglevel error -i "${RAW}" -vf "tpad=stop_mode=clone:stop_duration=25,fps=24" -t 60 -c:v libx264 -preset medium -crf 20 -movflags +faststart "${OUT}"`, { stdio: 'inherit' });
+  execSync(`ffmpeg -y -loglevel error -i "${RAW}" -vf "tpad=stop_mode=clone:stop_duration=40,fps=24" -t 60 -c:v libx264 -preset medium -crf 20 -movflags +faststart "${OUT}"`, { stdio: 'inherit' });
   console.log('✅ wrote', OUT, '(exactly 60s)');
 })();
