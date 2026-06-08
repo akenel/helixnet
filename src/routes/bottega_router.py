@@ -491,11 +491,14 @@ async def recipes_run(slug: str, request: Request,
     # Auto-save the structured intakes to the Blueprint spine -- the dashboard reads these
     # (the person-schema slices, not throwaway). One row per run; the dashboard takes latest.
     if slug in ("body-intake", "story-intake") and result.get("output_type") == "json":
-        db.add(BottegaSessionModel(
+        sess = BottegaSessionModel(
             username=owner, slug=slug, title=RECIPES[slug].get("title", slug),
             inputs=json.dumps({k: v for k, v in raw.items() if isinstance(v, str)}),
-            output=json.dumps(result.get("result", {})), output_type="json", tags="intake"))
+            output=json.dumps(result.get("result", {})), output_type="json", tags="intake")
+        db.add(sess)
         await db.commit()
+        await db.refresh(sess)
+        result["saved_id"] = str(sess.id)
     result["charged"] = price
     result["balance"] = await credit_balance(db, owner)
     return result

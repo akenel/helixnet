@@ -189,6 +189,14 @@
               <div class="text-slate-200" x-text="Array.isArray(v) ? v.join(' · ') : v"></div>
             </div>
           </template>
+          <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-800">
+            <span x-show="savedId" class="text-[11px] text-emerald-400 font-semibold mr-1">✓ in your Blueprint</span>
+            <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
+            <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
+            <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
+            <button @click="downloadOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download</button>
+            <button @click="saveSession()" :disabled="saving||!token" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand/90 hover:bg-brand text-white disabled:opacity-40" x-text="savedMsg||(savedId?'📌 Pin again':'📓 Save to Blueprint')"></button>
+          </div>
         </div>
       </template>
       <!-- markdown/text output (cv-generate, cover-letter) -->
@@ -251,7 +259,11 @@ function bottega() {
     renderMd(s) { try { const h = window.marked ? marked.parse(s||'') : (s||''); return window.DOMPurify ? DOMPurify.sanitize(h) : ''; } catch(e){ return ''; } },
     _text() {
       const o=this.output||{}, r=o.result;
-      const body = typeof r==='string'?r:JSON.stringify(r,null,2);
+      const body = typeof r==='string' ? r
+        : (r && typeof r==='object'
+            ? Object.entries(r).filter(([k,v])=>v && (!Array.isArray(v)||v.length))
+                .map(([k,v])=>'**'+k.replace(/_/g,' ')+':** '+(Array.isArray(v)?v.join(' · '):v)).join('\n\n')
+            : String(r));
       const q = Object.entries(o.inputs||{}).filter(([k,v])=>v).map(([k,v])=>'**'+k+':** '+v).join('\n');
       return '# '+(o.recipe||'La Piazza')+'\n_'+((o.asked_at||'').slice(0,16).replace('T',' '))+'_\n\n'
         + (q ? '## Asked\n'+q+'\n\n## Answer\n' : '') + body + '\n';
@@ -323,7 +335,7 @@ function bottega() {
         const r = await fetch('/api/v1/compute/bottega/recipes/'+this.active.slug+'/run', {
           method:'POST', headers:{'Authorization':'Bearer '+this.token}, body: fd });
         const d = await r.json();
-        if (r.ok) { this.savedId = null; this.output = { ...d, recipe: this.active.title, slug: this.active.slug,
+        if (r.ok) { this.savedId = d.saved_id || null; this.output = { ...d, recipe: this.active.title, slug: this.active.slug,
                                   inputs: {...this.fields}, asked_at: new Date().toISOString() }; }
         else this.err = d.detail || ('error '+r.status);
       } catch(e) { this.err = 'failed'; }
