@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:210mm; height:297mm; font-family:'Helvetica Neue',Arial,sans-serif; color:#222; }
+  body { padding:0; }
+  .wrap { padding:11mm 14mm 8mm; }
+  .red { color:#C0392B; } .navy { color:#2C3E50; }
+  /* header */
+  .head { display:flex; align-items:flex-end; justify-content:space-between; border-bottom:3px solid #C0392B; padding-bottom:4mm; }
+  .brand { font-size:30pt; font-weight:800; letter-spacing:-.5pt; color:#2C3E50; }
+  .brand b { color:#C0392B; }
+  .brand small { display:block; font-size:10.5pt; font-weight:600; color:#5b6b7a; letter-spacing:.3pt; margin-top:1mm; }
+  .head .own { text-align:right; font-size:9pt; color:#7a8a99; line-height:1.5; }
+  .head .own b { color:#2C3E50; font-size:11pt; }
+  /* hero */
+  .hero { margin:4.5mm 0 4mm; }
+  .hero h1 { font-size:17.5pt; color:#2C3E50; font-weight:800; line-height:1.25; }
+  .hero h1 em { color:#C0392B; font-style:normal; }
+  .hero p { font-size:10pt; color:#555; margin-top:2mm; }
+  /* section title */
+  h2.sec { font-size:8.5pt; letter-spacing:1.4pt; text-transform:uppercase; color:#C0392B; font-weight:800; margin:3.5mm 0 2.5mm; }
+  /* modules */
+  .mods { display:grid; grid-template-columns:repeat(3,1fr); gap:2.5mm; }
+  .mod { border:1px solid #e3e8ee; border-radius:2.5mm; padding:3mm 3mm; }
+  .mod .i { font-size:14pt; } .mod .n { font-weight:700; font-size:9.5pt; color:#2C3E50; margin-top:1mm; }
+  .mod .d { font-size:7.8pt; color:#6b7884; line-height:1.35; margin-top:.6mm; }
+  /* comparison */
+  table { width:100%; border-collapse:collapse; font-size:9pt; }
+  th,td { padding:2.4mm 3mm; text-align:left; border-bottom:1px solid #e8ecf1; }
+  thead th { background:#2C3E50; color:#fff; font-size:8.5pt; }
+  thead th:nth-child(3) { background:#C0392B; }
+  td.lbl { font-weight:600; color:#3a4856; width:34%; }
+  td.corp { color:#9aa7b3; width:33%; }
+  td.lp { color:#1f7a3d; font-weight:700; width:33%; }
+  /* pricing */
+  .price { display:grid; grid-template-columns:1fr 1fr; gap:3mm; }
+  .tier { border:1.5px solid #e3e8ee; border-radius:3mm; padding:3.5mm 4mm; }
+  .tier.feat { border-color:#C0392B; background:#fcf4f3; }
+  .tier .t { font-size:9pt; font-weight:800; color:#C0392B; letter-spacing:.5pt; text-transform:uppercase; }
+  .tier .amt { font-size:15pt; font-weight:800; color:#2C3E50; margin:1mm 0; }
+  .tier .amt span { font-size:9pt; color:#7a8a99; font-weight:600; }
+  .tier .li { font-size:8pt; color:#5b6b7a; line-height:1.5; }
+  .own-line { text-align:center; font-size:8.5pt; color:#2C3E50; margin-top:3mm; font-weight:600; }
+  .own-line b { color:#C0392B; }
+  /* why */
+  .why { background:#f7f9fb; border-left:3px solid #C0392B; padding:3.5mm 4mm; font-size:8.6pt; color:#46555f; line-height:1.5; margin-top:2mm; }
+  .why b { color:#2C3E50; }
+  /* footer cta */
+  .cta { margin-top:3.5mm; border-top:2px solid #2C3E50; padding-top:3.5mm; display:flex; justify-content:space-between; align-items:center; }
+  .cta .big { font-size:13pt; font-weight:800; color:#2C3E50; }
+  .cta .big em { color:#C0392B; font-style:normal; }
+  .cta .contact { text-align:right; font-size:8.6pt; color:#46555f; line-height:1.6; }
+  .cta .contact b { color:#2C3E50; }
+  .fineprint { text-align:center; font-size:6.8pt; color:#9aa7b3; margin-top:3mm; }
+</style></head>
+<body><div class="wrap">
+
+  <div class="head">
+    <div class="brand">Helix<b>Net</b><small>Your business platform — you own it.</small></div>
+    <div class="own">no licenses · no lock-in<br><b>your server · your data</b></div>
+  </div>
+
+  <div class="hero">
+    <h1>What SAP &amp; the big vendors charge <em>€50,000–€200,000</em> for —<br>yours from <em>€49/month</em>, running on your own server.</h1>
+    <p>Production-grade business software (secure login, your database, your files) — built, deployed, and managed for small &amp; medium businesses. Built by a SAP architect who knows the trap from the inside.</p>
+  </div>
+
+  <h2 class="sec">What you get — the modules you need</h2>
+  <div class="mods">
+    <div class="mod"><div class="i">🔧</div><div class="n">Repairs &amp; Service</div><div class="d">Jobs, customers, bays, quotations, invoices — the whole shop floor.</div></div>
+    <div class="mod"><div class="i">🛒</div><div class="n">Point of Sale</div><div class="d">Checkout, products, cash count, reports, daily close.</div></div>
+    <div class="mod"><div class="i">🖨️</div><div class="n">Print Shop</div><div class="d">Orders, catalog, artworks, suppliers, purchase orders.</div></div>
+    <div class="mod"><div class="i">🏪</div><div class="n">Marketplace &amp; Bookings</div><div class="d">Listings, events, customers — sell &amp; schedule online.</div></div>
+    <div class="mod"><div class="i">🔐</div><div class="n">Secure Login (RBAC)</div><div class="d">Keycloak OAuth2, roles per staff member — enterprise-grade.</div></div>
+    <div class="mod"><div class="i">🗄️</div><div class="n">Your Data &amp; Files</div><div class="d">PostgreSQL + object storage — your records, never the vendor's.</div></div>
+  </div>
+
+  <h2 class="sec">The same thing — two worlds</h2>
+  <table>
+    <thead><tr><th>What</th><th>Enterprise (SAP &amp; co.)</th><th>HelixNet</th></tr></thead>
+    <tbody>
+      <tr><td class="lbl">Up-front cost</td><td class="corp">€50,000–€200,000 + yearly licenses</td><td class="lp">from €490 setup, no licenses</td></tr>
+      <tr><td class="lbl">Time to go live</td><td class="corp">8–16 weeks</td><td class="lp">days</td></tr>
+      <tr><td class="lbl">Change a form field</td><td class="corp">weeks of tickets</td><td class="lp">same day</td></tr>
+      <tr><td class="lbl">Who owns it</td><td class="corp">the vendor</td><td class="lp">you — box, data &amp; code</td></tr>
+      <tr><td class="lbl">If you walk away</td><td class="corp">locked in</td><td class="lp">keep everything, no lock-in</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">Simple pricing</h2>
+  <div class="price">
+    <div class="tier"><div class="t">Essential</div><div class="amt">€490 <span>setup</span> + €49<span>/mo</span></div><div class="li">One module · hosting · updates · backups · email support · your own server</div></div>
+    <div class="tier feat"><div class="t">Complete</div><div class="amt">€990 <span>setup</span> + €99<span>/mo</span></div><div class="li">Multiple modules + marketplace · priority support · staff roles · training session</div></div>
+  </div>
+  <div class="own-line">Infrastructure runs for <b>~€7.59/month</b>. You own the server, the data, and the software — <b>cancel anytime, keep your platform.</b></div>
+
+  <div class="why">
+    <b>Why HelixNet?</b> Built by Angelo Kenel — a SAP PI/PO integration architect who spent years inside enterprise IT and saw the trap: months of meetings, licence ransoms, and six months to change a form field. HelixNet is the way out — the same real tools (Docker, Keycloak, PostgreSQL) without the bureaucracy. Already running for real businesses in Trapani.
+  </div>
+
+  <div class="cta">
+    <div class="big">Book a <em>20-minute look</em>.<br>No slides, no obligation — the real thing.</div>
+    <div class="contact"><b>Angelo Kenel</b> · HelixNet<br>angel.kenel@gmail.com<br>Telegram @BigKingFisher · WhatsApp on request</div>
+  </div>
+
+  <div class="fineprint">HelixNet · open-source, production-grade business software for SMEs (5–50 staff) · pricing indicative, tailored per business</div>
+
+</div></body></html>
