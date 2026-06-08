@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today · La Piazza</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']},colors:{brand:'#C0392B',branddark:'#8B0000'}}}};</script>
+<style>
+  body{background:radial-gradient(1100px 600px at 50% -12%, #1f2a44, transparent), #060910;}
+  .card{background:rgba(15,23,42,.66);border:1px solid rgba(30,41,59,.9);}
+  [x-cloak]{display:none!important}
+  .strike{text-decoration:line-through;opacity:.5}
+  @media print{ .noprint{display:none!important} body{background:#fff} .card{background:#fff;border-color:#ccc} * {color:#111 !important} }
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased" x-data="day()" x-init="boot()">
+{% include "_lapiazza_nav.html" %}
+
+<div class="max-w-2xl mx-auto px-4 py-6">
+
+  <!-- not logged in -->
+  <div x-show="!token" x-cloak class="card rounded-2xl p-8 text-center mt-6">
+    <div class="text-5xl mb-3">📋</div>
+    <div class="text-xl font-bold text-white">Your daily page</div>
+    <p class="text-slate-400 mt-1 mb-5">Log in to see today's list — your Top 10 and Bonus Round.</p>
+    <button @click="login()" class="px-6 py-3 rounded-xl bg-brand hover:bg-branddark text-white font-bold text-lg">Log in</button>
+  </div>
+
+  <div x-show="token" x-cloak>
+    <!-- ===== THE HEADER (local time, the phase) ===== -->
+    <div class="card rounded-2xl p-5 mb-4">
+      <div class="text-2xl sm:text-[26px] font-black text-white leading-tight" x-text="headerDate"></div>
+      <div class="text-sm text-slate-400 font-semibold" x-text="headerTime"></div>
+      <template x-if="ph">
+        <div class="mt-3 space-y-1">
+          <div class="text-[15px] font-bold"><span class="text-emerald-400">🌱 Phase <span x-text="ph.phaseN"></span></span>
+            <span class="text-slate-300">· Day <span x-text="ph.dayInPhase"></span> of 30 · Week <span x-text="ph.weekInPhase"></span> of 4</span>
+            <span class="text-slate-500 text-[12px]" x-show="ph.phaseN===1">— the habit-making phase</span></div>
+          <div class="text-[13px] text-slate-400">🎯 Month <span x-text="ph.month"></span> of 12 — on the road to a <b class="text-brand">made man</b> (1 year)
+            <span x-show="ph.madeMan" class="text-emerald-400 font-bold">· 🏆 YEAR COMPLETE — made!</span></div>
+        </div>
+      </template>
+      <template x-if="!ph">
+        <button @click="askStart()" class="mt-2 text-[12px] text-brand hover:underline">⚙️ set your Day 1 to see your progress →</button>
+      </template>
+    </div>
+
+    <!-- ===== DAY SWITCHER + TOOLS ===== -->
+    <div class="flex items-center justify-between gap-2 mb-3 noprint">
+      <div class="flex items-center gap-1">
+        <button @click="shiftDay(-1)" class="w-10 h-10 rounded-xl card text-lg hover:border-brand/50" title="previous day">◀</button>
+        <button @click="goToday()" class="px-3 h-10 rounded-xl card text-sm font-bold hover:border-brand/50" x-text="isToday?'Today':dayLabelShort"></button>
+        <button @click="shiftDay(1)" class="w-10 h-10 rounded-xl card text-lg hover:border-brand/50" title="next day">▶</button>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button @click="filter='all'" :class="filter==='all'?'bg-brand/25 border-brand/50 text-white':'card text-slate-400'" class="px-3 h-9 rounded-lg text-xs font-bold border">All</button>
+        <button @click="filter='open'" :class="filter==='open'?'bg-brand/25 border-brand/50 text-white':'card text-slate-400'" class="px-3 h-9 rounded-lg text-xs font-bold border">To-do</button>
+        <button @click="filter='done'" :class="filter==='done'?'bg-brand/25 border-brand/50 text-white':'card text-slate-400'" class="px-3 h-9 rounded-lg text-xs font-bold border">Done</button>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 mb-4 text-xs noprint">
+      <button @click="carryYesterday()" class="text-slate-400 hover:text-white">↩️ Pull yesterday's unfinished</button>
+      <button @click="window.print()" class="text-slate-400 hover:text-white ml-auto">🖨️ Print</button>
+    </div>
+
+    <!-- ===== TOP 10 ===== -->
+    <div class="mb-5">
+      <div class="flex items-baseline justify-between mb-2">
+        <h2 class="text-lg font-black text-white">🎯 Top 10 <span class="text-slate-500 text-sm font-semibold" x-text="'('+doneCount('top10')+'/'+count('top10')+')'"></span></h2>
+      </div>
+      <div class="space-y-2">
+        <template x-for="t in shown('top10')" :key="t.id">
+          <div class="card rounded-xl p-3">
+            <div class="flex items-center gap-3">
+              <button @click="toggle(t)" class="text-2xl leading-none shrink-0" x-text="t.status==='done'?'✅':'⬜'"></button>
+              <button @click="editTitle(t)" class="flex-1 text-left text-[15px]" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
+              <button @click="editNotes(t)" class="text-slate-500 hover:text-slate-200 text-lg noprint" title="note">📝</button>
+              <button @click="moveTomorrow(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to tomorrow">→</button>
+              <button @click="del(t)" class="text-slate-600 hover:text-rose-400 text-lg noprint" title="delete">🗑️</button>
+            </div>
+            <div x-show="t.notes" class="text-[12px] text-slate-400 pl-11 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
+          </div>
+        </template>
+        <template x-if="shown('top10').length===0"><div class="text-sm text-slate-600 px-1 py-2" x-text="filter==='all'?'Nothing yet — add your first below 👇':'nothing here'"></div></template>
+      </div>
+      <div class="flex gap-2 mt-2 noprint">
+        <input x-model="newTop" @keydown.enter="add('top10')" type="text" maxlength="300" placeholder="add a task…" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-[15px]">
+        <button @click="add('top10')" class="px-5 rounded-xl bg-brand hover:bg-branddark text-white font-bold text-xl">+</button>
+      </div>
+    </div>
+
+    <!-- ===== BONUS ROUND ===== -->
+    <div class="mb-6">
+      <div class="flex items-baseline justify-between mb-2">
+        <h2 class="text-lg font-black text-white">✨ Bonus Round <span class="text-slate-500 text-sm font-semibold" x-text="'('+doneCount('bonus')+'/'+count('bonus')+')'"></span></h2>
+      </div>
+      <div class="space-y-2">
+        <template x-for="t in shown('bonus')" :key="t.id">
+          <div class="card rounded-xl p-3">
+            <div class="flex items-center gap-3">
+              <button @click="toggle(t)" class="text-2xl leading-none shrink-0" x-text="t.status==='done'?'✅':'⬜'"></button>
+              <button @click="editTitle(t)" class="flex-1 text-left text-[15px]" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
+              <button @click="editNotes(t)" class="text-slate-500 hover:text-slate-200 text-lg noprint" title="note">📝</button>
+              <button @click="moveTomorrow(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to tomorrow">→</button>
+              <button @click="del(t)" class="text-slate-600 hover:text-rose-400 text-lg noprint" title="delete">🗑️</button>
+            </div>
+            <div x-show="t.notes" class="text-[12px] text-slate-400 pl-11 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
+          </div>
+        </template>
+        <template x-if="shown('bonus').length===0"><div class="text-sm text-slate-600 px-1 py-2">extra wins go here</div></template>
+      </div>
+      <div class="flex gap-2 mt-2 noprint">
+        <input x-model="newBonus" @keydown.enter="add('bonus')" type="text" maxlength="300" placeholder="add a bonus…" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-[15px]">
+        <button @click="add('bonus')" class="px-5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xl">+</button>
+      </div>
+    </div>
+
+    <div class="text-center text-[11px] text-slate-600 pb-8">one page a day · check it, note it, or move it to tomorrow · 🐺</div>
+  </div>
+</div>
+
+<script>
+function day(){
+  return {
+    token:null, me:null, viewDay:null, tasks:[], journeyStart:null,
+    filter:'all', newTop:'', newBonus:'',
+    headerDate:'', headerTime:'', isToday:true, dayLabelShort:'', ph:null,
+    _clock:null,
+
+    boot(){ this.token=this.loadToken(); this.me=this.decodeUser();
+      this.viewDay=this.localDay(0);
+      if(this.token){ this.load(); this.tick(); this._clock=setInterval(()=>this.tick(),30000); } },
+
+    // --- auth (same pattern as the workshop) ---
+    loadToken(){ if(location.hash.includes('token=')){const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t);localStorage.setItem('compute_token',t);history.replaceState({},document.title,location.pathname);}}
+      return sessionStorage.getItem('compute_token')||localStorage.getItem('compute_token'); },
+    decodeUser(){ if(!this.token)return null; try{const p=JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); if(p.exp*1000<=Date.now()){this.token=null;return null;} return p.preferred_username||null;}catch(e){return null;} },
+    login(){ const kc=location.hostname==='helix.local'?'https://keycloak.helix.local':location.origin;
+      const redirect=encodeURIComponent(location.origin+'/compute/callback');
+      location.href=`${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${encodeURIComponent(location.pathname)}`; },
+    H(){ return {'Authorization':'Bearer '+this.token}; },
+
+    // --- local date helpers (the BROWSER owns the timezone) ---
+    localDay(offset){ const d=new Date(); d.setDate(d.getDate()+offset);
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
+    shiftDay(n){ const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()+n);
+      this.viewDay=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); this.tick(); this.load(); },
+    goToday(){ this.viewDay=this.localDay(0); this.tick(); this.load(); },
+
+    tick(){
+      const d=new Date(this.viewDay+'T00:00:00');
+      this.headerDate='🐺 '+d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      this.isToday=(this.viewDay===this.localDay(0));
+      this.dayLabelShort=d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+      const now=new Date();
+      const tz=(new Intl.DateTimeFormat('en-US',{timeZoneName:'short'}).formatToParts(now).find(p=>p.type==='timeZoneName')||{}).value||'';
+      this.headerTime=this.isToday ? (now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+tz+' · '+Intl.DateTimeFormat().resolvedOptions().timeZone)
+                                   : 'planning ahead';
+      this.ph=this.phase();
+    },
+    phase(){ if(!this.journeyStart)return null;
+      const s=new Date(this.journeyStart+'T00:00:00'), t=new Date(this.viewDay+'T00:00:00');
+      const dayNum=Math.round((t-s)/86400000)+1; if(dayNum<1)return null;
+      const phaseN=Math.floor((dayNum-1)/30)+1, dayInPhase=((dayNum-1)%30)+1;
+      return {dayNum,phaseN,dayInPhase,weekInPhase:Math.min(4,Math.ceil(dayInPhase/7)),month:phaseN,madeMan:dayNum>=360}; },
+
+    // --- data ---
+    async load(){ try{ const r=await fetch('/api/v1/compute/bottega/today?day='+this.viewDay,{headers:this.H()});
+      if(r.ok){const d=await r.json(); this.tasks=d.tasks||[]; this.journeyStart=d.journey_start; this.ph=this.phase();} }catch(e){} },
+    inSec(s){ return this.tasks.filter(t=>t.section===s); },
+    count(s){ return this.inSec(s).length; },
+    doneCount(s){ return this.inSec(s).filter(t=>t.status==='done').length; },
+    shown(s){ let f=this.inSec(s); if(this.filter==='open')f=f.filter(t=>t.status!=='done'); if(this.filter==='done')f=f.filter(t=>t.status==='done'); return f; },
+
+    async add(section){ const v=(section==='top10'?this.newTop:this.newBonus).trim(); if(!v)return;
+      try{ const r=await fetch('/api/v1/compute/bottega/today/tasks',{method:'POST',headers:{...this.H(),'Content-Type':'application/json'},
+        body:JSON.stringify({day:this.viewDay,section,title:v})}); if(r.ok){const t=await r.json(); this.tasks.push(t); if(section==='top10')this.newTop='';else this.newBonus='';} }catch(e){} },
+    async toggle(t){ const ns=t.status==='done'?'open':'done'; t.status=ns;
+      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({status:ns})}); }catch(e){} },
+    async editTitle(t){ const v=prompt('Edit task:',t.title); if(v===null)return; t.title=v.trim()||t.title;
+      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({title:t.title})}); }catch(e){} },
+    async editNotes(t){ const v=prompt('Note (steps, phone number, details):',t.notes||''); if(v===null)return; t.notes=v;
+      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({notes:v})}); }catch(e){} },
+    async moveTomorrow(t){ try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id+'/move',{method:'POST',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id);}catch(e){} },
+    async del(t){ if(!confirm('Delete this task?'))return; try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'DELETE',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id);}catch(e){} },
+    async carryYesterday(){ const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()-1);
+      const y=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      try{ const r=await fetch('/api/v1/compute/bottega/today/carry?from_day='+y+'&to_day='+this.viewDay,{method:'POST',headers:this.H()});
+        if(r.ok){const j=await r.json(); this.load(); alert('Pulled '+j.carried+' unfinished task(s) to this page.');} }catch(e){} },
+    async askStart(){ const v=prompt('Your Day 1 (YYYY-MM-DD) — e.g. 2026-06-01:', this.localDay(0)); if(!v)return;
+      try{ const r=await fetch('/api/v1/compute/bottega/today/journey-start',{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({date:v.trim()})});
+        if(r.ok){const j=await r.json(); this.journeyStart=j.journey_start; this.ph=this.phase();} else alert('Use the format YYYY-MM-DD'); }catch(e){} },
+
+  };
+}
+</script>
+</body>
+</html>

@@ -18,7 +18,7 @@ from src.core.config import settings
 
 from src.db.database import get_db_session
 from src.db.models.bottega_model import (
-    BottegaProfileModel, BottegaProfileHistoryModel, BottegaSessionModel)
+    BottegaProfileModel, BottegaProfileHistoryModel, BottegaSessionModel, BottegaTaskModel)
 from src.db.models.backlog_model import (
     BacklogItemModel, BacklogItemType, BacklogPriority)
 from src.core.constants import HelixApplication
@@ -864,3 +864,154 @@ async def undo(current_user: dict = Depends(require_bottega_access()),
         await db.commit()
         await db.refresh(profile)
     return {"profile": _view(profile), "restored_from": snap.created_at.isoformat()}
+
+
+# ---------------------------------------------------------------------------
+# Daily One-Pager — the habit-making checklist (Top 10 + Bonus Round). Lego-simple:
+# a line, a checkbox, a note. Keyed by the LOCAL date; the browser owns the timezone.
+# ---------------------------------------------------------------------------
+class TaskIn(BaseModel):
+    day: str
+    section: str = "top10"
+    title: str
+    notes: str | None = None
+
+
+class TaskPatch(BaseModel):
+    title: str | None = None
+    notes: str | None = None
+    status: str | None = None
+    section: str | None = None
+    sort_order: int | None = None
+    day: str | None = None
+
+
+class JourneyStartIn(BaseModel):
+    date: str
+
+
+def _task_view(t: BottegaTaskModel) -> dict:
+    return {"id": str(t.id), "day": t.day, "section": t.section, "title": t.title,
+            "notes": t.notes or "", "status": t.status, "sort_order": t.sort_order}
+
+
+async def _own_task(db: AsyncSession, task_id: str, username: str) -> BottegaTaskModel:
+    t = (await db.execute(
+        select(BottegaTaskModel).where(BottegaTaskModel.id == task_id))).scalar_one_or_none()
+    if not t or t.username != username:
+        raise HTTPException(status_code=404, detail="task not found")
+    return t
+
+
+@router.get("/today")
+async def today(day: str, current_user: dict = Depends(require_bottega_access()),
+                db: AsyncSession = Depends(get_db_session)):
+    """The daily page for `day` (YYYY-MM-DD = the user's LOCAL date) + their journey start.
+    The browser computes the phase header from journey_start (it owns the timezone)."""
+    username = current_user["username"]
+    rows = (await db.execute(
+        select(BottegaTaskModel).where(
+            BottegaTaskModel.username == username, BottegaTaskModel.day == day)
+        .order_by(BottegaTaskModel.sort_order, BottegaTaskModel.created_at))).scalars().all()
+    profile = await _get(db, username)
+    js = None
+    if profile and profile.journey_start:
+        js = profile.journey_start.isoformat()
+    elif profile and profile.created_at:
+        js = profile.created_at.date().isoformat()
+    return {"day": day, "journey_start": js, "tasks": [_task_view(t) for t in rows]}
+
+
+@router.post("/today/tasks")
+async def create_task(t: TaskIn, current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    title = (t.title or "").strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="give the task a few words")
+    section = t.section if t.section in ("top10", "bonus") else "top10"
+    n = (await db.execute(select(func.coalesce(func.max(BottegaTaskModel.sort_order), 0)).where(
+        BottegaTaskModel.username == current_user["username"],
+        BottegaTaskModel.day == t.day, BottegaTaskModel.section == section))).scalar() + 1
+    task = BottegaTaskModel(username=current_user["username"], day=t.day, section=section,
+                            title=title[:300], notes=(t.notes or None), status="open", sort_order=n)
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+    return _task_view(task)
+
+
+@router.patch("/today/tasks/{task_id}")
+async def update_task(task_id: str, p: TaskPatch,
+                      current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    t = await _own_task(db, task_id, current_user["username"])
+    if p.title is not None:
+        t.title = p.title.strip()[:300]
+    if p.notes is not None:
+        t.notes = p.notes or None
+    if p.status in ("open", "done"):
+        t.status = p.status
+    if p.section in ("top10", "bonus"):
+        t.section = p.section
+    if p.sort_order is not None:
+        t.sort_order = p.sort_order
+    if p.day is not None:
+        t.day = p.day
+    await db.commit()
+    await db.refresh(t)
+    return _task_view(t)
+
+
+@router.delete("/today/tasks/{task_id}")
+async def delete_task(task_id: str, current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    t = await _own_task(db, task_id, current_user["username"])
+    await db.delete(t)
+    await db.commit()
+    return {"deleted": True}
+
+
+@router.post("/today/tasks/{task_id}/move")
+async def move_task(task_id: str, current_user: dict = Depends(require_bottega_access()),
+                    db: AsyncSession = Depends(get_db_session)):
+    """Move an unfinished task to tomorrow (day + 1)."""
+    from datetime import date as _date, timedelta
+    t = await _own_task(db, task_id, current_user["username"])
+    try:
+        nxt = (_date.fromisoformat(t.day) + timedelta(days=1)).isoformat()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="bad day")
+    t.day, t.status = nxt, "open"
+    await db.commit()
+    return {"moved_to": nxt}
+
+
+@router.post("/today/carry")
+async def carry_forward(from_day: str, to_day: str,
+                        current_user: dict = Depends(require_bottega_access()),
+                        db: AsyncSession = Depends(get_db_session)):
+    """Pull every UNFINISHED task from one day onto another (carry yesterday's open tasks)."""
+    rows = (await db.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.username == current_user["username"],
+        BottegaTaskModel.day == from_day, BottegaTaskModel.status == "open"))).scalars().all()
+    for t in rows:
+        t.day = to_day
+    await db.commit()
+    return {"carried": len(rows), "to": to_day}
+
+
+@router.patch("/today/journey-start")
+async def set_journey_start(j: JourneyStartIn,
+                            current_user: dict = Depends(require_bottega_access()),
+                            db: AsyncSession = Depends(get_db_session)):
+    """Set Day 1 of the journey (e.g. 2026-06-01)."""
+    from datetime import date as _date
+    profile = await _get(db, current_user["username"])
+    if not profile:
+        raise HTTPException(status_code=404, detail="no profile")
+    try:
+        profile.journey_start = _date.fromisoformat(j.date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD")
+    await db.commit()
+    return {"journey_start": profile.journey_start.isoformat()}

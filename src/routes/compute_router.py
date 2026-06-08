@@ -539,6 +539,12 @@ async def compute_legends(request: Request):
     return templates.TemplateResponse("compute/legends.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
 
 
+@html_router.get("/compute/today", response_class=HTMLResponse)
+async def compute_today(request: Request):
+    """The Daily One-Pager: phase header + Top 10 + Bonus Round. Lego-simple, for everyone."""
+    return templates.TemplateResponse("compute/today.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
+
+
 @html_router.get("/u/{slug}", response_class=HTMLResponse)
 async def public_profile(slug: str, request: Request,
                          db: AsyncSession = Depends(get_db_session)):

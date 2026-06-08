@@ -5,8 +5,8 @@
 
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Integer, Text
+from datetime import datetime, timezone, date
+from sqlalchemy import String, DateTime, Integer, Text, Date
 from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base
 
@@ -54,6 +54,10 @@ class BottegaProfileModel(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc), nullable=False,
     )
+    journey_start: Mapped[date | None] = mapped_column(
+        Date, nullable=True,
+        comment="Day 1 of the 30-day-phase / 1-year journey (local date); null => use created_at",
+    )
 
 
 class BottegaSessionModel(Base):
@@ -100,3 +104,28 @@ class BottegaProfileHistoryModel(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc), nullable=False, index=True,
     )
+
+
+class BottegaTaskModel(Base):
+    """A daily one-pager task -- the member's habit-making checklist (Top 10 + Bonus Round).
+    Keyed by the LOCAL date string it belongs to ('day'); move-to-tomorrow just changes the day.
+    Lego-simple: a line, a checkbox, a note. For every man, woman, and child."""
+    __tablename__ = "bottega_tasks"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    username: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    day: Mapped[str] = mapped_column(
+        String(10), nullable=False, index=True, comment="local date YYYY-MM-DD this task lives on")
+    section: Mapped[str] = mapped_column(
+        String(12), nullable=False, default="top10", comment="top10 | bonus")
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(10), nullable=False, default="open", comment="open | done")
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc), nullable=False)
