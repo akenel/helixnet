@@ -177,13 +177,16 @@ RECIPES: dict[str, dict] = {
             "fortune cookie. Output clean Markdown (headings, lists, tables ok -- NO LaTeX)."
         ),
         "prompt": (
-            "Channel {mentor}, mentoring a living person facing this:\n\"{situation}\"\n\n"
-            "Stand in {mentor}'s real workshop and teach from their actual life and method, "
-            "applied to THIS exact problem. If the goal is physically impossible, say so plainly "
-            "and redirect to the legitimate version of what they want. Structure it: what's "
-            "really going on -> the real method -> why it's hard -> a realistic direction -> ONE "
-            "small action they can take today. Stay in period, invent nothing specific, speak to "
-            "them as 'you', keep formulas in plain text."
+            "WHO YOU ARE MENTORING — a real, living person. You are in your own workshop and "
+            "cannot see screens, apps, files, or 'data' (never mention such things); you simply "
+            "KNOW this about the person standing before you:\n{portrait}\n\n"
+            "They are facing this:\n\"{situation}\"\n\n"
+            "Channel {mentor}, teaching from your actual life and method, applied to THIS exact "
+            "person and where they are — speak to who they are, not a stranger. If the goal is "
+            "physically impossible, say so plainly and redirect to the legitimate version. "
+            "Structure it: what's really going on -> the real method -> why it's hard -> a "
+            "realistic direction -> ONE small action they can take today. Stay in period, invent "
+            "nothing specific, speak to them as 'you', keep formulas in plain text."
         ),
         "output": "markdown",
     },
@@ -386,8 +389,10 @@ def menu() -> list[dict]:
     ]
 
 
-async def run_recipe(slug: str, raw_inputs: dict) -> dict:
-    """Generic runner -- executes ANY recipe. raw_inputs: {name: value | (filename, bytes)}."""
+async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "") -> dict:
+    """Generic runner -- executes ANY recipe. raw_inputs: {name: value | (filename, bytes)}.
+    `portrait` = a plain-language human portrait of the member, available to prompts as {portrait}
+    (context-aware mentors/coach -- the master KNOWS the person, never reads a screen)."""
     r = RECIPES.get(slug)
     if not r:
         raise KeyError(slug)
@@ -405,6 +410,7 @@ async def run_recipe(slug: str, raw_inputs: dict) -> dict:
             ctx[name] = text[:9000]
         else:
             ctx[name] = (val if val not in (None, "") else inp.get("default", ""))
+    ctx["portrait"] = portrait or "(They haven't built a profile yet — gently ask them who they are.)"
     prompt = r["prompt"].format(**ctx)
     out_schema = r.get("output_schema") if r["output"] == "json" else None
     js = _json_schema(out_schema, r["inputs"]) if isinstance(out_schema, dict) else None

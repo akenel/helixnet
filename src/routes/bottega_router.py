@@ -345,6 +345,73 @@ async def legend_questions(name: str, current_user: dict = Depends(require_botte
     return {"questions": qs}
 
 
+async def _build_portrait(db: AsyncSession, username: str) -> str:
+    """A plain-language human portrait of the member -- the CONTEXT a master/coach reads so it
+    mentors the REAL person. Framed for a historical master: their life + situation, NEVER apps."""
+    from datetime import date as _date
+    profile = await _get(db, username)
+    rows = (await db.execute(
+        select(BottegaSessionModel).where(BottegaSessionModel.username == username)
+        .order_by(BottegaSessionModel.created_at.desc()).limit(60))).scalars().all()
+
+    def _out(slug):
+        s = next((x for x in rows if x.slug == slug), None)
+        if not s:
+            return None
+        if s.output_type == "json":
+            try:
+                return json.loads(s.output)
+            except Exception:  # noqa: BLE001
+                return None
+        return s.output
+
+    parts = []
+    if profile and profile.tagline:
+        parts.append(f'In their own words: "{profile.tagline}".')
+    if profile and profile.bio:
+        parts.append(f"About them: {profile.bio}")
+    if profile and profile.skills:
+        try:
+            sk = json.loads(profile.skills)
+            if sk:
+                parts.append("Their strengths: " + ", ".join(sk[:8]) + ".")
+        except Exception:  # noqa: BLE001
+            pass
+    body = _out("body-intake")
+    if isinstance(body, dict):
+        bits = []
+        if body.get("goal"):
+            bits.append(f"their goal is {body['goal']}")
+        if body.get("days"):
+            bits.append(f"they committed to {body['days']} sessions a week")
+        if bits:
+            parts.append("On their body: " + "; ".join(bits) + ".")
+    spirit = _out("story-intake")
+    if isinstance(spirit, dict):
+        ol = spirit.get("one_liner") or spirit.get("oneLiner") or spirit.get("why")
+        if ol:
+            parts.append(f'Their deeper purpose: "{ol}".')
+    if profile and profile.journey_start:
+        dn = (_date.today() - profile.journey_start).days + 1
+        if dn >= 1:
+            dip = (dn - 1) % 30 + 1
+            parts.append(
+                f"They are on Day {dip} of a 30-day stretch of rebuilding themselves -- the "
+                "habit-making phase, on a year-long road to becoming who they mean to be.")
+    trows = (await db.execute(
+        select(BottegaTaskModel).where(BottegaTaskModel.username == username)
+        .order_by(BottegaTaskModel.created_at.desc()).limit(40))).scalars().all()
+    if trows:
+        done = sum(1 for t in trows if t.status == "done")
+        parts.append(
+            f"Lately they set themselves {len(trows)} tasks and finished {done} -- read that "
+            "honestly (steady follow-through, or slipping and discouraged).")
+    if not parts:
+        return ("A newcomer who hasn't told us much yet -- draw them out; ask who they are "
+                "and what they want.")
+    return " ".join(parts)
+
+
 @router.post("/recipes/{slug}/run")
 async def recipes_run(slug: str, request: Request,
                       current_user: dict = Depends(require_bottega_access()),
@@ -371,8 +438,14 @@ async def recipes_run(slug: str, request: Request,
                 raw[name] = (up.filename or "upload", await up.read())
         else:
             raw[name] = form.get(name)
+    portrait = ""
+    if slug in ("mentor-session", "find-your-edge", "decide"):
+        try:
+            portrait = await _build_portrait(db, owner)
+        except Exception:  # noqa: BLE001
+            portrait = ""
     try:
-        result = await run_recipe(slug, raw)
+        result = await run_recipe(slug, raw, portrait=portrait)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except BrainUnavailable:
