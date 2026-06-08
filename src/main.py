@@ -355,7 +355,7 @@ async def sitemap_page(request: Request):
     services = [
         {"icon": "🔐", "name": "Keycloak — Auth", "tag": "ONE login for every app (the unified realm + SSO)",
          "prefixes": ["/login"], "links": [
-            {"p": "/login", "l": "Login", "d": "one identity across all apps — log in once, in everywhere"}]},
+            {"p": "/get-started", "l": "Get Started / Login", "d": "the real door — sign up in one motion, or log in (Keycloak SSO across all apps)"}]},
         {"icon": "🗒️", "name": "Backlog (BL)", "tag": "the shared tracker — every app's 💬 feedback lands here",
          "prefixes": ["/backlog"], "links": [
             {"p": "/backlog", "l": "Backlog board", "d": "kanban + list + activity; all apps feed it"}]},
@@ -504,10 +504,12 @@ async def dashboard():
     /api/v1/jobs; rather than rewrite an orphan to duplicate /compute, redirect there."""
     return RedirectResponse(url="/compute")
 
-@app.get("/login", tags=["🔑 Web UI"], response_class=HTMLResponse)
+@app.get("/login", tags=["🔑 Web UI"])
 async def login_page(request: Request):
-    """Render login page."""
-    return templates.TemplateResponse("login.html", {"request": request})
+    """The real door is the one-motion Get Started (sign up) + its 'already a member? log in'
+    (Keycloak SSO). The old standalone /login register form looped -- send people to the real
+    entrance instead of a dead-end."""
+    return RedirectResponse(url="/get-started", status_code=307)
 
 @app.get("/submit-form", tags=["📨 Web UI"])
 async def submit_form_page():
