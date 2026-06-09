@@ -30,11 +30,15 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   await page.goto(SQUARE + EVENT, { waitUntil: 'networkidle2', timeout: 30000 });
   await client.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
-  await sleep(3200);                                            // the event + the count: 3/12 and climbing
-  await page.evaluate(() => window.scrollTo({ top: 300, behavior: 'smooth' })); await sleep(3400);   // capacity bar, Free, RSVP
-  await page.evaluate(() => window.scrollTo({ top: 620, behavior: 'smooth' })); await sleep(3400);   // Attendees + notes (the crew who said yes)
-  await page.evaluate(() => window.scrollTo({ top: 980, behavior: 'smooth' })); await sleep(3200);   // their notes: cookies, a friend, the heavy lifting
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2200);     // back to the top: open to the neighbourhood
+  await sleep(3200);                                            // the event + the count: 6/12 and climbing
+  await page.evaluate(() => window.scrollTo({ top: 380, behavior: 'smooth' })); await sleep(2800);   // capacity bar, Free, the Share (open it up)
+  // expand the "Attendees + notes" panel — the people coming
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find(x => (x.getAttribute('@click') || '').includes('open = !open') && /ttend|coming/i.test(x.textContent)); if (b) { b.scrollIntoView({ block: 'center' }); b.click(); } });
+  await sleep(3000);                                            // the list opens: who said yes
+  await page.evaluate(() => window.scrollBy({ top: 300, behavior: 'smooth' })); await sleep(3200);    // the crew, one by one
+  await page.evaluate(() => window.scrollBy({ top: 320, behavior: 'smooth' })); await sleep(3200);    // more of the crew
+  await page.evaluate(() => window.scrollBy({ top: 320, behavior: 'smooth' })); await sleep(3000);    // the rest
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2200);     // back to the top: 6/12, open to the neighbourhood
 
   await client.send('Page.stopScreencast'); await sleep(400);
   await browser.close();

@@ -31,18 +31,17 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
   await page.evaluate(() => fetch('/api/v1/demo/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'mike' }) }).then(r => r.text()));
 
   await page.goto(SQUARE + '/helpboard', { waitUntil: 'networkidle2', timeout: 30000 });
-  // open Mike's garage post (with the cover)
-  await page.evaluate(() => { const cards = [...document.querySelectorAll('*')].filter(el => (el.getAttribute('@click') || '').startsWith('openPost')); const card = cards.find(c => c.textContent.includes('Garage Moving Day')) || cards[0]; if (card) card.click(); });
-  await page.waitForFunction(() => /Replies|Add a reply/i.test(document.body.innerText), { timeout: 12000, polling: 400 }).catch(() => {});
+  // open Mike's "20 hands needed" post (the ask from Ep 2)
+  await page.evaluate(() => { const cards = [...document.querySelectorAll('*')].filter(el => (el.getAttribute('@click') || '').startsWith('openPost')); const card = cards.find(c => c.textContent.includes('20 hands needed')) || cards[0]; if (card) card.click(); });
+  await page.waitForFunction(() => /Cookies are already|strong back|sound-bath/i.test(document.body.innerText), { timeout: 12000, polling: 400 }).catch(() => {});
 
   await client.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
-  await sleep(2600);                                            // the post + cover (the ask)
-  await page.evaluate(() => window.scrollTo({ top: 380, behavior: 'smooth' })); await sleep(3000);   // Nino, Sally show up
-  await page.evaluate(() => window.scrollTo({ top: 760, behavior: 'smooth' })); await sleep(3200);   // Sally's cookies, Marco's +1
-  await page.evaluate(() => window.scrollTo({ top: 1140, behavior: 'smooth' })); await sleep(3200);  // Jake - work for food
-  await page.evaluate(() => window.scrollTo({ top: 1520, behavior: 'smooth' })); await sleep(3200);  // Maria - moved whole buildings
-  await page.evaluate(() => window.scrollTo({ top: 1880, behavior: 'smooth' })); await sleep(2600);  // "Add a reply" - where you join the lift
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(1800);     // back to the top: the ask, answered
+  await sleep(3000);                                            // the ask (Mike's open question)
+  await page.evaluate(() => window.scrollTo({ top: 260, behavior: 'smooth' })); await sleep(3200);   // Sally's cookies + Nino's straps
+  await page.evaluate(() => window.scrollTo({ top: 480, behavior: 'smooth' })); await sleep(3200);   // Marco + brother
+  await page.evaluate(() => window.scrollTo({ top: 700, behavior: 'smooth' })); await sleep(3200);   // Jake - strong back for cookies
+  await page.evaluate(() => window.scrollTo({ top: 920, behavior: 'smooth' })); await sleep(3200);   // Elena - the trade
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2200);     // back to the top: the ask, answered
 
   await client.send('Page.stopScreencast'); await sleep(400);
   await browser.close();
