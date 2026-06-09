@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 Ship Episode 1 — Dream Weavers</title>
+<style>
+  :root{ --red:#C0392B; --dark:#2C3E50; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937;background:#f4f6f8;margin:0;line-height:1.5}
+  .wrap{max-width:860px;margin:0 auto;padding:16px}
+  header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  h1{margin:0;font-size:20px;color:var(--dark)} h1 b{color:var(--red)}
+  .meta{font-size:13px;color:#667;margin-top:4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
+  a.dl{display:inline-block;background:#1d4ed8;color:#fff;padding:9px 14px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none}
+  video{width:100%;border-radius:10px;background:#000;margin-bottom:14px}
+  .step{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 16px;margin-bottom:10px}
+  .step.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:24px;height:24px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .n{font-weight:700;color:var(--dark)}
+  .do{font-size:13.5px;color:#374151;margin:2px 0 0 34px}
+  .do a{color:var(--red);font-weight:600}
+  .fieldwrap{margin:8px 0 0 34px}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin:8px 0 2px;font-weight:700}
+  textarea{width:100%;border:1px solid #ccd;border-radius:8px;padding:8px;font:inherit;font-size:14px;resize:vertical}
+  textarea.copy{min-height:38px;background:#fffdf7}
+  textarea.note{min-height:34px;background:#fbfdff}
+  .copybtn{margin-top:4px;font-size:12px;padding:5px 10px}
+  #copybox{width:100%;min-height:90px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;border:1px solid #ccd;border-radius:8px;padding:10px;display:none}
+  @media print{ video,.bar,button,a.dl{display:none} body{background:#fff} .step{break-inside:avoid} }
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1>🚀 Ship Episode 1 — <b>Dream Weavers</b></h1>
+  <div class="meta">Two hands on the wheel — you ride shotgun. Tap each step, copy the fields into YouTube, hit Publish. Saves as you go.</div>
+  <div class="bar">
+    <span id="prog" style="font-weight:700;color:var(--dark);font-size:14px;align-self:center">0 / 0</span>
+    <a class="dl" href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01-final.mp4" download="DreamWeavers-Ep01.mp4">⬇️ Download the video</a>
+    <button onclick="copyAll()">📋 Copy notes back to Tigs</button>
+    <button class="ghost" onclick="window.print()">🖨️ Print</button>
+    <button class="ghost" onclick="if(confirm('Clear?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
+</header>
+
+<video src="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01-final.mp4" controls preload="metadata"></video>
+
+<div id="sheet"></div>
+<textarea id="copybox" readonly></textarea>
+
+<script>
+const KEY='lp-ship-ep01';
+const STEPS=[
+ {n:'1 · Download + watch once', do:'Tap <b>⬇️ Download the video</b> above. Give it one last watch — happy? Then go.', },
+ {n:'2 · Open YouTube Studio', do:'Go to <a href="https://studio.youtube.com" target="_blank">studio.youtube.com</a> (logged in as <b>@theSAPspecialist</b>) → <b>Create → Upload videos</b> → pick <b>DreamWeavers-Ep01.mp4</b>.'},
+ {n:'3 · Title', do:'Paste this into the Title box (tweak if you like):', copy:"Welcome to La Piazza 🐺 | Dream Weavers Ep 1 — the town square I built (no fees, no tracking)"},
+ {n:'4 · Description', do:'Paste this into the Description box:', copy:"I'm building La Piazza — an open-source neighbourhood town square. No fees, no middlemen, nobody selling your data.\n\nThis is Episode 1 of Dream Weavers — a series where I show you the whole thing by USING it, building in public. Scrappy, honest, one real person.\n\nIn 60 seconds: sign up in one motion (no CV, no forms) and your own workshop gets built for you.\n\n🏛️ Try it: https://lapiazza.app\n🔧 The workshop: https://bottega.lapiazza.app\n\nMade with free tools and shown warts-and-all — the story, while making the story. Music made on Suno. Built on FastAPI + Keycloak + Postgres.\n\n▶ Subscribe for the whole journey — next episode, Mike asks the whole town to help move his garage.\n\n#LaPiazza #BuildInPublic #IndieHacker #OpenSource #NoFees"},
+ {n:'5 · Tags', do:'Open <b>Show more</b> → Tags, paste these:', copy:"la piazza, dream weavers, build in public, indie app, neighbourhood marketplace, no fees, open source, fastapi, keycloak, sap specialist, town square, indie hacker, no tracking"},
+ {n:'6 · Thumbnail', do:'Use the <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01-intro.png" target="_blank">intro card</a> as the thumbnail (download + upload it), or let YouTube pick a frame.'},
+ {n:'7 · Playlist', do:'Create/add to a playlist: <b>Dream Weavers — Mike\\'s Big Move</b>. Every episode funnels here.'},
+ {n:'8 · Settings', do:'Audience: <b>No, it\\'s not made for kids</b>. Then on the Visibility step choose <b>Public</b> (or Unlisted first if you want to preview).'},
+ {n:'9 · PUBLISH 🚀', do:'Hit <b>Publish</b>. Then copy the live URL and paste it in the box below so I have it.', copy:""},
+];
+function render(){
+  document.getElementById('sheet').innerHTML = STEPS.map((s,i)=>`
+   <div class="step" data-i="${i}">
+     <div class="top"><input type="checkbox" data-c="${i}">
+       <div style="flex:1"><div class="n">${s.n}</div><div class="do">${s.do}</div></div></div>
+     ${s.copy!==undefined?`<div class="fieldwrap"><label class="fld">${i===8?'paste the LIVE youtube url here':'copy this'}</label>
+        <textarea class="copy" data-cp="${i}">${s.copy}</textarea>
+        ${s.copy?`<button class="copybtn" onclick="cp(${i})">📋 Copy</button>`:''}</div>`:''}
+     <div class="fieldwrap"><label class="fld">📝 notes for Tigs</label><textarea class="note" data-n="${i}" placeholder="anything off? a better title idea?"></textarea></div>
+   </div>`).join('');
+  document.getElementById('prog').dataset.total=STEPS.length;
+  load(); wire(); count();
+}
+function wire(){ document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',()=>{save();count();}); el.addEventListener('change',()=>{save();count();}); }); }
+function count(){ const d=[...document.querySelectorAll('[data-c]')].filter(c=>c.checked).length; document.getElementById('prog').textContent=`${d} / ${STEPS.length}`;
+  document.querySelectorAll('.step').forEach(b=>{const c=b.querySelector('[data-c]'); b.classList.toggle('done',c&&c.checked);}); }
+function cp(i){ const t=q(`[data-cp="${i}"]`); t.select(); try{navigator.clipboard.writeText(t.value);}catch(e){} const b=event.target; b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy',1200); }
+function save(){ const d={items:{}}; STEPS.forEach((_,i)=>{ const cp=q(`[data-cp="${i}"]`); d.items[i]={done:q(`[data-c="${i}"]`).checked, cp:cp?cp.value:null, note:q(`[data-n="${i}"]`).value}; }); localStorage.setItem(KEY,JSON.stringify(d)); }
+function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){d={}} Object.entries(d.items||{}).forEach(([i,v])=>{ const c=q(`[data-c="${i}"]`); if(c)c.checked=!!v.done; const cp=q(`[data-cp="${i}"]`); if(cp&&v.cp!=null)cp.value=v.cp; const n=q(`[data-n="${i}"]`); if(n)n.value=v.note||''; }); }
+function copyAll(){
+  let t="SHIP EP1 — notes + the live URL\\n\\n";
+  STEPS.forEach((s,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const note=q(`[data-n="${i}"]`).value.trim(); const cp=q(`[data-cp="${i}"]`);
+    const liveurl=(i===8&&cp&&cp.value.trim())?('  LIVE URL: '+cp.value.trim()+'\\n'):'';
+    if(note||liveurl||i===8) t+=`${done} ${s.n}\\n${liveurl}`+(note?`  NOTE: ${note}\\n`:'')+'\\n'; });
+  const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
+  try{ navigator.clipboard.writeText(t); alert('Copied! Paste it to Tigs.'); }catch(e){ alert('Select the box below + copy.'); }
+}
+const q=s=>document.querySelector(s);
+render();
+</script>
+</div></body></html>
