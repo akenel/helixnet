@@ -4,11 +4,14 @@
 ## THE VIBE
 **Punchy folk-rock / Americana road-rock.** Warm, scrappy, hopeful, built-by-one-person.
 A neighbourhood pulling together, the open road, the underdog who wins. Sicilian highway energy.
-**Reference feel:** Tom Petty riff + The Lumineers stomp + a lonesome harmonica hook.
+**Reference feel:** **Jethro Tull / Ian Anderson** — the harmonica + **flute** hooks and the slow,
+deliberate **buildup** of *Locomotive Breath* / *Aqualung* — over a Tom-Petty-ish driving riff. That
+build-from-a-simmer-to-a-peak is the signature; lean into it.
 
 ## THE INSTRUMENTS (the layers to add)
 - **Electric/acoustic guitar** — the punchy lead riff (you've got this — it's the hook). Keep it front.
 - **Harmonica** — the soul/melody line, the part people hum. Sits on the peaks.
+- **Flute** — the Ian-Anderson signature; trades the hook with the harmonica and rides the peaks.
 - **Tambourine** — the drive and the stomp, the foot-tap groove. Keeps it moving.
 - **Light kick + clap (or hand-percussion)** — the punch under it all.
 - *(Optional) a simple bass* for body. No synths, no strings — keep it rootsy and human.
@@ -31,10 +34,21 @@ The two peaks + the drop between = the "higher peaks and lows" punch you wanted.
 - **Export:** highest quality (WAV or 320k MP3). Drop it in the repo and tell me the path.
 
 ## READY-TO-PASTE PROMPT (for a text-prompt tool like Suno/Udio)
-> Upbeat punchy folk-rock instrumental, Americana road-rock. Driving acoustic-electric guitar riff,
-> soulful harmonica lead, tambourine and hand-claps, light kick drum. Warm, hopeful, scrappy,
-> underdog energy. Builds to a peak with harmonica, drops to guitar+tambourine, then a bigger
-> peak, resolves on the riff. ~50 seconds, loopable. No vocals, no synths. ~125 BPM, major key.
+> Punchy prog-folk-rock instrumental in the style of Jethro Tull / Ian Anderson — driving
+> acoustic-electric guitar riff, soulful harmonica AND flute trading the lead, tambourine and
+> hand-claps, light kick drum. Warm, hopeful, scrappy, underdog energy. Slow deliberate BUILDUP
+> from a simmer (like Locomotive Breath) to a flute/harmonica peak, a brief drop to guitar +
+> tambourine, then a bigger peak, resolving on the riff. ~50–60 seconds, loopable. No vocals,
+> no synths. ~120 BPM, major key.
+
+## THE AUDIO MODEL (how it lands on the videos)
+- **Episode 1 = director's cut:** YOUR voiceover (see `ep01-directors-cut.html`) **+ the theme at ~5%**
+  underneath. The host introduces the series in your own words.
+- **Episodes 2–12 = fully automated:** the theme **only** (no voice — the cards + action carry it).
+  Music-bed at a comfortable level (~30–50%, no voice to duck under). This is the efficient default
+  you want — no narration to record, every episode self-running.
+- **Tigs mixes it:** you record the Ep-1 voice + cut the theme; I master + loop the theme, lay it at
+  ~5% under your Ep-1 voice, and score Eps 2–12 with the theme alone. One pass.
 
 ## WHAT TIGS DOES WITH IT
 Seamless crossfade-loop → punchy master (EQ + gentle compression + normalize) → fade in/out →
