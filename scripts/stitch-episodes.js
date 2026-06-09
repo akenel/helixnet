@@ -7,7 +7,7 @@ const VID = '/home/angel/Videos/dream-weavers';
 const FINAL = VID + '/final';
 fs.mkdirSync(FINAL, { recursive: true });
 
-const INTRO = 2.8, OUTRO = 3.2, XF = 0.7;   // card holds + crossfade duration (seconds)
+const INTRO = 5.0, OUTRO = 4.0, XF = 0.7;   // card holds + crossfade duration (seconds) — intro held long enough to READ
 
 for (let n = 1; n <= 12; n++) {
   const nn = String(n).padStart(2, '0');

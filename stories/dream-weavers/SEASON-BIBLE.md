@@ -107,6 +107,16 @@ accident.*
   frame (~93%, big readable text), output crisp 1080p.
 - **Bookend with cards** (intro + outro, rendered 1920×1080) and a **cover image** where it lifts the
   post (designed flyer when stock photos don't fit). Each episode = its own OG share.
+- **Card hold:** intro card ~5s (long enough to READ the tagline), outro ~4s, 0.7s crossfades.
+
+## 🎵 MUSIC & 🌱 FUTURE SEEDS
+- **Theme:** the Dream Weavers signature theme (folk-rock, punchy guitar + harmonica + tambourine,
+  two peaks and a breath) — Angel composes it at a music site (brief in `docs/business/marketing/
+  dream-weavers-theme-brief.md`); Tigs masters + seamless-loops + scores all 12 + the film. No voice.
+- **Locandina finisher (Angel's idea, 2026-06-09):** end an episode (or tease the next) by **printing
+  the digital event as a physical Locandina** — the postcard/poster/business-card-poster. Shows the
+  bridge: a La Piazza event → a beautiful printed card you hang on a wall / hand out. Ties the digital
+  town square to the UFA postcard business (the physical handshake). Strong Season-2 hook / finisher.
 
 ---
 *Season 1 Bible. The crane is the plot, the cookies are the heart, the scammer is the test, the
