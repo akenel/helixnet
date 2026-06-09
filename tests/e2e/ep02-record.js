@@ -5,8 +5,8 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 
 const SQUARE = 'https://staging.lapiazza.app';
-const TITLE = 'Need Help Moving a Garage - 20 hands for a 1000lb crane';
-const BODY = "Moving my whole garage before a relocation. There's a 1000-lb car crane that needs about 20 hands to lift safely - fit folks welcome. Saturday morning. My sister Sally is baking cookies for the crew.";
+const TITLE = '20 hands needed Saturday - moving a 1,000-lb crane out of my garage';
+const BODY = "Hey neighbours - clearing out the garage before the big move, and there's a 1,000-lb engine crane that is NOT a one-man job. Looking for ~20 good hands this Saturday at 9am. My sister Sally's baking cookies for the crew. Bring gloves. Who's in?";
 const COVER = __dirname + '/../../stories/dream-weavers/cards/ep02-garage-cover.png';
 const FRAMES = '/tmp/ep2rec';
 const OUTDIR = '/home/angel/Videos/dream-weavers';
@@ -34,19 +34,20 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
 
   await page.goto(SQUARE + '/helpboard', { waitUntil: 'networkidle2', timeout: 30000 });
   await client.send('Page.startScreencast', { format: 'jpeg', quality: 80, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
-  await sleep(2800);                                            // dwell: the board (neighbours helping neighbours)
-  await page.evaluate(() => window.scrollTo({ top: 320, behavior: 'smooth' })); await sleep(2800);  // Mike's post + its cover in the list
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(1200);
-  // open Mike's garage post (the one with the cover photo)
-  await page.evaluate(() => {
-    const cards = [...document.querySelectorAll('*')].filter(el => (el.getAttribute('@click') || '').startsWith('openPost'));
-    const card = cards.find(c => c.textContent.includes('Garage Moving Day')) || cards[0];
-    if (card) card.click();
-  });
-  await sleep(3200);                                            // the post + the cover
-  await page.evaluate(() => window.scrollTo({ top: 360, behavior: 'smooth' })); await sleep(3000);  // cover + the ask
-  await page.evaluate(() => window.scrollTo({ top: 720, behavior: 'smooth' })); await sleep(3000);  // the reply area (the crew can answer)
+  await sleep(3500);                                            // SETUP: the Help Board — neighbours help neighbours
+  await page.evaluate(() => window.scrollTo({ top: 300, behavior: 'smooth' })); await sleep(2800);
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(1500);
+  // TURN: open the "Ask for help" request form
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find(x => (x.getAttribute('@click') || '').includes('showCreate = true')); if (b) b.click(); });
+  await sleep(2800);                                            // the new-request form
+  // the ask takes shape (let the title + body breathe as they type)
+  await page.type('input[x-model="newPost.title"]', TITLE, { delay: 45 }); await sleep(1800);
+  await page.type('textarea[x-model="newPost.body"]', BODY, { delay: 26 }); await sleep(2500);
+  await sleep(1800);                                            // breather: read the ask
+  // COMMIT: post it
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find(x => (x.getAttribute('@click') || '').includes('submitPost')); if (b) b.click(); });
+  await sleep(4000);                                            // PAYOFF: the ask goes live on the board
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2800);
 
   await client.send('Page.stopScreencast'); await sleep(400);
   await browser.close();
