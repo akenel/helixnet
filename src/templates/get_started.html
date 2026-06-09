@@ -60,7 +60,11 @@
       <div>
         <input @change="file=$event.target.files[0]" type="file" accept=".pdf,.docx,.txt" class="w-full text-sm text-slate-300">
       </div>
-      <button @click="submit()" :disabled="busy||!name||!password||(!about.trim()&&!file)"
+      <label class="flex items-start gap-2 text-xs text-slate-400 cursor-pointer select-none pt-1">
+        <input type="checkbox" x-model="age16" class="mt-0.5 accent-brand w-4 h-4 flex-shrink-0">
+        <span>I confirm I'm <b class="text-slate-300">16 or older</b>. La Piazza is an adult neighbourhood marketplace.</span>
+      </label>
+      <button @click="submit()" :disabled="busy||!name||!password||!age16||(!about.trim()&&!file)"
         class="w-full py-3 rounded-xl font-bold bg-brand hover:bg-branddark text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
         x-text="busy?buildMsg:'🧬 Build my Bottega →'"></button>
       <div x-show="busy" x-cloak class="mt-3">
@@ -95,7 +99,7 @@
 <script>
 function getStarted() {
   return {
-    name:'', email:'', password:'', about:'', file:null, busy:false, err:'', done:null, pct:0,
+    name:'', email:'', password:'', about:'', file:null, busy:false, err:'', done:null, pct:0, age16:false,
     buildMsg:'Building your Bottega…',
     async submit() {
       this.busy=true; this.err=''; this.pct=8;
