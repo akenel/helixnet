@@ -53,13 +53,13 @@
 <script>
 const KEY='lp-dc-ep01';
 const BEATS=[
- {tc:'0:00–0:05',on:'Intro card — "Episode 1 · Welcome to the Piazza"',say:"Hey — I'm the SAP Specialist, and this is La Piazza, the town square I built. Let me show you around."},
- {tc:'0:05–0:12',on:'The Square — the marketplace home, real listings',say:"This is the square — your neighbours' stuff to borrow, learn, sell, and help with. No fees, no middlemen, nobody selling your data."},
- {tc:'0:12–0:28',on:'Get Started — typing name, email, a sentence about you',say:"Signing up is one motion. Just tell it who you are — even a sentence. No CV, no forms."},
- {tc:'0:28–0:38',on:'Building — the progress bar, "Choosing your House…"',say:"And it builds your own little workshop for you — bio, skills, the lot — in about thirty seconds."},
- {tc:'0:38–0:48',on:'🎉 Welcome — the tagline + "profile 70% complete, add a photo"',say:"Boom — you're a member. It even nudges you to add a photo to finish. Thirty seconds, no fees, you're in."},
- {tc:'0:48–0:60',on:'The Workshop — the recipe menu (CV→Bio, Find Your Edge…)',say:"And here's your workshop — turn a CV into a bio, make a poster, ask a master, find your edge. Yours, right away."},
- {tc:'0:60–0:68',on:'Outro card — "Next: Ask the Neighbourhood · Subscribe"',say:"Next episode — watch Mike ask the whole town to move a thousand-pound crane. Subscribe so you don't miss it. A presto."},
+ {tc:'0:00–0:05',on:'Intro card — "Episode 1 · Welcome to the Piazza"',say:"Hi — I'm the SAP Specialist, and I made La Piazza, the town square for you. Let me show you around."},
+ {tc:'0:05–0:12',on:'The Square — the marketplace home, real listings',say:"This is your town square — your neighbours' stuff to borrow, learn, sell, and help with. No fees, no middlemen, nobody selling your data."},
+ {tc:'0:12–0:28',on:'Get Started — typing name, email, a sentence about you',say:"Sign-up is one motion. Just tell the machine who you are — a simple sentence or two. No CV, no forms."},
+ {tc:'0:28–0:38',on:'Building — the progress bar, "Choosing your House…"',say:"La Piazza builds your own workshop, tailored to you — your bio, your skills — in about thirty seconds."},
+ {tc:'0:38–0:48',on:'🎉 Welcome — the tagline + "profile 70% complete, add a photo"',say:"Boom — you're a member. It even nudges you to add a photo. No fees, you're in."},
+ {tc:'0:48–0:60',on:'The Workshop — the recipe menu (CV→Bio, Find Your Edge…)',say:"And here's your workshop, your Bottega — make a poster, ask a master, find your edge. This is yours, right away."},
+ {tc:'0:60–0:68',on:'Outro card — "Next: Ask the Neighbourhood · Subscribe"',say:"Next episode — watch Mike ask the whole town to move his garage. Subscribe and learn more. A presto."},
 ];
 function render(){
   document.getElementById('sheet').innerHTML = BEATS.map((b,i)=>`

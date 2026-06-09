@@ -101,7 +101,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   console.log(`captured ${frames.length} frames over ${(frames[frames.length - 1].t - t0).toFixed(1)}s -> encoding…`);
   const RAW = `${FRAMES}/raw.mp4`;
   execSync(`ffmpeg -y -loglevel error -f concat -safe 0 -i ${FRAMES}/list.txt -vf "fps=24,format=yuv420p,scale=1920:1080" -c:v libx264 -preset medium -crf 20 "${RAW}"`, { stdio: 'inherit' });
-  // normalize to EXACTLY 60.0s: clone the last frame to pad short, hard-cut at 60 if long
+  // Ep 1 is the special ~1-minute director's cut: cap at 60s (Angel: never over a minute)
   execSync(`ffmpeg -y -loglevel error -i "${RAW}" -vf "tpad=stop_mode=clone:stop_duration=25,fps=24" -t 60 -c:v libx264 -preset medium -crf 20 -movflags +faststart "${OUT}"`, { stdio: 'inherit' });
-  console.log('✅ wrote', OUT, '(exactly 60s)');
+  console.log('wrote', OUT, '(~60s directors cut)');
 })();
