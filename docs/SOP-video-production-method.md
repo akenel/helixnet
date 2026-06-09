@@ -68,6 +68,11 @@ work is putting the **story + the prototype** where people already are, and invi
 - **Natural length**; the special director's cut **≤ 1 min**; **zoom** for readable text; **banner-free**
   (strip the cookie banner from the *movie* only — it's required in the app).
 - **Audio LAST**; **one signature theme** (master-flavored variations later, kept recognizable).
+- **Shorts = NATIVE PORTRAIT, never padded landscape.** (Learned 2026-06-09 the hard way.) Don't pad
+  a landscape episode into a 9:16 frame — you get a tiny unreadable strip with dead bars (rookie).
+  **Re-shoot the scene at a phone viewport** (`432×768 @ deviceScaleFactor 2.5, isMobile:true` →
+  captures 1080×1920); the app is mobile-first, so the responsive **mobile layout renders full-frame,
+  big-text, phone-native.** Exemplar: `tests/e2e/short-scammer-portrait.js`.
 - **Build in public** — free tools, document the making (the free Suno account, the 3 takes). *Tell the
   story while making the story.*
 - The **draft 1 → your notes → draft 2** loop (interactive task sheets).
