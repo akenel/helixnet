@@ -43,8 +43,10 @@ teaches + tests + sells).
 9. **Gate** — the episode **joins the regression suite** (`tests/e2e/dream-weavers-regression.js`). The
    stories test the whole caboodle before every prod deploy (`scripts/deploy-prod.sh`). A broken story
    blocks a bad ship. The test value **compounds**.
-10. **Publish + measure** — upload kit (titles/desc/chapters/tags), **Shorts** (9:16, lead with the
-    hook), a **playlist**. Then watch the numbers — close the distribution loop.
+10. **Publish + measure** — upload kit (title/desc/tags), **`.srt` captions** (Whisper-generated from
+    the voice → English; YouTube auto-translates into every language = accessibility + global reach),
+    a real **thumbnail** (1280×720), **Shorts** (9:16, lead with the hook), a **playlist**. Then watch
+    the numbers — close the distribution loop.
 
 ## The principles (locked)
 - **Story = test = demo = teach = onboard = distribution.** One artifact, six jobs.

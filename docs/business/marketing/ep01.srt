@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:08,000
+Hi, I'm the SAP Specialist. I made La Piazza, the town square for you. Let me show you around.
+
+2
+00:00:08,000 --> 00:00:14,000
+This is your town square — your neighbours' stuff to borrow, learn, sell and help with.
+
+3
+00:00:14,000 --> 00:00:20,000
+No fees, no middlemen, nobody selling your data. Sign up in one motion.
+
+4
+00:00:20,000 --> 00:00:26,000
+Just tell the machine who you are — a simple sentence or two. No CVs, no forms.
+
+5
+00:00:26,000 --> 00:00:36,000
+La Piazza builds your own workshop, tailored to you — your bio, your skills — in about 30 seconds.
+
+6
+00:00:36,000 --> 00:00:43,000
+Boom — you're a member. It even nudges you to add a photo. No fees, you're in.
+
+7
+00:00:43,000 --> 00:00:52,000
+And here's your workshop, your Bottega — make a poster, ask a master, find your edge. This is yours, right away.
+
+8
+00:00:52,000 --> 00:00:59,000
+Next episode — watch Mike ask the whole town to move his garage. Subscribe and learn more.
+
+9
+00:00:59,000 --> 00:01:03,000
+A presto. See you soon.

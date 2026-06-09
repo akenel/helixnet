@@ -60,15 +60,16 @@ const STEPS=[
  {n:'5 · Tags', do:'Open <b>Show more</b> → Tags, paste these:', copy:"la piazza, dream weavers, build in public, indie app, neighbourhood marketplace, no fees, open source, fastapi, keycloak, sap specialist, town square, indie hacker, no tracking"},
  {n:'6 · Thumbnail (1280×720, ready)', do:'Download one + upload it as the thumbnail: <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01-thumbnail.png" download="DreamWeavers-Ep01-thumb.png">⬇️ Title card (recommended)</a> &nbsp;·&nbsp; <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01-thumbnail-alt.png" download="DreamWeavers-Ep01-thumb-alt.png">⬇️ Welcome frame</a>'},
  {n:'7 · Playlist', do:'Create/add to this playlist (copy the name):', copy:"Dream Weavers — Mike's Big Move"},
- {n:'8 · Settings', do:'Audience: <b>No, it\\'s not made for kids</b>. Then on the Visibility step choose <b>Public</b> (or Unlisted first if you want to preview).'},
- {n:'9 · PUBLISH 🚀', do:'Hit <b>Publish</b>. Then copy the live URL and paste it in the box below so I have it.', copy:""},
+ {n:'8 · Captions (.srt)', do:'On the <b>Subtitles</b> step → <b>Add → Upload file → With timing</b> → choose <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01.srt" download="DreamWeavers-Ep01.srt">⬇️ ep01.srt</a> (language: English). YouTube auto-translates it into every language — accessibility + global reach in one move.'},
+ {n:'9 · Settings', do:'Audience: <b>No, it\\'s not made for kids</b>. Then on the Visibility step choose <b>Public</b> (or Unlisted first if you want to preview).'},
+ {n:'10 · PUBLISH 🚀', do:'Hit <b>Publish</b>. Then copy the live URL and paste it in the box below so I have it.', copy:"", liveurl:true},
 ];
 function render(){
   document.getElementById('sheet').innerHTML = STEPS.map((s,i)=>`
    <div class="step" data-i="${i}">
      <div class="top"><input type="checkbox" data-c="${i}">
        <div style="flex:1"><div class="n">${s.n}</div><div class="do">${s.do}</div></div></div>
-     ${s.copy!==undefined?`<div class="fieldwrap"><label class="fld">${i===8?'paste the LIVE youtube url here':'copy this'}</label>
+     ${s.copy!==undefined?`<div class="fieldwrap"><label class="fld">${s.liveurl?'paste the LIVE youtube url here':'copy this'}</label>
         <textarea class="copy" data-cp="${i}">${s.copy}</textarea>
         ${s.copy?`<button class="copybtn" onclick="cp(${i})">📋 Copy</button>`:''}</div>`:''}
      <div class="fieldwrap"><label class="fld">📝 notes for Tigs</label><textarea class="note" data-n="${i}" placeholder="anything off? a better title idea?"></textarea></div>
@@ -85,8 +86,8 @@ function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(
 function copyAll(){
   let t="SHIP EP1 — notes + the live URL\\n\\n";
   STEPS.forEach((s,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const note=q(`[data-n="${i}"]`).value.trim(); const cp=q(`[data-cp="${i}"]`);
-    const liveurl=(i===8&&cp&&cp.value.trim())?('  LIVE URL: '+cp.value.trim()+'\\n'):'';
-    if(note||liveurl||i===8) t+=`${done} ${s.n}\\n${liveurl}`+(note?`  NOTE: ${note}\\n`:'')+'\\n'; });
+    const liveurl=(s.liveurl&&cp&&cp.value.trim())?('  LIVE URL: '+cp.value.trim()+'\\n'):'';
+    if(note||liveurl||s.liveurl) t+=`${done} ${s.n}\\n${liveurl}`+(note?`  NOTE: ${note}\\n`:'')+'\\n'; });
   const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
   try{ navigator.clipboard.writeText(t); alert('Copied! Paste it to Tigs.'); }catch(e){ alert('Select the box below + copy.'); }
 }
