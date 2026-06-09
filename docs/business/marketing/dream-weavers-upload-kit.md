@@ -72,21 +72,22 @@ I am the SAP Specialist — I built the SAP alternative, and this is it.
 ## THE FULL MOVIE (flagship video)
 - **Title:** A neighbourhood moves a 1,000-lb crane with 20 hands and a tray of cookies | La Piazza (full film)
 - **Description:** The complete Dream Weavers Season 1 in one sitting. One person built a town square with no fees and no middlemen, then told its story through the app itself: a help post becomes an event becomes a Saturday lift, held together by one housebound woman's cookies, with a scammer caught and a crowd grown along the way. Open source. No narration, just the neighbourhood. [CTA]
-- **Runtime:** 6:08. File: `Videos/dream-weavers/Dream-Weavers-S1-FULL.mp4`
+- **Runtime:** 6:44 (cards held 5s for readability). File: `Videos/dream-weavers/Dream-Weavers-S1-FULL.mp4`
+- **Watch on staging:** https://staging-bottega.lapiazza.app/static/dream-weavers-s1.mp4
 - **Chapters (exact, from the compile — paste into the description):**
 ```
 0:00 Ep 1 — Welcome to the Piazza
-1:04 Ep 2 — Ask the Neighbourhood
-1:35 Ep 3 — The Crew Rallies
-2:05 Ep 4 — Make an Event
-2:31 Ep 5 — RSVP and Open It Up
-2:57 Ep 6 — The Side Conversation
-3:30 Ep 7 — Grow the Crowd
-3:56 Ep 8 — The Trade
-4:25 Ep 9 — Spot the Scammer
-4:51 Ep 10 — Who's Coming
-5:15 Ep 11 — Saturday, The Lift
-5:41 Ep 12 — Build Your Own Piazza
+1:07 Ep 2 — Ask the Neighbourhood
+1:41 Ep 3 — The Crew Rallies
+2:14 Ep 4 — Make an Event
+2:42 Ep 5 — RSVP and Open It Up
+3:12 Ep 6 — The Side Conversation
+3:48 Ep 7 — Grow the Crowd
+4:17 Ep 8 — The Trade
+4:49 Ep 9 — Spot the Scammer
+5:18 Ep 10 — Who's Coming
+5:44 Ep 11 — Saturday, The Lift
+6:13 Ep 12 — Build Your Own Piazza
 ```
 
 ---
