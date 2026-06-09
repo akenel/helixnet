@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 Ship Dream Weavers — Season 1 (the full movie)</title>
+<style>
+  :root{ --red:#C0392B; --dark:#2C3E50; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937;background:#f4f6f8;margin:0;line-height:1.5}
+  .wrap{max-width:880px;margin:0 auto;padding:16px}
+  header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  h1{margin:0;font-size:19px;color:var(--dark)} h1 b{color:var(--red)}
+  .meta{font-size:13px;color:#667;margin-top:4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
+  a.dl{display:inline-block;background:#1d4ed8;color:#fff;padding:9px 14px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none}
+  video{width:100%;border-radius:10px;background:#000;margin-bottom:14px}
+  .step{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 16px;margin-bottom:10px}
+  .step.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:24px;height:24px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .n{font-weight:700;color:var(--dark)} .do{font-size:13.5px;color:#374151;margin:2px 0 0 34px} .do a{color:var(--red);font-weight:600}
+  .fieldwrap{margin:8px 0 0 34px}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin:8px 0 2px;font-weight:700}
+  textarea{width:100%;border:1px solid #ccd;border-radius:8px;padding:8px;font:inherit;font-size:13.5px;resize:vertical}
+  textarea.copy{min-height:38px;background:#fffdf7} textarea.copy.big{min-height:230px}
+  textarea.note{min-height:32px;background:#fbfdff}
+  .copybtn{margin-top:4px;font-size:12px;padding:5px 10px}
+  #copybox{width:100%;min-height:80px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;border:1px solid #ccd;border-radius:8px;padding:10px;display:none}
+  @media print{ video,.bar,button,a.dl{display:none} body{background:#fff} .step{break-inside:avoid} }
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1>🚀 Ship <b>Dream Weavers — Season 1</b> (the full movie, 7:19)</h1>
+  <div class="meta">The flagship. Download, paste the fields, add chapters + captions + thumbnail, publish. Then upload the 2 Shorts as bait.</div>
+  <div class="bar">
+    <span id="prog" style="font-weight:700;color:var(--dark);font-size:14px;align-self:center">0 / 0</span>
+    <a class="dl" href="https://staging-bottega.lapiazza.app/static/dream-weavers-s1-full.mp4" download="DreamWeavers-S1.mp4">⬇️ Download the movie</a>
+    <button onclick="copyAll()">📋 Copy notes back to Tigs</button>
+    <button class="ghost" onclick="window.print()">🖨️ Print</button>
+    <button class="ghost" onclick="if(confirm('Clear?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
+</header>
+
+<video src="https://staging-bottega.lapiazza.app/static/dream-weavers-s1-full.mp4" controls preload="metadata"></video>
+
+<div id="sheet"></div>
+<textarea id="copybox" readonly></textarea>
+
+<script>
+const KEY='lp-ship-fullmovie';
+const STEPS=[
+ {n:'1 · Download + last watch', do:'Tap <b>⬇️ Download the movie</b> above. Happy with the score across the 7 min? Then go.'},
+ {n:'2 · YouTube Studio → Upload', do:'<a href="https://studio.youtube.com" target="_blank">studio.youtube.com</a> (as @theSAPspecialist) → Create → Upload → DreamWeavers-S1.mp4.'},
+ {n:'3 · Title', do:'Paste into Title:', copy:"Dream Weavers S1: Mike's Big Move 🐺 — a town square moves a 1,000-lb crane (open-source, no fees)"},
+ {n:'4 · Description (chapters included)', do:'Paste into Description — the chapters make the timeline clickable:', big:true, copy:
+`La Piazza is an open-source neighbourhood town square — no fees, no middlemen, no tracking. This is Season 1 of Dream Weavers: I show you the whole platform by telling a story THROUGH it. Watch a newcomer help Mike move a 1,000-lb crane out of his garage — and twenty hands (plus his sister Sally's cookies) answer the call.
+
+Every second is the REAL app, used live. Built in public with free tools.
+
+🏛️ Try it: https://lapiazza.app
+🔧 The workshop: https://bottega.lapiazza.app
+
+⏱️ Chapters
+0:00 Welcome to the Piazza
+1:07 Ask the Neighbourhood
+2:13 The Crew Rallies
+2:44 Make an Event
+3:13 RSVP & Open It Up
+3:48 The Side Conversation
+4:24 Grow the Crowd
+4:53 The Trade
+5:25 Spot the Scammer
+5:54 Who's Coming
+6:20 Saturday — The Lift
+6:49 Build Your Own Piazza
+
+Built on FastAPI + Keycloak + Postgres. Music made on Suno.
+
+▶ Subscribe — then try building your own town square.
+
+#LaPiazza #BuildInPublic #OpenSource #IndieHacker #NoFees`},
+ {n:'5 · Tags', do:'Show more → Tags:', copy:"la piazza, dream weavers, build in public, open source, no fees, neighbourhood marketplace, fastapi, keycloak, sap specialist, indie hacker, town square, no tracking"},
+ {n:'6 · Captions (.srt)', do:'Subtitles → Add → Upload file → With timing → <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01.srt" download="DreamWeavers-S1.srt">⬇️ S1.srt</a> (English). Covers your voice opener; YouTube auto-translates it.'},
+ {n:'7 · Thumbnail', do:'Upload the title card: <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01-thumbnail.png" download="DreamWeavers-S1-thumb.png">⬇️ title card (1280×720)</a>.'},
+ {n:'8 · Playlist', do:'Add to the playlist:', copy:"Dream Weavers — Mike's Big Move"},
+ {n:'9 · Settings', do:'Audience: <b>Not made for kids</b>. Visibility: <b>Unlisted first</b> to preview → then <b>Public</b>.'},
+ {n:'10 · PUBLISH 🚀 + paste URL', do:'Publish, then paste the live URL below.', copy:"", liveurl:true},
+ {n:'11 · The 2 Shorts (separate uploads — bait)', do:'Upload each as a Short (they\\'re 9:16): <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-short-scammer.mp4" download>⬇️ Scammer Short</a> · <a href="https://staging-bottega.lapiazza.app/static/dream-weavers-short-lift.mp4" download>⬇️ Lift Short</a>. Title them with a hook + #Shorts, link the full movie in the description. The scammer one is your strongest hook.'},
+];
+function render(){
+  document.getElementById('sheet').innerHTML = STEPS.map((s,i)=>`
+   <div class="step" data-i="${i}">
+     <div class="top"><input type="checkbox" data-c="${i}"><div style="flex:1"><div class="n">${s.n}</div><div class="do">${s.do}</div></div></div>
+     ${s.copy!==undefined?`<div class="fieldwrap"><label class="fld">${s.liveurl?'paste the LIVE youtube url here':'copy this'}</label>
+        <textarea class="copy ${s.big?'big':''}" data-cp="${i}">${s.copy}</textarea>${s.copy?`<button class="copybtn" onclick="cp(${i})">📋 Copy</button>`:''}</div>`:''}
+     <div class="fieldwrap"><label class="fld">📝 notes for Tigs</label><textarea class="note" data-n="${i}" placeholder=""></textarea></div>
+   </div>`).join('');
+  document.getElementById('prog').dataset.total=STEPS.length; load(); wire(); count();
+}
+function wire(){ document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',()=>{save();count();}); el.addEventListener('change',()=>{save();count();}); }); }
+function count(){ const d=[...document.querySelectorAll('[data-c]')].filter(c=>c.checked).length; document.getElementById('prog').textContent=`${d} / ${STEPS.length}`;
+  document.querySelectorAll('.step').forEach(b=>{const c=b.querySelector('[data-c]'); b.classList.toggle('done',c&&c.checked);}); }
+function cp(i){ const t=q(`[data-cp="${i}"]`); t.select(); try{navigator.clipboard.writeText(t.value);}catch(e){} const b=event.target; b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy',1200); }
+function save(){ const d={items:{}}; STEPS.forEach((_,i)=>{ const cp=q(`[data-cp="${i}"]`); d.items[i]={done:q(`[data-c="${i}"]`).checked, cp:cp?cp.value:null, note:q(`[data-n="${i}"]`).value}; }); localStorage.setItem(KEY,JSON.stringify(d)); }
+function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){d={}} Object.entries(d.items||{}).forEach(([i,v])=>{ const c=q(`[data-c="${i}"]`); if(c)c.checked=!!v.done; const cp=q(`[data-cp="${i}"]`); if(cp&&v.cp!=null)cp.value=v.cp; const n=q(`[data-n="${i}"]`); if(n)n.value=v.note||''; }); }
+function copyAll(){ let t="SHIP FULL MOVIE — notes + live URL\\n\\n";
+  STEPS.forEach((s,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const note=q(`[data-n="${i}"]`).value.trim(); const cp=q(`[data-cp="${i}"]`);
+    const lu=(s.liveurl&&cp&&cp.value.trim())?('  LIVE URL: '+cp.value.trim()+'\\n'):''; if(note||lu||s.liveurl) t+=`${done} ${s.n}\\n${lu}`+(note?`  NOTE: ${note}\\n`:'')+'\\n'; });
+  const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
+  try{ navigator.clipboard.writeText(t); alert('Copied! Paste it to Tigs.'); }catch(e){ alert('Select the box below + copy.'); } }
+const q=s=>document.querySelector(s);
+render();
+</script>
+</div></body></html>
