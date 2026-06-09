@@ -43,10 +43,22 @@ teaches + tests + sells).
 9. **Gate** — the episode **joins the regression suite** (`tests/e2e/dream-weavers-regression.js`). The
    stories test the whole caboodle before every prod deploy (`scripts/deploy-prod.sh`). A broken story
    blocks a bad ship. The test value **compounds**.
-10. **Publish + measure** — upload kit (title/desc/tags), **`.srt` captions** (Whisper-generated from
-    the voice → English; YouTube auto-translates into every language = accessibility + global reach),
-    a real **thumbnail** (1280×720), **Shorts** (9:16, lead with the hook), a **playlist**. Then watch
-    the numbers — close the distribution loop.
+10. **Publish + measure** — upload kit (title/desc/tags), **`.srt` captions** *(voice episodes ONLY —
+    Whisper from the voice → English; YouTube auto-translates = accessibility + global reach; music-only
+    episodes skip it, no speech to caption)*, a real **thumbnail** (1280×720), **Shorts** (9:16, lead
+    with the hook), a **playlist**. Then **distribute** (see below) — and watch the numbers.
+
+## ⚠️ The hard truth: PUBLISHING ≠ DISTRIBUTION
+A video posted to a small channel sits in the void — views are a *lagging* indicator. The *leading*
+work is putting the **story + the prototype** where people already are, and inviting them in:
+- **Your network first (LinkedIn)** — you're a SAP specialist with a real network; "I built an
+  open-source town square, here's episode 1, try the prototype" serves distribution AND the job hunt.
+- **Builder communities** — X/Twitter build-in-public (`scripts/lp_tweet.py` + the marketing kit),
+  Indie Hackers, Reddit (r/SideProject, r/selfhosted), a "Show HN".
+- **The prototype-feedback hook** (Angel's instinct, and it's the right one): *"This is a prototype —
+  try it, tell me what to fix, help me build it for you."* People love shaping a thing early.
+- **The measure that matters at this stage:** not YouTube views — **"did a real person try La Piazza
+  and give feedback?"** Ten real triers > ten thousand passive views.
 
 ## The principles (locked)
 - **Story = test = demo = teach = onboard = distribution.** One artifact, six jobs.
