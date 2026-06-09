@@ -25,7 +25,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const browser = await puppeteer.launch({ headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--hide-scrollbars', '--window-size=1920,1080'] });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
+  await page.setViewport({ width: 1366, height: 768, deviceScaleFactor: 2 });   // zoom in: content fills the frame, larger/readable text
   page.on('requestfailed', r => { if (r.url().includes('get-started')) console.log('REQ-FAILED', r.url(), r.failure() && r.failure().errorText); });
   page.on('response', r => { if (r.url().includes('get-started') && r.request().method() === 'POST') console.log('POST get-started ->', r.status()); });
   // hold the 🎉 Welcome readable: delay the post-submit redirect navigation by ~5s (no page-JS patch)
