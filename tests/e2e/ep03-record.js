@@ -21,6 +21,7 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
   const page = await browser.newPage();
   await page.setViewport({ width: 1024, height: 576, deviceScaleFactor: 2 });   // zoom in MORE: the reply text is small -> bigger upscale
 
+  await page.evaluateOnNewDocument(() => { try { localStorage.setItem('cookie_consent', 'accepted'); localStorage.setItem('pwa_install_dismissed', '1'); } catch (e) {} });   // no cookie / install banner in the videos
   const client = await page.target().createCDPSession();
   const frames = [];
   client.on('Page.screencastFrame', async ev => { frames.push({ t: ev.metadata.timestamp, data: ev.data }); try { await client.send('Page.screencastFrameAck', { sessionId: ev.sessionId }); } catch (e) {} });

@@ -1,15 +1,14 @@
-// Ep 4 — "It's Bigger Than a Garage" (Make an Event) -> MP4. Silent 1-pager, natural length, zoomed.
-// A help-post can't hold a 1000-lb crane -> Mike makes an EVENT. Show date/venue/capacity/RSVP, from
-// an attendee's POV (Nino). Login -> the event page -> the RSVP panel + the details.
+// Ep 5 — "RSVP & Open It Up" (the event fills) -> MP4. Silent 1-pager, natural length, zoomed.
+// The crew RSVP'd: 3/12 and climbing. Mike's POV: the count + the attendees + their notes.
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const { execSync } = require('child_process');
 
 const SQUARE = 'https://staging.lapiazza.app';
 const EVENT = '/items/garage-moving-day-tool-sale-trapani';
-const FRAMES = '/tmp/ep4rec';
+const FRAMES = '/tmp/ep5rec';
 const OUTDIR = '/home/angel/Videos/dream-weavers';
-const OUT = `${OUTDIR}/ep04-playthrough.mp4`;
+const OUT = `${OUTDIR}/ep05-playthrough.mp4`;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
@@ -20,23 +19,22 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--hide-scrollbars', '--window-size=1280,720'] });
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 });   // zoom in: readable
-
   await page.evaluateOnNewDocument(() => { try { localStorage.setItem('cookie_consent', 'accepted'); localStorage.setItem('pwa_install_dismissed', '1'); } catch (e) {} });   // no cookie / install banner in the videos
   const client = await page.target().createCDPSession();
   const frames = [];
   client.on('Page.screencastFrame', async ev => { frames.push({ t: ev.metadata.timestamp, data: ev.data }); try { await client.send('Page.screencastFrameAck', { sessionId: ev.sessionId }); } catch (e) {} });
 
-  // login as Nino (an attendee who'd RSVP)
+  // login as Mike (the host watching his event fill)
   await page.goto(SQUARE + '/', { waitUntil: 'networkidle2', timeout: 30000 });
-  await page.evaluate(() => fetch('/api/v1/demo/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'nino' }) }).then(r => r.text()));
+  await page.evaluate(() => fetch('/api/v1/demo/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'mike' }) }).then(r => r.text()));
 
   await page.goto(SQUARE + EVENT, { waitUntil: 'networkidle2', timeout: 30000 });
   await client.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
-  await sleep(3200);                                            // the event: title + cover + the RSVP panel
-  await page.evaluate(() => window.scrollTo({ top: 280, behavior: 'smooth' })); await sleep(3400);   // Start/End date+time, venue
-  await page.evaluate(() => window.scrollTo({ top: 560, behavior: 'smooth' })); await sleep(3400);   // 0/12 attendees, Free, RSVP
-  await page.evaluate(() => window.scrollTo({ top: 900, behavior: 'smooth' })); await sleep(3200);   // description / the story
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2200);     // back to the top + RSVP
+  await sleep(3200);                                            // the event + the count: 3/12 and climbing
+  await page.evaluate(() => window.scrollTo({ top: 300, behavior: 'smooth' })); await sleep(3400);   // capacity bar, Free, RSVP
+  await page.evaluate(() => window.scrollTo({ top: 620, behavior: 'smooth' })); await sleep(3400);   // Attendees + notes (the crew who said yes)
+  await page.evaluate(() => window.scrollTo({ top: 980, behavior: 'smooth' })); await sleep(3200);   // their notes: cookies, a friend, the heavy lifting
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(2200);     // back to the top: open to the neighbourhood
 
   await client.send('Page.stopScreencast'); await sleep(400);
   await browser.close();

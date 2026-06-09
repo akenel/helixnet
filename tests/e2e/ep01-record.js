@@ -38,6 +38,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   });
 
   // --- CDP screencast: collect frames + their real timestamps ---
+  await page.evaluateOnNewDocument(() => { try { localStorage.setItem('cookie_consent', 'accepted'); localStorage.setItem('pwa_install_dismissed', '1'); } catch (e) {} });   // no cookie / install banner in the videos
   const client = await page.target().createCDPSession();
   const frames = [];                       // buffer in memory (no sync I/O in the hot path)
   client.on('Page.screencastFrame', async ev => {
