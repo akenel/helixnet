@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📣 Distribute Episode 1 — Dream Weavers</title>
+<style>
+  :root{ --red:#C0392B; --dark:#2C3E50; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937;background:#f4f6f8;margin:0;line-height:1.5}
+  .wrap{max-width:880px;margin:0 auto;padding:16px}
+  header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  h1{margin:0;font-size:20px;color:var(--dark)} h1 b{color:var(--red)}
+  .meta{font-size:13px;color:#667;margin-top:4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
+  .urlbox{background:#fffdf7;border:1px solid #f0e6c8;border-radius:8px;padding:12px 14px;margin-bottom:14px}
+  .urlbox input{width:100%;margin-top:6px;border:1px solid #ccd;border-radius:8px;padding:9px;font:inherit;font-size:14px}
+  .why{font-size:12.5px;color:#475569;background:#fff;border-left:3px solid var(--red);border-radius:8px;padding:10px 14px;margin-bottom:14px}
+  .ch{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 16px;margin-bottom:10px}
+  .ch.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:24px;height:24px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .name{font-weight:700;color:var(--dark)} .name a{color:var(--red)}
+  .for{font-size:12.5px;color:#64748b;margin:2px 0 0 34px}
+  .fieldwrap{margin:8px 0 0 34px}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin:8px 0 2px;font-weight:700}
+  textarea{width:100%;border:1px solid #ccd;border-radius:8px;padding:8px;font:inherit;font-size:13.5px;resize:vertical}
+  textarea.post{min-height:120px;background:#fffdf7}
+  textarea.note{min-height:34px;background:#fbfdff}
+  .copybtn{margin-top:4px;font-size:12px;padding:5px 10px}
+  #copybox{width:100%;min-height:90px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;border:1px solid #ccd;border-radius:8px;padding:10px;display:none}
+  @media print{ .bar,button{display:none} body{background:#fff} .ch{break-inside:avoid} }
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1>📣 Distribute Episode 1 — <b>Dream Weavers</b></h1>
+  <div class="meta">Publishing ≠ distribution. Post the STORY + the PROTOTYPE where people already are. The win = a real person <b>tries La Piazza + gives feedback</b> — not view counts.</div>
+  <div class="bar">
+    <span id="prog" style="font-weight:700;color:var(--dark);font-size:14px;align-self:center">0 / 0 posted</span>
+    <button onclick="copyAll()">📋 Copy progress back to Tigs</button>
+    <button class="ghost" onclick="window.print()">🖨️ Print</button>
+    <button class="ghost" onclick="if(confirm('Clear?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
+</header>
+
+<div class="urlbox">🔗 <b>Paste your live YouTube URL once</b> — it fills into every post below:
+  <input id="liveurl" type="url" placeholder="https://youtu.be/…" oninput="fill()"></div>
+<div class="why">💡 <b>Order of attack:</b> LinkedIn first (your network = your unfair advantage + it doubles as job-hunt signal), then X, then the communities. Tweak any post to sound like you — these are starting points.</div>
+
+<div id="sheet"></div>
+<textarea id="copybox" readonly></textarea>
+
+<script>
+const KEY='lp-distribute-ep01';
+const URLPH='[your YouTube link]';
+const CH=[
+ {n:'LinkedIn', u:'https://www.linkedin.com/feed/', for:'Your network + it doubles as job-hunt signal. Lead here.', tpl:
+`Three years ago I stepped away from the corporate world. Since then I've been building La Piazza — an open-source neighbourhood town square. No fees, no middlemen, nobody selling your data.
+
+Here's Episode 1 of a series where I show the whole thing by actually using it — building in public, scrappy and honest.
+
+▶ Watch (60s): {{URL}}
+🏛️ Try the prototype: https://lapiazza.app
+
+It's early and rough in places — that's the point. I'd genuinely love your feedback: try it, tell me what's confusing, what's missing, what you'd want. Help me build it for you.
+
+#BuildInPublic #OpenSource #IndieHacker`},
+ {n:'X / Twitter', u:'https://twitter.com/compose/tweet', for:'Build-in-public crowd. Short + punchy. (You also have scripts/lp_tweet.py.)', tpl:
+`I built an open-source town square 🐺 — no fees, no middlemen, no tracking.
+
+Episode 1 of building it in public (60s) 👇
+{{URL}}
+
+Try the prototype + tell me what to fix: https://lapiazza.app
+
+#buildinpublic #indiehackers`},
+ {n:'Reddit — r/SideProject', u:'https://www.reddit.com/r/SideProject/submit', for:'Makers who give real feedback. Reddit loves "I built this, roast it" — NOT ads.', tpl:
+`Title: I spent 3 years building an open-source "town square" — Episode 1 + a live prototype, would love a roast
+
+Body:
+I left my corporate job and have been building La Piazza — a neighbourhood marketplace / town square with no fees, no middlemen, and no data harvesting. I just started a video series showing the whole thing by using it.
+
+Ep 1 (60s): {{URL}}
+Live prototype: https://lapiazza.app
+
+It's a prototype — I genuinely want feedback. What's confusing? What would make you actually use it? Roast away.`},
+ {n:'Indie Hackers', u:'https://www.indiehackers.com/new-post', for:'Build-in-public milestones land well here.', tpl:
+`Title: Shipped Episode 1 of "building La Piazza in public"
+
+La Piazza is an open-source neighbourhood town square (no fees, no middlemen, no tracking). I'm documenting the build as a video series — Ep 1 is a 60s walkthrough.
+
+▶ {{URL}}
+🏛️ Try it: https://lapiazza.app
+
+Doing it all with free tools, shown warts-and-all. Feedback very welcome — what would make this useful to you?`},
+];
+function render(){
+  document.getElementById('sheet').innerHTML = CH.map((c,i)=>`
+   <div class="ch" data-i="${i}">
+     <div class="top"><input type="checkbox" data-c="${i}">
+       <div style="flex:1"><span class="name"><a href="${c.u}" target="_blank">${c.n}</a></span><div class="for">${c.for}</div></div></div>
+     <div class="fieldwrap"><label class="fld">post (edit to taste)</label>
+       <textarea class="post" data-tpl="${i}">${c.tpl}</textarea>
+       <button class="copybtn" onclick="cp(${i})">📋 Copy this post</button></div>
+     <div class="fieldwrap"><label class="fld">📝 notes / who replied / a link</label><textarea class="note" data-n="${i}" placeholder="posted? any bites? a comment to follow up?"></textarea></div>
+   </div>`).join('');
+  document.getElementById('prog').dataset.total=CH.length;
+  load(); fill(); wire(); count();
+}
+function fill(){ const url=(document.getElementById('liveurl').value||'').trim()||URLPH;
+  CH.forEach((c,i)=>{ const t=q(`[data-tpl="${i}"]`); if(t && !t.dataset.touched) t.value=c.tpl.split('{{URL}}').join(url); });
+  save(); }
+function wire(){ document.querySelectorAll('textarea.post').forEach(t=>t.addEventListener('input',()=>{t.dataset.touched='1';save();}));
+  document.querySelectorAll('input,textarea.note,#liveurl').forEach(el=>{ el.addEventListener('input',()=>{save();count();}); el.addEventListener('change',()=>{save();count();}); }); }
+function count(){ const d=[...document.querySelectorAll('[data-c]')].filter(c=>c.checked).length; document.getElementById('prog').textContent=`${d} / ${CH.length} posted`;
+  document.querySelectorAll('.ch').forEach(b=>{const c=b.querySelector('[data-c]'); b.classList.toggle('done',c&&c.checked);}); }
+function cp(i){ const t=q(`[data-tpl="${i}"]`); t.select(); try{navigator.clipboard.writeText(t.value);}catch(e){} const b=event.target; b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy this post',1200); }
+function save(){ const d={url:document.getElementById('liveurl').value,items:{}}; CH.forEach((_,i)=>{ d.items[i]={done:q(`[data-c="${i}"]`).checked, post:q(`[data-tpl="${i}"]`).value, note:q(`[data-n="${i}"]`).value}; }); localStorage.setItem(KEY,JSON.stringify(d)); }
+function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){d={}} if(d.url)document.getElementById('liveurl').value=d.url;
+  Object.entries(d.items||{}).forEach(([i,v])=>{ const c=q(`[data-c="${i}"]`); if(c)c.checked=!!v.done; const t=q(`[data-tpl="${i}"]`); if(t&&v.post){t.value=v.post;t.dataset.touched='1';} const n=q(`[data-n="${i}"]`); if(n)n.value=v.note||''; }); }
+function copyAll(){
+  let t="DISTRIBUTE EP1 — progress\\n\\nLive URL: "+(document.getElementById('liveurl').value||'(not set)')+"\\n\\n";
+  CH.forEach((c,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const note=q(`[data-n="${i}"]`).value.trim();
+    t+=`${done} ${c.n}`+(note?` — ${note}`:'')+'\\n'; });
+  const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
+  try{ navigator.clipboard.writeText(t); alert('Copied! Paste it to Tigs.'); }catch(e){ alert('Select the box below + copy.'); }
+}
+const q=s=>document.querySelector(s);
+render();
+</script>
+</div></body></html>
