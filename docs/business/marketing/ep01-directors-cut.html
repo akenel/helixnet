@@ -8,41 +8,88 @@
   body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937;background:#f4f6f8;margin:0;line-height:1.5}
   .wrap{max-width:900px;margin:0 auto;padding:16px}
   header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-  h1{margin:0;font-size:21px;color:var(--dark)} h1 b{color:var(--red)}
+  h1{margin:0;font-size:20px;color:var(--dark)} h1 b{color:var(--red)}
   .meta{font-size:13px;color:#667;margin-top:4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
   video{width:100%;border-radius:10px;background:#000;margin-bottom:14px}
   .tip{font-size:12.5px;color:#475569;background:#fff;border-left:3px solid var(--red);border-radius:8px;padding:10px 14px;margin-bottom:14px}
-  .beat{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 16px;margin-bottom:10px;display:flex;gap:12px}
-  .beat input{width:22px;height:22px;margin-top:2px;flex-shrink:0;accent-color:var(--red)}
-  .tc{font-family:ui-monospace,monospace;font-weight:700;color:var(--red);font-size:14px;white-space:nowrap}
-  .on{font-size:13px;color:#64748b;margin:2px 0 6px}
-  .say{font-size:14.5px;color:#1f2937}
-  .say b{color:var(--dark)}
-  @media print{ video,.tip{display:none} body{background:#fff} .beat{break-inside:avoid} }
+  .beat{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 16px;margin-bottom:10px}
+  .beat.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:24px;height:24px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .tc{font-family:ui-monospace,monospace;font-weight:700;color:var(--red);font-size:14px}
+  .on{font-size:12.5px;color:#64748b}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin:8px 0 2px;font-weight:700}
+  textarea{width:100%;border:1px solid #ccd;border-radius:8px;padding:8px;font:inherit;font-size:14px;resize:vertical}
+  textarea.say{min-height:46px;background:#fffdf7}
+  textarea.note{min-height:38px;background:#fbfdff}
+  #copybox{width:100%;min-height:120px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;border:1px solid #ccd;border-radius:8px;padding:10px;display:none}
+  @media print{ video,.tip,.bar,button{display:none} body{background:#fff} .beat{break-inside:avoid} }
 </style></head>
 <body><div class="wrap">
 
 <header>
-  <h1>🎬 Director's Cut — Dream Weavers <b>Ep 1</b>: Welcome to the Piazza</h1>
-  <div class="meta">~68s · narrate in your own words · music bed at ~5% under your voice · tick each beat as you record it</div>
+  <h1>🎬 Director's Cut — Dream Weavers <b>Ep 1</b></h1>
+  <div class="meta">Watch the video · edit the script in your own words · jot notes · tick each beat · then <b>Copy notes back to Tigs</b>. Saves on this device as you go. (Music sits at ~5% under your voice.)</div>
+  <div class="bar">
+    <span id="prog" style="font-weight:700;color:var(--dark);font-size:14px;align-self:center">0 / 0 done</span>
+    <button onclick="copyAll()">📋 Copy my notes back to Tigs</button>
+    <button class="ghost" onclick="window.print()">🖨️ Print</button>
+    <button class="ghost" onclick="if(confirm('Clear all my edits?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
 </header>
 
 <video src="https://staging-bottega.lapiazza.app/static/dream-weavers-ep01.mp4" controls preload="metadata"></video>
+<div class="tip">🎙️ <b>How:</b> play it once to feel it, then record your voice over it (phone memo is fine). The script lines are <i>starting points</i> — reword them right in the box. Drop notes for me on anything. When done, hit <b>Copy my notes back to Tigs</b> and paste it into the chat — I'll cut draft 2 from your edits.</div>
 
-<div class="tip">🎙️ <b>How to do it:</b> hit play, watch once to feel it, then record your voice talking over it (phone voice-memo is fine). The cues below are *prompts, not a teleprompter* — say it your way. Times are approximate; adjust to what you see. Send me the voice file + I'll mix it with the music at ~5% and lock the director's cut.</div>
+<div id="sheet"></div>
 
-<div class="beat"><input type="checkbox"><div><span class="tc">0:00–0:05</span> · <span class="on">Intro card — "Episode 1 · Welcome to the Piazza"</span><div class="say">💬 <b>Say:</b> "Hey — I'm the SAP Specialist, and this is La Piazza, the town square I built. Let me show you around."</div></div></div>
+<label class="fld" style="margin-top:16px">📓 Overall notes / memos / anything (phone numbers, ideas, "do this next" — your diary box)</label>
+<textarea id="overall" class="note" style="min-height:80px"></textarea>
+<textarea id="copybox" readonly></textarea>
 
-<div class="beat"><input type="checkbox"><div><span class="tc">0:05–0:12</span> · <span class="on">The Square — the marketplace home, real listings</span><div class="say">💬 <b>Say:</b> "This is the square — your neighbours' stuff to borrow, learn, sell, and help with. No fees, no middlemen, nobody selling your data."</div></div></div>
-
-<div class="beat"><input type="checkbox"><div><span class="tc">0:12–0:28</span> · <span class="on">Get Started — typing name, email, a sentence about yourself</span><div class="say">💬 <b>Say:</b> "Signing up is one motion. Just tell it who you are — even a sentence. No CV, no forms."</div></div></div>
-
-<div class="beat"><input type="checkbox"><div><span class="tc">0:28–0:38</span> · <span class="on">Building — the progress bar, "Choosing your House…"</span><div class="say">💬 <b>Say:</b> "And it builds your own little workshop for you — your bio, your skills, the lot — in about thirty seconds."</div></div></div>
-
-<div class="beat"><input type="checkbox"><div><span class="tc">0:38–0:48</span> · <span class="on">🎉 Welcome — the tagline + "profile 70% complete, add a photo"</span><div class="say">💬 <b>Say:</b> "Boom — you're a member. It even nudges you to add a photo and banner to finish. Thirty seconds, no fees, you're in."</div></div></div>
-
-<div class="beat"><input type="checkbox"><div><span class="tc">0:48–0:60</span> · <span class="on">The Workshop — the recipe menu (CV→Bio, Find Your Edge…)</span><div class="say">💬 <b>Say:</b> "And here's your workshop — turn a CV into a bio, make a poster, ask a master, find your edge. Yours, right away."</div></div></div>
-
-<div class="beat"><input type="checkbox"><div><span class="tc">0:60–0:68</span> · <span class="on">Outro card — "Next: Ask the Neighbourhood · Subscribe"</span><div class="say">💬 <b>Say:</b> "Next episode — watch our neighbour Mike ask the whole town for help moving a thousand-pound crane. Subscribe so you don't miss it. A presto."</div></div></div>
-
+<script>
+const KEY='lp-dc-ep01';
+const BEATS=[
+ {tc:'0:00–0:05',on:'Intro card — "Episode 1 · Welcome to the Piazza"',say:"Hey — I'm the SAP Specialist, and this is La Piazza, the town square I built. Let me show you around."},
+ {tc:'0:05–0:12',on:'The Square — the marketplace home, real listings',say:"This is the square — your neighbours' stuff to borrow, learn, sell, and help with. No fees, no middlemen, nobody selling your data."},
+ {tc:'0:12–0:28',on:'Get Started — typing name, email, a sentence about you',say:"Signing up is one motion. Just tell it who you are — even a sentence. No CV, no forms."},
+ {tc:'0:28–0:38',on:'Building — the progress bar, "Choosing your House…"',say:"And it builds your own little workshop for you — bio, skills, the lot — in about thirty seconds."},
+ {tc:'0:38–0:48',on:'🎉 Welcome — the tagline + "profile 70% complete, add a photo"',say:"Boom — you're a member. It even nudges you to add a photo to finish. Thirty seconds, no fees, you're in."},
+ {tc:'0:48–0:60',on:'The Workshop — the recipe menu (CV→Bio, Find Your Edge…)',say:"And here's your workshop — turn a CV into a bio, make a poster, ask a master, find your edge. Yours, right away."},
+ {tc:'0:60–0:68',on:'Outro card — "Next: Ask the Neighbourhood · Subscribe"',say:"Next episode — watch Mike ask the whole town to move a thousand-pound crane. Subscribe so you don't miss it. A presto."},
+];
+function render(){
+  document.getElementById('sheet').innerHTML = BEATS.map((b,i)=>`
+   <div class="beat" data-i="${i}">
+     <div class="top"><input type="checkbox" data-c="${i}">
+       <div style="flex:1"><span class="tc">${b.tc}</span> · <span class="on">${b.on}</span></div></div>
+     <label class="fld">💬 Your line (edit it your way)</label>
+     <textarea class="say" data-s="${i}">${b.say}</textarea>
+     <label class="fld">📝 Notes for Tigs (what to change, a better take, a tip…)</label>
+     <textarea class="note" data-n="${i}" placeholder="e.g. 'too long here' / 'cut to the workshop sooner' / 'add the price'"></textarea>
+   </div>`).join('');
+  document.getElementById('prog').dataset.total=BEATS.length;
+  load(); wire(); count();
+}
+function wire(){ document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',()=>{save();count();}); el.addEventListener('change',()=>{save();count();}); }); }
+function count(){ const d=[...document.querySelectorAll('[data-c]')].filter(c=>c.checked).length; document.getElementById('prog').textContent=`${d} / ${document.getElementById('prog').dataset.total} done`;
+  document.querySelectorAll('.beat').forEach(b=>{const c=b.querySelector('[data-c]'); b.classList.toggle('done',c&&c.checked);}); }
+function save(){ const d={overall:val('#overall'),items:{}}; BEATS.forEach((_,i)=>{ d.items[i]={done:q(`[data-c="${i}"]`).checked,say:q(`[data-s="${i}"]`).value,note:q(`[data-n="${i}"]`).value}; }); localStorage.setItem(KEY,JSON.stringify(d)); }
+function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){d={}} if(d.overall)setv('#overall',d.overall);
+  Object.entries(d.items||{}).forEach(([i,v])=>{ const c=q(`[data-c="${i}"]`); if(c)c.checked=!!v.done; const s=q(`[data-s="${i}"]`); if(s&&v.say!=null)s.value=v.say; const n=q(`[data-n="${i}"]`); if(n)n.value=v.note||''; }); }
+function copyAll(){
+  let t="DIRECTOR'S CUT NOTES — Dream Weavers Ep 1\\n\\n";
+  BEATS.forEach((b,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const say=q(`[data-s="${i}"]`).value.trim(); const note=q(`[data-n="${i}"]`).value.trim();
+    t+=`${done} ${b.tc} — ${b.on}\\n  LINE: ${say}\\n`+(note?`  NOTE: ${note}\\n`:'')+'\\n'; });
+  const ov=val('#overall').trim(); if(ov)t+=`OVERALL NOTES:\\n${ov}\\n`;
+  const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
+  try{ navigator.clipboard.writeText(t); alert('Copied! Paste it into the chat for Tigs. (Also shown in the box below.)'); }
+  catch(e){ alert('Select-all in the box below and copy, then paste it to Tigs.'); }
+}
+const q=s=>document.querySelector(s); const val=s=>{const e=q(s);return e?e.value:''}; const setv=(s,v)=>{const e=q(s);if(e)e.value=v};
+render();
+</script>
 </div></body></html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find the Dream Weavers Theme — Music Site Finder</title>
+<style>
+  :root{ --red:#C0392B; --dark:#2C3E50; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937;background:#f4f6f8;margin:0;line-height:1.5}
+  .wrap{max-width:880px;margin:0 auto;padding:16px}
+  header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  h1{margin:0;font-size:20px;color:var(--dark)} h1 b{color:var(--red)}
+  .meta{font-size:13px;color:#667;margin-top:4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
+  .brief{font-size:13px;background:#fffdf7;border:1px solid #f0e6c8;border-radius:8px;padding:10px 14px;margin-bottom:14px}
+  .crit{font-size:12.5px;color:#475569;background:#fff;border-left:3px solid var(--red);border-radius:8px;padding:10px 14px;margin-bottom:14px}
+  .site{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 16px;margin-bottom:10px}
+  .site.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:24px;height:24px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .name{font-weight:700;color:var(--dark)} .name a{color:var(--red)}
+  .pick{font-size:11px;background:#eef2ff;color:#4338ca;border-radius:999px;padding:2px 8px;font-weight:700;margin-left:6px}
+  .for{font-size:12.5px;color:#64748b;margin:4px 0 0 34px}
+  .rate{margin:8px 0 0 34px;display:flex;gap:6px;flex-wrap:wrap}
+  .rate label{font-size:12px;padding:4px 10px;border:1px solid #ccd;border-radius:999px;cursor:pointer}
+  .rate input{display:none} .rate label:has(input:checked){border-color:var(--red);background:#fcf1f0;font-weight:700}
+  textarea{width:100%;margin:8px 0 0;border:1px solid #ccd;border-radius:8px;padding:8px;font:inherit;font-size:13.5px;min-height:44px;resize:vertical}
+  #copybox{width:100%;min-height:120px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;border:1px solid #ccd;border-radius:8px;padding:10px;display:none}
+  @media print{ .bar,button{display:none} body{background:#fff} .site{break-inside:avoid} }
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1>🎵 Find the <b>Dream Weavers</b> Theme — Music Site Finder</h1>
+  <div class="meta">Try a few, score each, jot what you hear · then <b>Copy my picks back to Tigs</b>. Saves as you go.</div>
+  <div class="bar">
+    <button onclick="copyAll()">📋 Copy my picks back to Tigs</button>
+    <button class="ghost" onclick="window.print()">🖨️ Print</button>
+    <button class="ghost" onclick="if(confirm('Clear?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
+</header>
+
+<div class="brief">🎸 <b>What we're after:</b> a ~50–60s instrumental — <b>Jethro Tull / Ian Anderson</b> vibe: flute + harmonica trading the hook over a driving guitar riff, that slow <i>Locomotive Breath</i> buildup. Loopable, YouTube-safe, no vocals. (Full brief: <code>dream-weavers-theme-brief.md</code>.)</div>
+<div class="crit">✅ <b>Score each site on:</b> free or cheap? · YouTube/commercial license (no copyright claims)? · instrument control (flute + harmonica + guitar)? · clean loop / good export (WAV or 320 MP3)? · does the <i>buildup</i> feel right?</div>
+
+<div id="sheet"></div>
+<textarea id="copybox" readonly></textarea>
+
+<script>
+const KEY='lp-music-finder';
+const SITES=[
+ {n:'Soundraw', u:'https://soundraw.io', pick:'top pick', for:'Made for video creators. Pick genre/mood/length, swap instruments, royalty-free, clean loops. Strong on control + licensing.'},
+ {n:'Suno', u:'https://suno.com', pick:'highest quality', for:'Text-prompt full songs, excellent quality, instrumental mode. Check the plan tier for YouTube/commercial license.'},
+ {n:'Udio', u:'https://udio.com', for:'Like Suno — high-quality text-to-music, instrumental option. Verify commercial license.'},
+ {n:'Mubert', u:'https://mubert.com', for:'Generative, royalty-free, built for loops/beds + creators. Great for a seamless background loop.'},
+ {n:'Beatoven.ai', u:'https://beatoven.ai', for:'Mood/scene-based, royalty-free, made for video. Simple, license-clean.'},
+ {n:'AIVA', u:'https://aiva.ai', for:'Composition-focused, instrument control, downloadable stems. More "compose your own" feel.'},
+];
+function render(){
+  document.getElementById('sheet').innerHTML = SITES.map((s,i)=>`
+   <div class="site" data-i="${i}">
+     <div class="top"><input type="checkbox" data-c="${i}">
+       <div style="flex:1"><span class="name"><a href="${s.u}" target="_blank">${s.n}</a></span>${s.pick?`<span class="pick">${s.pick}</span>`:''}<div class="for">${s.for}</div></div></div>
+     <div class="rate">${['👍 love it','🤔 maybe','👎 no','💰 too pricey'].map(l=>`<label><input type="radio" name="r${i}" value="${l}">${l}</label>`).join('')}</div>
+     <textarea data-n="${i}" placeholder="What you heard / license notes / the track URL if you made one…"></textarea>
+   </div>`).join('');
+  load(); wire();
+}
+function wire(){ document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',save); el.addEventListener('change',()=>{save();mark();}); }); mark(); }
+function mark(){ document.querySelectorAll('.site').forEach(s=>{const c=s.querySelector('[data-c]'); s.classList.toggle('done',c&&c.checked);}); }
+function save(){ const d={}; SITES.forEach((_,i)=>{ d[i]={done:q(`[data-c="${i}"]`).checked, rate:(q(`[name="r${i}"]:checked`)||{}).value||'', note:q(`[data-n="${i}"]`).value}; }); localStorage.setItem(KEY,JSON.stringify(d)); }
+function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){d={}} Object.entries(d).forEach(([i,v])=>{ const c=q(`[data-c="${i}"]`); if(c)c.checked=!!v.done; if(v.rate){const r=q(`[name="r${i}"][value="${CSS.escape(v.rate)}"]`); if(r)r.checked=true;} const n=q(`[data-n="${i}"]`); if(n)n.value=v.note||''; }); }
+function copyAll(){
+  let t="MUSIC SITE PICKS — Dream Weavers theme\\n\\n";
+  SITES.forEach((s,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const rate=(q(`[name="r${i}"]:checked`)||{}).value||''; const note=q(`[data-n="${i}"]`).value.trim();
+    if(done==='[x]'||rate||note) t+=`${done} ${s.n} ${rate?'('+rate+')':''}\\n`+(note?`  ${note}\\n`:'')+'\\n'; });
+  const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
+  try{ navigator.clipboard.writeText(t); alert('Copied! Paste it to Tigs.'); }catch(e){ alert('Select the box below + copy, paste to Tigs.'); }
+}
+const q=s=>document.querySelector(s);
+render();
+</script>
+</div></body></html>
