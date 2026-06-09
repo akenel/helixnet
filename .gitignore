@@ -211,3 +211,7 @@ docs/blueprint/*.html
 
 # console-sweep run artifacts (regenerated each run)
 tests/e2e/*-report.json
+
+# YouTube uploader secrets (never commit)
+scripts/yt_client_secret.json
+scripts/yt_token.json
