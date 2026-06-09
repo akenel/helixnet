@@ -19,7 +19,7 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
   const browser = await puppeteer.launch({ headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--hide-scrollbars', '--window-size=1366,768'] });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1366, height: 768, deviceScaleFactor: 2 });   // zoom in: readable text
+  await page.setViewport({ width: 1024, height: 576, deviceScaleFactor: 2 });   // zoom in MORE: the reply text is small -> bigger upscale
 
   const client = await page.target().createCDPSession();
   const frames = [];
@@ -36,10 +36,11 @@ const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [.
 
   await client.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
   await sleep(2600);                                            // the post + cover (the ask)
-  await page.evaluate(() => window.scrollTo({ top: 440, behavior: 'smooth' })); await sleep(3000);   // the crew shows up
-  await page.evaluate(() => window.scrollTo({ top: 840, behavior: 'smooth' })); await sleep(3200);   // Sally's cookies, Marco's +1
-  await page.evaluate(() => window.scrollTo({ top: 1220, behavior: 'smooth' })); await sleep(3200);  // Jake, Maria - the whole crew shows up
-  await page.evaluate(() => window.scrollTo({ top: 1520, behavior: 'smooth' })); await sleep(3000);  // "Add a reply" - where you join the lift
+  await page.evaluate(() => window.scrollTo({ top: 380, behavior: 'smooth' })); await sleep(3000);   // Nino, Sally show up
+  await page.evaluate(() => window.scrollTo({ top: 760, behavior: 'smooth' })); await sleep(3200);   // Sally's cookies, Marco's +1
+  await page.evaluate(() => window.scrollTo({ top: 1140, behavior: 'smooth' })); await sleep(3200);  // Jake - work for food
+  await page.evaluate(() => window.scrollTo({ top: 1520, behavior: 'smooth' })); await sleep(3200);  // Maria - moved whole buildings
+  await page.evaluate(() => window.scrollTo({ top: 1880, behavior: 'smooth' })); await sleep(2600);  // "Add a reply" - where you join the lift
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(1800);     // back to the top: the ask, answered
 
   await client.send('Page.stopScreencast'); await sleep(400);
