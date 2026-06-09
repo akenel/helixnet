@@ -1,0 +1,60 @@
+// Ep 3 — "The Crew Rallies" (Help Board replies) -> MP4. Silent 1-pager, natural length, zoomed.
+// Login as a newcomer -> open Mike's garage post -> scroll the crew's replies -> add your own hand.
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const { execSync } = require('child_process');
+
+const SQUARE = 'https://staging.lapiazza.app';
+const REPLY = "New to the neighbourhood but I have a strong back - count me in for Saturday morning.";
+const FRAMES = '/tmp/ep3rec';
+const OUTDIR = '/home/angel/Videos/dream-weavers';
+const OUT = `${OUTDIR}/ep03-playthrough.mp4`;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clickByAttr = (page, attr, frag) => page.evaluate((a, f) => { const b = [...document.querySelectorAll('button')].find(x => (x.getAttribute(a) || '').includes(f)); if (b) b.click(); }, attr, frag);
+
+(async () => {
+  try { fs.rmSync(FRAMES, { recursive: true, force: true }); } catch (e) {}
+  fs.mkdirSync(FRAMES, { recursive: true }); fs.mkdirSync(OUTDIR, { recursive: true });
+
+  const browser = await puppeteer.launch({ headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--hide-scrollbars', '--window-size=1366,768'] });
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1366, height: 768, deviceScaleFactor: 2 });   // zoom in: readable text
+
+  const client = await page.target().createCDPSession();
+  const frames = [];
+  client.on('Page.screencastFrame', async ev => { frames.push({ t: ev.metadata.timestamp, data: ev.data }); try { await client.send('Page.screencastFrameAck', { sessionId: ev.sessionId }); } catch (e) {} });
+
+  // login as george (a newcomer/fresh helper)
+  await page.goto(SQUARE + '/', { waitUntil: 'networkidle2', timeout: 30000 });
+  await page.evaluate(() => fetch('/api/v1/demo/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'mike' }) }).then(r => r.text()));
+
+  await page.goto(SQUARE + '/helpboard', { waitUntil: 'networkidle2', timeout: 30000 });
+  // open Mike's garage post (with the cover)
+  await page.evaluate(() => { const cards = [...document.querySelectorAll('*')].filter(el => (el.getAttribute('@click') || '').startsWith('openPost')); const card = cards.find(c => c.textContent.includes('Garage Moving Day')) || cards[0]; if (card) card.click(); });
+  await page.waitForFunction(() => /Replies|Add a reply/i.test(document.body.innerText), { timeout: 12000, polling: 400 }).catch(() => {});
+
+  await client.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
+  await sleep(2600);                                            // the post + cover (the ask)
+  await page.evaluate(() => window.scrollTo({ top: 440, behavior: 'smooth' })); await sleep(3000);   // the crew shows up
+  await page.evaluate(() => window.scrollTo({ top: 840, behavior: 'smooth' })); await sleep(3200);   // Sally's cookies, Marco's +1
+  await page.evaluate(() => window.scrollTo({ top: 1220, behavior: 'smooth' })); await sleep(3200);  // Jake, Maria - the whole crew shows up
+  await page.evaluate(() => window.scrollTo({ top: 1520, behavior: 'smooth' })); await sleep(3000);  // "Add a reply" - where you join the lift
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' })); await sleep(1800);     // back to the top: the ask, answered
+
+  await client.send('Page.stopScreencast'); await sleep(400);
+  await browser.close();
+
+  if (frames.length < 2) { console.log('NO FRAMES'); process.exit(1); }
+  frames.forEach((f, k) => { f.fn = `${FRAMES}/f${String(k).padStart(6, '0')}.jpg`; fs.writeFileSync(f.fn, Buffer.from(f.data, 'base64')); });
+  let concat = '';
+  for (let k = 0; k < frames.length; k++) {
+    const dur = k < frames.length - 1 ? Math.min(6.0, Math.max(0.033, frames[k + 1].t - frames[k].t)) : 0.5;
+    concat += `file '${frames[k].fn}'\nduration ${dur.toFixed(3)}\n`;
+  }
+  concat += `file '${frames[frames.length - 1].fn}'\n`;
+  fs.writeFileSync(`${FRAMES}/list.txt`, concat);
+  console.log(`captured ${frames.length} frames over ${(frames[frames.length - 1].t - frames[0].t).toFixed(1)}s -> encoding…`);
+  execSync(`ffmpeg -y -loglevel error -f concat -safe 0 -i ${FRAMES}/list.txt -vf "fps=24,format=yuv420p,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,tpad=stop_mode=clone:stop_duration=1.2" -c:v libx264 -preset medium -crf 20 -movflags +faststart "${OUT}"`, { stdio: 'inherit' });
+  console.log('✅ wrote', OUT);
+})();
