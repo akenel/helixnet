@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1920px;height:1080px;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#fff;
+    background:radial-gradient(1400px 800px at 78% -10%, #3a1212, transparent),
+               radial-gradient(1100px 800px at 8% 115%, #1f2a44, transparent), #060910;position:relative}
+  .wrap{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 150px}
+  .kicker{font-size:32px;letter-spacing:.42em;color:#C0392B;font-weight:800;text-transform:uppercase}
+  .epno{font-size:30px;letter-spacing:.3em;color:#94a3b8;font-weight:700;margin-top:26px;text-transform:uppercase}
+  h1{font-family:'Bebas Neue',sans-serif;font-size:148px;line-height:.92;letter-spacing:.01em;margin:8px 0 0;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+  h1 .red{color:#C0392B}
+  .tag{font-size:38px;color:#cbd5e1;font-weight:500;margin-top:30px;max-width:1200px}
+  .ch{position:absolute;bottom:70px;left:150px;font-size:26px;color:#64748b;font-weight:600}
+  .wolf{position:absolute;top:80px;right:150px;font-size:120px}
+  /* outro */
+  .center{align-items:center;text-align:center;padding:0 120px}
+  .next{font-size:30px;letter-spacing:.3em;color:#C0392B;font-weight:800;text-transform:uppercase}
+  .cta{margin-top:54px;font-size:44px;font-weight:900;background:#C0392B;color:#fff;padding:22px 60px;border-radius:18px;display:inline-block}
+  .foot{position:absolute;bottom:64px;width:100%;left:0;text-align:center;font-size:26px;color:#64748b;font-weight:600}
+  .climax{position:absolute;right:90px;top:60px;font-size:340px;opacity:.13;transform:rotate(-8deg)}
+</style></head>
+<body>
+<script>
+  const p = new URLSearchParams(location.search);
+  const kind = p.get('kind') || 'intro';
+  const n = p.get('n') || '1';
+  const title = p.get('title') || '';
+  const tag = p.get('tag') || '';
+  const next = p.get('next') || '';
+  const climax = p.get('climax') === '1';
+  const finale = p.get('finale') === '1';
+  const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  // render red-accent the last word of a title
+  const redLast = t => { const w = esc(t).split(' '); if (w.length) w[w.length - 1] = '<span class="red">' + w[w.length - 1] + '</span>'; return w.join(' '); };
+  let html = '';
+  if (kind === 'intro') {
+    html = `${climax ? '<div class="climax">🏗️</div>' : '<div class="wolf">🐺</div>'}
+      <div class="wrap">
+        <div class="kicker">Dream Weavers · Mike's Big Move</div>
+        <div class="epno">Episode ${esc(n)}</div>
+        <h1>${redLast(title)}</h1>
+        <div class="tag">${esc(tag)}</div>
+      </div>
+      <div class="ch">▶ @theSAPspecialist</div>`;
+  } else {
+    html = `<div class="wolf">🐺</div>
+      <div class="wrap center">
+        ${finale
+          ? `<div class="next">La Piazza</div><h1 style="font-size:120px">Build your <span class="red">own</span>.</h1><div class="tag" style="margin-top:20px;text-align:center">A town square with no fees, no middlemen. Forever.</div>`
+          : `<div class="next">Next Episode</div><div class="epno" style="margin-top:14px">Episode ${esc(+n + 1)}</div><h1>${redLast(next)}</h1>`}
+        <div class="cta">▶ Subscribe · @theSAPspecialist</div>
+      </div>
+      <div class="foot">La Piazza · free · open source · forever</div>`;
+  }
+  document.body.insertAdjacentHTML('beforeend', html);
+</script>
+</body></html>
