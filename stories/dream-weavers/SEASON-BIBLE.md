@@ -98,6 +98,16 @@ accident.*
 - **The loop:** Tiger builds → plays → cuts → **Wolf watches → approves / twists / stops** → Wolf
   voices → publish → OG-share. One episode per session ([[feedback-cadence-couple-hours-a-day]]).
 
+## 📐 EPISODE STANDARDS (the reusable template — so we whip through them)
+- **No voice required.** Silent Sid-Field 1-pagers — the cards + the on-screen action carry it.
+  Banksy-authentic, travels in any language. (Voiceover optional, never the gate.)
+- **Natural length, tight.** Each episode runs as long as its beat needs — *never padded.* No frozen
+  tails. The **~60s intro (Ep 1) is the deliberate exception**; content episodes are usually shorter.
+- **Zoomed for readability.** Record at a **1366×768 viewport, 2× scale** so the content fills the
+  frame (~93%, big readable text), output crisp 1080p.
+- **Bookend with cards** (intro + outro, rendered 1920×1080) and a **cover image** where it lifts the
+  post (designed flyer when stock photos don't fit). Each episode = its own OG share.
+
 ---
 *Season 1 Bible. The crane is the plot, the cookies are the heart, the scammer is the test, the
 Newcomer is you. Dawn-empty to dusk-full to a hundred squares.* 🐺🐅
