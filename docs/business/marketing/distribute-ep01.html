@@ -46,7 +46,7 @@
 
 <div class="urlbox">🔗 <b>Paste your live YouTube URL once</b> — it fills into every post below:
   <input id="liveurl" type="url" placeholder="https://youtu.be/…" oninput="fill()"></div>
-<div class="why">💡 <b>Order of attack:</b> LinkedIn first (your network = your unfair advantage + it doubles as job-hunt signal), then X, then the communities. Tweak any post to sound like you — these are starting points.</div>
+<div class="why">💡 <b>Your channels:</b> LinkedIn (✓ done) → <b>Reddit</b> (your sleeper — no followers needed, makers give real feedback) → <b>Telegram</b> (your warm crowd who already know you) → Indie Hackers. <i>(Skipped Twitter — no base there yet.)</i> Tweak any post to sound like you.</div>
 
 <div id="sheet"></div>
 <textarea id="copybox" readonly></textarea>
@@ -55,7 +55,7 @@
 const KEY='lp-distribute-ep01';
 const URLPH='[your YouTube link]';
 const CH=[
- {n:'LinkedIn', u:'https://www.linkedin.com/feed/', for:'Your network + it doubles as job-hunt signal. Lead here.', tpl:
+ {n:'LinkedIn', u:'https://www.linkedin.com/feed/', for:'✓ POSTED. Your SAP network = the right audience — don\\'t underrate it.', tpl:
 `Three years ago I stepped away from the corporate world. Since then I've been building La Piazza — an open-source neighbourhood town square. No fees, no middlemen, nobody selling your data.
 
 Here's Episode 1 of a series where I show the whole thing by actually using it — building in public, scrappy and honest.
@@ -66,16 +66,7 @@ Here's Episode 1 of a series where I show the whole thing by actually using it �
 It's early and rough in places — that's the point. I'd genuinely love your feedback: try it, tell me what's confusing, what's missing, what you'd want. Help me build it for you.
 
 #BuildInPublic #OpenSource #IndieHacker`},
- {n:'X / Twitter', u:'https://twitter.com/compose/tweet', for:'Build-in-public crowd. Short + punchy. (You also have scripts/lp_tweet.py.)', tpl:
-`I built an open-source town square 🐺 — no fees, no middlemen, no tracking.
-
-Episode 1 of building it in public (60s) 👇
-{{URL}}
-
-Try the prototype + tell me what to fix: https://lapiazza.app
-
-#buildinpublic #indiehackers`},
- {n:'Reddit — r/SideProject', u:'https://www.reddit.com/r/SideProject/submit', for:'Makers who give real feedback. Reddit loves "I built this, roast it" — NOT ads.', tpl:
+ {n:'Reddit — r/SideProject', u:'https://www.reddit.com/r/SideProject/submit', for:'⭐ Your sleeper — NO followers needed. Also try r/selfhosted + r/opensource. Reddit rewards "I built this, roast it" — never ads.', tpl:
 `Title: I spent 3 years building an open-source "town square" — Episode 1 + a live prototype, would love a roast
 
 Body:
@@ -85,6 +76,13 @@ Ep 1 (60s): {{URL}}
 Live prototype: https://lapiazza.app
 
 It's a prototype — I genuinely want feedback. What's confusing? What would make you actually use it? Roast away.`},
+ {n:'Telegram (your work area / groups)', u:'https://web.telegram.org', for:'Warm audience who already know you — direct + high response. Drop it where your people are.', tpl:
+`I just shipped Episode 1 of the thing I've been building — La Piazza, an open-source town square. No fees, no middlemen, nobody selling your data. 🐺
+
+60-second walkthrough: {{URL}}
+Try it + tell me what to fix: https://lapiazza.app
+
+It's a prototype — your feedback shapes it. Jump in.`},
  {n:'Indie Hackers', u:'https://www.indiehackers.com/new-post', for:'Build-in-public milestones land well here.', tpl:
 `Title: Shipped Episode 1 of "building La Piazza in public"
 
