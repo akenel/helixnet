@@ -117,7 +117,7 @@
             </div>
           </div>
           <p class="text-[13px] text-slate-400 mt-3" x-show="selected?.bio" x-text="selected?.bio"></p>
-          <button x-show="selected?.bio" @click="readAloud(selected.bio)" :title="speaking?'Stop':'Read this profile aloud'" class="mt-2 px-3 py-1 rounded-lg text-[11px] font-semibold bg-purple-700/70 hover:bg-purple-600 text-white" x-text="speaking?'⏹ Stop':'🔊 Read profile'"></button>
+          <button x-show="selected?.bio" @click="readAloud((selected.name||'')+'. '+(selected.tagline||'')+'. '+(selected.bio||''))" :title="speaking?'Stop':'Read this profile aloud'" class="mt-2 px-3 py-1 rounded-lg text-[11px] font-semibold bg-purple-700/70 hover:bg-purple-600 text-white" x-text="speaking?'⏹ Stop':'🔊 Read profile'"></button>
 
           <div x-show="suggested.length" class="mt-5">
             <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2" x-text="suggestedFor?'Try asking — picked for you ✨':'Try asking'"></div>
