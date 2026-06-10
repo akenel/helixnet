@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧪 Staging Test Runner — La Piazza</title>
+<style>
+  :root{ --red:#C0392B; --dark:#2C3E50; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937;background:#f4f6f8;margin:0;line-height:1.5}
+  .wrap{max-width:780px;margin:0 auto;padding:16px}
+  header{background:#fff;border-top:5px solid var(--red);border-radius:10px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  h1{margin:0;font-size:19px;color:var(--dark)} h1 b{color:var(--red)}
+  .meta{font-size:13px;color:#667;margin-top:4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  button{background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--dark);border:1px solid #ccd}
+  .who{background:#fffdf7;border:1px solid #f0e6c8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+  .who b{color:var(--dark)} code{background:#eef;padding:1px 5px;border-radius:4px;font-size:12px}
+  h2{font-size:15px;color:var(--dark);margin:18px 0 8px;border-left:3px solid var(--red);padding-left:8px}
+  .step{background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:11px 14px;margin-bottom:9px}
+  .step.done{background:#f3faf4;border-color:#bfe6c6}
+  .top{display:flex;gap:10px;align-items:flex-start}
+  .top input[type=checkbox]{width:23px;height:23px;margin-top:1px;flex-shrink:0;accent-color:var(--red)}
+  .do{font-size:14px;color:#1f2937} .do a{color:var(--red);font-weight:600}
+  .exp{font-size:12.5px;color:#0a7d33;margin:3px 0 0 33px} .exp b{color:#0a7d33}
+  textarea{width:100%;margin:6px 0 0 33px;border:1px solid #ccd;border-radius:8px;padding:7px;font:inherit;font-size:13px;min-height:34px;resize:vertical;width:calc(100% - 33px)}
+  #copybox{width:100%;min-height:80px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;border:1px solid #ccd;border-radius:8px;padding:10px;display:none}
+  @media print{ .bar,button{display:none} body{background:#fff} .step{break-inside:avoid} }
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1>🧪 Staging Test Runner — <b>Age + Terms Gate</b></h1>
+  <div class="meta">Open this on one side, staging on the other. Tick as you go, note what's off, copy back to Tigs. The human eye catches what the script can't.</div>
+  <div class="bar">
+    <span id="prog" style="font-weight:700;color:var(--dark);font-size:14px;align-self:center">0 / 0</span>
+    <button onclick="copyAll()">📋 Copy results back to Tigs</button>
+    <button class="ghost" onclick="window.print()">🖨️ Print</button>
+    <button class="ghost" onclick="if(confirm('Clear?')){localStorage.removeItem(KEY);location.reload()}">↺ Reset</button>
+  </div>
+</header>
+
+<div class="who">👤 <b>Who am I signing in as?</b> For a FRESH signup: <code>artemisthinking@gmail.com</code> (clean on staging — no <code>+aliases</code>, they normalize to the base). &nbsp; For existing flows: the <b>demo users</b> (mike, nino, sally, marco, jake, elena) — password <code>helix_pass</code>, via the demo switcher. &nbsp; <i>Before each test session: confirm which user + that staging is clean.</i></div>
+
+<div id="sheet"></div>
+<textarea id="copybox" readonly></textarea>
+
+<script>
+const KEY='lp-test-age-terms';
+const STEPS=[
+ {do:'Open <a href="https://staging-bottega.lapiazza.app/get-started" target="_blank">staging-bottega → /get-started</a>', exp:'The one-motion signup page loads.'},
+ {do:'Fill: name <b>Artemis</b>, email <b>artemisthinking@gmail.com</b>, a password, and "sap dev for decades" in About.', exp:'All fields accept input.'},
+ {do:'Look at the <b>"🧬 Build my Bottega"</b> button — DON\\'T tick anything yet.', exp:'Button is <b>greyed out / disabled</b> (you can\\'t submit without consent).'},
+ {do:'Tick <b>only</b> "I\\'m 16 or older".', exp:'Button is <b>STILL greyed</b> — one box isn\\'t enough.'},
+ {do:'Now also tick <b>"I agree to the Terms & Conditions"</b>.', exp:'Button <b>lights up</b> — both boxes = go.'},
+ {do:'Click the Terms link.', exp:'⚠️ KNOWN: /terms is a 404 right now — we still need to write the page. Just noting it.'},
+ {do:'Click <b>Build my Bottega</b>.', exp:'Progress bar runs, then "🎉 Welcome, Artemis" + "70% complete, add a photo" → lands in your Bottega.'},
+ {do:'Sanity: the Workshop menu loads (Find Your Edge, CV→Bio, etc.).', exp:'Menu renders, no "loading…" hang.'},
+];
+function render(){
+  document.getElementById('sheet').innerHTML = STEPS.map((s,i)=>`
+   <div class="step" data-i="${i}">
+     <div class="top"><input type="checkbox" data-c="${i}"><div style="flex:1"><div class="do">${s.do}</div><div class="exp">✓ expect: ${s.exp}</div></div></div>
+     <textarea data-n="${i}" placeholder="✏️ what you saw / anything off…"></textarea>
+   </div>`).join('');
+  document.getElementById('prog').dataset.total=STEPS.length; load(); wire(); count();
+}
+function wire(){ document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',()=>{save();count();}); el.addEventListener('change',()=>{save();count();}); }); }
+function count(){ const d=[...document.querySelectorAll('[data-c]')].filter(c=>c.checked).length; document.getElementById('prog').textContent=`${d} / ${STEPS.length}`;
+  document.querySelectorAll('.step').forEach(b=>{const c=b.querySelector('[data-c]'); b.classList.toggle('done',c&&c.checked);}); }
+function save(){ const d={}; STEPS.forEach((_,i)=>{ d[i]={done:q(`[data-c="${i}"]`).checked, note:q(`[data-n="${i}"]`).value}; }); localStorage.setItem(KEY,JSON.stringify(d)); }
+function load(){ let d; try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){d={}} Object.entries(d).forEach(([i,v])=>{ const c=q(`[data-c="${i}"]`); if(c)c.checked=!!v.done; const n=q(`[data-n="${i}"]`); if(n)n.value=v.note||''; }); }
+function copyAll(){ let t="AGE+TERMS GATE TEST — results\\n\\n";
+  STEPS.forEach((s,i)=>{ const done=q(`[data-c="${i}"]`).checked?'[x]':'[ ]'; const note=q(`[data-n="${i}"]`).value.trim();
+    t+=`${done} step ${i+1}`+(note?` — ${note}`:'')+'\\n'; });
+  const box=document.getElementById('copybox'); box.style.display='block'; box.value=t; box.select();
+  try{ navigator.clipboard.writeText(t); alert('Copied! Paste it to Tigs.'); }catch(e){ alert('Select the box below + copy.'); } }
+const q=s=>document.querySelector(s);
+render();
+</script>
+</div></body></html>
