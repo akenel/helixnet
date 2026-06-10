@@ -117,6 +117,7 @@
             </div>
           </div>
           <p class="text-[13px] text-slate-400 mt-3" x-show="selected?.bio" x-text="selected?.bio"></p>
+          <button x-show="selected?.bio" @click="readAloud((selected.name||'')+'. '+(selected.tagline||'')+'. '+(selected.bio||''))" :title="speaking?'Stop':'Read this profile aloud'" class="mt-2 px-3 py-1 rounded-lg text-[11px] font-semibold bg-purple-700/70 hover:bg-purple-600 text-white" x-text="speaking?'⏹ Stop':'🔊 Read profile'"></button>
 
           <div x-show="suggested.length" class="mt-5">
             <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2" x-text="suggestedFor?'Try asking — picked for you ✨':'Try asking'"></div>
@@ -152,6 +153,7 @@
             <!-- The master's answer is platinum gold -> first-class artifact handling (consistent with recipe outputs).
                  Save/Share route through /s/{id}: serial № + staging "not distributable" watermark come free. -->
             <div class="flex flex-wrap gap-2 mb-4">
+              <button @click="readAloud(answer)" :title="speaking?'Stop reading':'Read this answer aloud'" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-700/80 hover:bg-purple-600 text-white" x-text="speaking?'⏹ Stop':'🔊 Read this'"></button>
               <button @click="openReading()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-white">📖 Reading mode</button>
               <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
               <button @click="downloadOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download</button>
@@ -202,7 +204,7 @@ function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
     page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], suggestedFor:false, portrait:'', showWrapper:false,
-    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[], pcBusy:false,
+    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[], pcBusy:false, speaking:false,
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -280,6 +282,11 @@ function legends(){
       window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
     async shareWa(){ const u=await this._shareUrl(); const t=this._answerTitle()+' — ';
       window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
+    readAloud(text){ try{ const s=window.speechSynthesis; if(!s){ this.err='your browser has no voice'; return; }
+      if(s.speaking){ s.cancel(); this.speaking=false; return; }
+      const u=new SpeechSynthesisUtterance(String(text||'').replace(/[#*_>`\[\]]/g,'').replace(/\n+/g,'. '));
+      u.rate=0.92; u.onend=()=>{this.speaking=false}; u.onerror=()=>{this.speaking=false};
+      s.speak(u); this.speaking=true; }catch(e){ this.speaking=false; } },
     openReading(){ this.reading=true; this.$nextTick(()=>{ const el=document.getElementById('readingMd');
       if(el){ const h=window.marked?marked.parse(this.answer):this.answer; el.innerHTML=window.DOMPurify?DOMPurify.sanitize(h):''; } }); },
     async postcardIt(){ this.pcBusy=true; try{ if(!this.savedId) await this.saveSession(); if(this.savedId) window.open(location.origin+'/s/'+this.savedId,'_blank'); }catch(e){} this.pcBusy=false; },
