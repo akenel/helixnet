@@ -359,7 +359,11 @@ function bottega() {
     async editCard(s) {  // Ada's ledger: edit -> a NEW version (the original is kept). Load full output first.
       this.editId=s.id; this.editTitle=s.title||''; this.editOutput=''; this.editMsg=''; this.editBusy=false; this.editing=true;
       try { const r=await fetch('/api/v1/compute/bottega/sessions/'+s.id,{headers:{'Authorization':'Bearer '+this.token}});
-        if(r.ok){ const d=await r.json(); this.editOutput=(typeof d.output==='string'?d.output:JSON.stringify(d.output,null,2)); } } catch(e){}
+        if(r.ok){ const d=await r.json(); let out=(typeof d.output==='string'?d.output:JSON.stringify(d.output,null,2));
+          // structured outputs are stored as JSON with \uXXXX escapes -- decode + pretty-print so the editor
+          // shows real characters (curly quotes, em-dashes), not ‑ noise. Keep it simple: readable JSON.
+          if(d.output_type==='json' && typeof d.output==='string'){ try{ out=JSON.stringify(JSON.parse(d.output),null,2); }catch(e){} }
+          this.editOutput=out; } } catch(e){}
     },
     async saveEdit() {
       if(!this.editId) return; this.editBusy=true;
