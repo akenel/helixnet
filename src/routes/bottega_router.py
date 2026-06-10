@@ -163,6 +163,7 @@ def _scan_clues(text: str) -> dict:
 @router.post("/get-started")
 async def get_started(name: str = Form(...), email: str = Form(""), password: str = Form(...),
                       about: str = Form(""), file: UploadFile = File(None),
+                      tos_accepted: str = Form(""), age_confirmed: str = Form(""),
                       db: AsyncSession = Depends(get_db_session)):
     """PUBLIC. The whole onboarding in one breath: tell us your name, and EITHER drop a
     CV OR just say what you do -- you walk out WITH a Bottega (account + profile + logged
@@ -170,6 +171,12 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
     are enough. The account is the empty room, your words furnish it, one motion."""
     if len(password) < 6:
         raise HTTPException(status_code=400, detail="pick a password of at least 6 characters")
+    # Age & Terms gate — foundational + SERVER-enforced (the UI checkboxes alone can be bypassed).
+    _yes = ("1", "true", "on", "yes")
+    if str(age_confirmed).strip().lower() not in _yes:
+        raise HTTPException(status_code=400, detail="You must confirm you are 16 or older to join La Piazza.")
+    if str(tos_accepted).strip().lower() not in _yes:
+        raise HTTPException(status_code=400, detail="You must accept the Terms & Conditions to join.")
     if file is not None and getattr(file, "filename", ""):
         source, text = "cv", extract_text(file.filename, await file.read())
     else:
