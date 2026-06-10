@@ -254,7 +254,7 @@
           <div class="flex items-start justify-between gap-4 mb-6 sticky top-0 bg-[#0a0f1a] py-2 z-10">
             <div class="text-[11px] uppercase tracking-wider text-slate-500">📖 Reading — <span x-text="(output&&output.recipe)||'La Piazza'"></span></div>
             <div class="flex gap-2 flex-shrink-0 no-print">
-              <button @click="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">🖨️ Save PDF</button>
+              <button @click="postcardIt()" :disabled="pcBusy" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand/80 hover:bg-brand text-white disabled:opacity-40" x-text="pcBusy?'…':'🖼️ Postcard it →'"></button>
               <button @click="reading=false" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">✕ Close</button>
             </div>
           </div>
@@ -274,7 +274,7 @@ function bottega() {
   return {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
-    saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false, reading: false,
+    saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false, reading: false, pcBusy: false,
     savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
     editing: false, editId: null, editTitle: '', editOutput: '', editBusy: false, editMsg: '',
     cats: [
@@ -322,6 +322,7 @@ function bottega() {
     },
     copyOut() { navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
     openReading() { this.reading = true; this.$nextTick(() => { const el = document.getElementById('readingMd'); if (el) el.innerHTML = this.renderMd(this._text()); }); },
+    async postcardIt() { this.pcBusy=true; try { if(!this.savedId) await this.saveSession(); if(this.savedId) window.open(location.origin+'/s/'+this.savedId,'_blank'); } catch(e){} this.pcBusy=false; },
     async _shareUrl() {  // ensure the output is saved so it has a postcard page with a cover
       if (!this.savedId) await this.saveSession();
       return this.savedId ? (location.origin + '/s/' + this.savedId) : location.origin;
