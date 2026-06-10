@@ -32,7 +32,7 @@ const ok = (cond, name) => { if (cond) { pass++; console.log('  ✅ ' + name); }
     await page.type('input[placeholder="you@example.com"]', `angel.kenel+reg${Date.now()}@gmail.com`, { delay: 3 });
     await page.type('input[placeholder="at least 6 characters"]', 'helix_pass', { delay: 4 });
     await page.type('textarea[placeholder*="cook with"]', 'Regression user, fixes motorbikes.', { delay: 2 });
-    await page.evaluate(() => { const cb = [...document.querySelectorAll('input[type=checkbox]')].find(x => (x.getAttribute('x-model') || '') === 'age16'); if (cb && !cb.checked) cb.click(); });  // 16+ gate
+    await page.evaluate(() => { [...document.querySelectorAll('input[type=checkbox]')].forEach(x => { const m = (x.getAttribute('x-model') || ''); if ((m === 'age16' || m === 'tos') && !x.checked) x.click(); }); });  // 16+ AND Terms gate (both required)
     await page.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(x => /build my bottega/i.test(x.textContent)); if (btn) btn.click(); });
     await page.waitForFunction(() => location.pathname.includes('/compute/bottega') || /Welcome,/.test(document.body.innerText), { timeout: 45000 }).catch(() => {});
     await page.waitForFunction(() => location.pathname.includes('/compute/bottega'), { timeout: 30000 }).catch(() => {});
