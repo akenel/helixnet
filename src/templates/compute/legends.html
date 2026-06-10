@@ -140,7 +140,30 @@
           </div>
 
           <div x-show="answer" class="mt-6 pt-5 border-t border-slate-800">
+            <!-- The master's answer is platinum gold -> first-class artifact handling (consistent with recipe outputs).
+                 Save/Share route through /s/{id}: serial № + staging "not distributable" watermark come free. -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button @click="openReading()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-white">📖 Reading mode</button>
+              <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
+              <button @click="saveSession()" :disabled="saving||!token" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand/90 hover:bg-brand text-white disabled:opacity-40" x-text="savedMsg||(savedId?'📌 Pinned':'📓 Save to Blueprint')"></button>
+              <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
+              <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
+            </div>
             <div class="md" id="answerMd"></div>
+
+            <!-- Reading mode: the clean full-screen text interface for studying the gold (enrichment grows here later) -->
+            <div x-show="reading" x-cloak class="fixed inset-0 z-[70] bg-[#0a0f1a] overflow-y-auto" style="display:none">
+              <div class="max-w-3xl mx-auto px-5 py-8">
+                <div class="flex items-start justify-between gap-4 mb-6 sticky top-0 bg-[#0a0f1a] py-2 z-10">
+                  <div>
+                    <div class="text-[11px] uppercase tracking-wider text-slate-500">📖 Reading — <span x-text="(selected&&selected.name)||''"></span></div>
+                    <div class="text-sm text-slate-400 mt-1" x-text="question"></div>
+                  </div>
+                  <button @click="reading=false" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 flex-shrink-0">✕ Close</button>
+                </div>
+                <div class="md" id="readingMd" style="font-size:17px;line-height:1.75"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -155,6 +178,7 @@ function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
     page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], suggestedFor:false, portrait:'', showWrapper:false,
+    copied:false, saving:false, savedId:null, savedMsg:'', reading:false,
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -186,7 +210,7 @@ function legends(){
         .then(r=>r.json()).then(d=>{ this.portrait=d.portrait||''; }).catch(()=>{}); },
     async ask(){
       if(!this.question.trim()) return;
-      this.busy=true; this.err=''; this.answer='';
+      this.busy=true; this.err=''; this.answer=''; this.savedId=null; this.savedMsg='';
       try{
         const body=new URLSearchParams({ mentor:this.selected.name, situation:this.question, portrait:this.portrait });
         const r=await fetch('/api/v1/compute/bottega/recipes/mentor-session/run',{ method:'POST',
@@ -198,6 +222,27 @@ function legends(){
       }catch(e){ this.err='failed — try again'; }
       this.busy=false;
     },
+    // --- The master's answer as a first-class artifact (copy / save-to-blueprint / share / reading) ---
+    _answerTitle(){ return ('Ask '+((this.selected&&this.selected.name)||'a master')+(this.question?(' — '+this.question.slice(0,60)):'')).slice(0,140); },
+    _text(){ const m=(this.selected&&this.selected.name)||'a master'; return '# '+m+'\n\n## Asked\n'+this.question+'\n\n## Answer\n'+this.answer+'\n'; },
+    copyOut(){ navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
+    async saveSession(){
+      if(!this.answer||!this.token) return; this.saving=true;
+      try{ const r=await fetch('/api/v1/compute/bottega/sessions',{method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+        body:JSON.stringify({slug:'mentor-session', title:this._answerTitle(),
+          inputs:{mentor:(this.selected&&this.selected.name)||'', question:this.question},
+          output:this.answer, output_type:'markdown'})});
+        if(r.ok){ const d=await r.json(); this.savedId=d.id; this.savedMsg='✓ Saved'; setTimeout(()=>this.savedMsg='',2000); } }catch(e){}
+      this.saving=false;
+    },
+    async _shareUrl(){ if(!this.savedId) await this.saveSession(); return this.savedId?(location.origin+'/s/'+this.savedId):location.origin; },
+    async shareTg(){ const u=await this._shareUrl(); const t=this._answerTitle();
+      window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
+    async shareWa(){ const u=await this._shareUrl(); const t=this._answerTitle()+' — ';
+      window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
+    openReading(){ this.reading=true; this.$nextTick(()=>{ const el=document.getElementById('readingMd');
+      if(el){ const h=window.marked?marked.parse(this.answer):this.answer; el.innerHTML=window.DOMPurify?DOMPurify.sanitize(h):''; } }); },
     login(){
       const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
