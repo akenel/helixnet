@@ -1,0 +1,72 @@
+name: CI Gate
+
+# The "test → clean → prod" gate. Runs on every push/PR to main.
+# GREEN = this commit is cleared for prod (then run scripts/deploy-prod.sh).
+# RED = do NOT promote. (Fixes the old silently-failing ci.yml: this fails loudly + writes a summary.)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    name: Unit tests (pytest · in-memory SQLite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install app + test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r compose/helix-main/helix-platform-requirements.txt
+          pip install -r src/tests/requirements-test.txt
+      - name: Run pytest
+        run: pytest -q
+      - name: Summary
+        if: always()
+        run: echo "### pytest: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+
+  browser-gate:
+    name: Browser gate (console-sweep + regression · vs staging)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install puppeteer (+ Chromium)
+        run: |
+          npm ci || npm install
+          npx puppeteer browsers install chrome || true
+      - name: Console sweep (every page, anon + persona)
+        run: node tests/e2e/console-sweep.js staging
+      - name: Dream Weavers regression (the stories ARE the test)
+        run: node tests/e2e/dream-weavers-regression.js
+      - name: Summary
+        if: always()
+        run: echo "### browser gate: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+
+  gate:
+    name: "✅ Prod-ready gate"
+    needs: [pytest, browser-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All green → cleared for prod
+        run: |
+          echo "🟢 ALL GATES GREEN — commit ${{ github.sha }} is cleared for prod." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Promote with: scripts/deploy-prod.sh  (gated, small + often)." >> "$GITHUB_STEP_SUMMARY"
+
+  # Note: failure of pytest/browser-gate makes 'gate' never run → the commit shows RED.
+  # GitHub emails the committer on failure (default). A Telegram alert (via telegram-tigs) is a follow-up.
+  # Auto-DEPLOY on green is intentionally NOT wired here — prod deploy stays a deliberate, human-pulled
+  # trigger (scripts/deploy-prod.sh, which re-runs the regression gate). CD with SSH secrets = a later step.
