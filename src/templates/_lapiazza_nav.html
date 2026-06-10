@@ -52,7 +52,11 @@
   var h=location.hostname, sq=document.getElementById('lp-square');
   if(sq && h.indexOf('staging')>-1) sq.href='https://staging.lapiazza.app';
   // auth state: show "logged in as @user" + Logout; hide Get Started when logged in
-  var tok=null; try{tok=localStorage.getItem('compute_token');}catch(e){}
+  // token from localStorage/sessionStorage OR the #token= hash. The post-signup redirect lands on
+  // /compute/bottega#token=... and this nav runs BEFORE the page stores it -- without the hash check,
+  // "Get Started" wrongly persists for a logged-in member (who could click it and start over).
+  var tok=null; try{tok=localStorage.getItem('compute_token')||sessionStorage.getItem('compute_token');}catch(e){}
+  if(!tok){ var _m=(location.hash||'').match(/token=([^&]+)/); if(_m) tok=decodeURIComponent(_m[1]); }
   function me(){ if(!tok) return null; try{ var p=JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); if(p.exp*1000<=Date.now())return null; return p.preferred_username||null; }catch(e){return null;} }
   var u=me(), auth=document.getElementById('lp-auth'), gs=document.getElementById('lp-getstarted');
   if(u && auth){
