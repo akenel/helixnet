@@ -60,6 +60,15 @@
 
     <!-- HOUSES -->
     <div x-show="view==='houses'">
+      <!-- Your Masters: recently asked (auto-added on ask) -- jump straight back, no House-hunting. -->
+      <div x-show="recent.length" class="mb-5">
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2">⭐ Your Masters</div>
+        <div class="flex flex-wrap gap-2">
+          <template x-for="m in recent" :key="m">
+            <button @click="openMaster(m)" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-brand/15 border border-brand/40 text-slate-200 hover:bg-brand/25 transition" x-text="m"></button>
+          </template>
+        </div>
+      </div>
       <div x-show="loading" class="text-center text-slate-500 py-10">Gathering the legends…</div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <template x-for="h in houses" :key="h.name">
@@ -192,7 +201,7 @@ function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
     page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], suggestedFor:false, portrait:'', showWrapper:false,
-    copied:false, saving:false, savedId:null, savedMsg:'', reading:false,
+    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[],
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -200,9 +209,24 @@ function legends(){
           localStorage.setItem('compute_token', this.token); history.replaceState(null,'',location.pathname); }catch(e){}
       }
       if(!this.token){ try{ this.token = localStorage.getItem('compute_token'); }catch(e){} }
-      if(this.token) this.loadHouses();
+      if(this.token){ this.loadHouses(); this.loadRecent(); }
     },
     hdr(){ return { 'Authorization':'Bearer '+this.token }; },
+    async loadRecent(){
+      // Auto-favorites: the masters you've already asked (from your Blueprint sessions). Find them again, fast.
+      try{ const r=await fetch('/api/v1/compute/bottega/sessions',{headers:this.hdr()});
+        if(!r.ok) return; const rows=await r.json(); const names=[];
+        for(const s of rows){ if(s.slug!=='mentor-session') continue;
+          const m=(s.title||'').replace(/^Ask\s+/i,'').split(' — ')[0].trim();
+          if(m && !names.includes(m)){ names.push(m); if(names.length>=8) break; } }
+        this.recent=names;
+      }catch(e){}
+    },
+    async openMaster(name){
+      try{ const r=await fetch('/api/v1/compute/bottega/legends?q='+encodeURIComponent(name),{headers:this.hdr()});
+        const d=await r.json(); const list=d.legends||[]; const p=list.find(x=>x.name===name)||list[0];
+        if(p) this.select(p); }catch(e){ this.err='could not open '+name; }
+    },
     async loadHouses(){
       this.loading=true;
       try{ const r=await fetch('/api/v1/compute/bottega/legends/houses',{headers:this.hdr()});
