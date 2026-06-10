@@ -30,6 +30,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r compose/helix-main/helix-platform-requirements.txt
           pip install -r src/tests/requirements-test.txt
+      - name: Provide dummy env (Settings requires ~43 vars; example env is the known dummy set)
+        run: cp env/helix.example.env .env
       - name: Run pytest
         run: pytest -q
       - name: Summary
