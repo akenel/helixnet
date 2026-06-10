@@ -151,15 +151,29 @@
             </div>
             <div class="md" id="answerMd"></div>
 
-            <!-- Reading mode: the clean full-screen text interface for studying the gold (enrichment grows here later) -->
-            <div x-show="reading" x-cloak class="fixed inset-0 z-[70] bg-[#0a0f1a] overflow-y-auto" style="display:none">
-              <div class="max-w-3xl mx-auto px-5 py-8">
+            <!-- Reading mode: the clean full-screen text interface for studying the gold (enrichment grows here later).
+                 Print-friendly: 🖨️ Save as PDF prints ONLY the sheet, clean black-on-white (fixes the blank-print bug). -->
+            <style>
+              @media print {
+                body * { visibility: hidden !important; }
+                #readingSheet, #readingSheet * { visibility: visible !important; color: #111 !important; }
+                #readingOverlay { position: static !important; background: #fff !important; overflow: visible !important; }
+                #readingSheet { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 1.2cm !important; }
+                #readingSheet a { color: #111 !important; text-decoration: underline; }
+                .no-print { display: none !important; }
+              }
+            </style>
+            <div id="readingOverlay" x-show="reading" x-cloak class="fixed inset-0 z-[70] bg-[#0a0f1a] overflow-y-auto" style="display:none">
+              <div id="readingSheet" class="max-w-3xl mx-auto px-5 py-8">
                 <div class="flex items-start justify-between gap-4 mb-6 sticky top-0 bg-[#0a0f1a] py-2 z-10">
                   <div>
                     <div class="text-[11px] uppercase tracking-wider text-slate-500">📖 Reading — <span x-text="(selected&&selected.name)||''"></span></div>
                     <div class="text-sm text-slate-400 mt-1" x-text="question"></div>
                   </div>
-                  <button @click="reading=false" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 flex-shrink-0">✕ Close</button>
+                  <div class="flex gap-2 flex-shrink-0 no-print">
+                    <button @click="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">🖨️ Save PDF</button>
+                    <button @click="reading=false" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">✕ Close</button>
+                  </div>
                 </div>
                 <div class="md" id="readingMd" style="font-size:17px;line-height:1.75"></div>
               </div>
