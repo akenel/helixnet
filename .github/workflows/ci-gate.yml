@@ -1,6 +1,6 @@
 name: CI Gate
 
-# The "test → clean → prod" gate. Runs on every push/PR to main.
+# The "test -> clean -> prod" gate. Runs on every push/PR to main.
 # GREEN = this commit is cleared for prod (then run scripts/deploy-prod.sh).
 # RED = do NOT promote. (Fixes the old silently-failing ci.yml: this fails loudly + writes a summary.)
 
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   pytest:
-    name: Unit tests (pytest · in-memory SQLite)
+    name: Unit tests (pytest, in-memory SQLite)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,10 +34,11 @@ jobs:
         run: pytest -q
       - name: Summary
         if: always()
-        run: echo "### pytest: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "### pytest - ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
 
   browser-gate:
-    name: Browser gate (console-sweep + regression · vs staging)
+    name: Browser gate (console-sweep + regression vs staging)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,19 +55,20 @@ jobs:
         run: node tests/e2e/dream-weavers-regression.js
       - name: Summary
         if: always()
-        run: echo "### browser gate: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "### browser gate - ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
 
   gate:
-    name: "✅ Prod-ready gate"
+    name: Prod-ready gate
     needs: [pytest, browser-gate]
     runs-on: ubuntu-latest
     steps:
-      - name: All green → cleared for prod
+      - name: All green - cleared for prod
         run: |
-          echo "🟢 ALL GATES GREEN — commit ${{ github.sha }} is cleared for prod." | tee -a "$GITHUB_STEP_SUMMARY"
-          echo "Promote with: scripts/deploy-prod.sh  (gated, small + often)." >> "$GITHUB_STEP_SUMMARY"
+          echo "ALL GATES GREEN - commit ${{ github.sha }} is cleared for prod." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Promote with scripts/deploy-prod.sh (gated, small and often)." >> "$GITHUB_STEP_SUMMARY"
 
-  # Note: failure of pytest/browser-gate makes 'gate' never run → the commit shows RED.
-  # GitHub emails the committer on failure (default). A Telegram alert (via telegram-tigs) is a follow-up.
-  # Auto-DEPLOY on green is intentionally NOT wired here — prod deploy stays a deliberate, human-pulled
-  # trigger (scripts/deploy-prod.sh, which re-runs the regression gate). CD with SSH secrets = a later step.
+  # Failure of pytest/browser-gate makes 'gate' never run -> the commit shows RED.
+  # GitHub emails the committer on failure (default). Telegram alert (via telegram-tigs) = a follow-up.
+  # Auto-DEPLOY on green is intentionally NOT wired -- prod deploy stays a deliberate human trigger
+  # (scripts/deploy-prod.sh, which re-runs the regression gate). CD with SSH secrets = a later step.
