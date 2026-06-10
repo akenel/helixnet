@@ -81,6 +81,9 @@ class BottegaSessionModel(Base):
     parent_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), nullable=True, index=True,
         comment="prior version (edit-and-rerun chains here)")
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True,
+        comment="Ada's ledger: soft-delete tombstone -- hidden from view, never lost from history")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
         nullable=False, index=True)

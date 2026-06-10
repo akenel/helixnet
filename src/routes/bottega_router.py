@@ -555,10 +555,18 @@ async def save_session(body: SaveSession,
 @router.get("/sessions")
 async def list_sessions(current_user: dict = Depends(require_bottega_access()),
                         db: AsyncSession = Depends(get_db_session)):
-    """My Blueprint Folder -- newest first (lean: titles + questions, no full output)."""
+    """My Blueprint Folder -- newest first. Ada's 'fold': CURRENT versions only -- superseded
+    versions (an id that is some live row's parent) + soft-deleted tombstones are hidden, never lost."""
+    uname = current_user["username"]
+    superseded = (select(BottegaSessionModel.parent_id)
+                  .where(BottegaSessionModel.username == uname,
+                         BottegaSessionModel.parent_id.is_not(None),
+                         BottegaSessionModel.deleted_at.is_(None)))
     rows = (await db.execute(
         select(BottegaSessionModel)
-        .where(BottegaSessionModel.username == current_user["username"])
+        .where(BottegaSessionModel.username == uname,
+               BottegaSessionModel.deleted_at.is_(None),
+               BottegaSessionModel.id.not_in(superseded))
         .order_by(BottegaSessionModel.created_at.desc()).limit(100))).scalars().all()
     return [{"id": str(s.id), "slug": s.slug, "title": s.title,
              "inputs": json.loads(s.inputs or "{}"), "version": s.version,
@@ -610,26 +618,32 @@ class EditSession(BaseModel):
 async def edit_session(session_id: str, body: EditSession,
                        current_user: dict = Depends(require_bottega_access()),
                        db: AsyncSession = Depends(get_db_session)):
-    """Edit a card in place (tune the output the way you want it)."""
+    """Ada's ledger: editing APPENDS a new version (parent_id chain, version+1). The original is
+    NEVER mutated -- the trace of who you were when you began is never lost. list_sessions 'folds'
+    the chain so only the latest version shows; older ones stay recorded, reachable as history."""
     s = await _own_session(db, session_id, current_user["username"])
-    if body.title is not None:
-        s.title = body.title[:160]
-    if body.output is not None:
-        s.output = body.output[:200000]
-    if body.tags is not None:
-        s.tags = body.tags
+    new = BottegaSessionModel(
+        username=s.username, slug=s.slug,
+        title=(body.title if body.title is not None else (s.title or ""))[:160],
+        inputs=s.inputs,
+        output=(body.output if body.output is not None else (s.output or ""))[:200000],
+        output_type=s.output_type,
+        tags=(body.tags if body.tags is not None else s.tags),
+        version=(s.version or 1) + 1, parent_id=s.id)
+    db.add(new)
     await db.commit()
-    await db.refresh(s)
-    return {"id": str(s.id), "saved": True, "version": s.version}
+    await db.refresh(new)
+    return {"id": str(new.id), "saved": True, "version": new.version, "supersedes": str(s.id)}
 
 
 @router.delete("/sessions/{session_id}")
 async def delete_session(session_id: str,
                          current_user: dict = Depends(require_bottega_access()),
                          db: AsyncSession = Depends(get_db_session)):
-    """Delete a card from the Blueprint."""
+    """Ada's tombstone: SOFT-delete -- hidden from the Blueprint, but the row + its full version
+    history remain recorded. Never lose the trace of what was once said."""
     s = await _own_session(db, session_id, current_user["username"])
-    await db.delete(s)
+    s.deleted_at = datetime.now(timezone.utc)
     await db.commit()
     return {"deleted": True}
 

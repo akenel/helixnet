@@ -85,14 +85,35 @@
       <template x-if="folder.length===0"><div class="text-sm text-slate-600">nothing yet — onboard, or run something and save it.</div></template>
       <div class="divide-y divide-slate-800/70">
         <template x-for="s in filteredFolder()" :key="s.id">
-          <button @click="loadSession(s.id)" class="w-full text-left py-2.5 hover:bg-slate-800/40 px-2 rounded flex items-center gap-3">
+          <div class="py-2.5 px-2 rounded flex items-center gap-3 hover:bg-slate-800/40">
             <span class="text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0" :class="kindClass(s.slug)" x-text="kindLabel(s.slug)"></span>
-            <span class="text-sm text-slate-200 flex-1 truncate" x-text="s.title"></span>
+            <button @click="loadSession(s.id)" class="text-sm text-slate-200 flex-1 truncate text-left" x-text="s.title"></button>
             <span x-show="s.version>1" class="text-[10px] font-mono text-amber-400" x-text="'v'+s.version"></span>
             <span class="text-[11px] text-slate-600 font-mono shrink-0" x-text="(s.created_at||'').slice(0,10)"></span>
-          </button>
+            <button @click="editCard(s)" title="Edit — saves a new version" class="text-slate-500 hover:text-brand text-sm shrink-0">✏️</button>
+            <button @click="deleteCard(s)" title="Delete — kept in your history" class="text-slate-500 hover:text-red-400 text-sm shrink-0">🗑️</button>
+          </div>
         </template>
         <template x-if="folder.length>0 && filteredFolder().length===0"><div class="text-sm text-slate-600 py-2">no match for "<span x-text="q"></span>"</div></template>
+      </div>
+    </div>
+
+    <!-- Ada's ledger: editing a card SAVES A NEW VERSION (the original stays in your history) -->
+    <div x-show="editing" x-cloak class="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4" @click.self="editing=false">
+      <div class="card rounded-2xl p-5 max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+          <div class="font-semibold text-white">✏️ Edit — saves a new version</div>
+          <button @click="editing=false" class="text-slate-500 hover:text-slate-300 text-sm">✕</button>
+        </div>
+        <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">Title</label>
+        <input x-model="editTitle" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm mb-3">
+        <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">Content — fix typos, refine. The original stays in your history.</label>
+        <textarea x-model="editOutput" rows="14" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-[13px] font-mono"></textarea>
+        <div class="flex items-center gap-3 mt-3">
+          <button @click="saveEdit()" :disabled="editBusy" class="px-4 py-2 rounded-lg font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-40" x-text="editBusy?'Saving…':'💾 Save new version'"></button>
+          <button @click="editing=false" class="text-xs text-slate-500 hover:text-slate-300">cancel</button>
+          <span class="text-xs text-emerald-400" x-text="editMsg"></span>
+        </div>
       </div>
     </div>
 
@@ -255,6 +276,7 @@ function bottega() {
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
     saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false, reading: false,
     savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
+    editing: false, editId: null, editTitle: '', editOutput: '', editBusy: false, editMsg: '',
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
@@ -333,6 +355,24 @@ function bottega() {
       if(!this.token) return;
       try { const r=await fetch('/api/v1/compute/bottega/sessions',{headers:{'Authorization':'Bearer '+this.token}});
         if(r.ok){ this.folder=await r.json(); this.showFolder=true; } } catch(e){}
+    },
+    async editCard(s) {  // Ada's ledger: edit -> a NEW version (the original is kept). Load full output first.
+      this.editId=s.id; this.editTitle=s.title||''; this.editOutput=''; this.editMsg=''; this.editBusy=false; this.editing=true;
+      try { const r=await fetch('/api/v1/compute/bottega/sessions/'+s.id,{headers:{'Authorization':'Bearer '+this.token}});
+        if(r.ok){ const d=await r.json(); this.editOutput=(typeof d.output==='string'?d.output:JSON.stringify(d.output,null,2)); } } catch(e){}
+    },
+    async saveEdit() {
+      if(!this.editId) return; this.editBusy=true;
+      try { const r=await fetch('/api/v1/compute/bottega/sessions/'+this.editId,{method:'PATCH',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+        body:JSON.stringify({title:this.editTitle, output:this.editOutput})});
+        if(r.ok){ const d=await r.json(); this.editMsg='✓ Saved as v'+d.version; setTimeout(()=>{ this.editing=false; this.openFolder(); }, 900); } } catch(e){}
+      this.editBusy=false;
+    },
+    async deleteCard(s) {
+      if(!confirm('Delete "'+(s.title||'this')+'"? It stays in your history, just hidden from view.')) return;
+      try { const r=await fetch('/api/v1/compute/bottega/sessions/'+s.id,{method:'DELETE',headers:{'Authorization':'Bearer '+this.token}});
+        if(r.ok){ this.openFolder(); } } catch(e){}
     },
     filteredFolder() {
       let f = this.folder;
