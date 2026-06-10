@@ -6,6 +6,8 @@ const puppeteer = require('puppeteer');
 const SQUARE = process.env.SQUARE || 'https://staging.lapiazza.app';
 const BOTTEGA = process.env.BOTTEGA || 'https://staging-bottega.lapiazza.app';
 const EVENT_ITEM = 'garage-moving-day-tool-sale-trapani';
+// 18+ gate test items (real age_restricted listings — NOT story items that get toggled). Pass if EITHER renders the gate.
+const AGE_ITEMS = ['10-hours-of-ux-debugging-help', 'helping-hand-with-moving-garage-space'];
 
 let pass = 0; const fails = [];
 const ok = (cond, name) => { if (cond) { pass++; console.log('  ✅ ' + name); } else { fails.push(name); console.log('  ❌ ' + name); } };
@@ -47,8 +49,12 @@ const ok = (cond, name) => { if (cond) { pass++; console.log('  ✅ ' + name); }
     console.log('— Ep 9 + age policy: the safety scan + the 18+ gate —');
     const scamStatus = await page.evaluate(() => fetch('/api/v1/helpboard/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ help_type: 'offer', title: 'Regression scam check ignore', category: 'moving', urgency: 'normal', body: 'DM me on Telegram @x, join here first https://t.me/x' }) }).then(r => r.status));
     ok(scamStatus === 201, `Funnel post still creates (scan is fail-open) (${scamStatus})`);
-    const html18 = await page.evaluate(async (u) => { try { const r = await fetch(u); return await r.text(); } catch (e) { return ''; } }, SQUARE + '/items/' + EVENT_ITEM);
-    ok(/age-restricted|age18_confirmed|18 or older/i.test(html18), '18+ gate markup present on age-restricted listing');
+    let gateSeen = false;
+    for (const slug of AGE_ITEMS) {
+      const html18 = await page.evaluate(async (u) => { try { const r = await fetch(u); return await r.text(); } catch (e) { return ''; } }, SQUARE + '/items/' + slug);
+      if (/age-restricted|age18_confirmed|18 or older/i.test(html18)) { gateSeen = true; break; }
+    }
+    ok(gateSeen, '18+ gate markup present on an age-restricted listing');
 
     console.log('— Ep 10: who-viewed endpoint mounted + owner-gated —');
     const viewersUnauth = await page.evaluate(async (sq) => { try { const r = await fetch(sq + '/api/v1/items/00000000-0000-0000-0000-000000000000/viewers', { headers: { 'Cookie': '' } }); return r.status; } catch (e) { return 0; } }, SQUARE);
