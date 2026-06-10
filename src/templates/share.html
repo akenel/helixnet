@@ -40,10 +40,24 @@
   .md li{margin:.2rem 0}.md strong{color:#f8fafc}.md a{color:#C0392B}
   .md table{width:100%;border-collapse:collapse;margin:.6rem 0}.md td,.md th{border:1px solid #334155;padding:4px 8px;font-size:.85rem}
   .md blockquote{border-left:3px solid #C0392B;padding-left:12px;color:#94a3b8;font-style:italic;margin:.6rem 0}
+  /* Print: a clean, ink-friendly, ONE-page keepsake — strip nav/CTA/chrome, white card, dark text. */
+  @media print {
+    body{background:#fff !important}
+    #doorway,.no-print{display:none !important}
+    .card{background:#fff !important;border:1px solid #ccc !important;box-shadow:none !important}
+    .card h1,.card .text-white{color:#111 !important;text-shadow:none !important}
+    .md,.md h1,.md h2,.md h3,.md p,.md li,.md strong,.md blockquote{color:#111 !important}
+    .md a{color:#8B0000 !important}
+    .text-slate-500,.text-slate-400,.text-slate-300,.text-slate-600{color:#333 !important}
+    .text-emerald-400{color:#0a7d33 !important}
+    .max-w-2xl{max-width:100% !important;padding:0 !important}
+    .card .grad-rule{background:#C0392B !important}
+    @page{margin:1.2cm}
+  }
 </style>
 </head>
 <body class="font-sans text-slate-300 min-h-screen antialiased">
-{% include "_lapiazza_nav.html" %}
+<div class="no-print">{% include "_lapiazza_nav.html" %}</div>
 <div class="max-w-2xl mx-auto px-5 py-10">
 
   <!-- the postcard -->
@@ -88,12 +102,12 @@
     <!-- footer -->
     <div class="px-6 py-4 border-t border-slate-800/70 flex items-center justify-between">
       <span class="text-xs text-slate-500">Made on <a href="/" class="text-brand font-semibold">La Piazza</a> — the square where ideas become things</span>
-      <a href="/get-started" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand hover:bg-branddark text-white">Make your own →</a>
+      <a href="/get-started" class="no-print text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand hover:bg-branddark text-white">Make your own →</a>
     </div>
   </div>
 
   <!-- the doorway (Share-L): turn a viewer into a member. A pitch, not a dead-end. -->
-  <div class="mt-8 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/12 to-transparent p-6 sm:p-7 text-center">
+  <div id="doorway" class="mt-8 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/12 to-transparent p-6 sm:p-7 text-center">
     <h2 class="text-xl sm:text-2xl font-black text-white">This was made on La Piazza.</h2>
     <p class="mt-2 text-[15px] text-slate-300 max-w-md mx-auto">
       Your own <span class="text-white font-semibold">workshop</span> where AI mentors help you build —
@@ -121,6 +135,8 @@
   // QR -> the canonical artifact URL (provenance, no tracking). Client-side render, no external call.
   try { new QRCode(document.getElementById('qr'), { text: {{ share_url|tojson }}, width: 80, height: 80,
     colorDark: '#0b1220', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+  // logged-in members are already in -- don't pitch them the signup doorway
+  try { if (localStorage.getItem('compute_token')) { var _d=document.getElementById('doorway'); if(_d) _d.style.display='none'; } } catch(e){}
 </script>
 </body>
 </html>
