@@ -181,7 +181,7 @@
                     <div class="text-sm text-slate-400 mt-1" x-text="question"></div>
                   </div>
                   <div class="flex gap-2 flex-shrink-0 no-print">
-                    <button @click="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">🖨️ Save PDF</button>
+                    <button @click="postcardIt()" :disabled="pcBusy" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand/80 hover:bg-brand text-white disabled:opacity-40" x-text="pcBusy?'…':'🖼️ Postcard it →'"></button>
                     <button @click="reading=false" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">✕ Close</button>
                   </div>
                 </div>
@@ -202,7 +202,7 @@ function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
     page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], suggestedFor:false, portrait:'', showWrapper:false,
-    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[],
+    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[], pcBusy:false,
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -282,6 +282,7 @@ function legends(){
       window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
     openReading(){ this.reading=true; this.$nextTick(()=>{ const el=document.getElementById('readingMd');
       if(el){ const h=window.marked?marked.parse(this.answer):this.answer; el.innerHTML=window.DOMPurify?DOMPurify.sanitize(h):''; } }); },
+    async postcardIt(){ this.pcBusy=true; try{ if(!this.savedId) await this.saveSession(); if(this.savedId) window.open(location.origin+'/s/'+this.savedId,'_blank'); }catch(e){} this.pcBusy=false; },
     _fname(){ const m=((this.selected&&this.selected.name)||'master').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); const q=(this.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24); return 'ask-'+m+(q?('_'+q):'')+'.md'; },
     downloadOut(){ const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=this._fname(); a.click(); },
     login(){
