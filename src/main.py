@@ -437,6 +437,24 @@ async def share_page(session_id: str, request: Request):
                 found = True
                 title = s.title or "La Piazza"
                 content = s.output or ""
+                # Structured (JSON) outputs were dumped raw on the postcard ({"childhood":...}).
+                # Render them as readable markdown instead -- {field: value} -> "## Field\n value".
+                if (s.output_type or "") == "json" and content.lstrip().startswith("{"):
+                    try:
+                        _o = _json.loads(content); _parts = []
+                        for _k, _v in _o.items():
+                            if str(_k).startswith("_") or _v in (None, "", [], {}):
+                                continue
+                            _lab = str(_k).replace("_", " ").title()
+                            if isinstance(_v, list):
+                                _b = "\n".join(f"- {_x}" for _x in _v if _x)
+                                if _b:
+                                    _parts.append(f"## {_lab}\n{_b}")
+                            elif isinstance(_v, (str, int, float)):
+                                _parts.append(f"## {_lab}\n{_v}")
+                        content = "\n\n".join(_parts) or content
+                    except Exception:  # noqa: BLE001
+                        pass
                 version = s.version or 1
                 created_dt = s.created_at
                 creator = s.username or ""

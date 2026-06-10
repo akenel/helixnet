@@ -193,6 +193,7 @@
           </template>
           <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-800">
             <span x-show="savedId" class="text-[11px] text-emerald-400 font-semibold mr-1">✓ in your Blueprint</span>
+            <button @click="openReading()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-white">📖 Reading mode</button>
             <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
             <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
             <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
@@ -206,6 +207,7 @@
         <div>
           <div class="md text-slate-300 max-h-[460px] overflow-y-auto" x-html="renderMd(output.result)"></div>
           <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800">
+            <button @click="openReading()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-white">📖 Reading mode</button>
             <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
             <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
             <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
@@ -214,6 +216,30 @@
           </div>
         </div>
       </template>
+
+      <!-- Reading mode: clean full-screen study view (parity with Legends). 🖨️ prints black-on-white. -->
+      <style>
+        @media print {
+          body * { visibility: hidden !important; }
+          #readingSheet, #readingSheet * { visibility: visible !important; color: #111 !important; }
+          #readingOverlay { position: static !important; background: #fff !important; overflow: visible !important; }
+          #readingSheet { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 1.2cm !important; }
+          #readingSheet a { color: #111 !important; text-decoration: underline; }
+          .no-print { display: none !important; }
+        }
+      </style>
+      <div id="readingOverlay" x-show="reading" x-cloak class="fixed inset-0 z-[70] bg-[#0a0f1a] overflow-y-auto" style="display:none">
+        <div id="readingSheet" class="max-w-3xl mx-auto px-5 py-8">
+          <div class="flex items-start justify-between gap-4 mb-6 sticky top-0 bg-[#0a0f1a] py-2 z-10">
+            <div class="text-[11px] uppercase tracking-wider text-slate-500">📖 Reading — <span x-text="(output&&output.recipe)||'La Piazza'"></span></div>
+            <div class="flex gap-2 flex-shrink-0 no-print">
+              <button @click="window.print()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">🖨️ Save PDF</button>
+              <button @click="reading=false" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">✕ Close</button>
+            </div>
+          </div>
+          <div class="md" id="readingMd" style="font-size:17px;line-height:1.75"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -227,7 +253,7 @@ function bottega() {
   return {
     token: null, me: null,
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
-    saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false,
+    saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false, reading: false,
     savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
@@ -273,6 +299,7 @@ function bottega() {
         + (q ? '## Asked\n'+q+'\n\n## Answer\n' : '') + body + '\n';
     },
     copyOut() { navigator.clipboard.writeText(this._text()).then(()=>{ this.copied=true; setTimeout(()=>this.copied=false,1500); }).catch(()=>{}); },
+    openReading() { this.reading = true; this.$nextTick(() => { const el = document.getElementById('readingMd'); if (el) el.innerHTML = this.renderMd(this._text()); }); },
     async _shareUrl() {  // ensure the output is saved so it has a postcard page with a cover
       if (!this.savedId) await this.saveSession();
       return this.savedId ? (location.origin + '/s/' + this.savedId) : location.origin;

@@ -154,6 +154,7 @@
             <div class="flex flex-wrap gap-2 mb-4">
               <button @click="openReading()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-white">📖 Reading mode</button>
               <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
+              <button @click="downloadOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download</button>
               <button @click="saveSession()" :disabled="saving||!token" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand/90 hover:bg-brand text-white disabled:opacity-40" x-text="savedMsg||(savedId?'📌 Pinned':'📓 Save to Blueprint')"></button>
               <button @click="shareTg()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-700/80 hover:bg-sky-600 text-white">✈️ Telegram</button>
               <button @click="shareWa()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/80 hover:bg-emerald-600 text-white">🟢 WhatsApp</button>
@@ -281,6 +282,8 @@ function legends(){
       window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
     openReading(){ this.reading=true; this.$nextTick(()=>{ const el=document.getElementById('readingMd');
       if(el){ const h=window.marked?marked.parse(this.answer):this.answer; el.innerHTML=window.DOMPurify?DOMPurify.sanitize(h):''; } }); },
+    _fname(){ const m=((this.selected&&this.selected.name)||'master').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); const q=(this.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24); return 'ask-'+m+(q?('_'+q):'')+'.md'; },
+    downloadOut(){ const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=this._fname(); a.click(); },
     login(){
       const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
