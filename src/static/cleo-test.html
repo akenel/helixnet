@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cleopatra v2 — Round-2 Fixes (5 quick checks)</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  ol.steps input[type=checkbox]{ width:20px; height:20px; margin-top:2px; accent-color:var(--red); flex:none; cursor:pointer; }
+  .step-body{ flex:1; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  .type{ font-family:ui-monospace,Menlo,monospace; background:#fdf2f1; border:1px solid #f3c9c4; color:#8B0000; padding:1px 6px; border-radius:5px; font-size:12.5px; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#fde8e6; color:var(--dark); }
+  .stg{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#fef3c7; color:#92400e; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>👑 Cleopatra v2 — Round-2 Fixes<small>The fixes this round — hosted (mic permission sticks). Whip through it.</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260611-CLEO-V2-FIXES · rev.1</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report (with screenshots)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>Scope:</strong> only the 5 things we fixed since your last run — the 500 that blocked you, the grounding leak
+    (record + chips), language-following chips, and the read-aloud button. Everything else already passed 15/15.
+    Log in as <strong>angel / helix_pass</strong>, then tick down the list. <span class="stg">staging · Chrome best</span>
+    <br><br>
+    Hit <strong>Copy text</strong> (or <strong>Export</strong> for screenshots) at the end and paste it back to me. Then say <strong>"prod"</strong> if it's good.
+  </div>
+
+  <!-- 1 · THE 500 IS GONE -->
+  <section>
+    <h2>1 · The Concierge actually loads <span class="tag">the 500 fix</span></h2>
+    <p class="why">Last time you got "Could not reach the Concierge" — a duplicate-record 500. This is the unblocker.</p>
+    <a class="open" href="https://staging-bottega.lapiazza.app/compute/concierge" target="_blank">Open the Concierge ↗</a>
+    <span class="url">https://staging-bottega.lapiazza.app/compute/concierge</span>
+    <ol class="steps" data-sec="loads">
+      <li><input type="checkbox"><div class="step-body">Log in, land on Cleopatra. <span class="exp">the chat + her greeting load — NO "Could not reach the Concierge"</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="loads" placeholder="Did it load clean?"></textarea>
+  </section>
+
+  <!-- 2 · GROUNDING: SHE HOLDS + THE RECORD STAYS CLEAN -->
+  <section>
+    <h2>2 · Plant a fiction — she holds AND it doesn't stick <span class="tag">the grounding fix</span></h2>
+    <p class="why">The big one. She must decline an invented place — AND it must NOT end up in your memory panel as "why you came".</p>
+    <ol class="steps" data-sec="ground">
+      <li><input type="checkbox"><div class="step-body">Type <span class="type">Give me a tour of the Innovation Lab</span> and send. <span class="exp">she gently says that isn't part of La Piazza, points to recipes / 🏛️ Masters — no invented tour</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Open the <strong>🧠 "What Cleopatra has learned"</strong> panel and read <em>"Why they came"</em>. <span class="exp">it is NOT "wants a tour of the Innovation Lab" — blank, or your real reason</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="ground" placeholder="Did she hold? Did the memory panel stay clean? Try your own invented room too."></textarea>
+  </section>
+
+  <!-- 3 · CHIPS DON'T ECHO THE FICTION -->
+  <section>
+    <h2>3 · The tap-chips stay grounded <span class="tag">chips fix</span></h2>
+    <p class="why">Before, the suggestion chips re-offered the invented thing ("Innovation Lab tour"). They shouldn't.</p>
+    <ol class="steps" data-sec="chips">
+      <li><input type="checkbox"><div class="step-body">Look at the tap-chips right after that fiction. <span class="exp">none of them mention the Innovation Lab / a tour / a made-up master — they point at real moves (tell her about you, ask the Masters)</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="chips" placeholder="Any chip still echoing a made-up thing?"></textarea>
+  </section>
+
+  <!-- 4 · CHIPS FOLLOW LANGUAGE -->
+  <section>
+    <h2>4 · Chips follow the language <span class="tag">language fix</span></h2>
+    <p class="why">Before, with IT selected the chips still came back in English.</p>
+    <ol class="steps" data-sec="lang">
+      <li><input type="checkbox"><div class="step-body">Set <strong>"Reply in" → IT</strong>, send a normal line (e.g. <span class="type">Ciao, vorrei rimettermi in forma</span>). <span class="exp">she replies in Italian AND the tap-chips are in Italian, not English</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="lang" placeholder="Chips in Italian now?"></textarea>
+  </section>
+
+  <!-- 5 · READ-ALOUD BUTTON -->
+  <section>
+    <h2>5 · Read-aloud button <span class="tag">polish</span></h2>
+    <p class="why">You flagged it was too small to tap. Bigger now (and the voice/stop were already fixed).</p>
+    <ol class="steps" data-sec="speak">
+      <li><input type="checkbox"><div class="step-body"><strong>On your phone</strong>, the 🔊 control under a reply is an easy tap-target (a bordered pill, not tiny text). <span class="exp">easy to hit; tapping reads aloud, tapping again stops</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="speak" placeholder="Easy to tap now? Voice + stop OK?"></textarea>
+  </section>
+
+  <!-- 6 · MIC NO LONGER TRIPLES -->
+  <section>
+    <h2>6 · Mobile mic — no more triple <span class="tag">the fix you hit</span></h2>
+    <p class="why">On your Fairphone the mic was repeating every phrase ~3× ("I I was I was..."). Rebuilt how dictation reads results.</p>
+    <ol class="steps" data-sec="mic">
+      <li><input type="checkbox"><div class="step-body"><strong>On your phone</strong>, tap 🎤 in Cleopatra and speak a sentence. <span class="exp">your words appear ONCE — no tripling, no stutter</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="mic" placeholder="Clean now? Any stutter left?"></textarea>
+  </section>
+
+  <!-- VERDICT -->
+  <section>
+    <h2>★ Verdict</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><input type="checkbox"><div class="step-body"><strong>All up to par — ship to prod?</strong></div></li>
+    </ol>
+    <label class="cm">anything off</label>
+    <textarea data-cm="verdict" placeholder="Say the word and I deploy + scrub your demo record clean." style="min-height:70px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza</strong> · Cleopatra v2 Round-2 Fixes · registered artifact</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-UAT-20260611-CLEO-V2-FIXES · rev.1 · 2026-06-11</span>
+    </div>
+    <div style="margin-top:6px">Five checks, the fixes only. · staging — no prod until you say so 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='cleo_v2_hosted_runbook';
+  const STEPS=[];
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]');
+      const label = (li.querySelector('.step-body')?.textContent||'').trim().replace(/\s+/g,' ');
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      li.querySelector('.step-body').appendChild(wrap);
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[] };
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+
+  function save(){ const d={cb:[],note:[],shots:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export your report to save screenshots, then clear.'); } }
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length; document.getElementById('prog').textContent=done+'/'+STEPS.length; }
+  document.addEventListener('change',e=>{ save(); progress(); });
+  let flashT=null; function flash(msg){ const el=document.getElementById('prog'); if(flashT) clearTimeout(flashT); const old=el.textContent; el.textContent='⚠'; alert(msg); el.textContent=old; }
+
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  function copyReport(){ let out='CLEOPATRA v2 — ROUND-2 FIXES REPORT\n'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) attached (see exported report)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied. (Use Export for the version with screenshots.)')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>Cleopatra v2 — Round-2 Fixes report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>👑 Cleopatra v2 — Round-2 Fixes report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span> '+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='cleo-v2-round2-fixes-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+  buildSteps(); restore(); progress(); paintClock();
+</script>
+</body>
+</html>
