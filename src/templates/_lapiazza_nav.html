@@ -18,6 +18,9 @@
   .lp-webview{display:none;background:#7c2d12;color:#fff;font:600 13px/1.4 Inter,system-ui,sans-serif;padding:10px 30px 10px 14px;text-align:center;position:relative;z-index:65}
   .lp-webview b{color:#fdba74}
   .lp-webview .x{position:absolute;right:10px;top:8px;color:#fdba74;cursor:pointer;font-weight:700}
+  .lp-maint{display:none;background:#7c2d12;color:#fff;font:600 13px/1.4 Inter,system-ui,sans-serif;padding:9px 30px 9px 14px;text-align:center;position:relative;z-index:66}
+  .lp-maint b{color:#fdba74}
+  .lp-maint .x{position:absolute;right:10px;top:7px;color:#fdba74;cursor:pointer;font-weight:700}
 </style>
 <!-- Door: WhatsApp/IG/FB in-app browsers BLOCK Google sign-in (disallowed_useragent) — the #1
      funnel killer. Detect the webview and nudge "open in a real browser". -->
@@ -29,6 +32,13 @@
   if(/(WhatsApp|Instagram|FBAN|FBAV|FB_IAB|Line\/|MicroMessenger|GSA\/)/i.test(ua)){
     var b=document.getElementById('lp-webview');if(b){b.style.display='block';
       var x=document.getElementById('lp-webview-x');if(x)x.onclick=function(){b.style.display='none';};}}})();</script>
+<!-- Maintenance banner: shows only when LP_MAINTENANCE_MESSAGE is set on the box (env toggle, no
+     deploy). Dismissible. The text/window is whatever ops set in the env var. -->
+<div class="lp-maint" id="lp-maint"><span id="lp-maint-msg"></span> <span class="x" id="lp-maint-x">✕</span></div>
+<script>(function(){try{fetch('/api/maintenance').then(function(r){return r.json();}).then(function(d){
+  if(d&&d.active&&d.message){var b=document.getElementById('lp-maint');
+    document.getElementById('lp-maint-msg').textContent='🔧 '+d.message;b.style.display='block';
+    var x=document.getElementById('lp-maint-x');if(x)x.onclick=function(){b.style.display='none';};}}).catch(function(){});}catch(e){}})();</script>
 <nav class="lp-nav">
   <div class="lp-nav-in">
     <a href="/" class="lp-logo">La <b>Piazza</b></a>

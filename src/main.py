@@ -6,6 +6,7 @@ from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel, OAuthFlowPassw
 from fastapi.security import OAuth2
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 # Added datetime import for potential use in service layer mock/UserRead
@@ -316,6 +317,13 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 async def home(request: Request):
     """La Piazza front door -- the public landing page."""
     return templates.TemplateResponse("home.html", {"request": request})
+
+@app.get("/api/maintenance", include_in_schema=False)
+async def maintenance_notice():
+    """Public maintenance flag for the site banner. Toggle by setting LP_MAINTENANCE_MESSAGE on the
+    box (empty/unset = banner off) and restarting -- no code deploy needed. The shared nav polls this."""
+    msg = os.getenv("LP_MAINTENANCE_MESSAGE", "").strip()
+    return {"active": bool(msg), "message": msg}
 
 @app.get("/get-started", tags=["🧭 Web UI"], response_class=HTMLResponse)
 async def get_started_page(request: Request):
