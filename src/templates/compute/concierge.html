@@ -169,7 +169,7 @@
         </div>
         <!-- the input surface: a real, roomy editor -->
         <div class="rounded-xl bg-slate-900 border border-slate-700 focus-within:border-brand transition-colors">
-          <textarea x-ref="ta" x-model="draft" @input="autogrow()" @keydown.enter="onEnter($event)" rows="3"
+          <textarea x-ref="ta" x-model="draft" :maxlength="MAXLEN" @input="autogrow()" @keydown.enter="onEnter($event)" rows="3"
             placeholder="Tell Cleopatra who you are — or ask a question…&#10;(Enter to send · Shift+Enter for a new line)"
             class="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
             style="min-height:4.75rem;max-height:15rem"></textarea>
@@ -181,7 +181,9 @@
               <span x-show="micOn" x-cloak class="text-[11px] text-red-400">listening…</span>
               <button x-show="draft && !micOn" @click="clearComposer()" title="Clear"
                 class="px-2 py-1 rounded-md hover:bg-slate-800 hover:text-slate-200 text-sm leading-none">🗑️</button>
-              <span class="text-[11px] text-slate-600" x-show="draft && !micOn" x-text="draft.length+' chars'"></span>
+              <span class="text-[11px]" x-show="draft && !micOn"
+                :class="draft.length > MAXLEN*0.9 ? 'text-amber-400' : 'text-slate-600'"
+                x-text="draft.length+' / '+MAXLEN"></span>
             </div>
             <div class="flex items-center gap-2">
               <button @click="dispatchQ()" :disabled="busy||!canSend()" title="Hand this question to the two best masters on the board"
@@ -247,7 +249,7 @@
 function concierge(){
   return {
     token:null, lang:'auto', langs:[{code:'auto',label:'Auto'},{code:'en',label:'EN'},{code:'it',label:'IT'}],
-    messages:[], draft:'', busy:false, err:'', expired:false,
+    messages:[], draft:'', busy:false, err:'', expired:false, MAXLEN:2000,
     suggestions:[],
     starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
@@ -292,7 +294,7 @@ function concierge(){
     // --- composer: roomy multi-line + microphone (talk to the machine) ----------------------
     autogrow(){ const ta=this.$refs.ta; if(!ta) return; ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,240)+'px'; },
     onEnter(e){ if(e.shiftKey) return; e.preventDefault(); this.send(); },   // Enter sends, Shift+Enter = newline
-    canSend(){ return !!this.draft.trim(); },
+    canSend(){ const t=this.draft.trim(); return !!t && t.length<=this.MAXLEN; },
     clearComposer(){ this.draft=''; this.$nextTick(()=>this.autogrow()); },
     // Web Speech API: speech -> text, all in the browser (no upload, no file, nothing to scan).
     // On mobile Chrome this opens the phone mic. Dictates into the draft; you edit, then send.
@@ -313,7 +315,7 @@ function concierge(){
             if(ev.results[i].isFinal) fin+=t; else interim+=t;
           }
           if(fin) this._micBase += fin + ' ';   // space between final chunks so words don't glue
-          this.draft = (this._micBase + interim).replace(/\s+/g,' ').trimStart();
+          this.draft = (this._micBase + interim).replace(/\s+/g,' ').trimStart().slice(0,this.MAXLEN);
           this.$nextTick(()=>this.autogrow());
         };
         r.onerror=(e)=>{ if(e&&e.error==='not-allowed') this.err='Microphone blocked — allow mic access to talk.'; this.stopMic(); };
