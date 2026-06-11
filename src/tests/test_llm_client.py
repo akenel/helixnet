@@ -113,26 +113,27 @@ async def test_local_no_auth_json_mode_only_user_turn():
 
 @pytest.mark.asyncio
 async def test_recipe_threads_per_job_model(monkeypatch):
-    """The 'decide' recipe names its own brain (deepseek-r1:14b); a default recipe
-    passes model=None. This is the BYO-brain contract, end to end through run_recipe."""
+    """The 'decide' recipe names its own brain as DATA (Turbo gpt-oss:120b + a local-dev
+    fallback deepseek-r1:14b); a default recipe passes model=None. Both reach the brain
+    unchanged -- the BYO-brain contract, end to end through run_recipe."""
     import src.compute.recipes as rc
 
     seen = []
 
-    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
-        seen.append(model)
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None, model_local=None):
+        seen.append((model, model_local))
         return '{"x":1}' if json_mode else "## The Call\nDo it."
 
     monkeypatch.setattr(rc, "_brain_chat", fake_brain)
 
-    # 'decide' carries a per-job model -> it must reach the brain unchanged
+    # 'decide' carries a per-job brain (both Turbo + local) -> must reach the brain unchanged
     out = await rc.run_recipe("decide", {"decision": "take the contract or not"})
-    assert seen[-1] == "deepseek-r1:14b"
+    assert seen[-1] == ("gpt-oss:120b", "deepseek-r1:14b")
     assert out["output_type"] == "markdown"
 
-    # a recipe with no "model" key -> default brain (None)
+    # a recipe with no "model" key -> default brain (None, None)
     await rc.run_recipe("music-playlist", {"vibe": "sunrise drive", "count": "10"})
-    assert seen[-1] is None
+    assert seen[-1] == (None, None)
 
 
 def test_menu_does_not_leak_model():
@@ -163,7 +164,7 @@ async def test_run_recipe_strips_think(monkeypatch):
     """A reasoning model's <think> block must never reach the recipe result."""
     import src.compute.recipes as rc
 
-    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None, model_local=None):
         return "<think>weigh contract vs no contract, money vs risk</think>## The Call\nTake it."
 
     monkeypatch.setattr(rc, "_brain_chat", fake_brain)
