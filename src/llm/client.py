@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass
 
@@ -21,6 +22,26 @@ import httpx
 logger = logging.getLogger("helix.llm")
 
 DEFAULT_TIMEOUT = 180.0
+
+# Transient failures worth retrying: rate-limit + the 5xx family + network blips. A throttled
+# Turbo (429) was the single point of failure we hit in practice -- ride it out with bounded backoff
+# instead of failing the whole call. NOT retried: 4xx other than 429 (e.g. 404 wrong-model, which
+# the caller handles by falling back to the house brain).
+_RETRY_STATUSES = {429, 500, 502, 503, 504}
+_MAX_RETRIES = 2                       # 3 attempts total
+_BACKOFF_BASE = 0.6                    # seconds: 0.6, 1.2 (short -- these calls are interactive)
+
+
+def _retry_delay(resp: "httpx.Response | None", attempt: int) -> float:
+    """Honour a Retry-After header if the server sent one, else exponential backoff (capped)."""
+    if resp is not None:
+        ra = resp.headers.get("retry-after")
+        if ra:
+            try:
+                return max(0.0, min(float(ra), 10.0))   # cap so we never hang an interactive turn
+            except ValueError:
+                pass
+    return _BACKOFF_BASE * (2 ** attempt)
 
 
 @dataclass(frozen=True)
@@ -83,9 +104,27 @@ async def run_llm(
     if owns:
         client = httpx.AsyncClient(timeout=target.timeout)
     try:
-        r = await client.post(url, json=body, headers=headers, timeout=target.timeout)
-        r.raise_for_status()
-        data = r.json()
+        data = None
+        for attempt in range(_MAX_RETRIES + 1):
+            try:
+                r = await client.post(url, json=body, headers=headers, timeout=target.timeout)
+            except (httpx.TimeoutException, httpx.TransportError) as e:
+                if attempt < _MAX_RETRIES:
+                    delay = _retry_delay(None, attempt)
+                    logger.warning("brain %s transient %s; retry %d/%d in %.1fs",
+                                   target.model, type(e).__name__, attempt + 1, _MAX_RETRIES, delay)
+                    await asyncio.sleep(delay)
+                    continue
+                raise
+            if r.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+                delay = _retry_delay(r, attempt)
+                logger.warning("brain %s transient %s; retry %d/%d in %.1fs",
+                               target.model, r.status_code, attempt + 1, _MAX_RETRIES, delay)
+                await asyncio.sleep(delay)
+                continue
+            r.raise_for_status()      # raises on 4xx (incl. final 429) / unretried 5xx
+            data = r.json()
+            break
     finally:
         if owns:
             await client.aclose()

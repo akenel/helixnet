@@ -171,3 +171,44 @@ async def test_run_recipe_strips_think(monkeypatch):
     out = await rc.run_recipe("decide", {"decision": "take the contract?"})
     assert "<think>" not in out["result"] and "</think>" not in out["result"]
     assert out["result"] == "## The Call\nTake it."
+
+
+# --- retry-with-backoff on transient errors (the Turbo-throttle single-point-of-failure) ----
+
+@pytest.mark.asyncio
+async def test_run_llm_retries_429_then_succeeds(monkeypatch):
+    import httpx
+    from src.llm import client as llm
+    monkeypatch.setattr(llm.asyncio, "sleep", _no_sleep)   # don't actually wait in tests
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            return httpx.Response(429, headers={"retry-after": "0"}, text="slow down")
+        return httpx.Response(200, json={"message": {"content": "ok"}, "eval_count": 1, "prompt_eval_count": 1})
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport) as c:
+        res = await llm.run_llm("hi", target=llm.ModelTarget("m", "http://x"), client=c)
+    assert res.text == "ok"
+    assert calls["n"] == 3                 # two 429s rode out, third succeeded
+
+
+@pytest.mark.asyncio
+async def test_run_llm_raises_after_exhausting_retries(monkeypatch):
+    import httpx
+    from src.llm import client as llm
+    monkeypatch.setattr(llm.asyncio, "sleep", _no_sleep)
+
+    def handler(request):
+        return httpx.Response(503, text="down")
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport) as c:
+        with pytest.raises(httpx.HTTPStatusError):
+            await llm.run_llm("hi", target=llm.ModelTarget("m", "http://x"), client=c)
+
+
+async def _no_sleep(*a, **k):
+    return None
