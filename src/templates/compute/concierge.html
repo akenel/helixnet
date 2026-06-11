@@ -101,6 +101,11 @@
 
       <!-- composer -->
       <div class="border-t border-slate-800 p-3">
+        <div x-show="expired" class="mb-2 flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs"
+             style="background:rgba(120,53,15,.35);border:1px solid rgba(180,83,9,.5);color:#fcd34d">
+          <span>⏱️ Session timed out — your chat is saved.</span>
+          <button @click="login()" class="px-2.5 py-1 rounded-md bg-brand hover:bg-branddark text-white font-semibold">Log in again</button>
+        </div>
         <div class="flex items-end gap-2">
           <textarea x-model="draft" @keydown.enter.prevent="send()" rows="1"
             placeholder="Tell Heisenberg who you are..."
@@ -163,7 +168,7 @@
 function concierge(){
   return {
     token:null, lang:'en', langs:[{code:'en',label:'EN'},{code:'it',label:'IT'}],
-    messages:[], draft:'', busy:false, err:'',
+    messages:[], draft:'', busy:false, err:'', expired:false,
     record:{},
     fields:[
       {k:'goal',label:'Goal'}, {k:'why_they_came',label:'Why they came'},
@@ -185,6 +190,8 @@ function concierge(){
       // default reply language from the locale cookie / browser
       try{ const c=(document.cookie.match(/bh_lang=([a-z]{2})/)||[])[1]; const b=(navigator.language||'en').slice(0,2);
         this.lang=(c==='it'||(!c&&b==='it'))?'it':'en'; }catch(e){}
+      // restore a message that was being typed when the session timed out (survives the re-login redirect)
+      try{ const pd=localStorage.getItem('cg_pending_draft'); if(pd){ this.draft=pd; localStorage.removeItem('cg_pending_draft'); } }catch(e){}
       if(this.token){ this.load(); }
     },
     hdr(){ return {'Authorization':'Bearer '+this.token}; },
@@ -210,7 +217,17 @@ function concierge(){
         const r=await fetch('/api/v1/compute/bottega/concierge/chat',{
           method:'POST', headers:{'Content-Type':'application/json',...this.hdr()},
           body:JSON.stringify({message:msg, language:this.lang})});
-        if(!r.ok){ this.err = r.status===503 ? 'Heisenberg stepped away — try again in a moment.' : ('Error '+r.status); this.busy=false; return; }
+        if(!r.ok){
+          if(r.status===401||r.status===403){
+            // session timed out: don't lose the message — stash it, undo the optimistic bubble, offer re-login
+            if(msg){ this.messages.pop(); this.draft=msg; try{ localStorage.setItem('cg_pending_draft',msg); }catch(e){} }
+            this.expired=true; this.err='Your session timed out — log in again to continue. Your chat and your message are saved.';
+            this.busy=false; return;
+          }
+          this.err = r.status===503 ? 'Heisenberg stepped away — try again in a moment.' : ('Something hiccuped (error '+r.status+'). Try again.');
+          this.busy=false; return;
+        }
+        this.expired=false;
         const d=await r.json();
         this.messages.push({role:'concierge',content:d.reply});
         if(d.record) this.record=d.record;
