@@ -99,6 +99,13 @@
         </div>
       </div>
 
+      <!-- Cleo's profile-aware next moves -- tap to say it -->
+      <div x-show="suggestions.length && !busy" class="px-4 pb-1 flex flex-wrap gap-1.5">
+        <template x-for="s in suggestions" :key="s">
+          <button @click="pick(s)" class="text-xs px-2.5 py-1 rounded-full chip hover:brightness-150 transition" x-text="s"></button>
+        </template>
+      </div>
+
       <!-- composer -->
       <div class="border-t border-slate-800 p-3">
         <div x-show="expired" class="mb-2 flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs"
@@ -169,6 +176,8 @@ function concierge(){
   return {
     token:null, lang:'auto', langs:[{code:'auto',label:'Auto'},{code:'en',label:'EN'},{code:'it',label:'IT'}],
     messages:[], draft:'', busy:false, err:'', expired:false,
+    suggestions:[],
+    starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
     fields:[
       {k:'preferred_language',label:'Speaks'}, {k:'language_level',label:'Level'},
@@ -198,6 +207,7 @@ function concierge(){
     hdr(){ return {'Authorization':'Bearer '+this.token}; },
     render(t){ const h=window.marked?marked.parse(t||''):(t||''); return window.DOMPurify?DOMPurify.sanitize(h):h; },
     scroll(){ this.$nextTick(()=>{ const el=document.getElementById('thread'); if(el) el.scrollTop=el.scrollHeight; }); },
+    pick(s){ this.draft=s; this.send(); },
     async load(){
       try{
         const r=await fetch('/api/v1/compute/bottega/concierge/record',{headers:this.hdr()});
@@ -213,7 +223,7 @@ function concierge(){
       const msg = opening ? '' : this.draft.trim();
       if(!opening && !msg) return;
       if(msg){ this.messages.push({role:'member',content:msg}); this.draft=''; }
-      this.busy=true; this.err=''; this.scroll();
+      this.busy=true; this.err=''; this.suggestions=[]; this.scroll();
       try{
         const r=await fetch('/api/v1/compute/bottega/concierge/chat',{
           method:'POST', headers:{'Content-Type':'application/json',...this.hdr()},
@@ -232,6 +242,7 @@ function concierge(){
         const d=await r.json();
         this.messages.push({role:'concierge',content:d.reply,lang:d.language||'en'});
         if(d.record) this.record=d.record;
+        this.suggestions = d.opening ? this.starters : (d.suggestions||[]);
       }catch(e){ this.err='Network hiccup — try again.'; }
       this.busy=false; this.scroll();
     },

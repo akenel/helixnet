@@ -3,6 +3,7 @@
 # (bio/tagline/skills/categories). ENRICH-SAFELY: /generate never persists; /apply
 # snapshots the existing profile to history first, then writes. Nothing silently clobbered.
 
+import asyncio
 import json
 import logging
 import re
@@ -461,18 +462,23 @@ async def concierge_chat(request: Request,
                             detail="Cleopatra stepped away for a second -- try again in a moment.")
     transcript.append({"role": "concierge", "content": reply})
 
-    # Every turn updates the JSON. Extraction is best-effort -- a bad read never breaks the chat.
-    try:
-        fresh = await cg.extract_record(transcript)
+    # Every turn: update the record (extraction) AND propose next-move chips (suggestions),
+    # concurrently -- both best-effort, neither can break the chat (return_exceptions).
+    fresh, suggestions = await asyncio.gather(
+        cg.extract_record(transcript), cg.suggest_next(transcript, record),
+        return_exceptions=True)
+    if isinstance(fresh, dict):
         record = cg.merge_record(record, fresh)
-    except Exception:  # noqa: BLE001
-        logger.warning("concierge extraction failed for %s", current_user["username"], exc_info=True)
+    else:
+        logger.warning("concierge extraction failed for %s: %s", current_user["username"], fresh)
+    if not isinstance(suggestions, list):
+        suggestions = []
 
     await write_concierge(db, current_user["username"], record, transcript)
     # Voice follows the actual reply language: an explicit pick is authoritative; in Auto we
     # detect what the master actually wrote (the masters' rule -- the words decide).
     reply_lang = language if (language and language.lower() not in ("", "auto")) else cg.detect_lang(reply)
-    return {"reply": reply, "language": reply_lang, "record": record}
+    return {"reply": reply, "language": reply_lang, "record": record, "suggestions": suggestions}
 
 
 async def _build_portrait(db: AsyncSession, username: str) -> str:

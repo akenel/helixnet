@@ -240,6 +240,41 @@ async def concierge_reply(transcript: list[dict], record: dict, language: str = 
     return _strip_think(reply)
 
 
+SUGGEST_SYS = """You are Cleopatra's quick wit. Given what you already know about this guest and the
+conversation so far, propose 2 to 4 SHORT next moves THEY might tap -- written first person, in
+their own voice, each under about 8 words. Make them a useful MIX of:
+- a gap worth filling (something you'd love to know to help them better),
+- a master or House to meet that fits who they are,
+- a "why" that digs into something they said,
+- when they seem ready, seeing how someone like them succeeded, or taking a tour.
+Be PROFILE-AWARE: if you know little about them, lean to gentle getting-to-know-you prompts; once
+you know their goal, lean to masters / rooms / the why / successes. Reply with ONLY valid JSON:
+{"suggestions": ["...", "..."]}. No prose, no markdown."""
+
+
+async def suggest_next(transcript: list[dict], record: dict) -> list:
+    """Cleo's profile-aware next-move chips -- short first-person prompts the guest can tap. Runs
+    alongside extraction (independent). Best-effort: any failure returns []."""
+    user = (f"What you know about this guest:\n{_known_block(record)}\n\n"
+            f"The conversation so far:\n{_transcript_block(transcript)}")
+    try:
+        raw = _strip_think(await _brain_chat(SUGGEST_SYS, user, json_mode=True))
+        a, b = raw.find("{"), raw.rfind("}")
+        if a < 0 or b <= a:
+            return []
+        items = json.loads(raw[a:b + 1]).get("suggestions", [])
+        out, seen = [], set()
+        for s in items:
+            s = str(s).strip().strip('"').lstrip("-• ").strip()
+            if s and s.lower() not in seen:
+                seen.add(s.lower())
+                out.append(s)
+        return out[:4]
+    except Exception:  # noqa: BLE001
+        logger.warning("suggest_next failed", exc_info=True)
+        return []
+
+
 async def extract_record(transcript: list[dict]) -> dict:
     """Second pass: read the whole transcript -> a structured record. JSON-mode + prompt + regex
     (the proven gotcha-proof path: gpt-oss did not honour the format param alone)."""
