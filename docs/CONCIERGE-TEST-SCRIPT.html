@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concierge — Test Script (split-screen)</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#222;background:#f4f5f7;margin:0;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:22px}
+  h1{font-size:23px;color:#C0392B;margin:0 0 4px;border-bottom:3px solid #C0392B;padding-bottom:8px}
+  .sub{color:#667;font-size:14px;margin-bottom:18px}
+  .url{display:block;background:#fff;border:2px solid #C0392B;border-radius:10px;padding:12px 16px;margin:14px 0;font-size:17px;font-weight:700;color:#C0392B;text-align:center;text-decoration:none}
+  .url:hover{background:#fff5f4}
+  h2{font-size:16px;color:#fff;margin:24px 0 0;background:#2C3E50;padding:9px 14px;border-radius:8px 8px 0 0}
+  .test{background:#fff;border:1px solid #dfe3e8;border-top:none;border-radius:0 0 10px 10px;padding:6px 18px 16px;margin-bottom:16px}
+  .who{font-size:13px;color:#667;margin:8px 0 10px;font-style:italic}
+  .say{background:#eef4ff;border-left:4px solid #1565c0;border-radius:0 6px 6px 0;padding:8px 12px;margin:7px 0;font-size:14px}
+  .say b{color:#1565c0;font-size:11px;display:block;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+  .watch{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;margin:10px 0 6px;font-size:13.5px}
+  .watch b{color:#8a6d00}
+  .chk{margin:10px 0 2px;font-size:14px}
+  .chk label{display:block;margin:5px 0;cursor:pointer}
+  .note{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:13px 17px;margin:14px 0;font-size:14px}
+  .win{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:13px 17px;margin:16px 0;font-size:14px}
+  code{background:#eef1f4;padding:1px 5px;border-radius:4px;font-size:13px}
+  .small{font-size:12.5px;color:#778}
+  textarea{width:100%;min-height:46px;border:1px solid #cdd5df;border-radius:7px;padding:7px;font-size:13px;font-family:inherit;margin-top:4px}
+</style></head>
+<body><div class="wrap">
+
+<h1>🎩 The Concierge — Your Test Script</h1>
+<div class="sub">Open this on one side, the Concierge on the other. Run each conversation, watch the right-hand <b>🧠 What Heisenberg has learned</b> panel fill, and tick the boxes. Whatever feels off → write it in the box; I fix it.</div>
+
+<a class="url" href="https://helix.local/compute/concierge">▶  https://helix.local/compute/concierge</a>
+
+<div class="note">
+<b>First (30 seconds):</b>
+<ol style="margin:6px 0 0;padding-left:20px">
+<li>Click the red link. If it asks you to log in → <code>angel</code> / <code>helix_pass</code>.</li>
+<li>Heisenberg greets you first (the "imagination machine" opening). Good — he's in.</li>
+<li>Each test below = a <b>different person</b> you're pretending to be. Paste the lines <b>one at a time</b>, hit Send, read his reply, then send the next.</li>
+<li>Watch the <b>right panel</b> grow as he learns. Watch the <b>🔊 Read aloud</b> button under his replies.</li>
+<li><b>Tip:</b> to start a fresh person, just keep talking — or tell me "reset" and I'll wipe the slate between runs.</li>
+</ol>
+</div>
+
+<!-- ============ TEST 1 ============ -->
+<h2>TEST 1 — Marco, the old master (the easy one)</h2>
+<div class="test">
+<div class="who">A 64-year-old bike mechanic. Body's worn but he wants to give something back. This should fill the panel fast.</div>
+<div class="say"><b>Say</b>hey. i'm 64, been a bike mechanic for 30 years. my back's a bit shot now but i'd love to teach kids how to fix bikes.</div>
+<div class="say"><b>then</b>i got my city cycling-instructor certificate back in 2018. honestly i love being outdoors more than anything.</div>
+<div class="say"><b>then</b>what do you think — is that a crazy idea at my age?</div>
+<div class="watch"><b>Watch for:</b> warm, a little dry humor. He should <b>propose</b> something (a seated / low-impact workshop) and <b>wait</b> — not boss you. Right panel fills: <b>legacy</b> life-stage, Background, Goal, the cert as a chip, and the RIASEC bars (Realistic + Social should be tallest).</div>
+<div class="chk">
+<label><input type="checkbox"> Felt like a real, sharp person — not a form</label>
+<label><input type="checkbox"> He proposed + waited (didn't lecture)</label>
+<label><input type="checkbox"> The right panel filled correctly</label>
+</div>
+<textarea placeholder="Anything to fix on Test 1?"></textarea>
+</div>
+
+<!-- ============ TEST 2 ============ -->
+<h2>TEST 2 — Sofia, the seeker (the deep one)</h2>
+<div class="test">
+<div class="who">She knows she's unhappy but not what she wants. This tests whether he DIGS past the surface and gives <b>options</b>, never a single order.</div>
+<div class="say"><b>Say</b>i want to leave teaching and do something creative, but i don't know what, and i never actually do anything about it.</div>
+<div class="say"><b>then</b>i used to paint and illustrate years ago. i miss making things. but i'm the steady income, so leaving feels selfish.</div>
+<div class="say"><b>then</b>i guess i'm scared i'm not good enough to be more than a hobbyist.</div>
+<div class="watch"><b>Watch for:</b> he should gently get to the REAL thing (the fear), name it kindly, and offer <b>2–4 ways forward</b> — ending with something like "the choice is yours," not "do this."</div>
+<div class="chk">
+<label><input type="checkbox"> He dug past the surface to what's really going on</label>
+<label><input type="checkbox"> He gave options, didn't prescribe one answer</label>
+<label><input type="checkbox"> It felt kind, not preachy</label>
+</div>
+<textarea placeholder="Anything to fix on Test 2?"></textarea>
+</div>
+
+<!-- ============ TEST 3 ============ -->
+<h2>TEST 3 — The 16-year-old (just starting out)</h2>
+<div class="test">
+<div class="who">Tests the <b>life-stage lens</b>: same machine, but a kid launching should get a different tone than Marco winding down.</div>
+<div class="say"><b>Say</b>i'm 16, just finished school. my parents want me to be an accountant but i love building stuff and messing with electronics.</div>
+<div class="say"><b>then</b>no idea what i actually want to do though.</div>
+<div class="watch"><b>Watch for:</b> encouraging, exploratory ("you've got time to try things"). Right panel: life-stage should read <b>launching</b>, and it should NOT demand a birthdate (it works from "16").</div>
+<div class="chk">
+<label><input type="checkbox"> Tone fit a young person starting out</label>
+<label><input type="checkbox"> Life-stage = launching in the panel</label>
+</div>
+<textarea placeholder="Anything to fix on Test 3?"></textarea>
+</div>
+
+<!-- ============ TEST 4 ============ -->
+<h2>TEST 4 — Dave, the walking contradiction (the honesty filter)</h2>
+<div class="test">
+<div class="who">The important one. Dave says things that can't both be true. Heisenberg must hold up a <b>mirror</b> — kind and a little dry — <b>not</b> wag a finger.</div>
+<div class="say"><b>Say</b>i make great money as a software engineer but i'm dead inside staring at a screen all day.</div>
+<div class="say"><b>then</b>i love being outdoors, animals, working with my hands. but i'd never quit, the pay's too good. i'm not changing anything.</div>
+<div class="say"><b>then</b>oh and i want to get in shape. but i eat junk and i'm not gonna exercise. just want the results.</div>
+<div class="watch"><b>Watch for:</b> he should <b>gently name the tension</b> ("you want the harvest but won't plant — which one's the real priority?") with warmth, not judgment. Right panel: <b>Tensions noticed</b> chips should appear.</div>
+<div class="chk">
+<label><input type="checkbox"> He caught the contradictions</label>
+<label><input type="checkbox"> Mirror, not finger — curious, not preachy</label>
+<label><input type="checkbox"> "Tensions noticed" filled in the panel</label>
+</div>
+<textarea placeholder="Anything to fix on Test 4?"></textarea>
+</div>
+
+<!-- ============ TEST 5 ============ -->
+<h2>TEST 5 — In Italian (language + voice)</h2>
+<div class="test">
+<div class="who">Tests that he replies in your language and the <b>🔊 Read aloud</b> speaks it. Up top, click <b>Reply in → IT</b> first.</div>
+<div class="say"><b>1. Click</b>the <b>IT</b> button at the top of the chat (Reply in: EN / IT)</div>
+<div class="say"><b>Say</b>ciao, ho una piccola officina di biciclette e vorrei insegnare ai bambini. da dove comincio?</div>
+<div class="say"><b>then</b>click <b>🔊 Read aloud</b> under his reply</div>
+<div class="watch"><b>Watch for:</b> his whole reply comes back in <b>Italian</b>, and Read-aloud speaks it with an Italian voice (not English reading Italian words). <span class="small">(Voice quality depends on your browser's installed voices — we're checking the language is right, not the accent.)</span></div>
+<div class="chk">
+<label><input type="checkbox"> Replied fully in Italian</label>
+<label><input type="checkbox"> Read aloud spoke Italian</label>
+</div>
+<textarea placeholder="Anything to fix on Test 5?"></textarea>
+</div>
+
+<!-- ============ TEST 6 ============ -->
+<h2>TEST 6 — You, for real (the one that matters)</h2>
+<div class="test">
+<div class="who">Forget the personas. Just talk to him as yourself for a few turns. Does it feel like a guide who's actually listening?</div>
+<div class="watch"><b>The only question:</b> would you keep talking to him? Did the panel end up describing the real you?</div>
+<div class="chk">
+<label><input type="checkbox"> I'd keep talking to him</label>
+<label><input type="checkbox"> The panel got me right</label>
+</div>
+<textarea placeholder="What would make him better?"></textarea>
+</div>
+
+<div class="win">
+<b>When you're done:</b> tell me what's <b>good</b> and what needs a <b>fix</b>. Good → I push to staging, then prod. Fix → I fix it and we go again. Easy peasy.
+<br><br>
+<span class="small">Known already, no need to report: turn-1 can be a little sparse (he asks before he fills) — the panel catches up by turn 2–3. That's by design: emptier → he guides harder; fuller → the masters do more.</span>
+</div>
+
+<div class="small" style="text-align:center;margin-top:18px">
+La Piazza · Concierge / #74 · test on <code>helix.local</code> → staging → prod · "we just need wiring." 🐺
+</div>
+
+</div></body></html>

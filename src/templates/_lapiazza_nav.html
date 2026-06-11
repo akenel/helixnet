@@ -35,6 +35,7 @@
     <div class="lp-links">
       <a href="https://lapiazza.app" id="lp-square" class="lp-link">🏪 <span class="lp-hide-sm">Square</span></a>
       <a href="/compute/bottega" class="lp-link" data-nav="workshop">🔧 <span class="lp-hide-sm">Workshop</span></a>
+      <a href="/compute/concierge" class="lp-link" data-nav="concierge">🎩 <span class="lp-hide-sm">Concierge</span></a>
       <a href="/compute/legends" class="lp-link" data-nav="legends">🎭 <span class="lp-hide-sm">Legends</span></a>
       <a href="/compute" class="lp-link" data-nav="exchange">⚡ <span class="lp-hide-sm">Exchange</span></a>
       <a href="/compute/today" class="lp-link" data-nav="today">📋 <span class="lp-hide-sm">Today</span></a>
@@ -46,7 +47,7 @@
     </div>
   </div>
 </nav>
-<script>(function(){var p=location.pathname;document.querySelectorAll('.lp-nav [data-nav]').forEach(function(a){var d=a.getAttribute('data-nav');var on=(d==='workshop'&&p.indexOf('/compute/bottega')===0)||(d==='legends'&&p.indexOf('/compute/legends')===0)||(d==='me'&&p.indexOf('/compute/me')===0)||(d==='exchange'&&(p==='/compute'||p==='/compute/dashboard'))||(d==='faq'&&(p.indexOf('/compute/faq')===0||p.indexOf('/compute/help')===0))||(d==='map'&&p.indexOf('/sitemap')===0)||(d==='today'&&p.indexOf('/compute/today')===0);if(on)a.classList.add('active');});})();</script>
+<script>(function(){var p=location.pathname;document.querySelectorAll('.lp-nav [data-nav]').forEach(function(a){var d=a.getAttribute('data-nav');var on=(d==='workshop'&&p.indexOf('/compute/bottega')===0)||(d==='concierge'&&p.indexOf('/compute/concierge')===0)||(d==='legends'&&p.indexOf('/compute/legends')===0)||(d==='me'&&p.indexOf('/compute/me')===0)||(d==='exchange'&&(p==='/compute'||p==='/compute/dashboard'))||(d==='faq'&&(p.indexOf('/compute/faq')===0||p.indexOf('/compute/help')===0))||(d==='map'&&p.indexOf('/sitemap')===0)||(d==='today'&&p.indexOf('/compute/today')===0);if(on)a.classList.add('active');});})();</script>
 <script>(function(){
   // env-aware cross-link: on a *-staging host, point Square at staging.lapiazza.app (not prod)
   var h=location.hostname, sq=document.getElementById('lp-square');
