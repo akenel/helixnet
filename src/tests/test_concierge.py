@@ -249,6 +249,25 @@ async def test_audit_motivation_drops_request_keeps_self_disclosure():
 
 
 @pytest.mark.asyncio
+async def test_audit_motivation_scrubs_fiction_from_list_fields():
+    # #82: the fiction leaked into affinities/aptitudes even when scalars were clean. The auditor
+    # names the fiction term; we filter the lists by it, keeping the real interests.
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        return '{"why_they_came":"keep","fiction_terms":["Innovation Lab"]}'
+
+    rec = cg.blank_record()
+    rec["why_they_came"] = "wants to teach mechanics to youth"
+    rec["affinities"] = ["innovation lab", "hands-on workshops", "post-retirement planning"]
+    rec["aptitudes"] = ["Innovation Lab tours", "repair", "teaching"]
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg._audit_motivation([{"role": "member", "content": "..."}], rec)
+    assert out["why_they_came"] == "wants to teach mechanics to youth"   # real scalar kept
+    assert "innovation lab" not in [a.lower() for a in out["affinities"]]
+    assert "hands-on workshops" in out["affinities"] and "post-retirement planning" in out["affinities"]
+    assert out["aptitudes"] == ["repair", "teaching"]                    # fiction list-item dropped, real kept
+
+
+@pytest.mark.asyncio
 async def test_audit_motivation_skips_brain_when_nothing_to_audit():
     # a plain chat turn with no motivation captured must NOT cost a brain call
     called = {"n": 0}
