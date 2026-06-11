@@ -470,10 +470,15 @@ async def concierge_chat(request: Request,
                             detail="Cleopatra stepped away for a second -- try again in a moment.")
     transcript.append({"role": "concierge", "content": reply})
 
+    # Voice AND the next-move chips follow the actual reply language: an explicit pick is
+    # authoritative; in Auto we detect what the master actually wrote (the masters' rule).
+    reply_lang = language if (language and language.lower() not in ("", "auto")) else cg.detect_lang(reply)
+
     # Every turn: update the record (extraction) AND propose next-move chips (suggestions),
-    # concurrently -- both best-effort, neither can break the chat (return_exceptions).
+    # concurrently -- both best-effort, neither can break the chat (return_exceptions). Chips
+    # are generated in reply_lang so they don't come back English under an Italian conversation.
     fresh, suggestions = await asyncio.gather(
-        cg.extract_record(transcript), cg.suggest_next(transcript, record),
+        cg.extract_record(transcript), cg.suggest_next(transcript, record, reply_lang),
         return_exceptions=True)
     if isinstance(fresh, dict):
         record = cg.merge_record(record, fresh)
@@ -481,11 +486,12 @@ async def concierge_chat(request: Request,
         logger.warning("concierge extraction failed for %s: %s", current_user["username"], fresh)
     if not isinstance(suggestions, list):
         suggestions = []
+    # when a guest-planted fiction is live, the model's chips can't be trusted (they parrot it) --
+    # serve safe, grounded fallback chips instead of reinforcing the invention.
+    if cg.fiction_flagged(record):
+        suggestions = cg.safe_chips(reply_lang)
 
     await write_concierge(db, current_user["username"], record, transcript)
-    # Voice follows the actual reply language: an explicit pick is authoritative; in Auto we
-    # detect what the master actually wrote (the masters' rule -- the words decide).
-    reply_lang = language if (language and language.lower() not in ("", "auto")) else cg.detect_lang(reply)
     return {"reply": reply, "language": reply_lang, "record": record, "suggestions": suggestions}
 
 

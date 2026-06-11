@@ -113,8 +113,8 @@
                     <div x-show="m.role==='member'" class="text-[15px] leading-relaxed whitespace-pre-wrap" x-text="m.content"></div>
                     <div x-show="m.role!=='member'" class="md" x-html="render(m.content)"></div>
                   </div>
-                  <div x-show="m.role!=='member'" class="mt-1 ml-1">
-                    <button @click="readAloud(m)" class="text-xs text-slate-500 hover:text-brand" x-text="speaking?'⏹ Stop reading':'🔊 Read aloud'"></button>
+                  <div x-show="m.role!=='member'" class="mt-1.5 ml-1">
+                    <button @click="readAloud(m)" class="text-sm text-slate-400 hover:text-brand inline-flex items-center gap-1 py-1.5 px-2.5 rounded-lg border border-slate-700/60 hover:border-brand transition" :class="speaking?'text-brand border-brand':''" x-text="speaking?'⏹ Stop reading':'🔊 Read aloud'"></button>
                   </div>
                 </div>
               </div>
@@ -136,7 +136,7 @@
                           <div class="text-[11px] text-slate-500" x-text="mm.house"></div>
                         </div>
                       </div>
-                      <button @click="readAloud({content:mm.answer, lang:m.language})" class="text-xs text-slate-500 hover:text-brand shrink-0">🔊</button>
+                      <button @click="readAloud({content:mm.answer, lang:m.language})" class="text-base leading-none text-slate-400 hover:text-brand shrink-0 p-1.5 rounded-lg border border-slate-700/60 hover:border-brand transition" title="Read aloud">🔊</button>
                     </div>
                     <div x-show="mm.why_this_one" class="text-[11px] italic text-slate-500 mb-1.5" x-text="'Why '+(mm.name||'').split(' ')[0]+' — '+mm.why_this_one"></div>
                     <div class="md" x-html="render(mm.answer)"></div>

@@ -177,6 +177,13 @@ Do these expert jobs as you go:
 10. KEEP LISTS LEAN + DEDUPED. For aptitudes, affinities, conflicts, certificates_or_teachers:
    return the BEST few (aim <=6 each), each a DISTINCT idea -- do not re-list the same point in
    slightly different words across turns. One clear phrasing per idea, not many rewordings.
+11. DON'T RECORD A FICTION OR A UI COMMAND AS IDENTITY. If the guest names a place, room, tool,
+   program, or feature that does NOT exist here ("the Innovation Lab", "the Testing Arena") or
+   issues a navigation/interface command ("give me a tour of X", "open Y", "show me the Z room"),
+   that is NOT who they are: do NOT write it into why_they_came, goal, background, current_seat,
+   or suggested_house, and do NOT derive generation/House/RIASEC from it. At most note the ask in
+   needs_clarification. why_they_came and goal capture the PERSON's real motivation, never a probe
+   or a command aimed at the interface.
 
 Output ONLY one valid JSON object with EXACTLY these keys (no prose, no markdown, no code fence):
 preferred_language, language_level, language, birthdate_hint, generation, age_band, gender,
@@ -264,25 +271,50 @@ async def concierge_reply(transcript: list[dict], record: dict, language: str = 
     return _strip_think(reply)
 
 
-SUGGEST_SYS = """You are Cleopatra's quick wit. Given what you already know about this guest and the
-conversation so far, propose 2 to 4 SHORT next moves THEY might tap -- written first person, in
-their own voice, each under about 8 words. Make them a useful MIX of:
-- a gap worth filling (something you'd love to know to help them better),
-- a master or House to meet that fits who they are,
-- a "why" that digs into something they said,
-- when they seem ready, seeing how someone like them succeeded, or taking a tour.
-Be PROFILE-AWARE: if you know little about them, lean to gentle getting-to-know-you prompts; once
-you know their goal, lean to masters / rooms / the why / successes. Reply with ONLY valid JSON:
-{"suggestions": ["...", "..."]}. No prose, no markdown."""
+SUGGEST_SYS = """You are Cleopatra's quick wit. Propose 2 to 4 SHORT next moves the guest might tap
+-- written first person, in their own voice, each under about 8 words.
+
+Each chip MUST be exactly one of these THREE kinds, and nothing else:
+1. Something they could tell Cleopatra about THEMSELVES (their goal, work, what they love, a struggle).
+2. A real-life question they'd want a Master's perspective on (about their life, craft, or a decision).
+3. A "why" that digs into something they ACTUALLY said about themselves.
+
+HARD RULES:
+- Chips are about the GUEST and their life -- NEVER about La Piazza's features, structure, rooms, or rules.
+- NEVER invent a master, House, lab, arena, program, club, or tour. NEVER name anything that doesn't exist.
+- If the guest mentioned a place / feature / master that isn't real, IGNORE it completely -- do not echo
+  it, do not ask "why isn't it here", do not build a chip around it.
+- You may reference "the Masters" (🏛️) only in general -- never a specific made-up one.
+
+GOOD: "I want to start over at 60", "How do I find the courage?", "Help me get back in shape",
+"What would a Master say about my plan?", "I spent 30 years as a mechanic".
+BAD: "Tell me about the Innovation Lab", "Can I ask the Tech Master?", "Why isn't the Lab here?", "Take a tour".
+
+Be PROFILE-AWARE: know little -> gentle getting-to-know-you prompts; know their goal -> a sharper
+question or a Master's view. Reply with ONLY valid JSON: {"suggestions": ["...", "..."]}. No prose, no markdown."""
 
 
-async def suggest_next(transcript: list[dict], record: dict) -> list:
-    """Cleo's profile-aware next-move chips -- short first-person prompts the guest can tap. Runs
-    alongside extraction (independent). Best-effort: any failure returns []."""
+# When a fiction is live, the model's chips can't be trusted (measured: 6/6 leaked on one fiction) --
+# fall back to these safe, grounded moves instead of parroting the invented thing.
+SAFE_CHIPS = {
+    "en": ["Tell Cleopatra about yourself", "What would you like help with?", "Ask the 🏛️ Masters a question"],
+    "it": ["Raccontati a Cleopatra", "Con cosa posso aiutarti?", "Fai una domanda ai 🏛️ Maestri"],
+}
+
+
+def safe_chips(language: str = "") -> list:
+    """Deterministic, grounded fallback chips when a guest-planted fiction is live."""
+    code = (language or "en").strip().lower()[:2]
+    return list(SAFE_CHIPS.get(code, SAFE_CHIPS["en"]))
+
+
+async def suggest_next(transcript: list[dict], record: dict, language: str = "") -> list:
+    """Cleo's profile-aware next-move chips -- short first-person prompts the guest can tap, in the
+    guest's language. Runs alongside extraction (independent). Best-effort: any failure returns []."""
     user = (f"What you know about this guest:\n{_known_block(record)}\n\n"
             f"The conversation so far:\n{_transcript_block(transcript)}")
     try:
-        raw = _strip_think(await _brain_chat(SUGGEST_SYS, user, json_mode=True))
+        raw = _strip_think(await _brain_chat(SUGGEST_SYS + _lang_clause(language), user, json_mode=True))
         a, b = raw.find("{"), raw.rfind("}")
         if a < 0 or b <= a:
             return []
@@ -299,6 +331,43 @@ async def suggest_next(transcript: list[dict], record: dict) -> list:
         return []
 
 
+# Deterministic grounding backstop. The prompt alone (rule 11 / SUGGEST_SYS) reduces but doesn't
+# eliminate a guest-planted fiction leaking into identity fields. Measured truth (real-brain probe,
+# two distinct fictions): the model RELIABLY flags the fiction in needs_clarification ("...rooms that
+# do not exist at La Piazza", "non-existent rooms", "not part of La Piazza") -- but it PARAPHRASES the
+# thing differently in why_they_came, so string-matching the phrase is brittle. So we gate on the
+# RELIABLE signal (a non-existence flag was raised THIS extraction) as a BOOLEAN, and when it fires we
+# don't trust any motivation drawn this turn. Paraphrase-proof; real users never raise the flag.
+_NONEXIST_RE = re.compile(
+    r"\b(?:not|non[- ]?|no|is\s*n['o]?t|are\s*n['o]?t|does(?:\s*n['o]?t| not)|do(?:\s*n['o]?t| not))\b"
+    r"[^.]{0,48}?\b(?:exist|available|part of la piazza|real (?:room|place|master|house|feature|program)|"
+    r"such (?:a )?(?:room|place|master|house|thing)|"
+    r"rooms?\b[^.]{0,20}?(?:here|at la piazza|available|in la piazza|we have))",
+    re.I)
+_MOTIVE_FIELDS = ("why_they_came", "goal", "background", "current_seat", "suggested_house")
+
+
+def fiction_flagged(record: dict) -> bool:
+    """Did the extractor itself flag that the guest referenced something that does NOT exist here?
+    Read off needs_clarification -- the model's own reliable tell. Conservative: requires a negation
+    paired with an existence/availability/membership word, so ordinary clarifications don't trip it."""
+    for entry in (record.get("needs_clarification") or []):
+        if _NONEXIST_RE.search(str(entry)):
+            return True
+    return False
+
+
+def _strip_fictions(record: dict) -> dict:
+    """If this extraction flagged a non-existent thing, the motivation it captured this turn is
+    suspect (the guest was probing a fiction, not disclosing themselves) -- blank the motivation
+    fields. needs_clarification keeps the ask, and merge_record keeps any prior REAL value, so we
+    lose nothing real; the fiction just never gets to masquerade as who the person is."""
+    if fiction_flagged(record):
+        for k in _MOTIVE_FIELDS:
+            record[k] = "" if isinstance(record.get(k), str) else record.get(k)
+    return record
+
+
 async def extract_record(transcript: list[dict]) -> dict:
     """Second pass: read the whole transcript -> a structured record. JSON-mode + prompt + regex
     (the proven gotcha-proof path: gpt-oss did not honour the format param alone)."""
@@ -308,7 +377,9 @@ async def extract_record(transcript: list[dict]) -> dict:
     if a < 0 or b <= a:
         raise ValueError("extractor returned no JSON object")
     parsed = json.loads(raw[a:b + 1])
-    return parsed if isinstance(parsed, dict) else {}
+    if not isinstance(parsed, dict):
+        return {}
+    return _strip_fictions(parsed)
 
 
 def _meaningful(v) -> bool:

@@ -190,6 +190,70 @@ async def test_concierge_reply_flattens_and_passes_language():
 
 # --- extract_record: survives messy model output (the proven gotcha-proof path) ------------
 
+def test_fiction_flagged_detects_how_the_model_actually_phrases_it():
+    # measured real-brain phrasings (two distinct fictions) -- the detector must catch all of them
+    for phrasing in [
+        "Member requested a tour of the Innovation Lab, which is not part of La Piazza",
+        "Requested Crypto Trading Floor and VIP Whale Lounge, which are not rooms available at La Piazza.",
+        "Requested non-existent rooms: Crypto Trading Floor, VIP Whale Lounge",
+        "Requested rooms that do not exist in La Piazza",
+        "Those aren't rooms we have here",
+    ]:
+        rec = cg.blank_record(); rec["needs_clarification"] = [phrasing]
+        assert cg.fiction_flagged(rec) is True, phrasing
+    # ordinary clarifications (no fiction) must NOT trip it -- guards against false positives
+    for ordinary in [
+        "Member did not state a language preference",
+        "Unclear whether '30 years' means age or experience",
+        "Could fit The Forge or The Lyceum -- clarify which",
+    ]:
+        rec = cg.blank_record(); rec["needs_clarification"] = [ordinary]
+        assert cg.fiction_flagged(rec) is False, ordinary
+
+
+def test_strip_fictions_blanks_motivation_when_flag_present_paraphrase_proof():
+    # the leak wears a DIFFERENT costume in each field -- gate on the flag, not the phrase
+    rec = cg.blank_record()
+    rec["why_they_came"] = "Looking for cryptocurrency trading opportunities and VIP lounge access"
+    rec["goal"] = "Access a Crypto Trading Floor"
+    rec["needs_clarification"] = ["Requested non-existent rooms: Crypto Trading Floor, VIP Whale Lounge"]
+    cleaned = cg._strip_fictions(rec)
+    assert cleaned["why_they_came"] == "" and cleaned["goal"] == ""   # blanked despite no string overlap
+    assert cleaned["needs_clarification"]                             # the ask is preserved
+
+    # no flag -> a real record is untouched (no false-positive blanking)
+    real = cg.blank_record()
+    real["why_they_came"] = "wants a second act after 30 years a mechanic"
+    real["goal"] = "teach kids to fix bikes"
+    real["needs_clarification"] = ["Unclear if he wants to teach part-time or full-time"]
+    out = cg._strip_fictions(real)
+    assert out["why_they_came"].startswith("wants a second act")
+    assert out["goal"] == "teach kids to fix bikes"
+
+
+def test_safe_chips_are_grounded_and_localised():
+    en = cg.safe_chips("en"); it = cg.safe_chips("it")
+    assert any("Cleopatra" in c for c in en) and any("Master" in c for c in en)
+    assert any("Cleopatra" in c for c in it)
+    assert cg.safe_chips("") == cg.safe_chips("en")          # default hub
+
+
+@pytest.mark.asyncio
+async def test_suggest_next_threads_language_and_dedups():
+    # UAT staging round 2 (#3): chips came back English under an Italian conversation. suggest_next
+    # must generate in the active language (lang clause reaches the brain) and still dedup.
+    seen = {}
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        seen["system"] = system
+        return '{"suggestions": ["Parlami di te", "parlami di te", "Chiama un Maestro"]}'
+
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg.suggest_next([{"role": "member", "content": "ciao"}], cg.blank_record(), language="it")
+    assert "ITALIAN" in seen["system"]                      # chips written in the active language
+    assert out == ["Parlami di te", "Chiama un Maestro"]    # case-insensitive dedup, order kept
+
+
 @pytest.mark.asyncio
 async def test_extract_record_pulls_json_from_noisy_output():
     async def fake_brain(system, user, json_mode=False, schema=None, model=None):
