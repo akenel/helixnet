@@ -14,7 +14,22 @@
   .lp-cta:hover{background:#8B0000}
   .lp-who{padding:6px 8px;color:#cbd5e1;font-size:13px;font-weight:700;white-space:nowrap}
   #lp-logout{color:#94a3b8}
-  @media(max-width:560px){.lp-hide-sm{display:none}}
+  .lp-burger{display:none;background:none;border:0;color:#f1f5f9;font-size:22px;line-height:1;cursor:pointer;padding:4px 10px}
+  @media(max-width:560px){
+    /* Phones: the inline emoji row is too cramped and label-less (you couldn't tell which
+       icon was the Bottega). Collapse the rooms into a tapped ☰ drawer WITH labels instead. */
+    .lp-hide-sm{display:none}
+    .lp-burger{display:block}
+    .lp-links{position:absolute;top:54px;left:0;right:0;z-index:60;flex-direction:column;align-items:stretch;
+      gap:2px;padding:8px 12px 12px;background:rgba(6,9,16,0.98);border-bottom:1px solid rgba(30,41,59,0.7);
+      box-shadow:0 14px 28px rgba(0,0,0,.45);display:none}
+    .lp-links.open{display:flex}
+    .lp-links .lp-link{padding:12px 12px;font-size:15px;border-radius:8px}
+    .lp-links.open .lp-link .lp-hide-sm{display:inline}   /* show the labels inside the drawer */
+    .lp-links.open a.lp-link.lp-hide-sm{display:flex}       /* and the FAQ link itself */
+    .lp-cta{margin-left:0;margin-top:8px;text-align:center;padding:12px}
+    .lp-who{padding:12px}
+  }
   .lp-webview{display:none;background:#7c2d12;color:#fff;font:600 13px/1.4 Inter,system-ui,sans-serif;padding:10px 30px 10px 14px;text-align:center;position:relative;z-index:65}
   .lp-webview b{color:#fdba74}
   .lp-webview .x{position:absolute;right:10px;top:8px;color:#fdba74;cursor:pointer;font-weight:700}
@@ -42,7 +57,8 @@
 <nav class="lp-nav">
   <div class="lp-nav-in">
     <a href="/" class="lp-logo">La <b>Piazza</b></a>
-    <div class="lp-links">
+    <button class="lp-burger" id="lp-burger" aria-label="Open menu" aria-expanded="false">☰</button>
+    <div class="lp-links" id="lp-links">
       <a href="https://lapiazza.app" id="lp-square" class="lp-link">🏪 <span class="lp-hide-sm">Square</span></a>
       <a href="/compute/bottega" class="lp-link" data-nav="workshop">🔧 <span class="lp-hide-sm">Workshop</span></a>
       <a href="/compute/concierge" class="lp-link" data-nav="concierge">🎩 <span class="lp-hide-sm">Concierge</span></a>
@@ -57,6 +73,17 @@
     </div>
   </div>
 </nav>
+<script>(function(){
+  // Mobile menu: the ☰ toggles the labeled drawer. Reuses the SAME anchors as desktop
+  // (so auth-state + active-link logic below applies to both); only the layout differs.
+  var b=document.getElementById('lp-burger'),l=document.getElementById('lp-links');
+  if(b&&l){
+    b.addEventListener('click',function(){var o=l.classList.toggle('open');
+      b.setAttribute('aria-expanded',o?'true':'false'); b.textContent=o?'✕':'☰';});
+    l.addEventListener('click',function(e){ if(e.target.closest('a')){   // tapping a room closes it
+      l.classList.remove('open'); b.setAttribute('aria-expanded','false'); b.textContent='☰'; }});
+  }
+})();</script>
 <script>(function(){var p=location.pathname;document.querySelectorAll('.lp-nav [data-nav]').forEach(function(a){var d=a.getAttribute('data-nav');var on=(d==='workshop'&&p.indexOf('/compute/bottega')===0)||(d==='concierge'&&p.indexOf('/compute/concierge')===0)||(d==='legends'&&p.indexOf('/compute/legends')===0)||(d==='me'&&p.indexOf('/compute/me')===0)||(d==='exchange'&&(p==='/compute'||p==='/compute/dashboard'))||(d==='faq'&&(p.indexOf('/compute/faq')===0||p.indexOf('/compute/help')===0))||(d==='map'&&p.indexOf('/sitemap')===0)||(d==='today'&&p.indexOf('/compute/today')===0);if(on)a.classList.add('active');});})();</script>
 <script>(function(){
   // env-aware cross-link: on a *-staging host, point Square at staging.lapiazza.app (not prod)
