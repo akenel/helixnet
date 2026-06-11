@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="The Concierge · La Piazza"><meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="{{ request.headers.get('x-forwarded-proto','https') }}://{{ request.headers.get('x-forwarded-host') or request.url.netloc }}/og/lapiazza-og-v3.png">
+<title>The Concierge · La Piazza</title>
+<meta name="description" content="Heisenberg, your personal guide. He learns who you are, so every master in the Bottega helps the real you.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme:{ extend:{
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    colors:{ brand:'#C0392B', branddark:'#8B0000' } } } };
+</script>
+<style>
+  body{ background:radial-gradient(1100px 600px at 50% -12%, #1f2a44, transparent), #060910; }
+  .card{ background:rgba(15,23,42,.65); border:1px solid rgba(30,41,59,.9); }
+  .av{ background:linear-gradient(135deg,#C0392B,#8B0000); }
+  .grad-rule{ background:linear-gradient(90deg,#8B0000,#C0392B,transparent); }
+  .md{ font-size:15px; line-height:1.6; color:#e2e8f0; }
+  .md p{ margin:.35rem 0; } .md ul,.md ol{ margin:.4rem 0 .4rem 1.1rem; list-style:disc; } .md li{margin:.15rem 0}
+  .md strong{ color:#f8fafc; }
+  .bubble-me{ background:linear-gradient(135deg,#C0392B,#8B0000); }
+  .bubble-h{ background:rgba(15,23,42,.92); border:1px solid rgba(51,65,85,.9); }
+  .chip{ background:rgba(192,57,43,.14); border:1px solid rgba(192,57,43,.4); color:#fca5a5; }
+  .bar{ height:6px; border-radius:6px; background:#1e293b; overflow:hidden; }
+  .bar > span{ display:block; height:100%; background:linear-gradient(90deg,#8B0000,#C0392B); }
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .dot{ animation:blink 1.4s infinite both; } .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+</style>
+</head>
+<body class="font-sans text-slate-200 min-h-screen antialiased">
+{% include "_lapiazza_nav.html" %}
+
+<div class="max-w-5xl mx-auto px-4 sm:px-5 py-8" x-data="concierge()" x-init="init()">
+
+  <!-- header -->
+  <div class="text-center mb-6">
+    <div class="text-4xl mb-2">🎩</div>
+    <h1 class="text-2xl sm:text-3xl font-black text-white">Heisenberg <span class="text-slate-500 font-semibold text-lg">· your Concierge</span></h1>
+    <p class="text-slate-400 text-sm mt-1">Your guide at the front door. The more he knows you, the more every master can help the <em>real</em> you.</p>
+    <div class="h-[3px] w-32 mx-auto mt-3 grad-rule rounded"></div>
+  </div>
+
+  <!-- not logged in -->
+  <div x-show="!token" class="card rounded-2xl p-10 text-center max-w-md mx-auto">
+    <div class="text-4xl mb-3">🐺</div>
+    <p class="text-slate-300 mb-5">Log in to meet your Concierge.</p>
+    <button @click="login()" class="px-5 py-2.5 rounded-lg font-bold text-sm bg-brand hover:bg-branddark text-white">Log in</button>
+  </div>
+
+  <template x-if="token">
+  <div class="grid md:grid-cols-3 gap-5">
+
+    <!-- chat column -->
+    <div class="md:col-span-2 card rounded-2xl flex flex-col" style="height:72vh">
+      <!-- language picker -->
+      <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800">
+        <div class="flex items-center gap-2 text-sm text-slate-400"><span class="w-2 h-2 rounded-full bg-green-500"></span> Heisenberg is in</div>
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-slate-500">Reply in</span>
+          <template x-for="opt in langs" :key="opt.code">
+            <button @click="lang=opt.code"
+              :class="lang===opt.code ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+              class="px-2.5 py-1 rounded-md font-semibold" x-text="opt.label"></button>
+          </template>
+        </div>
+      </div>
+
+      <!-- thread -->
+      <div id="thread" class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <template x-for="(m,i) in messages" :key="i">
+          <div :class="m.role==='member' ? 'justify-end' : 'justify-start'" class="flex">
+            <div class="max-w-[85%]">
+              <div :class="m.role==='member' ? 'bubble-me text-white' : 'bubble-h'"
+                   class="rounded-2xl px-4 py-2.5">
+                <div x-show="m.role==='member'" class="text-[15px] leading-relaxed" x-text="m.content"></div>
+                <div x-show="m.role!=='member'" class="md" x-html="render(m.content)"></div>
+              </div>
+              <div x-show="m.role!=='member'" class="mt-1 ml-1">
+                <button @click="readAloud(m.content)" class="text-xs text-slate-500 hover:text-brand">🔊 Read aloud</button>
+              </div>
+            </div>
+          </div>
+        </template>
+        <!-- typing -->
+        <div x-show="busy" class="flex justify-start">
+          <div class="bubble-h rounded-2xl px-4 py-3">
+            <span class="dot inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            <span class="dot inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            <span class="dot inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- composer -->
+      <div class="border-t border-slate-800 p-3">
+        <div class="flex items-end gap-2">
+          <textarea x-model="draft" @keydown.enter.prevent="send()" rows="1"
+            placeholder="Tell Heisenberg who you are..."
+            class="flex-1 resize-none rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand"></textarea>
+          <button @click="send()" :disabled="busy||!draft.trim()"
+            class="px-4 py-2.5 rounded-xl font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-40">Send</button>
+        </div>
+        <p x-show="err" x-text="err" class="text-xs text-red-400 mt-1.5"></p>
+      </div>
+    </div>
+
+    <!-- record column: what Heisenberg has learned (transparency / it's YOUR memory) -->
+    <div class="card rounded-2xl p-4 overflow-y-auto" style="height:72vh">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-lg">🧠</span>
+        <h2 class="font-bold text-white text-sm">What Heisenberg has learned</h2>
+      </div>
+      <p class="text-[11px] text-slate-500 mb-4">This is your memory — yours to see. Every master reads it.</p>
+
+      <div x-show="empty()" class="text-slate-500 text-xs italic">Nothing yet. Say hello and tell him a little about you.</div>
+
+      <div class="space-y-3 text-sm">
+        <template x-for="f in fields" :key="f.k">
+          <div x-show="has(f.k)">
+            <div class="text-[11px] uppercase tracking-wide text-slate-500" x-text="f.label"></div>
+            <div class="text-slate-200" x-text="show(f.k)"></div>
+          </div>
+        </template>
+
+        <!-- lists -->
+        <template x-for="lf in listFields" :key="lf.k">
+          <div x-show="(record[lf.k]||[]).length">
+            <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1" x-text="lf.label"></div>
+            <div class="flex flex-wrap gap-1.5">
+              <template x-for="v in (record[lf.k]||[])" :key="v">
+                <span class="chip text-[11px] px-2 py-0.5 rounded-full" x-text="v"></span>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- RIASEC mini-bars -->
+        <div x-show="hasRiasec()">
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1.5">Interests (RIASEC)</div>
+          <template x-for="t in riasecRows()" :key="t.k">
+            <div class="mb-1.5" x-show="t.v>0">
+              <div class="flex justify-between text-[11px] text-slate-400"><span x-text="t.label"></span><span x-text="t.v"></span></div>
+              <div class="bar"><span :style="'width:'+t.v+'%'"></span></div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </template>
+</div>
+
+<script>
+function concierge(){
+  return {
+    token:null, lang:'en', langs:[{code:'en',label:'EN'},{code:'it',label:'IT'}],
+    messages:[], draft:'', busy:false, err:'',
+    record:{},
+    fields:[
+      {k:'goal',label:'Goal'}, {k:'why_they_came',label:'Why they came'},
+      {k:'background',label:'Background'}, {k:'current_seat',label:'Today'},
+      {k:'fit_insight',label:'Where they\'d thrive'}, {k:'health_energy',label:'Body / energy'},
+      {k:'generation',label:'Generation'}, {k:'life_stage',label:'Life stage'},
+      {k:'top_holland_code',label:'Holland code'}, {k:'suggested_house',label:'House'},
+    ],
+    listFields:[
+      {k:'aptitudes',label:'What lights them up'}, {k:'certificates_or_teachers',label:'Certs / teachers'},
+      {k:'affinities',label:'Affinities'}, {k:'conflicts',label:'Tensions noticed'},
+    ],
+    init(){
+      if(location.hash.indexOf('token=')>-1){
+        try{ this.token=new URLSearchParams(location.hash.slice(1)).get('token');
+          localStorage.setItem('compute_token',this.token); history.replaceState(null,'',location.pathname);}catch(e){}
+      }
+      if(!this.token){ try{ this.token=localStorage.getItem('compute_token'); }catch(e){} }
+      // default reply language from the locale cookie / browser
+      try{ const c=(document.cookie.match(/bh_lang=([a-z]{2})/)||[])[1]; const b=(navigator.language||'en').slice(0,2);
+        this.lang=(c==='it'||(!c&&b==='it'))?'it':'en'; }catch(e){}
+      if(this.token){ this.load(); }
+    },
+    hdr(){ return {'Authorization':'Bearer '+this.token}; },
+    render(t){ const h=window.marked?marked.parse(t||''):(t||''); return window.DOMPurify?DOMPurify.sanitize(h):h; },
+    scroll(){ this.$nextTick(()=>{ const el=document.getElementById('thread'); if(el) el.scrollTop=el.scrollHeight; }); },
+    async load(){
+      try{
+        const r=await fetch('/api/v1/compute/bottega/concierge/record',{headers:this.hdr()});
+        if(r.status===401||r.status===403){ this.token=null; return; }
+        const d=await r.json();
+        this.record=d.record||{};
+        this.messages=(d.transcript||[]).map(m=>({role:m.role==='member'?'member':'concierge',content:m.content}));
+        if(!this.messages.length){ await this.send(true); }  // fire the opening
+        else this.scroll();
+      }catch(e){ this.err='Could not reach the Concierge.'; }
+    },
+    async send(opening){
+      const msg = opening ? '' : this.draft.trim();
+      if(!opening && !msg) return;
+      if(msg){ this.messages.push({role:'member',content:msg}); this.draft=''; }
+      this.busy=true; this.err=''; this.scroll();
+      try{
+        const r=await fetch('/api/v1/compute/bottega/concierge/chat',{
+          method:'POST', headers:{'Content-Type':'application/json',...this.hdr()},
+          body:JSON.stringify({message:msg, language:this.lang})});
+        if(!r.ok){ this.err = r.status===503 ? 'Heisenberg stepped away — try again in a moment.' : ('Error '+r.status); this.busy=false; return; }
+        const d=await r.json();
+        this.messages.push({role:'concierge',content:d.reply});
+        if(d.record) this.record=d.record;
+      }catch(e){ this.err='Network hiccup — try again.'; }
+      this.busy=false; this.scroll();
+    },
+    // record panel helpers
+    DEF:{generation:'unknown',age_band:'unknown',gender:'unknown',life_stage:'unknown'},
+    has(k){ const v=this.record[k]; return v && v!=='unknown' && (''+v).trim()!==''; },
+    show(k){ return this.record[k]; },
+    empty(){ return this.fields.every(f=>!this.has(f.k)) && this.listFields.every(lf=>!(this.record[lf.k]||[]).length) && !this.hasRiasec(); },
+    hasRiasec(){ const r=this.record.riasec||{}; return Object.values(r).some(v=>v>0); },
+    riasecRows(){ const r=this.record.riasec||{}; const L={realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
+      return Object.keys(L).map(k=>({k,label:L[k],v:r[k]||0})).sort((a,b)=>b.v-a.v); },
+    readAloud(text){
+      try{ const s=window.speechSynthesis; if(!s) return; s.cancel();
+        const plain=(text||'').replace(/[#*_`>\-]/g,' ').replace(/\s+/g,' ').trim();
+        const u=new SpeechSynthesisUtterance(plain); u.lang=(this.lang==='it')?'it-IT':'en-US'; u.rate=.96; s.speak(u);
+      }catch(e){}
+    },
+    login(){
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const redirect = encodeURIComponent(location.origin + '/compute/callback');
+      const state = encodeURIComponent('/compute/concierge');
+      location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;
+    },
+  };
+}
+</script>
+</body>
+</html>

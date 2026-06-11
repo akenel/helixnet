@@ -539,6 +539,13 @@ async def compute_legends(request: Request):
     return templates.TemplateResponse("compute/legends.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
 
 
+@html_router.get("/compute/concierge", response_class=HTMLResponse)
+async def compute_concierge(request: Request):
+    """The Concierge (#74): Heisenberg -- the named front-door host who learns who you are
+    through chat, so every master reads the real you. The chat + the live record, side by side."""
+    return templates.TemplateResponse("compute/concierge.html", {"request": request, "lp_realm": settings.LP_REALM, "lp_client": settings.LP_CLIENT})
+
+
 @html_router.get("/compute/today", response_class=HTMLResponse)
 async def compute_today(request: Request):
     """The Daily One-Pager: phase header + Top 10 + Bonus Round. Lego-simple, for everyone."""
