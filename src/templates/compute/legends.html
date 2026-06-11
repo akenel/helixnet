@@ -212,7 +212,14 @@ function legends(){
           localStorage.setItem('compute_token', this.token); history.replaceState(null,'',location.pathname); }catch(e){}
       }
       if(!this.token){ try{ this.token = localStorage.getItem('compute_token'); }catch(e){} }
-      if(this.token){ this.loadHouses(); this.loadRecent(); }
+      // Deep-link from the Square: ?ask=<master name> -> remember across login, then open that master
+      try{ const a=new URLSearchParams(location.search).get('ask');
+        if(a){ localStorage.setItem('lp_pending_ask', a); history.replaceState(null,'',location.pathname); } }catch(e){}
+      if(this.token){ this.loadHouses(); this.loadRecent(); this.consumePendingAsk(); }
+    },
+    consumePendingAsk(){
+      try{ const name=localStorage.getItem('lp_pending_ask');
+        if(name){ localStorage.removeItem('lp_pending_ask'); this.openMaster(name); } }catch(e){}
     },
     hdr(){ return { 'Authorization':'Bearer '+this.token }; },
     async loadRecent(){
