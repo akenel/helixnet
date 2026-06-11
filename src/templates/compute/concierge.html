@@ -31,6 +31,7 @@
   .chip{ background:rgba(192,57,43,.14); border:1px solid rgba(192,57,43,.4); color:#fca5a5; }
   .bar{ height:6px; border-radius:6px; background:#1e293b; overflow:hidden; }
   .bar > span{ display:block; height:100%; background:linear-gradient(90deg,#8B0000,#C0392B); }
+  [x-cloak]{ display:none !important; }
   @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
   .dot{ animation:blink 1.4s infinite both; } .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
 </style>
@@ -60,16 +61,38 @@
 
     <!-- chat column -->
     <div class="md:col-span-2 card rounded-2xl flex flex-col" style="height:72vh">
-      <!-- language picker -->
-      <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800">
-        <div class="flex items-center gap-2 text-sm text-slate-400"><span class="w-2 h-2 rounded-full bg-green-500"></span> Cleopatra is in</div>
-        <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-slate-500">Reply in</span>
-          <template x-for="opt in langs" :key="opt.code">
-            <button @click="lang=opt.code"
-              :class="lang===opt.code ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-              class="px-2.5 py-1 rounded-md font-semibold" x-text="opt.label"></button>
-          </template>
+      <!-- language picker + voice controls -->
+      <div class="border-b border-slate-800">
+        <div class="flex items-center justify-between px-4 py-2.5">
+          <div class="flex items-center gap-2 text-sm text-slate-400"><span class="w-2 h-2 rounded-full bg-green-500"></span> Cleopatra is in</div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <button @click="voiceOpen=!voiceOpen" :title="voiceOpen?'Hide voice controls':'Voice controls'"
+              :class="voiceOpen ? 'text-brand' : 'text-slate-400 hover:text-slate-200'" class="mr-1 text-base leading-none">🔊</button>
+            <span class="text-slate-500">Reply in</span>
+            <template x-for="opt in langs" :key="opt.code">
+              <button @click="lang=opt.code"
+                :class="lang===opt.code ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+                class="px-2.5 py-1 rounded-md font-semibold" x-text="opt.label"></button>
+            </template>
+          </div>
+        </div>
+        <!-- voice player controls (speed / volume / voice) -- persisted, so it never pops twice -->
+        <div x-show="voiceOpen" x-cloak class="px-4 pb-3 pt-1 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400 border-t border-slate-800/60">
+          <label class="flex items-center gap-2">Speed
+            <input type="range" min="0.6" max="1.3" step="0.05" x-model.number="rate" @input="persistVoice()" class="accent-brand w-24">
+            <span class="w-10 text-slate-300" x-text="rate.toFixed(2)+'×'"></span>
+          </label>
+          <label class="flex items-center gap-2">Volume
+            <input type="range" min="0" max="1" step="0.05" x-model.number="volume" @input="persistVoice()" class="accent-brand w-24">
+            <span class="w-10 text-slate-300" x-text="Math.round(volume*100)+'%'"></span>
+          </label>
+          <label class="flex items-center gap-2">Voice
+            <select x-model="voiceName" @change="persistVoice()" class="bg-slate-800 border border-slate-700 rounded px-1.5 py-1 text-slate-200 max-w-[170px]">
+              <option value="">Auto (best for language)</option>
+              <template x-for="v in voicePicks" :key="v.name"><option :value="v.name" x-text="v.label"></option></template>
+            </select>
+          </label>
+          <button @click="testVoice()" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">▶ Test</button>
         </div>
       </div>
 
@@ -179,6 +202,8 @@ function concierge(){
     suggestions:[],
     starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
+    // voice player: speed / volume / chosen voice -- all persisted (never pops ears twice)
+    voiceOpen:false, rate:0.92, volume:0.85, voiceName:'', voices:[], voicePicks:[],
     fields:[
       {k:'preferred_language',label:'Speaks'}, {k:'language_level',label:'Level'},
       {k:'birthdate_hint',label:'Born'},
@@ -202,6 +227,13 @@ function concierge(){
       // mark they carried in (a cookie). The picker (Auto/EN/IT) is their explicit override.
       // restore a message that was being typed when the session timed out (survives the re-login redirect)
       try{ const pd=localStorage.getItem('cg_pending_draft'); if(pd){ this.draft=pd; localStorage.removeItem('cg_pending_draft'); } }catch(e){}
+      // restore voice preferences (speed / volume / chosen voice)
+      try{ const v=JSON.parse(localStorage.getItem('cg_voice')||'{}');
+        if(typeof v.rate==='number') this.rate=v.rate;
+        if(typeof v.volume==='number') this.volume=v.volume;
+        if(v.voiceName) this.voiceName=v.voiceName; }catch(e){}
+      this.loadVoices();
+      try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged=()=>this.loadVoices(); }catch(e){}
       if(this.token){ this.load(); }
     },
     hdr(){ return {'Authorization':'Bearer '+this.token}; },
@@ -258,12 +290,34 @@ function concierge(){
     guessLang(t){ t=' '+(t||'').toLowerCase()+' '; let h=0;
       [' il ',' che ',' di ',' per ',' sono ',' ti ',' ciao',' grazie',' più',' cosa',' quale',' della ',' con '].forEach(w=>{if(t.indexOf(w)>-1)h++;});
       if(/[àèéìòù]/.test(t)) h++; return h>=2?'it':'en'; },
+    loadVoices(){
+      try{ const all=(window.speechSynthesis&&speechSynthesis.getVoices())||[];
+        this.voices=all;
+        this.voicePicks=all.filter(v=>/^(en|it)/i.test(v.lang)).map(v=>({name:v.name,label:v.name+' · '+v.lang}));
+      }catch(e){}
+    },
+    pickVoice(lang){
+      const want=(lang==='it')?'it':'en';
+      // an explicit choice wins ONLY if it matches the reply's language; else auto-pick the sweetest match
+      if(this.voiceName){ const c=this.voices.find(v=>v.name===this.voiceName); if(c&&c.lang.toLowerCase().startsWith(want)) return c; }
+      const cands=this.voices.filter(v=>v.lang.toLowerCase().startsWith(want));
+      if(!cands.length) return null;
+      const nice=cands.find(v=>/female|google|natural|samantha|alice|federica|karen|moira|tessa|aria|jenny|libby/i.test(v.name));
+      return nice||cands[0];
+    },
+    persistVoice(){ try{ localStorage.setItem('cg_voice',JSON.stringify({rate:this.rate,volume:this.volume,voiceName:this.voiceName})); }catch(e){} },
+    testVoice(){ const l=(this.lang==='it')?'it':'en';
+      this.readAloud({lang:l, content:(l==='it')?'Benvenuto. Questa è la mia voce — regola pure velocità e volume.':'Welcome. This is my voice — set the speed and volume to your liking.'}); },
     readAloud(m){
       try{ const s=window.speechSynthesis; if(!s) return; s.cancel();
         const text=(typeof m==='string')?m:(m&&m.content)||'';
         const lang=(m&&m.lang)||this.guessLang(text);
         const plain=text.replace(/[#*_`>\-]/g,' ').replace(/\s+/g,' ').trim();
-        const u=new SpeechSynthesisUtterance(plain); u.lang=(lang==='it')?'it-IT':'en-US'; u.rate=.96; s.speak(u);
+        const u=new SpeechSynthesisUtterance(plain);
+        u.lang=(lang==='it')?'it-IT':'en-US';
+        u.rate=this.rate; u.volume=this.volume;
+        const v=this.pickVoice(lang); if(v) u.voice=v;
+        s.speak(u);
       }catch(e){}
     },
     login(){
