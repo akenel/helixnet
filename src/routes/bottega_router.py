@@ -445,9 +445,11 @@ async def concierge_chat(request: Request,
 
     # Fresh member, no message yet -> the front-door greeting (no brain call, Angel's copy).
     if not message and not transcript:
-        transcript.append({"role": "concierge", "content": cg.OPENING})
+        greeting = cg.opening()  # one of the four five-star flavours, fresh each visit
+        transcript.append({"role": "concierge", "content": greeting})
         await write_concierge(db, current_user["username"], record, transcript)
-        return {"reply": cg.OPENING, "language": language, "record": record, "opening": True}
+        # the opening is the English hub greeting; voice reads it in English
+        return {"reply": greeting, "language": "en", "record": record, "opening": True}
 
     if message:
         transcript.append({"role": "member", "content": message})
@@ -456,7 +458,7 @@ async def concierge_chat(request: Request,
         reply = await cg.concierge_reply(transcript, record, language)
     except BrainUnavailable:
         raise HTTPException(status_code=503,
-                            detail="Heisenberg stepped away for a second -- try again in a moment.")
+                            detail="Cleopatra stepped away for a second -- try again in a moment.")
     transcript.append({"role": "concierge", "content": reply})
 
     # Every turn updates the JSON. Extraction is best-effort -- a bad read never breaks the chat.
@@ -467,7 +469,10 @@ async def concierge_chat(request: Request,
         logger.warning("concierge extraction failed for %s", current_user["username"], exc_info=True)
 
     await write_concierge(db, current_user["username"], record, transcript)
-    return {"reply": reply, "language": language, "record": record}
+    # Voice follows the actual reply language: an explicit pick is authoritative; in Auto we
+    # detect what the master actually wrote (the masters' rule -- the words decide).
+    reply_lang = language if (language and language.lower() not in ("", "auto")) else cg.detect_lang(reply)
+    return {"reply": reply, "language": reply_lang, "record": record}
 
 
 async def _build_portrait(db: AsyncSession, username: str) -> str:

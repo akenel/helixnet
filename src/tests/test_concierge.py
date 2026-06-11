@@ -102,14 +102,24 @@ def test_record_to_portrait_empty_record_is_empty():
 
 # --- language clause: voice follows language -----------------------------------------------
 
-def test_lang_clause_only_for_non_english():
-    assert cg._lang_clause("") == ""
-    assert cg._lang_clause("en") == ""
-    assert cg._lang_clause("English") == ""
+def test_lang_clause_auto_mirrors_explicit_forces():
+    # the masters' rule: auto/empty -> mirror the member's tongue and stay in it
+    for auto in ("", "auto", "AUTO"):
+        c = cg._lang_clause(auto)
+        assert "SAME language" in c and "STAY" in c
+    # explicit English -> forces English
+    assert "English" in cg._lang_clause("en") and "English" in cg._lang_clause("English")
+    # explicit Italian -> forces Italian
     it = cg._lang_clause("it")
     assert "ITALIAN" in it and "RESPOND ENTIRELY" in it
-    # unknown code still produces a clause using the raw code
+    # unknown code still produces a forced clause using the raw code
     assert "ZZ" in cg._lang_clause("zz").upper()
+
+
+def test_detect_lang_en_vs_it():
+    assert cg.detect_lang("I want to teach kids how to fix bikes") == "en"
+    assert cg.detect_lang("ciao, vorrei insegnare ai bambini come si fa") == "it"
+    assert cg.detect_lang("") == "en"  # nothing -> default hub
 
 
 # --- concierge_reply: flattens transcript + threads language through the single brain ------

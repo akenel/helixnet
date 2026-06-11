@@ -6,7 +6,7 @@
 <meta property="og:title" content="The Concierge · La Piazza"><meta name="twitter:card" content="summary_large_image">
 <meta property="og:image" content="{{ request.headers.get('x-forwarded-proto','https') }}://{{ request.headers.get('x-forwarded-host') or request.url.netloc }}/og/lapiazza-og-v3.png">
 <title>The Concierge · La Piazza</title>
-<meta name="description" content="Heisenberg, your personal guide. He learns who you are, so every master in the Bottega helps the real you.">
+<meta name="description" content="Cleopatra, your greeter at the front door. She meets you in your own tongue and learns who you are, so every master in the Bottega helps the real you.">
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -42,9 +42,9 @@
 
   <!-- header -->
   <div class="text-center mb-6">
-    <div class="text-4xl mb-2">🎩</div>
-    <h1 class="text-2xl sm:text-3xl font-black text-white">Heisenberg <span class="text-slate-500 font-semibold text-lg">· your Concierge</span></h1>
-    <p class="text-slate-400 text-sm mt-1">Your guide at the front door. The more he knows you, the more every master can help the <em>real</em> you.</p>
+    <div class="text-4xl mb-2">👑</div>
+    <h1 class="text-2xl sm:text-3xl font-black text-white">Cleopatra <span class="text-slate-500 font-semibold text-lg">· your greeter</span></h1>
+    <p class="text-slate-400 text-sm mt-1">She greets you in your own tongue. The more she knows you, the more every master can help the <em>real</em> you.</p>
     <div class="h-[3px] w-32 mx-auto mt-3 grad-rule rounded"></div>
   </div>
 
@@ -62,7 +62,7 @@
     <div class="md:col-span-2 card rounded-2xl flex flex-col" style="height:72vh">
       <!-- language picker -->
       <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-800">
-        <div class="flex items-center gap-2 text-sm text-slate-400"><span class="w-2 h-2 rounded-full bg-green-500"></span> Heisenberg is in</div>
+        <div class="flex items-center gap-2 text-sm text-slate-400"><span class="w-2 h-2 rounded-full bg-green-500"></span> Cleopatra is in</div>
         <div class="flex items-center gap-1.5 text-xs">
           <span class="text-slate-500">Reply in</span>
           <template x-for="opt in langs" :key="opt.code">
@@ -84,7 +84,7 @@
                 <div x-show="m.role!=='member'" class="md" x-html="render(m.content)"></div>
               </div>
               <div x-show="m.role!=='member'" class="mt-1 ml-1">
-                <button @click="readAloud(m.content)" class="text-xs text-slate-500 hover:text-brand">🔊 Read aloud</button>
+                <button @click="readAloud(m)" class="text-xs text-slate-500 hover:text-brand">🔊 Read aloud</button>
               </div>
             </div>
           </div>
@@ -108,7 +108,7 @@
         </div>
         <div class="flex items-end gap-2">
           <textarea x-model="draft" @keydown.enter.prevent="send()" rows="1"
-            placeholder="Tell Heisenberg who you are..."
+            placeholder="Tell Cleopatra who you are..."
             class="flex-1 resize-none rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand"></textarea>
           <button @click="send()" :disabled="busy||!draft.trim()"
             class="px-4 py-2.5 rounded-xl font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-40">Send</button>
@@ -117,11 +117,11 @@
       </div>
     </div>
 
-    <!-- record column: what Heisenberg has learned (transparency / it's YOUR memory) -->
+    <!-- record column: what Cleopatra has learned (transparency / it's YOUR memory) -->
     <div class="card rounded-2xl p-4 overflow-y-auto" style="height:72vh">
       <div class="flex items-center gap-2 mb-1">
         <span class="text-lg">🧠</span>
-        <h2 class="font-bold text-white text-sm">What Heisenberg has learned</h2>
+        <h2 class="font-bold text-white text-sm">What Cleopatra has learned</h2>
       </div>
       <p class="text-[11px] text-slate-500 mb-4">This is your memory — yours to see. Every master reads it.</p>
 
@@ -167,10 +167,12 @@
 <script>
 function concierge(){
   return {
-    token:null, lang:'en', langs:[{code:'en',label:'EN'},{code:'it',label:'IT'}],
+    token:null, lang:'auto', langs:[{code:'auto',label:'Auto'},{code:'en',label:'EN'},{code:'it',label:'IT'}],
     messages:[], draft:'', busy:false, err:'', expired:false,
     record:{},
     fields:[
+      {k:'preferred_language',label:'Speaks'}, {k:'language_level',label:'Level'},
+      {k:'birthdate_hint',label:'Born'},
       {k:'goal',label:'Goal'}, {k:'why_they_came',label:'Why they came'},
       {k:'background',label:'Background'}, {k:'current_seat',label:'Today'},
       {k:'fit_insight',label:'Where they\'d thrive'}, {k:'health_energy',label:'Body / energy'},
@@ -187,9 +189,8 @@ function concierge(){
           localStorage.setItem('compute_token',this.token); history.replaceState(null,'',location.pathname);}catch(e){}
       }
       if(!this.token){ try{ this.token=localStorage.getItem('compute_token'); }catch(e){} }
-      // default reply language from the locale cookie / browser
-      try{ const c=(document.cookie.match(/bh_lang=([a-z]{2})/)||[])[1]; const b=(navigator.language||'en').slice(0,2);
-        this.lang=(c==='it'||(!c&&b==='it'))?'it':'en'; }catch(e){}
+      // language stays on 'auto': the masters' rule -- the guest's WORDS decide the tongue, not a
+      // mark they carried in (a cookie). The picker (Auto/EN/IT) is their explicit override.
       // restore a message that was being typed when the session timed out (survives the re-login redirect)
       try{ const pd=localStorage.getItem('cg_pending_draft'); if(pd){ this.draft=pd; localStorage.removeItem('cg_pending_draft'); } }catch(e){}
       if(this.token){ this.load(); }
@@ -224,12 +225,12 @@ function concierge(){
             this.expired=true; this.err='Your session timed out — log in again to continue. Your chat and your message are saved.';
             this.busy=false; return;
           }
-          this.err = r.status===503 ? 'Heisenberg stepped away — try again in a moment.' : ('Something hiccuped (error '+r.status+'). Try again.');
+          this.err = r.status===503 ? 'Cleopatra stepped away — try again in a moment.' : ('Something hiccuped (error '+r.status+'). Try again.');
           this.busy=false; return;
         }
         this.expired=false;
         const d=await r.json();
-        this.messages.push({role:'concierge',content:d.reply});
+        this.messages.push({role:'concierge',content:d.reply,lang:d.language||'en'});
         if(d.record) this.record=d.record;
       }catch(e){ this.err='Network hiccup — try again.'; }
       this.busy=false; this.scroll();
@@ -242,10 +243,16 @@ function concierge(){
     hasRiasec(){ const r=this.record.riasec||{}; return Object.values(r).some(v=>v>0); },
     riasecRows(){ const r=this.record.riasec||{}; const L={realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
       return Object.keys(L).map(k=>({k,label:L[k],v:r[k]||0})).sort((a,b)=>b.v-a.v); },
-    readAloud(text){
+    // voice follows the language of THIS reply (the masters' rule), not the picker
+    guessLang(t){ t=' '+(t||'').toLowerCase()+' '; let h=0;
+      [' il ',' che ',' di ',' per ',' sono ',' ti ',' ciao',' grazie',' più',' cosa',' quale',' della ',' con '].forEach(w=>{if(t.indexOf(w)>-1)h++;});
+      if(/[àèéìòù]/.test(t)) h++; return h>=2?'it':'en'; },
+    readAloud(m){
       try{ const s=window.speechSynthesis; if(!s) return; s.cancel();
-        const plain=(text||'').replace(/[#*_`>\-]/g,' ').replace(/\s+/g,' ').trim();
-        const u=new SpeechSynthesisUtterance(plain); u.lang=(this.lang==='it')?'it-IT':'en-US'; u.rate=.96; s.speak(u);
+        const text=(typeof m==='string')?m:(m&&m.content)||'';
+        const lang=(m&&m.lang)||this.guessLang(text);
+        const plain=text.replace(/[#*_`>\-]/g,' ').replace(/\s+/g,' ').trim();
+        const u=new SpeechSynthesisUtterance(plain); u.lang=(lang==='it')?'it-IT':'en-US'; u.rate=.96; s.speak(u);
       }catch(e){}
     },
     login(){

@@ -12,6 +12,7 @@
 
 import json
 import logging
+import random
 import re
 
 from src.services.bottega_service import _brain_chat  # resilient single-brain wrapper
@@ -23,43 +24,85 @@ logger = logging.getLogger("helix.concierge")
 # skill, reads between the lines, asks only what HELPS (framed by why, always optional),
 # PROPOSES then WAITS, and -- crucially -- runs the honesty filter (name a contradiction kindly,
 # a mirror not a finger) plus quiet RIASEC / W5+H discovery. Short replies (2-5 sentences).
-BRAIN = """You are the CONCIERGE of La Piazza's Bottega -- the maitre d' at the front door,
-assigned BY NAME to this one member as their personal guide. Your name for them is Heisenberg:
-calm, precise, warm, with a little dry wit. You carry every master's skill (Da Vinci, Sherlock
-and the rest are in your back pocket) and you READ BETWEEN THE LINES. You are a friend, never a
-form.
+BRAIN = """You are CLEOPATRA -- not a chatbot but the queen who once greeted every visitor to her
+court in their OWN tongue and rarely needed an interpreter. Here you are the front-door greeter of
+La Piazza's Bottega, the first face every guest meets. Leonardo da Vinci stands at your side and
+Sherlock Holmes watches from the back corner; behind you, all the masters wait in their houses.
+You are warm, quick, regally direct, with a little dry wit -- and you READ BETWEEN THE LINES. A
+host, never a form.
 
-How you work:
+How you greet and guide:
+- FIVE-STAR FROM THE FIRST WORD -- receive every soul like an honoured guest at court: "We have
+  been expecting you -- welcome to the castle, and glad to have you aboard." Real warmth, a quick
+  light humour. That five-star tone never drops, all the way down the ladder, for everyone.
 - Keep every reply SHORT -- 2 to 5 sentences. One idea, one gentle next step.
-- You PROPOSE, then you WAIT. Offer a small next move and let them say yes / no / something else.
-- Ask only what HELPS them, and say WHY it helps. Everything is optional -- never demand a
-  birthdate or a number; "born before or after 2000? it changes how I help" is enough.
-- Gently draw out who they are: what's on their mind, what they came here for, what lights them
-  up versus what they actually do all day (that gap is often the whole point), their energy and
-  health if it shapes the help, the skills and people who shaped them.
-- THE HONESTY FILTER: if they contradict themselves -- a goal that fights their own behaviour, or
-  two things that can't both be true -- do NOT just nod and file it. Hold up a MIRROR, kindly and
-  a touch dryly: name the tension and ask which one is the real priority. Curious, never preachy.
-  Observation, not rebuke. You refuse to quietly record nonsense.
-- You are here to help them find the work and the life they are truly made for -- surface
-  options and ways forward, but the choice is always theirs."""
+- You PROPOSE, then you WAIT. Offer a small next move; let them say yes / no / something else.
+- LANGUAGE FIRST -- it is your gift. Before anything else, settle the tongue you will share:
+  "We speak English and Italian beautifully here, and we'll attempt your own if we must -- which
+  would you like?" Then lightly gauge how strong they are in it (just getting by / comfortable /
+  fluent). From then on reply in THEIR language and STAY in it. If they answer with nonsense (a
+  made-up tongue, a joke), play along once with a dry smile, then steer back to a real choice --
+  and quietly note what their answer reveals about how seriously they have come.
+- AGE, WITH DIGNITY -- you'd love their birth date (it tunes everything), but you NEVER push. Take
+  whatever they offer: the exact date, just the month, the year, a range, even their star sign, or
+  "before/after 2000." Many will not say -- especially about age -- and that is entirely their
+  right; accept it gracefully and work with what you have. If they won't say, you may GUESS
+  gracefully from HOW they speak -- their references, phrasing, the cut of their words -- but hold
+  any guess LIGHTLY, as a guess, never stated as fact.
+- THE RECIPROCITY -- remind them, kindly, that the more honest and exact they are, the more you can
+  do for them: it is their record, under their own name, working for them.
+- Draw out the rest gently: what's on their mind, why they came, what lights them up versus what
+  they do all day (that gap is often the point), their energy/health if it shapes the help, the
+  skills and people who shaped them.
+- THE HONESTY FILTER -- you are warm but no fool. If they contradict themselves, talk nonsense, or
+  smell of a scam, do NOT just nod and file it: hold up a MIRROR, kindly and a touch dryly, name
+  the tension, and ask which is true. Curious, never preachy. You refuse to record nonsense as fact.
+- You are here to help them find the work and life they are truly made for -- surface options and
+  ways forward, but the choice is always theirs."""
 
-# The opening for a brand-new member (empty profile) -- Angel's copy, kept verbatim-ish.
-OPENING = (
-    "You've just stepped into the imagination machine -- in here you can make almost anything you "
-    "can picture. I'm Heisenberg, your guide, and I've got Da Vinci and Sherlock in my back "
-    "pocket. Thing is, I know nothing about you yet, so I can't put any of that to work. Help me "
-    "help you: born before 2000, or after? It changes how I steer. If you're useful to me, I'm "
-    "useful to you. So -- in the door, or out the door?"
-)
+# Cleopatra's entrance for a brand-new guest. FOUR flavours (Angel: "all 4, whatever works") --
+# one is chosen at random so the greeting stays fresh. All five-star, all language-first, all keep
+# the door. Each opens with "we have been expecting you."
+OPENINGS = [
+    # Intimate & conspiratorial (Angel's pick)
+    "We have been expecting you, fellow conspirator of dreams -- welcome to the imagination machine, "
+    "where every arrival is a secret ally and almost anything you can picture can be made. I'm "
+    "Cleopatra, your greeter; Leonardo is at my side, Sherlock keeps the back corner. I'll speak "
+    "English or Italian, or dare to echo your own tongue -- which whisper suits you? Come -- in the "
+    "door, or out the door?",
+    # Warm & playful
+    "We have been expecting you -- welcome to the imagination machine, where we greet you like royalty, "
+    "slip a smile into every step, and almost anything you can picture can be made. I'm Cleopatra; "
+    "Leonardo's at my side, Sherlock keeps the back. I'll speak English or Italian, or try your own -- "
+    "which makes you feel most at home? In the door, or out the door?",
+    # Dry & witty
+    "We have been expecting you. Our doors open only for sovereigns of thought -- welcome to the "
+    "imagination machine. I'm Cleopatra; Leonardo at my side, Sherlock in the back corner. We speak "
+    "English, Italian, and the occasional dialect, provided it isn't a secret code -- which shall I "
+    "receive you in? In the door, or out the door?",
+    # Grand & ceremonial
+    "We have been expecting you -- welcome to the palace of possibility, the imagination machine, where "
+    "every guest is crowned with curiosity. I'm Cleopatra, your greeter; Leonardo at my side, Sherlock "
+    "in the back corner, every master in their house. We speak English and Italian, or we'll attempt "
+    "your own tongue -- which shall be today's royal language? In the door, or out the door?",
+]
+OPENING = OPENINGS[0]  # back-compat / deterministic default
+
+
+def opening() -> str:
+    """A fresh entrance each visit -- one of the four five-star flavours."""
+    return random.choice(OPENINGS)
 
 # --- The memory / extraction ---------------------------------------------------------------
 # ONE universal master-control-record (the locked design): layers L0-L4 + RIASEC + conflicts +
 # affinities, filled inside-out as trust grows. Defaults below mean a field is never blank --
 # "unknown" / [] / 0 -- so the masters always read a complete shape.
 RECORD_FIELDS: dict = {
-    "language": "",            # L0 -- preferred reply language (ISO-ish: en, it, de...)
-    "generation": "unknown",   # L0 -- boomer / gen-x / millennial / gen-z (derived, never demanded)
+    "preferred_language": "",  # L0 -- the tongue they CHOSE to be spoken to in (en/it/...); the masters' passport
+    "language_level": "",      # L0 -- their own sense of it: basic / comfortable / fluent (or CEFR A1-C2)
+    "language": "",            # L0 -- reply language actually used (kept for back-compat / voice)
+    "birthdate_hint": "",      # L0 -- whatever they offered IN THEIR WORDS ("Jan 1964", "Aquarius", "60s", "after 2000")
+    "generation": "unknown",   # L0 -- boomer / gen-x / millennial / gen-z (DERIVED from birthdate_hint, never demanded)
     "age_band": "unknown",     # L0 -- "before-2000" | "after-2000" | unknown (sets the life lens)
     "gender": "unknown",       # L0
     "health_energy": "",       # L1 -- anything that shapes the help (injuries, energy, mobility)
@@ -99,13 +142,24 @@ Do these expert jobs as you go:
    two claims that can't both be true). RECORD them, do not resolve them. [] if none.
 5. life_stage: launching / building / peak / transitioning / legacy -- the lens, from age_band +
    what they said. "unknown" if unclear.
+6. LANGUAGE: preferred_language = the tongue they CHOSE to be spoken to in (en/it/de/... or the
+   plain name); language_level = how strong they said they are (basic / comfortable / fluent, or a
+   CEFR level A1-C2) -- "" if not stated. language = the language actually being used in the chat.
+7. BIRTHDATE (with dignity): birthdate_hint = WHATEVER they offered about their age in THEIR words
+   -- an exact date, a month, a year, a range, a star sign, "after 2000" -- verbatim-ish, "" if
+   they gave nothing. NEVER invent it. DERIVE generation + age_band ONLY when the signal is clear
+   and unambiguous; if the only clue is ambiguous (e.g. "30 years" that may mean experience not
+   age, or a star sign with no year), leave generation + age_band "unknown" and put the ambiguity
+   in needs_clarification rather than committing a shaky guess. Do not pester for more than offered.
+8. NONSENSE / SCAM GUARD: if an answer is obvious nonsense, a joke, or smells of a scam, do NOT
+   record it as fact -- put it in needs_clarification (or conflicts if it contradicts something).
 
 Output ONLY one valid JSON object with EXACTLY these keys (no prose, no markdown, no code fence):
-language, generation, age_band, gender, health_energy, why_they_came, goal, background,
-current_seat, aptitudes, certificates_or_teachers, riasec (object: realistic, investigative,
-artistic, social, enterprising, conventional as integers), top_holland_code, fit_insight,
-conflicts (array), life_stage, affinities (array), suggested_house, needs_clarification (array),
-notes."""
+preferred_language, language_level, language, birthdate_hint, generation, age_band, gender,
+health_energy, why_they_came, goal, background, current_seat, aptitudes, certificates_or_teachers,
+riasec (object: realistic, investigative, artistic, social, enterprising, conventional as
+integers), top_holland_code, fit_insight, conflicts (array), life_stage, affinities (array),
+suggested_house, needs_clarification (array), notes."""
 
 _LANG_NAMES = {"it": "Italian", "de": "German", "fr": "French", "es": "Spanish",
                "pt": "Portuguese", "nl": "Dutch", "en": "English"}
@@ -147,12 +201,32 @@ def _known_block(record: dict) -> str:
 
 
 def _lang_clause(language: str) -> str:
+    """The masters' rule (Cleopatra + Goethe, 2026-06-11): the guest's WORDS are the passport,
+    not a mark they carried in. Auto = mirror the language they write in and STAY in it. An
+    explicit pick (en/it/...) is the guest's stated preference and overrides."""
     lang = (language or "").strip().lower()
-    if not lang or lang in ("en", "english"):
-        return ""
+    if not lang or lang == "auto":
+        return ("\n\nLANGUAGE: reply in the SAME language the member is writing to you in. Once you "
+                "have answered in a language, STAY in it for the rest of the conversation unless the "
+                "member themselves switches first. Never mix two languages in one reply.")
+    if lang in ("en", "english"):
+        return "\n\nLANGUAGE: reply entirely in English (natural and warm)."
     name = _LANG_NAMES.get(lang, language)
     return (f"\n\nIMPORTANT -- RESPOND ENTIRELY IN {name.upper()}: every word of your reply in "
             f"{name}, natural and warm, as a native speaker would say it. The member reads {name}.")
+
+
+# Lightweight EN/IT detector -- labels an auto-mode reply so the browser reads it aloud in the
+# right voice. Heuristic (common words + accents); extend as more chrome languages land.
+_IT_WORDS = (" il ", " che ", " di ", " per ", " sono ", " ti ", " tu ", " ciao", " grazie",
+             " piu", " tuo", " cosa", " quale", " vita", " come ", " della ", " con ", " un ")
+
+
+def detect_lang(text: str) -> str:
+    """Best-effort: 'it' if the text reads Italian, else 'en'. Used only to pick the read-aloud voice."""
+    t = " " + (text or "").lower() + " "
+    hits = sum(1 for w in _IT_WORDS if w in t) + sum(1 for c in t if c in "àèéìòù")
+    return "it" if hits >= 2 else "en"
 
 
 async def concierge_reply(transcript: list[dict], record: dict, language: str = "") -> str:
@@ -229,6 +303,11 @@ def record_to_portrait(record: dict) -> list[str]:
     if not record:
         return []
     out = []
+    if record.get("preferred_language"):
+        lvl = f" (level: {record['language_level']})" if record.get("language_level") else ""
+        out.append(f"Speak to them in {record['preferred_language']}{lvl}.")
+    if record.get("birthdate_hint") and (record.get("generation", "unknown") == "unknown"):
+        out.append(f"On their age, all they offered: {record['birthdate_hint']}.")
     if record.get("why_they_came"):
         out.append(f"Why they came: {record['why_they_came']}")
     if record.get("goal"):
