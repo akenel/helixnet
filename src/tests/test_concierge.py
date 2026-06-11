@@ -257,3 +257,40 @@ async def test_read_concierge_recovers_from_corrupt_row(db_session):
     state = await br.read_concierge(db_session, "bad")   # must not raise
     assert state["transcript"] == []
     assert set(state["record"].keys()) == set(cg.RECORD_FIELDS.keys())
+
+
+@pytest.mark.asyncio
+async def test_concierge_tolerates_and_self_heals_duplicate_rows(db_session):
+    # The staging 500: a legacy/race left TWO concierge-record rows for one member, and
+    # scalar_one_or_none() raised MultipleResultsFound. read must newest-win (not 500),
+    # and the next write must collapse the dups back to a single row.
+    from datetime import datetime, timedelta, timezone
+    from sqlalchemy import select
+    from src.db.models.bottega_model import BottegaSessionModel
+    from src.routes import bottega_router as br
+
+    older = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    newer = older + timedelta(days=1)
+    db_session.add(BottegaSessionModel(
+        username="dup", slug=br.CONCIERGE_SLUG, title="Concierge Record", inputs="{}",
+        output=json.dumps({"record": {"goal": "OLD goal"}, "transcript": []}),
+        output_type="json", tags="concierge", created_at=older))
+    db_session.add(BottegaSessionModel(
+        username="dup", slug=br.CONCIERGE_SLUG, title="Concierge Record", inputs="{}",
+        output=json.dumps({"record": {"goal": "NEW goal"}, "transcript": [{"role": "member", "content": "hi"}]}),
+        output_type="json", tags="concierge", created_at=newer))
+    await db_session.commit()
+
+    # read must not raise, and newest wins
+    state = await br.read_concierge(db_session, "dup")
+    assert state["record"]["goal"] == "NEW goal"
+    assert state["transcript"] == [{"role": "member", "content": "hi"}]
+
+    # write self-heals: collapses to exactly one row, keeping the newest, applying the update
+    rec = cg.merge_record(cg.blank_record(), {"goal": "NEW goal", "background": "30 yrs"})
+    await br.write_concierge(db_session, "dup", rec, [{"role": "member", "content": "hi"}])
+    rows = (await db_session.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == "dup",
+        BottegaSessionModel.slug == br.CONCIERGE_SLUG))).scalars().all()
+    assert len(rows) == 1                              # the duplicate was dropped
+    assert json.loads(rows[0].output)["record"]["background"] == "30 yrs"

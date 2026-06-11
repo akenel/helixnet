@@ -393,9 +393,11 @@ async def legend_questions(name: str, current_user: dict = Depends(require_botte
 async def read_concierge(db: AsyncSession, username: str) -> dict:
     """Read the member's Concierge state -- {record, transcript}. A blank, fully-defaulted record
     if they've never spoken to the Concierge."""
+    # newest-wins: tolerate >1 row (legacy dup-write or a race) instead of 500ing on the member.
     row = (await db.execute(select(BottegaSessionModel).where(
         BottegaSessionModel.username == username,
-        BottegaSessionModel.slug == CONCIERGE_SLUG))).scalar_one_or_none()
+        BottegaSessionModel.slug == CONCIERGE_SLUG)
+        .order_by(BottegaSessionModel.created_at.desc()))).scalars().first()
     if row and row.output:
         try:
             data = json.loads(row.output)
@@ -409,11 +411,16 @@ async def read_concierge(db: AsyncSession, username: str) -> dict:
 async def write_concierge(db: AsyncSession, username: str, record: dict, transcript: list) -> None:
     """Upsert the member's Concierge row (record + transcript together) on the session spine."""
     payload = json.dumps({"record": record, "transcript": transcript[-60:]})  # cap the tail
-    row = (await db.execute(select(BottegaSessionModel).where(
+    # newest-wins + self-heal: if legacy duplicates exist, write the newest and drop the extras
+    # so the (username, slug) invariant converges to one row on the next save.
+    rows = (await db.execute(select(BottegaSessionModel).where(
         BottegaSessionModel.username == username,
-        BottegaSessionModel.slug == CONCIERGE_SLUG))).scalar_one_or_none()
-    if row:
-        row.output = payload
+        BottegaSessionModel.slug == CONCIERGE_SLUG)
+        .order_by(BottegaSessionModel.created_at.desc()))).scalars().all()
+    if rows:
+        rows[0].output = payload
+        for dup in rows[1:]:
+            await db.delete(dup)
     else:
         db.add(BottegaSessionModel(
             username=username, slug=CONCIERGE_SLUG, title="Concierge Record",
