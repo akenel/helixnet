@@ -32,6 +32,9 @@
   .bar{ height:6px; border-radius:6px; background:#1e293b; overflow:hidden; }
   .bar > span{ display:block; height:100%; background:linear-gradient(90deg,#8B0000,#C0392B); }
   [x-cloak]{ display:none !important; }
+  /* phones: no title row + tighter chrome -> the conversation gets the landscape. sm+: roomier. */
+  .convo-h{ height:calc(100dvh - 104px); }
+  @media (min-width:640px){ .convo-h{ height:calc(100dvh - 150px); } }
   @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
   .dot{ animation:blink 1.4s infinite both; } .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
 </style>
@@ -39,10 +42,10 @@
 <body class="font-sans text-slate-200 min-h-screen antialiased">
 {% include "_lapiazza_nav.html" %}
 
-<div class="max-w-5xl mx-auto px-4 sm:px-5 py-4" x-data="concierge()" x-init="init()">
+<div class="max-w-5xl mx-auto px-4 sm:px-5 py-2 sm:py-4" x-data="concierge()" x-init="init()">
 
-  <!-- header (compact slim line — give the landscape to the conversation, scrolls away on phones) -->
-  <div class="flex items-center justify-center gap-2.5 mb-3 mt-0.5">
+  <!-- header (slim line; HIDDEN on phones — the nav already says 🎩 Concierge, so the conversation gets the whole screen) -->
+  <div class="hidden sm:flex items-center justify-center gap-2.5 mb-3 mt-0.5">
     <span class="text-2xl leading-none">👑</span>
     <div class="text-center sm:text-left">
       <h1 class="text-lg sm:text-xl font-black text-white leading-tight">Cleopatra <span class="text-slate-500 font-semibold text-sm">· your greeter</span></h1>
@@ -61,7 +64,7 @@
   <div class="grid md:grid-cols-3 gap-5">
 
     <!-- chat column -->
-    <div class="md:col-span-2 card rounded-2xl flex flex-col" style="height:calc(100dvh - 150px)">
+    <div class="md:col-span-2 card rounded-2xl flex flex-col convo-h">
       <!-- language picker + voice controls -->
       <div class="border-b border-slate-800">
         <div class="flex items-center justify-between px-4 py-2.5">
@@ -199,7 +202,7 @@
     </div>
 
     <!-- record column: what Cleopatra has learned (transparency / it's YOUR memory) -->
-    <div class="card rounded-2xl p-4 overflow-y-auto" style="height:calc(100dvh - 150px)">
+    <div class="card rounded-2xl p-4 overflow-y-auto convo-h">
       <div class="flex items-center gap-2 mb-1">
         <span class="text-lg">🧠</span>
         <h2 class="font-bold text-white text-sm">What Cleopatra has learned</h2>
@@ -403,22 +406,32 @@ function concierge(){
     hasRiasec(){ const r=this.record.riasec||{}; return Object.values(r).some(v=>v>0); },
     riasecRows(){ const r=this.record.riasec||{}; const L={realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
       return Object.keys(L).map(k=>({k,label:L[k],v:r[k]||0})).sort((a,b)=>b.v-a.v); },
-    // voice follows the language of THIS reply (the masters' rule), not the picker
-    guessLang(t){ t=' '+(t||'').toLowerCase()+' '; let h=0;
-      [' il ',' che ',' di ',' per ',' sono ',' ti ',' ciao',' grazie',' più',' cosa',' quale',' della ',' con '].forEach(w=>{if(t.indexOf(w)>-1)h++;});
-      if(/[àèéìòù]/.test(t)) h++; return h>=2?'it':'en'; },
+    // voice follows the language of THIS reply (the masters' rule), not the picker.
+    // EN/IT are the home tongues; we also sniff DE/FR/ES so an off-menu reply (Angel's German
+    // "just for spass") gets a NATIVE voice instead of an English one mangling it ("goofy German").
+    ttsLang(t){ t=' '+(t||'').toLowerCase()+' '; const s={it:0,de:0,fr:0,es:0};
+      [' il ',' che ',' di ',' per ',' sono ',' ciao',' grazie',' più',' cosa',' della ',' con ',' vorrei '].forEach(w=>{if(t.indexOf(w)>-1)s.it++;});
+      if(/[àèìòù]/.test(t)) s.it++;
+      [' und ',' ich ',' nicht ',' ist ',' das ',' sie ',' wir ',' möchten ',' sprechen',' deutsch',' ein ',' sehr ',' danke'].forEach(w=>{if(t.indexOf(w)>-1)s.de++;});
+      if(/[äöüß]/.test(t)) s.de++;
+      [' vous ',' parlez',' je ',' ne ',' pas ',' une ',' allemand',' français',' merci',' bonjour',' oui '].forEach(w=>{if(t.indexOf(w)>-1)s.fr++;});
+      [' usted ',' gracias',' hola',' qué ',' está',' por favor',' soy '].forEach(w=>{if(t.indexOf(w)>-1)s.es++;});
+      if(/[ñ¿¡]/.test(t)) s.es++;
+      const best=Object.keys(s).reduce((a,b)=>s[b]>s[a]?b:a,'it');
+      if(s[best]<2) return 'en-US';
+      return {it:'it-IT',de:'de-DE',fr:'fr-FR',es:'es-ES'}[best]; },
     loadVoices(){
       try{ const all=(window.speechSynthesis&&speechSynthesis.getVoices())||[];
         this.voices=all;
         this.voicePicks=all.filter(v=>/^(en|it)/i.test(v.lang)).map(v=>({name:v.name,label:v.name+' · '+v.lang}));
       }catch(e){}
     },
-    pickVoice(lang){
-      const want=(lang==='it')?'it':'en';
+    pickVoice(bcp){
+      const want=(bcp||'en-US').slice(0,2).toLowerCase();   // 'it-IT' -> 'it', 'de-DE' -> 'de'
       // an explicit choice wins ONLY if it matches the reply's language; else auto-pick the sweetest match
       if(this.voiceName){ const c=this.voices.find(v=>v.name===this.voiceName); if(c&&c.lang.toLowerCase().startsWith(want)) return c; }
       const cands=this.voices.filter(v=>v.lang.toLowerCase().startsWith(want));
-      if(!cands.length) return null;
+      if(!cands.length) return null;   // no native voice installed -> let the browser default for u.lang
       const nice=cands.find(v=>/female|google|natural|samantha|alice|federica|karen|moira|tessa|aria|jenny|libby/i.test(v.name));
       return nice||cands[0];
     },
@@ -430,12 +443,14 @@ function concierge(){
         // TOGGLE: if anything is speaking/queued, a click STOPS it (the reported "couldn't turn it off")
         if(s.speaking || s.pending){ s.cancel(); this.speaking=false; return; }
         const text=(typeof m==='string')?m:(m&&m.content)||'';
-        const lang=(m&&m.lang)||this.guessLang(text);
+        // explicit Italian picker is authoritative; otherwise read the TEXT's true language
+        // (so a German reply gets a German voice, not en-US mangling it)
+        const bcp=(m&&m.lang==='it')?'it-IT':this.ttsLang(text);
         const plain=text.replace(/[#*_`>\-]/g,' ').replace(/\s+/g,' ').trim();
         const u=new SpeechSynthesisUtterance(plain);
-        u.lang=(lang==='it')?'it-IT':'en-US';
+        u.lang=bcp;
         u.rate=this.rate; u.volume=this.volume;
-        const v=this.pickVoice(lang); if(v) u.voice=v;
+        const v=this.pickVoice(bcp); if(v) u.voice=v;
         u.onend=()=>{ this.speaking=false; }; u.onerror=()=>{ this.speaking=false; };
         this.speaking=true; s.speak(u);
       }catch(e){ this.speaking=false; }
