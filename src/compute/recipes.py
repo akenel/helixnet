@@ -389,7 +389,7 @@ def menu() -> list[dict]:
     ]
 
 
-async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "") -> dict:
+async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "", language: str = "") -> dict:
     """Generic runner -- executes ANY recipe. raw_inputs: {name: value | (filename, bytes)}.
     `portrait` = a plain-language human portrait of the member, available to prompts as {portrait}
     (context-aware mentors/coach -- the master KNOWS the person, never reads a screen)."""
@@ -412,6 +412,12 @@ async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "") -> dict:
             ctx[name] = (val if val not in (None, "") else inp.get("default", ""))
     ctx["portrait"] = portrait or "(They haven't built a profile yet — gently ask them who they are.)"
     prompt = r["prompt"].format(**ctx)
+    # Output language (POC: the master speaks the user's tongue). English is the hub -> no directive.
+    if language and language.lower() not in ("en", "english"):
+        _ln = {"it": "Italian", "de": "German", "fr": "French", "es": "Spanish"}.get(language.lower(), language)
+        prompt += (f"\n\nIMPORTANT — RESPOND ENTIRELY IN {_ln.upper()}: write every word "
+                   f"(headings, lists, all of it) in natural, fluent {_ln}, as a native speaker would. "
+                   f"Think and write directly in {_ln}; do not translate word-for-word.")
     out_schema = r.get("output_schema") if r["output"] == "json" else None
     js = _json_schema(out_schema, r["inputs"]) if isinstance(out_schema, dict) else None
     # Per-job brain: a recipe MAY name its own model as data (e.g. "model": "deepseek-r1:14b").

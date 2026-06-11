@@ -489,8 +489,9 @@ async def recipes_run(slug: str, request: Request,
             portrait = await _build_portrait(db, owner)
         except Exception:  # noqa: BLE001
             portrait = ""
+    language = (form.get("language") or "").strip()
     try:
-        result = await run_recipe(slug, raw, portrait=portrait)
+        result = await run_recipe(slug, raw, portrait=portrait, language=language)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except BrainUnavailable:

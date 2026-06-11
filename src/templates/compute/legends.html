@@ -142,10 +142,16 @@
           <label class="block text-[11px] uppercase tracking-wider text-slate-500 mt-5 mb-1">What are you facing?</label>
           <textarea x-model="question" rows="3" placeholder="Ask your master anything…"
             class="w-full px-3 py-2 rounded-lg bg-[#070d18] border border-slate-700 text-slate-100 text-sm"></textarea>
-          <div class="flex items-center gap-3 mt-3">
+          <div class="flex items-center gap-3 mt-3 flex-wrap">
             <button @click="ask()" :disabled="busy || !question.trim()"
               class="px-5 py-2.5 rounded-lg font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-30"
               x-text="busy ? 'Asking…' : ('Ask ' + (selected?.name||'').split(' ')[0])"></button>
+            <!-- POC: the master's reply language (narrow: EN/IT). Defaults from your locale. -->
+            <div class="flex items-center gap-1 text-[11px]">
+              <span class="text-slate-500 mr-1">Reply in</span>
+              <button type="button" @click="lang='en'" :class="lang==='en'?'bg-brand text-white':'bg-slate-800 text-slate-400 hover:text-slate-200'" class="px-2 py-1 rounded font-bold">EN</button>
+              <button type="button" @click="lang='it'" :class="lang==='it'?'bg-brand text-white':'bg-slate-800 text-slate-400 hover:text-slate-200'" class="px-2 py-1 rounded font-bold">IT</button>
+            </div>
             <span class="text-xs text-red-400" x-text="err"></span>
           </div>
 
@@ -153,7 +159,7 @@
             <!-- The master's answer is platinum gold -> first-class artifact handling (consistent with recipe outputs).
                  Save/Share route through /s/{id}: serial № + staging "not distributable" watermark come free. -->
             <div class="flex flex-wrap gap-2 mb-4">
-              <button @click="readAloud(answer)" :title="speaking?'Stop reading':'Read this answer aloud'" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-700/80 hover:bg-purple-600 text-white" x-text="speaking?'⏹ Stop':'🔊 Read this'"></button>
+              <button @click="readAloud(answer, lang)" :title="speaking?'Stop reading':'Read this answer aloud'" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-700/80 hover:bg-purple-600 text-white" x-text="speaking?'⏹ Stop':'🔊 Read this'"></button>
               <button @click="openReading()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-white">📖 Reading mode</button>
               <button @click="copyOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
               <button @click="downloadOut()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download</button>
@@ -204,7 +210,7 @@ function legends(){
   return {
     token:null, houses:[], people:[], house:null, view:'houses',
     page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], suggestedFor:false, portrait:'', showWrapper:false,
-    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[], pcBusy:false, speaking:false,
+    copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[], pcBusy:false, speaking:false, lang:'en',
     init(){
       // capture token from callback hash, else localStorage
       if(location.hash.indexOf('token=')>-1){
@@ -215,6 +221,8 @@ function legends(){
       // Deep-link from the Square: ?ask=<master name> -> remember across login, then open that master
       try{ const a=new URLSearchParams(location.search).get('ask');
         if(a){ localStorage.setItem('lp_pending_ask', a); history.replaceState(null,'',location.pathname); } }catch(e){}
+      // Default reply language: bh_lang cookie (from the Square) -> device language -> English. Narrow: EN/IT.
+      try{ const c=document.cookie.match(/(?:^|;\s*)bh_lang=([a-z]{2})/i); var d=(c&&c[1])||((navigator.language||'en').slice(0,2)); this.lang=(d.toLowerCase()==='it')?'it':'en'; }catch(e){ this.lang='en'; }
       if(this.token){ this.loadHouses(); this.loadRecent(); this.consumePendingAsk(); }
     },
     consumePendingAsk(){
@@ -260,7 +268,7 @@ function legends(){
       if(!this.question.trim()) return;
       this.busy=true; this.err=''; this.answer=''; this.savedId=null; this.savedMsg='';
       try{
-        const body=new URLSearchParams({ mentor:this.selected.name, situation:this.question, portrait:this.portrait });
+        const body=new URLSearchParams({ mentor:this.selected.name, situation:this.question, portrait:this.portrait, language:this.lang });
         const r=await fetch('/api/v1/compute/bottega/recipes/mentor-session/run',{ method:'POST',
           headers:{ 'Authorization':'Bearer '+this.token, 'Content-Type':'application/x-www-form-urlencoded' }, body });
         const d=await r.json();
@@ -289,9 +297,10 @@ function legends(){
       window.open('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(t),'_blank'); },
     async shareWa(){ const u=await this._shareUrl(); const t=this._answerTitle()+' — ';
       window.open('https://wa.me/?text='+encodeURIComponent(t+u),'_blank'); },
-    readAloud(text){ try{ const s=window.speechSynthesis; if(!s){ this.err='your browser has no voice'; return; }
+    readAloud(text, lang){ try{ const s=window.speechSynthesis; if(!s){ this.err='your browser has no voice'; return; }
       if(s.speaking){ s.cancel(); this.speaking=false; return; }
       const u=new SpeechSynthesisUtterance(String(text||'').replace(/[#*_>`\[\]]/g,'').replace(/\n+/g,'. '));
+      u.lang=(lang==='it')?'it-IT':'en-US';   // voice follows the answer's language (no English robot on Italian)
       u.rate=0.92; u.onend=()=>{this.speaking=false}; u.onerror=()=>{this.speaking=false};
       s.speak(u); this.speaking=true; }catch(e){ this.speaking=false; } },
     openReading(){ this.reading=true; this.$nextTick(()=>{ const el=document.getElementById('readingMd');
