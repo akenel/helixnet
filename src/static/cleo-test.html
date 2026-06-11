@@ -232,6 +232,24 @@
   function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
 
   let rec=null;
+  // Fold a SpeechRecognition results[] array into clean text. Robust to desktop (distinct
+  // phrases -> append) AND Android/Fairphone (growing/revised restatements -> newer wins,
+  // never append). The old resultIndex+= pattern tripled on the phone ("just just checking").
+  function reconcileSpeech(segments){
+    let built='';
+    for(const raw of segments){
+      const t=(raw||'').trim(); if(!t) continue;
+      if(!built){ built=t; continue; }
+      const a=built.toLowerCase(), b=t.toLowerCase();
+      if(b.startsWith(a)){ built=t; continue; }
+      if(a.startsWith(b) || a.endsWith(b)){ continue; }
+      let i=0; const n=Math.min(a.length,b.length);
+      while(i<n && a[i]===b[i]) i++;
+      if(i >= a.length*0.5){ built=t; continue; }
+      built=(built+' '+t).trim();
+    }
+    return built.replace(/\s+/g,' ').trim();
+  }
   function micToggle(btn, ta){
     if(rec){ rec.stop(); return; }
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -239,8 +257,8 @@
     rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
     let base=ta.value?ta.value.trim()+' ':'';
     btn.classList.add('on');
-    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
-      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onresult=e=>{ const segs=[]; for(let k=0;k<e.results.length;k++) segs.push(e.results[k][0].transcript);
+      ta.value=(base+reconcileSpeech(segs)).replace(/\s+/g,' ').trimStart(); save(); };
     rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
     try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
   }

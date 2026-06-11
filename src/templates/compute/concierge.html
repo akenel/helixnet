@@ -312,16 +312,15 @@ function concierge(){
         r.lang = (this.lang==='it') ? 'it-IT' : 'en-US';   // follows the Reply-in picker (auto -> en)
         r.continuous=true; r.interimResults=true;
         this._micBase = this.draft ? this.draft.trim()+' ' : '';   // text that existed before mic
-        // Rebuild the whole transcript from the FULL results array each event -- never append
-        // incrementally. Android Chrome (Fairphone) re-fires results without advancing resultIndex,
-        // so the old `_micBase += fin` double/triple-counted ("I I was I was..."). Summing all finals
-        // + the current interim from index 0 is stable on both desktop and mobile.
-        r.onresult=(ev)=>{ let fin='', interim='';
-          for(let i=0;i<ev.results.length;i++){
-            const t=ev.results[i][0].transcript;
-            if(ev.results[i].isFinal) fin+=t+' '; else interim+=t;
-          }
-          this.draft = (this._micBase + fin + interim).replace(/\s+/g,' ').trimStart().slice(0,this.MAXLEN);
+        // Reconcile the FULL results[] array each event -- robust to BOTH engines:
+        //  - desktop Chrome: entries are DISTINCT sequential phrases -> append them.
+        //  - Android/Fairphone Chrome: entries are GROWING/REVISED restatements of the
+        //    SAME utterance ("I" / "I was" / "I was kind of...") -> newer wins, don't append.
+        // The old "sum all results" produced the staircase "I I was I was kind of..." on the phone.
+        r.onresult=(ev)=>{
+          const segs=[];
+          for(let i=0;i<ev.results.length;i++) segs.push(ev.results[i][0].transcript);
+          this.draft = (this._micBase + this._reconcileSpeech(segs)).replace(/\s+/g,' ').trimStart().slice(0,this.MAXLEN);
           this.$nextTick(()=>this.autogrow());
         };
         r.onerror=(e)=>{ if(e&&e.error==='not-allowed') this.err='Microphone blocked — allow mic access to talk.'; this.stopMic(); };
@@ -330,6 +329,22 @@ function concierge(){
       }catch(e){ this.err='Could not start the microphone.'; this.micOn=false; }
     },
     stopMic(){ this.micOn=false; try{ if(this._rec) this._rec.stop(); }catch(e){} },
+    // Fold a SpeechRecognition results[] array into clean text (see startMic for why).
+    _reconcileSpeech(segments){
+      let built='';
+      for(const raw of segments){
+        const t=(raw||'').trim(); if(!t) continue;
+        if(!built){ built=t; continue; }
+        const a=built.toLowerCase(), b=t.toLowerCase();
+        if(b.startsWith(a)){ built=t; continue; }            // pure cumulative growth -> take longer
+        if(a.startsWith(b) || a.endsWith(b)){ continue; }     // already contained -> ignore
+        let i=0; const n=Math.min(a.length,b.length);
+        while(i<n && a[i]===b[i]) i++;                         // longest common leading run
+        if(i >= a.length*0.5){ built=t; continue; }            // same utterance, revised -> newer wins
+        built=(built+' '+t).trim();                            // genuinely new phrase -> append
+      }
+      return built.replace(/\s+/g,' ').trim();
+    },
     async load(){
       try{
         const r=await fetch('/api/v1/compute/bottega/concierge/record',{headers:this.hdr()});
