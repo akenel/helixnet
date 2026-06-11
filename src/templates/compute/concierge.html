@@ -311,14 +311,17 @@ function concierge(){
         const r=new SR();
         r.lang = (this.lang==='it') ? 'it-IT' : 'en-US';   // follows the Reply-in picker (auto -> en)
         r.continuous=true; r.interimResults=true;
-        this._micBase = this.draft ? this.draft.trim()+' ' : '';
+        this._micBase = this.draft ? this.draft.trim()+' ' : '';   // text that existed before mic
+        // Rebuild the whole transcript from the FULL results array each event -- never append
+        // incrementally. Android Chrome (Fairphone) re-fires results without advancing resultIndex,
+        // so the old `_micBase += fin` double/triple-counted ("I I was I was..."). Summing all finals
+        // + the current interim from index 0 is stable on both desktop and mobile.
         r.onresult=(ev)=>{ let fin='', interim='';
-          for(let i=ev.resultIndex;i<ev.results.length;i++){
+          for(let i=0;i<ev.results.length;i++){
             const t=ev.results[i][0].transcript;
-            if(ev.results[i].isFinal) fin+=t; else interim+=t;
+            if(ev.results[i].isFinal) fin+=t+' '; else interim+=t;
           }
-          if(fin) this._micBase += fin + ' ';   // space between final chunks so words don't glue
-          this.draft = (this._micBase + interim).replace(/\s+/g,' ').trimStart().slice(0,this.MAXLEN);
+          this.draft = (this._micBase + fin + interim).replace(/\s+/g,' ').trimStart().slice(0,this.MAXLEN);
           this.$nextTick(()=>this.autogrow());
         };
         r.onerror=(e)=>{ if(e&&e.error==='not-allowed') this.err='Microphone blocked — allow mic access to talk.'; this.stopMic(); };
