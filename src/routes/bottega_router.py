@@ -29,8 +29,13 @@ from src.services.bottega_service import (
 from src.services.compute_service import credit_balance, post_ledger, ensure_starter_grant
 from src.db.models.compute_model import ComputeLedgerKind
 from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
+from src.compute import concierge as cg
 
 logger = logging.getLogger("helix.bottega_router")
+
+# The Concierge stores ONE row per member on the shared session spine: the structured
+# master-record + the running transcript, kept together (slug below).
+CONCIERGE_SLUG = "concierge-record"
 router = APIRouter(prefix="/api/v1/compute/bottega", tags=["Bottega - Onboarding"])
 
 
@@ -381,6 +386,90 @@ async def legend_questions(name: str, current_user: dict = Depends(require_botte
     return {"questions": qs}
 
 
+# --- The Concierge: persist (Phase 1) + the conversational endpoint (Phase 2) -----------------
+
+async def read_concierge(db: AsyncSession, username: str) -> dict:
+    """Read the member's Concierge state -- {record, transcript}. A blank, fully-defaulted record
+    if they've never spoken to the Concierge."""
+    row = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == username,
+        BottegaSessionModel.slug == CONCIERGE_SLUG))).scalar_one_or_none()
+    if row and row.output:
+        try:
+            data = json.loads(row.output)
+            rec = cg.merge_record(cg.blank_record(), data.get("record") or {})
+            return {"record": rec, "transcript": data.get("transcript") or []}
+        except Exception:  # noqa: BLE001
+            logger.warning("concierge record parse failed for %s", username, exc_info=True)
+    return {"record": cg.blank_record(), "transcript": []}
+
+
+async def write_concierge(db: AsyncSession, username: str, record: dict, transcript: list) -> None:
+    """Upsert the member's Concierge row (record + transcript together) on the session spine."""
+    payload = json.dumps({"record": record, "transcript": transcript[-60:]})  # cap the tail
+    row = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == username,
+        BottegaSessionModel.slug == CONCIERGE_SLUG))).scalar_one_or_none()
+    if row:
+        row.output = payload
+    else:
+        db.add(BottegaSessionModel(
+            username=username, slug=CONCIERGE_SLUG, title="Concierge Record",
+            inputs="{}", output=payload, output_type="json", tags="concierge,memory"))
+    await db.commit()
+
+
+@router.get("/concierge/record")
+async def concierge_record(current_user: dict = Depends(require_bottega_access()),
+                           db: AsyncSession = Depends(get_db_session)):
+    """The member's own master-record + transcript -- theirs to see (anti-Meta: it's their memory)."""
+    return await read_concierge(db, current_user["username"])
+
+
+@router.post("/concierge/chat")
+async def concierge_chat(request: Request,
+                         current_user: dict = Depends(require_bottega_access()),
+                         db: AsyncSession = Depends(get_db_session)):
+    """One concierge turn. Body: {message?, language?}. Empty message on a fresh member -> the
+    opening greeting. Otherwise: reply (Heisenberg) -> extract -> merge -> persist. Returns the
+    reply + the language (so the widget can read it aloud in the right voice) + the live record."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+    message = (body.get("message") or "").strip()
+    language = (body.get("language") or "").strip()
+
+    state = await read_concierge(db, current_user["username"])
+    record, transcript = state["record"], state["transcript"]
+
+    # Fresh member, no message yet -> the front-door greeting (no brain call, Angel's copy).
+    if not message and not transcript:
+        transcript.append({"role": "concierge", "content": cg.OPENING})
+        await write_concierge(db, current_user["username"], record, transcript)
+        return {"reply": cg.OPENING, "language": language, "record": record, "opening": True}
+
+    if message:
+        transcript.append({"role": "member", "content": message})
+
+    try:
+        reply = await cg.concierge_reply(transcript, record, language)
+    except BrainUnavailable:
+        raise HTTPException(status_code=503,
+                            detail="Heisenberg stepped away for a second -- try again in a moment.")
+    transcript.append({"role": "concierge", "content": reply})
+
+    # Every turn updates the JSON. Extraction is best-effort -- a bad read never breaks the chat.
+    try:
+        fresh = await cg.extract_record(transcript)
+        record = cg.merge_record(record, fresh)
+    except Exception:  # noqa: BLE001
+        logger.warning("concierge extraction failed for %s", current_user["username"], exc_info=True)
+
+    await write_concierge(db, current_user["username"], record, transcript)
+    return {"reply": reply, "language": language, "record": record}
+
+
 async def _build_portrait(db: AsyncSession, username: str) -> str:
     """A plain-language human portrait of the member -- the CONTEXT a master/coach reads so it
     mentors the REAL person. Framed for a historical master: their life + situation, NEVER apps."""
@@ -442,6 +531,15 @@ async def _build_portrait(db: AsyncSession, username: str) -> str:
         parts.append(
             f"Lately they set themselves {len(trows)} tasks and finished {done} -- read that "
             "honestly (steady follow-through, or slipping and discouraged).")
+    # Close the loop: whatever the Concierge has learned through conversation enriches the portrait
+    # every master reads. Highest-signal context, so it leads.
+    crow = next((x for x in rows if x.slug == CONCIERGE_SLUG), None)
+    if crow and crow.output:
+        try:
+            crec = json.loads(crow.output).get("record") or {}
+            parts = cg.record_to_portrait(crec) + parts
+        except Exception:  # noqa: BLE001
+            logger.warning("concierge portrait fold failed for %s", username, exc_info=True)
     if not parts:
         return ("A newcomer who hasn't told us much yet -- draw them out; ask who they are "
                 "and what they want.")
