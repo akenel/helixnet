@@ -379,7 +379,45 @@ async def extract_record(transcript: list[dict]) -> dict:
     parsed = json.loads(raw[a:b + 1])
     if not isinstance(parsed, dict):
         return {}
-    return _strip_fictions(parsed)
+    grounded = _strip_fictions(parsed)            # cheap boolean gate (catches the flagged cases free)
+    return await _audit_motivation(transcript, grounded)   # interrogator (catches the no-flag residual)
+
+
+AUDIT_SYS = """You are a strict grounding auditor for La Piazza member records. You receive the
+conversation and a few VALUES a junior extractor wrote into the member's record. For EACH value
+decide one word:
+- KEEP -- it is a genuine thing the PERSON disclosed about THEMSELVES (their real motivation, goal,
+  history, trade, or what they do).
+- DROP -- it is merely a request or command to visit, tour, open, access, or use a place, room,
+  tool, program, club, or feature (e.g. "wants a tour of X", "access to the Y", "open the Z"),
+  ESPECIALLY one that may not even exist here. A command aimed at the interface is NOT who they are.
+When unsure between a real life-goal and a feature-request, prefer DROP only if it names a place/
+feature to visit or open; otherwise KEEP. Reply with ONLY valid JSON mapping each given field to
+"keep" or "drop", e.g. {"why_they_came":"drop","goal":"keep"}. No prose."""
+
+_AUDIT_FIELDS = ("why_they_came", "goal", "current_seat")
+
+
+async def _audit_motivation(transcript: list[dict], record: dict) -> dict:
+    """The interrogator: a second, focused pass that catches a fiction the boolean gate missed
+    (the model leaked it into a motivation field WITHOUT flagging it). Fires only when there is a
+    motivation value to audit -- so a plain chat turn costs nothing. Best-effort: any failure leaves
+    the record as-is (the gate + prompt already handled the common cases)."""
+    fields = {k: record.get(k) for k in _AUDIT_FIELDS if str(record.get(k) or "").strip()}
+    if not fields:
+        return record
+    user = ("Conversation:\n" + _transcript_block(transcript) + "\n\nValues to audit:\n"
+            + "\n".join(f"- {k}: {v}" for k, v in fields.items()))
+    try:
+        raw = _strip_think(await _brain_chat(AUDIT_SYS, user, json_mode=True))
+        a, b = raw.find("{"), raw.rfind("}")
+        verdict = json.loads(raw[a:b + 1]) if (a >= 0 and b > a) else {}
+        for k in fields:
+            if str(verdict.get(k, "")).strip().lower().startswith("drop"):
+                record[k] = ""
+    except Exception:  # noqa: BLE001
+        logger.warning("audit_motivation failed", exc_info=True)
+    return record
 
 
 def _meaningful(v) -> bool:

@@ -231,6 +231,38 @@ def test_strip_fictions_blanks_motivation_when_flag_present_paraphrase_proof():
     assert out["goal"] == "teach kids to fix bikes"
 
 
+@pytest.mark.asyncio
+async def test_audit_motivation_drops_request_keeps_self_disclosure():
+    # the interrogator: catches a fiction that slipped past the boolean gate (no flag emitted)
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        return '{"why_they_came":"drop","goal":"keep","current_seat":"keep"}'
+
+    rec = cg.blank_record()
+    rec["why_they_came"] = "Requested a tour of the Innovation Lab"   # request -> should DROP
+    rec["goal"] = "teach kids to fix bikes"                          # real -> should KEEP
+    rec["current_seat"] = "semi-retired mechanic"                    # real -> should KEEP
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg._audit_motivation([{"role": "member", "content": "..."}], rec)
+    assert out["why_they_came"] == ""
+    assert out["goal"] == "teach kids to fix bikes"
+    assert out["current_seat"] == "semi-retired mechanic"
+
+
+@pytest.mark.asyncio
+async def test_audit_motivation_skips_brain_when_nothing_to_audit():
+    # a plain chat turn with no motivation captured must NOT cost a brain call
+    called = {"n": 0}
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        called["n"] += 1
+        return "{}"
+
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg._audit_motivation([{"role": "member", "content": "hi"}], cg.blank_record())
+    assert called["n"] == 0                                          # no fields -> no call
+    assert out == cg.blank_record()
+
+
 def test_safe_chips_are_grounded_and_localised():
     en = cg.safe_chips("en"); it = cg.safe_chips("it")
     assert any("Cleopatra" in c for c in en) and any("Master" in c for c in en)
