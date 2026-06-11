@@ -53,6 +53,21 @@ def test_merge_riasec_latest_nonzero_wins_clamped():
     assert merged["riasec"]["investigative"] == 0  # untouched default
 
 
+def test_merge_collapses_reworded_near_duplicates_and_caps():
+    # the real UAT bug: the extractor rewords the same idea each turn -> exact dedupe let lists balloon.
+    old = cg.merge_record(cg.blank_record(), {"conflicts": ["Initially claimed to be a retired baker from Trapani"]})
+    merged = cg.merge_record(old, {"conflicts": [
+        "Initially claimed to be a retired baker, later clarified a developer",
+        "Initially claimed to be a retired baker then said he is a developer",
+        "Asked for profile retrieval despite lacking the login",
+    ]})
+    # the three baker rewordings collapse to ONE (shared 40-char prefix); the distinct one survives
+    assert len(merged["conflicts"]) == 2
+    # and lists are hard-capped at 12
+    big = cg.merge_record(cg.blank_record(), {"affinities": [f"distinct skill number {i}" for i in range(30)]})
+    assert len(big["affinities"]) == 12
+
+
 def test_merge_conflicts_accumulate_without_duplicates():
     old = cg.merge_record(cg.blank_record(), {"conflicts": ["wants health, won't move"]})
     merged = cg.merge_record(old, {"conflicts": ["wants health, won't move", "loves outdoors, won't leave desk"]})

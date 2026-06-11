@@ -111,7 +111,7 @@
                     <div x-show="m.role!=='member'" class="md" x-html="render(m.content)"></div>
                   </div>
                   <div x-show="m.role!=='member'" class="mt-1 ml-1">
-                    <button @click="readAloud(m)" class="text-xs text-slate-500 hover:text-brand">🔊 Read aloud</button>
+                    <button @click="readAloud(m)" class="text-xs text-slate-500 hover:text-brand" x-text="speaking?'⏹ Stop reading':'🔊 Read aloud'"></button>
                   </div>
                 </div>
               </div>
@@ -252,7 +252,7 @@ function concierge(){
     starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
     // voice player: speed / volume / chosen voice -- all persisted (never pops ears twice)
-    voiceOpen:false, rate:0.92, volume:0.85, voiceName:'', voices:[], voicePicks:[],
+    voiceOpen:false, rate:0.92, volume:0.85, voiceName:'', voices:[], voicePicks:[], speaking:false,
     fields:[
       {k:'preferred_language',label:'Speaks'}, {k:'language_level',label:'Level'},
       {k:'birthdate_hint',label:'Born'},
@@ -312,7 +312,7 @@ function concierge(){
             const t=ev.results[i][0].transcript;
             if(ev.results[i].isFinal) fin+=t; else interim+=t;
           }
-          if(fin) this._micBase += fin;
+          if(fin) this._micBase += fin + ' ';   // space between final chunks so words don't glue
           this.draft = (this._micBase + interim).replace(/\s+/g,' ').trimStart();
           this.$nextTick(()=>this.autogrow());
         };
@@ -424,7 +424,9 @@ function concierge(){
     testVoice(){ const l=(this.lang==='it')?'it':'en';
       this.readAloud({lang:l, content:(l==='it')?'Benvenuto. Questa è la mia voce — regola pure velocità e volume.':'Welcome. This is my voice — set the speed and volume to your liking.'}); },
     readAloud(m){
-      try{ const s=window.speechSynthesis; if(!s) return; s.cancel();
+      try{ const s=window.speechSynthesis; if(!s) return;
+        // TOGGLE: if anything is speaking/queued, a click STOPS it (the reported "couldn't turn it off")
+        if(s.speaking || s.pending){ s.cancel(); this.speaking=false; return; }
         const text=(typeof m==='string')?m:(m&&m.content)||'';
         const lang=(m&&m.lang)||this.guessLang(text);
         const plain=text.replace(/[#*_`>\-]/g,' ').replace(/\s+/g,' ').trim();
@@ -432,8 +434,9 @@ function concierge(){
         u.lang=(lang==='it')?'it-IT':'en-US';
         u.rate=this.rate; u.volume=this.volume;
         const v=this.pickVoice(lang); if(v) u.voice=v;
-        s.speak(u);
-      }catch(e){}
+        u.onend=()=>{ this.speaking=false; }; u.onerror=()=>{ this.speaking=false; };
+        this.speaking=true; s.speak(u);
+      }catch(e){ this.speaking=false; }
     },
     login(){
       const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;

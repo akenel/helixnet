@@ -303,7 +303,7 @@
     let base=ta.value?ta.value.trim()+' ':'';
     btn.classList.add('on');
     rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
-      if(fin) base+=fin; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
     rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
     try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
   }
