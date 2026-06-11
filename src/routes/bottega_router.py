@@ -23,7 +23,7 @@ from src.db.models.bottega_model import (
 from src.db.models.backlog_model import (
     BacklogItemModel, BacklogItemType, BacklogPriority)
 from src.core.constants import HelixApplication
-from uuid import UUID
+from uuid import UUID, uuid4
 from src.core.keycloak_auth import require_roles
 from src.services.bottega_service import (
     extract_text, cv_to_bio, generate_cv, slugify, BrainUnavailable)
@@ -31,6 +31,7 @@ from src.services.compute_service import credit_balance, post_ledger, ensure_sta
 from src.db.models.compute_model import ComputeLedgerKind
 from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
 from src.compute import concierge as cg
+from src.compute import dispatcher as dsp
 
 logger = logging.getLogger("helix.bottega_router")
 
@@ -481,6 +482,45 @@ async def concierge_chat(request: Request,
     return {"reply": reply, "language": reply_lang, "record": record, "suggestions": suggestions}
 
 
+@router.post("/concierge/dispatch")
+async def concierge_dispatch(request: Request,
+                             current_user: dict = Depends(require_bottega_access()),
+                             db: AsyncSession = Depends(get_db_session)):
+    """The HANDOFF (Concierge v2). Body: {question, question_type?, priority?, language?}. Cleo
+    packages the question as a work order and dispatches it to the 2 best masters ON THE BOARD --
+    hard-grounded (no invented masters). Each handoff is logged as a named history entry (so it
+    shows in My Blueprint + the scorecard). Returns the outbound Service Interface."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+    question = (body.get("question") or body.get("message") or "").strip()
+    if not question:
+        raise HTTPException(status_code=422, detail="A question is required to dispatch.")
+    language = (body.get("language") or "").strip()
+    question_type = (body.get("question_type") or "auto").strip()
+    priority = (body.get("priority") or "normal").strip()
+
+    # The board: masters only (badge_tier=LEGEND minus the family denylist), enriched with Houses.
+    from src.services.square_bridge import list_legends, apply_houses
+    roster = apply_houses(await list_legends(masters_only=True, limit=500), await _house_map(db))
+
+    ref_id = uuid4().hex[:12]
+    wp = dsp.build_work_package(question, ref_id=ref_id, source="guest",
+                                question_type=question_type, language=language or "auto",
+                                priority=priority)
+    result = await dsp.dispatch(wp, roster, language=language,
+                                timestamp=datetime.now(timezone.utc).isoformat())
+
+    # Log the handoff on the spine -- a named job in the member's history (Block B / scorecard read it).
+    db.add(BottegaSessionModel(
+        username=current_user["username"], slug=f"dispatch-{ref_id}",
+        title=("Asked: " + question)[:90], inputs=json.dumps(wp),
+        output=json.dumps(result), output_type="json", tags="dispatch,concierge"))
+    await db.commit()
+    return result
+
+
 async def _build_portrait(db: AsyncSession, username: str) -> str:
     """A plain-language human portrait of the member -- the CONTEXT a master/coach reads so it
     mentors the REAL person. Framed for a historical master: their life + situation, NEVER apps."""
@@ -832,6 +872,27 @@ async def me_dashboard(current_user: dict = Depends(require_bottega_access()),
     def all_of(slug):
         return [_parse(s) for s in rows if s.slug == slug]
 
+    # --- the scorecard: three honest numbers so the member sees where they're at ---
+    # plumbing rows don't count as "works" the member made
+    NOISE = {"message", "notification", CONCIERGE_SLUG, "legend-houses"}
+    dispatch_rows = [s for s in rows if (s.slug or "").startswith("dispatch-")]
+    works = [s for s in rows if s.slug not in NOISE and not (s.slug or "").startswith("dispatch-")]
+    masters_met = set()
+    for s in dispatch_rows:
+        try:
+            for m in (json.loads(s.output) or {}).get("masters", []):
+                if m.get("name"):
+                    masters_met.add(m["name"])
+        except Exception:  # noqa: BLE001
+            pass
+    crec = (await read_concierge(db, user)).get("record", {})
+    scorecard = {
+        "portrait": cg.portrait_completeness(crec),   # {filled,total,pct}
+        "works": len(works),                          # things they've made/saved
+        "handoffs": len(dispatch_rows),               # questions sent to the court
+        "masters_met": len(masters_met),              # distinct masters consulted
+    }
+
     return {
         "username": user,
         "profile": _view(await _get(db, user)),
@@ -840,6 +901,7 @@ async def me_dashboard(current_user: dict = Depends(require_bottega_access()),
         "workouts": all_of("workout-plan"),
         "mentors": all_of("mentor-session"),
         "archive": latest("blueprint-archive"),
+        "scorecard": scorecard,
         "total": len(rows),
     }
 

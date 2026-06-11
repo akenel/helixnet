@@ -17,7 +17,7 @@ if (!E) { console.error('unknown target', TARGET); process.exit(2); }
 const PAGES = [
   { p: '/' }, { p: '/browse' }, { p: '/helpboard' }, { p: '/calendar' }, { p: '/raffles' },
   { p: '/compute/bottega', b: true }, { p: '/get-started', b: true },
-  { p: '/compute/legends', b: true }, { p: '/compute/me', b: true },
+  { p: '/compute/legends', b: true }, { p: '/compute/me', b: true }, { p: '/compute/concierge', b: true },
 ];
 // ignore known-noisy third-party / non-actionable console lines
 // ignore: third-party noise + EXTERNAL image CDNs (flaky, not our code — broken item images are a

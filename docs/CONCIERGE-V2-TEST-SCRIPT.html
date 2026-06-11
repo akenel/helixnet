@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cleopatra v2 — Test Runbook (Dispatcher · Scorecard · Mic · Composer)</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  ol.steps input[type=checkbox]{ width:20px; height:20px; margin-top:2px; accent-color:var(--red); flex:none; cursor:pointer; }
+  .step-body{ flex:1; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#fde8e6; color:var(--dark); }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>👑 Cleopatra v2 — Test Runbook<small>Dispatcher · Scorecard · Microphone · Roomy Composer — tested on helix.local</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report (with screenshots)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>How to use:</strong> Log in first (link below), then work top to bottom. Tick each check as you confirm it,
+    jot anything odd in the comment box under each section, and hit <strong>Copy report</strong> at the end to paste your
+    feedback back to Tigs. Your ticks &amp; notes auto-save in this browser. <span class="tag">no prod — local only</span>
+    <br><br>
+    <strong>Best on Chrome</strong> (the microphone uses Chrome's speech engine). On your phone, open the same URL in Chrome to test the mic with the phone keyboard mic.
+  </div>
+
+  <!-- 0. LOGIN -->
+  <section>
+    <h2>0 · Log in</h2>
+    <p class="why">Everything below needs you logged into the Bottega.</p>
+    <a class="open" href="https://helix.local/compute/concierge" target="_blank">Open the Concierge ↗</a>
+    <span class="url">https://helix.local/compute/concierge</span>
+    <ol class="steps" data-sec="login">
+      <li><input type="checkbox"><div class="step-body">Click <em>Log in</em>, sign in, land back on Cleopatra's page. <span class="exp">you see the chat, not the "log in" card</span></div></li>
+    </ol>
+  </section>
+
+  <!-- 1. BOARD -->
+  <section>
+    <h2>1 · The board is masters-only <span class="tag">grounding</span></h2>
+    <p class="why">The dispatcher can only route to real masters. Your family was seeded as "legends" — they must NOT be on the public board.</p>
+    <a class="open" href="https://helix.local/compute/legends" target="_blank">Open the Legends wall ↗</a>
+    <span class="url">https://helix.local/compute/legends</span>
+    <ol class="steps" data-sec="board">
+      <li><input type="checkbox"><div class="step-body">Search the wall for <em>Kenel</em>. <span class="exp">Dave / Mario / Paul Kenel do NOT appear as masters</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Browse a House or two (e.g. The Lyceum, The Atelier). <span class="exp">only real historical masters — Einstein, Curie, da Vinci, etc.</span></div></li>
+      <li><input type="checkbox"><div class="step-body">No obvious newbies / regular members on the wall. <span class="exp">it reads like a hall of legends, not a member list</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="board" placeholder="Anyone on the board who shouldn't be? Anyone missing?"></textarea>
+  </section>
+
+  <!-- 2. GREETING + LANGUAGE -->
+  <section>
+    <h2>2 · Cleopatra greets &amp; settles the language</h2>
+    <p class="why">She's the front door: five-star welcome, language-first, keeps "in the door, or out the door?".</p>
+    <a class="open" href="https://helix.local/compute/concierge" target="_blank">Open the Concierge ↗</a>
+    <ol class="steps" data-sec="greet">
+      <li><input type="checkbox"><div class="step-body">Fresh visit shows an opening greeting. <span class="exp">"we have been expecting you…", offers EN/IT, keeps the door line</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Type in English, send. <span class="exp">she replies in English and asks about your language comfort</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Set "Reply in" to <strong>IT</strong> and send a line. <span class="exp">she replies in Italian</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Tap a suggestion chip under the box. <span class="exp">it sends that line for you</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="greet" placeholder="Tone right? Language behaving? Chips useful?"></textarea>
+  </section>
+
+  <!-- 3. MICROPHONE -->
+  <section>
+    <h2>3 · The microphone 🎤 <span class="tag">talk to the machine</span></h2>
+    <p class="why">Speak instead of type — transcribed in the browser, nothing uploaded. The big one for mobile.</p>
+    <ol class="steps" data-sec="mic">
+      <li><input type="checkbox"><div class="step-body">Click 🎤 (bottom-left of the box), allow mic if asked. <span class="exp">it turns red + pulses, shows "listening…"</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Say a sentence. <span class="exp">your words appear in the box as you speak</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Click 🎤 again to stop, edit the text, then Send. <span class="exp">stops cleanly; you can fix the text before sending</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Set "Reply in" to IT, mic on, speak Italian. <span class="exp">it transcribes Italian (lang follows the picker)</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>On your phone</strong> (Chrome): same page, tap 🎤, talk. <span class="exp">phone mic works, hands-free input</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="mic" placeholder="Accuracy? Start/stop smooth? Phone behaviour?"></textarea>
+  </section>
+
+  <!-- 4. COMPOSER -->
+  <section>
+    <h2>4 · The roomy composer</h2>
+    <p class="why">No more cramped one-liner — a real editor.</p>
+    <ol class="steps" data-sec="composer">
+      <li><input type="checkbox"><div class="step-body">Box is ~3 lines tall and grows as you type a long message. <span class="exp">grows up to a limit, then scrolls — never tiny</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Press <strong>Shift+Enter</strong>. <span class="exp">adds a new line (does NOT send)</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Press <strong>Enter</strong>. <span class="exp">sends the message</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Type something, watch the char count, click 🗑️. <span class="exp">count shows; trash clears the box</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="composer" placeholder="Feel right? Anything awkward on mobile?"></textarea>
+  </section>
+
+  <!-- 5. DISPATCHER -->
+  <section>
+    <h2>5 · The Dispatcher 🏛️ <span class="tag">the handoff</span></h2>
+    <p class="why">Cleo packages your question and hands it to the 2 best masters on the board — they answer in their own voice.</p>
+    <a class="open" href="https://helix.local/compute/concierge" target="_blank">Open the Concierge ↗</a>
+    <ol class="steps" data-sec="dispatch">
+      <li><input type="checkbox"><div class="step-body">Type a real question (e.g. <em>"How do I find courage to start over at 60?"</em>) and click <strong>🏛️ Masters</strong>. <span class="exp">a "dispatched to the court" block with TWO master cards</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Each card shows a name, a House, a "why this one", and an answer. <span class="exp">real masters (not made-up names), answers in their voice</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Click 🔊 on a master card. <span class="exp">it reads that master's answer aloud</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Set "Reply in" IT, dispatch an Italian question. <span class="exp">the masters answer in Italian</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Try a nonsense / off-topic question. <span class="exp">it still picks real masters or gracefully says it can't — never invents a wizard</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>Variety:</strong> ask 3 different-topic questions (business, music, health). <span class="exp">DIFFERENT, fitting masters each time — e.g. Carnegie/Sun Tzu, Beethoven/Mozart, Hippocrates/Nightingale — not the same two every time</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="dispatch" placeholder="Right masters chosen? Answers good? Anything weird?"></textarea>
+  </section>
+
+  <!-- 6. SCORECARD -->
+  <section>
+    <h2>6 · The Scorecard 📊</h2>
+    <p class="why">Three honest numbers so a member sees where they're at.</p>
+    <a class="open" href="https://helix.local/compute/me" target="_blank">Open Your dashboard ↗</a>
+    <span class="url">https://helix.local/compute/me</span>
+    <ol class="steps" data-sec="score">
+      <li><input type="checkbox"><div class="step-body">On the <strong>Home</strong> tab, a "your scorecard" card shows 3 numbers: Portrait %, Things made, Masters consulted. <span class="exp">three stats + a progress bar</span></div></li>
+      <li><input type="checkbox"><div class="step-body">After chatting with Cleopatra, the <strong>Portrait %</strong> rises. <span class="exp">more you tell her → higher %</span></div></li>
+      <li><input type="checkbox"><div class="step-body">After dispatching questions, <strong>Masters consulted</strong> reflects it. <span class="exp">count matches the masters you reached</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Click "Tell Cleopatra more →". <span class="exp">jumps you back to the Concierge</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="score" placeholder="Numbers make sense? Useful at a glance?"></textarea>
+  </section>
+
+  <!-- 7 · RENDER / SAVED OUTPUT -->
+  <section>
+    <h2>7 · Saved handoff renders right <span class="tag">the bug you found</span></h2>
+    <p class="why">The dispatch you save must display as readable master cards in the workshop — never "[object Object]".</p>
+    <a class="open" href="https://helix.local/compute/bottega" target="_blank">Open the Workshop ↗</a>
+    <ol class="steps" data-sec="render">
+      <li><input type="checkbox"><div class="step-body">Dispatch a question, then in the output click <strong>📓 Save to Blueprint</strong>. <span class="exp">saves without error</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Open it again from your Blueprint / history. <span class="exp">the masters show as cards: name · house · why · answer — NOT "[object Object]"</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Check 📖 Reading mode + 📋 Copy on the saved handoff. <span class="exp">both produce readable text, masters included</span></div></li>
+    </ol>
+  </section>
+
+  <!-- 8 · ROBUSTNESS -->
+  <section>
+    <h2>8 · Robustness spot-checks <span class="tag">no silly errors</span></h2>
+    <p class="why">The little things that throw 400s if we're sloppy.</p>
+    <ol class="steps" data-sec="robust">
+      <li><input type="checkbox"><div class="step-body">Empty box: Send + 🏛️ Masters are disabled. <span class="exp">can't send nothing</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Send a very long multi-paragraph message. <span class="exp">handled, no error, scrolls</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Switch Auto / EN / IT a few times mid-chat. <span class="exp">replies follow the picker, no flip-flop</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Reload the page mid-conversation. <span class="exp">your chat + record are still there</span></div></li>
+    </ol>
+  </section>
+
+  <!-- OVERALL -->
+  <section>
+    <h2>★ Overall verdict</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><input type="checkbox"><div class="step-body"><strong>Ship to prod?</strong> — tick if you're happy to ship Cleopatra v2.</div></li>
+    </ol>
+    <label class="cm">the big notes — what to fix before/after ship</label>
+    <textarea data-cm="verdict" placeholder="Your call, Wolf. What's gold, what's not, what ships." style="min-height:90px"></textarea>
+  </section>
+
+  <footer>Cleopatra v2 runbook · generated 2026-06-11 · local only, no prod until you say so 🐺</footer>
+</main>
+
+<script>
+  const KEY='cleo_v2_runbook';
+  const STEPS=[];   // [{li, cb, label, ta, thumbs, shots:[{name,data}]}] indexed by DOM order
+
+  // ---- build per-step controls: comment box + 🎤 dictation + 📋/drop/📷 screenshot ----
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]');
+      const label = (li.querySelector('.step-body')?.textContent||'').trim().replace(/\s+/g,' ');
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      // comment + mic
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      // screenshot zone (paste / drop / pick)
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      li.querySelector('.step-body').appendChild(wrap);
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[] };
+    });
+  }
+
+  // ---- screenshots: downscale to keep storage small, embed as dataURL ----
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+
+  // ---- persistence (index-keyed: checks, step notes, shots; plus section textareas; + timer) ----
+  function save(){ const d={cb:[],note:[],shots:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export your report to save screenshots, then clear.'); } }
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length; document.getElementById('prog').textContent=done+'/'+STEPS.length; }
+  document.addEventListener('change',e=>{ save(); progress(); });
+  let flashT=null; function flash(msg){ const el=document.getElementById('prog'); /* lightweight notice */ if(flashT) clearTimeout(flashT); const old=el.textContent; el.textContent='⚠'; alert(msg); el.textContent=old; }
+
+  // ---- stopwatch ----
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  // ---- microphone: dictate into a note (Web Speech API, browser-only) ----
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  // ---- text copy (no images) ----
+  function copyReport(){ let out='CLEOPATRA v2 — TEST REPORT\n'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) attached (see exported report)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied. (Use Export for the version with screenshots.)')).catch(()=>prompt('Copy this:',out)); }
+
+  // ---- export a self-contained HTML report (checks + notes + embedded screenshots) ----
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>Cleopatra v2 — UAT report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>👑 Cleopatra v2 — UAT report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span> '+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='cleo-v2-uat-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+  buildSteps(); restore(); progress(); paintClock();
+</script>
+</body>
+</html>

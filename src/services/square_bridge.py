@@ -37,6 +37,18 @@ HOUSES = [
 HOUSE_NAMES = [h[0] for h in HOUSES]
 DEFAULT_HOUSE = "The Hearth"
 
+# The board is masters only. badge_tier='LEGEND' marks every seeded master persona (all carry
+# synthetic @borrowhood.local emails; no real signup is ever LEGEND). But a few REAL people were
+# seeded as LEGEND personas -- Angel's family. Legends to him, not public master-board figures.
+# Governed denylist (master-data discipline): explicit, honest, extend as curation finds more.
+# NOTE (v3, banked): living members could one day be dispatch targets by demonstrated expertise
+# (e.g. ask Sally the cook for a recipe) -- with consent + a reply loop. Out of scope for now.
+REAL_PEOPLE_EMAILS = {
+    "dave.kenel@borrowhood.local",
+    "mario.kenel@borrowhood.local",
+    "paul.kenel@borrowhood.local",
+}
+
 
 def _norm(s: str | None) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
@@ -67,14 +79,18 @@ def _ro_engine():
     return _engine
 
 
-async def list_legends(q: str | None = None, limit: int = 400) -> list[dict]:
-    """The cast: La Piazza legend personas to pick from in Ask-a-Master.
+async def list_legends(q: str | None = None, limit: int = 400, masters_only: bool = True) -> list[dict]:
+    """The cast: La Piazza legend personas to pick from in Ask-a-Master / the dispatcher.
+    masters_only (default True): only badge_tier='LEGEND' personas, minus REAL_PEOPLE_EMAILS
+    (family seeded as legends). This is THE board -- the dispatcher must never route elsewhere.
     Returns [{name, workshop, tagline, bio, ref}]. Read-only; never raises (returns [] on error)."""
     sql = (
-        "SELECT display_name, workshop_name, tagline, bio, keycloak_id::text "
+        "SELECT display_name, workshop_name, tagline, bio, keycloak_id::text, email "
         "FROM bh_user WHERE display_name IS NOT NULL AND display_name <> '' "
     )
     params: dict = {}
+    if masters_only:
+        sql += "AND badge_tier::text = 'LEGEND' "
     if q:
         sql += ("AND (display_name ILIKE :q OR workshop_name ILIKE :q "
                 "OR bio ILIKE :q OR tagline ILIKE :q) ")
@@ -87,9 +103,11 @@ async def list_legends(q: str | None = None, limit: int = 400) -> list[dict]:
     except Exception:  # noqa: BLE001
         logger.warning("square_bridge.list_legends failed", exc_info=True)
         return []
+    deny = REAL_PEOPLE_EMAILS if masters_only else set()
     return [
         {"name": r[0], "workshop": r[1] or "", "tagline": r[2] or "", "bio": r[3] or "", "ref": r[4]}
         for r in rows
+        if (r[5] or "").lower() not in deny
     ]
 
 

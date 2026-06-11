@@ -100,6 +100,39 @@ def test_record_to_portrait_empty_record_is_empty():
     assert cg.record_to_portrait({}) == []
 
 
+# --- portrait_completeness: the scorecard axis ---------------------------------------------
+
+def test_portrait_completeness_blank_is_zero():
+    s = cg.portrait_completeness(cg.blank_record())
+    assert s["filled"] == 0 and s["pct"] == 0
+    assert s["total"] == len(cg.PORTRAIT_KEYS)
+
+
+def test_portrait_completeness_counts_lists_and_riasec():
+    rec = cg.merge_record(cg.blank_record(), {
+        "goal": "teach", "aptitudes": ["repair"], "riasec": {"realistic": 80}})
+    s = cg.portrait_completeness(rec)
+    assert s["filled"] == 3                       # goal + aptitudes(list) + riasec(nonzero)
+    assert 0 < s["pct"] < 100
+
+
+def test_portrait_completeness_full_is_hundred():
+    rec = cg.blank_record()
+    for k in cg.PORTRAIT_KEYS:
+        if k == "riasec":
+            rec[k] = {"realistic": 50}
+        elif k in ("aptitudes", "affinities"):
+            rec[k] = ["x"]
+        else:
+            rec[k] = "set"
+    assert cg.portrait_completeness(rec)["pct"] == 100
+
+
+def test_portrait_completeness_none_safe():
+    assert cg.portrait_completeness({})["pct"] == 0
+    assert cg.portrait_completeness(None)["pct"] == 0
+
+
 # --- language clause: voice follows language -----------------------------------------------
 
 def test_lang_clause_auto_mirrors_explicit_forces():

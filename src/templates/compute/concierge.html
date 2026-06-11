@@ -39,14 +39,15 @@
 <body class="font-sans text-slate-200 min-h-screen antialiased">
 {% include "_lapiazza_nav.html" %}
 
-<div class="max-w-5xl mx-auto px-4 sm:px-5 py-8" x-data="concierge()" x-init="init()">
+<div class="max-w-5xl mx-auto px-4 sm:px-5 py-4" x-data="concierge()" x-init="init()">
 
-  <!-- header -->
-  <div class="text-center mb-6">
-    <div class="text-4xl mb-2">👑</div>
-    <h1 class="text-2xl sm:text-3xl font-black text-white">Cleopatra <span class="text-slate-500 font-semibold text-lg">· your greeter</span></h1>
-    <p class="text-slate-400 text-sm mt-1">She greets you in your own tongue. The more she knows you, the more every master can help the <em>real</em> you.</p>
-    <div class="h-[3px] w-32 mx-auto mt-3 grad-rule rounded"></div>
+  <!-- header (compact slim line — give the landscape to the conversation, scrolls away on phones) -->
+  <div class="flex items-center justify-center gap-2.5 mb-3 mt-0.5">
+    <span class="text-2xl leading-none">👑</span>
+    <div class="text-center sm:text-left">
+      <h1 class="text-lg sm:text-xl font-black text-white leading-tight">Cleopatra <span class="text-slate-500 font-semibold text-sm">· your greeter</span></h1>
+      <p class="text-slate-500 text-xs hidden sm:block leading-tight">She meets you in your own tongue — the more she knows you, the better every master helps.</p>
+    </div>
   </div>
 
   <!-- not logged in -->
@@ -60,7 +61,7 @@
   <div class="grid md:grid-cols-3 gap-5">
 
     <!-- chat column -->
-    <div class="md:col-span-2 card rounded-2xl flex flex-col" style="height:72vh">
+    <div class="md:col-span-2 card rounded-2xl flex flex-col" style="height:calc(100dvh - 150px)">
       <!-- language picker + voice controls -->
       <div class="border-b border-slate-800">
         <div class="flex items-center justify-between px-4 py-2.5">
@@ -99,17 +100,47 @@
       <!-- thread -->
       <div id="thread" class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <template x-for="(m,i) in messages" :key="i">
-          <div :class="m.role==='member' ? 'justify-end' : 'justify-start'" class="flex">
-            <div class="max-w-[85%]">
-              <div :class="m.role==='member' ? 'bubble-me text-white' : 'bubble-h'"
-                   class="rounded-2xl px-4 py-2.5">
-                <div x-show="m.role==='member'" class="text-[15px] leading-relaxed" x-text="m.content"></div>
-                <div x-show="m.role!=='member'" class="md" x-html="render(m.content)"></div>
+          <div>
+            <!-- normal chat bubble (the guest, or Cleopatra) -->
+            <template x-if="m.role!=='dispatch'">
+              <div :class="m.role==='member' ? 'justify-end' : 'justify-start'" class="flex">
+                <div class="max-w-[85%]">
+                  <div :class="m.role==='member' ? 'bubble-me text-white' : 'bubble-h'"
+                       class="rounded-2xl px-4 py-2.5">
+                    <div x-show="m.role==='member'" class="text-[15px] leading-relaxed whitespace-pre-wrap" x-text="m.content"></div>
+                    <div x-show="m.role!=='member'" class="md" x-html="render(m.content)"></div>
+                  </div>
+                  <div x-show="m.role!=='member'" class="mt-1 ml-1">
+                    <button @click="readAloud(m)" class="text-xs text-slate-500 hover:text-brand">🔊 Read aloud</button>
+                  </div>
+                </div>
               </div>
-              <div x-show="m.role!=='member'" class="mt-1 ml-1">
-                <button @click="readAloud(m)" class="text-xs text-slate-500 hover:text-brand">🔊 Read aloud</button>
+            </template>
+            <!-- the handoff: Cleopatra dispatched the question; the masters answer (cards) -->
+            <template x-if="m.role==='dispatch'">
+              <div class="space-y-2.5">
+                <div class="text-[11px] text-slate-500 flex items-center gap-1.5"><span class="text-sm">🏛️</span> Cleopatra dispatched this to the court</div>
+                <template x-if="!m.masters || !m.masters.length">
+                  <div class="bubble-h rounded-2xl px-4 py-3 text-sm text-slate-400" x-text="m.note || 'No master on the board fit this one — let me ask you a little more.'"></div>
+                </template>
+                <template x-for="mm in (m.masters||[])" :key="mm.name">
+                  <div class="bubble-h rounded-2xl px-4 py-3">
+                    <div class="flex items-center justify-between gap-2 mb-1.5">
+                      <div class="flex items-center gap-2">
+                        <span class="av w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" x-text="initials(mm.name)"></span>
+                        <div class="leading-tight">
+                          <div class="font-bold text-white text-sm" x-text="mm.name"></div>
+                          <div class="text-[11px] text-slate-500" x-text="mm.house"></div>
+                        </div>
+                      </div>
+                      <button @click="readAloud({content:mm.answer, lang:m.language})" class="text-xs text-slate-500 hover:text-brand shrink-0">🔊</button>
+                    </div>
+                    <div x-show="mm.why_this_one" class="text-[11px] italic text-slate-500 mb-1.5" x-text="'Why '+(mm.name||'').split(' ')[0]+' — '+mm.why_this_one"></div>
+                    <div class="md" x-html="render(mm.answer)"></div>
+                  </div>
+                </template>
               </div>
-            </div>
+            </template>
           </div>
         </template>
         <!-- typing -->
@@ -136,26 +167,44 @@
           <span>⏱️ Session timed out — your chat is saved.</span>
           <button @click="login()" class="px-2.5 py-1 rounded-md bg-brand hover:bg-branddark text-white font-semibold">Log in again</button>
         </div>
-        <div class="flex items-end gap-2">
-          <textarea x-model="draft" @keydown.enter.prevent="send()" rows="1"
-            placeholder="Tell Cleopatra who you are..."
-            class="flex-1 resize-none rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand"></textarea>
-          <button @click="send()" :disabled="busy||!draft.trim()"
-            class="px-4 py-2.5 rounded-xl font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-40">Send</button>
+        <!-- the input surface: a real, roomy editor -->
+        <div class="rounded-xl bg-slate-900 border border-slate-700 focus-within:border-brand transition-colors">
+          <textarea x-ref="ta" x-model="draft" @input="autogrow()" @keydown.enter="onEnter($event)" rows="3"
+            placeholder="Tell Cleopatra who you are — or ask a question…&#10;(Enter to send · Shift+Enter for a new line)"
+            class="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
+            style="min-height:4.75rem;max-height:15rem"></textarea>
+          <div class="flex items-center justify-between px-2.5 pb-2 pt-0.5">
+            <div class="flex items-center gap-1 text-slate-400">
+              <button x-show="micSupported" @click="toggleMic()" :title="micOn?'Stop listening':'Talk to Cleopatra'"
+                :class="micOn ? 'text-red-400 animate-pulse bg-red-500/10' : 'hover:bg-slate-800 hover:text-slate-200'"
+                class="px-2 py-1 rounded-md text-base leading-none">🎤</button>
+              <span x-show="micOn" x-cloak class="text-[11px] text-red-400">listening…</span>
+              <button x-show="draft && !micOn" @click="clearComposer()" title="Clear"
+                class="px-2 py-1 rounded-md hover:bg-slate-800 hover:text-slate-200 text-sm leading-none">🗑️</button>
+              <span class="text-[11px] text-slate-600" x-show="draft && !micOn" x-text="draft.length+' chars'"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="dispatchQ()" :disabled="busy||!canSend()" title="Hand this question to the two best masters on the board"
+                class="px-3 py-1.5 rounded-lg font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 whitespace-nowrap">🏛️ Masters</button>
+              <button @click="send()" :disabled="busy||!canSend()"
+                class="px-4 py-1.5 rounded-lg font-bold text-sm bg-brand hover:bg-branddark text-white disabled:opacity-40">Send</button>
+            </div>
+          </div>
         </div>
+        <p class="text-[11px] text-slate-600 mt-1.5"><span class="text-slate-500">🎤</span> talk or type · <span class="text-slate-500">Send</span> talks to Cleopatra · <span class="text-slate-500">🏛️ Masters</span> dispatches to the court</p>
         <p x-show="err" x-text="err" class="text-xs text-red-400 mt-1.5"></p>
       </div>
     </div>
 
     <!-- record column: what Cleopatra has learned (transparency / it's YOUR memory) -->
-    <div class="card rounded-2xl p-4 overflow-y-auto" style="height:72vh">
+    <div class="card rounded-2xl p-4 overflow-y-auto" style="height:calc(100dvh - 150px)">
       <div class="flex items-center gap-2 mb-1">
         <span class="text-lg">🧠</span>
         <h2 class="font-bold text-white text-sm">What Cleopatra has learned</h2>
       </div>
       <p class="text-[11px] text-slate-500 mb-4">This is your memory — yours to see. Every master reads it.</p>
 
-      <div x-show="empty()" class="text-slate-500 text-xs italic">Nothing yet. Say hello and tell him a little about you.</div>
+      <div x-show="empty()" class="text-slate-500 text-xs italic">Nothing yet. Say hello and tell her a little about you.</div>
 
       <div class="space-y-3 text-sm">
         <template x-for="f in fields" :key="f.k">
@@ -240,6 +289,39 @@ function concierge(){
     render(t){ const h=window.marked?marked.parse(t||''):(t||''); return window.DOMPurify?DOMPurify.sanitize(h):h; },
     scroll(){ this.$nextTick(()=>{ const el=document.getElementById('thread'); if(el) el.scrollTop=el.scrollHeight; }); },
     pick(s){ this.draft=s; this.send(); },
+    // --- composer: roomy multi-line + microphone (talk to the machine) ----------------------
+    autogrow(){ const ta=this.$refs.ta; if(!ta) return; ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,240)+'px'; },
+    onEnter(e){ if(e.shiftKey) return; e.preventDefault(); this.send(); },   // Enter sends, Shift+Enter = newline
+    canSend(){ return !!this.draft.trim(); },
+    clearComposer(){ this.draft=''; this.$nextTick(()=>this.autogrow()); },
+    // Web Speech API: speech -> text, all in the browser (no upload, no file, nothing to scan).
+    // On mobile Chrome this opens the phone mic. Dictates into the draft; you edit, then send.
+    micOn:false, micSupported:('webkitSpeechRecognition' in window)||('SpeechRecognition' in window),
+    _rec:null, _micBase:'',
+    toggleMic(){ this.micOn ? this.stopMic() : this.startMic(); },
+    startMic(){
+      if(!this.micSupported){ this.err='Your browser can\'t do voice input — try Chrome.'; return; }
+      try{
+        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+        const r=new SR();
+        r.lang = (this.lang==='it') ? 'it-IT' : 'en-US';   // follows the Reply-in picker (auto -> en)
+        r.continuous=true; r.interimResults=true;
+        this._micBase = this.draft ? this.draft.trim()+' ' : '';
+        r.onresult=(ev)=>{ let fin='', interim='';
+          for(let i=ev.resultIndex;i<ev.results.length;i++){
+            const t=ev.results[i][0].transcript;
+            if(ev.results[i].isFinal) fin+=t; else interim+=t;
+          }
+          if(fin) this._micBase += fin;
+          this.draft = (this._micBase + interim).replace(/\s+/g,' ').trimStart();
+          this.$nextTick(()=>this.autogrow());
+        };
+        r.onerror=(e)=>{ if(e&&e.error==='not-allowed') this.err='Microphone blocked — allow mic access to talk.'; this.stopMic(); };
+        r.onend=()=>{ this.micOn=false; };
+        this._rec=r; this.micOn=true; this.err=''; r.start();
+      }catch(e){ this.err='Could not start the microphone.'; this.micOn=false; }
+    },
+    stopMic(){ this.micOn=false; try{ if(this._rec) this._rec.stop(); }catch(e){} },
     async load(){
       try{
         const r=await fetch('/api/v1/compute/bottega/concierge/record',{headers:this.hdr()});
@@ -252,9 +334,13 @@ function concierge(){
       }catch(e){ this.err='Could not reach the Concierge.'; }
     },
     async send(opening){
+      if(!opening && !this.canSend()) return;
+      this.stopMic();
       const msg = opening ? '' : this.draft.trim();
-      if(!opening && !msg) return;
-      if(msg){ this.messages.push({role:'member',content:msg}); this.draft=''; }
+      if(!opening){
+        this.messages.push({role:'member',content:msg});
+        this.draft=''; this.$nextTick(()=>this.autogrow());
+      }
       this.busy=true; this.err=''; this.suggestions=[]; this.scroll();
       try{
         const r=await fetch('/api/v1/compute/bottega/concierge/chat',{
@@ -263,7 +349,7 @@ function concierge(){
         if(!r.ok){
           if(r.status===401||r.status===403){
             // session timed out: don't lose the message — stash it, undo the optimistic bubble, offer re-login
-            if(msg){ this.messages.pop(); this.draft=msg; try{ localStorage.setItem('cg_pending_draft',msg); }catch(e){} }
+            if(!opening){ this.messages.pop(); this.draft=msg; try{ localStorage.setItem('cg_pending_draft',msg); }catch(e){} }
             this.expired=true; this.err='Your session timed out — log in again to continue. Your chat and your message are saved.';
             this.busy=false; return;
           }
@@ -278,6 +364,35 @@ function concierge(){
       }catch(e){ this.err='Network hiccup — try again.'; }
       this.busy=false; this.scroll();
     },
+    // the handoff: dispatch the question to the 2 best masters on the board (Concierge v2)
+    async dispatchQ(){
+      if(this.busy || !this.canSend()) return;
+      this.stopMic();
+      const q=this.draft.trim();
+      this.messages.push({role:'member',content:q});
+      this.draft=''; this.$nextTick(()=>this.autogrow());
+      this.busy=true; this.err=''; this.suggestions=[]; this.scroll();
+      try{
+        const r=await fetch('/api/v1/compute/bottega/concierge/dispatch',{
+          method:'POST', headers:{'Content-Type':'application/json',...this.hdr()},
+          body:JSON.stringify({question:q, language:this.lang})});
+        if(!r.ok){
+          if(r.status===401||r.status===403){
+            this.messages.pop(); this.draft=q; try{ localStorage.setItem('cg_pending_draft',q); }catch(e){}
+            this.expired=true; this.err='Your session timed out — log in again. Your question is saved.';
+            this.busy=false; return;
+          }
+          this.err = r.status===503 ? 'The court stepped away — try again in a moment.' : ('Something hiccuped (error '+r.status+'). Try again.');
+          this.busy=false; return;
+        }
+        this.expired=false;
+        const d=await r.json();
+        this.messages.push({role:'dispatch', masters:d.masters||[], language:d.language||'en',
+                            note:d.note, next_action:d.next_action});
+      }catch(e){ this.err='Network hiccup — try again.'; }
+      this.busy=false; this.scroll();
+    },
+    initials(n){ return (n||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); },
     // record panel helpers
     DEF:{generation:'unknown',age_band:'unknown',gender:'unknown',life_stage:'unknown'},
     has(k){ const v=this.record[k]; return v && v!=='unknown' && (''+v).trim()!==''; },
