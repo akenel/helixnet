@@ -156,8 +156,24 @@
         </div>
       </div>
 
+      <!-- 📋 Recap: every few turns, read back what Cleo understands and ask the member to confirm -->
+      <div x-show="!busy && recap.open" x-cloak class="px-4 pb-1">
+        <div class="rounded-xl border border-slate-600 bg-slate-800/50 p-3">
+          <div class="text-[11px] uppercase tracking-wide text-slate-300 flex items-center gap-1.5 mb-2"><span>📋</span> <span x-text="S('recap_title')"></span></div>
+          <div class="space-y-1 mb-2.5">
+            <template x-for="it in recapItems()" :key="it.label">
+              <div class="text-[12.5px] leading-snug"><span class="text-slate-500" x-text="it.label+': '"></span><span class="text-slate-100" x-text="it.value"></span></div>
+            </template>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button @click="confirmRecap()" class="text-xs px-3 py-1.5 rounded-lg bg-brand hover:bg-branddark text-white font-semibold" x-text="S('recap_yes')"></button>
+            <button @click="correctRecap()" class="text-xs px-3 py-1.5 rounded-lg border border-slate-600 hover:border-slate-400 text-slate-200" x-text="S('recap_fix')"></button>
+          </div>
+        </div>
+      </div>
+
       <!-- 🎯 Sharpen: ranked either/or questions that tighten the RIASEC portrait ("narrow it down") -->
-      <div x-show="!busy && (canSharpen() || sharpen.open || sharpen.loading)" class="px-4 pb-1">
+      <div x-show="!busy && !recap.open && (canSharpen() || sharpen.open || sharpen.loading)" class="px-4 pb-1">
         <!-- collapsed trigger -->
         <button x-show="!sharpen.open && !sharpen.loading" @click="openSharpen()"
           class="w-full text-left text-xs px-3 py-2 rounded-lg border border-brand/40 bg-brand/10 text-brand hover:brightness-125 transition flex items-center gap-2">
@@ -249,7 +265,7 @@
       <div class="space-y-3 text-sm">
         <template x-for="f in fields" :key="f.k">
           <div x-show="has(f.k)">
-            <div class="text-[11px] uppercase tracking-wide text-slate-500" x-text="pl(f)"></div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-500 cursor-help decoration-dotted underline underline-offset-2 decoration-slate-700" :title="tip(f.k)" x-text="pl(f)"></div>
             <div class="text-slate-200" x-text="show(f.k)"></div>
           </div>
         </template>
@@ -257,7 +273,7 @@
         <!-- lists -->
         <template x-for="lf in listFields" :key="lf.k">
           <div x-show="(record[lf.k]||[]).length">
-            <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1" x-text="pl(lf)"></div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1 cursor-help decoration-dotted underline underline-offset-2 decoration-slate-700" :title="tip(lf.k)" x-text="pl(lf)"></div>
             <div class="flex flex-wrap gap-1.5">
               <template x-for="v in (record[lf.k]||[])" :key="v">
                 <span class="chip text-[11px] px-2 py-0.5 rounded-full" x-text="v"></span>
@@ -268,7 +284,7 @@
 
         <!-- RIASEC mini-bars -->
         <div x-show="hasRiasec()">
-          <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1.5">Interests (RIASEC)</div>
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1.5 cursor-help decoration-dotted underline underline-offset-2 decoration-slate-700" :title="tip('riasec')" x-text="S('interests')">Interests (RIASEC)</div>
           <template x-for="t in riasecRows()" :key="t.k">
             <div class="mb-1.5" x-show="t.v>0">
               <div class="flex justify-between text-[11px] text-slate-400"><span x-text="t.label"></span><span x-text="t.v"></span></div>
@@ -291,6 +307,8 @@ function concierge(){
     suggestions:[],
     // 🎯 Sharpen: a ranked batch of either/or questions that tighten RIASEC (the member's own ask)
     sharpen:{ open:false, loading:false, questions:[], idx:0 },
+    // 📋 Recap: every few turns, show what Cleo understands and ask "is this right?" (keeps focus)
+    recap:{ open:false }, memberTurns:0, lastRecapTurn:0,
     starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
     // voice player: speed / volume / chosen voice -- all persisted (never pops ears twice)
@@ -462,6 +480,7 @@ function concierge(){
         this.messages.push({role:'concierge',content:d.reply,lang:d.language||'en'});
         if(d.record) this.record=d.record;
         this.suggestions = d.opening ? this.starters : (d.suggestions||[]);
+        if(!opening){ this.memberTurns++; this.maybeRecap(); }   // E2: offer a check-in every few turns
       }catch(e){ this.err='Network hiccup — try again.'; }
       this.busy=false; this.scroll();
     },
@@ -509,8 +528,47 @@ function concierge(){
       memory:{en:'This is your memory — yours to see. Every master reads it.', it:'Questa è la tua memoria — tua da vedere. Ogni maestro la legge.'},
       nothing:{en:'Nothing yet. Say hello and tell her a little about you.', it:'Ancora niente. Salutala e raccontale un po\' di te.'},
       interests:{en:'Interests (RIASEC)', it:'Interessi (RIASEC)'},
+      recap_title:{en:'Quick check — here\'s what I understand. Is this right?', it:'Verifica veloce — ecco cosa ho capito. È corretto?'},
+      recap_yes:{en:'✓ Yes, that\'s me', it:'✓ Sì, sono io'},
+      recap_fix:{en:'✏️ Let me correct something', it:'✏️ Vorrei correggere qualcosa'},
     },
     S(key){ const e=this.i18n[key]; if(!e) return ''; return this.panelLang()==='it'?(e.it||e.en):e.en; },
+    // E1: plain-language tooltips so a member understands each term (hover on desktop). Localised.
+    tips:{
+      preferred_language:{en:'The language Cleopatra speaks with you.', it:'La lingua in cui Cleopatra ti parla.'},
+      language_level:{en:'How strong you are in that language.', it:'Quanto la padroneggi.'},
+      birthdate_hint:{en:'Whatever you shared about your age — it helps tailor the help.', it:'Quello che hai condiviso sulla tua età — aiuta a personalizzare.'},
+      goal:{en:'What you want to achieve.', it:'Cosa vuoi raggiungere.'},
+      why_they_came:{en:'Why you came to La Piazza.', it:'Perché sei venuto a La Piazza.'},
+      background:{en:'Your history, trade, years.', it:'La tua storia, il mestiere, gli anni.'},
+      current_seat:{en:'What you actually do today.', it:'Cosa fai davvero oggi.'},
+      fit_insight:{en:'Where you\'d likely thrive vs where you are now.', it:'Dove fioriresti rispetto a dove sei ora.'},
+      health_energy:{en:'Anything about your body/energy that shapes the help.', it:'Ciò che riguarda corpo/energia e influenza l\'aiuto.'},
+      generation:{en:'Your generation — gently inferred, never demanded.', it:'La tua generazione — dedotta con garbo, mai richiesta.'},
+      life_stage:{en:'Launching, building, peak, transitioning, or legacy.', it:'Avvio, costruzione, apice, transizione o eredità.'},
+      top_holland_code:{en:'Your strongest RIASEC interest themes, as letters.', it:'I tuoi temi di interesse RIASEC più forti, in lettere.'},
+      suggested_house:{en:'Which of La Piazza\'s Houses fits you best.', it:'Quale Casa di La Piazza ti si addice di più.'},
+      aptitudes:{en:'What you\'re good at and drawn to.', it:'Ciò in cui sei bravo e che ti attrae.'},
+      certificates_or_teachers:{en:'Your certifications and the people who shaped you.', it:'Le tue certificazioni e le persone che ti hanno formato.'},
+      affinities:{en:'The masters and Houses you gravitate toward.', it:'I maestri e le Case verso cui gravita il tuo interesse.'},
+      conflicts:{en:'Gentle contradictions Cleopatra noticed — recorded, not judged.', it:'Piccole contraddizioni notate da Cleopatra — annotate, non giudicate.'},
+      riasec:{en:'RIASEC — a well-known aptitude model (Realistic, Investigative, Artistic, Social, Enterprising, Conventional). It maps your INTERESTS to help find work you\'d love.', it:'RIASEC — un noto modello attitudinale (Realistico, Investigativo, Artistico, Sociale, Intraprendente, Convenzionale). Mappa i tuoi INTERESSI per aiutarti a trovare un lavoro che ami.'},
+    },
+    tip(key){ const e=this.tips[key]; if(!e) return ''; return this.panelLang()==='it'?(e.it||e.en):e.en; },
+    // E2 recap: how many fields Cleo has, the key ones to read back, and when to offer a check-in.
+    filledCount(){ let n=0; for(const f of this.fields){ if(this.has(f.k)) n++; } for(const lf of this.listFields){ if((this.record[lf.k]||[]).length) n++; } if(this.hasRiasec()) n++; return n; },
+    recapItems(){
+      const keys=['goal','why_they_came','background','current_seat','fit_insight','top_holland_code','suggested_house'];
+      const out=[];
+      for(const k of keys){ if(this.has(k)){ const f=this.fields.find(x=>x.k===k); out.push({label:f?this.pl(f):k, value:this.show(k)}); } }
+      const apt=this.record.aptitudes||[]; if(apt.length){ const lf=this.listFields.find(x=>x.k==='aptitudes'); out.push({label:lf?this.pl(lf):'aptitudes', value:apt.slice(0,4).join(', ')}); }
+      const rr=this.riasecRows().filter(t=>t.v>0).slice(0,3); if(rr.length){ out.push({label:this.S('interests'), value:rr.map(t=>t.label).join(' · ')}); }
+      return out;
+    },
+    maybeRecap(){ if(this.recap.open||this.sharpen.open) return;
+      if(this.memberTurns - this.lastRecapTurn >= 5 && this.filledCount() >= 3){ this.recap.open=true; this.lastRecapTurn=this.memberTurns; this.scroll(); } },
+    confirmRecap(){ this.recap.open=false; },
+    correctRecap(){ this.recap.open=false; this.$nextTick(()=>{ if(this.$refs.ta) this.$refs.ta.focus(); }); },
     riasecRows(){ const r=this.record.riasec||{}; const L=this.panelLang()==='it'?{realistic:'Realistico',investigative:'Investigativo',artistic:'Artistico',social:'Sociale',enterprising:'Intraprendente',conventional:'Convenzionale'}:{realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
       return Object.keys(L).map(k=>({k,label:L[k],v:r[k]||0})).sort((a,b)=>b.v-a.v); },
     // voice follows the language of THIS reply (the masters' rule), not the picker.
