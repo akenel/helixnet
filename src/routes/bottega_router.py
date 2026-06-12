@@ -402,15 +402,18 @@ async def read_concierge(db: AsyncSession, username: str) -> dict:
         try:
             data = json.loads(row.output)
             rec = cg.merge_record(cg.blank_record(), data.get("record") or {})
-            return {"record": rec, "transcript": data.get("transcript") or []}
+            # freshness: prefer the stamped updated_at, else fall back to the row's created_at
+            updated = data.get("updated_at") or (row.created_at.isoformat() if row.created_at else "")
+            return {"record": rec, "transcript": data.get("transcript") or [], "updated_at": updated}
         except Exception:  # noqa: BLE001
             logger.warning("concierge record parse failed for %s", username, exc_info=True)
-    return {"record": cg.blank_record(), "transcript": []}
+    return {"record": cg.blank_record(), "transcript": [], "updated_at": ""}
 
 
 async def write_concierge(db: AsyncSession, username: str, record: dict, transcript: list) -> None:
     """Upsert the member's Concierge row (record + transcript together) on the session spine."""
-    payload = json.dumps({"record": record, "transcript": transcript[-60:]})  # cap the tail
+    payload = json.dumps({"record": record, "transcript": transcript[-60:],     # cap the tail
+                          "updated_at": datetime.now(timezone.utc).isoformat()})  # freshness stamp (R0)
     # newest-wins + self-heal: if legacy duplicates exist, write the newest and drop the extras
     # so the (username, slug) invariant converges to one row on the next save.
     rows = (await db.execute(select(BottegaSessionModel).where(
@@ -431,8 +434,11 @@ async def write_concierge(db: AsyncSession, username: str, record: dict, transcr
 @router.get("/concierge/record")
 async def concierge_record(current_user: dict = Depends(require_bottega_access()),
                            db: AsyncSession = Depends(get_db_session)):
-    """The member's own master-record + transcript -- theirs to see (anti-Meta: it's their memory)."""
-    return await read_concierge(db, current_user["username"])
+    """The member's own master-record + transcript -- theirs to see (anti-Meta: it's their memory).
+    Includes the R0 prep-scan: where the card stands (new?, completeness, host, freshness, must-do gaps)."""
+    state = await read_concierge(db, current_user["username"])
+    state["scan"] = cg.prep_scan(state)
+    return state
 
 
 @router.get("/concierge/sharpen")
@@ -888,6 +894,42 @@ async def me(current_user: dict = Depends(require_bottega_access()),
     return {"profile": _view(await _get(db, current_user["username"]))}
 
 
+# --- Recipe-run ledger (#119): "has this been done? how many times? where are the records?" -------
+# DRY -- every run is already a bottega_sessions row (slug=recipe + timestamp); derive the summary
+# instead of keeping a parallel ledger. Powers done-checks (generalize the CV-banner-hide), visitor-mode.
+_PLUMBING_SLUGS = {"message", "notification", CONCIERGE_SLUG, "legend-houses", "legend-questions"}
+
+
+def _recipe_runs(rows) -> dict:
+    """Group a member's session rows by recipe slug -> {slug: {count, last_run, last_id}}. Plumbing
+    rows (inbox/concierge/legend cache) and per-ref dispatch rows are excluded. Pure + testable."""
+    out: dict = {}
+    for s in rows:
+        slug = getattr(s, "slug", "") or ""
+        if slug in _PLUMBING_SLUGS or slug.startswith("dispatch-"):
+            continue
+        ts = s.created_at.isoformat() if getattr(s, "created_at", None) else ""
+        cur = out.get(slug)
+        if cur is None:
+            out[slug] = {"count": 1, "last_run": ts, "last_id": str(s.id)}
+        else:
+            cur["count"] += 1
+            if ts > (cur["last_run"] or ""):
+                cur["last_run"], cur["last_id"] = ts, str(s.id)
+    return out
+
+
+@router.get("/me/activity")
+async def me_activity(current_user: dict = Depends(require_bottega_access()),
+                      db: AsyncSession = Depends(get_db_session)):
+    """The recipe-run ledger: {recipe_runs: {slug: {count, last_run, last_id}}} -- what this member has
+    run, how many times, and where the latest record is. Powers done-checks (CV/etc.) + visitor-mode."""
+    user = current_user["username"]
+    rows = (await db.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == user))).scalars().all()
+    return {"recipe_runs": _recipe_runs(rows)}
+
+
 @router.get("/me/dashboard")
 async def me_dashboard(current_user: dict = Depends(require_bottega_access()),
                        db: AsyncSession = Depends(get_db_session)):
@@ -965,6 +1007,35 @@ def _inbox_brief(s: BottegaSessionModel) -> dict:
             "created_at": s.created_at.isoformat() if s.created_at else ""}
 
 
+# --- Keystone (#107): a thread is a chain of bottega_sessions rows linked by parent_id ----------
+# The root is a message row (parent_id IS NULL); each reply is a child row. Every turn stashes
+# {author, role} in `inputs` (already a JSON field) -- role 'member' if the owner wrote it, else
+# 'master'. These pure helpers turn the row chain into the engine's transcript shape; no schema
+# change (parent_id already exists + is indexed). Tested in test_thread_engine.py.
+def _turn_author(s, owner: str) -> tuple[str, str]:
+    """(author, role) for one thread row. Prefer the explicit role we write; fall back to inferring
+    from the author vs the thread owner (legacy nudge rows carry only `from`)."""
+    try:
+        inp = json.loads(s.inputs or "{}")
+    except Exception:  # noqa: BLE001
+        inp = {}
+    author = inp.get("author") or inp.get("from") or ""
+    role = inp.get("role")
+    if role not in ("member", "master"):
+        role = "member" if author and author == owner else "master"
+    return author, role
+
+
+def _thread_transcript(rows: list, owner: str) -> list[dict]:
+    """Ordered rows (root first) -> the engine transcript [{role: member|master, content, author}].
+    role maps straight onto the concierge engine's MEMBER/YOU split."""
+    out = []
+    for s in rows:
+        author, role = _turn_author(s, owner)
+        out.append({"role": role, "content": s.output or "", "author": author})
+    return out
+
+
 def _deliver_message(db: AsyncSession, *, to: str, sender: str, body: str,
                      subject: str = "", icon: str = "💬") -> None:
     """Drop a message + its notification into a member's inbox (the one spine). Shared by the
@@ -992,14 +1063,30 @@ async def send_message(m: Message, current_user: dict = Depends(require_bottega_
 @router.get("/me/inbox")
 async def me_inbox(current_user: dict = Depends(require_bottega_access()),
                    db: AsyncSession = Depends(get_db_session)):
-    """My messages + notifications (newest first) + unread count."""
+    """My messages + notifications (newest first) + unread count. Only thread ROOTS show here
+    (parent_id IS NULL) -- thread replies live inside their thread, not as loose inbox items."""
     user = current_user["username"]
     rows = (await db.execute(
         select(BottegaSessionModel)
         .where(BottegaSessionModel.username == user,
-               BottegaSessionModel.slug.in_(["message", "notification"]))
+               BottegaSessionModel.slug.in_(["message", "notification"]),
+               BottegaSessionModel.parent_id.is_(None))
         .order_by(BottegaSessionModel.created_at.desc()).limit(100))).scalars().all()
-    items = [_inbox_brief(s) for s in rows]
+    # reply counts per root (one grouped query) so the inbox can show a 💬 thread affordance
+    root_ids = [s.id for s in rows if s.slug == "message"]
+    counts: dict = {}
+    if root_ids:
+        crows = (await db.execute(
+            select(BottegaSessionModel.parent_id, func.count())
+            .where(BottegaSessionModel.parent_id.in_(root_ids))
+            .group_by(BottegaSessionModel.parent_id))).all()
+        counts = {pid: n for pid, n in crows}
+    items = []
+    for s in rows:
+        b = _inbox_brief(s)
+        if s.slug == "message":
+            b["replies"] = int(counts.get(s.id, 0))
+        items.append(b)
     unread = sum(1 for i in items if i["kind"] == "message" and not i["read"])
     return {"items": items, "unread": unread}
 
@@ -1020,6 +1107,122 @@ async def mark_read(item_id: str, current_user: dict = Depends(require_bottega_a
         s.inputs = json.dumps(inp)
         await db.commit()
     return {"ok": True}
+
+
+# ===== Keystone (#107): a message is a replyable THREAD on the concierge engine =====
+class ThreadReply(BaseModel):
+    message: str
+    language: str = ""
+
+
+def _thread_turn_view(s, owner: str) -> dict:
+    author, role = _turn_author(s, owner)
+    return {"id": str(s.id), "author": author, "role": role, "body": s.output or "",
+            "created_at": s.created_at.isoformat() if s.created_at else ""}
+
+
+def _persona_for(author: str, role: str) -> str:
+    """Resolve the speaker's persona = its Service-Interface definition. v1: every thread speaks in
+    Cleopatra's voice. The protocol turn (slice 2) swaps THIS ONE LINE for load(master_definition)
+    keyed by the author -- the author=master_id seam, persona-as-data. The runtime never changes."""
+    return cg.BRAIN
+
+
+def _mark_read_inplace(s) -> None:
+    """Flip a row's inputs.read=True without a round-trip (caller commits)."""
+    try:
+        inp = json.loads(s.inputs or "{}")
+    except Exception:  # noqa: BLE001
+        inp = {}
+    if not inp.get("read"):
+        inp["read"] = True
+        s.inputs = json.dumps(inp)
+
+
+async def _load_thread(db: AsyncSession, root_id: UUID, owner: str):
+    """Load a thread the member owns: (root, [children oldest-first]). A root is a message row with
+    no parent (a nudge, or any message). (None, []) if missing / not theirs / not a root."""
+    root = await db.get(BottegaSessionModel, root_id)
+    if not root or root.username != owner or root.parent_id is not None or root.slug != "message":
+        return None, []
+    children = (await db.execute(
+        select(BottegaSessionModel)
+        .where(BottegaSessionModel.parent_id == root_id)
+        .order_by(BottegaSessionModel.created_at.asc()))).scalars().all()
+    return root, list(children)
+
+
+@router.get("/me/thread/{root_id}")
+async def get_thread(root_id: str, current_user: dict = Depends(require_bottega_access()),
+                     db: AsyncSession = Depends(get_db_session)):
+    """Read one thread (root + replies, oldest first). Opening it marks the root read."""
+    owner = current_user["username"]
+    try:
+        rid = UUID(root_id)
+    except (ValueError, AttributeError, TypeError):
+        raise HTTPException(status_code=404, detail="Thread not found.")
+    root, children = await _load_thread(db, rid, owner)
+    if not root:
+        raise HTTPException(status_code=404, detail="Thread not found.")
+    _mark_read_inplace(root)
+    await db.commit()
+    turns = [_thread_turn_view(s, owner) for s in [root] + children]
+    return {"id": str(root.id), "title": root.title, "turns": turns}
+
+
+@router.post("/me/thread/{root_id}/reply")
+async def reply_to_thread(root_id: str, body: ThreadReply,
+                          current_user: dict = Depends(require_bottega_access()),
+                          db: AsyncSession = Depends(get_db_session)):
+    """The keystone loop: a member replies into a thread, and the thread's master answers in-thread,
+    grounded in the member's record -- the concierge engine, reused (not a new one-shot endpoint).
+    v1 the master is Cleopatra; the persona is a parameter (author=master_id), so another master can
+    take the thread over later by changing only _persona_for."""
+    owner = current_user["username"]
+    try:
+        rid = UUID(root_id)
+    except (ValueError, AttributeError, TypeError):
+        raise HTTPException(status_code=404, detail="Thread not found.")
+    root, children = await _load_thread(db, rid, owner)
+    if not root:
+        raise HTTPException(status_code=404, detail="Thread not found.")
+    msg = (body.message or "").strip()
+    if not msg:
+        raise HTTPException(status_code=422, detail="An empty reply has nothing to say.")
+
+    # 1) the member's turn -> a child row on the spine
+    member_turn = BottegaSessionModel(
+        username=owner, slug="message", parent_id=rid, title=("You: " + msg)[:160],
+        inputs=json.dumps({"author": owner, "role": "member", "read": True}),
+        output=msg[:8000], output_type="text", tags="message,thread")
+    db.add(member_turn)
+    _mark_read_inplace(root)
+
+    # 2) the thread's master speaks -- same engine, persona = the root's author (author=master_id)
+    author, _role = _turn_author(root, owner)
+    speaker = author or "Cleopatra"
+    transcript = _thread_transcript([root] + children + [member_turn], owner)
+    state = await read_concierge(db, owner)
+    try:
+        reply = await cg.thread_reply(transcript, state["record"],
+                                      persona=_persona_for(author, _role),
+                                      language=(body.language or "").strip())
+    except BrainUnavailable:
+        await db.commit()  # keep the member's turn even if the master stepped away
+        raise HTTPException(status_code=503,
+                            detail=f"{speaker} stepped away for a second -- try again in a moment.")
+
+    # 3) the reply -> a child row too (no separate notification: the member is already in the thread)
+    master_turn = BottegaSessionModel(
+        username=owner, slug="message", parent_id=rid, title=(speaker + ": " + reply)[:160],
+        inputs=json.dumps({"author": speaker, "role": "master", "read": True}),
+        output=reply[:8000], output_type="text", tags="message,thread")
+    db.add(master_turn)
+    await db.commit()
+
+    turns = [_thread_turn_view(s, owner) for s in [root] + children + [member_turn, master_turn]]
+    return {"id": str(root.id), "title": root.title, "turns": turns,
+            "reply": {"author": speaker, "body": reply}}
 
 
 # ===== A: the living crew -- Cleo reads your board and nudges (summary + next move) =====
@@ -1099,6 +1302,70 @@ async def me_nudge(day: str | None = None,
                      subject="🎩 A note from Cleopatra", icon="🎩")
     await db.commit()
     return {"posted": True, "note": note, "day": the_day}
+
+
+# ===== A: Cleo picks your Top 10 (the morning bookend -- triage open work toward your goals) =====
+PICK_SYS = (
+    "You are Cleopatra, the member's host at La Piazza. From their OPEN tasks listed below, choose "
+    "up to TEN to focus on TODAY and put them in priority order -- the ones that move their GOALS "
+    "(projects) forward the most, plus anything stale that needs unsticking. "
+    "HARD RULES: pick ONLY from the ids given -- never invent a task. Prefer a spread across goals "
+    "over ten items from one. Return STRICT JSON only:\n"
+    '{"picks":[{"id":"<id>","why":"<=8 words"}], "note":"<one warm line, plain text>"}'
+)
+
+
+@router.post("/me/pick-top10")
+async def pick_top10(day: str | None = None,
+                     current_user: dict = Depends(require_bottega_access()),
+                     db: AsyncSession = Depends(get_db_session)):
+    """Cleo triages the member's OPEN top-level tasks (any day) and promotes up to 10 onto `day`'s
+    Top 10 in priority order. Grounded: she may only choose ids that exist; hallucinated ids drop."""
+    from datetime import date as _date
+    user = current_user["username"]
+    the_day = day or _date.today().isoformat()
+    cands = (await db.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.username == user, BottegaTaskModel.status != "done",
+        BottegaTaskModel.parent_id.is_(None))
+        .order_by(BottegaTaskModel.day).limit(60))).scalars().all()
+    if not cands:
+        return {"picked": [], "note": "Nothing open to pick from yet — add a task or set a goal and "
+                "I'll build the list with you.", "day": the_day}
+    by_id = {str(c.id): c for c in cands}
+    lines = [f"- id={cid} | {c.title} | goal={c.project or '-'} | key={c.task_key or '-'} | on={c.day}"
+             for cid, c in by_id.items()]
+    facts = f"Member: {user}\nToday: {the_day}\nOPEN TASKS ({len(by_id)}):\n" + "\n".join(lines)
+
+    ordered_ids, note = [], ""
+    try:
+        from src.services.bottega_service import _brain_chat
+        raw = await _brain_chat(PICK_SYS, facts, json_mode=True)
+        raw = cg._strip_think(raw) if hasattr(cg, "_strip_think") else raw
+        data = json.loads(raw)
+        for p in (data.get("picks") or []):
+            pid = str(p.get("id", "")).strip()
+            if pid in by_id and pid not in ordered_ids:
+                ordered_ids.append(pid)
+            if len(ordered_ids) >= 10:
+                break
+        note = (data.get("note") or "").strip()
+    except Exception:  # noqa: BLE001 -- brain down: fall back to the 10 oldest-open, still grounded
+        ordered_ids = list(by_id.keys())[:10]
+        note = "Cleo's brain is napping — here's your oldest-open ten to start with."
+
+    if not ordered_ids:                               # model returned nothing usable
+        ordered_ids = list(by_id.keys())[:10]
+    picked = []
+    for i, pid in enumerate(ordered_ids):
+        t = by_id[pid]
+        if t.day != the_day or t.section != "top10":
+            _log_history(t, "day" if t.day != the_day else "section",
+                         t.day if t.day != the_day else t.section, the_day, by="Cleopatra")
+        t.day, t.section, t.sort_order = the_day, "top10", i
+        picked.append({"id": pid, "title": t.title, "task_key": t.task_key})
+    await db.commit()
+    return {"picked": picked, "note": (note or "Here's your Top 10 — in the order I'd tackle them.")[:600],
+            "day": the_day}
 
 
 # ===== Block G: Feedback widget -> files into the Backlog (BL) board =====

@@ -164,6 +164,8 @@ RECORD_FIELDS: dict = {
     "life_stage": "unknown",   # L3 lens -- launching / building / peak / transitioning / legacy
     "affinities": [],          # the team they build: masters/houses they gravitate to
     "suggested_house": "",     # which of the 15 Houses fits (blank until clear)
+    "current_host": "",        # the STANDING HOST who mans this person's desk now (set on handoff; "" => Cleopatra)
+    "favorite_masters": [],    # masters they've used + liked -> jump straight back into that conversation
     "needs_clarification": [], # open questions the concierge still wants to resolve
     "notes": "",               # free margin -- the narrative the boxes can't hold
 }
@@ -292,6 +294,23 @@ async def concierge_reply(transcript: list[dict], record: dict, language: str = 
             "Reply now, as Heisenberg -- one short turn (2-5 sentences). If they just contradicted "
             "themselves or what they do clashes with what they want, gently hold up the mirror.")
     reply = await _brain_chat(BRAIN + _lang_clause(language), user)
+    return _strip_think(reply)
+
+
+async def thread_reply(transcript: list[dict], record: dict, persona: str = BRAIN,
+                       language: str = "") -> str:
+    """One master turn inside a discussion THREAD -- the keystone's reusable engine (#107).
+
+    Same machinery as concierge_reply (single-brain wrapper + record grounding + honesty mirror),
+    but the PERSONA is a parameter: this is the masters-as-tools seam (author = master_id). Invoking
+    a master means loading ITS brain over the shared thread; default is Cleopatra, so the inbox/nudge
+    threads speak in her voice until another master takes the thread over. The transcript ends with
+    the member's latest message; we return the speaker's next reply."""
+    user = (f"What you already know about this member:\n{_known_block(record)}\n\n"
+            f"The conversation so far:\n{_transcript_block(transcript)}\n\n"
+            "Reply now -- one short turn (2-5 sentences), in character. If they just contradicted "
+            "themselves or what they do clashes with what they want, gently hold up the mirror.")
+    reply = await _brain_chat(persona + _lang_clause(language), user)
     return _strip_think(reply)
 
 
@@ -577,6 +596,70 @@ def portrait_completeness(record: dict) -> dict:
             filled += 1
     total = len(PORTRAIT_KEYS)
     return {"filled": filled, "total": total, "pct": round(100 * filled / total) if total else 0}
+
+
+# --- R0: the prep scan + the duty checklist (the "control data" a host settles before handoff) -----
+# Angel's model (2026-06-12): before ANY host speaks it re-reads the card fresh and knows where it stands.
+# A host tries 2-3 times for each gate, then fills a guess/default/TBD and moves on -- only a HARD gate
+# truly blocks the handoff. Cleo's ONE must function is LANGUAGE; she must SELECT a House (a guess counts);
+# age + why are best-effort (deferrable / verified by another master / the user's pick). Same checklist
+# shape generalizes to any master (master_readiness). Tiers: hard (blocks) | produce (must settle, guess
+# ok, blocks) | soft (best-effort, never blocks).
+def _riasec_has_signal(record: dict) -> bool:
+    r = (record or {}).get("riasec") or {}
+    return isinstance(r, dict) and any((v or 0) > 0 for v in r.values())
+
+
+CLEO_MUST_DOS = (
+    ("language", "Settle the language", "hard",
+     lambda r: _meaningful(r.get("preferred_language"))),
+    ("house", "Select the right House", "produce",
+     lambda r: _meaningful(r.get("suggested_house"))),
+    ("age", "Age bracket (with dignity)", "soft",
+     lambda r: (r.get("age_band", "unknown") not in ("", "unknown")) or _meaningful(r.get("birthdate_hint"))),
+    ("why", "Why they came / their goal", "soft",
+     lambda r: _meaningful(r.get("why_they_came")) or _meaningful(r.get("goal"))),
+)
+_BLOCKING_TIERS = ("hard", "produce")
+
+
+def must_do_readiness(record: dict, checklist=CLEO_MUST_DOS) -> dict:
+    """Grade a card against a host's duty checklist -> {ready, done[], gaps[], blocking[]}. This is the
+    host's 'I did my job / here are the gaps'. ready = no BLOCKING gaps (hard/produce); soft gaps never
+    block. Generalizes to master_readiness(card, schema)."""
+    done, gaps = [], []
+    rec = record or {}
+    for key, label, tier, check in checklist:
+        try:
+            ok = bool(check(rec))
+        except Exception:  # noqa: BLE001 -- a malformed card must never crash the scan
+            ok = False
+        (done if ok else gaps).append({"key": key, "label": label, "tier": tier})
+    blocking = [g for g in gaps if g["tier"] in _BLOCKING_TIERS]
+    return {"ready": not blocking, "done": done, "gaps": gaps, "blocking": blocking}
+
+
+def prep_scan(state: dict) -> dict:
+    """R0 -- the prep scan. From the freshly-read state {record, transcript, updated_at?}, derive what a
+    host needs BEFORE it speaks: brand-new?, how complete is the card, who holds the desk, their favourite
+    masters, WHEN the card was last written (freshness -- not three years old), and the must-do readiness
+    (done / gaps / what's blocking). Pure + testable; run every turn so a host never acts on a stale card."""
+    state = state or {}
+    record = state.get("record") or {}
+    transcript = state.get("transcript") or []
+    comp = portrait_completeness(record)
+    readiness = must_do_readiness(record)
+    return {
+        "is_new": (not transcript) and comp["filled"] == 0,
+        "completeness": comp,
+        "current_host": record.get("current_host") or "Cleopatra",
+        "favorite_masters": list(record.get("favorite_masters") or []),
+        "updated_at": state.get("updated_at") or "",
+        "ready_to_handoff": readiness["ready"],
+        "must_do_done": readiness["done"],
+        "must_do_gaps": readiness["gaps"],
+        "blocking_gaps": readiness["blocking"],
+    }
 
 
 def record_to_portrait(record: dict) -> list[str]:
