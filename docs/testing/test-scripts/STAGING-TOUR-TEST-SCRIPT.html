@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Piazza — Staging Tour · Test Script</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --ink:#e2e8f0; --mut:#94a3b8; --red:#dc2626; --grn:#16a34a; --amb:#d97706; --brand:#dc2626; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Segoe UI',system-ui,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+  header { padding:18px 20px; border-bottom:3px solid var(--red); background:#0b1220; position:sticky; top:0; z-index:5; }
+  header h1 { margin:0; font-size:19px; }
+  header .meta { color:var(--mut); font-size:13px; margin-top:4px; }
+  header .url { color:#f87171; font-weight:600; }
+  .wrap { max-width:880px; margin:0 auto; padding:18px 16px 130px; }
+  .intro { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:16px; font-size:14px; }
+  .intro b { color:#fca5a5; }
+  .who-pill { display:inline-block; background:#0b1220; border:1px solid var(--line); border-radius:999px; padding:2px 9px; font-size:12px; color:#fca5a5; font-weight:600; }
+  .check { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .check .top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .check h3 { margin:0 0 4px; font-size:15.5px; }
+  .check .do { color:var(--mut); font-size:13.5px; margin:6px 0 10px; white-space:pre-line; }
+  .open { display:inline-block; background:var(--brand); color:#fff !important; text-decoration:none; border-radius:9px; padding:8px 14px; font-size:13.5px; font-weight:700; white-space:nowrap; }
+  .open:hover { background:#ef4444; }
+  .who { font-size:12px; color:var(--mut); margin-bottom:8px; }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .btns button { border:1px solid var(--line); background:#0b1220; color:var(--ink); border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btns button.on[data-v="pass"] { background:var(--grn); border-color:var(--grn); color:#fff; }
+  .btns button.on[data-v="issue"] { background:var(--amb); border-color:var(--amb); color:#fff; }
+  .btns button.on[data-v="skip"] { background:#475569; border-color:#475569; color:#fff; }
+  .row { display:flex; gap:8px; align-items:flex-start; }
+  textarea { width:100%; min-height:54px; background:#0b1220; border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:8px; font:inherit; font-size:13.5px; resize:vertical; }
+  .mic { border:1px solid var(--line); background:#0b1220; color:var(--ink); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; white-space:nowrap; }
+  .mic.rec { background:var(--red); border-color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  .shot { margin-top:8px; }
+  .shot .drop { border:1px dashed var(--line); border-radius:8px; padding:8px; font-size:12.5px; color:var(--mut); cursor:pointer; }
+  .shot img { max-width:100%; border-radius:8px; margin-top:6px; border:1px solid var(--line); }
+  .bar { position:fixed; bottom:0; left:0; right:0; background:#0b1220; border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .bar .prog { font-size:13px; color:var(--mut); }
+  .bar button { border:0; border-radius:9px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; }
+  .bar .copy { background:var(--red); color:#fff; }
+  .bar .dl { background:#334155; color:#fff; }
+  .bar .reset { background:transparent; color:var(--mut); border:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🐺 La Piazza — Staging Tour</h1>
+  <div class="meta">A walk through the rooms on <span class="url">staging-bottega.lapiazza.app</span> · 2026-06-12<br>
+  Sign in as <span class="who-pill">angel</span> (your full card) — or re-run a couple as <span class="who-pill">artemis</span> (second account, lighter card) to see the other view.</div>
+</header>
+<div class="wrap">
+  <div class="intro">
+    Each card has an <b>Open page ▸</b> button — tap it, it opens that room in a new tab. Do the quick check,
+    mark <b>✅ Pass</b> / <b>⚠️ Issue</b> / <b>⏭️ Skip</b>, drop a note (type or 🎤 — mic fixed this time),
+    📋 paste a screenshot if handy. Auto-saves here. At the end hit <b>Copy report → Tigs</b> and paste it back.
+  </div>
+  <div id="checks"></div>
+</div>
+<div class="bar">
+  <span class="prog" id="prog"></span>
+  <div>
+    <button class="reset" onclick="resetAll()">reset</button>
+    <button class="dl" onclick="download()">⬇ Download</button>
+    <button class="copy" onclick="copyReport()">📋 Copy report → Tigs</button>
+  </div>
+</div>
+
+<script>
+const BASE = 'https://staging-bottega.lapiazza.app';
+const CHECKS = [
+  { id:'concierge', t:'1 · The Concierge (reception)', path:'/compute/concierge', who:'angel — then try as artemis',
+    d:'Chat with Cleopatra. She greets you, settles your language, draws you out — and the "what Cleopatra knows" panel fills as you talk. Try a sensitive answer (age, a gap) and watch she stays warm, never pushy.' },
+  { id:'legends', t:'2 · Legends (the masters & houses)', path:'/compute/legends', who:'angel',
+    d:'Browse the Houses, pick a master, and look at the suggested questions. Does the picker feel right? Are the right masters in the right houses?' },
+  { id:'workshop', t:'3 · The Workshop (run a recipe)', path:'/compute/bottega', who:'angel — then artemis',
+    d:'Pick a card (e.g. Ask a Master, or a playlist) and Run it. Output renders cleanly + Save to Blueprint works. Confirm: NO "Drop your CV" banner for angel (profile built); for a lighter account it may still show.' },
+  { id:'today', t:'4 · Today (the work board)', path:'/compute/today', who:'angel',
+    d:'Your Top 10 + breakdown steps load. Add a step, set an assignee/house, try Ask Cleo. Smooth?' },
+  { id:'me', t:'5 · You — Rebuild + the keystone thread', path:'/compute/me', who:'angel',
+    d:'Scorecard + tabs. Go to 📬 Inbox, open the Cleopatra nudge, reply — she answers IN the thread. (The headline feature.) Reply nests, no litter.' },
+  { id:'exchange', t:'6 · The Exchange', path:'/compute', who:'angel',
+    d:'The compute exchange page loads and reads clearly. Anything broken or confusing at a glance?' },
+  { id:'faq', t:'7 · FAQ', path:'/compute/faq', who:'angel or logged out',
+    d:'The FAQ page loads, reads well, and the answers actually help a newcomer. Nav bar present + links work.' },
+  { id:'getstarted', t:'8 · Get Started (the front door)', path:'/get-started', who:'logged out / a fresh eye',
+    d:'The one-motion sign-up: "tell us about yourself" (CV optional). Does it feel inviting + obvious for a brand-new person walking in?' },
+];
+
+const KEY = 'staging_tour_test';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { state = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} renderProg(); }
+function st(id) { return state[id] || (state[id] = { status:'', note:'', shot:'' }); }
+
+function render() {
+  const root = document.getElementById('checks');
+  root.innerHTML = '';
+  CHECKS.forEach(c => {
+    const s = st(c.id);
+    const el = document.createElement('div');
+    el.className = 'check';
+    el.innerHTML = `
+      <div class="top">
+        <div><h3>${c.t}</h3></div>
+        <a class="open" href="${BASE}${c.path}" target="_blank" rel="noopener">Open page ▸</a>
+      </div>
+      <div class="who">sign in as: <b style="color:#fca5a5">${c.who}</b> · <span style="color:#64748b">${BASE}${c.path}</span></div>
+      <p class="do">${c.d}</p>
+      <div class="btns">
+        <button data-v="pass">✅ Pass</button>
+        <button data-v="issue">⚠️ Issue</button>
+        <button data-v="skip">⏭️ Skip</button>
+      </div>
+      <div class="row">
+        <textarea placeholder="What happened? (type or 🎤)">${s.note || ''}</textarea>
+        <button class="mic" title="voice note">🎤</button>
+      </div>
+      <div class="shot">
+        <div class="drop">📋 click here, then Ctrl/Cmd+V to paste a screenshot</div>
+        ${s.shot ? `<img src="${s.shot}">` : ''}
+      </div>`;
+    el.querySelectorAll('.btns button').forEach(b => {
+      if (s.status === b.dataset.v) b.classList.add('on');
+      b.onclick = () => { s.status = (s.status === b.dataset.v ? '' : b.dataset.v); save(); render(); };
+    });
+    const ta = el.querySelector('textarea');
+    ta.oninput = () => { s.note = ta.value; save(); };
+    el.querySelector('.mic').onclick = ev => startMic(c.id, ta, ev.currentTarget);
+    const drop = el.querySelector('.drop');
+    drop.onclick = () => { drop.textContent = '📋 ready — press Ctrl/Cmd+V now'; window._activeShot = { id:c.id, drop }; };
+    root.appendChild(el);
+  });
+  renderProg();
+}
+
+function renderProg() {
+  const done = CHECKS.filter(c => (state[c.id] && state[c.id].status)).length;
+  document.getElementById('prog').textContent = `${done}/${CHECKS.length} checked`;
+}
+
+document.addEventListener('paste', e => {
+  if (!window._activeShot) return;
+  const items = (e.clipboardData || {}).items || [];
+  for (const it of items) {
+    if (it.type && it.type.indexOf('image') === 0) {
+      const r = new FileReader();
+      r.onload = ev => { st(window._activeShot.id).shot = ev.target.result; save(); render(); };
+      r.readAsDataURL(it.getAsFile());
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
+function startMic(id, ta, mic) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice needs Chrome (and an https/localhost page). Just type the note.'); return; }
+  const rec = new SR();
+  rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = true;
+  mic.classList.add('rec');
+  const base = st(id).note || '';   // anchor once; REPLACE each fire — no cumulative cascade (fixes the #81 mic bug)
+  rec.onresult = e => {
+    let txt = '';
+    for (let i = 0; i < e.results.length; i++) if (e.results[i].isFinal) txt += e.results[i][0].transcript + ' ';
+    const s = st(id); s.note = (base ? base + ' ' : '') + txt.trim(); ta.value = s.note; save();
+  };
+  rec.onerror = () => mic.classList.remove('rec');
+  rec.onend = () => mic.classList.remove('rec');
+  rec.start();
+}
+
+function copyReport() {
+  let out = 'LA PIAZZA — STAGING TOUR REPORT (staging-bottega.lapiazza.app)\n2026-06-12 · @angel\n\n';
+  let shots = 0;
+  CHECKS.forEach(c => {
+    const s = state[c.id] || {};
+    const mark = s.status === 'pass' ? '✅ PASS' : s.status === 'issue' ? '⚠️ ISSUE' : s.status === 'skip' ? '⏭️ SKIP' : '⬜ (not checked)';
+    out += `${c.t}  [${c.path}]\n  ${mark}\n`;
+    if (s.note) out += `  note: ${s.note}\n`;
+    if (s.shot) { shots++; out += `  [screenshot #${shots} attached in page]\n`; }
+    out += '\n';
+  });
+  if (shots) out += `(${shots} screenshot(s) — drag them into chat too.)\n`;
+  navigator.clipboard.writeText(out).then(
+    () => { const b = document.querySelector('.copy'); b.textContent = '✓ Copied — paste to Tigs'; setTimeout(()=>b.textContent='📋 Copy report → Tigs', 2500); },
+    () => prompt('Copy this report:', out)
+  );
+}
+
+function download() {
+  let txt = 'LA PIAZZA — STAGING TOUR REPORT\n2026-06-12 @angel\n\n';
+  CHECKS.forEach(c => { const s = state[c.id]||{}; txt += `${c.t} [${c.path}]\n  ${s.status||'(not checked)'}\n  ${s.note||''}\n\n`; });
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+  a.download = 'staging-tour-report.txt'; a.click();
+}
+
+function resetAll() { if (confirm('Clear all answers?')) { state = {}; save(); render(); } }
+render();
+</script>
+</body>
+</html>
