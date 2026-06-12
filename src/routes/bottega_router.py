@@ -1224,6 +1224,12 @@ class TaskIn(BaseModel):
     section: str = "top10"
     title: str
     notes: str | None = None
+    parent_id: str | None = None       # set => this is a sub-task (a breakdown step)
+    estimate_min: int | None = None    # planned minutes (the "time")
+    assignee: str | None = None        # lead; defaults to the owner ("" => TBD/unassigned)
+    house: str | None = None           # resolution group / House when no specific person
+    collaborators: list[dict] | None = None   # the crew: [{who, role}] (Tesla=idea, Da Vinci=art)
+    project: str | None = None         # epic/project slug; mints the EPIC-n key at creation
 
 
 class TaskPatch(BaseModel):
@@ -1233,15 +1239,76 @@ class TaskPatch(BaseModel):
     section: str | None = None
     sort_order: int | None = None
     day: str | None = None
+    estimate_min: int | None = None
+    assignee: str | None = None
+    house: str | None = None           # resolution group / House
+    collaborators: list[dict] | None = None    # full replace of the crew list
+    project: str | None = None         # set/change the epic; mints the EPIC-n key on first assignment
+
+
+class ReorderIn(BaseModel):
+    ids: list[str]                     # the new top-to-bottom order; index => sort_order
 
 
 class JourneyStartIn(BaseModel):
     date: str
 
 
+def _clean_collaborators(raw) -> list[dict]:
+    """Normalise the crew list to [{who, role}] with non-empty 'who'. Accepts dicts or strings."""
+    out = []
+    for c in (raw or [])[:20]:
+        if isinstance(c, str):
+            who, role = c.strip(), ""
+        elif isinstance(c, dict):
+            who, role = str(c.get("who", "")).strip(), str(c.get("role", "")).strip()
+        else:
+            continue
+        if who:
+            out.append({"who": who[:100], "role": role[:80]})
+    return out
+
+
 def _task_view(t: BottegaTaskModel) -> dict:
+    try:
+        hist = json.loads(t.history) if t.history else []
+    except (ValueError, TypeError):
+        hist = []
+    try:
+        crew = json.loads(t.collaborators) if t.collaborators else []
+    except (ValueError, TypeError):
+        crew = []
     return {"id": str(t.id), "day": t.day, "section": t.section, "title": t.title,
-            "notes": t.notes or "", "status": t.status, "sort_order": t.sort_order}
+            "notes": t.notes or "", "status": t.status, "sort_order": t.sort_order,
+            "parent_id": str(t.parent_id) if t.parent_id else None,
+            "estimate_min": t.estimate_min, "assignee": t.assignee, "house": t.house,
+            "collaborators": crew, "project": t.project, "task_key": t.task_key,
+            "history": hist}
+
+
+async def _next_task_key(db: AsyncSession, username: str, project: str) -> str:
+    """EPIC-n: next number in this member's project (e.g. BOTTEGA-12). Per-user, per-project."""
+    n = (await db.execute(select(func.count()).where(
+        BottegaTaskModel.username == username,
+        BottegaTaskModel.project == project,
+        BottegaTaskModel.task_key.isnot(None)))).scalar() or 0
+    return f"{project.strip().upper().replace(' ', '-')[:24]}-{n + 1}"
+
+
+_HISTORY_CAP = 50  # keep the last N edits per task -- "a little version control", not a black hole
+
+
+def _log_history(t: BottegaTaskModel, field: str, old, new, *, by: str) -> None:
+    """Append one append-only edit row to the task's history JSON (bounded)."""
+    if old == new:
+        return
+    try:
+        hist = json.loads(t.history) if t.history else []
+    except (ValueError, TypeError):
+        hist = []
+    hist.append({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                 "by": by, "field": field, "from": old, "to": new})
+    t.history = json.dumps(hist[-_HISTORY_CAP:], ensure_ascii=False)
 
 
 async def _own_task(db: AsyncSession, task_id: str, username: str) -> BottegaTaskModel:
@@ -1274,15 +1341,32 @@ async def today(day: str, current_user: dict = Depends(require_bottega_access())
 @router.post("/today/tasks")
 async def create_task(t: TaskIn, current_user: dict = Depends(require_bottega_access()),
                       db: AsyncSession = Depends(get_db_session)):
+    username = current_user["username"]
     title = (t.title or "").strip()
     if not title:
         raise HTTPException(status_code=400, detail="give the task a few words")
     section = t.section if t.section in ("top10", "bonus") else "top10"
     n = (await db.execute(select(func.coalesce(func.max(BottegaTaskModel.sort_order), 0)).where(
-        BottegaTaskModel.username == current_user["username"],
+        BottegaTaskModel.username == username,
         BottegaTaskModel.day == t.day, BottegaTaskModel.section == section))).scalar() + 1
-    task = BottegaTaskModel(username=current_user["username"], day=t.day, section=section,
-                            title=title[:300], notes=(t.notes or None), status="open", sort_order=n)
+    # a sub-task must point at a real task this member owns
+    parent = None
+    if t.parent_id:
+        parent = await _own_task(db, t.parent_id, username)
+    project = (t.project or (parent.project if parent else None) or None)
+    if project:
+        project = project.strip().lower()[:40] or None
+    task = BottegaTaskModel(
+        username=username, day=t.day, section=section, title=title[:300],
+        notes=(t.notes or None), status="open", sort_order=n,
+        parent_id=parent.id if parent else None,
+        estimate_min=t.estimate_min if (t.estimate_min and t.estimate_min > 0) else None,
+        assignee=(t.assignee if t.assignee is not None else username),  # owner first; ""/null => TBD
+        house=(t.house.strip()[:60] or None) if t.house else None,
+        collaborators=(json.dumps(_clean_collaborators(t.collaborators), ensure_ascii=False)
+                       if t.collaborators else None),
+        project=project,
+        task_key=(await _next_task_key(db, username, project) if (project and not parent) else None))
     db.add(task)
     await db.commit()
     await db.refresh(task)
@@ -1293,19 +1377,52 @@ async def create_task(t: TaskIn, current_user: dict = Depends(require_bottega_ac
 async def update_task(task_id: str, p: TaskPatch,
                       current_user: dict = Depends(require_bottega_access()),
                       db: AsyncSession = Depends(get_db_session)):
-    t = await _own_task(db, task_id, current_user["username"])
+    username = current_user["username"]
+    t = await _own_task(db, task_id, username)
     if p.title is not None:
-        t.title = p.title.strip()[:300]
+        nv = p.title.strip()[:300]
+        _log_history(t, "title", t.title, nv, by=username)
+        t.title = nv
     if p.notes is not None:
-        t.notes = p.notes or None
+        nv = p.notes or None
+        _log_history(t, "notes", t.notes, nv, by=username)
+        t.notes = nv
     if p.status in ("open", "done"):
+        _log_history(t, "status", t.status, p.status, by=username)
         t.status = p.status
     if p.section in ("top10", "bonus"):
         t.section = p.section
     if p.sort_order is not None:
         t.sort_order = p.sort_order
     if p.day is not None:
+        _log_history(t, "day", t.day, p.day, by=username)
         t.day = p.day
+    if p.estimate_min is not None:
+        nv = p.estimate_min if p.estimate_min > 0 else None
+        _log_history(t, "estimate_min", t.estimate_min, nv, by=username)
+        t.estimate_min = nv
+    if p.assignee is not None:
+        nv = p.assignee.strip()[:100] or None   # "" => TBD/unassigned (the auto-router can claim it)
+        _log_history(t, "assignee", t.assignee, nv, by=username)
+        t.assignee = nv
+    if p.house is not None:
+        nv = p.house.strip()[:60] or None
+        _log_history(t, "house", t.house, nv, by=username)
+        t.house = nv
+    if p.collaborators is not None:
+        crew = _clean_collaborators(p.collaborators)
+        nv = json.dumps(crew, ensure_ascii=False) if crew else None
+        if nv != t.collaborators:
+            _log_history(t, "collaborators", None, [c["who"] for c in crew], by=username)
+        t.collaborators = nv
+    if p.project is not None:
+        nv = (p.project.strip().lower()[:40] or None)
+        if nv != t.project:
+            _log_history(t, "project", t.project, nv, by=username)
+            t.project = nv
+            # mint a key the first time a (top-level) task joins a project; keep it once minted
+            if nv and not t.task_key and not t.parent_id:
+                t.task_key = await _next_task_key(db, username, nv)
     await db.commit()
     await db.refresh(t)
     return _task_view(t)
@@ -1315,9 +1432,30 @@ async def update_task(task_id: str, p: TaskPatch,
 async def delete_task(task_id: str, current_user: dict = Depends(require_bottega_access()),
                       db: AsyncSession = Depends(get_db_session)):
     t = await _own_task(db, task_id, current_user["username"])
+    # cascade: deleting a task takes its breakdown steps with it
+    kids = (await db.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.parent_id == t.id))).scalars().all()
+    for k in kids:
+        await db.delete(k)
     await db.delete(t)
     await db.commit()
-    return {"deleted": True}
+    return {"deleted": True, "with_subtasks": len(kids)}
+
+
+@router.post("/today/reorder")
+async def reorder_tasks(r: ReorderIn, current_user: dict = Depends(require_bottega_access()),
+                        db: AsyncSession = Depends(get_db_session)):
+    """Set sort_order from the given top-to-bottom id list (drag/▲▼ result). Owns-check each."""
+    username = current_user["username"]
+    rows = (await db.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.username == username,
+        BottegaTaskModel.id.in_(r.ids)))).scalars().all()
+    by_id = {str(x.id): x for x in rows}
+    for i, tid in enumerate(r.ids):
+        if tid in by_id:
+            by_id[tid].sort_order = i
+    await db.commit()
+    return {"reordered": len(by_id)}
 
 
 @router.post("/today/tasks/{task_id}/move")

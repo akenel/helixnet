@@ -127,6 +127,30 @@ class BottegaTaskModel(Base):
     status: Mapped[str] = mapped_column(
         String(10), nullable=False, default="open", comment="open | done")
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # --- breakdowns block (2026-06-12) ---
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True, index=True,
+        comment="if set, this row is a SUB-TASK of that task id (one level deep)")
+    estimate_min: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, comment="planned minutes for this task (the 'time')")
+    assignee: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, index=True,
+        comment="who the ask is assigned to; defaults to the owner, reassignable (later: a master)")
+    house: Mapped[str | None] = mapped_column(
+        String(60), nullable=True, index=True,
+        comment="resolution group / House that owns the ask when no specific person does")
+    collaborators: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="JSON array of {who, role} -- the crew (e.g. Tesla=the idea, Da Vinci=the paintings)")
+    history: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="JSON array of edits [{at, field, from, to}] -- a little version control")
+    project: Mapped[str | None] = mapped_column(
+        String(40), nullable=True, index=True,
+        comment="epic/project slug this task rolls up to (e.g. 'bottega'); null = loose daily task")
+    task_key: Mapped[str | None] = mapped_column(
+        String(60), nullable=True, index=True,
+        comment="stable version-control handle, EPIC-n (e.g. BOTTEGA-12); set when a project is")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(

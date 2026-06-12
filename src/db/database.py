@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager, contextmanager
 from typing import AsyncGenerator, Iterator, Optional
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from src.db.models.base import Base
 from src.core.config import get_settings
 
@@ -103,7 +103,42 @@ async def init_db_tables() -> None:
     async with async_engine.begin() as conn:
         logger.info("Checking database for missing tables and attempting creation...")
         await conn.run_sync(Base.metadata.create_all)
+    await _ensure_lightweight_columns()
     logger.info("✅ Database table initialization complete.")
+
+
+# Idempotent, additive-only column migrations for tables that already exist.
+# create_all() only makes MISSING tables -- it never adds columns to a table that
+# is already there. These ALTERs run on every env (not debug-gated) and are safe on
+# a shared DB: ADD COLUMN IF NOT EXISTS is non-destructive and backward-compatible
+# (older code that doesn't select the column is unaffected). Postgres only.
+_ADDITIVE_COLUMNS: list[str] = [
+    # Today "breakdowns" block (2026-06-12): sub-tasks, time, assignee, edit history.
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS parent_id UUID",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS estimate_min INTEGER",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS assignee VARCHAR(100)",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS house VARCHAR(60)",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS collaborators TEXT",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS history TEXT",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS project VARCHAR(40)",
+    "ALTER TABLE bottega_tasks ADD COLUMN IF NOT EXISTS task_key VARCHAR(60)",
+    "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_parent_id ON bottega_tasks (parent_id)",
+    "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_assignee ON bottega_tasks (assignee)",
+    "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_house ON bottega_tasks (house)",
+    "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_project ON bottega_tasks (project)",
+    "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_task_key ON bottega_tasks (task_key)",
+]
+
+
+async def _ensure_lightweight_columns() -> None:
+    """Run the additive ALTERs above. Each is independent and forgiving -- one failure
+    (e.g. table not created yet on a brand-new DB) must not block the others or boot."""
+    for stmt in _ADDITIVE_COLUMNS:
+        try:
+            async with async_engine.begin() as conn:
+                await conn.execute(text(stmt))
+        except Exception as e:  # pragma: no cover - defensive, never block startup
+            logger.warning(f"additive migration skipped ({stmt[:60]}...): {e}")
 
 # ================================================================
 # 🧹 CLEANUP

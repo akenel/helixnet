@@ -52,6 +52,7 @@
       <div x-show="tasks.length" class="mt-3 text-[13px] text-slate-300 font-semibold">
         ✅ <b class="text-emerald-400" x-text="doneAll()"></b> of <b x-text="totalAll()"></b> done
         <span class="text-slate-400" x-text="(totalAll()>0&&doneAll()===totalAll())?'— all clear! 🏆':(doneAll()>0?'— keep going 💪':'— let\'s go 🐺')"></span>
+        <span x-show="estTotal()>0" class="text-amber-300/90 ml-1" x-text="'· ⏱ '+fmtMins(estTotal())+' planned'"></span>
       </div>
     </div>
 
@@ -61,10 +62,8 @@
         <button @click="shiftDay(-1)" class="w-10 h-10 rounded-xl card text-lg hover:border-brand/50" title="previous day">◀</button>
         <button @click="goToday()" class="px-3 h-10 rounded-xl card text-sm font-bold hover:border-brand/50" x-text="isToday?'Today':dayLabelShort"></button>
         <button @click="shiftDay(1)" class="w-10 h-10 rounded-xl card text-lg hover:border-brand/50" title="next day">▶</button>
-        <!-- jump to ANY day (calendar pick) -->
         <input type="date" :value="viewDay" @change="jumpTo($event.target.value)" title="jump to any day"
                class="h-10 rounded-xl card px-2 text-sm text-slate-300 bg-transparent hover:border-brand/50 noprint">
-        <!-- shared hidden picker: move a task to any day, forward or back -->
         <input type="date" x-ref="mover" @change="doMove($event.target.value)" class="hidden">
       </div>
       <div class="flex items-center gap-1.5">
@@ -82,22 +81,66 @@
     <!-- ===== TOP 10 ===== -->
     <div class="mb-5">
       <div class="flex items-baseline justify-between mb-2">
-        <h2 class="text-lg font-black text-white">🎯 Top 10 <span class="text-slate-500 text-sm font-semibold" x-text="'('+doneCount('top10')+'/'+count('top10')+')'"></span></h2>
+        <h2 class="text-lg font-black text-white">🎯 Top 10 <span class="text-slate-500 text-sm font-semibold" x-text="'('+doneTop('top10')+'/'+countTop('top10')+')'"></span></h2>
       </div>
       <div class="space-y-2">
-        <template x-for="t in shown('top10')" :key="t.id">
+        <template x-for="t in topShown('top10')" :key="t.id">
           <div class="card rounded-xl p-3">
-            <div class="flex items-center gap-3">
+            <!-- main row -->
+            <div class="flex items-center gap-2">
               <button @click="toggle(t)" class="text-2xl leading-none shrink-0" x-text="t.status==='done'?'✅':'⬜'"></button>
-              <button @click="editTitle(t)" class="flex-1 text-left text-[15px]" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
-              <button @click="editNotes(t)" class="text-slate-500 hover:text-slate-200 text-lg noprint" title="note">📝</button>
-              <button @click="pickMove(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to any day (forward or back)">📅</button>
-              <button @click="del(t)" class="text-slate-600 hover:text-rose-400 text-lg noprint" title="delete">🗑️</button>
+              <button @click="editTitle(t)" class="flex-1 text-left text-[15px] min-w-0 break-words" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
+              <span x-show="t.task_key" class="shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand/20 text-brand border border-brand/40" x-text="t.task_key"></span>
+              <span x-show="t.estimate_min" class="shrink-0 text-[11px] text-amber-300/90" x-text="'⏱ '+fmtMins(t.estimate_min)"></span>
+              <button @click="t._open=!t._open" class="shrink-0 text-slate-500 hover:text-white text-xl leading-none noprint" title="details">⋯</button>
             </div>
-            <div x-show="t.notes" class="text-[12px] text-slate-400 pl-11 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
+            <!-- who / house / crew / steps -->
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-9 mt-1 text-[11px]" x-show="t.assignee||t.house||(t.collaborators&&t.collaborators.length)||subTotal(t)">
+              <span class="text-slate-300" x-text="whoLabel(t)"></span>
+              <span x-show="t.house" class="text-sky-300/90" x-text="'🏛 '+t.house"></span>
+              <span x-show="t.collaborators&&t.collaborators.length" class="text-fuchsia-300/90" x-text="'🤝 '+crewLabel(t)"></span>
+              <span x-show="subTotal(t)" class="text-emerald-300/90" x-text="'🌳 '+subDone(t)+'/'+subTotal(t)+' steps'"></span>
+            </div>
+            <!-- notes -->
+            <div x-show="t.notes" class="text-[12px] text-slate-400 pl-9 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
+            <!-- sub-tasks (the breakdown) -->
+            <div class="pl-9 mt-2 space-y-1" x-show="subTotal(t) || t._open">
+              <template x-for="s in subsOf(t.id)" :key="s.id">
+                <div class="flex items-center gap-2 border-l border-slate-700 pl-2">
+                  <button @click="toggle(s)" class="text-lg leading-none shrink-0" x-text="s.status==='done'?'✅':'⬜'"></button>
+                  <button @click="editTitle(s)" class="flex-1 text-left text-[13px] break-words" :class="s.status==='done'?'strike':'text-slate-300'" x-text="s.title"></button>
+                  <button @click="del(s)" class="shrink-0 text-slate-600 hover:text-rose-400 noprint" title="delete step">🗑️</button>
+                </div>
+              </template>
+              <div class="flex gap-2 noprint" x-show="t._open">
+                <input x-model="t._newSub" @keydown.enter="addSub(t)" type="text" maxlength="300" placeholder="add a step…" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-[13px]">
+                <button @click="addSub(t)" class="px-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">+ step</button>
+              </div>
+            </div>
+            <!-- details drawer -->
+            <div x-show="t._open" x-cloak class="pl-9 mt-2 noprint">
+              <div class="flex flex-wrap gap-1.5 text-[11px]">
+                <button @click="reorder('top10',t,-1)" class="px-2 py-1 rounded card hover:border-brand/50" title="move up">▲</button>
+                <button @click="reorder('top10',t,1)" class="px-2 py-1 rounded card hover:border-brand/50" title="move down">▼</button>
+                <button @click="editNotes(t)" class="px-2 py-1 rounded card hover:border-brand/50">📝 note</button>
+                <button @click="setTime(t)" class="px-2 py-1 rounded card hover:border-brand/50">⏱ time</button>
+                <button @click="setAssignee(t)" class="px-2 py-1 rounded card hover:border-brand/50">👤 assign</button>
+                <button @click="setHouse(t)" class="px-2 py-1 rounded card hover:border-brand/50">🏛 house</button>
+                <button @click="setCollab(t)" class="px-2 py-1 rounded card hover:border-brand/50">🤝 crew</button>
+                <button @click="setProject(t)" class="px-2 py-1 rounded card hover:border-brand/50">🏷 project</button>
+                <button @click="pickMove(t)" class="px-2 py-1 rounded card hover:border-amber-400/60">📅 move</button>
+                <button @click="t._hist=!t._hist" x-show="t.history&&t.history.length" class="px-2 py-1 rounded card hover:border-brand/50" x-text="'🕐 history ('+t.history.length+')'"></button>
+                <button @click="del(t)" class="px-2 py-1 rounded card hover:border-rose-400/60 text-rose-300">🗑️</button>
+              </div>
+              <div x-show="t._hist && t.history && t.history.length" class="mt-2 text-[10.5px] text-slate-500 space-y-0.5 border-l border-slate-700 pl-2">
+                <template x-for="(h,i) in histRows(t)" :key="i">
+                  <div><span class="text-slate-400" x-text="h.field"></span>: <span x-text="fmtVal(h.from)"></span> → <span class="text-slate-300" x-text="fmtVal(h.to)"></span> <span class="text-slate-600" x-text="'· '+shortTime(h.at)"></span></div>
+                </template>
+              </div>
+            </div>
           </div>
         </template>
-        <template x-if="shown('top10').length===0"><div class="text-sm text-slate-600 px-1 py-2" x-text="filter==='all'?'Nothing yet — add your first below 👇':'nothing here'"></div></template>
+        <template x-if="topShown('top10').length===0"><div class="text-sm text-slate-600 px-1 py-2" x-text="filter==='all'?'Nothing yet — add your first below 👇':'nothing here'"></div></template>
       </div>
       <div class="flex gap-2 mt-2 noprint">
         <input x-model="newTop" @keydown.enter="add('top10')" type="text" maxlength="300" placeholder="add a task…" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-[15px]">
@@ -108,22 +151,61 @@
     <!-- ===== BONUS ROUND ===== -->
     <div class="mb-6">
       <div class="flex items-baseline justify-between mb-2">
-        <h2 class="text-lg font-black text-white">✨ Bonus Round <span class="text-slate-500 text-sm font-semibold" x-text="'('+doneCount('bonus')+'/'+count('bonus')+')'"></span></h2>
+        <h2 class="text-lg font-black text-white">✨ Bonus Round <span class="text-slate-500 text-sm font-semibold" x-text="'('+doneTop('bonus')+'/'+countTop('bonus')+')'"></span></h2>
       </div>
       <div class="space-y-2">
-        <template x-for="t in shown('bonus')" :key="t.id">
+        <template x-for="t in topShown('bonus')" :key="t.id">
           <div class="card rounded-xl p-3">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <button @click="toggle(t)" class="text-2xl leading-none shrink-0" x-text="t.status==='done'?'✅':'⬜'"></button>
-              <button @click="editTitle(t)" class="flex-1 text-left text-[15px]" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
-              <button @click="editNotes(t)" class="text-slate-500 hover:text-slate-200 text-lg noprint" title="note">📝</button>
-              <button @click="pickMove(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to any day (forward or back)">📅</button>
-              <button @click="del(t)" class="text-slate-600 hover:text-rose-400 text-lg noprint" title="delete">🗑️</button>
+              <button @click="editTitle(t)" class="flex-1 text-left text-[15px] min-w-0 break-words" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
+              <span x-show="t.task_key" class="shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand/20 text-brand border border-brand/40" x-text="t.task_key"></span>
+              <span x-show="t.estimate_min" class="shrink-0 text-[11px] text-amber-300/90" x-text="'⏱ '+fmtMins(t.estimate_min)"></span>
+              <button @click="t._open=!t._open" class="shrink-0 text-slate-500 hover:text-white text-xl leading-none noprint" title="details">⋯</button>
             </div>
-            <div x-show="t.notes" class="text-[12px] text-slate-400 pl-11 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-9 mt-1 text-[11px]" x-show="t.assignee||t.house||(t.collaborators&&t.collaborators.length)||subTotal(t)">
+              <span class="text-slate-300" x-text="whoLabel(t)"></span>
+              <span x-show="t.house" class="text-sky-300/90" x-text="'🏛 '+t.house"></span>
+              <span x-show="t.collaborators&&t.collaborators.length" class="text-fuchsia-300/90" x-text="'🤝 '+crewLabel(t)"></span>
+              <span x-show="subTotal(t)" class="text-emerald-300/90" x-text="'🌳 '+subDone(t)+'/'+subTotal(t)+' steps'"></span>
+            </div>
+            <div x-show="t.notes" class="text-[12px] text-slate-400 pl-9 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
+            <div class="pl-9 mt-2 space-y-1" x-show="subTotal(t) || t._open">
+              <template x-for="s in subsOf(t.id)" :key="s.id">
+                <div class="flex items-center gap-2 border-l border-slate-700 pl-2">
+                  <button @click="toggle(s)" class="text-lg leading-none shrink-0" x-text="s.status==='done'?'✅':'⬜'"></button>
+                  <button @click="editTitle(s)" class="flex-1 text-left text-[13px] break-words" :class="s.status==='done'?'strike':'text-slate-300'" x-text="s.title"></button>
+                  <button @click="del(s)" class="shrink-0 text-slate-600 hover:text-rose-400 noprint" title="delete step">🗑️</button>
+                </div>
+              </template>
+              <div class="flex gap-2 noprint" x-show="t._open">
+                <input x-model="t._newSub" @keydown.enter="addSub(t)" type="text" maxlength="300" placeholder="add a step…" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-[13px]">
+                <button @click="addSub(t)" class="px-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">+ step</button>
+              </div>
+            </div>
+            <div x-show="t._open" x-cloak class="pl-9 mt-2 noprint">
+              <div class="flex flex-wrap gap-1.5 text-[11px]">
+                <button @click="reorder('bonus',t,-1)" class="px-2 py-1 rounded card hover:border-brand/50" title="move up">▲</button>
+                <button @click="reorder('bonus',t,1)" class="px-2 py-1 rounded card hover:border-brand/50" title="move down">▼</button>
+                <button @click="editNotes(t)" class="px-2 py-1 rounded card hover:border-brand/50">📝 note</button>
+                <button @click="setTime(t)" class="px-2 py-1 rounded card hover:border-brand/50">⏱ time</button>
+                <button @click="setAssignee(t)" class="px-2 py-1 rounded card hover:border-brand/50">👤 assign</button>
+                <button @click="setHouse(t)" class="px-2 py-1 rounded card hover:border-brand/50">🏛 house</button>
+                <button @click="setCollab(t)" class="px-2 py-1 rounded card hover:border-brand/50">🤝 crew</button>
+                <button @click="setProject(t)" class="px-2 py-1 rounded card hover:border-brand/50">🏷 project</button>
+                <button @click="pickMove(t)" class="px-2 py-1 rounded card hover:border-amber-400/60">📅 move</button>
+                <button @click="t._hist=!t._hist" x-show="t.history&&t.history.length" class="px-2 py-1 rounded card hover:border-brand/50" x-text="'🕐 history ('+t.history.length+')'"></button>
+                <button @click="del(t)" class="px-2 py-1 rounded card hover:border-rose-400/60 text-rose-300">🗑️</button>
+              </div>
+              <div x-show="t._hist && t.history && t.history.length" class="mt-2 text-[10.5px] text-slate-500 space-y-0.5 border-l border-slate-700 pl-2">
+                <template x-for="(h,i) in histRows(t)" :key="i">
+                  <div><span class="text-slate-400" x-text="h.field"></span>: <span x-text="fmtVal(h.from)"></span> → <span class="text-slate-300" x-text="fmtVal(h.to)"></span> <span class="text-slate-600" x-text="'· '+shortTime(h.at)"></span></div>
+                </template>
+              </div>
+            </div>
           </div>
         </template>
-        <template x-if="shown('bonus').length===0"><div class="text-sm text-slate-600 px-1 py-2">extra wins go here</div></template>
+        <template x-if="topShown('bonus').length===0"><div class="text-sm text-slate-600 px-1 py-2">extra wins go here</div></template>
       </div>
       <div class="flex gap-2 mt-2 noprint">
         <input x-model="newBonus" @keydown.enter="add('bonus')" type="text" maxlength="300" placeholder="add a bonus…" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-[15px]">
@@ -131,7 +213,7 @@
       </div>
     </div>
 
-    <div class="text-center text-[11px] text-slate-600 pb-8">one page a day · check it, note it, or move it to tomorrow · 🐺</div>
+    <div class="text-center text-[11px] text-slate-600 pb-8">one page a day · break it down · assign it · check it · 🐺</div>
   </div>
 </div>
 
@@ -162,7 +244,7 @@ function day(){
     shiftDay(n){ const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()+n);
       this.viewDay=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); this.tick(); this.load(); },
     goToday(){ this.viewDay=this.localDay(0); this.tick(); this.load(); },
-    jumpTo(v){ if(v){ this.viewDay=v; this.tick(); this.load(); } },   // calendar pick -> any day
+    jumpTo(v){ if(v){ this.viewDay=v; this.tick(); this.load(); } },
 
     tick(){
       const d=new Date(this.viewDay+'T00:00:00');
@@ -182,34 +264,69 @@ function day(){
       return {dayNum,phaseN,dayInPhase,weekInPhase:Math.min(4,Math.ceil(dayInPhase/7)),month:phaseN,madeMan:dayNum>=360}; },
 
     // --- data ---
+    _hydrate(t){ t._open=false; t._hist=false; t._newSub=''; return t; },
     async load(){ try{ const r=await fetch('/api/v1/compute/bottega/today?day='+this.viewDay,{headers:this.H()});
-      if(r.ok){const d=await r.json(); this.tasks=d.tasks||[]; this.journeyStart=d.journey_start; this.ph=this.phase();} }catch(e){} },
-    inSec(s){ return this.tasks.filter(t=>t.section===s); },
-    count(s){ return this.inSec(s).length; },
-    doneCount(s){ return this.inSec(s).filter(t=>t.status==='done').length; },
+      if(r.ok){const d=await r.json(); this.tasks=(d.tasks||[]).map(t=>this._hydrate(t)); this.journeyStart=d.journey_start; this.ph=this.phase();} }catch(e){} },
+
+    // top-level (a real task) vs sub-task (a breakdown step)
+    topLevelAll(s){ return this.tasks.filter(x=>x.section===s && !x.parent_id).sort((a,b)=>(a.sort_order-b.sort_order)||0); },
+    topShown(s){ let f=this.topLevelAll(s); if(this.filter==='open')f=f.filter(t=>t.status!=='done'); if(this.filter==='done')f=f.filter(t=>t.status==='done'); return f; },
+    subsOf(id){ return this.tasks.filter(x=>x.parent_id===id).sort((a,b)=>(a.sort_order-b.sort_order)||0); },
+    subTotal(t){ return this.subsOf(t.id).length; },
+    subDone(t){ return this.subsOf(t.id).filter(s=>s.status==='done').length; },
+    countTop(s){ return this.topLevelAll(s).length; },
+    doneTop(s){ return this.topLevelAll(s).filter(t=>t.status==='done').length; },
     totalAll(){ return this.tasks.length; },
     doneAll(){ return this.tasks.filter(t=>t.status==='done').length; },
-    shown(s){ let f=this.inSec(s); if(this.filter==='open')f=f.filter(t=>t.status!=='done'); if(this.filter==='done')f=f.filter(t=>t.status==='done'); return f; },
+    estTotal(){ return this.tasks.reduce((a,t)=>a+(t.estimate_min||0),0); },
 
+    // labels
+    fmtMins(m){ if(!m)return''; m=Math.round(m); return m>=60?(Math.floor(m/60)+'h'+(m%60?(' '+(m%60)+'m'):'')):(m+'m'); },
+    whoLabel(t){ if(t.assignee && t.assignee===this.me) return '🐺 me'; if(t.assignee) return '👤 '+t.assignee; if(t.house) return '🏛 '+t.house; return '⏳ TBD'; },
+    crewLabel(t){ return (t.collaborators||[]).map(c=>c.who+(c.role?(' · '+c.role):'')).join(', '); },
+    crewToStr(arr){ return (arr||[]).map(c=>c.role?(c.who+': '+c.role):c.who).join(', '); },
+    parseCrew(str){ return (str||'').split(',').map(s=>s.trim()).filter(Boolean).map(p=>{const i=p.indexOf(':'); return i>=0?{who:p.slice(0,i).trim(),role:p.slice(i+1).trim()}:{who:p,role:''};}); },
+    fmtVal(v){ if(v===null||v===undefined||v==='')return '∅'; if(Array.isArray(v))return v.join(', ')||'∅'; return String(v); },
+    shortTime(iso){ try{return new Date(iso).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return iso;} },
+    histRows(t){ return (t.history||[]).slice().reverse(); },
+
+    // --- mutations ---
     async add(section){ const v=(section==='top10'?this.newTop:this.newBonus).trim(); if(!v)return;
       try{ const r=await fetch('/api/v1/compute/bottega/today/tasks',{method:'POST',headers:{...this.H(),'Content-Type':'application/json'},
-        body:JSON.stringify({day:this.viewDay,section,title:v})}); if(r.ok){const t=await r.json(); this.tasks.push(t); if(section==='top10')this.newTop='';else this.newBonus='';} }catch(e){} },
-    async toggle(t){ const ns=t.status==='done'?'open':'done'; t.status=ns;
-      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({status:ns})}); }catch(e){} },
-    async editTitle(t){ const v=prompt('Edit task:',t.title); if(v===null)return; t.title=v.trim()||t.title;
-      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({title:t.title})}); }catch(e){} },
-    async editNotes(t){ const v=prompt('Note (steps, phone number, details):',t.notes||''); if(v===null)return; t.notes=v;
-      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({notes:v})}); }catch(e){} },
-    async moveTomorrow(t){ try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id+'/move',{method:'POST',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id);}catch(e){} },
-    // 📅 move a task to ANY day (forward OR back): open the native picker, default tomorrow, then PATCH its day
+        body:JSON.stringify({day:this.viewDay,section,title:v})}); if(r.ok){const t=await r.json(); this.tasks.push(this._hydrate(t)); if(section==='top10')this.newTop='';else this.newBonus='';} }catch(e){} },
+    async addSub(parent){ const v=(parent._newSub||'').trim(); if(!v)return;
+      try{ const r=await fetch('/api/v1/compute/bottega/today/tasks',{method:'POST',headers:{...this.H(),'Content-Type':'application/json'},
+        body:JSON.stringify({day:this.viewDay,section:parent.section,parent_id:parent.id,title:v})});
+        if(r.ok){const t=await r.json(); this.tasks.push(this._hydrate(t)); parent._newSub='';} }catch(e){} },
+    async patch(t,body){ try{ const r=await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.ok){ return await r.json(); } }catch(e){} return null; },
+    async toggle(t){ const ns=t.status==='done'?'open':'done'; t.status=ns; const r=await this.patch(t,{status:ns}); if(r)t.history=r.history; },
+    async editTitle(t){ const v=prompt('Edit:',t.title); if(v===null)return; const nv=v.trim()||t.title; t.title=nv; const r=await this.patch(t,{title:nv}); if(r)t.history=r.history; },
+    async editNotes(t){ const v=prompt('Note (steps, phone, details):',t.notes||''); if(v===null)return; t.notes=v; const r=await this.patch(t,{notes:v}); if(r)t.history=r.history; },
+    async setTime(t){ const v=prompt('Estimated minutes (blank to clear):', t.estimate_min||''); if(v===null)return; const n=parseInt(v,10); const m=(v.trim()===''||isNaN(n)||n<=0)?0:n;
+      const r=await this.patch(t,{estimate_min:m}); if(r){t.estimate_min=r.estimate_min; t.history=r.history;} },
+    async setAssignee(t){ const v=prompt('Assign to a person (blank = TBD / unassigned):', t.assignee||''); if(v===null)return;
+      const r=await this.patch(t,{assignee:v.trim()}); if(r){t.assignee=r.assignee; t.history=r.history;} },
+    async setHouse(t){ const v=prompt('House / resolution group (blank to clear):', t.house||''); if(v===null)return;
+      const r=await this.patch(t,{house:v.trim()}); if(r){t.house=r.house; t.history=r.history;} },
+    async setCollab(t){ const v=prompt('Crew — comma list, "Name: role" (e.g. Tesla: the idea, Da Vinci: the art):', this.crewToStr(t.collaborators)); if(v===null)return;
+      const crew=this.parseCrew(v); const r=await this.patch(t,{collaborators:crew}); if(r){t.collaborators=r.collaborators; t.history=r.history;} },
+    async setProject(t){ const v=prompt('Project / epic (slug, e.g. bottega). Blank to clear:', t.project||''); if(v===null)return;
+      const r=await this.patch(t,{project:v.trim()}); if(r){t.project=r.project; t.task_key=r.task_key; t.history=r.history;} },
+    async reorder(section,t,dir){ const arr=this.topLevelAll(section); const i=arr.findIndex(x=>x.id===t.id); const j=i+dir; if(j<0||j>=arr.length)return;
+      const tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp; arr.forEach((x,idx)=>x.sort_order=idx); const ids=arr.map(x=>x.id);
+      try{ await fetch('/api/v1/compute/bottega/today/reorder',{method:'POST',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({ids})}); }catch(e){} },
+    // 📅 move a task (and its steps stay with it server-side? no — only this row) to ANY day
     pickMove(t){ this._moveT=t; const dp=this.$refs.mover;
       const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()+1);
       dp.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
       if(dp.showPicker){ try{ dp.showPicker(); }catch(e){ dp.click(); } } else { dp.click(); } },
     async doMove(v){ const t=this._moveT; this._moveT=null; if(!t||!v||v===this.viewDay) return;
-      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({day:v})});
-        this.tasks=this.tasks.filter(x=>x.id!==t.id); }catch(e){} },
-    async del(t){ if(!confirm('Delete this task?'))return; try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'DELETE',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id);}catch(e){} },
+      const ids=[t.id, ...this.subsOf(t.id).map(s=>s.id)];   // a task moves with its steps
+      for(const id of ids){ try{ await fetch('/api/v1/compute/bottega/today/tasks/'+id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({day:v})}); }catch(e){} }
+      this.tasks=this.tasks.filter(x=>!ids.includes(x.id)); },
+    async del(t){ const kids=this.subsOf(t.id).length; if(!confirm('Delete this'+(kids?(' and its '+kids+' step(s)'):'')+'?'))return;
+      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'DELETE',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id && x.parent_id!==t.id);}catch(e){} },
     async carryYesterday(){ const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()-1);
       const y=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
       try{ const r=await fetch('/api/v1/compute/bottega/today/carry?from_day='+y+'&to_day='+this.viewDay,{method:'POST',headers:this.H()});
