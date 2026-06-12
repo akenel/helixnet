@@ -61,6 +61,11 @@
         <button @click="shiftDay(-1)" class="w-10 h-10 rounded-xl card text-lg hover:border-brand/50" title="previous day">◀</button>
         <button @click="goToday()" class="px-3 h-10 rounded-xl card text-sm font-bold hover:border-brand/50" x-text="isToday?'Today':dayLabelShort"></button>
         <button @click="shiftDay(1)" class="w-10 h-10 rounded-xl card text-lg hover:border-brand/50" title="next day">▶</button>
+        <!-- jump to ANY day (calendar pick) -->
+        <input type="date" :value="viewDay" @change="jumpTo($event.target.value)" title="jump to any day"
+               class="h-10 rounded-xl card px-2 text-sm text-slate-300 bg-transparent hover:border-brand/50 noprint">
+        <!-- shared hidden picker: move a task to any day, forward or back -->
+        <input type="date" x-ref="mover" @change="doMove($event.target.value)" class="hidden">
       </div>
       <div class="flex items-center gap-1.5">
         <button @click="filter='all'" :class="filter==='all'?'bg-brand/25 border-brand/50 text-white':'card text-slate-400'" class="px-3 h-9 rounded-lg text-xs font-bold border">All</button>
@@ -86,7 +91,7 @@
               <button @click="toggle(t)" class="text-2xl leading-none shrink-0" x-text="t.status==='done'?'✅':'⬜'"></button>
               <button @click="editTitle(t)" class="flex-1 text-left text-[15px]" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
               <button @click="editNotes(t)" class="text-slate-500 hover:text-slate-200 text-lg noprint" title="note">📝</button>
-              <button @click="moveTomorrow(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to tomorrow">→</button>
+              <button @click="pickMove(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to any day (forward or back)">📅</button>
               <button @click="del(t)" class="text-slate-600 hover:text-rose-400 text-lg noprint" title="delete">🗑️</button>
             </div>
             <div x-show="t.notes" class="text-[12px] text-slate-400 pl-11 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
@@ -112,7 +117,7 @@
               <button @click="toggle(t)" class="text-2xl leading-none shrink-0" x-text="t.status==='done'?'✅':'⬜'"></button>
               <button @click="editTitle(t)" class="flex-1 text-left text-[15px]" :class="t.status==='done'?'strike':'text-slate-100'" x-text="t.title"></button>
               <button @click="editNotes(t)" class="text-slate-500 hover:text-slate-200 text-lg noprint" title="note">📝</button>
-              <button @click="moveTomorrow(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to tomorrow">→</button>
+              <button @click="pickMove(t)" class="text-slate-500 hover:text-amber-400 text-lg noprint" title="move to any day (forward or back)">📅</button>
               <button @click="del(t)" class="text-slate-600 hover:text-rose-400 text-lg noprint" title="delete">🗑️</button>
             </div>
             <div x-show="t.notes" class="text-[12px] text-slate-400 pl-11 mt-1 whitespace-pre-wrap" x-text="'📝 '+t.notes"></div>
@@ -136,7 +141,7 @@ function day(){
     token:null, me:null, viewDay:null, tasks:[], journeyStart:null,
     filter:'all', newTop:'', newBonus:'',
     headerDate:'', headerTime:'', isToday:true, dayLabelShort:'', ph:null,
-    _clock:null,
+    _clock:null, _moveT:null,
 
     boot(){ this.token=this.loadToken(); this.me=this.decodeUser();
       this.viewDay=this.localDay(0);
@@ -157,6 +162,7 @@ function day(){
     shiftDay(n){ const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()+n);
       this.viewDay=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); this.tick(); this.load(); },
     goToday(){ this.viewDay=this.localDay(0); this.tick(); this.load(); },
+    jumpTo(v){ if(v){ this.viewDay=v; this.tick(); this.load(); } },   // calendar pick -> any day
 
     tick(){
       const d=new Date(this.viewDay+'T00:00:00');
@@ -195,6 +201,14 @@ function day(){
     async editNotes(t){ const v=prompt('Note (steps, phone number, details):',t.notes||''); if(v===null)return; t.notes=v;
       try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({notes:v})}); }catch(e){} },
     async moveTomorrow(t){ try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id+'/move',{method:'POST',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id);}catch(e){} },
+    // 📅 move a task to ANY day (forward OR back): open the native picker, default tomorrow, then PATCH its day
+    pickMove(t){ this._moveT=t; const dp=this.$refs.mover;
+      const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()+1);
+      dp.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      if(dp.showPicker){ try{ dp.showPicker(); }catch(e){ dp.click(); } } else { dp.click(); } },
+    async doMove(v){ const t=this._moveT; this._moveT=null; if(!t||!v||v===this.viewDay) return;
+      try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({day:v})});
+        this.tasks=this.tasks.filter(x=>x.id!==t.id); }catch(e){} },
     async del(t){ if(!confirm('Delete this task?'))return; try{ await fetch('/api/v1/compute/bottega/today/tasks/'+t.id,{method:'DELETE',headers:this.H()}); this.tasks=this.tasks.filter(x=>x.id!==t.id);}catch(e){} },
     async carryYesterday(){ const d=new Date(this.viewDay+'T12:00:00'); d.setDate(d.getDate()-1);
       const y=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
