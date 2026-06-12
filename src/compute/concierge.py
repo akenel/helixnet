@@ -1,5 +1,5 @@
 # File: src/compute/concierge.py
-# Purpose: The Concierge (task #74) -- Heisenberg, the assigned front-door host of the Bottega
+# Purpose: The Concierge (task #74) -- Cleopatra, the assigned front-door host of the Bottega
 # who builds a member's master-control-record through friendly chat. Both halves proven in the
 # terminal POC (2026-06-11): the BRAIN talks right (warm, dry, proposes-and-waits, reads between
 # the lines, honesty filter, RIASEC + W5+H discovery) and the MEMORY remembers right (chat ->
@@ -20,7 +20,7 @@ from src.services.bottega_service import _brain_chat  # resilient single-brain w
 logger = logging.getLogger("helix.concierge")
 
 # --- The persona / brain -------------------------------------------------------------------
-# Encodes Angel's full spec: an assigned, NAMED host (Heisenberg) who carries every master's
+# Encodes Angel's full spec: an assigned, NAMED host (Cleopatra) who carries every master's
 # skill, reads between the lines, asks only what HELPS (framed by why, always optional),
 # PROPOSES then WAITS, and -- crucially -- runs the honesty filter (name a contradiction kindly,
 # a mirror not a finger) plus quiet RIASEC / W5+H discovery. Short replies (2-5 sentences).
@@ -287,11 +287,11 @@ def detect_lang(text: str) -> str:
 
 
 async def concierge_reply(transcript: list[dict], record: dict, language: str = "") -> str:
-    """One Heisenberg turn. The transcript ends with the member's latest message; we return the
+    """One Cleopatra turn. The transcript ends with the member's latest message; we return the
     concierge's next reply. Flattened to a single brain call (BYO-brain rule)."""
     user = (f"What you already know about this member:\n{_known_block(record)}\n\n"
             f"The conversation so far:\n{_transcript_block(transcript)}\n\n"
-            "Reply now, as Heisenberg -- one short turn (2-5 sentences). If they just contradicted "
+            "Reply now, as Cleopatra -- one short turn (2-5 sentences). If they just contradicted "
             "themselves or what they do clashes with what they want, gently hold up the mirror.")
     reply = await _brain_chat(BRAIN + _lang_clause(language), user)
     return _strip_think(reply)

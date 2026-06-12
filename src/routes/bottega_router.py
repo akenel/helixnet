@@ -475,7 +475,7 @@ async def concierge_chat(request: Request,
                          current_user: dict = Depends(require_bottega_access()),
                          db: AsyncSession = Depends(get_db_session)):
     """One concierge turn. Body: {message?, language?}. Empty message on a fresh member -> the
-    opening greeting. Otherwise: reply (Heisenberg) -> extract -> merge -> persist. Returns the
+    opening greeting. Otherwise: reply (Cleopatra) -> extract -> merge -> persist. Returns the
     reply + the language (so the widget can read it aloud in the right voice) + the live record."""
     try:
         body = await request.json()
