@@ -435,6 +435,35 @@ async def concierge_record(current_user: dict = Depends(require_bottega_access()
     return await read_concierge(db, current_user["username"])
 
 
+@router.get("/concierge/sharpen")
+async def concierge_sharpen(request: Request,
+                           current_user: dict = Depends(require_bottega_access()),
+                           db: AsyncSession = Depends(get_db_session)):
+    """The Sharpen pass: a few RANKED either/or questions that tighten the member's RIASEC, the
+    member's own ask ("narrow it down, make it more accurate"). Gated on a base portrait existing
+    (nothing to sharpen on a blank). Answers are tapped back through /concierge/chat, so extraction
+    re-scores RIASEC -- no separate scoring path. Query: ?language=&n=. Best-effort: [] on failure."""
+    state = await read_concierge(db, current_user["username"])
+    record = state["record"]
+    completeness = cg.portrait_completeness(record)
+    # Ready once we actually know *something* about them -- otherwise there's nothing to sharpen yet.
+    ready = completeness["filled"] >= 2
+    if not ready:
+        return {"ready": False, "completeness": completeness, "questions": []}
+
+    language = (request.query_params.get("language") or "").strip()
+    try:
+        n = max(1, min(3, int(request.query_params.get("n") or 3)))
+    except (TypeError, ValueError):
+        n = 3
+    try:
+        questions = await cg.personality_questions(record, language, n)
+    except Exception:  # noqa: BLE001
+        logger.warning("concierge_sharpen failed for %s", current_user["username"], exc_info=True)
+        questions = []
+    return {"ready": True, "completeness": completeness, "questions": questions}
+
+
 @router.post("/concierge/chat")
 async def concierge_chat(request: Request,
                          current_user: dict = Depends(require_bottega_access()),

@@ -543,3 +543,116 @@ def record_to_portrait(record: dict) -> list[str]:
     if record.get("health_energy"):
         out.append(f"On their body/energy: {record['health_energy']}.")
     return out
+
+
+# --- The Sharpen pass: ranked personality questions that tighten RIASEC -----------------------
+# The member asked to "narrow it down, make it more accurate". So after a base portrait exists,
+# Cleopatra offers a few precise either/or questions -- RANKED by information gain. The split:
+# PYTHON decides WHICH themes to tell apart (a defensible ranking, not LLM whim); the BRAIN only
+# writes the natural either/or question. Two regimes:
+#   thin signal  -> probe the three Holland HEXAGON OPPOSITES (R<->S, I<->E, A<->C): maximal spread.
+#   has signal   -> probe the CLOSEST pairs in the contested band: sharpen exactly where it's unclear.
+# Answers flow back through the ordinary /chat loop, so extraction re-scores RIASEC -- no new
+# scoring math, the honesty filter still applies, conflicts still get recorded.
+RIASEC_THEMES = ("realistic", "investigative", "artistic", "social", "enterprising", "conventional")
+_THEME_LABEL = {"realistic": "Realistic", "investigative": "Investigative", "artistic": "Artistic",
+                "social": "Social", "enterprising": "Enterprising", "conventional": "Conventional"}
+# Holland hexagon opposites -- the maximally-separated pairs; the best cold-start either/or probes.
+_HEX_OPPOSITES = [("realistic", "social"), ("investigative", "enterprising"), ("artistic", "conventional")]
+_CONTESTED_FLOOR = 20   # a theme below this carries too little signal to count as "contested"
+
+
+def _riasec_pairs_to_probe(record: dict, n: int = 3) -> list:
+    """Rank up to n RIASEC theme-pairs to tell apart, best information-gain first. Pure + testable.
+    Thin profile (no theme above the floor) -> the three hexagon opposites. Otherwise -> the pairs
+    that are CLOSEST together in the contested band (small gap + high combined weight = hardest to
+    tell apart = most to gain), padded with any unprobed hexagon opposites."""
+    r = (record or {}).get("riasec") or {}
+    vals = {t: int(r.get(t, 0) or 0) for t in RIASEC_THEMES}
+    if (max(vals.values()) if vals else 0) < _CONTESTED_FLOOR:
+        return list(_HEX_OPPOSITES[:n])
+    ranked = []
+    for i in range(len(RIASEC_THEMES)):
+        for j in range(i + 1, len(RIASEC_THEMES)):
+            a, b = RIASEC_THEMES[i], RIASEC_THEMES[j]
+            hi, lo = max(vals[a], vals[b]), min(vals[a], vals[b])
+            if hi < _CONTESTED_FLOOR:
+                continue
+            ranked.append((hi - lo, -(hi + lo), a, b))   # gap asc, then combined weight desc
+    ranked.sort()
+    # Diversity pass: prefer pairs that introduce a not-yet-probed theme, so the set spreads across
+    # interests instead of anchoring every question on one theme; then fill from the best remaining.
+    out, used = [], set()
+    for _, _, a, b in ranked:
+        if len(out) >= n:
+            break
+        if a not in used or b not in used:
+            out.append((a, b))
+            used.update((a, b))
+    for _, _, a, b in ranked:
+        if len(out) >= n:
+            break
+        if (a, b) not in out:
+            out.append((a, b))
+    for opp in _HEX_OPPOSITES:                            # pad so we always probe the unknowns too
+        if len(out) >= n:
+            break
+        if opp not in out and (opp[1], opp[0]) not in out:
+            out.append(opp)
+    return out[:n]
+
+
+SHARPEN_SYS = """You are Cleopatra, sharpening a member's portrait with a few precise either/or
+questions. You are given, IN PRIORITY ORDER, pairs of interest-themes to tell apart. For EACH pair
+write ONE short, warm, first-person either/or question that helps the member reveal which side is
+more truly THEM -- rooted in real life, never about quizzes or jargon. Each side maps to one theme.
+
+HARD RULES:
+- Two concrete options, each a real activity or feeling (~3-8 words), one leaning each theme.
+- NEVER name the theme words, "RIASEC", "Holland", or any test. Just life.
+- NEVER invent a master, House, room, lab, program, or feature. Never name anything that doesn't exist.
+- Personalise to what you already know about them when you naturally can; stay honest and brief.
+- Do NOT ask something they have effectively already answered.
+
+For each given pair "<A> vs <B>" return:
+{"question": "...", "option_a": "<leans A>", "option_b": "<leans B>"}
+KEEP THE ORDER you were given. Reply with ONLY valid JSON: {"questions":[{...},{...}]}. No prose, no markdown."""
+
+
+async def personality_questions(record: dict, language: str = "", n: int = 3) -> list:
+    """Ranked either/or questions that tighten RIASEC. Returns a list of dicts:
+    {rank, targets:[a,b], question, options:[{label, theme}], rationale}. Best-effort: [] on any
+    failure. Grounding: the questions probe interests with generic life choices -- they never echo
+    the guest's words -- and the record they read from is already fiction-scrubbed at extraction."""
+    pairs = _riasec_pairs_to_probe(record, n)
+    if not pairs:
+        return []
+    probe = "\n".join(f"{i + 1}. {_THEME_LABEL[a]} vs {_THEME_LABEL[b]}" for i, (a, b) in enumerate(pairs))
+    user = (f"What you know about this member:\n{_known_block(record)}\n\n"
+            f"Theme pairs to tell apart, IN PRIORITY ORDER:\n{probe}\n\n"
+            "Write one either/or question per pair, in the SAME order.")
+    try:
+        raw = _strip_think(await _brain_chat(SHARPEN_SYS + _lang_clause(language), user, json_mode=True))
+        lo, hi = raw.find("{"), raw.rfind("}")
+        if lo < 0 or hi <= lo:
+            return []
+        items = json.loads(raw[lo:hi + 1]).get("questions", [])
+    except Exception:  # noqa: BLE001
+        logger.warning("personality_questions failed", exc_info=True)
+        return []
+    out = []
+    for idx, (ta, tb) in enumerate(pairs):
+        item = items[idx] if idx < len(items) and isinstance(items[idx], dict) else {}
+        q = str(item.get("question", "")).strip()
+        oa = str(item.get("option_a", "")).strip()
+        ob = str(item.get("option_b", "")).strip()
+        if not (q and oa and ob):
+            continue
+        out.append({
+            "rank": idx + 1,
+            "targets": [ta, tb],
+            "question": q,
+            "options": [{"label": oa, "theme": ta}, {"label": ob, "theme": tb}],
+            "rationale": f"{_THEME_LABEL[ta]} vs {_THEME_LABEL[tb]}",
+        })
+    return out

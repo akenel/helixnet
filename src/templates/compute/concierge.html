@@ -156,8 +156,43 @@
         </div>
       </div>
 
+      <!-- 🎯 Sharpen: ranked either/or questions that tighten the RIASEC portrait ("narrow it down") -->
+      <div x-show="!busy && (canSharpen() || sharpen.open || sharpen.loading)" class="px-4 pb-1">
+        <!-- collapsed trigger -->
+        <button x-show="!sharpen.open && !sharpen.loading" @click="openSharpen()"
+          class="w-full text-left text-xs px-3 py-2 rounded-lg border border-brand/40 bg-brand/10 text-brand hover:brightness-125 transition flex items-center gap-2">
+          <span class="text-sm">🎯</span>
+          <span>Narrow it down — a few quick questions to sharpen your profile</span>
+        </button>
+        <!-- loading -->
+        <div x-show="sharpen.loading" class="text-xs text-slate-500 px-3 py-2 flex items-center gap-2">
+          <span class="text-sm">🎯</span> Lining up a couple of questions…
+        </div>
+        <!-- active ranked question -->
+        <div x-show="sharpen.open && curQ()" x-cloak class="rounded-xl border border-brand/40 bg-brand/5 p-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-[11px] uppercase tracking-wide text-brand flex items-center gap-1.5">
+              <span>🎯</span> Sharpen
+              <span class="text-slate-500 normal-case" x-text="'· '+(sharpen.idx+1)+' of '+sharpen.questions.length"></span>
+            </div>
+            <button @click="closeSharpen()" class="text-slate-500 hover:text-slate-300 text-xs">Done</button>
+          </div>
+          <div class="text-sm text-slate-100 mb-2.5" x-text="curQ() && curQ().question"></div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <template x-for="opt in (curQ() ? curQ().options : [])" :key="opt.label">
+              <button @click="answerSharpen(opt)" :disabled="busy"
+                class="flex-1 text-sm px-3 py-2 rounded-lg border border-slate-700 bg-slate-800/70 hover:border-brand hover:bg-brand/10 text-slate-100 transition text-left disabled:opacity-40"
+                x-text="opt.label"></button>
+            </template>
+          </div>
+          <div class="mt-2">
+            <button @click="skipSharpen()" :disabled="busy" class="text-[11px] text-slate-500 hover:text-slate-300 disabled:opacity-40">Skip this one</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Cleo's profile-aware next moves -- tap to say it -->
-      <div x-show="suggestions.length && !busy" class="px-4 pb-1 flex flex-wrap gap-1.5">
+      <div x-show="suggestions.length && !busy && !sharpen.open" class="px-4 pb-1 flex flex-wrap gap-1.5">
         <template x-for="s in suggestions" :key="s">
           <button @click="pick(s)" class="text-xs px-2.5 py-1 rounded-full chip hover:brightness-150 transition" x-text="s"></button>
         </template>
@@ -254,6 +289,8 @@ function concierge(){
     token:null, lang:'auto', langs:[{code:'auto',label:'Auto'},{code:'en',label:'EN'},{code:'it',label:'IT'}],
     messages:[], draft:'', busy:false, err:'', expired:false, MAXLEN:2000,
     suggestions:[],
+    // 🎯 Sharpen: a ranked batch of either/or questions that tighten RIASEC (the member's own ask)
+    sharpen:{ open:false, loading:false, questions:[], idx:0 },
     starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
     // voice player: speed / volume / chosen voice -- all persisted (never pops ears twice)
@@ -294,6 +331,47 @@ function concierge(){
     render(t){ const h=window.marked?marked.parse(t||''):(t||''); return window.DOMPurify?DOMPurify.sanitize(h):h; },
     scroll(){ this.$nextTick(()=>{ const el=document.getElementById('thread'); if(el) el.scrollTop=el.scrollHeight; }); },
     pick(s){ this.draft=s; this.send(); },
+    // --- 🎯 Sharpen: ranked personality questions that tighten RIASEC -----------------------
+    // Cheap, client-side readiness (no brain call): once Cleo knows >=2 things, offer to sharpen.
+    canSharpen(){
+      let known=0;
+      for(const f of this.fields){ if(this.has(f.k)) known++; }
+      for(const lf of this.listFields){ if((this.record[lf.k]||[]).length) known++; }
+      if(this.hasRiasec()) known++;
+      return known>=2;
+    },
+    curQ(){ return this.sharpen.questions[this.sharpen.idx] || null; },
+    async loadSharpen(){
+      if(!this.token){ return; }
+      this.sharpen.loading=true; this.err='';
+      try{
+        const r=await fetch('/api/v1/compute/bottega/concierge/sharpen?language='+encodeURIComponent(this.lang),{headers:this.hdr()});
+        if(!r.ok){ this.sharpen.questions=[]; return; }
+        const d=await r.json();
+        this.sharpen.questions = d.questions||[];
+        this.sharpen.idx=0;
+      }catch(e){ this.sharpen.questions=[]; }
+      finally{ this.sharpen.loading=false; }
+    },
+    async openSharpen(){
+      await this.loadSharpen();
+      if(this.sharpen.questions.length){ this.sharpen.open=true; }
+      else { this.err='Tell Cleopatra a little more first, then we can sharpen.'; }
+    },
+    closeSharpen(){ this.sharpen.open=false; },
+    skipSharpen(){
+      if(this.sharpen.idx < this.sharpen.questions.length-1){ this.sharpen.idx++; }
+      else { this.sharpen.open=false; this.sharpen.questions=[]; }
+    },
+    async answerSharpen(opt){
+      if(this.busy) return;
+      const more = this.sharpen.idx < this.sharpen.questions.length-1;
+      this.sharpen.open=false;            // the answer goes into the chat as a member turn
+      this.draft=opt.label;
+      await this.send();                  // chat -> extraction re-scores RIASEC; record panel updates live
+      if(more){ this.sharpen.idx++; this.sharpen.open=true; }   // next ranked question
+      else { this.sharpen.questions=[]; }                       // ran the batch; trigger reappears if still ready
+    },
     // --- composer: roomy multi-line + microphone (talk to the machine) ----------------------
     autogrow(){ const ta=this.$refs.ta; if(!ta) return; ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,240)+'px'; },
     onEnter(e){ if(e.shiftKey) return; e.preventDefault(); this.send(); },   // Enter sends, Shift+Enter = newline

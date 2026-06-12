@@ -409,3 +409,116 @@ async def test_concierge_tolerates_and_self_heals_duplicate_rows(db_session):
         BottegaSessionModel.slug == br.CONCIERGE_SLUG))).scalars().all()
     assert len(rows) == 1                              # the duplicate was dropped
     assert json.loads(rows[0].output)["record"]["background"] == "30 yrs"
+
+
+# --- The Sharpen pass: ranked personality questions that tighten RIASEC ---------------------
+
+def test_riasec_pairs_thin_profile_uses_hexagon_opposites():
+    # No real signal yet -> the three maximally-separated Holland pairs (best cold-start probes).
+    assert cg._riasec_pairs_to_probe(cg.blank_record()) == cg._HEX_OPPOSITES
+    thin = {"riasec": {t: 5 for t in cg.RIASEC_THEMES}}     # everything below the contested floor
+    assert cg._riasec_pairs_to_probe(thin) == cg._HEX_OPPOSITES
+
+
+def test_riasec_pairs_contested_probes_closest_pair_first():
+    # Investigative 80 vs Artistic 78 are nearly tied -> telling them apart yields the most info.
+    rec = {"riasec": {"realistic": 10, "investigative": 80, "artistic": 78,
+                      "social": 30, "enterprising": 25, "conventional": 15}}
+    pairs = cg._riasec_pairs_to_probe(rec)
+    assert pairs[0] == ("investigative", "artistic")       # smallest-gap contested pair ranked #1
+
+
+def test_riasec_pairs_diversity_spreads_across_themes():
+    # Two clusters: the set shouldn't anchor every question on one theme -- it should spread.
+    rec = {"riasec": {"realistic": 70, "investigative": 68, "artistic": 20,
+                      "social": 18, "enterprising": 65, "conventional": 22}}
+    pairs = cg._riasec_pairs_to_probe(rec, n=3)
+    themes = {t for pair in pairs for t in pair}
+    assert len(themes) >= 4                                 # covers at least four distinct interests
+
+
+def test_riasec_pairs_respects_n():
+    assert len(cg._riasec_pairs_to_probe(cg.blank_record(), n=1)) == 1
+    assert len(cg._riasec_pairs_to_probe(cg.blank_record(), n=2)) == 2
+
+
+@pytest.mark.asyncio
+async def test_personality_questions_ranked_shape_and_theme_mapping():
+    rec = {"riasec": {"realistic": 10, "investigative": 80, "artistic": 78,
+                      "social": 30, "enterprising": 25, "conventional": 15}}
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        # the brain must keep the priority ORDER it was given; option_a leans the first theme
+        return json.dumps({"questions": [
+            {"question": "Dig into a puzzle, or sketch something new?",
+             "option_a": "Dig into a hard puzzle", "option_b": "Sketch something new"},
+            {"question": "Q2?", "option_a": "a2", "option_b": "b2"},
+            {"question": "Q3?", "option_a": "a3", "option_b": "b3"},
+        ]})
+
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg.personality_questions(rec, language="", n=3)
+    assert len(out) == 3
+    assert out[0]["rank"] == 1 and out[0]["targets"] == ["investigative", "artistic"]
+    assert out[0]["question"].startswith("Dig into a puzzle")
+    assert out[0]["options"][0] == {"label": "Dig into a hard puzzle", "theme": "investigative"}
+    assert out[0]["options"][1] == {"label": "Sketch something new", "theme": "artistic"}
+
+
+@pytest.mark.asyncio
+async def test_personality_questions_empty_on_bad_brain_output():
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        return "no json at all here"
+
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg.personality_questions({"riasec": {"investigative": 80, "artistic": 78}}, "", 3)
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_personality_questions_skips_incomplete_items():
+    # brain returns fewer/partial items than pairs -> only fully-formed questions survive (no crash)
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        return json.dumps({"questions": [
+            {"question": "Only one good one?", "option_a": "yes", "option_b": "no"},
+            {"question": "missing options"},               # incomplete -> dropped
+        ]})
+
+    rec = {"riasec": {"realistic": 70, "investigative": 68, "artistic": 65}}
+    with patch.object(cg, "_brain_chat", fake_brain):
+        out = await cg.personality_questions(rec, "", 3)
+    assert len(out) == 1 and out[0]["question"] == "Only one good one?"
+
+
+@pytest.mark.asyncio
+async def test_sharpen_endpoint_gates_on_base_portrait(db_session):
+    import types
+    from src.routes import bottega_router as br
+
+    # blank member -> not ready, no questions, no brain call
+    req = types.SimpleNamespace(query_params={})
+    res = await br.concierge_sharpen(req, {"username": "newbie"}, db_session)
+    assert res["ready"] is False and res["questions"] == []
+
+
+@pytest.mark.asyncio
+async def test_sharpen_endpoint_returns_ranked_questions(db_session):
+    import types
+    from src.routes import bottega_router as br
+
+    rec = cg.merge_record(cg.blank_record(),
+                          {"goal": "teach kids", "background": "30 yrs mechanic",
+                           "riasec": {"realistic": 70, "investigative": 68}})
+    await br.write_concierge(db_session, "ada", rec, [{"role": "member", "content": "hi"}])
+
+    async def fake_q(record, language="", n=3):
+        return [{"rank": 1, "targets": ["realistic", "investigative"], "question": "Q?",
+                 "options": [{"label": "A", "theme": "realistic"}, {"label": "B", "theme": "investigative"}],
+                 "rationale": "Realistic vs Investigative"}]
+
+    req = types.SimpleNamespace(query_params={"n": "2"})
+    with patch.object(cg, "personality_questions", fake_q):
+        res = await br.concierge_sharpen(req, {"username": "ada"}, db_session)
+    assert res["ready"] is True
+    assert res["completeness"]["filled"] >= 2
+    assert res["questions"][0]["targets"] == ["realistic", "investigative"]
