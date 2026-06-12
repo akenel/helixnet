@@ -146,7 +146,11 @@ function render() {
       shotrow.appendChild(t);
     });
     const drop = el.querySelector('.drop');
-    drop.onclick = () => { drop.textContent = '📋 press Ctrl/Cmd+V'; window._activeShot = c.id; };
+    const addShot = (file) => { if (file && file.type.indexOf('image')===0) { const r=new FileReader(); r.onload=ev=>{ st(c.id).shots.push(ev.target.result); save(); render(); }; r.readAsDataURL(file); } };
+    drop.onclick = () => { drop.textContent = '📋 armed — Ctrl/Cmd+V, or drag an image here'; window._activeShot = c.id; };
+    drop.ondragover = ev => { ev.preventDefault(); drop.style.borderColor = '#f87171'; };
+    drop.ondragleave = () => { drop.style.borderColor = ''; };
+    drop.ondrop = ev => { ev.preventDefault(); drop.style.borderColor=''; addShot((ev.dataTransfer.files||[])[0]); };
     root.appendChild(el);
   });
   renderProg();

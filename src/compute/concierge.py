@@ -308,8 +308,11 @@ async def thread_reply(transcript: list[dict], record: dict, persona: str = BRAI
     the member's latest message; we return the speaker's next reply."""
     user = (f"What you already know about this member:\n{_known_block(record)}\n\n"
             f"The conversation so far:\n{_transcript_block(transcript)}\n\n"
-            "Reply now -- one short turn (2-5 sentences), in character. If they just contradicted "
-            "themselves or what they do clashes with what they want, gently hold up the mirror.")
+            "This is an ONGOING conversation, not a first meeting: do NOT greet them again, do NOT "
+            "re-introduce yourself, and do NOT re-ask their language or age if you already know it -- "
+            "just continue naturally from where it left off. Reply now -- one short turn (2-5 "
+            "sentences), in character. If they just contradicted themselves or what they do clashes "
+            "with what they want, gently hold up the mirror.")
     reply = await _brain_chat(persona + _lang_clause(language), user)
     return _strip_think(reply)
 
