@@ -75,7 +75,21 @@
 
     <div class="flex items-center gap-3 mb-4 text-xs noprint">
       <button @click="carryYesterday()" class="text-slate-400 hover:text-white">↩️ Pull yesterday's unfinished</button>
+      <button @click="askCleo()" :disabled="cleoBusy" class="text-amber-300/90 hover:text-amber-200 font-semibold disabled:opacity-50" x-text="cleoBusy?'🎩 Cleo is reading the board…':'🎩 Ask Cleo'"></button>
       <button @click="window.print()" class="text-slate-400 hover:text-white ml-auto">🖨️ Print</button>
+    </div>
+
+    <!-- 🎩 the living crew: Cleo's grounded nudge (also saved to the inbox) -->
+    <div x-show="cleoNote" x-cloak class="card rounded-2xl p-4 mb-4" style="border-color:rgba(245,158,11,.35)">
+      <div class="flex items-start gap-3">
+        <div class="text-2xl leading-none">🎩</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[12px] font-bold text-amber-200/90 mb-0.5">Cleopatra · your host</div>
+          <div class="text-[14px] text-slate-100 whitespace-pre-wrap break-words" x-text="cleoNote"></div>
+          <div class="text-[11px] text-slate-500 mt-1">📬 saved to your inbox</div>
+        </div>
+        <button @click="cleoNote=''" class="shrink-0 text-slate-600 hover:text-white text-sm noprint">✕</button>
+      </div>
     </div>
 
     <!-- ===== TOP 10 ===== -->
@@ -223,7 +237,7 @@ function day(){
     token:null, me:null, viewDay:null, tasks:[], journeyStart:null,
     filter:'all', newTop:'', newBonus:'',
     headerDate:'', headerTime:'', isToday:true, dayLabelShort:'', ph:null,
-    _clock:null, _moveT:null,
+    _clock:null, _moveT:null, cleoNote:'', cleoBusy:false,
 
     boot(){ this.token=this.loadToken(); this.me=this.decodeUser();
       this.viewDay=this.localDay(0);
@@ -331,6 +345,13 @@ function day(){
       const y=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
       try{ const r=await fetch('/api/v1/compute/bottega/today/carry?from_day='+y+'&to_day='+this.viewDay,{method:'POST',headers:this.H()});
         if(r.ok){const j=await r.json(); this.load(); alert('Pulled '+j.carried+' unfinished task(s) to this page.');} }catch(e){} },
+    // 🎩 the living crew: Cleo reads this day's board and posts a grounded nudge (+ to the inbox)
+    async askCleo(){ if(this.cleoBusy)return; this.cleoBusy=true; this.cleoNote='';
+      try{ const r=await fetch('/api/v1/compute/bottega/me/nudge?day='+this.viewDay,{method:'POST',headers:this.H()});
+        if(r.ok){ const j=await r.json(); this.cleoNote=j.note||''; }
+        else { this.cleoNote='Cleo is busy right now — give it a moment and try again.'; } }
+      catch(e){ this.cleoNote='Could not reach Cleo right now.'; }
+      finally{ this.cleoBusy=false; } },
     async askStart(){ const v=prompt('Your Day 1 (YYYY-MM-DD) — e.g. 2026-06-01:', this.localDay(0)); if(!v)return;
       try{ const r=await fetch('/api/v1/compute/bottega/today/journey-start',{method:'PATCH',headers:{...this.H(),'Content-Type':'application/json'},body:JSON.stringify({date:v.trim()})});
         if(r.ok){const j=await r.json(); this.journeyStart=j.journey_start; this.ph=this.phase();} else alert('Use the format YYYY-MM-DD'); }catch(e){} },

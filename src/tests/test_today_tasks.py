@@ -75,3 +75,24 @@ def test_task_view_survives_corrupt_json_blobs():
     t = _fake_task(collaborators="{not json", history="garbage")
     v = br._task_view(t)
     assert v["collaborators"] == [] and v["history"] == []
+
+
+# --- _board_facts: the grounded brief Cleo nudges from (A — the living crew) --------------
+
+def test_board_facts_separates_done_open_and_tbd():
+    tasks = [
+        {"title": "Ship it", "status": "done", "task_key": "BOTTEGA-1", "assignee": "angel"},
+        {"title": "Run Sheet", "status": "open", "house": "The Forge"},      # open, has a House
+        {"title": "Floating", "status": "open"},                              # open + unassigned -> TBD
+        {"title": "a step", "status": "done", "parent_id": "x"},              # sub-task, not a top line
+    ]
+    f = br._board_facts(tasks, "2026-06-12")
+    assert "DONE (1):" in f and "Ship it" in f
+    assert "OPEN (2):" in f and "Run Sheet" in f and "House: The Forge" in f
+    assert "WAITING / unassigned: Floating" in f
+    assert "Breakdown steps: 1 of 1 done" in f
+
+
+def test_board_facts_empty_board_invites_a_first_win():
+    f = br._board_facts([], "2026-06-12")
+    assert "board is empty" in f.lower()

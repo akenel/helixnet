@@ -965,19 +965,26 @@ def _inbox_brief(s: BottegaSessionModel) -> dict:
             "created_at": s.created_at.isoformat() if s.created_at else ""}
 
 
+def _deliver_message(db: AsyncSession, *, to: str, sender: str, body: str,
+                     subject: str = "", icon: str = "💬") -> None:
+    """Drop a message + its notification into a member's inbox (the one spine). Shared by the
+    member-to-member send, the equalizer nudge, AND the master/Cleo nudges (A — the living crew)."""
+    db.add(BottegaSessionModel(
+        username=to, slug="message", title=(subject or f"Message from {sender}")[:160],
+        inputs=json.dumps({"from": sender, "read": False}), output=(body or "")[:8000],
+        output_type="text", tags="message"))
+    db.add(BottegaSessionModel(
+        username=to, slug="notification", title=f"{icon} {sender}"[:160],
+        inputs=json.dumps({"read": False}), output=(subject or (body or "")[:80]),
+        output_type="text", tags="notification"))
+
+
 @router.post("/message")
 async def send_message(m: Message, current_user: dict = Depends(require_bottega_access()),
                        db: AsyncSession = Depends(get_db_session)):
     """Send a member a message (+ a notification). The equalizer's nudge runs through here too."""
     sender = current_user["username"]
-    db.add(BottegaSessionModel(
-        username=m.to, slug="message", title=(m.subject or f"Message from {sender}")[:160],
-        inputs=json.dumps({"from": sender, "read": False}), output=(m.body or "")[:8000],
-        output_type="text", tags="message"))
-    db.add(BottegaSessionModel(
-        username=m.to, slug="notification", title=f"💬 {sender}",
-        inputs=json.dumps({"read": False}), output=(m.subject or (m.body or "")[:80]),
-        output_type="text", tags="notification"))
+    _deliver_message(db, to=m.to, sender=sender, body=m.body, subject=m.subject)
     await db.commit()
     return {"sent": True, "to": m.to}
 
@@ -1013,6 +1020,85 @@ async def mark_read(item_id: str, current_user: dict = Depends(require_bottega_a
         s.inputs = json.dumps(inp)
         await db.commit()
     return {"ok": True}
+
+
+# ===== A: the living crew -- Cleo reads your board and nudges (summary + next move) =====
+CLEO_NUDGE_SYS = (
+    "You are Cleopatra, the warm host of La Piazza and this member's guide. Write ONE short note "
+    "for their inbox about today's work board. 2-4 sentences, ~60 words max. First, celebrate what "
+    "is DONE -- name one or two real items. Then point at the single most useful NEXT move, taken "
+    "from what is still OPEN or waiting (unassigned/TBD). "
+    "HARD RULES: use ONLY the facts given below. NEVER invent a task, a person, a date, a number, "
+    "or a booking. Do not promise to do anything yourself. Warm, specific, a little spark. "
+    "Plain text, at most one emoji."
+)
+
+
+def _board_facts(tasks: list[dict], day: str) -> str:
+    tops = [t for t in tasks if not t.get("parent_id")]
+    done = [t for t in tops if t.get("status") == "done"]
+    opent = [t for t in tops if t.get("status") != "done"]
+    tbd = [t for t in opent if not t.get("assignee") and not t.get("house")]
+    steps = [t for t in tasks if t.get("parent_id")]
+    steps_done = sum(1 for s in steps if s.get("status") == "done")
+    est = sum((t.get("estimate_min") or 0) for t in tasks)
+
+    def line(t):
+        bits = []
+        if t.get("task_key"):
+            bits.append(t["task_key"])
+        if t.get("assignee"):
+            bits.append("by " + t["assignee"])
+        elif t.get("house"):
+            bits.append("House: " + t["house"])
+        else:
+            bits.append("unassigned/TBD")
+        return f"  - {t.get('title','')} ({'; '.join(bits)})"
+
+    out = [f"Day: {day}"]
+    out.append(f"DONE ({len(done)}):")
+    out += [line(t) for t in done] or ["  (nothing checked off yet)"]
+    out.append(f"OPEN ({len(opent)}):")
+    out += [line(t) for t in opent] or ["  (none)"]
+    if tbd:
+        out.append("WAITING / unassigned: " + ", ".join(t.get("title", "") for t in tbd))
+    if steps:
+        out.append(f"Breakdown steps: {steps_done} of {len(steps)} done")
+    if est:
+        out.append(f"Planned time today: {est} min")
+    if not done and not opent:
+        out.append("The board is empty -- gently invite them to add a first task or a small win.")
+    return "\n".join(out)
+
+
+@router.post("/me/nudge")
+async def me_nudge(day: str | None = None,
+                   current_user: dict = Depends(require_bottega_access()),
+                   db: AsyncSession = Depends(get_db_session)):
+    """A — the first living-crew touch: Cleopatra looks at the member's board for `day`, writes a
+    grounded summary + one next move, and delivers it to their own inbox (message + notification)."""
+    from datetime import date as _date
+    user = current_user["username"]
+    the_day = day or _date.today().isoformat()
+    rows = (await db.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.username == user, BottegaTaskModel.day == the_day))).scalars().all()
+    tasks = [_task_view(t) for t in rows]
+    facts = _board_facts(tasks, the_day)
+    try:
+        from src.services.bottega_service import _brain_chat
+        note = (await _brain_chat(CLEO_NUDGE_SYS, facts)).strip()
+        note = cg._strip_think(note) if hasattr(cg, "_strip_think") else note
+    except Exception:  # noqa: BLE001 -- brain down: still deliver a useful, honest note
+        done_n = sum(1 for t in tasks if not t.get("parent_id") and t.get("status") == "done")
+        open_n = sum(1 for t in tasks if not t.get("parent_id") and t.get("status") != "done")
+        note = (f"Nice work — {done_n} done today, {open_n} still open. "
+                "Pick the one that matters most and give it the next hour. 🐺") if (done_n or open_n) \
+            else "Fresh page today. Drop in the one thing that would make today a win, and we'll go from there."
+    note = (note or "")[:1200]
+    _deliver_message(db, to=user, sender="Cleopatra", body=note,
+                     subject="🎩 A note from Cleopatra", icon="🎩")
+    await db.commit()
+    return {"posted": True, "note": note, "day": the_day}
 
 
 # ===== Block G: Feedback widget -> files into the Backlog (BL) board =====
