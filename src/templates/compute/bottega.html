@@ -54,8 +54,10 @@
 
 <main class="max-w-5xl mx-auto px-5 py-8 space-y-6">
 
-  <!-- onboarding nudge (tasteful) -->
-  <div class="card rounded-xl p-4 flex items-center gap-3 border-l-2 border-brand/50">
+  <!-- onboarding nudge (tasteful) — only until the profile is built; then it gets out of the way.
+       Shows for anon (newcomer) immediately; for a logged-in member, only after we confirm no bio yet
+       (so a returning member never sees it flash). Redo lives in the 👤 About You menu (cv-to-bio). -->
+  <div x-show="!hasProfile && (!token || profileChecked)" x-cloak class="card rounded-xl p-4 flex items-center gap-3 border-l-2 border-brand/50">
     <span class="text-xl">🧬</span>
     <div class="flex-1 text-sm">
       <span class="font-semibold">New here?</span>
@@ -307,6 +309,7 @@ function bottega() {
     saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false, reading: false, pcBusy: false,
     savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
     editing: false, editId: null, editTitle: '', editOutput: '', editBusy: false, editMsg: '',
+    hasProfile: false, profileChecked: false,
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
@@ -319,6 +322,16 @@ function bottega() {
     boot() {
       this.token = this.loadToken(); this.me = this.decodeUser();
       this.fetchMenu();
+      this.checkProfile();
+    },
+    async checkProfile() {
+      // hide the "Drop your CV" nudge once a profile (bio) exists — don't ask for what's done.
+      if (!this.token) return;
+      try {
+        const r = await fetch('/api/v1/compute/bottega/me', { headers: { 'Authorization': 'Bearer ' + this.token } });
+        if (r.ok) { const j = await r.json(); this.hasProfile = !!(j.profile && j.profile.bio); }
+      } catch (e) {}
+      this.profileChecked = true;
     },
     loadToken() {
       if (location.hash.includes('token=')) { const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t); localStorage.setItem('compute_token',t); history.replaceState({},document.title,location.pathname);} }
