@@ -192,14 +192,48 @@
 
     <!-- INBOX -->
     <div x-show="tab==='inbox'" class="space-y-3">
-      <template x-if="!(inbox.items||[]).length"><div class="card rounded-xl p-5 text-center text-sm text-slate-500">No messages yet. When someone reaches out, it lands here. 📬</div></template>
-      <template x-for="it in (inbox.items||[])" :key="it.id">
-        <div class="card rounded-xl p-4 cursor-pointer" :class="(it.kind==='message' && !it.read) && 'border-brand/60'" @click="markRead(it)">
-          <div class="flex items-center justify-between gap-2">
-            <span class="font-semibold text-sm truncate" x-text="it.title"></span>
-            <span class="text-[11px] font-mono text-slate-600 shrink-0" x-text="(it.created_at||'').slice(0,10)"></span>
+      <!-- list of threads (roots) -->
+      <template x-if="!openThread">
+        <div class="space-y-3">
+          <template x-if="!(inbox.items||[]).length"><div class="card rounded-xl p-5 text-center text-sm text-slate-500">No messages yet. When someone reaches out, it lands here. 📬</div></template>
+          <template x-for="it in (inbox.items||[])" :key="it.id">
+            <div class="card rounded-xl p-4 cursor-pointer" :class="(it.kind==='message' && !it.read) && 'border-brand/60'" @click="openMessage(it)">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold text-sm truncate" x-text="it.title"></span>
+                <span class="text-[11px] font-mono text-slate-600 shrink-0" x-text="(it.created_at||'').slice(0,10)"></span>
+              </div>
+              <p class="text-sm text-slate-300 mt-1 whitespace-pre-line" x-text="it.body"></p>
+              <div class="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                <span x-show="it.kind==='message'">💬 <span x-text="(it.replies||0)===0 ? 'Reply' : it.replies"></span></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- one thread, opened: a conversation you talk into -->
+      <template x-if="openThread">
+        <div class="card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-sm truncate" x-text="openThread.title"></span>
+            <button class="text-xs text-slate-400 hover:text-slate-200 shrink-0" @click="closeThread()">✕ close</button>
           </div>
-          <p class="text-sm text-slate-300 mt-1 whitespace-pre-line" x-text="it.body"></p>
+          <div class="space-y-2 max-h-[52vh] overflow-y-auto pr-1">
+            <template x-for="(t,i) in (openThread.turns||[])" :key="t.id||i">
+              <div :class="t.role==='member' && 'text-right'">
+                <div class="inline-block text-left rounded-xl px-3 py-2 text-sm max-w-[85%] whitespace-pre-line"
+                     :class="t.role==='member' ? 'bg-brand/20' : 'bg-slate-800'">
+                  <div class="text-[10px] uppercase tracking-wide text-slate-500 mb-0.5" x-text="t.role==='member' ? 'You' : (t.author||'Cleopatra')"></div>
+                  <span x-text="t.body"></span>
+                </div>
+              </div>
+            </template>
+            <div x-show="threadSending" class="text-xs text-slate-500 italic" x-text="(openThread.author||'Cleopatra')+' is thinking…'"></div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <textarea x-model="threadDraft" rows="2" placeholder="Reply…" class="flex-1 rounded-lg bg-slate-900 border border-slate-700 p-2 text-sm focus:border-brand focus:outline-none" @keydown.meta.enter="sendReply()"></textarea>
+            <button @click="sendReply()" :disabled="threadSending || !threadDraft.trim()" class="rounded-lg bg-brand text-white px-3 text-sm font-semibold disabled:opacity-40">Send</button>
+          </div>
         </div>
       </template>
     </div>
@@ -210,6 +244,7 @@
 function rebuild() {
   return {
     token:null, username:'', d:{}, tab:'home', inbox:{items:[],unread:0},
+    openThread:null, threadDraft:'', threadSending:false,
     async boot(){ this.token=this.loadToken(); this.username=this.decodeUser()||''; if(this.token){ await this.load(); await this.loadInbox(); } },
     loadToken(){
       if (location.hash.includes('token=')) { const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t); localStorage.setItem('compute_token',t); history.replaceState({},document.title,location.pathname);} }
@@ -219,6 +254,10 @@ function rebuild() {
     async load(){ try{ const r=await fetch('/api/v1/compute/bottega/me/dashboard',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.d=await r.json(); }catch(e){} },
     async loadInbox(){ try{ const r=await fetch('/api/v1/compute/bottega/me/inbox',{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok) this.inbox=await r.json(); }catch(e){} },
     async markRead(it){ if(it.kind!=='message'||it.read) return; it.read=true; this.inbox.unread=Math.max(0,(this.inbox.unread||0)-1); try{ await fetch('/api/v1/compute/bottega/me/inbox/'+it.id+'/read',{method:'POST',headers:{'Authorization':'Bearer '+this.token}}); }catch(e){} },
+    threadAuthor(t){ const ms=(t.turns||[]).filter(x=>x.role==='master'); return ms.length?ms[ms.length-1].author:'Cleopatra'; },
+    async openMessage(it){ if(it.kind!=='message'){ this.markRead(it); return; } this.markRead(it); try{ const r=await fetch('/api/v1/compute/bottega/me/thread/'+it.id,{headers:{'Authorization':'Bearer '+this.token}}); if(r.ok){ const t=await r.json(); t.author=this.threadAuthor(t); this.openThread=t; this.threadDraft=''; } }catch(e){} },
+    async sendReply(){ const msg=(this.threadDraft||'').trim(); if(!msg||this.threadSending||!this.openThread) return; this.threadSending=true; this.openThread.turns=[...(this.openThread.turns||[]),{role:'member',body:msg,author:this.username}]; this.threadDraft=''; try{ const r=await fetch('/api/v1/compute/bottega/me/thread/'+this.openThread.id+'/reply',{method:'POST',headers:{'Authorization':'Bearer '+this.token,'Content-Type':'application/json'},body:JSON.stringify({message:msg})}); if(r.ok){ const t=await r.json(); t.author=this.threadAuthor(t); this.openThread=t; } else { this.openThread.turns=[...this.openThread.turns,{role:'master',body:'('+ (this.openThread.author||'Cleopatra') +' stepped away — try again in a moment)',author:this.openThread.author}]; } }catch(e){ } this.threadSending=false; },
+    closeThread(){ this.openThread=null; this.threadDraft=''; this.loadInbox(); },
     homeCards(){ return [
       {k:'p',icon:'👤',label:'Profile',done:!!(this.d.profile&&this.d.profile.bio),status:(this.d.profile&&this.d.profile.bio)?'built ✓':'drop your CV →',href:'/compute/bottega'},
       {k:'b',icon:'🩺',label:'Body Setup',done:!!this.d.body,status:this.d.body?'set ✓':'calibrate →',href:'/compute/bottega'},
