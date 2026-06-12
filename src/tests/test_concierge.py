@@ -522,3 +522,53 @@ async def test_sharpen_endpoint_returns_ranked_questions(db_session):
     assert res["ready"] is True
     assert res["completeness"]["filled"] >= 2
     assert res["questions"][0]["targets"] == ["realistic", "investigative"]
+
+
+# --- B1: the Born field must read like age/era, not work tenure -----------------------------
+
+def test_clean_birthdate_hint_rejects_experience_keeps_dates():
+    # tenure phrasing with no date signal -> dropped
+    assert cg._clean_birthdate_hint("30 years of mechanic craft") == ""
+    assert cg._clean_birthdate_hint("20 years as a baker") == ""
+    assert cg._clean_birthdate_hint("unknown") == ""
+    assert cg._clean_birthdate_hint("") == ""
+    # genuine age/era hints -> kept
+    for good in ("January 9 1964", "1964", "Aquarius", "63 years old", "born after 2000", "60s"):
+        assert cg._clean_birthdate_hint(good) == good
+    # tenure that ALSO carries a real date signal is kept (conservative)
+    assert cg._clean_birthdate_hint("born 1964, 30 years of experience") == "born 1964, 30 years of experience"
+
+
+def test_merge_birthdate_keeps_good_and_purges_stored_tenure():
+    old = cg.merge_record(cg.blank_record(), {"birthdate_hint": "January 9 1964"})
+    # a later turn with no birthdate must not lose the good value
+    assert cg.merge_record(old, {"background": "x"})["birthdate_hint"] == "January 9 1964"
+    # a later turn's tenure misparse must NOT clobber the good stored value
+    assert cg.merge_record(old, {"birthdate_hint": "30 years of mechanic craft"})["birthdate_hint"] == "January 9 1964"
+    # an already-polluted record gets purged on the next merge
+    bad = cg.blank_record(); bad["birthdate_hint"] = "30 years of mechanic craft"
+    assert cg.merge_record(bad, {"goal": "teach"})["birthdate_hint"] == ""
+
+
+# --- B2: a named fiction is scrubbed from the standing identity lists (not just the fresh turn) ---
+
+def test_merge_scrubs_fiction_from_identity_lists_but_keeps_conflicts():
+    old = cg.merge_record(cg.blank_record(), {
+        "affinities": ["innovation lab", "hands-on workshops"],
+        "aptitudes": ["the Innovation Lab tour"],
+        "conflicts": ["wants the Innovation Lab which doesn't exist here"]})
+    # next turn the auditor names the fiction; merge must clean the STANDING lists
+    fresh = {"affinities": ["learning"], "fiction_terms": ["innovation lab"]}
+    m = cg.merge_record(old, fresh)
+    assert all("innovation lab" not in a.lower() for a in m["affinities"])
+    assert all("innovation lab" not in a.lower() for a in m["aptitudes"])
+    # conflicts / clarifications legitimately RECORD the fiction -- they are spared
+    assert any("innovation lab" in c.lower() for c in m["conflicts"])
+    # the transient signal never persists into the record
+    assert "fiction_terms" not in m
+
+
+def test_merge_without_fiction_terms_is_unchanged():
+    old = cg.merge_record(cg.blank_record(), {"affinities": ["innovation lab", "baking"]})
+    m = cg.merge_record(old, {"affinities": ["teaching"]})   # no fiction_terms -> no scrub
+    assert "innovation lab" in [a.lower() for a in m["affinities"]]

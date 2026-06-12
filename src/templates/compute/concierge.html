@@ -240,16 +240,16 @@
     <div class="card rounded-2xl p-4 overflow-y-auto convo-h">
       <div class="flex items-center gap-2 mb-1">
         <span class="text-lg">🧠</span>
-        <h2 class="font-bold text-white text-sm">What Cleopatra has learned</h2>
+        <h2 class="font-bold text-white text-sm" x-text="S('learned')">What Cleopatra has learned</h2>
       </div>
-      <p class="text-[11px] text-slate-500 mb-4">This is your memory — yours to see. Every master reads it.</p>
+      <p class="text-[11px] text-slate-500 mb-4" x-text="S('memory')">This is your memory — yours to see. Every master reads it.</p>
 
-      <div x-show="empty()" class="text-slate-500 text-xs italic">Nothing yet. Say hello and tell her a little about you.</div>
+      <div x-show="empty()" class="text-slate-500 text-xs italic" x-text="S('nothing')">Nothing yet. Say hello and tell her a little about you.</div>
 
       <div class="space-y-3 text-sm">
         <template x-for="f in fields" :key="f.k">
           <div x-show="has(f.k)">
-            <div class="text-[11px] uppercase tracking-wide text-slate-500" x-text="f.label"></div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-500" x-text="pl(f)"></div>
             <div class="text-slate-200" x-text="show(f.k)"></div>
           </div>
         </template>
@@ -257,7 +257,7 @@
         <!-- lists -->
         <template x-for="lf in listFields" :key="lf.k">
           <div x-show="(record[lf.k]||[]).length">
-            <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1" x-text="lf.label"></div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1" x-text="pl(lf)"></div>
             <div class="flex flex-wrap gap-1.5">
               <template x-for="v in (record[lf.k]||[])" :key="v">
                 <span class="chip text-[11px] px-2 py-0.5 rounded-full" x-text="v"></span>
@@ -296,17 +296,17 @@ function concierge(){
     // voice player: speed / volume / chosen voice -- all persisted (never pops ears twice)
     voiceOpen:false, rate:0.92, volume:0.85, voiceName:'', voices:[], voicePicks:[], speaking:false,
     fields:[
-      {k:'preferred_language',label:'Speaks'}, {k:'language_level',label:'Level'},
-      {k:'birthdate_hint',label:'Born'},
-      {k:'goal',label:'Goal'}, {k:'why_they_came',label:'Why they came'},
-      {k:'background',label:'Background'}, {k:'current_seat',label:'Today'},
-      {k:'fit_insight',label:'Where they\'d thrive'}, {k:'health_energy',label:'Body / energy'},
-      {k:'generation',label:'Generation'}, {k:'life_stage',label:'Life stage'},
-      {k:'top_holland_code',label:'Holland code'}, {k:'suggested_house',label:'House'},
+      {k:'preferred_language',label:'Speaks',it:'Parla'}, {k:'language_level',label:'Level',it:'Livello'},
+      {k:'birthdate_hint',label:'Born',it:'Nato/a'},
+      {k:'goal',label:'Goal',it:'Obiettivo'}, {k:'why_they_came',label:'Why they came',it:'Perché è qui'},
+      {k:'background',label:'Background',it:'Storia'}, {k:'current_seat',label:'Today',it:'Oggi'},
+      {k:'fit_insight',label:'Where they\'d thrive',it:'Dove fiorirebbe'}, {k:'health_energy',label:'Body / energy',it:'Corpo / energia'},
+      {k:'generation',label:'Generation',it:'Generazione'}, {k:'life_stage',label:'Life stage',it:'Fase di vita'},
+      {k:'top_holland_code',label:'Holland code',it:'Codice Holland'}, {k:'suggested_house',label:'House',it:'Casa'},
     ],
     listFields:[
-      {k:'aptitudes',label:'What lights them up'}, {k:'certificates_or_teachers',label:'Certs / teachers'},
-      {k:'affinities',label:'Affinities'}, {k:'conflicts',label:'Tensions noticed'},
+      {k:'aptitudes',label:'What lights them up',it:'Cosa lo/la accende'}, {k:'certificates_or_teachers',label:'Certs / teachers',it:'Certificati / maestri'},
+      {k:'affinities',label:'Affinities',it:'Affinità'}, {k:'conflicts',label:'Tensions noticed',it:'Tensioni notate'},
     ],
     init(){
       if(location.hash.indexOf('token=')>-1){
@@ -500,7 +500,18 @@ function concierge(){
     show(k){ return this.record[k]; },
     empty(){ return this.fields.every(f=>!this.has(f.k)) && this.listFields.every(lf=>!(this.record[lf.k]||[]).length) && !this.hasRiasec(); },
     hasRiasec(){ const r=this.record.riasec||{}; return Object.values(r).some(v=>v>0); },
-    riasecRows(){ const r=this.record.riasec||{}; const L={realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
+    // B3: the record panel follows the conversation's language. Explicit picker wins; under Auto we
+    // read the language Cleo actually settled on (preferred_language / reply language). EN otherwise.
+    panelLang(){ const p=(this.lang&&this.lang!=='auto')?this.lang:(this.record.preferred_language||this.record.language||'en'); return (''+p).toLowerCase().slice(0,2)==='it'?'it':'en'; },
+    pl(f){ return this.panelLang()==='it'?(f.it||f.label):f.label; },
+    i18n:{
+      learned:{en:'What Cleopatra has learned', it:'Cosa ha imparato Cleopatra'},
+      memory:{en:'This is your memory — yours to see. Every master reads it.', it:'Questa è la tua memoria — tua da vedere. Ogni maestro la legge.'},
+      nothing:{en:'Nothing yet. Say hello and tell her a little about you.', it:'Ancora niente. Salutala e raccontale un po\' di te.'},
+      interests:{en:'Interests (RIASEC)', it:'Interessi (RIASEC)'},
+    },
+    S(key){ const e=this.i18n[key]; if(!e) return ''; return this.panelLang()==='it'?(e.it||e.en):e.en; },
+    riasecRows(){ const r=this.record.riasec||{}; const L=this.panelLang()==='it'?{realistic:'Realistico',investigative:'Investigativo',artistic:'Artistico',social:'Sociale',enterprising:'Intraprendente',conventional:'Convenzionale'}:{realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
       return Object.keys(L).map(k=>({k,label:L[k],v:r[k]||0})).sort((a,b)=>b.v-a.v); },
     // voice follows the language of THIS reply (the masters' rule), not the picker.
     // EN/IT are the home tongues; we also sniff DE/FR/ES so an off-menu reply (Angel's German

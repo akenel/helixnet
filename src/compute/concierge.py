@@ -71,6 +71,11 @@ How you greet and guide:
   Speak ONLY of what truly exists here. If you don't know or can't do something, say so plainly and
   warmly -- honesty is the whole point. You may, of course, talk about what the guest has told you
   (their own record is yours to reflect back).
+- NEVER FABRICATE A NAMED OFFERING OR A BOOKING. Do NOT invent a specific named workshop, course,
+  class, or event ("the Retirement Blueprint workshop"), and do NOT offer, reserve, or CONFIRM dates,
+  times, slots, or seats ("I've set your seat for Monday 09:00"). You cannot book or schedule anything.
+  Talk only about the real workshop RECIPES in the Bottega and the 🏛️ Masters button -- if the guest
+  wants to act, point them there. A confirmed booking that does not exist is just another lie.
 - DON'T VALIDATE A FICTION THE GUEST PLANTS. If the guest names a place, room, tool, feature, program,
   or master that does NOT exist here ("give me a tour of the Innovation Lab", "open the Testing Arena"),
   do NOT play along, affirm it, or describe it -- not even as a "virtual guide" or "let me paint you a
@@ -368,6 +373,28 @@ def _strip_fictions(record: dict) -> dict:
     return record
 
 
+# B1 -- the Born field must read like AGE/era, not work tenure. "30 years of mechanic craft" is
+# EXPERIENCE; it must never land in (or overwrite) birthdate_hint. Reject the tenure shape unless a
+# real date signal is also present; keep genuine hints (a year, month, age, decade, sign, after-2000).
+_EXPERIENCE_HINT_RE = re.compile(r"\b\d+\s*\+?\s*years?\s+(?:of|as|in|working|experience|exp|spent)\b", re.I)
+_DATE_SIGNAL_RE = re.compile(
+    r"\b(?:19|20)\d{2}\b|"                                   # a 4-digit year
+    r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|"   # a month
+    r"\b(?:aries|taurus|gemini|cancer|leo|virgo|libra|scorpio|sagittarius|capricorn|aquarius|pisces)\b|"
+    r"\bborn\b|\bbefore\s*2000\b|\bafter\s*2000\b|\b\d0s\b|\bage\s*\d", re.I)
+
+
+def _clean_birthdate_hint(v) -> str:
+    """Keep a birthdate hint only if it reads like age/era, not work tenure. '' otherwise.
+    Conservative: only rejects an experience phrase ("30 years of/as ...") that carries NO date signal."""
+    s = str(v or "").strip()
+    if not s or s.lower() == "unknown":
+        return ""
+    if _EXPERIENCE_HINT_RE.search(s) and not _DATE_SIGNAL_RE.search(s):
+        return ""
+    return s
+
+
 async def extract_record(transcript: list[dict]) -> dict:
     """Second pass: read the whole transcript -> a structured record. JSON-mode + prompt + regex
     (the proven gotcha-proof path: gpt-oss did not honour the format param alone)."""
@@ -379,6 +406,7 @@ async def extract_record(transcript: list[dict]) -> dict:
     parsed = json.loads(raw[a:b + 1])
     if not isinstance(parsed, dict):
         return {}
+    parsed["birthdate_hint"] = _clean_birthdate_hint(parsed.get("birthdate_hint"))  # B1: tenure != birthday
     grounded = _strip_fictions(parsed)            # cheap boolean gate (catches the flagged cases free)
     return await _audit_motivation(transcript, grounded)   # interrogator (catches the no-flag residual)
 
@@ -402,6 +430,9 @@ No prose."""
 
 _AUDIT_FIELDS = ("why_they_came", "goal", "current_seat")
 _AUDIT_LIST_FIELDS = ("affinities", "aptitudes")
+# B2: the IDENTITY lists merge_record scrubs of named fictions (NOT conflicts/needs_clarification --
+# those legitimately record "wants X, which doesn't exist here").
+_FICTION_SCRUB_LISTS = ("affinities", "aptitudes", "certificates_or_teachers")
 
 
 async def _audit_motivation(transcript: list[dict], record: dict) -> dict:
@@ -429,6 +460,10 @@ async def _audit_motivation(transcript: list[dict], record: dict) -> dict:
                 lst = record.get(lk)
                 if isinstance(lst, list):
                     record[lk] = [it for it in lst if not any(t in str(it).lower() for t in terms)]
+            # B2: carry the named terms to merge_record so it can scrub the STANDING lists too --
+            # the per-turn scrub above only cleans THIS extraction; the union with the stored record
+            # would re-introduce a fiction that leaked on an earlier turn ("innovation lab" in affinities).
+            record["fiction_terms"] = terms
     except Exception:  # noqa: BLE001
         logger.warning("audit_motivation failed", exc_info=True)
     return record
@@ -453,9 +488,18 @@ def merge_record(old: dict, new: dict) -> dict:
     latest scores (more conversation = better signal) for any theme that moved off zero."""
     out = blank_record()
     out.update({k: v for k, v in (old or {}).items() if k in out})
+    # B2: fiction terms the auditor named this turn -> scrub them from the IDENTITY lists of the
+    # MERGED record (not just the fresh turn), so a leak from an earlier turn can't survive the union.
+    # NOT applied to conflicts/needs_clarification -- those legitimately RECORD the fiction.
+    fic = [str(t).strip().lower() for t in ((new or {}).get("fiction_terms") or []) if str(t).strip()]
     for k, default in RECORD_FIELDS.items():
         nv = (new or {}).get(k)
-        if k == "riasec":
+        if k == "birthdate_hint":
+            # B1: never let work tenure ("30 years of ...") sit in or overwrite Born; purge a
+            # previously-stored bad value too (new wins if it's a clean hint, else clean the old).
+            nv_clean = _clean_birthdate_hint(nv)
+            out[k] = nv_clean if nv_clean else _clean_birthdate_hint(out.get(k))
+        elif k == "riasec":
             cur = dict(out.get("riasec") or {})
             for theme in RECORD_FIELDS["riasec"]:
                 score = (nv or {}).get(theme) if isinstance(nv, dict) else None
@@ -478,6 +522,11 @@ def merge_record(old: dict, new: dict) -> dict:
                 if norm and norm not in seen:
                     seen.add(norm)
                     merged.append(item)
+            # B2: scrub named fictions from the IDENTITY lists (a fiction is not an affinity/aptitude).
+            # conflicts + needs_clarification are spared -- recording "wants the Innovation Lab (doesn't
+            # exist)" there is correct and useful.
+            if fic and k in _FICTION_SCRUB_LISTS:
+                merged = [m for m in merged if not any(t in str(m).lower() for t in fic)]
             out[k] = merged[:12]   # hard cap so the record (and the prompt that carries it) stays lean
         elif _meaningful(nv):
             out[k] = nv
