@@ -96,6 +96,43 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    # The get-hired engine: paste a recruiter email + your CV -> a confident, honest reply + a CV slant.
+    "recruiter-reply": {
+        "slug": "recruiter-reply", "title": "Recruiter Reply", "emoji": "\U0001F4BC",
+        "category": "identity", "est_credits": 2,
+        "inputs": [
+            {"name": "email", "type": "text", "label": "Paste the recruiter's email"},
+            {"name": "cv", "type": "text", "label": "Your CV / key experience (paste -- helps match the role)"},
+            {"name": "stance", "type": "text",
+             "label": "Your stance / notes (optional, e.g. 'fine with the rate, flag my B2 German confidently')"},
+            {"name": "reply_lang", "type": "select", "label": "Reply language",
+             "options": ["Auto", "English", "Italian"], "default": "Auto"},
+        ],
+        "system": (
+            "You are a sharp, warm career assistant helping a candidate reply to a recruiter and win the "
+            "interview. Address EVERY point the recruiter raised. Be professional, confident and HONEST. "
+            "Handle any gap (a language level, an employment gap, a missing 'nice-to-have') with quiet "
+            "confidence -- never apologise or talk the candidate down; frame it as a strength or a "
+            "non-issue and offer to discuss. NEVER invent experience, employers, dates, titles or "
+            "credentials -- re-weight ONLY what the candidate gave you. Output clean Markdown."
+        ),
+        "prompt": (
+            "Reply to this recruiter email on the candidate's behalf, in {reply_lang} (if 'Auto', match "
+            "the recruiter's own language). Produce EXACTLY these Markdown parts:\n\n"
+            "1. The reply itself, ready to paste: greet by name if given; confirm or answer EACH point "
+            "the recruiter raised (conditions, rate, exclusivity, the CV to follow, any question); handle "
+            "any gap confidently; sign off as the candidate.\n"
+            "2. A section '## ✂️ CV slant for this role' -- 3-5 short bullets: the keywords / "
+            "experience to emphasise on the CV for THIS posting, drawn ONLY from the candidate's real "
+            "background.\n"
+            "3. A section '## Covers' -- a one-line list of the points the reply addressed.\n\n"
+            "Candidate's stance / notes: {stance}\n\n"
+            "What we already know about the candidate: {portrait}\n\n"
+            "Candidate's CV / experience (paste):\n{cv}\n\n"
+            "The recruiter's email:\n{email}"
+        ),
+        "output": "markdown",
+    },
     # A real, output-producing recipe -- no file needed (procedure-as-code: one entry).
     "music-playlist": {
         "slug": "music-playlist", "title": "Music Playlist", "emoji": "\U0001F3B5",
