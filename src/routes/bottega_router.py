@@ -226,8 +226,10 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
 
 
 @router.get("/recipes")
-async def recipes(current_user: dict = Depends(require_bottega_access())):
-    """The Chinese menu -- every recipe + its input spec. Adding one = a dict entry."""
+async def recipes():
+    """The Chinese menu -- every recipe + its input spec. PUBLIC: the menu is a catalog (no
+    user data), so anyone can see the smorgasbord without logging in -- 'look around free.'
+    Running a recipe (/recipes/{slug}/run) stays gated; only browsing the menu is open."""
     return recipe_menu()
 
 
