@@ -4,7 +4,7 @@
 > (La Piazza marketplace) on a member's behalf — the SAP-style interface Angel described:
 > GET/POST/PATCH across the modules, no realm merge required for v1.
 
-**Status:** spec + **Legends-1 (cast read) built**. Writes specced, phased behind the identity link.
+**Status:** spec + **Legends-1 (cast read) built**. **Writes approach CHOSEN 2026-06-13: BAPI-style service endpoints (option C), service-key auth, identity-by-email — keeps the two realms, no Keycloak migration.** (The two apps are on separate KC realms — `lapiazza-realm-*` for the Bottega, `borrowhood*` for the Square — proven by distinct JWKS/issuers, so a user token does NOT cross; the service-key BAPI sidesteps that entirely.)
 
 ---
 
@@ -40,6 +40,34 @@ The *only* real engineering is **one account that works at both doors** (the ide
 5. They tap **Push to La Piazza** → the improved version replaces the old. Last-write-wins; it's their own window.
 
 **Is POC B too powerful? No.** It's POC A plus one "pull first" step — and the pull is already built. Same one account, same one button. Both journeys ride the same machinery.
+
+---
+
+## The contract discipline — BAPI, not raw PATCH (chosen 2026-06-13)
+
+**Principle (Angel's material-master rule):** the write path is a *defined service operation* (a BAPI), not field-poking. A raw `PATCH` is a dumb pipe — changes a field, trusts the caller, can leave the master half-valid. A **BAPI is a smart gate**: it validates the **whole proposed state at the door**, is **all-or-nothing** (commit or rollback — never a half-write), and on failure returns a **structured, actionable error** ("missing X / invalid Y, fix and retry") with **no change made**. The rule for "what is a valid profile" lives in **one place** — so the Bottega, the marketplace's own settings page, and any future client all go through the same gate and get the same guarantee. Call it from anywhere: it's either right, or a clean rejection.
+
+**Scope (so it stays simple, not an SAP monolith):** the BAPI guards the **module border + shared master data** (profile, listings). It does NOT wrap the Bottega's own private/ephemeral state (draft notes, in-progress recipe runs). Rule: *crosses the border or is shared master data → service interface; purely local → don't bother.*
+
+**Auth + identity:** caller authenticates as a trusted service via `X-LP-Service-Key` (env `LP_SERVICE_KEY`, a secret shared Bottega↔Square). The user is identified **by email** (the realms differ, so `sub` can't be the join key); the marketplace resolves-or-creates the `bh_user` by email — `get_user` already matches by email.
+
+### First BAPI contract — `publish_profile`
+- **Endpoint (marketplace / BorrowHood):** `POST /api/v1/lp/bapi/publish-profile`
+- **Headers:** `X-LP-Service-Key: <LP_SERVICE_KEY>`
+- **Request:**
+  ```json
+  { "email": "person@example.com",        // required — the identity join key
+    "display_name": "…",                   // optional
+    "bio": "…", "tagline": "…",            // optional
+    "skills": ["…"], "categories": ["…"],  // optional arrays
+    "workshop_name": "…" }                 // optional
+  ```
+- **Validation (at the door, before any write):** `email` present + well-formed; `bio` ≤ N chars, `tagline` ≤ M chars; `categories` ∈ the marketplace's real category set (else rejected, not silently dropped); slug uniqueness handled server-side. Bad input → **422** `{ "ok": false, "errors": [ { "field": "...", "code": "...", "message": "..." } ] }`, **nothing written**.
+- **Success:** find-or-create `bh_user` by email → update the allowed fields → **commit transactionally** → **200** `{ "ok": true, "profile": { … }, "url": "/u/<slug>" }`.
+- **Idempotent:** same payload twice = same result (last-write-wins on fields; no duplicate user). 
+- **Bottega side:** `square_bridge.publish_profile(email, fields)` calls it with the service key; the consumer (the "Push to La Piazza" button handler) never sees the transport.
+
+**Later BAPIs (same shape):** `publish-listing` (create/update an item), `retire-listing`. Each: validate-whole → commit-or-reject → structured errors.
 
 ---
 
