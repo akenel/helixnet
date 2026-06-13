@@ -8,10 +8,46 @@
 
 ---
 
-## Grounded facts (verified 2026-06-07)
+## The simple model (keep it this simple — 2026-06-13)
+
+**Two modules. One person. One button. Last write wins.**
+
+- **La Piazza (the Square)** = the storefront / front door. Where you *show, sell, auction, run events, offer services*. Your display window.
+- **The Bottega (the Workshop)** = the back door. Where Cleopatra and the masters *guide you* — figure out who you are, build you up, and help you make a **proper, customized profile** instead of winging it freehand in the Square.
+
+It is **one relationship the whole way through** — the same single person in both rooms. Not fifteen people running someone's Bottega. One guy, one account, two doors. Resist the urge to make this an SAP monolith with modules and governance; there are exactly **two modules** and **one user editing their own stuff**.
+
+**The whole feature in one line:** the Workshop builds your profile → you tap **"Push to La Piazza"** → it fills your storefront profile. Want to change it? Push again, or edit it in La Piazza. Last one wins. It's your own window — no merge, no diff, no "are you sure."
+
+The *only* real engineering is **one account that works at both doors** (the identity link). Everything else — building the profile (a recipe we already have) and saving it (`PATCH /me`, already exists) — is wiring two things that already work, behind one button.
+
+---
+
+## The two POCs (the only two journeys that matter)
+
+### POC A — Brand-new user, enters through the Bottega (back door)
+1. **Get Started** on the Bottega → name, email, and "tell us about yourself" (CV optional).
+2. We create **one account** — same email, works at both doors (La Piazza account made to match, automatically).
+3. Cleopatra + the chosen master + the profile recipe build a **draft profile** in the Workshop — byline, story, skills.
+4. They tune it with the masters until it feels like *them*.
+5. They tap **Push to La Piazza** → their storefront profile is filled in. They walk into the Square with a finished, customized profile — **they never had to wing it freehand.**
+
+### POC B — Existing La Piazza user with a display window, comes into the Bottega to improve it
+1. They already have a La Piazza account + a storefront/profile (the display window).
+2. They log into the Bottega — **same login, same person** (one account).
+3. The Bottega **pulls their current Square profile** so they start from what's *already live*, not a blank page. *(This read already exists: `square_bridge.get_square_profile`.)*
+4. Cleopatra + masters help them sharpen the byline / story / a listing.
+5. They tap **Push to La Piazza** → the improved version replaces the old. Last-write-wins; it's their own window.
+
+**Is POC B too powerful? No.** It's POC A plus one "pull first" step — and the pull is already built. Same one account, same one button. Both journeys ride the same machinery.
+
+---
+
+## Grounded facts (verified 2026-06-07, updated 2026-06-13)
 | Fact | Value | Consequence |
 |---|---|---|
-| Square repo | **separate git repo** (`BorrowHood/`), image `borrowhood:staging`, no `/opt` checkout on box | marketplace-side endpoints need its own build/deploy (unmapped) → defer write API |
+| Square repo | **FOUND 2026-06-13:** `/home/angel/repos/helixnet/BorrowHood/` (nested git repo, remote `github.com/akenel/borrowhood.git`, branch `main`) | build/deploy path is mappable — no longer a blocker |
+| **Write endpoints already exist** | `PATCH /me` (`users/me.py:84`, fields incl. display_name/tagline/bio/workshop_name/skills), `POST /me/skills`, `POST /listings` (`listings.py:91`), `PATCH /listings/{id}` (:208), `DELETE` (:247), `PATCH /listings/{id}/status` (:293) — all `Depends(require_auth)` | **the write API is NOT new work.** "Push to La Piazza" just CALLS these. The only real work is the identity link below. |
 | Same Postgres | `helix_db` (Bottega) + `borrowhood` (Square), one instance, `helix_user` can read both | **reads can use a read-only DB connection now** |
 | Square identity key | `bh_user.keycloak_id` (sub) + `email` — **no `username` column** | — |
 | Bottega identity key | `bottega_profiles.username` (KC preferred_username) | **no shared key** between modules |
