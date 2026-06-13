@@ -215,3 +215,8 @@ tests/e2e/*-report.json
 # YouTube uploader secrets (never commit)
 scripts/yt_client_secret.json
 scripts/yt_token.json
+
+# Test outputs — generated, not source (test-scripts/ + *.md stay tracked)
+docs/testing/reports/
+docs/testing/artifacts/
+docs/testing/archive/

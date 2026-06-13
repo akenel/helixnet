@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keystone v1 — Test Script · La Piazza</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --ink:#e2e8f0; --mut:#94a3b8; --red:#dc2626; --grn:#16a34a; --amb:#d97706; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Segoe UI',system-ui,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+  header { padding:18px 20px; border-bottom:3px solid var(--red); background:#0b1220; position:sticky; top:0; z-index:5; }
+  header h1 { margin:0; font-size:19px; }
+  header .meta { color:var(--mut); font-size:13px; margin-top:4px; }
+  header .url { color:#f87171; font-weight:600; }
+  .wrap { max-width:860px; margin:0 auto; padding:18px 16px 120px; }
+  .intro { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:16px; font-size:14px; }
+  .intro b { color:#fca5a5; }
+  .check { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .check h3 { margin:0 0 4px; font-size:15.5px; }
+  .check .do { color:var(--mut); font-size:13.5px; margin:0 0 10px; white-space:pre-line; }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .btns button { border:1px solid var(--line); background:#0b1220; color:var(--ink); border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btns button.on[data-v="pass"] { background:var(--grn); border-color:var(--grn); color:#fff; }
+  .btns button.on[data-v="issue"] { background:var(--amb); border-color:var(--amb); color:#fff; }
+  .btns button.on[data-v="skip"] { background:#475569; border-color:#475569; color:#fff; }
+  .row { display:flex; gap:8px; align-items:flex-start; }
+  textarea { width:100%; min-height:54px; background:#0b1220; border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:8px; font:inherit; font-size:13.5px; resize:vertical; }
+  .mic { border:1px solid var(--line); background:#0b1220; color:var(--ink); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; white-space:nowrap; }
+  .mic.rec { background:var(--red); border-color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  .shot { margin-top:8px; }
+  .shot .drop { border:1px dashed var(--line); border-radius:8px; padding:8px; font-size:12.5px; color:var(--mut); cursor:pointer; }
+  .shot img { max-width:100%; border-radius:8px; margin-top:6px; border:1px solid var(--line); }
+  .bar { position:fixed; bottom:0; left:0; right:0; background:#0b1220; border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .bar .prog { font-size:13px; color:var(--mut); }
+  .bar button { border:0; border-radius:9px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; }
+  .bar .copy { background:var(--red); color:#fff; }
+  .bar .dl { background:#334155; color:#fff; }
+  .bar .reset { background:transparent; color:var(--mut); border:1px solid var(--line); }
+  .ok { color:#86efac; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🐺 Keystone v1 — Test Script</h1>
+  <div class="meta">Feature: replyable inbox threads + R0 prep-scan + CV-banner-hide + recipe ledger · 2026-06-12<br>
+  Test on: <span class="url">https://staging-bottega.lapiazza.app</span> · log in as <b>angel</b></div>
+</header>
+<div class="wrap">
+  <div class="intro">
+    Run each check on staging. Mark <b>✅ Pass</b> / <b>⚠️ Issue</b> / <b>⏭️ Skip</b>, drop a note (type or 🎤),
+    and 📋 paste a screenshot if useful (click a shot box then Ctrl/Cmd+V). Everything auto-saves in this page.
+    When done, hit <b>Copy report</b> at the bottom and paste it back to Tigs. I read between the lines.<br><br>
+    <b>Note:</b> if Cleopatra replies "stepped away for a second", the brain was just busy — retry; that's not a bug.
+  </div>
+  <div id="checks"></div>
+</div>
+<div class="bar">
+  <span class="prog" id="prog"></span>
+  <div>
+    <button class="reset" onclick="resetAll()">reset</button>
+    <button class="dl" onclick="download()">⬇ Download</button>
+    <button class="copy" onclick="copyReport()">📋 Copy report → Tigs</button>
+  </div>
+</div>
+
+<script>
+const CHECKS = [
+  { id:'login', t:'1 · Log in on staging',
+    d:'Open https://staging-bottega.lapiazza.app/compute/me and log in. The "Your Rebuild" page loads — scorecard, tabs (Home/Body/Mind/Spirit/Inbox).' },
+  { id:'inbox', t:'2 · The nudge is in your inbox',
+    d:'Click the 📬 Inbox tab. You see a "Cleopatra" message (the welcome nudge about your Story) with a 💬 marker, and an unread badge on the tab.' },
+  { id:'open', t:'3 · It opens as a conversation (the keystone)',
+    d:'Click the Cleopatra message. It opens as a thread: her nudge at the top, and a reply box at the bottom — not a dead-end notice.' },
+  { id:'reply', t:'4 · You reply → Cleo answers IN the thread',
+    d:'Type a reply (e.g. "Yes — let\'s do the Story") and Send. Your line appears on the right; Cleopatra answers right below it, in the SAME thread, grounded in what she knows, in your language.' },
+  { id:'nest', t:'5 · Replies nest, they don\'t litter the inbox',
+    d:'Close the thread (✕). Back in the list, the Cleopatra message now shows a 💬 count (e.g. 2). Your reply + her answer did NOT show up as separate inbox items.' },
+  { id:'cv', t:'6 · The "Drop your CV" banner is gone',
+    d:'Go to 🔧 Workshop (/compute/bottega). The "New here? Drop your CV" strip at the top is GONE (your profile is built). The redo path still lives under 👤 About You.' },
+  { id:'today', t:'7 · Today board still works (regression)',
+    d:'Go to 📋 Today. Your Top 10 + breakdown steps load and behave normally — nothing broke.' },
+  { id:'console', t:'8 · No red console errors',
+    d:'Open DevTools (F12) → Console while you do the reply flow. No red errors (no "Failed to fetch", mixed-content, or undefined).' },
+];
+
+const KEY = 'keystone_v1_test';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { state = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} renderProg(); }
+function st(id) { return state[id] || (state[id] = { status:'', note:'', shot:'' }); }
+
+function render() {
+  const root = document.getElementById('checks');
+  root.innerHTML = '';
+  CHECKS.forEach(c => {
+    const s = st(c.id);
+    const el = document.createElement('div');
+    el.className = 'check';
+    el.innerHTML = `
+      <h3>${c.t}</h3>
+      <p class="do">${c.d}</p>
+      <div class="btns">
+        <button data-v="pass">✅ Pass</button>
+        <button data-v="issue">⚠️ Issue</button>
+        <button data-v="skip">⏭️ Skip</button>
+      </div>
+      <div class="row">
+        <textarea placeholder="What happened? (type or use 🎤)">${s.note || ''}</textarea>
+        <button class="mic" title="voice note">🎤</button>
+      </div>
+      <div class="shot">
+        <div class="drop">📋 click here, then Ctrl/Cmd+V to paste a screenshot</div>
+        ${s.shot ? `<img src="${s.shot}">` : ''}
+      </div>`;
+    // status buttons
+    el.querySelectorAll('.btns button').forEach(b => {
+      if (s.status === b.dataset.v) b.classList.add('on');
+      b.onclick = () => { s.status = (s.status === b.dataset.v ? '' : b.dataset.v); save(); render(); };
+    });
+    // note
+    const ta = el.querySelector('textarea');
+    ta.oninput = () => { s.note = ta.value; save(); };
+    // mic
+    const mic = el.querySelector('.mic');
+    mic.onclick = () => startMic(c.id, ta, mic);
+    // paste screenshot
+    const drop = el.querySelector('.drop');
+    drop.onclick = () => { drop.textContent = '📋 ready — press Ctrl/Cmd+V now'; window._activeShot = { id:c.id, drop }; };
+    root.appendChild(el);
+  });
+  renderProg();
+}
+
+function renderProg() {
+  const done = CHECKS.filter(c => (state[c.id] && state[c.id].status)).length;
+  document.getElementById('prog').textContent = `${done}/${CHECKS.length} checked`;
+}
+
+document.addEventListener('paste', e => {
+  if (!window._activeShot) return;
+  const items = (e.clipboardData || {}).items || [];
+  for (const it of items) {
+    if (it.type && it.type.indexOf('image') === 0) {
+      const file = it.getAsFile();
+      const r = new FileReader();
+      r.onload = ev => { st(window._activeShot.id).shot = ev.target.result; save(); render(); };
+      r.readAsDataURL(file);
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
+function startMic(id, ta, mic) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice needs Chrome. Just type the note.'); return; }
+  const rec = new SR();
+  rec.lang = 'en-US'; rec.interimResults = false;
+  mic.classList.add('rec');
+  rec.onresult = e => {
+    const txt = Array.from(e.results).map(r => r[0].transcript).join(' ');
+    const s = st(id); s.note = (s.note ? s.note + ' ' : '') + txt; ta.value = s.note; save();
+  };
+  rec.onerror = () => mic.classList.remove('rec');
+  rec.onend = () => mic.classList.remove('rec');
+  rec.start();
+}
+
+function copyReport() {
+  let out = 'KEYSTONE v1 — TEST REPORT (staging-bottega.lapiazza.app)\n2026-06-12 · @angel\n\n';
+  let shots = 0;
+  CHECKS.forEach(c => {
+    const s = state[c.id] || {};
+    const mark = s.status === 'pass' ? '✅ PASS' : s.status === 'issue' ? '⚠️ ISSUE' : s.status === 'skip' ? '⏭️ SKIP' : '⬜ (not checked)';
+    out += `${c.t}\n  ${mark}\n`;
+    if (s.note) out += `  note: ${s.note}\n`;
+    if (s.shot) { shots++; out += `  [screenshot attached #${shots} — paste image separately]\n`; }
+    out += '\n';
+  });
+  out += shots ? `(${shots} screenshot(s) in the page — drag them to chat too.)\n` : '';
+  navigator.clipboard.writeText(out).then(
+    () => { const b = document.querySelector('.copy'); b.textContent = '✓ Copied — paste to Tigs'; setTimeout(()=>b.textContent='📋 Copy report → Tigs', 2500); },
+    () => { prompt('Copy this report:', out); }
+  );
+}
+
+function download() {
+  let out = document.querySelector('.copy') ? '' : '';
+  // reuse copyReport text
+  let txt = 'KEYSTONE v1 — TEST REPORT (staging)\n2026-06-12 @angel\n\n';
+  CHECKS.forEach(c => { const s = state[c.id]||{}; txt += `${c.t}\n  ${s.status||'(not checked)'}\n  ${s.note||''}\n\n`; });
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+  a.download = 'keystone-v1-test-report.txt'; a.click();
+}
+
+function resetAll() { if (confirm('Clear all answers?')) { state = {}; save(); render(); } }
+
+render();
+</script>
+</body>
+</html>
