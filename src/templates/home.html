@@ -25,6 +25,8 @@
   .card:hover { border-color: rgba(192,57,43,0.5); transform: translateY(-2px); }
   .grad-rule { background:linear-gradient(90deg,#8B0000,#C0392B,transparent) }
   .glow { text-shadow: 0 0 40px rgba(192,57,43,0.35); }
+  @keyframes rise { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:none } }
+  .rise { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; }
 </style>
 </head>
 <body class="font-sans text-slate-200 min-h-screen antialiased">
@@ -34,25 +36,35 @@
 
   <!-- hero -->
   <div class="text-center">
-    <div class="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-slate-500 mb-6">
-      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> La Piazza · live
+    <div class="rise inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-slate-500 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> La Piazza · the square where ideas become things
     </div>
-    <h1 class="text-5xl sm:text-6xl font-black tracking-tight leading-[1.05]">
-      The square where<br><span class="text-brand glow">ideas become things.</span>
+    <h1 class="rise text-4xl sm:text-5xl font-black tracking-tight leading-[1.08]" style="animation-delay:.08s">
+      Got a skill the world stopped hiring?<br>
+      <span class="text-brand glow">Good — it's still worth something here.</span>
     </h1>
-    <p class="mt-6 text-lg text-slate-400 max-w-xl mx-auto leading-relaxed">
-      An imagination machine. Drop your CV and get a profile in 30 seconds. Make a poster, a posting,
-      a playlist. List it, sell it, share it. Built by one person, in the open.
+    <p class="rise mt-6 text-lg text-slate-400 max-w-xl mx-auto leading-relaxed" style="animation-delay:.16s">
+      La Piazza is the town square for people who'd rather build their own thing than wait for a
+      callback that isn't coming. <span class="text-slate-200 font-medium">Your years aren't a liability — they're the product.</span>
+      Tell us what you can do; we'll help you make something of it.
     </p>
 
     <!-- hero CTA -->
-    <div class="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+    <div class="rise mt-9 flex flex-col sm:flex-row gap-3 justify-center" style="animation-delay:.24s">
       <a href="/get-started" class="px-7 py-3.5 rounded-xl font-bold bg-brand hover:bg-branddark text-white text-[15px] shadow-lg shadow-brand/20">
-        🧬 Drop your CV → build your Bottega
+        🐺 Start free — just tell us what you do
       </a>
       <a href="/compute" class="px-7 py-3.5 rounded-xl font-semibold bg-slate-800/70 hover:bg-slate-700/70 border border-slate-700 text-slate-200 text-[15px]">
         ⚡ Enter the Compute Exchange
       </a>
+    </div>
+
+    <!-- trust promise, said out loud (research rec 5) -->
+    <div class="rise mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12.5px] font-mono text-slate-400" style="animation-delay:.32s">
+      <span><span class="text-emerald-400 font-bold">✓</span> Look around free — no login to browse</span>
+      <span><span class="text-emerald-400 font-bold">✓</span> No phone number</span>
+      <span><span class="text-emerald-400 font-bold">✓</span> We don't sell your data</span>
+      <span><span class="text-emerald-400 font-bold">✓</span> One email, only when you're ready</span>
     </div>
   </div>
 
