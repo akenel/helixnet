@@ -43,6 +43,12 @@
   .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
   .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
   @keyframes pulse{ 50%{ opacity:.45 } }
+  .verdict{ display:flex; gap:6px; margin-top:7px; }
+  .vb{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:3px 11px; font-size:12px; font-weight:700; cursor:pointer; color:var(--mut); }
+  .vb:hover{ background:#f5f5f5; }
+  .vb.pass.on{ background:#dcfce7; border-color:#059669; color:#166534; }
+  .vb.fail.on{ background:#fee2e2; border-color:#dc2626; color:#991b1b; }
+  .vb.issue.on{ background:#fff4d6; border-color:#d97706; color:#92600a; }
   .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
   .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
   .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
@@ -239,6 +245,13 @@
       const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
       mic.addEventListener('click', ()=>micToggle(mic, ta));
       row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      // PASS / FAIL / ISSUE verdict per step (in addition to the done-check)
+      const vg=document.createElement('div'); vg.className='verdict';
+      ['pass','fail','issue'].forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.className='vb '+v;
+        b.textContent={pass:'✓ PASS',fail:'✗ FAIL',issue:'⚠ ISSUE'}[v];
+        b.addEventListener('click',()=>{ STEPS[i].verdict=(STEPS[i].verdict===v?'':v); paintVerdict(i); save(); progress(); });
+        vg.appendChild(b); });
+      wrap.appendChild(vg);
       const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
       zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
       const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
@@ -252,7 +265,7 @@
       const thumbs = document.createElement('div'); thumbs.className='thumbs';
       wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
       li.querySelector('.step-body').appendChild(wrap);
-      STEPS[i]={ li, cb, label, ta, thumbs, shots:[] };
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[], verdict:'', vg };
     });
   }
 
@@ -270,18 +283,22 @@
       const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
       const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
       d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+  function paintVerdict(i){ const s=STEPS[i]; if(!s||!s.vg) return; [...s.vg.children].forEach(b=>{ b.classList.toggle('on', b.classList.contains(s.verdict)); }); }
 
-  function save(){ const d={cb:[],note:[],shots:[],cm:{},seconds};
-    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+  function save(){ const d={cb:[],note:[],shots:[],verdict:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; d.verdict[i]=s.verdict||''; });
     document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
     try{ localStorage.setItem(KEY,JSON.stringify(d)); }
     catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export your report to save screenshots, then clear.'); } }
   function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
     STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
-      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); }
+      if(d.verdict&&d.verdict[i]){ s.verdict=d.verdict[i]; paintVerdict(i); } });
     if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
     if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
-  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length; document.getElementById('prog').textContent=done+'/'+STEPS.length; }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length;
+    const f=STEPS.filter(s=>s.verdict==='fail').length, is=STEPS.filter(s=>s.verdict==='issue').length;
+    let t=done+'/'+STEPS.length; if(f) t+=' · '+f+'✗'; if(is) t+=' · '+is+'⚠'; document.getElementById('prog').textContent=t; }
   document.addEventListener('change',e=>{ save(); progress(); });
   let flashT=null; function flash(msg){ const el=document.getElementById('prog'); if(flashT) clearTimeout(flashT); const old=el.textContent; el.textContent='⚠'; alert(msg); el.textContent=old; }
 
@@ -309,7 +326,7 @@
   function copyReport(){ let out='THE DOOR RELEASE — PRE-PROD UAT REPORT\n'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n\n';
     document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
       sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
-        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.label||'')+'\n';
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n';
         if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
         if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) attached (see exported report)\n'; });
       const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
@@ -321,7 +338,9 @@
     h+='<h1>🚪 The Door Release — Pre-Prod UAT report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
     document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
       sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
-        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span> '+esc(s.label||'');
+        const vcol={pass:'#166534',fail:'#991b1b',issue:'#92600a'}[s.verdict];
+        const vlab=s.verdict?(' <b style="color:'+vcol+'">['+s.verdict.toUpperCase()+']</b> '):' ';
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span>'+vlab+esc(s.label||'');
         if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
         (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
       const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
