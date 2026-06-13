@@ -68,7 +68,7 @@
 <body>
 <header>
   <div class="htop">
-    <h1>🌱 Fresh First-Timer — clean-account signup<small>The one path we couldn't test before: a BRAND-NEW account walking in for the first time · run on staging</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260613-FRESH-FIRSTTIMER · rev.2 · registered <span id="envtag" style="margin-left:6px;color:#fff;background:#92600a;padding:1px 7px;border-radius:6px;font-size:11px"></span></small></h1>
+    <h1>🌱 Fresh First-Timer — clean-account signup<small>The one path we couldn't test before: a BRAND-NEW account walking in for the first time · run on staging</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260613-FRESH-FIRSTTIMER · rev.3 · registered<span id="envtag" style="margin-left:6px;color:#fff;background:#92600a;padding:1px 7px;border-radius:6px;font-size:11px"></span></small></h1>
     <div class="meters">
       <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
       <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
@@ -205,11 +205,17 @@
       d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
   function paintVerdict(i){ const s=STEPS[i]; if(!s||!s.vg) return; [...s.vg.children].forEach(b=>{ b.classList.toggle('on', b.classList.contains(s.verdict)); }); }
 
-  function save(){ const d={cb:[],note:[],shots:[],verdict:[],cm:{},seconds};
+  // DEBOUNCED save — rev.3 crash fix. Was serializing all screenshots to localStorage on EVERY
+  // keystroke + every mic interim-result (~10x/sec) → multi-MB JSON.stringify froze the tab. Now
+  // it fires at most once ~600ms after you stop; beforeunload flushes so nothing is lost.
+  let _saveT=null;
+  function save(){ clearTimeout(_saveT); _saveT=setTimeout(saveNow, 600); }
+  function saveNow(){ clearTimeout(_saveT); const d={cb:[],note:[],shots:[],verdict:[],cm:{},seconds};
     STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; d.verdict[i]=s.verdict||''; });
     document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
     try{ localStorage.setItem(KEY,JSON.stringify(d)); }
     catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export your report to save screenshots, then clear.'); } }
+  window.addEventListener('beforeunload', saveNow);
   function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
     STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
       if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); }
