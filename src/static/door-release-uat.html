@@ -69,7 +69,7 @@
 <body>
 <header>
   <div class="htop">
-    <h1>🚪 The Door Release — Pre-Prod UAT<small>Research-grounded door (recs 1 &amp; 5) + public menu fix + full pre-prod pass · run on STAGING, then we promote to prod tonight</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260613-DOOR-RELEASE · rev.1 · registered</small></h1>
+    <h1>🚪 The Door Release — Pre-Prod UAT<small>Research-grounded door (recs 1 &amp; 5) + public menu fix + full pre-prod pass · run on STAGING, then we promote to prod tonight</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260613-DOOR-RELEASE · rev.2 · registered <span id="envtag" style="margin-left:6px;color:#fff;background:#92600a;padding:1px 7px;border-radius:6px;font-size:11px"></span></small></h1>
     <div class="meters">
       <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
       <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
@@ -233,6 +233,7 @@
 <script>
   const KEY='door_release_runbook';
   const STEPS=[];
+  const ENV = location.hostname || 'local-file';
 
   function buildSteps(){
     document.querySelectorAll('ol.steps li').forEach((li,i)=>{
@@ -322,8 +323,19 @@
     rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
     try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
   }
+  // mic on EVERY section-notes textarea too (not just per-step notes) — talk anywhere
+  function addSectionMics(){
+    document.querySelectorAll('textarea[data-cm]').forEach(ta=>{
+      if(ta.dataset.miced) return; ta.dataset.miced='1';
+      const mic=document.createElement('button'); mic.type='button'; mic.className='mic-btn';
+      mic.textContent='🎤 speak'; mic.title='Dictate this note'; mic.style.marginTop='6px';
+      mic.addEventListener('click',()=>micToggle(mic,ta));
+      ta.insertAdjacentElement('afterend', mic);
+    });
+  }
 
-  function copyReport(){ let out='THE DOOR RELEASE — PRE-PROD UAT REPORT\n'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n\n';
+  function copyReport(){ const _P=STEPS.filter(s=>s.verdict==='pass').length,_F=STEPS.filter(s=>s.verdict==='fail').length,_I=STEPS.filter(s=>s.verdict==='issue').length;
+    let out='THE DOOR RELEASE — PRE-PROD UAT REPORT\n'+document.getElementById('prog').textContent+' checks · '+_P+' PASS / '+_F+' FAIL / '+_I+' ISSUE · env: '+ENV+' · '+document.getElementById('clock').textContent+' elapsed\n\n';
     document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
       sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
         out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n';
@@ -335,7 +347,10 @@
   function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
     let h='<!doctype html><meta charset=utf-8><title>The Door Release — UAT report</title>'+
       '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
-    h+='<h1>🚪 The Door Release — Pre-Prod UAT report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    const _fails=STEPS.filter(s=>s.verdict==='fail'), _issues=STEPS.filter(s=>s.verdict==='issue'), _pass=STEPS.filter(s=>s.verdict==='pass').length;
+    h+='<h1>🚪 The Door Release — Pre-Prod UAT report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · env: '+ENV+' · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    h+='<div style="background:#f7f7f8;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin:10px 0"><b>'+_pass+' PASS · '+_fails.length+' FAIL · '+_issues.length+' ISSUE</b>';
+    if(_fails.length||_issues.length){ h+='<ul style="margin:6px 0 0;padding-left:18px">'; _fails.forEach(s=>{h+='<li style="color:#991b1b">✗ '+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); _issues.forEach(s=>{h+='<li style="color:#92600a">⚠ '+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); h+='</ul>'; } else { h+=' — all clear ✓'; } h+='</div>';
     document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
       sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
         const vcol={pass:'#166534',fail:'#991b1b',issue:'#92600a'}[s.verdict];
@@ -345,9 +360,19 @@
         (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
       const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
     const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob); a.download='door-release-uat-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+    a.href=URL.createObjectURL(blob); a.download='door-release-uat-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    // auto-download a TEXT-ONLY twin (no screenshots) — lightweight for Tigs to read straight away
+    let tx='DOOR RELEASE — UAT REPORT (text)\n'+_pass+' PASS / '+_fails.length+' FAIL / '+_issues.length+' ISSUE · env: '+ENV+' · '+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n';
+    if(_fails.length||_issues.length){ tx+='\nFLAGS:\n'; _fails.forEach(s=>tx+='  X FAIL  '+(s.label||'')+(s.ta&&s.ta.value.trim()?' -- '+s.ta.value.trim():'')+'\n'); _issues.forEach(s=>tx+='  ! ISSUE '+(s.label||'')+(s.ta&&s.ta.value.trim()?' -- '+s.ta.value.trim():'')+'\n'); }
+    tx+='\n';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; tx+='## '+ttl.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{}; tx+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n'; if(s.ta&&s.ta.value.trim()) tx+='     note: '+s.ta.value.trim()+'\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) tx+='   section notes: '+t.value.trim()+'\n'; tx+='\n'; });
+    const tb=new Blob([tx],{type:'text/plain'}); const a2=document.createElement('a'); a2.href=URL.createObjectURL(tb); a2.download='door-release-uat-report.txt';
+    setTimeout(()=>{ a2.click(); setTimeout(()=>URL.revokeObjectURL(a2.href),2000); }, 500); }
 
-  buildSteps(); restore(); progress(); paintClock();
+  buildSteps(); addSectionMics(); restore(); progress(); paintClock();
+  (function(){ const e=document.getElementById('envtag'); if(e) e.textContent='env: '+ENV; })();
 </script>
 </body>
 </html>
