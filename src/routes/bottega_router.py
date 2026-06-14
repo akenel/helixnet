@@ -167,6 +167,64 @@ def _scan_clues(text: str) -> dict:
     return {"emails": emails, "phones": sorted(set(phones))[:10], "links": links}
 
 
+async def _provision_card(db: AsyncSession, *, username: str, name: str, email: str,
+                          source: str, text: str):
+    """BORN HERE — the ONE place a member's card is created. Profile + Blueprint archive +
+    Cleopatra's inbox welcome + her seeded record (WW-4). Called by get-started (brand-new account)
+    AND by the setup escort (an already-authenticated member who arrived WITHOUT a card: social
+    login, Keycloak self-register, or pre-WW-4). Returns the profile view, snapshotted BEFORE the
+    card-seed commit (so the ORM object can't re-expire -> MissingGreenlet). The keystone: every
+    door ends with a card, and the experience below is identical no matter which door you came in."""
+    proposal = await cv_to_bio(text, DEFAULT_CATEGORIES)   # bio/tagline/skills/categories
+    slug = await _unique_slug(db, slugify(name or username), username)
+    profile = BottegaProfileModel(
+        username=username, bio=proposal.get("bio"), tagline=proposal.get("tagline"),
+        skills=json.dumps(proposal.get("skills", [])),
+        categories=json.dumps(proposal.get("categories", [])),
+        source=source, status="applied", completeness=70, slug=slug)
+    db.add(profile)
+    # Block A: archive the raw input + scanned clues into the Blueprint Folder (first history entry).
+    clues = _scan_clues(text)
+    db.add(BottegaSessionModel(
+        username=username, slug="blueprint-archive",
+        title=f"Onboarding archive · {name or username}"[:160],
+        inputs=json.dumps({"raw": text[:8000], "source": source}),
+        output=json.dumps({
+            "bio": proposal.get("bio"), "tagline": proposal.get("tagline"),
+            "skills": proposal.get("skills", []), "categories": proposal.get("categories", []),
+            "emails": clues["emails"] or ([email] if email else []),
+            "phones": clues["phones"], "links": clues["links"], "chars": len(text)}),
+        output_type="json", tags="archive,onboarding"))
+    # WW-1 — warm welcome: Cleopatra greets the member in their inbox, by name, mirroring what
+    # she just learned, pointing to the card (she builds it; the masters read it).
+    _first = ((name or username).strip().split() or [name or username])[0]
+    _sk = proposal.get("skills", []) or []
+    _seen = proposal.get("tagline") or (proposal.get("bio") or "")[:140] or "a real set of skills"
+    _wbody = (
+        f"Welcome to La Piazza, {_first}. I'm Cleopatra — your host here.\n\n"
+        f"I read what you shared, and here's what I already see in you:\n"
+        f"  • {_seen}\n"
+        + (f"  • Strengths: {', '.join(_sk[:5])}\n" if _sk else "")
+        + "\nYour profile is started. The real key is the card I keep on you — it's what lets "
+        "every master here help you fast. Give me two minutes and we'll sharpen it together, "
+        "then I'll point you to the masters who fit you best.\n\n"
+        "I'm here to help you find your way — and you'll help me make this place better. Deal?\n\n"
+        "When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after."
+    )
+    _deliver_message(db, to=username, sender="Cleopatra",
+                     subject="Welcome — let's build your card", body=_wbody, icon="👑")
+    await db.commit()
+    await db.refresh(profile)
+    view = _view(profile)   # snapshot BEFORE write_concierge commits (else profile re-expires)
+    # WW-4: seed Cleopatra's card from their words so she starts off KNOWING them (not a blank).
+    try:
+        seed = cg.merge_record(cg.blank_record(), await cg.extract_record([{"role": "member", "content": text}]))
+        await write_concierge(db, username, seed, [])
+    except Exception:  # noqa: BLE001 — card-seeding must NEVER break onboarding
+        logger.warning("concierge card seed failed for %s", username, exc_info=True)
+    return view
+
+
 @router.post("/get-started")
 async def get_started(name: str = Form(...), email: str = Form(""), password: str = Form(...),
                       about: str = Form(""), file: UploadFile = File(None),
@@ -191,7 +249,6 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
     if len(text.strip()) < 20:
         raise HTTPException(status_code=400,
                             detail="tell us a little more about what you do (a sentence or two), or drop a CV")
-    proposal = await cv_to_bio(text, DEFAULT_CATEGORIES)   # bio/tagline/skills/categories
     async with httpx.AsyncClient(verify=False, timeout=30.0) as c:
         tok = await _kc_admin_token(c)
         try:
@@ -199,58 +256,34 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
         except httpx.HTTPStatusError as e:
             code = 409 if e.response.status_code == 409 else 400
             raise HTTPException(status_code=code, detail="couldn't create your account (name/email may be taken)")
-        slug = await _unique_slug(db, slugify(name), username)
-        profile = BottegaProfileModel(
-            username=username, bio=proposal.get("bio"), tagline=proposal.get("tagline"),
-            skills=json.dumps(proposal.get("skills", [])),
-            categories=json.dumps(proposal.get("categories", [])),
-            source="cv", status="applied", completeness=70, slug=slug)
-        db.add(profile)
-        # Block A: archive the raw input + scanned clues into the Blueprint Folder.
-        # The first entry in the member's history -- the clues kept for later.
-        clues = _scan_clues(text)
-        db.add(BottegaSessionModel(
-            username=username, slug="blueprint-archive",
-            title=f"Onboarding archive · {name}"[:160],
-            inputs=json.dumps({"raw": text[:8000], "source": source}),
-            output=json.dumps({
-                "bio": proposal.get("bio"), "tagline": proposal.get("tagline"),
-                "skills": proposal.get("skills", []), "categories": proposal.get("categories", []),
-                "emails": clues["emails"] or ([email] if email else []),
-                "phones": clues["phones"], "links": clues["links"], "chars": len(text)}),
-            output_type="json", tags="archive,onboarding"))
-        # WW-1 — Warm welcome: Cleopatra greets the new member in their inbox right away,
-        # referencing what she already learned from their CV/words and pointing to the next
-        # step (the card she keeps fills via a short chat -> then she matches them to masters).
-        _first = (name.strip().split() or [name])[0]
-        _sk = proposal.get("skills", []) or []
-        _seen = proposal.get("tagline") or (proposal.get("bio") or "")[:140] or "a real set of skills"
-        _wbody = (
-            f"Welcome to La Piazza, {_first}. I'm Cleopatra — your host here.\n\n"
-            f"I read what you shared, and here's what I already see in you:\n"
-            f"  • {_seen}\n"
-            + (f"  • Strengths: {', '.join(_sk[:5])}\n" if _sk else "")
-            + "\nYour profile is started. The real key is the card I keep on you — it's what lets "
-            "every master here help you fast. Give me two minutes and we'll sharpen it together, "
-            "then I'll point you to the masters who fit you best.\n\n"
-            "I'm here to help you find your way — and you'll help me make this place better. Deal?\n\n"
-            "When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after."
-        )
-        _deliver_message(db, to=username, sender="Cleopatra",
-                         subject="Welcome — let's build your card", body=_wbody, icon="👑")
-        await db.commit()
-        await db.refresh(profile)
         token = await _member_token(c, username, password)   # auto-login: you're in
-    profile_view = _view(profile)   # snapshot BEFORE write_concierge commits (else profile re-expires -> MissingGreenlet)
-    # WW-4: seed Cleopatra's card from the CV so she starts off KNOWING the member — not a blank
-    # "say hello". Same extraction the chat uses; empty transcript so her greeting still opens fresh,
-    # but "What Cleopatra has learned" is already filled from what they gave at the door.
-    try:
-        seed = cg.merge_record(cg.blank_record(), await cg.extract_record([{"role": "member", "content": text}]))
-        await write_concierge(db, username, seed, [])
-    except Exception:  # noqa: BLE001 — card-seeding must NEVER break signup
-        logger.warning("concierge card seed from CV failed for %s", username, exc_info=True)
-    return {"username": username, "slug": slug, "token": token, "profile": profile_view}
+    view = await _provision_card(db, username=username, name=name, email=email, source=source, text=text)
+    return {"username": username, "slug": view.slug, "token": token, "profile": view}
+
+
+@router.post("/me/setup-card")
+async def setup_card(about: str = Form(""), file: UploadFile = File(None),
+                     current_user: dict = Depends(require_bottega_access()),
+                     db: AsyncSession = Depends(get_db_session)):
+    """GUARANTEED-CARD ESCORT. An already-authenticated member who arrived WITHOUT a card (social
+    login, Keycloak self-register, or pre-WW-4) builds one here -- same provisioning as get-started,
+    minus account creation. IDEMPOTENT: if they already have a profile it's a no-op. This is what
+    makes every door end with a card (and unblocks promoting social login)."""
+    username = current_user["username"]
+    existing = await _get(db, username)
+    if existing:
+        return {"already": True, "profile": _view(existing)}
+    if file is not None and getattr(file, "filename", ""):
+        source, text = "cv", extract_text(file.filename, await file.read())
+    else:
+        source, text = "about", (about or "").strip()
+    if len(text.strip()) < 20:
+        raise HTTPException(status_code=400,
+                            detail="tell us a little more about what you do (a sentence or two), or drop a CV")
+    name = current_user.get("name") or current_user.get("preferred_username") or username
+    view = await _provision_card(db, username=username, name=name,
+                                 email=current_user.get("email") or "", source=source, text=text)
+    return {"already": False, "profile": view}
 
 
 @router.get("/recipes")
