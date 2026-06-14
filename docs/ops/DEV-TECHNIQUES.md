@@ -77,6 +77,15 @@ data/structure and keep the code dumb, small, and identical:
 A new feature should usually be a new row, not a new branch. See
 `memory/lp-the-design-factory.md` and `memory/lp-everything-is-a-service-interface.md`.
 
+**UI corollary — one component, not N copies.** Every repeated piece of markup
+(avatar, user-card, badge) lives ONCE in `templates/components/_*.html` and is
+registered as a Jinja global (see `pages/_helpers.py` → `avatar`), so it's
+`{{ avatar(...) }}` everywhere with no import. Client-rendered (Alpine) lists
+share one JS helper (`window.lpAvatar` in base.html). If you ever edit the "same"
+thing in more than one file, stop — make it a component. The 2026-06-14 avatar
+fix was a 14-file edit *because* this layer didn't exist; now it's one file. This
+is the structural cure for the "check all the seals" duplication.
+
 ## 5. Failure-mode-first
 
 Design the failure before the feature. For anything non-trivial, answer in one
