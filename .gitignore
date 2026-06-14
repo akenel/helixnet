@@ -208,6 +208,20 @@ docs/blueprint/*.jpeg
 docs/blueprint/*.jpg
 docs/blueprint/*.pdf
 docs/blueprint/*.html
+docs/blueprint/*.ogg
+
+# Marketing media — root-level frame exports + voice notes (the .html/.md/.srt
+# sources + nested youtube-upload-kit thumbnails stay tracked; this is single-level)
+docs/business/marketing/*.png
+docs/business/marketing/*.ogg
+docs/business/marketing/*.jpg
+
+# Test-script PDF exports — generated runbook prints (the .html sources stay tracked)
+docs/testing/test-scripts/*.pdf
+
+# Generated workflow orchestration scripts (session artifacts — force-add or move
+# to scripts/ if one becomes a keeper). settings.json stays tracked.
+.claude/workflows/
 
 # console-sweep run artifacts (regenerated each run)
 tests/e2e/*-report.json

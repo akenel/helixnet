@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concierge Build Plan — Memory First</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#222;background:#f4f5f7;margin:0;line-height:1.55}
+  .wrap{max-width:840px;margin:0 auto;padding:24px}
+  h1{font-size:24px;color:#C0392B;margin:0 0 4px;border-bottom:3px solid #C0392B;padding-bottom:8px}
+  .sub{color:#667;font-size:14px;margin-bottom:20px}
+  h2{font-size:17px;color:#2C3E50;margin:26px 0 6px;background:#eaecef;border-left:4px solid #C0392B;padding:8px 12px;border-radius:0 6px 6px 0}
+  .phase{background:#fff;border:1px solid #dfe3e8;border-radius:10px;padding:4px 18px 14px;margin-bottom:14px}
+  .note{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:14px 18px;margin:14px 0}
+  .win{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:14px 18px;margin:14px 0}
+  ol{margin:6px 0;padding-left:22px} li{margin:7px 0}
+  .who{display:inline-block;font-size:11px;font-weight:800;padding:1px 7px;border-radius:5px;vertical-align:middle;margin-right:6px}
+  .tigs{background:#1565c0;color:#fff}
+  .you{background:#C0392B;color:#fff}
+  code{background:#eef1f4;padding:1px 5px;border-radius:4px;font-size:13px}
+  .verify{color:#2e7d32;font-size:13px;font-style:italic}
+  .chk{color:#C0392B;font-weight:800}
+  .small{font-size:13px;color:#667}
+</style></head>
+<body><div class="wrap">
+
+<h1>🎩 The Concierge — Build Plan</h1>
+<div class="sub"><b>Goal:</b> make the Concierge <b>remember</b> — persist the member's master-record and close the loop so every master reads it. &nbsp;|&nbsp; <b>Order:</b> top to bottom. &nbsp;|&nbsp; <span class="who tigs">TIGS</span> = I build it &nbsp; <span class="who you">YOU</span> = you check it.</div>
+
+<div class="win">
+<b>Already de-risked (proven in the terminal, nothing to re-discover):</b> the brain talks right · remembers right · catches conflicts · scores aptitude (RIASEC) · runs the W5+H discovery · master-validated by Jung &amp; Socrates. This plan is just the <b>wiring</b>.
+</div>
+
+<div class="note">
+<b>① First: should you <code>/compact</code>?</b> Yes — now. It squeezes this chat into a summary and starts fresh; work continues. Safe because everything's on disk: <code>MEMORY.md</code> + the <code>lp-*.md</code> memories (auto-reload), the git commits, this file, the <code>/tmp</code> prototypes. <b>After compact, say:</b> <i>"open the Concierge build plan, let's build."</i>
+</div>
+
+<h2>PHASE 1 — PERSIST (give the record a home)</h2>
+<div class="phase"><ol>
+<li><span class="who tigs">TIGS</span> Store the master-record as <b>JSON per member</b> (the layered schema lives as one flexible blob). Reuse the existing <code>bottega_sessions</code> spine (a row, <code>slug='concierge-record'</code>) → <b>no new migration</b>, fastest path.</li>
+<li><span class="who tigs">TIGS</span> Two functions: <code>save_record(user, data)</code> and <code>read_record(user)</code>.</li>
+<li><span class="verify">✓ Verify: save Marco's record → read it back → matches exactly.</span></li>
+</ol></div>
+
+<h2>PHASE 2 — THE ENDPOINT (brain goes server-side)</h2>
+<div class="phase"><ol>
+<li><span class="who tigs">TIGS</span> <code>POST /concierge/chat</code> — takes your message + history → returns Heisenberg's reply (multi-turn) → runs the extraction pass → <b>updates the stored record</b>. (Reuses the exact prompts we proved.)</li>
+<li><span class="who tigs">TIGS</span> Empty profile → opens with the "imagination machine" greeting.</li>
+<li><span class="verify">✓ Verify: a 5-turn chat fills the record (generation, RIASEC, goal…) from nothing.</span></li>
+</ol></div>
+
+<h2>PHASE 3 — CLOSE THE LOOP (masters read the record)</h2>
+<div class="phase"><ol>
+<li><span class="who tigs">TIGS</span> Wire <code>_build_portrait</code> (the thing every master reads) to include the stored record.</li>
+<li><span class="verify">✓ Verify: ask a master <b>before vs after</b> — the "after" answer is visibly more personal. <b>This is the magic moment.</b></span></li>
+</ol></div>
+
+<h2>PHASE 4 — THE TEST GAUNTLET (upside down &amp; backwards, on staging)</h2>
+<div class="phase"><ol>
+<li><span class="who tigs">TIGS</span> <b>Make test users:</b> Marco (65 / legacy), Sofia (teacher), a 16-yr-old (launching), Dave (contradictory), one non-English.</li>
+<li><span class="who tigs">TIGS</span> <b>Run the existing gates green:</b> <code>smoke-test.sh</code>, <code>console-sweep.js</code>, <code>pytest</code>.</li>
+<li><span class="who tigs">TIGS</span> <b>Write NEW tests</b> for the new stuff: the endpoint, extraction accuracy, persistence round-trip, the loop.</li>
+<li><span class="who tigs">TIGS</span> <b>5 flexible payloads</b> — empty / rich / contradictory / non-English / partial — all handled, no crash.</li>
+<li><span class="who tigs">TIGS</span> <b>Stress it:</b> run the chat+extraction <b>100×</b> — stable, no errors, note latency + cost.</li>
+<li><span class="who tigs">TIGS</span> Deploy to <b>staging</b>, confirm green.</li>
+</ol></div>
+
+<h2>PHASE 5 — YOUR CHECK → PROD (human-green)</h2>
+<div class="phase"><ol>
+<li><span class="who tigs">TIGS</span> Hand you <b>1 staging URL + 5 HTML test scripts</b> (split-screen runbooks, same as we always do).</li>
+<li><span class="who you">YOU</span> Split screen: <b>Bottega left, test script right.</b> Run each one.</li>
+<li><span class="who you">YOU</span> The only questions that matter: <b>does it look good? feel good? work?</b></li>
+<li><span class="who you">YOU</span> Thumbs up → <span class="who tigs">TIGS</span> ships to prod (surgical, verified). 🎉</li>
+</ol></div>
+
+<div class="win">
+<b>End state:</b> the Concierge remembers you. Every master reads what it learns. The loop is closed — fill the profile → the masters get smarter. <b>That's the compounding magic.</b>
+</div>
+
+<div class="small" style="margin-top:18px;text-align:center">
+La Piazza · Concierge / task #74 · build order: MEMORY FIRST · full spec in <code>lp-concierge-gap-filler.md</code><br>
+"Dream the cathedral, lay one brick." 🐺
+</div>
+
+</div></body></html>

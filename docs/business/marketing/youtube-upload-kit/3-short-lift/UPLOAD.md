@@ -13,7 +13,7 @@
 ```
 Mike asked his town for 20 hands. They came — and his sister Sally baked the cookies. An open-source town square, no fees, no middlemen.
 
-Full story (Season 1): [FULL MOVIE LINK]
+Full story (Season 1): https://youtu.be/0O41PR-XSjI
 Try it: https://lapiazza.app
 
 #Shorts #BuildInPublic #community #OpenSource #indiehacker
@@ -28,3 +28,5 @@ la piazza, community, neighbourhood, build in public, open source, shorts, mutua
 - Audience: **Not made for kids** · Visibility: **Public**
 - 9:16 → auto-detected as a **Short**.
 - After upload: paste the **full movie URL** into the description (replace `[FULL MOVIE LINK]`).
+
+https://youtube.com/shorts/qAJCmgpQaYY?feature=share

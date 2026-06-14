@@ -53,3 +53,5 @@ la piazza, dream weavers, build in public, open source, no fees, neighbourhood m
 - **End screen:** add Subscribe + a video element on the last few seconds.
 
 👉 **Grab the live URL after publishing** — you'll paste it into the two Shorts.
+
+**Published:** https://youtu.be/0O41PR-XSjI

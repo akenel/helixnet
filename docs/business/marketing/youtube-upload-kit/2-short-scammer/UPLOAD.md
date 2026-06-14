@@ -13,10 +13,16 @@ This town-square app caught a scammer in real time 🚩🐺 #Shorts
 ```
 La Piazza's safety scan flagged an off-platform funnel the moment it posted. No fees, no middlemen, no tracking — open source.
 
-Full story (Season 1): [FULL MOVIE LINK]
+Full story (Season 1): https://youtu.be/0O41PR-XSjI
 Try it: https://lapiazza.app
 
 #Shorts #BuildInPublic #OpenSource #scam #indiehacker
+```
+
+## PUBLISHED URLs  (confirm which is THIS short)
+```
+https://youtube.com/shorts/r_3InmA01Eo?feature=share
+https://youtube.com/shorts/cDm9p5NcD5E?feature=share
 ```
 
 ## TAGS  (copy)
