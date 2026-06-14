@@ -45,26 +45,27 @@ read-only drift+health run, the clobber-guard firing, the `--dry-run` plan
 
 ---
 
-## BLOCKER before the live path can be trusted (found tonight)
+## BLOCKER — RESOLVED 2026-06-14 (#141 fixed)
 
-**The staging smoke gives a false-RED.** `smoke-test.sh staging` *obtains* a
-token from the `borrowhood-staging` realm (section 4 ✓) but the staging **app
-rejects it** — every authed endpoint returns `Authentication required` (section
-5 ✗), while all public/unauthed checks are green and staging is demonstrably
-healthy. So the smoke's auth signal is broken (issuer / audience / client
-mismatch between the `borrowhood-staging` realm token and what the staging app
-validates).
+**The staging smoke gave a false-RED.** It *obtained* a token from the
+`borrowhood-staging` realm @ `staging.lapiazza.app` (section 4 ✓) but the
+`borrowhood_staging` container validates JWTs against `lapiazza-realm-staging` @
+`staging-bottega.lapiazza.app` (its `BH_KC_REALM` / `BH_KC_URL`). Wrong issuer →
+signature unverifiable → every authed endpoint returned `Authentication required`
+while staging was healthy.
 
-This matters more than it looks: **a verify that false-REDs is as dangerous as
-one that false-GREENs.** If `lp deploy` auto-rollback were wired to this signal,
-*every good staging deploy would verify-fail and roll itself back.* Verifying the
-verify before trusting it is the whole point.
+**Fix (chose option a — mint a token the app accepts):** point the staging
+target's `KC_URL`/`REALM` at the issuer the app trusts. `borrowhood-web` is a
+public client there, so no secret is committed. A *second* latent false-RED was
+hiding behind it — the demo-login check expected 404 on staging, but the page is
+gated on `(not debug AND env==prod)`, so staging legitimately serves it (200).
+Both fixed; staging smoke is now **37 passed / 0 failed / exit 0** on the box.
 
-→ Tracked as task #141. **Until #141 is fixed, run `lp deploy staging <files>`
-only with `--dry-run`, or accept that a live run will roll back on the false-RED.**
-The fix is to either (a) make the smoke mint a token the staging app accepts, or
-(b) split smoke into a `--public-only` gate that lp_deploy uses for verify until
-auth is sorted.
+**Lesson stands:** a verify that false-REDs is as dangerous as one that
+false-GREENs — if auto-rollback had trusted this, every good deploy would have
+rolled itself back. Verifying the verify before trusting it is the whole point.
+Now that an absolute-green is trustworthy, the live mutate+rollback path can be
+wired — still **exercise rollback first on a trivial file** (refinement #3).
 
 ---
 

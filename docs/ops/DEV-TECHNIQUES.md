@@ -25,9 +25,11 @@ A green that's actually broken (false-GREEN) and a red that's actually fine
 (false-RED) are *equally dangerous*. Before you trust a gate to make decisions,
 confirm the gate means what it says.
 
-- Live proof: `smoke-test.sh staging` reports **RED while staging is healthy** —
-  the auth section uses a token the staging app rejects. If `lp_deploy`'s
-  auto-rollback trusted it, every good deploy would roll itself back. → #141,
+- Live proof (found + fixed 2026-06-14): `smoke-test.sh staging` reported **RED
+  while staging was healthy** — it minted the auth token from the wrong realm, so
+  the app rejected it. If `lp_deploy`'s auto-rollback had trusted it, every good
+  deploy would have rolled itself back. *Two* latent false-REDs were hiding there
+  (auth realm + a stale demo-login expectation). → #141,
   see `memory/lesson-staging-smoke-false-red.md`.
 - **Machine-green is not human-green.** smoke + console-sweep + pytest can all
   pass while a UI feature renders nothing (a silent template miss throws no
@@ -121,9 +123,11 @@ No gate alone is "done." For UI, human is mandatory.
 
 ## Known gate gaps (don't trust blindly until closed)
 
-- **#141** — staging smoke false-REDs on auth. Trust only public/unauthed checks
-  there until fixed; lp_deploy auto-rollback stays unwired to it.
 - **#140** — BorrowHood box tree diverged from origin (uncommitted prod code).
   Needs a human reconcile, not a blind sync.
 
-When you close one, delete it from this list — keep the page honest.
+*Closed:* **#141** (staging smoke false-RED) — fixed 2026-06-14: smoke now mints
+its token from the realm the staging app actually trusts; staging is a clean
+37/0 green, so lp_deploy auto-rollback can trust an absolute green.
+
+When you close one, move it to *Closed* with the date — keep the page honest.
