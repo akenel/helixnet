@@ -29,3 +29,86 @@ lapiazza.app, borrowhood.duckdns.org {
 www.lapiazza.app {
 	redir https://lapiazza.app{uri} permanent
 }
+# Snippet to append to hetzner/Caddyfile for staging.
+# Copy these blocks below the existing `lapiazza.app, borrowhood.duckdns.org` block.
+
+staging.lapiazza.app {
+	# MinIO media proxy -- same bucket (files are unguessable URLs)
+	handle /media/* {
+		uri strip_prefix /media
+		reverse_proxy minio:9000
+	}
+
+	# Keycloak auth paths (staging uses the same Keycloak instance,
+	# but the app points at the borrowhood-staging realm via env var)
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+
+	# Staging app
+	handle {
+		reverse_proxy borrowhood_staging:8000
+	}
+
+	# Exclude from search engines -- staging is not for humans to Google
+	header X-Robots-Tag "noindex, nofollow"
+}
+
+
+
+bottega.lapiazza.app {
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /media/* {
+		reverse_proxy minio:9000
+	}
+	handle {
+		reverse_proxy helix-platform:8000
+	}
+}
+# Snippet to append to hetzner/Caddyfile for helix-platform (Bottega) STAGING.
+# Mirrors the prod `bottega.lapiazza.app` block but routes the app to
+# helix-platform-staging and excludes it from search engines.
+#
+# PREREQUISITE: a DNS A record must exist first ->
+#   staging-bottega.lapiazza.app  A  46.62.138.218
+# (Caddy can't get a TLS cert until it resolves.)
+#
+# Apply (in-place append keeps the same inode -- avoids the stale-mount gotcha):
+#   cat hetzner/Caddyfile.helix-staging-snippet >> hetzner/Caddyfile
+#   docker compose -f docker-compose.uat.yml --env-file uat.env restart caddy
+#   # verify: md5sum hetzner/Caddyfile == docker exec caddy md5sum /etc/caddy/Caddyfile
+
+staging-bottega.lapiazza.app {
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /media/* {
+		reverse_proxy minio:9000
+	}
+	handle {
+		reverse_proxy helix-platform-staging:8000
+	}
+
+	# Staging is not for humans to Google.
+	header X-Robots-Tag "noindex, nofollow"
+}
