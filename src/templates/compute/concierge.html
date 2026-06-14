@@ -44,7 +44,7 @@
 
 <div class="max-w-5xl mx-auto px-4 sm:px-5 py-2 sm:py-4" x-data="concierge()" x-init="init()">
 
-  <!-- header (slim line; HIDDEN on phones — the nav already says 🎩 Concierge, so the conversation gets the whole screen) -->
+  <!-- header (slim line; HIDDEN on phones — the nav already says 👑 Concierge, so the conversation gets the whole screen) -->
   <div class="hidden sm:flex items-center justify-center gap-2.5 mb-3 mt-0.5">
     <span class="text-2xl leading-none">👑</span>
     <div class="text-center sm:text-left">
@@ -284,7 +284,8 @@
 
         <!-- RIASEC mini-bars -->
         <div x-show="hasRiasec()">
-          <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-1.5 cursor-help decoration-dotted underline underline-offset-2 decoration-slate-700" :title="tip('riasec')" x-text="S('interests')">Interests (RIASEC)</div>
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 mb-0.5 cursor-help decoration-dotted underline underline-offset-2 decoration-slate-700" :title="tip('riasec')" x-text="S('interests')">Your Natural Strengths</div>
+          <div class="text-[9px] text-slate-600 mb-1.5">(RIASEC aptitude)</div>
           <template x-for="t in riasecRows()" :key="t.k">
             <div class="mb-1.5" x-show="t.v>0">
               <div class="flex justify-between text-[11px] text-slate-400"><span x-text="t.label"></span><span x-text="t.v"></span></div>
@@ -527,7 +528,7 @@ function concierge(){
       learned:{en:'What Cleopatra has learned', it:'Cosa ha imparato Cleopatra'},
       memory:{en:'This is your memory — yours to see. Every master reads it.', it:'Questa è la tua memoria — tua da vedere. Ogni maestro la legge.'},
       nothing:{en:'Nothing yet. Say hello and tell her a little about you.', it:'Ancora niente. Salutala e raccontale un po\' di te.'},
-      interests:{en:'Interests (RIASEC)', it:'Interessi (RIASEC)'},
+      interests:{en:'Your Natural Strengths', it:'I tuoi punti di forza naturali'},
       recap_title:{en:'Quick check — here\'s what I understand. Is this right?', it:'Verifica veloce — ecco cosa ho capito. È corretto?'},
       recap_yes:{en:'✓ Yes, that\'s me', it:'✓ Sì, sono io'},
       recap_fix:{en:'✏️ Let me correct something', it:'✏️ Vorrei correggere qualcosa'},

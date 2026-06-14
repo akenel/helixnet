@@ -231,12 +231,13 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
             f"  • {_seen}\n"
             + (f"  • Strengths: {', '.join(_sk[:5])}\n" if _sk else "")
             + "\nYour profile is started. The real key is the card I keep on you — it's what lets "
-            "every master here help you fast. Give me two minutes in the Concierge and we'll "
-            "sharpen it together, then I'll point you to the masters who fit you best.\n\n"
-            "When you're ready: open 🎩 Concierge and just tell me what you're after."
+            "every master here help you fast. Give me two minutes and we'll sharpen it together, "
+            "then I'll point you to the masters who fit you best.\n\n"
+            "I'm here to help you find your way — and you'll help me make this place better. Deal?\n\n"
+            "When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after."
         )
         _deliver_message(db, to=username, sender="Cleopatra",
-                         subject="Welcome — let's build your card", body=_wbody, icon="🎩")
+                         subject="Welcome — let's build your card", body=_wbody, icon="👑")
         await db.commit()
         await db.refresh(profile)
         token = await _member_token(c, username, password)   # auto-login: you're in
@@ -1321,7 +1322,7 @@ async def me_nudge(day: str | None = None,
             else "Fresh page today. Drop in the one thing that would make today a win, and we'll go from there."
     note = (note or "")[:1200]
     _deliver_message(db, to=user, sender="Cleopatra", body=note,
-                     subject="🎩 A note from Cleopatra", icon="🎩")
+                     subject="👑 A note from Cleopatra", icon="👑")
     await db.commit()
     return {"posted": True, "note": note, "day": the_day}
 
