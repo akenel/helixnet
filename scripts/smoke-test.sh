@@ -42,13 +42,17 @@ elif [[ "$TARGET" == "prod" ]]; then
     APP_MODE="borrowhood"
 elif [[ "$TARGET" == "staging" ]]; then
     # Staging on Hetzner -- reachable publicly; Caddy path-routes /realms/*.
-    # Runs the same checks against the borrowhood-staging realm + container so
-    # we exercise staging exactly like prod BEFORE handing it to Angel.
+    # The marketplace staging app lives at staging.lapiazza.app but validates JWTs
+    # against the lapiazza-realm-staging realm issued by staging-bottega.lapiazza.app
+    # (that's what BH_KC_REALM / BH_KC_URL are set to in the borrowhood_staging
+    # container). Mint the token from THAT issuer or the app rejects it -> the
+    # false-RED that blocked lp_deploy auto-rollback (#141, fixed 2026-06-14).
     BASE="https://staging.lapiazza.app"
-    KC_URL="https://staging.lapiazza.app"
-    REALM="borrowhood-staging"
+    KC_URL="https://staging-bottega.lapiazza.app"   # the issuer the staging app trusts
+    REALM="lapiazza-realm-staging"                   # the realm the staging app validates against
     CONTAINER="borrowhood_staging"
-    DEMO_LOGIN_EXPECT="404"   # staging runs BH_DEBUG=false -> demo-login disabled
+    DEMO_LOGIN_EXPECT="200"   # demo-login is gated on (not debug AND env==prod); staging
+                              # is env=staging, so the UAT user-switcher is live -> 200
     ENV_NAME="STAGING"
     APP_MODE="borrowhood"
 else
