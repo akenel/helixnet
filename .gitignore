@@ -217,6 +217,10 @@ scripts/yt_client_secret.json
 scripts/yt_token.json
 
 # Test outputs — generated, not source (test-scripts/ + *.md stay tracked)
-docs/testing/reports/
+# reports/: track the lightweight .txt twins + README (the "what we verified" log);
+# ignore bulky screenshot-laden .html and any images.
+docs/testing/reports/**/*.html
+docs/testing/reports/**/*.png
+docs/testing/reports/**/*.jpg
 docs/testing/artifacts/
 docs/testing/archive/

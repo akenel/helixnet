@@ -1,0 +1,541 @@
+NEW USER — WARM WELCOME (text)
+11 PASS / 0 FAIL / 0 ISSUE · env: staging-bottega.lapiazza.app · 42:16
+
+## 0 · Arrive & cross (Incognito)
+[x] [PASS] The door greets you (headline + trust strip), logged out. "…stopped hiring? Good." + look-around-free
+     note: La Piazza
+☰
+La Piazza · the square where ideas become things
+Got a skill the world stopped hiring?
+Good — it's still worth something here.
+La Piazza is the town square for people who'd rather build their own thing than wait for a callback that isn't coming. Your years aren't a liability — they're the product. Tell us what you can do; we'll help you make something of it.
+
+🐺 Start free — just tell us what you do
+⚡ Enter the Compute Exchange
+✓ Look around free — no login to browse
+✓ No phone number
+✓ We don't sell your data
+✓ One email, only when you're ready
+🔧
+La Bottega — the workshop
+A Chinese menu of makers: CV → bio, tailored CV, cover letter, product & event postings, music playlists. Pick a dish, give a few words, get the thing.
+
+open the workshop →
+⚡
+Compute Exchange — the shared brain
+A fair, verifiable compute marketplace. Submit work, watch it run live, lend your machine and earn. Credit = brain tokens. We host the square, not the model.
+
+enter the exchange →
+No ads
+ever
+No algorithm
+you choose
+No ransom
+no monthly lock-in
+Your data
+stays yours
+There's a story behind this — escape, a camper named MAX, a town square in Sicily. Why La Piazza exists →
+
+La Piazza · we host the square, not the model
+built solo, in the open · Sicily → the world
+[x] [PASS] Click Start free, sign up with a fresh +tag email. account created, you land in your Bottega, logged in
+     note: It generally works fine And all my Cv up when I created the account I'm in his art 1140 right now I'm gonna check the blueprint And that looks good we've got stuff there >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+La Bottega
+THE WORKSHOP · PICK A RECIPE
+← exchange
+@art-1140
+What do you want to make?
+📓 My Blueprint
+Pick a card. Answer a couple of questions. Get the thing.
+📓 My Blueprint (3)
+✕ close
+search your history…
+↓ newest
+notification
+👑 Cleopatra
+2026-06-14
+✏️
+🗑️
+message
+Welcome — let's build your card
+2026-06-14
+✏️
+🗑️
+archive
+Onboarding archive · Art 1140
+2026-06-14
+✏️
+🗑️
+👤 About You
+turn your CV into a profile, a sharper CV, or a cover letter
+
+🧬
+CV → Bio
+~2 credits
+
+📄
+CV Generator
+~2 credits
+
+📨
+Cover Letter
+~2 credits
+
+💼
+Recruiter Reply
+~2 credits
+
+🎯
+Find Your Edge
+~2 credits
+📢 Sell & Announce
+list a product or announce an event
+
+🛍️
+Product Posting
+~1 credits
+
+📣
+Event Posting
+~1 credits
+🎬 Make Media
+playlists and more
+
+🎵
+Music Playlist
+~2 credits
+🕰️ Ask a Master
+the dead teach the living — a real mentor session for what you face
+
+🕰️
+Ask a Master
+~2 credits
+
+🧭
+Think It Through
+~3 credits
+🏋️ Get in Shape
+a private, calibrated workout — your gear, your goal, 20–60 min, day by day
+
+🏋️
+Workout Plan
+~2 credits
+
+🩺
+Body Setup
+~1 credits
+✨ Your Story
+find your why — childhood, passion, dreams, your one-liner & 22-second pitch
+
+✨
+Your Story
+~1 credits
+procedure-as-code · every recipe is a menu entry, not an app · we host the square, not the model >> https://staging-bottega.lapiazza.app/compute/bottega#:~:text=%F0%9F%94%A7%20Planned%20maintenance%20tonight,not%20the%20model
+   section notes: Looks fine there's not an issue here The only thing maybe we have that Wiki link start free and then if you have more questions send them there Frequently asked questions and stuff like that You know what we talked about
+
+## 1 · The welcome is waiting WW-1/2
+[x] [PASS] Go to 🐺 You → 📬 Inbox: Cleopatra's "Welcome — let's build your card" is waiting. unread badge = 1, the message is there
+     note: 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕ La Piazza ☰ 💬 Feedback 🐺 art-1140 SAP integration architect bridging on‑prem to cloud with secure, scalable solutions. 📊 Home 🏋️ Body 🧠 Mind ✨ Spirit 📬 Inbox 1 your scorecard 0% Portrait complete 1 Things made 0 Masters consulted Tell Cleopatra more → to fill in your portrait 👑 Ask Cleopatra Two minutes of chat sharpens your card — then she points you to the right masters. open → about you I’m Angelo, a SAP Basis and PI/PO integration specialist with 15+ years delivering end‑to‑end middleware solutions. I design and administer SAP landscapes, build secure SOAP/REST/iFlow interfaces, and connect SAP to RabbitMQ, Azure and third‑party APIs. My recent work blends SAP Integration Suite with cloud micro‑services, while I lead teams through upgrades, migrations and award‑winning projects. 👤 Profile built ✓ 🩺 Body Setup calibrate → ✨ Your Story tell it → 🏋️ Workouts 0 done 3 things in your Blueprint >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕ La Piazza ☰ 💬 Feedback Cleopatra is in 🔊 Reply in Auto EN IT We have been expecting you -- welcome to the imagination machine, where every guest is crowned with curiosity. I'm Cleopatra, your host; Leonardo at my side, Sherlock in the back, every master in their house -- and my charge is to learn who you are so they can serve you well. First the tongue: English, Italian, or your own -- which is today's royal language, and what others grace your voice? In the door, or out the door? 🔊 Read aloud We speak English and Italian beautifully here, and we’ll gladly try your own if you wish— which shall be our royal language today? May I ask your native tongue and any others you feel comfortable using? Shall we together uncover the work that lights you up? 🔊 Read aloud I love painting cityscapes in evenings. How can I find time for my writing? My biggest challenge is staying motivated. Tell Cleopatra who you are — or ask a question… (Enter to send · Shift+Enter for a new line) 🎤 🏛️ Masters Send 🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court 🧠 What Cleopatra has learned This is your memory — yours to see. Every master reads it. Nothing yet. Say hello and tell her a little about you. This is pretty good here But the only thing is he doesn't know anything about the CV that you loaded we spoke about this before but that's pretty easy to fix up When I do like the template and what's going on here so far Maybe you see improvements what we can do to make this a little bit better but the flow is there but it's not it's not exactly what we're looking for but the mechanics are there generally speaking https://staging-bottega.lapiazza.app/compute/concierge But now I see my you page and it seems okay and in the inbox it's the notifications there welcome let's build your card it's actually quite good >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+💬 Feedback
+🐺
+art-1140
+SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+
+📊 Home
+🏋️ Body
+🧠 Mind
+✨ Spirit
+📬 Inbox
+Welcome — let's build your card
+✕ close
+
+Cleopatra
+
+Welcome to La Piazza, Art. I'm Cleopatra — your host here.
+
+I read what you shared, and here's what I already see in you:
+• SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+• Strengths: sap basis, pi/po, cpi, api integration, oauth2
+
+Your profile is started. The real key is the card I keep on you — it's what lets every master here help you fast. Give me two minutes and we'll sharpen it together, then I'll point you to the masters who fit you best.
+
+I'm here to help you find your way — and you'll help me make this place better. Deal?
+
+When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after.
+Reply…
+Send
+[x] [PASS] It greets you by name and mirrors what you shared, and ends with "…you'll help me make this place better. Deal?" warm, personal, reciprocal — not generic
+     note: I think it's acceptable Um this is not a hang up here Issues how it all works but I think we're on the right track it's good
+[x] [PASS] Open it → it clears clean. badge gone, no lingering "undone" notification
+     note: 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+💬 Feedback
+🐺
+art-1140
+SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+
+📊 Home
+🏋️ Body
+🧠 Mind
+✨ Spirit
+📬 Inbox
+Welcome — let's build your card
+✕ close
+
+Cleopatra
+
+Welcome to La Piazza, Art. I'm Cleopatra — your host here.
+
+I read what you shared, and here's what I already see in you:
+• SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+• Strengths: sap basis, pi/po, cpi, api integration, oauth2
+
+Your profile is started. The real key is the card I keep on you — it's what lets every master here help you fast. Give me two minutes and we'll sharpen it together, then I'll point you to the masters who fit you best.
+
+I'm here to help you find your way — and you'll help me make this place better. Deal?
+
+When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after.
+
+You
+
+what do you need can i see my card so far
+
+Cleopatra
+
+I have a draft of your “integration architect” card ready for you to peek at. Before I roll it out, may I confirm which language you’d like us to continue in—English or Italian—and how comfortable you feel with it? And, if you’re comfortable sharing, a hint of your age range helps the masters fine‑tune their advice. Shall we proceed?
+
+You
+
+i like english born in canada 1964 burlington ontario
+
+Cleopatra
+
+Your draft card is ready—shall I unveil it for you? It captures your SAP integration strengths and points to the masters who can help you sharpen them. If there’s a particular goal or question you have in mind, share it and we’ll refine together.
+
+You
+
+inveil it plase i want to see my card
+
+Cleopatra
+
+Here’s your draft card, freshly unrolled:
+
+- **Role:** SAP Integration Architect – bridging on‑premise to cloud with secure, scalable solutions.
+- **Core strengths:** SAP Basis, PI/PO, CPI, API integration, OAuth 2.0, end‑to‑end data flow design.
+- **Location:** Burlington, Ontario (Canada), born 1964.
+
+If you have a particular goal—say a certification, a project challenge, or a career pivot—let me know and we’ll sharpen the details together. Shall we?
+Reply…
+Send
+   section notes: From the inbox I have answered some questions she knows about my profile but then when I actually start her up And start Cleopatra she starts at the beginning again so she doesn't sort of do that scan and say hey where are we at what have we got to deload a CV and cuz she already talks about the card but then we start from scratch So it's just a little bit of the flow and workflow and the mechanics of it to make that better Kind of expecting that in what Cleopatra has learned it's true she hasn't learned this but she has learned this in the inbox so it's the same user it's the same data we have it she knows my CV's been loaded she knows what I do And now we're sort of you know getting into it you know try the Masters button and I aim to become a cloud lead architect and stuff so it does continue correctly I copied and pasted in the inbox chat and put it right in to keep her going And we could do something like that I just kind of tested it manually seems to work >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+💬 Feedback
+Cleopatra is in
+🔊
+Reply in
+Auto
+EN
+IT
+We have been expecting you -- welcome to the imagination machine, where every guest is crowned with curiosity. I'm Cleopatra, your host; Leonardo at my side, Sherlock in the back, every master in their house -- and my charge is to learn who you are so they can serve you well. First the tongue: English, Italian, or your own -- which is today's royal language, and what others grace your voice? In the door, or out the door?
+
+🔊 Read aloud
+We speak English and Italian beautifully here, and we’ll gladly try your own if you wish— which shall be our royal language today? May I ask your native tongue and any others you feel comfortable using? Shall we together uncover the work that lights you up?
+
+🔊 Read aloud
+I already answered a lot of these questions so in our first inbox conversation and this I'll give you the whole chat session it might help you a little bit >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+💬 Feedback
+🐺
+art-1140
+SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+
+📊 Home
+🏋️ Body
+🧠 Mind
+✨ Spirit
+📬 Inbox
+Welcome — let's build your card
+✕ close
+
+Cleopatra
+
+Welcome to La Piazza, Art. I'm Cleopatra — your host here.
+
+I read what you shared, and here's what I already see in you:
+• SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+• Strengths: sap basis, pi/po, cpi, api integration, oauth2
+
+Your profile is started. The real key is the card I keep on you — it's what lets every master here help you fast. Give me two minutes and we'll sharpen it together, then I'll point you to the masters who fit you best.
+
+I'm here to help you find your way — and you'll help me make this place better. Deal?
+
+When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after.
+
+You
+
+what do you need can i see my card so far
+
+Cleopatra
+
+I have a draft of your “integration architect” card ready for you to peek at. Before I roll it out, may I confirm which language you’d like us to continue in—English or Italian—and how comfortable you feel with it? And, if you’re comfortable sharing, a hint of your age range helps the masters fine‑tune their advice. Shall we proceed?
+
+You
+
+i like english born in canada 1964 burlington ontario
+
+Cleopatra
+
+Your draft card is ready—shall I unveil it for you? It captures your SAP integration strengths and points to the masters who can help you sharpen them. If there’s a particular goal or question you have in mind, share it and we’ll refine together.
+
+You
+
+inveil it plase i want to see my card
+
+Cleopatra
+
+Here’s your draft card, freshly unrolled:
+
+- **Role:** SAP Integration Architect – bridging on
+Here is the draft card I have for you: Role: SAP Integration Architect — bridging on‑premise to cloud with secure, scalable solutions; Core strengths: SAP Basis, PI/PO, CPI, API integration, OAuth 2.0; Languages: native English, comfortable in Italian if needed; Location & age: Burlington, Ontario, born 1964.
+
+Does anything look off or need adding, and is there a particular goal or challenge you’d like us to focus on next?
+
+If you’re ready, we can hand this to the appropriate masters—just tap the 🏛️ Masters button whenever you wish.
+
+🔊 Read aloud
+
+🎯
+Narrow it down — a few quick questions to sharpen your profile
+I aim to become a cloud lead architect
+How can I strengthen my API security skills?
+Why do I prefer English over Italian?
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+🏛️ Masters
+Send
+🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court
+
+🧠
+What Cleopatra has learned
+This is your memory — yours to see. Every master reads it.
+
+Speaks
+English
+Level
+fluent
+Born
+born 1964
+Goal
+review card and get guidance on integration architecture work
+Why they came
+to view and refine their personal SAP integration architect card
+Background
+SAP Integration Architect bridging on‑premise to cloud with secure, scalable solutions; strengths include SAP Basis, PI/PO, CPI, API integration, OAuth2
+Generation
+Baby Boomer
+Life stage
+transitioning
+Holland code
+IRC
+House
+The Forge
+What lights them up
+SAP Basis
+PI/PO
+CPI
+API integration
+OAuth2
+Affinities
+cloud integration
+secure solutions
+SAP ecosystem
+Your Natural Strengths
+(RIASEC aptitude)
+Investigative
+80
+Realistic
+70
+Conventional
+65
+Artistic
+20
+Social
+15
+Enterprising
+10
+
+## 2 · Cleo, everywhere (the queen at the door) B1
+[x] [PASS] The top nav shows 👑 Ask Cleo on every page (not a 🎩 top hat). she's a queen, always one tap away
+     note: I like the way it's set up it's it's good I don't think there's a problem here Is she's in the header and in different spots and it bounces into the The What Cleopatra has learned so I like that It's not a top hat like you say either
+[x] [PASS] On 🐺 You home, the 👑 Ask Cleopatra button is right there. the always-open door to the card-builder
+   section notes: Yeah I would say it's pretty obvious what's going on there they'll pick it up and Cleopatra's here from the minute so I like the the crown it's better than the top hat I mean we could go back to the top hat but it's everybody knows Cleopatra's a woman so it doesn't really make sense I mean In my opinion and she looks better with a crown and then you feel like more like a king you know
+
+## 3 · Meet Cleo + Your Natural Strengths
+[x] [PASS] Open 👑 Ask Cleo, tell her 2–3 real things. the record panel fills (Goal, Background…)
+     note: 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+🏪 Square
+🔧 Workshop
+👑 Ask Cleo
+🎭 Legends
+⚡ Exchange
+📋 Today
+🐺 You
+FAQ
+🗺️
+👤 art-1140Logout
+💬 Feedback
+👑
+Cleopatra · your greeter
+She meets you in your own tongue — the more she knows you, the better every master helps.
+
+Cleopatra is in
+🔊
+Reply in
+Auto
+EN
+IT
+We have been expecting you -- welcome to the imagination machine, where every guest is crowned with curiosity. I'm Cleopatra, your host; Leonardo at my side, Sherlock in the back, every master in their house -- and my charge is to learn who you are so they can serve you well. First the tongue: English, Italian, or your own -- which is today's royal language, and what others grace your voice? In the door, or out the door?
+
+🔊 Read aloud
+We speak English and Italian beautifully here, and we’ll gladly try your own if you wish— which shall be our royal language today? May I ask your native tongue and any others you feel comfortable using? Shall we together uncover the work that lights you up?
+
+🔊 Read aloud
+I already answered a lot of these questions so in our first inbox conversation and this I'll give you the whole chat session it might help you a little bit >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+💬 Feedback
+🐺
+art-1140
+SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+
+📊 Home
+🏋️ Body
+🧠 Mind
+✨ Spirit
+📬 Inbox
+Welcome — let's build your card
+✕ close
+
+Cleopatra
+
+Welcome to La Piazza, Art. I'm Cleopatra — your host here.
+
+I read what you shared, and here's what I already see in you:
+• SAP integration architect bridging on‑prem to cloud with secure, scalable solutions.
+• Strengths: sap basis, pi/po, cpi, api integration, oauth2
+
+Your profile is started. The real key is the card I keep on you — it's what lets every master here help you fast. Give me two minutes and we'll sharpen it together, then I'll point you to the masters who fit you best.
+
+I'm here to help you find your way — and you'll help me make this place better. Deal?
+
+When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after.
+
+You
+
+what do you need can i see my card so far
+
+Cleopatra
+
+I have a draft of your “integration architect” card ready for you to peek at. Before I roll it out, may I confirm which language you’d like us to continue in—English or Italian—and how comfortable you feel with it? And, if you’re comfortable sharing, a hint of your age range helps the masters fine‑tune their advice. Shall we proceed?
+
+You
+
+i like english born in canada 1964 burlington ontario
+
+Cleopatra
+
+Your draft card is ready—shall I unveil it for you? It captures your SAP integration strengths and points to the masters who can help you sharpen them. If there’s a particular goal or question you have in mind, share it and we’ll refine together.
+
+You
+
+inveil it plase i want to see my card
+
+Cleopatra
+
+Here’s your draft card, freshly unrolled:
+
+- **Role:** SAP Integration Architect – bridging on
+Here is the draft card I have for you: Role: SAP Integration Architect — bridging on‑premise to cloud with secure, scalable solutions; Core strengths: SAP Basis, PI/PO, CPI, API integration, OAuth 2.0; Languages: native English, comfortable in Italian if needed; Location & age: Burlington, Ontario, born 1964.
+
+Does anything look off or need adding, and is there a particular goal or challenge you’d like us to focus on next?
+
+If you’re ready, we can hand this to the appropriate masters—just tap the 🏛️ Masters button whenever you wish.
+
+🔊 Read aloud
+
+🎯
+Narrow it down — a few quick questions to sharpen your profile
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+🏛️ Masters
+Send
+🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court
+
+🧠
+What Cleopatra has learned
+This is your memory — yours to see. Every master reads it.
+
+Speaks
+English
+Level
+fluent
+Born
+born 1964
+Goal
+review card and get guidance on integration architecture work
+Why they came
+to view and refine their personal SAP integration architect card
+Background
+SAP Integration Architect bridging on‑premise to cloud with secure, scalable solutions; strengths include SAP Basis, PI/PO, CPI, API integration, OAuth2
+Generation
+Baby Boomer
+Life stage
+transitioning
+Holland code
+IRC
+House
+The Forge
+What lights them up
+SAP Basis
+PI/PO
+CPI
+API integration
+OAuth2
+Affinities
+cloud integration
+secure solutions
+SAP ecosystem
+Your Natural Strengths
+(RIASEC aptitude)
+Investigative
+80
+Realistic
+70
+Conventional
+65
+Artistic
+20
+Social
+15
+Enterprising
+10
+[x] [PASS] The aptitude reads "Your Natural Strengths" with a small grey (RIASEC aptitude) underneath. human heading, jargon tucked away
+     note: Generally I like the look of the card And it's fine we don't have any debate on that she's put me in the forge And this identified me correctly as a baby boomer
+[x] [PASS] She introduces / dispatches you to masters without you typing who to ask. she guides — you don't have to know the cast
+     note: Yes that part Works quite well it's been working well that the Masters are called and you get the nice snippet from them that's always been working it works well
+   section notes: Overall it's much better than it was before there's some slight little tweaks that we can do that I've mentioned But uh She's picked up on the background I mean I had to actually force it in but I think once we do that which we can do then it's going to go much slicker much faster and I think that's what's going to make the users anxious or excited because they're giving something they're getting something back right away it's not messing it up and trapping it
+
+## ★ Verdict
+[x] [PASS] Does a stranger feel RECEIVED — and does Cleo feel like the always-there friend? tick if the warm welcome is good to merge to prod
+   section notes: I have to admit It's generally pretty good the the screens are crisp I'm using on the desktop I'm not doing it on the mobile per se but the content the flows are generally good it's just we had the problem at the beginning Then we need that CV when I sign up that I've put in and loaded in that that makes it right through I'm not sure if everybody would put in a CV but since it is an option on the first page which is a good idea In my opinion That way we get that up front and most people are out of a job would have some sort of CV and if they didn't they can always type something in so But that information regardless has to come through into the card right away and I think that's the little flaw we don't have Cleo Cleopatra doing that properly So I think it's just a minor tweak a little bit of workflow there we have all the pieces in place so it shouldn't be any problem
+

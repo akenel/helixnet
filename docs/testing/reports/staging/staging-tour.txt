@@ -1,0 +1,94 @@
+LA PIAZZA — STAGING TOUR REPORT
+2026-06-12 @angel
+
+1 · The Concierge (reception) [/compute/concierge]
+  pass
+  🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+🏪 Square
+🔧 Workshop
+🎩 Concierge
+🎭 Legends
+⚡ Exchange
+📋 Today
+🐺 You
+FAQ
+🗺️
+👤 art-ten-junLogout
+💬 Feedback
+👑
+Cleopatra · your greeter
+She meets you in your own tongue — the more she knows you, the better every master helps.
+
+Cleopatra is in
+🔊
+Reply in
+Auto
+EN
+IT
+We have been expecting you, fellow conspirator of dreams -- welcome to the imagination machine, where almost anything you can picture can be made. I'm Cleopatra, your host here; my one job is to learn who you truly are, so the right masters can help you build the life you're made for -- and we do it together. First, your tongue: I speak English and Italian and I'll reach for your own -- which fits you best, and what others do you carry? In the door, or out the door?
+
+🔊 Read aloud
+I’m Cleopatra, your host here—not Heisenberg—but I’m delighted to continue welcoming you. We speak English and Italian beautifully, and we’ll gladly try yours; which language feels most comfortable for you? May I also ask roughly when you were born (month, year, or even just a sign) so we can fine‑tune your path? Shall we embark on this together?
+
+🔊 Read aloud
+i was born in canada on jan 9 1964 and speak native english i live in switzerland now and speak b2 german
+We’ve noted you’re a native English speaker, now living in Switzerland with solid B2 German, and you were born on 9 January 1964. Our pact is to help you discover a path that feels truly yours, working together every step of the way—shall we? Could you share what you love doing or dreaming about when you’re not busy with daily responsibilities? If that sounds good, just say “yes” and we’ll dive deeper.
+
+🔊 Read aloud
+
+🎯
+Narrow it down — a few quick questions to sharpen your profile
+I love painting landscapes in my free time.
+How can I change careers now?
+Why do I feel stuck in Switzerland?
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+🏛️ Masters
+Send
+🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court
+
+🧠
+What Cleopatra has learned
+This is your memory — yours to see. Every master reads it.
+
+Speaks
+English
+Level
+fluent
+Born
+9 January 1964
+Generation
+Baby Boomer
+Life stage
+legacy
+
+2 · Legends (the masters & houses) [/compute/legends]
+  pass
+  works bseems ok  has some ridusdual info about sap  
+
+3 · The Workshop (run a recipe) [/compute/bottega]
+  pass
+  recipes working did cv thing
+
+4 · Today (the work board) [/compute/today]
+  pass
+  seems ok i guess
+
+5 · You — Rebuild + the keystone thread [/compute/me]
+  pass
+  
+
+6 · The Exchange [/compute]
+  pass
+  
+
+7 · FAQ [/compute/faq]
+  pass
+  It seems okay
+
+8 · Get Started (the front door) [/get-started]
+  pass
+  I think this is okay I don't sign in I didn't sign in with a fresh account I think it's okay
+

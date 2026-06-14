@@ -1,0 +1,41 @@
+LA PIAZZA — FRESH-CHECK v3 REPORT
+staging-bottega.lapiazza.app · @angel
+started 17:57 · finished 18:09 · took 11:57
+
+1 · Concierge — NEW turn, no "Heisenberg"
+  ✅ PASS
+
+2 · Inbox thread — NEW reply, no re-greeting
+  ✅ PASS
+  note: 
+🏪 Square
+🔧 Workshop
+🎩 Concierge
+🎭 Legends
+⚡ Exchange
+📋 Today
+🐺 You
+FAQ
+🗺️
+👤 flora-flowersLogout
+💬 Feedback
+🐺
+flora-flowers
+15‑year SAP integration architect bridging classic systems to cloud‑native services.
+
+📊 Home
+🏋️ Body
+🧠 Mind
+✨ Spirit
+📬 Inbox
+No messages yet. When someone reaches out, it lands here. 📬
+
+3 · Screenshot tool — multi + drag + delete
+  ⚠️ ISSUE
+  note: does NOT work  >> 🎤
+📋 armed — Ctrl/Cmd+V, or drag an image here but crrl V does nothing used to be start ctrl c and then ask for ctrl v and it worked no drag image allowed either 
+
+4 · Overall feel — anything nagging?
+  ✅ PASS
+  note: Seems generally fine I don't see any problems Except for the image job which was a test script but That's not really a big issue Microphone works really well though I have to admit
+

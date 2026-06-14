@@ -1,0 +1,545 @@
+DOOR RELEASE — UAT REPORT (text)
+16 PASS / 0 FAIL / 8 ISSUE · env: local-file · 26/26 · 8⚠ checks · 60:38 elapsed
+
+FLAGS:
+  ! ISSUE On your phone (Chrome): headline + trust strip readable, buttons stack. clean on mobile -- This script is more for the desktop so Let's not worry too much about mobile until we have all the functionality worked out and then we'll make up a test script just for mobile maybe separately might be easier That we don't have to retest everything just certain mobile features we're looking for that would be my idea
+  ! ISSUE Still logged out, the recipe menu LOADS — you see the cards. ~13 recipes, NOT a stuck "loading menu…" -- I tested this to see if you're logged out and if the loading menu loads anything and it doesn't He said expect some recipes not a stuck loading menu I think it's technically correct because the user's not signed in so this is where the menu loading menu shouldn't be loading many it should be Cleopatra talking to the user and welcoming him on board and telling him you got to log into use the Imagination machine if you know what I'm saying so this is our opportunity here Uh anyways that's just my thoughts
+  ! ISSUE Open Legends (🎭) logged out. the cast of masters shows — no login wall to browse -- You don't see the Masters list when you're logged out You know And so there's no sample or anything it just says log in and I think it's kind of correct but You know maybe you want to tempt him with a couple cards there and say hey talk to the Masters and you know this is what they would see and this is the things you can do with the master and that's why we have the Masters and maybe explain the philosophy of the Masters and the legends right there on that login page So they you know it's irresistible they want to log in and start working with a master like Leonardo da Vinci or Tesla or one of the great And where they battled together to find out the answer and the best ideas And we're Cleopatra or one of the mediators comes in you know For example there's all sorts of stuff so it's pretty good But it's not uh you can't log in there but you don't see any Legends
+  ! ISSUE Sign up as artemisthinking@gmail.com (Google login OR email + password). account created; NO phone number demanded -- I don't recall a sign in seeing a sign in for Google or anything like that but I signed in with the email address everything worked it was successful I'm in right now as art 440 j13 rev 3 is my username I'm logged in as that I've completed my profile I've already done six things I have not consulted any Masters yet And I haven't really met Cleopatra so When I go to my home button I see the inbox there's no notifications there's nothing in there from Cleopatra that was supposed to be something there Sort of a welcome message and what I've already done it should even mention the six tasks that are current Maybe something a little update or a summary of you know next things to do or whatever I think that's important in the inbox is maybe what's going to get them going And that's kind of what it is you have an inbox and you have an outbox and then you have a you know pending or processing right so depending on what your information you have So I'm going to mark that as an issue here
+  ! ISSUE You land in your Bottega, logged in, with a profile started. you're in — a bio/skills draft exists, not an empty shell -- I I got the um the profile but it's it's uh it's it's just a paragraph which I think is okay I think it's doing its job but What I was kind of hoping is as it took that CV and or took that stuff it could already start building you know Cleopatra's card Because Cleopatra doesn't know that you ran this CV thing and that you now should have a CV on file at least one You know per user right this is what and then you generate more CV so you know you get a whole bunch of CVS So um that's the only issue here that I see Going back to the workshop I'm going to go to the And it still says zero completed zero thing oh six things made I have six things made Masters consulted I haven't talked to any Masters yet
+  ! ISSUE Try the recruiter/job-email reply recipe (paste a job email + CV). a tailored reply + role-slanted CV come back -- Here it asks for the recruiter's email which is good but then it says your CV key experience but there should be a an upload button for upload the CV otherwise I've got to find it and paste it all in And then your stance notes options Etc so this is a recruiter reply which is really good and then it's got the selection if you want the languages so that's fantastic
+  ! ISSUE Set "Reply in" to IT, ask something. she replies in Italian; the panel stays consistent -- I've checked this out before so I assume it's okay I don't want to check this every time it was working before so we could take it off the revision list unless you think it's broken I'll check it now Theoretically and technically it works but you can see that some stuff isn't Converted over to the language Italian in this case But the labels are which is really good so Um I think it's an easy fix but maybe something we should do right away if you want to have a you know the uh the language is working properly >> MA
+Maya Angelou
+The Hearth
+🔊
+Why Maya — She embodies the power of story and community, perfect for finding purpose and connection in later life.
+At 63 you can turn your knowledge into a narrative that inspires others—write blogs, record podcasts, or host virtual workshops for seniors learning digital tools. Volunteer to teach computer basics at community centers, bridging the generational gap and giving your expertise meaning. Your voice, combined with technology, can amplify unheard stories and create a legacy of mentorship and art.
+
+🎯
+Sharpen
+· 1 of 3
+Done
+Mi sento più portato a sistemare il giardino oppure a fare volontariato in una mensa?
+sistemare il giardino
+fare volontariato in una mensa
+Skip this one
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+🏛️ Masters
+Send
+🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court
+
+🧠
+Cosa ha imparato Cleopatra
+Questa è la tua memoria — tua da vedere. Ogni maestro la legge.
+
+Obiettivo
+Discover personal purpose and direction
+Perché è qui
+Seeks purpose; feels hollow despite successes.
+Dove fiorirebbe
+Would likely thrive in a role or activity with clear personal purpose and alignment to values, but currently feels directionless
+  ! ISSUE Open You (🐺 /compute/me). the dashboard renders — your data or a clear CTA -- I like the The today page and one thing I like about is the ask Cleo and pool yesterday's unfinished Or that pull yesterday's unfinished could be you know pull in You know my information and then maybe a you know create a task sheet for me you know that might be the way to go a special but And as Cleo that might we might make that a little bit bigger and like ask Cleopatra So it's but I'm gonna do that Cleo is reading the board And I noticed the board is still empty when I'm inviting guest canvas for your next accomplished and a first task or jot down a small win to get a momentum rolling I'm excited to see your first entry light up the board So let me give you Screenshot of that
+
+## 0 · Pick your tester + reset the first-timer setup
+[x] [PASS] First-timer account is reset (or you'll sign up a genuinely new email). artemisthinking is a clean slate — no existing profile
+     note: Seem to work fine No problem it was very good And I tested it kind of in the mobile mode on the desktop but just sort of scrunch the screen up so I get the hamburger thing everything is working fine And I loaded my CV I didn't type anything in so so far so good he's got A sort of an overview He's got skills he's got a tag line he's got categories I could probably go into reading mode I could save to blueprint So that's a result Now I'm gonna go back to the U menu Clicking on the nav bar you it says two things made portrait complete zero percent and I think that's A little bit of a problem I see a progression bar coming along there Oh so yeah because it's scrunched it knows to bring a that bar across so I can see the inbox there's nothing in the inbox It says about you I have some stuff there it says the profile is built it has it checked off I'll give you a view of that >> 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+💬 Feedback
+🐺
+art-440-j13-rev3
+SAP integration architect turning complex data flows into scalable solutions.
+
+📊 Home
+🏋️ Body
+🧠 Mind
+✨ Spirit
+📬 Inbox
+your scorecard
+0%
+Portrait complete
+2
+Things made
+0
+Masters consulted
+Tell Cleopatra more → to fill in your portrait
+
+about you
+I’m Angelo, a SAP Basis and PI/PO integration specialist with 15+ years turning complex SAP landscapes into seamless, secure connections. I design and support middleware bridges—SOAP, REST, JMS, sFTP, RabbitMQ—while handling system upgrades, transport and security. Recently I merged SAP Integration Suite with micro‑services, Docker and IaC to deliver award‑winning solutions for Nestlé and Swiss Life. I mentor junior consultants on SAP transport and agile delivery.
+
+👤
+Profile
+built ✓
+🩺
+Body Setup
+calibrate →
+✨
+Your Story
+tell it →
+🏋️
+Workouts
+0 done
+2 things in your Blueprint
+[x] [PASS] Start logged out for §1–§2. no token in this browser / Incognito
+     note: Generally the login works fine I didn't have any issues I don't think It looks good At least in Bottega Let me just check something now I'd click on the nav bar and go to the square I'm still not logged in so now I'm going to log in Now it's got me logged in by just pressing the button it must know who I am I'm gonna go to the dashboard to find out who I am I see him art June 13th okay Now I'm going to go and jump La Fiago La patago pick a recipe So it knows who I am I can pick the recipe so in my opinion that works perfectly fine Bravo
+
+## 1 · The door — first impression (anonymous) recs 1 & 5
+[x] [PASS] Headline reads "Got a skill the world stopped hiring? Good — it's still worth something here." it mirrors the person, with dignity — not generic poetry
+     note: 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+☰
+La Piazza · the square where ideas become things
+Got a skill the world stopped hiring?
+Good — it's still worth something here.
+La Piazza is the town square for people who'd rather build their own thing than wait for a callback that isn't coming. Your years aren't a liability — they're the product. Tell us what you can do; we'll help you make something of it.
+
+🐺 Start free — just tell us what you do
+⚡ Enter the Compute Exchange
+✓ Look around free — no login to browse
+✓ No phone number
+✓ We don't sell your data
+✓ One email, only when you're ready
+🔧
+La Bottega — the workshop
+A Chinese menu of makers: CV → bio, tailored CV, cover letter, product & event postings, music playlists. Pick a dish, give a few words, get the thing.
+
+open the workshop →
+⚡
+Compute Exchange — the shared brain
+A fair, verifiable compute marketplace. Submit work, watch it run live, lend your machine and earn. Credit = brain tokens. We host the square, not the model.
+
+enter the exchange →
+No ads
+ever
+No algorithm
+you choose
+No ransom
+no monthly lock-in
+Your data
+stays yours
+There's a story behind this — escape, a camper named MAX, a town square in Sicily. Why La Piazza exists →
+
+La Piazza · we host the square, not the model
+built solo, in the open · Sicily → the world
+[x] [PASS] Subhead flips age into the asset: "Your years aren't a liability — they're the product." recognition + dignity, no rejection
+     note: To be honest I actually I like the setup I think it's good it's clean it's crisp it's it's bang on Promise nobody reads anything anymore they just want a mad clickers you know what I mean We do what we can
+[x] [PASS] The hero elements rise/fade in on load. a brief staggered reveal — feels alive, not static
+     note: I think this page is fine you know people don't read anything so it says start free just tell us what you What you do or tell us why maybe you know why and what tell us a little bit about yourself Get us started in the dream machine you know what are your dreams maybe I don't know don't make it too you know corny or tacky But uh maybe just leave it the way it is Because then when I click on it I'm going to click on it now I'm not logged in it says welcome you know and it says your name email I need six characters tell us about yourself so And they choose to file and I've already done this so build my Bottega You know maybe it needs a tool tip to explain what Boutique is or do you have a Bottega login And that works well too Yeah So I'm pretty happy with it I go to Blueprint So no it's fine
+[x] [PASS] A trust strip sits under the buttons: Look around free · No phone number · We don't sell your data · One email when ready. 4 plain promises, green ✓s, readable
+     note: procedure-as-code · every recipe is a menu entry, not an app · we host the square, not the model
+[x] [ISSUE] On your phone (Chrome): headline + trust strip readable, buttons stack. clean on mobile
+     note: This script is more for the desktop so Let's not worry too much about mobile until we have all the functionality worked out and then we'll make up a test script just for mobile maybe separately might be easier That we don't have to retest everything just certain mobile features we're looking for that would be my idea
+   section notes: This script is basically for the desktop and what I do is I simulate The phone by just kind of shrinking the size of the window down to its minimum and then you get the hamburger and that sort of gives you the idea what a mobile is it's not a true mobile testing But this is a web app and it should technically work okay however It's Proper okay it's not a pwa type app and stuff the way we have the other app so It's not a real mobile test So a separate script might be better for mobile tests and trying to squeeze mobile tests in here because they're done a little bit differently But generally speaking it's okay um from what I see so far it's not mobile enriched like La Piazza is that's okay for now Would look at more functionality before we start getting into over polish but it's definitely something to talk about
+
+## 2 · "Look around free" actually works the fix
+[x] [ISSUE] Still logged out, the recipe menu LOADS — you see the cards. ~13 recipes, NOT a stuck "loading menu…"
+     note: I tested this to see if you're logged out and if the loading menu loads anything and it doesn't He said expect some recipes not a stuck loading menu I think it's technically correct because the user's not signed in so this is where the menu loading menu shouldn't be loading many it should be Cleopatra talking to the user and welcoming him on board and telling him you got to log into use the Imagination machine if you know what I'm saying so this is our opportunity here Uh anyways that's just my thoughts
+[x] [ISSUE] Open Legends (🎭) logged out. the cast of masters shows — no login wall to browse
+     note: You don't see the Masters list when you're logged out You know And so there's no sample or anything it just says log in and I think it's kind of correct but You know maybe you want to tempt him with a couple cards there and say hey talk to the Masters and you know this is what they would see and this is the things you can do with the master and that's why we have the Masters and maybe explain the philosophy of the Masters and the legends right there on that login page So they you know it's irresistible they want to log in and start working with a master like Leonardo da Vinci or Tesla or one of the great And where they battled together to find out the answer and the best ideas And we're Cleopatra or one of the mediators comes in you know For example there's all sorts of stuff so it's pretty good But it's not uh you can't log in there but you don't see any Legends
+[x] [PASS] Nothing demands a login that shouldn't (browsing is free). you can look around the whole square before committing
+     note: Browsing is generally free but there's not a whole much you can do Um Let's leave it like that for now okay because it makes a lot of sense you you can't really use the system unless you're logged in it doesn't have anything to work against Uh theoretically technically you probably could but It's not waste any more time they need to log in and Cleopatra is there to help them so She can do her job at motivating him to sign into you can probably watch their IP address and if that same IP address is popping in three times the third time you have to say hey I've seen here before you sure you know You want to just keep looking or maybe you want to log in and really use this thing and change your life and get inside the imagination machine or something like that
+
+## 3 · First-timer signup — the Keycloak path artemisthinking
+[x] [PASS] From the door, click "🐺 Start free — just tell us what you do" (or Get Started). lands on a warm intake, not a blank form
+[x] [ISSUE] Sign up as artemisthinking@gmail.com (Google login OR email + password). account created; NO phone number demanded
+     note: I don't recall a sign in seeing a sign in for Google or anything like that but I signed in with the email address everything worked it was successful I'm in right now as art 440 j13 rev 3 is my username I'm logged in as that I've completed my profile I've already done six things I have not consulted any Masters yet And I haven't really met Cleopatra so When I go to my home button I see the inbox there's no notifications there's nothing in there from Cleopatra that was supposed to be something there Sort of a welcome message and what I've already done it should even mention the six tasks that are current Maybe something a little update or a summary of you know next things to do or whatever I think that's important in the inbox is maybe what's going to get them going And that's kind of what it is you have an inbox and you have an outbox and then you have a you know pending or processing right so depending on what your information you have So I'm going to mark that as an issue here
+[x] [ISSUE] You land in your Bottega, logged in, with a profile started. you're in — a bio/skills draft exists, not an empty shell
+     note: I I got the um the profile but it's it's uh it's it's just a paragraph which I think is okay I think it's doing its job but What I was kind of hoping is as it took that CV and or took that stuff it could already start building you know Cleopatra's card Because Cleopatra doesn't know that you ran this CV thing and that you now should have a CV on file at least one You know per user right this is what and then you generate more CV so you know you get a whole bunch of CVS So um that's the only issue here that I see Going back to the workshop I'm going to go to the And it still says zero completed zero thing oh six things made I have six things made Masters consulted I haven't talked to any Masters yet
+
+## 4 · The workshop makes something (seated)
+[x] [PASS] Pick a recipe, answer the inputs, run it. a real, usable output appears
+     note: Okay I picked the recipe and it's the cover letter one But I already loaded my CV in so actually this recipe needs a little fix it's sort of a side issue but The cover letter should say hey do you want to use your existing CV that you already loaded Or do you want to load another new one And use that instead And then after that you can say do you want to use that as your new CV or do you want to leave the old one type of thing Or you can have both on record I guess But you know the point here so it won't work which is correct it says missing file input I'm going to put in my CV again and see if it works I ran the cover letter and I have to admit it's Dynamite based on my CV it's pretty awesome what can I say Here it is >> # Cover Letter _2026-06-13 14:57_ ## Asked **job:** Pilatus Airplane Company -- Stans Switzerland - Sysrtem Architect ## Answer **Angelo Kenel** Lucerne Metropolitan Area, Switzerland +41 79 828 2841 • theSAPspecialist@gmail.com • [linkedin.com/in/theSAPspecialist](https://linkedin.com/in/theSAPspecialist) 31 May 2026 **Hiring Committee** Pilatus Airplane Company – Stans, Switzerland Dear Members of the Hiring Committee, I am writing to express my enthusiasm for the **System Architect** position at Pilatus Airplane Company. With more than 15 years of hands‑on experience designing, modernising, and operating large‑scale SAP integration landscapes—most recently as an independent platform architect and as SAP PI/PO Lead for Swiss Life—I have built the technical breadth and architectural rigour that your aerospace projects demand. ### Why Pilatus and I are a match * **Enterprise‑scale integration expertise** – I have led end‑to‑end migrations from legacy SAP PI/PO environments to cloud‑native platforms (Azure Integration Services, SAP Cloud Integration). At Swiss Life I replaced the on‑premise middleware with a secure Azure‑based solution, implementing Azure API Management, Logic Apps, and OAuth 2.0 client‑server flows. These experiences align directly with Pilatus’ need to integrate flight‑operations, maintenance, and supply‑chain systems across on‑premise and cloud assets. * **Architectural design of resilient, multi‑tenant platforms** – My recent freelance work involved building a production‑grade micro‑services platform (FastAPI, PostgreSQL, Keycloak OIDC) that follows canonical data‑model patterns and Docker‑orchestrated IaC deployment (Terraform). The same principles of scalability, role‑based access, and API‑first design can be transferred to Pilatus’ aircraft‑data and manufacturing‑execution environments. * **Proven delivery under Agile and ITIL governance** – Across every engagement—whether delivering Nestlé’s global de‑investment project (Globe Award) or orchestrating complex booking interfaces for CMA‑CGM—I have applied Scrum, ITIL change‑management, and DevOps pipelines (JIRA, Azure DevOps, ServiceNow). This ensures that architectural decisions are realised on time, with transparent traceability and high‑quality releases. * **Cross‑functional communication and stakeholder management** – As the Integration Competency Center SPOC for Nestlé, I coordinated multi‑regional teams, presented technical roadmaps in English, and mentored offshore support groups. My fluency in English, native‑speaker level, and B1/B2 German enable effective collaboration with Pilatus’ international engineering and regulatory partners. ### Highlights relevant to Pilatus | Area | Relevant Experience | |------|----------------------| | **SAP Process Orchestration (PO 7.4/7.5, PI, XI)** | Development of SOAP/REST/JMS adapters, XSLT and Java mappings, ESR/ID configuration, 3rd‑level support. | | **Cloud Integration (CPI, Azure APIM, Logic Apps)** | Designed and delivered iFlows/iCos for S/4HANA‑to‑non‑SAP interfaces; implemented secure certificate‑based and OAuth 2.0 authentication. | | **API Management & OpenAPI** | Built OpenAPI 3.0 specifications, Swagger documentation, and role‑based access controls for multi‑tenant services. | | **Infrastructure‑as‑Code & DevOps** | Terraform IaC, CI/CD pipelines, container orchestration with Docker, automated monitoring via ServiceNow. | | **Enterprise Architecture** | Defined canonical data models, integration patterns, and cut‑over plans for global roll‑outs (20+ markets). | ### What I will bring to Pilatus 1. **A holistic integration blueprint** that blends SAP PO expertise with modern Azure and open‑source services, enabling seamless data flow from aircraft telemetry to ERP and MRO systems. 2. **Robust security architecture**—SSL/TLS, VPN, SAP OAuth 2.0, and certificate‑based authentication—meeting the stringent certification requirements of the aerospace sector. 3. **Agile delivery leadership** that empowers cross‑disciplinary teams to iterate quickly while respecting regulatory change‑control processes. I am a Swiss‑Canadian citizen, currently based in Lucerne, and available to start immediately. I would welcome the opportunity to discuss how my background can help Pilatus accelerate its digital transformation and maintain its reputation for engineering excellence. Thank you for considering my application. I look forward to the possibility of contributing to Pilatus’ next generation of aircraft systems. Sincerely, **Angelo Kenel** --- *Enclosure: Curriculum Vitae* I also Uh I'm running the CV generator going for the detail architect job I spelled architect wrong but I'm sure it works fine here it's pretty good This is the detailed one >># CV Generator _2026-06-13 14:59_ ## Asked **target_role:** System Arictect **style:** detailed ## Answer # Angelo Kenel – SAP PI/PO Interface Integration Developer **Location:** CH‑6375 Beckenried, Nidwalden, Switzerland **Phone:** +41 79 828 2841 **E‑mail:** theSAPspecialist@gmail.com **LinkedIn:** [linkedin.com/in/theSAPspecialist](https://www.linkedin.com/in/theSAPspecialist) *Married – Swiss / Canadian* *Languages:* English (native), German (B1/B2) --- ## Summary - Agile software developer with 12 + years of end‑to‑end integration experience across SAP PI/PO, Azure, and HANA S/4 environments. - Expert at early‑stage analysis, proof‑of‑concept prototyping, and stress‑testing of business‑process integrations (O2C, P2P, HR). - Proven ability to produce clear functional & technical specifications and to coordinate cross‑functional stakeholders (network, security, business, and decision‑makers). - Strong hands‑on background in canonical mapping, message routing, and technical troubleshooting for both green‑field and production middleware interfaces. - Experienced with modern DevOps toolchains (M365, Azure DevOps, Terraform, JIRA, ServiceNow) and large‑scale multinational project delivery. - Techno‑functional knowledge spanning FI/CO, HCM, CRM, BW, APO and S/4‑HANA, enabling holistic view of data‑flow and master‑data governance in B2B and A2A scenarios. --- ## Experience ### SAP PI/PO Lead – Azure + HANA S/4 Integration **Swiss Life – Zürich, Switzerland** *(07/2019 – 01/2024)* - Designed and built SAP PO 7.5 iFlows/iCos; configured SOAP, REST, and sFTP adapters to expose IFRS‑system data to external non‑SAP applications. - Led migration of legacy SAP PI/PO middleware to Microsoft Azure, creating a scalable, secure platform for encrypted bank‑ and payroll‑document transmission (Finance & HR). - Delivered PoC using Azure MS Graph, Azure API Management, and Azure Logic Apps (iPaaS) to enable REST/SOAP message exchange, certificate‑based authentication and SAP OAuth 2.0 flows. - Authored technical artefacts (WSDLs, OpenAPI specs) and orchestrated Azure‑based API import/export pipelines. ### SAP PI/PO Lead Developer – CRM Integration **Deutsche Börse Group – Luxembourg** *(01/2019 – 06/2019)* - Developed iFlows on PO 7.4 using Eclipse NWDS; leveraged XML‑SOAP & JSON‑REST adapters for seamless integration between SAP CRM and a proprietary banking application. - Created Enterprise Service Repository (ESR) and Integration Directory objects for synchronous integration scenarios. - Collaborated with network & system admins to harden HTTP connections; built ABAP service interfaces for KYC‑API consumption. ### Integration Project Manager – GIS Integration **CMA‑CGM – Marseille, France** *(09/2018 – 12/2018)* - Delivered two end‑to‑end booking interfaces by combining legacy CMA systems with SAP Process Orchestration REST‑API adapters. - Ran PoC and UAT for HERE Geocoder API, adding latitude/longitude enrichment to SAP Transportation Management via AIF & Event Management. ### SAP HCM ABAP & Basis Technical Support **ManpowerGroup – Eschborn, Germany** *(06/2018 – 08/2018)* - Accelerated transition of a cross‑functional HCM support team from German to English‑based support for offshore service providers. - Provided knowledge transfer on content servers, RFC connections, security, and change‑management across six SAP systems and several non‑SAP platforms. ### SAP ICC SPOC / Integration Project Manager **Nestlé – Frankfurt, Germany** *(03/2016 – 12/2017)* - Served as Single Point of Contact for the Integration Competency Center; managed global SAP PI/PO projects from design through cut‑over and support. - Oversaw full project lifecycle: strategic planning, security setup, change‑management, service‑pack upgrades, testing, and post‑go‑live support. - Utilised SAP Business Suite components (Basis, ABAP, BODS, BW, Solution Manager, APO, S/4‑HANA) to resolve mission‑critical issues. - Contributed to Nestlé’s Globe‑Award‑winning global de‑investment project covering 20+ markets. ### SAP Integration Consultant / Technical Support **Nestlé Nespresso – Lausanne, Switzerland** *(03/2014 – 02/2016)* - Managed high‑volume messaging (AS Java PO 7.4, NWDS, SLD) across SAP Hybris, CRM, Retail, APO, and BW HANA landscapes. - Implemented ALE/IDocs, BDocs, RFCs, iFlows, web services, and file adapters to enable omnichannel experiences. - Certified Change‑Management Coordinator for SAP IdM and CTS transport system. ### SAP Integration Projects / SAP Business Suite Consultant **Nestlé – Vevey, Switzerland** *(11/2012 – 02/2014)* - Built prototypes for global messaging interfaces; authored technical specs, mapping, payload routing, and performance‑tuning guidelines. - Delivered O2C Mobile Web Application (real‑time orders, shipments, invoices) using SAP output determination, ALE/IDocs, and XI basics; earned 3rd place in Nestlé Innovation Award. ### SAP Data Migration Lead – SAP ByDesign **Utopia Inc – Chicago, USA** *(07/2010 – 09/2012)* - Led 4‑6‑person teams for data‑migration projects using SAP BODS, ABAP, LSMW, IDocs, SQL, and IBM AS/400 to migrate ERP data into SAP ByDesign. - Managed pharmaceutical green‑field migration (FI, MM, SD) for H.D. Smith; applied Six‑Sigma methodology for reporting, issue tracking, and defect management. ### SAP XI/PI Upgrade Project – Integration Specialist **Nestlé** *(08/2009 – 07/2010)* - Supported the upgrade of SAP XI to PI, handling repository migration, adapter configuration, and post‑upgrade validation. --- ## Skills - **Integration Platforms:** SAP PI/PO, SAP PO 7.x, SAP Integration Designer, Azure API Management, Logic Apps, iPaaS - **Protocol & Adapter Expertise:** SOAP, REST, sFTP, JSON, XML, IDocs, ALE, BDocs, RFC, OAuth 2.0, certificate‑based auth - **Programming & Scripting:** ABAP, Java, C#, .NET, M365 low‑code/no‑code automations - **Cloud & DevOps:** Azure (APIM, Logic Apps, MS Graph), Terraform (IaC), Azure DevOps, M365 CAF, ServiceNow, JIRA - **Data & Analytics:** SAP BW, BW HANA, SAP BODS, SAP HANA, SAP BusinessObjects - **Project & Process:** Agile (Scrum/Kanban), cut‑over planning, change management, budgeting, scheduling, stakeholder coordination - **Languages:** English (native), German (B1/B2) --- ## Education & Certifications - **Solution Consultant Certification** – SAP (North Sydney, NSW, Australia) - **Application Consultant Certification** – SAP (Toronto, Canada) - **ABAP Workbench for SAP R/3 Release 4.0** – SAP (Toronto, Canada) - **mySAP BI (Business Warehouse) – SAP R/3 4.6C, SAP BW 3.0** – SAP (North Sydney) - **Computer Systems Co‑Op Diploma (3 years)** – Mohawk College, Hamilton, Canada --- ## Bridge to System Architect | Transferable Experience | How It Relates to a System Architect Role | Gaps / Learning & Certifications | |--------------------------|--------------------------------------------|---------------------------------| | **Enterprise Integration Architecture** – end‑to‑end design of SAP PI/PO, Azure APIM, Logic Apps, and REST/SOAP flows. | Provides a foundation for architecting scalable, secure, and governed integration landscapes across cloud & on‑premise. | Deepen knowledge of enterprise‑wide integration patterns (e.g., TOGAF Integration Architecture). | | **Cloud Migration & iPaaS** – led migration from SAP PI/PO to Azure‑based services, built PoCs using Azure Graph & API Management. | Demonstrates ability to evaluate, select, and design cloud‑native platforms—key for system‑level decisions on SaaS, PaaS, IaaS. | Acquire Azure Solutions Architect Expert certification (AZ‑303/304) and AWS Solutions Architect – Associate/Professional. | | **Technical Governance & Security** – implemented certificate‑based authentication, OAuth 2.0, and coordinated with network/security teams. | Aligns with architect responsibilities for security standards, identity & access management, and compliance. | Formal training in security frameworks (e.g., CISSP, ISO 27001) and Zero‑Trust architecture. | | **DevOps & IaC** – Terraform, Azure DevOps, continuous integration pipelines, automated testing of integration artefacts. | Enables design of repeatable, automated delivery pipelines across systems – a core expectation for modern architects. | Pursue Certified Kubernetes Administrator (CKA) and Terraform Certified Associate. | | **Cross‑Domain Knowledge** – hands‑on experience in FI/CO, HCM, CRM, BW, APO, S/4‑HANA, and non‑SAP systems (banking, GIS, logistics). | Offers a holistic view of business processes and data flows, essential for defining enterprise reference architectures. | Study TOGAF 9/10 (Enterprise Architecture) and obtain TOGAF certification. | | **Project & Portfolio Management** – budgeting, scheduling, stakeholder alignment, multi‑regional rollout. | Supports the architectural role’s need to influence road‑maps, ROI analyses, and alignment with business strategy. | Consider PMI‑ACP or PRINCE2 Agile certification for advanced portfolio governance. | **Action Plan for Transition** 1. **Certifications (next 12 months):** - TOGAF 9/10 Certified - Azure Solutions Architect Expert (AZ‑303 & AZ‑304) - Terraform Certified Associate 2. **Skill Expansion:** - Deep dive into micro‑services design, event‑driven architectures, and API‑first strategy. - Hands‑on labs with Kubernetes and service mesh (e.g., Istio) to complement existing iPaaS expertise. 3. **Architectural Portfolio:** - Document past integration projects as case studies highlighting architectural decisions, trade‑offs, and outcomes. - Build a reference diagram library (C4 model, integration flow diagrams) to showcase system‑level thinking. 4. **Networking:** - Join enterprise architecture communities (e.g., The Open Group, Azure Architecture Center) and attend relevant webinars/conferences. By leveraging extensive integration and cloud‑migration experience, coupled with targeted architecture certifications and expanded micro‑services knowledge, Angelo is well‑positioned to transition into a System Architect role. << Another nice feature was that I could just switch to concise after to see what the concise view is and I had all my buttons at the bottom to save it and stuff and put it in my recipe so that seems okay And I'm just running the whole thing the same way again but it's the concise version >># CV Generator
+_2026-06-13 15:00_
+
+## Asked
+**target_role:** System Arictect
+**style:** concise
+
+## Answer
+# Angelo Kenel – SAP PI/PO Interface Integration Developer  
+Beckenried, Nidwalden, Switzerland • +41 79 828 2841 • theSAPspecialist@gmail.com  
+[LinkedIn](https://www.linkedin.com/in/theSAPspecialist)  
+
+*Married • Swiss‑Canadian • English (native) • German B1/B2*  
+
+---  
+
+## Summary  
+Agile integration specialist with 12 + years delivering end‑to‑end SAP PI/PO solutions across finance, HR, logistics, and CRM. Skilled in early analysis, functional/technical design, proof‑of‑concept prototyping, and stress testing. Strong track record of replacing legacy middleware with cloud‑based platforms (Azure, HANA) and of coordinating multi‑disciplinary stakeholders (network, security, business). Hands‑on experience with SAP modules (FI/CO, HCM, CRM, BW/HANA), .NET/C#, M365 automations, DevOps (Terraform, CI/CD), and enterprise‑grade project governance (JIRA, ServiceNow, Agile).  
+
+---  
+
+## Bridge to System Architect  
+
+| Transferable strengths | What to learn / certify |
+|------------------------|------------------------|
+| **Integration Architecture** – design of iFlows, ESR/ID objects, canonical mapping, message routing across SAP PI/PO, Azure APIM, Logic Apps. | **Enterprise Architecture Frameworks** – TOGAF, Zachman (certification). |
+| **Cloud Migration** – leading PoC and migration from SAP PI/PO to Azure, Azure AD, APIM, Logic Apps, and S/4HANA integration. | **Cloud Architecture** – Microsoft Certified: Azure Solutions Architect Expert (or AWS Certified Solutions Architect). |
+| **DevOps & IaC** – Terraform, CI/CD pipelines, automated testing, version control of integration artifacts. | **Advanced DevOps** – Certified DevOps Engineer (Azure) / Docker & Kubernetes fundamentals. |
+| **End‑to‑end Business Processes** – O2C, P2P, payroll, HR, logistics, and B2B/A2A data flows. | **Systems Modeling** – UML/SysML, BPMN, modeling tools (Sparx EA, Enterprise Architect). |
+| **Stakeholder & Change Management** – coordinating network/security teams, cut‑over planning, service‑pack upgrades, global roll‑outs. | **Enterprise Governance** – ITIL® 4 Foundation, COBIT® basics. |
+| **Technical Leadership** – leading multi‑regional teams, mentoring, SPOC role for ICC. | **Leadership** – Certified ScrumMaster (CSM) or SAFe® Agilist for large‑scale architecture delivery. |
+
+---  
+
+## Experience  
+
+### SAP PI/PO Lead – Azure + HANA S/4 Integration  
+**Swiss Life, Zürich, Switzerland** *(07/2019 – 01/2024)*  
+- Designed and built iFlows & iCos on SAP PO 7.5; configured SOAP, REST, sFTP adapters for IFRS‑to‑non‑SAP connectivity.  
+- Directed a digital‑transformation PoC moving SAP PI/PO middleware to Azure (MsGraph, APIM, Logic Apps).  
+- Implemented certificate‑based and OAuth 2.0 security for bank‑payroll document exchange.  
+- Automated payload routing via Azure Logic Apps, enabling SAP‑driven REST/SOAP calls.  
+
+### SAP PI/PO Lead Developer – CRM Integration  
+**Deutsche Börse Group, Luxembourg** *(01/2019 – 06/2019)*  
+- Created iFlows with Eclipse NWDS on PO 7.4; used XML‑SOAP & JSON‑REST adapters for SAP CRM ↔ banking app integration.  
+- Built new Enterprise Service Repository and Integration Directory objects for synchronous scenarios.  
+- Secured HTTP connections and generated ABAP service interfaces for a custom KYC API.  
+
+### Integration Project Manager – GIS Integration  
+**CMA‑CGM, Marseille, France** *(09/2018 – 12/2018)*  
+- Delivered two booking interfaces linking legacy CMA system to SAP PO REST API.  
+- Ran PoC & UAT for HERE Geocoding API; enriched address data with lat/long for route optimization.  
+- Integrated geocoding data into SAP TM via AIF and Event Management.  
+
+### SAP HCM ABAP & Basis Technical Support  
+**ManpowerGroup, Eschborn, Germany** *(06/2018 – 08/2018)*  
+- Transitioned HCM support from German to English for offshore service providers.  
+- Configured content servers, RFCs, security protocols across six SAP systems and several non‑SAP platforms.  
+
+### SAP ICC SPOC / Integration Project Manager  
+**Nestlé, Frankfurt, Germany** *(03/2016 – 12/2017)*  
+- Single point of contact for the Integration Competency Center; managed global SAP‑non‑SAP integration projects.  
+- Oversaw end‑to‑end messaging, security, change management, service‑pack upgrades, and cut‑over plans.  
+- Utilized Basis, ABAP, BODS, BW, Solution Manager, APO, and S/4HANA; contributed to Nestlé Globe Award‑winning de‑investment project.  
+
+### SAP Integration Consultant / Technical Support  
+**Nestlé Nespresso, Lausanne, Switzerland** *(03/2014 – 02/2016)*  
+- Optimized high‑volume messaging (AS Java SAP PO 7.4, NWDS, SLD, Hybris, CRM, Retail, APO, BW HANA).  
+- Employed ALE/IDocs, BDocs, RFCs, iFlows, web services, and file adapters for omni‑channel experiences.  
+- Certified Change Management Coordinator for SAP IdM & CTS.  
+
+### SAP Integration Projects / Business Suite Consultant  
+**Nestlé, Vevey, Switzerland** *(11/2012 – 02/2014)*  
+- Built prototypes, technical specs, mappings, and routing rules for global messaging.  
+- Delivered O2C Mobile Web App using output determination, ALE/IDocs, and XI tech; earned 3rd place in Nestlé Innovation Award.  
+
+### SAP Data Migration Lead – SAP ByDesign  
+**Utopia Inc., Chicago, USA** *(07/2010 – 09/2012)*  
+- Led 4‑6‑person teams migrating ERP data via SAP BODS, ABAP, LSMW, IDocs, SQL, AS/400, ECC 6.0.  
+- Managed greenfield pharmaceutical migration (FI, MM, SD) and legacy‑to‑ByDesign upgrade.  
+- Applied Six Sigma for status reporting, issue tracking, and defect dashboards.  
+
+### SAP XI/PI Upgrade Project – Integration Specialist  
+**Nestlé** *(08/2009 – 07/2010)*  
+- (Details omitted for brevity – role focused on XI → PI upgrade and integration support.)  
+
+---  
+
+## Skills  
+
+- **Integration Platforms**: SAP PI/PO, SAP PO 7.5, Azure APIM, Logic Apps, iFlows, ESR/ID, ALE/IDocs, BDocs, RFCs  
+- **Programming & Automation**: .NET, C#, Java, ABAP, M365 low‑code/no‑code, REST/SOAP, JSON, XML, Terraform (IaC)  
+- **Cloud & DevOps**: Azure, HANA, Azure AD, MsGraph, CI/CD pipelines, ServiceNow, JIRA, Agile/Scrum, Git  
+- **Enterprise Tools**: SAP BW/HANA, SAP Business Suite, SAP BODS, SAP Solution Manager, SAP IdM, SAP APO, SAP TM, AIF, Event Management  
+- **Project & Change Management**: Cut‑over planning, budgeting, scheduling, stakeholder coordination, ICT support, Six Sigma basics  
+- **Languages**: English (native), German (B1/B2)  
+
+---  
+
+## Education & Training  
+
+- **SAP Solution Consultant Certification** – SAP, North Sydney, NSW, Australia  
+- **SAP Application Consultant Certification** – SAP, Toronto, Canada (ABAP Workbench for R/3 4.0)  
+- **mySAP BI (Business Warehouse) Training** – SAP R/3 4.6C, SAP BW 3.0  
+- **Computer Systems Co‑Op Diploma (3 years)** – Mohawk College, Hamilton, Canada  
+
+---
+<<
+[x] [ISSUE] Try the recruiter/job-email reply recipe (paste a job email + CV). a tailored reply + role-slanted CV come back
+     note: Here it asks for the recruiter's email which is good but then it says your CV key experience but there should be a an upload button for upload the CV otherwise I've got to find it and paste it all in And then your stance notes options Etc so this is a recruiter reply which is really good and then it's got the selection if you want the languages so that's fantastic
+   section notes: I was just thinking that when you go to the tasks you maybe want to show you that these are tasks you've done Like running a recipe is actually a task right I've uploaded the CV I registered so you could have that You know in the top 10 As done right marked is done already right For example why not Because the today tab I think people go to but after they've done stuff because I'm always having a hard time finding where my blueprint is for some reason I'm going to go back to the workshop now There I see it now the blueprint at the top so maybe should be a little bit bigger so it's a little bit more obvious so I hit the blueprint And I see the CV generator so I'm going to click on that and it gives me the output there right this is the new CV That I just wrote up so if I'm replying to the recruiter I want to use this so I copy it Then I go to the workshop again and then I say recruiter reply Paste in the recruiter's email and put it in your CV now I can paste that in so that's pretty good I don't think it's cut off I think it's fine the whole thing's in there Your stance you know Like 90 you know Euros per hour And any You can start You know Immediately No other issues I can think Another problem with the recruiters reply is that maybe you're replying to an email or you know you're replying to say is there you know any discussion you want to put in here to bring context to it so like if I'm replying to an email then it's probably a good idea to paste in that email here right so the pace feature is probably just the way you want it And maybe tell them you know run the CV generator first to get a proper CV and then you know this is what you're going to reply with and put in here type of thing I don't know it could be some instructions and tooltips here So I'm going to run the recipe now This is the recruiter reply And it's taken a little bit of time But it did it no problem so I'm gonna give you the whole thing just a copy function >># Recruiter Reply
+_2026-06-13 15:05_
+
+## Asked
+**email:** thesapspecialist@gmail.com
+**cv:** # CV Generator _2026-06-13 15:00_  ## Asked **target_role:** System Arictect **style:** concise  ## Answer # Angelo Kenel – SAP PI/PO Interface Integration Developer   Beckenried, Nidwalden, Switzerland • +41 79 828 2841 • theSAPspecialist@gmail.com   [LinkedIn](https://www.linkedin.com/in/theSAPspecialist)    *Married • Swiss‑Canadian • English (native) • German B1/B2*    ---    ## Summary   Agile integration specialist with 12 + years delivering end‑to‑end SAP PI/PO solutions across finance, HR, logistics, and CRM. Skilled in early analysis, functional/technical design, proof‑of‑concept prototyping, and stress testing. Strong track record of replacing legacy middleware with cloud‑based platforms (Azure, HANA) and of coordinating multi‑disciplinary stakeholders (network, security, business). Hands‑on experience with SAP modules (FI/CO, HCM, CRM, BW/HANA), .NET/C#, M365 automations, DevOps (Terraform, CI/CD), and enterprise‑grade project governance (JIRA, ServiceNow, Agile).    ---    ## Bridge to System Architect    | Transferable strengths | What to learn / certify | |------------------------|------------------------| | **Integration Architecture** – design of iFlows, ESR/ID objects, canonical mapping, message routing across SAP PI/PO, Azure APIM, Logic Apps. | **Enterprise Architecture Frameworks** – TOGAF, Zachman (certification). | | **Cloud Migration** – leading PoC and migration from SAP PI/PO to Azure, Azure AD, APIM, Logic Apps, and S/4HANA integration. | **Cloud Architecture** – Microsoft Certified: Azure Solutions Architect Expert (or AWS Certified Solutions Architect). | | **DevOps & IaC** – Terraform, CI/CD pipelines, automated testing, version control of integration artifacts. | **Advanced DevOps** – Certified DevOps Engineer (Azure) / Docker & Kubernetes fundamentals. | | **End‑to‑end Business Processes** – O2C, P2P, payroll, HR, logistics, and B2B/A2A data flows. | **Systems Modeling** – UML/SysML, BPMN, modeling tools (Sparx EA, Enterprise Architect). | | **Stakeholder & Change Management** – coordinating network/security teams, cut‑over planning, service‑pack upgrades, global roll‑outs. | **Enterprise Governance** – ITIL® 4 Foundation, COBIT® basics. | | **Technical Leadership** – leading multi‑regional teams, mentoring, SPOC role for ICC. | **Leadership** – Certified ScrumMaster (CSM) or SAFe® Agilist for large‑scale architecture delivery. |  ---    ## Experience    ### SAP PI/PO Lead – Azure + HANA S/4 Integration   **Swiss Life, Zürich, Switzerland** *(07/2019 – 01/2024)*   - Designed and built iFlows & iCos on SAP PO 7.5; configured SOAP, REST, sFTP adapters for IFRS‑to‑non‑SAP connectivity.   - Directed a digital‑transformation PoC moving SAP PI/PO middleware to Azure (MsGraph, APIM, Logic Apps).   - Implemented certificate‑based and OAuth 2.0 security for bank‑payroll document exchange.   - Automated payload routing via Azure Logic Apps, enabling SAP‑driven REST/SOAP calls.    ### SAP PI/PO Lead Developer – CRM Integration   **Deutsche Börse Group, Luxembourg** *(01/2019 – 06/2019)*   - Created iFlows with Eclipse NWDS on PO 7.4; used XML‑SOAP & JSON‑REST adapters for SAP CRM ↔ banking app integration.   - Built new Enterprise Service Repository and Integration Directory objects for synchronous scenarios.   - Secured HTTP connections and generated ABAP service interfaces for a custom KYC API.    ### Integration Project Manager – GIS Integration   **CMA‑CGM, Marseille, France** *(09/2018 – 12/2018)*   - Delivered two booking interfaces linking legacy CMA system to SAP PO REST API.   - Ran PoC & UAT for HERE Geocoding API; enriched address data with lat/long for route optimization.   - Integrated geocoding data into SAP TM via AIF and Event Management.    ### SAP HCM ABAP & Basis Technical Support   **ManpowerGroup, Eschborn, Germany** *(06/2018 – 08/2018)*   - Transitioned HCM support from German to English for offshore service providers.   - Configured content servers, RFCs, security protocols across six SAP systems and several non‑SAP platforms.    ### SAP ICC SPOC / Integration Project Manager   **Nestlé, Frankfurt, Germany** *(03/2016 – 12/2017)*   - Single point of contact for the Integration Competency Center; managed global SAP‑non‑SAP integration projects.   - Oversaw end‑to‑end messaging, security, change management, service‑pack upgrades, and cut‑over plans.   - Utilized Basis, ABAP, BODS, BW, Solution Manager, APO, and S/4HANA; contributed to Nestlé Globe Award‑winning de‑investment project.    ### SAP Integration Consultant / Technical Support   **Nestlé Nespresso, Lausanne, Switzerland** *(03/2014 – 02/2016)*   - Optimized high‑volume messaging (AS Java SAP PO 7.4, NWDS, SLD, Hybris, CRM, Retail, APO, BW HANA).   - Employed ALE/IDocs, BDocs, RFCs, iFlows, web services, and file adapters for omni‑channel experiences.   - Certified Change Management Coordinator for SAP IdM & CTS.    ### SAP Integration Projects / Business Suite Consultant   **Nestlé, Vevey, Switzerland** *(11/2012 – 02/2014)*   - Built prototypes, technical specs, mappings, and routing rules for global messaging.   - Delivered O2C Mobile Web App using output determination, ALE/IDocs, and XI tech; earned 3rd place in Nestlé Innovation Award.    ### SAP Data Migration Lead – SAP ByDesign   **Utopia Inc., Chicago, USA** *(07/2010 – 09/2012)*   - Led 4‑6‑person teams migrating ERP data via SAP BODS, ABAP, LSMW, IDocs, SQL, AS/400, ECC 6.0.   - Managed greenfield pharmaceutical migration (FI, MM, SD) and legacy‑to‑ByDesign upgrade.   - Applied Six Sigma for status reporting, issue tracking, and defect dashboards.    ### SAP XI/PI Upgrade Project – Integration Specialist   **Nestlé** *(08/2009 – 07/2010)*   - (Details omitted for brevity – role focused on XI → PI upgrade and integration support.)    ---    ## Skills    - **Integration Platforms**: SAP PI/PO, SAP PO 7.5, Azure APIM, Logic Apps, iFlows, ESR/ID, ALE/IDocs, BDocs, RFCs   - **Programming & Automation**: .NET, C#, Java, ABAP, M365 low‑code/no‑code, REST/SOAP, JSON, XML, Terraform (IaC)   - **Cloud & DevOps**: Azure, HANA, Azure AD, MsGraph, CI/CD pipelines, ServiceNow, JIRA, Agile/Scrum, Git   - **Enterprise Tools**: SAP BW/HANA, SAP Business Suite, SAP BODS, SAP Solution Manager, SAP IdM, SAP APO, SAP TM, AIF, Event Management   - **Project & Change Management**: Cut‑over planning, budgeting, scheduling, stakeholder coordination, ICT support, Six Sigma basics   - **Languages**: English (native), German (B1/B2)    ---    ## Education & Training    - **SAP Solution Consultant Certification** – SAP, North Sydney, NSW, Australia   - **SAP Application Consultant Certification** – SAP, Toronto, Canada (ABAP Workbench for R/3 4.0)   - **mySAP BI (Business Warehouse) Training** – SAP R/3 4.6C, SAP BW 3.0   - **Computer Systems Co‑Op Diploma (3 years)** – Mohawk College, Hamilton, Canada    ---
+**stance:** would like 90 euro per hour and can start immediately no other issues i can think of
+
+## Answer
+**Reply to Recruiter**
+
+Subject: Re: System Architect Opportunity – Availability & Rate
+
+Hi [Recruiter Name],
+
+Thank you for reaching out with the details of the System Architect role. I’m enthusiastic about the opportunity and happy to confirm the points you raised:
+
+- **Rate:** I am targeting a rate of **€90 per hour**, which aligns with the scope and responsibilities described.  
+- **Start date:** I can start **immediately**, as I have no pending commitments.  
+- **Exclusivity:** I am open to an exclusive engagement if the project requires it; otherwise, I can operate on a non‑exclusive basis – whichever best fits your client’s needs.  
+- **CV:** I have attached my updated CV for your review. It highlights more than 12 years of end‑to‑end SAP PI/PO integration, recent cloud‑migration initiatives on Azure, and strong architectural design experience.  
+- **Questions:** At this stage I have no additional questions, but I’m happy to discuss any specifics (e.g., project timeline, team structure, or certification expectations) at your convenience.
+
+Please let me know the next steps or if you’d like to arrange a brief call to dive deeper into the role.
+
+Looking forward to hearing from you.
+
+Best regards,  
+**Angelo Kenel**  
+SAP PI/PO Interface Integration Developer  
++41 79 828 2841 • theSAPspecialist@gmail.com • [LinkedIn](https://www.linkedin.com/in/theSAPspecialist)  
+
+---
+
+## ✂️ CV slant for this role
+- **SAP PI/PO & Azure Integration:** 12 + years designing iFlows, ESR/ID objects, and migrating middleware to Azure APIM & Logic Apps.  
+- **System & Cloud Architecture:** Proven experience leading PoCs and full migrations to Azure (AD, HANA, S/4HANA) – a solid foundation for a System Architect.  
+- **DevOps & IaC:** Hands‑on with Terraform, CI/CD pipelines, and automated testing of integration artifacts.  
+- **End‑to‑end Business Processes:** Deep knowledge of O2C, P2P, payroll, logistics, and B2B/A2A data flows across SAP modules (FI/CO, HCM, CRM, BW/HANA).  
+- **Stakeholder & Change Management:** Global coordination of network, security, and business teams; cut‑over planning and service‑pack upgrades.
+
+---
+
+## Covers
+- Rate (€90 /h)  
+- Immediate start  
+- Exclusivity flexibility  
+- CV attached  
+- No further questions, open to discuss details.
+<<
+
+## 5 · Cleopatra (Concierge) grounding + language
+[x] Tell her 2–3 real things. the "what Cleopatra has learned" panel fills (Goal, Background, Interests…)
+     note: This is the opener and it's not bad um Considering what I've done before previous to these steps So um Yeah I like it Let's continue And you know what's nice is she poses some deep questions I love creating stories that Inspire how can I find my true purpose Why do I feel Fear sharing my ideas The only thing I have to say is Cleopatra has learned she should at least say okay you know your name is so and so you know your email is so and so or something at the top maybe that's valuable maybe it's not has to be in the card Maybe the cars should be sort of shown and a little bit blank at this stage you know just uh instead of just uh this is your memory yours to see every Master reads it nothing yet say hello but there is something there you know we do have a bio So that's kind of important it seems to me to be a DOT at that point So I'm gonna now type something in and like you say two or three things Actually I'm going for the um how do I find my true purpose that's pretty good It was a few questions there I don't see them anymore after I've clicked so they're gone which is okay I mean this screen Works for me so the goal is to identify personal purpose now Why they came seeking guidance to discover true purpose So that's pretty good and then I'm getting some output there We've been expecting you uh so it says narrow it down Okay I'm sure what career truly fulfills me I'm unsure What would a master say about finding purpose Why do I feel aimless despite my successes I love art but Making it work Why do I feel aimless despite my successes okay that's not a bad question for a guy like me So I'm pressing that button it's was suggested I haven't actually went to the Masters yet I haven't had to type anything yet which is nice I am signed on as a user so but it's working So now it comes back says where where they thrive So would likely thrive in a role of activity with clear personal purpose and Alignment to values but currently feels directionless and why they came feel aimless despite having successes or to purpose discover personal purpose and Direction Is good Why does success feel horrible to me oh that's why not let's go with that four questions were there I'm you know tell her three real things I haven't told her real things I'm asked just asking questions she hasn't asked for anything real You know maybe that would be help these answers too right if I would have that information already You know what I'm saying So anyways that pumped out nice you know it's fairly uh robust You know and then where do we get any more it's still It still says we've been expecting you and it's saying narrow it down and then it just sort of on the side gives it I'm gonna now ask the Masters so What can I do 63 as a pensioner With computer skills But no job And A And llms taking Over the Kodi jobs Masters so the Masters wouldn't have known about AI and llms but it'll be explained to them so I think that might actually work So after this we're gonna get something At 62 you can oh so I get two responses they're very nice you know so uh love lace came in Even as AI reshapes coding oh this is so good so you're going to have the whole stuff and I'll just do I'll do a copy for you Cleopatra's blasters to the court Well actually this is pretty good let's do the whole thing there >> Cleopatra is in
+🔊
+Reply in
+Auto
+EN
+IT
+We have been expecting you. Our doors open only for sovereigns of thought -- welcome to the imagination machine. I'm Cleopatra, your host; Leonardo at my side, Sherlock in the back. My charge is to find out who you are and what you're made for, so the masters can actually help. We speak English and Italian and we'll attempt your own -- which shall I receive you in, and what others do you speak? In the door, or out the door?
+
+🔊 Read aloud
+We have been expecting you—welcome to our court! We converse in English and Italian, and are happy to try any other tongue you prefer; which language shall we greet you in, and what other languages do you speak? (A quick gauge: just getting by, comfortable, or fluent?) Shall we begin this little quest together?
+
+🔊 Read aloud
+How can I find my true purpose?
+We have been expecting you—welcome to our court! Before we set out to uncover what truly lights you, may I ask which language you’d like us to speak (English, Italian, or another) and how comfortable you are with any others, plus a hint of your age or birth‑date if you’re willing? I’ll be your guide, you make every choice, and together we’ll map your interests (the classic Realistic‑Investigative‑Artistic‑Social‑Enterprising‑Conventional blend) toward a purpose that feels uniquely yours. Shall we begin?
+
+🔊 Read aloud
+Why do I feel aimless despite my successes?
+We have been expecting you—welcome to our court, where even the aimless can find a throne. First, may I ask which language you’d like us to converse in (English, Italian, or another) and how comfortable you are with any others? Then, could you share one recent success that felt rewarding and what, in the days that follow, leaves you feeling adrift? Shall we explore that contrast together?
+
+🔊 Read aloud
+Why does success feel hollow to me?
+We have been expecting you—welcome to our court, where even triumphs can feel empty. First, may I know which language you’d like us to speak (English, Italian, or another) and how comfortable you are with any others? And could you share a recent success that felt hollow and the deeper need or value you suspect it missed? Shall we explore that contrast together?
+
+🔊 Read aloud
+what can i do at age 63 as a pensioner with computer skills but no job and AI and LLMs taking over the coding jobs
+🏛️
+Cleopatra dispatched this to the court
+AA
+Ada Augusta Lovelace
+The Hearth
+🔊
+Why Ada — She pioneered computing and can guide you to apply your skills creatively beyond traditional coding.
+Even as AI reshapes coding, your understanding of algorithms can be a catalyst for new ideas. Consider mentoring younger programmers, contributing to open‑source projects that explore AI ethics, or learning prompt‑engineering to work alongside large language models. You can also write about your experiences, creating tutorials or stories that illuminate the human side of technology. These activities keep you relevant while honoring the spirit of invention that sparked computing.
+
+MA
+Maya Angelou
+The Hearth
+🔊
+Why Maya — She embodies the power of story and community, perfect for finding purpose and connection in later life.
+At 63 you can turn your knowledge into a narrative that inspires others—write blogs, record podcasts, or host virtual workshops for seniors learning digital tools. Volunteer to teach computer basics at community centers, bridging the generational gap and giving your expertise meaning. Your voice, combined with technology, can amplify unheard stories and create a legacy of mentorship and art.
+
+
+🎯
+Narrow it down — a few quick questions to sharpen your profile
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+[x] [PASS] She never leaks an invented name (no "Heisenberg", no made-up masters/labs). clean — only real, grounded content
+     note: I didn't get into all the details but you can take a look it seems okay to me
+[x] [ISSUE] Set "Reply in" to IT, ask something. she replies in Italian; the panel stays consistent
+     note: I've checked this out before so I assume it's okay I don't want to check this every time it was working before so we could take it off the revision list unless you think it's broken I'll check it now Theoretically and technically it works but you can see that some stuff isn't Converted over to the language Italian in this case But the labels are which is really good so Um I think it's an easy fix but maybe something we should do right away if you want to have a you know the uh the language is working properly >> MA
+Maya Angelou
+The Hearth
+🔊
+Why Maya — She embodies the power of story and community, perfect for finding purpose and connection in later life.
+At 63 you can turn your knowledge into a narrative that inspires others—write blogs, record podcasts, or host virtual workshops for seniors learning digital tools. Volunteer to teach computer basics at community centers, bridging the generational gap and giving your expertise meaning. Your voice, combined with technology, can amplify unheard stories and create a legacy of mentorship and art.
+
+🎯
+Sharpen
+· 1 of 3
+Done
+Mi sento più portato a sistemare il giardino oppure a fare volontariato in una mensa?
+sistemare il giardino
+fare volontariato in una mensa
+Skip this one
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+🏛️ Masters
+Send
+🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court
+
+🧠
+Cosa ha imparato Cleopatra
+Questa è la tua memoria — tua da vedere. Ogni maestro la legge.
+
+Obiettivo
+Discover personal purpose and direction
+Perché è qui
+Seeks purpose; feels hollow despite successes.
+Dove fiorirebbe
+Would likely thrive in a role or activity with clear personal purpose and alignment to values, but currently feels directionless
+   section notes: Generally speaking I don't have a problem with the The flows they're generally working I mean there's a few little details and cosmetic stuff but overall it's in pretty good shape I have to admit Maybe you see some stuff I'm missing but I think the feedback up up above speaks for itself We can discuss it if you want in different options how to do it I'm going on to task number six ask a master
+
+## 6 · Ask a Master (Legends)
+[x] [PASS] Pick a House, pick a master, ask a question. an answer in the master's voice
+     note: 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕
+La Piazza
+🏪 Square
+🔧 Workshop
+🎩 Concierge
+🎭 Legends
+⚡ Exchange
+📋 Today
+🐺 You
+FAQ
+🗺️
+👤 art-440-j13-rev3Logout
+💬 Feedback
+The Legends
+Pick a master. Ask them anything. You could be on this wall someday.
+
+← All Houses
+/
+The Sanctuary
+F
+Florence Nightingale
+I attribute my success to this: I never gave or took any excuse
+Born in Florence, Italy, to wealthy English parents -- hence the name. Felt a calling to nursing at 16. My family was horrified. In 1854, I took 38 nurses to the Crimean War. Scutari hospital was a death trap. I reduced the death rate from 42 percent to 2 percent through sanitation. Then changed the world with data. My polar area diagrams showed Parliament visually that sanitation saves lives. Tip: You cannot argue with a picture. Data presented visually is more persuasive than any speech. The real enemy is not disease -- it is bureaucratic indifference. My friend Sidney Herbert helped me get access to the army.
+
+🔊 Read profile
+Try asking — picked for you ✨
+“How can I apply Nightingale's data‑driven, patient‑centered mindset to find deeper purpose in my integration projects?”
+“What can I learn from Nightingale's focus on environment and well‑being to align my SAP solutions with broader human values?”
+“How might I mentor junior consultants the way Nightingale nurtured nurses, turning technical expertise into a lasting, purposeful legacy?”
+
+▸
+📋 What
+Florence
+knows about you
+What are you facing?
+How can I apply Nightingale's data‑driven, patient‑centered mindset to find deeper purpose in my integration projects?
+Ask Florence
+Reply in
+EN
+IT
+🔊 Read this
+📖 Reading mode
+📋 Copy
+⬇ Download
+📌 Pinned
+✈️ Telegram
+🟢 WhatsApp
+What is really going on
+You are a skilled architect of connections, arranging the flow of information as a surgeon arranges the passage of blood. Yet you feel a hollowness, as if the work serves only machines and not the people whose lives depend on them. The yearning for purpose is the same as the longing I felt when I saw the sick lying unattended while the system of care was tangled and inefficient.
+
+The method I followed
+Observe and record – I kept a careful register of every death, every cause, and every condition of the wards.
+Turn numbers into pictures – By arranging the data in tables and in my “coxcomb” diagrams, I let the truth speak plainly.
+Ask the patient what they need – The wellbeing of the individual was the yard‑stick by which any reform was measured.
+Adjust the system to serve the patient – Improvements in ventilation, nutrition, and cleanliness followed directly from what the statistics revealed.
+Apply this same sequence to your work: collect factual evidence of how your integrations affect the end‑users, make that evidence visible, let the people’s experience be the measure, and then remodel the flow accordingly.
+
+Why it is hard
+Invisible impact – Unlike a ward where a fever can be felt, the benefit of a data bridge is often hidden behind screens and reports.
+Complexity of the web – The multitude of protocols and servers can obscure the simple question: “Does this help the person who depends on it?”
+Habit of technical pride – Mastery of the craft can become an end in itself, diverting attention from the human outcome.
+A realistic direction
+Define a patient‑centered metric – Choose one clear indicator that reflects the experience of the ultimate user (e.g., time to retrieve a critical report, frequency of an error that blocks a decision).
+Gather the numbers – Over a short period, record this metric for each integration you oversee.
+Visualize the result – Use a simple bar chart or a circle diagram to compare the current state with a modest target.
+Present the picture to those who feel the impact – Invite the business users, the operators, and the managers to view the chart and comment on the meaning.
+When the picture shows a gap, let the remedy be a concrete adjustment in the flow you control. In this way every line of code or configuration becomes a remedy for a patient’s need.
+
+One small action you can take today
+Create a one‑page log that records, for each integration you touch, the average time a user waits for the final output. After a day’s work, plot those times in a simple column chart and note which line is longest. Share that single chart with a colleague who uses the output, ask how the wait feels to them, and write down one modest change you could test to shorten it.
+
+That act of turning a hidden statistic into a visible picture, and then linking it to a human feeling, will begin to stitch purpose into the very fabric of your work.
+
+These are example masters. Build your Bottega and earn your place on the wall.
+[x] [PASS] No leftover SAP/technical residue in houses or master bios. clean cast — village, not enterprise jargon
+     note: No there was no residual but I'm using my Cv so I think it's fine I don't think there's an issue here Um it's asking pretty good questions and it's on topic so I like it the way it is
+   section notes: 🔧 Planned maintenance tonight 20:00-22:00 CEST - the site may briefly blink while we ship updates.✕ La Piazza 🏪 Square 🔧 Workshop 🎩 Concierge 🎭 Legends ⚡ Exchange 📋 Today 🐺 You FAQ 🗺️ 👤 art-440-j13-rev3Logout 💬 Feedback 🐺 art-440-j13-rev3 SAP integration architect turning complex data flows into scalable solutions. 📊 Home 🏋️ Body 🧠 Mind ✨ Spirit 📬 Inbox your scorecard 23% Portrait complete 7 Things made 2 Masters consulted Tell Cleopatra more → to fill in your portrait about you I’m Angelo, a SAP Basis and PI/PO integration specialist with 15+ years turning complex SAP landscapes into seamless, secure connections. I design and support middleware bridges—SOAP, REST, JMS, sFTP, RabbitMQ—while handling system upgrades, transport and security. Recently I merged SAP Integration Suite with micro‑services, Docker and IaC to deliver award‑winning solutions for Nestlé and Swiss Life. I mentor junior consultants on SAP transport and agile delivery. 👤 Profile built ✓ 🩺 Body Setup calibrate → ✨ Your Story tell it → 🏋️ Workouts 0 done 9 things in your Blueprint That's the U page and it's pretty good It does show that I've used the Masters twice which is fine Things made portrait complete 23 percent Not sure why that is I I know why that is and it's actually totally correct Cleopatra is the one that gets the card filled she's the one that does the aptitude test and the whole thing it's the one place they go the Masters use that card after So it's very quick for them to get a grip on who you are what's going on and then they can apply the card information So I see that the mechanics are actually flowing correctly And that's the connoisseur is the one that fills that card out for you so we've got to get that pointed in the inbox Get your concierge Cleopatra the concierge Receptionist to guide you to the right rooms and the right Masters so you have that information to go with so for example maybe in the profile here on this page it should say preferred Masters or Uh this is the house that you should be working in maybe some of the information On the home page right here And again in the today part you could have some of that stuff too and I see the ass Cleo And that's a good idea ask Cleopatra the concierge and you have that on your you page also Maybe beside the inbox so if the inbox didn't activate at least the ask Cleo A link is there and then they can pick up the conversation so that's a good idea That's how I would do it You know we could make this this uh home page the you home page a little bit more robust the Home Like I say maybe have that link To start uh Clio up like we do on the today page
+
+## 7 · You & Today (the home board)
+[x] [ISSUE] Open You (🐺 /compute/me). the dashboard renders — your data or a clear CTA
+     note: I like the The today page and one thing I like about is the ask Cleo and pool yesterday's unfinished Or that pull yesterday's unfinished could be you know pull in You know my information and then maybe a you know create a task sheet for me you know that might be the way to go a special but And as Cleo that might we might make that a little bit bigger and like ask Cleopatra So it's but I'm gonna do that Cleo is reading the board And I noticed the board is still empty when I'm inviting guest canvas for your next accomplished and a first task or jot down a small win to get a momentum rolling I'm excited to see your first entry light up the board So let me give you Screenshot of that
+[x] [PASS] Open Today (📋). the board renders; tasks/breakdowns work
+     note: I've tested this today lesson it generally works good the editing features are there I like it I just want to pre-populate it you know and maybe pull out things that need to be done this is like Cleopatra knows I need to get this guys Profile belt so maybe there's some you know A suggestion box to say hey this is what tasks I think you should be working on right now You know tell me what location you're in what languages you speak let's get your profile built up Let's make sure that you have your CV loaded if you have a CV You know get a workout plan all that sort of stuff
+   section notes: I think overall this is a good place to to organize the person you know and give them a list of things to do they're getting on board it's There should be some suggestion or maybe you put it in the bonus round you know I don't know it's up to you we got to think of something
+
+## 8 · The hallway + chrome
+[x] The shared top nav appears on every page (Square · Workshop · Concierge · Legends · Exchange · Today · You · FAQ). consistent, active room highlighted
+     note: Navbar works pretty good And when I shrink it down If I can do that let me just do that here I can get sort of the mobile mode going And see what it looks like and I have to admit it's not bad it's quite workable the buttons look all good It's readable legible Lively organized And then when I hit the nav bar I have Square Workshop Legends exchange today you and frequently asked questions And everything sort of comes up nice it Scrolls off nicely Today comes back everything is there Exchange looks good it even fits a little bit cluttered on the top but nothing really to worry about That's on the mobile view scrunched up Legends come up nice Florence Nightingale is there your Masters Conservatory I could go there There's Al Pacino He comes up with the questions Can the intensity you bring to a performance be translated I go for that I asked the A In English
+[x] [PASS] The maintenance banner shows tonight's window and is dismissible. closes on ✕, doesn't block the page
+     note: # Al Pacino
+
+## Asked
+Can the intensity you bring to a performance be translated into a tech project, so it feels personally meaningful rather than just functional?
+
+## Answer
+## What’s Really Going On
+
+You’re a master of building bridges—between SAP systems, between cloud and on‑prem, between teams.  
+The “intensity” you bring to a stage role is the fire that makes a performance unforgettable.  
+When it lands on a technical project it can feel *just another pipeline*, a series of endpoints and transports, and the fire fades into routine. The hollow feeling you describe is the gap between **skill** and **meaning**.
+
+## The Real Method (as I learned it)
+
+1. **Identify the Core Objective** – In acting we ask, “What does the character *need* right now?” Not the line, not the scene, but the deep need that drives all choices.  
+2. **Ground the Objective in Personal Truth** – I never played a role until I could find a personal memory or conviction that resonated with that need. The emotion becomes authentic, not a costume.  
+3. **Commit to Action** – The moment the character decides, the body, voice, and mind follow. The action is the “through‑line” that stitches every beat together.  
+
+These steps are not theatrical tricks; they are a disciplined way to turn any pursuit into something lived, not just performed.
+
+## Why It’s Hard for You
+
+- **Technical work is abstract** – Code, transports, and middleware don’t scream “need” the way a script does.  
+- **Success can mask purpose** – Ten years of award‑winning deliveries give external validation, but they don’t guarantee inner alignment.  
+- **Habitual execution** – You set tasks, then let them sit. The habit of “starting” without a clear through‑line weakens follow‑through.
+
+## A Realistic Direction
+
+Treat each integration project as a *character* with a **definitive need** that ties directly to a value you hold dear (e.g., “protecting data integrity for the people who rely on it”). Align your technical decisions with that need, and let it drive every design choice, not merely the functional spec.
+
+### ONE Small Action You Can Take Today
+
+Pick the next piece of work you have in your queue (perhaps the upcoming transport migration). Write, in plain text, a single statement:
+
+> **Project Need:** “Ensure that every sales order flowing from SAP to the partner system arrives unchanged, because the partner’s ability to fulfill orders on time depends on it.”
+
+Then, for the next two hours, *act* on that need: every time you choose a protocol, a security setting, or a monitoring rule, ask yourself, “Does this protect the fidelity of the sales order?” If the answer is “no,” adjust. By binding each technical action to that clear, personal purpose, the intensity you feel on stage will reappear in the code you write.
+[x] [PASS] Log out. returns home; "Get Started" comes back
+   section notes: No everything it seems to be pretty good here actually Something that we don't need to check I think every time Unless you think it's important we can put it on the list maybe it is but it shouldn't be but it should just work Okay next is gonna be the overall verdict promote to prod tonight
+
+## ★ Overall verdict — promote to prod tonight?
+[x] [PASS] Green-light the whole release to prod (in the 20:00–22:00 CEST window, with backup taken). tick if staging is good enough to ship
+     note: But definitely a green light on what we've got but I think we can do a little bit more tuning we've got over two hours to do some stuff and test it again I would like to do another revisions four and maybe even a revision five So far on this it's been very good this is the door release pre-prod uat registered Environment local file It's all good I'm gonna try to export the report and also test If everything is working on the exit and you see the text file and I'll see it too >>🚪 The Door Release — Pre-Prod UAT
+Research-grounded door (recs 1 & 5) + public menu fix + full pre-prod pass · run on STAGING, then we promote to prod tonight
+🐺 La Piazza · № LP-UAT-20260613-DOOR-RELEASE · rev.3 · registeredenv: local-file
+16/26 · 5⚠
+checks
+48:56elapsed
+⏸ Pause
+reset
+⧉ Copy text
+⬇ Export report (with screenshots)<<
+   section notes: I think there's a few minor sort of cosmetic things to clean up maybe a little bit of functionality and wiring But generally overall I would say it's it's looking good so it's there's nothing showstoppers there or anything that's breaking The login and logout is the main thing we are welcoming it on but like I said there was the inbox in Cleopatra but I think I discovered some stuff about that that makes a lot of sense it works with the Legends I could run works and recipes They just forget that I've loaded my CV in and I think that's something that once you load your CV and and then you're making CVS That you keep track of those and you can say hey this is one of my CVS use this one for the response to the recruiter for example this is quite common what to do So You would have many CVS Your first one you initially upload or whatever and then you can be uploading others you could be trying it out several times and massaging over coming up with a very good CV loading that up again So yeah there's a lot of ways to use that functionality and should be Regurgitate it if you know what I'm saying
+

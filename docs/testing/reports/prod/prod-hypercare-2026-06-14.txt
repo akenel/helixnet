@@ -1,0 +1,214 @@
+PROD HYPERCARE (text)
+7 PASS / 0 FAIL / 0 ISSUE · env: bottega.lapiazza.app · 00:00
+
+## 1 · The door is up (anon)
+[x] [PASS] Door loads logged-out: headline + trust strip. "…stopped hiring? Good." + look-around-free
+   section notes: But generally it's working very well I did notice that when I go on the hamburger menu That depending on my resolution I might not see the log out button or me signed in Maybe we just want to bring that up to the top But I don't know that's maybe not the solution there But I didn't check it on the mobile that's something I have to do that might be a separate test or maybe it's included in this test
+
+## 2 · Look around free (anon menu)
+[ ] Logged-out, the recipe menu LOADS. cards show, not a stuck "loading menu…"
+[x] [PASS] The nav shows 👑 Ask Cleo on every page. queen, not a top hat
+
+## 3 · Sign up fresh → the welcome is waiting
+[x] [PASS] Start free, sign up with a fresh +tag email → land in your Bottega, logged in. account created, no errors
+     note: La Piazza 🏪 Square 🔧 Workshop 👑 Ask Cleo 🎭 Legends ⚡ Exchange 📋 Today 🐺 You FAQ 🗺️ 👤 art-prod14-rev4Logout La Bottega THE WORKSHOP · PICK A RECIPE ← exchange @art-prod14-rev4 What do you want to make? 📓 My Blueprint Pick a card. Answer a couple of questions. Get the thing. 📓 My Blueprint (4) ✕ close search your history… ↓ newest concierge-record Concierge Record 2026-06-14 ✏️ 🗑️ notification 👑 Cleopatra 2026-06-14 ✏️ 🗑️ message Welcome — let's build your card 2026-06-14 ✏️ 🗑️ archive Onboarding archive · Art prod14 rev4 2026-06-14 ✏️ 🗑️ 👤 About You turn your CV into a profile, a sharper CV, or a cover letter 🧬 CV → Bio ~2 credits 📄 CV Generator ~2 credits 📨 Cover Letter ~2 credits 💼 Recruiter Reply ~2 credits 🎯 Find Your Edge ~2 credits 📢 Sell & Announce list a product or announce an event 🛍️ Product Posting ~1 credits 📣 Event Posting ~1 credits 🎬 Make Media playlists and more 🎵 Music Playlist ~2 credits 🕰️ Ask a Master the dead teach the living — a real mentor session for what you face 🕰️ Ask a Master ~2 credits 🧭 Think It Through ~3 credits 🏋️ Get in Shape a private, calibrated workout — your gear, your goal, 20–60 min, day by day 🏋️ Workout Plan ~2 credits 🩺 Body Setup ~1 credits ✨ Your Story find your why — childhood, passion, dreams, your one-liner & 22-second pitch ✨ Your Story ~1 credits procedure-as-code · every recipe is a menu entry, not an app · we host the square, not the model - Just looks really good In my opinion we've got the archive the message and notification and the concierge record So that was the first button as I pressed four in the blueprint Makes sense I loaded my CV I'm signed into prod now
+[x] [PASS] 🐺 You → 📬 Inbox: Cleopatra's welcome greets you by name + mirrors your CV + ends with "…Deal?" there, warm, personal
+     note: La Piazza ☰ 💬 Feedback 🐺 art-prod14-rev4 SAP integration architect bridging SAP and third‑party ecosystems. 📊 Home 🏋️ Body 🧠 Mind ✨ Spirit 📬 Inbox Welcome — let's build your card ✕ close Cleopatra Welcome to La Piazza, Art. I'm Cleopatra — your host here. I read what you shared, and here's what I already see in you: • SAP integration architect bridging SAP and third‑party ecosystems. • Strengths: sap basis, sap pi/po, integration suite, cloud integration, microservices Your profile is started. The real key is the card I keep on you — it's what lets every master here help you fast. Give me two minutes and we'll sharpen it together, then I'll point you to the masters who fit you best. I'm here to help you find your way — and you'll help me make this place better. Deal? When you're ready, tap 👑 Ask Cleo at the top and just tell me what you're after. Reply… Send I think you could say that works perfectly And it says you know put go to the link I'm wondering if we can put hyperlinks in there that would be kind of cool but anyways I'm going to the menu now to ask Leo or Cleo I should say Cleopatra
+   section notes: Much better In my opinion so we fine-tune a little bit the inbox notification has gone away Like I said I'm going to now go to the ask Leo Which is almost like the natural progression so it's good That's number four Cleo already knows that you the card we're gonna check it out
+
+## 4 · Cleo already knows you (the card)
+[x] [PASS] Open 👑 Ask Cleo: "What Cleopatra has learned" is already filled from your signup. background + Your Natural Strengths populated — NOT blank "say hello"
+     note: La Piazza
+☰
+💬 Feedback
+Cleopatra is in
+🔊
+Reply in
+Auto
+EN
+IT
+We have been expecting you, fellow conspirator of dreams -- welcome to the imagination machine, where almost anything you can picture can be made. I'm Cleopatra, your host here; my one job is to learn who you truly are, so the right masters can help you build the life you're made for -- and we do it together. First, your tongue: I speak English and Italian and I'll reach for your own -- which fits you best, and what others do you carry? In the door, or out the door?
+
+🔊 Read aloud
+We speak English and Italian here—do you prefer to converse in one of those, and could you tell me how comfortable you are with it (just getting by, comfortable, or fluent)? Also, what is your native tongue and any other languages you use regularly? Shall we begin our discovery together?
+
+🔊 Read aloud
+
+🎯
+Narrow it down — a few quick questions to sharpen your profile
+I’m looking to join a collaborative team.
+How can I balance freelance freedom with stability?
+Why do I stay solo despite craving teamwork?
+I miss face‑to‑face interaction with colleagues.
+Tell Cleopatra who you are — or ask a question…
+(Enter to send · Shift+Enter for a new line)
+🎤
+🏛️ Masters
+Send
+🎤 talk or type · Send talks to Cleopatra · 🏛️ Masters dispatches to the court
+
+🧠
+What Cleopatra has learned
+This is your memory — yours to see. Every master reads it.
+
+Speaks
+English
+Level
+fluent
+Background
+15+ years of experience as an SAP Basis, PI/PO and Integration Consultant. Currently independent Integration Architect (HelixNet) working remote. Previously held senior PI/PO Lead roles at Swiss Life, Deutsche Börse, Nestlé and other multinational firms, focusing on SAP system administration, middleware integration, API development, cloud‑native microservices, security (OAuth 2.0, SSL/TLS) and end‑to‑end project delivery using ITIL, Scrum and Six Sigma.
+Today
+Independent Consultant / Integration Architect (HelixNet / Freelance, Remote)
+Where they'd thrive
+They would likely thrive in a collaborative enterprise integration team, whereas they are currently operating as an independent remote consultant.
+Life stage
+peak
+Holland code
+IC
+House
+The Strategoi
+What lights them up
+SAP Integration Architecture
+Middleware & API Development
+SAP Basis Administration
+Cloud & Microservices Platform Design
+Security & Authentication (OAuth, SSL/TLS)
+Project & Change Management (ITIL, Scrum)
+Certs / teachers
+SAP Certified Solution Consultant – mySAP BI
+SAP Certified Application Consultant – ABAP Workbench
+ICC‑certified Change Management Coordinator
+Six Sigma (Green Belt implied)
+Computer Systems Co‑Op Diploma – Mohawk College
+Affinities
+Enterprise Systems
+Process Automation
+Cross‑Functional Collaboration
+Your Natural Strengths
+(RIASEC aptitude)
+Investigative
+90
+Conventional
+80
+Enterprising
+60
+Social
+50
+Realistic
+30
+Artistic
+20
+   section notes: Personally I think it worked perfectly That's exactly what we want now Users off to a good start I'm going into the Legends now
+
+## 5 · A master answers (grounded)
+[x] [PASS] Ask a master (Legends or via Cleo) a real question. a grounded answer that reflects your card — no 500s, no blanks
+     note: La Piazza
+☰
+💬 Feedback
+The Legends
+Pick a master. Ask them anything. You could be on this wall someday.
+
+← All Houses
+/
+The Strategoi
+A
+Achilles
+I say no wealth is worth my life.
+Born in Phthia, son of Peleus and the sea nymph Thetis. She held me by the heel and dipped me in the Styx to make me invulnerable -- all except that heel. My mother tried to hide me among women to keep me from Troy. Odysseus found me. At Troy, I was the greatest warrior on either side. I killed Hector and dragged his body behind my chariot for twelve days. Patroclus was my soul -- when Hector killed him wearing my armor, something broke in me that rage filled. Priam came alone at night to beg for his son's body. An old king kneeling before the man who killed his boy. I gave Hector back. Tip: Rage makes you powerful and stupid in equal measure. I refused to fight because Agamemnon insulted me, and Patroclus died for my pride. Channel your anger or it will consume you and everyone you love.
+
+🔊 Read profile
+Try asking — picked for you ✨
+“How can I channel Achilles' near‑invincibility to design integration solutions that are swift and resilient while guarding my vulnerable 'heel' of single‑point failures?”
+“What can I learn from Achilles about balancing heroic solo feats with the honor of team collaboration as I transition from independent consulting to a corporate integration squad?”
+“In what way does Achilles' pursuit of everlasting glory inspire me to future‑proof my SAP‑to‑cloud bridges so they endure beyond a single campaign?”
+
+▸
+📋 What
+Achilles
+knows about you
+What are you facing?
+Ask your master anything…
+Ask Achilles
+Reply in
+EN
+IT
+These are example masters. Build your Bottega and earn your place on the wall.
+   section notes: La Piazza
+☰
+💬 Feedback
+The Legends
+Pick a master. Ask them anything. You could be on this wall someday.
+
+← All Houses
+/
+The Strategoi
+A
+Achilles
+I say no wealth is worth my life.
+Born in Phthia, son of Peleus and the sea nymph Thetis. She held me by the heel and dipped me in the Styx to make me invulnerable -- all except that heel. My mother tried to hide me among women to keep me from Troy. Odysseus found me. At Troy, I was the greatest warrior on either side. I killed Hector and dragged his body behind my chariot for twelve days. Patroclus was my soul -- when Hector killed him wearing my armor, something broke in me that rage filled. Priam came alone at night to beg for his son's body. An old king kneeling before the man who killed his boy. I gave Hector back. Tip: Rage makes you powerful and stupid in equal measure. I refused to fight because Agamemnon insulted me, and Patroclus died for my pride. Channel your anger or it will consume you and everyone you love.
+
+🔊 Read profile
+Try asking — picked for you ✨
+“How can I channel Achilles' near‑invincibility to design integration solutions that are swift and resilient while guarding my vulnerable 'heel' of single‑point failures?”
+“What can I learn from Achilles about balancing heroic solo feats with the honor of team collaboration as I transition from independent consulting to a corporate integration squad?”
+“In what way does Achilles' pursuit of everlasting glory inspire me to future‑proof my SAP‑to‑cloud bridges so they endure beyond a single campaign?”
+
+▸
+📋 What
+Achilles
+knows about you
+What are you facing?
+In what way does Achilles' pursuit of everlasting glory inspire me to future‑proof my SAP‑to‑cloud bridges so they endure beyond a single campaign?
+Ask Achilles
+Reply in
+EN
+IT
+🔊 Read this
+📖 Reading mode
+📋 Copy
+⬇ Download
+📓 Save to Blueprint
+✈️ Telegram
+🟢 WhatsApp
+Cosa sta succedendo davvero
+Ti trovi a costruire ponti di comunicazione fra il regno interno delle tue strutture e le terre lontane del cielo.
+Questi ponti, come le campagne di Achille, devono resistere al tempo e alle tempeste, altrimenti il tuo valore si disperde in una sola battaglia.
+
+Il metodo reale (ispirato al mio lavoro)
+Nel mio studio ho sempre seguito questi principi:
+
+Osservazione continua – esamina ogni pietra, ogni cavo, ogni movimento del fiume prima di posare un nuovo arco.
+Progettazione modulare – ogni componente è realizzato come un blocco indipendente che può essere sostituito senza smantellare l’intera struttura.
+Documentazione dettagliata – disegni, annotazioni e schemi sono conservati affinché chiunque possa capire il funzionamento senza dover ricominciare da capo.
+Test di resistenza – soggetto il ponte a carichi graduali, simulando le condizioni più estreme che potrà incontrare.
+Manutenzione programmata – stabilisci un calendario di ispezioni e piccole riparazioni prima che i danni diventino critici.
+Perché è difficile
+Variabilità dei flussi: le acque (i dati) cambiano velocità e volume, così come le esigenze dei partner esterni.
+Evoluzione delle tecnologie: nuove armi (protocollo, cifrature) nascono continuamente; un ponte costruito una volta può diventare obsoleto.
+Mancanza di standard condivisi: senza un linguaggio comune, ogni nuovo collegamento richiede traduzioni manuali, aumentando il rischio di errore.
+Una direzione realistica
+Adotta una architettura a strati:
+
+Strato di trasporto (cavi e robuste fondamenta) gestisce la sicurezza e la connessione stabile.
+Strato di interfaccia (moduli di traduzione) espone standard aperti, così che le parti esterne possano collegarsi senza modificare il nucleo.
+Strato di logica (la tua maestria opera) contiene le regole di trasformazione e i processi di business, isolati da modifiche al trasporto.
+Questo approccio ti permette di aggiornare o sostituire un singolo strato senza compromettere l’intero ponte, proprio come un arciere può cambiare la punta della freccia senza dover ricostruire l’arco.
+
+Un’azione piccola da fare oggi
+Disegna un registro schematizzato dei tuoi attuali collegamenti: per ciascuno annota
+
+nome del ponte,
+protocollo di trasporto,
+standard di interfaccia,
+versione corrente della logica.
+Metti questo registro in un luogo accessibile a chiunque lavori al progetto e aggiorna la prima riga con la data di oggi. Avrai così una mappa chiara per valutare dove introdurre strati modulari e dove pianificare i primi test di resistenza.
+
+Con questa piccola iniziativa, il tuo lavoro comincerà a riflettere la ricerca di gloria eterna di Achille: un valore che persiste ben oltre la prima campagna.
+
+These are example masters. Build your Bottega and earn your place on the wall.
+
+## ★ Verdict
+[x] [PASS] Is PROD healthy — nothing broken for a real visitor? tick if all clear
+     note: YES BRAVO
+   section notes: Generally in very good shape there so let's not mess any of that up it's working great I even checked the Italian All the buttons look good So we're on track
+
