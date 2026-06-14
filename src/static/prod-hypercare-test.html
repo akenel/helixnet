@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROD Hypercare — quick sanity (warm welcome)</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  ol.steps input[type=checkbox]{ width:20px; height:20px; margin-top:2px; accent-color:var(--red); flex:none; cursor:pointer; }
+  .step-body{ flex:1; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .verdict{ display:flex; gap:6px; margin-top:7px; }
+  .vb{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:3px 11px; font-size:12px; font-weight:700; cursor:pointer; color:var(--mut); }
+  .vb:hover{ background:#f5f5f5; }
+  .vb.pass.on{ background:#dcfce7; border-color:#059669; color:#166534; }
+  .vb.fail.on{ background:#fee2e2; border-color:#dc2626; color:#991b1b; }
+  .vb.issue.on{ background:#fff4d6; border-color:#d97706; color:#92600a; }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#dcfce7; color:#166534; }
+  .note-box{ background:#fff7f6; border:1px solid #f3c9c4; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#7a1f17; margin:6px 0 12px; }
+  .note-box code{ background:#fff; padding:1px 5px; border-radius:4px; border:1px solid #f0c8c2; font-size:12px; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🩺 PROD Hypercare — quick sanity<small>5 checks on what just shipped to PRODUCTION (the warm welcome). PROD ONLY — bottega.lapiazza.app.</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-HYPERCARE-20260614-PROD · rev.4 · registered <span id="envtag" style="margin-left:6px;color:#fff;background:#166534;padding:1px 7px;border-radius:6px;font-size:11px"></span></small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export (html + txt)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>Hypercare:</strong> a fast confidence pass on <strong>PRODUCTION</strong> right after shipping the warm welcome.
+    All links go to <strong>bottega.lapiazza.app</strong> (not staging).
+    <div class="note-box">Use a brand-new tag email on PROD (e.g. <code>artemisthinking+prod14@gmail.com</code>), <strong>Incognito</strong>.</div>
+    Per step: tick · <strong>✓ PASS / ✗ FAIL / ⚠ ISSUE</strong> · note (type or 🎤 speak) · 📋 screenshot. Export → drag me the <code>.txt</code>.
+    <span class="tag">PRODUCTION · live site 🐺</span>
+  </div>
+
+  <section>
+    <h2>1 · The door is up (anon)</h2>
+    <a class="open" href="https://bottega.lapiazza.app/" target="_blank">Open prod door ↗</a><span class="url">bottega.lapiazza.app/</span>
+    <ol class="steps" data-sec="door">
+      <li><input type="checkbox"><div class="step-body">Door loads logged-out: headline + trust strip. <span class="exp">"…stopped hiring? Good." + look-around-free</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="door" placeholder="anything off on the live door?"></textarea>
+  </section>
+
+  <section>
+    <h2>2 · Look around free (anon menu)</h2>
+    <a class="open" href="https://bottega.lapiazza.app/compute/bottega" target="_blank">Open Workshop ↗</a>
+    <ol class="steps" data-sec="menu">
+      <li><input type="checkbox"><div class="step-body">Logged-out, the recipe menu LOADS. <span class="exp">cards show, not a stuck "loading menu…"</span></div></li>
+      <li><input type="checkbox"><div class="step-body">The nav shows <strong>👑 Ask Cleo</strong> on every page. <span class="exp">queen, not a top hat</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="menu" placeholder="menu load ok? nav ok?"></textarea>
+  </section>
+
+  <section>
+    <h2>3 · Sign up fresh → the welcome is waiting</h2>
+    <ol class="steps" data-sec="welcome">
+      <li><input type="checkbox"><div class="step-body">Start free, sign up with a fresh <code>+tag</code> email → land in your Bottega, logged in. <span class="exp">account created, no errors</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>🐺 You → 📬 Inbox</strong>: Cleopatra's welcome greets you by name + mirrors your CV + ends with "…Deal?" <span class="exp">there, warm, personal</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="welcome" placeholder="welcome landed? by name? CV mirrored?"></textarea>
+  </section>
+
+  <section>
+    <h2>4 · Cleo already knows you (the card)</h2>
+    <ol class="steps" data-sec="card">
+      <li><input type="checkbox"><div class="step-body">Open <strong>👑 Ask Cleo</strong>: "What Cleopatra has learned" is <strong>already filled</strong> from your signup. <span class="exp">background + Your Natural Strengths populated — NOT blank "say hello"</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="card" placeholder="card pre-filled from the CV? or blank?"></textarea>
+  </section>
+
+  <section>
+    <h2>5 · A master answers (grounded)</h2>
+    <ol class="steps" data-sec="master">
+      <li><input type="checkbox"><div class="step-body">Ask a master (Legends or via Cleo) a real question. <span class="exp">a grounded answer that reflects your card — no 500s, no blanks</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="master" placeholder="master answered? grounded in your card?"></textarea>
+  </section>
+
+  <section>
+    <h2>★ Verdict</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><input type="checkbox"><div class="step-body"><strong>Is PROD healthy — nothing broken for a real visitor?</strong> <span class="exp">tick if all clear</span></div></li>
+    </ol>
+    <label class="cm">the big note</label><textarea data-cm="verdict" placeholder="Anything to hotfix on prod? Or all clear, Wolf." style="min-height:70px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza</strong> · PROD Hypercare Sanity · registered</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-HYPERCARE-20260614-PROD · rev.4 · 2026-06-14</span>
+    </div>
+    <div style="margin-top:6px">Production confidence pass. Five checks, then back to building. 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='prod_hypercare_v4';
+  const ENV = location.hostname || 'local-file';
+  const STEPS=[];
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]');
+      const label = (li.querySelector('.step-body')?.textContent||'').trim().replace(/\s+/g,' ');
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const vg=document.createElement('div'); vg.className='verdict';
+      ['pass','fail','issue'].forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.className='vb '+v;
+        b.textContent={pass:'✓ PASS',fail:'✗ FAIL',issue:'⚠ ISSUE'}[v];
+        b.addEventListener('click',()=>{ STEPS[i].verdict=(STEPS[i].verdict===v?'':v); paintVerdict(i); save(); progress(); });
+        vg.appendChild(b); });
+      wrap.appendChild(vg);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      li.querySelector('.step-body').appendChild(wrap);
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[], verdict:'', vg };
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+  function paintVerdict(i){ const s=STEPS[i]; if(!s||!s.vg) return; [...s.vg.children].forEach(b=>{ b.classList.toggle('on', b.classList.contains(s.verdict)); }); }
+
+  let _saveT=null;
+  function save(){ clearTimeout(_saveT); _saveT=setTimeout(saveNow, 600); }
+  function saveNow(){ clearTimeout(_saveT); const d={cb:[],note:[],shots:[],verdict:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; d.verdict[i]=s.verdict||''; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export, then clear.'); } }
+  window.addEventListener('beforeunload', saveNow);
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); }
+      if(d.verdict&&d.verdict[i]){ s.verdict=d.verdict[i]; paintVerdict(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length;
+    const f=STEPS.filter(s=>s.verdict==='fail').length, is=STEPS.filter(s=>s.verdict==='issue').length;
+    let t=done+'/'+STEPS.length; if(f) t+=' · '+f+'✗'; if(is) t+=' · '+is+'⚠'; document.getElementById('prog').textContent=t; }
+  document.addEventListener('change',e=>{ save(); progress(); });
+  function addSectionMics(){
+    document.querySelectorAll('textarea[data-cm]').forEach(ta=>{
+      if(ta.dataset.miced) return; ta.dataset.miced='1';
+      const mic=document.createElement('button'); mic.type='button'; mic.className='mic-btn';
+      mic.textContent='🎤 speak'; mic.title='Dictate this note'; mic.style.marginTop='6px';
+      mic.addEventListener('click',()=>micToggle(mic,ta));
+      ta.insertAdjacentElement('afterend', mic);
+    });
+  }
+  let flashT=null; function flash(msg){ const el=document.getElementById('prog'); if(flashT) clearTimeout(flashT); const old=el.textContent; el.textContent='⚠'; alert(msg); el.textContent=old; }
+
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  function copyReport(){ const _P=STEPS.filter(s=>s.verdict==='pass').length,_F=STEPS.filter(s=>s.verdict==='fail').length,_I=STEPS.filter(s=>s.verdict==='issue').length;
+    let out='PROD HYPERCARE — REPORT\n'+document.getElementById('prog').textContent+' checks · '+_P+' PASS / '+_F+' FAIL / '+_I+' ISSUE · env: '+ENV+' · '+document.getElementById('clock').textContent+'\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied.')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const _fails=STEPS.filter(s=>s.verdict==='fail'), _issues=STEPS.filter(s=>s.verdict==='issue'), _pass=STEPS.filter(s=>s.verdict==='pass').length;
+    let h='<!doctype html><meta charset=utf-8><title>PROD Hypercare — report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>🩺 PROD Hypercare — report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · env: '+ENV+' · '+document.getElementById('clock').textContent+' · '+new Date().toLocaleString()+'</p>';
+    h+='<div style="background:#f7f7f8;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin:10px 0"><b>'+_pass+' PASS · '+_fails.length+' FAIL · '+_issues.length+' ISSUE</b>';
+    if(_fails.length||_issues.length){ h+='<ul style="margin:6px 0 0;padding-left:18px">'; _fails.forEach(s=>{h+='<li style="color:#991b1b">✗ '+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); _issues.forEach(s=>{h+='<li style="color:#92600a">⚠ '+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); h+='</ul>'; } else { h+=' — all clear ✓'; } h+='</div>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        const vcol={pass:'#166534',fail:'#991b1b',issue:'#92600a'}[s.verdict];
+        const vlab=s.verdict?(' <b style="color:'+vcol+'">['+s.verdict.toUpperCase()+']</b> '):' ';
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span>'+vlab+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='prod-hypercare-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    let tx='PROD HYPERCARE (text)\n'+_pass+' PASS / '+_fails.length+' FAIL / '+_issues.length+' ISSUE · env: '+ENV+' · '+document.getElementById('clock').textContent+'\n';
+    if(_fails.length||_issues.length){ tx+='\nFLAGS:\n'; _fails.forEach(s=>tx+='  X FAIL  '+(s.label||'')+(s.ta&&s.ta.value.trim()?' -- '+s.ta.value.trim():'')+'\n'); _issues.forEach(s=>tx+='  ! ISSUE '+(s.label||'')+(s.ta&&s.ta.value.trim()?' -- '+s.ta.value.trim():'')+'\n'); }
+    tx+='\n';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; tx+='## '+ttl.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{}; tx+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n'; if(s.ta&&s.ta.value.trim()) tx+='     note: '+s.ta.value.trim()+'\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) tx+='   section notes: '+t.value.trim()+'\n'; tx+='\n'; });
+    const tb=new Blob([tx],{type:'text/plain'}); const a2=document.createElement('a'); a2.href=URL.createObjectURL(tb); a2.download='prod-hypercare-report.txt';
+    setTimeout(()=>{ a2.click(); setTimeout(()=>URL.revokeObjectURL(a2.href),2000); }, 500); }
+
+  buildSteps(); addSectionMics(); restore(); progress(); paintClock();
+  (function(){ const e=document.getElementById('envtag'); if(e) e.textContent='env: '+ENV; })();
+</script>
+</body>
+</html>
