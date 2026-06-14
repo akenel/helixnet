@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Art Drop — Run Sheet · La Piazza</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8;
+         --sylvie:#7c3aed; --corrado:#b45309; --you:#1d4ed8; --app:#0f766e; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  .who-key{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .chip{ font-size:11px; font-weight:800; padding:2px 9px; border-radius:99px; color:#fff; letter-spacing:.02em; }
+  .chip.sylvie{ background:var(--sylvie); } .chip.corrado{ background:var(--corrado); }
+  .chip.you{ background:var(--you); } .chip.app{ background:var(--app); }
+  .chip.pre{ background:#991b1b; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  ol.steps input[type=checkbox]{ width:22px; height:22px; margin-top:2px; accent-color:var(--ok); flex:none; cursor:pointer; }
+  .step-body{ flex:1; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ done when: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .flag{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:3px 11px; font-size:12px; font-weight:700; cursor:pointer; color:var(--mut); margin-top:7px; }
+  .flag.on{ background:#fee2e2; border-color:#dc2626; color:#991b1b; }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .note-box{ background:#fff7f6; border:1px solid #f3c9c4; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#7a1f17; margin:6px 0 12px; }
+  .note-box code{ background:#fff; padding:1px 5px; border-radius:4px; border:1px solid #f0c8c2; font-size:12px; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#dcfce7; color:#166534; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🎨 First Art Drop — Run Sheet<small>Corrado · 12 pieces · run once, cleanly. Three people, each doing their part.</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-ARTDROP-01 · rev.1</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>steps done</span></div>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export (html + txt)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>What this is:</strong> the one-time checklist to put Corrado's first 12 pieces on La Piazza and sell them
+    hands-off. Tick each step as it's done; tap 🎤 to leave a voice note or 📋 to drop a photo. When the drop is live,
+    <strong>Export</strong> and send the <code>.txt</code> back to the group.
+    <div class="who-key">
+      <span class="chip pre">DO FIRST</span>
+      <span class="chip sylvie">Sylvie</span>
+      <span class="chip corrado">Corrado</span>
+      <span class="chip you">You (Angel)</span>
+      <span class="chip app">La Piazza (automatic)</span>
+    </div>
+    <div class="note-box" style="margin-top:12px">Money never touches La Piazza. Buyers pay Corrado directly (bank / Revolut / cash).
+      The app routes the <em>offer</em> and tracks <em>sold</em> — that's it.</div>
+  </div>
+
+  <!-- ============ PREREQUISITE ============ -->
+  <section data-owner="pre" data-label="DO FIRST">
+    <h2><span class="chip pre">DO FIRST</span> 0 · Wire up Corrado (one time)</h2>
+    <p class="why">The whole hands-off plan depends on an offer reaching Corrado's phone. Prove it before any piece goes up.</p>
+    <ol class="steps" data-sec="prereq">
+      <li><input type="checkbox"><div class="step-body">Corrado has a La Piazza account, and the 12 listings will live <strong>under his account</strong>. <span class="exp">offers route to him, not to you</span></div></li>
+      <li><input type="checkbox"><div class="step-body">In his account: <strong>Telegram linked</strong> + offer notifications <strong>ON</strong>. <span class="exp">his settings show Telegram connected</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>Test it:</strong> make a tiny test offer on any listing → Corrado's phone pings on Telegram. <span class="exp">a real notification lands on a real phone</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="prereq" placeholder="did the test offer ping Corrado's phone? any setup snag?"></textarea>
+  </section>
+
+  <!-- ============ THE LOOP ============ -->
+  <section data-owner="sylvie">
+    <h2><span class="chip sylvie">Sylvie</span> 1 · Pick the 12</h2>
+    <ol class="steps" data-sec="pick">
+      <li><input type="checkbox"><div class="step-body">Choose 12 pieces that hang together — theme, colours, a set that looks gorgeous as a group. <span class="exp">12 picked</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="pick" placeholder="the theme / why these 12"></textarea>
+  </section>
+
+  <section data-owner="sylvie">
+    <h2><span class="chip sylvie">Sylvie</span> 2 · Tag, name, order, story</h2>
+    <p class="why">This is the catalog copy — and the one decision per piece that matters: original or edition.</p>
+    <ol class="steps" data-sec="tag">
+      <li><input type="checkbox"><div class="step-body"><strong>Tag each piece:</strong> <code>ORIGINAL (1 of 1)</code> or <code>EDITION (1 of N)</code>. <span class="exp">most framed one-offs = Original; only tag Edition if Corrado truly wants a numbered run</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Name each piece + give the set its order (1→12) and each a one-line story. <span class="exp">12 names + an order + 12 one-liners</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Pick the one <strong>hero</strong> image — the piece that leads the drop. <span class="exp">1 hero chosen</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="tag" placeholder="list: piece → tag (orig/edition N) → name → story"></textarea>
+  </section>
+
+  <section data-owner="corrado">
+    <h2><span class="chip corrado">Corrado</span> 3 · Shoot</h2>
+    <ol class="steps" data-sec="shoot">
+      <li><input type="checkbox"><div class="step-body">Lay out the 12. Tripod. One straight-on photo each, one session. <span class="exp">12 clean straight-on shots</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Send all 12 to the WhatsApp group — no zip, just send them. <span class="exp">12 photos in the chat</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="shoot" placeholder="all 12 sent? any reshoot needed?"></textarea>
+  </section>
+
+  <section data-owner="you">
+    <h2><span class="chip you">You</span> 4 · Pull the photos</h2>
+    <ol class="steps" data-sec="pull">
+      <li><input type="checkbox"><div class="step-body">Save the 12 photos off WhatsApp onto the machine, named to the catalog order. <span class="exp">12 files, in order</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="pull" placeholder="saved + named ok?"></textarea>
+  </section>
+
+  <section data-owner="you">
+    <h2><span class="chip you">You</span> 5 · Build the 12 listings</h2>
+    <p class="why">Each one a <code>SELL</code> listing under Corrado's account — the "Make an Offer" button appears automatically.</p>
+    <ol class="steps" data-sec="list">
+      <li><input type="checkbox"><div class="step-body">For each piece: photo · name · one-line story · <strong>€200</strong> · <strong>"offers welcome"</strong> · shipping <strong>€20 registered from Trapani</strong> · pickup option. <span class="exp">12 listings live under Corrado</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Edition-tagged pieces: note the edition in the listing (e.g. "Edition of N"). <span class="exp">edition pieces marked; originals say 1 of 1</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="list" placeholder="12 up? any listing that fought you?"></textarea>
+  </section>
+
+  <section data-owner="you">
+    <h2><span class="chip you">You</span> 6 · Print the 12 cards</h2>
+    <p class="why">The claim ticket that travels with each piece when it sells: artwork + serial + QR (→ the piece's page on La Piazza).</p>
+    <ol class="steps" data-sec="cards">
+      <li><input type="checkbox"><div class="step-body">Generate the 12 Locandina cards — ribbon reads "ORIGINAL · 1 of 1 · № 00X" or "EDITION · 1 of N", QR → the piece's page. <span class="exp">12 cards, each scans to its own listing</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Scan-check 2–3 cards with a phone. <span class="exp">QR opens the right piece on La Piazza</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Set the cards aside — each travels with its piece when it sells. <span class="exp">cards stored, matched to pieces</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="cards" placeholder="cards printed + QR verified?"></textarea>
+  </section>
+
+  <section data-owner="corrado">
+    <h2><span class="chip corrado">Corrado</span> 7 · Approve</h2>
+    <ol class="steps" data-sec="approve">
+      <li><input type="checkbox"><div class="step-body">Open the live link, look at all 12, say yes (or flag fixes). <span class="exp">Corrado's green light</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="approve" placeholder="approved? anything to change?"></textarea>
+  </section>
+
+  <section data-owner="corrado">
+    <h2><span class="chip corrado">Corrado</span> <span class="chip you">You</span> 8 · Share</h2>
+    <p class="why">This is the whole point — the photo going out wide is free advertising to the global market.</p>
+    <ol class="steps" data-sec="share">
+      <li><input type="checkbox"><div class="step-body">Both press <strong>Share</strong> → WhatsApp / Telegram. Corrado: Rome + art-show crowd. You: Sicily + Northern-Europe. <span class="exp">the drop is out</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Bonus: Sylvie makes one photo of all 12 arranged as a board — your strongest marketing shot. <span class="exp">the board image, posted</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="share" placeholder="where shared? first reactions?"></textarea>
+  </section>
+
+  <section data-owner="app">
+    <h2><span class="chip app">La Piazza</span> <span class="chip corrado">Corrado</span> 9 · A sale happens</h2>
+    <p class="why">The hands-off loop. The app does the routing; Corrado does the human bits; money stays off-platform.</p>
+    <ol class="steps" data-sec="sale">
+      <li><input type="checkbox"><div class="step-body">Buyer makes an offer → <strong>Corrado pinged on Telegram</strong> → they agree a price. <span class="exp">offer landed, deal struck</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Buyer pays Corrado directly (bank / Revolut / cash). <span class="exp">money received — off-platform</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Corrado signs + dates + numbers the back, adds the QR card, mails registered. <span class="exp">piece + certificate on their way</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Mark the listing <strong>Sold</strong> in La Piazza. <span class="exp">scans now show SOLD; the ledger logs the date</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="sale" placeholder="log each sale: piece, offer price, buyer, date"></textarea>
+  </section>
+
+  <section data-owner="you">
+    <h2><span class="chip you">You</span> 10 · Read the votes</h2>
+    <ol class="steps" data-sec="read">
+      <li><input type="checkbox"><div class="step-body">Watch what sells and at what offer price — that's your real pricing data. <span class="exp">drop 2 gets priced off what actually moved, not opinion</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="read" placeholder="what moved fast? what didn't? offer prices?"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza</strong> · First Art Drop Run Sheet</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-ARTDROP-01 · rev.1 · 2026-06-14</span>
+    </div>
+    <div style="margin-top:6px">The photo is the bait. What you sell is the real, signed, registered object the screenshot can never be. 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='art_drop1_runsheet_v1';
+  const ENV = location.hostname || 'local-file';
+  const STEPS=[];
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]');
+      const label = (li.querySelector('.step-body')?.textContent||'').trim().replace(/\s+/g,' ');
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const flag=document.createElement('button'); flag.type='button'; flag.className='flag'; flag.textContent='🚩 blocked';
+      flag.addEventListener('click',()=>{ STEPS[i].blocked=!STEPS[i].blocked; flag.classList.toggle('on',STEPS[i].blocked); save(); progress(); });
+      wrap.appendChild(flag);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click & paste a photo (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      li.querySelector('.step-body').appendChild(wrap);
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[], blocked:false, flag };
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'photo.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+
+  let _saveT=null;
+  function save(){ clearTimeout(_saveT); _saveT=setTimeout(saveNow, 600); }
+  function saveNow(){ clearTimeout(_saveT); const d={cb:[],note:[],shots:[],blocked:[],cm:{}};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; d.blocked[i]=!!s.blocked; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); alert('⚠ Storage full — Export, then clear.'); } }
+  window.addEventListener('beforeunload', saveNow);
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); }
+      if(d.blocked&&d.blocked[i]){ s.blocked=true; s.flag.classList.add('on'); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+  }catch(e){} }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length;
+    const b=STEPS.filter(s=>s.blocked).length;
+    let t=done+'/'+STEPS.length; if(b) t+=' · '+b+'🚩'; document.getElementById('prog').textContent=t; }
+  document.addEventListener('change',e=>{ save(); progress(); });
+  function addSectionMics(){
+    document.querySelectorAll('textarea[data-cm]').forEach(ta=>{
+      if(ta.dataset.miced) return; ta.dataset.miced='1';
+      const mic=document.createElement('button'); mic.type='button'; mic.className='mic-btn';
+      mic.textContent='🎤 speak'; mic.title='Dictate this note'; mic.style.marginTop='6px';
+      mic.addEventListener('click',()=>micToggle(mic,ta));
+      ta.insertAdjacentElement('afterend', mic);
+    });
+  }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  function ownerOf(sec){ const c=sec.querySelector('.chip'); return c?c.textContent.trim():''; }
+  function copyReport(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length, b=STEPS.filter(s=>s.blocked).length;
+    let out='FIRST ART DROP — RUN SHEET STATUS\n'+done+'/'+STEPS.length+' steps done'+(b?(' · '+b+' blocked'):'')+' · '+ENV+'\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.blocked?'🚩 ':'')+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Status copied.')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const done=STEPS.filter(s=>s.cb&&s.cb.checked).length, blocked=STEPS.filter(s=>s.blocked);
+    let h='<!doctype html><meta charset=utf-8><title>First Art Drop — status</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>🎨 First Art Drop — status</h1><p class=h>'+done+'/'+STEPS.length+' steps done · '+ENV+' · '+new Date().toLocaleString()+'</p>';
+    if(blocked.length){ h+='<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;margin:10px 0"><b>🚩 Blocked:</b><ul style="margin:6px 0 0;padding-left:18px">';
+      blocked.forEach(s=>{h+='<li>'+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); h+='</ul></div>'; }
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span> '+(s.blocked?'🚩 ':'')+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='art-drop-1-status.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    let tx='FIRST ART DROP — STATUS\n'+done+'/'+STEPS.length+' steps done'+(blocked.length?(' · '+blocked.length+' blocked'):'')+' · '+ENV+'\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; tx+='## '+ttl.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{}; tx+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.blocked?'🚩 ':'')+(s.label||'')+'\n'; if(s.ta&&s.ta.value.trim()) tx+='     note: '+s.ta.value.trim()+'\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) tx+='   notes: '+t.value.trim()+'\n'; tx+='\n'; });
+    const tb=new Blob([tx],{type:'text/plain'}); const a2=document.createElement('a'); a2.href=URL.createObjectURL(tb); a2.download='art-drop-1-status.txt';
+    setTimeout(()=>{ a2.click(); setTimeout(()=>URL.revokeObjectURL(a2.href),2000); }, 500); }
+
+  buildSteps(); addSectionMics(); restore(); progress();
+</script>
+</body>
+</html>
