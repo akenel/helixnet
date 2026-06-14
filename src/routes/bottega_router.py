@@ -241,7 +241,16 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
         await db.commit()
         await db.refresh(profile)
         token = await _member_token(c, username, password)   # auto-login: you're in
-    return {"username": username, "slug": slug, "token": token, "profile": _view(profile)}
+    profile_view = _view(profile)   # snapshot BEFORE write_concierge commits (else profile re-expires -> MissingGreenlet)
+    # WW-4: seed Cleopatra's card from the CV so she starts off KNOWING the member — not a blank
+    # "say hello". Same extraction the chat uses; empty transcript so her greeting still opens fresh,
+    # but "What Cleopatra has learned" is already filled from what they gave at the door.
+    try:
+        seed = cg.merge_record(cg.blank_record(), await cg.extract_record([{"role": "member", "content": text}]))
+        await write_concierge(db, username, seed, [])
+    except Exception:  # noqa: BLE001 — card-seeding must NEVER break signup
+        logger.warning("concierge card seed from CV failed for %s", username, exc_info=True)
+    return {"username": username, "slug": slug, "token": token, "profile": profile_view}
 
 
 @router.get("/recipes")
