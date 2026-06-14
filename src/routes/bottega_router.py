@@ -1103,11 +1103,13 @@ async def me_inbox(current_user: dict = Depends(require_bottega_access()),
         counts = {pid: n for pid, n in crows}
     items = []
     for s in rows:
+        if s.slug != "message":
+            continue  # WW-2: notifications are the unread SIGNAL (the badge), not separate inbox
+            # rows. Showing both made a handled item's notification linger as "undone" (Angel's flag).
         b = _inbox_brief(s)
-        if s.slug == "message":
-            b["replies"] = int(counts.get(s.id, 0))
+        b["replies"] = int(counts.get(s.id, 0))
         items.append(b)
-    unread = sum(1 for i in items if i["kind"] == "message" and not i["read"])
+    unread = sum(1 for i in items if not i["read"])
     return {"items": items, "unread": unread}
 
 

@@ -92,6 +92,16 @@
           </p>
         </div>
       </template>
+
+      <!-- WW-3: the always-there door to Cleopatra — she fills your card, then matches you to masters -->
+      <a href="/compute/concierge" class="card rounded-xl p-4 flex items-center gap-3 hover:border-brand/60 transition block">
+        <div class="text-2xl">🎩</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm text-white">Ask Cleopatra</div>
+          <div class="text-[12px] text-slate-400 leading-snug">Two minutes of chat sharpens your card — then she points you to the right masters.</div>
+        </div>
+        <div class="text-brand text-sm font-mono shrink-0">open&nbsp;→</div>
+      </a>
       <div class="card rounded-xl p-5" x-show="d.profile && d.profile.bio">
         <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">about you</div>
         <p class="text-slate-200 text-sm" x-text="d.profile && d.profile.bio"></p>
