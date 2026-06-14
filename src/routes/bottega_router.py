@@ -219,6 +219,24 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
                 "emails": clues["emails"] or ([email] if email else []),
                 "phones": clues["phones"], "links": clues["links"], "chars": len(text)}),
             output_type="json", tags="archive,onboarding"))
+        # WW-1 — Warm welcome: Cleopatra greets the new member in their inbox right away,
+        # referencing what she already learned from their CV/words and pointing to the next
+        # step (the card she keeps fills via a short chat -> then she matches them to masters).
+        _first = (name.strip().split() or [name])[0]
+        _sk = proposal.get("skills", []) or []
+        _seen = proposal.get("tagline") or (proposal.get("bio") or "")[:140] or "a real set of skills"
+        _wbody = (
+            f"Welcome to La Piazza, {_first}. I'm Cleopatra — your host here.\n\n"
+            f"I read what you shared, and here's what I already see in you:\n"
+            f"  • {_seen}\n"
+            + (f"  • Strengths: {', '.join(_sk[:5])}\n" if _sk else "")
+            + "\nYour profile is started. The real key is the card I keep on you — it's what lets "
+            "every master here help you fast. Give me two minutes in the Concierge and we'll "
+            "sharpen it together, then I'll point you to the masters who fit you best.\n\n"
+            "When you're ready: open 🎩 Concierge and just tell me what you're after."
+        )
+        _deliver_message(db, to=username, sender="Cleopatra",
+                         subject="Welcome — let's build your card", body=_wbody, icon="🎩")
         await db.commit()
         await db.refresh(profile)
         token = await _member_token(c, username, password)   # auto-login: you're in
