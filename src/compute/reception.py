@@ -149,6 +149,56 @@ async def match_reception(record: dict, roster: list[dict], language: str = "") 
     return base
 
 
+def _packet_brief(packet: dict) -> str:
+    """A compact line of what Cleo learned, for the master's opening -- from the SLICE (tier-3 already
+    redacted), so the master greets KNOWING them without ever seeing sensitive fields."""
+    cs = (packet or {}).get("card_slice") or {}
+    bits = []
+    for k, label in (("goal", "wants"), ("why_they_came", "came because"),
+                     ("location", "is in"), ("background", "background")):
+        v = cs.get(k)
+        if v and v != "unknown":
+            bits.append(f"{label}: {v}")
+    apt = cs.get("aptitudes") or []
+    if apt:
+        bits.append("good at: " + ", ".join(str(x) for x in apt[:6]))
+    return "; ".join(bits) if bits else "(little on file yet)"
+
+
+async def master_opening(packet: dict, language: str = "") -> str:
+    """R4: the master's FIRST turn after the handoff -- a warm greeting in the master's own voice,
+    grounded in the packet (they already KNOW the guest, never re-ask), naming why they fit and the
+    first step. Resilient: on a brain failure, compose a plain opening from the packet so the handoff
+    never breaks."""
+    packet = packet or {}
+    master = (packet.get("master") or "the master").strip()
+    first_step = (packet.get("first_step") or "").strip()
+    why = (packet.get("why_picked") or "").strip()
+    lang = (language or packet.get("language") or "en").strip().lower()
+    lang_name = {"it": "Italian", "de": "German", "fr": "French", "es": "Spanish",
+                 "pt": "Portuguese", "en": "English"}.get(lang, "English")
+    sys = (f"You are {master}, a master of La Piazza. Cleopatra the host has just brought a guest to "
+           f"your desk and handed you her notes. Greet them warmly IN YOUR OWN VOICE and era, as the "
+           f"real {master} would speak. You already KNOW them from the notes -- do NOT re-ask what is "
+           f"on file. In 2-4 sentences: acknowledge what they're after, say in ONE line why you're a "
+           f"good fit for them, and give them their first step. Then stop.\n\n"
+           f"IRON RULES: speak only of what truly exists here; NEVER invent a place, tool, class, "
+           f"booking, or another master; you cannot schedule, book, or send anything. Write entirely "
+           f"in {lang_name}, natural and warm.")
+    user = (f"Cleopatra's notes on the guest: {_packet_brief(packet)}\n"
+            f"Why you were matched to them: {why}\n"
+            f"The first step to give them (put it in your own words): {first_step}")
+    try:
+        reply = _strip_think(await _brain_chat(sys, user) or "").strip()
+        if reply:
+            return reply
+    except Exception:  # noqa: BLE001
+        logger.warning("master_opening brain failed for %s", master, exc_info=True)
+    # resilient fallback -- composed straight from the grounded packet
+    fb = [s for s in (why, (f"A good first step: {first_step}" if first_step else "")) if s]
+    return " ".join(fb) or f"Welcome -- I'm {master}. Let's get you started."
+
+
 def build_reception_packet(record: dict, match: dict) -> dict:
     """The OUTBOUND Service Interface -- the typed contract that travels on the handoff (R4). Pure +
     testable. Carries the OBJECTIVE, the master-readable card-slice (tier-3 redacted via master_slice),

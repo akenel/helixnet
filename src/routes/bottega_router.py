@@ -32,6 +32,7 @@ from src.db.models.compute_model import ComputeLedgerKind
 from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
 from src.compute import concierge as cg
 from src.compute import dispatcher as dsp
+from src.compute import reception as rcp
 
 logger = logging.getLogger("helix.bottega_router")
 
@@ -600,6 +601,74 @@ async def concierge_dispatch(request: Request,
         output=json.dumps(result), output_type="json", tags="dispatch,concierge"))
     await db.commit()
     return result
+
+
+class HandoffReq(BaseModel):
+    language: str = ""
+
+
+@router.post("/concierge/handoff")
+async def concierge_handoff(req: HandoffReq,
+                            current_user: dict = Depends(require_bottega_access()),
+                            db: AsyncSession = Depends(get_db_session)):
+    """R4 -- the warm handoff (Reception). Cleo matches the FINISHED card to ONE grounded master,
+    seeds a replyable thread where that master greets the guest KNOWING them (never re-asks), sets the
+    master as the standing host (current_host), and drops the first-step sticky-note on the Today board
+    (assigned to the master). ABSTAIN => no handoff: the guest stays with Cleo (current_host unchanged).
+    Reuses the R3 matcher (src.compute.reception) + the thread spine (#107) -- no new machinery."""
+    username = current_user["username"]
+    language = (req.language or "").strip()
+    state = await read_concierge(db, username)
+    record = state["record"]
+
+    # the board: masters only, enriched with Houses -- the matcher routes ONLY here (anti-hallucination)
+    from src.services.square_bridge import list_legends, apply_houses
+    roster = apply_houses(await list_legends(masters_only=True, limit=500), await _house_map(db))
+
+    match = await rcp.match_reception(record, roster, language=language)
+    if not (match.get("master") or "").strip() or match.get("confidence") == "abstain":
+        # No grounded match yet -- Cleo keeps the desk; the UI offers a fork / one more question.
+        return {"handoff": False, "confidence": "abstain",
+                "reason": match.get("note") or "No clear match yet -- staying with Cleo.",
+                "alternate": match.get("alternate", "")}
+
+    packet = rcp.build_reception_packet(record, match)
+    master = packet["master"]
+    opening = await rcp.master_opening(packet, language=language)
+
+    # 1) the thread ROOT -- the master, in their own voice, greeting the guest (replyable; #107 engine)
+    root = BottegaSessionModel(
+        username=username, slug="message", parent_id=None,
+        title=(master + ": " + opening)[:160],
+        inputs=json.dumps({"author": master, "role": "master", "read": False}),
+        output=opening[:8000], output_type="text", tags="message,thread,handoff")
+    db.add(root)
+    await db.flush()  # assign root.id for the response
+    # 2) a notification so the inbox badge lights up
+    db.add(BottegaSessionModel(
+        username=username, slug="notification", title=f"🎭 {master}"[:160],
+        inputs=json.dumps({"read": False}),
+        output=f"{master} is ready at your desk in {packet.get('house') or 'the workshop'}."[:200],
+        output_type="text", tags="notification"))
+    # 3) the first-step sticky-note on the Today board, assigned to the master (Decision 6)
+    if (packet.get("first_step") or "").strip():
+        from datetime import date as _date
+        day = _date.today().isoformat()
+        n = (await db.execute(select(func.coalesce(func.max(BottegaTaskModel.sort_order), 0)).where(
+            BottegaTaskModel.username == username,
+            BottegaTaskModel.day == day, BottegaTaskModel.section == "top10"))).scalar() + 1
+        db.add(BottegaTaskModel(
+            username=username, day=day, section="top10", title=packet["first_step"][:300],
+            notes=(packet.get("why_picked") or None), status="open", sort_order=n,
+            assignee=master, house=(packet.get("house") or None)))
+    # 4) the master takes the desk -- set current_host (write_concierge commits the whole unit of work)
+    record["current_host"] = master
+    await write_concierge(db, username, record, state["transcript"])
+
+    return {"handoff": True, "master": master, "house": packet.get("house", ""),
+            "why": packet.get("why_picked", ""), "first_step": packet.get("first_step", ""),
+            "confidence": packet.get("confidence", "high"), "alternate": packet.get("alternate", ""),
+            "thread_id": str(root.id)}
 
 
 async def _build_portrait(db: AsyncSession, username: str) -> str:

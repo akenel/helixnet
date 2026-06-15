@@ -128,3 +128,114 @@ def test_build_packet_objective_falls_back_to_why_they_came():
     rec["why_they_came"] = "I lost my job and need a new direction."
     pkt = rcp.build_reception_packet(rec, {"master": "Leonardo da Vinci"})
     assert pkt["objective"] == rec["why_they_came"]
+
+
+# --- master_opening (R4): the master's first turn, grounded + resilient -----------------------
+
+@pytest.mark.asyncio
+async def test_master_opening_uses_the_brain_when_available():
+    pkt = {"master": "Marie Curie", "why_picked": "instrumentation is your bridge",
+           "first_step": "List three local labs.", "card_slice": {"goal": "adjacent income"}, "language": "en"}
+    async def brain(system, user, json_mode=False, schema=None, model=None):
+        return "Welcome -- I am Marie Curie. Your rigor points to instrumentation. Start by listing three labs."
+    with patch.object(rcp, "_brain_chat", brain):
+        out = await rcp.master_opening(pkt)
+    assert "Marie Curie" in out and "labs" in out
+
+
+@pytest.mark.asyncio
+async def test_master_opening_falls_back_to_packet_on_brain_failure():
+    pkt = {"master": "Marie Curie", "why_picked": "instrumentation is your bridge",
+           "first_step": "List three local labs.", "card_slice": {}}
+    async def boom(system, user, json_mode=False, schema=None, model=None):
+        raise RuntimeError("brain down")
+    with patch.object(rcp, "_brain_chat", boom):
+        out = await rcp.master_opening(pkt)
+    # the handoff never breaks: the grounded first_step still reaches the guest
+    assert "List three local labs." in out
+
+
+# --- /concierge/handoff endpoint (R4a): seed thread + set host + sticky-note ------------------
+
+def _patch_handoff(match):
+    """Patch the handoff's collaborators: a 1-master board, a fixed match, a canned opening."""
+    from src.services import square_bridge
+    from src.routes import bottega_router as br
+
+    async def fake_legends(**kw):
+        return [{"name": "Marie Curie", "house": "The Lyceum", "tagline": "radioactivity", "ref": "r1"}]
+    async def fake_house_map(db):
+        return {}
+    async def fake_match(record, roster, language=""):
+        return match
+    async def fake_opening(packet, language=""):
+        return "Welcome -- I am Marie Curie. Start by listing three local labs."
+
+    return [
+        patch.object(square_bridge, "list_legends", fake_legends),
+        patch.object(square_bridge, "apply_houses", lambda legends, hmap: legends),
+        patch.object(br, "_house_map", fake_house_map),
+        patch.object(rcp, "match_reception", fake_match),
+        patch.object(rcp, "master_opening", fake_opening),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_handoff_seeds_thread_sets_host_and_sticky_note(db_session):
+    import types
+    from contextlib import ExitStack
+    from sqlalchemy import select
+    from src.routes import bottega_router as br
+    from src.db.models.bottega_model import BottegaSessionModel, BottegaTaskModel
+
+    rec = cg.merge_record(cg.blank_record(), {"goal": "adjacent legitimate income", "aptitudes": ["physics"]})
+    await br.write_concierge(db_session, "wernr", rec, [{"role": "member", "content": "hi"}])
+
+    match = {"master": "Marie Curie", "house": "The Lyceum", "confidence": "high",
+             "why": "instrumentation is your bridge", "first_step": "List three local labs.",
+             "alternate": "", "language": "en"}
+    with ExitStack() as es:
+        for p in _patch_handoff(match):
+            es.enter_context(p)
+        res = await br.concierge_handoff(types.SimpleNamespace(language=""), {"username": "wernr"}, db_session)
+
+    assert res["handoff"] is True and res["master"] == "Marie Curie" and res["thread_id"]
+    # thread root seeded, authored by the master
+    root = (await db_session.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == "wernr", BottegaSessionModel.slug == "message",
+        BottegaSessionModel.parent_id.is_(None)))).scalars().first()
+    assert root is not None and "Marie Curie" in (root.inputs or "")
+    # the master took the desk
+    state = await br.read_concierge(db_session, "wernr")
+    assert state["record"]["current_host"] == "Marie Curie"
+    # the sticky-note landed on Today, assigned to the master
+    task = (await db_session.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.username == "wernr"))).scalars().first()
+    assert task is not None and task.title == "List three local labs." and task.assignee == "Marie Curie"
+
+
+@pytest.mark.asyncio
+async def test_handoff_abstains_makes_no_writes(db_session):
+    import types
+    from contextlib import ExitStack
+    from sqlalchemy import select
+    from src.routes import bottega_router as br
+    from src.db.models.bottega_model import BottegaSessionModel, BottegaTaskModel
+
+    await br.write_concierge(db_session, "ghost", cg.blank_record(), [])
+    match = {"master": "", "confidence": "abstain", "note": "no clear match", "alternate": ""}
+    with ExitStack() as es:
+        for p in _patch_handoff(match):
+            es.enter_context(p)
+        res = await br.concierge_handoff(types.SimpleNamespace(language=""), {"username": "ghost"}, db_session)
+
+    assert res["handoff"] is False and res["confidence"] == "abstain"
+    # no desk handed off, no thread, no task
+    state = await br.read_concierge(db_session, "ghost")
+    assert state["record"]["current_host"] == ""
+    root = (await db_session.execute(select(BottegaSessionModel).where(
+        BottegaSessionModel.username == "ghost", BottegaSessionModel.slug == "message"))).scalars().first()
+    assert root is None
+    task = (await db_session.execute(select(BottegaTaskModel).where(
+        BottegaTaskModel.username == "ghost"))).scalars().first()
+    assert task is None
