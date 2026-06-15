@@ -74,6 +74,30 @@ def test_merge_conflicts_accumulate_without_duplicates():
     assert merged["conflicts"] == ["wants health, won't move", "loves outdoors, won't leave desk"]
 
 
+def test_merge_drops_short_subset_tags_keeps_richest():
+    # the aptitudes 5->12 UAT bug: short near-dup tags share no 30-char-prefix difference, so the
+    # prefix stage keeps them all; the subset stage must collapse them to the richest phrasing.
+    old = cg.merge_record(cg.blank_record(), {"aptitudes": ["multilingual", "patience"]})
+    merged = cg.merge_record(old, {"aptitudes": ["multilingual communication", "patience under pressure"]})
+    assert "multilingual" not in merged["aptitudes"]                 # subsumed by the richer tag
+    assert "multilingual communication" in merged["aptitudes"]
+    assert "patience" not in merged["aptitudes"]                     # subsumed
+    assert "patience under pressure" in merged["aptitudes"]
+    assert len(merged["aptitudes"]) == 2
+
+
+def test_merge_subset_dedup_is_whole_word_not_substring():
+    # 'art' must NOT be swallowed by 'martial arts' -- it is not a WORD of it. Distinct ideas survive.
+    merged = cg.merge_record(cg.blank_record(), {"affinities": ["art", "martial arts", "good cook", "good baker"]})
+    assert set(merged["affinities"]) == {"art", "martial arts", "good cook", "good baker"}
+
+
+def test_merge_subset_dedup_collapses_a_chain_to_one():
+    merged = cg.merge_record(cg.blank_record(), {"affinities": [
+        "teaching", "teaching kids", "teaching kids to read"]})
+    assert merged["affinities"] == ["teaching kids to read"]
+
+
 def test_merge_ignores_unknown_extra_keys_and_tolerates_none():
     base = cg.blank_record()
     merged = cg.merge_record(base, {"junk_key": "ignore me", "goal": None})

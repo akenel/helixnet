@@ -606,6 +606,29 @@ def _meaningful(v) -> bool:
     return True
 
 
+def _token_set(s) -> frozenset:
+    """The whole-word tokens of a string, lowercased (alnum runs). Used for the subset dedupe so that a
+    substring like 'art' inside 'martial arts' can NEVER force a false merge -- only whole-word
+    containment counts ('art' is not a token of 'martial arts'; 'arts' is)."""
+    return frozenset(re.findall(r"[a-z0-9]+", str(s).lower()))
+
+
+def _drop_subsumed(items: list) -> list:
+    """Drop any entry whose words are a PROPER subset of another entry's, keeping the richer phrasing:
+    'multilingual' falls away when 'multilingual communication' is present. Order-preserving. This is
+    the stage the 30-char prefix collapse can't do -- for a SHORT tag the prefix IS the whole string,
+    so only exact dups collapse and near-dup tags balloon the list (the aptitudes 5->12 UAT bug).
+    Equal token sets (same words, different order) are left to the prefix stage; here we only remove
+    strict subsets, so distinct ideas ('good cook' vs 'good baker') always both survive."""
+    toks = [_token_set(it) for it in items]
+    out = []
+    for i, it in enumerate(items):
+        if toks[i] and any(j != i and toks[i] < toks[j] for j in range(len(items))):
+            continue   # a strictly-richer sibling already says everything this entry says
+        out.append(it)
+    return out
+
+
 def merge_record(old: dict, new: dict) -> dict:
     """Fold a fresh extraction into the standing record WITHOUT clobbering known facts with blanks.
     Scalars: new wins only if meaningful. Lists: union (order-preserving, deduped). riasec: take the
@@ -638,17 +661,19 @@ def merge_record(old: dict, new: dict) -> dict:
                     cur[theme] = max(0, min(100, score))
             out["riasec"] = cur
         elif isinstance(default, list):
-            # Dedupe by a normalized PREFIX (not exact string): the extractor rewords the same idea
-            # each turn ("claimed to be a baker" vs "...a retired baker from Trapani"), so exact-match
-            # dedupe let the lists balloon. Collapse on the first 40 alnum chars + cap, keeping it lean.
-            # short tags dedupe on their full text; long sentences (where the AI rewords the same idea)
-            # collapse on their first 30 alnum chars -- enough to catch "claimed to be a baker..." variants.
+            # Two-stage dedupe so the lists stop hoarding near-duplicates. STAGE 1 -- collapse on a
+            # 30-char alnum PREFIX: the extractor rewords the same long idea each turn ("claimed to be a
+            # baker" vs "...a retired baker from Trapani") and they share an opening. STAGE 2 -- drop any
+            # entry whose WORDS are a subset of a richer sibling ("multilingual" under "multilingual
+            # communication"); this is what catches SHORT near-dup tags, where the 30-char prefix is the
+            # whole string and stage 1 alone only kills exact dups (the aptitudes 5->12 UAT bug).
             seen, merged = set(), []
             for item in list(out.get(k) or []) + (list(nv) if isinstance(nv, list) else []):
                 norm = re.sub(r"[^a-z0-9]", "", str(item).lower())[:30]
                 if norm and norm not in seen:
                     seen.add(norm)
                     merged.append(item)
+            merged = _drop_subsumed(merged)
             # B2: scrub named fictions from the IDENTITY lists (a fiction is not an affinity/aptitude).
             # conflicts + needs_clarification are spared -- recording "wants the Innovation Lab (doesn't
             # exist)" there is correct and useful.
