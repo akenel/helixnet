@@ -132,11 +132,6 @@ No gate alone is "done." For UI, human is mandatory.
 
 ## Known gate gaps (don't trust blindly until closed)
 
-- **#148** — the box's *helixnet* checkout (`/opt/helixnet`, build source for
-  helix-platform) is 0 ahead / 10 behind origin; its `smoke-test.sh` was stale
-  (pre-#141) and threw false-REDs until patched per-file. Sibling of #140 — same
-  verified-reset playbook, but confirm the working tree first (it's also the
-  helix-platform build source). Don't blind-pull.
 - **CI alarm is still GitHub-native** (BorrowHood). The gate is green and
   trustworthy again (#147), but a future red only shows as a buried email + a red
   ✗ in the web UI — which is how it stayed red for 5+ days last time. The loud
@@ -158,5 +153,13 @@ structure/behaviour, and a seed-realism gap (`trust_score` NULL on fresh seeds)
 was fixed at the source. Lesson: `memory/lesson-ci-red-as-wallpaper.md`. NOTE:
 verifying the 5 in-container was *not* enough — CI's fresh seed differs from the
 real DB; machine-green-in-container ≠ CI-green (verify the verify, again).
+
+*Closed:* **#148** (helixnet box checkout drift) — reconciled 2026-06-15. The
+box's `/opt/helixnet` was 0 ahead / 10 behind, all docs/scripts/tests (no `src/`
+runtime). Verified reset to origin/main (`../src` is volume-mounted but the
+tracked diff was empty, so zero runtime change — no rebuild), then pinned box ==
+origin. Prod + staging 37/0. Both box repos (BorrowHood + helixnet) now run a
+known commit. Untracked box-local overrides/backups (`banner.override.yml`, env
+backups) were left untouched, not mine to delete.
 
 When you close one, move it to *Closed* with the date — keep the page honest.
