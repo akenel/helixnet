@@ -168,6 +168,64 @@ RECORD_FIELDS: dict = {
     "favorite_masters": [],    # masters they've used + liked -> jump straight back into that conversation
     "needs_clarification": [], # open questions the concierge still wants to resolve
     "notes": "",               # free margin -- the narrative the boxes can't hold
+    # --- Card v2 (slice 1): location, household, and the Five-Capitals resource spine -----------
+    # WHERE + the household/situation + what they've GOT to work with. These turn generic advice
+    # into real advice (Switzerland vs Sicily; "no tools, handmade" vs "full kit + a supplier").
+    "location": "",            # WHERE they are now -- bends almost every answer
+    "mobility_constraint": "", # can / can't leave town (kids, ties) -- shapes what's feasible
+    "marital_status": "",      # single / married / divorced / "freshly divorced" -- ONLY as it bears on constraints
+    "dependents": "",          # kids / alimony / who relies on them -- a planning input, never a judgement
+    "accessibility": "",       # ADHD / disability / what shapes HOW we help -- asset + constraint
+    "employment_status": "",   # reframed: time+energy available + what they want to build, never "unemployed"
+    "time_available": "",      # human capital -- how much time they can give
+    "tools": [],               # physical capital -- tools / equipment they OWN
+    "materials_suppliers": [], # physical/social -- materials + who supplies them
+    "helpers": [],             # social capital -- people who help / their network ("Joey the expert")
+    "workspace": "",           # physical -- where they can work
+    "production_capacity": "", # physical -- how much they can make / do
+    "capital": "",             # financial -- asked LAST, lightly, OPTIONAL, gates nothing (most here have none)
+    "_meta": {},               # v2 provenance sidecar: field -> {source, confidence, last_updated}
+}
+
+# --- Card v2: the STATIC field spec (sensitivity tier + why we ask) -------------------------------
+# A field's full "typed slot" = its flat value + dynamic provenance (record["_meta"][key]) + this
+# static spec. Tiers: 1 = safe/energizing (ask early) | 2 = ordinary | 3 = sensitive (defer, optional,
+# normalize, never re-ask, REDACTED from the master-facing slice). `why` is the dignified one-liner
+# Cleo can SAY before a tier-3 ask ("the more I know, the better I help"). Unlisted fields => tier 2.
+FIELD_SPEC: dict = {
+    "preferred_language": {"tier": 1, "why": "so every master speaks your language"},
+    "language_level": {"tier": 1, "why": "so we pitch it at the right level"},
+    "language": {"tier": 1, "why": ""},
+    "why_they_came": {"tier": 1, "why": "so we help with what actually brought you here"},
+    "goal": {"tier": 1, "why": "so we aim at what you want"},
+    "riasec": {"tier": 1, "why": "to point you where you'd thrive"},
+    "top_holland_code": {"tier": 1, "why": ""},
+    "aptitudes": {"tier": 1, "why": "to build on what you're already good at"},
+    "location": {"tier": 1, "why": "so I only suggest things you can actually do from where you are"},
+    "tools": {"tier": 1, "why": "so a master plans around what you've already got"},
+    "materials_suppliers": {"tier": 1, "why": "so we use what you can actually source"},
+    "helpers": {"tier": 1, "why": "so we count the hands you can call on"},
+    "background": {"tier": 2, "why": ""},
+    "current_seat": {"tier": 2, "why": ""},
+    "certificates_or_teachers": {"tier": 2, "why": ""},
+    "fit_insight": {"tier": 2, "why": ""},
+    "health_energy": {"tier": 2, "why": "so we don't suggest something that hurts"},
+    "life_stage": {"tier": 2, "why": ""},
+    "affinities": {"tier": 2, "why": ""},
+    "suggested_house": {"tier": 2, "why": ""},
+    "mobility_constraint": {"tier": 2, "why": "so plans fit your real life"},
+    "employment_status": {"tier": 2, "why": "to size the time and energy you've got to build with"},
+    "time_available": {"tier": 2, "why": "so a plan fits the hours you really have"},
+    "workspace": {"tier": 2, "why": "so we plan around where you work"},
+    "production_capacity": {"tier": 2, "why": "so advice matches how much you can make"},
+    "birthdate_hint": {"tier": 3, "why": "only to frame advice for your stage of life -- skip if you like"},
+    "generation": {"tier": 3, "why": ""},
+    "age_band": {"tier": 3, "why": ""},
+    "gender": {"tier": 3, "why": "only if it helps me help you -- entirely optional"},
+    "marital_status": {"tier": 3, "why": "only as it shapes what's practical for you -- skip if you like"},
+    "dependents": {"tier": 3, "why": "only to plan around the people who count on you -- optional"},
+    "accessibility": {"tier": 3, "why": "only so we work WITH how you work best -- share what you're comfortable with"},
+    "capital": {"tier": 3, "why": "only what you're comfortable sharing -- it never gates anything"},
 }
 
 EXTRACT_SYS = """You are the MEMORY of the Concierge. Read the conversation and extract the
@@ -210,13 +268,30 @@ Do these expert jobs as you go:
    or suggested_house, and do NOT derive generation/House/RIASEC from it. At most note the ask in
    needs_clarification. why_they_came and goal capture the PERSON's real motivation, never a probe
    or a command aimed at the interface.
+12. CARD v2 -- WHERE they are, their SITUATION, and the RESOURCES at hand. Fill ONLY from what they
+   revealed; "" or [] if not mentioned. These turn generic advice into real advice.
+   - location = where they LIVE / work NOW (city / region / country) -- NOT a place they wish to visit.
+   - mobility_constraint = anything tying them to one place (young kids, caring for someone, "can't
+     leave town"); "" if none stated.
+   - tools = equipment / tools they OWN; materials_suppliers = materials they have + who supplies
+     them; helpers = people who help them or their network (e.g. "my friend Joey, an expert"). Lists,
+     [] if none. Treat "no tools / all by hand / nothing yet" as a VALID answer (note it), never a fault.
+   - workspace = where they can work; production_capacity = how much they can make / do;
+     time_available = how much time they can give.
+   - employment_status = their work situation IN THEIR OWN FRAME ("between jobs, lots of time to
+     build") -- NEVER label them "unemployed".
+   - SENSITIVE -- record ONLY if they FREELY offered it; NEVER infer, NEVER guess, "" otherwise; hold
+     gently: marital_status, dependents, accessibility (disability / ADHD / how they work best),
+     gender, capital (money / savings -- OPTIONAL, the LAST thing, and it gates NOTHING).
 
 Output ONLY one valid JSON object with EXACTLY these keys (no prose, no markdown, no code fence):
 preferred_language, language_level, language, birthdate_hint, generation, age_band, gender,
 health_energy, why_they_came, goal, background, current_seat, aptitudes, certificates_or_teachers,
 riasec (object: realistic, investigative, artistic, social, enterprising, conventional as
 integers), top_holland_code, fit_insight, conflicts (array), life_stage, affinities (array),
-suggested_house, needs_clarification (array), notes."""
+suggested_house, needs_clarification (array), notes, location, mobility_constraint, marital_status,
+dependents, accessibility, employment_status, time_available, tools (array), materials_suppliers
+(array), helpers (array), workspace, production_capacity, capital."""
 
 _LANG_NAMES = {"it": "Italian", "de": "German", "fr": "French", "es": "Spanish",
                "pt": "Portuguese", "nl": "Dutch", "en": "English"}
@@ -533,7 +608,10 @@ def merge_record(old: dict, new: dict) -> dict:
     # MERGED record (not just the fresh turn), so a leak from an earlier turn can't survive the union.
     # NOT applied to conflicts/needs_clarification -- those legitimately RECORD the fiction.
     fic = [str(t).strip().lower() for t in ((new or {}).get("fiction_terms") or []) if str(t).strip()]
+    confirms = []   # 1c: sensitive changes we refused to silently apply -> Cleo confirms them
     for k, default in RECORD_FIELDS.items():
+        if k == "_meta":
+            continue   # v2 provenance sidecar -- merged once, below, not field-by-field
         nv = (new or {}).get(k)
         if k == "birthdate_hint":
             # B1: never let work tenure ("30 years of ...") sit in or overwrite Born; purge a
@@ -570,8 +648,181 @@ def merge_record(old: dict, new: dict) -> dict:
                 merged = [m for m in merged if not any(t in str(m).lower() for t in fic)]
             out[k] = merged[:12]   # hard cap so the record (and the prompt that carries it) stays lean
         elif _meaningful(nv):
-            out[k] = nv
+            # 1c survivorship: a guess can't bury a stated fact, and a sensitive field is never
+            # silently overwritten -- keep the standing value and let Cleo confirm the change.
+            ov = out.get(k)
+            new_src = "inferred" if k in INFERRED_FIELDS else "stated"
+            if _value_survives(k, ov, _old_source(old, k), nv, new_src):
+                out[k] = nv
+            elif field_spec(k)["tier"] >= 3 and _meaningful(ov):
+                confirms.append(f"confirm {k}: have '{ov}', now hearing '{nv}' -- which is right?")
+    # 1c: queue any refused sensitive changes for Cleo to confirm (deduped, capped, never wiping
+    # the legitimate clarifications already there).
+    if confirms:
+        nc = list(out.get("needs_clarification") or [])
+        for c in confirms:
+            if c not in nc:
+                nc.append(c)
+        out["needs_clarification"] = nc[:12]
+    # v2: carry provenance forward. A fresh stamp (written by set_field during extraction) wins per
+    # key; absent that, the standing card's provenance is preserved (a blank turn never wipes it).
+    out["_meta"] = {**((old or {}).get("_meta") or {}), **((new or {}).get("_meta") or {})}
     return out
+
+
+# --- Card v2: provenance + the typed-slot view + the master-facing slice (slice 1) ----------------
+# Every field is a typed SLOT: its flat value (the read model masters consume) + dynamic provenance
+# in record["_meta"][key] (where the fact came from, how sure, when) + the static FIELD_SPEC (tier +
+# why). field_slot() composes the three on demand -- full provenance WITHOUT breaking the flat
+# readers. This is the MDM golden-record + data-steward pattern: Cleo WRITES (set_field stamps the
+# source); masters READ a sliced, tier-3-redacted projection (master_slice) and never touch raw chat.
+_DEFAULT_SPEC = {"tier": 2, "why": ""}
+
+
+def _utc_now_iso() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
+
+
+def field_spec(key: str) -> dict:
+    """The static spec for a field: {tier, why}. Unknown field => tier 2, no why."""
+    return {**_DEFAULT_SPEC, **FIELD_SPEC.get(key, {})}
+
+
+def field_slot(record: dict, key: str) -> dict:
+    """The full typed slot for one field: value + provenance + spec. Tolerates a legacy card with no
+    _meta (source='', confidence 0.0) so old records never crash."""
+    rec = record or {}
+    spec = field_spec(key)
+    meta = ((rec.get("_meta") or {}).get(key)) or {}
+    try:
+        conf = float(meta.get("confidence", 0.0) or 0.0)
+    except (TypeError, ValueError):
+        conf = 0.0
+    return {
+        "key": key,
+        "value": rec.get(key, RECORD_FIELDS.get(key)),
+        "source": meta.get("source", ""),          # "" (legacy) | "stated" | "inferred"
+        "confidence": conf,
+        "last_updated": meta.get("last_updated", ""),
+        "tier": spec["tier"],
+        "why_we_ask": spec["why"],
+        "sensitive": spec["tier"] >= 3,
+    }
+
+
+def card_slots(record: dict) -> dict:
+    """Every field as a typed slot (the v2 view), keyed by field name. Skips the _meta sidecar."""
+    return {k: field_slot(record, k) for k in RECORD_FIELDS if k != "_meta"}
+
+
+def set_field(record: dict, key: str, value, *, source: str = "stated",
+              confidence: float = None, now: str = None) -> dict:
+    """The ONE provenance-stamping write. Sets the flat value AND records where it came from, how
+    sure, and when. source: 'stated' (the user said it, authoritative) | 'inferred' (Cleo derived
+    it, confirm before trusting). Default confidence: stated=1.0, inferred=0.6. `now` is injectable
+    for deterministic tests. Returns a NEW record (does not mutate the input)."""
+    rec = dict(record or {})
+    meta = dict(rec.get("_meta") or {})
+    rec[key] = value
+    if confidence is None:
+        confidence = 1.0 if source == "stated" else 0.6
+    meta[key] = {"source": source,
+                 "confidence": round(float(confidence), 3),
+                 "last_updated": now or _utc_now_iso()}
+    rec["_meta"] = meta
+    return rec
+
+
+# Fields a master NEVER receives: tier-3 sensitive + Cleo's private working notes. Privacy-first
+# default -- you can widen a permission later; you can't un-leak. (Per-master field access = a later
+# slice; for now the leatherwork master simply never sees the divorce field.)
+_MASTER_PRIVATE = {"_meta", "conflicts", "needs_clarification", "notes", "fiction_terms",
+                   "current_host", "favorite_masters"}
+
+
+def master_slice(record: dict) -> dict:
+    """The read-only projection a master receives: the portrait MINUS tier-3 sensitive fields and
+    Cleo's private working notes. Dignity as an enforced boundary, not a prompt plea. Cleo writes the
+    card; masters read THIS."""
+    rec = record or {}
+    out = {}
+    for k in RECORD_FIELDS:
+        if k in _MASTER_PRIVATE or field_spec(k)["tier"] >= 3:
+            continue
+        out[k] = rec.get(k, RECORD_FIELDS.get(k))
+    return out
+
+
+def normalize_card(record: dict) -> dict:
+    """Upgrade a legacy / partial card to the v2 shape: every RECORD_FIELDS key present + a _meta
+    dict. Non-destructive (keeps existing values). For callers that read the stored JSON directly."""
+    out = blank_record()
+    for k, v in (record or {}).items():
+        if k in out:
+            out[k] = v
+    if not isinstance(out.get("_meta"), dict):
+        out["_meta"] = {}
+    return out
+
+
+# Fields Cleo DERIVES rather than the member stating them outright -> provenance 'inferred' (a guess,
+# confirm before trusting). Everything else the extraction writes is something the member actually
+# said -> 'stated'. The birthdate HINT is stated (their words); the generation/age_band derived FROM
+# it are inferred -- exactly the dignity split (hold their words firmly, confirm our guess).
+INFERRED_FIELDS = frozenset({
+    "generation", "age_band", "riasec", "top_holland_code", "fit_insight",
+    "life_stage", "suggested_house", "conflicts",
+})
+
+
+def _old_source(old: dict, key: str) -> str:
+    """The provenance source already on record for a field ('' if legacy/unknown)."""
+    return ((((old or {}).get("_meta") or {}).get(key)) or {}).get("source", "")
+
+
+def _value_survives(key: str, old_val, old_src: str, new_val, new_src: str) -> bool:
+    """1c survivorship: should a fresh value OVERWRITE the standing one? Rules, in order:
+    - nothing to protect (old blank) or no change -> yes.
+    - SENSITIVE (tier 3) and it actually changed -> NO. Never silently overwrite age / marital /
+      accessibility / capital etc. -- Cleo confirms first (the dignity rule, and the kill for the
+      misparse-overwrite class #89).
+    - explicit beats a guess: an 'inferred' value cannot overwrite a 'stated' one -> NO.
+    - otherwise (newer stated, or guess-over-guess) -> yes."""
+    if not _meaningful(old_val):
+        return True
+    if str(old_val) == str(new_val):
+        return True
+    if field_spec(key)["tier"] >= 3:
+        return False
+    if new_src == "inferred" and old_src == "stated":
+        return False
+    return True
+
+
+def stamp_provenance(record: dict, fresh: dict, *, now: str = None) -> dict:
+    """After a fresh extraction is folded into the card, stamp _meta for every field the extraction
+    meaningfully provided THIS turn: derived fields -> 'inferred', the rest -> 'stated'; refresh
+    last_updated on each touched field. Pure; `now` injectable. Returns a NEW record."""
+    rec = dict(record or {})
+    meta = dict(rec.get("_meta") or {})
+    stamp = now or _utc_now_iso()
+    for k in RECORD_FIELDS:
+        if k == "_meta":
+            continue
+        fv = (fresh or {}).get(k)
+        if not _meaningful(fv):
+            continue
+        # Only stamp a scalar if the fresh value actually LANDED -- survivorship may have kept the old
+        # value (then its provenance must stand, not be downgraded). Lists/riasec are additive, so a
+        # meaningful fresh contribution always lands.
+        if not isinstance(RECORD_FIELDS[k], (list, dict)) and str(rec.get(k)) != str(fv):
+            continue
+        src = "inferred" if k in INFERRED_FIELDS else "stated"
+        meta[k] = {"source": src, "confidence": 1.0 if src == "stated" else 0.6,
+                   "last_updated": stamp}
+    rec["_meta"] = meta
+    return rec
 
 
 # The scorecard's completeness axis: the fields that make a portrait "full". Lists count when

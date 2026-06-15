@@ -246,7 +246,9 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
     # "say hello". Same extraction the chat uses; empty transcript so her greeting still opens fresh,
     # but "What Cleopatra has learned" is already filled from what they gave at the door.
     try:
-        seed = cg.merge_record(cg.blank_record(), await cg.extract_record([{"role": "member", "content": text}]))
+        extracted = await cg.extract_record([{"role": "member", "content": text}])
+        seed = cg.merge_record(cg.blank_record(), extracted)
+        seed = cg.stamp_provenance(seed, extracted)   # v2: every CV-seeded fact carries its source
         await write_concierge(db, username, seed, [])
     except Exception:  # noqa: BLE001 — card-seeding must NEVER break signup
         logger.warning("concierge card seed from CV failed for %s", username, exc_info=True)
@@ -547,6 +549,7 @@ async def concierge_chat(request: Request,
         return_exceptions=True)
     if isinstance(fresh, dict):
         record = cg.merge_record(record, fresh)
+        record = cg.stamp_provenance(record, fresh)   # v2: stamp each fact stated/inferred this turn
     else:
         logger.warning("concierge extraction failed for %s: %s", current_user["username"], fresh)
     if not isinstance(suggestions, list):
