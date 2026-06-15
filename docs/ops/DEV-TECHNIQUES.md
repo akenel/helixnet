@@ -132,11 +132,7 @@ No gate alone is "done." For UI, human is mandatory.
 
 ## Known gate gaps (don't trust blindly until closed)
 
-- **CI alarm is still GitHub-native** (BorrowHood). The gate is green and
-  trustworthy again (#147), but a future red only shows as a buried email + a red
-  ✗ in the web UI — which is how it stayed red for 5+ days last time. The loud
-  upgrade (Telegram via telegram-tigs, ~5-line workflow step) is banked, not
-  built. Until then, *glance at `gh run list` after a push.*
+*(No open gaps — both box repos pinned to origin, both gates green and loud.)*
 
 *Closed:* **#141** (staging smoke false-RED) — fixed 2026-06-14: smoke now mints
 its token from the realm the staging app actually trusts; staging is a clean
