@@ -132,11 +132,31 @@ No gate alone is "done." For UI, human is mandatory.
 
 ## Known gate gaps (don't trust blindly until closed)
 
-- **#140** — BorrowHood box tree diverged from origin (uncommitted prod code).
-  Needs a human reconcile, not a blind sync.
+- **#148** — the box's *helixnet* checkout (`/opt/helixnet`, build source for
+  helix-platform) is 0 ahead / 10 behind origin; its `smoke-test.sh` was stale
+  (pre-#141) and threw false-REDs until patched per-file. Sibling of #140 — same
+  verified-reset playbook, but confirm the working tree first (it's also the
+  helix-platform build source). Don't blind-pull.
+- **CI alarm is still GitHub-native** (BorrowHood). The gate is green and
+  trustworthy again (#147), but a future red only shows as a buried email + a red
+  ✗ in the web UI — which is how it stayed red for 5+ days last time. The loud
+  upgrade (Telegram via telegram-tigs, ~5-line workflow step) is banked, not
+  built. Until then, *glance at `gh run list` after a push.*
 
 *Closed:* **#141** (staging smoke false-RED) — fixed 2026-06-14: smoke now mints
 its token from the realm the staging app actually trusts; staging is a clean
 37/0 green, so lp_deploy auto-rollback can trust an absolute green.
+
+*Closed:* **#140** (BorrowHood box divergence) — reconciled 2026-06-15 via a
+*verified* `git reset --hard origin/main` (full-tree diff proved only 1 runtime
+file changed), tagged release `prod-2026-06-15-0517`, prod + staging both 37/0.
+The verified-reset playbook lives in `memory/borrowhood-box-divergence.md`.
+
+*Closed:* **#147** (BorrowHood CI red-as-wallpaper) — green again 2026-06-15
+(c49a370). The 5 stale homepage tests were de-brittled to assert
+structure/behaviour, and a seed-realism gap (`trust_score` NULL on fresh seeds)
+was fixed at the source. Lesson: `memory/lesson-ci-red-as-wallpaper.md`. NOTE:
+verifying the 5 in-container was *not* enough — CI's fresh seed differs from the
+real DB; machine-green-in-container ≠ CI-green (verify the verify, again).
 
 When you close one, move it to *Closed* with the date — keep the page honest.
