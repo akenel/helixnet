@@ -545,7 +545,7 @@ async def concierge_chat(request: Request,
     # concurrently -- both best-effort, neither can break the chat (return_exceptions). Chips
     # are generated in reply_lang so they don't come back English under an Italian conversation.
     fresh, suggestions = await asyncio.gather(
-        cg.extract_record(transcript), cg.suggest_next(transcript, record, reply_lang),
+        cg.extract_record(transcript, record), cg.suggest_next(transcript, record, reply_lang),
         return_exceptions=True)
     if isinstance(fresh, dict):
         record = cg.merge_record(record, fresh)

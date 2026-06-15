@@ -59,7 +59,7 @@ async def run(label, cv, turns, lang="auto"):
         openers.append(reply.strip()[:60])
         print(f"\n[{i}] MARCO: {line}")
         print(f"    CLEO : {reply}")
-        fresh = await cc.extract_record(transcript)
+        fresh = await cc.extract_record(transcript, record)
         if isinstance(fresh, dict):
             record = cc.stamp_provenance(cc.merge_record(record, fresh), fresh)
     show_card(record, f"final ({label})")

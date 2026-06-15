@@ -342,6 +342,37 @@ async def test_extract_record_pulls_json_from_noisy_output():
 
 
 @pytest.mark.asyncio
+async def test_extract_record_feeds_known_list_items_to_the_brain():
+    # the balloon fix at the source: when a standing record is passed, its on-file list items must
+    # reach the extractor prompt with a do-not-reword instruction, so the model stops paraphrasing.
+    seen = {}
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        seen["user"] = user
+        return '{"aptitudes": []}'
+
+    known = {"aptitudes": ["reading a room", "designing intake"], "affinities": ["hospitality design"]}
+    with patch.object(cg, "_brain_chat", fake_brain):
+        await cg.extract_record([{"role": "member", "content": "hi"}], known)
+    assert "ALREADY ON FILE" in seen["user"]
+    assert "reading a room" in seen["user"]
+    assert "hospitality design" in seen["user"]
+
+
+@pytest.mark.asyncio
+async def test_extract_record_no_known_block_when_record_empty():
+    seen = {}
+
+    async def fake_brain(system, user, json_mode=False, schema=None, model=None):
+        seen["user"] = user
+        return '{"goal": "x"}'
+
+    with patch.object(cg, "_brain_chat", fake_brain):
+        await cg.extract_record([{"role": "member", "content": "hi"}])          # no known
+    assert "ALREADY ON FILE" not in seen["user"]
+
+
+@pytest.mark.asyncio
 async def test_extract_record_raises_when_no_json():
     async def fake_brain(system, user, json_mode=False, schema=None, model=None):
         return "I could not extract anything useful."

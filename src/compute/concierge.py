@@ -519,10 +519,37 @@ def _clean_birthdate_hint(v) -> str:
     return s
 
 
-async def extract_record(transcript: list[dict]) -> dict:
+_KNOWN_LIST_FIELDS = ("aptitudes", "affinities", "certificates_or_teachers", "conflicts",
+                      "tools", "materials_suppliers", "helpers")
+
+
+def _known_list_block(known: dict) -> str:
+    """The list-items ALREADY on file, fed back to the extractor so it stops re-emitting paraphrases.
+    Root cause of the list-balloon: the extractor is stateless per turn -- it re-derives skills from
+    the growing transcript each call, rewords them ('process design' -> 'process optimization' ->
+    'process analysis'), and the union accumulates them. Lexical dedupe can't safely collapse semantic
+    siblings, so we cut it at the source: show the model what's recorded and forbid rewordings."""
+    if not known:
+        return ""
+    parts = []
+    for k in _KNOWN_LIST_FIELDS:
+        vals = [str(v).strip() for v in (known.get(k) or []) if str(v).strip()]
+        if vals:
+            parts.append(f"  {k}: {', '.join(vals)}")
+    if not parts:
+        return ""
+    return ("\n\nALREADY ON FILE -- do NOT repeat or reword any of these; for each list field below, "
+            "add an item ONLY if it is a genuinely NEW idea not already covered here, otherwise return "
+            "[] for that field (a reworded duplicate is NOT new):\n" + "\n".join(parts))
+
+
+async def extract_record(transcript: list[dict], known: dict = None) -> dict:
     """Second pass: read the whole transcript -> a structured record. JSON-mode + prompt + regex
-    (the proven gotcha-proof path: gpt-oss did not honour the format param alone)."""
-    raw = await _brain_chat(EXTRACT_SYS, _transcript_block(transcript), json_mode=True)
+    (the proven gotcha-proof path: gpt-oss did not honour the format param alone). `known` (the
+    standing record) feeds the on-file list-items back so the extractor doesn't regenerate paraphrases
+    of skills it already wrote -- the list-balloon fix at the source."""
+    raw = await _brain_chat(EXTRACT_SYS, _transcript_block(transcript) + _known_list_block(known),
+                            json_mode=True)
     raw = _strip_think(raw)
     a, b = raw.find("{"), raw.rfind("}")
     if a < 0 or b <= a:
