@@ -105,7 +105,7 @@
         <template x-for="(m,i) in messages" :key="i">
           <div>
             <!-- normal chat bubble (the guest, or Cleopatra) -->
-            <template x-if="m.role!=='dispatch'">
+            <template x-if="m.role!=='dispatch' && m.role!=='handoff'">
               <div :class="m.role==='member' ? 'justify-end' : 'justify-start'" class="flex">
                 <div class="max-w-[85%]">
                   <div :class="m.role==='member' ? 'bubble-me text-white' : 'bubble-h'"
@@ -140,6 +140,40 @@
                     </div>
                     <div x-show="mm.why_this_one" class="text-[11px] italic text-slate-500 mb-1.5" x-text="'Why '+(mm.name||'').split(' ')[0]+' — '+mm.why_this_one"></div>
                     <div class="md" x-html="render(mm.answer)"></div>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <!-- R4: the handoff -- a master takes the desk (greets you, gives a first step) -->
+            <template x-if="m.role==='handoff'">
+              <div class="space-y-2.5">
+                <template x-if="m.failed">
+                  <div class="bubble-h rounded-2xl px-4 py-3 text-sm text-slate-400">
+                    <span class="text-brand">👑</span> <span x-text="m.reason"></span>
+                  </div>
+                </template>
+                <template x-if="!m.failed">
+                  <div>
+                    <div class="text-[11px] text-slate-500 flex items-center gap-1.5 mb-2"><span class="text-sm">🎭</span> Cleopatra introduced you — <span x-text="(m.master||'').split(' ')[0]"></span> is at your desk now</div>
+                    <div class="bubble-h rounded-2xl px-4 py-3">
+                      <div class="flex items-center gap-2 mb-2">
+                        <span class="av w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" x-text="initials(m.master)"></span>
+                        <div class="leading-tight">
+                          <div class="font-bold text-white text-sm" x-text="m.master"></div>
+                          <div class="text-[11px] text-slate-500" x-text="m.house"></div>
+                        </div>
+                      </div>
+                      <div x-show="m.why" class="text-[11px] italic text-slate-500 mb-2" x-text="m.why"></div>
+                      <div class="md" x-html="render(m.opening)"></div>
+                      <div x-show="m.first_step" class="mt-2.5 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2">
+                        <div class="text-[10px] uppercase tracking-wide text-brand mb-0.5">Your first step</div>
+                        <div class="text-[13px] text-slate-100" x-text="m.first_step"></div>
+                      </div>
+                      <div class="mt-3 flex items-center gap-3">
+                        <a href="/compute/me" class="text-sm font-semibold text-brand hover:brightness-125 inline-flex items-center gap-1">Continue with <span x-text="(m.master||'').split(' ')[0]"></span> →</a>
+                        <span class="text-[11px] text-slate-500">It's on your Today board too.</span>
+                      </div>
+                    </div>
                   </div>
                 </template>
               </div>
@@ -212,6 +246,15 @@
         <template x-for="s in suggestions" :key="s">
           <button @click="pick(s)" class="text-xs px-2.5 py-1 rounded-full chip hover:brightness-150 transition" x-text="s"></button>
         </template>
+      </div>
+
+      <!-- R4: the warm handoff -- Cleo offers to introduce the master who fits, once there's a card -->
+      <div x-show="canHandoff() && !sharpen.open && !recap.open" class="px-4 pb-1">
+        <button @click="handoff()"
+          class="w-full text-left text-xs px-3 py-2 rounded-lg border border-brand/40 bg-brand/10 text-brand hover:brightness-125 transition flex items-center gap-2">
+          <span class="text-sm">🎭</span>
+          <span>I think I know who can help you — meet the master who fits, and I'll set you up with a first step.</span>
+        </button>
       </div>
 
       <!-- composer -->
@@ -510,6 +553,33 @@ function concierge(){
         const d=await r.json();
         this.messages.push({role:'dispatch', masters:d.masters||[], language:d.language||'en',
                             note:d.note, next_action:d.next_action});
+      }catch(e){ this.err='Network hiccup — try again.'; }
+      this.busy=false; this.scroll();
+    },
+    // R4: the warm handoff -- Cleo matches the card to ONE master who takes the desk (a thread + a first step)
+    canHandoff(){ return !this.busy && !this.empty() && !(this.record && this.record.current_host); },
+    async handoff(){
+      if(this.busy || !this.canHandoff()) return;
+      this.stopMic();
+      this.busy=true; this.err=''; this.suggestions=[]; this.scroll();
+      try{
+        const r=await fetch('/api/v1/compute/bottega/concierge/handoff',{
+          method:'POST', headers:{'Content-Type':'application/json',...this.hdr()},
+          body:JSON.stringify({language:this.lang})});
+        if(!r.ok){
+          if(r.status===401||r.status===403){ this.expired=true; this.err='Your session timed out — log in again.'; this.busy=false; return; }
+          this.err = r.status===503 ? 'The court stepped away — try again in a moment.' : ('Something hiccuped (error '+r.status+'). Try again.');
+          this.busy=false; return;
+        }
+        this.expired=false;
+        const d=await r.json();
+        if(d.handoff){
+          this.messages.push({role:'handoff', master:d.master, house:d.house, why:d.why,
+                              first_step:d.first_step, opening:d.opening, thread_id:d.thread_id, language:d.language||'en'});
+          if(this.record) this.record.current_host=d.master;   // the master now mans the desk
+        } else {
+          this.messages.push({role:'handoff', failed:true, reason:d.reason||'Let me learn a little more about you first.'});
+        }
       }catch(e){ this.err='Network hiccup — try again.'; }
       this.busy=false; this.scroll();
     },

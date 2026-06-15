@@ -667,8 +667,8 @@ async def concierge_handoff(req: HandoffReq,
 
     return {"handoff": True, "master": master, "house": packet.get("house", ""),
             "why": packet.get("why_picked", ""), "first_step": packet.get("first_step", ""),
-            "confidence": packet.get("confidence", "high"), "alternate": packet.get("alternate", ""),
-            "thread_id": str(root.id)}
+            "opening": opening, "confidence": packet.get("confidence", "high"),
+            "alternate": packet.get("alternate", ""), "thread_id": str(root.id)}
 
 
 async def _build_portrait(db: AsyncSession, username: str) -> str:
