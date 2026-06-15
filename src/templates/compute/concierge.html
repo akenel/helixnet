@@ -517,7 +517,18 @@ function concierge(){
     // record panel helpers
     DEF:{generation:'unknown',age_band:'unknown',gender:'unknown',life_stage:'unknown'},
     has(k){ const v=this.record[k]; return v && v!=='unknown' && (''+v).trim()!==''; },
-    show(k){ return this.record[k]; },
+    show(k){
+      const v=this.record[k];
+      // Decode the Holland code INLINE (mobile has no hover tooltip): "RIA — Realistic · Investigative · Artistic".
+      if(k==='top_holland_code' && v){
+        const it=this.panelLang()==='it';
+        const M=it?{R:'Realistico',I:'Investigativo',A:'Artistico',S:'Sociale',E:'Intraprendente',C:'Convenzionale'}
+                  :{R:'Realistic',I:'Investigative',A:'Artistic',S:'Social',E:'Enterprising',C:'Conventional'};
+        const names=(''+v).toUpperCase().replace(/[^RIASEC]/g,'').split('').map(c=>M[c]).filter(Boolean);
+        return names.length ? (v+' — '+names.join(' · ')) : v;
+      }
+      return v;
+    },
     empty(){ return this.fields.every(f=>!this.has(f.k)) && this.listFields.every(lf=>!(this.record[lf.k]||[]).length) && !this.hasRiasec(); },
     hasRiasec(){ const r=this.record.riasec||{}; return Object.values(r).some(v=>v>0); },
     // B3: the record panel follows the conversation's language. Explicit picker wins; under Auto we
