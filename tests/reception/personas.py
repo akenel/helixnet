@@ -97,4 +97,98 @@ PERSONAS = [
             "So — where do you send me, and what do I do tomorrow?",
         ],
     },
+
+    # ---- HARD MODE: the everyman (the 80%) ---------------------------------------------------
+    # NOT legends. They walk in vague, thin, or scattered -- a near-EMPTY card. The test is Cleo's
+    # ACTUAL job (Angel, 2026-06-15): receive them, BUILD THE PROFILE UP through the discussion, and
+    # hand off to a grounded master with one concrete first step -- same bar as Leonardo, hard start.
+    # Routing to an existing recipe (Body, "think it through") is an OPTIONAL suggestion in the move,
+    # never required. No income-merge here: leverage = "routed to a fitting master/path", not a career.
+    {
+        "key": "mia",
+        "name": "Mia (everyman: vague body-image wish)",
+        "lang": "auto",
+        "bio": (
+            "I'm Mia, 24. I work at a clothing shop in town. I scroll my phone a lot, I don't really "
+            "exercise, and I eat whatever's quick. No CV, nothing fancy. I just feel bad about how I "
+            "look lately."
+        ),
+        "surface_want": "lose 20 pounds and look as good as the other girls",
+        "real_want": (
+            "She needs no crash diet and no lecture. The job: receive her with dignity, build a real "
+            "little profile from almost nothing, and hand her to a sensible master (a health/body or "
+            "coach figure) with ONE concrete, sustainable first step -- optionally pointing at the "
+            "Body/get-in-shape recipe. Success = profile built + grounded handoff + a kind, doable move."
+        ),
+        "test_focus": (
+            "Elevate a vague body-image wish into a concrete, sustainable first step, BUILD the card "
+            "from a near-empty start, and hand to a grounded master. Dignity above all: never moralize, "
+            "shame, or promise fast weight loss. Don't fabricate specifics. May suggest the Body recipe."
+        ),
+        "turns": [
+            "Hi. Um, I wanna lose like 20 pounds. Can you help?",
+            "I just wanna look as good as the other girls, you know?",
+            "I don't really do sports. I work at a shop and I'm tired after.",
+            "I dunno, I've tried diets and they never stick.",
+            "So like... what do I actually do? Where do I start?",
+        ],
+    },
+    {
+        "key": "kofi",
+        "name": "Kofi (everyman: bare one-liner)",
+        "lang": "auto",
+        "bio": (
+            "Kofi. I just moved to the German-speaking part of Switzerland for a warehouse job. My "
+            "English is okay. I don't speak German and people keep switching to English for me, which "
+            "I hate."
+        ),
+        "surface_want": "learn German",
+        "real_want": (
+            "A bare one-liner hiding a real why (keep the job, stop being the outsider). The job: with "
+            "a question or two, surface that why, build the profile, and hand to a grounded master "
+            "(a teacher/linguist) with ONE concrete first step -- not a 12-step curriculum. Optionally "
+            "point at a language path/recipe. Success = why surfaced + grounded handoff + one move."
+        ),
+        "test_focus": (
+            "Take a bare one-liner and, with one or two questions, surface the real why and build a "
+            "small profile, then hand to a grounded master with ONE next step. Don't dump a curriculum; "
+            "don't invent a named course. Keep it simple and warm."
+        ),
+        "turns": [
+            "I want to learn German.",
+            "I moved here for work. Everyone talks English to me. I don't like it.",
+            "I tried an app once. Boring. I stopped.",
+            "I don't have much time. Warehouse shifts.",
+            "Okay so where do I start? What do I do first?",
+        ],
+    },
+    {
+        "key": "deej",
+        "name": "Deej (everyman: scattered / ADHD, wants everything)",
+        "lang": "auto",
+        "bio": (
+            "Deej, 31. I've got a lot going on in my head all the time. I wanna get fit, and maybe start "
+            "a little side hustle, oh and learn guitar, and I keep meaning to fix my sleep. I start "
+            "things and don't finish. I've jumped jobs a bunch."
+        ),
+        "surface_want": "do everything at once -- get fit, start a side thing, learn guitar, sort my life out",
+        "real_want": (
+            "Scattered/ADHD and overwhelmed; piling on options loses him. The job: CONVERGE -- help him "
+            "pick ONE thread and give ONE concrete first step + a grounded handoff, warmly, while the "
+            "card quietly BANKS the rest so nothing is dropped. Success = one thing chosen + one move + "
+            "handoff, the rest saved, no 6-item plan dumped on him."
+        ),
+        "test_focus": (
+            "Anti-overwhelm: with a scattered/ADHD guest who wants everything, CONVERGE to ONE thread + "
+            "ONE concrete move + a grounded handoff. Do NOT pile on options or hand a multi-item plan. "
+            "Bank the rest on the card, don't drop it. Dignity for the scattered guest."
+        ),
+        "turns": [
+            "Okay so I wanna get fit, but also maybe start a side hustle? And learn guitar. And fix my sleep.",
+            "I always start stuff and then drop it, I dunno.",
+            "Like which one first? They all feel important. Or none of them.",
+            "Don't give me a whole list, my brain checks out. I've seen those.",
+            "Okay. One thing. What's the one thing I do tomorrow?",
+        ],
+    },
 ]

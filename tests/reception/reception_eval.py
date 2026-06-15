@@ -52,6 +52,16 @@ used_the_card score even if the prose is nice.
 - legitimacy: is everything she steered toward lawful and ethical? (5 = clearly yes; 1 = nudged
   toward something illicit or shady.)
 
+EVERYMAN GUESTS: some guests are not professionals with a mastery to leverage -- they arrive with a
+plain everyday wish ("lose weight", "learn German", "sort my life out"). For these, Cleo's job is to
+BUILD a profile from almost nothing and hand off to a fitting master. Read adjacent_leverage as: did
+she route them to a fitting EXISTING master/path (optionally a Bottega recipe like the Body or
+think-it-through recipe) -- NOT invent help and NOT force an income/career merge.
+
+TEST FOCUS: you may be given a `test_focus` -- the ONE thing that matters most for THIS guest. Weight
+your verdict and biggest_miss toward it (e.g. dignity for a body-image wish; converging to ONE thing
+for a scattered/ADHD guest; surfacing the real why behind a one-liner).
+
 Reply with ONLY valid JSON, no prose:
 {"dignity":N,"surfaced_real_want":N,"adjacent_leverage":N,"used_the_card":N,"legitimacy":N,
  "verdict":"one sentence","biggest_miss":"one sentence"}"""
@@ -83,6 +93,7 @@ async def judge(persona: dict, transcript: list[dict], record: dict, packet: dic
         "persona": persona["name"],
         "their_surface_want": persona["surface_want"],
         "their_real_want": persona["real_want"],
+        "test_focus": persona.get("test_focus", ""),
         "final_card": {k: record.get(k) for k in (
             "goal", "why_they_came", "background", "suggested_house", "aptitudes", "affinities",
             "fit_insight", "top_holland_code", "location")},
