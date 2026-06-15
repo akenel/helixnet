@@ -31,6 +31,8 @@ import re
 import sys
 
 from src.compute import concierge as cc
+from src.compute import reception as rcp
+from src.services.square_bridge import list_legends
 from tests.reception.personas import PERSONAS
 
 JUDGE_SYS = """You are a strict, fair examiner of a concierge named Cleo who receives guests at
@@ -58,8 +60,8 @@ _REGREET = ("welcome", "expecting you", "nice to meet", "welcome back", "esteeme
 _SENSITIVE = ("marital_status", "dependents", "capital", "_meta")
 
 
-def hard_checks(openers: list[str], record: dict) -> dict:
-    """The deterministic gate — no brain, no opinion."""
+def hard_checks(openers: list[str], record: dict, match: dict) -> dict:
+    """The deterministic gate — no brain, no opinion. Includes the R3 handoff (P3)."""
     sl = cc.master_slice(record)
     regreet = sum(1 for o in openers[1:] if any(p in o.lower() for p in _REGREET))
     return {
@@ -69,10 +71,14 @@ def hard_checks(openers: list[str], record: dict) -> dict:
         "no_invented_fiction": not cc.fiction_flagged(record),
         "reached_goal": bool((record.get("goal") or "").strip()),
         "suggested_house": bool((record.get("suggested_house") or "").strip()),
+        # R3 handoff: a GROUNDED master takes the desk (not abstain) with a real sticky-note move.
+        "handoff_grounded": bool((match.get("master") or "").strip())
+        and match.get("confidence") != "abstain",
+        "handoff_has_move": bool((match.get("first_step") or "").strip()),
     }
 
 
-async def judge(persona: dict, transcript: list[dict], record: dict) -> dict:
+async def judge(persona: dict, transcript: list[dict], record: dict, packet: dict) -> dict:
     payload = json.dumps({
         "persona": persona["name"],
         "their_surface_want": persona["surface_want"],
@@ -80,6 +86,10 @@ async def judge(persona: dict, transcript: list[dict], record: dict) -> dict:
         "final_card": {k: record.get(k) for k in (
             "goal", "why_they_came", "background", "suggested_house", "aptitudes", "affinities",
             "fit_insight", "top_holland_code", "location")},
+        # the R3 handoff Cleo produced — the master + the concrete first move she converged to.
+        "handoff": {"master": packet.get("master"), "house": packet.get("house"),
+                    "why_picked": packet.get("why_picked"), "first_step": packet.get("first_step"),
+                    "confidence": packet.get("confidence"), "alternate": packet.get("alternate")},
         "transcript": [{"who": ("GUEST" if t["role"] == "member" else "CLEO"),
                         "text": t["content"]} for t in transcript],
     }, ensure_ascii=False)
@@ -94,7 +104,7 @@ async def judge(persona: dict, transcript: list[dict], record: dict) -> dict:
         return {}
 
 
-async def run_persona(p: dict) -> dict:
+async def run_persona(p: dict, roster: list[dict]) -> dict:
     extracted = await cc.extract_record([{"role": "member", "content": p["bio"]}])
     record = cc.stamp_provenance(cc.merge_record(cc.blank_record(), extracted), extracted)
     transcript, openers = [], []
@@ -106,8 +116,12 @@ async def run_persona(p: dict) -> dict:
         fresh = await cc.extract_record(transcript, record)
         if isinstance(fresh, dict):
             record = cc.stamp_provenance(cc.merge_record(record, fresh), fresh)
-    return {"persona": p, "record": record, "transcript": transcript,
-            "hard": hard_checks(openers, record), "soft": await judge(p, transcript, record)}
+    # R3: the handoff — match the finished card to a grounded master + the sticky-note move.
+    match = await rcp.match_reception(record, roster, p.get("lang", "auto"))
+    packet = rcp.build_reception_packet(record, match)
+    return {"persona": p, "record": record, "transcript": transcript, "match": match, "packet": packet,
+            "hard": hard_checks(openers, record, match),
+            "soft": await judge(p, transcript, record, packet)}
 
 
 def print_report(r: dict) -> tuple[bool, float]:
@@ -119,6 +133,11 @@ def print_report(r: dict) -> tuple[bool, float]:
     print(f"  card         : goal={record.get('goal')!r}")
     print(f"                 house={record.get('suggested_house')!r}  holland={record.get('top_holland_code')!r}")
     print(f"                 aptitudes({len(record.get('aptitudes') or [])})={record.get('aptitudes')}")
+    m = r["match"]
+    print(f"  HANDOFF (R3): master={m.get('master')!r} house={m.get('house')!r} "
+          f"confidence={m.get('confidence')!r}" + (f" alt={m.get('alternate')!r}" if m.get('alternate') else ""))
+    print(f"                why : {m.get('why')}")
+    print(f"                move: {m.get('first_step')}")
     hard_ok = all(hard.values())
     print(f"\n  HARD (gate): {'PASS' if hard_ok else 'FAIL'}")
     for k, v in hard.items():
@@ -138,8 +157,10 @@ def print_report(r: dict) -> tuple[bool, float]:
 async def main():
     keys = sys.argv[1:]
     chosen = [p for p in PERSONAS if not keys or p["key"] in keys]
-    print(f"Running {len(chosen)} persona(s): {', '.join(p['key'] for p in chosen)}")
-    results = [await run_persona(p) for p in chosen]   # serial — kinder to the brain
+    roster = await list_legends(masters_only=True, limit=500)   # THE board — the matcher routes only here
+    print(f"Running {len(chosen)} persona(s): {', '.join(p['key'] for p in chosen)}  "
+          f"(board: {len(roster)} masters)")
+    results = [await run_persona(p, roster) for p in chosen]   # serial — kinder to the brain
     print("\n" + "=" * 60 + "\nSCORECARD\n" + "=" * 60)
     n_pass = 0
     for r in results:
