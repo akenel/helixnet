@@ -51,11 +51,22 @@
 
   <template x-if="token">
   <div>
+    <!-- search: find a master by name across all houses -->
+    <div class="mb-5 relative max-w-xl mx-auto">
+      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
+      <input x-model="q" @input="runSearch()" @keyup.escape="clearSearch()" type="search"
+             placeholder="Search a master by name — type &quot;Ben&quot; for Benjamin Franklin"
+             class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-24 py-2.5 text-sm text-slate-200 focus:border-brand outline-none">
+      <button @click="runSearch()"
+              class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-brand/90 hover:bg-brand text-white text-xs font-semibold">Search</button>
+    </div>
+
     <!-- breadcrumb -->
     <div class="flex items-center gap-2 text-sm text-slate-500 mb-4" x-show="view!=='houses'">
-      <button @click="view='houses'" class="hover:text-slate-300">← All Houses</button>
+      <button @click="view='houses'; clearSearch()" class="hover:text-slate-300">← All Houses</button>
       <span x-show="house" class="text-slate-600">/</span>
       <span x-show="house" class="text-slate-300" x-text="house"></span>
+      <span x-show="!house && searching" class="text-slate-300" x-text="'Results for &quot;'+q+'&quot; ('+people.length+')'"></span>
     </div>
 
     <!-- HOUSES -->
@@ -208,7 +219,7 @@
 <script>
 function legends(){
   return {
-    token:null, houses:[], people:[], house:null, view:'houses',
+    token:null, houses:[], people:[], allPeople:[], house:null, view:'houses', q:'', searching:false,
     page:0, perPage:12, selected:null, question:'', answer:'', busy:false, err:'', loading:false, suggested:[], suggestedFor:false, portrait:'', showWrapper:false,
     copied:false, saving:false, savedId:null, savedMsg:'', reading:false, recent:[], pcBusy:false, speaking:false, lang:'en',
     init(){
@@ -252,8 +263,22 @@ function legends(){
         const d=await r.json(); this.houses=d.houses||[]; }catch(e){ this.err='could not load'; }
       this.loading=false;
     },
+    async ensureAll(){
+      if(this.allPeople.length) return;
+      try{ const r=await fetch('/api/v1/compute/bottega/legends',{headers:this.hdr()});
+        const d=await r.json(); this.allPeople=d.legends||[]; }catch(e){}
+    },
+    async runSearch(){
+      const term=(this.q||'').trim().toLowerCase();
+      if(!term){ this.clearSearch(); return; }
+      await this.ensureAll();
+      this.searching=true; this.house=null; this.view='people'; this.page=0;
+      // name match across all houses -- "ben" finds Benjamin Franklin
+      this.people=this.allPeople.filter(p=>(p.name||'').toLowerCase().includes(term));
+    },
+    clearSearch(){ this.q=''; this.searching=false; this.view='houses'; this.house=null; },
     async openHouse(name){
-      this.house=name; this.view='people'; this.page=0; this.loading=true; this.people=[];
+      this.searching=false; this.house=name; this.view='people'; this.page=0; this.loading=true; this.people=[];
       try{ const r=await fetch('/api/v1/compute/bottega/legends?house='+encodeURIComponent(name),{headers:this.hdr()});
         const d=await r.json(); this.people=d.legends||[]; }catch(e){ this.err='could not load'; }
       this.loading=false;
