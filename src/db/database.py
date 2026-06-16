@@ -127,6 +127,9 @@ _ADDITIVE_COLUMNS: list[str] = [
     "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_house ON bottega_tasks (house)",
     "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_project ON bottega_tasks (project)",
     "CREATE INDEX IF NOT EXISTS ix_bottega_tasks_task_key ON bottega_tasks (task_key)",
+    # BYOH (2026-06-16): a node reports its probed capabilities (tools, ram, gpu) so
+    # the Provider Console can show the no-surprises "what can this box run" window.
+    "ALTER TABLE compute_nodes ADD COLUMN IF NOT EXISTS caps_json TEXT",
 ]
 
 

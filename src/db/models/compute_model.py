@@ -207,10 +207,24 @@ class ComputeNodeModel(Base):
         Float, nullable=False, default=5.0,
         comment="Stars (review system is a later block; display-only for now)",
     )
+    caps_json: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="JSON of probed capabilities: tools present, ram_mb, gpu. "
+                "Drives the no-surprises 'what can this box run' window + dispatch preflight.",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc), nullable=False,
     )
+
+    @property
+    def capabilities(self) -> dict:
+        """Parsed capabilities (empty dict for legacy nodes that never reported)."""
+        import json
+        try:
+            return json.loads(self.caps_json) if self.caps_json else {}
+        except (ValueError, TypeError):
+            return {}
 
 
 # ================================================================

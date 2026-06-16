@@ -99,6 +99,7 @@ class NodeRead(BaseModel):
     gpu: str
     status: str
     reputation: float
+    capabilities: dict = {}   # probed tools/ram/gpu -- the no-surprises window
     earned: int = 0      # credits earned via jobs on this node (computed)
     running: int = 0     # jobs running on it now (computed)
 
@@ -107,6 +108,7 @@ class NodeRegister(BaseModel):
     slug: str = Field(..., min_length=2, max_length=64, pattern=r"^[a-z0-9][a-z0-9-]*$")
     label: str = Field("", max_length=120)
     gpu: str = Field("CPU", max_length=80)
+    capabilities: dict | None = Field(None, description="probed tools/ram/gpu from the box")
 
 
 class NodeStatusUpdate(BaseModel):

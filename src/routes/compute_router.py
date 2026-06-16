@@ -200,6 +200,7 @@ async def register_node(
         slug=payload.slug, owner=current_user["username"],
         label=payload.label or payload.slug, gpu=payload.gpu,
         status=ComputeNodeStatus.ONLINE,
+        caps_json=json.dumps(payload.capabilities) if payload.capabilities else None,
     )
     db.add(node)
     await db.commit()
