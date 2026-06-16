@@ -119,18 +119,30 @@
       </div>
     </div>
 
+    <!-- accordion: one category open at a time -- compact, less scrolling -->
     <template x-for="c in cats" :key="c.key">
-      <div x-show="inCat(c.key).length" class="mb-8">
-        <div class="text-sm font-semibold text-slate-300 mb-1" x-text="c.label"></div>
-        <div class="text-xs text-slate-500 mb-3" x-text="c.hint"></div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <template x-for="r in inCat(c.key)" :key="r.slug">
-            <button @click="pick(r)" class="card rounded-xl p-5 text-left hover:border-brand/50 transition">
-              <div class="text-2xl mb-2" x-text="r.emoji"></div>
-              <div class="font-semibold" x-text="r.title"></div>
-              <div class="text-[11px] text-slate-500 font-mono mt-1" x-text="'~'+r.est_credits+' credits'"></div>
-            </button>
-          </template>
+      <div x-show="inCat(c.key).length" class="mb-3 card rounded-xl overflow-hidden">
+        <button @click="toggleCat(c.key)"
+                class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-800/40 transition">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-slate-200" x-text="c.label"></div>
+            <div class="text-xs text-slate-500 mt-0.5" x-text="c.hint"></div>
+          </div>
+          <span class="text-[11px] font-mono text-slate-500 whitespace-nowrap"
+                x-text="inCat(c.key).length + (inCat(c.key).length===1?' recipe':' recipes')"></span>
+          <span class="text-slate-400 text-xs transition-transform duration-200"
+                :class="openCat===c.key ? 'rotate-180' : ''">▾</span>
+        </button>
+        <div x-show="openCat===c.key" x-transition.opacity class="px-4 pb-4 pt-1 border-t border-slate-800/70">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <template x-for="r in inCat(c.key)" :key="r.slug">
+              <button @click="pick(r)" class="card rounded-xl p-5 text-left hover:border-brand/50 transition">
+                <div class="text-2xl mb-2" x-text="r.emoji"></div>
+                <div class="font-semibold" x-text="r.title"></div>
+                <div class="text-[11px] text-slate-500 font-mono mt-1" x-text="'~'+r.est_credits+' credits'"></div>
+              </button>
+            </template>
+          </div>
         </div>
       </div>
     </template>
@@ -310,6 +322,7 @@ function bottega() {
     savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
     editing: false, editId: null, editTitle: '', editOutput: '', editBusy: false, editMsg: '',
     hasProfile: false, profileChecked: false,
+    openCat: 'identity',   // accordion: first category open by default
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
@@ -319,6 +332,7 @@ function bottega() {
       { key:'spirit',   label:'✨ Your Story',         hint:'find your why — childhood, passion, dreams, your one-liner & 22-second pitch' },
     ],
     inCat(k) { return this.recipes.filter(r => r.category === k); },
+    toggleCat(k) { this.openCat = this.openCat === k ? '' : k; },
     boot() {
       this.token = this.loadToken(); this.me = this.decodeUser();
       this.fetchMenu();
