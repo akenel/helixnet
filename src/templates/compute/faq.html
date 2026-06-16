@@ -44,15 +44,28 @@
     <p class="text-sm text-slate-400 mt-1">The square hosts the trade, not the model. Here's the deal in plain terms.</p>
   </div>
 
-  <!-- quick nav -->
-  <div class="card rounded-xl p-4 flex flex-wrap gap-2 text-xs font-mono">
-    <a href="#credit" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What's a credit?</a>
-    <a href="#sop" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What's an SOP?</a>
-    <a href="#templates" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Templates</a>
-    <a href="#queue" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Wait your turn</a>
-    <a href="#byo" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">BYO brain</a>
-    <a href="#earn" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Earning credits</a>
-    <a href="#rules" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Acceptable use</a>
+  <!-- quick nav -- grouped submenu -->
+  <div class="card rounded-xl p-4 space-y-3 text-xs font-mono">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-[10px] uppercase tracking-wider text-slate-500 w-full sm:w-28">Using the square</span>
+      <a href="#credit" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What's a credit?</a>
+      <a href="#sop" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What's an SOP?</a>
+      <a href="#templates" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Templates</a>
+      <a href="#queue" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Wait your turn</a>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-[10px] uppercase tracking-wider text-brand w-full sm:w-28">Bring your own</span>
+      <a href="#byo" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">BYO brain</a>
+      <a href="#byoh" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">BYO hardware</a>
+      <a href="#whatruns" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">What can my machine run?</a>
+      <a href="#sponsor" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Lend a GPU, earn credits</a>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-[10px] uppercase tracking-wider text-slate-500 w-full sm:w-28">Trust &amp; rules</span>
+      <a href="#earn" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Earning credits</a>
+      <a href="#software" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">My own software?</a>
+      <a href="#rules" class="px-3 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-700 transition">Acceptable use</a>
+    </div>
   </div>
 
   <section id="credit" class="card rounded-xl p-6 q">
@@ -107,11 +120,71 @@
     </p>
   </section>
 
+  <section id="byoh" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> What's "Bring Your Own Hardware"?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      A recipe runs on a <strong>machine</strong> — and that machine can be ours, or <strong>yours</strong>. Lend your computer to the
+      square and jobs run on it. Your box reaches <em>out</em> to the square to pull work, runs it, and sends the result back —
+      so <strong>nothing on your machine is exposed</strong> (no open ports, no inbound connections). Unplug anytime.
+    </p>
+    <p class="text-sm text-slate-400 mt-3 leading-relaxed">
+      Setup is one step: register your machine, and it tells the square what it can do. From then on it quietly does work and
+      <span class="text-emerald-400 font-semibold">earns you credits</span>. <span class="text-slate-400">Bring your own brain, bring your own hardware.</span>
+    </p>
+  </section>
+
+  <section id="whatruns" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> What can my machine run?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      Most recipes need just three small, free tools — and a normal laptop has room for all of them:
+    </p>
+    <ul class="text-sm text-slate-400 mt-3 space-y-1.5 list-disc list-inside">
+      <li><span class="font-mono text-emerald-300">Piper</span> — turns text into a spoken voice.</li>
+      <li><span class="font-mono text-emerald-300">Puppeteer</span> — turns designs into images, PDFs, and video frames.</li>
+      <li><span class="font-mono text-emerald-300">ffmpeg</span> — mixes voice + visuals into video.</li>
+    </ul>
+    <p class="text-sm text-slate-400 mt-3 leading-relaxed">
+      Together that's about <span class="font-mono">1&nbsp;GB</span> on disk and well under <span class="font-mono">1&nbsp;GB</span> of memory while running —
+      a voiceover video takes <span class="font-mono">~2 seconds</span> on a plain CPU. <strong>No graphics card needed</strong> for voice, captions,
+      cards, print, or video. On the Provider Console, green badges show which tools your box has, and it tells you plainly what it
+      <em>runs</em> and <em>can't run</em>. Heavy image / 3D recipes are the only ones that need a real GPU.
+    </p>
+  </section>
+
+  <section id="sponsor" class="card rounded-xl p-6 q border-l-2 border-emerald-500/50">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-emerald-400">●</span> Lend a GPU, earn credits</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      Got a gaming PC that sits dark most of the day? Plug it into La Piazza. It runs the heavy recipes — <strong>image generation, 3D</strong> —
+      that a laptop can't, and <span class="text-emerald-400 font-semibold">earns you credits while you sleep.</span>
+    </p>
+    <p class="text-sm text-slate-400 mt-3 leading-relaxed">
+      One command, nothing exposed, unplug whenever. Costs you nothing but the electricity you'd spend anyway.
+      Spend the credits anywhere in the square. <span class="text-slate-400">So… why wouldn't you?</span>
+    </p>
+  </section>
+
   <section id="earn" class="card rounded-xl p-6 q">
     <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> I blew my credits. Now what?</h2>
     <p class="text-sm text-slate-300 mt-3 leading-relaxed">
       You earn more. Lend your idle machine to the network, contribute skills, help a neighbour — credits come back through work, not a monthly ransom.
       No money required; the square balances itself. <span class="text-slate-400">And next time, you'll use tighter SOPs. Fool me once…</span>
+    </p>
+  </section>
+
+  <section id="software" class="card rounded-xl p-6 q">
+    <h2 class="text-lg font-bold flex items-center gap-2"><span class="text-brand">●</span> Can I bring my own software?</h2>
+    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+      Two things you <em>can</em> swap freely: <strong>your brain</strong> (the AI model) and <strong>your hardware</strong> (the machine).
+      One thing you <em>can't</em>: the <strong>software</strong> — because the software <em>is</em> the recipe, and the recipes are tested.
+      That's the guarantee, not a limit.
+    </p>
+    <ul class="text-sm text-slate-400 mt-3 space-y-1.5 list-disc list-inside">
+      <li><strong>No surprises</strong> — we wrote and tested the steps, so we know what comes out.</li>
+      <li><strong>It protects the people who lend machines</strong> — your computer only ever runs vetted recipes, never a stranger's mystery code.</li>
+    </ul>
+    <p class="text-sm text-slate-400 mt-3 leading-relaxed">
+      The menu still grows: new recipes get added after testing — like an <strong>app store</strong>, not sideloading.
+      Every dish on the menu has been cooked and tasted first.
     </p>
   </section>
 

@@ -239,6 +239,26 @@
       <p class="text-sm text-slate-500">Lend your idle machine to the square. Jobs that run on it earn you credits.</p>
     </div>
 
+    <!-- BYOH no-brainer callout -->
+    <div class="card rounded-xl p-4 border-l-2 border-emerald-500/50 text-sm">
+      <div class="flex items-start gap-3">
+        <span class="text-lg leading-none">🖥</span>
+        <div class="space-y-1">
+          <div class="font-semibold text-slate-200">Bring your own hardware — three steps</div>
+          <ol class="text-slate-400 text-xs space-y-0.5 list-decimal list-inside">
+            <li>Register your machine below (give it a name).</li>
+            <li>It reports what it can do — the <span class="text-emerald-300">green badges</span> show its tools.</li>
+            <li>Jobs it can run flow to it, and you <span class="text-emerald-400">earn credits</span>. Nothing exposed; unplug anytime.</li>
+          </ol>
+          <div class="text-xs text-slate-500 pt-0.5">
+            New to this? <a href="/compute/faq#byoh" class="text-brand hover:underline">What's BYO hardware?</a>
+            · <a href="/compute/faq#whatruns" class="text-brand hover:underline">What can my machine run?</a>
+            · <a href="/compute/faq#sponsor" class="text-emerald-400 hover:underline">Lend a GPU →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card rounded-xl overflow-hidden">
       <div class="px-4 py-2.5 border-b border-slate-800 text-xs font-mono text-slate-400">my nodes</div>
       <div class="divide-y divide-slate-800/70">
@@ -249,20 +269,23 @@
               <div class="text-xs text-slate-500" x-text="n.label+' · '+n.gpu+' · ★'+n.reputation"></div>
               <!-- BYOH capability window: what this box has, and what it can / can't run -->
               <template x-if="n.capabilities && n.capabilities.tools">
-                <div class="mt-1.5">
+                <div class="mt-1.5" title="Green = this box has the tool. Greyed = it doesn't.">
                   <div class="flex flex-wrap items-center gap-1">
                     <template x-for="(present,tool) in n.capabilities.tools" :key="tool">
                       <span class="px-1.5 py-0.5 rounded text-[10px] font-mono border"
                             :class="present?'bg-emerald-500/10 text-emerald-300 border-emerald-500/30':'bg-slate-700/30 text-slate-500 border-slate-700 line-through'"
+                            :title="tool+': '+(present?'installed on this box':'not installed')"
                             x-text="tool"></span>
                     </template>
                     <span class="px-1.5 py-0.5 rounded text-[10px] font-mono border border-slate-600 text-slate-400"
-                          x-show="n.capabilities.ram_mb" x-text="Math.round(n.capabilities.ram_mb/1024)+'GB'"></span>
+                          x-show="n.capabilities.ram_mb" title="memory available on this box"
+                          x-text="Math.round(n.capabilities.ram_mb/1024)+'GB'"></span>
                     <span class="px-1.5 py-0.5 rounded text-[10px] font-mono border"
                           :class="n.capabilities.gpu?'bg-violet-500/10 text-violet-300 border-violet-500/30':'bg-slate-700/30 text-slate-500 border-slate-700'"
+                          :title="n.capabilities.gpu?'has a graphics card -- can run image/3D recipes':'no graphics card -- CPU recipes only'"
                           x-text="n.capabilities.gpu?'GPU':'no GPU'"></span>
                   </div>
-                  <div class="text-[11px] mt-1">
+                  <div class="text-[11px] mt-1" title="Which recipes this box can and can't run, based on its tools.">
                     <span class="text-emerald-400" x-text="'runs: '+nodeRuns(n).can.join(', ')"></span>
                     <span class="text-slate-500" x-show="nodeRuns(n).cannot.length" x-text="' · can'+String.fromCharCode(39)+'t: '+nodeRuns(n).cannot.join(', ')"></span>
                   </div>
