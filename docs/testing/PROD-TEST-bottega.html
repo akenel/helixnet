@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Piazza / Bottega — Prod Test Sheet</title>
+<style>
+  :root { --red:#8B0000; --ink:#1c2733; --mut:#6b7785; --line:#e3e7ec; --ok:#0a7d55; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; color: var(--ink);
+         background:#f6f7f9; margin:0; padding:16px; line-height:1.5; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { border-bottom:3px solid var(--red); padding-bottom:10px; margin-bottom:8px; }
+  h1 { font-size:1.4rem; margin:0; } h1 b{ color:var(--red); }
+  .sub { color:var(--mut); font-size:.85rem; margin-top:4px; }
+  .base { font-family:monospace; background:#fff; border:1px solid var(--line); border-radius:8px;
+          padding:8px 12px; margin:12px 0; font-size:.85rem; }
+  .legend { font-size:.8rem; color:var(--mut); margin-bottom:16px; }
+  .scn { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .scn h2 { font-size:1.05rem; margin:0 0 4px; color:var(--red); }
+  .scn .why { color:var(--mut); font-size:.82rem; margin:0 0 12px; }
+  .step { border-top:1px solid var(--line); padding:11px 0; }
+  .step:first-of-type { border-top:none; }
+  .step a { color:var(--red); font-family:monospace; font-size:.82rem; word-break:break-all; }
+  .exp { font-size:.85rem; margin-top:3px; }
+  .exp b { color:var(--ink); }
+  .chk { margin-top:7px; display:flex; gap:18px; font-size:.8rem; color:var(--mut); user-select:none; }
+  .chk label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .chk input { width:20px; height:20px; accent-color:var(--ok); }
+  .note { font-size:.78rem; color:var(--mut); background:#fffaf0; border-left:3px solid #d99b00;
+          padding:6px 10px; border-radius:0 6px 6px 0; margin-top:8px; }
+  footer { text-align:center; color:var(--mut); font-size:.78rem; margin-top:20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>La <b>Piazza</b> / Bottega — Prod Test Sheet</h1>
+    <div class="sub">New-user scenarios · shipped 2026-06-16 (accordion · legends search · BYOH capability window · FAQ)</div>
+  </header>
+
+  <div class="base">Base URL: <b>https://bottega.lapiazza.app</b></div>
+  <div class="legend">Tap each link (opens in a new tab). Tick <b>D</b> after testing on desktop and <b>M</b> after mobile.
+    Start <b>logged out / incognito</b> to get the true new-user view.</div>
+
+  <!-- A -->
+  <div class="scn">
+    <h2>A · Front door — brand new visitor</h2>
+    <p class="why">The first 30 seconds. No CV, one motion.</p>
+    <div class="step">
+      <a href="https://bottega.lapiazza.app/get-started" target="_blank">/get-started</a>
+      <div class="exp"><b>Expect:</b> "Welcome to La Piazza" — enter a name + a line about what you do → "Enter your Bottega".</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+    <div class="step">
+      <div class="exp"><b>Expect:</b> after login you land in the workshop; a confetti welcome and your profile % shows.</div>
+      <div class="note">Mobile: nav collapses — check the menu opens and "Get Started" is tappable.</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="scn">
+    <h2>B · Ask Cleo — the card</h2>
+    <p class="why">The host reads you and starts your card.</p>
+    <div class="step">
+      <a href="https://bottega.lapiazza.app/compute/me" target="_blank">/compute/me</a> &nbsp;·&nbsp;
+      <a href="https://bottega.lapiazza.app/compute/concierge" target="_blank">/compute/concierge (Ask Cleo)</a>
+      <div class="exp"><b>Expect:</b> Cleopatra greets you by name, lists what she already sees, and offers to sharpen your card.</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="scn">
+    <h2>C · The Workshop — pick a recipe (NEW accordion)</h2>
+    <p class="why">The recipe catalog, now compact.</p>
+    <div class="step">
+      <a href="https://bottega.lapiazza.app/compute/bottega" target="_blank">/compute/bottega</a>
+      <div class="exp"><b>Expect:</b> categories are <b>collapsed accordions</b> — "About You" open, others closed with a ▾ and a recipe count. Tap a header → it opens, the open one closes.</div>
+      <div class="exp"><b>Then:</b> pick a card → answer a couple of questions → get the output (you already did this — the workout plan ✓).</div>
+      <div class="note">Mobile: headers should be easy taps; only one open at a time = little scrolling.</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="scn">
+    <h2>D · The Legends — search (NEW)</h2>
+    <p class="why">Find a master by name across all houses.</p>
+    <div class="step">
+      <a href="https://bottega.lapiazza.app/compute/legends" target="_blank">/compute/legends</a>
+      <div class="exp"><b>Expect:</b> a search box on top. Type <b>"Ben"</b> → <b>Benjamin Franklin</b> appears (live, as you type). Clear → back to the Houses.</div>
+      <div class="exp"><b>Then:</b> open a master → ask a question → get a mentor reply.</div>
+      <div class="note">Mobile: the search keyboard should not cover results; tapping a result opens the master.</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="scn">
+    <h2>E · The Exchange — Bring Your Own Hardware (NEW)</h2>
+    <p class="why">The capability window + the no-brainer.</p>
+    <div class="step">
+      <a href="https://bottega.lapiazza.app/compute/dashboard" target="_blank">/compute/dashboard</a> → <b>Provider</b> tab
+      <div class="exp"><b>Expect:</b> a "Bring your own hardware — three steps" callout, and the demo node <b>angel-laptop</b> with green capability badges (<b>ffmpeg · piper · puppeteer · 15GB · no GPU</b>) and "runs: voice, captions, cards/print, video · can't: image/3D". Hover a badge → tooltip.</div>
+      <div class="note">Badges show for nodes that reported capabilities. A node registered via the form (no probe yet) shows none — that's the per-node-enroll upgrade, still to come.</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+  </div>
+
+  <!-- F -->
+  <div class="scn">
+    <h2>F · Help / FAQ (NEW submenu + sections)</h2>
+    <p class="why">The no-brainer explainer for the show.</p>
+    <div class="step">
+      <a href="https://bottega.lapiazza.app/compute/faq" target="_blank">/compute/faq</a>
+      <div class="exp"><b>Expect:</b> a grouped submenu (Using the square / Bring your own / Trust &amp; rules). Read <b>"Bring Your Own Hardware"</b>, <b>"What can my machine run?"</b>, <b>"Lend a GPU"</b>, <b>"Can I bring my own software?"</b>.</div>
+      <div class="chk"><label><input type="checkbox">D</label><label><input type="checkbox">M</label></div>
+    </div>
+  </div>
+
+  <footer>We host the square, not the model. · bottega.lapiazza.app · tick D + M as you go</footer>
+</div>
+</body>
+</html>
