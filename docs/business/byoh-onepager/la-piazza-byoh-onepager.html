@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 210mm; height: 297mm; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1c2733; background: #fff; }
+  body { padding: 14mm 15mm; display: flex; flex-direction: column; }
+  .red { color: #8B0000; }
+  .accent { color: #C0392B; }
+  .emerald { color: #0a7d55; }
+
+  header { border-bottom: 2px solid #8B0000; padding-bottom: 5mm; }
+  .brand { font-size: 26pt; font-weight: 800; letter-spacing: -0.5px; }
+  .brand .sub { font-size: 12pt; font-weight: 600; color: #8B0000; }
+  .kicker { font-size: 9.5pt; color: #6b7785; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 2mm; }
+
+  .hero { margin-top: 6mm; }
+  .hero h1 { font-size: 21pt; line-height: 1.12; font-weight: 800; }
+  .hero p { font-size: 11pt; color: #41505e; margin-top: 3mm; line-height: 1.45; max-width: 165mm; }
+
+  .cols { display: flex; gap: 6mm; margin-top: 7mm; }
+  .col { flex: 1; border: 1px solid #e3e7ec; border-radius: 3mm; padding: 5mm; }
+  .col h3 { font-size: 11.5pt; font-weight: 800; }
+  .col .tag { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8B0000; }
+  .col p { font-size: 9.5pt; color: #41505e; margin-top: 2.5mm; line-height: 1.4; }
+  .pills { margin-top: 3mm; display: flex; flex-wrap: wrap; gap: 1.5mm; }
+  .pill { font-size: 8pt; font-weight: 700; padding: 1mm 2.5mm; border-radius: 2mm; background: #eef7f2; color: #0a7d55; }
+  .pill.gpu { background: #f3eef9; color: #6b3fa0; }
+
+  .offer { margin-top: 7mm; border-left: 4px solid #0a7d55; background: #f1faf5; border-radius: 0 3mm 3mm 0; padding: 5mm 6mm; }
+  .offer h2 { font-size: 14pt; font-weight: 800; color: #0a7d55; }
+  .offer p { font-size: 10.5pt; color: #2b4a3d; margin-top: 2mm; line-height: 1.45; }
+  .offer .close { font-weight: 800; color: #0a7d55; }
+
+  .steps { display: flex; gap: 5mm; margin-top: 7mm; }
+  .step { flex: 1; }
+  .step .n { font-size: 16pt; font-weight: 800; color: #8B0000; }
+  .step h4 { font-size: 10pt; font-weight: 800; margin-top: 1mm; }
+  .step p { font-size: 9pt; color: #41505e; margin-top: 1.5mm; line-height: 1.4; }
+
+  .credit { margin-top: 7mm; font-size: 10pt; color: #41505e; border-top: 1px solid #e3e7ec; padding-top: 4mm; line-height: 1.5; }
+  .credit b { color: #1c2733; }
+
+  footer { margin-top: auto; border-top: 2px solid #8B0000; padding-top: 4mm; display: flex; justify-content: space-between; align-items: flex-end; }
+  footer .url { font-size: 13pt; font-weight: 800; color: #8B0000; }
+  footer .motto { font-size: 9pt; color: #6b7785; font-style: italic; }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">La Piazza <span class="sub">· Compute Exchange</span></div>
+    <div class="kicker">Bring Your Own Brain · Bring Your Own Hardware</div>
+  </header>
+
+  <div class="hero">
+    <h1>Your idle machine earns <span class="red">while you sleep.</span></h1>
+    <p>La Piazza is a town square where ordinary people make real things — a voiceover, a postcard, a video, a 3D print —
+       by running tested <strong>recipes</strong>. The thinking is shared and cheap. The <em>making</em> runs on hardware —
+       ours, or <strong>yours</strong>. Lend your machine, run the recipes, earn credits. No frontier-model bill, no rules
+       changing under you.</p>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="tag">Swap freely</div>
+      <h3>Your brain. Your hardware.</h3>
+      <p>Use any AI model (or our shared one), run on any capable machine. Both are interchangeable — the recipe stays in command.</p>
+    </div>
+    <div class="col">
+      <div class="tag">No GPU needed</div>
+      <h3>A normal laptop does plenty.</h3>
+      <p>Three small free tools (~1&nbsp;GB) cover most of it. A voiceover video renders in ~2 seconds on a plain CPU.</p>
+      <div class="pills"><span class="pill">voice</span><span class="pill">captions</span><span class="pill">cards / print</span><span class="pill">video</span></div>
+    </div>
+    <div class="col">
+      <div class="tag">The heavy tier</div>
+      <h3>A gaming rig unlocks more.</h3>
+      <p>A real graphics card runs the recipes a laptop can't — and earns the most credits.</p>
+      <div class="pills"><span class="pill gpu">images</span><span class="pill gpu">3D models</span><span class="pill gpu">AI video</span></div>
+    </div>
+  </div>
+
+  <div class="offer">
+    <h2>Lend a GPU — earn credits</h2>
+    <p>Got a gaming PC that sits dark most of the day? Plug it into La Piazza. One command, nothing on your machine is exposed,
+       unplug whenever. It quietly makes things for the square and earns you credits — costs you nothing but the electricity you'd
+       spend anyway. <span class="close">So… why wouldn't you?</span></p>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="n">1</div><h4>Pick a recipe</h4><p>Choose from the tested catalog — no code, no prompts to write.</p></div>
+    <div class="step"><div class="n">2</div><h4>It runs on capable hardware</h4><p>The square matches your job to a machine that can run it. No surprises.</p></div>
+    <div class="step"><div class="n">3</div><h4>Get a finished file</h4><p>A real result, every time. Lend your machine and you earn while others create.</p></div>
+  </div>
+
+  <div class="credit">
+    <b>Your own currency, fair and simple.</b> 1 credit = 1,000 tokens of brain work — pegged to real work, not a speculative coin,
+    auditable by a kid. Spend credits anywhere in the square; earn them by lending your machine or helping a neighbour.
+    <b>We make our own money, and it balances itself.</b>
+  </div>
+
+  <footer>
+    <div class="url">bottega.lapiazza.app</div>
+    <div class="motto">"We host the square, not the model."</div>
+  </footer>
+
+</body>
+</html>
