@@ -295,6 +295,14 @@
       <template x-if="output && output.output_type==='video'">
         <div>
           <video controls playsinline class="w-full rounded-lg bg-black" :src="output.result"></video>
+          <!-- stats: whose voice, shape, how long it took (transparency + optimize nudge) -->
+          <div class="text-[11px] font-mono text-slate-500 mt-2" x-show="output.meta">
+            🎙 <span class="text-slate-300" x-text="output.meta && output.meta.voice"></span> voice
+            · <span x-text="output.meta && output.meta.shape"></span>
+            <span x-show="output.meta && output.meta.karaoke"> · karaoke</span>
+            · made in <span class="text-slate-300" x-text="output.meta && output.meta.seconds"></span>s
+            <span x-show="output.meta && output.meta.seconds > 25" class="text-amber-400"> · tip: shorter scripts render faster</span>
+          </div>
           <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800">
             <a :href="output.result" download="voiceover.mp4" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download MP4</a>
             <a :href="output.result" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">↗ Open</a>

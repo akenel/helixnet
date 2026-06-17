@@ -105,7 +105,9 @@ def word_timestamps(wav: Path) -> list[tuple[str, float, float]]:
 
 
 def _karaoke_ass(words: list[tuple[str, float, float]], W: int, H: int, fontsize: int) -> str:
-    """Build an ASS subtitle that highlights each word as it's spoken (karaoke \\k)."""
+    """Build an ASS subtitle that highlights each word as it's spoken (karaoke \\k).
+    Words are wrapped into lines, then grouped into multi-line BLOCKS (a sentence or two
+    on screen at once) so the karaoke flows and fills the canvas instead of one short line."""
     wrap = max(14, int((W - 160) / (fontsize * 0.6)))
     lines, cur, cur_len = [], [], 0
     for w in words:
@@ -115,6 +117,16 @@ def _karaoke_ass(words: list[tuple[str, float, float]], W: int, H: int, fontsize
         cur.append(w); cur_len += wl
     if cur:
         lines.append(cur)
+    # group lines into blocks: prefer sentence ends, cap by what fits the canvas height
+    max_lines = 6 if H > W else 3      # portrait fills tall; landscape/square fewer
+    blocks, b = [], []
+    for ln in lines:
+        b.append(ln)
+        ends_sentence = ln[-1][0].rstrip().endswith((".", "!", "?"))
+        if len(b) >= max_lines or (ends_sentence and len(b) >= 2):
+            blocks.append(b); b = []
+    if b:
+        blocks.append(b)
     header = (
         "[Script Info]\nScriptType: v4.00+\n"
         f"PlayResX: {W}\nPlayResY: {H}\nScaledBorderAndShadow: yes\n\n"
@@ -129,14 +141,23 @@ def _karaoke_ass(words: list[tuple[str, float, float]], W: int, H: int, fontsize
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
     events = []
-    for line in lines:
-        start, end = line[0][1], line[-1][2]
-        parts = []
-        for i, (word, ws, we) in enumerate(line):
-            nxt = line[i + 1][1] if i + 1 < len(line) else we
-            cs = max(1, int(round((nxt - ws) * 100)))
-            parts.append(f"{{\\k{cs}}}{word} ")
-        events.append(f"Dialogue: 0,{_ass_time(start)},{_ass_time(end)},K,,0,0,0,,{''.join(parts).strip()}")
+    for block in blocks:
+        flat = [w for ln in block for w in ln]
+        start, end = flat[0][1], flat[-1][2]
+        # \k per word = time until the next word starts (flows across all lines of the block)
+        cs = []
+        for i, (word, ws, we) in enumerate(flat):
+            nxt = flat[i + 1][1] if i + 1 < len(flat) else we
+            cs.append(max(1, int(round((nxt - ws) * 100))))
+        parts, gi = [], 0
+        for li, ln in enumerate(block):
+            for (word, ws, we) in ln:
+                parts.append(f"{{\\k{cs[gi]}}}{word} ")
+                gi += 1
+            if li < len(block) - 1:
+                parts.append("\\N")
+        text = "".join(parts).replace(" \\N", "\\N").strip()
+        events.append(f"Dialogue: 0,{_ass_time(start)},{_ass_time(end)},K,,0,0,0,,{text}")
     return header + "\n".join(events) + "\n"
 
 
@@ -144,7 +165,7 @@ def compose_video(wav: Path, caption: str, out_mp4: Path, aspect: str = "square"
                   karaoke: bool = False) -> None:
     """WAV + caption -> MP4 (navy card, amber waveform, wrapped caption) at the chosen aspect."""
     W, H = ASPECTS.get(aspect, ASPECTS["landscape"])
-    fontsize = 64
+    fontsize = 72          # bigger = more presence / fills more of the canvas
     wave_h = int(H * 0.22)          # waveform band, proportional to the canvas
     wave_margin = int(H * 0.10)     # gap from the bottom
     cap_offset = int(H * 0.06)      # nudge the caption up from dead-center

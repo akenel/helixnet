@@ -6,6 +6,7 @@
 import json
 import os
 import re
+import time
 import uuid
 from pathlib import Path
 
@@ -503,6 +504,7 @@ async def _render_voiceover(slug: str, raw_inputs: dict) -> dict:
     fmt = (raw_inputs.get("format") or "").strip().lower()
     aspect = "portrait" if fmt.startswith("p") else "square" if fmt.startswith("s") else "landscape"
     karaoke = (raw_inputs.get("highlight") or "yes").strip().lower().startswith("y")
+    t0 = time.monotonic()
     try:
         async with httpx.AsyncClient(timeout=240.0) as client:
             resp = await client.post(f"{RENDER_WORKER_URL}/generate",
@@ -512,11 +514,19 @@ async def _render_voiceover(slug: str, raw_inputs: dict) -> dict:
             data = resp.content
     except Exception as e:  # noqa: BLE001 -- surface a friendly 400 to the workshop
         raise ValueError(f"the render worker is unavailable right now ({str(e)[:100]})")
+    seconds = round(time.monotonic() - t0, 1)
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
     name = f"{uuid.uuid4().hex}.mp4"
     (MEDIA_DIR / name).write_bytes(data)
     return {"slug": slug, "output_type": "video",
-            "result": f"/api/v1/compute/bottega/media/{name}"}
+            "result": f"/api/v1/compute/bottega/media/{name}",
+            "meta": {  # shown on the output card -- transparency + an optimize nudge
+                "voice": "Female" if voice == "en_f" else "Male",
+                "shape": aspect.capitalize(),
+                "karaoke": karaoke,
+                "seconds": seconds,
+                "chars": len(script),
+            }}
 
 
 async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "", language: str = "") -> dict:
