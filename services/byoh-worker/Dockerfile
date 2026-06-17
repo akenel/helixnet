@@ -8,9 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg fonts-dejavu-core curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# python deps: the HTTP wire + Piper TTS
+# python deps: the HTTP wire + Piper TTS + faster-whisper (word timings for karaoke)
 RUN pip install --no-cache-dir \
-        fastapi "uvicorn[standard]" pydantic python-multipart httpx piper-tts
+        fastapi "uvicorn[standard]" pydantic python-multipart httpx piper-tts faster-whisper
+
+# bake the Whisper base model into the image (no runtime download / no internet needed)
+RUN python -c "from faster_whisper import WhisperModel; WhisperModel('base', device='cpu', compute_type='int8')"
 
 # voices: 'en' = joe (male), 'en_f' = amy (female) -- both medium, fast + clean
 RUN mkdir -p /voices \

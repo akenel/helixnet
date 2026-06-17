@@ -213,7 +213,8 @@ services:
     restart: unless-stopped
     networks:
       - helixnet
-    mem_limit: 768m
+    # karaoke loads the Whisper model (~300-500MB) on top of the render -- headroom, still caps prod risk
+    mem_limit: 1536m
     cpus: 1.0
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8800/health', timeout=5)\""]
