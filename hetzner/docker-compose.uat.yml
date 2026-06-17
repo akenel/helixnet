@@ -181,9 +181,12 @@ services:
       SERVICE_TYPE: platform
       # BYOH render worker (the muscle) -- shared sidecar, reached by service name.
       RENDER_WORKER_URL: http://render-worker:8800
-      BOTTEGA_MEDIA_DIR: /tmp/bottega-media
+      # Rendered reels live on a named volume (NOT /tmp) so they survive a container recreate --
+      # users find their work in My Blueprint after a restart. (#5 job-history)
+      BOTTEGA_MEDIA_DIR: /var/bottega-media
     volumes:
       - ../src:/app/src
+      - bottega_media:/var/bottega-media
     networks:
       - helixnet
     depends_on:
@@ -364,6 +367,7 @@ volumes:
   caddy_config:
   minio_data:
   telegram_data:
+  bottega_media:   # rendered reels -- survives `up --force-recreate` (#5 job-history)
 
 # -------------------------------------------------------------
 # NETWORK -- Single flat network for UAT (no edge/core split)

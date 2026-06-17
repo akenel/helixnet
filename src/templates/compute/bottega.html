@@ -484,13 +484,19 @@ function bottega() {
       if (q) f = f.filter(s => ((s.title||'')+' '+(s.slug||'')+' '+JSON.stringify(s.inputs||{})).toLowerCase().includes(q));
       return [...f].sort((a,b)=>{ const d=(a.created_at||'').localeCompare(b.created_at||''); return this.sortDesc?-d:d; });
     },
-    kindLabel(slug) { return slug==='blueprint-archive'?'archive':(slug==='mentor-session'?'mentor':(slug||'note')); },
-    kindClass(slug) { return slug==='blueprint-archive'?'bg-emerald-900/60 text-emerald-300':(slug==='mentor-session'?'bg-amber-900/50 text-amber-300':'bg-slate-800 text-slate-400'); },
+    kindLabel(slug) { return slug==='voiceover-reel'?'🎬 reel':(slug==='blueprint-archive'?'archive':(slug==='mentor-session'?'mentor':(slug||'note'))); },
+    kindClass(slug) { return slug==='voiceover-reel'?'bg-sky-900/50 text-sky-300':(slug==='blueprint-archive'?'bg-emerald-900/60 text-emerald-300':(slug==='mentor-session'?'bg-amber-900/50 text-amber-300':'bg-slate-800 text-slate-400')); },
     async loadSession(id) {
       try { const r=await fetch('/api/v1/compute/bottega/sessions/'+id,{headers:{'Authorization':'Bearer '+this.token}});
         if(r.ok){ const s=await r.json(); this.active={slug:s.slug,title:s.title,inputs:[]};
-          this.output={output_type:s.output_type,result:s.output,recipe:s.title,slug:s.slug,inputs:s.inputs,asked_at:s.created_at};
-          this.showFolder=false; } } catch(e){}
+          if (s.output_type==='video') {
+            // reels store {result:url, meta:{...}} as JSON -> unpack so the player + download work on replay
+            let v={}; try { v=JSON.parse(s.output||'{}'); } catch(e){}
+            this.output={output_type:'video',result:v.result||s.output,meta:v.meta||{},recipe:s.title,slug:s.slug,inputs:s.inputs,asked_at:s.created_at};
+          } else {
+            this.output={output_type:s.output_type,result:s.output,recipe:s.title,slug:s.slug,inputs:s.inputs,asked_at:s.created_at};
+          }
+          this.savedId=s.id; this.showFolder=false; } } catch(e){}
     },
     loadCV() {
       const r = this.recipes.find(x=>x.slug==='cv-to-bio');

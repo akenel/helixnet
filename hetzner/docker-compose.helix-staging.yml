@@ -41,10 +41,11 @@ services:
       SQUARE_DB: borrowhood_staging
       # BYOH render worker (the muscle) -- a sidecar container, reached by service name.
       RENDER_WORKER_URL: http://render-worker:8800
-      BOTTEGA_MEDIA_DIR: /tmp/bottega-media   # ephemeral PoC store (MinIO bucket later); /tmp writable (src is :ro)
+      BOTTEGA_MEDIA_DIR: /var/bottega-media   # shared bottega_media volume (from uat.yml) -- same DB as prod, so same media; survives recreate (#5)
     volumes:
       # Independent worktree at the fix commit, read-only so staging can't mutate it.
       - ${HELIX_STAGING_SRC:-/opt/helix-staging-tree/src}:/app/src:ro
+      - bottega_media:/var/bottega-media
     ports:
       # localhost-only: reachable for curl/SSH-tunnel verification, NOT publicly exposed.
       - "127.0.0.1:8099:8000"

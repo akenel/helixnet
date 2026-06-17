@@ -814,6 +814,21 @@ async def recipes_run(slug: str, request: Request,
         await db.commit()
         await db.refresh(sess)
         result["saved_id"] = str(sess.id)
+    elif result.get("output_type") == "video":
+        # Every reel is auto-logged to the Blueprint so the work isn't lost on a container restart --
+        # users find it in My Blueprint (replay + re-download). URL + stats kept together as JSON.
+        script = (raw.get("script") or "").strip()
+        hint = " ".join(script.split()[:7])
+        title = (RECIPES[slug].get("title", slug) + (f" — {hint}" if hint else "")).strip()[:140]
+        sess = BottegaSessionModel(
+            username=owner, slug=slug, title=title,
+            inputs=json.dumps({k: v for k, v in raw.items() if isinstance(v, str)}),
+            output=json.dumps({"result": result.get("result"), "meta": result.get("meta", {})}),
+            output_type="video", tags="reel")
+        db.add(sess)
+        await db.commit()
+        await db.refresh(sess)
+        result["saved_id"] = str(sess.id)
     result["charged"] = price
     result["balance"] = await credit_balance(db, owner)
     return result
