@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__FEATURE__ — Human Sanity-Check Sheet (TEST-__NNN__)</title>
+<!-- ===================================================================
+     REUSABLE HUMAN SANITY-CHECK SHEET  (HelixNet / La Piazza testing SOP)
+     COPY THIS FILE per feature. Replace:
+       __FEATURE__   -> feature name (e.g. "Voiceover Job-History")
+       __NNN__       -> doc number (e.g. "006")
+       __ENV__       -> URL under test (staging or prod)
+       __BUILD__     -> commit SHA
+       the <tbody> rows -> one row per check (Step | Expected | Pass | Notes)
+     FILLABLE IN THE BROWSER ONLY: type in fields + tick boxes on screen,
+     THEN Print -> Save as PDF. A browser-printed PDF freezes the fields,
+     so always fill BEFORE printing. Self-contained: system fonts, no deps.
+     =================================================================== -->
+<style>
+  :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1;
+         margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 900px; margin:0 auto; background:#fff; padding:0 0 32px;
+           box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--red); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--red); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee;
+           border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:18px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px;
+          background:var(--shade); border:1px solid var(--line); border-radius:6px;
+          padding:14px 16px; margin-bottom:20px; }
+  .meta b { color:var(--head); }
+  .pre { background:#fff7e6; border:1px solid #f0d089; border-left:4px solid #e0a800;
+         border-radius:6px; padding:10px 14px; font-size:13px; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border:1px solid var(--line); padding:9px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:12px; }
+  td.n { text-align:center; font-weight:bold; color:var(--red); width:28px; }
+  td.chk { text-align:center; width:46px; }
+  td.notes { width:170px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .step b { color:var(--head); }
+  .exp { color:#445; }
+  .big td { background:#fbe9e7 !important; }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit;
+              color:var(--ink); padding:2px 4px; width:100%; min-width:60px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--red); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  input[type=checkbox], input[type=radio] {
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; print-color-adjust:exact;
+    -webkit-print-color-adjust:exact; }
+  input[type=checkbox] { border-radius:3px; }
+  input[type=radio] { border-radius:50%; }
+  input[type=checkbox]:checked { background:var(--red); border-color:var(--red); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:13px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio]:checked { background:var(--red); border-color:var(--red);
+    box-shadow:inset 0 0 0 3px #fff; }
+  .kbd { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
+         padding:1px 5px; font-size:12px; }
+  .result { margin-top:22px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:14px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; }
+  .sig span { flex:1; }
+  .polish { margin-top:22px; border:1px dashed #b08; border-radius:6px; padding:14px 16px;
+            background:#fdf4fb; }
+  .polish h3 { margin:0 0 4px; color:#922; font-size:14px; }
+  .polish .hint { font-size:12px; color:#967; margin:0 0 12px; }
+  .polish ol { margin:0; padding-left:22px; }
+  .polish li { margin-bottom:9px; }
+  .polish li input.txt { border-bottom:1px solid #c9a; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0;
+           font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:900px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--red); color:#fff; border:0; border-radius:5px;
+                 padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .sheet { box-shadow:none; max-width:100%; }
+    .btns, .no-print { display:none !important; }
+    input.txt:focus { background:transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="btns no-print">
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · La Piazza</div>
+    <div class="title">__FEATURE__<br>Human Sanity-Check Sheet</div>
+    <div class="docid">TEST-__NNN__</div>
+  </header>
+
+  <div class="body">
+    <h1>__FEATURE__ — Sanity Check</h1>
+    <p class="sub">One-line purpose: what this sheet confirms. (Backlog #__)</p>
+
+    <div class="howto">📝 <b>How to use:</b> fill this in <b>on screen</b> (type in the fields, tick the boxes),
+      <b>then</b> click <span class="kbd">🖨️ Print / Save as PDF</span> to archive the completed copy.
+      A PDF saved from the browser locks the fields, so fill it in <b>before</b> you print.</div>
+
+    <div class="meta">
+      <div><b>Environment:</b> <input class="txt" type="text" value="__ENV__"></div>
+      <div><b>Build:</b> <input class="txt" type="text" value="commit __BUILD__"></div>
+      <div><b>Tester:</b> <input class="txt" type="text" placeholder="your name"></div>
+      <div><b>Date:</b> <input class="txt" type="text" placeholder="dd/mm/yyyy"></div>
+    </div>
+
+    <div class="pre"><b>Pre-flight:</b> describe the starting state (log in, where to be, what to have ready).</div>
+
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>Step</th><th>Expected result</th><th class="chk">Pass</th><th class="notes">Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr class="step">
+          <td class="n">1</td>
+          <td><b>Do this.</b> Replace with the first action.</td>
+          <td class="exp">Expect this. Replace with the observable result.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">2</td>
+          <td>Next action…</td>
+          <td class="exp">Next expected result…</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step big">
+          <td class="n">3</td>
+          <td><b>The big one:</b> the make-or-break check (highlight it).</td>
+          <td class="exp">The single result that proves the feature works.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall result</h3>
+      <label><input type="radio" name="overall"> ✅ PASS — all steps green</label>
+      <label><input type="radio" name="overall"> ❌ FAIL — see notes</label>
+      <div class="sig">
+        <span>Signature: <input class="txt" type="text"></span>
+        <span>Date: <input class="txt" type="text"></span>
+      </div>
+    </div>
+
+    <div class="polish">
+      <h3>✍️ Polish notes for the next batch (cosmetic)</h3>
+      <p class="hint">Works ≠ done. Jot the little things to make it <i>really</i> good. Be specific (where + what).</p>
+      <ol>
+        <li><input class="txt" type="text" placeholder="e.g. <area> — <change>"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>TEST-__NNN__ · Rev 1 · __DATE__</span>
+  </footer>
+</div>
+
+</body>
+</html>
