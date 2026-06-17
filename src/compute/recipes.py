@@ -62,6 +62,12 @@ RECIPES: dict[str, dict] = {
     "cv-to-bio": {
         "slug": "cv-to-bio", "title": "CV → Bio", "emoji": "\U0001F9EC",
         "category": "identity", "est_credits": 2,
+        # SI presentation contract (Popsa-derived, 2026-06-17): `outcome` = the one-line
+        # transformation (emotional > functional), shown on the card + run screen; `steps` = the
+        # 3-beat journey ("what this asks of me"). Every recipe carries them -> the chassis polish
+        # is inherited, not re-built per recipe. See RESUME-BYOH.md ⭐ POLISH BATCH.
+        "outcome": "Your CV becomes a warm profile people actually want to read.",
+        "steps": ["Drop your CV", "We read it", "Your profile"],
         "inputs": [{"name": "file", "type": "file", "label": "Your CV (PDF/Word)"}],
         "system": "You build concise, warm professional profiles from a CV. Return STRICT JSON only.",
         "prompt": (
@@ -76,6 +82,8 @@ RECIPES: dict[str, dict] = {
     "cv-generate": {
         "slug": "cv-generate", "title": "CV Generator", "emoji": "\U0001F4C4",
         "category": "identity", "est_credits": 2,
+        "outcome": "A sharper CV, re-aimed at the job you want — in your words, never invented.",
+        "steps": ["Drop your CV", "Name the target", "Polished CV"],
         "inputs": [
             {"name": "file", "type": "file", "label": "Your CV (PDF/Word)"},
             {"name": "target_role", "type": "text", "label": "Target role / trade (optional)"},
@@ -97,6 +105,8 @@ RECIPES: dict[str, dict] = {
     "cover-letter": {
         "slug": "cover-letter", "title": "Cover Letter", "emoji": "\U0001F4E8",
         "category": "identity", "est_credits": 2,
+        "outcome": "A one-page letter that sounds like you — ready to send.",
+        "steps": ["Drop your CV", "Name the job", "Your letter"],
         "inputs": [
             {"name": "file", "type": "file", "label": "Your CV (PDF/Word)"},
             {"name": "job", "type": "text", "label": "Job / company you're applying to"},
@@ -112,6 +122,8 @@ RECIPES: dict[str, dict] = {
     "recruiter-reply": {
         "slug": "recruiter-reply", "title": "Recruiter Reply", "emoji": "\U0001F4BC",
         "category": "identity", "est_credits": 2,
+        "outcome": "Answer a recruiter with quiet confidence — every point covered, no gap apologised for.",
+        "steps": ["Paste the email", "Add your CV", "Your reply"],
         "inputs": [
             {"name": "email", "type": "text", "label": "Paste the recruiter's email"},
             {"name": "cv", "type": "text", "label": "Your CV / key experience (paste -- helps match the role)"},
@@ -149,6 +161,8 @@ RECIPES: dict[str, dict] = {
     "music-playlist": {
         "slug": "music-playlist", "title": "Music Playlist", "emoji": "\U0001F3B5",
         "category": "media", "est_credits": 2,
+        "outcome": "A handpicked playlist for your moment — links ready to play.",
+        "steps": ["Describe the vibe", "Pick a length", "Your playlist"],
         "inputs": [
             {"name": "vibe", "type": "text",
              "label": "Mood / vibe / occasion (e.g. 'sunrise drive, soulful')"},
@@ -169,6 +183,8 @@ RECIPES: dict[str, dict] = {
     "voiceover-reel": {
         "slug": "voiceover-reel", "title": "Voiceover Reel", "emoji": "\U0001F3AC",  # clapperboard
         "category": "media", "est_credits": 1,
+        "outcome": "Your words become a narrated video — shareable in 30 seconds.",
+        "steps": ["Type your script", "Pick a voice", "Your reel"],
         "render": "voiceover",   # TOOL recipe: rendered by the worker (Piper+ffmpeg), not the brain
         # opt-in karaoke costs extra CPU (Whisper) -> +1 credit, so people choose deliberately
         "surcharge": {"input": "highlight", "prefix": "y", "credits": 1},
@@ -209,6 +225,8 @@ RECIPES: dict[str, dict] = {
     "product-posting": {
         "slug": "product-posting", "title": "Product Posting", "emoji": "\U0001F6CD️",
         "category": "listing", "est_credits": 1,
+        "outcome": "A listing that sells — punchy, honest, ready to post.",
+        "steps": ["Name it", "One-line pitch", "Your listing"],
         "inputs": [
             {"name": "name", "type": "text", "label": "Product name"},
             {"name": "kind", "type": "select", "label": "Type",
@@ -226,6 +244,8 @@ RECIPES: dict[str, dict] = {
     "event-posting": {
         "slug": "event-posting", "title": "Event Posting", "emoji": "\U0001F4E3",
         "category": "listing", "est_credits": 1,
+        "outcome": "An invitation people actually show up to.",
+        "steps": ["What & where", "Set the entry", "Your posting"],
         "inputs": [
             {"name": "what", "type": "text", "label": "Event (e.g. 'protest + free coffee & hot dogs')"},
             {"name": "where", "type": "text", "label": "Location (e.g. City Hall)"},
@@ -243,6 +263,8 @@ RECIPES: dict[str, dict] = {
     "mentor-session": {
         "slug": "mentor-session", "title": "Ask a Master", "emoji": "\U0001F570️",
         "category": "coaching", "est_credits": 2,
+        "outcome": "Sit with a master and get real counsel for what you face.",
+        "steps": ["Pick a master", "Ask your question", "Their counsel"],
         "inputs": [
             {"name": "mentor", "type": "text",
              "label": "Which master? (e.g. Leonardo da Vinci, Nikola Tesla, Sun Tzu)"},
@@ -283,6 +305,8 @@ RECIPES: dict[str, dict] = {
     "workout-plan": {
         "slug": "workout-plan", "title": "Workout Plan", "emoji": "\U0001F3CB️",
         "category": "body", "est_credits": 2,
+        "outcome": "A private workout built around your gear, your goal, your time.",
+        "steps": ["Your goal & gear", "Time per day", "Your plan"],
         "inputs": [
             {"name": "equipment", "type": "select", "label": "What do you have?",
              "options": ["Just my body (no equipment)", "Resistance bands", "Dumbbells",
@@ -326,6 +350,8 @@ RECIPES: dict[str, dict] = {
     "body-intake": {
         "slug": "body-intake", "title": "Body Setup", "emoji": "\U0001FA7A",
         "category": "body", "est_credits": 1,
+        "outcome": "Set up your body once — every workout after fits you.",
+        "steps": ["A few questions", "We calibrate", "You're set"],
         "inputs": [
             {"name": "equipment", "type": "select", "label": "Main equipment",
              "options": ["Just my body", "Resistance bands", "Dumbbells", "Kettlebell", "Full gym"]},
@@ -363,6 +389,8 @@ RECIPES: dict[str, dict] = {
     "story-intake": {
         "slug": "story-intake", "title": "Your Story", "emoji": "✨",
         "category": "spirit", "est_credits": 1,
+        "outcome": "Find your why — and your 22-second pitch.",
+        "steps": ["Tell your story", "We find the thread", "Your one-liner"],
         "inputs": [
             {"name": "childhood", "type": "text",
              "label": "What did you love as a kid — what were you good at before the world said otherwise?"},
@@ -392,6 +420,8 @@ RECIPES: dict[str, dict] = {
     "decide": {
         "slug": "decide", "title": "Think It Through", "emoji": "\U0001F9ED",  # compass
         "category": "coaching", "est_credits": 3,    # reasoning model => more brain-tokens
+        "outcome": "Think a hard choice all the way through, with a clear head.",
+        "steps": ["The decision", "The trade-offs", "A clear call"],
         # Brain as data: a Turbo model AND a local-dev fallback. The runner uses the right one
         # per backend, and if a model isn't served it falls back to the house brain (no 500).
         "model": "gpt-oss:120b",            # Turbo brain (every deployed env has BH_OLLAMA_KEY)
@@ -421,6 +451,8 @@ RECIPES: dict[str, dict] = {
     "find-your-edge": {
         "slug": "find-your-edge", "title": "Find Your Edge", "emoji": "\U0001F3AF",  # target
         "category": "identity", "est_credits": 2,
+        "outcome": "Name the edge you already have — and where to point it.",
+        "steps": ["Answer honestly", "We weigh it", "Your edge"],
         "inputs": [
             {"name": "child_joy", "type": "text",
              "label": "As a kid, what did you lose track of time doing?"},
@@ -485,6 +517,7 @@ def menu() -> list[dict]:
     return [
         {"slug": r["slug"], "title": r["title"], "emoji": r["emoji"],
          "category": r["category"], "est_credits": r["est_credits"], "inputs": r["inputs"],
+         "outcome": r.get("outcome", ""), "steps": r.get("steps", []),
          "blurb": r.get("blurb", ""), "samples": r.get("samples", [])}
         for r in RECIPES.values()
     ]

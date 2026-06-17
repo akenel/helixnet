@@ -72,7 +72,13 @@
       <div class="text-2xl font-bold">What do you want to make?</div>
       <button @click="openFolder()" x-show="token" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:border-brand/50 hover:text-brand">📓 My Blueprint</button>
     </div>
-    <div class="text-sm text-slate-500 mt-1 mb-7">Pick a card. Answer a couple of questions. Get the thing.</div>
+    <div class="text-sm text-slate-500 mt-1 mb-3">Pick a card. Answer a couple of questions. Get the thing.</div>
+    <!-- P5 trust strip: our story Popsa can't tell. Quiet, not loud. (ties angel-why-and-goal) -->
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-slate-500 mb-7">
+      <span>🔒 Your data stays yours.</span>
+      <span>🚫 No algorithm.</span>
+      <span>🕊️ No monthly ransom.</span>
+    </div>
 
     <!-- My Blueprint folder (saved sessions) -->
     <div x-show="showFolder" class="card rounded-xl p-5 mb-7">
@@ -139,7 +145,9 @@
               <button @click="pick(r)" class="card rounded-xl p-5 text-left hover:border-brand/50 transition">
                 <div class="text-2xl mb-2" x-text="r.emoji"></div>
                 <div class="font-semibold" x-text="r.title"></div>
-                <div class="text-[11px] text-slate-500 font-mono mt-1" x-text="'~'+r.est_credits+' credits'"></div>
+                <!-- P1 outcome-first: the transformation, not the price (Popsa polish, SI contract) -->
+                <div class="text-[12.5px] text-slate-400 mt-1 leading-snug" x-show="r.outcome" x-text="r.outcome"></div>
+                <div class="text-[11px] text-slate-500 font-mono mt-2" x-text="'~'+r.est_credits+' credits'"></div>
               </button>
             </template>
           </div>
@@ -156,6 +164,21 @@
         <div class="font-semibold"><span x-text="active?.emoji"></span> <span x-text="active?.title"></span></div>
         <button @click="active=null;output=null;err=''" class="text-xs text-slate-500 hover:text-slate-300">← menu</button>
       </div>
+      <!-- P1 outcome on the run screen: keep the promise in front of them -->
+      <template x-if="active?.outcome">
+        <p class="text-[13px] text-slate-300 font-medium mb-2" x-text="active.outcome"></p>
+      </template>
+      <!-- P2 journey strip: the 3 beats, so nothing the form asks is a surprise -->
+      <template x-if="active?.steps && active.steps.length">
+        <div class="flex items-center gap-1.5 flex-wrap mb-4 text-[11px] text-slate-500">
+          <template x-for="(st,i) in active.steps" :key="i">
+            <span class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300" x-text="st"></span>
+              <span x-show="i < active.steps.length-1" class="text-slate-600">→</span>
+            </span>
+          </template>
+        </div>
+      </template>
       <!-- recipe blurb: what it's for + best use -->
       <template x-if="active?.blurb">
         <p class="text-[13px] text-slate-400 leading-relaxed mb-4 pb-3 border-b border-slate-800" style="white-space:pre-line" x-text="active.blurb"></p>
