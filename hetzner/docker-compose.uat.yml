@@ -179,6 +179,9 @@ services:
       - ./uat.env
     environment:
       SERVICE_TYPE: platform
+      # BYOH render worker (the muscle) -- shared sidecar, reached by service name.
+      RENDER_WORKER_URL: http://render-worker:8800
+      BOTTEGA_MEDIA_DIR: /tmp/bottega-media
     volumes:
       - ../src:/app/src
     networks:
@@ -198,6 +201,26 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+# -------------------------------------------------------------
+# BYOH RENDER WORKER -- the "muscle" (Piper + ffmpeg). Shared by prod + staging.
+# Image built on the box: docker build -t byoh-render-worker:latest <tree>/services/byoh-worker
+# Move it to its own box later by changing only RENDER_WORKER_URL on the apps.
+# -------------------------------------------------------------
+  render-worker:
+    image: byoh-render-worker:latest
+    container_name: render-worker
+    restart: unless-stopped
+    networks:
+      - helixnet
+    mem_limit: 768m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8800/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
 # -------------------------------------------------------------
 # LPCX CONSUMER -- aio-pika worker that executes compute jobs off RabbitMQ
