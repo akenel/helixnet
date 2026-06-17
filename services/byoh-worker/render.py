@@ -11,7 +11,9 @@ Bring Your Own Hardware = same render(), different machine.
 
 from __future__ import annotations
 
+import difflib
 import os
+import re
 import subprocess
 import tempfile
 import textwrap
@@ -104,6 +106,63 @@ def word_timestamps(wav: Path) -> list[tuple[str, float, float]]:
     return words
 
 
+def _norm(w: str) -> str:
+    """Strip case + punctuation so 'Piazza,' and 'piazza' match for alignment."""
+    return re.sub(r"[^a-z0-9]+", "", w.lower())
+
+
+def align_script_to_timings(
+    script: str, whisper_words: list[tuple[str, float, float]]
+) -> list[tuple[str, float, float]]:
+    """Display the KNOWN script words (correct spelling) but borrow Whisper's timings.
+
+    Whisper transcribes the TTS audio to get word-level clocks, but it mishears brand
+    words ('La Piazza' -> 'Lapia's') and then we'd *print* the mistake on screen. The
+    script is the source of truth for spelling -- so we keep its words and only steal
+    the clock: sequence-match script<->whisper, take exact timings on matched runs, and
+    spread the time span evenly across script words that Whisper merged/split/misheard.
+    No forced-aligner model needed; faster-whisper stays the only timing source.
+    """
+    script_words = [w for w in re.split(r"\s+", script.strip()) if w]
+    if not whisper_words or not script_words:
+        return whisper_words
+    skeys = [_norm(s) for s in script_words]
+    wkeys = [_norm(w[0]) for w in whisper_words]
+    sm = difflib.SequenceMatcher(a=skeys, b=wkeys, autojunk=False)
+    timed: list[tuple[float, float] | None] = [None] * len(script_words)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            for off in range(i2 - i1):
+                w = whisper_words[j1 + off]
+                timed[i1 + off] = (w[1], w[2])
+            continue
+        # script[i1:i2] roughly corresponds to whisper[j1:j2] (replace/insert/delete).
+        # Spread the matching whisper time span evenly across these script words.
+        if j2 > j1:
+            t0, t1 = whisper_words[j1][1], whisper_words[j2 - 1][2]
+        else:  # pure insertion on the script side: wedge into the neighbour gap
+            t0 = whisper_words[j1 - 1][2] if j1 > 0 else whisper_words[0][1]
+            t1 = whisper_words[j1][1] if j1 < len(whisper_words) else whisper_words[-1][2]
+        n = max(1, i2 - i1)
+        step = (t1 - t0) / n if t1 > t0 else 0.0
+        for off in range(i2 - i1):
+            s = t0 + off * step
+            e = (t0 + (off + 1) * step) if step else t1
+            timed[i1 + off] = (s, e)
+    # stitch any leftover gaps from the previous end, then force monotonic order
+    out: list[tuple[str, float, float]] = []
+    for idx, word in enumerate(script_words):
+        t = timed[idx]
+        if t is None:
+            prev_e = out[-1][2] if out else whisper_words[0][1]
+            t = (prev_e, prev_e + 0.2)
+        out.append((word, t[0], t[1]))
+    for i in range(1, len(out)):
+        if out[i][1] < out[i - 1][1]:
+            out[i] = (out[i][0], out[i - 1][1], max(out[i][2], out[i - 1][1]))
+    return out
+
+
 def _karaoke_ass(words: list[tuple[str, float, float]], W: int, H: int, fontsize: int) -> str:
     """Build an ASS subtitle that highlights each word as it's spoken (karaoke \\k).
     Words are wrapped into lines, then grouped into multi-line BLOCKS (a sentence or two
@@ -174,6 +233,9 @@ def compose_video(wav: Path, caption: str, out_mp4: Path, aspect: str = "square"
     # KARAOKE: words light up as spoken (Whisper timings -> ASS \k). Falls back to a
     # static caption if Whisper finds no words.
     words = word_timestamps(wav) if karaoke else []
+    if words and caption:
+        # keep the script's spelling, borrow only Whisper's timings (no brand typos)
+        words = align_script_to_timings(caption, words)
     if words:
         ass = _karaoke_ass(words, W, H, fontsize)
         with tempfile.NamedTemporaryFile("w", suffix=".ass", delete=False, encoding="utf-8") as af:
