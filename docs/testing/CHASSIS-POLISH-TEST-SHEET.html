@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipe Chassis Polish (P1+P5) — Human Sanity-Check Sheet (TEST-UX-006)</title>
+<!-- Self-contained: system fonts only, no external deps. White bg = print-friendly (CLAUDE.md).
+     FILLABLE IN THE BROWSER: type into fields + tick boxes on screen, THEN Print -> Save as PDF
+     to archive the signed copy. (A browser-printed PDF freezes fields, so fill BEFORE printing.) -->
+<style>
+  :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1;
+         margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 900px; margin:0 auto; background:#fff; padding:0 0 32px;
+           box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--red); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--red); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee;
+           border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:18px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px;
+          background:var(--shade); border:1px solid var(--line); border-radius:6px;
+          padding:14px 16px; margin-bottom:20px; }
+  .meta b { color:var(--head); }
+  .pre { background:#fff7e6; border:1px solid #f0d089; border-left:4px solid #e0a800;
+         border-radius:6px; padding:10px 14px; font-size:13px; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border:1px solid var(--line); padding:9px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:12px; }
+  td.n { text-align:center; font-weight:bold; color:var(--red); width:28px; }
+  td.chk { text-align:center; width:46px; }
+  td.notes { width:170px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .step b { color:var(--head); }
+  .exp { color:#445; }
+  .big td { background:#fbe9e7 !important; }
+  /* Text fields: a clean writable line, prints crisp. */
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit;
+              color:var(--ink); padding:2px 4px; width:100%; min-width:60px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--red); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  /* Checkboxes: drawn box (border, not background) so it ALWAYS prints + is clickable on screen. */
+  input[type=checkbox], input[type=radio] {
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; print-color-adjust:exact;
+    -webkit-print-color-adjust:exact; }
+  input[type=checkbox] { border-radius:3px; }
+  input[type=radio] { border-radius:50%; }
+  input[type=checkbox]:checked { background:var(--red); border-color:var(--red); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:13px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio]:checked { background:var(--red); border-color:var(--red);
+    box-shadow:inset 0 0 0 3px #fff; }
+  .kbd { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
+         padding:1px 5px; font-size:12px; }
+  .result { margin-top:22px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:14px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; }
+  .sig span { flex:1; }
+  /* Polish-notes capture: jot the next cosmetic fixes right into the form. */
+  .polish { margin-top:22px; border:1px dashed #b08; border-radius:6px; padding:14px 16px;
+            background:#fdf4fb; }
+  .polish h3 { margin:0 0 4px; color:#922; font-size:14px; }
+  .polish .hint { font-size:12px; color:#967; margin:0 0 12px; }
+  .polish ol { margin:0; padding-left:22px; }
+  .polish li { margin-bottom:9px; }
+  .polish li input.txt { border-bottom:1px solid #c9a; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0;
+           font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:900px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--red); color:#fff; border:0; border-radius:5px;
+                 padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .sheet { box-shadow:none; max-width:100%; }
+    .btns, .no-print { display:none !important; }
+    input.txt:focus { background:transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="btns no-print">
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · La Piazza</div>
+    <div class="title">Recipe Chassis Polish — Outcome Cards &amp; Trust Strip<br>Human Sanity-Check Sheet</div>
+    <div class="docid">TEST-UX-006</div>
+  </header>
+
+  <div class="body">
+    <h1>🎨 Recipe Chassis Polish (P1 + P5) — Test Sheet</h1>
+    <p class="sub">Confirms the Popsa-derived polish is inherited by <b>every</b> recipe through the chassis + SI contract — not bolted onto one. (Polish batch, builds on backlog #5)</p>
+
+    <div class="howto">📝 <b>How to use:</b> fill this in <b>on screen</b> (type in the fields, tick the boxes),
+      <b>then</b> click <span class="kbd">🖨️ Print / Save as PDF</span> to archive the completed copy.
+      A PDF saved from the browser locks the fields, so fill it in <b>before</b> you print.</div>
+
+    <div class="meta">
+      <div><b>Environment:</b> Staging — <span class="kbd">staging-bottega.lapiazza.app/compute/bottega</span></div>
+      <div><b>Build:</b> <input class="txt" type="text" value="commit c3784fc"></div>
+      <div><b>Tester:</b> <input class="txt" type="text" placeholder="your name"></div>
+      <div><b>Date:</b> <input class="txt" type="text" placeholder="dd/mm/yyyy"></div>
+    </div>
+
+    <div class="pre"><b>Pre-flight:</b> Open the URL above and <b>log in</b>. You should land on the
+      “What do you want to make?” menu of recipe cards.</div>
+
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>Step</th><th>Expected result</th><th class="chk">Pass</th><th class="notes">Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr class="step">
+          <td class="n">1</td>
+          <td><b>Trust strip (P5).</b> Look just under the “What do you want to make?” subtitle.</td>
+          <td class="exp">A quiet one-line strip: <b>🔒 Your data stays yours · 🚫 No algorithm · 🕊️ No monthly ransom</b>. Tasteful, not loud.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step big">
+          <td class="n">2</td>
+          <td><b>The big one (P1):</b> open a category (e.g. <span class="kbd">👤 About You</span>). Read the recipe cards.</td>
+          <td class="exp">Each card now leads with a <b>one-line outcome</b> under its title (e.g. “Your CV becomes a warm profile people actually want to read.”), with “~N credits” demoted below it.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">3</td>
+          <td>Read 4–5 outcomes across different categories.</td>
+          <td class="exp">They read like a <b>promise / transformation</b>, not a feature spec — and every card has one (no blanks).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">4</td>
+          <td>Click a card to open it — try <span class="kbd">🎬 Voiceover Reel</span>.</td>
+          <td class="exp">The run screen shows the <b>outcome line</b> at the top, then a <b>journey strip</b>: “Type your script → Pick a voice → Your reel” (P2).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">5</td>
+          <td>Go back (<span class="kbd">← menu</span>) and open <b>2–3 other</b> recipes.</td>
+          <td class="exp">Every run screen shows its own outcome + its own 3-step journey strip — the polish is <b>consistent</b> everywhere (that’s the chassis working).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">6</td>
+          <td>Glance at the card grid as a whole on desktop + phone width.</td>
+          <td class="exp">Nothing looks cramped, clipped, or broken; the extra line sits cleanly. Spacing feels intentional.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">7</td>
+          <td><b>Regression:</b> open <span class="kbd">📓 My Blueprint</span> and replay a saved item (a reel and a text one).</td>
+          <td class="exp">It still loads and plays / renders exactly as before — nothing broke.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall result</h3>
+      <label><input type="radio" name="overall"> ✅ PASS — promote to prod</label>
+      <label><input type="radio" name="overall"> ❌ FAIL — see notes</label>
+      <div class="sig">
+        <span>Signature: <input class="txt" type="text"></span>
+        <span>Date: <input class="txt" type="text"></span>
+      </div>
+    </div>
+
+    <div class="polish">
+      <h3>✍️ Polish notes for the next batch (cosmetic)</h3>
+      <p class="hint">This batch is P1 + P5. The rest are banked (P3 pre-run confirm, P4 dynamic sample, P6 copy tuning).
+        Jot anything you'd reword or nudge — outcomes that don't land, a journey label that reads wrong, spacing.</p>
+      <ol>
+        <li><input class="txt" type="text" placeholder="e.g. <recipe> — outcome should say … instead"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>TEST-UX-006 · Rev 1 · 2026-06-17</span>
+  </footer>
+</div>
+
+</body>
+</html>
