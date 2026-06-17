@@ -190,6 +190,9 @@ RECIPES: dict[str, dict] = {
         "inputs": [
             {"name": "voice", "type": "select", "label": "Voice",
              "options": ["Female", "Male"], "default": "Female"},
+            {"name": "format", "type": "select", "label": "Shape",
+             "options": ["Landscape (full screen)", "Portrait (Shorts / Reels)", "Square (feed)"],
+             "default": "Landscape (full screen)"},
             {"name": "script", "type": "textarea", "maxlength": 2000,
              "label": "Your script — what the voice will say (aim for ~20–30 seconds)"},
         ],
@@ -478,12 +481,14 @@ async def _render_voiceover(slug: str, raw_inputs: dict) -> dict:
     script = (script or "").strip()[:2000]   # cap: keep clips short, CPU light
     if len(script) < 3:
         raise ValueError("Type a sentence to turn into a voiceover video.")
-    voice_label = (raw_inputs.get("voice") or "Male").strip().lower()
+    voice_label = (raw_inputs.get("voice") or "Female").strip().lower()
     voice = "en_f" if voice_label.startswith("f") else "en"
+    fmt = (raw_inputs.get("format") or "").strip().lower()
+    aspect = "portrait" if fmt.startswith("p") else "square" if fmt.startswith("s") else "landscape"
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.post(f"{RENDER_WORKER_URL}/generate",
-                                     json={"text": script, "voice": voice})
+                                     json={"text": script, "voice": voice, "aspect": aspect})
             resp.raise_for_status()
             data = resp.content
     except Exception as e:  # noqa: BLE001 -- surface a friendly 400 to the workshop

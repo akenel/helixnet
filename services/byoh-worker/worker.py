@@ -33,8 +33,9 @@ app = FastAPI(title="BYOH worker", version="0.1")
 
 class Job(BaseModel):
     text: str = Field(..., min_length=1, max_length=2000)
-    voice: str = Field("en", description="en | en_gb | it | it_m")
+    voice: str = Field("en", description="en | en_f | en_gb | it | it_m")
     caption: str | None = Field(None, description="on-screen text; defaults to spoken text")
+    aspect: str = Field("square", description="square | portrait | landscape (legacy default = square)")
 
 
 @app.get("/health")
@@ -52,7 +53,7 @@ def health() -> dict:
 def generate(job: Job) -> FileResponse:
     out = Path(tempfile.mkdtemp(prefix="byoh-")) / "out.mp4"
     try:
-        render.render(job.text, out, voice=job.voice, caption=job.caption)
+        render.render(job.text, out, voice=job.voice, caption=job.caption, aspect=job.aspect)
     except Exception as e:  # noqa: BLE001 -- surface the tool error to the caller
         raise HTTPException(status_code=500, detail=str(e)[:500])
     return FileResponse(out, media_type="video/mp4", filename="byoh.mp4")
