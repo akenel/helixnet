@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voiceover Job-History — Test Sheet (TEST-VO-005)</title>
+<!-- Self-contained: system fonts only, no external deps. White bg = print-friendly (CLAUDE.md). -->
+<style>
+  :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1;
+         margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 900px; margin:0 auto; background:#fff; padding:0 0 32px;
+           box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--red); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--red); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 18px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; font-size:13px;
+          background:var(--shade); border:1px solid var(--line); border-radius:6px;
+          padding:12px 16px; margin-bottom:20px; }
+  .meta b { color:var(--head); }
+  .meta .fill { border-bottom:1px solid #aab; display:inline-block; min-width:120px; }
+  .pre { background:#fff7e6; border:1px solid #f0d089; border-left:4px solid #e0a800;
+         border-radius:6px; padding:10px 14px; font-size:13px; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border:1px solid var(--line); padding:9px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:12px; }
+  td.n { text-align:center; font-weight:bold; color:var(--red); width:28px; }
+  td.chk { text-align:center; width:46px; }
+  td.notes { width:150px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .step b { color:var(--head); }
+  .exp { color:#445; }
+  .big { background:#fdeceA; }
+  .big td { background:#fbe9e7 !important; }
+  input[type=checkbox] { width:18px; height:18px; accent-color:var(--red); cursor:pointer; }
+  .kbd { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
+         padding:1px 5px; font-size:12px; }
+  .result { margin-top:22px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:14px; }
+  .result label { font-size:14px; margin-right:22px; }
+  .sig { margin-top:14px; font-size:13px; color:#445; }
+  .sig .fill { border-bottom:1px solid #aab; display:inline-block; min-width:180px; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0;
+           font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:900px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--red); color:#fff; border:0; border-radius:5px;
+                 padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .sheet { box-shadow:none; max-width:100%; }
+    .btns, .no-print { display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="btns no-print">
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · La Piazza</div>
+    <div class="title">Voiceover Reel — Job-History &amp; Durable Storage<br>Acceptance Test Sheet</div>
+    <div class="docid">TEST-VO-005</div>
+  </header>
+
+  <div class="body">
+    <h1>🎬 Voiceover Job-History — Test Sheet</h1>
+    <p class="sub">Confirms every reel is logged to My Blueprint and survives a container restart. (Backlog #5)</p>
+
+    <div class="meta">
+      <div><b>Environment:</b> Production — <span class="kbd">bottega.lapiazza.app/compute/bottega</span></div>
+      <div><b>Build:</b> commit <span class="kbd">5b93752</span></div>
+      <div><b>Tester:</b> <span class="fill">&nbsp;</span></div>
+      <div><b>Date:</b> <span class="fill">&nbsp;</span></div>
+    </div>
+
+    <div class="pre"><b>Pre-flight:</b> Open the URL above and <b>log in</b>. You should land on the
+      “What do you want to make?” menu with a <b>📓 My Blueprint</b> button top-right.</div>
+
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>Step</th><th>Expected result</th><th class="chk">Pass</th><th class="notes">Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr class="step">
+          <td class="n">1</td>
+          <td><b>Make Media → Voiceover Reel.</b> Type a script containing <b>La Piazza</b>. Set Highlight = <b>Yes</b>. Run.</td>
+          <td class="exp">Video plays. Karaoke spells <b>La Piazza</b> (not “Lapias”). Stats card shows voice / shape / seconds.</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step">
+          <td class="n">2</td>
+          <td>Click <span class="kbd">⬇ Download MP4</span>.</td>
+          <td class="exp">File downloads and plays in your local player.</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step">
+          <td class="n">3</td>
+          <td>Go back (<span class="kbd">← menu</span>) → click <span class="kbd">📓 My Blueprint</span>.</td>
+          <td class="exp">A <b>🎬 reel</b> row appears, dated today, titled <i>“Voiceover Reel — &lt;your first words&gt;”</i>.</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step">
+          <td class="n">4</td>
+          <td>Make a <b>second</b> reel (different script). Reopen <span class="kbd">📓 My Blueprint</span>.</td>
+          <td class="exp"><b>Two</b> 🎬 reel rows, newest on top.</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step">
+          <td class="n">5</td>
+          <td>Type a word from one script into the <b>search</b> box.</td>
+          <td class="exp">List filters down to the matching reel.</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step">
+          <td class="n">6</td>
+          <td><b>Replay:</b> click a reel row.</td>
+          <td class="exp">It loads back into the player and plays. <span class="kbd">⬇ Download</span> still works.</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step big">
+          <td class="n">7</td>
+          <td><b>The big one:</b> ask Tigs to recreate the prod container (or wait for any deploy), then reopen a reel.</td>
+          <td class="exp">It <b>still plays</b> — the file survived the restart. <i>(This is what used to vanish.)</i></td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+        <tr class="step">
+          <td class="n">8</td>
+          <td>Click 🗑️ on the test reel <i>“This is La Piazza, your town square.”</i></td>
+          <td class="exp">It disappears from the folder (soft-delete — hidden, kept in history).</td>
+          <td class="chk"><input type="checkbox"></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall result</h3>
+      <label><input type="radio" name="overall"> ✅ PASS — all steps green</label>
+      <label><input type="radio" name="overall"> ❌ FAIL — see notes</label>
+      <div class="sig">Signature: <span class="fill">&nbsp;</span> &nbsp;&nbsp; Date: <span class="fill">&nbsp;</span></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>TEST-VO-005 · Rev 1 · 2026-06-17</span>
+  </footer>
+</div>
+
+</body>
+</html>
