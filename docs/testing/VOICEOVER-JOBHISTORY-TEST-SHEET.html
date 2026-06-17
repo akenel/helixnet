@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Voiceover Job-History — Test Sheet (TEST-VO-005)</title>
-<!-- Self-contained: system fonts only, no external deps. White bg = print-friendly (CLAUDE.md). -->
+<!-- Self-contained: system fonts only, no external deps. White bg = print-friendly (CLAUDE.md).
+     FILLABLE IN THE BROWSER: type into fields + tick boxes on screen, THEN Print -> Save as PDF
+     to archive the signed copy. (A browser-printed PDF freezes fields, so fill BEFORE printing.) -->
 <style>
   :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; }
   * { box-sizing: border-box; }
@@ -19,12 +21,13 @@
   header .docid { font-size:12px; color:#777; font-family:monospace; }
   .body { padding: 22px 28px; }
   h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
-  .sub { color:#667; font-size:13px; margin:0 0 18px; }
-  .meta { display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; font-size:13px;
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee;
+           border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:18px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px;
           background:var(--shade); border:1px solid var(--line); border-radius:6px;
-          padding:12px 16px; margin-bottom:20px; }
+          padding:14px 16px; margin-bottom:20px; }
   .meta b { color:var(--head); }
-  .meta .fill { border-bottom:1px solid #aab; display:inline-block; min-width:120px; }
   .pre { background:#fff7e6; border:1px solid #f0d089; border-left:4px solid #e0a800;
          border-radius:6px; padding:10px 14px; font-size:13px; margin-bottom:18px; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -32,20 +35,43 @@
   th { background:var(--head); color:#fff; font-size:12px; }
   td.n { text-align:center; font-weight:bold; color:var(--red); width:28px; }
   td.chk { text-align:center; width:46px; }
-  td.notes { width:150px; }
+  td.notes { width:170px; padding:4px; }
   tr:nth-child(even) td { background:#fafbfc; }
   .step b { color:var(--head); }
   .exp { color:#445; }
-  .big { background:#fdeceA; }
   .big td { background:#fbe9e7 !important; }
-  input[type=checkbox] { width:18px; height:18px; accent-color:var(--red); cursor:pointer; }
+  /* Text fields: a clean writable line, prints crisp. */
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit;
+              color:var(--ink); padding:2px 4px; width:100%; min-width:60px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--red); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  /* Checkboxes: drawn box (border, not background) so it ALWAYS prints + is clickable on screen. */
+  input[type=checkbox], input[type=radio] {
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; print-color-adjust:exact;
+    -webkit-print-color-adjust:exact; }
+  input[type=checkbox] { border-radius:3px; }
+  input[type=radio] { border-radius:50%; }
+  input[type=checkbox]:checked { background:var(--red); border-color:var(--red); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:13px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio]:checked { background:var(--red); border-color:var(--red);
+    box-shadow:inset 0 0 0 3px #fff; }
   .kbd { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
          padding:1px 5px; font-size:12px; }
   .result { margin-top:22px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
   .result h3 { margin:0 0 10px; color:var(--head); font-size:14px; }
-  .result label { font-size:14px; margin-right:22px; }
-  .sig { margin-top:14px; font-size:13px; color:#445; }
-  .sig .fill { border-bottom:1px solid #aab; display:inline-block; min-width:180px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; }
+  .sig span { flex:1; }
+  /* Polish-notes capture: Angel types cosmetic fixes for the next batch right into the form. */
+  .polish { margin-top:22px; border:1px dashed #b08; border-radius:6px; padding:14px 16px;
+            background:#fdf4fb; }
+  .polish h3 { margin:0 0 4px; color:#922; font-size:14px; }
+  .polish .hint { font-size:12px; color:#967; margin:0 0 12px; }
+  .polish ol { margin:0; padding-left:22px; }
+  .polish li { margin-bottom:9px; }
+  .polish li input.txt { border-bottom:1px solid #c9a; }
   footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0;
            font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
   .btns { max-width:900px; margin:0 auto 14px; text-align:right; }
@@ -55,6 +81,7 @@
     body { background:#fff; padding:0; }
     .sheet { box-shadow:none; max-width:100%; }
     .btns, .no-print { display:none !important; }
+    input.txt:focus { background:transparent; }
   }
 </style>
 </head>
@@ -75,11 +102,15 @@
     <h1>🎬 Voiceover Job-History — Test Sheet</h1>
     <p class="sub">Confirms every reel is logged to My Blueprint and survives a container restart. (Backlog #5)</p>
 
+    <div class="howto">📝 <b>How to use:</b> fill this in <b>on screen</b> (type in the fields, tick the boxes),
+      <b>then</b> click <span class="kbd">🖨️ Print / Save as PDF</span> to archive the completed copy.
+      A PDF saved from the browser locks the fields, so fill it in <b>before</b> you print.</div>
+
     <div class="meta">
       <div><b>Environment:</b> Production — <span class="kbd">bottega.lapiazza.app/compute/bottega</span></div>
-      <div><b>Build:</b> commit <span class="kbd">5b93752</span></div>
-      <div><b>Tester:</b> <span class="fill">&nbsp;</span></div>
-      <div><b>Date:</b> <span class="fill">&nbsp;</span></div>
+      <div><b>Build:</b> <input class="txt" type="text" value="commit 5b93752"></div>
+      <div><b>Tester:</b> <input class="txt" type="text" placeholder="your name"></div>
+      <div><b>Date:</b> <input class="txt" type="text" placeholder="dd/mm/yyyy"></div>
     </div>
 
     <div class="pre"><b>Pre-flight:</b> Open the URL above and <b>log in</b>. You should land on the
@@ -94,49 +125,49 @@
           <td class="n">1</td>
           <td><b>Make Media → Voiceover Reel.</b> Type a script containing <b>La Piazza</b>. Set Highlight = <b>Yes</b>. Run.</td>
           <td class="exp">Video plays. Karaoke spells <b>La Piazza</b> (not “Lapias”). Stats card shows voice / shape / seconds.</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step">
           <td class="n">2</td>
           <td>Click <span class="kbd">⬇ Download MP4</span>.</td>
           <td class="exp">File downloads and plays in your local player.</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step">
           <td class="n">3</td>
           <td>Go back (<span class="kbd">← menu</span>) → click <span class="kbd">📓 My Blueprint</span>.</td>
           <td class="exp">A <b>🎬 reel</b> row appears, dated today, titled <i>“Voiceover Reel — &lt;your first words&gt;”</i>.</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step">
           <td class="n">4</td>
           <td>Make a <b>second</b> reel (different script). Reopen <span class="kbd">📓 My Blueprint</span>.</td>
           <td class="exp"><b>Two</b> 🎬 reel rows, newest on top.</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step">
           <td class="n">5</td>
           <td>Type a word from one script into the <b>search</b> box.</td>
           <td class="exp">List filters down to the matching reel.</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step">
           <td class="n">6</td>
           <td><b>Replay:</b> click a reel row.</td>
           <td class="exp">It loads back into the player and plays. <span class="kbd">⬇ Download</span> still works.</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step big">
           <td class="n">7</td>
           <td><b>The big one:</b> ask Tigs to recreate the prod container (or wait for any deploy), then reopen a reel.</td>
           <td class="exp">It <b>still plays</b> — the file survived the restart. <i>(This is what used to vanish.)</i></td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
         <tr class="step">
           <td class="n">8</td>
           <td>Click 🗑️ on the test reel <i>“This is La Piazza, your town square.”</i></td>
           <td class="exp">It disappears from the folder (soft-delete — hidden, kept in history).</td>
-          <td class="chk"><input type="checkbox"></td><td></td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
         </tr>
       </tbody>
     </table>
@@ -145,13 +176,30 @@
       <h3>Overall result</h3>
       <label><input type="radio" name="overall"> ✅ PASS — all steps green</label>
       <label><input type="radio" name="overall"> ❌ FAIL — see notes</label>
-      <div class="sig">Signature: <span class="fill">&nbsp;</span> &nbsp;&nbsp; Date: <span class="fill">&nbsp;</span></div>
+      <div class="sig">
+        <span>Signature: <input class="txt" type="text"></span>
+        <span>Date: <input class="txt" type="text"></span>
+      </div>
+    </div>
+
+    <div class="polish">
+      <h3>✍️ Polish notes for the next batch (cosmetic)</h3>
+      <p class="hint">Generally in great shape — jot the little things to make it <i>really</i> good.
+        Be specific (where + what). These feed the next cosmetic pass.</p>
+      <ol>
+        <li><input class="txt" type="text" placeholder="e.g. stats card — make the seconds bigger / add a 'remix this' button"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+      </ol>
     </div>
   </div>
 
   <footer>
     <span>Confidential — Internal Use Only</span>
-    <span>TEST-VO-005 · Rev 1 · 2026-06-17</span>
+    <span>TEST-VO-005 · Rev 2 · 2026-06-17</span>
   </footer>
 </div>
 
