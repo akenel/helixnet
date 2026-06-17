@@ -169,9 +169,23 @@ RECIPES: dict[str, dict] = {
         "slug": "voiceover-reel", "title": "Voiceover Reel", "emoji": "\U0001F3AC",  # clapperboard
         "category": "media", "est_credits": 1,
         "render": "voiceover",   # TOOL recipe: rendered by the worker (Piper+ffmpeg), not the brain
+        "blurb": ("Turn a short script into a narrated video — a clean voice over a captioned "
+                  "card. Best for a 20–30 second clip: an intro, an announcement, a 22-second "
+                  "elevator pitch. Keep it tight — long scripts are better done in chunks."),
+        "samples": [
+            {"label": "🧩 Riddle", "text": "I speak without a mouth, and hear without ears. "
+             "I have no body, but I come alive with the wind. What am I? An echo."},
+            {"label": "😂 Joke", "text": "Why don't skeletons ever fight each other? "
+             "They simply don't have the guts. But here at La Piazza, we do."},
+            {"label": "🎤 Elevator pitch", "text": "In thirty seconds: I turn the skills people "
+             "already have into income they can use today. No career change, no risk — just leverage. "
+             "That is La Piazza."},
+        ],
         "inputs": [
-            {"name": "script", "type": "text",
-             "label": "What should it say? (type the words to be spoken)"},
+            {"name": "voice", "type": "select", "label": "Voice",
+             "options": ["Male", "Female"], "default": "Male"},
+            {"name": "script", "type": "textarea", "maxlength": 2000,
+             "label": "Your script — what the voice will say (aim for ~20–30 seconds)"},
         ],
         "system": "", "prompt": "",
         "output": "video",
@@ -443,7 +457,8 @@ def menu() -> list[dict]:
     """The public Chinese menu (no prompts leaked -- just what the UI needs)."""
     return [
         {"slug": r["slug"], "title": r["title"], "emoji": r["emoji"],
-         "category": r["category"], "est_credits": r["est_credits"], "inputs": r["inputs"]}
+         "category": r["category"], "est_credits": r["est_credits"], "inputs": r["inputs"],
+         "blurb": r.get("blurb", ""), "samples": r.get("samples", [])}
         for r in RECIPES.values()
     ]
 
@@ -454,13 +469,15 @@ async def _render_voiceover(slug: str, raw_inputs: dict) -> dict:
     script = raw_inputs.get("script")
     if isinstance(script, tuple):          # a file slipped in -- not valid here
         script = ""
-    script = (script or "").strip()
+    script = (script or "").strip()[:2000]   # cap: keep clips short, CPU light
     if len(script) < 3:
         raise ValueError("Type a sentence to turn into a voiceover video.")
+    voice_label = (raw_inputs.get("voice") or "Male").strip().lower()
+    voice = "en_f" if voice_label.startswith("f") else "en"
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.post(f"{RENDER_WORKER_URL}/generate",
-                                     json={"text": script[:2000], "voice": "en"})
+                                     json={"text": script, "voice": voice})
             resp.raise_for_status()
             data = resp.content
     except Exception as e:  # noqa: BLE001 -- surface a friendly 400 to the workshop

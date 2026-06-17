@@ -152,10 +152,14 @@
   <!-- run a recipe -->
   <div x-show="active" class="grid lg:grid-cols-2 gap-5">
     <div class="card rounded-xl p-5">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <div class="font-semibold"><span x-text="active?.emoji"></span> <span x-text="active?.title"></span></div>
         <button @click="active=null;output=null;err=''" class="text-xs text-slate-500 hover:text-slate-300">← menu</button>
       </div>
+      <!-- recipe blurb: what it's for + best use -->
+      <template x-if="active?.blurb">
+        <p class="text-[13px] text-slate-400 leading-relaxed mb-4 pb-3 border-b border-slate-800" x-text="active.blurb"></p>
+      </template>
       <template x-for="inp in active?.inputs||[]" :key="inp.name">
         <div class="mb-3">
           <label class="text-xs text-slate-400 block mb-1" x-text="inp.label"></label>
@@ -164,6 +168,26 @@
           </template>
           <template x-if="inp.type==='text'">
             <input type="text" @input="fields[inp.name]=$event.target.value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+          </template>
+          <template x-if="inp.type==='textarea'">
+            <div>
+              <!-- copy-paste samples: hear it work without typing -->
+              <div class="flex flex-wrap items-center gap-1.5 mb-2" x-show="active?.samples?.length">
+                <span class="text-[10px] text-slate-500">Try a sample →</span>
+                <template x-for="(s,i) in (active?.samples||[])" :key="i">
+                  <button type="button" @click="fields[inp.name]=s.text"
+                    class="px-2 py-1 rounded text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+                    x-text="s.label"></button>
+                </template>
+              </div>
+              <textarea x-model="fields[inp.name]" :maxlength="inp.maxlength||2000" rows="4"
+                placeholder="Keep it short — a 20–30 second clip. Long script? Do it in chunks."
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm resize-y"></textarea>
+              <div class="text-[10px] font-mono text-slate-500 mt-1 text-right">
+                <span x-text="(fields[inp.name]||'').length"></span>/<span x-text="inp.maxlength||2000"></span> chars
+                · ~22 sec = a tight elevator pitch
+              </div>
+            </div>
           </template>
           <template x-if="inp.type==='select'">
             <select @change="fields[inp.name]=$event.target.value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">

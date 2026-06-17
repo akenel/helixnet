@@ -12,12 +12,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir \
         fastapi "uvicorn[standard]" pydantic python-multipart httpx piper-tts
 
-# the default voice ('en' = lessac-medium, fast + clean on CPU)
+# voices: 'en' = lessac (male), 'en_f' = amy (female) -- both medium, fast + clean
 RUN mkdir -p /voices \
- && curl -sfL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx" \
-        -o /voices/en_US-lessac-medium.onnx \
- && curl -sfL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json" \
-        -o /voices/en_US-lessac-medium.onnx.json
+ && for v in "en_US/lessac/medium/en_US-lessac-medium" "en_US/amy/medium/en_US-amy-medium"; do \
+        curl -sfL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/$v.onnx" \
+             -o "/voices/$(basename $v).onnx" && \
+        curl -sfL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/$v.onnx.json" \
+             -o "/voices/$(basename $v).onnx.json" ; \
+    done
 
 WORKDIR /app
 COPY render.py worker.py capabilities.py /app/
