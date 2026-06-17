@@ -169,12 +169,15 @@ RECIPES: dict[str, dict] = {
         "slug": "voiceover-reel", "title": "Voiceover Reel", "emoji": "\U0001F3AC",  # clapperboard
         "category": "media", "est_credits": 1,
         "render": "voiceover",   # TOOL recipe: rendered by the worker (Piper+ffmpeg), not the brain
-        "blurb": ("Turn a short script into a narrated video — a clean voice over a captioned "
-                  "card. Best for a 20–30 second clip: an intro, an announcement, a 22-second "
-                  "elevator pitch. Keep it tight — long scripts are better done in chunks. "
-                  "Tip: write it like you'd say it aloud — periods and commas set the pacing, "
-                  "and a question mark makes the voice rise like a real question. Good grammar = "
-                  "a better read."),
+        "blurb": ("Turn a short script into a narrated video — a clean voice over a captioned card. "
+                  "Best for a 20–30 second clip: an intro, an announcement, a 22-second elevator pitch.\n"
+                  "\n"
+                  "How to make it sound great — everything's right here, no catch:\n"
+                  "• Write it the way you'd say it out loud.\n"
+                  "• A period ends a sentence with a natural pause; a comma gives a short breath.\n"
+                  "• A question mark makes the voice rise, like a real question.\n"
+                  "• Short sentences read best. Keep it under ~30 seconds; do longer scripts in chunks.\n"
+                  "• Pick a Male or Female voice below, or tap a sample to hear it instantly."),
         "samples": [
             {"label": "🧩 Riddle", "text": "I speak without a mouth, and hear without ears. "
              "I have no body, but I come alive with the wind. What am I? An echo."},

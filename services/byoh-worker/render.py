@@ -32,8 +32,8 @@ SENTENCE_SILENCE = os.getenv("SENTENCE_SILENCE", "0.3")
 TEMPO = os.getenv("TEMPO", "0.85")   # <1.0 = slower
 
 VOICES = {
-    "en": "en_US-lessac-medium.onnx",    # English male (default), fast + clean
-    "en_f": "en_US-amy-medium.onnx",     # English female
+    "en": "en_US-joe-medium.onnx",       # English male (Angel's pick -- warmer than lessac)
+    "en_f": "en_US-amy-medium.onnx",     # English female (the good one)
     "en_hq": "en_US-ryan-high.onnx",      # premium/most-human but SLOW (>60s on CPU) -- not for live use
     "en_gb": "en_GB-alba-medium.onnx",
     "it": "it_IT-paola-medium.onnx",

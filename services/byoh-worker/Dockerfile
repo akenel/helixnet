@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir \
         fastapi "uvicorn[standard]" pydantic python-multipart httpx piper-tts
 
-# voices: 'en' = lessac (male), 'en_f' = amy (female) -- both medium, fast + clean
+# voices: 'en' = joe (male), 'en_f' = amy (female) -- both medium, fast + clean
 RUN mkdir -p /voices \
- && for v in "en_US/lessac/medium/en_US-lessac-medium" "en_US/amy/medium/en_US-amy-medium"; do \
+ && for v in "en_US/joe/medium/en_US-joe-medium" "en_US/amy/medium/en_US-amy-medium"; do \
         curl -sfL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/$v.onnx" \
              -o "/voices/$(basename $v).onnx" && \
         curl -sfL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/$v.onnx.json" \

@@ -158,7 +158,7 @@
       </div>
       <!-- recipe blurb: what it's for + best use -->
       <template x-if="active?.blurb">
-        <p class="text-[13px] text-slate-400 leading-relaxed mb-4 pb-3 border-b border-slate-800" x-text="active.blurb"></p>
+        <p class="text-[13px] text-slate-400 leading-relaxed mb-4 pb-3 border-b border-slate-800" style="white-space:pre-line" x-text="active.blurb"></p>
       </template>
       <template x-for="inp in active?.inputs||[]" :key="inp.name">
         <div class="mb-3">
