@@ -267,8 +267,18 @@
           </div>
         </div>
       </template>
+      <!-- video output (voiceover-reel) -->
+      <template x-if="output && output.output_type==='video'">
+        <div>
+          <video controls playsinline class="w-full rounded-lg bg-black" :src="output.result"></video>
+          <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800">
+            <a :href="output.result" download="voiceover.mp4" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">⬇ Download MP4</a>
+            <a :href="output.result" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">↗ Open</a>
+          </div>
+        </div>
+      </template>
       <!-- markdown/text output (cv-generate, cover-letter) -->
-      <template x-if="output && output.output_type!=='json'">
+      <template x-if="output && output.output_type!=='json' && output.output_type!=='video'">
         <div>
           <div class="md text-slate-300 max-h-[460px] overflow-y-auto" x-html="renderMd(output.result)"></div>
           <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800">

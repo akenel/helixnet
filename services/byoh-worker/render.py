@@ -23,8 +23,16 @@ PIPER_BIN = Path(os.getenv("PIPER_BIN", "/home/angel/repos/helixnet/.venv/bin/pi
 VOICES_DIR = Path(os.getenv("VOICES_DIR", "/home/angel/.local/share/piper-voices"))
 FONT = Path(os.getenv("FONT", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"))
 
+# Voice feel: length-scale 1.0 = v1's clean speed (slowing lessac pushes its true
+# peaks over 0 dB and clips -- that was the "scratch"). A sentence pause is free:
+# silence adds no peaks, so we get natural breathing without the clip.
+LENGTH_SCALE = os.getenv("LENGTH_SCALE", "1.0")
+SENTENCE_SILENCE = os.getenv("SENTENCE_SILENCE", "0.4")
+VOLUME = os.getenv("VOLUME", "1.0")
+
 VOICES = {
-    "en": "en_US-lessac-medium.onnx",
+    "en": "en_US-lessac-medium.onnx",    # default: fast (~2s on CPU) + clean
+    "en_hq": "en_US-ryan-high.onnx",      # premium/most-human but SLOW (>60s on CPU) -- not for live use
     "en_gb": "en_GB-alba-medium.onnx",
     "it": "it_IT-paola-medium.onnx",
     "it_m": "it_IT-riccardo-x_low.onnx",
@@ -44,7 +52,9 @@ def synth_voice(text: str, voice: str, out_wav: Path) -> None:
     """text -> WAV via Piper (CPU, no GPU)."""
     model = VOICES_DIR / VOICES.get(voice, VOICES["en"])
     proc = subprocess.run(
-        [_piper_bin(), "-m", str(model), "-f", str(out_wav)],
+        [_piper_bin(), "-m", str(model), "-f", str(out_wav),
+         "--length-scale", LENGTH_SCALE, "--sentence-silence", SENTENCE_SILENCE,
+         "--volume", VOLUME],
         input=text.encode("utf-8"),
         capture_output=True,
     )
@@ -60,6 +70,8 @@ def compose_video(wav: Path, caption: str, out_mp4: Path) -> None:
         tf.write(wrapped)
         textfile = tf.name
 
+    # loudnorm caps the true peak at -1.5 dB so it CANNOT clip (the v2 scratch was
+    # +4.4 dB clipping). aresample=48000 first -- loudnorm silently upsamples otherwise.
     filtergraph = (
         f"[0:a]showwaves=s={W}x300:mode=cline:colors={WAVE}:rate=30[wave];"
         f"color=c={BG}:s={W}x{H}:r=30[bg];"

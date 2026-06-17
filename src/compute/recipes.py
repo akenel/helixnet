@@ -4,9 +4,20 @@
 #   recipe. Adding use #4..#100 = a new dict entry, not an engineering project.
 
 import json
+import os
 import re
+import uuid
+from pathlib import Path
+
+import httpx
 
 from src.services.bottega_service import _brain_chat, extract_text
+
+# Render worker (BYOH): the "muscle" that turns text into media (Piper + ffmpeg).
+# It runs OUTSIDE the app (the app has no piper/ffmpeg) -- a sidecar container in
+# staging/prod, or your laptop in dev. The app just calls it by URL.
+RENDER_WORKER_URL = os.getenv("RENDER_WORKER_URL", "http://localhost:8800").rstrip("/")
+MEDIA_DIR = Path(os.getenv("BOTTEGA_MEDIA_DIR", "/tmp/bottega-media"))
 
 # Reasoning models (DeepSeek-R1 et al.) emit their chain-of-thought inside
 # <think>...</think> before the real answer. We never want that in the product
@@ -153,6 +164,17 @@ RECIPES: dict[str, dict] = {
             "artists. End with one short line on the mood."
         ),
         "output": "markdown",
+    },
+    "voiceover-reel": {
+        "slug": "voiceover-reel", "title": "Voiceover Reel", "emoji": "\U0001F3AC",  # clapperboard
+        "category": "media", "est_credits": 1,
+        "render": "voiceover",   # TOOL recipe: rendered by the worker (Piper+ffmpeg), not the brain
+        "inputs": [
+            {"name": "script", "type": "text",
+             "label": "What should it say? (type the words to be spoken)"},
+        ],
+        "system": "", "prompt": "",
+        "output": "video",
     },
     "product-posting": {
         "slug": "product-posting", "title": "Product Posting", "emoji": "\U0001F6CD️",
@@ -426,6 +448,30 @@ def menu() -> list[dict]:
     ]
 
 
+async def _render_voiceover(slug: str, raw_inputs: dict) -> dict:
+    """Text -> the render worker (Piper voice + ffmpeg video) -> a saved MP4 + its URL.
+    No brain involved. The worker is reached by URL (sidecar container, or laptop in dev)."""
+    script = raw_inputs.get("script")
+    if isinstance(script, tuple):          # a file slipped in -- not valid here
+        script = ""
+    script = (script or "").strip()
+    if len(script) < 3:
+        raise ValueError("Type a sentence to turn into a voiceover video.")
+    try:
+        async with httpx.AsyncClient(timeout=180.0) as client:
+            resp = await client.post(f"{RENDER_WORKER_URL}/generate",
+                                     json={"text": script[:2000], "voice": "en"})
+            resp.raise_for_status()
+            data = resp.content
+    except Exception as e:  # noqa: BLE001 -- surface a friendly 400 to the workshop
+        raise ValueError(f"the render worker is unavailable right now ({str(e)[:100]})")
+    MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+    name = f"{uuid.uuid4().hex}.mp4"
+    (MEDIA_DIR / name).write_bytes(data)
+    return {"slug": slug, "output_type": "video",
+            "result": f"/api/v1/compute/bottega/media/{name}"}
+
+
 async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "", language: str = "") -> dict:
     """Generic runner -- executes ANY recipe. raw_inputs: {name: value | (filename, bytes)}.
     `portrait` = a plain-language human portrait of the member, available to prompts as {portrait}
@@ -433,6 +479,9 @@ async def run_recipe(slug: str, raw_inputs: dict, portrait: str = "", language: 
     r = RECIPES.get(slug)
     if not r:
         raise KeyError(slug)
+    # TOOL recipes (render): the muscle runs OUTSIDE the brain -- hand off to the worker.
+    if r.get("render") == "voiceover":
+        return await _render_voiceover(slug, raw_inputs)
     ctx: dict[str, str] = {}
     for inp in r["inputs"]:
         name = inp["name"]

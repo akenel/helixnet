@@ -39,6 +39,9 @@ services:
       LP_REALM: lapiazza-realm-staging
       LP_CLIENT: lapiazza_web
       SQUARE_DB: borrowhood_staging
+      # BYOH render worker (the muscle) -- a sidecar container, reached by service name.
+      RENDER_WORKER_URL: http://render-worker:8800
+      BOTTEGA_MEDIA_DIR: /tmp/bottega-media   # ephemeral PoC store (MinIO bucket later); /tmp writable (src is :ro)
     volumes:
       # Independent worktree at the fix commit, read-only so staging can't mutate it.
       - ${HELIX_STAGING_SRC:-/opt/helix-staging-tree/src}:/app/src:ro
@@ -65,3 +68,23 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  # BYOH render worker -- the "muscle" (Piper + ffmpeg). Built on the box from
+  # services/byoh-worker/Dockerfile:  docker build -t byoh-render-worker:latest <worktree>/services/byoh-worker
+  # The app (helix-platform-staging) POSTs text here and gets an MP4 back. Flexible:
+  # move it to its own box later by changing only RENDER_WORKER_URL.
+  render-worker:
+    image: byoh-render-worker:latest
+    container_name: render-worker-staging
+    restart: unless-stopped
+    networks:
+      - helixnet
+    # idle ~small; a render peaks ~300MB for a couple seconds. Capped so it can't OOM prod.
+    mem_limit: 768m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8800/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s

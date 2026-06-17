@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -815,6 +816,19 @@ async def recipes_run(slug: str, request: Request,
     result["charged"] = price
     result["balance"] = await credit_balance(db, owner)
     return result
+
+
+@router.get("/media/{name}")
+async def bottega_media(name: str):
+    """Serve a rendered media file (PoC: from the local media dir; the per-user MinIO
+    bucket is the proper home later). Unauthenticated by design -- the <video> element
+    can't carry a bearer token; the uuid filename is the unguessable guard for now."""
+    from src.compute.recipes import MEDIA_DIR
+    safe = name.replace("/", "").replace("\\", "").replace("..", "")
+    path = MEDIA_DIR / safe
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="media not found")
+    return FileResponse(path, media_type="video/mp4")
 
 
 # ===== Blueprint Folder: a user's saved sessions (their cutover list) =====
