@@ -23,12 +23,13 @@ PIPER_BIN = Path(os.getenv("PIPER_BIN", "/home/angel/repos/helixnet/.venv/bin/pi
 VOICES_DIR = Path(os.getenv("VOICES_DIR", "/home/angel/.local/share/piper-voices"))
 FONT = Path(os.getenv("FONT", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"))
 
-# Voice feel: 1.175 = the slower, more human pace Sylvie picked (1.0 too fast, 0.5
-# too slow). Slowing lessac pushes its true peaks over 0 dB and clips (the "scratch"),
-# so synth_voice runs a loudnorm true-peak limiter pass to cap it safely. A sentence
-# pause adds breathing room (silence = no peaks).
-LENGTH_SCALE = os.getenv("LENGTH_SCALE", "1.175")
-SENTENCE_SILENCE = os.getenv("SENTENCE_SILENCE", "0.45")
+# Voice feel: synthesize CLEAN at length-scale 1.0 (stretching lessac inside Piper
+# warbles, and loudnorm pumps -- that was the sentence-2 scratch). Slow the finished
+# audio with ffmpeg atempo instead: a clean time-stretch, pitch preserved, no clip.
+# atempo 0.85 == the ~17% slower pace Sylvie picked (== old length-scale 1.175).
+LENGTH_SCALE = os.getenv("LENGTH_SCALE", "1.0")
+SENTENCE_SILENCE = os.getenv("SENTENCE_SILENCE", "0.3")
+TEMPO = os.getenv("TEMPO", "0.85")   # <1.0 = slower
 
 VOICES = {
     "en": "en_US-lessac-medium.onnx",    # default: fast (~2s on CPU) + clean
@@ -49,8 +50,9 @@ def _piper_bin() -> str:
 
 
 def synth_voice(text: str, voice: str, out_wav: Path) -> None:
-    """text -> Piper WAV (slowed) -> loudnorm true-peak limit -> clean WAV.
-    The limiter is what lets us slow the voice without the +5 dB clipping scratch."""
+    """text -> Piper WAV (clean, length-scale 1.0) -> ffmpeg atempo (clean slow-down).
+    Slowing inside Piper warbles + needs loudnorm (which pumps); time-stretching the
+    finished audio is clean and keeps the pitch. Verified: flat factor 0, peak ~0."""
     model = VOICES_DIR / VOICES.get(voice, VOICES["en"])
     raw = out_wav.with_suffix(".raw.wav")
     proc = subprocess.run(
@@ -61,15 +63,15 @@ def synth_voice(text: str, voice: str, out_wav: Path) -> None:
     )
     if proc.returncode != 0 or not raw.exists():
         raise RuntimeError(f"piper failed: {proc.stderr.decode('utf-8', 'replace')[:500]}")
-    # cap true peak at -1.5 dB so the slowed voice can NEVER clip (simple single pass).
-    norm = subprocess.run(
+    # slow the finished voice (no clip, no warble) -- atempo preserves pitch
+    tempo = subprocess.run(
         ["ffmpeg", "-y", "-i", str(raw),
-         "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "22050", str(out_wav)],
+         "-af", f"atempo={TEMPO}", "-ar", "22050", str(out_wav)],
         capture_output=True,
     )
     raw.unlink(missing_ok=True)
-    if norm.returncode != 0 or not out_wav.exists():
-        raise RuntimeError(f"normalize failed: {norm.stderr.decode('utf-8', 'replace')[-400:]}")
+    if tempo.returncode != 0 or not out_wav.exists():
+        raise RuntimeError(f"tempo failed: {tempo.stderr.decode('utf-8', 'replace')[-400:]}")
 
 
 def compose_video(wav: Path, caption: str, out_mp4: Path) -> None:
