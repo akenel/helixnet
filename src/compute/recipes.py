@@ -171,7 +171,10 @@ RECIPES: dict[str, dict] = {
         "render": "voiceover",   # TOOL recipe: rendered by the worker (Piper+ffmpeg), not the brain
         "blurb": ("Turn a short script into a narrated video — a clean voice over a captioned "
                   "card. Best for a 20–30 second clip: an intro, an announcement, a 22-second "
-                  "elevator pitch. Keep it tight — long scripts are better done in chunks."),
+                  "elevator pitch. Keep it tight — long scripts are better done in chunks. "
+                  "Tip: write it like you'd say it aloud — periods and commas set the pacing, "
+                  "and a question mark makes the voice rise like a real question. Good grammar = "
+                  "a better read."),
         "samples": [
             {"label": "🧩 Riddle", "text": "I speak without a mouth, and hear without ears. "
              "I have no body, but I come alive with the wind. What am I? An echo."},
@@ -183,7 +186,7 @@ RECIPES: dict[str, dict] = {
         ],
         "inputs": [
             {"name": "voice", "type": "select", "label": "Voice",
-             "options": ["Male", "Female"], "default": "Male"},
+             "options": ["Female", "Male"], "default": "Female"},
             {"name": "script", "type": "textarea", "maxlength": 2000,
              "label": "Your script — what the voice will say (aim for ~20–30 seconds)"},
         ],
