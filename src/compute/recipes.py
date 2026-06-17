@@ -169,6 +169,8 @@ RECIPES: dict[str, dict] = {
         "slug": "voiceover-reel", "title": "Voiceover Reel", "emoji": "\U0001F3AC",  # clapperboard
         "category": "media", "est_credits": 1,
         "render": "voiceover",   # TOOL recipe: rendered by the worker (Piper+ffmpeg), not the brain
+        # opt-in karaoke costs extra CPU (Whisper) -> +1 credit, so people choose deliberately
+        "surcharge": {"input": "highlight", "prefix": "y", "credits": 1},
         "blurb": ("Turn a short script into a narrated video — a clean voice over a captioned card. "
                   "Best for a 20–30 second clip: an intro, an announcement, a 22-second elevator pitch.\n"
                   "\n"
@@ -193,9 +195,10 @@ RECIPES: dict[str, dict] = {
             {"name": "format", "type": "select", "label": "Shape",
              "options": ["Landscape (full screen)", "Portrait (Shorts / Reels)", "Square (feed)"],
              "default": "Landscape (full screen)"},
-            {"name": "highlight", "type": "select", "label": "Karaoke highlight (words light up as spoken)",
-             "options": ["Yes — light up each word", "No — plain caption"],
-             "default": "Yes — light up each word"},
+            {"name": "highlight", "type": "select",
+             "label": "Karaoke highlight — words light up as spoken (costs +1 credit, slower)",
+             "options": ["No — plain caption", "Yes — light up each word (+1 credit)"],
+             "default": "No — plain caption"},
             {"name": "script", "type": "textarea", "maxlength": 2000,
              "label": "Your script — what the voice will say (aim for ~20–30 seconds)"},
         ],
@@ -463,6 +466,17 @@ RECIPES: dict[str, dict] = {
         "output": "markdown",
     },
 }
+
+
+def recipe_price(slug: str, raw_inputs: dict) -> int:
+    """Fair price = base est_credits + any opt-in surcharge the inputs trigger
+    (e.g. karaoke = +1, since it burns extra CPU). Keeps people choosing deliberately."""
+    r = RECIPES.get(slug, {})
+    price = int(r.get("est_credits", 1))
+    sc = r.get("surcharge")
+    if sc and str(raw_inputs.get(sc["input"], "")).strip().lower().startswith(sc["prefix"]):
+        price += int(sc["credits"])
+    return price
 
 
 def menu() -> list[dict]:

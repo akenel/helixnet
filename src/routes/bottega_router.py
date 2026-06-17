@@ -30,7 +30,7 @@ from src.services.bottega_service import (
     extract_text, cv_to_bio, generate_cv, slugify, BrainUnavailable)
 from src.services.compute_service import credit_balance, post_ledger, ensure_starter_grant
 from src.db.models.compute_model import ComputeLedgerKind
-from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe
+from src.compute.recipes import RECIPES, menu as recipe_menu, run_recipe, recipe_price
 from src.compute import concierge as cg
 from src.compute import dispatcher as dsp
 from src.compute import reception as rcp
@@ -766,12 +766,6 @@ async def recipes_run(slug: str, request: Request,
     if slug not in RECIPES:
         raise HTTPException(status_code=404, detail=f"unknown recipe '{slug}'")
     owner = current_user["username"]
-    price = int(RECIPES[slug].get("est_credits", 1))
-    await ensure_starter_grant(db, owner)
-    bal = await credit_balance(db, owner)
-    if bal < price:
-        raise HTTPException(status_code=402,
-                            detail=f"not enough credits -- '{slug}' costs {price}, you have {bal}")
     form = await request.form()
     raw: dict = {}
     for inp in RECIPES[slug]["inputs"]:
@@ -782,6 +776,13 @@ async def recipes_run(slug: str, request: Request,
                 raw[name] = (up.filename or "upload", await up.read())
         else:
             raw[name] = form.get(name)
+    # Fair price depends on the inputs (e.g. karaoke = +1 credit). Compute AFTER reading them.
+    price = recipe_price(slug, raw)
+    await ensure_starter_grant(db, owner)
+    bal = await credit_balance(db, owner)
+    if bal < price:
+        raise HTTPException(status_code=402,
+                            detail=f"not enough credits -- '{slug}' costs {price}, you have {bal}")
     # Transparency: if the user edited the visible wrapper, THEIR text wins; else auto-build it.
     portrait = (form.get("portrait") or "").strip()
     if not portrait and slug in ("mentor-session", "find-your-edge", "decide"):
