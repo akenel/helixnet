@@ -15,18 +15,22 @@ Tigs: read memories `[[byoh-project]]` + `[[deploy-topology-bottega-vs-borrowhoo
 - **Big BYOH:** (9) render jobs through the REAL exchange (remote gamer GPU node) (10) GPU tier (Stable Diffusion / 2D→3D / premium voices; OpenArt as rented stopgap)
 - **Breadth/reach:** (11) more recipes from the top-10 catalog (RECIPES.md) (12) recipe→branded postcard→upload to La Piazza (13) multilingual translate+voices (14) voice-cast (master character voices) (15) DISTRIBUTION = warm last-mile (the real lever for users + getting hired)
 
-## ⭐ POLISH BATCH — Popsa-derived, APP-WIDE via the recipe chassis (queued 2026-06-17, do after compact)
+## ⭐ POLISH BATCH — Popsa-derived, APP-WIDE via the recipe chassis (P1+P2+P5 DONE+LIVE 2026-06-17)
 **Key call (Angel + Tigs):** don't polish Voiceover in isolation — polish the *recipe chassis* + add presentation
 fields to the *recipe/SI contract* so EVERY recipe inherits it (the design-factory: fix the factory, not one product).
 Popsa (popsa.com) sells the same bet as us — "so easy it feels like cheating," "impossible to mess up." Cherry-picks:
 
+**✅ SHIPPED (commit c3784fc, prod bottega.lapiazza.app, gate-3 PASS = TEST-UX-006):** `outcome` + `steps` are now
+standard SI-contract fields on ALL 14 recipes (`menu()` serializes both); chassis renders P1 outcome-first cards +
+run-screen outcome, P2 journey strip, P5 trust strip. Staging→sheet→prod, smoke green both. Angel: "perfect and simple".
+
 Two buckets:
 - **CHASSIS (build once, every recipe gets it)** — edit the shared workshop UI (`src/templates/compute/bottega.html`):
-  - (P1) **Outcome-first card:** show a one-line *outcome* under each recipe title (not just "~1 credit"). HIGH, cheap.
-  - (P2) **3-step journey strip** shown BEFORE the form ("Type → Voice → Reel") — kills "what will this ask of me". MED.
-  - (P3) **Confidence / pre-run confirm:** tiny preview of what you'll get + cost BEFORE charging (esp. the +1 karaoke). MED.
-  - (P5) **Trust strip** on the workshop: *"Your data stays yours. No algorithm. No monthly ransom."* — our story Popsa can't tell. HIGH for trust/distribution, cheap. (ties [[angel-why-and-goal]])
-- **PER-RECIPE FIELD (data in the recipe dict / SI definition — `src/compute/recipes.py`)** — standardize NEW contract fields:
+  - ✅(P1) **Outcome-first card:** one-line *outcome* under each recipe title; price demoted. DONE.
+  - ✅(P2) **3-step journey strip** on the run screen ("Type → Voice → Reel") — kills "what will this ask of me". DONE.
+  - (P3) **Confidence / pre-run confirm:** tiny preview of what you'll get + cost BEFORE charging (esp. the +1 karaoke). MED. BANKED.
+  - ✅(P5) **Trust strip** on the workshop: *"Your data stays yours. No algorithm. No monthly ransom."* — our story Popsa can't tell. DONE. (ties [[angel-why-and-goal]])
+- **PER-RECIPE FIELD (data in the recipe dict / SI definition — `src/compute/recipes.py`)** — ✅ `outcome`+`steps` now standard; remaining:
   - `outcome:` (one-line transformation, feeds P1) · `steps:` (the journey labels, feeds P2) · `sample:`/dynamic sample (P4)
   - (P4) **Never a blank box:** pre-fill a personalized sample (= existing backlog #3 "dynamic profile-based sample"). HIGH.
   - (P6) **Emotional > functional copy** in `outcome`/blurb: "your voice, your story, shareable in 30s" not "a video". (ties Alli-Miller transformation>productivity [[ref-alli-miller-video-validation]])
