@@ -826,7 +826,7 @@ async def recipes_run(slug: str, request: Request,
                             detail=f"not enough credits -- '{slug}' costs {price}, you have {bal}")
     # Transparency: if the user edited the visible wrapper, THEIR text wins; else auto-build it.
     portrait = (form.get("portrait") or "").strip()
-    if not portrait and slug in ("mentor-session", "find-your-edge", "decide"):
+    if not portrait and slug in ("mentor-session", "find-your-edge", "decide", "draft-a-listing"):
         try:
             portrait = await _build_portrait(db, owner)
         except Exception:  # noqa: BLE001

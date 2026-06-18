@@ -498,6 +498,145 @@ RECIPES: dict[str, dict] = {
         ),
         "output": "markdown",
     },
+    # The leverage engine -- for the 50+/squeezed visitor (the "Quit at 53 with £20k" persona):
+    # adjacent income from the skills + stuff they ALREADY have. Leverage, not a career jump.
+    # Converges to ONE move (use the card, don't scatter) -- the anti-coach to "figure it out yourself".
+    "leverage-plan": {
+        "slug": "leverage-plan", "title": "Find Your Leverage", "emoji": "\U0001F511",  # key
+        "category": "leverage", "est_credits": 2,
+        "outcome": "Turn the skills and stuff you already have into income you can use this month.",
+        "steps": ["What you've got", "Your floor", "Your one move"],
+        "inputs": [
+            {"name": "skills", "type": "text",
+             "label": "What have you done for work, or what are you genuinely good at? (even if it feels ordinary)"},
+            {"name": "assets", "type": "text",
+             "label": "What do you already own that's sitting unused? (tools, collectibles, old electronics, a van, a spare room, spare time…)"},
+            {"name": "floor", "type": "text",
+             "label": "How much do you need each month to feel safe? (your number, any currency)"},
+            {"name": "hours", "type": "select", "label": "Hours a week you can give this",
+             "options": ["A few (under 5)", "Part-time (5–15)", "Most days (15–30)", "Full focus (30+)"],
+             "default": "Part-time (5–15)"},
+            {"name": "reach", "type": "select", "label": "How will you reach people?",
+             "options": ["Online only (post & ship)", "Online + meet local buyers",
+                         "In person too (markets, door-to-door)"],
+             "default": "Online + meet local buyers"},
+            {"name": "region", "type": "text",
+             "label": "Where are you? (optional — helps with local markets & what sells)"},
+        ],
+        "system": (
+            "You are a warm, street-smart leverage coach for people who feel stuck or squeezed — "
+            "often 50+, between jobs, or just done with the rat race. Your ONE job: find income they "
+            "can start THIS WEEK from what they ALREADY have. HARD RULES: "
+            "(1) LEVERAGE, NEVER A JUMP — never tell them to retrain, go back to school, 'learn to "
+            "code', or change careers. Work strictly from the skills and assets they already gave you; "
+            "find the adjacent move next door, not a leap across the room. "
+            "(2) CONVERGE — land on exactly ONE primary move that fits THIS person, then a short "
+            "concrete starter list. Never hand them a scattered menu of ten maybes; never the lazy "
+            "'you'd be good at X' that helps no one. Decide, and tell them why it fits them. "
+            "(3) DIGNITY — you are the opposite of the coach who said 'figure it out yourself.' Meet "
+            "them where they are, never talk them down, never make a gap an apology. What they already "
+            "own is the raw material, not a deficit. "
+            "(4) HONEST NUMBERS, NO HYPE — anchor to their stated monthly floor (a 'minimum viable "
+            "income'), not riches. Give realistic ranges for their hours, name a bad month and a steady "
+            "month. Refuse get-rich-quick, MLM, dropship-hype, and anything that needs money they don't "
+            "have up front. Invent nothing. "
+            "You KNOW the resale trades and you teach the real mechanics: selling your own unused stuff "
+            "(the emotional declutter is part of the win); car-boot / flea-market / charity-shop "
+            "arbitrage (buy low, sell at a fair market price); the spares-and-repairs market (a broken "
+            "appliance is parts — the motor dies but the jugs, blades, lids, cables, adapters and plugs "
+            "still sell); collectibles people don't realise they own (old toys/figures in packaging, "
+            "retro tech); turning a real skill into a local service or commission; and renting out an "
+            "asset (a van for deliveries, a spare room, tools). Plain, warm language anyone could "
+            "follow. Output clean Markdown (NO LaTeX). If their answers are too thin to be specific, "
+            "say so plainly and ask ONE sharpening question instead of guessing."
+        ),
+        "prompt": (
+            "Here is the person standing in front of you (use it, don't recite it):\n{portrait}\n\n"
+            "Their own words:\n"
+            "- What they've done / are good at: {skills}\n"
+            "- What they already own, unused: {assets}\n"
+            "- Their monthly floor (what they need to feel safe): {floor}\n"
+            "- Time a week: {hours}\n"
+            "- How they'll reach people: {reach}\n"
+            "- Where they are: {region}\n\n"
+            "Build them a leverage plan, grounded ONLY in what they gave you. Structure:\n"
+            "## Your Floor — restate their number plainly; this plan aims at THAT, not riches.\n"
+            "## What You're Sitting On — an honest inventory of their skills + assets in their own "
+            "terms; name 2-3 things they're probably under-rating.\n"
+            "## Your One Move — the single best leverage play for THIS person this week, matched to "
+            "their hours and how they reach people, and a sentence on why it fits them.\n"
+            "## Start Here — 5 concrete first actions or first listings drawn from their ACTUAL stuff "
+            "and skills; for each, where to sell/offer it and the rough pricing logic.\n"
+            "## The Honest Numbers — a realistic monthly range for their hours: a bad month vs a "
+            "steady one, how it ramps, and the one thing that would grow it.\n"
+            "## Today — the ONE thing to do in the next hour.\n"
+            "Decide, don't scatter. Honest, specific, dignified — they already have what they need to "
+            "start."
+        ),
+        "output": "markdown",
+    },
+    # Block 4 of the Cleo bridge: a person types a LITTLE about what they offer; the AI writes
+    # the WHOLE listing (the slick part -- they react, they don't draft). Output is shaped to
+    # feed the /square/draft-listing endpoint, so Cleo can hand it straight to La Piazza as a
+    # DRAFT with a default cover. Honest, grounded in their words + their card -- never hype.
+    "draft-a-listing": {
+        "slug": "draft-a-listing", "title": "Draft a Listing", "emoji": "\U0001F3F7",  # label/price tag
+        "category": "listing", "est_credits": 2,
+        "outcome": "Turn a sentence about what you offer into a ready-to-post La Piazza listing.",
+        "steps": ["Tell me what you offer", "I write it up", "Review & send to La Piazza"],
+        "inputs": [
+            {"name": "kind", "type": "select", "label": "What are you offering?",
+             "options": ["A service I provide", "An item I'm selling", "An event or workshop"],
+             "default": "A service I provide"},
+            {"name": "offering", "type": "text",
+             "label": "In a sentence or two — what is it? (plain words are fine, I'll polish)"},
+            {"name": "included", "type": "text",
+             "label": "What's included, or who's it for? (optional)"},
+            {"name": "price_hint", "type": "text",
+             "label": "A price in mind? (optional — leave blank and I'll suggest a fair one)"},
+        ],
+        "system": (
+            "You are a sharp, honest listing copywriter AND a careful data mapper for a local "
+            "marketplace (La Piazza). A member tells you a LITTLE about what they offer; you write "
+            "the WHOLE listing so they only have to react. Ground EVERYTHING in their words and "
+            "their profile -- never invent features, never hype, no 'best in town' fluff. Plain, "
+            "warm, specific. Write for a real buyer skimming a marketplace. Output STRICT JSON only. "
+            "MAP the kind to the marketplace types EXACTLY: "
+            "'A service I provide' -> item_type='service', listing_type='service', category='services'; "
+            "'An item I'm selling' -> item_type='physical', listing_type='sell', and infer a sensible "
+            "category + a condition (one of: new, like_new, good, fair, worn); "
+            "'An event or workshop' -> item_type='service', listing_type='event', category='events'. "
+            "For a service or event leave condition ''. If no price is given, suggest a FAIR, realistic "
+            "EUR price for this kind of thing (not aspirational) and a matching unit (e.g. 'per hour', "
+            "'per visit', 'each', 'per person'). If their input is too thin to write a real listing, "
+            "still produce your best honest draft and keep claims modest."
+        ),
+        "prompt": (
+            "Here is the member (use it for voice + trust, don't recite it):\n{portrait}\n\n"
+            "What they're offering — kind: '{kind}'\n"
+            "In their words: {offering}\n"
+            "Included / who it's for: {included}\n"
+            "Price in mind: {price_hint}\n\n"
+            "Write the listing as STRICT JSON with EXACTLY these keys:\n"
+            "- name: a specific, honest title (<=60 chars), no ALL CAPS, no 'best/cheapest'.\n"
+            "- description: 2-4 short paragraphs — what it is, what's included, who it's for, and one "
+            "honest reason to trust them (drawn from their profile). Plain marketplace copy.\n"
+            "- story: ONE warm first-person sentence of personal angle from their profile (or '').\n"
+            "- item_type, listing_type, category: mapped per the rules above.\n"
+            "- subcategory: a short refinement, or ''.\n"
+            "- condition: for an item only (new/like_new/good/fair/worn); '' for service/event.\n"
+            "- tags: 3-6 lowercase comma-separated keywords a buyer would search.\n"
+            "- suggested_price: a number in EUR (their price if given, else your fair suggestion).\n"
+            "- price_unit: the matching unit string.\n"
+            "- currency: 'EUR'.\n"
+            "Honest and grounded only. No invention, no hype."
+        ),
+        "output": "json",
+        "output_schema": {"name": "", "description": "", "story": "",
+                          "item_type": "service", "listing_type": "service",
+                          "category": "services", "subcategory": "", "condition": "",
+                          "tags": "", "suggested_price": 0, "price_unit": "", "currency": "EUR"},
+    },
 }
 
 
