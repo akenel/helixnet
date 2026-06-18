@@ -480,6 +480,61 @@ async def suggest_next(transcript: list[dict], record: dict, language: str = "")
         return []
 
 
+# --- Blocks 2-3 of the Cleo bridge: she reads the card and PRE-FILLS the Draft-a-Listing recipe ---
+# The anti-blank-box move. Cleo doesn't hand the member an empty form; she fills it FROM what she
+# already knows and explains why. The serious-user gate lives here too: if the card is too thin to
+# offer something real, recommend=false (don't push a listing on someone with nothing to sell yet).
+LISTING_PREFILL_SYS = """You are CLEOPATRA, helping a member turn what they ALREADY do into a
+listing on La Piazza's marketplace. You are looking at their profile and deciding, on their behalf,
+what to offer -- then pre-filling a "Draft a Listing" recipe FOR them so they face a filled form,
+never a blank one.
+
+Decide HONESTLY:
+- If they have a real, concrete skill / craft / thing to offer NOW (from their profile), recommend it.
+- If the profile is too thin -- no real skill, just "exploring", nothing to sell -- set recommend=false
+  and say kindly in `why` what you'd want to know first. NEVER invent a skill they did not show.
+
+LEVERAGE, NOT A LEAP: build on what they already have; the obvious adjacent offering, not a fantasy.
+
+Output STRICT JSON only, EXACTLY these keys:
+- recommend: true/false
+- kind: one of EXACTLY "A service I provide" | "An item I'm selling" | "An event or workshop"
+- offering: a short FIRST-PERSON sentence in THEIR voice describing the thing, grounded in their profile
+- included: who it's for / what's included (or "")
+- why: ONE warm sentence -- why THIS move fits THEM (their words, their strengths). If recommend=false,
+  use this to say what you'd need from them first.
+- technique: ONE coaching line -- e.g. "Run it, nudge the price to feel right, then send it to La Piazza."
+No prose, no markdown, only the JSON object."""
+
+
+async def suggest_listing_prefill(portrait: str, record: dict, language: str = "") -> dict:
+    """Cleo reads the member (portrait + card) and pre-fills the Draft-a-Listing recipe (Blocks 2-3).
+    Returns {recommend, kind, offering, included, why, technique}. recommend=false = the serious-user
+    gate (too thin to offer something real yet). Best-effort: any failure => a safe no-recommend."""
+    known = _known_block(record)
+    body = (f"The member's profile (use it, don't recite it):\n{portrait or '(thin -- little on file)'}\n\n"
+            f"What we know in structured form:\n{known}\n\nDecide and pre-fill now.")
+    try:
+        raw = _strip_think(await _brain_chat(LISTING_PREFILL_SYS + _lang_clause(language), body, json_mode=True))
+        a, b = raw.find("{"), raw.rfind("}")
+        d = json.loads(raw[a:b + 1]) if (a >= 0 and b > a) else {}
+    except Exception:  # noqa: BLE001
+        logger.warning("suggest_listing_prefill failed", exc_info=True)
+        return {"recommend": False, "kind": "A service I provide", "offering": "",
+                "included": "", "why": "", "technique": ""}
+    kind = str(d.get("kind") or "").strip()
+    if kind not in ("A service I provide", "An item I'm selling", "An event or workshop"):
+        kind = "A service I provide"
+    return {
+        "recommend": bool(d.get("recommend", False)),
+        "kind": kind,
+        "offering": str(d.get("offering") or "").strip(),
+        "included": str(d.get("included") or "").strip(),
+        "why": str(d.get("why") or "").strip(),
+        "technique": str(d.get("technique") or "").strip(),
+    }
+
+
 # Deterministic grounding backstop. The prompt alone (rule 11 / SUGGEST_SYS) reduces but doesn't
 # eliminate a guest-planted fiction leaking into identity fields. Measured truth (real-brain probe,
 # two distinct fictions): the model RELIABLY flags the fiction in needs_clarification ("...rooms that

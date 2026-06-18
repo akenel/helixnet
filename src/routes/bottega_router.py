@@ -713,6 +713,23 @@ async def square_draft_listing(req: DraftListingReq, request: Request,
     return result
 
 
+@router.post("/concierge/suggest-listing")
+async def concierge_suggest_listing(req: HandoffReq,
+                                    current_user: dict = Depends(require_bottega_access()),
+                                    db: AsyncSession = Depends(get_db_session)):
+    """Blocks 2-3: Cleo reads the member's card + portrait and PRE-FILLS the Draft-a-Listing recipe
+    for them -- kind, a first-person offering sentence, who-it's-for, a why, and a coaching line.
+    recommend=false when the profile is too thin to offer something real yet (the serious-user gate)."""
+    username = current_user["username"]
+    language = (req.language or "").strip()
+    state = await read_concierge(db, username)
+    try:
+        portrait = await _build_portrait(db, username)
+    except Exception:  # noqa: BLE001
+        portrait = ""
+    return await cg.suggest_listing_prefill(portrait, state["record"], language)
+
+
 async def _build_portrait(db: AsyncSession, username: str) -> str:
     """A plain-language human portrait of the member -- the CONTEXT a master/coach reads so it
     mentors the REAL person. Framed for a historical master: their life + situation, NEVER apps."""
