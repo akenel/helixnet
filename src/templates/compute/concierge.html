@@ -297,9 +297,25 @@
 
     <!-- record column: what Cleopatra has learned (transparency / it's YOUR memory) -->
     <div class="card rounded-2xl p-4 overflow-y-auto convo-h">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="text-lg">🧠</span>
-        <h2 class="font-bold text-white text-sm" x-text="S('learned')">What Cleopatra has learned</h2>
+      <div class="flex items-center justify-between gap-2 mb-1">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-lg">🧠</span>
+          <h2 class="font-bold text-white text-sm truncate" x-text="S('learned')">What Cleopatra has learned</h2>
+        </div>
+        <!-- Start fresh: wipe the card + chat back to blank (two-step confirm) -->
+        <div class="shrink-0">
+          <button x-show="!resetConfirm" @click="resetConfirm=true" :disabled="busy||resetBusy"
+            class="text-[11px] text-slate-500 hover:text-brand inline-flex items-center gap-1 disabled:opacity-40"
+            :title="S('reset_tip')"><span class="text-xs leading-none">↺</span> <span x-text="S('reset')"></span></button>
+          <div x-show="resetConfirm" x-cloak class="flex items-center gap-1.5">
+            <button @click="resetCard()" :disabled="resetBusy"
+              class="text-[11px] px-2 py-1 rounded bg-brand hover:bg-branddark text-white font-semibold disabled:opacity-50"
+              x-text="resetBusy ? S('reset_busy') : S('reset_yes')"></button>
+            <button @click="resetConfirm=false" :disabled="resetBusy"
+              class="text-[11px] px-2 py-1 rounded border border-slate-600 hover:border-slate-400 text-slate-300"
+              x-text="S('reset_no')"></button>
+          </div>
+        </div>
       </div>
       <p class="text-[11px] text-slate-500 mb-4" x-text="S('memory')">This is your memory — yours to see. Every master reads it.</p>
 
@@ -353,6 +369,7 @@ function concierge(){
     sharpen:{ open:false, loading:false, questions:[], idx:0 },
     // 📋 Recap: every few turns, show what Cleo understands and ask "is this right?" (keeps focus)
     recap:{ open:false }, memberTurns:0, lastRecapTurn:0,
+    resetConfirm:false, resetBusy:false,
     starters:['Continue in English','Parliamo in italiano','Let me tell you about myself','What can you do for me?'],
     record:{},
     // voice player: speed / volume / chosen voice -- all persisted (never pops ears twice)
@@ -613,6 +630,11 @@ function concierge(){
       recap_title:{en:'Quick check — here\'s what I understand. Is this right?', it:'Verifica veloce — ecco cosa ho capito. È corretto?'},
       recap_yes:{en:'✓ Yes, that\'s me', it:'✓ Sì, sono io'},
       recap_fix:{en:'✏️ Let me correct something', it:'✏️ Vorrei correggere qualcosa'},
+      reset:{en:'Start fresh', it:'Ricomincia'},
+      reset_tip:{en:'Wipe your card and chat and start over from a blank slate', it:'Cancella la tua scheda e la chat e ricomincia da zero'},
+      reset_yes:{en:'✓ Wipe & restart', it:'✓ Cancella e riparti'},
+      reset_no:{en:'Cancel', it:'Annulla'},
+      reset_busy:{en:'Resetting…', it:'Ripristino…'},
     },
     S(key){ const e=this.i18n[key]; if(!e) return ''; return this.panelLang()==='it'?(e.it||e.en):e.en; },
     // E1: plain-language tooltips so a member understands each term (hover on desktop). Localised.
@@ -651,6 +673,28 @@ function concierge(){
       if(this.memberTurns - this.lastRecapTurn >= 5 && this.filledCount() >= 3){ this.recap.open=true; this.lastRecapTurn=this.memberTurns; this.scroll(); } },
     confirmRecap(){ this.recap.open=false; },
     correctRecap(){ this.recap.open=false; this.$nextTick(()=>{ if(this.$refs.ta) this.$refs.ta.focus(); }); },
+    // Start fresh: wipe the card + chat back to blank, then fire a brand-new opening. The honest
+    // re-test path (a messy/testing profile can't keep dragging Cleo down) and a real member feature.
+    async resetCard(){
+      if(this.resetBusy) return;
+      this.resetBusy=true; this.err='';
+      try{
+        const r=await fetch('/api/v1/compute/bottega/concierge/reset',{
+          method:'POST', headers:{'Content-Type':'application/json',...this.hdr()},
+          body:JSON.stringify({})});
+        if(!r.ok){
+          if(r.status===401||r.status===403){ this.expired=true; this.err='Your session timed out — log in again.'; return; }
+          this.err='Could not start fresh — try again.'; return;
+        }
+        const d=await r.json();
+        // local state back to a blank slate, mirroring the server
+        this.messages=[]; this.record=d.record||{}; this.suggestions=[];
+        this.memberTurns=0; this.lastRecapTurn=0; this.recap.open=false;
+        this.sharpen.open=false; this.sharpen.questions=[]; this.resetConfirm=false; this.expired=false;
+        await this.send(true);   // fresh greeting, exactly like a brand-new guest
+      }catch(e){ this.err='Network hiccup — try again.'; }
+      finally{ this.resetBusy=false; }
+    },
     riasecRows(){ const r=this.record.riasec||{}; const L=this.panelLang()==='it'?{realistic:'Realistico',investigative:'Investigativo',artistic:'Artistico',social:'Sociale',enterprising:'Intraprendente',conventional:'Convenzionale'}:{realistic:'Realistic',investigative:'Investigative',artistic:'Artistic',social:'Social',enterprising:'Enterprising',conventional:'Conventional'};
       return Object.keys(L).map(k=>({k,label:L[k],v:r[k]||0})).sort((a,b)=>b.v-a.v); },
     // voice follows the language of THIS reply (the masters' rule), not the picker.

@@ -565,6 +565,38 @@ async def concierge_chat(request: Request,
     return {"reply": reply, "language": reply_lang, "record": record, "suggestions": suggestions}
 
 
+@router.post("/concierge/reset")
+async def concierge_reset(request: Request,
+                          current_user: dict = Depends(require_bottega_access()),
+                          db: AsyncSession = Depends(get_db_session)):
+    """Scrap it all and start fresh -- wipe the member's card + chat back to a blank slate, so a
+    messy or testing-only profile can't keep dragging Cleo down. Their memory, their call (anti-Meta).
+    Optional {seed_text}: a CV, or a few lines about themselves, to re-seed the new card from -- the
+    SAME extraction signup uses ("explain yourself, or give me a CV, if you want to start fresh").
+    After reset the next /concierge/chat (empty message) opens fresh, as a brand-new guest."""
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+    username = current_user["username"]
+    seed_text = (body.get("seed_text") or "").strip()
+
+    record, reseeded = cg.blank_record(), False
+    if seed_text:
+        # re-seed from what they pasted -- same path as CV signup; a bad paste must never 500 the reset
+        try:
+            extracted = await cg.extract_record([{"role": "member", "content": seed_text[:8000]}])
+            record = cg.stamp_provenance(cg.merge_record(cg.blank_record(), extracted), extracted)
+            reseeded = True
+        except Exception:  # noqa: BLE001
+            logger.warning("concierge reset re-seed failed for %s", username, exc_info=True)
+            record, reseeded = cg.blank_record(), False
+    # empty transcript => the next chat turn greets fresh, exactly like a brand-new guest
+    await write_concierge(db, username, record, [])
+    logger.info("concierge reset for %s (reseeded=%s)", username, reseeded)
+    return {"ok": True, "record": record, "reseeded": reseeded, "transcript": []}
+
+
 @router.post("/concierge/dispatch")
 async def concierge_dispatch(request: Request,
                              current_user: dict = Depends(require_bottega_access()),
