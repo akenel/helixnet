@@ -34,9 +34,11 @@ services:
       - ./uat.env
     environment:
       SERVICE_TYPE: platform
-      # Dedicated staging auth realm (own frontendUrl=staging-bottega.lapiazza.app).
-      # Keeps staging login isolated from prod's lapiazza-realm-dev (gotcha #3).
-      LP_REALM: lapiazza-realm-staging
+      # CONSOLIDATED REALM (2026-06-18): both staging apps now share `borrowhood-staging`
+      # (frontendUrl=staging-bottega.lapiazza.app), mirroring the Option-A prod target where
+      # `borrowhood` is the one CUA. Marketplace (borrowhood_staging) reads the same realm from
+      # .env.staging. See docs/LP-IDENTITY-CONSOLIDATION-ADR.md.
+      LP_REALM: borrowhood-staging
       LP_CLIENT: lapiazza_web
       SQUARE_DB: borrowhood_staging
       # BYOH render worker (the muscle) -- a sidecar container, reached by service name.
