@@ -135,6 +135,11 @@ class Settings(BaseSettings):
             f"{self.POSTGRES_PASSWORD.get_secret_value()}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
     SQUARE_DB: str = "borrowhood"   # the marketplace DB (read-only bridge); same Postgres instance
+    # The Square (La Piazza marketplace) write-side bridge (Cleo draft-listing handoff).
+    # API URL = internal service name for server-to-server calls (same Docker network);
+    # PUBLIC URL = browser-facing host, used to build cover-image + view links the user clicks.
+    SQUARE_API_URL: str = "http://borrowhood:8000"     # staging overrides -> borrowhood_staging:8000
+    SQUARE_PUBLIC_URL: str = "https://lapiazza.app"     # staging overrides -> https://staging.lapiazza.app
     @property
     def SQUARE_ASYNC_URI(self) -> str:
         return (

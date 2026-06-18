@@ -672,6 +672,47 @@ async def concierge_handoff(req: HandoffReq,
             "alternate": packet.get("alternate", ""), "thread_id": str(root.id)}
 
 
+class DraftListingReq(BaseModel):
+    name: str
+    description: str = ""
+    story: str = ""
+    item_type: str = "service"        # service|physical|digital|space|made_to_order
+    listing_type: str = "service"     # service|sell|rent|event|training|giveaway|...
+    category: str = "services"
+    subcategory: str = ""
+    condition: str | None = None
+    tags: str = ""
+    price: float | None = None
+    price_unit: str = ""
+    currency: str = "EUR"
+    cover_url: str = ""               # blank => a default placeholder cover is attached
+    content_language: str = "en"
+
+
+@router.post("/square/draft-listing")
+async def square_draft_listing(req: DraftListingReq, request: Request,
+                               current_user: dict = Depends(require_bottega_access()),
+                               db: AsyncSession = Depends(get_db_session)):
+    """Cleo's hand-off to La Piazza: create a DRAFT listing (with a default cover) in the
+    marketplace AS the member, by forwarding the member's own token (principal propagation --
+    both apps share one Keycloak realm now). The draft is invisible until the member publishes
+    it. Logged on the spine so it shows in My Blueprint. Returns the draft refs + a view link."""
+    from src.services.square_bridge import create_draft_listing, SquareBridgeError
+    auth = request.headers.get("authorization") or ""
+    token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    try:
+        result = await create_draft_listing(token, req.model_dump())
+    except SquareBridgeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    db.add(BottegaSessionModel(
+        username=current_user["username"], slug=f"draft-listing-{result['item_id']}",
+        title=("Drafted in La Piazza: " + req.name)[:120],
+        inputs=json.dumps(req.model_dump()), output=json.dumps(result),
+        output_type="json", tags="square,draft-listing,handoff"))
+    await db.commit()
+    return result
+
+
 async def _build_portrait(db: AsyncSession, username: str) -> str:
     """A plain-language human portrait of the member -- the CONTEXT a master/coach reads so it
     mentors the REAL person. Framed for a historical master: their life + situation, NEVER apps."""

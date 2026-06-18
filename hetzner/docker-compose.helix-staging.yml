@@ -41,6 +41,9 @@ services:
       LP_REALM: borrowhood-staging
       LP_CLIENT: lapiazza_web
       SQUARE_DB: borrowhood_staging
+      # Cleo draft-listing bridge -> the STAGING marketplace (internal API + public host for links)
+      SQUARE_API_URL: http://borrowhood_staging:8000
+      SQUARE_PUBLIC_URL: https://staging.lapiazza.app
       # BYOH render worker (the muscle) -- a sidecar container, reached by service name.
       RENDER_WORKER_URL: http://render-worker:8800
       BOTTEGA_MEDIA_DIR: /var/bottega-media   # shared bottega_media volume (from uat.yml) -- same DB as prod, so same media; survives recreate (#5)

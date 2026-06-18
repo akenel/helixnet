@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import re
 
+import httpx
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -128,3 +129,83 @@ async def get_square_profile(keycloak_id: str | None) -> dict | None:
         return None
     return {"display_name": row[0] or "", "slug": row[1] or "", "workshop": row[2] or "",
             "tagline": row[3] or "", "bio": row[4] or "", "city": row[5] or ""}
+
+
+# --- WRITE side: the Cleo draft-listing bridge (per-user, identity-linked) -------------------
+# This is the "later slice" the header promised. We call the marketplace API server-to-server,
+# carrying the MEMBER's own token (principal propagation) -- valid cross-app because both apps
+# now share ONE Keycloak realm (borrowhood). BorrowHood verifies the token + acts as the user,
+# JIT-relinking by username. Output is always a DRAFT (invisible) with a default cover, so the
+# member opens La Piazza to a tidy, image-bearing listing ready to review and publish.
+
+class SquareBridgeError(Exception):
+    """A friendly, surfaced failure from the marketplace write bridge."""
+
+
+async def create_draft_listing(user_token: str, d: dict) -> dict:
+    """Create item -> default cover -> DRAFT listing in La Piazza, AS the member (their token).
+    `d` carries the listing fields (name/description/story/item_type/listing_type/category/
+    subcategory/condition/tags/price/price_unit/currency/cover_url/content_language).
+    Returns {item_id, listing_id, slug, status, view_url, cover}. Raises SquareBridgeError."""
+    if not (user_token or "").strip():
+        raise SquareBridgeError("not signed in")
+    name = (d.get("name") or "").strip()
+    if len(name) < 2:
+        raise SquareBridgeError("the listing needs a name")
+    h = {"Authorization": f"Bearer {user_token}"}
+    cover = (d.get("cover_url") or "").strip() or f"{settings.SQUARE_PUBLIC_URL}/static/og-default.png"
+    item_body = {
+        "name": name[:200],
+        "description": (d.get("description") or "")[:5000],
+        "story": (d.get("story") or "")[:5000],
+        "content_language": (d.get("content_language") or "en")[:5],
+        "item_type": d.get("item_type") or "service",
+        "category": (d.get("category") or "services")[:50],
+        "subcategory": (d.get("subcategory") or "")[:50],
+        "tags": (d.get("tags") or "")[:300],
+    }
+    if d.get("condition"):
+        item_body["condition"] = d["condition"]
+    listing_body = {
+        "item_id": None,  # filled after item create
+        "listing_type": d.get("listing_type") or "service",
+        "status": "draft",
+        "currency": (d.get("currency") or "EUR")[:3],
+        "notes": (d.get("notes") or "Drafted by Cleo — review and publish when you're ready.")[:500],
+    }
+    if d.get("price") not in (None, ""):
+        try:
+            listing_body["price"] = float(d["price"])
+            if d.get("price_unit"):
+                listing_body["price_unit"] = str(d["price_unit"])[:20]
+        except (TypeError, ValueError):
+            pass
+    try:
+        async with httpx.AsyncClient(base_url=settings.SQUARE_API_URL, verify=False, timeout=30.0) as c:
+            r = await c.post("/api/v1/items", headers=h, json=item_body)
+            if r.status_code == 401:
+                raise SquareBridgeError("your session can't post to La Piazza yet — try signing in again")
+            if r.status_code != 201:
+                raise SquareBridgeError(f"couldn't create the listing ({r.status_code})")
+            item = r.json()
+            iid, slug = item.get("id"), item.get("slug")
+            # cover is best-effort: a draft without it is still fine, just plainer
+            try:
+                await c.post(f"/api/v1/items/{iid}/media", headers=h,
+                             json={"url": cover, "alt_text": "Replace with your photo", "media_type": "photo"})
+            except Exception:  # noqa: BLE001
+                logger.warning("square_bridge: cover attach failed for item %s", iid, exc_info=True)
+            listing_body["item_id"] = iid
+            r = await c.post("/api/v1/listings", headers=h, json=listing_body)
+            if r.status_code != 201:
+                raise SquareBridgeError(f"created the item but couldn't draft the listing ({r.status_code})")
+            listing = r.json()
+    except SquareBridgeError:
+        raise
+    except Exception as e:  # noqa: BLE001
+        logger.warning("square_bridge.create_draft_listing failed", exc_info=True)
+        raise SquareBridgeError(f"the marketplace is unreachable right now ({str(e)[:80]})")
+    return {
+        "item_id": iid, "listing_id": listing.get("id"), "slug": slug, "status": "draft",
+        "view_url": f"{settings.SQUARE_PUBLIC_URL}/items/{slug}", "cover": cover,
+    }
