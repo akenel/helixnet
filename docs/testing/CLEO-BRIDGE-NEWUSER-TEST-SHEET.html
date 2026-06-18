@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cleo Bridge — New User End-to-End (TEST-CLEO-008)</title>
+<!-- Self-contained: system fonts, no deps. White bg = print-friendly.
+     FILLABLE IN THE BROWSER: tick boxes + type on screen, THEN Print -> Save as PDF.
+     A browser-printed PDF freezes the fields, so fill BEFORE printing. -->
+<style>
+  :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8;
+          --stg:#1d4ed8; --prod:#15803d; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1;
+         margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 980px; margin:0 auto; background:#fff; padding:0 0 32px;
+           box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--red); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--red); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee;
+           border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:16px; }
+  .urls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .urlbox { border:1px solid var(--line); border-radius:6px; padding:10px 13px; font-size:13px; }
+  .urlbox.stg { border-left:4px solid var(--stg); }
+  .urlbox.prod { border-left:4px solid var(--prod); }
+  .urlbox b { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .urlbox.stg b { color:var(--stg); } .urlbox.prod b { color:var(--prod); }
+  .users { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .userbox { border:1px dashed var(--line); border-radius:6px; padding:9px 13px; font-size:12.5px; }
+  .userbox.stg { border-left:4px solid var(--stg); } .userbox.prod { border-left:4px solid var(--prod); }
+  .userbox b { font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .userbox.stg b { color:var(--stg); } .userbox.prod b { color:var(--prod); }
+  .kbd { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
+         padding:1px 5px; font-size:12px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:11.5px; }
+  th.stg { background:var(--stg); } th.prod { background:var(--prod); }
+  td.n { text-align:center; font-weight:bold; color:var(--red); width:24px; }
+  td.chk { text-align:center; width:62px; }
+  td.notes { width:150px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .what b { color:var(--head); }
+  .step { color:#445; font-size:12px; }
+  .exp { color:#367; font-size:11.5px; margin-top:3px; }
+  .exp b { color:#15803d; }
+  .finding { font-size:11px; color:#7a5; font-style:italic; margin-top:2px; }
+  .finding.gap { color:#b45309; }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit;
+              color:var(--ink); padding:2px 4px; width:100%; min-width:50px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--red); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  .yn { display:inline-flex; gap:8px; align-items:center; justify-content:center; }
+  .yn label { font-size:11px; color:#556; }
+  input[type=checkbox] {
+    appearance:none; -webkit-appearance:none; width:17px; height:17px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; border-radius:3px;
+    print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  input[type=checkbox]:checked { background:var(--red); border-color:var(--red); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:12px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio] { appearance:none; -webkit-appearance:none; width:16px; height:16px;
+    border:1.6px solid #667; background:#fff; cursor:pointer; vertical-align:middle; border-radius:50%;
+    print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  input[type=radio]:checked { background:var(--red); border-color:var(--red); box-shadow:inset 0 0 0 3px #fff; }
+  .result { margin-top:20px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 8px; color:var(--head); font-size:14px; }
+  .sig { margin-top:12px; font-size:13px; color:#445; display:flex; gap:28px; }
+  .sig span { flex:1; }
+  .gaps { margin-top:20px; border:1px dashed #b45309; border-radius:6px; padding:14px 16px; background:#fffbeb; }
+  .gaps h3 { margin:0 0 4px; color:#92400e; font-size:14px; }
+  .gaps .hint { font-size:12px; color:#a16207; margin:0 0 10px; }
+  .gaps ol { margin:0; padding-left:20px; } .gaps li { margin-bottom:8px; }
+  .gaps li input.txt { border-bottom:1px solid #d9b; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 28px 0;
+           font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:980px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--red); color:#fff; border:0; border-radius:5px;
+                 padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; max-width:100%; }
+    .btns,.no-print { display:none !important; } input.txt:focus { background:transparent; } }
+</style>
+</head>
+<body>
+
+<div class="btns no-print"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · La Piazza</div>
+    <div class="title">Cleo Bridge — New User End-to-End<br>sign up → Cleo drafts → live in La Piazza</div>
+    <div class="docid">TEST-CLEO-008</div>
+  </header>
+
+  <div class="body">
+    <h1>🐯 Create a new user &amp; walk the whole loop</h1>
+    <p class="sub">Make a BRAND-NEW account on each environment, then ride the full bridge:
+      Cleo reads you → suggests a listing → AI writes it → you edit → one button → it's a draft in
+      La Piazza, with a cover. Tick what you actually see on each env.</p>
+
+    <div class="howto">📝 <b>How to use:</b> <b>hard-refresh</b> each page first (beat the cache). Create a fresh
+      user per environment (separate realms, so the staging user ≠ the prod user). Do the steps in order —
+      each one feeds the next. Tick STAGING and PROD as you go, mark Match Y/N, jot notes. Fill <b>on screen</b>,
+      then <span class="kbd">🖨️ Print / Save as PDF</span>.</p>
+
+    <div class="urls">
+      <div class="urlbox stg"><b>Staging</b>
+        Workshop / sign up: <span class="kbd">staging-bottega.lapiazza.app/compute/bottega</span><br>
+        Marketplace: <span class="kbd">staging.lapiazza.app</span></div>
+      <div class="urlbox prod"><b>Production</b>
+        Workshop / sign up: <span class="kbd">bottega.lapiazza.app/compute/bottega</span><br>
+        Marketplace: <span class="kbd">lapiazza.app</span></div>
+    </div>
+
+    <div class="users">
+      <div class="userbox stg"><b>Staging test user</b> &nbsp; name: <input class="txt" type="text" style="width:42%" placeholder="e.g. Tony Test">
+        &nbsp; user/email: <input class="txt" type="text" style="width:42%" placeholder="you'll get a username"></div>
+      <div class="userbox prod"><b>Prod test user</b> &nbsp; name: <input class="txt" type="text" style="width:42%" placeholder="e.g. Rosa Real">
+        &nbsp; user/email: <input class="txt" type="text" style="width:42%"></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>Step &nbsp;·&nbsp; what should happen</th>
+          <th class="stg" style="width:62px">STAGING</th><th class="prod" style="width:62px">PROD</th>
+          <th style="width:74px">Match?</th><th class="notes">Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="n">1</td>
+          <td class="what"><b>✍️ Sign up (Get Started).</b> <span class="step">On the Workshop, tap <b>Get Started</b> →
+            type your name + a sentence or two about what you do + a password → submit.</span>
+            <div class="exp">Expect: <b>you land logged in</b>, no email-verify wall, no error.</div>
+            <div class="finding">Tigs: one-motion Get Started is live on both; a few honest sentences are enough (no CV needed).</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m1"><label>N</label><input type="radio" name="m1"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">2</td>
+          <td class="what"><b>👑 Cleopatra greets you.</b> <span class="step">Check the inbox / welcome — she references
+            what you just told her (not a generic "hello").</span>
+            <div class="exp">Expect: a warm note naming a strength or two she read from your words.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m2"><label>N</label><input type="radio" name="m2"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">3</td>
+          <td class="what"><b>💡 Cleo suggests a listing (her pick).</b> <span class="step">Use the "draft a listing"
+            suggestion / ask Cleo what to offer.</span>
+            <div class="exp">Expect: <b>ONE concrete move</b> — a kind (service / item / event) + a first-person
+            offering sentence + a short <i>why this fits you</i> + a coaching line. If your profile was thin,
+            she asks ONE sharpening question instead — that's also a pass (the dignity gate).</div>
+            <div class="finding">Tigs: verified both — recommend=true with a real prefill; thin profile → polite "tell me more".</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m3"><label>N</label><input type="radio" name="m3"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">4</td>
+          <td class="what"><b>📢 Open "Draft a Listing", pre-filled.</b> <span class="step">In the
+            <b>📢 Sell &amp; Announce</b> shelf, open <b>Draft a Listing</b> — kind + a sentence about the thing.</span>
+            <div class="exp">Expect: the recipe is there and the inputs are easy (you type a LITTLE).</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m4"><label>N</label><input type="radio" name="m4"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">5</td>
+          <td class="what"><b>🤖 AI writes the whole listing.</b> <span class="step">Run it.</span>
+            <div class="exp">Expect: a real <b>title</b>, a full <b>description</b> (what / included / who / one honest
+            trust line), <b>tags</b>, and a <b>fair EUR price + unit</b> — grounded in your words, <b>no hype</b>.</div>
+            <div class="finding">Tigs: e.g. "I bake sourdough" → full listing + €/loaf, no "best in town" fluff.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m5"><label>N</label><input type="radio" name="m5"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">6</td>
+          <td class="what"><b>✏️ Review &amp; edit (you stay in charge).</b> <span class="step">Change the title or nudge
+            the price right in the result.</span>
+            <div class="exp">Expect: title / description / price / unit are <b>editable</b> before sending.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m6"><label>N</label><input type="radio" name="m6"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">7</td>
+          <td class="what"><b>🏛️ Send to La Piazza (one button).</b> <span class="step">Click
+            <b>Send to La Piazza (draft)</b>.</span>
+            <div class="exp">Expect: <b>✓ success message</b> + a <b>"→ View your draft"</b> link; no error.</div>
+            <div class="finding">Tigs: verified end-to-end as mike (staging) + angel (prod). Expect ✓ both.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m7"><label>N</label><input type="radio" name="m7"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">8</td>
+          <td class="what"><b>🔗 Same person on the marketplace (SSO).</b> <span class="step">Open the marketplace
+            in the same browser — you should already be <b>you</b> (no second login).</span>
+            <div class="exp">Expect: <b>no re-login</b>; your name/profile shows. One identity across both apps.</div>
+            <div class="finding">Tigs: SSO + self-relink verified on both envs.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m8"><label>N</label><input type="radio" name="m8"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">9</td>
+          <td class="what"><b>📦 The draft is waiting in La Piazza.</b> <span class="step">In your account /
+            "my listings", find the draft you just sent.</span>
+            <div class="exp">Expect: the listing is there as a <b>DRAFT</b> (not public yet), title + description intact.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m9"><label>N</label><input type="radio" name="m9"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">10</td>
+          <td class="what"><b>🖼 It has a cover image (no naked listing).</b> <span class="step">Look at the draft's
+            photo.</span>
+            <div class="exp">Expect: a <b>default cover</b> ("replace with your photo") — <b>not a grey box</b>.</div>
+            <div class="finding">Tigs: every bridge draft gets the placeholder cover automatically.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m10"><label>N</label><input type="radio" name="m10"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall</h3>
+      <label style="font-size:14px;margin-right:20px;"><input type="radio" name="overall"> ✅ Whole loop works on both — ship-confidence</label>
+      <label style="font-size:14px;"><input type="radio" name="overall"> ⚠️ Something broke — listed below</label>
+      <div class="sig">
+        <span>Tester: <input class="txt" type="text" placeholder="angel"></span>
+        <span>Date: <input class="txt" type="text" placeholder="dd/mm/yyyy"></span>
+        <span>Device: <input class="txt" type="text" placeholder="Fairphone / desktop"></span>
+      </div>
+    </div>
+
+    <div class="gaps">
+      <h3>⚠️ Anything that broke or felt off</h3>
+      <p class="hint">A row where the step failed, OR something that worked but felt clunky / unclear / un-dignified.
+        Note which env (STG/PROD) + step #. These become the next fix list.</p>
+      <ol>
+        <li><input class="txt" type="text" placeholder="e.g. PROD #5 — price felt too high; STG #3 — Cleo rambled"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>TEST-CLEO-008 · Rev 1 · 2026-06-18</span>
+  </footer>
+</div>
+
+</body>
+</html>
