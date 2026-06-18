@@ -124,7 +124,7 @@ function getStarted() {
       clearInterval(tick); this.busy=false;
     },
     login() {
-      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : ('{{ lp_kc_url }}' || location.origin);
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent('/compute/bottega');
       location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;

@@ -76,6 +76,7 @@ html_router = APIRouter(tags=["Compute - Web UI"])
 
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+templates.env.globals["lp_kc_url"] = settings.LP_KC_PUBLIC_URL  # browser-facing KC host for LP login
 
 
 

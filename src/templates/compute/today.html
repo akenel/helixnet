@@ -247,7 +247,7 @@ function day(){
     loadToken(){ if(location.hash.includes('token=')){const t=location.hash.split('token=')[1].split('&')[0]; if(t){sessionStorage.setItem('compute_token',t);localStorage.setItem('compute_token',t);history.replaceState({},document.title,location.pathname);}}
       return sessionStorage.getItem('compute_token')||localStorage.getItem('compute_token'); },
     decodeUser(){ if(!this.token)return null; try{const p=JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); if(p.exp*1000<=Date.now()){this.token=null;return null;} return p.preferred_username||null;}catch(e){return null;} },
-    login(){ const kc=location.hostname==='helix.local'?'https://keycloak.helix.local':location.origin;
+    login(){ const kc=location.hostname==='helix.local'?'https://keycloak.helix.local':('{{ lp_kc_url }}'||location.origin);
       const redirect=encodeURIComponent(location.origin+'/compute/callback');
       location.href=`${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${encodeURIComponent(location.pathname)}`; },
     H(){ return {'Authorization':'Bearer '+this.token}; },

@@ -334,7 +334,7 @@ function legends(){
     _fname(){ const m=((this.selected&&this.selected.name)||'master').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); const q=(this.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24); return 'ask-'+m+(q?('_'+q):'')+'.md'; },
     downloadOut(){ const b=new Blob([this._text()],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=this._fname(); a.click(); },
     login(){
-      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : ('{{ lp_kc_url }}' || location.origin);
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent('/compute/legends');
       location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;

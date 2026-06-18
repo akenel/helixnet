@@ -537,7 +537,7 @@ function lpcx() {
       return sessionStorage.getItem('compute_token') || localStorage.getItem('compute_token') || sessionStorage.getItem('backlog_token') || localStorage.getItem('backlog_token');
     },
     login() {
-      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : ('{{ lp_kc_url }}' || location.origin);
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent(location.pathname);
       location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;

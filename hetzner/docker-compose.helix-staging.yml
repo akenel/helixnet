@@ -44,6 +44,9 @@ services:
       # Cleo draft-listing bridge -> the STAGING marketplace (internal API + public host for links)
       SQUARE_API_URL: http://borrowhood_staging:8000
       SQUARE_PUBLIC_URL: https://staging.lapiazza.app
+      # Browser-facing KC host for the login redirect — MUST match borrowhood-staging's frontendUrl
+      # (staging-bottega.lapiazza.app), else cross-host login dead-ends on "already logged in".
+      LP_KC_PUBLIC_URL: https://staging-bottega.lapiazza.app
       # BYOH render worker (the muscle) -- a sidecar container, reached by service name.
       RENDER_WORKER_URL: http://render-worker:8800
       BOTTEGA_MEDIA_DIR: /var/bottega-media   # shared bottega_media volume (from uat.yml) -- same DB as prod, so same media; survives recreate (#5)

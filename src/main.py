@@ -308,6 +308,7 @@ logger.info(f"🔗 API base path: {settings.API_V1_STR}")
 # ================================================================
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
+templates.env.globals["lp_kc_url"] = get_settings().LP_KC_PUBLIC_URL  # browser-facing KC host for LP login
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # ================================================================

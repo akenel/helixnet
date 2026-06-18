@@ -455,7 +455,7 @@ function bottega() {
     },
     decodeUser() { if(!this.token) return null; try { const p=JSON.parse(atob(this.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); if(p.exp*1000<=Date.now()){this.token=null;return null;} return p.preferred_username||null; } catch(e){return null;} },
     login() {
-      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : location.origin;
+      const kc = location.hostname==='helix.local' ? 'https://keycloak.helix.local' : ('{{ lp_kc_url }}' || location.origin);
       const redirect = encodeURIComponent(location.origin + '/compute/callback');
       const state = encodeURIComponent(location.pathname);
       location.href = `${kc}/realms/{{ lp_realm }}/protocol/openid-connect/auth?client_id={{ lp_client }}&redirect_uri=${redirect}&response_type=code&scope=openid%20profile&state=${state}`;

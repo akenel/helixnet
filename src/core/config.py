@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     # point at its own dedicated realm (lapiazza-realm-staging) without code edits.
     LP_REALM: str = "lapiazza-realm-dev"
     LP_CLIENT: str = "lapiazza_web"
+    # Browser-facing Keycloak host for the LP realm — MUST match the realm's frontendUrl, or the
+    # interactive login dead-ends on "you are already logged in" when app host != KC host.
+    # prod borrowhood frontendUrl = lapiazza.app (default); staging overrides to staging-bottega.
+    LP_KC_PUBLIC_URL: str = "https://lapiazza.app"
 # Seeder superuser
     HX_SUPER_NAME:  str = "helix_user"
     HX_SUPER_EMAIL: EmailStr 
