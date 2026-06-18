@@ -727,6 +727,18 @@ async def concierge_suggest_listing(req: HandoffReq,
         portrait = await _build_portrait(db, username)
     except Exception:  # noqa: BLE001
         portrait = ""
+    # One identity now (realm consolidation): if the Bottega card is thin, Cleo still SEES the
+    # member's La Piazza profile -- so a crossing-over marketplace member gets a real suggestion.
+    if (not portrait) or portrait.startswith("A newcomer") or len(portrait) < 60:
+        from src.services.square_bridge import get_square_profile
+        sub = current_user.get("sub")
+        sq = await get_square_profile(sub) if sub else None
+        if sq:
+            bits = [sq.get("display_name"), sq.get("workshop"), sq.get("tagline"),
+                    sq.get("bio"), sq.get("city")]
+            sqp = ". ".join(b for b in bits if b)
+            if sqp:
+                portrait = f"From their La Piazza profile — {sqp}"
     return await cg.suggest_listing_prefill(portrait, state["record"], language)
 
 
