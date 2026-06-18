@@ -264,8 +264,43 @@
           <a x-show="savedUrl" :href="savedUrl" target="_blank" class="block text-xs text-brand hover:underline font-mono" x-text="'→ view your page: '+savedUrl"></a>
         </div>
       </template>
+      <!-- json output: draft-a-listing (custom render + Send to La Piazza) -->
+      <template x-if="output && output.output_type==='json' && active && active.slug==='draft-a-listing'">
+        <div class="space-y-3 text-sm" x-data="{ L: resObj() }">
+          <div>
+            <div class="text-[10px] uppercase text-slate-500">listing title</div>
+            <input x-model="L.name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-base font-semibold text-slate-100">
+          </div>
+          <div class="flex flex-wrap gap-2 text-[11px]">
+            <span class="px-2 py-1 rounded bg-slate-800 text-slate-300" x-text="(L.listing_type||'service')+' · '+(L.category||'services')"></span>
+            <span x-show="L.condition" class="px-2 py-1 rounded bg-slate-800 text-slate-300" x-text="'condition: '+L.condition"></span>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase text-slate-500">description</div>
+            <textarea x-model="L.description" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-[13px] text-slate-200"></textarea>
+          </div>
+          <div x-show="L.story">
+            <div class="text-[10px] uppercase text-slate-500">your angle</div>
+            <div class="text-slate-300 italic" x-text="L.story"></div>
+          </div>
+          <div class="flex items-end gap-3">
+            <div><div class="text-[10px] uppercase text-slate-500">price (EUR)</div>
+              <input type="number" x-model="L.suggested_price" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-sm"></div>
+            <div><div class="text-[10px] uppercase text-slate-500">per</div>
+              <input x-model="L.price_unit" placeholder="hour / visit / each" class="w-32 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-sm"></div>
+          </div>
+          <div x-show="L.tags"><div class="text-[10px] uppercase text-slate-500">tags</div><div class="font-mono text-xs text-slate-400" x-text="L.tags"></div></div>
+          <div class="text-[11px] text-amber-400/90">🖼 A default cover is added automatically — swap it for your own photo once it's in La Piazza.</div>
+          <div class="pt-3 border-t border-slate-800 flex flex-wrap items-center gap-2">
+            <button @click="sendToSquare(L)" :disabled="sending||!token||!!sentUrl" class="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40 disabled:cursor-not-allowed" x-text="sending?'sending…':(sentUrl?'✓ sent as draft':'🏛️ Send to La Piazza (draft)')"></button>
+            <button @click="copyOut()" class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200" x-text="copied?'✓ copied':'📋 Copy'"></button>
+          </div>
+          <div class="text-xs font-mono" :class="sendMsg.startsWith('✓')?'text-emerald-400':'text-rose-400'" x-text="sendMsg"></div>
+          <a x-show="sentUrl" :href="sentUrl" target="_blank" class="block text-sm text-brand hover:underline font-semibold" x-text="'→ View your draft in La Piazza'"></a>
+        </div>
+      </template>
       <!-- json output: generic (body-intake, story-intake, any structured recipe) -->
-      <template x-if="output && output.output_type==='json' && !(active && active.slug==='cv-to-bio')">
+      <template x-if="output && output.output_type==='json' && !(active && (active.slug==='cv-to-bio' || active.slug==='draft-a-listing'))">
         <div class="space-y-3 text-sm">
           <template x-for="[k,v] in Object.entries(resObj())" :key="k">
             <div x-show="v && (!Array.isArray(v) || v.length) && !['emails','phones','links','chars','char','source','ref','ref_id'].includes(k)">
@@ -385,11 +420,13 @@ function bottega() {
     recipes: [], active: null, files: {}, fields: {}, output: null, err: '', busy: false,
     saveMsg: '', saving: false, handle: '', savedUrl: '', copied: false, reading: false, pcBusy: false,
     savedMsg: '', showFolder: false, folder: [], q: '', sortDesc: true, savedId: null,
+    sending: false, sentUrl: '', sendMsg: '',   // Block 6: send a listing draft to La Piazza
     editing: false, editId: null, editTitle: '', editOutput: '', editBusy: false, editMsg: '',
     hasProfile: false, profileChecked: false,
     openCat: 'identity',   // accordion: first category open by default
     cats: [
       { key:'identity', label:'👤 About You',       hint:'turn your CV into a profile, a sharper CV, or a cover letter' },
+      { key:'leverage', label:'🪙 Make a Living',     hint:'turn the skills and stuff you already have into income you can use this month — no career change' },
       { key:'listing',  label:'📢 Sell & Announce',  hint:'list a product or announce an event' },
       { key:'media',    label:'🎬 Make Media',        hint:'playlists and more' },
       { key:'coaching', label:'🕰️ Ask a Master',      hint:'the dead teach the living — a real mentor session for what you face' },
@@ -431,6 +468,28 @@ function bottega() {
     renderMd(s) { try { const h = window.marked ? marked.parse(s||'') : (s||''); return window.DOMPurify ? DOMPurify.sanitize(h) : ''; } catch(e){ return ''; } },
     // Loaded JSON sessions store the result as TEXT -> parse it so we render the object, not its letters.
     resObj() { let r = this.output && this.output.result; if (typeof r === 'string') { try { r = JSON.parse(r); } catch(e) { return {}; } } return (r && typeof r === 'object' && !Array.isArray(r)) ? r : {}; },
+    // Block 6: push the (possibly edited) listing draft to La Piazza via the bridge endpoint.
+    async sendToSquare(L) {
+      if (!this.token) { this.sendMsg = '✗ please sign in first'; return; }
+      this.sending = true; this.sendMsg = '';
+      try {
+        const body = {
+          name: L.name, description: L.description, story: L.story || '',
+          item_type: L.item_type || 'service', listing_type: L.listing_type || 'service',
+          category: L.category || 'services', subcategory: L.subcategory || '',
+          condition: L.condition || null, tags: L.tags || '',
+          price: (L.suggested_price !== '' && L.suggested_price != null) ? Number(L.suggested_price) : null,
+          price_unit: L.price_unit || '', currency: L.currency || 'EUR',
+        };
+        const r = await fetch('/api/v1/compute/bottega/square/draft-listing', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token },
+          body: JSON.stringify(body),
+        });
+        if (r.ok) { const d = await r.json(); this.sentUrl = d.view_url; this.sendMsg = '✓ Draft created in La Piazza — review & publish when ready'; }
+        else { const e = await r.json().catch(() => ({})); this.sendMsg = '✗ ' + (e.detail || ('error ' + r.status)); }
+      } catch (e) { this.sendMsg = '✗ ' + e.message; }
+      finally { this.sending = false; }
+    },
     _text() {
       const o=this.output||{}, r=o.result;
       const body = typeof r==='string' ? r
@@ -530,6 +589,7 @@ function bottega() {
     async run() {
       if (!this.token || !this.active) return;
       this.busy=true; this.err=''; this.output=null;
+      this.sentUrl=''; this.sendMsg='';   // Block 6: fresh send-state per run
       const fd = new FormData();
       for (const inp of this.active.inputs) {
         if (inp.type==='file' && this.files[inp.name]) fd.append(inp.name, this.files[inp.name]);
