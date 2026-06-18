@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Piazza — Click-to-Test (TEST-LINKS-009)</title>
+<style>
+  :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --stg:#1d4ed8; --prod:#15803d; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial,Helvetica,sans-serif; color:var(--ink); background:#eceff1; margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width:960px; margin:0 auto; background:#fff; box-shadow:0 2px 14px rgba(0,0,0,.12); padding:0 0 32px; }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--red); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--red); }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding:22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 16px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee; border-left:4px solid #3b73b9;
+           border-radius:6px; padding:9px 13px; margin-bottom:18px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .env { border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .env h2 { margin:0; padding:10px 14px; font-size:13px; color:#fff; letter-spacing:.04em; }
+  .env.stg h2 { background:var(--stg); } .env.prod h2 { background:var(--prod); }
+  .env .host { font-size:11px; color:#778; font-family:monospace; padding:6px 14px 2px; }
+  .links { padding:8px 14px 14px; display:flex; flex-direction:column; gap:8px; }
+  a.go { display:flex; align-items:center; gap:9px; text-decoration:none; border:1px solid var(--line);
+         border-radius:7px; padding:9px 12px; font-size:14px; color:var(--head); font-weight:600; background:#fafbfc; }
+  a.go:hover { border-color:var(--red); background:#fff7f6; color:var(--red); }
+  a.go .arr { margin-left:auto; color:#aab; font-weight:400; }
+  .env.stg a.go:hover { border-color:var(--stg); color:var(--stg); background:#f5f8ff; }
+  .env.prod a.go:hover { border-color:var(--prod); color:var(--prod); background:#f4fcf6; }
+  .check { margin-top:22px; }
+  .check h3 { font-size:14px; color:var(--head); margin:0 0 8px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--head); color:#fff; font-size:11.5px; }
+  th.stg { background:var(--stg); } th.prod { background:var(--prod); }
+  td.n { text-align:center; font-weight:bold; color:var(--red); width:24px; }
+  td.chk { text-align:center; width:62px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  input[type=checkbox] { appearance:none; -webkit-appearance:none; width:17px; height:17px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; border-radius:3px; print-color-adjust:exact; }
+  input[type=checkbox]:checked { background:var(--red); border-color:var(--red); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:12px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  .note { font-size:11.5px; color:#7a5; font-style:italic; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 28px 0; font-size:11px; color:#8a93a0;
+           display:flex; justify-content:space-between; }
+  .btns { max-width:960px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--red); color:#fff; border:0; border-radius:5px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print { body{background:#fff;padding:0;} .sheet{box-shadow:none;} .btns{display:none;} a.go{background:#fff;} }
+</style>
+</head>
+<body>
+
+<div class="btns"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · La Piazza</div>
+    <div class="docid">TEST-LINKS-009</div>
+  </header>
+  <div class="body">
+    <h1>🖱️ Click-to-Test — just press a link</h1>
+    <p class="sub">No copy-paste. Click a button → it opens in a new tab. Staging is the rehearsal; <b>prod is where it must work</b>. They should behave the same.</p>
+
+    <div class="howto">📝 <b>The main thing to check (today's fix):</b> open <b>La Piazza</b> and log in, then click <b>🔧 Bottega Workshop</b> —
+      you should land <b>inside the Bottega, already logged in</b> (no "You are already logged in" dead-end). Same on both envs.</div>
+
+    <div class="cols">
+      <div class="env stg">
+        <h2>STAGING — the test bench</h2>
+        <div class="host">staging.lapiazza.app · staging-bottega.lapiazza.app</div>
+        <div class="links">
+          <a class="go" href="https://staging.lapiazza.app" target="_blank">🏪 La Piazza (marketplace) <span class="arr">↗</span></a>
+          <a class="go" href="https://staging.lapiazza.app/login" target="_blank">🔑 Log in to La Piazza <span class="arr">↗</span></a>
+          <a class="go" href="https://staging-bottega.lapiazza.app/compute/bottega" target="_blank">🔧 Bottega Workshop <span class="arr">↗</span></a>
+          <a class="go" href="https://staging-bottega.lapiazza.app/compute/concierge" target="_blank">👑 Cleo (Concierge) <span class="arr">↗</span></a>
+          <a class="go" href="https://staging-bottega.lapiazza.app/get-started" target="_blank">✍️ Get Started (new user) <span class="arr">↗</span></a>
+        </div>
+      </div>
+      <div class="env prod">
+        <h2>PRODUCTION — the real thing</h2>
+        <div class="host">lapiazza.app · bottega.lapiazza.app</div>
+        <div class="links">
+          <a class="go" href="https://lapiazza.app" target="_blank">🏪 La Piazza (marketplace) <span class="arr">↗</span></a>
+          <a class="go" href="https://lapiazza.app/login" target="_blank">🔑 Log in to La Piazza <span class="arr">↗</span></a>
+          <a class="go" href="https://bottega.lapiazza.app/compute/bottega" target="_blank">🔧 Bottega Workshop <span class="arr">↗</span></a>
+          <a class="go" href="https://bottega.lapiazza.app/compute/concierge" target="_blank">👑 Cleo (Concierge) <span class="arr">↗</span></a>
+          <a class="go" href="https://bottega.lapiazza.app/get-started" target="_blank">✍️ Get Started (new user) <span class="arr">↗</span></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="check">
+      <h3>Quick checks (tick what works)</h3>
+      <table>
+        <thead><tr><th class="n">#</th><th>Check</th><th class="stg">STAGING</th><th class="prod">PROD</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Log in to <b>La Piazza</b> — lands you in, no error.</td>
+            <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td></tr>
+          <tr><td class="n">2</td><td><b>Then click 🔧 Bottega Workshop</b> — lands you <b>inside, already logged in</b> (NO "already logged in" dead-end). <span class="note">← today's fix</span></td>
+            <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td></tr>
+          <tr><td class="n">3</td><td>From the Bottega, click <b>🏪 Square</b> (top nav) — back to La Piazza, still logged in.</td>
+            <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td></tr>
+          <tr><td class="n">4</td><td><b>👑 Cleo (Concierge)</b> opens and she greets you.</td>
+            <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td></tr>
+          <tr><td class="n">5</td><td>(Full loop) New user via <b>Get Started</b> → draft a listing → Send to La Piazza. <span class="note">(see TEST-CLEO-008 for the detailed walk)</span></td>
+            <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <footer><span>Confidential — Internal Use Only</span><span>TEST-LINKS-009 · Rev 1 · 2026-06-18</span></footer>
+</div>
+
+</body>
+</html>
