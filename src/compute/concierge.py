@@ -278,8 +278,13 @@ Do these expert jobs as you go:
    artistic (creative/design/expression), social (helping/teaching/people), enterprising
    (leading/selling/persuading), conventional (organising/data/structure/routine).
 2. top_holland_code: the 2-3 strongest themes as letters, e.g. "RIA".
-3. fit_insight: name honestly where they'd likely THRIVE versus where they currently ARE -- the
-   mismatch, if one exists. That gap is the point. "" if there is genuinely no signal.
+3. fit_insight: this is the LEVERAGE HOP -- the single most important field for placing them. Name
+   BOTH (a) where they currently ARE / the surface want they stated, AND (b) the ADJACENT BRIDGE off
+   their EXISTING mastery into reachable income: the step SIDEWAYS, never a 1:1 mirror of their old
+   title and never a fantasy leap (a physicist's rigor -> instrumentation / forensics / process
+   science; a strategist's read-of-people -> negotiation coaching / advisory; a chemist -> distilling,
+   materials, QA science -- NOT "go be a chemist again"). If you only echo the surface want here, you
+   have FAILED this field. "" only when there is genuinely no signal yet.
 4. conflicts: list any self-contradictions they expressed (a goal that fights their behaviour, or
    two claims that can't both be true). RECORD them, do not resolve them. [] if none.
 5. life_stage: launching / building / peak / transitioning / legacy -- the lens, from age_band +
@@ -306,8 +311,11 @@ Do these expert jobs as you go:
    issues a navigation/interface command ("give me a tour of X", "open Y", "show me the Z room"),
    that is NOT who they are: do NOT write it into why_they_came, goal, background, current_seat,
    or suggested_house, and do NOT derive generation/House/RIASEC from it. At most note the ask in
-   needs_clarification. why_they_came and goal capture the PERSON's real motivation, never a probe
-   or a command aimed at the interface.
+   needs_clarification. SURFACE vs REAL: why_they_came holds the literal ask they ARRIVED with (the
+   shape they think is allowed -- "a teaching post", "back into office"); goal holds the REAL want
+   BENEATH it -- what they are truly reaching for (a living, the work they're made for), NOT the
+   surface job-title. ("a teaching post" is the surface; the goal is to make a living from deep
+   science.) Both capture the PERSON's real motivation, never a probe or a command aimed at the interface.
 12. CARD v2 -- WHERE they are, their SITUATION, and the RESOURCES at hand. Fill ONLY from what they
    revealed; "" or [] if not mentioned. These turn generic advice into real advice.
    - location = where they LIVE / work NOW (city / region / country) -- NOT a place they wish to visit.
@@ -824,7 +832,10 @@ def merge_record(old: dict, new: dict) -> dict:
             # exist)" there is correct and useful.
             if fic and k in _FICTION_SCRUB_LISTS:
                 merged = [m for m in merged if not any(t in str(m).lower() for t in fic)]
-            out[k] = merged[:12]   # hard cap so the record (and the prompt that carries it) stays lean
+            # Hard cap so the record (and the prompt that carries it) stays lean. The GATED identity
+            # lists (aptitudes/affinities -- lists_lean checks <=8) cap tighter than the rest, so
+            # prompt-verbosity can NEVER trip the gate. Never rely on the LLM to count.
+            out[k] = merged[:8 if k in _AUDIT_LIST_FIELDS else 12]
         elif _meaningful(nv):
             # 1c survivorship: a guess can't bury a stated fact, and a sensitive field is never
             # silently overwritten -- keep the standing value and let Cleo confirm the change.

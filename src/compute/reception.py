@@ -59,10 +59,23 @@ IRON RULES:
   `alternate` with the runner-up's exact board name so Cleo can offer a peek at each).
 - why is ONE sentence: why THIS master for THIS person, in the guest's language.
 
+THINK IT THROUGH BEFORE YOU PLACE -- fill these THREE first; they force the leverage hop and stop you
+defaulting to the easy mirror:
+1. surface_want   : in a few words, what the card LITERALLY asks for -- the obvious shape they named.
+2. mirror_trap    : the lazy MIRROR placement that just echoes that surface want (e.g. "wants a
+                    teaching post -> the teaching house", "was a chemist -> the science house"). Name
+                    it out loud so you can REJECT it. The card's "Cleo's first-guess house" is USUALLY
+                    exactly this trap -- treat it as the thing to challenge, never as the answer.
+3. leverage_bridge: the ADJACENT merge off their DEEP mastery into reachable income -- the step
+                    sideways (a physicist's rigor -> instrumentation/forensics; a strategist's
+                    read-of-people -> negotiation/advisory). NOT the mirror, NOT a fantasy leap.
+Then choose the master whose craft serves the leverage_bridge. Your `master` MUST NOT be the mirror_trap.
+
 Respond with ONLY one valid JSON object (no prose, no markdown, no code fence):
-{"house":"<the house, from the board>","master":"<exactly as on the board>",
- "alternate":"<exact board name or empty>","confidence":"<high|torn>",
- "why":"<one sentence>","first_step":"<the sticky-note leverage move>"}"""
+{"surface_want":"<a few words>","mirror_trap":"<the mirror placement you are rejecting>",
+ "leverage_bridge":"<the adjacent merge off their mastery>","house":"<the house, from the board>",
+ "master":"<exactly as on the board>","alternate":"<exact board name or empty>",
+ "confidence":"<high|torn>","why":"<one sentence>","first_step":"<the sticky-note leverage move>"}"""
 
 
 def _parse_json(raw: str) -> dict:
@@ -79,7 +92,7 @@ def _card_for_match(record: dict) -> str:
     Tier-3 sensitive fields are irrelevant to the match and stay out (the matcher never needs them)."""
     bits = []
     for k in ("goal", "why_they_came", "background", "current_seat", "fit_insight",
-              "top_holland_code", "suggested_house", "location", "life_stage"):
+              "top_holland_code", "location", "life_stage"):
         v = record.get(k)
         if v and v != "unknown":
             bits.append(f"{k.replace('_', ' ')}: {v}")
@@ -87,6 +100,12 @@ def _card_for_match(record: dict) -> str:
         v = record.get(k)
         if v:
             bits.append(f"{k.replace('_', ' ')}: {', '.join(str(x) for x in v)}")
+    # Cleo's house guess is a HINT, not an order -- and it is usually the SURFACE mirror. Present it
+    # as the thing to CHALLENGE so the matcher doesn't just echo it (the Leak-1 mirror trap).
+    sh = record.get("suggested_house")
+    if sh and sh != "unknown":
+        bits.append(f"Cleo's first-guess house (CHALLENGE this -- it is usually the surface mirror, "
+                    f"not the leverage bridge): {sh}")
     return "\n".join(bits) if bits else "(the card is nearly empty)"
 
 
@@ -117,8 +136,9 @@ async def match_reception(record: dict, roster: list[dict], language: str = "") 
     user = (f"BOARD (the ONLY masters you may choose -- name | House | craft):\n"
             f"{_roster_block(roster)}\n\n"
             f"THE GUEST'S CARD:\n{_card_for_match(record)}\n\n"
-            f"{lang_line} Place the guest with the single best master (the leverage bridge, not a "
-            f"mirror) and write their first step.")
+            f"{lang_line} First name the surface_want, the mirror_trap to REJECT, and the "
+            f"leverage_bridge; THEN place the guest with the master whose craft serves that bridge "
+            f"(never the mirror), and write their first step.")
     try:
         data = _parse_json(await _brain_chat(MATCH_SYS, user, json_mode=True))
     except Exception:  # noqa: BLE001
