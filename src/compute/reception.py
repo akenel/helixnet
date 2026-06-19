@@ -18,6 +18,7 @@
 #
 # Every brain call goes through the single src.llm wrapper (_brain_chat) -- the BYO-brain rule.
 
+import difflib
 import json
 import logging
 import re
@@ -109,6 +110,24 @@ def _card_for_match(record: dict) -> str:
     return "\n".join(bits) if bits else "(the card is nearly empty)"
 
 
+def _relevance_fallback(record: dict, roster: list[dict]) -> dict:
+    """LAST-RESORT grounding so a guest is NEVER dead-ended: when the brain answered but named a
+    master we couldn't ground (even after a retry + fuzzy match), pick the board master whose
+    name+tagline shares the most words with the guest's leverage text. Always returns a roster
+    entry (callers guarantee roster is non-empty)."""
+    text = " ".join(str(record.get(k) or "") for k in
+                    ("fit_insight", "goal", "why_they_came", "background", "current_seat"))
+    text += " " + " ".join(str(x) for x in (record.get("aptitudes") or []))
+    want = set(re.findall(r"[a-z]{4,}", text.lower()))
+    best, best_score = roster[0], -1
+    for lg in roster:
+        blob = (str(lg.get("name", "")) + " " + str(lg.get("tagline") or lg.get("workshop") or "")).lower()
+        score = len(want & set(re.findall(r"[a-z]{4,}", blob)))
+        if score > best_score:
+            best, best_score = lg, score
+    return best
+
+
 async def match_reception(record: dict, roster: list[dict], language: str = "") -> dict:
     """R3: card -> the standing host. Pick the ONE best master (grounded), the house, the reason, and
     the sticky-note first step. Hard-grounded: only a name on the roster survives; none -> abstain.
@@ -139,18 +158,52 @@ async def match_reception(record: dict, roster: list[dict], language: str = "") 
             f"{lang_line} First name the surface_want, the mirror_trap to REJECT, and the "
             f"leverage_bridge; THEN place the guest with the master whose craft serves that bridge "
             f"(never the mirror), and write their first step.")
-    try:
-        data = _parse_json(await _brain_chat(MATCH_SYS, user, json_mode=True))
-    except Exception:  # noqa: BLE001
-        logger.warning("reception match brain/parse failed", exc_info=True)
-        base["note"] = "The court is momentarily unavailable -- the guest stays with Cleo."
-        return base
+    async def _attempt(msg: str) -> dict | None:
+        """One brain call -> parsed dict, or None on a brain/parse failure."""
+        try:
+            return _parse_json(await _brain_chat(MATCH_SYS, msg, json_mode=True))
+        except Exception:  # noqa: BLE001
+            logger.warning("reception match brain/parse failed", exc_info=True)
+            return None
 
-    entry = _match_master(data.get("master", ""), index)  # ANTI-HALLUCINATION: must be on the board
+    data = await _attempt(user)
+    brain_ok = data is not None
+    entry = _match_master((data or {}).get("master", ""), index)  # ANTI-HALLUCINATION: must be on the board
+
+    # NEVER DEAD-END (the rare abstain a real guest hit): the model named an off-board master.
+    # 1) RETRY once, telling it exactly what it got wrong and to copy a board name verbatim.
     if not entry:
-        logger.info("reception match dropped off-board master %r", data.get("master"))
-        base["note"] = "No master on the board fit well enough -- the guest stays with Cleo."
-        return base
+        bad = (data or {}).get("master", "")
+        logger.info("reception match: off-board master %r -- retrying", bad)
+        retry_msg = (user + f"\n\nIMPORTANT: your previous pick {bad!r} is NOT on the board. You MUST "
+                     f"copy a name EXACTLY from the BOARD list above -- re-read it and choose the real "
+                     f"master closest to the leverage_bridge.")
+        data2 = await _attempt(retry_msg)
+        brain_ok = brain_ok or data2 is not None
+        entry2 = _match_master((data2 or {}).get("master", ""), index)
+        if entry2:
+            data, entry = data2, entry2
+        elif data2 and not data:
+            data = data2  # keep whatever leverage text we have for the fallbacks below
+
+    # 2) FUZZY: the model's pick is a near-spelling of a real board name.
+    if not entry and data:
+        cand = difflib.get_close_matches(_norm(data.get("master", "")), list(index.keys()),
+                                         n=1, cutoff=0.6)
+        if cand:
+            entry = index[cand[0]]
+            logger.info("reception match: fuzzy-grounded to %r", entry["name"])
+
+    # 3) RELEVANCE fallback: pick the best-fitting board master from the CARD itself, so a guest is
+    # never left standing. Only a true brain OUTAGE (no data at all) still abstains -- a hollow,
+    # fabricated handoff would be worse than an honest "the court is busy, try again".
+    if not entry:
+        if not brain_ok:
+            base["note"] = "The court is momentarily unavailable -- the guest stays with Cleo."
+            return base
+        entry = _relevance_fallback(record, roster)
+        data = data or {}
+        logger.info("reception match: relevance fallback -> %r", entry["name"])
 
     base["master"] = entry["name"]                         # canonical board name, never the LLM's spelling
     base["house"] = entry.get("house") or base["house"]    # house from the board when we have it
