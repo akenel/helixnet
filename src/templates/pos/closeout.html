@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="min-h-screen bg-gray-50" x-data="closeoutData()">
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div id="closeout-ui" class="max-w-4xl mx-auto px-4 py-8">
         <div class="card">
             <h1 class="text-3xl font-bold text-gray-900 mb-6">⏰ Close Shift</h1>
 
@@ -187,9 +187,15 @@
 <style>
     #daily-print-sheet { display: none; }
     @media print {
-        body * { visibility: hidden; }
-        #daily-print-sheet, #daily-print-sheet * { visibility: visible; }
-        #daily-print-sheet { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+        body { margin: 0; padding: 0; }
+        .no-print { display: none !important; }
+        /* HIDE the interactive UI entirely (display:none, not visibility:hidden) so it
+           takes NO space -- visibility:hidden left the long page reserving 3 blank pages. */
+        #closeout-ui { display: none !important; }
+        .min-h-screen { min-height: auto !important; }
+        /* The Z-report prints in normal flow on a single page. */
+        #daily-print-sheet { display: block !important; position: static !important; width: 100%; padding: 12mm; }
+        @page { size: A4; margin: 0; }
     }
 </style>
 
