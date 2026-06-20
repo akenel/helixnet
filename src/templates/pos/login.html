@@ -30,6 +30,23 @@
                 <span>Login</span>
             </button>
 
+            <!-- Secondary actions: register, recover, and the escape hatch from "already logged in" -->
+            <div class="grid grid-cols-3 gap-2 mt-3 pt-4 border-t border-gray-100">
+                <button onclick="registerWithKeycloak()"
+                    class="flex flex-col items-center gap-1 py-2 px-1 rounded-lg border border-gray-200 text-gray-600 hover:border-indigo-400 hover:text-indigo-600 transition text-xs font-semibold">
+                    <span class="text-lg">✍️</span>Sign Up
+                </button>
+                <button onclick="resetPassword()"
+                    class="flex flex-col items-center gap-1 py-2 px-1 rounded-lg border border-gray-200 text-gray-600 hover:border-amber-400 hover:text-amber-600 transition text-xs font-semibold">
+                    <span class="text-lg">🔑</span>Forgot Password
+                </button>
+                <button onclick="logoutKeycloak()"
+                    class="flex flex-col items-center gap-1 py-2 px-1 rounded-lg border border-gray-200 text-gray-600 hover:border-red-400 hover:text-red-600 transition text-xs font-semibold">
+                    <span class="text-lg">🚪</span>Log Out
+                </button>
+            </div>
+            <p class="mt-2 text-center text-xs text-gray-400">Stuck on "already logged in"? Hit <b>Log Out</b>, then Login again.</p>
+
             <div class="mt-6 text-center text-sm text-gray-600">
                 <p>Use your Artemis Store credentials</p>
                 <p class="mt-2 text-xs text-gray-500">
@@ -69,29 +86,49 @@
         }
     });
 
-    function loginWithKeycloak() {
-        // Keycloak authorization endpoint.
-        // Local dev resolves keycloak.helix.local via Traefik; every public host
-        // (staging-bottega, bottega, banco) routes /realms/* to Keycloak through Caddy,
-        // so the browser must hit the SAME origin it's on -- never the local-only host.
+    // One source of truth for the Keycloak endpoints.
+    // Local dev resolves keycloak.helix.local via Traefik; every public host
+    // (staging-bottega, bottega, banco) routes /realms/* to Keycloak through Caddy,
+    // so the browser must hit the SAME origin it's on -- never the local-only host.
+    function kcConfig() {
         const _h = window.location.hostname;
         const keycloakUrl = (_h === 'helix.local' || _h === 'localhost' || _h === '127.0.0.1')
             ? 'https://keycloak.helix.local'
             : window.location.origin;
-        const realm = 'kc-pos-realm-dev';
-        const clientId = 'helix_pos_web';
-        // Use server-side callback to avoid CORS issues
-        const redirectUri = window.location.origin + '/pos/callback';
+        return {
+            keycloakUrl,
+            realm: 'kc-pos-realm-dev',
+            clientId: 'helix_pos_web',
+            redirectUri: window.location.origin + '/pos/callback',
+        };
+    }
 
-        // Build authorization URL
-        const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?` +
-            `client_id=${clientId}&` +
-            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-            `response_type=code&` +
-            `scope=openid profile email`;
+    function loginWithKeycloak() {
+        const c = kcConfig();
+        window.location.href = `${c.keycloakUrl}/realms/${c.realm}/protocol/openid-connect/auth?` +
+            `client_id=${c.clientId}&redirect_uri=${encodeURIComponent(c.redirectUri)}&` +
+            `response_type=code&scope=${encodeURIComponent('openid profile email')}`;
+    }
 
-        // Redirect to Keycloak
-        window.location.href = authUrl;
+    function registerWithKeycloak() {
+        const c = kcConfig();
+        window.location.href = `${c.keycloakUrl}/realms/${c.realm}/protocol/openid-connect/registrations?` +
+            `client_id=${c.clientId}&redirect_uri=${encodeURIComponent(c.redirectUri)}&` +
+            `response_type=code&scope=openid`;
+    }
+
+    function resetPassword() {
+        const c = kcConfig();
+        window.location.href = `${c.keycloakUrl}/realms/${c.realm}/login-actions/reset-credentials?client_id=${c.clientId}`;
+    }
+
+    // The escape hatch: clear the local app token AND end the Keycloak SSO session,
+    // then come back to /pos clean. This is the cure for the "already logged in" dead-end.
+    function logoutKeycloak() {
+        const c = kcConfig();
+        try { AuthHelper.clearToken(); sessionStorage.removeItem('pos_cart'); } catch (e) {}
+        window.location.href = `${c.keycloakUrl}/realms/${c.realm}/protocol/openid-connect/logout?` +
+            `post_logout_redirect_uri=${encodeURIComponent(window.location.origin + '/pos')}&client_id=${c.clientId}`;
     }
 </script>
 {% endblock %}
