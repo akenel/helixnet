@@ -77,7 +77,17 @@
                             @input="searchProducts()"
                             placeholder="Type product name..."
                             class="input-field">
-                        <p class="text-sm text-gray-600">Found <span x-text="searchResults.length"></span> products</p>
+                        <select x-model="searchCategory" @change="searchProducts()" class="input-field">
+                            <option value="">All categories</option>
+                            <template x-for="c in categories" :key="c.name">
+                                <option :value="c.name" x-text="c.name + ' (' + c.count + ')'"></option>
+                            </template>
+                        </select>
+                        <p class="text-sm text-gray-600">
+                            <span x-show="searchTotal > 0">Showing <span x-text="searchResults.length"></span> of <span x-text="searchTotal"></span> matches</span>
+                            <span x-show="searchInput.length >= 2 && searchTotal === 0">No matches</span>
+                            <span x-show="searchInput.length < 2 && !searchCategory">Type at least 2 letters, or pick a category</span>
+                        </p>
                     </div>
 
                     <!-- Catalog Mode (for items without barcodes) -->
@@ -159,6 +169,12 @@
                             </div>
                         </template>
                     </div>
+                    <!-- Pagination: load the next page on demand (big catalog) -->
+                    <button x-show="searchResults.length < searchTotal" @click="loadMore()"
+                        class="btn-secondary w-full mt-3" :disabled="searchLoading">
+                        <span x-show="!searchLoading">Show more (<span x-text="searchTotal - searchResults.length"></span> more)</span>
+                        <span x-show="searchLoading">Loading…</span>
+                    </button>
                 </div>
             </div>
 
@@ -306,9 +322,15 @@
             // Barcode mode
             barcodeInput: '',
 
-            // Search mode
+            // Search mode (paginated)
             searchInput: '',
+            searchCategory: '',
             searchResults: [],
+            searchTotal: 0,
+            searchSkip: 0,
+            searchPageSize: 20,
+            searchLoading: false,
+            categories: [],
 
             // Catalog mode
             catalogCategory: '',
@@ -357,6 +379,8 @@
                         console.error('Failed to restore cart:', e);
                     }
                 }
+
+                this.loadCategories();
             },
 
             async searchByBarcode() {
@@ -380,21 +404,53 @@
                 }
             },
 
+            _searchUrl(skip) {
+                return `/api/v1/pos/search?q=${encodeURIComponent(this.searchInput)}`
+                    + `&category=${encodeURIComponent(this.searchCategory || '')}`
+                    + `&limit=${this.searchPageSize}&skip=${skip}`;
+            },
+
             async searchProducts() {
-                if (this.searchInput.length < 2) {
-                    this.searchResults = [];
+                // Need a term OR a category to search.
+                if (this.searchInput.length < 2 && !this.searchCategory) {
+                    this.searchResults = []; this.searchTotal = 0; this.searchSkip = 0;
                     return;
                 }
-
+                this.searchLoading = true; this.searchSkip = 0;
                 try {
-                    // Fuzzy, relevance-ranked search across the WHOLE catalog (trigram).
-                    // Returns stock_quantity so the on-hand badges keep working.
-                    const products = await API.get(`/api/v1/pos/search?q=${encodeURIComponent(this.searchInput)}&limit=20`);
-                    this.searchResults = products;
+                    // Fuzzy, relevance-ranked, PAGINATED search across the whole catalog
+                    // (trigram + GIN index). Envelope: {items, total, skip, limit}.
+                    const data = await API.get(this._searchUrl(0));
+                    this.searchResults = data.items || [];
+                    this.searchTotal = data.total || 0;
                 } catch (error) {
                     console.error('Search error:', error);
-                    this.searchResults = [];
+                    this.searchResults = []; this.searchTotal = 0;
+                } finally {
+                    this.searchLoading = false;
                 }
+            },
+
+            async loadMore() {
+                this.searchLoading = true;
+                try {
+                    const nextSkip = this.searchSkip + this.searchPageSize;
+                    const data = await API.get(this._searchUrl(nextSkip));
+                    this.searchResults = this.searchResults.concat(data.items || []);
+                    this.searchTotal = data.total || this.searchTotal;
+                    this.searchSkip = nextSkip;
+                } catch (error) {
+                    console.error('Load more error:', error);
+                } finally {
+                    this.searchLoading = false;
+                }
+            },
+
+            async loadCategories() {
+                try {
+                    const cats = await API.get('/api/v1/pos/search/categories');
+                    this.categories = (cats || []).map(c => ({ name: c.name, count: c.count }));
+                } catch (e) { console.warn('categories unavailable', e); }
             },
 
             addCatalogItem() {

@@ -235,52 +235,54 @@ async def search_products_fast(
     q: str = "",
     category: Optional[str] = None,
     limit: int = 50,
+    skip: int = 0,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
-    Fast product search using PostgreSQL full-text search and trigram similarity.
+    Fast paginated product search (trigram fuzzy + ILIKE + exact sku/barcode),
+    backed by the GIN trigram index. Built for a big (thousands) catalog.
 
-    - Instant barcode lookup (exact match, <5ms)
-    - Fuzzy name search (trigram similarity)
-    - Full-text search (German language)
-    - Category filtering
-
+    Returns an envelope: {items, total, skip, limit}. `total` is the HONEST count
+    of all matches (window count), so the UI can paginate / show "Found N".
     No auth required for search (public catalog).
     """
     from sqlalchemy import text
 
     if not q and not category:
-        # Return empty if no search term
-        return []
+        return {"items": [], "total": 0, "skip": skip, "limit": limit}
 
-    # Use the PostgreSQL search_products function
+    # One query: ranked page + total matches via count(*) OVER().
     query = text("""
-        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url, relevance
-        FROM search_products(:search_term, :category_filter, :limit_rows)
+        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url,
+               similarity(name, :q) AS relevance,
+               count(*) OVER() AS total_count
+        FROM products
+        WHERE is_active = true
+          AND (
+            :q = '' OR name ILIKE '%' || :q || '%' OR sku ILIKE '%' || :q || '%'
+            OR barcode ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1
+          )
+          AND (CAST(:category AS TEXT) IS NULL OR category ILIKE '%' || CAST(:category AS TEXT) || '%')
+        ORDER BY
+          CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
+          similarity(name, :q) DESC, name
+        LIMIT :limit OFFSET :skip
     """)
+    rows = (await db.execute(query, {
+        "q": q or "", "category": category, "limit": limit, "skip": skip,
+    })).fetchall()
 
-    result = await db.execute(query, {
-        "search_term": q if q else None,
-        "category_filter": category,
-        "limit_rows": limit
-    })
-
-    rows = result.fetchall()
-
-    return [
+    total = int(rows[0].total_count) if rows else 0
+    items = [
         {
-            "id": str(row.id),
-            "sku": row.sku,
-            "barcode": row.barcode,
-            "name": row.name,
-            "category": row.category,
-            "price": float(row.price) if row.price else 0,
-            "stock_quantity": row.stock_quantity or 0,
-            "image_url": row.image_url,
-            "relevance": float(row.relevance) if row.relevance else 0
+            "id": str(row.id), "sku": row.sku, "barcode": row.barcode, "name": row.name,
+            "category": row.category, "price": float(row.price) if row.price else 0,
+            "stock_quantity": row.stock_quantity or 0, "image_url": row.image_url,
+            "relevance": float(row.relevance) if row.relevance else 0,
         }
         for row in rows
     ]
+    return {"items": items, "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/search/categories")

@@ -444,7 +444,8 @@ function searchApp() {
 
                 const response = await fetch(url);
                 if (response.ok) {
-                    this.results = await response.json();
+                    const data = await response.json();
+                    this.results = data.items || [];   // /search now returns {items,total,...}
 
                     // Mark exact barcode matches
                     this.results.forEach(p => {

@@ -49,8 +49,8 @@ async function searchProducts(page: Page, term: string) {
   await page.goto('/pos/scan');
   await page.getByRole('button', { name: /Search/ }).click();
   await page.getByPlaceholder('Type product name...').fill(term);
-  // "Found N products" updates as results arrive
-  await expect(page.getByText(/Found \d+ products/)).toBeVisible({ timeout: 15_000 });
+  // Paginated search shows "Showing X of N matches" once results arrive.
+  await expect(page.getByText(/of \d+ matches/)).toBeVisible({ timeout: 15_000 });
 }
 
 test('@smoke cashier can log in and reach the dashboard', async ({ page }) => {
@@ -63,10 +63,27 @@ test('@smoke cashier can log in and reach the dashboard', async ({ page }) => {
 test('search actually filters + shows on-hand stock badges', async ({ page }) => {
   await login(page);
   await searchProducts(page, 'grinder');
-  // The term must actually filter: a grinder row appears...
-  await expect(page.getByText(/grinder/i).first()).toBeVisible({ timeout: 15_000 });
-  // ...and stock badges render on results.
-  await expect(page.getByText(/in stock|out of stock/i).first()).toBeVisible({ timeout: 15_000 });
+  // Honest paginated count is shown.
+  await expect(page.getByText(/of \d+ matches/)).toBeVisible({ timeout: 15_000 });
+  // A grinder appears in the RESULTS list (scope past the category dropdown option),
+  // and stock badges render.
+  const results = page.locator('.max-h-96');
+  await expect(results.getByText(/grinder/i).first()).toBeVisible({ timeout: 15_000 });
+  await expect(results.getByText(/in stock|out of stock/i).first()).toBeVisible();
+});
+
+test('search paginates: Show more loads the next page (big catalog)', async ({ page }) => {
+  await login(page);
+  await searchProducts(page, 'er');  // broad term -> many matches on a real catalog
+  const showMore = page.getByRole('button', { name: /Show more/i });
+  if (!(await showMore.isVisible().catch(() => false))) {
+    test.skip(true, 'catalog too small to paginate');
+  }
+  const before = await page.locator('.max-h-96 button', { hasText: 'Add' }).count();
+  await showMore.click();
+  await expect.poll(async () =>
+    page.locator('.max-h-96 button', { hasText: 'Add' }).count()
+  ).toBeGreaterThan(before);
 });
 
 test('full sale: ring -> checkout -> receipt, and the cashier STAYS logged in', async ({ page }) => {

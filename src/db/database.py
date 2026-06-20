@@ -161,6 +161,17 @@ _DDL_MIGRATIONS: list[str] = [
     """,
     # pg_trgm powers similarity() for the POS product search.
     "CREATE EXTENSION IF NOT EXISTS pg_trgm",
+    # GIN trigram index keeps fuzzy/ILIKE name search fast on a big (thousands) catalog.
+    "CREATE INDEX IF NOT EXISTS ix_products_name_trgm ON products USING gin (name gin_trgm_ops)",
+    # Category list for the search filter (the /search/categories endpoint expects this
+    # view; it was missing -> 500, same pattern as search_products).
+    """
+    CREATE OR REPLACE VIEW product_categories AS
+    SELECT category, count(*) AS product_count, avg(price) AS avg_price
+    FROM products
+    WHERE is_active = true AND category IS NOT NULL AND category <> ''
+    GROUP BY category
+    """,
     # Fuzzy + substring product search used by GET /api/v1/pos/search.
     """
     CREATE OR REPLACE FUNCTION public.search_products(
