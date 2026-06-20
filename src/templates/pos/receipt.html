@@ -211,11 +211,11 @@
         .receipt-page {
             box-shadow: none !important;
             margin: 0;
-            padding: 9mm !important;
+            padding: 6mm !important;       /* headroom for browsers that add default print margins (Firefox) */
             min-height: auto !important;   /* don't force a full-page-tall box */
             page-break-after: auto;        /* no forced blank trailing page */
             font-size: 10px;
-            line-height: 1.3;
+            line-height: 1.25;
         }
         /* Tighten everything so the company block + ~20 item lines + totals +
            footer all fit on ONE A4. */
