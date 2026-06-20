@@ -34,6 +34,18 @@ realm `kc-pos-realm-dev`, client `helix_pos_web`. Verified working end-to-end vi
   🎤 mic everywhere, 📋 screenshot attach (paste/drop/pick), timer, autosave, Export-report-with-screenshots. **USE THIS.**
 - TEST-BANCO-001 = `BANCO-STAGING-TEST-SHEET.html` (older, lighter).
 
+### Testing standard + suites (2026-06-20, NEW)
+- **`docs/testing/POS-TESTING-SOP.md`** — Tigs runs 99% (technical/functional, automated, local first);
+  Angel verifies the visual 1% on staging. Test-first/before-after; local→staging→Angel→prod.
+- **`tests/pos/`** API regression (pytest, real KC token): `make test-pos` / `make test-pos ENV=staging`.
+  11 tests lock inclusive VAT, stock deduct + oversell guard, daily vat_total, Banana CSV.
+- **`tests/scenarios/pos-cashier-flow.spec.ts`** Playwright E2E (real browser+login): `npm run
+  test:pos:dev` / `test:pos:staging` (run `--workers=1`). 5 tests: login, catalog stock badges,
+  full sale→receipt session-survives, **silent token refresh (no logout)**, navigation.
+- **Logout-after-sale BUG FIXED** (b4bb397): 300s token had no refresh → 401 did a hard SSO logout.
+  Now: callback returns refresh_token+expires_in; server-side `POST /pos/refresh`; client refreshes
+  proactively + 401→refresh→retry. Green local + staging.
+
 ## NEXT (in order)
 1. **Angel runs TEST-BANCO-002 on staging** to verify the VAT fix + catalog stock + bricks. Ring a FRESH sale
    (old transactions are already-wrong historical rows). Export the report → Tigs reads it.
