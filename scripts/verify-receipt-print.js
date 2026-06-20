@@ -33,9 +33,9 @@ async function ringSale(tok) {
       body: JSON.stringify({ product_id: p.id, quantity: 1, discount_percent: '0' }),
     });
   }
-  await fetch(`${API}/api/v1/pos/transactions/${tx.id}/checkout`, {
-    method: 'POST', headers: h, body: JSON.stringify({ payment_method: 'visa' }),
-  });
+  // NB: intentionally NOT checking out -- the receipt renders line items + totals
+  // from the open transaction, so the print-layout/page-count check stays
+  // non-destructive (no stock deduction on the shared dev DB).
   return tx.id;
 }
 
