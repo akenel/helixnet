@@ -94,6 +94,8 @@ class LineItemCreate(BaseModel):
     # Only used for custom lines (product_id is None):
     name: Optional[str] = None
     unit_price: Optional[Decimal] = Field(default=None, ge=0)
+    # A free promotional treat: real product, zero revenue, stock still leaves.
+    is_giveaway: bool = False
 
 
 class LineItemRead(LineItemBase):
@@ -207,6 +209,9 @@ class DailySummary(BaseModel):
     top_seller: Optional[str] = None
     top_seller_quantity: Optional[int] = None
     cashier_performance: dict[str, Decimal] = Field(default_factory=dict)
+    # Promotional treats given free today: count + their cost (COGS, for tax).
+    giveaway_count: int = 0
+    giveaway_cost: Decimal = Decimal("0.00")
 
 
 # ================================================================

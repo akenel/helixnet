@@ -78,6 +78,12 @@ class LineItemModel(Base):
         nullable=True,
         comment="Special notes for this item (e.g., 'gift wrap requested')"
     )
+    is_giveaway: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        comment="Free promotional giveaway (a 'treat'): zero revenue, but real stock "
+                "leaves inventory -- tracked for COGS / tax."
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

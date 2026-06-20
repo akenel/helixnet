@@ -51,6 +51,10 @@
                         <td class="py-1 text-gray-500">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</td>
                         <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_total)"></td>
                     </tr>
+                    <tr x-show="summary.giveaway_count > 0">
+                        <td class="py-1 text-pink-600">🎁 Treats given (free) — <span x-text="summary.giveaway_count"></span> · cost</td>
+                        <td class="py-1 text-right text-pink-600" x-text="formatPrice(summary.giveaway_cost)"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -101,7 +105,8 @@
                 cash_total: 0, twint_total: 0, visa_total: 0,
                 debit_total: 0, crypto_total: 0, other_total: 0,
                 top_seller: null, top_seller_quantity: 0,
-                cashier_performance: {}
+                cashier_performance: {},
+                giveaway_count: 0, giveaway_cost: 0
             },
             downloading: false,
 
@@ -123,7 +128,9 @@
                         other_total: parseFloat(data.other_total || 0),
                         top_seller: data.top_seller || null,
                         top_seller_quantity: data.top_seller_quantity || 0,
-                        cashier_performance: data.cashier_performance || {}
+                        cashier_performance: data.cashier_performance || {},
+                        giveaway_count: data.giveaway_count || 0,
+                        giveaway_cost: parseFloat(data.giveaway_cost || 0)
                     };
                 } catch (e) {
                     console.error('Failed to load report:', e);

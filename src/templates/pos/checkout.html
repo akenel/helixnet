@@ -221,17 +221,15 @@
             showChangeProducts: false,
             quickRoundApplied: false,
 
-            // Product-as-Change defaults (configurable per store)
-            changeProducts: [
-                { name: 'Lollipop', emoji: '🍭', price: 0.50 },
-                { name: 'CBD Gummy', emoji: '🍬', price: 0.45 },
-                { name: 'Papers', emoji: '📄', price: 0.60 },
-                { name: 'Sticker', emoji: '✨', price: 0.30 },
-                { name: 'Lighter', emoji: '🔥', price: 1.50 },
-                { name: 'Grinder Card', emoji: '🃏', price: 1.80 }
-            ],
+            // Treats come from the real 'Treats' catalog (loaded in init) so each
+            // giveaway decrements stock + carries a cost for tax. emoji is by SKU.
+            changeProducts: [],
+            treatEmoji: {
+                'TREAT-LOLLIPOP': '🍭', 'TREAT-GUMMY': '🍬', 'TREAT-PAPERS': '📄',
+                'TREAT-STICKER': '✨', 'TREAT-LIGHTER': '🔥', 'TREAT-GRINDERCARD': '🃏'
+            },
 
-            init() {
+            async init() {
                 const stored = sessionStorage.getItem('pos_cart');
                 if (!stored) {
                     showToast('No cart data found', 'warning');
@@ -242,6 +240,15 @@
                 this.cartData = JSON.parse(stored);
                 this.discount = this.cartData.discount || 0;
                 this.recalculateTotals();
+
+                // Load the treats catalog (real products) for the "give a treat" picker.
+                try {
+                    const treats = await API.get('/api/v1/pos/products?category=Treats&limit=50');
+                    this.changeProducts = (treats || [])
+                        .filter(t => t.is_active && t.stock_quantity > 0)
+                        .map(t => ({ id: t.id, name: t.name, retailValue: parseFloat(t.price || 0),
+                                     emoji: this.treatEmoji[t.sku] || '🎁' }));
+                } catch (e) { console.warn('treats unavailable', e); }
             },
 
             selectPayment(method) {
@@ -312,12 +319,14 @@
                 // customer already paid); we just record the giveaway on the sale.
                 // retailValue is kept for tax/COGS tracking.
                 this.cartData.cart.push({
-                    id: 'change_' + Date.now(),
+                    id: product.id,            // real product id -> stock decrements
+                    product_id: product.id,
                     name: product.name + ' (Treat)',
-                    price: 0,
+                    price: 0,                  // free to the customer
                     quantity: 1,
                     isChangeProduct: true,
-                    retailValue: product.price
+                    isGiveaway: true,
+                    retailValue: product.retailValue
                 });
                 // total unchanged -- recalc only to keep VAT/derived fields consistent
                 this.recalculateTotals();
@@ -406,13 +415,17 @@
                     // Add line items. Custom lines (manual catalog 'catalog...' + change
                     // 'change_...') have no product_id: send name + unit_price instead.
                     for (const item of this.cartData.cart) {
-                        const isCustom = item.id.toString().startsWith('catalog') || item.id.toString().startsWith('change_');
+                        // Treats are real products given free (is_giveaway) -> stock + COGS tracked.
+                        // Manual catalog entries ('catalog...') are still custom (no product_id).
+                        const isGiveaway = !!item.isGiveaway;
+                        const isCustom = !isGiveaway && (item.id.toString().startsWith('catalog') || item.id.toString().startsWith('change_'));
                         await API.post(`/api/v1/pos/transactions/${transaction.id}/items`, {
-                            product_id: isCustom ? null : item.id,
+                            product_id: isCustom ? null : (item.product_id || item.id),
                             quantity: item.quantity,
                             unit_price: item.price.toString(),
                             discount_percent: this.cartData.discount.toString(),
-                            name: isCustom ? item.name : null
+                            name: isCustom ? item.name : null,
+                            is_giveaway: isGiveaway
                         });
                     }
 

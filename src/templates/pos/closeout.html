@@ -56,6 +56,7 @@
                             <tr x-show="summary.otherSales > 0"><td class="py-1">Other</td><td class="py-1 text-right" x-text="formatPrice(summary.otherSales)"></td></tr>
                             <tr class="border-t-2 border-gray-800 font-bold"><td class="py-2">TOTAL</td><td class="py-2 text-right text-lg" x-text="formatPrice(summary.totalSales)"></td></tr>
                             <tr class="text-gray-500"><td class="py-1">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</td><td class="py-1 text-right" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                            <tr x-show="summary.giveawayCount > 0" class="text-pink-600"><td class="py-1">🎁 Treats given (free) — <span x-text="summary.giveawayCount"></span> · cost</td><td class="py-1 text-right" x-text="formatPrice(summary.giveawayCost)"></td></tr>
                             <tr class="text-gray-500"><td class="py-1">Transactions</td><td class="py-1 text-right" x-text="summary.transactionCount"></td></tr>
                         </tbody>
                     </table>
@@ -171,6 +172,7 @@
                 <tr x-show="summary.otherSales > 0"><td style="padding:5px 0;">Other</td><td style="text-align:right;" x-text="formatPrice(summary.otherSales)"></td></tr>
                 <tr style="border-top:2px solid #000;font-weight:bold;"><td style="padding-top:7px;">TOTAL</td><td style="text-align:right;padding-top:7px;" x-text="formatPrice(summary.totalSales)"></td></tr>
                 <tr><td style="padding:2px 0;color:#444;">incl. VAT (8.1%)</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                <tr x-show="summary.giveawayCount > 0"><td style="padding:2px 0;color:#444;">Treats given (free) &mdash; <span x-text="summary.giveawayCount"></span> &middot; cost</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.giveawayCost)"></td></tr>
                 <tr><td style="padding-top:7px;color:#444;">Transactions</td><td style="text-align:right;padding-top:7px;color:#444;" x-text="summary.transactionCount"></td></tr>
             </tbody>
         </table>
@@ -206,7 +208,9 @@
                 debitSales: 0,
                 cryptoSales: 0,
                 otherSales: 0,
-                cardSales: 0
+                cardSales: 0,
+                giveawayCount: 0,
+                giveawayCost: 0
             },
             cashCount: {
                 notes: 0,
@@ -240,7 +244,9 @@
                         debitSales: parseFloat(data.debit_total || 0),
                         cryptoSales: parseFloat(data.crypto_total || 0),
                         otherSales: parseFloat(data.other_total || 0),
-                        cardSales: parseFloat(data.visa_total || 0) + parseFloat(data.debit_total || 0) + parseFloat(data.twint_total || 0)
+                        cardSales: parseFloat(data.visa_total || 0) + parseFloat(data.debit_total || 0) + parseFloat(data.twint_total || 0),
+                        giveawayCount: data.giveaway_count || 0,
+                        giveawayCost: parseFloat(data.giveaway_cost || 0)
                     };
                 } catch (error) {
                     console.error('Failed to load summary:', error);

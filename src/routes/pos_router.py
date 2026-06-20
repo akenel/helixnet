@@ -1004,6 +1004,7 @@ async def get_transaction(
                 "discount_amount": str(item.discount_amount),
                 "line_total": str(item.line_total),
                 "notes": item.notes,
+                "is_giveaway": bool(item.is_giveaway),
                 "created_at": item.created_at.isoformat()
             }
             for item in line_items
@@ -1054,8 +1055,10 @@ async def add_item_to_transaction(
         if product.stock_quantity < item.quantity:
             raise HTTPException(status_code=400, detail=f"Insufficient stock. Available: {product.stock_quantity}")
 
-        unit_price = product.price
-        line_notes = item.notes
+        # A giveaway is a real product handed over free: zero revenue, but stock still
+        # leaves (deducted at checkout) so it's tracked for COGS/tax.
+        unit_price = Decimal("0.00") if item.is_giveaway else product.price
+        line_notes = ("🎁 Treat — on the house" if item.is_giveaway else item.notes)
     else:
         # Custom line (manual catalog entry / product-as-change treat): no catalog
         # product, so the till supplies the price + name. No stock to check or deduct.
@@ -1078,6 +1081,7 @@ async def add_item_to_transaction(
         discount_amount=discount_amount,
         line_total=line_total,
         notes=line_notes,
+        is_giveaway=item.is_giveaway,
     )
 
     db.add(new_line_item)
@@ -1314,6 +1318,21 @@ async def get_daily_summary(
     crypto_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.CRYPTO)
     other_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.OTHER)
 
+    # Promotional treats given free today: count + their cost (COGS, for Felix's tax).
+    giveaway_count = 0
+    giveaway_cost = Decimal("0.00")
+    tx_ids = [t.id for t in transactions]
+    if tx_ids:
+        gv = await db.execute(
+            select(LineItemModel.quantity, ProductModel.cost)
+            .join(ProductModel, ProductModel.id == LineItemModel.product_id, isouter=True)
+            .where(and_(LineItemModel.transaction_id.in_(tx_ids), LineItemModel.is_giveaway == True))
+        )
+        for qty, cost in gv.all():
+            q = int(qty or 0)
+            giveaway_count += q
+            giveaway_cost += Decimal(str(cost or 0)) * q
+
     return DailySummary(
         date=target_date.isoformat(),
         total_transactions=len(transactions),
@@ -1325,6 +1344,8 @@ async def get_daily_summary(
         twint_total=Decimal(str(twint_total)),
         crypto_total=Decimal(str(crypto_total)),
         other_total=Decimal(str(other_total)),
+        giveaway_count=giveaway_count,
+        giveaway_cost=giveaway_cost,
     )
 
 
@@ -1356,6 +1377,11 @@ async def get_daily_summary_csv(
     for label, amount in by_method:
         if amount and amount > 0:
             writer.writerow([summary.date, f"POS daily sales - {label}", f"{amount:.2f}", "", "", ""])
+    # Promotional treats given free -- the cost is an expense (COGS) for tax.
+    if summary.giveaway_cost and summary.giveaway_cost > 0:
+        writer.writerow([summary.date,
+                         f"POS giveaways (treats) x{summary.giveaway_count} - cost",
+                         "", f"{summary.giveaway_cost:.2f}", "", ""])
 
     filename = f"banana-{summary.date}.csv"
     return Response(
