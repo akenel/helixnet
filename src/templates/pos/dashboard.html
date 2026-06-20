@@ -173,13 +173,19 @@
             shiftTime: '0h 0m',
 
             init() {
-                // Check for token in URL fragment (from OAuth callback)
+                // Check for tokens in URL fragment (from OAuth callback):
+                // #token=<access>&refresh=<refresh>&expires_in=<secs>
                 const hash = window.location.hash;
                 if (hash && hash.includes('token=')) {
-                    const tokenFromUrl = hash.split('token=')[1];
-                    if (tokenFromUrl) {
-                        AuthHelper.setToken(tokenFromUrl);
-                        // Clear the hash from URL for cleaner display
+                    const params = new URLSearchParams(hash.replace(/^#/, ''));
+                    const access = params.get('token');
+                    if (access) {
+                        AuthHelper.setSession({
+                            access,
+                            refresh: params.get('refresh'),
+                            expiresIn: params.get('expires_in'),
+                        });
+                        // Clear the hash from URL for cleaner display (and to hide tokens)
                         window.history.replaceState({}, document.title, '/pos/dashboard');
                         showToast('Login successful!', 'success');
                     }

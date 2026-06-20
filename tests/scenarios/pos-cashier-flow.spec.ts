@@ -107,29 +107,44 @@ test('full sale: ring -> checkout -> receipt, and the cashier STAYS logged in', 
 });
 
 /**
- * KNOWN BUG (Angel hit this on staging): "logged out after submitting a sale."
+ * REGRESSION (Angel hit this on staging): "logged out after submitting a sale."
  *
- * Root cause: POS access token lives 300s and the client gets NO refresh token
- * (callback returns only #token=<access_token>). On ANY 401 the client does a
- * HARD Keycloak SSO logout (base.html ~L248) instead of refreshing -- so a sale
- * that crosses the 5-minute mark logs the cashier out and loses the cart.
- *
- * Marked fixme until the token-refresh / graceful-reauth fix lands. Flip to a
- * normal test() once fixed: an expired access token mid-sale must NOT hard-logout.
+ * Root cause was: 300s access token + the client got NO refresh token, so on any
+ * 401 it did a HARD Keycloak SSO logout. A sale crossing 5 min logged the cashier
+ * out and lost the cart. Fixed 2026-06-20 with a silent server-side refresh flow
+ * (/pos/refresh): the token is now refreshed before/at expiry and the cashier is
+ * never bounced. This test forces an expired ACCESS token (keeping the real
+ * REFRESH token) and proves a protected call still succeeds with no logout.
  */
-test.fixme('expired token mid-sale must NOT hard-logout (token refresh)', async ({ page }) => {
+test('expired access token mid-sale refreshes silently, NO hard-logout', async ({ page }) => {
   await login(page);
-  // Simulate the 5-min boundary: replace the stored token with an expired JWT.
-  await page.evaluate(() => {
+
+  // The real refresh token must be present after login (the fix's contract).
+  expect(await page.evaluate(() => !!sessionStorage.getItem('pos_refresh'))).toBe(true);
+
+  // Stay on the loaded POS page (API helper available) and, in-page: expire ONLY
+  // the access token (keep the valid refresh token), then make a real protected
+  // API call. The 401 -> silent refresh -> retry path must make it succeed.
+  const result = await page.evaluate(async () => {
     const expired =
       'eyJhbGciOiJub25lIn0.' +
       btoa(JSON.stringify({ exp: 1, preferred_username: 'felix' })).replace(/=/g, '') +
       '.';
     sessionStorage.setItem('pos_token', expired);
+    sessionStorage.setItem('pos_token_exp', '1');  // marked expired -> forces refresh
+    try {
+      const data = await API.get('/api/v1/pos/reports/daily-summary');
+      return { ok: true, token: sessionStorage.getItem('pos_token'), gotData: !!data };
+    } catch (e) {
+      return { ok: false, error: String(e) };
+    }
   });
-  // Trigger a protected API call (dashboard loads the daily summary).
-  await page.goto('/pos/dashboard');
-  // DESIRED: silently refreshed OR returned to /pos login with cart intact --
+
+  // The call SUCCEEDED (no thrown "Session expired"), proving silent refresh.
+  expect(result.ok).toBe(true);
+  expect(result.gotData).toBe(true);
+  // The fake expired token was silently replaced with a fresh, valid one.
+  expect(result.token).not.toContain('eyJhbGciOiJub25lIn0');
   // NOT bounced to the Keycloak SSO logout endpoint.
   expect(page.url()).not.toMatch(/openid-connect\/logout/);
 });

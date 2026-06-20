@@ -1512,14 +1512,64 @@ async def pos_oauth_callback(request: Request, code: str = None, error: str = No
                 logger.error("No access_token in response")
                 return RedirectResponse(url="/pos?error=no_token")
 
-            # Redirect to dashboard with token in URL fragment
-            # Frontend will pick it up and store in sessionStorage
-            logger.info(f"OAuth callback successful, redirecting to dashboard")
-            return RedirectResponse(url=f"/pos/dashboard#token={access_token}")
+            # Redirect to dashboard with the tokens in the URL fragment (never sent to
+            # the server). Include the refresh_token + expires_in so the till can refresh
+            # silently and NEVER hard-logout the cashier mid-sale.
+            refresh_token = tokens.get("refresh_token", "")
+            expires_in = tokens.get("expires_in", 300)
+            logger.info("OAuth callback successful, redirecting to dashboard")
+            frag = f"#token={access_token}&refresh={refresh_token}&expires_in={expires_in}"
+            return RedirectResponse(url=f"/pos/dashboard{frag}")
 
     except Exception as e:
         logger.error(f"Token exchange exception: {e}")
         return RedirectResponse(url="/pos?error=token_exchange_error")
+
+
+@html_router.post("/pos/refresh")
+async def pos_token_refresh(request: Request):
+    """Silent token refresh -- server-to-server (no CORS, mirrors /pos/callback).
+
+    The till POSTs its refresh_token here when the access token is near/at expiry.
+    We exchange it with Keycloak for a fresh access (+ rotated refresh) token so the
+    cashier is NEVER hard-logged-out mid-sale. No auth dependency: the access token
+    is expired by definition -- the refresh_token IS the credential."""
+    import httpx
+    from fastapi.responses import JSONResponse
+
+    body = await request.json()
+    refresh_token = body.get("refresh_token")
+    if not refresh_token:
+        return JSONResponse(status_code=400, content={"detail": "missing refresh_token"})
+
+    keycloak_internal_url = "http://keycloak:8080"
+    realm = "kc-pos-realm-dev"
+    client_id = "helix_pos_web"
+    token_endpoint = f"{keycloak_internal_url}/realms/{realm}/protocol/openid-connect/token"
+
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            response = await client.post(
+                token_endpoint,
+                data={
+                    "grant_type": "refresh_token",
+                    "client_id": client_id,
+                    "refresh_token": refresh_token,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+        if response.status_code != 200:
+            logger.info(f"Token refresh rejected: {response.status_code}")
+            return JSONResponse(status_code=401, content={"detail": "refresh_failed"})
+        tokens = response.json()
+        return JSONResponse(content={
+            "access_token": tokens.get("access_token"),
+            "refresh_token": tokens.get("refresh_token", refresh_token),
+            "expires_in": tokens.get("expires_in", 300),
+        })
+    except Exception as e:
+        logger.error(f"Token refresh exception: {e}")
+        return JSONResponse(status_code=500, content={"detail": "refresh_error"})
 
 
 @html_router.get("/pos/dashboard", response_class=HTMLResponse, name="pos_dashboard")

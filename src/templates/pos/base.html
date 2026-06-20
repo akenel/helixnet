@@ -147,8 +147,53 @@
                 sessionStorage.setItem('pos_token', token);
             },
 
+            // Store the full session from the OAuth callback (access + refresh + expiry)
+            // so the till can refresh silently and never hard-logout mid-sale.
+            setSession({ access, refresh, expiresIn }) {
+                if (access) sessionStorage.setItem('pos_token', access);
+                if (refresh) sessionStorage.setItem('pos_refresh', refresh);
+                if (expiresIn) {
+                    const expAt = Date.now() + (parseInt(expiresIn, 10) * 1000);
+                    sessionStorage.setItem('pos_token_exp', String(expAt));
+                }
+            },
+
+            getRefreshToken() {
+                return sessionStorage.getItem('pos_refresh');
+            },
+
+            // True when the access token is missing or within `skewMs` of expiry.
+            isExpiring(skewMs = 30000) {
+                const expAt = parseInt(sessionStorage.getItem('pos_token_exp') || '0', 10);
+                return !expAt || Date.now() >= (expAt - skewMs);
+            },
+
+            // Silent server-side refresh. Returns true on success, false if the
+            // refresh token is gone/rejected (caller then hard-logs-out).
+            async refresh() {
+                const refresh = this.getRefreshToken();
+                if (!refresh) return false;
+                try {
+                    const r = await fetch('/pos/refresh', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refresh_token: refresh }),
+                    });
+                    if (!r.ok) return false;
+                    const t = await r.json();
+                    if (!t.access_token) return false;
+                    this.setSession({ access: t.access_token, refresh: t.refresh_token, expiresIn: t.expires_in });
+                    return true;
+                } catch (e) {
+                    console.warn('Token refresh failed:', e);
+                    return false;
+                }
+            },
+
             clearToken() {
                 sessionStorage.removeItem('pos_token');
+                sessionStorage.removeItem('pos_refresh');
+                sessionStorage.removeItem('pos_token_exp');
                 sessionStorage.removeItem('pos_user');
             },
 
@@ -220,35 +265,42 @@
             }
         };
 
-        // API helper with automatic auth
+        // API helper with automatic auth + silent token refresh
         const API = {
-            async call(endpoint, options = {}) {
+            _buildConfig(options) {
                 const token = AuthHelper.getToken();
-
                 const defaultHeaders = {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 };
+                if (token) defaultHeaders['Authorization'] = `Bearer ${token}`;
+                return {
+                    ...options,
+                    headers: { ...defaultHeaders, ...options.headers }
+                };
+            },
 
-                if (token) {
-                    defaultHeaders['Authorization'] = `Bearer ${token}`;
+            async call(endpoint, options = {}) {
+                // Proactive: if the access token is about to expire, refresh BEFORE the
+                // call so a long sale never trips a mid-request 401.
+                if (AuthHelper.isExpiring()) {
+                    await AuthHelper.refresh();  // best-effort; 401 path below is the safety net
                 }
 
-                const config = {
-                    ...options,
-                    headers: {
-                        ...defaultHeaders,
-                        ...options.headers
-                    }
-                };
-
                 try {
-                    const response = await fetch(endpoint, config);
+                    let response = await fetch(endpoint, this._buildConfig(options));
 
-                    // Handle 401 - token expired
+                    // Reactive: a 401 means the access token died. Try ONE silent refresh
+                    // and retry. Only hard-logout if the refresh token itself is gone/dead.
                     if (response.status === 401) {
-                        AuthHelper.logout();
-                        throw new Error('Session expired. Please login again.');
+                        const refreshed = await AuthHelper.refresh();
+                        if (refreshed) {
+                            response = await fetch(endpoint, this._buildConfig(options));
+                        }
+                        if (response.status === 401) {
+                            AuthHelper.logout();
+                            throw new Error('Session expired. Please login again.');
+                        }
                     }
 
                     // Handle other errors
