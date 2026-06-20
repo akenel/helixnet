@@ -60,10 +60,12 @@ test('@smoke cashier can log in and reach the dashboard', async ({ page }) => {
   await expect(page.getByText(/already logged in/i)).toHaveCount(0);
 });
 
-test('catalog shows on-hand stock badges', async ({ page }) => {
+test('search actually filters + shows on-hand stock badges', async ({ page }) => {
   await login(page);
-  await searchProducts(page, 'cbd');
-  // Stock badge: "N in stock" or "Out of stock" must appear on rows
+  await searchProducts(page, 'grinder');
+  // The term must actually filter: a grinder row appears...
+  await expect(page.getByText(/grinder/i).first()).toBeVisible({ timeout: 15_000 });
+  // ...and stock badges render on results.
   await expect(page.getByText(/in stock|out of stock/i).first()).toBeVisible({ timeout: 15_000 });
 });
 

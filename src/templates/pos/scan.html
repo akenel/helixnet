@@ -366,20 +366,17 @@
                 }
 
                 try {
-                    const products = await API.get(`/api/v1/pos/products?barcode=${this.barcodeInput}&limit=1`);
-
-                    if (products.length === 0) {
-                        showToast('Product not found. Try catalog mode.', 'warning');
-                        this.searchMode = 'catalog';
-                        return;
-                    }
-
-                    this.addToCart(products[0]);
+                    // Exact barcode lookup (the dedicated endpoint -- /search fuzzy-ranks
+                    // the exact match too low to trust for a scan).
+                    const product = await API.get(`/api/v1/pos/products/barcode/${encodeURIComponent(this.barcodeInput.trim())}`);
+                    this.addToCart(product);
                     this.barcodeInput = '';
                     showToast('Product added!', 'success');
 
                 } catch (error) {
-                    showToast('Error: ' + error.message, 'error');
+                    // 404 -> not found; offer catalog (manual) entry.
+                    showToast('Product not found. Try catalog mode.', 'warning');
+                    this.searchMode = 'catalog';
                 }
             },
 
@@ -390,7 +387,9 @@
                 }
 
                 try {
-                    const products = await API.get(`/api/v1/pos/products?name=${this.searchInput}&limit=20`);
+                    // Fuzzy, relevance-ranked search across the WHOLE catalog (trigram).
+                    // Returns stock_quantity so the on-hand badges keep working.
+                    const products = await API.get(`/api/v1/pos/search?q=${encodeURIComponent(this.searchInput)}&limit=20`);
                     this.searchResults = products;
                 } catch (error) {
                     console.error('Search error:', error);
