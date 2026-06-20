@@ -34,11 +34,12 @@ class LineItemModel(Base):
         nullable=False,
         comment="Parent transaction this item belongs to"
     )
-    product_id: Mapped[uuid.UUID] = mapped_column(
+    product_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey('products.id'),
-        nullable=False,
-        comment="Product from catalog"
+        nullable=True,
+        comment="Product from catalog. NULL for custom lines (manual catalog entry, "
+                "product-as-change treats) -- name lives in notes, price is sent by the till."
     )
 
     # Line Item Details

@@ -71,7 +71,7 @@ class ProductRead(ProductBase):
 
 class LineItemBase(BaseModel):
     """Base line item fields"""
-    product_id: UUID
+    product_id: Optional[UUID] = None  # None for custom lines (manual/change)
     quantity: int = Field(default=1, ge=1, description="Number of units")
     unit_price: Decimal = Field(..., ge=0, description="Price per unit")
     discount_percent: Decimal = Field(default=Decimal("0.00"), ge=0, le=100)
@@ -81,11 +81,19 @@ class LineItemBase(BaseModel):
 
 
 class LineItemCreate(BaseModel):
-    """Schema for adding item to cart (simplified)"""
-    product_id: UUID
+    """Schema for adding an item to the cart.
+
+    product_id is OPTIONAL: a custom line (manual catalog entry, product-as-change
+    treat) has no catalog product -- it carries its own name + unit_price instead.
+    For real products the server always prices from the catalog (client unit_price
+    is ignored, so it can't be tampered with)."""
+    product_id: Optional[UUID] = None
     quantity: int = Field(default=1, ge=1)
     discount_percent: Decimal = Field(default=Decimal("0.00"), ge=0, le=100)
     notes: Optional[str] = None
+    # Only used for custom lines (product_id is None):
+    name: Optional[str] = None
+    unit_price: Optional[Decimal] = Field(default=None, ge=0)
 
 
 class LineItemRead(LineItemBase):

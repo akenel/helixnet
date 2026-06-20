@@ -964,7 +964,7 @@ async def get_transaction(
     # Resolve product names so the receipt shows "CBD Oil 20%", not a generic "Product"
     # (one batched lookup, no N+1).
     product_names: dict = {}
-    product_ids = {item.product_id for item in line_items}
+    product_ids = {item.product_id for item in line_items if item.product_id is not None}
     if product_ids:
         prod_rows = await db.execute(
             select(ProductModel).where(ProductModel.id.in_(product_ids))
@@ -995,8 +995,9 @@ async def get_transaction(
             {
                 "id": str(item.id),
                 "transaction_id": str(item.transaction_id),
-                "product_id": str(item.product_id),
-                "product_name": product_names.get(item.product_id),
+                "product_id": str(item.product_id) if item.product_id else None,
+                # Real product -> catalog name; custom line -> the name kept in notes.
+                "product_name": product_names.get(item.product_id) or (item.notes if item.product_id is None else None),
                 "quantity": item.quantity,
                 "unit_price": str(item.unit_price),
                 "discount_percent": str(item.discount_percent),
@@ -1038,23 +1039,33 @@ async def add_item_to_transaction(
     if transaction.status != TransactionStatus.OPEN:
         raise HTTPException(status_code=400, detail="Transaction is not open")
 
-    # Get product and check stock
-    prod_result = await db.execute(
-        select(ProductModel).where(ProductModel.id == item.product_id)
-    )
-    product = prod_result.scalar_one_or_none()
+    if item.product_id is not None:
+        # Catalog product: price from the catalog (client unit_price ignored -> no
+        # tampering), stock checked + later deducted at checkout.
+        prod_result = await db.execute(
+            select(ProductModel).where(ProductModel.id == item.product_id)
+        )
+        product = prod_result.scalar_one_or_none()
 
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        if not product.is_active:
+            raise HTTPException(status_code=400, detail="Product is inactive")
+        if product.stock_quantity < item.quantity:
+            raise HTTPException(status_code=400, detail=f"Insufficient stock. Available: {product.stock_quantity}")
 
-    if not product.is_active:
-        raise HTTPException(status_code=400, detail="Product is inactive")
-
-    if product.stock_quantity < item.quantity:
-        raise HTTPException(status_code=400, detail=f"Insufficient stock. Available: {product.stock_quantity}")
+        unit_price = product.price
+        line_notes = item.notes
+    else:
+        # Custom line (manual catalog entry / product-as-change treat): no catalog
+        # product, so the till supplies the price + name. No stock to check or deduct.
+        if item.unit_price is None:
+            raise HTTPException(status_code=422, detail="Custom line item requires unit_price")
+        unit_price = item.unit_price
+        # Keep the name for the receipt -- stored in notes (the only free-text column).
+        line_notes = item.name or item.notes
 
     # Calculate line item totals
-    unit_price = product.price
     discount_amount = (unit_price * item.quantity * item.discount_percent) / Decimal("100")
     line_total = (unit_price * item.quantity) - discount_amount
 
@@ -1066,7 +1077,7 @@ async def add_item_to_transaction(
         discount_percent=item.discount_percent,
         discount_amount=discount_amount,
         line_total=line_total,
-        notes=item.notes,
+        notes=line_notes,
     )
 
     db.add(new_line_item)
@@ -1081,7 +1092,8 @@ async def add_item_to_transaction(
     await db.commit()
     await db.refresh(new_line_item)
 
-    logger.info(f"Item added to transaction {transaction.transaction_number}: {product.sku} x{item.quantity}")
+    item_label = product.sku if item.product_id is not None else (item.name or "custom")
+    logger.info(f"Item added to transaction {transaction.transaction_number}: {item_label} x{item.quantity}")
     return new_line_item
 
 
@@ -1182,6 +1194,8 @@ async def checkout_transaction(
         select(LineItemModel).where(LineItemModel.transaction_id == transaction.id)
     )
     for li in li_result.scalars().all():
+        if li.product_id is None:
+            continue  # custom line (manual/change) -- no catalog stock to deduct
         product = await db.get(ProductModel, li.product_id)
         if product is not None:
             product.stock_quantity = max(0, product.stock_quantity - li.quantity)

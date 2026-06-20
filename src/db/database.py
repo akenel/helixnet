@@ -137,6 +137,10 @@ _ADDITIVE_COLUMNS: list[str] = [
 # this was only ever set up on local, so POS fuzzy search 500'd on staging/prod).
 # CREATE EXTENSION / OR REPLACE FUNCTION are safe to re-run on a shared DB.
 _DDL_MIGRATIONS: list[str] = [
+    # Custom POS line items (manual catalog entry, product-as-change treats) carry no
+    # product_id -- the name lives in notes and the price is sent by the till. Drop the
+    # NOT NULL so they can be stored. Idempotent (no-op once already nullable).
+    "ALTER TABLE line_items ALTER COLUMN product_id DROP NOT NULL",
     # pg_trgm powers similarity() for the POS product search.
     "CREATE EXTENSION IF NOT EXISTS pg_trgm",
     # Fuzzy + substring product search used by GET /api/v1/pos/search.
