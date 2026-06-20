@@ -145,6 +145,12 @@
                     <div class="space-y-2">
                         <template x-for="product in searchResults" :key="product.id">
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <!-- Product photo (from the supplier feed); falls back to a tile when missing/broken -->
+                                <div class="w-14 h-14 rounded-lg border bg-white mr-3 flex-none flex items-center justify-center overflow-hidden">
+                                    <img x-show="product.image_url" :src="product.image_url" loading="lazy" alt=""
+                                         class="w-full h-full object-cover" @error="product.image_url=''">
+                                    <span x-show="!product.image_url" class="text-2xl">📦</span>
+                                </div>
                                 <div class="flex-1">
                                     <p class="font-semibold text-gray-900" x-text="product.name"></p>
                                     <p class="text-sm text-gray-600">
