@@ -1070,9 +1070,12 @@ async def add_item_to_transaction(
         # Keep the name for the receipt -- stored in notes (the only free-text column).
         line_notes = item.name or item.notes
 
-    # Calculate line item totals
-    discount_amount = (unit_price * item.quantity * item.discount_percent) / Decimal("100")
-    line_total = (unit_price * item.quantity) - discount_amount
+    # Line is stored GROSS (qty x unit_price). The cart-wide % discount is applied ONCE
+    # at the transaction level below. (Per-line discounting + the running subtotal being
+    # re-rounded on each item's commit drifted a cent vs the till's single-rounded total
+    # on multi-item discounts.)
+    line_gross = unit_price * item.quantity
+    line_total = line_gross
 
     new_line_item = LineItemModel(
         transaction_id=transaction_id,
@@ -1080,7 +1083,7 @@ async def add_item_to_transaction(
         quantity=item.quantity,
         unit_price=unit_price,
         discount_percent=item.discount_percent,
-        discount_amount=discount_amount,
+        discount_amount=Decimal("0.00"),
         line_total=line_total,
         notes=line_notes,
         is_giveaway=item.is_giveaway,
@@ -1088,10 +1091,13 @@ async def add_item_to_transaction(
 
     db.add(new_line_item)
 
-    # Update transaction totals (inclusive VAT: subtotal & total are the GROSS the customer pays;
-    # tax_amount is the VAT contained within that gross).
-    transaction.subtotal += line_total
-    transaction.total = transaction.subtotal - transaction.discount_amount
+    # Transaction totals (inclusive VAT: subtotal & total are the GROSS the customer pays).
+    # total = round(subtotal * (1 - pct/100)) -- the EXACT formula the till displays, so the
+    # charged total always equals what the cashier/customer saw. discount = the reconciling gap.
+    transaction.subtotal += line_gross
+    keep = (Decimal("100") - item.discount_percent) / Decimal("100")
+    transaction.total = (transaction.subtotal * keep).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    transaction.discount_amount = transaction.subtotal - transaction.total
     transaction.tax_amount = _inclusive_vat(transaction.total)
     transaction.updated_at = datetime.now(timezone.utc)
 
