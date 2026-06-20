@@ -113,6 +113,29 @@ test('full sale: ring -> checkout -> receipt, and the cashier STAYS logged in', 
   expect(await tokenPresent(page)).toBe(true);
 });
 
+test('underpaid cash sale cannot be confirmed (Confirm disabled until enough cash)', async ({ page }) => {
+  await login(page);
+  // Add a pricier item so a low cash button is clearly short.
+  await searchProducts(page, 'puffco');
+  const addBtn = page.getByRole('button', { name: /Add/ }).first();
+  await expect(addBtn).toBeVisible({ timeout: 15_000 });
+  await addBtn.click();
+  await page.getByRole('button', { name: /Checkout/ }).click();
+
+  await expect(page.getByText(/Payment Method/i)).toBeVisible({ timeout: 10_000 });
+  await page.getByText('Cash', { exact: true }).click();
+
+  // Pick a too-small amount -> short -> Confirm must be disabled + warning shown.
+  await page.getByRole('button', { name: '50', exact: true }).click();
+  const confirm = page.getByRole('button', { name: /Confirm & Complete/i });
+  await expect(confirm).toBeDisabled();
+  await expect(page.getByText(/short.*of the total/i)).toBeVisible();
+
+  // EXACT covers the total -> Confirm becomes enabled.
+  await page.getByRole('button', { name: /EXACT/i }).click();
+  await expect(confirm).toBeEnabled();
+});
+
 test('Sales Reports page loads with breakdown + working CSV download', async ({ page }) => {
   await login(page);
   await page.goto('/pos/reports');

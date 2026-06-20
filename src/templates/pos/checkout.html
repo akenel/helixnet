@@ -129,8 +129,14 @@
                     </div>
                 </div>
 
-                <!-- Quick Round Options (when there's a small gap) -->
-                <div x-show="cashReceived > 0 && changeGap > 0 && changeGap <= 2" class="mb-4">
+                <!-- Insufficient cash: the received amount is less than the total due -->
+                <div x-show="cashReceived > 0 && changeAmount < 0" class="bg-red-50 border border-red-300 rounded-lg p-3 mb-4 text-red-700 text-sm">
+                    ⚠️ Cash received is <strong>CHF <span x-text="Math.abs(changeAmount).toFixed(2)"></span> short</strong> of the total.
+                    Collect more cash, pick a higher amount, or hit <strong>EXACT</strong>.
+                </div>
+
+                <!-- Quick Round Options (only when the customer OVERpaid -- there's real change) -->
+                <div x-show="changeAmount >= 0 && changeGap > 0 && changeGap <= 2" class="mb-4">
                     <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 Quick Round Options</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <button @click="applyQuickRound()"
@@ -146,8 +152,8 @@
                     </div>
                 </div>
 
-                <!-- Product-as-Change (Pink Punch Model) -->
-                <div x-show="showChangeProducts && changeGap > 0" x-transition class="bg-pink-50 rounded-lg p-4 mb-4">
+                <!-- Product-as-Change (Pink Punch Model) -- only when there's real change to give back -->
+                <div x-show="showChangeProducts && changeAmount >= 0 && changeGap > 0" x-transition class="bg-pink-50 rounded-lg p-4 mb-4">
                     <h3 class="text-md font-semibold text-pink-800 mb-3">🍭 Change Products (under CHF <span x-text="changeGap.toFixed(2)"></span>)</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         <template x-for="product in changeProducts" :key="product.name">
@@ -187,7 +193,10 @@
                 <button @click="goBack()" class="btn-secondary">
                     ✏️ Edit Cart
                 </button>
-                <button @click="completeTransaction()" :disabled="processing" class="btn-success">
+                <button @click="completeTransaction()"
+                        :disabled="processing || (paymentMethod === 'cash' && cashReceived < cartData.totals.total)"
+                        :class="(paymentMethod === 'cash' && cashReceived < cartData.totals.total) ? 'opacity-50 cursor-not-allowed' : ''"
+                        class="btn-success">
                     <span x-show="!processing">✅ Confirm & Complete</span>
                     <span x-show="processing">Processing...</span>
                 </button>
@@ -265,6 +274,12 @@
             },
 
             applyQuickRound() {
+                // Only meaningful when the customer OVERpaid -- never when cash is short
+                // (rounding up would deepen the deficit).
+                if (this.changeAmount < 0) {
+                    showToast('Cash received is less than the total — collect more cash first', 'warning');
+                    return;
+                }
                 // Round total UP to match cash received (customer gets clean change)
                 const total = this.cartData.totals.total;
                 const roundedTotal = this.cashReceived - Math.floor(this.changeAmount);
@@ -354,6 +369,13 @@
                 // For cash payments, require cash received amount
                 if (this.paymentMethod === 'cash' && this.cashReceived <= 0) {
                     showToast('Please select cash amount received', 'warning');
+                    return;
+                }
+
+                // Never complete an UNDERPAID cash sale (cash received < total due).
+                if (this.paymentMethod === 'cash' && this.cashReceived < this.cartData.totals.total) {
+                    const short = (this.cartData.totals.total - this.cashReceived).toFixed(2);
+                    showToast(`Cash received is CHF ${short} short of the total. Collect more or hit EXACT.`, 'warning');
                     return;
                 }
 
