@@ -91,6 +91,17 @@ test:
 		python -m pytest --version >/dev/null 2>&1 || pip install -q -r src/tests/requirements-test.txt; \
 		python -m pytest src/tests -o asyncio_mode=auto $(PYTEST_ARGS)'
 
+# Banco POS API regression suite -- BLACK-BOX HTTP against the running server.
+# Runs from the host .venv (no fastapi needed). ENV=local (default) or ENV=staging.
+#   make test-pos                # local  (helix.local)
+#   make test-pos ENV=staging    # staging (staging-banco.lapiazza.app)
+# See docs/testing/POS-TESTING-SOP.md.
+ENV ?= local
+.PHONY: test-pos
+test-pos:
+	@echo "🧪 POS API regression suite (ENV=$(ENV))..."
+	@. .venv/bin/activate && ENV=$(ENV) python -m pytest tests/pos -v $(PYTEST_ARGS)
+
 # ===================================================================
 # UTILITIES
 # ===================================================================
