@@ -135,33 +135,33 @@
                     Collect more cash, pick a higher amount, or hit <strong>EXACT</strong>.
                 </div>
 
-                <!-- Quick Round Options (only when the customer OVERpaid -- there's real change) -->
-                <div x-show="changeAmount >= 0 && changeGap > 0 && changeGap <= 2" class="mb-4">
-                    <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 Quick Round Options</h3>
+                <!-- Quick Round + Treat -- always available once cash is on the counter -->
+                <div x-show="cashReceived > 0" class="mb-4">
+                    <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 Quick Options</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <button @click="applyQuickRound()"
+                        <button x-show="changeAmount > 0" @click="applyQuickRound()"
                             class="bg-yellow-100 hover:bg-yellow-200 p-3 rounded-lg text-left">
                             <span class="block font-bold text-yellow-800">Round to <span x-text="'CHF ' + cashReceived.toFixed(2)"></span></span>
                             <span class="text-sm text-yellow-600">Give back CHF <span x-text="Math.floor(changeAmount).toFixed(2)"></span> (clean notes)</span>
                         </button>
                         <button @click="showChangeProducts = !showChangeProducts"
                             class="bg-pink-100 hover:bg-pink-200 p-3 rounded-lg text-left">
-                            <span class="block font-bold text-pink-800">🍭 Add Small Item</span>
-                            <span class="text-sm text-pink-600">Keep the change, give a treat!</span>
+                            <span class="block font-bold text-pink-800">🍭 Give a Treat</span>
+                            <span class="text-sm text-pink-600">On the house — free with the sale</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Product-as-Change (Pink Punch Model) -- only when there's real change to give back -->
-                <div x-show="showChangeProducts && changeAmount >= 0 && changeGap > 0" x-transition class="bg-pink-50 rounded-lg p-4 mb-4">
-                    <h3 class="text-md font-semibold text-pink-800 mb-3">🍭 Change Products (under CHF <span x-text="changeGap.toFixed(2)"></span>)</h3>
+                <!-- Treats (Pink Punch Model) -- always free giveaways -->
+                <div x-show="showChangeProducts" x-transition class="bg-pink-50 rounded-lg p-4 mb-4">
+                    <h3 class="text-md font-semibold text-pink-800 mb-3">🍭 Pick a treat — on the house</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         <template x-for="product in changeProducts" :key="product.name">
                             <button @click="addChangeProduct(product)"
                                 class="bg-white hover:bg-pink-100 p-2 rounded border text-center">
                                 <span class="block text-2xl" x-text="product.emoji"></span>
                                 <span class="block text-sm font-semibold" x-text="product.name"></span>
-                                <span class="block text-xs text-gray-500" x-text="'CHF ' + product.price.toFixed(2)"></span>
+                                <span class="block text-xs text-green-600 font-semibold">FREE</span>
                             </button>
                         </template>
                     </div>
@@ -276,11 +276,8 @@
                 this.changeAmount = Math.round((this.cashReceived - total) * 100) / 100;
                 // Gap is the cents part that could be rounded
                 this.changeGap = this.changeAmount > 0 ? (this.changeAmount % 1) : Math.abs(this.changeAmount);
-
-                // Filter change products to only show affordable ones
-                if (this.changeGap > 0) {
-                    this.changeProducts = this.changeProducts.filter(p => p.price <= this.changeGap + 0.50);
-                }
+                // (Treats are free now -- no affordability filtering; the old filter
+                //  also permanently mutated the list, dropping treats after one call.)
             },
 
             applyQuickRound() {
@@ -311,23 +308,24 @@
             },
 
             addChangeProduct(product) {
-                // Add product to cart as "change product"
+                // A treat is FREE -- on the house. It does NOT change the total (the
+                // customer already paid); we just record the giveaway on the sale.
+                // retailValue is kept for tax/COGS tracking.
                 this.cartData.cart.push({
                     id: 'change_' + Date.now(),
-                    name: product.name + ' (Change)',
-                    price: product.price,
+                    name: product.name + ' (Treat)',
+                    price: 0,
                     quantity: 1,
-                    isChangeProduct: true
+                    isChangeProduct: true,
+                    retailValue: product.price
                 });
-
-                // Recalculate totals with the new item
-                this.cartData.totals.subtotal += product.price;
+                // total unchanged -- recalc only to keep VAT/derived fields consistent
                 this.recalculateTotals();
                 this.calculateChange();
                 this.showChangeProducts = false;
 
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
-                showToast(`Added ${product.emoji} ${product.name} - customer gets a treat!`, 'success');
+                showToast(`${product.emoji} ${product.name} - on the house!`, 'success');
             },
 
             applyDiscount(percent) {

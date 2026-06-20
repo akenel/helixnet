@@ -138,6 +138,30 @@ test('underpaid cash sale cannot be confirmed (Confirm disabled until enough cas
   await expect(confirm).toBeEnabled();
 });
 
+test('Give a Treat is always available on cash and is free (total unchanged)', async ({ page }) => {
+  await login(page);
+  await searchProducts(page, 'grinder');
+  await page.getByRole('button', { name: /Add/ }).first().click();
+  await page.getByRole('button', { name: /Checkout/ }).click();
+  await page.getByText('Cash', { exact: true }).click();
+  await page.getByRole('button', { name: '100', exact: true }).click();
+
+  // The treat option shows for any cash payment now (not just a small rounding gap).
+  const treatBtn = page.getByRole('button', { name: /Give a Treat/i });
+  await expect(treatBtn).toBeVisible();
+  await treatBtn.click();
+  await expect(page.getByText('FREE').first()).toBeVisible();
+
+  // Pick a treat; the dry-run "Daily total" must NOT increase (it's on the house).
+  await page.getByRole('button').filter({ hasText: /Lollipop/ }).first().click();
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: /Confirm & Complete/i }).click();
+
+  await page.waitForURL(/\/pos\/receipt\//, { timeout: 20_000 });
+  // The treat shows on the receipt, free.
+  await expect(page.getByText(/Treat/i).first()).toBeVisible({ timeout: 10_000 });
+});
+
 test('Sales Reports page loads with breakdown + working CSV download', async ({ page }) => {
   await login(page);
   await page.goto('/pos/reports');

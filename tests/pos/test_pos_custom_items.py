@@ -54,6 +54,32 @@ def test_sale_with_a_change_treat_completes(session):
     assert "Lollipop (Change)" in names, f"custom line name missing: {names}"
 
 
+def test_free_treat_does_not_change_total(session):
+    """A treat is on the house: a CHF 0.00 custom line leaves the total unchanged
+    and shows on the receipt at zero."""
+    p = find_product(session, barcode="7610000123461")  # grinder 12.90
+    price = Decimal(str(p["price"]))
+    tx = _open_tx(session)
+    session.post(f"{POS}/transactions/{tx['id']}/items", json={
+        "product_id": p["id"], "quantity": 1, "discount_percent": "0",
+    }).raise_for_status()
+    # Free treat -- product_id None, unit_price 0.
+    r = session.post(f"{POS}/transactions/{tx['id']}/items", json={
+        "product_id": None, "quantity": 1, "unit_price": "0", "discount_percent": "0",
+        "name": "Lollipop (Treat)",
+    })
+    assert r.status_code == 200, f"free treat rejected: {r.status_code} {r.text[:120]}"
+    r = session.post(f"{POS}/transactions/{tx['id']}/checkout", json={
+        "payment_method": "cash", "amount_tendered": str(price + Decimal("5")),
+    })
+    r.raise_for_status()
+    assert Decimal(str(r.json()["total"])) == price, "free treat must not change the total"
+
+    full = get_transaction(session, tx["id"])
+    treat = next((li for li in full["line_items"] if li.get("product_name") == "Lollipop (Treat)"), None)
+    assert treat is not None and Decimal(str(treat["line_total"])) == Decimal("0.00")
+
+
 def test_custom_line_requires_unit_price(session):
     """A custom line with no unit_price is a 422 (can't price it)."""
     tx = _open_tx(session)
