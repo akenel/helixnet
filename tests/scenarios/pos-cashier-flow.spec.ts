@@ -104,6 +104,28 @@ test('full sale: ring -> checkout -> receipt, and the cashier STAYS logged in', 
   // Receipt shows the inclusive-VAT line + a real product name (not "Product")
   await expect(page.getByText(/incl\. VAT/i)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText(/^Product$/)).toHaveCount(0);
+
+  // CLOSE THE DEAL: the receipt offers a clear exit -- no history.back() dead-end.
+  await page.getByRole('button', { name: /New Sale/i }).click();
+  await page.waitForURL(/\/pos\/scan/, { timeout: 15_000 });
+  expect(await tokenPresent(page)).toBe(true);
+});
+
+test('Sales Reports page loads with breakdown + working CSV download', async ({ page }) => {
+  await login(page);
+  await page.goto('/pos/reports');
+
+  // The dead tile is now a real report (was rendering the dashboard placeholder).
+  await expect(page.getByRole('heading', { name: /Sales Reports/i })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Payment Method Breakdown/i)).toBeVisible();
+  await expect(page.getByText(/Total Sales/i)).toBeVisible();
+
+  // The CSV download button works (authenticated fetch -> file), no raw-URL 401.
+  const [download] = await Promise.all([
+    page.waitForEvent('download', { timeout: 15_000 }),
+    page.getByRole('button', { name: /Download Banana CSV/i }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^banana-.*\.csv$/);
 });
 
 /**

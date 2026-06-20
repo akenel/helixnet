@@ -1,0 +1,178 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Sales Reports - HelixPOS - Artemis Store{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="reportsData()">
+    <div class="max-w-5xl mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
+            <h1 class="text-3xl font-bold text-gray-900">📊 Sales Reports</h1>
+            <div class="flex space-x-2">
+                <button @click="goDashboard()" class="btn-secondary">🏠 Dashboard</button>
+                <button @click="goTransactions()" class="btn-secondary">💳 All Transactions</button>
+            </div>
+        </div>
+        <p class="text-gray-600 mb-6">Today &mdash; <span class="font-semibold" x-text="summary.date"></span></p>
+
+        <!-- Top KPI cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="card">
+                <p class="text-gray-600 text-sm">Total Sales</p>
+                <p class="text-3xl font-bold text-green-600" x-text="formatPrice(summary.total_sales)"></p>
+            </div>
+            <div class="card">
+                <p class="text-gray-600 text-sm">Transactions</p>
+                <p class="text-3xl font-bold text-gray-900" x-text="summary.total_transactions"></p>
+            </div>
+            <div class="card">
+                <p class="text-gray-600 text-sm">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</p>
+                <p class="text-3xl font-bold text-indigo-600" x-text="formatPrice(summary.vat_total)"></p>
+            </div>
+        </div>
+
+        <!-- Payment method breakdown -->
+        <div class="card mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Payment Method Breakdown</h2>
+            <table class="w-full text-sm">
+                <tbody>
+                    <template x-for="row in methodRows()" :key="row.label">
+                        <tr x-show="row.amount > 0" class="border-b last:border-0">
+                            <td class="py-2" x-text="row.label"></td>
+                            <td class="py-2 text-right font-semibold" x-text="formatPrice(row.amount)"></td>
+                        </tr>
+                    </template>
+                    <tr class="border-t-2 border-gray-800">
+                        <td class="py-2 font-bold">TOTAL</td>
+                        <td class="py-2 text-right font-bold text-lg" x-text="formatPrice(summary.total_sales)"></td>
+                    </tr>
+                    <tr>
+                        <td class="py-1 text-gray-500">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</td>
+                        <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_total)"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top seller + cashiers -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div class="card">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">🏆 Top Seller</h2>
+                <p x-show="summary.top_seller" class="text-gray-800">
+                    <span class="font-semibold" x-text="summary.top_seller"></span>
+                    &mdash; <span x-text="summary.top_seller_quantity"></span> sold
+                </p>
+                <p x-show="!summary.top_seller" class="text-gray-400">No sales yet today.</p>
+            </div>
+            <div class="card">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">👥 By Cashier</h2>
+                <template x-for="(amount, name) in summary.cashier_performance" :key="name">
+                    <div class="flex justify-between text-sm py-1 border-b last:border-0">
+                        <span x-text="name"></span>
+                        <span class="font-semibold" x-text="formatPrice(amount)"></span>
+                    </div>
+                </template>
+                <p x-show="Object.keys(summary.cashier_performance || {}).length === 0" class="text-gray-400 text-sm">No data.</p>
+            </div>
+        </div>
+
+        <!-- Banana export -->
+        <div class="card">
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">📥 Accounting Export</h2>
+            <p class="text-gray-600 text-sm mb-4">Download today's sales as a Banana Accounting CSV (one line per payment method).</p>
+            <button @click="downloadCSV()" :disabled="downloading" class="btn-primary">
+                <span x-show="!downloading">📥 Download Banana CSV</span>
+                <span x-show="downloading">Preparing...</span>
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function reportsData() {
+        return {
+            summary: {
+                date: '',
+                total_transactions: 0,
+                total_sales: 0,
+                vat_total: 0,
+                cash_total: 0, twint_total: 0, visa_total: 0,
+                debit_total: 0, crypto_total: 0, other_total: 0,
+                top_seller: null, top_seller_quantity: 0,
+                cashier_performance: {}
+            },
+            downloading: false,
+
+            async init() {
+                const userInfo = AuthHelper.getUserInfo();
+                if (!userInfo) { window.location.href = '/pos'; return; }
+                try {
+                    const data = await API.get('/api/v1/pos/reports/daily-summary');
+                    this.summary = {
+                        date: data.date || new Date().toISOString().slice(0, 10),
+                        total_transactions: data.total_transactions || 0,
+                        total_sales: parseFloat(data.total_sales || 0),
+                        vat_total: parseFloat(data.vat_total || 0),
+                        cash_total: parseFloat(data.cash_total || 0),
+                        twint_total: parseFloat(data.twint_total || 0),
+                        visa_total: parseFloat(data.visa_total || 0),
+                        debit_total: parseFloat(data.debit_total || 0),
+                        crypto_total: parseFloat(data.crypto_total || 0),
+                        other_total: parseFloat(data.other_total || 0),
+                        top_seller: data.top_seller || null,
+                        top_seller_quantity: data.top_seller_quantity || 0,
+                        cashier_performance: data.cashier_performance || {}
+                    };
+                } catch (e) {
+                    console.error('Failed to load report:', e);
+                    showToast('Could not load report', 'error');
+                }
+            },
+
+            methodRows() {
+                return [
+                    { label: 'Cash', amount: this.summary.cash_total },
+                    { label: 'TWINT', amount: this.summary.twint_total },
+                    { label: 'Visa/MC', amount: this.summary.visa_total },
+                    { label: 'Debit', amount: this.summary.debit_total },
+                    { label: 'Crypto', amount: this.summary.crypto_total },
+                    { label: 'Other', amount: this.summary.other_total }
+                ];
+            },
+
+            async downloadCSV() {
+                this.downloading = true;
+                try {
+                    // Authenticated fetch -> blob -> download. (The raw URL fails because
+                    // the endpoint requires a Bearer token; this attaches it.)
+                    if (AuthHelper.isExpiring()) await AuthHelper.refresh();
+                    const res = await fetch('/api/v1/pos/reports/daily-summary.csv', {
+                        headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }
+                    });
+                    if (!res.ok) { showToast('CSV download failed (' + res.status + ')', 'error'); return; }
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `banana-${this.summary.date}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    showToast('Banana CSV downloaded', 'success');
+                } catch (e) {
+                    showToast('CSV download failed: ' + e.message, 'error');
+                } finally {
+                    this.downloading = false;
+                }
+            },
+
+            goDashboard() { window.location.href = '/pos/dashboard'; },
+            goTransactions() { window.location.href = '/pos/transactions'; },
+            formatPrice(amount) { return formatPrice(amount); }
+        }
+    }
+</script>
+{% endblock %}

@@ -39,9 +39,34 @@
                 </div>
             </div>
 
-            <!-- Print daily sheet (what Felix copies into his book) -->
-            <div class="mb-6 text-right">
-                <button type="button" @click="printSummary()" class="btn-secondary">🖨️ Print Daily Summary</button>
+            <!-- Z-Report preview (on screen) + export. What Felix copies into his book. -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🧾 Daily Z-Report</h2>
+                <div class="bg-white border-2 border-gray-200 rounded-lg p-5">
+                    <p class="text-sm text-gray-500 mb-3">
+                        Artemis Luzern &middot; <span x-text="summary.date"></span> &middot; Cashier: <span x-text="user.username"></span>
+                    </p>
+                    <table class="w-full text-sm">
+                        <tbody>
+                            <tr x-show="summary.cashSales > 0"><td class="py-1">Cash</td><td class="py-1 text-right" x-text="formatPrice(summary.cashSales)"></td></tr>
+                            <tr x-show="summary.twintSales > 0"><td class="py-1">TWINT</td><td class="py-1 text-right" x-text="formatPrice(summary.twintSales)"></td></tr>
+                            <tr x-show="summary.visaSales > 0"><td class="py-1">Visa</td><td class="py-1 text-right" x-text="formatPrice(summary.visaSales)"></td></tr>
+                            <tr x-show="summary.debitSales > 0"><td class="py-1">Debit</td><td class="py-1 text-right" x-text="formatPrice(summary.debitSales)"></td></tr>
+                            <tr x-show="summary.cryptoSales > 0"><td class="py-1">Crypto</td><td class="py-1 text-right" x-text="formatPrice(summary.cryptoSales)"></td></tr>
+                            <tr x-show="summary.otherSales > 0"><td class="py-1">Other</td><td class="py-1 text-right" x-text="formatPrice(summary.otherSales)"></td></tr>
+                            <tr class="border-t-2 border-gray-800 font-bold"><td class="py-2">TOTAL</td><td class="py-2 text-right text-lg" x-text="formatPrice(summary.totalSales)"></td></tr>
+                            <tr class="text-gray-500"><td class="py-1">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</td><td class="py-1 text-right" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                            <tr class="text-gray-500"><td class="py-1">Transactions</td><td class="py-1 text-right" x-text="summary.transactionCount"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2 justify-end">
+                    <button type="button" @click="downloadCSV()" :disabled="downloading" class="btn-secondary">
+                        <span x-show="!downloading">📥 Download Banana CSV</span>
+                        <span x-show="downloading">Preparing...</span>
+                    </button>
+                    <button type="button" @click="printSummary()" class="btn-secondary">🖨️ Print Z-Report</button>
+                </div>
             </div>
 
             <!-- Cash Drawer Count -->
@@ -188,6 +213,7 @@
                 coins: 0,
                 total: 0
             },
+            downloading: false,
             needsAdjustment: 'no',
             adjustmentNote: '',
             processing: false,
@@ -287,7 +313,38 @@ Thank you for a great shift!
             },
 
             printSummary() {
+                // Datetime-stamp the suggested PDF filename so daily reports don't collide.
+                const original = document.title;
+                const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+                document.title = `Banco-ZReport-Artemis-${this.summary.date || stamp}-${stamp.slice(11)}`;
                 window.print();
+                setTimeout(() => { document.title = original; }, 500);
+            },
+
+            async downloadCSV() {
+                this.downloading = true;
+                try {
+                    // Authenticated fetch -> blob -> download (the raw URL 401s without a token).
+                    if (AuthHelper.isExpiring()) await AuthHelper.refresh();
+                    const res = await fetch('/api/v1/pos/reports/daily-summary.csv', {
+                        headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }
+                    });
+                    if (!res.ok) { showToast('CSV download failed (' + res.status + ')', 'error'); return; }
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `banana-${this.summary.date}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    showToast('Banana CSV downloaded', 'success');
+                } catch (e) {
+                    showToast('CSV download failed: ' + e.message, 'error');
+                } finally {
+                    this.downloading = false;
+                }
             },
 
             formatPrice(amount) {

@@ -1910,10 +1910,8 @@ async def pos_reports(request: Request):
     - Cashier performance
     - Payment method breakdown
     - Category analysis
-
-    For now: Placeholder
     """
-    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+    return templates.TemplateResponse("pos/reports.html", {"request": request})
 
 
 @html_router.get("/pos/transactions", response_class=HTMLResponse, name="pos_transactions")

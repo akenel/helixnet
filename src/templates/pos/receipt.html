@@ -5,10 +5,7 @@
 {% block content %}
 <div class="min-h-screen bg-gray-100 print:bg-white" x-data="receiptData()">
     <!-- Print Button Bar (hidden when printing) -->
-    <div class="no-print bg-white shadow-md sticky top-0 z-10 px-4 py-3 flex justify-between items-center">
-        <button @click="goBack()" class="btn-secondary">
-            ← Back
-        </button>
+    <div class="no-print bg-white shadow-md sticky top-0 z-10 px-4 py-3 flex justify-between items-center flex-wrap gap-2">
         <div class="flex items-center space-x-2">
             <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
             <span x-show="transaction.status === 'refunded'" class="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-semibold">REFUNDED</span>
@@ -17,8 +14,15 @@
             <button x-show="transaction.status === 'completed' && canRefund" @click="showRefundModal()" class="btn-danger">
                 ↩️ Refund
             </button>
-            <button @click="printReceipt()" class="btn-primary">
+            <button @click="printReceipt()" class="btn-secondary">
                 🖨️ Print
+            </button>
+            <button @click="goDashboard()" class="btn-secondary">
+                🏠 Dashboard
+            </button>
+            <!-- Close the deal: straight into the next sale -->
+            <button @click="newSale()" class="btn-primary">
+                🛒 New Sale
             </button>
         </div>
     </div>
@@ -350,7 +354,14 @@
             },
 
             printReceipt() {
+                // Datetime-stamp the suggested PDF filename (browsers use document.title),
+                // so saved receipts don't all collide on one name. Restore after.
+                const original = document.title;
+                const num = this.transaction.transaction_number || 'receipt';
+                const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+                document.title = `Banco-Receipt-${num}-${stamp}`;
                 window.print();
+                setTimeout(() => { document.title = original; }, 500);
             },
 
             showRefundModal() {
@@ -392,8 +403,12 @@
                 }
             },
 
-            goBack() {
-                window.history.back();
+            goDashboard() {
+                window.location.href = '/pos/dashboard';
+            },
+
+            newSale() {
+                window.location.href = '/pos/scan';
             }
         }
     }
