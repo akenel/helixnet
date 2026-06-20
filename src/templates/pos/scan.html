@@ -142,10 +142,18 @@
                                         <span x-show="product.barcode"> | Barcode: <span x-text="product.barcode"></span></span>
                                     </p>
                                     <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(product.price)"></p>
+                                    <span class="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                                          :class="product.stock_quantity <= 0 ? 'bg-red-100 text-red-700'
+                                                  : (product.stock_quantity <= 5 ? 'bg-yellow-100 text-yellow-800'
+                                                  : 'bg-green-100 text-green-700')"
+                                          x-text="product.stock_quantity <= 0 ? 'Out of stock'
+                                                  : (product.stock_quantity + ' in stock')"></span>
                                 </div>
                                 <button
                                     @click="addToCart(product)"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">
+                                    :disabled="product.stock_quantity <= 0"
+                                    :class="product.stock_quantity <= 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
+                                    class="text-white px-4 py-2 rounded-lg font-semibold">
                                     ➕ Add
                                 </button>
                             </div>
