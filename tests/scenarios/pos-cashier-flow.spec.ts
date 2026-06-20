@@ -106,6 +106,8 @@ test('full sale: ring -> checkout -> receipt, and the cashier STAYS logged in', 
   // Receipt shows the inclusive-VAT line + a real product name (not "Product")
   await expect(page.getByText(/incl\. VAT/i)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText(/^Product$/)).toHaveCount(0);
+  // Cashier is named (the logged-in cashier), not the literal word "Cashier"
+  await expect(page.getByText(USER, { exact: false }).first()).toBeVisible();
 
   // CLOSE THE DEAL: the receipt offers a clear exit -- no history.back() dead-end.
   await page.getByRole('button', { name: /New Sale/i }).click();

@@ -139,11 +139,11 @@
             <div class="border-t-2 border-gray-300 pt-4 space-y-2">
                 <div class="flex justify-between text-lg">
                     <span>Subtotal:</span>
-                    <span x-text="formatPrice(transaction.subtotal)"></span>
+                    <span x-text="formatPrice(grossSubtotal())"></span>
                 </div>
-                <div x-show="parseFloat(transaction.discount_amount) > 0" class="flex justify-between text-lg text-green-600">
+                <div x-show="discountTotal() > 0.005" class="flex justify-between text-lg text-green-600">
                     <span>Discount:</span>
-                    <span x-text="'-' + formatPrice(transaction.discount_amount)"></span>
+                    <span x-text="'-' + formatPrice(discountTotal())"></span>
                 </div>
                 <div class="flex justify-between text-2xl font-bold border-t-2 border-gray-800 pt-2 mt-2">
                     <span>TOTAL:</span>
@@ -304,12 +304,11 @@
                     const settings = await API.get('/api/v1/pos/settings/1');
                     this.storeSettings = settings;
 
-                    // Get cashier name (optional - would need user endpoint)
-                    this.cashierName = 'Cashier'; // TODO: Fetch from user API
-
-                    // Check if user can process refunds (manager or admin only)
+                    // Cashier name: the transaction stores the Keycloak sub (no name),
+                    // so show the logged-in cashier (who rings + prints the receipt).
                     const userInfo = AuthHelper.getUserInfo();
                     if (userInfo) {
+                        this.cashierName = userInfo.username || 'Cashier';
                         this.canRefund = AuthHelper.isManager() || AuthHelper.isAdmin();
                     }
 
@@ -317,6 +316,16 @@
                     console.error('Failed to load receipt:', error);
                     showToast('Failed to load receipt: ' + error.message, 'error');
                 }
+            },
+
+            // Gross subtotal = sum of (qty x shelf price) before any discount, so the
+            // receipt shows where the discount went (line shows 12.90, total 10.00 -> -2.90).
+            grossSubtotal() {
+                return (this.transaction.line_items || []).reduce(
+                    (s, i) => s + parseFloat(i.quantity || 0) * parseFloat(i.unit_price || 0), 0);
+            },
+            discountTotal() {
+                return this.grossSubtotal() - parseFloat(this.transaction.total || 0);
             },
 
             formatAddress() {
