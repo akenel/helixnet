@@ -39,6 +39,11 @@
                 </div>
             </div>
 
+            <!-- Print daily sheet (what Felix copies into his book) -->
+            <div class="mb-6 text-right">
+                <button type="button" @click="printSummary()" class="btn-secondary">🖨️ Print Daily Summary</button>
+            </div>
+
             <!-- Cash Drawer Count -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Cash Drawer Count</h2>
@@ -122,16 +127,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Printable daily Z-report: hidden on screen, the ONLY thing that prints -->
+    <div id="daily-print-sheet">
+        <h1 style="font-size:20px;margin:0 0 2px;">Artemis Luzern &mdash; Daily Sales Summary</h1>
+        <div style="font-size:12px;color:#444;margin-bottom:14px;">
+            Date: <span x-text="summary.date"></span> &middot;
+            Cashier: <span x-text="user.username"></span> &middot;
+            Printed: <span x-text="currentTime()"></span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:15px;">
+            <tbody>
+                <tr><td style="padding:5px 0;">Cash</td><td style="text-align:right;" x-text="formatPrice(summary.cashSales)"></td></tr>
+                <tr><td style="padding:5px 0;">TWINT</td><td style="text-align:right;" x-text="formatPrice(summary.twintSales)"></td></tr>
+                <tr><td style="padding:5px 0;">Visa</td><td style="text-align:right;" x-text="formatPrice(summary.visaSales)"></td></tr>
+                <tr><td style="padding:5px 0;">Debit</td><td style="text-align:right;" x-text="formatPrice(summary.debitSales)"></td></tr>
+                <tr x-show="summary.cryptoSales > 0"><td style="padding:5px 0;">Crypto</td><td style="text-align:right;" x-text="formatPrice(summary.cryptoSales)"></td></tr>
+                <tr x-show="summary.otherSales > 0"><td style="padding:5px 0;">Other</td><td style="text-align:right;" x-text="formatPrice(summary.otherSales)"></td></tr>
+                <tr style="border-top:2px solid #000;font-weight:bold;"><td style="padding-top:7px;">TOTAL</td><td style="text-align:right;padding-top:7px;" x-text="formatPrice(summary.totalSales)"></td></tr>
+                <tr><td style="padding-top:7px;color:#444;">Transactions</td><td style="text-align:right;padding-top:7px;color:#444;" x-text="summary.transactionCount"></td></tr>
+            </tbody>
+        </table>
+        <div style="margin-top:22px;font-size:12px;color:#444;">
+            Cash counted: <span x-text="formatPrice(cashCount.total)"></span> &middot;
+            Difference: <span x-text="formatPrice(cashDifference())"></span>
+        </div>
+        <div style="margin-top:40px;font-size:12px;">Signature: ______________________________</div>
+    </div>
 </div>
+
+<style>
+    #daily-print-sheet { display: none; }
+    @media print {
+        body * { visibility: hidden; }
+        #daily-print-sheet, #daily-print-sheet * { visibility: visible; }
+        #daily-print-sheet { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+    }
+</style>
 
 <script>
     function closeoutData() {
         return {
             user: {},
             summary: {
+                date: '',
                 transactionCount: 0,
                 totalSales: 0,
                 cashSales: 0,
+                twintSales: 0,
+                visaSales: 0,
+                debitSales: 0,
+                cryptoSales: 0,
+                otherSales: 0,
                 cardSales: 0
             },
             cashCount: {
@@ -155,9 +202,15 @@
                 try {
                     const data = await API.get('/api/v1/pos/reports/daily-summary');
                     this.summary = {
+                        date: data.date || new Date().toISOString().slice(0, 10),
                         transactionCount: data.total_transactions || 0,
                         totalSales: parseFloat(data.total_sales || 0),
                         cashSales: parseFloat(data.cash_total || 0),
+                        twintSales: parseFloat(data.twint_total || 0),
+                        visaSales: parseFloat(data.visa_total || 0),
+                        debitSales: parseFloat(data.debit_total || 0),
+                        cryptoSales: parseFloat(data.crypto_total || 0),
+                        otherSales: parseFloat(data.other_total || 0),
                         cardSales: parseFloat(data.visa_total || 0) + parseFloat(data.debit_total || 0) + parseFloat(data.twint_total || 0)
                     };
                 } catch (error) {
@@ -228,6 +281,10 @@ Thank you for a great shift!
 
             goBack() {
                 window.location.href = '/pos/dashboard';
+            },
+
+            printSummary() {
+                window.print();
             },
 
             formatPrice(amount) {
