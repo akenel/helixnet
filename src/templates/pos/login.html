@@ -92,9 +92,12 @@
     // so the browser must hit the SAME origin it's on -- never the local-only host.
     function kcConfig() {
         const _h = window.location.hostname;
+        // Keycloak has ONE canonical front-door (KC_HOSTNAME_URL=https://lapiazza.app). The whole
+        // login leg must run on THAT host or the session cookie won't travel across hosts
+        // (400 / "Cookie not found"). We still come back to THIS host via redirectUri below.
         const keycloakUrl = (_h === 'helix.local' || _h === 'localhost' || _h === '127.0.0.1')
             ? 'https://keycloak.helix.local'
-            : window.location.origin;
+            : 'https://lapiazza.app';
         return {
             keycloakUrl,
             realm: 'kc-pos-realm-dev',

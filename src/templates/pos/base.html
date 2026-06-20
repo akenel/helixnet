@@ -208,9 +208,10 @@
                 // Logout from Keycloak to end SSO session.
                 // Same origin rule as login: local-only host for dev, current origin for public hosts.
                 const _h = window.location.hostname;
+                // Canonical KC host for the logout leg too (KC_HOSTNAME_URL), same as login.
                 const keycloakUrl = (_h === 'helix.local' || _h === 'localhost' || _h === '127.0.0.1')
                     ? 'https://keycloak.helix.local'
-                    : window.location.origin;
+                    : 'https://lapiazza.app';
                 const realm = 'kc-pos-realm-dev';
                 const redirectUri = encodeURIComponent(window.location.origin + '/pos');
 
