@@ -7,7 +7,7 @@ Sprint 4: Added HTML interface routes for Pam's POS system.
 """
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
@@ -1150,7 +1150,16 @@ async def checkout_transaction(
     transaction.receipt_number = f"REC-{transaction.transaction_number}"
 
     # TODO: Generate PDF receipt and store in MinIO
-    # TODO: Deduct stock from products
+
+    # Deduct stock for each line item so inventory is real (floor at 0 -- a mis-count never
+    # drives stock negative; Felix sees the zero and reconciles).
+    li_result = await db.execute(
+        select(LineItemModel).where(LineItemModel.transaction_id == transaction.id)
+    )
+    for li in li_result.scalars().all():
+        product = await db.get(ProductModel, li.product_id)
+        if product is not None:
+            product.stock_quantity = max(0, product.stock_quantity - li.quantity)
 
     await db.commit()
     await db.refresh(transaction)
@@ -1275,6 +1284,43 @@ async def get_daily_summary(
         twint_total=Decimal(str(twint_total)),
         crypto_total=Decimal(str(crypto_total)),
         other_total=Decimal(str(other_total)),
+    )
+
+
+@router.get("/reports/daily-summary.csv")
+async def get_daily_summary_csv(
+    report_date: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Daily sales as a Banana Accounting 'Income & Expenses' CSV -- one quoted line per payment
+    method that took money. Felix imports it straight into Banana instead of re-typing totals by
+    hand. Account + VatCode are intentionally left blank: Felix maps them to his chart of accounts
+    in Banana's import dialog (we pre-fill his real codes once he hands them over)."""
+    import csv as _csv
+    import io as _io
+
+    summary = await get_daily_summary(report_date=report_date, db=db, current_user=current_user)
+    by_method = [
+        ("Cash", summary.cash_total),
+        ("TWINT", summary.twint_total),
+        ("Visa", summary.visa_total),
+        ("Debit", summary.debit_total),
+        ("Crypto", summary.crypto_total),
+        ("Other", summary.other_total),
+    ]
+    buf = _io.StringIO()
+    writer = _csv.writer(buf, quoting=_csv.QUOTE_ALL)
+    writer.writerow(["Date", "Description", "Income", "Expenses", "Account", "VatCode"])
+    for label, amount in by_method:
+        if amount and amount > 0:
+            writer.writerow([summary.date, f"POS daily sales - {label}", f"{amount:.2f}", "", "", ""])
+
+    filename = f"banana-{summary.date}.csv"
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
