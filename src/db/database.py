@@ -133,15 +133,52 @@ _ADDITIVE_COLUMNS: list[str] = [
 ]
 
 
+# Idempotent DDL that must exist on EVERY env (the migration-not-gated lesson:
+# this was only ever set up on local, so POS fuzzy search 500'd on staging/prod).
+# CREATE EXTENSION / OR REPLACE FUNCTION are safe to re-run on a shared DB.
+_DDL_MIGRATIONS: list[str] = [
+    # pg_trgm powers similarity() for the POS product search.
+    "CREATE EXTENSION IF NOT EXISTS pg_trgm",
+    # Fuzzy + substring product search used by GET /api/v1/pos/search.
+    """
+    CREATE OR REPLACE FUNCTION public.search_products(
+        search_term text, category_filter text DEFAULT NULL::text, limit_rows integer DEFAULT 50)
+     RETURNS TABLE(id uuid, sku character varying, barcode character varying, name character varying,
+        category character varying, price numeric, stock_quantity integer, image_url character varying, relevance real)
+     LANGUAGE plpgsql
+    AS $function$
+    BEGIN
+        RETURN QUERY
+        SELECT p.id, p.sku, p.barcode, p.name, p.category, p.price, p.stock_quantity, p.image_url,
+            similarity(p.name, search_term) AS relevance
+        FROM products p
+        WHERE p.is_active = true
+            AND (
+                p.name ILIKE '%' || search_term || '%'
+                OR p.sku ILIKE '%' || search_term || '%'
+                OR p.barcode ILIKE '%' || search_term || '%'
+                OR similarity(p.name, search_term) > 0.1
+            )
+            AND (category_filter IS NULL OR p.category ILIKE '%' || category_filter || '%')
+        ORDER BY
+            CASE WHEN p.name ILIKE search_term || '%' THEN 0 ELSE 1 END,
+            similarity(p.name, search_term) DESC, p.name
+        LIMIT limit_rows;
+    END;
+    $function$
+    """,
+]
+
+
 async def _ensure_lightweight_columns() -> None:
     """Run the additive ALTERs above. Each is independent and forgiving -- one failure
     (e.g. table not created yet on a brand-new DB) must not block the others or boot."""
-    for stmt in _ADDITIVE_COLUMNS:
+    for stmt in _ADDITIVE_COLUMNS + _DDL_MIGRATIONS:
         try:
             async with async_engine.begin() as conn:
                 await conn.execute(text(stmt))
         except Exception as e:  # pragma: no cover - defensive, never block startup
-            logger.warning(f"additive migration skipped ({stmt[:60]}...): {e}")
+            logger.warning(f"additive migration skipped ({stmt[:60].strip()}...): {e}")
 
 # ================================================================
 # 🧹 CLEANUP
