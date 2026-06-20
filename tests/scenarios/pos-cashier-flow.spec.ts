@@ -86,6 +86,16 @@ test('search paginates: Show more loads the next page (big catalog)', async ({ p
   ).toBeGreaterThan(before);
 });
 
+test('product detail modal: tap a result opens specs + Add to Cart', async ({ page }) => {
+  await login(page);
+  await searchProducts(page, 'grinder');
+  // Tap the first result row to open the detail modal.
+  await page.locator('.max-h-96 [title="Tap for details"]').first().click();
+  await expect(page.getByText('Details', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('SKU', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Add to Cart/i })).toBeVisible();
+});
+
 test('full sale: ring -> checkout -> receipt, and the cashier STAYS logged in', async ({ page }) => {
   await login(page);
 

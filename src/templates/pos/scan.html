@@ -144,8 +144,9 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-3">Products</h3>
                     <div class="space-y-2">
                         <template x-for="product in searchResults" :key="product.id">
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
-                                <!-- Product photo (from the supplier feed); falls back to a tile when missing/broken -->
+                            <div @click="openDetail(product)" title="Tap for details"
+                                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <!-- Product photo (from the supplier feed); falls back to a tile. -->
                                 <div class="w-14 h-14 rounded-lg border bg-white mr-3 flex-none flex items-center justify-center overflow-hidden">
                                     <img x-show="product.image_url" :src="product.image_url" loading="lazy" alt=""
                                          class="w-full h-full object-cover" @error="product.image_url=''">
@@ -166,7 +167,7 @@
                                                   : (product.stock_quantity + ' in stock')"></span>
                                 </div>
                                 <button
-                                    @click="addToCart(product)"
+                                    @click.stop="addToCart(product)"
                                     :disabled="product.stock_quantity <= 0"
                                     :class="product.stock_quantity <= 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
                                     class="text-white px-4 py-2 rounded-lg font-semibold">
@@ -316,6 +317,57 @@
             </div>
         </div>
     </div>
+
+    <!-- Product detail / preview modal -->
+    <div x-show="detailProduct" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="detailProduct=null" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start p-5 border-b">
+                <h2 class="text-xl font-bold text-gray-900 pr-4" x-text="detailProduct?.name"></h2>
+                <button @click="detailProduct=null" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-5 p-5">
+                <!-- Left: big image + price + add -->
+                <div>
+                    <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden">
+                        <img x-show="detailProduct?.image_url" :src="detailProduct?.image_url" class="w-full h-full object-contain" @error="detailProduct.image_url=''" alt="">
+                        <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
+                    </div>
+                    <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
+                    <span class="inline-block mt-2 text-sm font-semibold px-3 py-1 rounded-full"
+                          :class="(detailProduct?.stock_quantity||0) <= 0 ? 'bg-red-100 text-red-700'
+                                  : ((detailProduct?.stock_quantity||0) <= 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-700')"
+                          x-text="(detailProduct?.stock_quantity||0) <= 0 ? 'Out of stock' : (detailProduct?.stock_quantity + ' in stock')"></span>
+                    <button @click="addToCart(detailProduct); detailProduct=null"
+                            :disabled="(detailProduct?.stock_quantity||0) <= 0"
+                            :class="(detailProduct?.stock_quantity||0) <= 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
+                            class="text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ Add to Cart</button>
+                </div>
+                <!-- Right: specs -->
+                <div class="text-sm">
+                    <h3 class="font-semibold text-gray-900 mb-2">Details</h3>
+                    <dl class="divide-y border-y">
+                        <div class="flex justify-between py-2"><dt class="text-gray-500">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500">Barcode</dt><dd class="font-medium text-right" x-text="detailProduct?.barcode"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-500">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-500">On hand</dt><dd class="font-medium text-right" x-text="detailProduct?.stock_quantity"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
+                    </dl>
+                    <template x-if="detailProduct?.description">
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-gray-900 mb-1">Description</h3>
+                            <p class="text-gray-700" x-text="detailProduct?.description"></p>
+                        </div>
+                    </template>
+                    <template x-if="detailProduct?.tags">
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-gray-900 mb-1">Tags</h3>
+                            <p class="text-gray-600" x-text="detailProduct?.tags"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -337,6 +389,7 @@
             searchPageSize: 20,
             searchLoading: false,
             categories: [],
+            detailProduct: null,
 
             // Catalog mode
             catalogCategory: '',
@@ -450,6 +503,16 @@
                 } finally {
                     this.searchLoading = false;
                 }
+            },
+
+            async openDetail(p) {
+                // Show immediately with the search-row data, then enrich with the full
+                // product (description, supplier, tags) from the catalog.
+                this.detailProduct = { ...p };
+                try {
+                    const full = await API.get(`/api/v1/pos/products/${p.id}`);
+                    this.detailProduct = { ...this.detailProduct, ...full };
+                } catch (e) { /* keep the basic view */ }
             },
 
             async loadCategories() {
