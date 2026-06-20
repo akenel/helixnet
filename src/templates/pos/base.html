@@ -205,8 +205,12 @@
                 // Also clear cart
                 sessionStorage.removeItem('pos_cart');
 
-                // Logout from Keycloak to end SSO session
-                const keycloakUrl = 'https://keycloak.helix.local';
+                // Logout from Keycloak to end SSO session.
+                // Same origin rule as login: local-only host for dev, current origin for public hosts.
+                const _h = window.location.hostname;
+                const keycloakUrl = (_h === 'helix.local' || _h === 'localhost' || _h === '127.0.0.1')
+                    ? 'https://keycloak.helix.local'
+                    : window.location.origin;
                 const realm = 'kc-pos-realm-dev';
                 const redirectUri = encodeURIComponent(window.location.origin + '/pos');
 

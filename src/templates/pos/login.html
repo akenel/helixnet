@@ -70,8 +70,14 @@
     });
 
     function loginWithKeycloak() {
-        // Keycloak authorization endpoint
-        const keycloakUrl = 'https://keycloak.helix.local';
+        // Keycloak authorization endpoint.
+        // Local dev resolves keycloak.helix.local via Traefik; every public host
+        // (staging-bottega, bottega, banco) routes /realms/* to Keycloak through Caddy,
+        // so the browser must hit the SAME origin it's on -- never the local-only host.
+        const _h = window.location.hostname;
+        const keycloakUrl = (_h === 'helix.local' || _h === 'localhost' || _h === '127.0.0.1')
+            ? 'https://keycloak.helix.local'
+            : window.location.origin;
         const realm = 'kc-pos-realm-dev';
         const clientId = 'helix_pos_web';
         // Use server-side callback to avoid CORS issues
