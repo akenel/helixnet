@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco POS — Staging Test Run 003 (search · change-treat · reports · exit)</title>
+<style>
+  :root{ --red:#0f766e; --dark:#0b4f49; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  ol.steps input[type=checkbox]{ width:20px; height:20px; margin-top:2px; accent-color:var(--red); flex:none; cursor:pointer; }
+  .step-body{ flex:1; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#dff5f1; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .verdict{ display:flex; gap:6px; margin-top:7px; }
+  .vb{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:3px 11px; font-size:12px; font-weight:700; cursor:pointer; color:var(--mut); }
+  .vb:hover{ background:#f5f5f5; }
+  .vb.pass.on{ background:#dcfce7; border-color:#059669; color:#166534; }
+  .vb.fail.on{ background:#fee2e2; border-color:#dc2626; color:#991b1b; }
+  .vb.issue.on{ background:#fff4d6; border-color:#d97706; color:#92600a; }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#f0faf8; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#dff5f1; color:var(--dark); }
+  .tag.stg{ background:#fff4d6; color:#92600a; }
+  .tag.fix{ background:#dcfce7; color:#166534; }
+  .tag.new{ background:#e0e7ff; color:#3730a3; }
+  .note-box{ background:#f0faf8; border:1px solid #bfe6df; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#0b4f49; margin:6px 0 12px; }
+  .note-box code{ background:#fff; padding:1px 5px; border-radius:4px; border:1px solid #bfe6df; font-size:12px; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🛒 Banco POS — Staging Test Run 003<small>The de-clunk + search + change-treat round: real search · "Add Small Item" treat · end-of-sale exit · real Sales Reports + CSV button · Z-report preview · inclusive VAT (regression)</small><small style="color:#0f766e;font-weight:700;letter-spacing:.05em">🐺 Banco · № TEST-BANCO-003 · rev.1<span id="envtag" style="margin-left:6px;color:#fff;background:#92600a;padding:1px 7px;border-radius:6px;font-size:11px"></span></small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report (with screenshots)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>What this is:</strong> the <strong>human-green gate</strong> for the workflow fixes shipped after run 002. The machine
+    already proved the plumbing (19 API + 6 browser E2E green on staging) — this run is the <strong>feel</strong>: does search find
+    the right thing, does the "give a treat" change item ring without a dead-end (the prod 422 you hit), can you close a sale and get
+    on with the next one, and does the Sales Reports page actually do something. Run on <strong>staging</strong>:
+    <code>staging-banco.lapiazza.app/pos</code>.
+    <br><br>
+    <strong>How to use:</strong> hit ▶ Start, work top to bottom. Tick each check; set <strong>PASS / FAIL / ISSUE</strong>; jot anything
+    odd (type or 🎤 speak — Chrome); drop a 📋 screenshot where it helps; hit <strong>Export report</strong> at the end and send it to Tigs.
+    Ticks, notes &amp; shots auto-save in this browser.
+    <span class="tag stg">staging UAT — tick as you go, flag anything odd 🐺</span>
+    <br><br>
+    <strong>Best on Chrome</strong> (the 🎤 mic needs it). Fresh <strong>Incognito</strong> window avoids stale sessions.
+  </div>
+
+  <!-- 0. SETUP + LOGIN -->
+  <section>
+    <h2>0 · Open the till &amp; log in <span class="tag">setup</span></h2>
+    <p class="why">Start as Felix's cashier would — fresh window, the Banco front door, real login. (The "logged out after a sale" bug is fixed + machine-verified; just confirm a clean start here.)</p>
+    <a class="open" href="https://staging-banco.lapiazza.app/pos" target="_blank">Open Banco POS ↗</a>
+    <span class="url">staging-banco.lapiazza.app/pos · Incognito</span>
+    <div class="note-box">
+      <strong>Users:</strong> <code>felix / helix_pass</code> (owner/admin) or <code>pam / helix_pass</code> (cashier). Realm: <code>kc-pos-realm-dev</code>.
+      Login briefly shows under <code>lapiazza.app</code> — normal, it bounces back to banco.
+    </div>
+    <ol class="steps" data-sec="login">
+      <li><input type="checkbox"><div class="step-body">Fresh Incognito → open Banco POS → click <strong>Login</strong> → <code>felix / helix_pass</code>. <span class="exp">lands on the dashboard, "Welcome, felix" — no error, no "already logged in"</span></div></li>
+    </ol>
+  </section>
+
+  <!-- 1. SEARCH (NEW) -->
+  <section>
+    <h2>1 · Search actually finds things <span class="tag new">new this round</span></h2>
+    <p class="why">Last round search was dead — it returned the same items whatever you typed. Now it's real, fuzzy search across the whole catalog (and it turns out the catalog is much bigger than the 17 you saw).</p>
+    <ol class="steps" data-sec="search">
+      <li><input type="checkbox"><div class="step-body">New Sale → <strong>🔍 Search</strong> tab → type a product name (e.g. <code>grinder</code> or <code>cbd</code>). <span class="exp">results filter to what you typed — and there are clearly more than 17 products now</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Try a <strong>typo</strong> on purpose (e.g. <code>grindr</code>, <code>vapr</code>). <span class="exp">fuzzy search still finds the right items</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Each result row shows its <strong>on-hand stock badge</strong> (green / amber low / red out-of-stock). <span class="exp">"N in stock"; out-of-stock items can't be added</span></div></li>
+      <li><input type="checkbox"><div class="step-body">(If you have a barcode handy) <strong>📊 Barcode</strong> tab → enter it. <span class="exp">the exact product is added, not a random one</span></div></li>
+    </ol>
+    <label class="cm">notes — does search feel fast &amp; right? anything you'd expect it to find but it doesn't?</label><textarea data-cm="search" placeholder="Type a few names. Does it surface the right product first? Pagination needed? Screenshot a search →"></textarea>
+  </section>
+
+  <!-- 2. RING A SALE -->
+  <section>
+    <h2>2 · Ring a normal sale</h2>
+    <p class="why">Add a real product and head to checkout. We'll add the treat next.</p>
+    <ol class="steps" data-sec="sale">
+      <li><input type="checkbox"><div class="step-body">Add a product (qty 1). <span class="exp">it joins the cart at its shelf price; cart total = shelf price (VAT included, not added on top)</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Cart shows <strong>TOTAL</strong> with an <strong>incl. VAT (8.1%)</strong> line underneath. <span class="exp">e.g. CHF 49.90 total, incl. VAT ≈ 3.74 — NOT 49.90 + VAT</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="sale" placeholder="Cart total = the shelf price? VAT shown as included, not on top?"></textarea>
+  </section>
+
+  <!-- 3. CHANGE TREAT (the 422 fix) -->
+  <section>
+    <h2>3 · "Add Small Item" change treat <span class="tag fix">the prod 422 — now fixed</span></h2>
+    <p class="why">This is the exact sale that errored on you in prod. Pay <strong>cash</strong> with a round note so there's change, then turn the change into a treat — it has no barcode, so it used to 422. It should ring clean now and show on the receipt by name.</p>
+    <ol class="steps" data-sec="treat">
+      <li><input type="checkbox"><div class="step-body">Checkout → <strong>💵 Cash</strong> → tap a round amount (e.g. <strong>100</strong>) so there's change. <span class="exp">Change shows; "🎯 Quick Round Options" / "🍭 Add Small Item" appears</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Click <strong>🍭 Add Small Item</strong> → pick a treat (Lollipop, Sticker…). <span class="exp">it's added to the cart as a line (no error)</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>Confirm &amp; Complete</strong>. <span class="exp">sale completes — NO 422 / "[object Object]" error — receipt opens</span></div></li>
+      <li><input type="checkbox"><div class="step-body">On the receipt, the treat shows <strong>by its real name</strong> (e.g. "Lollipop (Change)") with its price. <span class="exp">not "Product", and the total includes it</span></div></li>
+    </ol>
+    <label class="cm">notes — 📋 screenshot the receipt with the treat line</label><textarea data-cm="treat" placeholder="Did it complete without the 422? Treat named correctly on the receipt? Total right? Screenshot →"></textarea>
+  </section>
+
+  <!-- 4. VAT + EXIT -->
+  <section>
+    <h2>4 · ⭐ Receipt VAT + close-the-deal exit <span class="tag fix">retest + new</span></h2>
+    <p class="why">Receipt VAT is the headline regression. New this round: you're no longer stuck on the receipt — there's a clean way to start the next sale or go home.</p>
+    <ol class="steps" data-sec="vat">
+      <li><input type="checkbox"><div class="step-body">Receipt <strong>TOTAL = the gross you charged</strong>, with an <strong>incl. VAT (8.1%)</strong> line below + the real product name(s). <span class="exp">e.g. total 49.90, incl. VAT ≈ 3.74 — not the net</span></div></li>
+      <li><input type="checkbox"><div class="step-body">The receipt has clear buttons: <strong>🛒 New Sale</strong> and <strong>🏠 Dashboard</strong>. <span class="exp">no back-button dead-end — you can close the deal</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Click <strong>🛒 New Sale</strong>. <span class="exp">lands straight in a fresh sale (catalog/search), still logged in</span></div></li>
+      <li><input type="checkbox"><div class="step-body">(Optional) <strong>🖨️ Print</strong> the receipt → in the save dialog the filename is <strong>datetime-stamped</strong>. <span class="exp">e.g. Banco-Receipt-TXN-…-2026-06-20-1705 — not the same name every time</span></div></li>
+    </ol>
+    <label class="cm">notes — does the end of a sale feel finished?</label><textarea data-cm="vat" placeholder="VAT right? Is the exit obvious? Did New Sale drop you somewhere sensible? Print filename sensible?"></textarea>
+  </section>
+
+  <!-- 5. STOCK -->
+  <section>
+    <h2>5 · Stock went down</h2>
+    <p class="why">The real product you sold should drop on-hand; the treat (no stock) should not error.</p>
+    <ol class="steps" data-sec="stock">
+      <li><input type="checkbox"><div class="step-body">Search the product you sold again. <span class="exp">its stock is lower by the quantity you sold</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="stock" placeholder="Stock before vs after for the real item?"></textarea>
+  </section>
+
+  <!-- 6. SALES REPORTS (NEW) -->
+  <section>
+    <h2>6 · Sales Reports page <span class="tag new">was a dead tile</span></h2>
+    <p class="why">The dashboard "Sales Reports" tile did nothing before (it just reloaded the dashboard). Now it's a real page — and it's where the Banana CSV button lives, so you never paste a raw URL again.</p>
+    <a class="open" href="https://staging-banco.lapiazza.app/pos/reports" target="_blank">Open Sales Reports ↗</a>
+    <span class="url">/pos/reports</span>
+    <ol class="steps" data-sec="reports">
+      <li><input type="checkbox"><div class="step-body">Dashboard → <strong>📊 Sales Reports</strong> tile. <span class="exp">opens a real report — NOT just the dashboard again</span></div></li>
+      <li><input type="checkbox"><div class="step-body">It shows <strong>Total Sales · Transactions · incl. VAT</strong>, a <strong>payment-method breakdown</strong>, top seller, by-cashier. <span class="exp">numbers match the day; methods add up to the total</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Click <strong>📥 Download Banana CSV</strong>. <span class="exp">a CSV file downloads (no "Not authenticated" error) — headers Date, Description, Income, Expenses, Account, VatCode</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Open the CSV. <span class="exp">one line per payment method that took money, gross amounts matching the report</span></div></li>
+    </ol>
+    <label class="cm">notes — 📋 screenshot the reports page + the CSV</label><textarea data-cm="reports" placeholder="Does the tile open a real report? Numbers right? CSV downloads cleanly & matches? (Account/VatCode blank is intended — Felix maps those in Banana.)"></textarea>
+  </section>
+
+  <!-- 7. Z-REPORT PREVIEW -->
+  <section>
+    <h2>7 · Z-report on-screen preview <span class="tag fix">you can read it now</span></h2>
+    <p class="why">Last round you could only see the Z-report by printing to PDF. Now Close Shift shows it on screen, with Print + CSV right there.</p>
+    <a class="open" href="https://staging-banco.lapiazza.app/pos/closeout" target="_blank">Open Close Shift ↗</a>
+    <span class="url">/pos/closeout</span>
+    <ol class="steps" data-sec="zreport">
+      <li><input type="checkbox"><div class="step-body"><strong>Close Shift</strong> → the <strong>Daily Z-Report</strong> is visible <em>on screen</em> (methods, TOTAL, incl. VAT, count). <span class="exp">you can read it without printing first</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>🖨️ Print Z-Report</strong> → one clean page, datetime-stamped filename. <span class="exp">no app chrome, no blank 2nd page</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><strong>📥 Download Banana CSV</strong> from here too works. <span class="exp">same file as the Reports page</span></div></li>
+    </ol>
+    <label class="cm">notes — 📋 screenshot the on-screen Z-report</label><textarea data-cm="zreport" placeholder="Readable on screen? VAT line there? Print clean? Filename sensible?"></textarea>
+  </section>
+
+  <!-- 8. FEEL / POLISH -->
+  <section>
+    <h2>8 · Feel &amp; polish</h2>
+    <p class="why">Anything Felix would notice. Small things that make it feel like a real till.</p>
+    <ol class="steps" data-sec="polish">
+      <li><input type="checkbox"><div class="step-body">Navigation feels natural everywhere — catalog ⇄ sale ⇄ receipt ⇄ reports ⇄ dashboard, no dead-ends. <span class="exp">you always have a clear way forward/back</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Nothing visually broken (labels, CHF formatting, spacing, colours). <span class="exp">clean and trustworthy</span></div></li>
+    </ol>
+    <label class="cm">the polish list — small things to make it really good (be specific: where + what)</label><textarea data-cm="polish" placeholder="Works ≠ done. What would you change before showing Felix?" style="min-height:70px"></textarea>
+  </section>
+
+  <!-- OVERALL -->
+  <section>
+    <h2>★ Overall verdict — is the de-clunk round good?</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><input type="checkbox"><div class="step-body"><strong>Staging is clean — the workflow fixes are good</strong> (search, change-treat, exit, reports, Z-report). <span class="exp">tick if it feels ready / already shipped to prod and you're happy</span></div></li>
+    </ol>
+    <label class="cm">the big notes — what's gold, what still needs work, what can wait</label>
+    <textarea data-cm="verdict" placeholder="Your call, Banco. Does it feel like a real till now? What's the next thing to fix?" style="min-height:90px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #0f766e;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#0f766e">🐺 Banco</strong> · POS Staging Test Run · on the HelixNet engine</span>
+      <span style="font-variant-numeric:tabular-nums">№ TEST-BANCO-003 · rev.1 · 2026-06-20</span>
+    </div>
+    <div style="margin-top:6px">One sheet — the human-green gate for the de-clunk round. Screen, print, or export. 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='banco_pos_testrun_v3';
+  const STEPS=[];
+  const ENV = location.hostname || 'local-file';
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]');
+      const label = (li.querySelector('.step-body')?.textContent||'').trim().replace(/\s+/g,' ');
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const vg=document.createElement('div'); vg.className='verdict';
+      ['pass','fail','issue'].forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.className='vb '+v;
+        b.textContent={pass:'✓ PASS',fail:'✗ FAIL',issue:'⚠ ISSUE'}[v];
+        b.addEventListener('click',()=>{ STEPS[i].verdict=(STEPS[i].verdict===v?'':v); paintVerdict(i); save(); progress(); });
+        vg.appendChild(b); });
+      wrap.appendChild(vg);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      li.querySelector('.step-body').appendChild(wrap);
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[], verdict:'', vg };
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+  function paintVerdict(i){ const s=STEPS[i]; if(!s||!s.vg) return; [...s.vg.children].forEach(b=>{ b.classList.toggle('on', b.classList.contains(s.verdict)); }); }
+
+  let _saveT=null;
+  function save(){ clearTimeout(_saveT); _saveT=setTimeout(saveNow, 600); }
+  function saveNow(){ clearTimeout(_saveT); const d={cb:[],note:[],shots:[],verdict:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; d.verdict[i]=s.verdict||''; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export your report to save screenshots, then clear.'); } }
+  window.addEventListener('beforeunload', saveNow);
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); }
+      if(d.verdict&&d.verdict[i]){ s.verdict=d.verdict[i]; paintVerdict(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length;
+    const f=STEPS.filter(s=>s.verdict==='fail').length, is=STEPS.filter(s=>s.verdict==='issue').length;
+    let t=done+'/'+STEPS.length; if(f) t+=' · '+f+'✗'; if(is) t+=' · '+is+'⚠'; document.getElementById('prog').textContent=t; }
+  document.addEventListener('change',e=>{ save(); progress(); });
+  let flashT=null; function flash(msg){ const el=document.getElementById('prog'); if(flashT) clearTimeout(flashT); const old=el.textContent; el.textContent='⚠'; alert(msg); el.textContent=old; }
+
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+  function addSectionMics(){
+    document.querySelectorAll('textarea[data-cm]').forEach(ta=>{
+      if(ta.dataset.miced) return; ta.dataset.miced='1';
+      const mic=document.createElement('button'); mic.type='button'; mic.className='mic-btn';
+      mic.textContent='🎤 speak'; mic.title='Dictate this note'; mic.style.marginTop='6px';
+      mic.addEventListener('click',()=>micToggle(mic,ta));
+      ta.insertAdjacentElement('afterend', mic);
+    });
+  }
+
+  function copyReport(){ const _P=STEPS.filter(s=>s.verdict==='pass').length,_F=STEPS.filter(s=>s.verdict==='fail').length,_I=STEPS.filter(s=>s.verdict==='issue').length;
+    let out='BANCO POS — STAGING TEST RUN 003 REPORT\n'+document.getElementById('prog').textContent+' checks · '+_P+' PASS / '+_F+' FAIL / '+_I+' ISSUE · env: '+ENV+' · '+document.getElementById('clock').textContent+' elapsed\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) attached (see exported report)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied. (Use Export for the version with screenshots.)')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>Banco POS — Test Run 003 report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #0f766e;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    const _fails=STEPS.filter(s=>s.verdict==='fail'), _issues=STEPS.filter(s=>s.verdict==='issue'), _pass=STEPS.filter(s=>s.verdict==='pass').length;
+    h+='<h1>🛒 Banco POS — Staging Test Run 003 report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · env: '+ENV+' · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    h+='<div style="background:#f7f7f8;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin:10px 0"><b>'+_pass+' PASS · '+_fails.length+' FAIL · '+_issues.length+' ISSUE</b>';
+    if(_fails.length||_issues.length){ h+='<ul style="margin:6px 0 0;padding-left:18px">'; _fails.forEach(s=>{h+='<li style="color:#991b1b">✗ '+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); _issues.forEach(s=>{h+='<li style="color:#92600a">⚠ '+esc(s.label||'')+(s.ta&&s.ta.value.trim()?' — '+esc(s.ta.value.trim()):'')+'</li>';}); h+='</ul>'; } else { h+=' — all clear ✓'; } h+='</div>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        const vcol={pass:'#166534',fail:'#991b1b',issue:'#92600a'}[s.verdict];
+        const vlab=s.verdict?(' <b style="color:'+vcol+'">['+s.verdict.toUpperCase()+']</b> '):' ';
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span>'+vlab+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='banco-pos-test-run-003-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    let tx='BANCO POS — TEST RUN 003 REPORT (text)\n'+_pass+' PASS / '+_fails.length+' FAIL / '+_issues.length+' ISSUE · env: '+ENV+' · '+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n';
+    if(_fails.length||_issues.length){ tx+='\nFLAGS:\n'; _fails.forEach(s=>tx+='  X FAIL  '+(s.label||'')+(s.ta&&s.ta.value.trim()?' -- '+s.ta.value.trim():'')+'\n'); _issues.forEach(s=>tx+='  ! ISSUE '+(s.label||'')+(s.ta&&s.ta.value.trim()?' -- '+s.ta.value.trim():'')+'\n'); }
+    tx+='\n';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; tx+='## '+ttl.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{}; tx+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.verdict?('['+s.verdict.toUpperCase()+'] '):'')+(s.label||'')+'\n'; if(s.ta&&s.ta.value.trim()) tx+='     note: '+s.ta.value.trim()+'\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) tx+='   section notes: '+t.value.trim()+'\n'; tx+='\n'; });
+    const tb=new Blob([tx],{type:'text/plain'}); const a2=document.createElement('a'); a2.href=URL.createObjectURL(tb); a2.download='banco-pos-test-run-003-report.txt';
+    setTimeout(()=>{ a2.click(); setTimeout(()=>URL.revokeObjectURL(a2.href),2000); }, 500); }
+
+  buildSteps(); addSectionMics(); restore(); progress(); paintClock();
+  (function(){ const e=document.getElementById('envtag'); if(e) e.textContent='env: '+ENV; })();
+</script>
+</body>
+</html>
