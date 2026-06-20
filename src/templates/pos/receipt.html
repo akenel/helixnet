@@ -141,13 +141,13 @@
                     <span>Discount:</span>
                     <span x-text="'-' + formatPrice(transaction.discount_amount)"></span>
                 </div>
-                <div class="flex justify-between text-lg">
-                    <span>VAT (<span x-text="storeSettings.vat_rate || '8.1'"></span>%):</span>
-                    <span x-text="formatPrice(transaction.tax_amount)"></span>
-                </div>
                 <div class="flex justify-between text-2xl font-bold border-t-2 border-gray-800 pt-2 mt-2">
                     <span>TOTAL:</span>
                     <span x-text="formatPrice(transaction.total)"></span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span>incl. VAT (<span x-text="storeSettings.vat_rate || '8.1'"></span>%):</span>
+                    <span x-text="formatPrice(transaction.tax_amount)"></span>
                 </div>
             </div>
 

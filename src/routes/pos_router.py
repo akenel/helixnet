@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from datetime import datetime, timezone, date
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 from typing import Optional
 from pathlib import Path
@@ -961,6 +961,16 @@ async def get_transaction(
     )
     line_items = line_items_result.scalars().all()
 
+    # Resolve product names so the receipt shows "CBD Oil 20%", not a generic "Product"
+    # (one batched lookup, no N+1).
+    product_names: dict = {}
+    product_ids = {item.product_id for item in line_items}
+    if product_ids:
+        prod_rows = await db.execute(
+            select(ProductModel).where(ProductModel.id.in_(product_ids))
+        )
+        product_names = {p.id: p.name for p in prod_rows.scalars().all()}
+
     # Manually construct response to avoid async issues
     return {
         "id": str(transaction.id),
@@ -986,6 +996,7 @@ async def get_transaction(
                 "id": str(item.id),
                 "transaction_id": str(item.transaction_id),
                 "product_id": str(item.product_id),
+                "product_name": product_names.get(item.product_id),
                 "quantity": item.quantity,
                 "unit_price": str(item.unit_price),
                 "discount_percent": str(item.discount_percent),
@@ -997,6 +1008,14 @@ async def get_transaction(
             for item in line_items
         ]
     }
+
+
+def _inclusive_vat(gross: Decimal) -> Decimal:
+    """The VAT *contained within* a gross (VAT-inclusive) amount. Swiss retail prices include
+    VAT, so for a gross G at rate r%, the contained VAT = G * r / (100 + r), rounded to cents.
+    e.g. CHF 89.90 at 8.1% -> 6.74 VAT, leaving 83.16 net."""
+    rate = Decimal(str(get_settings().POS_VAT_RATE))
+    return (gross * rate / (Decimal("100") + rate)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 @router.post("/transactions/{transaction_id}/items", response_model=LineItemRead)
@@ -1052,9 +1071,11 @@ async def add_item_to_transaction(
 
     db.add(new_line_item)
 
-    # Update transaction totals
+    # Update transaction totals (inclusive VAT: subtotal & total are the GROSS the customer pays;
+    # tax_amount is the VAT contained within that gross).
     transaction.subtotal += line_total
-    transaction.total = transaction.subtotal - transaction.discount_amount + transaction.tax_amount
+    transaction.total = transaction.subtotal - transaction.discount_amount
+    transaction.tax_amount = _inclusive_vat(transaction.total)
     transaction.updated_at = datetime.now(timezone.utc)
 
     await db.commit()
@@ -1145,6 +1166,10 @@ async def checkout_transaction(
     transaction.status = TransactionStatus.COMPLETED
     transaction.completed_at = datetime.now(timezone.utc)
     transaction.updated_at = datetime.now(timezone.utc)
+
+    # Keep VAT consistent with the final gross total (inclusive VAT) so the receipt and the
+    # daily Z-report always show the right contained VAT.
+    transaction.tax_amount = _inclusive_vat(transaction.total)
 
     # Generate receipt number
     transaction.receipt_number = f"REC-{transaction.transaction_number}"
@@ -1267,6 +1292,7 @@ async def get_daily_summary(
 
     # Calculate totals
     total_sales = sum(t.total for t in transactions)
+    vat_total = sum(t.tax_amount for t in transactions)
     cash_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.CASH)
     visa_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.VISA)
     debit_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.DEBIT)
@@ -1278,6 +1304,7 @@ async def get_daily_summary(
         date=target_date.isoformat(),
         total_transactions=len(transactions),
         total_sales=Decimal(str(total_sales)),
+        vat_total=Decimal(str(vat_total)),
         cash_total=Decimal(str(cash_total)),
         visa_total=Decimal(str(visa_total)),
         debit_total=Decimal(str(debit_total)),

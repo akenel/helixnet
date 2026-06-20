@@ -145,6 +145,7 @@
                 <tr x-show="summary.cryptoSales > 0"><td style="padding:5px 0;">Crypto</td><td style="text-align:right;" x-text="formatPrice(summary.cryptoSales)"></td></tr>
                 <tr x-show="summary.otherSales > 0"><td style="padding:5px 0;">Other</td><td style="text-align:right;" x-text="formatPrice(summary.otherSales)"></td></tr>
                 <tr style="border-top:2px solid #000;font-weight:bold;"><td style="padding-top:7px;">TOTAL</td><td style="text-align:right;padding-top:7px;" x-text="formatPrice(summary.totalSales)"></td></tr>
+                <tr><td style="padding:2px 0;color:#444;">incl. VAT (8.1%)</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatTotal)"></td></tr>
                 <tr><td style="padding-top:7px;color:#444;">Transactions</td><td style="text-align:right;padding-top:7px;color:#444;" x-text="summary.transactionCount"></td></tr>
             </tbody>
         </table>
@@ -173,6 +174,7 @@
                 date: '',
                 transactionCount: 0,
                 totalSales: 0,
+                vatTotal: 0,
                 cashSales: 0,
                 twintSales: 0,
                 visaSales: 0,
@@ -205,6 +207,7 @@
                         date: data.date || new Date().toISOString().slice(0, 10),
                         transactionCount: data.total_transactions || 0,
                         totalSales: parseFloat(data.total_sales || 0),
+                        vatTotal: parseFloat(data.vat_total || 0),
                         cashSales: parseFloat(data.cash_total || 0),
                         twintSales: parseFloat(data.twint_total || 0),
                         visaSales: parseFloat(data.visa_total || 0),

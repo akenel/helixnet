@@ -189,6 +189,7 @@ class DailySummary(BaseModel):
     date: str
     total_transactions: int
     total_sales: Decimal
+    vat_total: Decimal = Decimal("0.00")  # VAT contained in the day's gross sales (inclusive)
     cash_total: Decimal
     visa_total: Decimal
     debit_total: Decimal
