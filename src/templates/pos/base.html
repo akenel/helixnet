@@ -331,9 +331,11 @@
             }).format(amount);
         }
 
-        // Calculate VAT (Swiss rate from config)
-        function calculateVAT(subtotal) {
-            return subtotal * POSConfig.vat_decimal;
+        // Contained (inclusive) VAT within a Swiss VAT-inclusive gross price.
+        // Shelf prices ALREADY include VAT, so VAT is extracted, never added on top:
+        // vat = gross * rate / (100 + rate). Mirrors the server's _inclusive_vat().
+        function calculateVAT(gross) {
+            return gross * POSConfig.vat_rate / (100 + POSConfig.vat_rate);
         }
 
         // Get current VAT rate for display
@@ -341,11 +343,12 @@
             return POSConfig.vat_rate;
         }
 
-        // Calculate total with discount and VAT
+        // Calculate total with discount (inclusive VAT model).
+        // The gross (shelf price less discount) IS the total -- VAT lives inside it.
         function calculateTotal(subtotal, discountPercent = 0) {
             const discountAmount = subtotal * (discountPercent / 100);
-            const afterDiscount = subtotal - discountAmount;
-            const vat = calculateVAT(afterDiscount);
+            const afterDiscount = subtotal - discountAmount;  // gross the customer pays
+            const vat = calculateVAT(afterDiscount);          // VAT contained within
             return {
                 subtotal,
                 discountPercent,
@@ -353,7 +356,7 @@
                 afterDiscount,
                 vat,
                 vatRate: POSConfig.vat_rate,
-                total: afterDiscount + vat
+                total: afterDiscount            // gross = total (VAT already included)
             };
         }
 

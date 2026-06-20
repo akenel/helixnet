@@ -235,7 +235,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Agreed Final Total (CHF)
                                 <span class="text-gray-500 font-normal">
-                                    (Full: <span x-text="formatPrice(totals.subtotal * (1 + POSConfig.vat_decimal))"></span>)
+                                    (Full: <span x-text="formatPrice(totals.subtotal)"></span>)
                                 </span>
                             </label>
                             <input
@@ -245,7 +245,7 @@
                                 x-model="targetTotal"
                                 @input="calculateDiscountFromTarget()"
                                 class="input-field text-xl font-bold"
-                                :placeholder="'Max ' + formatPrice(totals.subtotal * (1 + POSConfig.vat_decimal))">
+                                :placeholder="'Max ' + formatPrice(totals.subtotal)">
                             <p x-show="targetTotal && discount > 0" class="text-sm text-green-600 mt-1">
                                 = <span x-text="discount.toFixed(2)"></span>% discount applied
                             </p>
@@ -262,13 +262,13 @@
                                 <span>Discount (<span x-text="discount"></span>%):</span>
                                 <span class="font-semibold" x-text="'-' + formatPrice(totals.discountAmount)"></span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span>VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
-                                <span class="font-semibold" x-text="formatPrice(totals.vat)"></span>
-                            </div>
                             <div class="border-t pt-2 flex justify-between">
                                 <span class="text-lg font-bold">TOTAL:</span>
                                 <span class="text-2xl font-extrabold text-indigo-600" x-text="formatPrice(totals.total)"></span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>incl. VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
+                                <span x-text="formatPrice(totals.vat)"></span>
                             </div>
                         </div>
 
@@ -481,25 +481,22 @@
                     return;
                 }
 
-                // VAT rate from config (e.g., 0.081 for 8.1%)
-                const VAT_RATE = POSConfig.vat_decimal;
-
-                // Full price with VAT (no discount)
-                const fullPriceWithVAT = subtotal * (1 + VAT_RATE);
+                // Inclusive VAT: shelf prices already contain VAT, so the gross subtotal
+                // IS the full price. The agreed target is itself a gross (VAT-in) amount.
+                const fullPrice = subtotal;
 
                 // If target is higher than full price, no discount needed
-                if (target >= fullPriceWithVAT) {
+                if (target >= fullPrice) {
                     this.discount = 0;
-                    this.discountError = target > fullPriceWithVAT
-                        ? `Target exceeds full price (${formatPrice(fullPriceWithVAT)})`
+                    this.discountError = target > fullPrice
+                        ? `Target exceeds full price (${formatPrice(fullPrice)})`
                         : '';
                     return;
                 }
 
-                // Calculate the required discount percentage
-                // Formula: target = subtotal * (1 - discount/100) * (1 + VAT)
-                // Solving for discount: discount = (1 - target / (subtotal * (1 + VAT))) * 100
-                const requiredDiscount = (1 - target / fullPriceWithVAT) * 100;
+                // Required discount to reach the agreed gross total.
+                // target = subtotal * (1 - discount/100)  ->  discount = (1 - target/subtotal) * 100
+                const requiredDiscount = (1 - target / fullPrice) * 100;
 
                 // Round to 2 decimal places
                 const roundedDiscount = Math.round(requiredDiscount * 100) / 100;

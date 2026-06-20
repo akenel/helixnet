@@ -44,13 +44,13 @@
                     <span>Discount (<span x-text="discount"></span>%):</span>
                     <span x-text="'-' + formatPrice(discountAmount)"></span>
                 </div>
-                <div class="flex justify-between">
-                    <span>VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
-                    <span x-text="formatPrice(cartData.totals.vat)"></span>
-                </div>
                 <div class="border-t pt-3 flex justify-between text-xl font-bold">
                     <span>TOTAL:</span>
                     <span class="text-indigo-600" x-text="formatPrice(cartData.totals.total)"></span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>incl. VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
+                    <span x-text="formatPrice(cartData.totals.vat)"></span>
                 </div>
             </div>
 
@@ -269,18 +269,15 @@
                 const total = this.cartData.totals.total;
                 const roundedTotal = this.cashReceived - Math.floor(this.changeAmount);
 
-                // Calculate the discount needed to reach rounded total
-                // Reverse engineer: new_total = (subtotal - discount) * (1 + vat_rate)
-                // So: subtotal - discount = new_total / (1 + vat_rate)
-                const vatMultiplier = 1 + (POSConfig.vat_rate / 100);
-                const netAfterRound = roundedTotal / vatMultiplier;
+                // Inclusive VAT: the rounded total IS the gross paid. The round "discount"
+                // is just how far we trimmed the gross; the contained VAT is extracted from
+                // the rounded gross (gross * rate / (100 + rate)).
                 const subtotal = this.cartData.totals.subtotal;
-                const roundDiscount = subtotal - netAfterRound;
+                const roundDiscount = subtotal - roundedTotal;
 
-                // Apply as a discount amount (not percentage)
                 this.cartData.totals.roundDiscount = roundDiscount;
                 this.cartData.totals.total = roundedTotal;
-                this.cartData.totals.vat = roundedTotal - netAfterRound;
+                this.cartData.totals.vat = roundedTotal * POSConfig.vat_rate / (100 + POSConfig.vat_rate);
 
                 this.quickRoundApplied = true;
                 this.calculateChange();
@@ -329,12 +326,13 @@
             recalculateTotals() {
                 const subtotal = this.cartData.totals.subtotal || 0;
                 this.discountAmount = subtotal * (this.discount / 100);
-                const afterDiscount = subtotal - this.discountAmount;
-                // VAT calculated AFTER discount (Swiss compliant)
-                const vat = afterDiscount * POSConfig.vat_decimal;
+                const afterDiscount = subtotal - this.discountAmount;  // gross paid
+                // Inclusive Swiss VAT: shelf prices already contain VAT, so the gross IS
+                // the total and VAT is the contained portion (gross * rate / (100 + rate)).
+                const vat = afterDiscount * POSConfig.vat_rate / (100 + POSConfig.vat_rate);
                 this.cartData.totals.discountAmount = this.discountAmount;
                 this.cartData.totals.vat = vat;
-                this.cartData.totals.total = afterDiscount + vat;
+                this.cartData.totals.total = afterDiscount;
             },
 
             inventoryPreview() {
