@@ -130,7 +130,7 @@
                 </div>
 
                 <!-- Insufficient cash: the received amount is less than the total due -->
-                <div x-show="cashReceived > 0 && changeAmount < 0" class="bg-red-50 border border-red-300 rounded-lg p-3 mb-4 text-red-700 text-sm">
+                <div x-show="cashReceived > 0 && cashShort()" class="bg-red-50 border border-red-300 rounded-lg p-3 mb-4 text-red-700 text-sm">
                     ⚠️ Cash received is <strong>CHF <span x-text="Math.abs(changeAmount).toFixed(2)"></span> short</strong> of the total.
                     Collect more cash, pick a higher amount, or hit <strong>EXACT</strong>.
                 </div>
@@ -194,8 +194,8 @@
                     ✏️ Edit Cart
                 </button>
                 <button @click="completeTransaction()"
-                        :disabled="processing || (paymentMethod === 'cash' && cashReceived < cartData.totals.total)"
-                        :class="(paymentMethod === 'cash' && cashReceived < cartData.totals.total) ? 'opacity-50 cursor-not-allowed' : ''"
+                        :disabled="processing || cashShort()"
+                        :class="cashShort() ? 'opacity-50 cursor-not-allowed' : ''"
                         class="btn-success">
                     <span x-show="!processing">✅ Confirm & Complete</span>
                     <span x-show="processing">Processing...</span>
@@ -261,9 +261,19 @@
                 this.calculateChange();
             },
 
+            // Cash is genuinely short only when it's below the total by a whole cent
+            // (integer-cent compare avoids float dust failing an exactly-paid sale).
+            cashShort() {
+                if (this.paymentMethod !== 'cash') return false;
+                return Math.round(this.cashReceived * 100) < Math.round((this.cartData.totals.total || 0) * 100);
+            },
+
             calculateChange() {
                 const total = this.cartData.totals.total;
-                this.changeAmount = this.cashReceived - total;
+                // Round to whole cents -- the discount/VAT math leaves float dust
+                // (e.g. 10.0000001), which otherwise reads as "CHF 0.00 short" on an
+                // exactly-paid sale. Compare in cents, not raw floats.
+                this.changeAmount = Math.round((this.cashReceived - total) * 100) / 100;
                 // Gap is the cents part that could be rounded
                 this.changeGap = this.changeAmount > 0 ? (this.changeAmount % 1) : Math.abs(this.changeAmount);
 
@@ -372,8 +382,8 @@
                     return;
                 }
 
-                // Never complete an UNDERPAID cash sale (cash received < total due).
-                if (this.paymentMethod === 'cash' && this.cashReceived < this.cartData.totals.total) {
+                // Never complete an UNDERPAID cash sale (integer-cent compare).
+                if (this.cashShort()) {
                     const short = (this.cartData.totals.total - this.cashReceived).toFixed(2);
                     showToast(`Cash received is CHF ${short} short of the total. Collect more or hit EXACT.`, 'warning');
                     return;
