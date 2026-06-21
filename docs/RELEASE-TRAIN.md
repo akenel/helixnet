@@ -22,13 +22,18 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: BL-86 reaper + hide-cancelled shipped to banco.lapiazza.app @ `3c29154`, 2026-06-21 — Tigs, Angel GO.)
+`🟢 IDLE` — no train running. (Last: BL-87 camera scan + lazy capture shipped to banco.lapiazza.app @ `c4b4e61`, 2026-06-21 — Tigs, Angel GO.)
 
 ## Boarding (awaiting the next prod train)
 
-| Feature | Commit(s) | Test status | Prod |
-|---|---|---|---|
-| BL-87 camera barcode scan + lazy capture (`/pos/scan`) | `275e0a9`, `755ea99` (+ spec `90ac996`) | Camera PASSED on Fairphone (Angel). Logic fixes after device test: lazy-capture **quantity** field + **sellable stock** (was stock 1 → oversell-blocked on 2nd sale; persistence itself worked). Stale `LZ-%` test items bumped to 9999 on staging. POS gate 99 pass (7 = pre-existing flake). | **STAGED — staging-banco.lapiazza.app @ 755ea99, 2026-06-21. Awaiting Angel re-test PASS.** |
+_(empty — nothing boarding. BL-87 SHIPPED, see history below.)_
+
+> **BL-87 camera barcode scan + lazy capture (`/pos/scan`)** — `275e0a9`, `755ea99` (+ spec `90ac996`).
+> Camera PASSED on Angel's Fairphone (AC1/AC4). Verified on real device traffic (staging txns 0132-0136):
+> Felix(admin) lazy capture PERSISTS real products + qty 2/3 rang fine; Pam(cashier) → graceful one-off
+> line (403 create guard, **by design**). Angel decision: **create stays manager-only, ship as-is.**
+> **SHIPPED — banco.lapiazza.app @ `c4b4e61`, 2026-06-21** (vendored JS 200, scan page 200, camera button
+> served, no CSP blocks camera). Deploy = move `/opt/helix-banco-tree` to origin/main + restart `helix-platform-banco`.
 
 > _(BL-84 / BL-83 / BL-85 — Felix's three live feedbacks — and BL-86 (reaper + hide-cancelled)
 > all **SHIPPED 2026-06-21**, see history below.)_
