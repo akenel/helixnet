@@ -22,7 +22,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running.
+`⏸️ HELD — Tigs, 2026-06-21 ~13:24` — train PAUSED at the #140 divergence gate. Prod `helix-platform` (live bottega.lapiazza.app) is 75 behind AND carries **1,204 lines of UNCOMMITTED POS code/templates** colliding with the incoming commits (pos_router +299 / 17 incoming, database.py, pos_schema, 10 templates). NOT safe to ff/merge blind. Divergence fully backed up to `/root/banco-prod-divergence-20260621/` on the box. Live box UNTOUCHED. Awaiting Angel: (1) stand Banco up as its OWN clean container alongside Bottega, or (2) do the #140 reconciliation first. Do NOT drive until decided.
 
 ## Boarding (awaiting the next prod train)
 
