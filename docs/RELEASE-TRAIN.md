@@ -22,15 +22,17 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: BL-88 catalog management dashboard shipped to banco.lapiazza.app @ `7721a36`, 2026-06-21 — Tigs, Angel GO.)
+`🟢 IDLE` — no train running. (Last: BL-89 catalog polish + dup-barcode 409 fix shipped to banco.lapiazza.app @ `2015f36`, 2026-06-21 — Tigs, Angel GO.)
 
 ## Boarding (awaiting the next prod train)
 
-| Feature | Commit(s) | Test status | Prod |
-|---|---|---|---|
-| BL-89 catalog polish — camera scan on create/edit + category picker | `7c344e1` | green on staging-banco: `pos-scanner.js` 200, form has scan button + category datalist. Frontend+static only, no Python. | **STAGED — staging-banco.lapiazza.app @ 7c344e1, 2026-06-21. Awaiting Angel PASS.** |
+_(empty — nothing boarding. BL-87/88/89 SHIPPED, see history below.)_
 
-_(BL-87 + BL-88 SHIPPED, see history below.)_
+> **BL-89 catalog polish + dup-barcode fix** — `7c344e1`, `2015f36`. 📷 scan on create/edit (shared
+> `static/pos-scanner.js`) + category datalist (pick-existing-or-new); create/update now return a clean
+> **409** on duplicate barcode/SKU (was a raw 500 Angel hit on save). **SHIPPED — banco.lapiazza.app @
+> `2015f36`, 2026-06-21** (catalog 200, scanner asset 200, prod smoke: save 201 + dup 409, no 500). Angel
+> PASS. Next: BL-90 receiving.
 
 > **BL-88 catalog management dashboard (`/pos/catalog`)** — `8b522a0`. Manager-gated CRUD over products
 > (search/edit price+stock+picture+reorder, discontinue+reactivate, create), dashboard card. Added
