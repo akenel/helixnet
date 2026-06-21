@@ -44,11 +44,36 @@
                         🔍 Search
                     </button>
                 </div>
-                <p class="text-sm text-gray-500 mt-2">Try: "poppie", "@poppie_420", "larry@..."</p>
+                <div class="flex items-center justify-between mt-2 gap-2 flex-wrap">
+                    <p class="text-sm text-gray-500">Try: "poppie", "@poppie_420", "larry@..."</p>
+                    <button @click="toggleDirectory()" class="text-sm font-semibold text-indigo-600 hover:underline"
+                            x-text="showDirectory ? '✕ Hide member list' : '📖 Browse all members'"></button>
+                </div>
             </div>
 
-            <!-- Quick Add (if not found) -->
-            <div x-show="!customer && searched" class="mb-6">
+            <!-- Several matches -> pick the right person (no more silent "first Larry") -->
+            <div x-show="matches.length > 1 && !customer" x-cloak class="mb-6">
+                <p class="text-sm font-semibold text-gray-700 mb-2">
+                    <span x-text="matches.length"></span> members match — tap the right one:
+                </p>
+                <div class="space-y-2 max-h-72 overflow-y-auto">
+                    <template x-for="m in matches" :key="m.id">
+                        <button @click="selectCustomer(m)"
+                                class="w-full flex justify-between items-center bg-white border-2 rounded-lg p-3 text-left hover:border-indigo-500 transition">
+                            <div class="min-w-0">
+                                <div class="font-semibold truncate" x-text="m.handle"></div>
+                                <div class="text-xs text-gray-500 truncate"
+                                     x-text="(m.real_name ? m.real_name + ' · ' : '') + (m.instagram ? '@'+m.instagram : (m.email || '—'))"></div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full flex-none ml-3"
+                                  :class="tierBadgeClass(m.loyalty_tier)" x-text="m.loyalty_tier"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Quick Add (only when truly not found — not when there are matches to pick) -->
+            <div x-show="!customer && searched && matches.length === 0" class="mb-6">
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p class="text-yellow-800 mb-3">Customer not found. Create new profile?</p>
                     <button @click="showNewCustomerForm = true" class="btn-secondary">
@@ -204,6 +229,41 @@
                     </template>
                 </div>
             </div>
+
+            <!-- Full member directory — browse everyone, sort A–Z / newest / top spend -->
+            <div x-show="showDirectory" x-cloak class="mt-8 border-t pt-6">
+                <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <h3 class="text-lg font-semibold text-gray-700">
+                        📖 All Members <span class="text-sm text-gray-400" x-text="'(' + directoryTotal + ')'"></span>
+                    </h3>
+                    <div class="flex gap-1 text-sm">
+                        <button @click="setDirectorySort('name')" class="px-3 py-1 rounded-lg font-medium"
+                                :class="directorySort==='name' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'">A–Z</button>
+                        <button @click="setDirectorySort('recent')" class="px-3 py-1 rounded-lg font-medium"
+                                :class="directorySort==='recent' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'">🆕 Newest</button>
+                        <button @click="setDirectorySort('spend')" class="px-3 py-1 rounded-lg font-medium"
+                                :class="directorySort==='spend' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'">💰 Top spend</button>
+                    </div>
+                </div>
+                <div x-show="directoryLoading" class="text-sm text-gray-400 py-4">Loading…</div>
+                <div x-show="!directoryLoading" class="max-h-96 overflow-y-auto divide-y border rounded-lg">
+                    <template x-for="m in directory" :key="m.id">
+                        <button @click="selectCustomer(m)"
+                                class="w-full flex justify-between items-center p-3 text-left hover:bg-indigo-50 transition">
+                            <div class="min-w-0">
+                                <div class="font-semibold truncate" x-text="m.handle"></div>
+                                <div class="text-xs text-gray-500 truncate"
+                                     x-text="(m.real_name ? m.real_name + ' · ' : '') + (m.instagram ? '@'+m.instagram : (m.email || '—'))"></div>
+                            </div>
+                            <div class="text-right flex-none ml-3">
+                                <span class="text-xs px-2 py-1 rounded-full" :class="tierBadgeClass(m.loyalty_tier)" x-text="m.loyalty_tier"></span>
+                                <div class="text-xs text-gray-400 mt-1" x-text="'CHF ' + (m.lifetime_spend || 0).toFixed(0)"></div>
+                            </div>
+                        </button>
+                    </template>
+                    <div x-show="directory.length === 0 && !directoryLoading" class="p-4 text-sm text-gray-400">No members yet.</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -278,6 +338,12 @@
                 '15% off Papers bundle'
             ],
             recentCustomers: [],
+            matches: [],              // >1 search hit -> pick the right person (no silent "first Larry")
+            showDirectory: false,     // the full browsable member list
+            directory: [],
+            directoryTotal: 0,
+            directorySort: 'name',    // name | recent | spend
+            directoryLoading: false,
 
             async init() {
                 // Load recent customers from API
@@ -304,13 +370,13 @@
 
             async searchCustomer() {
                 this.searched = true;
+                this.matches = [];
                 if (!this.searchQuery) {
                     this.customer = null;
                     return;
                 }
 
                 try {
-                    // Search via API
                     const token = AuthHelper.getToken();
                     const response = await fetch(`/api/v1/customers/search?q=${encodeURIComponent(this.searchQuery)}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -326,25 +392,13 @@
 
                     const results = await response.json();
 
-                    if (results.length > 0) {
-                        // Get full profile for first match
-                        const checkoutResp = await fetch(`/api/v1/customers/checkout/${results[0].id}`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-
-                        if (checkoutResp.ok) {
-                            const checkout = await checkoutResp.json();
-                            this.customer = {
-                                ...results[0],
-                                ...checkout,
-                                instagram: checkout.instagram ? '@' + checkout.instagram : null,
-                            };
-                        } else {
-                            // Use basic search result
-                            this.customer = results[0];
-                        }
-                    } else {
+                    if (results.length === 1) {
+                        await this.loadFull(results[0]);        // exactly one -> open it
+                    } else if (results.length > 1) {
                         this.customer = null;
+                        this.matches = results;                  // several Larrys -> pick the right one
+                    } else {
+                        this.customer = null;                    // none -> "not found" / add new
                     }
                 } catch (error) {
                     console.error('Search error:', error);
@@ -352,9 +406,64 @@
                 }
             },
 
-            selectCustomer(recent) {
-                this.searchQuery = recent.handle;
-                this.searchCustomer();
+            // Load the full checkout-view profile for a chosen member (picker / directory / recents).
+            async loadFull(basic) {
+                this.matches = [];
+                this.searched = true;
+                try {
+                    const token = AuthHelper.getToken();
+                    const resp = await fetch(`/api/v1/customers/checkout/${basic.id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (resp.ok) {
+                        const checkout = await resp.json();
+                        this.customer = {
+                            ...basic,
+                            ...checkout,
+                            instagram: checkout.instagram ? '@' + checkout.instagram : (basic.instagram || null),
+                        };
+                    } else {
+                        this.customer = basic;
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (error) {
+                    console.error('Load profile error:', error);
+                    showToast('Could not load profile', 'error');
+                }
+            },
+
+            selectCustomer(c) {
+                this.loadFull(c);
+            },
+
+            // ---- Member directory: browse everyone, sort A-Z / newest / top spend ----
+            async toggleDirectory() {
+                this.showDirectory = !this.showDirectory;
+                if (this.showDirectory && this.directory.length === 0) {
+                    await this.loadDirectory();
+                }
+            },
+            async loadDirectory() {
+                this.directoryLoading = true;
+                try {
+                    const token = AuthHelper.getToken();
+                    const resp = await fetch(`/api/v1/customers?sort=${this.directorySort}&limit=200`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        this.directory = data.customers || [];
+                        this.directoryTotal = data.total || this.directory.length;
+                    }
+                } catch (error) {
+                    console.error('Directory error:', error);
+                } finally {
+                    this.directoryLoading = false;
+                }
+            },
+            setDirectorySort(s) {
+                this.directorySort = s;
+                this.loadDirectory();
             },
 
             async createCustomer() {

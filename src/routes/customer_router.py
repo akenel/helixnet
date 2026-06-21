@@ -128,6 +128,60 @@ async def search_customers(
 
 
 # ================================================================
+# BROWSE / DIRECTORY - the whole member list, sortable + paginated.
+# Search is "I know who I want"; this is "show me everyone we've got"
+# (with 50+ members a cashier must be able to SEE the list, not fish blind).
+# ================================================================
+
+@router.get("")
+async def list_customers(
+    sort: str = Query("name", pattern="^(name|recent|spend)$",
+                      description="name = A-Z by handle, recent = newest signups first, spend = top spenders"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The full member directory: browse everyone, alphabetical or by signup date."""
+    base = select(CustomerModel).where(CustomerModel.is_active == True)
+    if sort == "recent":
+        base = base.order_by(CustomerModel.created_at.desc())
+    elif sort == "spend":
+        base = base.order_by(CustomerModel.lifetime_spend.desc())
+    else:  # name
+        base = base.order_by(func.lower(CustomerModel.handle))
+
+    total = int((await db.execute(
+        select(func.count()).select_from(CustomerModel).where(CustomerModel.is_active == True)
+    )).scalar() or 0)
+
+    rows = (await db.execute(base.limit(limit).offset(offset))).scalars().all()
+
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "sort": sort,
+        "customers": [
+            {
+                "id": str(c.id),
+                "handle": c.handle,
+                "real_name": c.real_name,
+                "instagram": c.instagram,
+                "loyalty_tier": c.loyalty_tier.value,
+                "tier_discount_percent": c.tier_discount_percent,
+                "credits_balance": c.credits_balance,
+                "lifetime_spend": float(c.lifetime_spend or 0),
+                "visit_count": c.visit_count,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "last_visit": c.last_visit.isoformat() if c.last_visit else None,
+            }
+            for c in rows
+        ],
+    }
+
+
+# ================================================================
 # CHECKOUT VIEW - Quick lookup for POS
 # ================================================================
 
