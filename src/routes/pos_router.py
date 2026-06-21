@@ -1484,6 +1484,34 @@ class POSFeedback(BaseModel):
     kind: str = "other"      # bug | idea | other
     title: str
     body: str = ""
+    screenshot: Optional[str] = None       # base64 data-URL (image/*) of the screen
+    meta: Optional[dict] = None            # auto-collected browser/screen/path context
+
+
+# Cap an attached screenshot so a runaway data-URL can't bloat the shared DB
+# (~2.2 MB image after base64). Bigger than that -> drop the image, keep the report.
+_MAX_SHOT_CHARS = 3_000_000
+# Only these context keys are folded into the description (whitelist -- no surprises).
+_META_LABELS = [
+    ("path", "Screen"), ("referrer", "Came from"), ("app", "POS build"),
+    ("user", "User"), ("userAgent", "Browser"), ("platform", "Platform"),
+    ("viewport", "Viewport"), ("screen", "Screen size"), ("dpr", "Pixel ratio"),
+    ("language", "Locale"), ("tz", "Timezone"), ("online", "Online"),
+    ("when", "Client time"),
+]
+
+
+def _format_meta(meta: dict | None) -> str:
+    """Render the auto-collected context as a readable block for the board."""
+    if not isinstance(meta, dict):
+        return ""
+    lines = []
+    for key, label in _META_LABELS:
+        val = meta.get(key)
+        if val is None or val == "":
+            continue
+        lines.append(f"{label}: {str(val)[:300]}")
+    return ("\n\n🖥️ Context (auto-collected)\n" + "\n".join(lines)) if lines else ""
 
 
 @router.post("/feedback")
@@ -1492,7 +1520,10 @@ async def pos_feedback(
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_pos_role()),
 ):
-    """File a bug/idea from the till onto the shared Backlog board (/backlog)."""
+    """File a bug/idea from the till onto the shared Backlog board (/backlog).
+
+    Optionally carries an auto-captured screenshot + browser/screen context so a
+    report arrives with its own forensics."""
     title = (f.title or "").strip()
     if len(title) < 3:
         raise HTTPException(status_code=400, detail="Give it a short title (3+ characters)")
@@ -1509,16 +1540,26 @@ async def pos_feedback(
     body = (f.body or "").strip()
     desc = (f"{body}\n\n— filed from Banco POS by {user}" if body
             else f"Filed from Banco POS by {user}")
+    desc += _format_meta(f.meta)
+
+    # Validate + bound the screenshot: must be an image data-URL, under the size cap.
+    shot = f.screenshot
+    has_shot = False
+    if shot and isinstance(shot, str) and shot.startswith("data:image/") and len(shot) <= _MAX_SHOT_CHARS:
+        has_shot = True
+    elif shot:
+        shot = None  # malformed or oversized -> drop the image, still file the report
 
     item = BacklogItemModel(
         item_number=next_number, title=title[:200], description=desc,
         item_type=item_type, application=HelixApplication.HELIXNET,
         priority=BacklogPriority.MEDIUM, created_by=user,
-        tags=f"banco,feedback,pos,{kind}")
+        tags=f"banco,feedback,pos,{kind}",
+        screenshot_data=shot if has_shot else None)
     db.add(item)
     await db.commit()
-    logger.info(f"BL-{next_number:03d} filed from Banco POS by {user}: {title}")
-    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}"}
+    logger.info(f"BL-{next_number:03d} filed from Banco POS by {user}: {title} (screenshot={has_shot})")
+    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}", "screenshot": has_shot}
 
 
 # ================================================================

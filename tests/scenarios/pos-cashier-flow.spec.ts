@@ -255,21 +255,29 @@ test('expired access token mid-sale refreshes silently, NO hard-logout', async (
  * SAME backlog board (/backlog) the La Piazza 💬 button feeds. This proves the
  * floating button shows once logged in, the modal sends, and a BL-XXX ref comes back.
  */
-test('feedback widget files a bug from the till and returns a BL ref', async ({ page }) => {
+test('feedback widget captures a screenshot and files a bug with a BL ref', async ({ page }) => {
   await login(page);
   // The floating button only renders once authenticated.
   const fab = page.locator('#lpfb-open');
   await expect(fab).toBeVisible({ timeout: 10_000 });
   await fab.click();
 
-  // Modal opens; "Bug" is preselected. Fill a title + details and send.
+  // Modal opens; "Bug" is preselected. The auto-collected context line is shown.
   await expect(page.getByText('Send feedback')).toBeVisible();
+  await expect(page.locator('#lpfb-meta')).toContainText(/Auto-attached:/);
   await page.locator('#lpfb-title').fill('E2E: till test feedback');
   await page.locator('#lpfb-body').fill('Filed by the Playwright cashier flow.');
+
+  // Capture the screen (html2canvas) -> a thumbnail appears.
+  await page.locator('#lpfb-capture').click();
+  await expect(page.locator('#lpfb-thumb')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('#lpfb-thumb-img')).toHaveAttribute('src', /^data:image\//);
+
   await page.locator('#lpfb-send').click();
 
-  // Success: a BL-XXX reference is shown, linking to the backlog board.
+  // Success: a BL-XXX reference (with the 📸 indicator) linking to the backlog board.
   await expect(page.locator('#lpfb-msg')).toContainText(/Filed as BL-\d+/, { timeout: 15_000 });
+  await expect(page.locator('#lpfb-msg')).toContainText('📸');
   await expect(page.locator('#lpfb-msg a[href="/backlog"]')).toBeVisible();
   // Session survives filing feedback (no logout).
   expect(await tokenPresent(page)).toBe(true);

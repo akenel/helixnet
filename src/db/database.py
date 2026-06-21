@@ -130,6 +130,9 @@ _ADDITIVE_COLUMNS: list[str] = [
     # BYOH (2026-06-16): a node reports its probed capabilities (tools, ram, gpu) so
     # the Provider Console can show the no-surprises "what can this box run" window.
     "ALTER TABLE compute_nodes ADD COLUMN IF NOT EXISTS caps_json TEXT",
+    # Feedback screenshots (2026-06-21): the POS 💬 widget can attach an auto-captured
+    # screenshot (base64 data-URL) to a backlog item. Heavy text, deferred-loaded.
+    "ALTER TABLE backlog_items ADD COLUMN IF NOT EXISTS screenshot_data TEXT",
 ]
 
 

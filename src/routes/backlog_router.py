@@ -225,6 +225,25 @@ async def get_item(
     return item
 
 
+@router.get("/items/{item_id}/screenshot")
+async def get_item_screenshot(
+    item_id: UUID,
+    current_user: dict = Depends(require_backlog_access()),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Lazily fetch a feedback item's attached screenshot (base64 data-URL).
+
+    The column is deferred and kept off the list/detail payloads (it's heavy) --
+    only loaded when the detail modal asks for it. Returns {screenshot: null}
+    when there's no attachment. Auth'd fetch -> rendered as <img :src> in the UI."""
+    row = (await db.execute(
+        select(BacklogItemModel.screenshot_data).where(BacklogItemModel.id == item_id)
+    )).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Backlog item not found")
+    return {"screenshot": row[0]}
+
+
 # ================================================================
 # API: Update Item
 # ================================================================

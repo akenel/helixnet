@@ -11,6 +11,9 @@
     <!-- Alpine.js for reactive components -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- html2canvas: lets the feedback widget grab a screenshot of the current screen -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
     <!-- Inter font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -536,6 +539,17 @@
       .lpfb-cancel{padding:9px 14px;border:1px solid rgba(48,63,84,.9);border-radius:9px;background:transparent;color:#94a3b8;font-weight:600;cursor:pointer}
       .lpfb-send{padding:9px 18px;border:none;border-radius:9px;background:#C0392B;color:#fff;font-weight:700;cursor:pointer}
       .lpfb-send:disabled{opacity:.5;cursor:default}
+      .lpfb-shotrow{display:flex;align-items:center;gap:10px;margin:-2px 0 12px}
+      .lpfb-capture{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid rgba(48,63,84,.9);
+        border-radius:9px;background:rgba(15,23,42,.6);color:#cbd5e1;font-size:13px;font-weight:600;cursor:pointer}
+      .lpfb-capture:hover{border-color:#C0392B;color:#fff}
+      .lpfb-capture:disabled{opacity:.6;cursor:default}
+      .lpfb-thumb{position:relative;display:none;border:1px solid rgba(48,63,84,.9);border-radius:8px;overflow:hidden;background:#070d18}
+      .lpfb-thumb img{display:block;width:84px;height:54px;object-fit:cover}
+      .lpfb-thumb .x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;
+        background:#C0392B;color:#fff;font-size:12px;font-weight:800;line-height:20px;cursor:pointer;padding:0}
+      .lpfb-meta{font-size:11px;color:#64748b;margin:-4px 0 12px;line-height:1.5}
+      .lpfb-meta b{color:#94a3b8;font-weight:600}
     </style>
     <button class="lpfb-btn" id="lpfb-open">💬 Feedback</button>
     <div class="lpfb-ov" id="lpfb-ov">
@@ -549,6 +563,11 @@
         </div>
         <input id="lpfb-title" type="text" maxlength="200" placeholder="Short title (what's up?)" />
         <textarea id="lpfb-body" maxlength="4000" placeholder="Details — what happened, what you expected, steps…"></textarea>
+        <div class="lpfb-shotrow">
+          <button class="lpfb-capture" id="lpfb-capture" type="button">📸 Capture this screen</button>
+          <div class="lpfb-thumb" id="lpfb-thumb"><img id="lpfb-thumb-img" alt="screenshot" /><button class="x" id="lpfb-thumb-x" type="button" title="Remove">✕</button></div>
+        </div>
+        <div class="lpfb-meta" id="lpfb-meta"></div>
         <div class="lpfb-row">
           <span class="lpfb-msg" id="lpfb-msg"></span>
           <button class="lpfb-cancel" id="lpfb-cancel">Cancel</button>
@@ -561,14 +580,45 @@
       var open=document.getElementById('lpfb-open'),ov=document.getElementById('lpfb-ov'),
         title=document.getElementById('lpfb-title'),body=document.getElementById('lpfb-body'),
         msg=document.getElementById('lpfb-msg'),send=document.getElementById('lpfb-send'),
-        cancel=document.getElementById('lpfb-cancel'),kinds=document.getElementById('lpfb-kinds'),kind='bug';
+        cancel=document.getElementById('lpfb-cancel'),kinds=document.getElementById('lpfb-kinds'),
+        capture=document.getElementById('lpfb-capture'),thumb=document.getElementById('lpfb-thumb'),
+        thumbImg=document.getElementById('lpfb-thumb-img'),thumbX=document.getElementById('lpfb-thumb-x'),
+        metaEl=document.getElementById('lpfb-meta'),kind='bug',shot=null;
       // Reveal the button once a cashier is logged in. The token can land a tick
       // after load (dashboard parses it from the URL fragment), so poll briefly.
       function reveal(){if(token()){open.style.display='flex';return true;}return false;}
       if(!reveal()){var tries=0,iv=setInterval(function(){if(reveal()||++tries>20)clearInterval(iv);},250);}
-      function show(){ov.style.display='flex';setTimeout(function(){title.focus();},50);}
+
+      // Auto-collected context — travels with every report so we can analyse later
+      // (which screen, which browser, where they came from, viewport, etc.).
+      function collectMeta(){
+        var m={};
+        try{
+          m.path=location.pathname+location.search; m.url=location.href;
+          m.referrer=document.referrer||'';
+          m.userAgent=navigator.userAgent;
+          m.language=navigator.language||'';
+          m.platform=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'';
+          m.viewport=window.innerWidth+'×'+window.innerHeight;
+          m.screen=(window.screen?screen.width+'×'+screen.height:'');
+          m.dpr=window.devicePixelRatio||1;
+          m.online=navigator.onLine;
+          m.tz=(window.Intl&&Intl.DateTimeFormat)?Intl.DateTimeFormat().resolvedOptions().timeZone:'';
+          m.when=new Date().toISOString();
+          var v=document.getElementById('status-version'); m.app=v?(v.textContent||'').trim():'';
+          var u=token()&&AuthHelper.getUserInfo&&AuthHelper.getUserInfo(); if(u){m.user=u.username;}
+        }catch(e){}
+        return m;
+      }
+      function renderMeta(){
+        var m=collectMeta();
+        metaEl.innerHTML='<b>Auto-attached:</b> '+m.path+' · '+(m.platform||'?')+' · '+m.viewport+
+          (m.online?'':' · <span style="color:#f87171">offline</span>');
+      }
+      function show(){ov.style.display='flex';renderMeta();setTimeout(function(){title.focus();},50);}
       function hide(){ov.style.display='none';}
-      function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';kind='bug';
+      function clearShot(){shot=null;thumb.style.display='none';thumbImg.removeAttribute('src');capture.textContent='📸 Capture this screen';}
+      function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';kind='bug';clearShot();
         [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c.getAttribute('data-kind')==='bug');});}
       open.onclick=function(){reset();show();};
       cancel.onclick=hide;
@@ -576,14 +626,43 @@
       kinds.onclick=function(e){var k=e.target.closest('.lpfb-kind');if(!k)return;
         kind=k.getAttribute('data-kind');
         [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c===k);});};
+      thumbX.onclick=clearShot;
+
+      // Grab the screen BEHIND the modal: hide the overlay, html2canvas the page,
+      // downscale to keep the base64 small, then restore the modal.
+      capture.onclick=function(){
+        if(typeof html2canvas!=='function'){msg.textContent='Screenshot tool not loaded.';msg.className='lpfb-msg err';return;}
+        msg.textContent='';msg.className='lpfb-msg';
+        capture.disabled=true;capture.textContent='Capturing…';
+        ov.style.visibility='hidden';
+        setTimeout(function(){
+          html2canvas(document.body,{logging:false,useCORS:true,scale:1,
+            windowWidth:document.documentElement.scrollWidth,windowHeight:document.documentElement.scrollHeight})
+          .then(function(canvas){
+            ov.style.visibility='';
+            var maxW=1100,sc=Math.min(1,maxW/canvas.width);
+            var c2=document.createElement('canvas');
+            c2.width=Math.max(1,Math.round(canvas.width*sc));c2.height=Math.max(1,Math.round(canvas.height*sc));
+            c2.getContext('2d').drawImage(canvas,0,0,c2.width,c2.height);
+            shot=c2.toDataURL('image/jpeg',0.7);
+            thumbImg.src=shot;thumb.style.display='block';
+            capture.disabled=false;capture.textContent='📸 Recapture';
+          }).catch(function(){
+            ov.style.visibility='';capture.disabled=false;capture.textContent='📸 Capture this screen';
+            msg.textContent='Could not capture the screen — you can still send without it.';msg.className='lpfb-msg err';
+          });
+        },60);
+      };
+
       send.onclick=function(){
         var t=(title.value||'').trim();
         if(t.length<3){msg.textContent='Give it a short title (3+ characters).';msg.className='lpfb-msg err';return;}
         send.disabled=true;send.textContent='Sending…';msg.textContent='';msg.className='lpfb-msg';
         // API.post injects the bearer token + handles silent refresh; returns parsed JSON.
-        API.post('/api/v1/pos/feedback',{kind:kind,title:t,body:(body.value||'').trim()})
+        API.post('/api/v1/pos/feedback',{kind:kind,title:t,body:(body.value||'').trim(),
+          screenshot:shot||null,meta:collectMeta()})
         .then(function(j){
-          if(j&&j.ok){msg.innerHTML='Filed as <a href="/backlog" target="_blank" style="color:inherit;text-decoration:underline">'+j.ref+'</a> — thank you! 🐺';
+          if(j&&j.ok){msg.innerHTML='Filed as <a href="/backlog" target="_blank" style="color:inherit;text-decoration:underline">'+j.ref+'</a>'+(shot?' 📸':'')+' — thank you! 🐺';
             msg.className='lpfb-msg ok';send.textContent='Sent ✓';setTimeout(hide,1400);}
           else{msg.textContent=(j&&j.detail)?j.detail:'Something went wrong — try again.';
             msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})

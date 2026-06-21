@@ -387,6 +387,16 @@
                             placeholder="Leave a note...">
                     </div>
 
+                    <!-- Screenshot (feedback attachments) -->
+                    <div x-show="editingItem && screenshot">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 border-t pt-4">📸 Screenshot</h3>
+                        <a :href="screenshot" target="_blank" title="Open full size">
+                            <img :src="screenshot" alt="attached screenshot"
+                                 class="max-w-full rounded-lg border border-gray-200 shadow-sm hover:opacity-90 transition" />
+                        </a>
+                        <p class="text-xs text-gray-400 mt-1">Click to open full size in a new tab.</p>
+                    </div>
+
                     <!-- Activity Trail (edit only) -->
                     <div x-show="editingItem && activities.length > 0">
                         <h3 class="text-sm font-bold text-gray-700 mb-2 border-t pt-4">Activity Trail</h3>
@@ -439,6 +449,7 @@ function backlogBoard() {
         showModal: false,
         editingItem: null,
         activities: [],
+        screenshot: null,
         saving: false,
 
         // Filters
@@ -548,12 +559,21 @@ function backlogBoard() {
             } catch (e) {
                 this.activities = [];
             }
+            // Lazily load an attached screenshot (deferred column, fetched on demand).
+            this.screenshot = null;
+            try {
+                const r = await API.get(`/api/v1/backlog/items/${item.id}/screenshot`);
+                this.screenshot = (r && r.screenshot) ? r.screenshot : null;
+            } catch (e) {
+                this.screenshot = null;
+            }
         },
 
         closeModal() {
             this.showModal = false;
             this.editingItem = null;
             this.activities = [];
+            this.screenshot = null;
         },
 
         async saveItem() {

@@ -133,6 +133,12 @@ class BacklogItemModel(Base):
         nullable=True,
         comment="Comma-separated tags: postcard,isotto,urgent",
     )
+    screenshot_data: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        deferred=True,  # base64 data-URLs are heavy: never loaded in list queries
+        comment="Optional base64 data-URL screenshot attached to feedback",
+    )
     created_by: Mapped[str] = mapped_column(
         String(100),
         nullable=False,

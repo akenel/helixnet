@@ -44,6 +44,44 @@ def test_feedback_normalizes_unknown_kind(session):
     assert r.json()["ok"] is True
 
 
+# A 1x1 transparent PNG as a data-URL -- a valid, tiny image attachment.
+_TINY_PNG = ("data:image/png;base64,"
+             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
+
+
+def test_feedback_accepts_screenshot_and_meta(session):
+    """A valid image data-URL + context metadata -> filed, screenshot flag true."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug",
+        "title": "Screenshot attachment should persist",
+        "body": "with a screenshot",
+        "screenshot": _TINY_PNG,
+        "meta": {"path": "/pos/checkout", "userAgent": "pytest-UA",
+                 "viewport": "1280×720", "online": True},
+    })
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j["ok"] is True
+    assert j.get("screenshot") is True
+
+
+def test_feedback_drops_non_image_attachment(session):
+    """A non-image / malformed data-URL is dropped (not stored) but the report still files."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "title": "Malformed attachment is dropped",
+        "screenshot": "data:text/plain;base64,aGVsbG8=",
+    })
+    assert r.status_code == 200, r.text
+    assert r.json().get("screenshot") is False
+
+
+def test_feedback_without_screenshot_is_fine(session):
+    """No attachment -> filed normally, screenshot flag false."""
+    r = session.post(f"{POS}/feedback", json={"kind": "idea", "title": "No screenshot here"})
+    assert r.status_code == 200, r.text
+    assert r.json().get("screenshot") is False
+
+
 def test_feedback_requires_auth():
     """No token -> 401/403, never an anonymous write to the board."""
     import requests
