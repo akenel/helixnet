@@ -1343,6 +1343,20 @@ async def refund_transaction(
     else:
         transaction.notes = refund_note
 
+    # Full refund -> the goods come back on the shelf (mirror the checkout deduction so
+    # inventory stays honest). Partial refunds are money-only: we can't know which items
+    # were returned, so stock is left untouched and Felix reconciles by hand if needed.
+    if not refund.partial_amount:
+        li_result = await db.execute(
+            select(LineItemModel).where(LineItemModel.transaction_id == transaction.id)
+        )
+        for li in li_result.scalars().all():
+            if li.product_id is None:
+                continue  # custom line (manual/change) -- no catalog stock to restore
+            product = await db.get(ProductModel, li.product_id)
+            if product is not None:
+                product.stock_quantity = (product.stock_quantity or 0) + li.quantity
+
     await db.commit()
     await db.refresh(transaction)
 
