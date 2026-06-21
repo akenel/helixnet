@@ -223,6 +223,14 @@ async def create_customer(
     - +5 if email provided
     - +50 if referred (referrer gets +100)
     """
+    # Blank optional fields must be NULL, not "" -- the UI form sends empty strings,
+    # and a unique index (email/instagram) treats '' as a real value, so two members
+    # with a blank email would collide. Coerce blanks to None.
+    for _f in ("real_name", "email", "phone", "instagram", "telegram", "whatsapp"):
+        _v = getattr(customer, _f, None)
+        if isinstance(_v, str) and not _v.strip():
+            setattr(customer, _f, None)
+
     # Check handle uniqueness
     existing = await db.execute(
         select(CustomerModel).where(

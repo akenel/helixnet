@@ -28,6 +28,18 @@ def test_enroll_requires_18_plus(session):
     assert "18" in r.text
 
 
+def test_enroll_with_blank_optional_fields_twice(session):
+    """The UI form sends '' for unfilled email/instagram. Two members enrolled that
+    way must BOTH succeed -- blanks become NULL, not a duplicate '' (was a 500)."""
+    for _ in range(2):
+        r = session.post(CUST, json={
+            "handle": "blank_" + uuid.uuid4().hex[:8],
+            "real_name": "", "email": "", "instagram": "", "phone": "",
+            "age_confirmed": True,
+        })
+        assert r.status_code in (200, 201), r.text
+
+
 def test_search_finds_member_by_real_name(session):
     """The 'larry == poppe' fix: a member enrolled with a handle + real name must be
     findable by EITHER (search ignored real_name before)."""
