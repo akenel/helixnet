@@ -1304,10 +1304,14 @@ async def refund_transaction(
 @router.get("/reports/daily-summary", response_model=DailySummary)
 async def get_daily_summary(
     report_date: Optional[str] = None,
+    mine: bool = False,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Get daily sales summary - accessible by any POS role (cashiers need it for closeout)"""
+    """Get daily sales summary - accessible by any POS role (cashiers need it for closeout).
+
+    mine=true filters to the CALLER's own sales (so a cashier's dashboard shows their
+    own takings, not the whole store). Default false = store-wide (for managers/Felix)."""
     # Default to today
     if not report_date:
         target_date = date.today()
@@ -1318,15 +1322,15 @@ async def get_daily_summary(
     start_of_day = datetime.combine(target_date, datetime.min.time())
     end_of_day = datetime.combine(target_date, datetime.max.time())
 
-    result = await db.execute(
-        select(TransactionModel).where(
-            and_(
-                TransactionModel.status == TransactionStatus.COMPLETED,
-                TransactionModel.completed_at >= start_of_day,
-                TransactionModel.completed_at <= end_of_day
-            )
-        )
-    )
+    conditions = [
+        TransactionModel.status == TransactionStatus.COMPLETED,
+        TransactionModel.completed_at >= start_of_day,
+        TransactionModel.completed_at <= end_of_day,
+    ]
+    if mine:
+        conditions.append(TransactionModel.cashier_id == _uid(current_user))
+
+    result = await db.execute(select(TransactionModel).where(and_(*conditions)))
     transactions = result.scalars().all()
 
     # Calculate totals
@@ -1792,20 +1796,49 @@ async def close_cash_shift(
     hours = (now - shift.opened_at).total_seconds() / 3600.0
     logger.info(f"Cash shift CLOSE: {username} expected={res['expected']} counted={counted} "
                 f"variance={res['variance']} within={res['within_tolerance']}")
+    return _shift_report(shift, hours)
+
+
+def _shift_report(shift: CashShiftModel, hours: float | None = None) -> dict:
+    """The one-page per-cashier shift report payload (used by close + /shift/last)."""
+    if hours is None and shift.closed_at:
+        hours = (shift.closed_at - shift.opened_at).total_seconds() / 3600.0
     return {
         "ok": True, "shift_id": str(shift.id),
+        "username": shift.username,
         "opening_float": str(money(shift.opening_float)),
-        "cash_sales": str(s["cash_sales"]), "card_sales": str(s["card_sales"]),
-        "cash_refunds": str(s["cash_refunds"]),
+        "cash_sales": str(money(shift.cash_sales or 0)),
+        "card_sales": str(money(shift.card_sales or 0)),
+        "cash_refunds": str(money(shift.cash_refunds or 0)),
         "paid_in_total": str(money(shift.paid_in_total)),
         "paid_out_total": str(money(shift.paid_out_total)),
-        "expected_cash": str(res["expected"]), "counted_cash": str(res["counted"]),
-        "variance": str(res["variance"]), "within_tolerance": res["within_tolerance"],
-        "short": res["short"], "tolerance": str(res["tolerance"]),
-        "transaction_count": s["count"],
-        "opened_at": shift.opened_at.isoformat(), "closed_at": now.isoformat(),
-        "hours": round(hours, 2),
+        "expected_cash": str(money(shift.expected_cash or 0)),
+        "counted_cash": str(money(shift.counted_cash or 0)),
+        "variance": str(money(shift.variance or 0)),
+        "within_tolerance": bool(shift.within_tolerance),
+        "short": (Decimal(str(shift.variance or 0)) < 0),
+        "tolerance": str(money(shift.tolerance)),
+        "variance_note": shift.variance_note,
+        "transaction_count": shift.transaction_count,
+        "opened_at": shift.opened_at.isoformat(),
+        "closed_at": shift.closed_at.isoformat() if shift.closed_at else None,
+        "hours": round(hours, 2) if hours is not None else None,
     }
+
+
+@router.get("/shift/last")
+async def last_cash_shift(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The caller's most recent CLOSED shift -- so the report screen survives a reload."""
+    shift = (await db.execute(select(CashShiftModel).where(
+        CashShiftModel.user_id == _uid(current_user),
+        CashShiftModel.status == CashShiftStatus.CLOSED,
+    ).order_by(CashShiftModel.closed_at.desc()).limit(1))).scalar_one_or_none()
+    if not shift:
+        return {"ok": False}
+    return _shift_report(shift)
 
 
 # ================================================================
@@ -2102,6 +2135,13 @@ async def pos_closeout(request: Request):
     - GET /api/v1/pos/reports/daily-summary (fetch today's stats)
     """
     return templates.TemplateResponse("pos/closeout.html", {"request": request})
+
+
+@html_router.get("/pos/shift", response_class=HTMLResponse, name="pos_shift")
+async def pos_shift(request: Request):
+    """My Drawer -- per-cashier cash shift: open with a counted float, paid-in/out,
+    close by counting out (expected vs counted, variance, one-page report)."""
+    return templates.TemplateResponse("pos/shift.html", {"request": request})
 
 
 @html_router.get("/pos/cash-count", response_class=HTMLResponse, name="pos_cash_count")

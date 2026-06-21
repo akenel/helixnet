@@ -47,7 +47,7 @@
             <div class="card">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Today's Sales</p>
+                        <p class="text-sm text-gray-600 font-medium" x-text="salesIsMine ? 'My Sales Today' : 'Store Sales Today'"></p>
                         <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(stats.todaySales)"></p>
                     </div>
                     <span class="text-4xl">💰</span>
@@ -64,13 +64,15 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/shift'">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Shift Time</p>
-                        <p class="text-2xl font-bold text-gray-900" x-text="shiftTime"></p>
+                        <p class="text-sm text-gray-600 font-medium">My Drawer</p>
+                        <p class="text-2xl font-bold" :class="drawer ? 'text-green-600' : 'text-gray-400'"
+                           x-text="drawer ? formatPrice(parseFloat(drawer.expected_cash)) : 'Closed'"></p>
+                        <p class="text-xs text-gray-500" x-text="drawer ? 'Open — expected in drawer →' : 'Tap to open your drawer →'"></p>
                     </div>
-                    <span class="text-4xl">⏰</span>
+                    <span class="text-4xl" x-text="drawer ? '💵' : '🔒'"></span>
                 </div>
             </div>
         </div>
@@ -100,11 +102,11 @@
             </template>
 
             <template x-if="user.isCashier">
-                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/closeout'">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/shift'">
                     <div class="text-center py-8">
-                        <span class="text-6xl mb-4 block">⏰</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Close Shift</h3>
-                        <p class="text-gray-600">End your day & count cash</p>
+                        <span class="text-6xl mb-4 block">💰</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" x-text="drawer ? 'My Drawer · Close Shift' : 'My Drawer · Open Shift'"></h3>
+                        <p class="text-gray-600">Open float, count cash, close out</p>
                     </div>
                 </div>
             </template>
@@ -126,6 +128,16 @@
                         <span class="text-6xl mb-4 block">💳</span>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2">All Transactions</h3>
                         <p class="text-gray-600">View all sales</p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="user.isManager">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/closeout'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">⏰</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Store Z-Report</h3>
+                        <p class="text-gray-600">End-of-day store totals & Banana CSV</p>
                     </div>
                 </div>
             </template>
@@ -171,6 +183,8 @@
                 shiftStart: new Date()
             },
             shiftTime: '0h 0m',
+            salesIsMine: false,
+            drawer: null,        // /shift/current when this cashier has an open drawer
 
             init() {
                 // Check for tokens in URL fragment (from OAuth callback):
@@ -224,15 +238,22 @@
             },
 
             async loadStats() {
+                // A plain cashier sees THEIR OWN sales; a manager/admin sees the store.
+                this.salesIsMine = this.user.isCashier && !this.user.isManager && !this.user.isAdmin;
                 try {
-                    // Get today's summary
-                    const summary = await API.get('/api/v1/pos/reports/daily-summary');
+                    const summary = await API.get(
+                        '/api/v1/pos/reports/daily-summary' + (this.salesIsMine ? '?mine=true' : ''));
                     this.stats.todaySales = parseFloat(summary.total_sales || 0);
                     this.stats.transactionCount = summary.total_transactions || 0;
                 } catch (error) {
                     console.error('Failed to load stats:', error);
                     // Don't show error toast, stats are optional
                 }
+                // My drawer status (per-cashier cash shift)
+                try {
+                    const cur = await API.get('/api/v1/pos/shift/current');
+                    this.drawer = (cur && cur.open) ? cur : null;
+                } catch (e) { this.drawer = null; }
             },
 
             updateShiftTime() {

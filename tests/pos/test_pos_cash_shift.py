@@ -12,9 +12,23 @@ from decimal import Decimal
 import pytest
 import requests
 
-from conftest import POS, KC_BASE, REALM, CLIENT_ID, find_product, ring_sale
+from conftest import POS, KC_BASE, REALM, CLIENT_ID
 
 requests.packages.urllib3.disable_warnings()
+
+
+def _ring_custom_cash(session, price="42.00"):
+    """Ring a CASH sale of a custom (no-product) line item -- avoids depleting
+    catalog stock so the cash-shift math stays deterministic. Returns the total."""
+    price = Decimal(str(price))
+    tx = session.post(f"{POS}/transactions", json={}).json()
+    r = session.post(f"{POS}/transactions/{tx['id']}/items", json={
+        "product_id": None, "name": "Cash test item", "unit_price": str(price), "quantity": 1})
+    r.raise_for_status()
+    done = session.post(f"{POS}/transactions/{tx['id']}/checkout", json={
+        "payment_method": "cash", "amount_tendered": str(price + Decimal("10"))})
+    done.raise_for_status()
+    return Decimal(str(done.json()["total"]))
 
 
 def _token(username):
@@ -56,10 +70,7 @@ def test_open_ring_close_balances(felix):
     assert op["ok"] is True
     assert op["opening_float"] == "100.00"
 
-    p = find_product(felix, barcode="7610000123461") or find_product(felix, sku="CBD-Oil-20ml")
-    price = Decimal(str(p["price"]))
-    ring_sale(felix, [(p["id"], 1, price)], payment_method="cash",
-              amount_tendered=price + Decimal("10"))
+    price = _ring_custom_cash(felix, "42.00")
 
     cur = felix.get(f"{POS}/shift/current").json()
     assert cur["open"] is True
@@ -137,6 +148,39 @@ def test_paid_requires_kind_amount_reason(felix):
     assert felix.post(f"{POS}/shift/paid", json={"kind": "paid_out", "amount": "5", "reason": ""}).status_code == 400
 
 
+def test_last_shift_returns_the_closed_report(felix):
+    felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
+    felix.post(f"{POS}/shift/close", json={"counted_cash": "100.00"})
+    last = felix.get(f"{POS}/shift/last").json()
+    assert last["ok"] is True
+    assert last["within_tolerance"] is True
+    assert Decimal(last["opening_float"]) == Decimal("100.00")
+    assert last["closed_at"] is not None
+    assert last["hours"] is not None
+
+
+def test_daily_summary_mine_is_per_cashier(felix):
+    """?mine=true shows the caller's own takings; Felix's sale must not touch Pam's."""
+    pam = _sess("pam")
+    pam_before = Decimal(str(pam.get(
+        f"{POS}/reports/daily-summary", params={"mine": "true"}).json()["total_sales"]))
+
+    felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
+    price = _ring_custom_cash(felix, "42.00")
+
+    fmine = felix.get(f"{POS}/reports/daily-summary", params={"mine": "true"}).json()
+    store = felix.get(f"{POS}/reports/daily-summary").json()
+    pam_after = Decimal(str(pam.get(
+        f"{POS}/reports/daily-summary", params={"mine": "true"}).json()["total_sales"]))
+
+    assert Decimal(str(fmine["cash_total"])) >= price, "my sale counts toward MY summary"
+    assert Decimal(str(store["total_sales"])) >= Decimal(str(fmine["total_sales"])), "mine ⊆ store"
+    assert pam_after == pam_before, "Felix's sale must NOT appear in Pam's own summary"
+
+    cur = felix.get(f"{POS}/shift/current").json()
+    felix.post(f"{POS}/shift/close", json={"counted_cash": cur["expected_cash"]})
+
+
 def test_shifts_are_per_cashier(felix):
     """Pam's drawer must not see Felix's sales, and vice versa."""
     pam = _sess("pam")
@@ -146,10 +190,7 @@ def test_shifts_are_per_cashier(felix):
         pam.post(f"{POS}/shift/open", json={"opening_float": "200.00"})
 
         # Felix rings a cash sale; it must land on Felix's drawer only.
-        p = find_product(felix, barcode="7610000123461") or find_product(felix, sku="CBD-Oil-20ml")
-        price = Decimal(str(p["price"]))
-        ring_sale(felix, [(p["id"], 1, price)], payment_method="cash",
-                  amount_tendered=price + Decimal("10"))
+        price = _ring_custom_cash(felix, "42.00")
 
         fcur = felix.get(f"{POS}/shift/current").json()
         pcur = pam.get(f"{POS}/shift/current").json()

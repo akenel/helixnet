@@ -1,0 +1,337 @@
+{% extends "pos/base.html" %}
+
+{% block title %}My Drawer - HelixPOS{% endblock %}
+{% block page_name %}My Drawer{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="shiftData()" x-init="init()">
+
+    <!-- Top Bar -->
+    <div class="bg-white shadow-md border-b-4 border-indigo-600 no-print">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="goDashboard()" title="Back to dashboard" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">💰 My Drawer</h1>
+                    <p class="text-sm text-gray-600" x-text="user.username ? ('Cashier: ' + user.username) : ''"></p>
+                </div>
+            </div>
+            <button @click="goDashboard()" class="btn-secondary text-sm no-print">🏪 Dashboard</button>
+        </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-4 py-8">
+
+        <!-- Loading -->
+        <div x-show="loading" class="text-center py-20 text-gray-400">Loading your drawer…</div>
+
+        <!-- Error banner -->
+        <div x-show="error" class="mb-4 bg-red-100 text-red-800 rounded-lg p-3 text-sm" x-text="error"></div>
+
+        <!-- ============ OPEN DRAWER (no open shift) ============ -->
+        <div x-show="!loading && mode === 'open'" class="card" id="open-drawer">
+            <h2 class="text-xl font-bold text-gray-900 mb-1">Open your drawer</h2>
+            <p class="text-sm text-gray-600 mb-5">Count the cash you're starting with. This is your float —
+                only you are responsible for this drawer.</p>
+
+            <div class="border rounded-lg overflow-hidden mb-4">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr><th class="text-left py-2 px-3">Denomination</th>
+                            <th class="text-center py-2 px-3">Count</th>
+                            <th class="text-right py-2 px-3">Subtotal</th></tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="d in DENOMS" :key="d.k">
+                            <tr class="border-t">
+                                <td class="py-2 px-3 font-medium" x-text="'CHF ' + d.label"></td>
+                                <td class="py-1 px-3 text-center">
+                                    <input type="number" min="0" step="1" inputmode="numeric"
+                                        x-model.number="openCounts[d.k]"
+                                        class="w-20 text-center border rounded py-1 px-2">
+                                </td>
+                                <td class="py-2 px-3 text-right text-gray-700"
+                                    x-text="formatPrice(d.v * (openCounts[d.k] || 0))"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-800 bg-gray-50 font-bold">
+                            <td class="py-3 px-3" colspan="2">Opening float</td>
+                            <td class="py-3 px-3 text-right text-xl text-indigo-700" x-text="formatPrice(openTotal())"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <button @click="openDrawer()" :disabled="processing || openTotal() <= 0" class="btn-primary w-full">
+                <span x-show="!processing">🔓 Open Drawer with <span x-text="formatPrice(openTotal())"></span></span>
+                <span x-show="processing">Opening…</span>
+            </button>
+        </div>
+
+        <!-- ============ ACTIVE SHIFT (open) ============ -->
+        <div x-show="!loading && mode === 'active' && shift" class="space-y-6">
+
+            <!-- Status -->
+            <div class="card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="inline-block bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">● OPEN</span>
+                        <p class="text-sm text-gray-500 mt-1">Opened <span x-text="fmtTime(shift && shift.opened_at)"></span></p>
+                    </div>
+                    <button @click="refresh()" class="text-sm text-indigo-600 hover:underline">↻ Refresh</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><p class="text-gray-500">Opening float</p><p class="font-semibold text-lg" x-text="formatPrice(num(shift && shift.opening_float))"></p></div>
+                    <div><p class="text-gray-500">My cash sales</p><p class="font-semibold text-lg text-green-600" x-text="formatPrice(num(shift && shift.cash_sales))"></p></div>
+                    <div><p class="text-gray-500">My card/Twint (not in drawer)</p><p class="font-semibold" x-text="formatPrice(num(shift && shift.card_sales))"></p></div>
+                    <div><p class="text-gray-500">Transactions</p><p class="font-semibold" x-text="shift && shift.transaction_count"></p></div>
+                    <div x-show="num(shift && shift.paid_in_total) > 0"><p class="text-gray-500">Paid in</p><p class="font-semibold text-blue-600" x-text="formatPrice(num(shift && shift.paid_in_total))"></p></div>
+                    <div x-show="num(shift && shift.paid_out_total) > 0"><p class="text-gray-500">Paid out</p><p class="font-semibold text-orange-600" x-text="formatPrice(num(shift && shift.paid_out_total))"></p></div>
+                </div>
+                <div class="border-t mt-4 pt-4 flex justify-between items-center">
+                    <span class="font-semibold text-gray-700">Expected in drawer now</span>
+                    <span class="text-2xl font-bold text-indigo-700" x-text="formatPrice(num(shift && shift.expected_cash))"></span>
+                </div>
+            </div>
+
+            <!-- Paid in / out -->
+            <div class="card">
+                <h3 class="font-semibold text-gray-900 mb-3">Cash in / out (not a sale)</h3>
+                <p class="text-xs text-gray-500 mb-3">Petty cash out, or a float top-up in — recorded with a reason so the drawer still balances.</p>
+                <div class="flex flex-wrap gap-2 items-center">
+                    <select x-model="paid.kind" class="border rounded py-2 px-3 text-sm">
+                        <option value="paid_out">Paid OUT</option>
+                        <option value="paid_in">Paid IN</option>
+                    </select>
+                    <input type="number" min="0" step="0.05" x-model="paid.amount" placeholder="Amount" class="w-28 border rounded py-2 px-3 text-sm">
+                    <input type="text" x-model="paid.reason" placeholder="Reason (e.g. milk, float top-up)" class="flex-1 min-w-40 border rounded py-2 px-3 text-sm">
+                    <button @click="addPaid()" :disabled="processing" class="btn-secondary text-sm">Record</button>
+                </div>
+            </div>
+
+            <!-- Close: count the drawer -->
+            <div class="card" id="close-drawer">
+                <h3 class="font-semibold text-gray-900 mb-1">Close drawer — count out</h3>
+                <p class="text-sm text-gray-600 mb-4">Count what's physically in the drawer now.</p>
+
+                <div class="border rounded-lg overflow-hidden mb-4">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-500">
+                            <tr><th class="text-left py-2 px-3">Denomination</th>
+                                <th class="text-center py-2 px-3">Count</th>
+                                <th class="text-right py-2 px-3">Subtotal</th></tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="d in DENOMS" :key="'c'+d.k">
+                                <tr class="border-t">
+                                    <td class="py-2 px-3 font-medium" x-text="'CHF ' + d.label"></td>
+                                    <td class="py-1 px-3 text-center">
+                                        <input type="number" min="0" step="1" inputmode="numeric"
+                                            x-model.number="closeCounts[d.k]"
+                                            class="w-20 text-center border rounded py-1 px-2">
+                                    </td>
+                                    <td class="py-2 px-3 text-right text-gray-700"
+                                        x-text="formatPrice(d.v * (closeCounts[d.k] || 0))"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot>
+                            <tr class="border-t-2 border-gray-800 bg-gray-50 font-bold">
+                                <td class="py-3 px-3" colspan="2">Counted</td>
+                                <td class="py-3 px-3 text-right text-xl" x-text="formatPrice(closeTotal())"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Live reconciliation -->
+                <div class="rounded-lg p-4 mb-4" :class="withinTol() ? 'bg-green-50' : 'bg-yellow-50'">
+                    <div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Expected</span><span class="font-semibold" x-text="formatPrice(num(shift && shift.expected_cash))"></span></div>
+                    <div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Counted</span><span class="font-semibold" x-text="formatPrice(closeTotal())"></span></div>
+                    <div class="flex justify-between items-center border-t pt-2 mt-2">
+                        <span class="font-semibold">Variance</span>
+                        <span class="text-xl font-bold" :class="withinTol() ? 'text-green-600' : 'text-red-600'"
+                              x-text="(closeVariance() >= 0 ? '+' : '') + formatPrice(closeVariance())"></span>
+                    </div>
+                    <p x-show="withinTol()" class="text-green-700 text-sm mt-2 font-semibold">✅ Within tolerance (±<span x-text="num(shift && shift.tolerance).toFixed(2)"></span>) — good to close.</p>
+                    <p x-show="!withinTol()" class="text-red-700 text-sm mt-2 font-semibold">⚠️ Outside tolerance — add a note to close.</p>
+                </div>
+
+                <div x-show="!withinTol()" class="mb-4">
+                    <textarea x-model="note" rows="2" class="w-full border rounded py-2 px-3 text-sm"
+                        placeholder="What happened? (e.g. gave wrong change once)"></textarea>
+                </div>
+
+                <button @click="closeDrawer()" :disabled="processing || closeTotal() <= 0 || (!withinTol() && !note.trim())"
+                        class="btn-success w-full">
+                    <span x-show="!processing">🔒 Close Drawer & File Report</span>
+                    <span x-show="processing">Closing…</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============ REPORT (closed) ============ -->
+        <div x-show="!loading && mode === 'report' && report" id="shift-report">
+            <div class="card">
+                <div class="text-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Shift Report</h2>
+                    <p class="text-sm text-gray-500">
+                        <span x-text="report && report.username"></span> ·
+                        <span x-text="fmtTime(report && report.opened_at)"></span> →
+                        <span x-text="fmtTime(report && report.closed_at)"></span>
+                        (<span x-text="report && report.hours"></span> h)
+                    </p>
+                </div>
+
+                <div class="rounded-lg p-4 mb-4 text-center"
+                     :class="report && report.within_tolerance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    <p class="text-sm" x-show="report && report.within_tolerance">✅ Balanced within tolerance</p>
+                    <p class="text-sm" x-show="report && !report.within_tolerance">⚠️ Variance flagged — see note</p>
+                    <p class="text-3xl font-bold mt-1" x-text="(report && num(report.variance) >= 0 ? '+' : '') + formatPrice(num(report && report.variance))"></p>
+                    <p class="text-xs mt-1">variance (counted − expected)</p>
+                </div>
+
+                <table class="w-full text-sm">
+                    <tbody>
+                        <tr class="border-b"><td class="py-2 text-gray-600">Opening float</td><td class="py-2 text-right font-semibold" x-text="formatPrice(num(report && report.opening_float))"></td></tr>
+                        <tr class="border-b"><td class="py-2 text-gray-600">Cash sales</td><td class="py-2 text-right font-semibold text-green-600" x-text="formatPrice(num(report && report.cash_sales))"></td></tr>
+                        <tr class="border-b" x-show="report && num(report.cash_refunds) > 0"><td class="py-2 text-gray-600">Cash refunds</td><td class="py-2 text-right" x-text="'−' + formatPrice(num(report && report.cash_refunds))"></td></tr>
+                        <tr class="border-b" x-show="report && num(report.paid_in_total) > 0"><td class="py-2 text-gray-600">Paid in</td><td class="py-2 text-right text-blue-600" x-text="formatPrice(num(report && report.paid_in_total))"></td></tr>
+                        <tr class="border-b" x-show="report && num(report.paid_out_total) > 0"><td class="py-2 text-gray-600">Paid out</td><td class="py-2 text-right text-orange-600" x-text="'−' + formatPrice(num(report && report.paid_out_total))"></td></tr>
+                        <tr class="border-b border-gray-800"><td class="py-2 font-semibold">Expected in drawer</td><td class="py-2 text-right font-bold" x-text="formatPrice(num(report && report.expected_cash))"></td></tr>
+                        <tr class="border-b border-gray-800"><td class="py-2 font-semibold">Counted</td><td class="py-2 text-right font-bold" x-text="formatPrice(num(report && report.counted_cash))"></td></tr>
+                        <tr><td class="py-2 text-gray-600">Card / Twint (banked separately)</td><td class="py-2 text-right" x-text="formatPrice(num(report && report.card_sales))"></td></tr>
+                        <tr><td class="py-2 text-gray-600">Transactions</td><td class="py-2 text-right" x-text="report && report.transaction_count"></td></tr>
+                    </tbody>
+                </table>
+
+                <div x-show="report && report.variance_note" class="mt-4 bg-gray-50 rounded p-3 text-sm">
+                    <span class="text-gray-500">Note:</span> <span x-text="report && report.variance_note"></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-6 no-print">
+                    <button @click="window.print()" class="btn-secondary">🖨️ Print</button>
+                    <button @click="startNew()" class="btn-primary">🔓 Open New Drawer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    body * { visibility: hidden; }
+    #shift-report, #shift-report * { visibility: visible; }
+    #shift-report { position: absolute; left: 0; top: 0; width: 100%; }
+}
+</style>
+<script>
+function shiftData() {
+    return {
+        loading: true,
+        processing: false,
+        error: '',
+        mode: 'open',          // open | active | report
+        user: {},
+        shift: null,           // /shift/current when open
+        report: null,          // /shift/last or close result
+        note: '',
+        paid: { kind: 'paid_out', amount: '', reason: '' },
+        // CHF denominations -- keys MUST match the server's valid set ("0.50" not "0.5").
+        DENOMS: [
+            {k:'200', v:200, label:'200'}, {k:'100', v:100, label:'100'},
+            {k:'50', v:50, label:'50'}, {k:'20', v:20, label:'20'}, {k:'10', v:10, label:'10'},
+            {k:'5', v:5, label:'5'}, {k:'2', v:2, label:'2'}, {k:'1', v:1, label:'1'},
+            {k:'0.50', v:0.5, label:'0.50'}, {k:'0.20', v:0.2, label:'0.20'},
+            {k:'0.10', v:0.1, label:'0.10'}, {k:'0.05', v:0.05, label:'0.05'},
+        ],
+        openCounts: {},
+        closeCounts: {},
+
+        async init() {
+            this.user = AuthHelper.getUserInfo() || {};
+            this.DENOMS.forEach(d => { this.openCounts[d.k] = 0; this.closeCounts[d.k] = 0; });
+            await this.refresh();
+        },
+
+        async refresh() {
+            this.loading = true; this.error = '';
+            try {
+                const cur = await API.get('/api/v1/pos/shift/current');
+                if (cur && cur.open) {
+                    this.shift = cur; this.mode = 'active';
+                } else {
+                    this.shift = null;
+                    const last = await API.get('/api/v1/pos/shift/last');
+                    if (last && last.ok) { this.report = last; this.mode = 'report'; }
+                    else { this.mode = 'open'; }
+                }
+            } catch (e) { this.error = 'Could not load your drawer. ' + (e.message || ''); }
+            this.loading = false;
+        },
+
+        num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; },
+        fmtTime(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleString('de-CH'); } catch(e){ return iso; } },
+        denomTotal(counts) { let t = 0; this.DENOMS.forEach(d => t += d.v * (parseInt(counts[d.k]) || 0)); return Math.round(t * 100) / 100; },
+        openTotal() { return this.denomTotal(this.openCounts); },
+        closeTotal() { return this.denomTotal(this.closeCounts); },
+        cleanDenoms(counts) { const o = {}; this.DENOMS.forEach(d => { const n = parseInt(counts[d.k]) || 0; if (n > 0) o[d.k] = n; }); return o; },
+        closeVariance() { return Math.round((this.closeTotal() - this.num(this.shift && this.shift.expected_cash)) * 100) / 100; },
+        withinTol() { return Math.abs(this.closeVariance()) <= this.num(this.shift && this.shift.tolerance); },
+
+        async openDrawer() {
+            if (this.openTotal() <= 0) return;
+            this.processing = true; this.error = '';
+            try {
+                await API.post('/api/v1/pos/shift/open', { opening_denoms: this.cleanDenoms(this.openCounts) });
+                this.DENOMS.forEach(d => this.closeCounts[d.k] = 0);
+                await this.refresh();
+            } catch (e) { this.error = e.message || 'Could not open the drawer.'; }
+            this.processing = false;
+        },
+
+        async addPaid() {
+            const amt = parseFloat(this.paid.amount);
+            if (!amt || amt <= 0) { this.error = 'Enter an amount.'; return; }
+            if (!this.paid.reason.trim()) { this.error = 'Give a reason.'; return; }
+            this.processing = true; this.error = '';
+            try {
+                await API.post('/api/v1/pos/shift/paid', {
+                    kind: this.paid.kind, amount: String(amt), reason: this.paid.reason.trim() });
+                this.paid.amount = ''; this.paid.reason = '';
+                await this.refresh();
+            } catch (e) { this.error = e.message || 'Could not record the movement.'; }
+            this.processing = false;
+        },
+
+        async closeDrawer() {
+            if (this.closeTotal() <= 0) return;
+            if (!this.withinTol() && !this.note.trim()) { this.error = 'Add a note to close (outside tolerance).'; return; }
+            this.processing = true; this.error = '';
+            try {
+                const res = await API.post('/api/v1/pos/shift/close', {
+                    closing_denoms: this.cleanDenoms(this.closeCounts), note: this.note.trim() });
+                this.report = res; this.shift = null; this.note = ''; this.mode = 'report';
+            } catch (e) { this.error = e.message || 'Could not close the drawer.'; }
+            this.processing = false;
+        },
+
+        startNew() {
+            this.DENOMS.forEach(d => { this.openCounts[d.k] = 0; this.closeCounts[d.k] = 0; });
+            this.report = null; this.mode = 'open';
+        },
+
+        goDashboard() { window.location.href = '/pos/dashboard'; },
+    };
+}
+</script>
+{% endblock %}
