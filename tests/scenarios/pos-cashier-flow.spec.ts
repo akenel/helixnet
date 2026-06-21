@@ -463,3 +463,51 @@ test('My Drawer: the report carries the itemized daily sales log', async ({ page
   await expect(page.locator('#shift-report')).toContainText(/\d+ transactions/i);
   await expect(page.locator('#shift-report')).toContainText(/×\s/);   // a "1× <item>" line
 });
+
+/**
+ * CRM Phase 0c — a member attached to the sale: the checkout shows the member
+ * banner and the sale scores their points. (Enroll-via-API + "Use for Checkout"
+ * is simulated by seeding sessionStorage, exactly what the lookup page does.)
+ */
+test('member: shows on checkout and earns points on the sale', async ({ page }) => {
+  await login(page);
+
+  // Enroll a fresh 18+ member via the API; capture id + baseline credits.
+  const m = await page.evaluate(async () => {
+    const t = sessionStorage.getItem('pos_token');
+    const h = { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' };
+    const handle = 'e2e_' + Math.random().toString(36).slice(2, 9);
+    const created = await (await fetch('/api/v1/customers', { method: 'POST', headers: h,
+      body: JSON.stringify({ handle, age_confirmed: true }) })).json();
+    const view = await (await fetch('/api/v1/customers/checkout/' + created.id, { headers: h })).json();
+    return { id: created.id, handle, credits: view.credits_balance };
+  });
+
+  // Simulate the lookup page's "Use for Checkout" (seed the member), then ring a sale.
+  await page.goto('/pos/scan');
+  await page.evaluate((m) => sessionStorage.setItem('checkout_customer', JSON.stringify({
+    id: m.id, handle: m.handle, loyalty_tier: 'bronze', tier_discount_percent: 0, credits_balance: m.credits,
+  })), m);
+
+  await searchProducts(page, 'grinder');
+  await page.getByRole('button', { name: /Add/ }).first().click();
+  await page.getByRole('button', { name: /Checkout/ }).click();
+
+  // The member banner is shown on checkout.
+  await expect(page.locator('#member-banner')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('#member-banner')).toContainText(m.handle);
+
+  // Complete the sale (card).
+  await page.getByText('Visa/MC').click();
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: /Confirm & Complete/i }).click();
+  await page.waitForURL(/\/pos\/receipt\//, { timeout: 20_000 });
+
+  // The member earned points (credits went up from the baseline).
+  const after = await page.evaluate(async (id) => {
+    const t = sessionStorage.getItem('pos_token');
+    const h = { 'Authorization': 'Bearer ' + t };
+    return (await (await fetch('/api/v1/customers/checkout/' + id, { headers: h })).json()).credits_balance;
+  }, m.id);
+  expect(after).toBeGreaterThan(m.credits);
+});

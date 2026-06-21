@@ -249,6 +249,10 @@ async def create_customer(
         if existing_ig.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Instagram already registered")
 
+    # The only compliance must: 18+ (Pam ticks it at the counter / online claim).
+    if not customer.age_confirmed:
+        raise HTTPException(status_code=400, detail="Confirm the member is 18 or older to enroll.")
+
     # Create customer
     new_customer = CustomerModel(
         handle=customer.handle,
@@ -262,6 +266,8 @@ async def create_customer(
         birthday=customer.birthday,
         language=customer.language,
         notes=customer.notes,
+        age_confirmed=customer.age_confirmed,
+        marketing_consent=customer.marketing_consent,
     )
 
     db.add(new_customer)

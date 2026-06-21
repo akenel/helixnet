@@ -14,11 +14,18 @@ CUST = f"{API_BASE}/api/v1/customers"
 
 
 def _new_customer(session):
-    """Create a fresh Bronze member (unique handle per run)."""
+    """Create a fresh Bronze member (unique handle per run). 18+ is required to enroll."""
     handle = "tester_" + uuid.uuid4().hex[:8]
-    r = session.post(CUST, json={"handle": handle})
+    r = session.post(CUST, json={"handle": handle, "age_confirmed": True})
     r.raise_for_status()
     return r.json()["id"]
+
+
+def test_enroll_requires_18_plus(session):
+    """No 18+ confirmation -> the member is not created (the only compliance must)."""
+    r = session.post(CUST, json={"handle": "under_" + uuid.uuid4().hex[:8]})
+    assert r.status_code == 400
+    assert "18" in r.text
 
 
 def _view(session, cid):

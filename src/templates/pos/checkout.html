@@ -8,6 +8,28 @@
         <div class="card">
             <h1 class="text-3xl font-bold text-gray-900 mb-6">💳 Checkout</h1>
 
+            <!-- Member banner (loyalty) -->
+            <div x-show="member" id="member-banner" class="mb-6 flex items-center justify-between rounded-lg p-4 bg-indigo-600 text-white">
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl">👤</span>
+                    <div>
+                        <p class="font-bold text-lg" x-text="member ? (member.handle + (member.instagram ? ' · ' + member.instagram : '')) : ''"></p>
+                        <p class="text-sm text-indigo-100">
+                            <span class="uppercase font-semibold" x-text="member ? member.loyalty_tier : ''"></span>
+                            <span x-show="member && member.tier_discount_percent > 0">
+                                · <span x-text="member ? member.tier_discount_percent : 0"></span>% member discount</span>
+                            <span x-show="member && member.tier_discount_percent == 0">· member</span>
+                            · <span x-text="member ? member.credits_balance : 0"></span> pts
+                        </p>
+                    </div>
+                </div>
+                <button @click="clearMember()" class="text-indigo-100 hover:text-white text-sm underline">remove</button>
+            </div>
+            <div x-show="!member" class="mb-6 rounded-lg p-3 bg-gray-100 text-gray-600 text-sm flex justify-between items-center">
+                <span>No member on this sale.</span>
+                <a href="/pos/customer-lookup" class="text-indigo-600 underline font-medium">Add a member →</a>
+            </div>
+
             <!-- Order Summary -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
@@ -43,6 +65,10 @@
                 <div x-show="discount > 0" class="flex justify-between text-green-600">
                     <span>Discount (<span x-text="discount"></span>%):</span>
                     <span x-text="'-' + formatPrice(discountAmount)"></span>
+                </div>
+                <div x-show="member && member.tier_discount_percent > 0" class="flex justify-between text-indigo-600">
+                    <span>Member discount (<span x-text="member ? member.loyalty_tier : ''"></span> <span x-text="member ? member.tier_discount_percent : 0"></span>%):</span>
+                    <span x-text="'-' + formatPrice(memberDiscountAmount)"></span>
                 </div>
                 <div class="border-t pt-3 flex justify-between text-xl font-bold">
                     <span>TOTAL:</span>
@@ -209,6 +235,8 @@
     function checkoutData() {
         return {
             cartData: {cart: [], totals: {}, discount: 0, transactionId: ''},
+            member: null,              // loyalty member attached to this sale
+            memberDiscountAmount: 0,   // display-only; the server applies it once at checkout
             paymentMethod: 'visa',
             processing: false,
             discount: 0,
@@ -239,6 +267,11 @@
 
                 this.cartData = JSON.parse(stored);
                 this.discount = this.cartData.discount || 0;
+                // A member may have been picked on the lookup page ("Use for Checkout").
+                try {
+                    const m = sessionStorage.getItem('checkout_customer');
+                    if (m) this.member = JSON.parse(m);
+                } catch (e) { this.member = null; }
                 this.recalculateTotals();
 
                 // Load the treats catalog (real products) for the "give a treat" picker.
@@ -358,13 +391,25 @@
             recalculateTotals() {
                 const subtotal = this.cartData.totals.subtotal || 0;
                 this.discountAmount = subtotal * (this.discount / 100);
-                const afterDiscount = subtotal - this.discountAmount;  // gross paid
+                const afterDiscount = subtotal - this.discountAmount;  // after the manual discount
+                // Member tier discount stacks on top (display-only here -- the server applies
+                // it once at checkout from customer_id, so the displayed total matches the charge).
+                const memberPct = (this.member && this.member.tier_discount_percent) || 0;
+                this.memberDiscountAmount = afterDiscount * (memberPct / 100);
+                const gross = afterDiscount - this.memberDiscountAmount;  // gross paid
                 // Inclusive Swiss VAT: shelf prices already contain VAT, so the gross IS
                 // the total and VAT is the contained portion (gross * rate / (100 + rate)).
-                const vat = afterDiscount * POSConfig.vat_rate / (100 + POSConfig.vat_rate);
+                const vat = gross * POSConfig.vat_rate / (100 + POSConfig.vat_rate);
                 this.cartData.totals.discountAmount = this.discountAmount;
+                this.cartData.totals.memberDiscountAmount = this.memberDiscountAmount;
                 this.cartData.totals.vat = vat;
-                this.cartData.totals.total = afterDiscount;
+                this.cartData.totals.total = gross;
+            },
+
+            clearMember() {
+                this.member = null;
+                try { sessionStorage.removeItem('checkout_customer'); } catch (e) {}
+                this.recalculateTotals();
             },
 
             inventoryPreview() {
@@ -437,10 +482,15 @@
                         // Use the cash received from Quick Round buttons
                         checkoutData.amount_tendered = this.cashReceived.toFixed(2);
                     }
+                    // Attach the loyalty member -> server applies tier discount + earns points.
+                    if (this.member && this.member.id) {
+                        checkoutData.customer_id = this.member.id;
+                    }
                     await API.post(`/api/v1/pos/transactions/${transaction.id}/checkout`, checkoutData);
 
-                    // Clear cart
+                    // Clear cart + the attached member (the sale is done).
                     sessionStorage.removeItem('pos_cart');
+                    sessionStorage.removeItem('checkout_customer');
 
                     showToast('Transaction completed! Displaying receipt...', 'success');
 

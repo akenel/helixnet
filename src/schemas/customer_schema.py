@@ -149,6 +149,8 @@ class CustomerBase(BaseModel):
 class CustomerCreate(CustomerBase):
     """Create a new CRACK profile"""
     referrer_id: Optional[UUID] = Field(None, description="Who referred them")
+    age_confirmed: bool = Field(False, description="18+ confirmed at sign-up (required true to enroll)")
+    marketing_consent: bool = Field(False, description="Opt-in for SMS/email offers (default off)")
 
 
 class CustomerUpdate(BaseModel):

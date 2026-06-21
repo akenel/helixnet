@@ -75,8 +75,21 @@
                                placeholder="+41 79 123 4567">
                     </div>
                 </div>
+                <!-- The only must: 18+. Plus an optional offers opt-in (off by default). -->
+                <div class="mt-4 space-y-2">
+                    <label class="flex items-center space-x-2 text-sm font-medium"
+                           :class="newCustomer.age_confirmed ? 'text-green-700' : 'text-gray-700'">
+                        <input type="checkbox" x-model="newCustomer.age_confirmed" class="w-5 h-5">
+                        <span>✓ I confirm this member is <b>18 or older</b> (required)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm text-gray-600">
+                        <input type="checkbox" x-model="newCustomer.marketing_consent" class="w-5 h-5">
+                        <span>Send me offers (SMS/email) — optional</span>
+                    </label>
+                </div>
                 <div class="mt-4 flex gap-2">
-                    <button @click="createCustomer()" class="btn-success">✅ Create Profile</button>
+                    <button @click="createCustomer()" :disabled="!newCustomer.age_confirmed"
+                            class="btn-success" :class="!newCustomer.age_confirmed ? 'opacity-50 cursor-not-allowed' : ''">✅ Create Profile</button>
                     <button @click="showNewCustomerForm = false" class="btn-secondary">Cancel</button>
                 </div>
             </div>
@@ -214,7 +227,9 @@
                 email: '',
                 phone: '',
                 instagram: '',
-                telegram: ''
+                telegram: '',
+                age_confirmed: false,
+                marketing_consent: false
             },
             suggestions: [
                 'New Purple Power Oil (matches taste)',
@@ -226,7 +241,7 @@
             async init() {
                 // Load recent customers from API
                 try {
-                    const token = sessionStorage.getItem('access_token');
+                    const token = AuthHelper.getToken();
                     if (!token) return;
 
                     const response = await fetch('/api/v1/customers/recent/visitors?limit=8', {
@@ -255,7 +270,7 @@
 
                 try {
                     // Search via API
-                    const token = sessionStorage.getItem('access_token');
+                    const token = AuthHelper.getToken();
                     const response = await fetch(`/api/v1/customers/search?q=${encodeURIComponent(this.searchQuery)}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -308,7 +323,7 @@
                 }
 
                 try {
-                    const token = sessionStorage.getItem('access_token');
+                    const token = AuthHelper.getToken();
                     const response = await fetch('/api/v1/customers', {
                         method: 'POST',
                         headers: {

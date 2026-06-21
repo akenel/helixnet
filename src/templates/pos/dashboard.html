@@ -102,6 +102,16 @@
             </template>
 
             <template x-if="user.isCashier">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/customer-lookup'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">👤</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Members</h3>
+                        <p class="text-gray-600">Look up or sign up a member</p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="user.isCashier">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/shift'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">💰</span>
