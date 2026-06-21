@@ -26,7 +26,11 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Boarding (awaiting the next prod train)
 
-_(empty — nothing boarding. BL-87 SHIPPED, see history below.)_
+| Feature | Commit(s) | Test status | Prod |
+|---|---|---|---|
+| BL-88 catalog management dashboard (`/pos/catalog`) | `8b522a0` | green on staging-banco: page 200, dashboard card wired. POS gate 99 pass (7 = pre-existing flake, no regression). Authed round-trip PASS (create w/ picture+reorder → readback → edit picture → discontinue). | **STAGED — staging-banco.lapiazza.app @ 8b522a0, 2026-06-21. Awaiting Angel PASS.** |
+
+_(BL-87 SHIPPED, see history below.)_
 
 > **BL-87 camera barcode scan + lazy capture (`/pos/scan`)** — `275e0a9`, `755ea99` (+ spec `90ac996`).
 > Camera PASSED on Angel's Fairphone (AC1/AC4). Verified on real device traffic (staging txns 0132-0136):
