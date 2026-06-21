@@ -1841,6 +1841,70 @@ async def last_cash_shift(
     return _shift_report(shift)
 
 
+@router.get("/shift/{shift_id}/transactions")
+async def shift_transactions(
+    shift_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The itemized daily log for one shift -- every transaction the cashier rang in
+    the shift window, with its line items. This is what Pam hands Felix: 'I sold
+    exactly these N transactions, here is every item.' Owner sees their own; a
+    manager/admin can review anyone's."""
+    shift = (await db.execute(select(CashShiftModel).where(
+        CashShiftModel.id == shift_id))).scalar_one_or_none()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+    roles = (current_user.get("user_roles")
+             or current_user.get("realm_access", {}).get("roles", []) or [])
+    is_mgr = any(("manager" in r or "admin" in r or "developer" in r) for r in roles)
+    if shift.user_id != _uid(current_user) and not is_mgr:
+        raise HTTPException(status_code=403, detail="Not your shift.")
+
+    end = shift.closed_at or datetime.now(timezone.utc)
+    txs = (await db.execute(select(TransactionModel).where(
+        TransactionModel.cashier_id == shift.user_id,
+        TransactionModel.completed_at >= shift.opened_at,
+        TransactionModel.completed_at <= end,
+        TransactionModel.status.in_([TransactionStatus.COMPLETED, TransactionStatus.REFUNDED]),
+    ).order_by(TransactionModel.completed_at.asc()))).scalars().all()
+
+    tx_ids = [t.id for t in txs]
+    items_by_tx: dict = {}
+    if tx_ids:
+        lis = (await db.execute(select(LineItemModel).where(
+            LineItemModel.transaction_id.in_(tx_ids)))).scalars().all()
+        pids = {it.product_id for it in lis if it.product_id is not None}
+        names: dict = {}
+        if pids:
+            names = {p.id: p.name for p in (await db.execute(
+                select(ProductModel).where(ProductModel.id.in_(pids)))).scalars().all()}
+        for it in lis:
+            items_by_tx.setdefault(it.transaction_id, []).append({
+                "name": names.get(it.product_id) or (it.notes if it.product_id is None else "Item"),
+                "quantity": it.quantity,
+                "unit_price": str(money(it.unit_price)),
+                "line_total": str(money(it.line_total)),
+                "is_giveaway": bool(it.is_giveaway),
+            })
+
+    out = []
+    item_count = 0
+    for t in txs:
+        items = items_by_tx.get(t.id, [])
+        item_count += sum(i["quantity"] for i in items if not i["is_giveaway"])
+        out.append({
+            "number": t.transaction_number,
+            "time": t.completed_at.isoformat() if t.completed_at else None,
+            "payment_method": t.payment_method.value if t.payment_method else None,
+            "status": t.status.value,
+            "total": str(money(t.total)),
+            "items": items,
+        })
+    return {"shift_id": str(shift.id), "username": shift.username,
+            "transaction_count": len(out), "item_count": item_count, "transactions": out}
+
+
 # ================================================================
 # HTML WEB UI ROUTES (Sprint 4 - Pam's Interface)
 # ================================================================

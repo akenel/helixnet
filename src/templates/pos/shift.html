@@ -215,6 +215,48 @@
                     <span class="text-gray-500">Note:</span> <span x-text="report && report.variance_note"></span>
                 </div>
 
+                <!-- Itemized daily sales log — exactly what was sold this shift -->
+                <div class="mt-6 border-t pt-4">
+                    <div class="flex justify-between items-baseline mb-3">
+                        <h3 class="font-bold text-gray-900">Daily Sales Log</h3>
+                        <span class="text-sm text-gray-500" x-show="log"
+                              x-text="(log ? log.transaction_count : 0) + ' transactions · ' + (log ? log.item_count : 0) + ' items'"></span>
+                    </div>
+
+                    <p x-show="log && log.transactions.length === 0" class="text-sm text-gray-400 py-2">No sales this shift.</p>
+
+                    <div x-show="log && log.transactions.length > 0" class="space-y-3">
+                        <template x-for="(t, i) in (log ? log.transactions : [])" :key="t.number || i">
+                            <div class="border rounded-lg overflow-hidden text-sm">
+                                <div class="flex justify-between items-center bg-gray-50 px-3 py-2">
+                                    <div>
+                                        <span class="font-semibold" x-text="'#' + (t.number || (i+1))"></span>
+                                        <span class="text-gray-500 ml-2" x-text="fmtTime(t.time)"></span>
+                                        <span class="ml-2 text-xs uppercase px-2 py-0.5 rounded-full"
+                                              :class="t.status === 'refunded' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'"
+                                              x-text="t.payment_method + (t.status === 'refunded' ? ' · refund' : '')"></span>
+                                    </div>
+                                    <span class="font-bold" x-text="formatPrice(num(t.total))"></span>
+                                </div>
+                                <table class="w-full">
+                                    <tbody>
+                                        <template x-for="(it, j) in t.items" :key="j">
+                                            <tr class="border-t">
+                                                <td class="py-1 px-3 text-gray-700">
+                                                    <span x-text="it.quantity + '× ' + (it.name || 'Item')"></span>
+                                                    <span x-show="it.is_giveaway" class="text-pink-600 text-xs ml-1">🎁 free</span>
+                                                </td>
+                                                <td class="py-1 px-3 text-right text-gray-500" x-text="formatPrice(num(it.unit_price))"></td>
+                                                <td class="py-1 px-3 text-right font-medium" x-text="formatPrice(num(it.line_total))"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3 mt-6 no-print">
                     <button @click="window.print()" class="btn-secondary">🖨️ Print</button>
                     <button @click="startNew()" class="btn-primary">🔓 Open New Drawer</button>
@@ -244,6 +286,7 @@ function shiftData() {
         user: {},
         shift: null,           // /shift/current when open
         report: null,          // /shift/last or close result
+        log: null,             // itemized daily sales log for the report
         note: '',
         paid: { kind: 'paid_out', amount: '', reason: '' },
         // CHF denominations -- keys MUST match the server's valid set ("0.50" not "0.5").
@@ -272,7 +315,7 @@ function shiftData() {
                 } else {
                     this.shift = null;
                     const last = await API.get('/api/v1/pos/shift/last');
-                    if (last && last.ok) { this.report = last; this.mode = 'report'; }
+                    if (last && last.ok) { this.report = last; this.mode = 'report'; this.loadLog(last.shift_id); }
                     else { this.mode = 'open'; }
                 }
             } catch (e) { this.error = 'Could not load your drawer. ' + (e.message || ''); }
@@ -321,13 +364,21 @@ function shiftData() {
                 const res = await API.post('/api/v1/pos/shift/close', {
                     closing_denoms: this.cleanDenoms(this.closeCounts), note: this.note.trim() });
                 this.report = res; this.shift = null; this.note = ''; this.mode = 'report';
+                this.loadLog(res.shift_id);
             } catch (e) { this.error = e.message || 'Could not close the drawer.'; }
             this.processing = false;
         },
 
+        async loadLog(shiftId) {
+            this.log = null;
+            if (!shiftId) return;
+            try { this.log = await API.get('/api/v1/pos/shift/' + shiftId + '/transactions'); }
+            catch (e) { this.log = null; }
+        },
+
         startNew() {
             this.DENOMS.forEach(d => { this.openCounts[d.k] = 0; this.closeCounts[d.k] = 0; });
-            this.report = null; this.mode = 'open';
+            this.report = null; this.log = null; this.mode = 'open';
         },
 
         goDashboard() { window.location.href = '/pos/dashboard'; },

@@ -159,6 +159,36 @@ def test_last_shift_returns_the_closed_report(felix):
     assert last["hours"] is not None
 
 
+def test_shift_transactions_itemized_log(felix):
+    """The one-pager Pam hands in: the shift's transactions + every item sold."""
+    felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
+    _ring_custom_cash(felix, "42.00")
+    _ring_custom_cash(felix, "17.50")
+    closed = felix.post(f"{POS}/shift/close", json={"counted_cash": "159.50"}).json()
+    sid = closed["shift_id"]
+
+    log = felix.get(f"{POS}/shift/{sid}/transactions").json()
+    assert log["transaction_count"] == 2, "both sales appear in the shift log"
+    assert log["item_count"] >= 2
+    # Every transaction carries its line items with names + totals.
+    names = [it["name"] for t in log["transactions"] for it in t["items"]]
+    assert "Cash test item" in names
+    totals = [Decimal(t["total"]) for t in log["transactions"]]
+    assert Decimal("42.00") in totals and Decimal("17.50") in totals
+
+
+def test_shift_transactions_scoped_to_window_and_cashier(felix):
+    """A sale rung BEFORE the shift opened must not appear in the shift log."""
+    _ring_custom_cash(felix, "99.00")          # before opening
+    felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
+    _ring_custom_cash(felix, "42.00")          # during
+    closed = felix.post(f"{POS}/shift/close", json={"counted_cash": "142.00"}).json()
+    log = felix.get(f"{POS}/shift/{closed['shift_id']}/transactions").json()
+    totals = [Decimal(t["total"]) for t in log["transactions"]]
+    assert Decimal("42.00") in totals
+    assert Decimal("99.00") not in totals, "pre-shift sale excluded from the log"
+
+
 def test_daily_summary_mine_is_per_cashier(felix):
     """?mine=true shows the caller's own takings; Felix's sale must not touch Pam's."""
     pam = _sess("pam")

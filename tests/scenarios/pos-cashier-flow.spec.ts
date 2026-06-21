@@ -342,3 +342,124 @@ test('Close Shift screen has a header + back-to-dashboard (BL-021)', async ({ pa
   await page.waitForURL(/\/pos\/dashboard/, { timeout: 15_000 });
   expect(await tokenPresent(page)).toBe(true);
 });
+
+/**
+ * Cash shift — My Drawer (increment 2). Drives the cashier UI loop end-to-end:
+ * open with a denomination grid -> live status/expected -> close by counting the
+ * grid -> reconciliation light -> one-page report. (The sale-window math, where a
+ * cash sale raises Expected, is covered exhaustively by the API suite.)
+ */
+async function resetDrawer(page: Page) {
+  // Guarantee a clean slate: close any open shift via the API with the token in hand.
+  await page.evaluate(async () => {
+    const t = sessionStorage.getItem('pos_token');
+    const h = { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' };
+    const cur = await (await fetch('/api/v1/pos/shift/current', { headers: h })).json();
+    if (cur && cur.open) {
+      await fetch('/api/v1/pos/shift/close', { method: 'POST', headers: h,
+        body: JSON.stringify({ counted_cash: cur.expected_cash }) });
+    }
+  });
+}
+
+/** Land on the OPEN-drawer form. If a prior closed shift shows its report, click
+ *  "Open New Drawer" to get there. */
+async function gotoOpenDrawer(page: Page) {
+  await resetDrawer(page);
+  await page.goto('/pos/shift');
+  const openNew = page.getByRole('button', { name: /Open New Drawer/i });
+  try { await openNew.click({ timeout: 4000 }); } catch { /* already on the open form */ }
+  await expect(page.getByText('Open your drawer')).toBeVisible({ timeout: 10_000 });
+}
+
+test('My Drawer: open with a denomination grid, then close balanced -> report', async ({ page }) => {
+  await login(page);
+  await gotoOpenDrawer(page);
+
+  // OPEN form: count 1x CHF 100 + 1x CHF 0.50 = float 100.50.
+  const openInputs = page.locator('#open-drawer input[type="number"]');
+  await openInputs.nth(1).fill('1');   // CHF 100
+  await openInputs.nth(8).fill('1');   // CHF 0.50
+  await expect(page.locator('#open-drawer')).toContainText(/100[.,]50/);  // running float
+  await page.getByRole('button', { name: /Open Drawer with/i }).click();
+
+  // ACTIVE: status shows the float + expected (no sales -> expected == float).
+  await expect(page.getByText('● OPEN')).toBeVisible({ timeout: 15_000 });
+
+  // CLOSE: count the same 100.50 -> variance 0, within tolerance.
+  const closeInputs = page.locator('#close-drawer input[type="number"]');
+  await closeInputs.nth(1).fill('1');   // CHF 100
+  await closeInputs.nth(8).fill('1');   // CHF 0.50
+  await expect(page.locator('#close-drawer')).toContainText(/Within tolerance/i);
+  await page.getByRole('button', { name: /Close Drawer & File Report/i }).click();
+
+  // REPORT: balanced, variance +0.00.
+  await expect(page.locator('#shift-report')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#shift-report')).toContainText(/Balanced within tolerance/i);
+  await expect(page.locator('#shift-report')).toContainText(/Shift Report/i);
+  expect(await tokenPresent(page)).toBe(true);
+});
+
+test('My Drawer: a short count is blocked until a note is added', async ({ page }) => {
+  await login(page);
+  await gotoOpenDrawer(page);
+
+  // Open with 1x CHF 100 = 100.00.
+  const openInputs = page.locator('#open-drawer input[type="number"]');
+  await openInputs.nth(1).fill('1');
+  await page.getByRole('button', { name: /Open Drawer with/i }).click();
+  await expect(page.getByText('● OPEN')).toBeVisible({ timeout: 15_000 });
+
+  // Count only 98.00 (50 + 2x20 + 5 + 2 + 1) -> 2.00 short -> outside tolerance.
+  const c = page.locator('#close-drawer input[type="number"]');
+  await c.nth(2).fill('1');   // 50
+  await c.nth(3).fill('2');   // 20 x2
+  await c.nth(5).fill('1');   // 5
+  await c.nth(6).fill('1');   // 2
+  await c.nth(7).fill('1');   // 1
+  await expect(page.locator('#close-drawer')).toContainText(/Outside tolerance/i);
+
+  // Close button is disabled until a note is filled.
+  const closeBtn = page.getByRole('button', { name: /Close Drawer & File Report/i });
+  await expect(closeBtn).toBeDisabled();
+  await page.locator('#close-drawer textarea').fill('Two short — gave wrong change once.');
+  await expect(closeBtn).toBeEnabled();
+  await closeBtn.click();
+
+  // Report shows the flagged variance.
+  await expect(page.locator('#shift-report')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#shift-report')).toContainText(/Variance flagged/i);
+});
+
+test('My Drawer: the report carries the itemized daily sales log', async ({ page }) => {
+  await login(page);
+  await gotoOpenDrawer(page);
+
+  // Open with 1x CHF 100.
+  await page.locator('#open-drawer input[type="number"]').nth(1).fill('1');
+  await page.getByRole('button', { name: /Open Drawer with/i }).click();
+  await expect(page.getByText('● OPEN')).toBeVisible({ timeout: 15_000 });
+
+  // Ring a real cash sale through the till.
+  await searchProducts(page, 'grinder');
+  await page.getByRole('button', { name: /Add/ }).first().click();
+  await page.getByRole('button', { name: /Checkout/ }).click();
+  await page.getByText('Cash', { exact: true }).click();
+  await page.getByRole('button', { name: /EXACT/i }).click();
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: /Confirm & Complete/i }).click();
+  await page.waitForURL(/\/pos\/receipt\//, { timeout: 20_000 });
+
+  // Back to the drawer (still open). Count only the float -> short -> note -> close.
+  await page.goto('/pos/shift');
+  await expect(page.getByText('● OPEN')).toBeVisible({ timeout: 15_000 });
+  await page.locator('#close-drawer input[type="number"]').nth(1).fill('1');   // 100 only
+  await page.locator('#close-drawer textarea').fill('Counting float only — log test.');
+  await page.getByRole('button', { name: /Close Drawer & File Report/i }).click();
+
+  // The report shows the itemized daily log with the sale.
+  await expect(page.locator('#shift-report')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#shift-report')).toContainText(/Daily Sales Log/i);
+  await expect(page.locator('#shift-report')).toContainText(/\d+ transactions/i);
+  await expect(page.locator('#shift-report')).toContainText(/×\s/);   // a "1× <item>" line
+});
