@@ -39,17 +39,27 @@ so sessions don't fall over each other or push half-baked work to a live box.
 >    lookup resolves on `products.barcode` OR an alias; `POST /products/{id}/barcodes`
 >    attaches an extra code; the lazy-capture modal can "link to existing" instead of
 >    making a duplicate.
-> 4. **Data normalization** — `scripts/bl90_normalize_barcodes.py` splits the Banana
->    import's space-joined multi-barcode fields (root cause: e.g. `"EAN1 EAN2"` in one
->    field never exact-matched a single scan) → first code primary, rest aliases.
->    **61 rows fixed locally; both codes now resolve via the API.** Idempotent; run
->    `--dry-run` first, then once per env (staging+prod share the DB → run once).
+> 4. **Data normalization** — `scripts/bl90_normalize_barcodes.py` splits space-joined
+>    multi-barcode fields (root cause on a full import: `"EAN1 EAN2"` in one field never
+>    exact-matched a single scan) → first code primary, rest aliases; collision-aware +
+>    idempotent, `--dry-run` first. **61 such rows fixed in the LOCAL full-import DB.**
+>    NOTE: the SHARED prod/staging catalog has only ~3 problem rows and the normalizer is
+>    a **no-op** on them — so there is NO risky prod data write here.
 >
-> **STAGED** — local: 110 POS tests pass (106 + 4 new alias tests; also fixed the
-> pre-existing `find_product` flake by switching it to the exact barcode endpoint).
-> JS parse-clean, `/pos/scan` + `/pos/catalog` + `/static/pos-scanner.js` serve 200.
+> **SHIPPED — staging-banco @ `4f184d4`, 2026-06-21** (table `product_barcodes` created
+> on shared DB, retail-only formats served, scan/catalog pages 200). Local: 110 POS tests
+> pass (106 + 4 new alias tests; also fixed the pre-existing `find_product` flake by
+> switching it to the exact barcode endpoint). JS parse-clean.
+>
+> **Two known bad PROD rows = manual decisions for Angel/Felix (NOT auto-fixed):**
+> - *Gizeh Rolls Extra fine 5M* — TWO rows, same name, codes `421123680670` (stk 9997) &
+>   `42238072` (stk 9994). Same item captured twice; merging changes real stock → human
+>   call which row survives (then alias the other onto it).
+> - *Hemp Sana Salbe* — one row, garbage `59␝788130` barcode (unrecoverable). Cleanest =
+>   NULL the barcode so a future clean scan re-captures + links.
+>
 > **Camera reliability is Angel's Fairphone gate** (can't unit-test the lens).
-> Awaiting: deploy to staging-banco → Angel scans real Artemis stock → prod.
+> Awaiting: Angel scans real Artemis stock on staging-banco → then prod train.
 
 > **BL-89 catalog polish + dup-barcode fix** — `7c344e1`, `2015f36`. 📷 scan on create/edit (shared
 > `static/pos-scanner.js`) + category datalist (pick-existing-or-new); create/update now return a clean
