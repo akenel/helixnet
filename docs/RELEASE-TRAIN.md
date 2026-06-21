@@ -28,7 +28,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 | Feature | Commit(s) | Test status | Prod |
 |---|---|---|---|
-| BL-87 camera barcode scan + lazy capture (`/pos/scan`) | `275e0a9` (+ spec `90ac996`) | green on staging-banco: vendored JS 200 `application/javascript`, scan page 200, camera button served. POS gate 99 pass (7 fails = pre-existing find_product flake, not BL-87). **AC1–AC6 = Angel on Fairphone (camera can't be unit-tested).** | **STAGED — staging-banco.lapiazza.app @ 275e0a9, 2026-06-21. Awaiting Angel PASS.** |
+| BL-87 camera barcode scan + lazy capture (`/pos/scan`) | `275e0a9`, `755ea99` (+ spec `90ac996`) | Camera PASSED on Fairphone (Angel). Logic fixes after device test: lazy-capture **quantity** field + **sellable stock** (was stock 1 → oversell-blocked on 2nd sale; persistence itself worked). Stale `LZ-%` test items bumped to 9999 on staging. POS gate 99 pass (7 = pre-existing flake). | **STAGED — staging-banco.lapiazza.app @ 755ea99, 2026-06-21. Awaiting Angel re-test PASS.** |
 
 > _(BL-84 / BL-83 / BL-85 — Felix's three live feedbacks — and BL-86 (reaper + hide-cancelled)
 > all **SHIPPED 2026-06-21**, see history below.)_
