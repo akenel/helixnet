@@ -410,9 +410,15 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
                     <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" class="input-field">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
-                    <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
+                        <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                        <input type="number" step="1" min="1" x-model.number="lazyQty" @keyup.enter="saveLazyCapture()" class="input-field text-2xl font-bold">
+                    </div>
                 </div>
                 <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">
                     <span x-show="!lazySaving">➕ Save &amp; add to cart</span>
@@ -444,6 +450,7 @@
             lazyBarcode: '',
             lazyName: '',
             lazyPrice: '',
+            lazyQty: 1,
             lazySaving: false,
 
             // Search mode (paginated)
@@ -612,6 +619,7 @@
                 this.lazyBarcode = barcode || '';
                 this.lazyName = '';
                 this.lazyPrice = '';
+                this.lazyQty = 1;
                 this.lazySaving = false;
                 this.lazyOpen = true;
             },
@@ -620,6 +628,7 @@
                 if (!this.lazyName.trim()) { showToast('Enter a product name', 'warning'); return; }
                 const price = parseFloat(this.lazyPrice);
                 if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+                const qty = Math.max(1, parseInt(this.lazyQty, 10) || 1);
 
                 this.lazySaving = true;
                 const bc = (this.lazyBarcode || '').trim();
@@ -630,17 +639,18 @@
                     sku,
                     name: this.lazyName.trim(),
                     price,
-                    // Stock 1 = the physical item in hand; selling it nets 0, keeping the
-                    // existing stock-decrement sale path correct. NOT inventory management.
-                    stock_quantity: 1,
+                    // Uncounted new item: generous stock so it stays freely sellable on
+                    // every future sale (the oversell guard blocks at 0). Real stock is
+                    // set later in the deferred inventory pass. NOT inventory management.
+                    stock_quantity: 9999,
                 };
                 try {
                     // Persist a REAL product (manager/admin/dev). Known on every future scan.
                     const product = await API.post('/api/v1/pos/products', payload);
-                    this.addToCart(product);
+                    this.addToCart(product, qty);
                     this.lazyOpen = false;
                     this.barcodeInput = '';
-                    showToast('Saved — it scans instantly next time', 'success');
+                    showToast(`Saved — ${qty} added, scans instantly next time`, 'success');
                 } catch (err) {
                     // No permission (cashier) or any failure → never block the sale.
                     // Fall back to a one-off line so the customer still gets rung up.
@@ -649,7 +659,7 @@
                         id: 'catalog-' + Date.now(),
                         name: '[NEW] ' + this.lazyName.trim(),
                         price,
-                        quantity: 1,
+                        quantity: qty,
                         isCatalogItem: true,
                     });
                     this.lazyOpen = false;
@@ -751,14 +761,14 @@
                 this.catalogPrice = '';
             },
 
-            addToCart(product) {
+            addToCart(product, qty = 1) {
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
-                    existing.quantity++;
+                    existing.quantity += qty;
                 } else {
                     this.cart.push({
                         ...product,
-                        quantity: 1
+                        quantity: qty
                     });
                 }
             },
