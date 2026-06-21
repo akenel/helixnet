@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
@@ -130,7 +131,15 @@ async def create_product(
 
     new_product = ProductModel(**product.model_dump())
     db.add(new_product)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        # Duplicate barcode or SKU — return a clean 409, not a raw 500.
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A product with this barcode or SKU already exists.",
+        )
     await db.refresh(new_product)
 
     logger.info(f"Product created: {new_product.sku} by user {current_user['username']}")
@@ -218,7 +227,14 @@ async def update_product(
         setattr(product, field, value)
 
     product.updated_at = datetime.now(timezone.utc)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A product with this barcode or SKU already exists.",
+        )
     await db.refresh(product)
 
     logger.info(f"Product updated: {product.sku} by user {current_user['username']}")
