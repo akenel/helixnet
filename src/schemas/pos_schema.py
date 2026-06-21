@@ -9,6 +9,7 @@ from decimal import Decimal
 from uuid import UUID
 from typing import Optional
 from src.db.models.transaction_model import TransactionStatus, PaymentMethod
+from src.core.constants import Department
 
 
 # ================================================================
@@ -118,7 +119,9 @@ class TransactionBase(BaseModel):
 
 class TransactionCreate(TransactionBase):
     """Schema for creating new transaction (open cart)"""
-    pass
+    # Which counter this cart is opened on. Omitted = head_shop (today's behaviour).
+    # The cafe till sends 'cafe'. Validated against the Department enum.
+    department: Department = Department.HEAD_SHOP
 
 
 class TransactionUpdate(BaseModel):
@@ -149,6 +152,7 @@ class TransactionRead(TransactionBase):
     transaction_number: str
     cashier_id: UUID
     customer_id: Optional[UUID]
+    department: str = Department.HEAD_SHOP.value
     status: TransactionStatus
     payment_method: Optional[PaymentMethod]
     subtotal: Decimal
@@ -210,6 +214,9 @@ class DailySummary(BaseModel):
     top_seller: Optional[str] = None
     top_seller_quantity: Optional[int] = None
     cashier_performance: dict[str, Decimal] = Field(default_factory=dict)
+    # Sales split per counter (head_shop / cafe / grow_supplies) so the cafe's
+    # books and the head shop's books don't blur. Sums back to total_sales.
+    by_department: dict[str, Decimal] = Field(default_factory=dict)
     # Promotional treats given free today: count + their cost (COGS, for tax).
     giveaway_count: int = 0
     giveaway_cost: Decimal = Decimal("0.00")

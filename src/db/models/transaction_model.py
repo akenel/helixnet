@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Numeric, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from src.core.constants import HelixEnum
+from src.core.constants import HelixEnum, Department
 
 from .base import Base
 
@@ -69,6 +69,18 @@ class TransactionModel(Base):
         ForeignKey('customers.id'),
         nullable=True,
         comment="Optional - the loyalty CRM customer this sale belongs to (CustomerModel)"
+    )
+
+    # Which counter rang this sale (head shop / cafe / grow supplies). Defaults to
+    # head_shop so today's single-counter sales are unchanged; the cafe till sets
+    # 'cafe'. This is the dimension the daily Z-report groups on.
+    department: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=Department.HEAD_SHOP.value,
+        server_default=Department.HEAD_SHOP.value,
+        index=True,
+        comment="Department/counter the sale rang in: head_shop | cafe | grow_supplies"
     )
 
     # Transaction Status

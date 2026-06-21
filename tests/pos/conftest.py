@@ -74,6 +74,35 @@ def env_info():
     return {"env": ENV, "api": API_BASE, "kc": KC_BASE, "realm": REALM}
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _cleanup_test_products(cashier_token):
+    """Teardown hygiene: the suite creates throwaway TEST- products (refund, o2c,
+    procure-to-pay). The DB is SHARED, so deactivate them after the run instead of
+    leaving thousands of junk rows that crowd out the seeded catalogue. DELETE soft-
+    deactivates (is_active=False), so they vanish from the active listing."""
+    yield
+    s = requests.Session()
+    s.headers.update({"Authorization": f"Bearer {cashier_token}"})
+    s.verify = False
+    skip = 0
+    while True:
+        try:
+            batch = s.get(f"{POS}/products", params={"limit": 500, "skip": skip}, timeout=20).json()
+        except Exception:
+            return
+        if not batch:
+            return
+        for p in batch:
+            if (p.get("sku") or "").startswith("TEST-"):
+                try:
+                    s.delete(f"{POS}/products/{p['id']}", timeout=15)
+                except Exception:
+                    pass
+        if len(batch) < 500:
+            return
+        skip += 500
+
+
 @pytest.fixture(scope="session")
 def cashier_token():
     """Felix is admin (all POS roles); use him as the authenticated cashier."""
@@ -106,18 +135,31 @@ def list_products(session):
 
 
 def find_product(session, sku=None, barcode=None):
-    for p in list_products(session):
-        if sku and p.get("sku") == sku:
-            return p
-        if barcode and p.get("barcode") == barcode:
-            return p
+    """Robust lookup that does NOT depend on a 100-row listing window (the shared DB
+    holds thousands of products). Barcode = a direct scan endpoint; SKU = paged scan."""
+    if barcode:
+        r = session.get(f"{POS}/products/barcode/{barcode}")
+        return r.json() if r.status_code == 200 else None
+    skip = 0
+    while sku:
+        batch = session.get(f"{POS}/products", params={"limit": 500, "skip": skip}).json()
+        if not batch:
+            return None
+        for p in batch:
+            if p.get("sku") == sku:
+                return p
+        if len(batch) < 500:
+            return None
+        skip += 500
     return None
 
 
-def ring_sale(session, items, payment_method="cash", amount_tendered=None):
+def ring_sale(session, items, payment_method="cash", amount_tendered=None, department=None):
     """items = [(product_id, qty, unit_price), ...]. Returns the completed transaction dict.
-    Creates a transaction, adds line items, checks out."""
-    tx = session.post(f"{POS}/transactions", json={})
+    Creates a transaction, adds line items, checks out.
+    department (optional): 'head_shop' | 'cafe' | 'grow_supplies' -- which counter rang it."""
+    open_payload = {} if department is None else {"department": department}
+    tx = session.post(f"{POS}/transactions", json=open_payload)
     tx.raise_for_status()
     tx = tx.json()
     for product_id, qty, unit_price in items:

@@ -41,7 +41,7 @@ from src.db.models import (
     CreditTransactionModel,
     CreditTransactionType,
 )
-from src.core.constants import HelixApplication
+from src.core.constants import HelixApplication, Department
 from src.services.cash_shift_service import (
     expected_cash, close_result, denoms_total, money,
 )
@@ -133,7 +133,7 @@ async def create_product(
     await db.commit()
     await db.refresh(new_product)
 
-    logger.info(f"Product created: {new_product.sku} by user {current_user['username']}")
+    logger.info(f"Product created: {new_product.sku} by user {current_user.get('preferred_username', 'unknown')}")
     return new_product
 
 
@@ -221,7 +221,7 @@ async def update_product(
     await db.commit()
     await db.refresh(product)
 
-    logger.info(f"Product updated: {product.sku} by user {current_user['username']}")
+    logger.info(f"Product updated: {product.sku} by user {current_user.get('preferred_username', 'unknown')}")
     return product
 
 
@@ -243,7 +243,7 @@ async def delete_product(
     product.updated_at = datetime.now(timezone.utc)
     await db.commit()
 
-    logger.info(f"Product deactivated: {product.sku} by user {current_user['username']}")
+    logger.info(f"Product deactivated: {product.sku} by user {current_user.get('preferred_username', 'unknown')}")
 
 
 # ================================================================
@@ -946,6 +946,7 @@ async def create_transaction(
     new_transaction = TransactionModel(
         transaction_number=transaction_number,
         cashier_id=current_user.get('sub', current_user.get('preferred_username', 'unknown')),
+        department=transaction.department.value,  # which counter rang it (default head_shop)
         status=TransactionStatus.OPEN,
         notes=transaction.notes,
         subtotal=Decimal("0.00"),
@@ -1343,6 +1344,20 @@ async def refund_transaction(
     else:
         transaction.notes = refund_note
 
+    # Full refund -> the goods come back on the shelf (mirror the checkout deduction so
+    # inventory stays honest). Partial refunds are money-only: we can't know which items
+    # were returned, so stock is left untouched and Felix reconciles by hand if needed.
+    if not refund.partial_amount:
+        li_result = await db.execute(
+            select(LineItemModel).where(LineItemModel.transaction_id == transaction.id)
+        )
+        for li in li_result.scalars().all():
+            if li.product_id is None:
+                continue  # custom line (manual/change) -- no catalog stock to restore
+            product = await db.get(ProductModel, li.product_id)
+            if product is not None:
+                product.stock_quantity = (product.stock_quantity or 0) + li.quantity
+
     await db.commit()
     await db.refresh(transaction)
 
@@ -1389,6 +1404,13 @@ async def get_daily_summary(
     # Calculate totals
     total_sales = sum(t.total for t in transactions)
     vat_total = sum(t.tax_amount for t in transactions)
+
+    # Split the day's takings per counter (head_shop / cafe / grow_supplies) so the
+    # cafe's books and the head shop's books stay separate. Sums back to total_sales.
+    by_department: dict[str, Decimal] = {}
+    for t in transactions:
+        dept = t.department or Department.HEAD_SHOP.value
+        by_department[dept] = by_department.get(dept, Decimal("0.00")) + Decimal(str(t.total))
     cash_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.CASH)
     visa_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.VISA)
     debit_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.DEBIT)
@@ -1422,6 +1444,7 @@ async def get_daily_summary(
         twint_total=Decimal(str(twint_total)),
         crypto_total=Decimal(str(crypto_total)),
         other_total=Decimal(str(other_total)),
+        by_department=by_department,
         giveaway_count=giveaway_count,
         giveaway_cost=giveaway_cost,
     )

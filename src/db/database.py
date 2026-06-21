@@ -148,6 +148,14 @@ _ADDITIVE_COLUMNS: list[str] = [
     # table lacked (verified by diffing the model against information_schema).
     "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS is_team_order BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS team_name VARCHAR(200)",
+    # Banco Phase 2 WS-1 (2026-06-21): multi-DEPARTMENT under one roof. Felix's bigger
+    # space is head shop + cafe + grow supplies in ONE shop. A product belongs to a
+    # department and a sale rings in one, so the daily Z-report can split per counter.
+    # Default 'head_shop' keeps every existing product + sale exactly where it is.
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS department VARCHAR(20) NOT NULL DEFAULT 'head_shop'",
+    "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS department VARCHAR(20) NOT NULL DEFAULT 'head_shop'",
+    "CREATE INDEX IF NOT EXISTS ix_products_department ON products (department)",
+    "CREATE INDEX IF NOT EXISTS ix_transactions_department ON transactions (department)",
 ]
 
 

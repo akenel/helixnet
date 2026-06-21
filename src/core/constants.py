@@ -44,6 +44,17 @@ class HelixApplication(HelixEnum):
     ISOTTO = "isotto"
 
 
+class Department(HelixEnum):
+    """A counter inside ONE shop (one realm). Felix's bigger space is three
+    businesses under one roof; a product belongs to a department and a sale rings
+    in one, so the daily Z-report can split the money per counter while still
+    rolling up to one shop's books. Stored as the lowercase value string -- no
+    native PG enum type, so it migrates with a plain ADD COLUMN."""
+    HEAD_SHOP = "head_shop"        # the core counter (default -- all existing stock + sales)
+    CAFE = "cafe"                  # coffee/food counter (Felix's new line)
+    GROW_SUPPLIES = "grow_supplies"  # the back room (fertilizers, lights)
+
+
 class UserRoles(HelixEnum):
     """Defines the organizational roles for a user."""
     ADMIN = "admin"

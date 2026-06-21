@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Numeric, Integer, Boolean, Text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
+from src.core.constants import Department
 from .base import Base
 
 
@@ -77,6 +78,18 @@ class ProductModel(Base):
         Integer,
         nullable=True,
         comment="Alert when stock falls below this level"
+    )
+
+    # Which counter this product belongs to (head shop / cafe / grow supplies).
+    # Stored as the lowercase Department value; defaults to head_shop so every
+    # existing product stays where it is until explicitly moved to the cafe.
+    department: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=Department.HEAD_SHOP.value,
+        server_default=Department.HEAD_SHOP.value,
+        index=True,
+        comment="Department/counter: head_shop | cafe | grow_supplies"
     )
 
     # Categorization
