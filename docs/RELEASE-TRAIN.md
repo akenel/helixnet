@@ -22,13 +22,17 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🚦 DEPLOYING — Tigs — BL-90 scan hardening to banco prod (2026-06-21, Angel Fairphone PASS)`
+`🟢 IDLE` — no train running. (Last: BL-90 scan-recognition hardening shipped to banco.lapiazza.app @ `8e27725`, 2026-06-21 — Tigs, Angel Fairphone PASS.)
 
 ## Boarding (awaiting the next prod train)
 
+_(empty — nothing boarding. BL-90 SHIPPED, see below. Next build: BL-91 receiving.)_
+
 > **BL-90 scan-recognition hardening ("scan once, known forever")** — fixes the bug
 > where the same item got captured under different/garbage barcodes so a clean scan
-> 404'd and Felix re-entered it. Four parts:
+> 404'd and Felix re-entered it. **SHIPPED — banco.lapiazza.app @ `8e27725`, 2026-06-21**
+> (retail-only formats served, scan/catalog pages 200, alias lookup live: both Gizeh codes
+> resolve to one product on prod). Angel Fairphone PASS ("scans clean"). Four parts:
 > 1. **Retail formats only** — dropped CODE_128/CODE_39/ITF (the logistics/case codes
 >    + GS1 \x1D capture); scanner now decodes EAN_13/EAN_8/UPC_A/UPC_E only. The
 >    counter (`scan.html`) now shares the ONE hardened `PosScanner` instead of its own
@@ -46,10 +50,9 @@ so sessions don't fall over each other or push half-baked work to a live box.
 >    NOTE: the SHARED prod/staging catalog has only ~3 problem rows and the normalizer is
 >    a **no-op** on them — so there is NO risky prod data write here.
 >
-> **SHIPPED — staging-banco @ `4f184d4`, 2026-06-21** (table `product_barcodes` created
-> on shared DB, retail-only formats served, scan/catalog pages 200). Local: 110 POS tests
-> pass (106 + 4 new alias tests; also fixed the pre-existing `find_product` flake by
-> switching it to the exact barcode endpoint). JS parse-clean.
+> Staged @ `4f184d4` (table `product_barcodes` created on shared DB), prod code @ `8e27725`.
+> Local: 110 POS tests pass (106 + 4 new alias tests; also fixed the pre-existing
+> `find_product` flake by switching it to the exact barcode endpoint). JS parse-clean.
 >
 > **Two known bad PROD rows — RESOLVED 2026-06-21 (Angel's calls, applied to shared DB):**
 > - *Gizeh Rolls Extra fine 5M* — kept `421123680670` (row `e9522f3e`); aliased `42238072`
