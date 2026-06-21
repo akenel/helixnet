@@ -169,9 +169,9 @@ class CustomerModel(Base):
     )
     tier_discount_percent: Mapped[int] = mapped_column(
         Integer,
-        default=5,
+        default=0,
         nullable=False,
-        comment="Current tier discount (5/10/15/20/25)"
+        comment="Current standing discount % (Banco 3-tier: Bronze 0 / Silver 5 / Gold 10)"
     )
 
     # ================================================================

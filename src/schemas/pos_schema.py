@@ -133,6 +133,7 @@ class CheckoutRequest(BaseModel):
     """Schema for checkout (payment processing)"""
     payment_method: PaymentMethod
     amount_tendered: Optional[Decimal] = Field(None, ge=0, description="For cash payments")
+    customer_id: Optional[UUID] = Field(None, description="Loyalty member this sale belongs to (CRM)")
 
 
 class RefundRequest(BaseModel):

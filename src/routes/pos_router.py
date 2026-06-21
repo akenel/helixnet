@@ -37,6 +37,9 @@ from src.db.models import (
     CashShiftStatus,
     CashMovementModel,
     CashMovementKind,
+    CustomerModel,
+    CreditTransactionModel,
+    CreditTransactionType,
 )
 from src.core.constants import HelixApplication
 from src.services.cash_shift_service import (
@@ -1190,6 +1193,23 @@ async def checkout_transaction(
     if transaction.status != TransactionStatus.OPEN:
         raise HTTPException(status_code=400, detail="Transaction already processed")
 
+    # --- CRM: attach the loyalty member + apply their tier discount (before the cash
+    # check, so the member pays the discounted total). The total already reflects any
+    # manual cart discount; the tier discount stacks on top of it. ---
+    customer = None
+    if checkout.customer_id is not None:
+        customer = await db.get(CustomerModel, checkout.customer_id)
+        if customer is None:
+            raise HTTPException(status_code=404, detail="Customer (loyalty member) not found")
+        transaction.customer_id = customer.id
+        tier_pct = int(customer.tier_discount_percent or 0)
+        if tier_pct > 0:
+            before = Decimal(str(transaction.total))
+            tier_disc = (before * Decimal(tier_pct) / Decimal("100")).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP)
+            transaction.total = before - tier_disc
+            transaction.discount_amount = Decimal(str(transaction.discount_amount or 0)) + tier_disc
+
     # Validate cash payment
     if checkout.payment_method == PaymentMethod.CASH:
         if not checkout.amount_tendered:
@@ -1225,10 +1245,39 @@ async def checkout_transaction(
         if product is not None:
             product.stock_quantity = max(0, product.stock_quantity - li.quantity)
 
+    # --- CRM: the member earns points + their record updates (1 credit per CHF paid,
+    # floored). Updates lifetime spend, history, average basket, then re-tiers. ---
+    if customer is not None:
+        paid = Decimal(str(transaction.total))
+        earned = int(paid)  # 1 credit per CHF, rounded down
+        now = transaction.completed_at or datetime.now(timezone.utc)
+        customer.lifetime_spend = Decimal(str(customer.lifetime_spend or 0)) + paid
+        customer.purchase_count = (customer.purchase_count or 0) + 1
+        if customer.first_purchase is None:
+            customer.first_purchase = now
+        customer.last_purchase = now
+        customer.last_visit = now
+        customer.average_basket = (customer.lifetime_spend / customer.purchase_count).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if earned > 0:
+            customer.credits_balance = (customer.credits_balance or 0) + earned
+            customer.credits_earned_total = (customer.credits_earned_total or 0) + earned
+            db.add(CreditTransactionModel(
+                customer_id=customer.id,
+                transaction_type=CreditTransactionType.PURCHASE,
+                credits=earned,
+                balance_after=customer.credits_balance,
+                reference_id=transaction.id,
+                reference_type="order",
+                description=f"Purchase {transaction.transaction_number}: +{earned} credits",
+            ))
+        customer.recalculate_tier()
+
     await db.commit()
     await db.refresh(transaction)
 
-    logger.info(f"Transaction completed: {transaction.transaction_number} - Total: {transaction.total} CHF")
+    logger.info(f"Transaction completed: {transaction.transaction_number} - Total: {transaction.total} CHF"
+                + (f" - member {customer.handle} +{int(Decimal(str(transaction.total)))}cr" if customer else ""))
     return transaction
 
 
@@ -1498,6 +1547,7 @@ class POSFeedback(BaseModel):
     title: str
     body: str = ""
     screenshot: Optional[str] = None       # base64 data-URL (image/*) of the screen
+    attachments: Optional[list] = None     # user-attached files [{name,type,data}] -- images & PDFs
     meta: Optional[dict] = None            # auto-collected browser/screen/path context
     diagnostics: Optional[list] = None     # console/network breadcrumbs from the page
 
@@ -1505,6 +1555,36 @@ class POSFeedback(BaseModel):
 # Cap an attached screenshot so a runaway data-URL can't bloat the shared DB
 # (~2.2 MB image after base64). Bigger than that -> drop the image, keep the report.
 _MAX_SHOT_CHARS = 3_000_000
+# User-attached files (device picker / mobile camera). PDFs + images only, each
+# capped, and a small ceiling on count + total so a report can't bloat the DB.
+_ATTACH_PREFIXES = ("data:image/", "data:application/pdf")
+_MAX_ATTACH_CHARS = 6_000_000     # ~4.4 MB per file after base64 (PDFs run bigger)
+_MAX_ATTACH_COUNT = 5             # at most this many files per report
+_MAX_ATTACH_TOTAL = 18_000_000    # ~13 MB total across all files
+
+
+def _clean_attachments(raw: list | None) -> list:
+    """Keep only well-formed image/PDF data-URLs, within the per-file/count/total
+    caps. Malformed or oversized entries are silently dropped -- the report still
+    files. Returns a list of {name, type, data} dicts."""
+    if not isinstance(raw, list) or not raw:
+        return []
+    out, total = [], 0
+    for a in raw:
+        if not isinstance(a, dict):
+            continue
+        data = a.get("data")
+        if not (isinstance(data, str) and data.startswith(_ATTACH_PREFIXES)):
+            continue
+        if len(data) > _MAX_ATTACH_CHARS or total + len(data) > _MAX_ATTACH_TOTAL:
+            continue
+        total += len(data)
+        name = str(a.get("name") or "attachment")[:200]
+        mime = data.split(";", 1)[0][5:] or "application/octet-stream"  # strip "data:"
+        out.append({"name": name, "type": mime, "data": data})
+        if len(out) >= _MAX_ATTACH_COUNT:
+            break
+    return out
 # One-tap severity -> backlog priority (so the board sorts itself; default MEDIUM).
 _SEVERITY_PRIORITY = {
     "blocking": BacklogPriority.HIGH,
@@ -1594,18 +1674,26 @@ async def pos_feedback(
     elif shot:
         shot = None  # malformed or oversized -> drop the image, still file the report
 
+    # User-attached files (device picker / mobile camera) -- images and PDFs.
+    attachments = _clean_attachments(f.attachments)
+    if attachments:
+        names = ", ".join(a["name"] for a in attachments)
+        desc += f"\n\n📎 Attachments ({len(attachments)})\n{names}"
+
     item = BacklogItemModel(
         item_number=next_number, title=title[:200], description=desc,
         item_type=item_type, application=HelixApplication.HELIXNET,
         priority=priority, created_by=user,
         tags=f"banco,feedback,pos,{kind},{severity}",
-        screenshot_data=shot if has_shot else None)
+        screenshot_data=shot if has_shot else None,
+        attachments=json.dumps(attachments) if attachments else None)
     db.add(item)
     await db.commit()
     logger.info(f"BL-{next_number:03d} filed from Banco POS by {user}: {title} "
-                f"(severity={severity}, screenshot={has_shot})")
+                f"(severity={severity}, screenshot={has_shot}, attachments={len(attachments)})")
     return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}",
-            "screenshot": has_shot, "severity": severity, "priority": priority.value}
+            "screenshot": has_shot, "attachments": len(attachments),
+            "severity": severity, "priority": priority.value}
 
 
 # ================================================================
