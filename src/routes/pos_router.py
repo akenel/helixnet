@@ -1482,15 +1482,24 @@ async def update_store_settings(
 
 class POSFeedback(BaseModel):
     kind: str = "other"      # bug | idea | other
+    severity: str = "annoying"  # blocking | annoying | cosmetic  -> backlog priority
     title: str
     body: str = ""
     screenshot: Optional[str] = None       # base64 data-URL (image/*) of the screen
     meta: Optional[dict] = None            # auto-collected browser/screen/path context
+    diagnostics: Optional[list] = None     # console/network breadcrumbs from the page
 
 
 # Cap an attached screenshot so a runaway data-URL can't bloat the shared DB
 # (~2.2 MB image after base64). Bigger than that -> drop the image, keep the report.
 _MAX_SHOT_CHARS = 3_000_000
+# One-tap severity -> backlog priority (so the board sorts itself; default MEDIUM).
+_SEVERITY_PRIORITY = {
+    "blocking": BacklogPriority.HIGH,
+    "annoying": BacklogPriority.MEDIUM,
+    "cosmetic": BacklogPriority.LOW,
+}
+_MAX_DIAG = 25  # cap how many breadcrumbs we fold in (the buffer is small anyway)
 # Only these context keys are folded into the description (whitelist -- no surprises).
 _META_LABELS = [
     ("path", "Screen"), ("referrer", "Came from"), ("app", "POS build"),
@@ -1514,6 +1523,24 @@ def _format_meta(meta: dict | None) -> str:
     return ("\n\n🖥️ Context (auto-collected)\n" + "\n".join(lines)) if lines else ""
 
 
+def _format_diagnostics(diag: list | None) -> str:
+    """Render the console/network breadcrumbs -- the half of a bug a screenshot
+    can't show. Each entry is {t: error|warn|net, m: message, ts: epoch_ms}."""
+    if not isinstance(diag, list) or not diag:
+        return ""
+    icons = {"error": "❌", "warn": "⚠️", "net": "🌐"}
+    lines = []
+    for e in diag[-_MAX_DIAG:]:
+        if not isinstance(e, dict):
+            continue
+        t = str(e.get("t", "")).lower()
+        msg = str(e.get("m", "")).replace("\n", " ").strip()[:300]
+        if not msg:
+            continue
+        lines.append(f"{icons.get(t, '•')} [{t or '?'}] {msg}")
+    return ("\n\n🔎 Console & network (last events)\n" + "\n".join(lines)) if lines else ""
+
+
 @router.post("/feedback")
 async def pos_feedback(
     f: POSFeedback,
@@ -1532,6 +1559,10 @@ async def pos_feedback(
     if kind not in ("bug", "idea", "other"):
         kind = "other"
     item_type = BacklogItemType.BUG_FIX if kind == "bug" else BacklogItemType.BUSINESS_OPS
+    severity = (f.severity or "annoying").lower()
+    if severity not in _SEVERITY_PRIORITY:
+        severity = "annoying"
+    priority = _SEVERITY_PRIORITY[severity]
 
     # next BL number -- same shared sequence as backlog_router / bottega feedback
     next_number = (await db.execute(
@@ -1541,6 +1572,7 @@ async def pos_feedback(
     desc = (f"{body}\n\n— filed from Banco POS by {user}" if body
             else f"Filed from Banco POS by {user}")
     desc += _format_meta(f.meta)
+    desc += _format_diagnostics(f.diagnostics)
 
     # Validate + bound the screenshot: must be an image data-URL, under the size cap.
     shot = f.screenshot
@@ -1553,13 +1585,15 @@ async def pos_feedback(
     item = BacklogItemModel(
         item_number=next_number, title=title[:200], description=desc,
         item_type=item_type, application=HelixApplication.HELIXNET,
-        priority=BacklogPriority.MEDIUM, created_by=user,
-        tags=f"banco,feedback,pos,{kind}",
+        priority=priority, created_by=user,
+        tags=f"banco,feedback,pos,{kind},{severity}",
         screenshot_data=shot if has_shot else None)
     db.add(item)
     await db.commit()
-    logger.info(f"BL-{next_number:03d} filed from Banco POS by {user}: {title} (screenshot={has_shot})")
-    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}", "screenshot": has_shot}
+    logger.info(f"BL-{next_number:03d} filed from Banco POS by {user}: {title} "
+                f"(severity={severity}, screenshot={has_shot})")
+    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}",
+            "screenshot": has_shot, "severity": severity, "priority": priority.value}
 
 
 # ================================================================

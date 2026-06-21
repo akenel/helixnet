@@ -82,6 +82,53 @@ def test_feedback_without_screenshot_is_fine(session):
     assert r.json().get("screenshot") is False
 
 
+def test_feedback_severity_maps_to_priority(session):
+    """One-tap severity chips set the backlog priority (board sorts itself)."""
+    cases = {"blocking": "high", "annoying": "medium", "cosmetic": "low"}
+    for sev, prio in cases.items():
+        r = session.post(f"{POS}/feedback", json={
+            "kind": "bug", "severity": sev, "title": f"Severity {sev} should be {prio}"})
+        assert r.status_code == 200, r.text
+        j = r.json()
+        assert j.get("severity") == sev
+        assert j.get("priority") == prio, f"{sev} -> {j.get('priority')}, expected {prio}"
+
+
+def test_feedback_unknown_severity_defaults_medium(session):
+    """A bogus severity falls back to annoying/medium -- never 422, always files."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "severity": "apocalyptic", "title": "Bogus severity defaults"})
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j.get("severity") == "annoying"
+    assert j.get("priority") == "medium"
+
+
+def test_feedback_accepts_diagnostics(session):
+    """Console/network breadcrumbs ride along and the report still files cleanly."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "severity": "blocking",
+        "title": "Diagnostics should attach",
+        "diagnostics": [
+            {"t": "error", "m": "TypeError: x is undefined @ scan.html:412", "ts": 1},
+            {"t": "net", "m": "500 Internal Server Error /api/v1/pos/search", "ts": 2},
+            {"t": "warn", "m": "deprecated call", "ts": 3},
+        ],
+    })
+    assert r.status_code == 200, r.text
+    assert r.json().get("ok") is True
+
+
+def test_feedback_handles_malformed_diagnostics(session):
+    """Junk diagnostics never crash the endpoint -- robust to a noisy client."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "title": "Malformed diagnostics are tolerated",
+        "diagnostics": ["not-a-dict", 42, {"no_message": True}],
+    })
+    assert r.status_code == 200, r.text
+    assert r.json().get("ok") is True
+
+
 def test_feedback_requires_auth():
     """No token -> 401/403, never an anonymous write to the board."""
     import requests

@@ -255,7 +255,7 @@ test('expired access token mid-sale refreshes silently, NO hard-logout', async (
  * SAME backlog board (/backlog) the La Piazza 💬 button feeds. This proves the
  * floating button shows once logged in, the modal sends, and a BL-XXX ref comes back.
  */
-test('feedback widget captures a screenshot and files a bug with a BL ref', async ({ page }) => {
+test('feedback widget auto-captures + severity + diagnostics, files with a BL ref', async ({ page }) => {
   await login(page);
   // The floating button only renders once authenticated.
   const fab = page.locator('#lpfb-open');
@@ -265,13 +265,17 @@ test('feedback widget captures a screenshot and files a bug with a BL ref', asyn
   // Modal opens; "Bug" is preselected. The auto-collected context line is shown.
   await expect(page.getByText('Send feedback')).toBeVisible();
   await expect(page.locator('#lpfb-meta')).toContainText(/Auto-attached:/);
-  await page.locator('#lpfb-title').fill('E2E: till test feedback');
-  await page.locator('#lpfb-body').fill('Filed by the Playwright cashier flow.');
 
-  // Capture the screen (html2canvas) -> a thumbnail appears.
-  await page.locator('#lpfb-capture').click();
+  // The screenshot is grabbed AUTOMATICALLY on open -- a thumbnail appears with no click.
   await expect(page.locator('#lpfb-thumb')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('#lpfb-thumb-img')).toHaveAttribute('src', /^data:image\//);
+
+  // One-tap severity: bump it to Blocking (sets HIGH priority on the board).
+  await page.locator('.lpfb-sev[data-sev="blocking"]').click();
+  await expect(page.locator('.lpfb-sev[data-sev="blocking"]')).toHaveClass(/on/);
+
+  await page.locator('#lpfb-title').fill('E2E: till test feedback');
+  await page.locator('#lpfb-body').fill('Filed by the Playwright cashier flow.');
 
   await page.locator('#lpfb-send').click();
 
@@ -297,6 +301,23 @@ test('feedback widget rejects a too-short title (client guard)', async ({ page }
   await page.locator('#lpfb-title').fill('x');
   await page.locator('#lpfb-send').click();
   await expect(page.locator('#lpfb-msg')).toContainText(/3\+ characters/i);
+});
+
+/**
+ * The diagnostics ring buffer is the headline of the bundle: a console error the
+ * cashier never saw rides along with the report. Trigger a real console.error, then
+ * open the widget and confirm the auto-attached line reports the captured error.
+ */
+test('feedback auto-captures console errors (diagnostics breadcrumbs)', async ({ page }) => {
+  await login(page);
+  // Buffer is installed in <head> -> a console.error after load is captured.
+  await page.evaluate(() => console.error('E2E synthetic boom: TypeError somewhere'));
+  expect(await page.evaluate(() => (window).__lpfbDiag.get().length)).toBeGreaterThan(0);
+
+  await page.locator('#lpfb-open').click();
+  // The meta line surfaces the captured count with an error flag.
+  await expect(page.locator('#lpfb-meta')).toContainText(/🔎\s*\d+\s*log/);
+  await expect(page.locator('#lpfb-meta')).toContainText(/error/);
 });
 
 test('navigation: receipt -> back to catalog with no dead-end', async ({ page }) => {

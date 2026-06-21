@@ -5,6 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HelixPOS{% endblock %} - Artemis Store</title>
 
+    <!-- Diagnostics ring buffer: loaded FIRST so the feedback widget can attach the
+         last console errors + failed network calls to a bug report. Cheap text only.
+         Lives on window.__lpfbDiag; capped + scrubbed of Authorization headers. -->
+    <script>(function(){
+      var MAX=25, buf=[];
+      function push(type, msg){
+        try{
+          buf.push({t:type, m:String(msg).slice(0,500), ts:Date.now()});
+          if(buf.length>MAX) buf.shift();
+        }catch(e){}
+      }
+      // Console errors + warnings (most "it did nothing" bugs are a silent throw).
+      ['error','warn'].forEach(function(level){
+        var orig=console[level];
+        console[level]=function(){
+          try{push(level, Array.prototype.map.call(arguments,function(a){
+            if(a instanceof Error) return (a.stack||a.message||a);
+            if(typeof a==='object'){try{return JSON.stringify(a);}catch(_){return String(a);}}
+            return a;
+          }).join(' '));}catch(e){}
+          return orig && orig.apply(console, arguments);
+        };
+      });
+      // Uncaught errors + promise rejections.
+      window.addEventListener('error', function(e){
+        push('error', (e.message||'error')+' @ '+(e.filename||'')+':'+(e.lineno||'')); });
+      window.addEventListener('unhandledrejection', function(e){
+        var r=e.reason; push('error', 'unhandledrejection: '+((r&&(r.stack||r.message))||r)); });
+      // Failed network calls (4xx/5xx) + network throws -- the other half of UI bugs.
+      if(window.fetch){
+        var of=window.fetch;
+        window.fetch=function(){
+          var url=''; try{url=(arguments[0]&&arguments[0].url)||arguments[0]||'';}catch(e){}
+          url=String(url).slice(0,200);
+          return of.apply(this, arguments).then(function(res){
+            if(res && res.status>=400) push('net', res.status+' '+(res.statusText||'')+' '+url);
+            return res;
+          }).catch(function(err){
+            push('net', 'NETWORK FAIL '+url+' '+((err&&err.message)||err));
+            throw err;
+          });
+        };
+      }
+      // What the widget reads. Returns a shallow copy, newest last.
+      window.__lpfbDiag={ get:function(){ return buf.slice(); }, clear:function(){ buf.length=0; } };
+    })();</script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -530,6 +577,13 @@
       .lpfb-kind{flex:1;text-align:center;padding:9px 0;border:1px solid rgba(48,63,84,.9);border-radius:9px;
         background:rgba(15,23,42,.6);color:#cbd5e1;font-size:13px;font-weight:600;cursor:pointer}
       .lpfb-kind.on{border-color:#C0392B;background:rgba(192,57,43,.2);color:#fff}
+      .lpfb-sevlabel{font-size:11px;color:#94a3b8;font-weight:600;margin:2px 0 6px}
+      .lpfb-sevs{display:flex;gap:8px;margin-bottom:14px}
+      .lpfb-sev{flex:1;text-align:center;padding:8px 0;border:1px solid rgba(48,63,84,.9);border-radius:9px;
+        background:rgba(15,23,42,.6);color:#cbd5e1;font-size:12px;font-weight:600;cursor:pointer}
+      .lpfb-sev.on[data-sev="blocking"]{border-color:#ef4444;background:rgba(239,68,68,.18);color:#fff}
+      .lpfb-sev.on[data-sev="annoying"]{border-color:#f59e0b;background:rgba(245,158,11,.18);color:#fff}
+      .lpfb-sev.on[data-sev="cosmetic"]{border-color:#64748b;background:rgba(100,116,139,.22);color:#fff}
       .lpfb-card input,.lpfb-card textarea{width:100%;box-sizing:border-box;margin-bottom:12px;padding:10px 12px;
         background:#070d18;border:1px solid rgba(48,63,84,.9);border-radius:9px;color:#f1f5f9;font-size:14px;font-family:inherit}
       .lpfb-card textarea{min-height:90px;resize:vertical}
@@ -571,10 +625,16 @@
             <div class="lpfb-kind" data-kind="idea">💡 Idea</div>
             <div class="lpfb-kind" data-kind="other">💬 Other</div>
           </div>
+          <div class="lpfb-sevlabel" id="lpfb-sevlabel">How bad is it?</div>
+          <div class="lpfb-sevs" id="lpfb-sevs">
+            <div class="lpfb-sev" data-sev="blocking">🔴 Blocking</div>
+            <div class="lpfb-sev on" data-sev="annoying">🟡 Annoying</div>
+            <div class="lpfb-sev" data-sev="cosmetic">⚪ Cosmetic</div>
+          </div>
           <input id="lpfb-title" type="text" maxlength="200" placeholder="Short title (what's up?)" />
           <textarea id="lpfb-body" maxlength="4000" placeholder="Details — what happened, what you expected, steps…"></textarea>
           <div class="lpfb-shotrow">
-            <button class="lpfb-capture" id="lpfb-capture" type="button">📸 Capture this screen</button>
+            <button class="lpfb-capture" id="lpfb-capture" type="button">📸 Recapture screen</button>
             <div class="lpfb-thumb" id="lpfb-thumb"><img id="lpfb-thumb-img" alt="screenshot" /><button class="x" id="lpfb-thumb-x" type="button" title="Remove">✕</button></div>
           </div>
           <div class="lpfb-meta" id="lpfb-meta"></div>
@@ -601,12 +661,13 @@
         title=document.getElementById('lpfb-title'),body=document.getElementById('lpfb-body'),
         msg=document.getElementById('lpfb-msg'),send=document.getElementById('lpfb-send'),
         cancel=document.getElementById('lpfb-cancel'),kinds=document.getElementById('lpfb-kinds'),
+        sevs=document.getElementById('lpfb-sevs'),
         capture=document.getElementById('lpfb-capture'),thumb=document.getElementById('lpfb-thumb'),
         thumbImg=document.getElementById('lpfb-thumb-img'),thumbX=document.getElementById('lpfb-thumb-x'),
         metaEl=document.getElementById('lpfb-meta'),
         formEl=document.getElementById('lpfb-form'),doneEl=document.getElementById('lpfb-done'),
         doneRef=document.getElementById('lpfb-done-ref'),doneSub=document.getElementById('lpfb-done-sub'),
-        doneOk=document.getElementById('lpfb-done-ok'),kind='bug',shot=null;
+        doneOk=document.getElementById('lpfb-done-ok'),kind='bug',sev='annoying',shot=null;
       // Reveal the button once a cashier is logged in. The token can land a tick
       // after load (dashboard parses it from the URL fragment), so poll briefly.
       function reveal(){if(token()){open.style.display='flex';return true;}return false;}
@@ -633,10 +694,15 @@
         }catch(e){}
         return m;
       }
+      // The console/network breadcrumbs the head buffer collected -- the half of a
+      // UI bug a screenshot can't show (a silent throw, a 500 you never saw).
+      function collectDiag(){ try{ return (window.__lpfbDiag&&window.__lpfbDiag.get())||[]; }catch(e){ return []; } }
       function renderMeta(){
-        var m=collectMeta();
+        var m=collectMeta(), d=collectDiag(), errs=0;
+        d.forEach(function(x){ if(x.t!=='warn') errs++; });
+        var diagNote = d.length ? (' · <span style="color:'+(errs?'#f87171':'#94a3b8')+'">🔎 '+d.length+' log'+(d.length>1?'s':'')+(errs?' ('+errs+' error'+(errs>1?'s':'')+')':'')+'</span>') : '';
         metaEl.innerHTML='<b>Auto-attached:</b> '+m.path+' · '+(m.platform||'?')+' · '+m.viewport+
-          (m.online?'':' · <span style="color:#f87171">offline</span>');
+          (m.online?'':' · <span style="color:#f87171">offline</span>')+diagNote;
       }
       function show(){ov.style.display='flex';renderMeta();setTimeout(function(){title.focus();},50);}
       function hide(){ov.style.display='none';}
@@ -646,23 +712,29 @@
       function showDone(ref,hadShot){doneRef.textContent=ref;
         doneSub.textContent=(hadShot?'Screenshot attached. ':'')+"Thanks — it's on the workbench. 🐺";
         formEl.style.display='none';doneEl.style.display='block';}
-      function clearShot(){shot=null;thumb.style.display='none';thumbImg.removeAttribute('src');capture.textContent='📸 Capture this screen';}
-      function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';kind='bug';clearShot();showForm();
-        [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c.getAttribute('data-kind')==='bug');});}
-      open.onclick=function(){reset();show();};
+      function clearShot(){shot=null;thumb.style.display='none';thumbImg.removeAttribute('src');capture.textContent='📸 Capture screen';}
+      function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';
+        kind='bug';sev='annoying';clearShot();showForm();
+        [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c.getAttribute('data-kind')==='bug');});
+        [].forEach.call(sevs.children,function(c){c.classList.toggle('on',c.getAttribute('data-sev')==='annoying');});}
+      open.onclick=function(){reset();show();autoShot();};
       cancel.onclick=hide;
       doneOk.onclick=hide;
       ov.onclick=function(e){if(e.target===ov)hide();};
       kinds.onclick=function(e){var k=e.target.closest('.lpfb-kind');if(!k)return;
         kind=k.getAttribute('data-kind');
         [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c===k);});};
+      sevs.onclick=function(e){var s=e.target.closest('.lpfb-sev');if(!s)return;
+        sev=s.getAttribute('data-sev');
+        [].forEach.call(sevs.children,function(c){c.classList.toggle('on',c===s);});};
       thumbX.onclick=clearShot;
 
       // Grab the screen BEHIND the modal: hide the overlay, html2canvas the page,
-      // downscale to keep the base64 small, then restore the modal.
-      capture.onclick=function(){
-        if(typeof html2canvas!=='function'){msg.textContent='Screenshot tool not loaded.';msg.className='lpfb-msg err';return;}
-        msg.textContent='';msg.className='lpfb-msg';
+      // downscale to keep the base64 small, then restore the modal. `silent` is for
+      // the auto-capture on open (don't shout if it can't grab -- they can recapture).
+      function doCapture(silent){
+        if(typeof html2canvas!=='function'){ if(!silent){msg.textContent='Screenshot tool not loaded.';msg.className='lpfb-msg err';} return; }
+        if(!silent){msg.textContent='';msg.className='lpfb-msg';}
         capture.disabled=true;capture.textContent='Capturing…';
         ov.style.visibility='hidden';
         setTimeout(function(){
@@ -678,19 +750,22 @@
             thumbImg.src=shot;thumb.style.display='block';
             capture.disabled=false;capture.textContent='📸 Recapture';
           }).catch(function(){
-            ov.style.visibility='';capture.disabled=false;capture.textContent='📸 Capture this screen';
-            msg.textContent='Could not capture the screen — you can still send without it.';msg.className='lpfb-msg err';
+            ov.style.visibility='';capture.disabled=false;capture.textContent='📸 Capture screen';
+            if(!silent){msg.textContent='Could not capture the screen — you can still send without it.';msg.className='lpfb-msg err';}
           });
         },60);
-      };
+      }
+      // Auto-grab the screen the moment the card opens -- one less step per report.
+      function autoShot(){ doCapture(true); }
+      capture.onclick=function(){ doCapture(false); };
 
       send.onclick=function(){
         var t=(title.value||'').trim();
         if(t.length<3){msg.textContent='Give it a short title (3+ characters).';msg.className='lpfb-msg err';return;}
         send.disabled=true;send.textContent='Sending…';msg.textContent='';msg.className='lpfb-msg';
         // API.post injects the bearer token + handles silent refresh; returns parsed JSON.
-        API.post('/api/v1/pos/feedback',{kind:kind,title:t,body:(body.value||'').trim(),
-          screenshot:shot||null,meta:collectMeta()})
+        API.post('/api/v1/pos/feedback',{kind:kind,severity:sev,title:t,body:(body.value||'').trim(),
+          screenshot:shot||null,meta:collectMeta(),diagnostics:collectDiag()})
         .then(function(j){
           if(j&&j.ok){showDone(j.ref,!!(j.screenshot||shot));}
           else{msg.textContent=(j&&j.detail)?j.detail:'Something went wrong — try again.';
