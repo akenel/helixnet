@@ -34,6 +34,9 @@ so sessions don't fall over each other or push half-baked work to a live box.
 | Shop Pulse card (live 📊: sales/members/stock/drawers) | `af62709` | green — `GET /pos/system/pulse` 200, real stats | **APPROVED — Angel, 2026-06-21** |
 | `/health/dashboard` diagnostics page (health + system + browser/screen specs) | `04ae273` | green — HTTP 200, all cards render, env UAT | **APPROVED — Angel, 2026-06-21** |
 | Banco CRM Phase 0 (FK fix + on-sale attach/earn/re-tier/enroll) | `a6ef751`,`0013263`,`94a4619`,`9057c1d`,`675c6de`,`825a96e` | green — Angel signed off on staging | **APPROVED — Angel, 2026-06-21** |
+| No-cache headers on server-rendered HTML (kills the stale-page ghost) | `a381563` | green — staging sends `no-cache` on /pos pages (verified) | STAGED — low-risk infra, awaiting nod |
+| Member directory + multi-match picker ("several Larrys") | `d76b751` | green — `GET /customers` sort A-Z/newest/spend live on staging | STAGED — awaiting Angel walk |
+| Release-gate story suite + refund returns goods to shelf | `b76a6ee` | green — 13 gate tests + full refund restores stock | STAGED — awaiting Angel walk |
 
 ## Caveat — prod is NOT a live Banco POS yet
 
