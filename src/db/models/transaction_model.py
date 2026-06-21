@@ -28,6 +28,7 @@ class PaymentMethod(HelixEnum):
     VISA = "visa"
     DEBIT = "debit"
     TWINT = "twint"
+    BANK_TRANSFER = "bank_transfer"  # Felix: invoice/IBAN paid into the shop account
     CRYPTO = "crypto"
     OTHER = "other"
 

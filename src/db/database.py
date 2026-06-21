@@ -248,6 +248,11 @@ _DDL_MIGRATIONS: list[str] = [
         END IF;
     END $$;
     """,
+    # BL-84 (2026-06-21): Felix asked for a bank-transfer payment type (invoice/IBAN
+    # paid into the shop account). payment_method is a native PG enum whose labels are
+    # the Python enum NAMES (CASH, VISA, ...), so the new label is 'BANK_TRANSFER'.
+    # ADD VALUE IF NOT EXISTS is idempotent; PG 12+ allows it inside a transaction.
+    "ALTER TYPE paymentmethod ADD VALUE IF NOT EXISTS 'BANK_TRANSFER'",
 ]
 
 

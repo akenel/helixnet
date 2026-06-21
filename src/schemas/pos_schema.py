@@ -205,6 +205,7 @@ class DailySummary(BaseModel):
     visa_total: Decimal
     debit_total: Decimal
     twint_total: Decimal
+    bank_transfer_total: Decimal = Decimal("0.00")  # BL-84: invoice/IBAN paid to shop account
     crypto_total: Decimal
     other_total: Decimal
     top_seller: Optional[str] = None

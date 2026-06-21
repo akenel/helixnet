@@ -41,8 +41,12 @@
                     <select x-model="filterPayment" @change="loadTransactions()" class="input-field">
                         <option value="">All</option>
                         <option value="cash">Cash</option>
-                        <option value="card">Card</option>
-                        <option value="mobile">Mobile</option>
+                        <option value="debit">Debit card</option>
+                        <option value="twint">TWINT</option>
+                        <option value="visa">Visa</option>
+                        <option value="bank_transfer">Bank transfer</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -63,13 +67,21 @@
                 <p class="text-sm text-gray-600">Total Sales</p>
                 <p class="text-3xl font-bold text-green-600" x-text="formatPrice(summary.total)"></p>
             </div>
-            <div class="card">
-                <p class="text-sm text-gray-600">Cash Sales</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(summary.cash)"></p>
-            </div>
-            <div class="card">
-                <p class="text-sm text-gray-600">Card/Mobile Sales</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(summary.card)"></p>
+            <!-- BL-84: full payment breakdown (cash / debit / TWINT / visa / bank transfer / ...) -->
+            <div class="card md:col-span-2">
+                <p class="text-sm text-gray-600 mb-2">Payment Breakdown</p>
+                <p x-show="breakdownRows().length === 0" class="text-sm text-gray-400">No sales for these filters.</p>
+                <div class="space-y-1.5">
+                    <template x-for="row in breakdownRows()" :key="row.key">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                  :class="methodClass(row.key)" x-text="row.label"></span>
+                            <span class="text-xs text-gray-400 ml-auto" x-text="row.count + '×'"></span>
+                            <span class="text-base font-bold text-gray-900 tabular-nums w-24 text-right"
+                                  x-text="formatPrice(row.total)"></span>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
 
@@ -117,13 +129,8 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                          :class="{
-                                              'bg-green-100 text-green-800': txn.payment_method === 'cash',
-                                              'bg-blue-100 text-blue-800': txn.payment_method === 'card',
-                                              'bg-purple-100 text-purple-800': txn.payment_method === 'mobile',
-                                              'bg-gray-100 text-gray-800': !txn.payment_method
-                                          }"
-                                          x-text="(txn.payment_method || 'none').toUpperCase()">
+                                          :class="methodClass(txn.payment_method)"
+                                          x-text="methodLabel(txn.payment_method)">
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-right">
@@ -164,8 +171,18 @@
             summary: {
                 count: 0,
                 total: 0,
-                cash: 0,
-                card: 0
+                byMethod: {}   // BL-84: { cash: {total, count}, debit: {...}, ... }
+            },
+            // BL-84: the real PaymentMethod enum, in display order, with label + pill colour.
+            methodOrder: ['cash', 'debit', 'twint', 'visa', 'bank_transfer', 'crypto', 'other'],
+            paymentMeta: {
+                cash:          { label: 'Cash',          cls: 'bg-green-100 text-green-800' },
+                debit:         { label: 'Debit card',    cls: 'bg-blue-100 text-blue-800' },
+                twint:         { label: 'TWINT',         cls: 'bg-purple-100 text-purple-800' },
+                visa:          { label: 'Visa',          cls: 'bg-indigo-100 text-indigo-800' },
+                bank_transfer: { label: 'Bank transfer', cls: 'bg-amber-100 text-amber-800' },
+                crypto:        { label: 'Crypto',        cls: 'bg-orange-100 text-orange-800' },
+                other:         { label: 'Other',         cls: 'bg-gray-100 text-gray-800' }
             },
             loading: false,
             filterDate: new Date().toISOString().split('T')[0], // Today
@@ -209,12 +226,39 @@
             calculateSummary() {
                 this.summary.count = this.transactions.length;
                 this.summary.total = this.transactions.reduce((sum, t) => sum + parseFloat(t.total || 0), 0);
-                this.summary.cash = this.transactions
-                    .filter(t => t.payment_method === 'cash')
-                    .reduce((sum, t) => sum + parseFloat(t.total || 0), 0);
-                this.summary.card = this.transactions
-                    .filter(t => ['card', 'mobile'].includes(t.payment_method))
-                    .reduce((sum, t) => sum + parseFloat(t.total || 0), 0);
+                // BL-84: bucket every sale by its real payment method (don't lump as "cash").
+                const by = {};
+                for (const t of this.transactions) {
+                    const m = t.payment_method || 'other';
+                    if (!by[m]) by[m] = { total: 0, count: 0 };
+                    by[m].total += parseFloat(t.total || 0);
+                    by[m].count += 1;
+                }
+                this.summary.byMethod = by;
+            },
+
+            // BL-84: the payment breakdown rows, in enum order, only methods actually used.
+            breakdownRows() {
+                const seen = new Set([...this.methodOrder]);
+                const keys = [
+                    ...this.methodOrder.filter(m => this.summary.byMethod[m]),
+                    ...Object.keys(this.summary.byMethod).filter(m => !seen.has(m))
+                ];
+                return keys.map(m => ({
+                    key: m,
+                    label: this.methodLabel(m),
+                    total: this.summary.byMethod[m].total,
+                    count: this.summary.byMethod[m].count
+                }));
+            },
+
+            methodLabel(method) {
+                if (!method) return 'None';
+                return this.paymentMeta[method]?.label || method.toUpperCase();
+            },
+
+            methodClass(method) {
+                return this.paymentMeta[method]?.cls || 'bg-gray-100 text-gray-800';
             },
 
             resetFilters() {

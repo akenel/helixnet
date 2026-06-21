@@ -1407,6 +1407,7 @@ async def get_daily_summary(
     visa_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.VISA)
     debit_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.DEBIT)
     twint_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.TWINT)
+    bank_transfer_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.BANK_TRANSFER)
     crypto_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.CRYPTO)
     other_total = sum(t.total for t in transactions if t.payment_method == PaymentMethod.OTHER)
 
@@ -1434,6 +1435,7 @@ async def get_daily_summary(
         visa_total=Decimal(str(visa_total)),
         debit_total=Decimal(str(debit_total)),
         twint_total=Decimal(str(twint_total)),
+        bank_transfer_total=Decimal(str(bank_transfer_total)),
         crypto_total=Decimal(str(crypto_total)),
         other_total=Decimal(str(other_total)),
         giveaway_count=giveaway_count,
@@ -1460,6 +1462,7 @@ async def get_daily_summary_csv(
         ("TWINT", summary.twint_total),
         ("Visa", summary.visa_total),
         ("Debit", summary.debit_total),
+        ("Bank transfer", summary.bank_transfer_total),
         ("Crypto", summary.crypto_total),
         ("Other", summary.other_total),
     ]

@@ -29,7 +29,7 @@ def test_daily_summary_methods_sum_to_total(session):
     methods = sum(
         Decimal(str(s.get(k, 0)))
         for k in ("cash_total", "twint_total", "visa_total",
-                  "debit_total", "crypto_total", "other_total")
+                  "debit_total", "bank_transfer_total", "crypto_total", "other_total")
     )
     total = Decimal(str(s.get("total_sales", 0)))
     assert methods == total, f"payment methods {methods} != total_sales {total}"
