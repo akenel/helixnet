@@ -1,0 +1,302 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Receiving - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="receivingData()">
+    <!-- Top Bar -->
+    <div class="bg-white shadow-md border-b-4 border-emerald-600">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="window.location.href='/pos/dashboard'" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">📥 Receiving</h1>
+                    <p class="text-sm text-gray-600">Scan an item, type how many arrived — stock goes up</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-4 py-6 space-y-4">
+        <!-- Manager-only notice -->
+        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800">
+            Receiving stock requires a <strong>manager</strong> role. Ask Felix or Ralph.
+        </div>
+
+        <template x-if="user.isManager">
+        <div class="space-y-4">
+            <!-- Scan / add row -->
+            <div class="bg-white rounded-xl shadow p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Scan or type a barcode</label>
+                <div class="flex gap-2">
+                    <input type="text" x-model="barcodeInput" @keyup.enter="lookup()"
+                           inputmode="numeric" placeholder="e.g. 7610000123463"
+                           class="input-field font-mono flex-1">
+                    <button type="button" @click="startScan()" class="btn-primary flex-none px-4">📷 Scan</button>
+                    <button type="button" @click="lookup()" class="btn-success flex-none px-4">Add</button>
+                </div>
+                <p x-show="lookupMsg" x-text="lookupMsg" class="text-sm mt-2 text-gray-500" style="display:none;"></p>
+            </div>
+
+            <!-- Receiving list -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-4 py-3 border-b flex justify-between items-center">
+                    <h2 class="font-semibold text-gray-900">Delivery</h2>
+                    <span class="text-sm text-gray-500"><span x-text="totalUnits()"></span> unit(s), <span x-text="lines.length"></span> line(s)</span>
+                </div>
+
+                <div x-show="!lines.length" class="px-4 py-10 text-center text-gray-400" style="display:none;">
+                    Nothing added yet. Scan the first item.
+                </div>
+
+                <template x-for="(l, i) in lines" :key="l.product_id">
+                    <div class="px-4 py-3 border-b flex items-center gap-3">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate" x-text="l.name"></p>
+                            <p class="text-xs text-gray-500 font-mono" x-text="(l.barcode || 'no barcode') + ' · on hand ' + l.stock_before"></p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-none">
+                            <button type="button" @click="bump(i,-1)" class="w-9 h-9 rounded-lg bg-gray-100 text-gray-700 text-xl leading-none">−</button>
+                            <input type="number" min="1" step="1" x-model.number="l.quantity"
+                                   class="w-16 text-center input-field font-bold text-lg py-1">
+                            <button type="button" @click="bump(i,1)" class="w-9 h-9 rounded-lg bg-gray-100 text-gray-700 text-xl leading-none">+</button>
+                            <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-1" title="Remove">&times;</button>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="px-4 py-3 space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery note <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <input type="text" x-model="reference" maxlength="140" placeholder="e.g. FourTwenty invoice 4821"
+                               class="input-field">
+                    </div>
+                    <button type="button" @click="confirm()" :disabled="!lines.length || saving"
+                            class="btn-success w-full text-lg">
+                        <span x-show="!saving">✅ Receive <span x-text="totalUnits()"></span> unit(s)</span>
+                        <span x-show="saving" style="display:none;">Receiving…</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Last receipt result -->
+            <div x-show="result" style="display:none;" class="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-4">
+                <p class="font-semibold text-emerald-800 mb-2">✅ Received <span x-text="result?.total_units"></span> unit(s) across <span x-text="result?.received_lines"></span> line(s)</p>
+                <template x-for="r in (result?.lines || [])" :key="r.product_id">
+                    <p class="text-sm text-emerald-900" x-text="r.name + ' → ' + r.stock_after + ' on hand'"></p>
+                </template>
+            </div>
+        </div>
+        </template>
+    </div>
+
+    <!-- Camera scan overlay (shared PosScanner) -->
+    <div x-show="scanOpen" x-transition class="fixed inset-0 z-[60] bg-black flex flex-col" style="display:none;">
+        <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
+            <span class="font-semibold">📷 Aim at the barcode</span>
+            <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
+        </div>
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+            <div id="rcv-reader" class="w-full max-w-md"></div>
+            <p x-show="scanError" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
+        </div>
+        <div class="px-4 py-4 bg-black/80 text-center">
+            <p x-show="scanLive" class="text-green-300 font-mono text-lg mb-2" x-text="'Reading: ' + scanLive" style="display:none;"></p>
+            <p class="text-white/60 text-xs mb-2">Hold steady — confirms after reading the same code twice</p>
+            <button @click="stopScan()" class="btn-secondary">Cancel — use keyboard</button>
+        </div>
+    </div>
+
+    <!-- Unknown item → lazy create, then add to the delivery -->
+    <div x-show="newOpen" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" @click.self="newOpen=false" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="flex justify-between items-start p-5 border-b">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">🆕 New item</h2>
+                    <p class="text-sm text-gray-600 mt-1">Not in the catalog yet — add it, then receive it.</p>
+                </div>
+                <button @click="newOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                    <input type="text" x-model="newBarcode" readonly class="input-field bg-gray-100 font-mono">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
+                    <input type="text" x-model="newName" @keyup.enter="createAndAdd()" placeholder="e.g. Grinder 4-part 50mm" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sale price (CHF)</label>
+                    <input type="number" step="0.05" min="0" x-model="newPrice" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-2xl font-bold">
+                </div>
+                <button @click="createAndAdd()" :disabled="newSaving" class="btn-success w-full">
+                    <span x-show="!newSaving">➕ Add to delivery</span>
+                    <span x-show="newSaving" style="display:none;">Saving…</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function receivingData() {
+        return {
+            user: {},
+            barcodeInput: '',
+            lookupMsg: '',
+            lines: [],            // {product_id, name, barcode, stock_before, quantity}
+            reference: '',
+            saving: false,
+            result: null,
+
+            // camera
+            scanOpen: false,
+            scanError: '',
+            scanLive: '',
+
+            // lazy create
+            newOpen: false,
+            newBarcode: '',
+            newName: '',
+            newPrice: '',
+            newSaving: false,
+
+            init() {
+                const info = (AuthHelper.getUserInfo && AuthHelper.getUserInfo()) || {};
+                this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
+            },
+
+            totalUnits() { return this.lines.reduce((s, l) => s + (parseInt(l.quantity, 10) || 0), 0); },
+
+            async lookup() {
+                const bc = (this.barcodeInput || '').trim();
+                if (!bc) return;
+                this.lookupMsg = '';
+                try {
+                    const p = await API.get(`/api/v1/pos/products/barcode/${encodeURIComponent(bc)}`);
+                    this.addProduct(p);
+                    this.barcodeInput = '';
+                } catch (err) {
+                    if (String(err.message || err).includes('404') || err.status === 404) {
+                        this.openNew(bc);
+                    } else {
+                        this.lookupMsg = err.message || 'Lookup failed';
+                    }
+                }
+            },
+
+            addProduct(p) {
+                // Already in the delivery? bump its quantity instead of a 2nd line.
+                const existing = this.lines.find(l => l.product_id === p.id);
+                if (existing) {
+                    existing.quantity = (parseInt(existing.quantity, 10) || 0) + 1;
+                    showToast(`${p.name} +1`, 'success');
+                    return;
+                }
+                this.lines.unshift({
+                    product_id: p.id,
+                    name: p.name,
+                    barcode: p.barcode,
+                    stock_before: p.stock_quantity,
+                    quantity: 1,
+                });
+                showToast(`${p.name} added`, 'success');
+            },
+
+            bump(i, d) {
+                const q = (parseInt(this.lines[i].quantity, 10) || 0) + d;
+                this.lines[i].quantity = Math.max(1, q);
+            },
+            removeLine(i) { this.lines.splice(i, 1); },
+
+            // ---- camera (shared, hardened PosScanner) ----
+            async startScan() {
+                if (typeof window.PosScanner === 'undefined') { showToast('Scanner not loaded', 'warning'); return; }
+                this.scanError = ''; this.scanLive = ''; this.scanOpen = true;
+                await this.$nextTick();
+                window.PosScanner.start('rcv-reader',
+                    (text) => {
+                        this.scanOpen = false; this.scanLive = '';
+                        window.PosScanner.vibrate(60); window.PosScanner.beep();
+                        this.barcodeInput = (text || '').trim();
+                        this.lookup();
+                    },
+                    (err) => {
+                        const n = String((err && (err.name || err)) || '');
+                        this.scanError = /permission|denied|NotAllowed/i.test(n)
+                            ? 'Camera permission denied. Type the barcode instead.'
+                            : 'Could not open the camera. Type it instead.';
+                        setTimeout(() => { this.scanOpen = false; }, 2500);
+                    },
+                    { onProgress: (t) => { this.scanLive = t; } });
+            },
+            async stopScan() { await window.PosScanner.stop(); this.scanOpen = false; this.scanLive = ''; },
+
+            // ---- lazy create ----
+            openNew(barcode) {
+                this.newBarcode = barcode || '';
+                this.newName = ''; this.newPrice = ''; this.newSaving = false;
+                this.newOpen = true;
+            },
+            async createAndAdd() {
+                if (!this.newName.trim()) { showToast('Enter a product name', 'warning'); return; }
+                const price = parseFloat(this.newPrice);
+                if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+                this.newSaving = true;
+                const bc = (this.newBarcode || '').trim();
+                try {
+                    // Create at stock 0 — receiving bumps it to the counted amount.
+                    const p = await API.post('/api/v1/pos/products', {
+                        barcode: bc || null,
+                        sku: bc ? ('LZ-' + bc) : ('LZ-' + Date.now()),
+                        name: this.newName.trim(),
+                        price,
+                        stock_quantity: 0,
+                    });
+                    this.addProduct(p);
+                    this.newOpen = false;
+                    this.barcodeInput = '';
+                } catch (err) {
+                    showToast(err.message || 'Could not create the product', 'error');
+                } finally {
+                    this.newSaving = false;
+                }
+            },
+
+            async confirm() {
+                if (!this.lines.length) return;
+                const items = this.lines.map(l => ({
+                    product_id: l.product_id,
+                    quantity: Math.max(1, parseInt(l.quantity, 10) || 1),
+                }));
+                this.saving = true;
+                try {
+                    const res = await API.post('/api/v1/pos/receiving', {
+                        items,
+                        reference: (this.reference || '').trim() || null,
+                    });
+                    this.result = res;
+                    this.lines = [];
+                    this.reference = '';
+                    showToast(`Received ${res.total_units} unit(s)`, 'success');
+                } catch (err) {
+                    showToast(err.message || 'Receiving failed', 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+        }
+    }
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- BL-91: vendored scanner + shared PosScanner (no runtime CDN) -->
+<script src="/static/vendor/html5-qrcode.min.js"></script>
+<script src="/static/pos-scanner.js"></script>
+{% endblock %}

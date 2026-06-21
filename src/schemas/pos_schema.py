@@ -204,6 +204,37 @@ class BarcodeScanResponse(BaseModel):
 
 
 # ================================================================
+# RECEIVING SCHEMAS (BL-91 — stock IN at the counter)
+# ================================================================
+
+class ReceivingItem(BaseModel):
+    """One line of a goods-in: a known product + how many units arrived."""
+    product_id: UUID
+    quantity: int = Field(..., ge=1, description="Units received (singles)")
+
+
+class ReceivingRequest(BaseModel):
+    """A goods-in batch: several products received in one go (lean — no PO)."""
+    items: list[ReceivingItem] = Field(..., min_length=1)
+    reference: Optional[str] = Field(default=None, max_length=140,
+                                     description="Optional delivery note / supplier ref")
+
+
+class ReceivingLineResult(BaseModel):
+    product_id: UUID
+    name: str
+    quantity_received: int
+    stock_after: int
+
+
+class ReceivingResponse(BaseModel):
+    success: bool
+    received_lines: int
+    total_units: int
+    lines: list[ReceivingLineResult]
+
+
+# ================================================================
 # DAILY SUMMARY SCHEMAS (for Felix's email)
 # ================================================================
 

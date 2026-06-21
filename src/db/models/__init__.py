@@ -14,6 +14,7 @@ from .user_model import UserModel
 
 # POS Models (Felix's Artemis Store)
 from .product_model import ProductModel, ProductBarcodeModel
+from .pos_stock_movement_model import PosStockMovementModel
 from .transaction_model import TransactionModel, TransactionStatus, PaymentMethod
 from .line_item_model import LineItemModel
 from .store_settings_model import StoreSettingsModel
@@ -111,6 +112,7 @@ __all__ = [
     # POS Models
     "ProductModel",
     "ProductBarcodeModel",
+    "PosStockMovementModel",
     "TransactionModel",
     "TransactionStatus",
     "PaymentMethod",

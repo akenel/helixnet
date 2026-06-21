@@ -23,6 +23,7 @@ from src.db.database import get_db_session
 from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
+    PosStockMovementModel,
     TransactionModel,
     LineItemModel,
     UserModel,
@@ -64,6 +65,9 @@ from src.schemas.pos_schema import (
     DailySummary,
     StoreSettingsRead,
     StoreSettingsUpdate,
+    ReceivingRequest,
+    ReceivingResponse,
+    ReceivingLineResult,
 )
 from src.schemas.customer_schema import CustomerQRScanResponse
 # Real Keycloak authentication with RBAC
@@ -340,6 +344,73 @@ async def delete_product(
     await db.commit()
 
     logger.info(f"Product deactivated: {product.sku} by user {current_user['username']}")
+
+
+# ================================================================
+# RECEIVING (BL-91) — stock IN at the counter: scan -> count -> stock up
+# ================================================================
+
+@router.post("/receiving", response_model=ReceivingResponse)
+async def receive_stock(
+    body: ReceivingRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """
+    Record goods coming IN (manager/admin only). Lean by design (BL-91): each line
+    is a known product + a typed count; we bump stock and write an audit movement.
+    No purchase orders, no costing — "scan to sell, scan to receive, one camera".
+
+    New items are lazy-created on the receiving page first (POST /products), so this
+    endpoint only deals in product_ids. The whole batch is one transaction: if any
+    line's product is missing, nothing is applied.
+    """
+    # Resolve every product up front so a bad line fails the WHOLE batch (atomic).
+    resolved = []
+    for item in body.items:
+        result = await db.execute(select(ProductModel).where(ProductModel.id == item.product_id))
+        product = result.scalar_one_or_none()
+        if not product:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Product {item.product_id} not found — nothing was received.",
+            )
+        resolved.append((product, item.quantity))
+
+    reference = (body.reference or "").strip() or None
+    lines = []
+    total_units = 0
+    for product, qty in resolved:
+        product.stock_quantity = (product.stock_quantity or 0) + qty
+        product.updated_at = datetime.now(timezone.utc)
+        db.add(PosStockMovementModel(
+            product_id=product.id,
+            direction="in",
+            quantity=qty,
+            quantity_after=product.stock_quantity,
+            reason="receiving",
+            reference=reference,
+            performed_by=current_user.get("username"),
+        ))
+        total_units += qty
+        lines.append(ReceivingLineResult(
+            product_id=product.id,
+            name=product.name,
+            quantity_received=qty,
+            stock_after=product.stock_quantity,
+        ))
+
+    await db.commit()
+    logger.info(
+        f"Receiving: {len(lines)} line(s), {total_units} unit(s) in by "
+        f"{current_user['username']}" + (f" (ref {reference})" if reference else "")
+    )
+    return ReceivingResponse(
+        success=True,
+        received_lines=len(lines),
+        total_units=total_units,
+        lines=lines,
+    )
 
 
 # ================================================================
@@ -2477,6 +2548,16 @@ async def pos_catalog(request: Request):
     page just renders the screen.
     """
     return templates.TemplateResponse("pos/catalog.html", {"request": request})
+
+
+@html_router.get("/pos/receiving", response_class=HTMLResponse, name="pos_receiving")
+async def pos_receiving(request: Request):
+    """Receiving / goods-in (BL-91) — scan an item, type the count, stock goes up.
+
+    Lean restock screen: reuses the shared PosScanner + the lazy-create path, builds
+    a receiving list, then POSTs the batch to /api/v1/pos/receiving (manager/admin).
+    """
+    return templates.TemplateResponse("pos/receiving.html", {"request": request})
 
 
 @html_router.get("/pos/checkout", response_class=HTMLResponse, name="pos_checkout")
