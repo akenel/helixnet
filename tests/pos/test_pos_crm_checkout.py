@@ -54,6 +54,28 @@ def test_search_finds_member_by_real_name(session):
     assert any(c["handle"] == handle for c in by_name), "found by real name too"
 
 
+def test_checkout_view_returns_lifetime_spend(session):
+    """The card/receipt show lifetime spend -> the view must return it (was missing
+    -> 'CHF undefined' on the card)."""
+    cid = _new_customer(session)
+    v0 = _view(session, cid)
+    assert "lifetime_spend" in v0 and v0["lifetime_spend"] == 0
+    _ring(session, "120.00", customer_id=cid)
+    v1 = _view(session, cid)
+    assert v1["lifetime_spend"] == 120.0
+
+
+def test_member_sale_carries_customer_for_the_receipt(session):
+    """The receipt fetches the member from the txn's customer_id -> both the txn read
+    and the checkout view must resolve (proves the receipt CAN show the buyer)."""
+    cid = _new_customer(session)
+    tx = _ring(session, "55.00", customer_id=cid)
+    full = session.get(f"{POS}/transactions/{tx['id']}").json()
+    assert str(full.get("customer_id")) == cid, "the sale carries the member"
+    view = session.get(f"{CUST}/checkout/{cid}").json()
+    assert view["handle"] and "loyalty_tier" in view, "member resolves for the receipt block"
+
+
 def test_checkout_view_reports_correct_next_tier(session):
     """The receipt's 'CHF X to next tier' nudge uses the 3-tier thresholds (Silver 500,
     Gold 2000), not the old stale ones."""
