@@ -28,6 +28,39 @@ def test_enroll_requires_18_plus(session):
     assert "18" in r.text
 
 
+def test_search_finds_member_by_real_name(session):
+    """The 'larry == poppe' fix: a member enrolled with a handle + real name must be
+    findable by EITHER (search ignored real_name before)."""
+    handle = "poppe_" + uuid.uuid4().hex[:6]
+    realname = "larry_" + uuid.uuid4().hex[:6]
+    session.post(CUST, json={"handle": handle, "real_name": realname, "age_confirmed": True}).raise_for_status()
+    # by handle
+    by_handle = session.get(f"{CUST}/search", params={"q": handle}).json()
+    assert any(c["handle"] == handle for c in by_handle), "found by handle"
+    # by real name (the bug)
+    by_name = session.get(f"{CUST}/search", params={"q": realname}).json()
+    assert any(c["handle"] == handle for c in by_name), "found by real name too"
+
+
+def test_checkout_view_reports_correct_next_tier(session):
+    """The receipt's 'CHF X to next tier' nudge uses the 3-tier thresholds (Silver 500,
+    Gold 2000), not the old stale ones."""
+    cid = _new_customer(session)
+    v0 = _view(session, cid)
+    assert v0["next_tier_name"] == "Silver"
+    assert abs(v0["spend_to_next_tier"] - 500) < 0.01     # CHF 500 to Silver from zero
+
+    _ring(session, "600.00", customer_id=cid)             # -> Silver
+    v1 = _view(session, cid)
+    assert v1["next_tier_name"] == "Gold"
+    assert abs(v1["spend_to_next_tier"] - 1400) < 0.01    # 2000 - 600
+
+    _ring(session, "1500.00", customer_id=cid)            # -> Gold (top)
+    v2 = _view(session, cid)
+    assert v2["next_tier_name"] is None                   # nothing above Gold
+    assert v2["spend_to_next_tier"] == 0
+
+
 def _view(session, cid):
     r = session.get(f"{CUST}/checkout/{cid}")
     r.raise_for_status()

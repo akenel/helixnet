@@ -155,6 +155,26 @@
                 </div>
             </div>
 
+            <!-- Loyalty member (only when a member was on the sale) -->
+            <div x-show="member" class="border-t-2 border-dashed border-gray-400 mt-4 pt-3 space-y-1 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">👤 Member</span>
+                    <span class="font-semibold" x-text="member ? ('@' + member.handle + ' · ' + (member.loyalty_tier || '').toUpperCase()) : ''"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Points earned</span>
+                    <span class="font-semibold text-indigo-600" x-text="'+' + pointsEarned() + ' pts'"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Points balance</span>
+                    <span class="font-semibold" x-text="(member ? member.credits_balance : 0) + ' pts'"></span>
+                </div>
+                <div x-show="member && member.next_tier_name && member.spend_to_next_tier > 0" class="flex justify-between text-gray-500">
+                    <span>CHF to <span x-text="member ? member.next_tier_name : ''"></span></span>
+                    <span x-text="'CHF ' + (member ? Math.round(member.spend_to_next_tier) : 0)"></span>
+                </div>
+            </div>
+
             <!-- Payment Info -->
             <div class="mt-6 p-4 bg-gray-50 print:bg-gray-100 rounded-lg">
                 <div class="flex justify-between text-lg font-semibold">
@@ -301,6 +321,7 @@
                 receipt_logo_url: ''
             },
             cashierName: 'Cashier',
+            member: null,              // loyalty member on this sale (if any)
             canRefund: false,
             refundModalOpen: false,
             refundReason: '',
@@ -332,6 +353,13 @@
                         this.canRefund = AuthHelper.isManager() || AuthHelper.isAdmin();
                     }
 
+                    // Loyalty member on this sale -> show name, points earned, balance, next tier.
+                    if (this.transaction.customer_id) {
+                        try {
+                            this.member = await API.get('/api/v1/customers/checkout/' + this.transaction.customer_id);
+                        } catch (e) { this.member = null; }
+                    }
+
                 } catch (error) {
                     console.error('Failed to load receipt:', error);
                     showToast('Failed to load receipt: ' + error.message, 'error');
@@ -346,6 +374,10 @@
             },
             discountTotal() {
                 return this.grossSubtotal() - parseFloat(this.transaction.total || 0);
+            },
+            // Points earned on this sale = 1 per CHF paid, floored (matches the server).
+            pointsEarned() {
+                return Math.floor(parseFloat(this.transaction.total || 0));
             },
 
             formatAddress() {

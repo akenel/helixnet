@@ -77,6 +77,10 @@ async def search_customers(
     # Handle search (case-insensitive)
     conditions.append(func.lower(CustomerModel.handle).contains(search_term.lower()))
 
+    # Real name search -- a member enrolled as handle "poppe" / real-name "larry"
+    # must be findable by either (cashiers often know the real name).
+    conditions.append(func.lower(CustomerModel.real_name).contains(search_term.lower()))
+
     # Instagram search (with or without @)
     ig_term = search_term.lstrip('@')
     conditions.append(func.lower(CustomerModel.instagram).contains(ig_term.lower()))
@@ -150,20 +154,20 @@ async def get_checkout_view(
         days_until = (this_year_bday - today).days
         birthday_soon = 0 <= days_until <= 14
 
-    # Tier upgrade check
+    # Tier upgrade check -- Banco 3-tier thresholds (Silver @ 500, Gold @ 2000).
+    # Gold is the top; nothing to climb to beyond it.
     tier_upgrade_close = False
     spend_to_next = Decimal("0")
-    if customer.loyalty_tier == LoyaltyTier.BRONZE:
-        spend_to_next = Decimal("200") - customer.lifetime_spend
-        tier_upgrade_close = spend_to_next <= 50
-    elif customer.loyalty_tier == LoyaltyTier.SILVER:
+    next_tier_name = None
+    if customer.loyalty_tier == LoyaltyTier.GOLD:
+        spend_to_next = Decimal("0")
+    elif customer.lifetime_spend < Decimal("500"):
         spend_to_next = Decimal("500") - customer.lifetime_spend
+        next_tier_name = "Silver"
         tier_upgrade_close = spend_to_next <= 50
-    elif customer.loyalty_tier == LoyaltyTier.GOLD:
-        spend_to_next = Decimal("1000") - customer.lifetime_spend
-        tier_upgrade_close = spend_to_next <= 50
-    elif customer.loyalty_tier == LoyaltyTier.PLATINUM:
-        spend_to_next = Decimal("2500") - customer.lifetime_spend
+    else:
+        spend_to_next = Decimal("2000") - customer.lifetime_spend
+        next_tier_name = "Gold"
         tier_upgrade_close = spend_to_next <= 100
 
     # Last visit days
@@ -193,6 +197,7 @@ async def get_checkout_view(
         "birthday_soon": birthday_soon,
         "tier_upgrade_close": tier_upgrade_close,
         "spend_to_next_tier": float(spend_to_next) if spend_to_next > 0 else 0,
+        "next_tier_name": next_tier_name,
         "notes": customer.notes,
         "is_vip": customer.is_vip,
     }
