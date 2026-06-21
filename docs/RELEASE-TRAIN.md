@@ -51,12 +51,12 @@ so sessions don't fall over each other or push half-baked work to a live box.
 > pass (106 + 4 new alias tests; also fixed the pre-existing `find_product` flake by
 > switching it to the exact barcode endpoint). JS parse-clean.
 >
-> **Two known bad PROD rows = manual decisions for Angel/Felix (NOT auto-fixed):**
-> - *Gizeh Rolls Extra fine 5M* — TWO rows, same name, codes `421123680670` (stk 9997) &
->   `42238072` (stk 9994). Same item captured twice; merging changes real stock → human
->   call which row survives (then alias the other onto it).
-> - *Hemp Sana Salbe* — one row, garbage `59␝788130` barcode (unrecoverable). Cleanest =
->   NULL the barcode so a future clean scan re-captures + links.
+> **Two known bad PROD rows — RESOLVED 2026-06-21 (Angel's calls, applied to shared DB):**
+> - *Gizeh Rolls Extra fine 5M* — kept `421123680670` (row `e9522f3e`); aliased `42238072`
+>   onto it and soft-deleted the duplicate row `f5535425`. Both codes now resolve to the
+>   one product via the staging API. ✓
+> - *Hemp Sana Salbe* (`02c8ae9c`) — barcode NULLed (was garbage `59␝788130`); a clean
+>   re-scan will re-capture + link. ✓
 >
 > **Camera reliability is Angel's Fairphone gate** (can't unit-test the lens).
 > Awaiting: Angel scans real Artemis stock on staging-banco → then prod train.
