@@ -115,9 +115,21 @@ and never closes it. They accumulate as dangling `OPEN` rows.
 **Where:** a reaper function in `pos_router`/a service + a schedule. Check how other jobs are
 scheduled in this repo before adding a new mechanism (don't invent a second scheduler).
 
-**Decisions for Angel before building:** (1) cancel vs delete; (2) the age threshold;
-(3) also reap *non-empty* abandoned carts, or only the zero-value ones? (safer to start with
-zero-value only).
+**Decisions (Angel, 2026-06-21):** CANCEL (not delete) · **12h** threshold · **zero-value only**.
 
-**Gate:** same as everything — build → `make test-pos` (add a reaper test: an old empty
-OPEN cart gets cancelled, a cart-with-items is untouched) → staging → Angel PASS → prod train.
+✅ **BUILT + on staging (`7133065`), awaiting Angel PASS.**
+- `reap_stale_open_carts(db, older_than_hours=12)`: cancels carts that are `OPEN` AND
+  `total==0` AND have **no line items** AND `created_at < now-12h`. Sets `CANCELLED` +
+  `updated_at`, keeps the number. Idempotent; never touches carts with items or any value.
+- `POST /api/v1/pos/maintenance/reap-empty-carts` (manager/admin) — manual/on-demand.
+- **Hourly background loop** in the app lifespan (Celery Beat isn't deployed here; single
+  uvicorn worker → runs once per container, idempotent on the shared DB; a bad tick logs and
+  continues, never crashes the app).
+- Test `tests/pos/test_pos_reaper.py` (3): old empty cart cancelled, cart-with-items spared,
+  fresh cart spared. **Live staging proof:** cancelled 11 real 06-20 carts (>12h), spared
+  today's (<12h) and the non-zero CHF 10 ones.
+
+**Note:** today's CHF 0.00 OPEN carts get reaped automatically ~12h after they were opened
+(by tomorrow morning). The CHF 10.00 OPEN carts are non-zero → deliberately NOT reaped (zero-
+value-only). A "hide CANCELLED from the default list" tweak is an easy follow-up if you want
+the rows gone from view entirely, not just marked dead.

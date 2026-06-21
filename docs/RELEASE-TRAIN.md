@@ -28,7 +28,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 | Feature | Commits (main) | Staging | Prod |
 |---|---|---|---|
-| **BL-86** End-of-day reaper: void stale empty `OPEN` carts (Angel) | _pending_ | not built yet | **PENDING — teed up, see triage doc** |
+| **BL-86** End-of-day reaper: cancel stale empty `OPEN` carts (Angel) | `7133065` | **green — on staging-banco @ 7133065; manual run cancelled 11 real stale carts from 06-20 (>12h), spared today's (<12h) + the non-zero CHF 10 ones. Hourly auto-loop + POST /maintenance/reap-empty-carts (mgr/admin).** | **STAGED — awaiting Angel PASS** |
 
 > _(BL-84 / BL-83 / BL-85 — Felix's three live feedbacks — **SHIPPED 2026-06-21**, see history below.)_
 | Banco feedback: file + camera attachments | `0013263` (backend) + `4aba2da` | green (7/7 attach+screenshot, dog-fooded: img + 2 PDFs) | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
