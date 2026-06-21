@@ -67,6 +67,10 @@
                         <button @click="searchByBarcode()" class="btn-success w-full">
                             📊 Find by Barcode
                         </button>
+                        <!-- BL-87: live camera scan. Manual entry above stays as fallback. -->
+                        <button @click="startScan()" class="btn-primary w-full">
+                            📷 Scan with camera
+                        </button>
                     </div>
 
                     <!-- Search Mode -->
@@ -368,6 +372,55 @@
             </div>
         </div>
     </div>
+
+    <!-- BL-87: Camera scan overlay. Full-screen rear camera + scan box. -->
+    <div x-show="scanOpen" x-transition class="fixed inset-0 z-[60] bg-black flex flex-col" style="display:none;">
+        <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
+            <span class="font-semibold">📷 Aim at the barcode</span>
+            <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
+        </div>
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+            <!-- html5-qrcode injects the <video> here -->
+            <div id="reader" class="w-full max-w-md"></div>
+            <p x-show="scanError"
+               class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3"
+               x-text="scanError" style="display:none;"></p>
+        </div>
+        <div class="px-4 py-4 bg-black/80 text-center">
+            <button @click="stopScan()" class="btn-secondary">Cancel — use keyboard</button>
+        </div>
+    </div>
+
+    <!-- BL-87: Lazy capture. Unknown scan → save as a real product, known forever. -->
+    <div x-show="lazyOpen" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" @click.self="lazyOpen=false" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="flex justify-between items-start p-5 border-b">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">🆕 Item not on file</h2>
+                    <p class="text-sm text-gray-600 mt-1">Add it now — it'll scan instantly every time after.</p>
+                </div>
+                <button @click="lazyOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                    <input type="text" x-model="lazyBarcode" readonly class="input-field bg-gray-100 font-mono">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
+                    <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
+                    <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
+                </div>
+                <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">
+                    <span x-show="!lazySaving">➕ Save &amp; add to cart</span>
+                    <span x-show="lazySaving" style="display:none;">Saving…</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -379,6 +432,19 @@
 
             // Barcode mode
             barcodeInput: '',
+
+            // BL-87: camera scan
+            scanOpen: false,
+            scanError: '',
+            _scanner: null,
+            _scanBusy: false,
+
+            // BL-87: lazy capture (unknown scan → persisted product)
+            lazyOpen: false,
+            lazyBarcode: '',
+            lazyName: '',
+            lazyPrice: '',
+            lazySaving: false,
 
             // Search mode (paginated)
             searchInput: '',
@@ -457,9 +523,140 @@
                     showToast('Product added!', 'success');
 
                 } catch (error) {
-                    // 404 -> not found; offer catalog (manual) entry.
-                    showToast('Product not found. Try catalog mode.', 'warning');
-                    this.searchMode = 'catalog';
+                    // BL-87: not on file → lazy capture. Save it as a real product now so
+                    // it's known on every future scan (cashiers fall back to a one-off line).
+                    this.openLazyCapture(this.barcodeInput.trim());
+                }
+            },
+
+            // ---- BL-87: camera scan + lazy capture ----------------------------------
+            async startScan() {
+                if (typeof Html5Qrcode === 'undefined') {
+                    showToast('Scanner not loaded — type the barcode instead', 'warning');
+                    return;
+                }
+                this.scanError = '';
+                this.scanOpen = true;
+                this._scanBusy = false;
+                // Let the overlay (#reader) render before the camera attaches.
+                await this.$nextTick();
+                const F = Html5QrcodeSupportedFormats;
+                const formats = [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF];
+                try {
+                    this._scanner = new Html5Qrcode('reader', { formatsToSupport: formats, verbose: false });
+                    await this._scanner.start(
+                        { facingMode: 'environment' },                 // rear camera
+                        { fps: 10, qrbox: (vw, vh) => {                 // wide box suits 1D codes
+                            const w = Math.max(160, Math.min(300, vw - 40));
+                            return { width: w, height: Math.floor(w * 0.55) };
+                        } },
+                        (decodedText) => this.onScanDecode(decodedText),
+                        () => { /* per-frame no-read: ignore, keep scanning */ }
+                    );
+                } catch (err) {
+                    console.error('Camera start failed:', err);
+                    const name = String((err && (err.name || err)) || '');
+                    this.scanError = /permission|denied|NotAllowed/i.test(name)
+                        ? 'Camera permission denied. Type the barcode instead.'
+                        : 'Could not open the camera. Type the barcode instead.';
+                    await this._releaseScanner();
+                    setTimeout(() => { this.scanOpen = false; }, 2500);
+                }
+            },
+
+            async onScanDecode(decodedText) {
+                if (this._scanBusy) return;   // single-shot: ignore further frames
+                this._scanBusy = true;
+                await this._releaseScanner();  // stop + free the camera immediately
+                this.scanOpen = false;
+                try { navigator.vibrate && navigator.vibrate(60); } catch (e) {}
+                this._beep();
+                // Feed the EXACT path manual entry uses.
+                this.barcodeInput = (decodedText || '').trim();
+                this.searchMode = 'barcode';
+                await this.searchByBarcode();
+            },
+
+            async stopScan() {
+                await this._releaseScanner();
+                this.scanOpen = false;
+            },
+
+            async _releaseScanner() {
+                if (!this._scanner) return;
+                try {
+                    if (this._scanner.isScanning) await this._scanner.stop();
+                    await this._scanner.clear();
+                } catch (e) { /* already stopped */ }
+                this._scanner = null;
+            },
+
+            _beep() {
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (!Ctx) return;
+                    const ctx = new Ctx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.1;
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.12);
+                    osc.onended = () => ctx.close();
+                } catch (e) { /* no audio: vibrate already fired */ }
+            },
+
+            openLazyCapture(barcode) {
+                this.lazyBarcode = barcode || '';
+                this.lazyName = '';
+                this.lazyPrice = '';
+                this.lazySaving = false;
+                this.lazyOpen = true;
+            },
+
+            async saveLazyCapture() {
+                if (!this.lazyName.trim()) { showToast('Enter a product name', 'warning'); return; }
+                const price = parseFloat(this.lazyPrice);
+                if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+
+                this.lazySaving = true;
+                const bc = (this.lazyBarcode || '').trim();
+                // Operator never types a SKU — derive a stable one from the barcode.
+                const sku = bc ? ('LZ-' + bc) : ('LZ-' + Date.now());
+                const payload = {
+                    barcode: bc || null,
+                    sku,
+                    name: this.lazyName.trim(),
+                    price,
+                    // Stock 1 = the physical item in hand; selling it nets 0, keeping the
+                    // existing stock-decrement sale path correct. NOT inventory management.
+                    stock_quantity: 1,
+                };
+                try {
+                    // Persist a REAL product (manager/admin/dev). Known on every future scan.
+                    const product = await API.post('/api/v1/pos/products', payload);
+                    this.addToCart(product);
+                    this.lazyOpen = false;
+                    this.barcodeInput = '';
+                    showToast('Saved — it scans instantly next time', 'success');
+                } catch (err) {
+                    // No permission (cashier) or any failure → never block the sale.
+                    // Fall back to a one-off line so the customer still gets rung up.
+                    console.warn('Lazy capture create failed; using one-off line:', err);
+                    this.cart.push({
+                        id: 'catalog-' + Date.now(),
+                        name: '[NEW] ' + this.lazyName.trim(),
+                        price,
+                        quantity: 1,
+                        isCatalogItem: true,
+                    });
+                    this.lazyOpen = false;
+                    this.barcodeInput = '';
+                    showToast('Added for this sale. Ask a manager to add it permanently.', 'info');
+                } finally {
+                    this.lazySaving = false;
                 }
             },
 
@@ -696,4 +893,9 @@
         }
     }
 </script>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- BL-87: vendored locally (no runtime CDN). Powers the camera barcode scan. -->
+<script src="/static/vendor/html5-qrcode.min.js"></script>
 {% endblock %}
