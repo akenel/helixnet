@@ -32,6 +32,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 | Banco cash shift — per-cashier drawer (incr 1-3) | `2d9df70`,`94a9c75`,`cc7b886` | green, "per-cashier isolation proven" | STAGED — awaiting Angel sign-off |
 | Status bar: real version + git SHA stamp | `af62709` | green — shows `v3.3.0 (af62709)`, env `uat` | STAGED — awaiting Angel sign-off |
 | Shop Pulse card (live 📊: sales/members/stock/drawers) | `af62709` | green — `GET /pos/system/pulse` 200, real stats | STAGED — awaiting Angel sign-off |
+| `/health/dashboard` diagnostics page (health + system + browser/screen specs) | `04ae273` | green — HTTP 200, all cards render, env UAT | STAGED — awaiting Angel sign-off |
 | Banco CRM Phase 0 (FK fix + on-sale attach/earn/re-tier/enroll) | `a6ef751`,`0013263`,`94a4619`,`9057c1d`,`675c6de`,`825a96e` | (other terminal — actively fixing on staging) | PENDING |
 
 ## Caveat — prod is NOT a live Banco POS yet
