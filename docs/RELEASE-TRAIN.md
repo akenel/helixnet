@@ -22,7 +22,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: BL-89 catalog polish + dup-barcode 409 fix shipped to banco.lapiazza.app @ `2015f36`, 2026-06-21 — Tigs, Angel GO.)
+`🚦 DEPLOYING — Tigs — BL-90 scan hardening to banco prod (2026-06-21, Angel Fairphone PASS)`
 
 ## Boarding (awaiting the next prod train)
 
