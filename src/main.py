@@ -273,6 +273,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ================================================================
+# 🚫 No-stale-HTML — server-rendered pages must NEVER be cached.
+# Without this, a browser can serve a months-old page (the cf2794e ghost:
+# a Dec-2025 customer-lookup survived 914 commits in a cached tab, showing
+# long-fixed bugs). Only text/html is touched; CDN/static assets are
+# unaffected. Pages carry a live build stamp, so re-fetch is cheap + correct.
+# ================================================================
+@app.middleware("http")
+async def no_cache_html(request: Request, call_next):
+    response = await call_next(request)
+    if response.headers.get("content-type", "").startswith("text/html"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 # ================================================================
 # 🧩 Router Registration
 # ================================================================
