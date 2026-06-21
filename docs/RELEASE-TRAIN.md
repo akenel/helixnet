@@ -22,15 +22,14 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: Felix's 3 live feedbacks shipped to banco.lapiazza.app @ `21742df`, 2026-06-21 — Tigs, Angel GO.)
+`🟢 IDLE` — no train running. (Last: BL-86 reaper + hide-cancelled shipped to banco.lapiazza.app @ `3c29154`, 2026-06-21 — Tigs, Angel GO.)
 
 ## Boarding (awaiting the next prod train)
 
-| Feature | Commits (main) | Staging | Prod |
-|---|---|---|---|
-| **BL-86** End-of-day reaper: cancel stale empty `OPEN` carts (Angel) | `7133065` | **green — on staging-banco @ 7133065; manual run cancelled 11 real stale carts from 06-20 (>12h), spared today's (<12h) + the non-zero CHF 10 ones. Hourly auto-loop + POST /maintenance/reap-empty-carts (mgr/admin).** | **STAGED — awaiting Angel PASS** |
+_(empty — nothing boarding.)_
 
-> _(BL-84 / BL-83 / BL-85 — Felix's three live feedbacks — **SHIPPED 2026-06-21**, see history below.)_
+> _(BL-84 / BL-83 / BL-85 — Felix's three live feedbacks — and BL-86 (reaper + hide-cancelled)
+> all **SHIPPED 2026-06-21**, see history below.)_
 | Banco feedback: file + camera attachments | `0013263` (backend) + `4aba2da` | green (7/7 attach+screenshot, dog-fooded: img + 2 PDFs) | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
 | Banco cash shift — per-cashier drawer (incr 1-3) | `2d9df70`,`94a9c75`,`cc7b886` | green, "per-cashier isolation proven" | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
 | Status bar: real version + git SHA stamp | `af62709` | green — shows `v3.3.0 (af62709)`, env `uat` | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
@@ -56,6 +55,12 @@ git) — its banco block now points to `helix-platform-banco`; backup `/root/Cad
 
 ## Shipped (history)
 
+- **2026-06-21 — BL-86 empty-cart reaper + hide-cancelled (@ `3c29154`).** Cancels stale
+  `OPEN` carts that are zero-value + empty + >12h old (CANCELLED, never deleted; hourly
+  background loop + `POST /maintenance/reap-empty-carts` for mgr/admin). Cancelled carts are
+  hidden from the default transactions view (still reachable via `status_filter=cancelled`).
+  Staging proof: reaped 11 real 06-20 carts; prod redeploy found them already cancelled
+  (idempotent on the shared DB). Driver: Tigs (Angel: GO).
 - **2026-06-21 — Felix's 3 live feedbacks (one train, @ `21742df`).** BL-84 (real
   payment-method breakdown on the report + new `BANK_TRANSFER` type — fixed ~CHF 25k of
   visa/twint that rendered as zero), BL-83 (cashier names on the transactions report —

@@ -117,7 +117,8 @@ scheduled in this repo before adding a new mechanism (don't invent a second sche
 
 **Decisions (Angel, 2026-06-21):** CANCEL (not delete) · **12h** threshold · **zero-value only**.
 
-✅ **BUILT + on staging (`7133065`), awaiting Angel PASS.**
+✅ **SHIPPED to prod (`3c29154`, 2026-06-21).** Includes hide-cancelled (default
+transactions view excludes CANCELLED; reachable via the "Cancelled" status filter).
 - `reap_stale_open_carts(db, older_than_hours=12)`: cancels carts that are `OPEN` AND
   `total==0` AND have **no line items** AND `created_at < now-12h`. Sets `CANCELLED` +
   `updated_at`, keeps the number. Idempotent; never touches carts with items or any value.
