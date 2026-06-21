@@ -5,6 +5,7 @@ Handles products, transactions, scanning, and checkout.
 
 Sprint 4: Added HTML interface routes for Pam's POS system.
 """
+import json
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import HTMLResponse, Response
@@ -32,8 +33,15 @@ from src.db.models import (
     BacklogItemModel,
     BacklogItemType,
     BacklogPriority,
+    CashShiftModel,
+    CashShiftStatus,
+    CashMovementModel,
+    CashMovementKind,
 )
 from src.core.constants import HelixApplication
+from src.services.cash_shift_service import (
+    expected_cash, close_result, denoms_total, money,
+)
 from pydantic import BaseModel
 from src.schemas.pos_schema import (
     ProductCreate,
@@ -1594,6 +1602,210 @@ async def pos_feedback(
                 f"(severity={severity}, screenshot={has_shot})")
     return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}",
             "screenshot": has_shot, "severity": severity, "priority": priority.value}
+
+
+# ================================================================
+# CASH SHIFT -- per-cashier drawer accountability (the lockbox loop)
+# ================================================================
+# Open with a counted float -> ring sales (tied to cashier_id) -> record any
+# non-sale cash (paid-in/out) -> close by counting the drawer. The system shows
+# expected vs counted, flags variance beyond the tolerance, and the open/close
+# timestamps double as shift hours. Each cashier owns their own drawer.
+
+def _uid(current_user: dict) -> str:
+    return current_user.get("sub", current_user.get("preferred_username", "unknown"))
+
+
+def _uname(current_user: dict) -> str:
+    return current_user.get("preferred_username", current_user.get("username", "Unknown"))
+
+
+async def _open_shift_for(db: AsyncSession, user_id: str) -> Optional[CashShiftModel]:
+    return (await db.execute(select(CashShiftModel).where(
+        CashShiftModel.user_id == user_id,
+        CashShiftModel.status == CashShiftStatus.OPEN,
+    ))).scalar_one_or_none()
+
+
+async def _shift_sales(db: AsyncSession, user_id: str, start: datetime, end: datetime) -> dict:
+    """Sum THIS cashier's takings in the shift window. Only CASH touches the drawer;
+    card/twint/debit are reported but never counted. Refunds reduce the expected cash."""
+    rows = (await db.execute(select(TransactionModel).where(
+        TransactionModel.cashier_id == user_id,
+        TransactionModel.completed_at >= start,
+        TransactionModel.completed_at <= end,
+    ))).scalars().all()
+    cash_sales = card_sales = cash_refunds = Decimal("0")
+    count = 0
+    for t in rows:
+        total = Decimal(str(t.total or 0))
+        if t.status == TransactionStatus.COMPLETED:
+            count += 1
+            if t.payment_method == PaymentMethod.CASH:
+                cash_sales += total
+            else:
+                card_sales += total
+        elif t.status == TransactionStatus.REFUNDED and t.payment_method == PaymentMethod.CASH:
+            cash_refunds += total
+    return {"cash_sales": money(cash_sales), "card_sales": money(card_sales),
+            "cash_refunds": money(cash_refunds), "count": count}
+
+
+class OpenShiftReq(BaseModel):
+    opening_float: Optional[str] = None     # explicit total, OR
+    opening_denoms: Optional[dict] = None   # a {face: count} grid (preferred)
+    register_id: Optional[str] = None
+
+
+class PaidReq(BaseModel):
+    kind: str           # paid_in | paid_out
+    amount: str
+    reason: str = ""
+
+
+class CloseShiftReq(BaseModel):
+    counted_cash: Optional[str] = None      # explicit total, OR
+    closing_denoms: Optional[dict] = None   # a {face: count} grid
+    note: str = ""
+
+
+@router.post("/shift/open")
+async def open_cash_shift(
+    req: OpenShiftReq,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Start your drawer: count the float in. One open shift per cashier."""
+    user_id, username = _uid(current_user), _uname(current_user)
+    if await _open_shift_for(db, user_id):
+        raise HTTPException(status_code=400,
+            detail="You already have an open cash shift. Close it first.")
+    opening = denoms_total(req.opening_denoms) if req.opening_denoms else money(req.opening_float or 0)
+    shift = CashShiftModel(
+        user_id=user_id, username=username, store_number=1,
+        register_id=req.register_id, opening_float=opening,
+        opening_denoms=json.dumps(req.opening_denoms) if req.opening_denoms else None)
+    db.add(shift)
+    await db.commit()
+    await db.refresh(shift)
+    logger.info(f"Cash shift OPEN: {username} float={opening}")
+    return {"ok": True, "shift_id": str(shift.id), "opening_float": str(opening),
+            "opened_at": shift.opened_at.isoformat()}
+
+
+@router.post("/shift/paid")
+async def shift_paid_in_out(
+    req: PaidReq,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Record non-sale cash moving in/out of the drawer (with a reason) so the
+    drawer can still balance at close."""
+    user_id, username = _uid(current_user), _uname(current_user)
+    shift = await _open_shift_for(db, user_id)
+    if not shift:
+        raise HTTPException(status_code=404, detail="No open cash shift to adjust.")
+    kind = (req.kind or "").lower()
+    if kind not in ("paid_in", "paid_out"):
+        raise HTTPException(status_code=400, detail="kind must be paid_in or paid_out")
+    amount = money(req.amount or 0)
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be greater than zero.")
+    reason = (req.reason or "").strip()
+    if len(reason) < 2:
+        raise HTTPException(status_code=400, detail="Give a short reason for the cash movement.")
+    mv = CashMovementModel(
+        shift_id=shift.id,
+        kind=CashMovementKind.PAID_IN if kind == "paid_in" else CashMovementKind.PAID_OUT,
+        amount=amount, reason=reason[:300], actor=username)
+    db.add(mv)
+    if kind == "paid_in":
+        shift.paid_in_total = money(Decimal(str(shift.paid_in_total or 0)) + amount)
+    else:
+        shift.paid_out_total = money(Decimal(str(shift.paid_out_total or 0)) + amount)
+    await db.commit()
+    logger.info(f"Cash {kind}: {username} {amount} ({reason})")
+    return {"ok": True, "paid_in_total": str(shift.paid_in_total),
+            "paid_out_total": str(shift.paid_out_total)}
+
+
+@router.get("/shift/current")
+async def current_cash_shift(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The caller's open drawer with the live expected-cash-so-far (or open:false)."""
+    user_id = _uid(current_user)
+    shift = await _open_shift_for(db, user_id)
+    if not shift:
+        return {"open": False}
+    now = datetime.now(timezone.utc)
+    s = await _shift_sales(db, user_id, shift.opened_at, now)
+    exp = expected_cash(shift.opening_float, s["cash_sales"],
+                        shift.paid_in_total, shift.paid_out_total, s["cash_refunds"])
+    return {
+        "open": True, "shift_id": str(shift.id),
+        "opened_at": shift.opened_at.isoformat(),
+        "opening_float": str(money(shift.opening_float)),
+        "cash_sales": str(s["cash_sales"]), "card_sales": str(s["card_sales"]),
+        "cash_refunds": str(s["cash_refunds"]),
+        "paid_in_total": str(money(shift.paid_in_total)),
+        "paid_out_total": str(money(shift.paid_out_total)),
+        "expected_cash": str(exp), "transaction_count": s["count"],
+        "tolerance": str(money(shift.tolerance)),
+    }
+
+
+@router.post("/shift/close")
+async def close_cash_shift(
+    req: CloseShiftReq,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Count the drawer out. Computes expected vs counted; a variance beyond the
+    tolerance needs a note. Open->close timestamps are the shift hours."""
+    user_id, username = _uid(current_user), _uname(current_user)
+    shift = await _open_shift_for(db, user_id)
+    if not shift:
+        raise HTTPException(status_code=404, detail="No open cash shift to close.")
+    now = datetime.now(timezone.utc)
+    s = await _shift_sales(db, user_id, shift.opened_at, now)
+    counted = denoms_total(req.closing_denoms) if req.closing_denoms else money(req.counted_cash or 0)
+    exp = expected_cash(shift.opening_float, s["cash_sales"],
+                        shift.paid_in_total, shift.paid_out_total, s["cash_refunds"])
+    res = close_result(exp, counted, Decimal(str(shift.tolerance)))
+    note = (req.note or "").strip()
+    if not res["within_tolerance"] and not note:
+        raise HTTPException(status_code=400,
+            detail=f"Off by CHF {res['variance']}. Add a note to close the shift.")
+
+    shift.cash_sales = s["cash_sales"]; shift.card_sales = s["card_sales"]
+    shift.cash_refunds = s["cash_refunds"]; shift.transaction_count = s["count"]
+    shift.counted_cash = counted
+    shift.closing_denoms = json.dumps(req.closing_denoms) if req.closing_denoms else None
+    shift.expected_cash = res["expected"]; shift.variance = res["variance"]
+    shift.within_tolerance = res["within_tolerance"]
+    shift.variance_note = note or None
+    shift.status = CashShiftStatus.CLOSED; shift.closed_at = now
+    await db.commit()
+
+    hours = (now - shift.opened_at).total_seconds() / 3600.0
+    logger.info(f"Cash shift CLOSE: {username} expected={res['expected']} counted={counted} "
+                f"variance={res['variance']} within={res['within_tolerance']}")
+    return {
+        "ok": True, "shift_id": str(shift.id),
+        "opening_float": str(money(shift.opening_float)),
+        "cash_sales": str(s["cash_sales"]), "card_sales": str(s["card_sales"]),
+        "cash_refunds": str(s["cash_refunds"]),
+        "paid_in_total": str(money(shift.paid_in_total)),
+        "paid_out_total": str(money(shift.paid_out_total)),
+        "expected_cash": str(res["expected"]), "counted_cash": str(res["counted"]),
+        "variance": str(res["variance"]), "within_tolerance": res["within_tolerance"],
+        "short": res["short"], "tolerance": str(res["tolerance"]),
+        "transaction_count": s["count"],
+        "opened_at": shift.opened_at.isoformat(), "closed_at": now.isoformat(),
+        "hours": round(hours, 2),
+    }
 
 
 # ================================================================

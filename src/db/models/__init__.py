@@ -36,6 +36,11 @@ from .payslip_model import PaySlipModel
 # Shift & Session Management (BLQ: Handoff WIZARD)
 from .shift_session_model import ShiftSessionModel, SessionStatus
 
+# Cash Shift -- per-cashier drawer accountability (the lockbox model)
+from .cash_shift_model import (
+    CashShiftModel, CashShiftStatus, CashMovementModel, CashMovementKind,
+)
+
 # E2E Track & Trace Models (THE SPINE)
 from .farm_model import FarmModel, FarmType
 from .batch_model import BatchModel, BatchStatus, FreshnessRule
@@ -137,6 +142,11 @@ __all__ = [
     # Shift & Session
     "ShiftSessionModel",
     "SessionStatus",
+    # Cash Shift (per-cashier drawer)
+    "CashShiftModel",
+    "CashShiftStatus",
+    "CashMovementModel",
+    "CashMovementKind",
     # E2E Track & Trace Models (THE SPINE)
     "FarmModel",
     "FarmType",
