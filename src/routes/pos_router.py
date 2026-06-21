@@ -29,7 +29,12 @@ from src.db.models import (
     SessionStatus,
     TransactionStatus,
     PaymentMethod,
+    BacklogItemModel,
+    BacklogItemType,
+    BacklogPriority,
 )
+from src.core.constants import HelixApplication
+from pydantic import BaseModel
 from src.schemas.pos_schema import (
     ProductCreate,
     ProductUpdate,
@@ -1465,6 +1470,55 @@ async def update_store_settings(
 
     logger.info(f"Store #{store_number} settings updated by {current_user['username']}")
     return settings
+
+
+# ================================================================
+# IN-APP FEEDBACK -> Backlog board (the seatback card, built into the till)
+# ================================================================
+# A cashier reports a bug/idea from inside the POS; it lands as a real item on
+# the SAME backlog board (/backlog) the La Piazza 💬 button feeds. The POS token
+# (kc-pos-realm-dev) can't call the bottega feedback endpoint (different realm),
+# so this is the POS-native twin -- same BacklogItemModel, tagged for Banco/POS.
+
+class POSFeedback(BaseModel):
+    kind: str = "other"      # bug | idea | other
+    title: str
+    body: str = ""
+
+
+@router.post("/feedback")
+async def pos_feedback(
+    f: POSFeedback,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """File a bug/idea from the till onto the shared Backlog board (/backlog)."""
+    title = (f.title or "").strip()
+    if len(title) < 3:
+        raise HTTPException(status_code=400, detail="Give it a short title (3+ characters)")
+    user = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    kind = (f.kind or "other").lower()
+    if kind not in ("bug", "idea", "other"):
+        kind = "other"
+    item_type = BacklogItemType.BUG_FIX if kind == "bug" else BacklogItemType.BUSINESS_OPS
+
+    # next BL number -- same shared sequence as backlog_router / bottega feedback
+    next_number = (await db.execute(
+        select(func.coalesce(func.max(BacklogItemModel.item_number), 0)))).scalar() + 1
+
+    body = (f.body or "").strip()
+    desc = (f"{body}\n\n— filed from Banco POS by {user}" if body
+            else f"Filed from Banco POS by {user}")
+
+    item = BacklogItemModel(
+        item_number=next_number, title=title[:200], description=desc,
+        item_type=item_type, application=HelixApplication.HELIXNET,
+        priority=BacklogPriority.MEDIUM, created_by=user,
+        tags=f"banco,feedback,pos,{kind}")
+    db.add(item)
+    await db.commit()
+    logger.info(f"BL-{next_number:03d} filed from Banco POS by {user}: {title}")
+    return {"ok": True, "item_number": next_number, "ref": f"BL-{next_number:03d}"}
 
 
 # ================================================================

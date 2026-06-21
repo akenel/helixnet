@@ -249,6 +249,40 @@ test('expired access token mid-sale refreshes silently, NO hard-logout', async (
   expect(page.url()).not.toMatch(/openid-connect\/logout/);
 });
 
+/**
+ * In-app feedback (2026-06-21): the seatback card, built into the till. A cashier
+ * hits a problem mid-shift and reports it from inside the POS; it files onto the
+ * SAME backlog board (/backlog) the La Piazza 💬 button feeds. This proves the
+ * floating button shows once logged in, the modal sends, and a BL-XXX ref comes back.
+ */
+test('feedback widget files a bug from the till and returns a BL ref', async ({ page }) => {
+  await login(page);
+  // The floating button only renders once authenticated.
+  const fab = page.locator('#lpfb-open');
+  await expect(fab).toBeVisible({ timeout: 10_000 });
+  await fab.click();
+
+  // Modal opens; "Bug" is preselected. Fill a title + details and send.
+  await expect(page.getByText('Send feedback')).toBeVisible();
+  await page.locator('#lpfb-title').fill('E2E: till test feedback');
+  await page.locator('#lpfb-body').fill('Filed by the Playwright cashier flow.');
+  await page.locator('#lpfb-send').click();
+
+  // Success: a BL-XXX reference is shown, linking to the backlog board.
+  await expect(page.locator('#lpfb-msg')).toContainText(/Filed as BL-\d+/, { timeout: 15_000 });
+  await expect(page.locator('#lpfb-msg a[href="/backlog"]')).toBeVisible();
+  // Session survives filing feedback (no logout).
+  expect(await tokenPresent(page)).toBe(true);
+});
+
+test('feedback widget rejects a too-short title (client guard)', async ({ page }) => {
+  await login(page);
+  await page.locator('#lpfb-open').click();
+  await page.locator('#lpfb-title').fill('x');
+  await page.locator('#lpfb-send').click();
+  await expect(page.locator('#lpfb-msg')).toContainText(/3\+ characters/i);
+});
+
 test('navigation: receipt -> back to catalog with no dead-end', async ({ page }) => {
   await login(page);
   await page.goto('/pos/scan');
