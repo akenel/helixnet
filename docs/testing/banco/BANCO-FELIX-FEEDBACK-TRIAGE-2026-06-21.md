@@ -70,9 +70,15 @@ health link pinned/reachable (e.g. collapse the middle on `max-width` portrait).
 
 ## Build order & gate
 
-1. **BL-84** (HIGH, customer-visible "the numbers are wrong") — frontend + decide bank-transfer.
-2. **BL-83** (cashier name = small additive backend, rest frontend).
-3. **BL-85** (CSS-only responsive).
+1. **BL-84** — ✅ **BUILT + on staging (`3f19dfc`), awaiting Angel PASS.** Added `BANK_TRANSFER`
+   to the enum; replaced the 2-bucket summary with a real per-method breakdown; row pills + filter
+   fixed; Banana CSV gains the bucket. Tests: `tests/pos/test_pos_bank_transfer.py` (3) + reports
+   sum-invariant updated — green. **Root cause confirmed on live staging data:** the day held
+   *visa CHF 24,852 + twint CHF 915 + cash CHF 3,837*, but the old UI only summed `cash` and
+   `card`/`mobile` — and the real data is `visa`/`twint`, so ~CHF 25k rendered as **zero**. That's
+   the "it all shows as cash." Now every bucket shows.
+2. **BL-83** (cashier name = small additive backend, rest frontend) — NEXT.
+3. **BL-85** (CSS-only responsive) — after.
 
 **One pass, same two files** (`transactions.html` + `base.html`) plus a small `pos_router` /
 `transaction_model` add for the cashier name. Then the standard gate:
