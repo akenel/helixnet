@@ -54,6 +54,28 @@ def test_search_finds_member_by_real_name(session):
     assert any(c["handle"] == handle for c in by_name), "found by real name too"
 
 
+def test_purchase_history_is_on_record(session):
+    """Johnny's story: the shop 'has it on record that you bought it'. A member's
+    purchases (with items) are retrievable by account -- warranty without a receipt."""
+    cid = _new_customer(session)
+    # empty to start
+    h0 = session.get(f"{CUST}/{cid}/transactions").json()
+    assert h0["transaction_count"] == 0
+
+    # two purchases
+    tx1 = _ring(session, "8.50", customer_id=cid)     # the lighter
+    _ring(session, "42.00", customer_id=cid)
+
+    h1 = session.get(f"{CUST}/{cid}/transactions").json()
+    assert h1["transaction_count"] == 2
+    # newest first, each carries its receipt + items
+    top = h1["transactions"][0]
+    assert top["transaction_number"] and top["total"]
+    assert any(it["name"] == "CRM test item" for t in h1["transactions"] for it in t["items"])
+    # the lighter sale (8.50) is on record
+    assert any(t["total"] == "8.50" for t in h1["transactions"])
+
+
 def test_checkout_view_returns_lifetime_spend(session):
     """The card/receipt show lifetime spend -> the view must return it (was missing
     -> 'CHF undefined' on the card)."""

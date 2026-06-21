@@ -511,3 +511,38 @@ test('member: shows on checkout and earns points on the sale', async ({ page }) 
   }, m.id);
   expect(after).toBeGreaterThan(m.credits);
 });
+
+/**
+ * Johnny's story (CRM): a member's purchases are "on record" — Pam looks them up
+ * and sees what they bought, no receipt needed (warranty/returns). Wires the
+ * member card's "View History" button to the purchase-history endpoint.
+ */
+test('member: View History shows what they bought (warranty without a receipt)', async ({ page }) => {
+  await login(page);
+
+  // Enroll a member + ring a recorded sale via API.
+  const handle = await page.evaluate(async () => {
+    const t = sessionStorage.getItem('pos_token');
+    const h = { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' };
+    const hd = 'TESThist' + Math.random().toString(36).slice(2, 7);
+    const c = await (await fetch('/api/v1/customers', { method: 'POST', headers: h,
+      body: JSON.stringify({ handle: hd, age_confirmed: true }) })).json();
+    const tx = await (await fetch('/api/v1/pos/transactions', { method: 'POST', headers: h, body: '{}' })).json();
+    await fetch('/api/v1/pos/transactions/' + tx.id + '/items', { method: 'POST', headers: h,
+      body: JSON.stringify({ product_id: null, name: 'Zippo Lighter', unit_price: '8.50', quantity: 1 }) });
+    await fetch('/api/v1/pos/transactions/' + tx.id + '/checkout', { method: 'POST', headers: h,
+      body: JSON.stringify({ payment_method: 'twint', customer_id: c.id }) });
+    return hd;
+  });
+
+  // Pam looks Johnny up and opens his history.
+  await page.goto('/pos/customer-lookup');
+  await page.getByPlaceholder(/Handle, Instagram/i).fill(handle);
+  await page.getByRole('button', { name: /Search/ }).click();
+  await page.getByRole('button', { name: /View History/i }).click();
+
+  // The lighter is on record.
+  await expect(page.getByText('Purchase History')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('Zippo Lighter')).toBeVisible();
+  await expect(page.getByText(/CHF 8\.50/).first()).toBeVisible();
+});

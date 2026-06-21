@@ -3,6 +3,7 @@
 {% block title %}Customer Lookup - HelixPOS{% endblock %}
 
 {% block content %}
+<style>[x-cloak]{ display:none !important; }</style>
 <div class="min-h-screen bg-gray-50" x-data="customerLookupData()">
 
     <!-- Top Bar (matches the other POS screens) -->
@@ -205,6 +206,53 @@
             </div>
         </div>
     </div>
+
+    <!-- Purchase History modal — "we have it on record that you bought it" -->
+    <div x-show="historyModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @click.self="closeHistory()">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center px-6 py-4 border-b">
+                <h2 class="text-xl font-bold text-gray-900">📜 Purchase History
+                    <span class="text-gray-500 font-normal" x-show="history" x-text="history ? ('· @' + history.handle) : ''"></span></h2>
+                <button @click="closeHistory()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="overflow-y-auto px-6 py-4">
+                <p x-show="historyLoading" class="text-gray-400 py-6 text-center">Loading…</p>
+                <p x-show="history && history.transactions.length === 0" class="text-gray-400 py-6 text-center">No purchases on record yet.</p>
+                <div x-show="history && history.transactions.length > 0" class="space-y-3">
+                    <template x-for="(t, i) in (history ? history.transactions : [])" :key="t.transaction_number || i">
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="flex justify-between items-center bg-gray-50 px-3 py-2 text-sm">
+                                <div>
+                                    <span class="font-semibold" x-text="t.receipt_number || t.transaction_number"></span>
+                                    <span class="text-gray-500 ml-2" x-text="histDate(t.date)"></span>
+                                    <span class="ml-2 text-xs uppercase px-2 py-0.5 rounded-full"
+                                          :class="t.status === 'refunded' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'"
+                                          x-text="(t.payment_method || '') + (t.status === 'refunded' ? ' · refund' : '')"></span>
+                                </div>
+                                <span class="font-bold" x-text="'CHF ' + t.total"></span>
+                            </div>
+                            <table class="w-full text-sm">
+                                <tbody>
+                                    <template x-for="(it, j) in t.items" :key="j">
+                                        <tr class="border-t">
+                                            <td class="py-1 px-3 text-gray-700">
+                                                <span x-text="it.quantity + '× ' + (it.name || 'Item')"></span>
+                                                <span x-show="it.is_giveaway" class="text-pink-600 text-xs ml-1">🎁 free</span>
+                                            </td>
+                                            <td class="py-1 px-3 text-right font-medium" x-text="'CHF ' + it.line_total"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <div class="px-6 py-3 border-t text-right">
+                <button @click="closeHistory()" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -366,10 +414,23 @@
                 showToast('Edit feature coming soon', 'info');
             },
 
-            viewHistory() {
-                // TODO: Navigate to history
-                showToast('History feature coming soon', 'info');
+            historyModal: false,
+            history: null,
+            historyLoading: false,
+            async viewHistory() {
+                if (!this.customer) return;
+                this.historyModal = true;
+                this.historyLoading = true;
+                this.history = null;
+                try {
+                    this.history = await API.get('/api/v1/customers/' + this.customer.id + '/transactions');
+                } catch (e) {
+                    showToast('Could not load history: ' + (e.message || ''), 'error');
+                }
+                this.historyLoading = false;
             },
+            closeHistory() { this.historyModal = false; },
+            histDate(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleString('de-CH'); } catch(e){ return iso; } },
 
             tierClass(tier) {
                 const classes = {

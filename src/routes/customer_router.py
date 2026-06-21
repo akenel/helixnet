@@ -24,6 +24,10 @@ from src.db.models import (
     LoyaltyTier,
     CreditTransactionModel,
     CreditTransactionType,
+    TransactionModel,
+    TransactionStatus,
+    LineItemModel,
+    ProductModel,
 )
 from src.schemas.customer_schema import (
     CustomerCreate,
@@ -553,6 +557,57 @@ async def add_credits(
         "credits_adjusted": credits,
         "new_balance": new_balance,
     }
+
+
+@router.get("/{customer_id}/transactions")
+async def get_purchase_history(
+    customer_id: UUID,
+    limit: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """A member's PURCHASE history -- 'we have it on record that you bought it'.
+    Every sale tied to this customer (regardless of which cashier rang it), with its
+    items. Powers the 'View History' button: warranty/returns without a receipt."""
+    customer = await db.get(CustomerModel, customer_id)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    txs = (await db.execute(select(TransactionModel).where(
+        TransactionModel.customer_id == customer_id,
+        TransactionModel.status.in_([TransactionStatus.COMPLETED, TransactionStatus.REFUNDED]),
+    ).order_by(TransactionModel.completed_at.desc()).limit(limit))).scalars().all()
+
+    tx_ids = [t.id for t in txs]
+    items_by_tx: dict = {}
+    if tx_ids:
+        lis = (await db.execute(select(LineItemModel).where(
+            LineItemModel.transaction_id.in_(tx_ids)))).scalars().all()
+        pids = {it.product_id for it in lis if it.product_id is not None}
+        names: dict = {}
+        if pids:
+            names = {p.id: p.name for p in (await db.execute(
+                select(ProductModel).where(ProductModel.id.in_(pids)))).scalars().all()}
+        for it in lis:
+            items_by_tx.setdefault(it.transaction_id, []).append({
+                "name": names.get(it.product_id) or (it.notes if it.product_id is None else "Item"),
+                "quantity": it.quantity,
+                "line_total": str(it.line_total),
+                "is_giveaway": bool(it.is_giveaway),
+            })
+
+    out = []
+    for t in txs:
+        out.append({
+            "transaction_number": t.transaction_number,
+            "receipt_number": t.receipt_number,
+            "date": t.completed_at.isoformat() if t.completed_at else None,
+            "payment_method": t.payment_method.value if t.payment_method else None,
+            "status": t.status.value,
+            "total": str(t.total),
+            "items": items_by_tx.get(t.id, []),
+        })
+    return {"handle": customer.handle, "transaction_count": len(out), "transactions": out}
 
 
 @router.get("/{customer_id}/credits/history")
