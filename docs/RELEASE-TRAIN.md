@@ -22,20 +22,15 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: Banco stood up on prod via clean container, 2026-06-21 ~13:36 — Tigs.)
+`🟢 IDLE` — no train running. (Last: Felix's 3 live feedbacks shipped to banco.lapiazza.app @ `21742df`, 2026-06-21 — Tigs, Angel GO.)
 
 ## Boarding (awaiting the next prod train)
 
 | Feature | Commits (main) | Staging | Prod |
 |---|---|---|---|
-| **BL-84** Real payment-method breakdown on the report + bank transfer (Felix live feedback) | `3f19dfc` | **green — on staging-banco @ 3f19dfc; daily-summary shows all buckets (visa 24.8k + twint 915 + cash 3.8k were hidden before); enum `BANK_TRANSFER` added to shared DB** | **STAGED — awaiting Angel visual PASS** |
-| **BL-83** Name the cashier on the transactions report + drop duplicate # line (Felix live feedback) | `2bd019d` | **green — on staging-banco @ 2bd019d; 129 rows now show Felix (116) / Pam (13), no more generic "Cashier"** | **STAGED — awaiting Angel visual PASS** |
-| **BL-85** Status bar fits mobile portrait — 📊 stays reachable (Felix live feedback) | `f2f58f2` | **green — on staging-banco @ f2f58f2; sm-hide + @media(≤480px) verified in served HTML** | **STAGED — awaiting Angel visual PASS** |
+| **BL-86** End-of-day reaper: void stale empty `OPEN` carts (Angel) | _pending_ | not built yet | **PENDING — teed up, see triage doc** |
 
-> **🚂 Train loaded @ `f2f58f2` (BL-84 + BL-83 + BL-85), awaiting Angel's GO.** All three
-> verified on staging-banco; prod deploy held at the staging-before-prod gate until Angel
-> signs off. On GO: reset `/opt/helix-banco-tree` → `origin/main`, restart `helix-platform-banco`,
-> smoke 8098. Bottega `#140` tree untouched.
+> _(BL-84 / BL-83 / BL-85 — Felix's three live feedbacks — **SHIPPED 2026-06-21**, see history below.)_
 | Banco feedback: file + camera attachments | `0013263` (backend) + `4aba2da` | green (7/7 attach+screenshot, dog-fooded: img + 2 PDFs) | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
 | Banco cash shift — per-cashier drawer (incr 1-3) | `2d9df70`,`94a9c75`,`cc7b886` | green, "per-cashier isolation proven" | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
 | Status bar: real version + git SHA stamp | `af62709` | green — shows `v3.3.0 (af62709)`, env `uat` | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
@@ -61,6 +56,14 @@ git) — its banco block now points to `helix-platform-banco`; backup `/root/Cad
 
 ## Shipped (history)
 
+- **2026-06-21 — Felix's 3 live feedbacks (one train, @ `21742df`).** BL-84 (real
+  payment-method breakdown on the report + new `BANK_TRANSFER` type — fixed ~CHF 25k of
+  visa/twint that rendered as zero), BL-83 (cashier names on the transactions report —
+  129 rows show Felix/Pam, no more generic "Cashier"; dropped the duplicate # line), BL-85
+  (status bar fits mobile portrait so the 📊 stays reachable). Staged + Angel-PASSED on
+  staging-banco, then shipped together via the clean `helix-platform-banco` container
+  (worktree reset to origin/main + restart). Smoke green on banco.lapiazza.app. Bottega
+  `#140` untouched. Driver: Tigs (Angel: GO).
 - **2026-06-21 — Banco stand-up on prod (first Banco-on-prod).** 9 features (feedback
   attachments, cash-shift drawers, status-bar stamp, Shop Pulse, /health/dashboard, CRM
   Phase 0, no-cache headers, member directory, release-gate suite) went live on

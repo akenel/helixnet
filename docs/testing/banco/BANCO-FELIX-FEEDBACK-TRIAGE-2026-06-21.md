@@ -91,3 +91,33 @@ health link pinned/reachable (e.g. collapse the middle on `max-width` portrait).
 container** (reset `/opt/helix-banco-tree` to new `origin/main`, recreate `helix-platform-banco`).
 
 **Do NOT touch** the divergent Bottega `helix-platform` tree (#140).
+
+---
+
+## BL-86 (teed up) — End-of-day reaper for stale empty carts
+
+**Origin:** Angel spotted it in Felix's own data — a pile of `OPEN` / CHF 0.00 (and a few
+CHF 10.00) transactions cluttering the report. **Real, not just a test artifact:** in the
+live shop a cashier opens a sale and the customer walks, or Felix opens a cart in the back
+and never closes it. They accumulate as dangling `OPEN` rows.
+
+**What it is:** a small scheduled job that retires abandoned carts so the report stays clean.
+
+**Proposed rule (needs Angel's nod on the thresholds):**
+- Target: transactions with `status = OPEN`, **no line items** (or `total = 0`), older than
+  **N hours** (default 12 — i.e. anything still open from earlier in the day).
+- Action: set `status = CANCELLED` (auditable) rather than hard-delete — keep the trail,
+  don't lose the number. (Open question for Angel: cancel vs delete.)
+- Cadence: **end-of-day** (e.g. 23:30 shop-local) + optionally hourly during the day.
+- Safety: never touch a cart that has items or a non-zero total; never touch `COMPLETED`/
+  `REFUNDED`; log how many it reaped (no silent sweeps).
+
+**Where:** a reaper function in `pos_router`/a service + a schedule. Check how other jobs are
+scheduled in this repo before adding a new mechanism (don't invent a second scheduler).
+
+**Decisions for Angel before building:** (1) cancel vs delete; (2) the age threshold;
+(3) also reap *non-empty* abandoned carts, or only the zero-value ones? (safer to start with
+zero-value only).
+
+**Gate:** same as everything — build → `make test-pos` (add a reaper test: an old empty
+OPEN cart gets cancelled, a cart-with-items is untouched) → staging → Angel PASS → prod train.
