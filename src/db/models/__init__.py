@@ -13,7 +13,7 @@ from .refresh_token_model import RefreshTokenModel
 from .user_model import UserModel
 
 # POS Models (Felix's Artemis Store)
-from .product_model import ProductModel
+from .product_model import ProductModel, ProductBarcodeModel
 from .transaction_model import TransactionModel, TransactionStatus, PaymentMethod
 from .line_item_model import LineItemModel
 from .store_settings_model import StoreSettingsModel
@@ -110,6 +110,7 @@ __all__ = [
     "InitializerModel",
     # POS Models
     "ProductModel",
+    "ProductBarcodeModel",
     "TransactionModel",
     "TransactionStatus",
     "PaymentMethod",

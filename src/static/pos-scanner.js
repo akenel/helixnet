@@ -1,28 +1,49 @@
-// Reusable single-shot barcode scanner for Banco POS (BL-89).
-// Wraps the vendored html5-qrcode so multiple screens (counter sale, catalog
-// create/edit, future receiving) share ONE scanner implementation instead of
-// each copying ~50 lines. Retail 1D formats only, rear camera, single-shot.
+// Reusable single-shot barcode scanner for Banco POS (BL-89, hardened BL-90).
+// Wraps the vendored html5-qrcode so every screen (counter sale, catalog
+// create/edit, receiving) shares ONE scanner implementation instead of each
+// copying ~50 lines. Rear camera, single-shot, RETAIL 1D formats only.
+//
+// BL-90 "scan once, known forever" hardening — two changes that stop the same
+// item being captured under different / garbage barcodes:
+//   1. RETAIL formats only (EAN/UPC). We dropped CODE_128/CODE_39/ITF because
+//      packs print a second logistics/case code in those symbologies (and GS1
+//      codes carry a \x1D group-separator) — the decoder was grabbing the WRONG
+//      barcode off the same product.
+//   2. STABLE read: a value is only accepted after it decodes IDENTICALLY twice
+//      in a row. Kills partial/misreads that otherwise land on the first frame.
 //
 // Usage:
-//   PosScanner.start('reader-id', text => { ... }, err => { ... })
+//   PosScanner.start('reader-id', text => {...}, err => {...}, {onProgress})
 //   PosScanner.stop()          // always release on close/cancel/decode
 //   PosScanner.beep()          // short audible confirm
+//   onProgress(text)           // optional: each raw (unconfirmed) read — show it live
 (function () {
   const RETAIL_FORMATS = () => {
     const F = window.Html5QrcodeSupportedFormats;
-    return [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF];
+    // Retail point-of-sale symbologies ONLY. No CODE_128/CODE_39/ITF — those
+    // are the logistics/case codes that caused duplicate captures (BL-90).
+    return [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E];
   };
+
+  // A clean retail barcode is digits only (EAN/UPC). Reject anything with a
+  // control char (e.g. GS1 \x1D group separator) or non-digit noise.
+  const isCleanRetail = (text) => /^[0-9]{6,14}$/.test(text);
 
   window.PosScanner = {
     _scanner: null,
     _busy: false,
+    _lastVal: null,        // last raw decode (for the 2-in-a-row stability gate)
+    _lastCount: 0,
 
-    async start(readerId, onDecode, onError) {
+    async start(readerId, onDecode, onError, opts) {
       if (typeof window.Html5Qrcode === 'undefined') {
         onError && onError(new Error('scanner-not-loaded'));
         return;
       }
       this._busy = false;
+      this._lastVal = null;
+      this._lastCount = 0;
+      const onProgress = opts && opts.onProgress;
       try {
         this._scanner = new window.Html5Qrcode(readerId, {
           formatsToSupport: RETAIL_FORMATS(), verbose: false,
@@ -33,10 +54,22 @@
               const w = Math.max(160, Math.min(300, vw - 40));
               return { width: w, height: Math.floor(w * 0.55) };
           } },
-          (text) => {
+          (raw) => {
             if (this._busy) return;                       // single-shot
-            this._busy = true;
-            this.stop().then(() => onDecode && onDecode((text || '').trim()));
+            const text = (raw || '').trim();
+            onProgress && onProgress(text);               // show what's being read
+            if (!isCleanRetail(text)) {                   // ignore noise/logistics codes
+              this._lastVal = null; this._lastCount = 0;
+              return;
+            }
+            if (text === this._lastVal) {
+              this._lastCount += 1;
+            } else {
+              this._lastVal = text; this._lastCount = 1;
+            }
+            if (this._lastCount < 2) return;              // need 2 identical in a row
+            this._busy = true;                            // confirmed — accept
+            this.stop().then(() => onDecode && onDecode(text));
           },
           () => { /* per-frame no-read: ignore */ }
         );

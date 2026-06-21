@@ -22,6 +22,7 @@ from pathlib import Path
 from src.db.database import get_db_session
 from src.db.models import (
     ProductModel,
+    ProductBarcodeModel,
     TransactionModel,
     LineItemModel,
     UserModel,
@@ -187,15 +188,35 @@ async def get_product(
     return product
 
 
+async def _find_product_by_any_barcode(db: AsyncSession, barcode: str) -> Optional[ProductModel]:
+    """
+    Resolve a scanned barcode to a product, checking BOTH the primary
+    products.barcode AND the product_barcodes alias table (BL-90). This is what
+    makes "scan once, known forever" hold even when a pack carries more than one
+    barcode — every code the product has ever been scanned under resolves here.
+    """
+    # Primary barcode first (the common case, indexed).
+    result = await db.execute(select(ProductModel).where(ProductModel.barcode == barcode))
+    product = result.scalar_one_or_none()
+    if product:
+        return product
+    # Fall back to the alias table.
+    result = await db.execute(
+        select(ProductModel)
+        .join(ProductBarcodeModel, ProductBarcodeModel.product_id == ProductModel.id)
+        .where(ProductBarcodeModel.barcode == barcode)
+    )
+    return result.scalar_one_or_none()
+
+
 @router.get("/products/barcode/{barcode}", response_model=ProductRead)
 async def get_product_by_barcode(
     barcode: str,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Get product by barcode (for scanning)"""
-    result = await db.execute(select(ProductModel).where(ProductModel.barcode == barcode))
-    product = result.scalar_one_or_none()
+    """Get product by barcode (for scanning) — matches primary OR alias barcodes."""
+    product = await _find_product_by_any_barcode(db, barcode)
 
     if not product:
         raise HTTPException(status_code=404, detail=f"Product with barcode '{barcode}' not found")
@@ -204,6 +225,65 @@ async def get_product_by_barcode(
         raise HTTPException(status_code=400, detail="Product is inactive")
 
     return product
+
+
+class AddBarcodeRequest(BaseModel):
+    barcode: str
+
+
+@router.post("/products/{product_id}/barcodes", status_code=status.HTTP_201_CREATED)
+async def add_product_barcode(
+    product_id: UUID,
+    body: AddBarcodeRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """
+    Attach an additional barcode to an existing product (BL-90 alias barcodes).
+
+    Use this when a product carries more than one barcode (retail + case code), or
+    when an operator realises a freshly-scanned code belongs to an item already in
+    the catalog — instead of creating a duplicate product. Idempotent: if this code
+    already points at THIS product (primary or alias) it's a no-op; if it points at
+    a DIFFERENT product it's a 409.
+    """
+    barcode = (body.barcode or "").strip()
+    if not barcode:
+        raise HTTPException(status_code=400, detail="Barcode is required")
+
+    result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # Already resolves somewhere? Decide no-op vs conflict.
+    existing = await _find_product_by_any_barcode(db, barcode)
+    if existing is not None:
+        if existing.id == product.id:
+            return {"status": "already_linked", "product_id": str(product.id), "barcode": barcode}
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Barcode '{barcode}' already belongs to another product ({existing.name}).",
+        )
+
+    # If the product has no primary barcode yet, set it there; else add an alias.
+    if not product.barcode:
+        product.barcode = barcode
+        product.updated_at = datetime.now(timezone.utc)
+    else:
+        db.add(ProductBarcodeModel(product_id=product.id, barcode=barcode))
+
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Barcode '{barcode}' already exists.",
+        )
+
+    logger.info(f"Barcode '{barcode}' linked to product {product.sku} by {current_user['username']}")
+    return {"status": "linked", "product_id": str(product.id), "barcode": barcode}
 
 
 @router.put("/products/{product_id}", response_model=ProductRead)
@@ -1231,11 +1311,8 @@ async def scan_barcode(
     current_user: dict = Depends(require_roles(["💰️ pos-cashier", "👔️ pos-manager", "👑️ pos-admin"])),
 ):
     """Scan barcode and add to transaction (cashier/manager/admin only)"""
-    # Find product by barcode
-    prod_result = await db.execute(
-        select(ProductModel).where(ProductModel.barcode == scan.barcode)
-    )
-    product = prod_result.scalar_one_or_none()
+    # Find product by barcode — primary OR alias (BL-90).
+    product = await _find_product_by_any_barcode(db, scan.barcode)
 
     if not product:
         return BarcodeScanResponse(

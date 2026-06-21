@@ -7,7 +7,7 @@ For demo: manually seed 5-10 items.
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, Numeric, Integer, Boolean, Text
+from sqlalchemy import String, DateTime, Numeric, Integer, Boolean, Text, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from .base import Base
@@ -189,6 +189,56 @@ class ProductModel(Base):
         back_populates="product",
         cascade="all, delete-orphan"
     )
+    barcodes: Mapped[list["ProductBarcodeModel"]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<ProductModel(sku='{self.sku}', name='{self.name}', price={self.price} CHF)>"
+
+
+class ProductBarcodeModel(Base):
+    """
+    Alias barcodes — one product, many barcodes (BL-90).
+
+    Why this exists: a single article (e.g. a box of rolling papers) often prints
+    MORE THAN ONE barcode on the packaging — the retail EAN plus a logistics/case
+    code. Scanning the second code on a product already in the catalog used to
+    404 → the operator re-captured the SAME item under a new barcode → "scan once,
+    known forever" broke. Now every extra code a product is ever scanned under can
+    be attached here, and lookup checks products.barcode OR product_barcodes.
+
+    The product's "primary" barcode stays on products.barcode; this table holds the
+    additional aliases. A barcode is globally unique across BOTH places.
+    """
+    __tablename__ = 'product_barcodes'
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('products.id', ondelete='CASCADE'),
+        index=True,
+        nullable=False,
+    )
+    barcode: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        index=True,
+        nullable=False,
+        comment="An additional EAN/UPC this product is also known by",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    product: Mapped["ProductModel"] = relationship(back_populates="barcodes")
+
+    def __repr__(self):
+        return f"<ProductBarcodeModel(barcode='{self.barcode}', product_id='{self.product_id}')>"

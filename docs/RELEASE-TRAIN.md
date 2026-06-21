@@ -26,7 +26,30 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Boarding (awaiting the next prod train)
 
-_(empty — nothing boarding. BL-87/88/89 SHIPPED, see history below.)_
+> **BL-90 scan-recognition hardening ("scan once, known forever")** — fixes the bug
+> where the same item got captured under different/garbage barcodes so a clean scan
+> 404'd and Felix re-entered it. Four parts:
+> 1. **Retail formats only** — dropped CODE_128/CODE_39/ITF (the logistics/case codes
+>    + GS1 \x1D capture); scanner now decodes EAN_13/EAN_8/UPC_A/UPC_E only. The
+>    counter (`scan.html`) now shares the ONE hardened `PosScanner` instead of its own
+>    copy (seal lesson — one scanner, used by counter + catalog + future receiving).
+> 2. **Stable read** — a code is accepted only after decoding identically twice in a
+>    row (kills partial/misreads); the live number shows in the overlay.
+> 3. **Alias barcodes** — new `product_barcodes` table (one product, many codes);
+>    lookup resolves on `products.barcode` OR an alias; `POST /products/{id}/barcodes`
+>    attaches an extra code; the lazy-capture modal can "link to existing" instead of
+>    making a duplicate.
+> 4. **Data normalization** — `scripts/bl90_normalize_barcodes.py` splits the Banana
+>    import's space-joined multi-barcode fields (root cause: e.g. `"EAN1 EAN2"` in one
+>    field never exact-matched a single scan) → first code primary, rest aliases.
+>    **61 rows fixed locally; both codes now resolve via the API.** Idempotent; run
+>    `--dry-run` first, then once per env (staging+prod share the DB → run once).
+>
+> **STAGED** — local: 110 POS tests pass (106 + 4 new alias tests; also fixed the
+> pre-existing `find_product` flake by switching it to the exact barcode endpoint).
+> JS parse-clean, `/pos/scan` + `/pos/catalog` + `/static/pos-scanner.js` serve 200.
+> **Camera reliability is Angel's Fairphone gate** (can't unit-test the lens).
+> Awaiting: deploy to staging-banco → Angel scans real Artemis stock → prod.
 
 > **BL-89 catalog polish + dup-barcode fix** — `7c344e1`, `2015f36`. 📷 scan on create/edit (shared
 > `static/pos-scanner.js`) + category datalist (pick-existing-or-new); create/update now return a clean

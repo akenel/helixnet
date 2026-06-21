@@ -106,11 +106,21 @@ def list_products(session):
 
 
 def find_product(session, sku=None, barcode=None):
-    for p in list_products(session):
-        if sku and p.get("sku") == sku:
-            return p
-        if barcode and p.get("barcode") == barcode:
-            return p
+    # Use EXACT, indexed lookups instead of paging the (now ~7k-row) catalog —
+    # the old list(limit=100) scan flaked when a seeded product fell off page 1.
+    if barcode:
+        r = session.get(f"{POS}/products/barcode/{barcode}")
+        if r.status_code == 200:
+            return r.json()
+        if r.status_code == 404:
+            return None
+        r.raise_for_status()
+    if sku:
+        r = session.get(f"{POS}/search", params={"q": sku, "limit": 50})
+        r.raise_for_status()
+        for p in r.json().get("items", []):
+            if p.get("sku") == sku:
+                return p
     return None
 
 
