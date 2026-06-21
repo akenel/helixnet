@@ -397,6 +397,26 @@
                         <p class="text-xs text-gray-400 mt-1">Click to open full size in a new tab.</p>
                     </div>
 
+                    <!-- Attachments (files/photos the reporter added) -->
+                    <div x-show="editingItem && attachments.length > 0">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 border-t pt-4">
+                            📎 Attachments (<span x-text="attachments.length"></span>)
+                        </h3>
+                        <div class="flex flex-wrap gap-3">
+                            <template x-for="(att, idx) in attachments" :key="idx">
+                                <a :href="att.data" :download="att.name" target="_blank"
+                                   class="flex items-center gap-2 border border-gray-200 rounded-lg p-2 hover:bg-gray-50 transition max-w-full"
+                                   :title="att.name + ' — click to open/download'">
+                                    <img x-show="att.type && att.type.indexOf('image/') === 0" :src="att.data" :alt="att.name"
+                                         class="w-12 h-12 object-cover rounded border border-gray-200" />
+                                    <span x-show="att.type === 'application/pdf'"
+                                          class="w-12 h-12 flex items-center justify-center rounded bg-red-50 text-red-600 text-xs font-extrabold">PDF</span>
+                                    <span class="text-sm text-gray-700 truncate max-w-[180px]" x-text="att.name"></span>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
+
                     <!-- Activity Trail (edit only) -->
                     <div x-show="editingItem && activities.length > 0">
                         <h3 class="text-sm font-bold text-gray-700 mb-2 border-t pt-4">Activity Trail</h3>
@@ -450,6 +470,7 @@ function backlogBoard() {
         editingItem: null,
         activities: [],
         screenshot: null,
+        attachments: [],
         saving: false,
 
         // Filters
@@ -559,13 +580,17 @@ function backlogBoard() {
             } catch (e) {
                 this.activities = [];
             }
-            // Lazily load an attached screenshot (deferred column, fetched on demand).
+            // Lazily load the auto-captured screenshot + user attachments (deferred
+            // columns, fetched on demand).
             this.screenshot = null;
+            this.attachments = [];
             try {
                 const r = await API.get(`/api/v1/backlog/items/${item.id}/screenshot`);
                 this.screenshot = (r && r.screenshot) ? r.screenshot : null;
+                this.attachments = (r && Array.isArray(r.attachments)) ? r.attachments : [];
             } catch (e) {
                 this.screenshot = null;
+                this.attachments = [];
             }
         },
 
@@ -574,6 +599,7 @@ function backlogBoard() {
             this.editingItem = null;
             this.activities = [];
             this.screenshot = null;
+            this.attachments = [];
         },
 
         async saveItem() {

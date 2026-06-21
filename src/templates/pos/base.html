@@ -602,6 +602,16 @@
       .lpfb-thumb img{display:block;width:84px;height:54px;object-fit:cover}
       .lpfb-thumb .x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;
         background:#C0392B;color:#fff;font-size:12px;font-weight:800;line-height:20px;cursor:pointer;padding:0}
+      .lpfb-attachrow{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 10px}
+      .lpfb-files{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+      .lpfb-file{position:relative;display:flex;align-items:center;gap:8px;max-width:100%;
+        padding:6px 28px 6px 8px;border:1px solid rgba(48,63,84,.9);border-radius:8px;background:#070d18}
+      .lpfb-file img{width:34px;height:34px;border-radius:5px;object-fit:cover;flex:none}
+      .lpfb-file .pdf{width:34px;height:34px;border-radius:5px;flex:none;display:flex;align-items:center;
+        justify-content:center;background:rgba(192,57,43,.18);color:#f87171;font-size:11px;font-weight:800}
+      .lpfb-file .nm{font-size:12px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+      .lpfb-file .x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;
+        background:#C0392B;color:#fff;font-size:12px;font-weight:800;line-height:20px;cursor:pointer;padding:0}
       .lpfb-meta{font-size:11px;color:#64748b;margin:-4px 0 12px;line-height:1.5}
       .lpfb-meta b{color:#94a3b8;font-weight:600}
       #lpfb-done{text-align:center;padding:6px 4px}
@@ -637,6 +647,14 @@
             <button class="lpfb-capture" id="lpfb-capture" type="button">📸 Recapture screen</button>
             <div class="lpfb-thumb" id="lpfb-thumb"><img id="lpfb-thumb-img" alt="screenshot" /><button class="x" id="lpfb-thumb-x" type="button" title="Remove">✕</button></div>
           </div>
+          <div class="lpfb-attachrow">
+            <button class="lpfb-capture" id="lpfb-attach" type="button">📎 Attach file</button>
+            <button class="lpfb-capture" id="lpfb-photo" type="button">📷 Take photo</button>
+          </div>
+          <!-- device picker (images + PDFs); camera input only surfaces a capture UI on mobile -->
+          <input type="file" id="lpfb-file-input" accept="image/*,application/pdf" multiple style="display:none" />
+          <input type="file" id="lpfb-cam-input" accept="image/*" capture="environment" style="display:none" />
+          <div class="lpfb-files" id="lpfb-files"></div>
           <div class="lpfb-meta" id="lpfb-meta"></div>
           <div class="lpfb-row">
             <span class="lpfb-msg" id="lpfb-msg"></span>
@@ -664,10 +682,15 @@
         sevs=document.getElementById('lpfb-sevs'),
         capture=document.getElementById('lpfb-capture'),thumb=document.getElementById('lpfb-thumb'),
         thumbImg=document.getElementById('lpfb-thumb-img'),thumbX=document.getElementById('lpfb-thumb-x'),
+        attachBtn=document.getElementById('lpfb-attach'),photoBtn=document.getElementById('lpfb-photo'),
+        fileInput=document.getElementById('lpfb-file-input'),camInput=document.getElementById('lpfb-cam-input'),
+        filesEl=document.getElementById('lpfb-files'),
         metaEl=document.getElementById('lpfb-meta'),
         formEl=document.getElementById('lpfb-form'),doneEl=document.getElementById('lpfb-done'),
         doneRef=document.getElementById('lpfb-done-ref'),doneSub=document.getElementById('lpfb-done-sub'),
-        doneOk=document.getElementById('lpfb-done-ok'),kind='bug',sev='annoying',shot=null;
+        doneOk=document.getElementById('lpfb-done-ok'),kind='bug',sev='annoying',shot=null,attachments=[];
+      // Caps mirror the server (_clean_attachments): images + PDFs, 5 files, ~4.4MB each.
+      var ATTACH_MAX=5, ATTACH_MAX_BYTES=4400000;
       // Reveal the button once a cashier is logged in. The token can land a tick
       // after load (dashboard parses it from the URL fragment), so poll briefly.
       function reveal(){if(token()){open.style.display='flex';return true;}return false;}
@@ -709,12 +732,15 @@
       function showForm(){formEl.style.display='';doneEl.style.display='none';}
       // The result stays put -- the cashier reads the BL number and dismisses it
       // themselves (the old auto-close vanished before you could read it).
-      function showDone(ref,hadShot){doneRef.textContent=ref;
-        doneSub.textContent=(hadShot?'Screenshot attached. ':'')+"Thanks — it's on the workbench. 🐺";
+      function showDone(ref,hadShot,nFiles){doneRef.textContent=ref;
+        var bits=[];if(hadShot)bits.push('Screenshot attached.');
+        if(nFiles)bits.push(nFiles+' file'+(nFiles>1?'s':'')+' attached.');
+        doneSub.textContent=(bits.length?bits.join(' ')+' ':'')+"Thanks — it's on the workbench. 🐺";
         formEl.style.display='none';doneEl.style.display='block';}
       function clearShot(){shot=null;thumb.style.display='none';thumbImg.removeAttribute('src');capture.textContent='📸 Capture screen';}
+      function clearAttachments(){attachments=[];fileInput.value='';camInput.value='';renderFiles();}
       function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';
-        kind='bug';sev='annoying';clearShot();showForm();
+        kind='bug';sev='annoying';clearShot();clearAttachments();showForm();
         [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c.getAttribute('data-kind')==='bug');});
         [].forEach.call(sevs.children,function(c){c.classList.toggle('on',c.getAttribute('data-sev')==='annoying');});}
       open.onclick=function(){reset();show();autoShot();};
@@ -759,15 +785,58 @@
       function autoShot(){ doCapture(true); }
       capture.onclick=function(){ doCapture(false); };
 
+      // ---- User attachments: pick files from the device or shoot one on mobile ----
+      // Each file is read into a base64 data-URL and shown as a chip. Images render a
+      // thumbnail; PDFs show a "PDF" tile + filename. Caps mirror the server so we
+      // fail fast with a clear message instead of a silent server-side drop.
+      function renderFiles(){
+        filesEl.innerHTML='';
+        attachments.forEach(function(a,i){
+          var chip=document.createElement('div');chip.className='lpfb-file';
+          if(a.type==='application/pdf'){
+            var p=document.createElement('div');p.className='pdf';p.textContent='PDF';chip.appendChild(p);
+          }else{
+            var img=document.createElement('img');img.src=a.data;img.alt=a.name;chip.appendChild(img);
+          }
+          var nm=document.createElement('span');nm.className='nm';nm.textContent=a.name;nm.title=a.name;chip.appendChild(nm);
+          var x=document.createElement('button');x.className='x';x.type='button';x.title='Remove';x.textContent='✕';
+          x.onclick=function(){attachments.splice(i,1);renderFiles();};chip.appendChild(x);
+          filesEl.appendChild(chip);
+        });
+      }
+      function addFiles(fileList){
+        var files=[].slice.call(fileList||[]);
+        if(!files.length)return;
+        files.forEach(function(file){
+          if(attachments.length>=ATTACH_MAX){
+            msg.textContent='Up to '+ATTACH_MAX+' files. Remove one to add another.';msg.className='lpfb-msg err';return;}
+          var isImg=/^image\//.test(file.type), isPdf=file.type==='application/pdf';
+          if(!isImg&&!isPdf){msg.textContent='Only images and PDFs can be attached.';msg.className='lpfb-msg err';return;}
+          if(file.size>ATTACH_MAX_BYTES){msg.textContent='"'+file.name+'" is too big (max ~4 MB each).';msg.className='lpfb-msg err';return;}
+          var r=new FileReader();
+          r.onload=function(){
+            attachments.push({name:file.name||(isPdf?'document.pdf':'photo.jpg'),
+              type:isPdf?'application/pdf':(file.type||'image/jpeg'),data:r.result});
+            renderFiles();
+          };
+          r.onerror=function(){msg.textContent='Could not read "'+file.name+'".';msg.className='lpfb-msg err';};
+          r.readAsDataURL(file);
+        });
+      }
+      attachBtn.onclick=function(){msg.textContent='';msg.className='lpfb-msg';fileInput.value='';fileInput.click();};
+      photoBtn.onclick=function(){msg.textContent='';msg.className='lpfb-msg';camInput.value='';camInput.click();};
+      fileInput.onchange=function(){addFiles(fileInput.files);};
+      camInput.onchange=function(){addFiles(camInput.files);};
+
       send.onclick=function(){
         var t=(title.value||'').trim();
         if(t.length<3){msg.textContent='Give it a short title (3+ characters).';msg.className='lpfb-msg err';return;}
         send.disabled=true;send.textContent='Sending…';msg.textContent='';msg.className='lpfb-msg';
         // API.post injects the bearer token + handles silent refresh; returns parsed JSON.
         API.post('/api/v1/pos/feedback',{kind:kind,severity:sev,title:t,body:(body.value||'').trim(),
-          screenshot:shot||null,meta:collectMeta(),diagnostics:collectDiag()})
+          screenshot:shot||null,attachments:attachments,meta:collectMeta(),diagnostics:collectDiag()})
         .then(function(j){
-          if(j&&j.ok){showDone(j.ref,!!(j.screenshot||shot));}
+          if(j&&j.ok){showDone(j.ref,!!(j.screenshot||shot),(j.attachments!=null?j.attachments:attachments.length));}
           else{msg.textContent=(j&&j.detail)?j.detail:'Something went wrong — try again.';
             msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})
         .catch(function(){msg.textContent='Network error — try again.';msg.className='lpfb-msg err';

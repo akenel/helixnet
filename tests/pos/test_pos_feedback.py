@@ -82,6 +82,62 @@ def test_feedback_without_screenshot_is_fine(session):
     assert r.json().get("screenshot") is False
 
 
+# A tiny valid PDF as a data-URL -- a one-page empty doc (minimal but parseable header).
+_TINY_PDF = ("data:application/pdf;base64,"
+             "JVBERi0xLjAKMSAwIG9iajw8Pj5zdHJlYW0KZW5kc3RyZWFtCmVuZG9iagp0cmFpbGVyPDwvUm9vdCAxIDAgUj4+")
+
+
+def test_feedback_accepts_file_attachments(session):
+    """User-attached files (an image + a PDF) ride along and the count comes back."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug",
+        "title": "Attachments should persist",
+        "attachments": [
+            {"name": "till.png", "type": "image/png", "data": _TINY_PNG},
+            {"name": "receipt.pdf", "type": "application/pdf", "data": _TINY_PDF},
+        ],
+    })
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j["ok"] is True
+    assert j.get("attachments") == 2
+
+
+def test_feedback_drops_disallowed_attachment_types(session):
+    """A non-image/non-PDF attachment is dropped; valid ones in the batch survive."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "title": "Mixed attachment batch",
+        "attachments": [
+            {"name": "ok.png", "type": "image/png", "data": _TINY_PNG},
+            {"name": "evil.txt", "type": "text/plain", "data": "data:text/plain;base64,aGk="},
+        ],
+    })
+    assert r.status_code == 200, r.text
+    assert r.json().get("attachments") == 1
+
+
+def test_feedback_caps_attachment_count(session):
+    """More than the max files are clamped down to the cap (no DB bloat)."""
+    many = [{"name": f"f{i}.png", "type": "image/png", "data": _TINY_PNG} for i in range(9)]
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "title": "Too many files get clamped", "attachments": many,
+    })
+    assert r.status_code == 200, r.text
+    assert r.json().get("attachments") == 5
+
+
+def test_feedback_handles_malformed_attachments(session):
+    """Junk attachment entries never crash the endpoint -- robust to a noisy client."""
+    r = session.post(f"{POS}/feedback", json={
+        "kind": "bug", "title": "Malformed attachments tolerated",
+        "attachments": ["nope", 7, {"name": "x"}, {"data": 123}],
+    })
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j.get("ok") is True
+    assert j.get("attachments") == 0
+
+
 def test_feedback_severity_maps_to_priority(session):
     """One-tap severity chips set the backlog priority (board sorts itself)."""
     cases = {"blocking": "high", "annoying": "medium", "cosmetic": "low"}

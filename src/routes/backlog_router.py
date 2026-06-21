@@ -2,6 +2,7 @@
 # Purpose: Unified Backlog -- API + HTML routes
 # Auth: Keycloak RBAC via camper-qa-tester / camper-manager / camper-admin
 
+import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -231,17 +232,27 @@ async def get_item_screenshot(
     current_user: dict = Depends(require_backlog_access()),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Lazily fetch a feedback item's attached screenshot (base64 data-URL).
+    """Lazily fetch a feedback item's attached screenshot + files (base64 data-URLs).
 
-    The column is deferred and kept off the list/detail payloads (it's heavy) --
-    only loaded when the detail modal asks for it. Returns {screenshot: null}
-    when there's no attachment. Auth'd fetch -> rendered as <img :src> in the UI."""
+    Both columns are deferred and kept off the list/detail payloads (they're heavy)
+    -- only loaded when the detail modal asks for them. Returns {screenshot: null}
+    when there's no auto-capture, and {attachments: []} when no files were attached.
+    Auth'd fetch -> rendered as <img :src> / download links in the UI."""
     row = (await db.execute(
-        select(BacklogItemModel.screenshot_data).where(BacklogItemModel.id == item_id)
+        select(BacklogItemModel.screenshot_data, BacklogItemModel.attachments)
+        .where(BacklogItemModel.id == item_id)
     )).first()
     if row is None:
         raise HTTPException(status_code=404, detail="Backlog item not found")
-    return {"screenshot": row[0]}
+    attachments = []
+    if row[1]:
+        try:
+            parsed = json.loads(row[1])
+            if isinstance(parsed, list):
+                attachments = parsed
+        except (ValueError, TypeError):
+            attachments = []
+    return {"screenshot": row[0], "attachments": attachments}
 
 
 # ================================================================

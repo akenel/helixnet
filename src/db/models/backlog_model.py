@@ -139,6 +139,12 @@ class BacklogItemModel(Base):
         deferred=True,  # base64 data-URLs are heavy: never loaded in list queries
         comment="Optional base64 data-URL screenshot attached to feedback",
     )
+    attachments: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        deferred=True,  # base64 data-URLs are heavy: never loaded in list queries
+        comment="JSON list of user-attached files [{name,type,data}] (images/PDFs)",
+    )
     created_by: Mapped[str] = mapped_column(
         String(100),
         nullable=False,

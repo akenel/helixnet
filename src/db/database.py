@@ -133,6 +133,10 @@ _ADDITIVE_COLUMNS: list[str] = [
     # Feedback screenshots (2026-06-21): the POS 💬 widget can attach an auto-captured
     # screenshot (base64 data-URL) to a backlog item. Heavy text, deferred-loaded.
     "ALTER TABLE backlog_items ADD COLUMN IF NOT EXISTS screenshot_data TEXT",
+    # Feedback attachments (2026-06-21): the 💬 widget can now attach files (images
+    # AND PDFs) chosen from the device or shot with the mobile camera, beyond the
+    # single auto-captured screenshot. Stored as a JSON list. Heavy text, deferred.
+    "ALTER TABLE backlog_items ADD COLUMN IF NOT EXISTS attachments TEXT",
     # CRM Phase 0 (2026-06-21): age gate + marketing consent on customers (the only
     # compliance must -- 18+; marketing default off per Swiss FADP).
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed BOOLEAN NOT NULL DEFAULT FALSE",
