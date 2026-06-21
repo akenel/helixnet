@@ -924,7 +924,22 @@ async def list_transactions(
 
     query = query.order_by(TransactionModel.created_at.desc())
     result = await db.execute(query)
-    return result.scalars().all()
+    txns = result.scalars().all()
+
+    # BL-83 (Felix): show WHO rang each sale. cashier_id is the Keycloak sub, which
+    # matches users.id -- resolve it to a display name (first name, else username) so
+    # the report says "Pam"/"Felix", not a generic "Cashier". One batched lookup.
+    cashier_ids = {t.cashier_id for t in txns if t.cashier_id}
+    names: dict = {}
+    if cashier_ids:
+        urows = await db.execute(
+            select(UserModel.id, UserModel.first_name, UserModel.username)
+            .where(UserModel.id.in_(cashier_ids))
+        )
+        names = {uid: (first or uname) for uid, first, uname in urows.all()}
+    for t in txns:
+        t.cashier_name = names.get(t.cashier_id)
+    return txns
 
 
 @router.post("/transactions", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)

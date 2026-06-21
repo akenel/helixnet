@@ -118,14 +118,17 @@
                             <tr class="hover:bg-gray-50 transition cursor-pointer" @click="viewReceipt(txn.id)">
                                 <td class="px-4 py-3">
                                     <p class="font-semibold text-gray-900" x-text="txn.receipt_number || txn.transaction_number"></p>
-                                    <p class="text-xs text-gray-500" x-text="txn.transaction_number"></p>
+                                    <!-- BL-83: only show the txn number when it isn't a duplicate of the line above -->
+                                    <p class="text-xs text-gray-500"
+                                       x-show="txn.receipt_number && txn.receipt_number !== txn.transaction_number"
+                                       x-text="txn.transaction_number"></p>
                                 </td>
                                 <td class="px-4 py-3">
                                     <p class="text-sm text-gray-900" x-text="formatDate(txn.completed_at || txn.created_at)"></p>
                                     <p class="text-xs text-gray-500" x-text="formatTime(txn.completed_at || txn.created_at)"></p>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">
-                                    <span x-text="txn.cashier_name || 'Cashier'"></span>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                    <span x-text="txn.cashier_name || '—'"></span>
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
