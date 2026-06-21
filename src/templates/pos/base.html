@@ -657,9 +657,14 @@
          Same seatback card as La Piazza, wired to the POS token + POST /api/v1/pos/feedback.
          Only shows once logged in. Sits just above the status bar. -->
     <style>
-      .lpfb-btn{position:fixed;right:18px;bottom:42px;z-index:70;display:none;align-items:center;gap:7px;
+      /* Feedback button: draggable so it never traps a Submit button under it
+         (Felix: "the feedback button is over it... drag it out of the way").
+         Defaults to mid-right edge — clear of both the header and the bottom
+         action row — and remembers wherever it's dragged (localStorage). */
+      .lpfb-btn{position:fixed;right:14px;top:50%;z-index:70;display:none;align-items:center;gap:7px;
         padding:10px 15px;border:none;border-radius:999px;background:#C0392B;color:#fff;font:700 14px Inter,system-ui,sans-serif;
-        cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+        cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+      .lpfb-btn.dragging{cursor:grabbing;opacity:.85}
       .lpfb-btn:hover{background:#8B0000}
       .lpfb-ov{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
         background:rgba(2,6,12,.7);backdrop-filter:blur(3px);padding:16px;font-family:Inter,system-ui,sans-serif}
@@ -837,7 +842,47 @@
         kind='bug';sev='annoying';clearShot();clearAttachments();showForm();
         [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c.getAttribute('data-kind')==='bug');});
         [].forEach.call(sevs.children,function(c){c.classList.toggle('on',c.getAttribute('data-sev')==='annoying');});}
-      open.onclick=function(){reset();show();autoShot();};
+      function openFeedback(){reset();show();autoShot();}
+      // Draggable button (pointer events = mouse + touch). A real drag must NOT
+      // also open the modal, so we only open if the pointer barely moved.
+      (function(){
+        var POS_KEY='lpfb_pos', DRAG_PX=6;
+        try{var saved=JSON.parse(localStorage.getItem(POS_KEY)||'null');}catch(e){var saved=null;}
+        function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+        function place(left,top){
+          var w=open.offsetWidth||120,h=open.offsetHeight||44;
+          left=clamp(left,4,window.innerWidth-w-4);
+          top=clamp(top,4,window.innerHeight-h-4);
+          open.style.left=left+'px';open.style.top=top+'px';
+          open.style.right='auto';open.style.bottom='auto';
+        }
+        if(saved&&typeof saved.left==='number'){place(saved.left,saved.top);}
+        var dragging=false,moved=false,sx=0,sy=0,ox=0,oy=0;
+        open.addEventListener('pointerdown',function(e){
+          dragging=true;moved=false;
+          var r=open.getBoundingClientRect();ox=r.left;oy=r.top;sx=e.clientX;sy=e.clientY;
+          open.setPointerCapture&&open.setPointerCapture(e.pointerId);
+        });
+        open.addEventListener('pointermove',function(e){
+          if(!dragging)return;
+          var dx=e.clientX-sx,dy=e.clientY-sy;
+          if(!moved&&Math.abs(dx)+Math.abs(dy)>DRAG_PX){moved=true;open.classList.add('dragging');}
+          if(moved){place(ox+dx,oy+dy);}
+        });
+        function endDrag(){
+          if(!dragging)return;dragging=false;open.classList.remove('dragging');
+          if(moved){
+            var r=open.getBoundingClientRect();
+            try{localStorage.setItem(POS_KEY,JSON.stringify({left:r.left,top:r.top}));}catch(e){}
+          }
+        }
+        open.addEventListener('pointerup',function(e){var was=moved;endDrag();if(!was)openFeedback();});
+        open.addEventListener('pointercancel',endDrag);
+        // Keep it on-screen if the viewport rotates/resizes (portrait<->landscape).
+        window.addEventListener('resize',function(){
+          if(open.style.left){place(parseFloat(open.style.left)||0,parseFloat(open.style.top)||0);}
+        });
+      })();
       cancel.onclick=hide;
       doneOk.onclick=hide;
       ov.onclick=function(e){if(e.target===ov)hide();};
