@@ -4,9 +4,32 @@
 
 {% block content %}
 <div class="min-h-screen bg-gray-50" x-data="closeoutData()">
+    <!-- Top Bar (matches the other POS screens) -- BL-021: closeout had no header/back -->
+    <div class="bg-white shadow-md border-b-4 border-indigo-600 no-print">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="goBack()" title="Back to dashboard" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">⏰ Close Shift</h1>
+                    <p class="text-sm text-gray-600">End your day &amp; count cash</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button @click="goBack()" class="btn-secondary text-sm">🏪 Dashboard</button>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Cashier</p>
+                    <p class="font-semibold" x-text="user.username"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="closeout-ui" class="max-w-4xl mx-auto px-4 py-8">
         <div class="card">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">⏰ Close Shift</h1>
 
             <!-- Shift Summary (Auto-calculated) -->
             <div class="bg-indigo-50 rounded-lg p-6 mb-6">

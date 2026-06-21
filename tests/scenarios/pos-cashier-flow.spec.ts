@@ -275,10 +275,18 @@ test('feedback widget captures a screenshot and files a bug with a BL ref', asyn
 
   await page.locator('#lpfb-send').click();
 
-  // Success: a BL-XXX reference (with the 📸 indicator) linking to the backlog board.
-  await expect(page.locator('#lpfb-msg')).toContainText(/Filed as BL-\d+/, { timeout: 15_000 });
-  await expect(page.locator('#lpfb-msg')).toContainText('📸');
-  await expect(page.locator('#lpfb-msg a[href="/backlog"]')).toBeVisible();
+  // Success: a PERSISTENT panel shows the BL-XXX ref + a board link, and does NOT
+  // auto-vanish (the old 1.4s auto-close hid the number before you could read it).
+  const done = page.locator('#lpfb-done');
+  await expect(done).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#lpfb-done-ref')).toHaveText(/BL-\d+/);
+  await expect(page.locator('#lpfb-done-board')).toHaveAttribute('href', '/backlog');
+  // Still there after a beat -- it waits for the cashier, not a timer.
+  await page.waitForTimeout(2500);
+  await expect(done).toBeVisible();
+  // Dismiss it yourself.
+  await page.locator('#lpfb-done-ok').click();
+  await expect(page.locator('#lpfb-ov')).toBeHidden();
   // Session survives filing feedback (no logout).
   expect(await tokenPresent(page)).toBe(true);
 });
@@ -297,5 +305,19 @@ test('navigation: receipt -> back to catalog with no dead-end', async ({ page })
   // The cashier should always be able to get back to the catalog/dashboard.
   await page.goto('/pos/dashboard');
   await expect(page.getByText(/Product Catalog/i)).toBeVisible({ timeout: 10_000 });
+  expect(await tokenPresent(page)).toBe(true);
+});
+
+/**
+ * BL-021 (filed via the feedback widget!): the Close Shift screen had no header
+ * and no easy way back -- a dead-end. It now has a top bar with a Dashboard button.
+ */
+test('Close Shift screen has a header + back-to-dashboard (BL-021)', async ({ page }) => {
+  await login(page);
+  await page.goto('/pos/closeout');
+  const dash = page.getByRole('button', { name: '🏪 Dashboard' });
+  await expect(dash).toBeVisible({ timeout: 10_000 });
+  await dash.click();
+  await page.waitForURL(/\/pos\/dashboard/, { timeout: 15_000 });
   expect(await tokenPresent(page)).toBe(true);
 });

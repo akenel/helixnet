@@ -550,28 +550,48 @@
         background:#C0392B;color:#fff;font-size:12px;font-weight:800;line-height:20px;cursor:pointer;padding:0}
       .lpfb-meta{font-size:11px;color:#64748b;margin:-4px 0 12px;line-height:1.5}
       .lpfb-meta b{color:#94a3b8;font-weight:600}
+      #lpfb-done{text-align:center;padding:6px 4px}
+      .lpfb-done-icon{width:48px;height:48px;margin:2px auto 12px;border-radius:50%;background:rgba(52,211,153,.15);
+        color:#34d399;font-size:26px;font-weight:900;line-height:48px}
+      #lpfb-done h3{font-size:21px}
+      #lpfb-done .ref{color:#34d399}
+      #lpfb-done .lpfb-row{justify-content:center;margin-top:18px}
+      .lpfb-board{padding:9px 16px;border:1px solid rgba(48,63,84,.9);border-radius:9px;background:transparent;
+        color:#cbd5e1;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px}
+      .lpfb-board:hover{border-color:#34d399;color:#fff}
     </style>
     <button class="lpfb-btn" id="lpfb-open">💬 Feedback</button>
     <div class="lpfb-ov" id="lpfb-ov">
       <div class="lpfb-card" role="dialog" aria-modal="true" aria-label="Send feedback">
-        <h3>Send feedback</h3>
-        <p class="sub">Spot a bug or have an idea at the till? It goes straight to the workbench.</p>
-        <div class="lpfb-kinds" id="lpfb-kinds">
-          <div class="lpfb-kind on" data-kind="bug">🐛 Bug</div>
-          <div class="lpfb-kind" data-kind="idea">💡 Idea</div>
-          <div class="lpfb-kind" data-kind="other">💬 Other</div>
+        <div id="lpfb-form">
+          <h3>Send feedback</h3>
+          <p class="sub">Spot a bug or have an idea at the till? It goes straight to the workbench.</p>
+          <div class="lpfb-kinds" id="lpfb-kinds">
+            <div class="lpfb-kind on" data-kind="bug">🐛 Bug</div>
+            <div class="lpfb-kind" data-kind="idea">💡 Idea</div>
+            <div class="lpfb-kind" data-kind="other">💬 Other</div>
+          </div>
+          <input id="lpfb-title" type="text" maxlength="200" placeholder="Short title (what's up?)" />
+          <textarea id="lpfb-body" maxlength="4000" placeholder="Details — what happened, what you expected, steps…"></textarea>
+          <div class="lpfb-shotrow">
+            <button class="lpfb-capture" id="lpfb-capture" type="button">📸 Capture this screen</button>
+            <div class="lpfb-thumb" id="lpfb-thumb"><img id="lpfb-thumb-img" alt="screenshot" /><button class="x" id="lpfb-thumb-x" type="button" title="Remove">✕</button></div>
+          </div>
+          <div class="lpfb-meta" id="lpfb-meta"></div>
+          <div class="lpfb-row">
+            <span class="lpfb-msg" id="lpfb-msg"></span>
+            <button class="lpfb-cancel" id="lpfb-cancel">Cancel</button>
+            <button class="lpfb-send" id="lpfb-send">Send</button>
+          </div>
         </div>
-        <input id="lpfb-title" type="text" maxlength="200" placeholder="Short title (what's up?)" />
-        <textarea id="lpfb-body" maxlength="4000" placeholder="Details — what happened, what you expected, steps…"></textarea>
-        <div class="lpfb-shotrow">
-          <button class="lpfb-capture" id="lpfb-capture" type="button">📸 Capture this screen</button>
-          <div class="lpfb-thumb" id="lpfb-thumb"><img id="lpfb-thumb-img" alt="screenshot" /><button class="x" id="lpfb-thumb-x" type="button" title="Remove">✕</button></div>
-        </div>
-        <div class="lpfb-meta" id="lpfb-meta"></div>
-        <div class="lpfb-row">
-          <span class="lpfb-msg" id="lpfb-msg"></span>
-          <button class="lpfb-cancel" id="lpfb-cancel">Cancel</button>
-          <button class="lpfb-send" id="lpfb-send">Send</button>
+        <div id="lpfb-done" style="display:none">
+          <div class="lpfb-done-icon">✓</div>
+          <h3>Filed as <span class="ref" id="lpfb-done-ref">BL-000</span></h3>
+          <p class="sub" id="lpfb-done-sub">Thanks — it's on the workbench. 🐺</p>
+          <div class="lpfb-row">
+            <a class="lpfb-board" id="lpfb-done-board" href="/backlog" target="_blank">View on board ↗</a>
+            <button class="lpfb-send" id="lpfb-done-ok">Done</button>
+          </div>
         </div>
       </div>
     </div>
@@ -583,7 +603,10 @@
         cancel=document.getElementById('lpfb-cancel'),kinds=document.getElementById('lpfb-kinds'),
         capture=document.getElementById('lpfb-capture'),thumb=document.getElementById('lpfb-thumb'),
         thumbImg=document.getElementById('lpfb-thumb-img'),thumbX=document.getElementById('lpfb-thumb-x'),
-        metaEl=document.getElementById('lpfb-meta'),kind='bug',shot=null;
+        metaEl=document.getElementById('lpfb-meta'),
+        formEl=document.getElementById('lpfb-form'),doneEl=document.getElementById('lpfb-done'),
+        doneRef=document.getElementById('lpfb-done-ref'),doneSub=document.getElementById('lpfb-done-sub'),
+        doneOk=document.getElementById('lpfb-done-ok'),kind='bug',shot=null;
       // Reveal the button once a cashier is logged in. The token can land a tick
       // after load (dashboard parses it from the URL fragment), so poll briefly.
       function reveal(){if(token()){open.style.display='flex';return true;}return false;}
@@ -617,11 +640,18 @@
       }
       function show(){ov.style.display='flex';renderMeta();setTimeout(function(){title.focus();},50);}
       function hide(){ov.style.display='none';}
+      function showForm(){formEl.style.display='';doneEl.style.display='none';}
+      // The result stays put -- the cashier reads the BL number and dismisses it
+      // themselves (the old auto-close vanished before you could read it).
+      function showDone(ref,hadShot){doneRef.textContent=ref;
+        doneSub.textContent=(hadShot?'Screenshot attached. ':'')+"Thanks — it's on the workbench. 🐺";
+        formEl.style.display='none';doneEl.style.display='block';}
       function clearShot(){shot=null;thumb.style.display='none';thumbImg.removeAttribute('src');capture.textContent='📸 Capture this screen';}
-      function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';kind='bug';clearShot();
+      function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';kind='bug';clearShot();showForm();
         [].forEach.call(kinds.children,function(c){c.classList.toggle('on',c.getAttribute('data-kind')==='bug');});}
       open.onclick=function(){reset();show();};
       cancel.onclick=hide;
+      doneOk.onclick=hide;
       ov.onclick=function(e){if(e.target===ov)hide();};
       kinds.onclick=function(e){var k=e.target.closest('.lpfb-kind');if(!k)return;
         kind=k.getAttribute('data-kind');
@@ -662,8 +692,7 @@
         API.post('/api/v1/pos/feedback',{kind:kind,title:t,body:(body.value||'').trim(),
           screenshot:shot||null,meta:collectMeta()})
         .then(function(j){
-          if(j&&j.ok){msg.innerHTML='Filed as <a href="/backlog" target="_blank" style="color:inherit;text-decoration:underline">'+j.ref+'</a>'+(shot?' 📸':'')+' — thank you! 🐺';
-            msg.className='lpfb-msg ok';send.textContent='Sent ✓';setTimeout(hide,1400);}
+          if(j&&j.ok){showDone(j.ref,!!(j.screenshot||shot));}
           else{msg.textContent=(j&&j.detail)?j.detail:'Something went wrong — try again.';
             msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})
         .catch(function(){msg.textContent='Network error — try again.';msg.className='lpfb-msg err';
