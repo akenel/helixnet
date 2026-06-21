@@ -69,6 +69,27 @@ logger.setLevel(logging.INFO)
 # ================================================================
 # 🌌 Lifespan Manager (Startup / Shutdown)
 # ================================================================
+async def _empty_cart_reaper_loop():
+    """BL-86: hourly sweep that cancels stale, empty, zero-value OPEN carts (>12h old)
+    so abandoned sessions don't clutter the report. Runs inside the web process (no
+    extra container/scheduler); idempotent and defensive -- a bad tick never kills the
+    app. Celery Beat isn't deployed in this stack, so this is the auto-driver; the same
+    work is also exposed at POST /api/v1/pos/maintenance/reap-empty-carts for manual runs."""
+    import asyncio
+    from src.routes.pos_router import reap_stale_open_carts
+    while True:
+        try:
+            await asyncio.sleep(3600)  # hourly
+            async with get_db_session_context() as db:
+                result = await reap_stale_open_carts(db, older_than_hours=12)
+            if result["cancelled"]:
+                logger.info(f"🧹 Empty-cart reaper cancelled {result['cancelled']} stale cart(s)")
+        except asyncio.CancelledError:
+            break
+        except Exception as e:  # never let a maintenance tick crash the app
+            logger.warning(f"Empty-cart reaper tick skipped: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle HelixNet startup and shutdown lifecycle events."""
@@ -221,11 +242,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.debug(f"Keycloak health check deferred: {e}")
 
+    # --- BL-86: start the hourly empty-cart reaper (background) ---
+    import asyncio
+    reaper_task = asyncio.create_task(_empty_cart_reaper_loop())
+    logger.info("🧹 Empty-cart reaper started (hourly, cancels empty OPEN carts >12h).")
+
     logger.info("✨ HelixNet Core READY to serve requests.")
     yield
 
     # --- Shutdown ---
     logger.info("⬆️ Application shutting down. Closing DB engine...")
+    reaper_task.cancel()
+    try:
+        await reaper_task
+    except asyncio.CancelledError:
+        pass
     await close_async_engine()
     logger.info("🛑 HelixNet Core shutdown complete.")
 

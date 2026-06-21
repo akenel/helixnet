@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 from typing import Optional
@@ -1047,6 +1047,65 @@ async def get_transaction(
             for item in line_items
         ]
     }
+
+
+# ================================================================
+# 🧹 BL-86: empty-cart reaper (end-of-day cleanup)
+# ================================================================
+async def reap_stale_open_carts(db: AsyncSession, older_than_hours: int = 12) -> dict:
+    """Cancel abandoned empty carts so the report stays clean.
+
+    A real shop leaves dangling OPEN carts behind: a cashier opens a sale and the
+    customer walks, or someone mis-taps. We retire only the *truly empty* ones --
+    OPEN, zero value, AND no line items -- once they're older than `older_than_hours`.
+    We set status=CANCELLED (auditable, the number survives), never delete, and never
+    touch a cart that has items or any value. Idempotent: a cart cancelled once won't
+    match again. Returns the count + the transaction numbers reaped.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=older_than_hours)
+    has_items = (
+        select(LineItemModel.id)
+        .where(LineItemModel.transaction_id == TransactionModel.id)
+        .exists()
+    )
+    rows = (await db.execute(
+        select(TransactionModel).where(
+            TransactionModel.status == TransactionStatus.OPEN,
+            TransactionModel.total == 0,
+            TransactionModel.created_at < cutoff,
+            ~has_items,
+        )
+    )).scalars().all()
+
+    reaped = []
+    now = datetime.now(timezone.utc)
+    for t in rows:
+        t.status = TransactionStatus.CANCELLED
+        t.updated_at = now
+        reaped.append(t.transaction_number)
+    if rows:
+        await db.commit()
+    return {
+        "cancelled": len(reaped),
+        "older_than_hours": older_than_hours,
+        "transaction_numbers": reaped,
+    }
+
+
+@router.post("/maintenance/reap-empty-carts")
+async def reap_empty_carts(
+    older_than_hours: int = 12,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """Manually run the empty-cart reaper (it also runs hourly in the background).
+    Manager/admin only. `older_than_hours` defaults to 12 -- anything still empty and
+    open from earlier in the day gets cancelled."""
+    result = await reap_stale_open_carts(db, older_than_hours=older_than_hours)
+    logger.info(
+        f"🧹 Empty-cart reaper (manual by {current_user.get('username')}): {result['cancelled']} cancelled"
+    )
+    return result
 
 
 def _inclusive_vat(gross: Decimal) -> Decimal:
