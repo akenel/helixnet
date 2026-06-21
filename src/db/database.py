@@ -141,6 +141,13 @@ _ADDITIVE_COLUMNS: list[str] = [
     # compliance must -- 18+; marketing default off per Swiss FADP).
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN NOT NULL DEFAULT FALSE",
+    # BL-082 (2026-06-21): the IsottoOrder model grew team-order fields but there was
+    # no additive migration -- create_all() never adds columns to an existing table, so
+    # any env whose isotto_orders predated these 500'd on insert (seed crash + dead
+    # ISOTTO order feature). These are the only two columns the model has that the live
+    # table lacked (verified by diffing the model against information_schema).
+    "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS is_team_order BOOLEAN NOT NULL DEFAULT FALSE",
+    "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS team_name VARCHAR(200)",
 ]
 
 
