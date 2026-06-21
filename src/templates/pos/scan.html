@@ -329,7 +329,7 @@
                 <!-- Left: big image + price + add -->
                 <div>
                     <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden">
-                        <img x-show="detailProduct?.image_url" :src="detailProduct?.image_url" class="w-full h-full object-contain" @error="detailProduct.image_url=''" alt="">
+                        <img x-show="detailProduct?.image_url" :src="detailProduct?.image_url" class="w-full h-full object-contain" @error="if(detailProduct) detailProduct.image_url=''" alt="">
                         <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
