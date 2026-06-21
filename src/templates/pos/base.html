@@ -173,6 +173,17 @@
         .helix-status-bar a:hover {
             color: #e2e8f0;
         }
+        /* BL-85: in mobile portrait the bar overflowed and the right-hand 📊 (health/pulse)
+           fell off-screen. Shrink the spacing and drop the low-value bits (version, sha,
+           page name) so pulse · time · user · 📊 fit one row and 📊 stays tappable. */
+        @media (max-width: 480px) {
+            .helix-status-bar {
+                padding: 0 8px;
+                font-size: 11px;
+            }
+            .helix-status-bar .status-section { gap: 8px; }
+            .helix-status-bar .sm-hide { display: none; }
+        }
         /* Adjust body padding to not overlap footer */
         body {
             padding-bottom: 32px;
@@ -496,18 +507,20 @@
         <div class="status-section">
             <span class="pulse ok" id="status-pulse"></span>
             <span id="status-text">System OK</span>
-            <span class="divider">│</span>
+            <span class="divider sm-hide">│</span>
             <span id="status-time">--:--</span>
-            <span class="divider">│</span>
-            <span id="status-version">{{ ('v' + app_version) if app_version else 'v3.3.0' }}</span>
-            <span style="color: #64748b;">({{ git_sha[:7] if git_sha else 'dev' }})</span>
+            <!-- BL-85: version + git sha are noise on a phone; hidden in portrait so the
+                 right-hand 📊 (Shop Pulse / health) stays on-screen and tappable. -->
+            <span class="divider sm-hide">│</span>
+            <span id="status-version" class="sm-hide">{{ ('v' + app_version) if app_version else 'v3.3.0' }}</span>
+            <span class="sm-hide" style="color: #64748b;">({{ git_sha[:7] if git_sha else 'dev' }})</span>
         </div>
         <div class="status-section">
-            <span id="status-screen">{% block page_name %}POS{% endblock %}</span>
-            <span class="divider">│</span>
+            <span id="status-screen" class="sm-hide">{% block page_name %}POS{% endblock %}</span>
+            <span class="divider sm-hide">│</span>
             <span id="status-user">--</span>
             <span class="divider">│</span>
-            <button id="pulse-open" title="Shop Pulse — live stats" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1;color:inherit;">📊</button>
+            <button id="pulse-open" title="Shop Pulse — live stats" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">📊</button>
         </div>
     </footer>
 
