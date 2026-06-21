@@ -29,6 +29,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 | Feature | Commits (main) | Staging | Prod |
 |---|---|---|---|
 | **BL-84** Real payment-method breakdown on the report + bank transfer (Felix live feedback) | `3f19dfc` | **green — on staging-banco @ 3f19dfc; daily-summary shows all buckets (visa 24.8k + twint 915 + cash 3.8k were hidden before); enum `BANK_TRANSFER` added to shared DB** | **STAGED — awaiting Angel visual PASS** |
+| **BL-83** Name the cashier on the transactions report + drop duplicate # line (Felix live feedback) | `2bd019d` | **green — on staging-banco @ 2bd019d; 129 rows now show Felix (116) / Pam (13), no more generic "Cashier"** | **STAGED — awaiting Angel visual PASS** |
 | Banco feedback: file + camera attachments | `0013263` (backend) + `4aba2da` | green (7/7 attach+screenshot, dog-fooded: img + 2 PDFs) | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
 | Banco cash shift — per-cashier drawer (incr 1-3) | `2d9df70`,`94a9c75`,`cc7b886` | green, "per-cashier isolation proven" | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |
 | Status bar: real version + git SHA stamp | `af62709` | green — shows `v3.3.0 (af62709)`, env `uat` | **SHIPPED — banco.lapiazza.app @ 8303204, 2026-06-21** |

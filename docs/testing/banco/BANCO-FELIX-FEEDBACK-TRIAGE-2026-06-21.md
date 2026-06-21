@@ -77,8 +77,13 @@ health link pinned/reachable (e.g. collapse the middle on `max-width` portrait).
    *visa CHF 24,852 + twint CHF 915 + cash CHF 3,837*, but the old UI only summed `cash` and
    `card`/`mobile` — and the real data is `visa`/`twint`, so ~CHF 25k rendered as **zero**. That's
    the "it all shows as cash." Now every bucket shows.
-2. **BL-83** (cashier name = small additive backend, rest frontend) — NEXT.
-3. **BL-85** (CSS-only responsive) — after.
+2. **BL-83** — ✅ **BUILT + on staging (`2bd019d`), awaiting Angel PASS.** `list_transactions`
+   resolves `cashier_id` (== `users.id`) to a display name in one batched lookup; `TransactionRead`
+   gains `cashier_name`; the report shows it (drops the misleading "Cashier" literal) and no longer
+   repeats the txn number under the receipt# on open carts. Verified live: 129 rows show Felix (116) /
+   Pam (13). Test: `tests/pos/test_pos_cashier_name.py`. (Time-of-day already renders on this view —
+   Felix's "no timestamp" note was about the shift-close log, not the transactions report.)
+3. **BL-85** (CSS-only responsive status bar) — NEXT.
 
 **One pass, same two files** (`transactions.html` + `base.html`) plus a small `pos_router` /
 `transaction_model` add for the cashier name. Then the standard gate:
