@@ -26,7 +26,11 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Boarding (awaiting the next prod train)
 
-_(empty — nothing boarding. BL-87 + BL-88 SHIPPED, see history below.)_
+| Feature | Commit(s) | Test status | Prod |
+|---|---|---|---|
+| BL-89 catalog polish — camera scan on create/edit + category picker | `7c344e1` | green on staging-banco: `pos-scanner.js` 200, form has scan button + category datalist. Frontend+static only, no Python. | **STAGED — staging-banco.lapiazza.app @ 7c344e1, 2026-06-21. Awaiting Angel PASS.** |
+
+_(BL-87 + BL-88 SHIPPED, see history below.)_
 
 > **BL-88 catalog management dashboard (`/pos/catalog`)** — `8b522a0`. Manager-gated CRUD over products
 > (search/edit price+stock+picture+reorder, discontinue+reactivate, create), dashboard card. Added
