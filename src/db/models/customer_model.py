@@ -344,6 +344,22 @@ class CustomerModel(Base):
     )
 
     # ================================================================
+    # COMPLIANCE & CONSENT (the only must: 18+)
+    # ================================================================
+    age_confirmed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="18+ confirmed (ticked by staff at the counter / on online claim)"
+    )
+    marketing_consent: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="Explicit opt-in for SMS/email offers (Swiss FADP -- default off)"
+    )
+
+    # ================================================================
     # TIMESTAMPS
     # ================================================================
     created_at: Mapped[datetime] = mapped_column(
@@ -374,23 +390,13 @@ class CustomerModel(Base):
     # TIER CALCULATION
     # ================================================================
     def recalculate_tier(self) -> None:
-        """Update tier based on lifetime spend"""
-        spend = self.lifetime_spend
-        if spend >= Decimal("2500"):
-            self.loyalty_tier = LoyaltyTier.DIAMOND
-            self.tier_discount_percent = 25
-        elif spend >= Decimal("1000"):
-            self.loyalty_tier = LoyaltyTier.PLATINUM
-            self.tier_discount_percent = 20
-        elif spend >= Decimal("500"):
-            self.loyalty_tier = LoyaltyTier.GOLD
-            self.tier_discount_percent = 15
-        elif spend >= Decimal("200"):
-            self.loyalty_tier = LoyaltyTier.SILVER
-            self.tier_discount_percent = 10
-        else:
-            self.loyalty_tier = LoyaltyTier.BRONZE
-            self.tier_discount_percent = 5
+        """Update tier from lifetime spend via the pure loyalty policy (Banco 3-tier,
+        conservative). Bronze = points only / no standing %; Silver +5% @ CHF 500;
+        Gold +10% @ CHF 2000. (Platinum/Diamond enum values kept but unused for now.)"""
+        from src.services.loyalty_service import tier_for_spend
+        name, pct = tier_for_spend(self.lifetime_spend)
+        self.loyalty_tier = LoyaltyTier(name)
+        self.tier_discount_percent = pct
 
     def recalculate_crack_level(self) -> None:
         """Update CRACK level based on approved KBs"""

@@ -133,6 +133,10 @@ _ADDITIVE_COLUMNS: list[str] = [
     # Feedback screenshots (2026-06-21): the POS 💬 widget can attach an auto-captured
     # screenshot (base64 data-URL) to a backlog item. Heavy text, deferred-loaded.
     "ALTER TABLE backlog_items ADD COLUMN IF NOT EXISTS screenshot_data TEXT",
+    # CRM Phase 0 (2026-06-21): age gate + marketing consent on customers (the only
+    # compliance must -- 18+; marketing default off per Swiss FADP).
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed BOOLEAN NOT NULL DEFAULT FALSE",
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN NOT NULL DEFAULT FALSE",
 ]
 
 
@@ -202,6 +206,36 @@ _DDL_MIGRATIONS: list[str] = [
         LIMIT limit_rows;
     END;
     $function$
+    """,
+    # CRM Phase 0 (2026-06-21): the transactions.customer_id FK was pointing at users.id
+    # (staff) -- WRONG; a loyalty sale belongs to a CRM customer. Repoint it to
+    # customers.id. Idempotent: only acts if the correct FK isn't already present, so it
+    # drops whatever wrong FK is on customer_id and adds the right one exactly once.
+    """
+    DO $$
+    DECLARE badcon text; has_good boolean;
+    BEGIN
+        SELECT EXISTS (
+            SELECT 1 FROM pg_constraint con
+            JOIN pg_class fr ON fr.oid = con.confrelid
+            JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = ANY(con.conkey)
+            WHERE con.conrelid = 'transactions'::regclass AND con.contype = 'f'
+              AND a.attname = 'customer_id' AND fr.relname = 'customers'
+        ) INTO has_good;
+        IF NOT has_good THEN
+            SELECT con.conname INTO badcon
+            FROM pg_constraint con
+            JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = ANY(con.conkey)
+            WHERE con.conrelid = 'transactions'::regclass AND con.contype = 'f'
+              AND a.attname = 'customer_id' LIMIT 1;
+            IF badcon IS NOT NULL THEN
+                EXECUTE format('ALTER TABLE transactions DROP CONSTRAINT %I', badcon);
+            END IF;
+            ALTER TABLE transactions
+                ADD CONSTRAINT transactions_customer_id_customers_fkey
+                FOREIGN KEY (customer_id) REFERENCES customers(id);
+        END IF;
+    END $$;
     """,
 ]
 

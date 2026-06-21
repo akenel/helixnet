@@ -66,9 +66,9 @@ class TransactionModel(Base):
 
     customer_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('users.id'),
+        ForeignKey('customers.id'),
         nullable=True,
-        comment="Optional - for loyalty program customers"
+        comment="Optional - the loyalty CRM customer this sale belongs to (CustomerModel)"
     )
 
     # Transaction Status
@@ -166,9 +166,10 @@ class TransactionModel(Base):
         foreign_keys=[cashier_id],
         back_populates="cashier_transactions"
     )
-    customer: Mapped["UserModel | None"] = relationship(
-        foreign_keys=[customer_id],
-        back_populates="customer_transactions"
+    # The loyalty CRM customer this sale belongs to (one-directional -- CustomerModel
+    # doesn't carry a transactions back-ref). customer_id -> customers.id.
+    customer: Mapped["CustomerModel | None"] = relationship(
+        "CustomerModel", foreign_keys=[customer_id]
     )
     line_items: Mapped[list["LineItemModel"]] = relationship(
         back_populates="transaction",

@@ -71,11 +71,8 @@ class UserModel(Base):
         back_populates="cashier",
         cascade="all, delete-orphan"
     )
-    customer_transactions: Mapped[list["TransactionModel"]] = relationship(
-        foreign_keys="TransactionModel.customer_id",
-        back_populates="customer",
-        cascade="all, delete-orphan"
-    )
+    # (customer_transactions removed -- a sale's customer is now a CRM CustomerModel,
+    #  not a staff UserModel. The link lives on TransactionModel.customer.)
 
     def __repr__(self):
         return f"<UserModel(id='{self.id}', username='{self.username}', email='{self.email}')>"
