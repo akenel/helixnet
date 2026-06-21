@@ -499,17 +499,97 @@
             <span class="divider">│</span>
             <span id="status-time">--:--</span>
             <span class="divider">│</span>
-            <span id="status-version">v3.2.0</span>
-            <span style="color: #64748b;">({{ git_sha[:7] if git_sha else 'cf2794e' }})</span>
+            <span id="status-version">{{ ('v' + app_version) if app_version else 'v3.3.0' }}</span>
+            <span style="color: #64748b;">({{ git_sha[:7] if git_sha else 'dev' }})</span>
         </div>
         <div class="status-section">
             <span id="status-screen">{% block page_name %}POS{% endblock %}</span>
             <span class="divider">│</span>
             <span id="status-user">--</span>
             <span class="divider">│</span>
-            <a href="/health/dashboard" target="_blank" title="Full Health Dashboard">📊</a>
+            <button id="pulse-open" title="Shop Pulse — live stats" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1;color:inherit;">📊</button>
         </div>
     </footer>
+
+    <!-- ===== Shop Pulse: a live system card behind the 📊 (replaces the dead /health link) ===== -->
+    <style>
+      .pulse-ov{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+        background:rgba(2,6,12,.7);backdrop-filter:blur(3px);padding:16px;font-family:Inter,system-ui,sans-serif}
+      .pulse-card{width:100%;max-width:460px;background:#0b1220;border:1px solid rgba(48,63,84,.8);border-radius:14px;
+        padding:22px;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+      .pulse-card h3{margin:0 0 2px;font-size:18px;font-weight:900;color:#f1f5f9;display:flex;align-items:center;gap:8px}
+      .pulse-card p.sub{margin:0 0 16px;font-size:12px;color:#94a3b8}
+      .pulse-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+      .pulse-tile{background:rgba(15,23,42,.6);border:1px solid rgba(48,63,84,.9);border-radius:10px;padding:12px 14px}
+      .pulse-tile .k{font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+      .pulse-tile .v{font-size:22px;font-weight:900;color:#f1f5f9;margin-top:3px;line-height:1.1}
+      .pulse-tile .v small{font-size:12px;font-weight:600;color:#94a3b8}
+      .pulse-tile.alert .v{color:#f59e0b}
+      .pulse-tile.span2{grid-column:1 / span 2}
+      .pulse-tile.sales .v{color:#34d399}
+      .pulse-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;
+        font-size:11px;color:#64748b;border-top:1px solid rgba(48,63,84,.7);padding-top:12px}
+      .pulse-foot .build{font-family:ui-monospace,Menlo,monospace}
+      .pulse-foot .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+      .pulse-foot .dot.ok{background:#22c55e;box-shadow:0 0 6px #22c55e}.pulse-foot .dot.err{background:#ef4444}
+      .pulse-btns{display:flex;gap:8px}
+      .pulse-btn{padding:7px 14px;border:1px solid rgba(48,63,84,.9);border-radius:8px;background:transparent;color:#cbd5e1;font-weight:600;cursor:pointer;font-size:13px}
+      .pulse-btn.primary{background:#C0392B;border-color:#C0392B;color:#fff}
+      .pulse-btn:hover{border-color:#34d399;color:#fff}
+    </style>
+    <div class="pulse-ov" id="pulse-ov">
+      <div class="pulse-card" role="dialog" aria-modal="true" aria-label="Shop Pulse">
+        <h3>📊 Shop Pulse <span id="pulse-shop" style="font-size:12px;font-weight:600;color:#94a3b8;"></span></h3>
+        <p class="sub" id="pulse-sub">Live snapshot of the till.</p>
+        <div class="pulse-grid" id="pulse-grid">
+          <div class="pulse-tile sales span2"><div class="k">Today's sales</div><div class="v" id="pulse-sales">—</div></div>
+          <div class="pulse-tile"><div class="k">Members</div><div class="v" id="pulse-members">—</div></div>
+          <div class="pulse-tile"><div class="k">Open drawers</div><div class="v" id="pulse-drawers">—</div></div>
+          <div class="pulse-tile" id="pulse-lowstock-tile"><div class="k">Low stock</div><div class="v" id="pulse-lowstock">—</div></div>
+          <div class="pulse-tile"><div class="k">Catalog</div><div class="v" id="pulse-catalog">—</div></div>
+        </div>
+        <div class="pulse-foot">
+          <span><span class="dot" id="pulse-dbdot"></span><span id="pulse-env">—</span> · <span class="build" id="pulse-build">—</span></span>
+          <span class="pulse-btns">
+            <button class="pulse-btn" id="pulse-refresh" type="button">Refresh</button>
+            <button class="pulse-btn primary" id="pulse-close" type="button">Close</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <script>(function(){
+      var openBtn=document.getElementById('pulse-open'),ov=document.getElementById('pulse-ov'),
+        closeBtn=document.getElementById('pulse-close'),refreshBtn=document.getElementById('pulse-refresh'),
+        sub=document.getElementById('pulse-sub');
+      function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+      function chf(n){try{return 'CHF '+Number(n||0).toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2});}catch(e){return 'CHF '+(n||0);}}
+      function show(){ov.style.display='flex';load();}
+      function hide(){ov.style.display='none';}
+      async function load(){
+        sub.textContent='Loading…';
+        try{
+          var j=await API.get('/api/v1/pos/system/pulse');
+          var t=j.today||{};
+          document.getElementById('pulse-sales').innerHTML=chf(t.sales)+' <small>· '+(t.transactions||0)+' sale'+((t.transactions===1)?'':'s')+'</small>';
+          set('pulse-members',j.members!=null?j.members:'—');
+          set('pulse-drawers',j.open_drawers!=null?j.open_drawers:'—');
+          set('pulse-lowstock',j.low_stock!=null?j.low_stock:'—');
+          set('pulse-catalog',j.catalog!=null?j.catalog:'—');
+          document.getElementById('pulse-lowstock-tile').classList.toggle('alert',(j.low_stock||0)>0);
+          set('pulse-shop',j.shop?('· '+j.shop):'');
+          var b=j.build||{};
+          set('pulse-build',(b.version?('v'+b.version):'')+(b.sha?(' ('+b.sha+')'):''));
+          set('pulse-env',(b.env||'').toUpperCase()||'—');
+          document.getElementById('pulse-dbdot').className='dot '+((j.db==='ok')?'ok':'err');
+          sub.textContent='Live snapshot · '+new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        }catch(e){
+          sub.textContent='Could not load stats — '+(e&&e.message?e.message:'try again.');
+          document.getElementById('pulse-dbdot').className='dot err';
+        }
+      }
+      openBtn.onclick=show; closeBtn.onclick=hide; refreshBtn.onclick=load;
+      ov.onclick=function(e){if(e.target===ov)hide();};
+    })();</script>
 
     <script>
         // Status bar auto-update

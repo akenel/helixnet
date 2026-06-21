@@ -238,3 +238,6 @@ docs/testing/reports/**/*.png
 docs/testing/reports/**/*.jpg
 docs/testing/artifacts/
 docs/testing/archive/
+
+# Deploy build stamp (written per-deploy, not source)
+src/static/build-sha.txt

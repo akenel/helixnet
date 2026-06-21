@@ -86,6 +86,10 @@ html_router = APIRouter(tags=["🖥️ POS Web UI"])
 # Setup Jinja2 templates
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+# Real build stamp in the POS status bar (version + the SHA actually deployed).
+from src.build_info import get_version, get_git_sha  # noqa: E402
+templates.env.globals["app_version"] = get_version()
+templates.env.globals["git_sha"] = get_git_sha()
 
 
 # ================================================================
@@ -1531,6 +1535,67 @@ async def update_store_settings(
 
     logger.info(f"Store #{store_number} settings updated by {current_user['username']}")
     return settings
+
+
+# ================================================================
+# SYSTEM PULSE -> the live shop card behind the 📊 in the status bar
+# ================================================================
+# Replaces a dead /health/dashboard link. One auth'd call returns a snapshot a
+# cashier/manager actually cares about: today's takings, members, low stock, open
+# drawers, catalog size -- plus the real build stamp + a DB heartbeat.
+
+@router.get("/system/pulse")
+async def system_pulse(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Live shop snapshot for the status-bar card. Best-effort: any sub-stat that
+    errors degrades to None rather than failing the whole card."""
+    db_ok = True
+    today = None
+    try:
+        today = await get_daily_summary(db=db, current_user=current_user)
+    except Exception:
+        db_ok = False
+
+    async def _count(stmt) -> Optional[int]:
+        try:
+            return int((await db.execute(stmt)).scalar() or 0)
+        except Exception:
+            return None
+
+    members = await _count(select(func.count()).select_from(CustomerModel))
+    catalog = await _count(
+        select(func.count()).select_from(ProductModel).where(ProductModel.is_active == True))
+    low_stock = await _count(
+        select(func.count()).select_from(ProductModel).where(and_(
+            ProductModel.is_active == True,
+            ProductModel.stock_quantity <= ProductModel.stock_alert_threshold)))
+    open_drawers = await _count(
+        select(func.count()).select_from(CashShiftModel).where(
+            CashShiftModel.status == CashShiftStatus.OPEN))
+
+    settings = get_settings()
+    return {
+        "ok": True,
+        "db": "ok" if db_ok else "fail",
+        "shop": getattr(settings, "STORE_NAME", None) or "Artemis Store",
+        "today": {
+            "sales": float(today.total_sales) if today else None,
+            "transactions": today.total_transactions if today else None,
+            "vat": float(today.vat_total) if today else None,
+            "giveaways": today.giveaway_count if today else None,
+        },
+        "members": members,
+        "low_stock": low_stock,
+        "catalog": catalog,
+        "open_drawers": open_drawers,
+        "build": {
+            "version": get_version(),
+            "sha": get_git_sha(),
+            "env": getattr(settings, "HX_ENVIRONMENT", "") or "",
+        },
+    }
 
 
 # ================================================================

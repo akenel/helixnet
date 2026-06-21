@@ -309,6 +309,10 @@ logger.info(f"🔗 API base path: {settings.API_V1_STR}")
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 templates.env.globals["lp_kc_url"] = get_settings().LP_KC_PUBLIC_URL  # browser-facing KC host for LP login
+# Real build stamp for the status bar (version + the SHA actually deployed).
+from src.build_info import get_version, get_git_sha  # noqa: E402
+templates.env.globals["app_version"] = get_version()
+templates.env.globals["git_sha"] = get_git_sha()
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # ================================================================
