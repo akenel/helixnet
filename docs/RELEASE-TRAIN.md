@@ -22,15 +22,17 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: BL-87 camera scan + lazy capture shipped to banco.lapiazza.app @ `c4b4e61`, 2026-06-21 — Tigs, Angel GO.)
+`🟢 IDLE` — no train running. (Last: BL-88 catalog management dashboard shipped to banco.lapiazza.app @ `7721a36`, 2026-06-21 — Tigs, Angel GO.)
 
 ## Boarding (awaiting the next prod train)
 
-| Feature | Commit(s) | Test status | Prod |
-|---|---|---|---|
-| BL-88 catalog management dashboard (`/pos/catalog`) | `8b522a0` | green on staging-banco: page 200, dashboard card wired. POS gate 99 pass (7 = pre-existing flake, no regression). Authed round-trip PASS (create w/ picture+reorder → readback → edit picture → discontinue). | **STAGED — staging-banco.lapiazza.app @ 8b522a0, 2026-06-21. Awaiting Angel PASS.** |
+_(empty — nothing boarding. BL-87 + BL-88 SHIPPED, see history below.)_
 
-_(BL-87 SHIPPED, see history below.)_
+> **BL-88 catalog management dashboard (`/pos/catalog`)** — `8b522a0`. Manager-gated CRUD over products
+> (search/edit price+stock+picture+reorder, discontinue+reactivate, create), dashboard card. Added
+> image_url/supplier_name/min_stock/max_stock/lead_time_days to ProductBase/Update (additive). Angel
+> PASS on staging. **SHIPPED — banco.lapiazza.app @ `7721a36`, 2026-06-21** (page 200, card wired, scan
+> still live). Polish queued: category dropdown (from existing), camera-scan on create (unify w/ lazy capture).
 
 > **BL-87 camera barcode scan + lazy capture (`/pos/scan`)** — `275e0a9`, `755ea99` (+ spec `90ac996`).
 > Camera PASSED on Angel's Fairphone (AC1/AC4). Verified on real device traffic (staging txns 0132-0136):
