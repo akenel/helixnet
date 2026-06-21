@@ -2374,6 +2374,18 @@ async def pos_scan(request: Request):
     return templates.TemplateResponse("pos/scan.html", {"request": request})
 
 
+@html_router.get("/pos/catalog", response_class=HTMLResponse, name="pos_catalog")
+async def pos_catalog(request: Request):
+    """Catalog management dashboard (BL-88) — manager/admin CRUD over products.
+
+    Surfaces the create / update / soft-delete that already exist in the API:
+    search, edit price/stock/picture/reorder fields, discontinue + reactivate,
+    create new. Roles are enforced by the API endpoints (manager/admin); this
+    page just renders the screen.
+    """
+    return templates.TemplateResponse("pos/catalog.html", {"request": request})
+
+
 @html_router.get("/pos/checkout", response_class=HTMLResponse, name="pos_checkout")
 async def pos_checkout(request: Request):
     """

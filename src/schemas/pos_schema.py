@@ -31,6 +31,12 @@ class ProductBase(BaseModel):
     is_age_restricted: bool = Field(default=False, description="Requires 18+ ID")
     vending_compatible: bool = Field(default=False, description="Can be sold via vending machine")
     vending_slot: Optional[int] = Field(None, description="Vending machine slot number")
+    # Catalog picture + supplier + reorder fields (BL-88 catalog dashboard / P4 reorder)
+    image_url: Optional[str] = Field(None, max_length=500, description="Catalog picture URL")
+    supplier_name: Optional[str] = Field(None, max_length=255, description="Supplier")
+    min_stock: Optional[int] = Field(None, ge=0, description="Reorder trigger level")
+    max_stock: Optional[int] = Field(None, ge=0, description="Reorder up-to level")
+    lead_time_days: Optional[int] = Field(None, ge=0, description="Supplier lead time (days)")
 
 
 class ProductCreate(ProductBase):
@@ -54,6 +60,11 @@ class ProductUpdate(BaseModel):
     is_age_restricted: Optional[bool] = None
     vending_compatible: Optional[bool] = None
     vending_slot: Optional[int] = None
+    image_url: Optional[str] = Field(None, max_length=500)
+    supplier_name: Optional[str] = Field(None, max_length=255)
+    min_stock: Optional[int] = Field(None, ge=0)
+    max_stock: Optional[int] = Field(None, ge=0)
+    lead_time_days: Optional[int] = Field(None, ge=0)
 
 
 class ProductRead(ProductBase):

@@ -1,0 +1,377 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Catalog - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="catalogData()">
+    <!-- Top Bar -->
+    <div class="bg-white shadow-md border-b-4 border-indigo-600">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="window.location.href='/pos/dashboard'" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">📦 Catalog</h1>
+                    <p class="text-sm text-gray-600">Manage products — edit, discontinue, add</p>
+                </div>
+            </div>
+            <button x-show="user.isManager" @click="openCreate()" class="btn-primary">➕ New product</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-6 space-y-4">
+        <!-- Manager-only notice -->
+        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800">
+            You can browse the catalog, but editing, discontinuing and creating products require a
+            <strong>manager</strong> role. Ask Felix or Ralph.
+        </div>
+
+        <!-- Search + filters -->
+        <div class="card">
+            <div class="flex flex-col md:flex-row gap-3 md:items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input type="text" x-model="q" @input.debounce.300ms="search()"
+                           placeholder="Name, SKU or barcode…" class="input-field">
+                </div>
+                <div class="w-full md:w-56">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select x-model="category" @change="search()" class="input-field">
+                        <option value="">All categories</option>
+                        <template x-for="c in categories" :key="c.name">
+                            <option :value="c.name" x-text="c.name + ' (' + c.count + ')'"></option>
+                        </template>
+                    </select>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-gray-700 md:pb-2">
+                    <input type="checkbox" x-model="showDiscontinued" @change="onToggleDiscontinued()" class="w-4 h-4">
+                    Show discontinued
+                </label>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">
+                <span x-show="!showDiscontinued && total > 0">Found <span x-text="total"></span> active</span>
+                <span x-show="!showDiscontinued && q.length===0 && !category">Type to search, or pick a category</span>
+                <span x-show="showDiscontinued">Showing discontinued products</span>
+            </p>
+        </div>
+
+        <!-- Results -->
+        <div class="card">
+            <div x-show="results.length === 0" class="text-center py-10 text-gray-500">
+                <span class="text-5xl block mb-3">🗂️</span>
+                <p x-text="loading ? 'Loading…' : 'No products to show'"></p>
+            </div>
+
+            <div class="space-y-2">
+                <template x-for="p in results" :key="p.id">
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                         :class="p.is_active === false ? 'opacity-60' : ''">
+                        <div class="w-14 h-14 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden">
+                            <img x-show="p.image_url" :src="p.image_url" loading="lazy" alt=""
+                                 class="w-full h-full object-cover" @error="p.image_url=''">
+                            <span x-show="!p.image_url" class="text-2xl">📦</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-900 truncate" x-text="p.name"></p>
+                            <p class="text-sm text-gray-600 truncate">
+                                SKU: <span x-text="p.sku"></span>
+                                <span x-show="p.barcode"> · <span x-text="p.barcode"></span></span>
+                                <span x-show="p.category"> · <span x-text="p.category"></span></span>
+                            </p>
+                            <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(p.price)"></p>
+                        </div>
+                        <div class="text-right flex-none">
+                            <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-2"
+                                  :class="(p.stock_quantity||0) <= 0 ? 'bg-red-100 text-red-700'
+                                          : ((p.stock_quantity||0) <= 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-700')"
+                                  x-text="(p.stock_quantity||0) + ' in stock'"></span>
+                            <div>
+                                <button x-show="user.isManager && p.is_active !== false" @click="openEdit(p)"
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">✏️ Edit</button>
+                                <button x-show="user.isManager && p.is_active === false" @click="reactivate(p)"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">↩️ Reactivate</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <button x-show="!showDiscontinued && results.length < total" @click="loadMore()"
+                    class="btn-secondary w-full mt-3" :disabled="loading">
+                <span x-show="!loading">Show more (<span x-text="total - results.length"></span> more)</span>
+                <span x-show="loading" style="display:none;">Loading…</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Create / Edit modal -->
+    <div x-show="modalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="modalOpen=false" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-start p-5 border-b sticky top-0 bg-white">
+                <h2 class="text-xl font-bold text-gray-900" x-text="editing ? '✏️ Edit product' : '➕ New product'"></h2>
+                <button @click="modalOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                        <input type="text" x-model="form.name" class="input-field" placeholder="Product name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                        <input type="text" x-model="form.sku" class="input-field font-mono" :readonly="editing"
+                               :class="editing ? 'bg-gray-100' : ''">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                        <input type="text" x-model="form.barcode" class="input-field font-mono" placeholder="(optional)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF) *</label>
+                        <input type="number" step="0.05" min="0" x-model="form.price" class="input-field text-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cost (CHF)</label>
+                        <input type="number" step="0.05" min="0" x-model="form.cost" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock on hand</label>
+                        <input type="number" step="1" min="0" x-model="form.stock_quantity" class="input-field text-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Low-stock alert at</label>
+                        <input type="number" step="1" min="0" x-model="form.stock_alert_threshold" class="input-field" placeholder="(optional)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <input type="text" x-model="form.category" class="input-field" placeholder="(optional)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                        <input type="text" x-model="form.supplier_name" class="input-field" placeholder="(optional)">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Picture URL</label>
+                        <input type="text" x-model="form.image_url" class="input-field" placeholder="https://…">
+                        <div x-show="form.image_url" class="mt-2 w-24 h-24 rounded-lg border bg-white flex items-center justify-center overflow-hidden">
+                            <img :src="form.image_url" class="w-full h-full object-cover" @error="$el.style.display='none'" @load="$el.style.display='block'" alt="">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea x-model="form.description" rows="2" class="input-field" placeholder="(optional)"></textarea>
+                    </div>
+                    <!-- Reorder fields (feed the future 'what to reorder' report) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Reorder at (min)</label>
+                        <input type="number" step="1" min="0" x-model="form.min_stock" class="input-field" placeholder="(optional)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Reorder up to (max)</label>
+                        <input type="number" step="1" min="0" x-model="form.max_stock" class="input-field" placeholder="(optional)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lead time (days)</label>
+                        <input type="number" step="1" min="0" x-model="form.lead_time_days" class="input-field" placeholder="(optional)">
+                    </div>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 md:pt-7">
+                        <input type="checkbox" x-model="form.is_age_restricted" class="w-4 h-4"> 18+ age-restricted
+                    </label>
+                </div>
+
+                <div class="flex flex-wrap gap-3 pt-2 border-t">
+                    <button @click="save()" :disabled="saving" class="btn-success flex-1">
+                        <span x-show="!saving" x-text="editing ? 'Save changes' : 'Create product'"></span>
+                        <span x-show="saving" style="display:none;">Saving…</span>
+                    </button>
+                    <button x-show="editing" @click="discontinue()" :disabled="saving"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-semibold">🗑️ Discontinue</button>
+                </div>
+                <p class="text-xs text-gray-500">Discontinue = soft delete. The item stops selling but history is kept; you can reactivate it later.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function catalogData() {
+        return {
+            user: {},
+            q: '',
+            category: '',
+            categories: [],
+            results: [],
+            total: 0,
+            skip: 0,
+            pageSize: 25,
+            loading: false,
+            showDiscontinued: false,
+
+            modalOpen: false,
+            editing: false,
+            saving: false,
+            form: {},
+
+            init() {
+                const userInfo = AuthHelper.getUserInfo();
+                if (!userInfo) { window.location.href = '/pos'; return; }
+                this.user = { ...userInfo, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
+                this.loadCategories();
+            },
+
+            async loadCategories() {
+                try {
+                    const cats = await API.get('/api/v1/pos/search/categories');
+                    this.categories = (cats || []).map(c => ({ name: c.name, count: c.count }));
+                } catch (e) { console.warn('categories unavailable', e); }
+            },
+
+            _url(skip) {
+                return `/api/v1/pos/search?q=${encodeURIComponent(this.q)}`
+                    + `&category=${encodeURIComponent(this.category || '')}`
+                    + `&limit=${this.pageSize}&skip=${skip}`;
+            },
+
+            async search() {
+                if (this.showDiscontinued) return;  // discontinued view is separate
+                if (this.q.length < 2 && !this.category) {
+                    this.results = []; this.total = 0; this.skip = 0; return;
+                }
+                this.loading = true; this.skip = 0;
+                try {
+                    const data = await API.get(this._url(0));
+                    this.results = (data.items || []).map(p => ({ ...p, is_active: true }));
+                    this.total = data.total || 0;
+                } catch (e) { console.error(e); this.results = []; this.total = 0; }
+                finally { this.loading = false; }
+            },
+
+            async loadMore() {
+                this.loading = true;
+                try {
+                    const next = this.skip + this.pageSize;
+                    const data = await API.get(this._url(next));
+                    this.results = this.results.concat((data.items || []).map(p => ({ ...p, is_active: true })));
+                    this.total = data.total || this.total;
+                    this.skip = next;
+                } catch (e) { console.error(e); }
+                finally { this.loading = false; }
+            },
+
+            async onToggleDiscontinued() {
+                if (this.showDiscontinued) {
+                    await this.loadDiscontinued();
+                } else {
+                    this.results = []; this.total = 0; this.search();
+                }
+            },
+
+            async loadDiscontinued() {
+                this.loading = true;
+                try {
+                    // active_only=false returns all; keep only the inactive ones.
+                    const list = await API.get('/api/v1/pos/products?active_only=false&limit=200');
+                    this.results = (list || []).filter(p => p.is_active === false);
+                    this.total = this.results.length;
+                } catch (e) { console.error(e); this.results = []; this.total = 0; }
+                finally { this.loading = false; }
+            },
+
+            _blankForm() {
+                return {
+                    sku: 'SKU-' + Date.now(), barcode: '', name: '', description: '',
+                    price: '', cost: '', stock_quantity: 0, stock_alert_threshold: '',
+                    category: '', supplier_name: '', image_url: '',
+                    min_stock: '', max_stock: '', lead_time_days: '',
+                    is_age_restricted: false,
+                };
+            },
+
+            openCreate() {
+                this.editing = false;
+                this.form = this._blankForm();
+                this.modalOpen = true;
+            },
+
+            async openEdit(p) {
+                this.editing = true;
+                this.form = { id: p.id, ...this._blankForm(), ...p };  // start with row data
+                this.modalOpen = true;
+                try {
+                    // Enrich with the full record (cost, thresholds, supplier, etc.).
+                    const full = await API.get(`/api/v1/pos/products/${p.id}`);
+                    this.form = { ...this.form, ...full };
+                } catch (e) { /* keep row data */ }
+            },
+
+            _payload() {
+                const num = v => (v === '' || v === null || v === undefined) ? null : Number(v);
+                return {
+                    sku: this.form.sku, barcode: this.form.barcode || null,
+                    name: this.form.name, description: this.form.description || null,
+                    price: num(this.form.price), cost: num(this.form.cost),
+                    stock_quantity: parseInt(this.form.stock_quantity, 10) || 0,
+                    stock_alert_threshold: num(this.form.stock_alert_threshold),
+                    category: this.form.category || null,
+                    supplier_name: this.form.supplier_name || null,
+                    image_url: this.form.image_url || null,
+                    min_stock: num(this.form.min_stock), max_stock: num(this.form.max_stock),
+                    lead_time_days: num(this.form.lead_time_days),
+                    is_age_restricted: !!this.form.is_age_restricted,
+                };
+            },
+
+            async save() {
+                if (!this.form.name || !this.form.name.trim()) { showToast('Name is required', 'warning'); return; }
+                const price = parseFloat(this.form.price);
+                if (isNaN(price) || price < 0) { showToast('Enter a valid price', 'warning'); return; }
+                if (!this.editing && (!this.form.sku || !this.form.sku.trim())) { showToast('SKU is required', 'warning'); return; }
+
+                this.saving = true;
+                try {
+                    if (this.editing) {
+                        await API.put(`/api/v1/pos/products/${this.form.id}`, this._payload());
+                        showToast('Saved', 'success');
+                    } else {
+                        await API.post('/api/v1/pos/products', this._payload());
+                        showToast('Product created', 'success');
+                    }
+                    this.modalOpen = false;
+                    this.showDiscontinued ? this.loadDiscontinued() : this.search();
+                } catch (e) {
+                    showToast(e.message || 'Save failed', 'error');
+                } finally { this.saving = false; }
+            },
+
+            async discontinue() {
+                if (!confirm('Discontinue this product? It stops selling but history is kept.')) return;
+                this.saving = true;
+                try {
+                    await API.delete(`/api/v1/pos/products/${this.form.id}`);
+                    showToast('Discontinued', 'info');
+                    this.modalOpen = false;
+                    this.search();
+                } catch (e) {
+                    showToast(e.message || 'Discontinue failed', 'error');
+                } finally { this.saving = false; }
+            },
+
+            async reactivate(p) {
+                this.saving = true;
+                try {
+                    await API.put(`/api/v1/pos/products/${p.id}`, { is_active: true });
+                    showToast('Reactivated', 'success');
+                    this.loadDiscontinued();
+                } catch (e) {
+                    showToast(e.message || 'Reactivate failed', 'error');
+                } finally { this.saving = false; }
+            },
+
+            formatPrice(amount) { return formatPrice(amount); },
+        }
+    }
+</script>
+{% endblock %}
