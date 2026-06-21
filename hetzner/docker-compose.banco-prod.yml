@@ -1,0 +1,81 @@
+# =============================================================
+# HELIX-PLATFORM STAGING -- additive overlay for the Hetzner UAT stack
+# A second helix-platform instance for staging template/UI changes
+# BEFORE they touch the live bottega.lapiazza.app container.
+# =============================================================
+# Why this exists: prod `helix-platform` volume-mounts /opt/helixnet/src,
+# so a plain `git pull` would change prod immediately. Staging instead
+# mounts an INDEPENDENT git worktree (checked out at the fix commit) so
+# /opt/helixnet stays on the old commit until human sign-off.
+#
+# Setup on the server (from /opt/helixnet):
+#   git fetch origin
+#   git worktree add /opt/helix-staging-tree <fix-commit-sha>
+#
+# Usage (from /opt/helixnet/hetzner -- uat.env lives here):
+#   docker compose -f docker-compose.uat.yml -f docker-compose.helix-staging.yml up -d helix-platform-banco
+#   docker compose -f docker-compose.uat.yml -f docker-compose.helix-staging.yml logs -f helix-platform-banco
+#
+# Verify (localhost-only, no public hostname -- avoids touching prod Caddy):
+#   curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8099/compute/bottega
+#
+# Teardown after promotion:
+#   docker compose -f docker-compose.uat.yml -f docker-compose.helix-staging.yml down helix-platform-banco
+#   git worktree remove /opt/helix-staging-tree
+# =============================================================
+
+services:
+
+  helix-platform-banco:
+    image: helix-platform:latest          # reuse the built image; code comes from the mounted worktree
+    container_name: helix-platform-banco
+    restart: unless-stopped
+    env_file:
+      - ./uat.env
+    environment:
+      SERVICE_TYPE: platform
+      # CONSOLIDATED REALM (2026-06-18): both staging apps now share `borrowhood-staging`
+      # (frontendUrl=staging-bottega.lapiazza.app), mirroring the Option-A prod target where
+      # `borrowhood` is the one CUA. Marketplace (borrowhood_staging) reads the same realm from
+      # .env.staging. See docs/LP-IDENTITY-CONSOLIDATION-ADR.md.
+      LP_REALM: borrowhood-staging
+      LP_CLIENT: lapiazza_web
+      SQUARE_DB: borrowhood_staging
+      # Cleo draft-listing bridge -> the STAGING marketplace (internal API + public host for links)
+      SQUARE_API_URL: http://borrowhood_staging:8000
+      SQUARE_PUBLIC_URL: https://staging.lapiazza.app
+      # Browser-facing KC host for the login redirect — MUST match borrowhood-staging's frontendUrl
+      # (staging-bottega.lapiazza.app), else cross-host login dead-ends on "already logged in".
+      LP_KC_PUBLIC_URL: https://staging-bottega.lapiazza.app
+      # BYOH render worker (the muscle) -- a sidecar container, reached by service name.
+      RENDER_WORKER_URL: http://render-worker:8800
+      BOTTEGA_MEDIA_DIR: /var/bottega-media   # shared bottega_media volume (from uat.yml) -- same DB as prod, so same media; survives recreate (#5)
+    volumes:
+      # Independent worktree at the fix commit, read-only so staging can't mutate it.
+      - /opt/helix-banco-tree/src:/app/src:ro
+      - bottega_media:/var/bottega-media
+    ports:
+      # localhost-only: reachable for curl/SSH-tunnel verification, NOT publicly exposed.
+      - "127.0.0.1:8098:8000"
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    # Starve-proofing: a runaway staging can't OOM the box and take prod down.
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/healthz', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    # render-worker is now a SHARED service in the base stack (docker-compose.uat.yml);
+    # staging reaches it via RENDER_WORKER_URL=http://render-worker:8800 (set above).
