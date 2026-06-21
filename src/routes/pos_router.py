@@ -907,6 +907,10 @@ async def list_transactions(
             query = query.where(TransactionModel.status == ts)
         except ValueError:
             pass
+    else:
+        # BL-86: hide reaped/cancelled empty carts from the default view so the report
+        # stays clean. They're not deleted -- still reachable via status_filter=cancelled.
+        query = query.where(TransactionModel.status != TransactionStatus.CANCELLED)
 
     # Payment method filter
     if payment_method:

@@ -61,3 +61,20 @@ def test_reaper_spares_recent_empty_cart(session):
     session.post(f"{POS}/maintenance/reap-empty-carts",
                  params={"older_than_hours": 12}).raise_for_status()
     assert get_transaction(session, tx["id"])["status"].lower() == "open"
+
+
+def test_cancelled_cart_hidden_from_default_list(session):
+    """BL-86: a cancelled cart drops out of the default transactions view, but is still
+    reachable with an explicit status filter (cancel != delete)."""
+    tx = _open_cart(session)
+    session.post(f"{POS}/maintenance/reap-empty-carts",
+                 params={"older_than_hours": 0}).raise_for_status()
+
+    default = session.get(f"{POS}/transactions").json()
+    assert not any(r["id"] == tx["id"] for r in default), \
+        "cancelled cart should be hidden from the default list"
+
+    filtered = session.get(f"{POS}/transactions",
+                           params={"status_filter": "cancelled"}).json()
+    assert any(r["id"] == tx["id"] for r in filtered), \
+        "status_filter=cancelled should surface the cancelled cart"
