@@ -127,7 +127,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
-                        <input type="text" x-model="form.barcode" class="input-field font-mono" placeholder="(optional)">
+                        <div class="flex gap-2">
+                            <input type="text" x-model="form.barcode" class="input-field font-mono flex-1" placeholder="Scan or leave blank">
+                            <button type="button" @click="startBarcodeScan()" class="btn-secondary flex-none px-3" title="Scan barcode">📷</button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">No barcode? Leave it blank — a code is generated automatically.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF) *</label>
@@ -147,7 +151,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <input type="text" x-model="form.category" class="input-field" placeholder="(optional)">
+                        <input type="text" x-model="form.category" list="catlist" class="input-field" placeholder="Pick existing or type new">
+                        <datalist id="catlist">
+                            <template x-for="c in categories" :key="c.name">
+                                <option :value="c.name"></option>
+                            </template>
+                        </datalist>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
@@ -194,6 +203,21 @@
             </div>
         </div>
     </div>
+
+    <!-- BL-89: barcode scanner overlay (shared PosScanner) for the create/edit form -->
+    <div x-show="scanOpen" x-transition class="fixed inset-0 z-[70] bg-black flex flex-col" style="display:none;">
+        <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
+            <span class="font-semibold">📷 Scan the barcode</span>
+            <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
+        </div>
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+            <div id="cat-reader" class="w-full max-w-md"></div>
+            <p x-show="scanError" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
+        </div>
+        <div class="px-4 py-4 bg-black/80 text-center">
+            <button @click="stopScan()" class="btn-secondary">Cancel — type it instead</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -214,6 +238,10 @@
             editing: false,
             saving: false,
             form: {},
+
+            // BL-89: barcode scan on the form
+            scanOpen: false,
+            scanError: '',
 
             init() {
                 const userInfo = AuthHelper.getUserInfo();
@@ -370,8 +398,39 @@
                 } finally { this.saving = false; }
             },
 
+            async startBarcodeScan() {
+                this.scanError = '';
+                this.scanOpen = true;
+                await this.$nextTick();
+                window.PosScanner.start('cat-reader',
+                    (text) => {
+                        this.form.barcode = text;
+                        PosScanner.vibrate(60); PosScanner.beep();
+                        this.scanOpen = false;
+                        showToast('Barcode scanned', 'success');
+                    },
+                    (err) => {
+                        const n = String((err && (err.name || err)) || '');
+                        this.scanError = /permission|denied|NotAllowed/i.test(n)
+                            ? 'Camera permission denied. Type the barcode instead.'
+                            : 'Could not open the camera. Type it instead.';
+                        setTimeout(() => { this.scanOpen = false; }, 2500);
+                    });
+            },
+
+            async stopScan() {
+                await window.PosScanner.stop();
+                this.scanOpen = false;
+            },
+
             formatPrice(amount) { return formatPrice(amount); },
         }
     }
 </script>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- BL-89: vendored scanner + shared PosScanner helper (no runtime CDN) -->
+<script src="/static/vendor/html5-qrcode.min.js"></script>
+<script src="/static/pos-scanner.js"></script>
 {% endblock %}
