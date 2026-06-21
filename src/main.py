@@ -323,6 +323,21 @@ async def home(request: Request):
     """La Piazza front door -- the public landing page."""
     return templates.TemplateResponse("home.html", {"request": request})
 
+@app.get("/health/dashboard", tags=["💓 Health"], response_class=HTMLResponse)
+async def health_dashboard(request: Request):
+    """Standalone diagnostic page: server health, build/system info, and the
+    visitor's own browser + screen specs. No login required -- it's pure
+    diagnostics (shop figures live behind the in-app 📊 Shop Pulse card).
+    build version/sha are Jinja globals; env + shop come from settings."""
+    from datetime import datetime, timezone
+    _s = get_settings()
+    return templates.TemplateResponse("health_dashboard.html", {
+        "request": request,
+        "env": getattr(_s, "HX_ENVIRONMENT", "") or "",
+        "shop": getattr(_s, "STORE_NAME", None) or "Artemis Store",
+        "server_time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    })
+
 @app.get("/api/maintenance", include_in_schema=False)
 async def maintenance_notice():
     """Public maintenance flag for the site banner. Toggle by setting LP_MAINTENANCE_MESSAGE on the
