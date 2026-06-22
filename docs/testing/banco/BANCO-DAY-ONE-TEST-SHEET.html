@@ -158,7 +158,8 @@
     <div class="phone">
       <div>📱 <b>ON YOUR PHONE, go to:</b></div>
       <div class="u">sandbox-banco.lapiazza.app</div>
-      <div class="clicks">5–6 taps: <b>open the link</b> → <b>Login</b> → <b>pam</b> → <b>helix_pass</b> → <b>Sign in</b> → you're on the till.</div>
+      <div class="clicks">5–6 taps: <b>open the link</b> → <b>Login</b> → <b>felix</b> → <b>helix_pass</b> → <b>Sign in</b> → you're on the till.
+        <i>(Felix the owner — born-once cataloguing is manager-only; Pam would only get a one-off line, no photo.)</i></div>
     </div>
 
     <div class="howto">🎬 <b>How to run it:</b> this sheet lives on your <b>laptop</b> so you can see the whole script;
@@ -187,15 +188,15 @@
     <div class="meta">
       <div><b>Tester:</b> <input class="txt" data-k="tester" type="text" placeholder="Angel"></div>
       <div><b>Date:</b> <input class="txt" data-k="date" type="text" placeholder="22/06/2026"></div>
-      <div><b>Build:</b> <input class="txt" data-k="build" type="text" value="sandbox · commit 723a0c2"></div>
-      <div><b>Login:</b> <input class="txt" data-k="login" type="text" value="pam / helix_pass"></div>
+      <div><b>Build:</b> <input class="txt" data-k="build" type="text" value="sandbox · commit 53ba418"></div>
+      <div><b>Login:</b> <input class="txt" data-k="login" type="text" value="felix / helix_pass"></div>
     </div>
 
     <div class="links">
       <a class="go" href="https://sandbox-banco.lapiazza.app/pos" target="_blank">🔗 Open the till <span class="arr">↗</span></a>
       <a class="go" href="https://sandbox-banco.lapiazza.app/pos/dashboard" target="_blank">🔗 Dashboard <span class="arr">↗</span></a>
     </div>
-    <div class="creds">Log in with <code>pam / helix_pass</code> (cashier) — or <code>felix / helix_pass</code> (admin).</div>
+    <div class="creds">Log in with <code>felix / helix_pass</code> (owner/manager — needed to catalogue a born-once item with its photo).</div>
 
     <div class="qrbox">
       <h3>🔢 Tap to copy</h3>
@@ -218,7 +219,7 @@
       <h3>🎤 Director's note <button class="micbig" id="bigmic">🎤 Tap &amp; talk</button></h3>
       <p class="hint">How did the whole take feel — did the camera catch first try, did "make a label" make sense, did the
         first sale land with weight? Anything to polish before we film for real. Talk it; it transcribes here.</p>
-      <textarea id="bigtext" data-k="bignote" placeholder="e.g. 'Camera caught instantly. The make-a-label photo step felt natural. But the New Sale header shows a random #80535 — kills the first-sale feeling, want TXN-...-0001 there instead.'"></textarea>
+      <textarea id="bigtext" data-k="bignote" placeholder="e.g. 'Camera caught first try. Photographing the item felt natural — it showed up in the cart with its picture. Header read TXN-…-0001, nice. Box-split cost was clear. One thing: the Take-photo button could be bigger.'"></textarea>
       <div class="micnote" id="micstatus">Mic ready (Chrome/Edge). First tap asks permission.</div>
     </div>
 
@@ -248,18 +249,18 @@
     { act:"Act I — the empty shop", t:"0:00–0:25" },
     { tc:"~10s", do:"<b>On the phone, open</b> <code>sandbox-banco.lapiazza.app</code> and wait for the login screen.",
       exp:"Clean <b>Staff Login</b>, padlock in the address bar (HTTPS). No error." },
-    { tc:"~15s", do:"Tap <b>Login</b> → enter <code>pam</code> / <code>helix_pass</code> → <b>Sign in</b>.",
-      exp:"Lands on the dashboard: <b>“Welcome, pam 👋”</b>, <b>Sales CHF 0.00</b>, <b>Transactions 0</b>, <b>Drawer Closed</b>. <i>This is your opening shot — the shop before anything.</i>", big:true },
+    { tc:"~15s", do:"Tap <b>Login</b> → enter <code>felix</code> / <code>helix_pass</code> → <b>Sign in</b>.",
+      exp:"Lands on the dashboard: <b>“Welcome, felix 👋”</b>, <b>Sales CHF 0.00</b>, <b>Transactions 0</b>, <b>Drawer Closed</b>. <i>This is your opening shot — the shop before anything.</i>", big:true },
 
     { act:"Act II — an item is born, the first sale", t:"0:25–2:20" },
     { tc:"~15s", do:"Tap <b>My Drawer / Closed</b> → open the drawer, count your float (e.g. <code>200</code>), confirm.",
       exp:"Drawer opens, shows the float. The day has started." },
     { tc:"~10s", do:"Back to the dashboard, tap <b>New Sale · Start scanning products</b>.",
       exp:"New Sale screen: <b>Cart (0 items)</b>, “Scan or type barcode”." },
-    { tc:"~25s", do:"Tap <b>📷 Scan with camera</b> and point it at your first product.",
-      exp:"Camera opens (this is the HTTPS payoff) and reads the code.", big:true },
-    { tc:"~30s", do:"It’s <b>not on file</b> → the <b>make-a-label / new item</b> step: snap a photo, type a <b>name</b> and a <b>price</b>, confirm.",
-      exp:"<b>The item is born from nothing</b> — it joins the catalogue and you can drop it in the cart.", big:true },
+    { tc:"~25s", do:"Tap <b>📷 Scan with camera</b> and point it at your first product (or just type any code).",
+      exp:"Camera opens (this is the HTTPS payoff) and reads the code — and it’s <b>not on file</b>, so the <b>“Item not on file”</b> card appears.", big:true },
+    { tc:"~35s", do:"<b>Make-a-label / new item:</b> type a <b>name</b>, tap <b>📸 Take photo</b> and shoot the <i>item itself</i>, set a <b>price</b>, and (optional) a <b>cost</b> — tap <b>“bought a box? split it →”</b> to enter box cost ÷ units for a per-unit cost.",
+      exp:"<b>The item is born from nothing — with its own photo.</b> It joins the catalogue and drops into the cart.", big:true },
     { tc:"~15s", do:"Check the cart.",
       exp:"<b>Cart (1 item)</b> with the name + price you just gave it. Total is right." },
     { tc:"~20s", do:"<b>Checkout</b> → choose <b>Cash</b> → complete.",
