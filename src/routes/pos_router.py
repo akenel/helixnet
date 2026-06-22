@@ -1309,7 +1309,11 @@ async def add_item_to_transaction(
 
     if item.product_id is not None:
         # Catalog product: price from the catalog (client unit_price ignored -> no
-        # tampering), stock checked + later deducted at checkout.
+        # tampering). A real product on the shelf is ALWAYS sellable — Banco never
+        # blocks a sale on a stock count (the count is a lie for ~100% unmarked goods,
+        # and "sell anything, anytime" is the rule). Stock is still tracked: it's
+        # deducted at checkout (floored at 0) and feeds the low-stock reorder signal —
+        # informational, never a gate.
         prod_result = await db.execute(
             select(ProductModel).where(ProductModel.id == item.product_id)
         )
@@ -1319,8 +1323,6 @@ async def add_item_to_transaction(
             raise HTTPException(status_code=404, detail="Product not found")
         if not product.is_active:
             raise HTTPException(status_code=400, detail="Product is inactive")
-        if product.stock_quantity < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Insufficient stock. Available: {product.stock_quantity}")
 
         # A giveaway is a real product handed over free: zero revenue, but stock still
         # leaves (deducted at checkout) so it's tracked for COGS/tax.
