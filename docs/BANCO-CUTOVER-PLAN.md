@@ -31,6 +31,8 @@ hands the rest clean numbers.
 - [ ] Hardware: till device(s)? receipt printer (model/connection)? barcode scanner? cash drawer?
 - [ ] How many cashiers, and how cash-heavy vs card/TWINT is a typical day?
 - [ ] Member/loyalty data (the CRACKs) — does it exist anywhere to migrate, or start fresh?
+- [ ] **Label printer** — what does he stick on a product, on what printer? (thermal label
+      printer + size, or A4 sticker sheets?) Decides the label-print layout (backlog §6).
 
 ## 3. Data migration — the catalogue is the big one
 - **Products (~7,000):** sourced from **Mozy's wholesale library** (already the basis of the
