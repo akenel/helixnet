@@ -22,11 +22,17 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: the zero-inventory train shipped to banco.lapiazza.app @ `b7f083a`, 2026-06-22 — Tigs, Angel Fairphone PASS 12/12 + 24 E2E green.)
+`🟢 IDLE` — no train running. **Next train is STAGED on staging-banco @ `acf337a`, awaiting Angel Fairphone PASS** (sheet: `docs/testing/banco/BANCO-STAGING-TEST-3.html`). On PASS → prod. (Last shipped: zero-inventory train @ `b7f083a`, 2026-06-22 — Angel PASS 12/12.)
 
 ## Boarding (awaiting the next prod train)
 
-_(empty — the zero-inventory train SHIPPED, see below. Next: 🔴 `219d42a1` "Report totals are wrong"; backlog tidy.)_
+> **Settings + photo + reports train — STAGED on staging-banco.lapiazza.app @ `acf337a`, 2026-06-22** (war-room terminal). Verified: staging serves the new build (`/static/artemis-logo.png` 200 on staging, 404 on prod). App code == the sandbox SHA `92d4368` Angel already phone-passed (only a docs commit between). **Awaiting Angel Fairphone PASS on `BANCO-STAGING-TEST-3` → then prod.** Cargo:
+> - **cashier-photo-403 fix** — Pam's born-once photo now attaches (was silently swallowed).
+> - **real Settings control centre** `/pos/settings` (was a stub) — tabbed + Artemis Lucerne identity + `/static/artemis-logo.png` + store-profile (hours, socials).
+> - **Best-Seller report fixed** (was an empty field) + juicy daily report (per-cashier by NAME, top-3 leaderboard, avg basket, items sold, busiest hour).
+> - **⚠ one blank:** receipt VAT = placeholder `CHE-XXX.XXX.XXX MWST` → needs Felix's real UID (a NEED-FROM-FELIX item, not a blocker for staging).
+>
+> Next after this train: 🔴 `219d42a1` "Report totals are wrong"; velocity report #2.
 
 > **Zero-inventory train — SHIPPED to banco.lapiazza.app @ `b7f083a`, 2026-06-22**
 > (Angel Fairphone PASS, full mobile sheet 12/12; 24 Playwright E2E green on staging).
