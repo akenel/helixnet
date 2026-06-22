@@ -251,15 +251,17 @@
     { do:"<b>Open the Till</b> and log in (<code>felix / helix_pass</code>). Hard-refresh once if the camera ignores QR.",
       exp:"Lands inside the POS, no error." },
 
-    // --- B. Receive a delivery (BL-91 + BL-93 QR) ---
+    // --- B. Receive a delivery (BL-91 + BL-93 QR) — cataloguing, no counts ---
     { do:"<b>Receiving.</b> Dashboard → <b>📥 Receiving</b>. Scan QR <span class='chip' data-copy='4002604431002'>4002604431002</span> off the slip.",
-      exp:"<b>Known item</b> — resolves to <b>Gizeh 6m active filter</b> by name. Set qty <b>2</b>, confirm.", big:true },
-    { do:"Scan QR <span class='chip' data-copy='7610442291046'>7610442291046</span>, qty <b>5</b>, confirm.",
-      exp:"Known — resolves to <b>Sun Sack 125g</b>; the running total adds up." },
-    { do:"<b>New item.</b> Scan QR <span class='chip' data-copy='7649912000017'>7649912000017</span> → create <b>Hemp Wick Spule 5m</b>, receive qty <b>12</b>.",
-      exp:"<b>Not on file</b> → offers to create it → after confirm the new product exists with on-hand 12.", big:true },
-    { do:"<b>No-code item.</b> <b>Räucherstäbchen lose</b> (qty 3) has no QR. Find it by name or create it without a code, receive 3.",
-      exp:"You can receive an item with <b>no barcode at all</b>.", big:true },
+      exp:"<b>Known item</b> — resolves to <b>Gizeh 6m active filter</b> by name and lands on the list. <b>No quantity to type</b> (zero perpetual inventory).", big:true },
+    { do:"Scan QR <span class='chip' data-copy='7610442291046'>7610442291046</span>.",
+      exp:"Known — resolves to <b>Sun Sack 125g</b>; it joins the list as one item." },
+    { do:"<b>New item.</b> Scan QR <span class='chip' data-copy='7649912000017'>7649912000017</span> → create <b>Hemp Wick Spule 5m</b>.",
+      exp:"<b>Not on file</b> → offers to create it → it joins the list. No count anywhere.", big:true },
+    { do:"<b>No-code item.</b> <b>Räucherstäbchen lose</b> has no QR. Find it by name or create it without a code, add it.",
+      exp:"You can catalogue an item with <b>no barcode at all</b>.", big:true },
+    { do:"Tap <b>✅ Receive N item(s)</b>.",
+      exp:"Confirms — every scanned item shows <b>'on file'</b>. No units, no on-hand numbers." },
     { do:"<b>Scan once, known forever.</b> Scan QR <span class='chip' data-copy='7649912000017'>7649912000017</span> <b>again</b>.",
       exp:"Recognised <b>instantly</b> as Hemp Wick — no re-typing." },
 

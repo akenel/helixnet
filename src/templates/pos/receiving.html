@@ -15,7 +15,7 @@
                 </button>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">📥 Receiving</h1>
-                    <p class="text-sm text-gray-600">Scan an item, type how many arrived — stock goes up</p>
+                    <p class="text-sm text-gray-600">Scan each item that arrived — new ones join the catalogue</p>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
             <div class="bg-white rounded-xl shadow">
                 <div class="px-4 py-3 border-b flex justify-between items-center">
                     <h2 class="font-semibold text-gray-900">Delivery</h2>
-                    <span class="text-sm text-gray-500"><span x-text="totalUnits()"></span> unit(s), <span x-text="lines.length"></span> line(s)</span>
+                    <span class="text-sm text-gray-500"><span x-text="lines.length"></span> item(s)</span>
                 </div>
 
                 <div x-show="!lines.length" class="px-4 py-10 text-center text-gray-400" style="display:none;">
@@ -57,14 +57,10 @@
                     <div class="px-4 py-3 border-b flex items-center gap-3">
                         <div class="flex-1 min-w-0">
                             <p class="font-medium text-gray-900 truncate" x-text="l.name"></p>
-                            <p class="text-xs text-gray-500 font-mono" x-text="(l.barcode || 'no barcode') + ' · on hand ' + l.stock_before"></p>
+                            <p class="text-xs text-gray-500 font-mono" x-text="l.barcode || 'no barcode'"></p>
                         </div>
-                        <div class="flex items-center gap-2 flex-none">
-                            <button type="button" @click="bump(i,-1)" class="w-9 h-9 rounded-lg bg-gray-100 text-gray-700 text-xl leading-none">−</button>
-                            <input type="number" min="1" step="1" x-model.number="l.quantity"
-                                   class="w-16 text-center input-field font-bold text-lg py-1">
-                            <button type="button" @click="bump(i,1)" class="w-9 h-9 rounded-lg bg-gray-100 text-gray-700 text-xl leading-none">+</button>
-                            <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-1" title="Remove">&times;</button>
+                        <div class="flex items-center flex-none">
+                            <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-2" title="Remove">&times;</button>
                         </div>
                     </div>
                 </template>
@@ -77,7 +73,7 @@
                     </div>
                     <button type="button" @click="confirm()" :disabled="!lines.length || saving"
                             class="btn-success w-full text-lg">
-                        <span x-show="!saving">✅ Receive <span x-text="totalUnits()"></span> unit(s)</span>
+                        <span x-show="!saving">✅ Receive <span x-text="lines.length"></span> item(s)</span>
                         <span x-show="saving" style="display:none;">Receiving…</span>
                     </button>
                 </div>
@@ -85,9 +81,9 @@
 
             <!-- Last receipt result -->
             <div x-show="result" style="display:none;" class="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-4">
-                <p class="font-semibold text-emerald-800 mb-2">✅ Received <span x-text="result?.total_units"></span> unit(s) across <span x-text="result?.received_lines"></span> line(s)</p>
+                <p class="font-semibold text-emerald-800 mb-2">✅ Catalogued <span x-text="result?.received_lines"></span> item(s)</p>
                 <template x-for="r in (result?.lines || [])" :key="r.product_id">
-                    <p class="text-sm text-emerald-900" x-text="r.name + ' → ' + r.stock_after + ' on hand'"></p>
+                    <p class="text-sm text-emerald-900" x-text="r.name + ' — on file'"></p>
                 </template>
             </div>
         </div>
@@ -149,7 +145,7 @@
             user: {},
             barcodeInput: '',
             lookupMsg: '',
-            lines: [],            // {product_id, name, barcode, stock_before, quantity}
+            lines: [],            // {product_id, name, barcode} — one row per arrived item, no count
             reference: '',
             saving: false,
             result: null,
@@ -171,8 +167,6 @@
                 this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
             },
 
-            totalUnits() { return this.lines.reduce((s, l) => s + (parseInt(l.quantity, 10) || 0), 0); },
-
             async lookup() {
                 const bc = (this.barcodeInput || '').trim();
                 if (!bc) return;
@@ -191,27 +185,15 @@
             },
 
             addProduct(p) {
-                // Already in the delivery? bump its quantity instead of a 2nd line.
-                const existing = this.lines.find(l => l.product_id === p.id);
-                if (existing) {
-                    existing.quantity = (parseInt(existing.quantity, 10) || 0) + 1;
-                    showToast(`${p.name} +1`, 'success');
+                // No count — one row per item. Scanning the same item twice is a no-op.
+                if (this.lines.find(l => l.product_id === p.id)) {
+                    showToast(`${p.name} already on the list`, 'info');
                     return;
                 }
-                this.lines.unshift({
-                    product_id: p.id,
-                    name: p.name,
-                    barcode: p.barcode,
-                    stock_before: p.stock_quantity,
-                    quantity: 1,
-                });
+                this.lines.unshift({ product_id: p.id, name: p.name, barcode: p.barcode });
                 showToast(`${p.name} added`, 'success');
             },
 
-            bump(i, d) {
-                const q = (parseInt(this.lines[i].quantity, 10) || 0) + d;
-                this.lines[i].quantity = Math.max(1, q);
-            },
             removeLine(i) { this.lines.splice(i, 1); },
 
             // ---- camera (shared, hardened PosScanner) ----
@@ -250,7 +232,7 @@
                 this.newSaving = true;
                 const bc = (this.newBarcode || '').trim();
                 try {
-                    // Create at stock 0 — receiving bumps it to the counted amount.
+                    // Zero perpetual inventory: receiving just catalogues the item.
                     const p = await API.post('/api/v1/pos/products', {
                         barcode: bc || null,
                         sku: bc ? ('LZ-' + bc) : ('LZ-' + Date.now()),
@@ -270,10 +252,8 @@
 
             async confirm() {
                 if (!this.lines.length) return;
-                const items = this.lines.map(l => ({
-                    product_id: l.product_id,
-                    quantity: Math.max(1, parseInt(l.quantity, 10) || 1),
-                }));
+                // No count in zero perpetual inventory — each arrived item posts as one.
+                const items = this.lines.map(l => ({ product_id: l.product_id, quantity: 1 }));
                 this.saving = true;
                 try {
                     const res = await API.post('/api/v1/pos/receiving', {
@@ -281,9 +261,10 @@
                         reference: (this.reference || '').trim() || null,
                     });
                     this.result = res;
+                    const n = this.lines.length;
                     this.lines = [];
                     this.reference = '';
-                    showToast(`Received ${res.total_units} unit(s)`, 'success');
+                    showToast(`Catalogued ${n} item(s)`, 'success');
                 } catch (err) {
                     showToast(err.message || 'Receiving failed', 'error');
                 } finally {

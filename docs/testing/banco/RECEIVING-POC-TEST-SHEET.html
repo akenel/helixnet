@@ -148,7 +148,7 @@
 
   <div class="body">
     <h1>📥 Receiving PoC — test log</h1>
-    <p class="sub">Scan a delivery in, one item at a time, and watch stock go up. Four real-world cases:
+    <p class="sub">Scan a delivery in, one item at a time — each arrival joins the catalogue (no counts, zero perpetual inventory). Four real-world cases:
       <b>2 known</b>, <b>1 new</b>, <b>1 with no code</b>. Keep going till it's 100% green — that's our sign-off.</p>
 
     <div class="howto">📝 <b>How to use:</b> open the links, do each step on your Fairphone, then tap
@@ -251,16 +251,16 @@
       exp:"The receiving screen opens with a scan/type box." },
     { do:"<b>Case 1 — known item.</b> Scan QR <span class='chip' data-copy='4002604431002'>4002604431002</span> off the slip.",
       exp:"Resolves to <b>Gizeh 6m active filter</b> by name (not 'unknown').", big:true },
-    { do:"Set quantity <b>2</b> and confirm the line.",
-      exp:"On-hand for that filter goes <b>up by 2</b>.", big:true },
-    { do:"<b>Case 2 — known item.</b> Scan QR <span class='chip' data-copy='7610442291046'>7610442291046</span>, qty <b>5</b>, confirm.",
-      exp:"Resolves to <b>Sun Sack 125g</b>; on-hand goes <b>up by 5</b>." },
+    { do:"Tap <b>✅ Receive</b> to confirm the delivery.",
+      exp:"The filter is <b>on file</b> — no quantity to type, no on-hand number.", big:true },
+    { do:"<b>Case 2 — known item.</b> Scan QR <span class='chip' data-copy='7610442291046'>7610442291046</span>.",
+      exp:"Resolves to <b>Sun Sack 125g</b>; it joins the list as one item." },
     { do:"<b>Case 3 — new item with a code.</b> Scan QR <span class='chip' data-copy='7649912000017'>7649912000017</span>.",
       exp:"<b>Not on file</b> → it offers to <b>create</b> it (starts at stock 0).", big:true },
-    { do:"Create <b>Hemp Wick Spule 5m</b>, then receive qty <b>12</b>.",
-      exp:"New product exists and on-hand is now <b>12</b>." },
-    { do:"<b>Case 4 — no code.</b> Item <b>Räucherstäbchen lose</b> (qty 3) has no QR. Find it by name or create it without a code, receive 3.",
-      exp:"You can receive an item that has <b>no barcode at all</b>; on-hand = 3.", big:true },
+    { do:"Create <b>Hemp Wick Spule 5m</b> and add it.",
+      exp:"New product is created and joins the list — <b>on file</b> in the catalogue." },
+    { do:"<b>Case 4 — no code.</b> Item <b>Räucherstäbchen lose</b> has no QR. Find it by name or create it without a code, add it.",
+      exp:"You can catalogue an item that has <b>no barcode at all</b>.", big:true },
     { do:"<b>Scan once, known forever.</b> Scan QR <span class='chip' data-copy='7649912000017'>7649912000017</span> <b>again</b> (pretend next delivery).",
       exp:"Recognised <b>instantly</b> as Hemp Wick — no re-typing.", big:true },
     { do:"<b>Feedback button (BL-FB).</b> Drag the 💬 button off the Submit button.",
