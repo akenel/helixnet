@@ -163,18 +163,10 @@
                                         <span x-show="product.barcode"> | Barcode: <span x-text="product.barcode"></span></span>
                                     </p>
                                     <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(product.price)"></p>
-                                    <span class="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                          :class="product.stock_quantity <= 0 ? 'bg-red-100 text-red-700'
-                                                  : (product.stock_quantity <= 5 ? 'bg-yellow-100 text-yellow-800'
-                                                  : 'bg-green-100 text-green-700')"
-                                          x-text="product.stock_quantity <= 0 ? 'Out of stock'
-                                                  : (product.stock_quantity + ' in stock')"></span>
                                 </div>
                                 <button
                                     @click.stop="addToCart(product)"
-                                    :disabled="product.stock_quantity <= 0"
-                                    :class="product.stock_quantity <= 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
-                                    class="text-white px-4 py-2 rounded-lg font-semibold">
+                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">
                                     ➕ Add
                                 </button>
                             </div>
@@ -337,14 +329,8 @@
                         <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
-                    <span class="inline-block mt-2 text-sm font-semibold px-3 py-1 rounded-full"
-                          :class="(detailProduct?.stock_quantity||0) <= 0 ? 'bg-red-100 text-red-700'
-                                  : ((detailProduct?.stock_quantity||0) <= 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-700')"
-                          x-text="(detailProduct?.stock_quantity||0) <= 0 ? 'Out of stock' : (detailProduct?.stock_quantity + ' in stock')"></span>
                     <button @click="addToCart(detailProduct); detailProduct=null"
-                            :disabled="(detailProduct?.stock_quantity||0) <= 0"
-                            :class="(detailProduct?.stock_quantity||0) <= 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
-                            class="text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ Add to Cart</button>
+                            class="bg-green-500 hover:bg-green-600 text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ Add to Cart</button>
                 </div>
                 <!-- Right: specs -->
                 <div class="text-sm">
@@ -353,7 +339,6 @@
                         <div class="flex justify-between py-2"><dt class="text-gray-500">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500">Barcode</dt><dd class="font-medium text-right" x-text="detailProduct?.barcode"></dd></div>
                         <div class="flex justify-between py-2"><dt class="text-gray-500">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
-                        <div class="flex justify-between py-2"><dt class="text-gray-500">On hand</dt><dd class="font-medium text-right" x-text="detailProduct?.stock_quantity"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
                     </dl>
                     <template x-if="detailProduct?.description">
@@ -678,10 +663,8 @@
                     sku,
                     name: this.lazyName.trim(),
                     price,
-                    // Uncounted new item: generous stock so it stays freely sellable on
-                    // every future sale (the oversell guard blocks at 0). Real stock is
-                    // set later in the deferred inventory pass. NOT inventory management.
-                    stock_quantity: 9999,
+                    // Zero perpetual inventory: no stock_quantity to set. A product is born
+                    // once and is always sellable; velocity comes from the sales log, not a count.
                 };
                 try {
                     // Persist a REAL product (manager/admin/dev). Known on every future scan.
@@ -947,6 +930,6 @@
 {% block extra_scripts %}
 <!-- BL-87: vendored locally (no runtime CDN). Powers the camera barcode scan. -->
 <script src="/static/vendor/html5-qrcode.min.js"></script>
-<!-- BL-90: shared hardened scanner (retail formats + 2-in-a-row stable read). -->
-<script src="/static/pos-scanner.js"></script>
+<!-- BL-90: shared hardened scanner (retail formats + 2-in-a-row stable read). BL-93: + QR. -->
+<script src="/static/pos-scanner.js?v=qr1"></script>
 {% endblock %}

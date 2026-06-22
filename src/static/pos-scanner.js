@@ -1,7 +1,8 @@
 // Reusable single-shot barcode scanner for Banco POS (BL-89, hardened BL-90).
 // Wraps the vendored html5-qrcode so every screen (counter sale, catalog
 // create/edit, receiving) shares ONE scanner implementation instead of each
-// copying ~50 lines. Rear camera, single-shot, RETAIL 1D formats only.
+// copying ~50 lines. Rear camera, single-shot, RETAIL 1D formats + QR (our
+// own labels for unbarcoded goods).
 //
 // BL-90 "scan once, known forever" hardening — two changes that stop the same
 // item being captured under different / garbage barcodes:
@@ -18,16 +19,30 @@
 //   PosScanner.beep()          // short audible confirm
 //   onProgress(text)           // optional: each raw (unconfirmed) read — show it live
 (function () {
-  const RETAIL_FORMATS = () => {
+  const SCAN_FORMATS = () => {
     const F = window.Html5QrcodeSupportedFormats;
-    // Retail point-of-sale symbologies ONLY. No CODE_128/CODE_39/ITF — those
-    // are the logistics/case codes that caused duplicate captures (BL-90).
-    return [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E];
+    // Retail point-of-sale symbologies (manufacturer goods) PLUS QR_CODE for
+    // the labels WE mint (shelf tags for unbarcoded items, our delivery slips).
+    // Still NO CODE_128/CODE_39/ITF — those are the logistics/case codes that
+    // caused duplicate captures (BL-90). QR is additive: EAN/UPC untouched.
+    return [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.QR_CODE];
   };
 
   // A clean retail barcode is digits only (EAN/UPC). Reject anything with a
   // control char (e.g. GS1 \x1D group separator) or non-digit noise.
   const isCleanRetail = (text) => /^[0-9]{6,14}$/.test(text);
+  // A QR payload is one we minted (a SKU/code/short URL) — accept any short,
+  // printable string; reject empty or control-char garbage.
+  const isCleanQr = (text) =>
+    text.length >= 1 && text.length <= 512 && !/[\x00-\x08\x0e-\x1f]/.test(text);
+  // html5-qrcode passes the matched format on the result; fall back to "looks
+  // non-numeric => QR" when the structure isn't present.
+  const isQrResult = (decoded, text) => {
+    const fmt = decoded && decoded.result && decoded.result.format
+      && decoded.result.format.formatName;
+    if (fmt) return fmt === 'QR_CODE';
+    return !/^[0-9]+$/.test(text);
+  };
 
   window.PosScanner = {
     _scanner: null,
@@ -46,7 +61,7 @@
       const onProgress = opts && opts.onProgress;
       try {
         this._scanner = new window.Html5Qrcode(readerId, {
-          formatsToSupport: RETAIL_FORMATS(), verbose: false,
+          formatsToSupport: SCAN_FORMATS(), verbose: false,
         });
         await this._scanner.start(
           { facingMode: 'environment' },                 // rear camera
@@ -54,11 +69,14 @@
               const w = Math.max(160, Math.min(300, vw - 40));
               return { width: w, height: Math.floor(w * 0.55) };
           } },
-          (raw) => {
+          (raw, decoded) => {
             if (this._busy) return;                       // single-shot
             const text = (raw || '').trim();
             onProgress && onProgress(text);               // show what's being read
-            if (!isCleanRetail(text)) {                   // ignore noise/logistics codes
+            // Retail codes must be clean digits; QR (our own labels) just needs
+            // to be a sane printable payload.
+            const ok = isQrResult(decoded, text) ? isCleanQr(text) : isCleanRetail(text);
+            if (!ok) {                                    // ignore noise/logistics codes
               this._lastVal = null; this._lastCount = 0;
               return;
             }
