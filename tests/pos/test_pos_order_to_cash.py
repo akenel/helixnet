@@ -5,7 +5,8 @@ This is the release gate's flagship: it walks the whole arc the way Pam lives it
 order, asserting each link. If this stays green, the core of Felix's business works.
 
   enroll a member (18+) -> ring a real catalogue sale on their account
-  -> stock deducts -> points earned + lifetime grows -> tier climbs to Silver
+  -> stock count is untouched (zero perpetual inventory) -> points earned +
+     lifetime grows -> tier climbs to Silver
   -> the NEXT sale gets the 5% member discount -> View History has it on record
   -> the receipt view resolves the buyer.
 
@@ -64,14 +65,14 @@ def test_order_to_cash_end_to_end(session):
     assert start["tier_discount_percent"] == 0
     base_credits = start["credits_balance"]
 
-    # --- 2. a real catalogue sale on his account: stock deducts, points land ---
+    # --- 2. a real catalogue sale on his account: points land, count never moves ---
     # NOTE: checkout prices catalogue lines from product.price (the till never trusts a
     # client-sent price), so the totals here follow the product's CHF 100.00.
     p = _product(session, stock=20, price="100.00")
     tx1 = _ring(session, p["id"], qty=2, unit_price="100.00", customer_id=cid)  # 200.00
     assert Decimal(str(tx1["total"])) == Decimal("200.00"), "Bronze pays full"
     assert str(tx1["customer_id"]) == cid, "the sale is tied to Johnny"
-    assert _stock(session, p["id"]) == 18, "two units left the shelf"
+    assert _stock(session, p["id"]) == 20, "zero perpetual inventory: the count never moves"
 
     after1 = _member(session, cid)
     assert after1["credits_balance"] == base_credits + 200, "1 credit per CHF"

@@ -1481,17 +1481,10 @@ async def checkout_transaction(
 
     # TODO: Generate PDF receipt and store in MinIO
 
-    # Deduct stock for each line item so inventory is real (floor at 0 -- a mis-count never
-    # drives stock negative; Felix sees the zero and reconciles).
-    li_result = await db.execute(
-        select(LineItemModel).where(LineItemModel.transaction_id == transaction.id)
-    )
-    for li in li_result.scalars().all():
-        if li.product_id is None:
-            continue  # custom line (manual/change) -- no catalog stock to deduct
-        product = await db.get(ProductModel, li.product_id)
-        if product is not None:
-            product.stock_quantity = max(0, product.stock_quantity - li.quantity)
+    # Zero perpetual inventory: a sale never decrements a stock count. The count was
+    # always wrong for ~100% unmarked goods, and gating on it would refuse to sell
+    # product physically on the shelf. Velocity is read from the sales log itself
+    # (line items + completed_at) — see the velocity reporting spec (v2).
 
     # --- CRM: the member earns points + their record updates (1 credit per CHF paid,
     # floored). Updates lifetime spend, history, average basket, then re-tiers. ---
@@ -1587,19 +1580,8 @@ async def refund_transaction(
     else:
         transaction.notes = refund_note
 
-    # Full refund -> the goods come back on the shelf (mirror the checkout deduction so
-    # inventory stays honest). Partial refunds are money-only: we can't know which items
-    # were returned, so stock is left untouched and Felix reconciles by hand if needed.
-    if not refund.partial_amount:
-        li_result = await db.execute(
-            select(LineItemModel).where(LineItemModel.transaction_id == transaction.id)
-        )
-        for li in li_result.scalars().all():
-            if li.product_id is None:
-                continue  # custom line (manual/change) -- no catalog stock to restore
-            product = await db.get(ProductModel, li.product_id)
-            if product is not None:
-                product.stock_quantity = (product.stock_quantity or 0) + li.quantity
+    # Zero perpetual inventory: a refund moves money only — there's no stock count to
+    # put back on the shelf. The refund is recorded in the transaction notes above.
 
     await db.commit()
     await db.refresh(transaction)
@@ -1828,10 +1810,6 @@ async def system_pulse(
     members = await _count(select(func.count()).select_from(CustomerModel))
     catalog = await _count(
         select(func.count()).select_from(ProductModel).where(ProductModel.is_active == True))
-    low_stock = await _count(
-        select(func.count()).select_from(ProductModel).where(and_(
-            ProductModel.is_active == True,
-            ProductModel.stock_quantity <= ProductModel.stock_alert_threshold)))
     open_drawers = await _count(
         select(func.count()).select_from(CashShiftModel).where(
             CashShiftModel.status == CashShiftStatus.OPEN))
@@ -1848,7 +1826,6 @@ async def system_pulse(
             "giveaways": today.giveaway_count if today else None,
         },
         "members": members,
-        "low_stock": low_stock,
         "catalog": catalog,
         "open_drawers": open_drawers,
         "build": {

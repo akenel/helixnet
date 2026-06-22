@@ -1,8 +1,9 @@
 """
 Stock / inventory regression tests.
 
-LOCKS: catalog payload carries stock_quantity (so the till can show "N in stock"),
-checkout deducts stock by the quantity sold, and stock never goes negative.
+LOCKS: zero perpetual inventory — a sale NEVER deducts a stock count and is NEVER
+blocked by one (the count is a lie for ~100% unmarked goods). The stock_quantity
+column still exists but is dormant; velocity comes from the sales log (v2).
 """
 from decimal import Decimal
 
@@ -12,7 +13,8 @@ from conftest import POS, list_products, find_product, ring_sale
 
 
 def test_catalog_carries_stock_quantity(session):
-    """Every product row must expose stock_quantity (the catalog badge depends on it)."""
+    """The stock_quantity column is dormant but still serialized; rows must keep the
+    field (an int) so nothing downstream KeyErrors on it during the v1 -> v2 window."""
     products = list_products(session)
     assert products, "no products -- did seeding run?"
     for p in products:
@@ -20,26 +22,25 @@ def test_catalog_carries_stock_quantity(session):
         assert isinstance(p["stock_quantity"], int)
 
 
-def test_checkout_deducts_stock_by_qty_sold(session):
-    """Ring qty 2 of an in-stock item -> stock drops by exactly 2."""
+def test_checkout_does_not_deduct_stock(session):
+    """Zero perpetual inventory: ringing a sale must NOT change stock_quantity. The
+    sale lives in the sales log, never against a count."""
     p = find_product(session, barcode="7610000123466")  # CBD Tea, plentiful seed
     assert p, "expected CBD Relaxation Tea seed product"
     before = p["stock_quantity"]
-    if before < 2:
-        pytest.skip(f"need >=2 stock to test deduction, have {before}")
 
     price = Decimal(str(p["price"]))
     ring_sale(session, [(p["id"], 2, price)], payment_method="visa")
 
     after = find_product(session, barcode="7610000123466")["stock_quantity"]
-    assert after == before - 2, f"stock {before} -> {after}, expected {before - 2}"
+    assert after == before, f"a sale must not move the count: {before} -> {after}"
 
 
 def test_oversell_is_allowed_sell_to_seed(session):
     """BL-94 / Felix #91: a sale is NEVER blocked by a stock count. The count is a
     lie for ~100% unmarked goods, so a real product on the shelf is ALWAYS sellable.
-    Adding MORE than on-hand must be accepted (no 400) -- stock is still tracked and
-    deducted (floored at 0), just never a gate."""
+    Adding MORE than on-hand must be accepted (no 400) -- the count never moves and
+    never gates a sale."""
     products = list_products(session)
     low = next((p for p in products if 0 <= p["stock_quantity"] <= 3 and p["is_active"]), None)
     if not low:

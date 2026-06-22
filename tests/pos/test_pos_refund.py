@@ -1,6 +1,7 @@
 """
-Order-to-Cash story 9 — the refund: a sale is reversed, and on a FULL refund the
-goods come back on the shelf so inventory stays honest. Partial refunds are money-only.
+Order-to-Cash story 9 — the refund: a sale is reversed (status -> REFUNDED) and cash
+is returned. Zero perpetual inventory: a sale never deducts a stock count, so a refund
+has nothing to put back — it moves money only.
 
 Manager/admin-gated (the test session is felix = admin). Uses a throwaway product so
 the stock math is deterministic on the shared DB.
@@ -43,31 +44,32 @@ def _ring(session, pid, qty, unit_price):
     return done.json()
 
 
-def test_full_refund_flips_status_and_returns_stock(session):
-    """The whole sale is reversed: status -> REFUNDED and every item is back on the shelf."""
+def test_full_refund_flips_status_stock_untouched(session):
+    """The sale is reversed (status -> REFUNDED). Zero perpetual inventory: the count
+    never moved on the sale, so there is nothing to put back on the refund."""
     p = _new_product(session, stock=10, price="12.00")
     assert _stock(session, p["id"]) == 10
 
     tx = _ring(session, p["id"], qty=3, unit_price="12.00")
-    assert _stock(session, p["id"]) == 7, "checkout deducted the 3"
+    assert _stock(session, p["id"]) == 10, "a sale does not deduct the count"
 
     r = session.post(f"{POS}/transactions/{tx['id']}/refund", json={"reason": "TEST broken item"})
     r.raise_for_status()
     assert r.json()["status"] == "refunded"
-    assert _stock(session, p["id"]) == 10, "full refund put the 3 back on the shelf"
+    assert _stock(session, p["id"]) == 10, "refund moves money only — count unchanged"
 
 
 def test_partial_refund_is_money_only_stock_untouched(session):
-    """A partial refund returns cash but NOT stock -- we can't know which items came back."""
+    """A refund returns cash but never touches the count (there is no perpetual stock)."""
     p = _new_product(session, stock=10, price="20.00")
-    tx = _ring(session, p["id"], qty=2, unit_price="20.00")  # total 40.00, stock -> 8
-    assert _stock(session, p["id"]) == 8
+    tx = _ring(session, p["id"], qty=2, unit_price="20.00")  # total 40.00; count never moves
+    assert _stock(session, p["id"]) == 10
 
     r = session.post(f"{POS}/transactions/{tx['id']}/refund",
                      json={"reason": "TEST goodwill", "partial_amount": "10.00"})
     r.raise_for_status()
     assert r.json()["status"] == "refunded"
-    assert _stock(session, p["id"]) == 8, "partial refund leaves stock alone"
+    assert _stock(session, p["id"]) == 10, "refund is money-only — count unchanged"
 
 
 def test_refund_cannot_exceed_total(session):
