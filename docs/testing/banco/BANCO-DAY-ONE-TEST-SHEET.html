@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco Day One — First Sale Ever (TEST-BANCO-DAY1-001)</title>
+<!-- Built from QUICK-TEST-SHEET-TEMPLATE.html — same engine (progress %, timer,
+     PASS/FAIL, voice, autosave, copy-results). Scripted Syd-Field style: three
+     acts, every beat timecoded. Open this on the LAPTOP; operate the PHONE. -->
+<style>
+  :root { --red:#C0392B; --green:#15803d; --ink:#222; --head:#2C3E50; --line:#d9dee3;
+          --banco:#0f766e; --shade:#f4f6f8; --amber:#e0a800; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial,Helvetica,sans-serif; color:var(--ink); background:#eceff1; margin:0;
+         padding:24px; line-height:1.5; }
+  .sheet { max-width:1000px; margin:0 auto; background:#fff; box-shadow:0 2px 14px rgba(0,0,0,.12);
+           padding:0 0 32px; }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--banco); padding:18px 28px; gap:12px; flex-wrap:wrap; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--banco); letter-spacing:.5px; }
+  header .brand small { color:#789; font-weight:normal; font-size:12px; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding:22px 28px; }
+  h1 { font-size:21px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 16px; }
+  .howto { font-size:12.5px; color:#444; background:#e9f7f5; border:1px solid #b5ddd7;
+           border-left:4px solid var(--banco); border-radius:6px; padding:10px 14px; margin-bottom:16px; }
+  .howto b { color:var(--banco); }
+
+  /* phone-go banner */
+  .phone { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#0f766e; color:#fff;
+           border-radius:10px; padding:14px 18px; margin-bottom:16px; }
+  .phone .u { font-family:monospace; font-size:19px; font-weight:bold; letter-spacing:.5px; }
+  .phone .clicks { font-size:12.5px; opacity:.95; }
+  .phone .clicks b { background:rgba(255,255,255,.18); border-radius:4px; padding:1px 6px; }
+
+  .dash { position:sticky; top:0; z-index:5; background:#fff; border:1px solid var(--line);
+          border-radius:10px; padding:12px 16px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .dash .row1 { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .pct { font-size:30px; font-weight:bold; color:var(--banco); min-width:78px; }
+  .pct.done { color:var(--green); }
+  .tally { font-size:13px; color:#556; }
+  .tally b.p { color:var(--green); } .tally b.f { color:var(--red); } .tally b.l { color:#8a93a0; }
+  .timer { margin-left:auto; font-family:monospace; font-size:15px; color:var(--head);
+           background:var(--shade); border:1px solid var(--line); border-radius:6px; padding:4px 10px; }
+  .timer b { color:var(--banco); }
+  .runtime { font-family:monospace; font-size:12px; color:#789; background:var(--shade);
+             border:1px solid var(--line); border-radius:6px; padding:4px 10px; }
+  .bar { height:12px; background:#e7ebee; border-radius:7px; overflow:hidden; margin-top:10px; }
+  .bar > i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--banco),#22a08f);
+             transition:width .35s ease; }
+  .bar > i.done { background:linear-gradient(90deg,var(--green),#3bbf6f); }
+  .dashbtns { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .dashbtns button { border:1px solid var(--line); background:#fafbfc; color:var(--head);
+                     border-radius:6px; padding:6px 11px; font-size:12.5px; cursor:pointer; font-weight:600; }
+  .dashbtns button:hover { border-color:var(--banco); background:#f1faf8; color:var(--banco); }
+  .dashbtns button.primary { background:var(--banco); color:#fff; border-color:var(--banco); }
+  .dashbtns button.danger:hover { border-color:var(--red); color:var(--red); background:#fdecec; }
+
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; font-size:13px; background:var(--shade);
+          border:1px solid var(--line); border-radius:6px; padding:12px 16px; margin-bottom:16px; }
+  .meta b { color:var(--head); }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit; color:var(--ink);
+              padding:2px 4px; width:100%; min-width:50px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--banco); background:#fffce8; }
+
+  .links { display:flex; gap:9px; flex-wrap:wrap; margin-bottom:8px; }
+  a.go { display:flex; align-items:center; gap:8px; text-decoration:none; border:1px solid var(--line);
+         border-radius:8px; padding:9px 13px; font-size:13.5px; color:var(--head); font-weight:600; background:#fafbfc; }
+  a.go:hover { border-color:var(--banco); background:#f1faf8; color:var(--banco); }
+  a.go .arr { color:#aab; font-weight:400; }
+  .creds { font-size:12px; color:#667; margin:2px 0 16px; }
+  .creds code, .chip { background:#eef1f4; border:1px solid #cdd3da; border-radius:4px; padding:1px 6px;
+                       font-family:monospace; font-size:12px; }
+
+  .qrbox { border:1px dashed var(--banco); border-radius:8px; padding:11px 14px; margin-bottom:18px; background:#f3fbfa; }
+  .qrbox h3 { margin:0 0 4px; color:var(--banco); font-size:13.5px; }
+  .qrbox p { font-size:12px; color:#577; margin:0 0 9px; }
+  .chip { cursor:pointer; display:inline-block; margin:2px 4px 2px 0; padding:3px 9px; }
+  .chip:hover { border-color:var(--banco); background:#e4f5f2; }
+  .chip .tag { color:#789; font-family:Arial; font-size:11px; }
+
+  .check h3 { font-size:14px; color:var(--head); margin:18px 0 8px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--head); color:#fff; font-size:11.5px; }
+  td.n { text-align:center; font-weight:bold; color:var(--banco); width:24px; }
+  td.tc { text-align:center; font-family:monospace; font-size:11.5px; color:#0f766e; width:84px; white-space:nowrap; }
+  td.verdict { width:112px; text-align:center; }
+  td.notes { width:200px; padding:4px; }
+  tr.big td { background:#e6f5f2; }
+  tr.pass td { background:#eafaf0 !important; }
+  tr.fail td { background:#fdecec !important; }
+  tr.act td { background:var(--head); color:#fff; font-weight:bold; font-size:12px; letter-spacing:.4px;
+              text-transform:uppercase; }
+  tr.act td .t { float:right; font-family:monospace; opacity:.85; text-transform:none; letter-spacing:0; }
+  .step b { color:var(--head); }
+  .vbtns { display:flex; gap:5px; justify-content:center; }
+  .vbtn { border:1.5px solid var(--line); background:#fff; border-radius:6px; cursor:pointer;
+          padding:4px 9px; font-size:12px; font-weight:bold; color:#889; }
+  .vbtn.p.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .vbtn.f.on { background:var(--red); color:#fff; border-color:var(--red); }
+  .vbtn:hover { border-color:#aab; }
+  .stamp { display:block; font-size:10px; color:#9aa; font-family:monospace; margin-top:4px; min-height:12px; }
+  .micwrap { display:flex; align-items:center; gap:4px; }
+  .mic { border:1px solid var(--line); background:#fff; border-radius:5px; cursor:pointer; font-size:13px;
+         padding:2px 6px; line-height:1; }
+  .mic:hover { border-color:var(--banco); background:#f1faf8; }
+  .mic.rec { background:#fdecec; border-color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.5);} 50%{box-shadow:0 0 0 4px rgba(192,57,43,0);} }
+
+  .voicebox { margin-top:22px; border:1px dashed var(--banco); border-radius:8px; padding:14px 16px; background:#f3fbfa; }
+  .voicebox h3 { margin:0 0 4px; color:var(--banco); font-size:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .voicebox p.hint { font-size:12px; color:#577; margin:0 0 10px; }
+  .voicebox textarea { width:100%; min-height:80px; border:1px solid var(--line); border-radius:6px; padding:10px;
+    font:inherit; font-size:13px; resize:vertical; }
+  .voicebox textarea:focus { outline:none; border-color:var(--banco); }
+  .micbig { background:var(--banco); color:#fff; border:0; border-radius:6px; padding:7px 13px; font-size:12.5px;
+    font-weight:bold; cursor:pointer; }
+  .micbig.rec { background:var(--red); animation:pulse 1s infinite; }
+  .micnote { font-size:11px; color:#999; margin-top:6px; }
+
+  .result { margin-top:22px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:14px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  input[type=radio] { appearance:none; -webkit-appearance:none; width:17px; height:17px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; border-radius:50%; print-color-adjust:exact;
+    -webkit-print-color-adjust:exact; }
+  input[type=radio]:checked { background:var(--banco); border-color:var(--banco); box-shadow:inset 0 0 0 3px #fff; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; flex-wrap:wrap; }
+  .sig span { flex:1; min-width:180px; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 28px 0; font-size:11px; color:#8a93a0;
+           display:flex; justify-content:space-between; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--head); color:#fff;
+           padding:9px 18px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .25s; z-index:50; }
+  .toast.show { opacity:1; }
+  @media (max-width:680px){ .meta,.cols{grid-template-columns:1fr;} td.notes{width:auto;} .timer{margin-left:0;} }
+  @media print {
+    body{background:#fff;padding:0;} .sheet{box-shadow:none;max-width:100%;}
+    .dash{position:static;box-shadow:none;} .dashbtns,.mic,.micbig,.chip{display:none!important;}
+    a.go{background:#fff;} input.txt:focus{background:transparent;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <header>
+    <div class="brand">Banco <small>· on the HelixNet engine</small></div>
+    <div class="docid">TEST-BANCO-DAY1-001</div>
+  </header>
+
+  <div class="body">
+    <h1>🎬 Day One — the First Sale Ever</h1>
+    <p class="sub">A scripted run on the empty sandbox. Three acts, each beat timecoded — the whole take is ~3 minutes.
+       Proves Day One end-to-end: empty shop → an item is born from nothing → the first franc rings up.</p>
+
+    <div class="phone">
+      <div>📱 <b>ON YOUR PHONE, go to:</b></div>
+      <div class="u">sandbox-banco.lapiazza.app</div>
+      <div class="clicks">5–6 taps: <b>open the link</b> → <b>Login</b> → <b>pam</b> → <b>helix_pass</b> → <b>Sign in</b> → you're on the till.</div>
+    </div>
+
+    <div class="howto">🎬 <b>How to run it:</b> this sheet lives on your <b>laptop</b> so you can see the whole script;
+      you operate the <b>phone</b>. Do each beat in order, hit <b>✓ PASS</b> / <b>✗ FAIL</b> on the row, talk a
+      <b>🎤</b> note if something's off. The <b>Target</b> column is how long that beat <i>should</i> take — don't
+      rush, it's just the rhythm of the shoot. Everything <b>auto-saves</b>; when you're done hit <b>📋 Copy results</b>
+      and paste them back to me.</div>
+
+    <div class="dash">
+      <div class="row1">
+        <div class="pct" id="pct">0%</div>
+        <div class="tally" id="tally">— beats · <b class="p">0 pass</b> · <b class="f">0 fail</b> · <b class="l">— left</b></div>
+        <div class="runtime">🎬 target ~3:00</div>
+        <div class="timer">⏱ <b id="clock">00:00</b></div>
+      </div>
+      <div class="bar"><i id="barfill"></i></div>
+      <div class="dashbtns">
+        <button class="primary" id="btnCopy">📋 Copy results</button>
+        <button id="btnDownload">💾 Download .txt</button>
+        <button id="btnPrint">🖨️ Print / PDF</button>
+        <button id="btnTimer">⏱ Reset timer</button>
+        <button class="danger" id="btnReset">♻️ Reset sheet</button>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div><b>Tester:</b> <input class="txt" data-k="tester" type="text" placeholder="Angel"></div>
+      <div><b>Date:</b> <input class="txt" data-k="date" type="text" placeholder="22/06/2026"></div>
+      <div><b>Build:</b> <input class="txt" data-k="build" type="text" value="sandbox · commit 723a0c2"></div>
+      <div><b>Login:</b> <input class="txt" data-k="login" type="text" value="pam / helix_pass"></div>
+    </div>
+
+    <div class="links">
+      <a class="go" href="https://sandbox-banco.lapiazza.app/pos" target="_blank">🔗 Open the till <span class="arr">↗</span></a>
+      <a class="go" href="https://sandbox-banco.lapiazza.app/pos/dashboard" target="_blank">🔗 Dashboard <span class="arr">↗</span></a>
+    </div>
+    <div class="creds">Log in with <code>pam / helix_pass</code> (cashier) — or <code>felix / helix_pass</code> (admin).</div>
+
+    <div class="qrbox">
+      <h3>🔢 Tap to copy</h3>
+      <p>Handy values — tap to copy onto the laptop clipboard.</p>
+      <span class="chip" data-copy="https://sandbox-banco.lapiazza.app/pos">https://sandbox-banco.lapiazza.app/pos <span class="tag">· phone URL</span></span>
+      <span class="chip" data-copy="ssh root@46.62.138.218 'cd /opt/helixnet && make sandbox-reset'">make sandbox-reset (SSH) <span class="tag">· re-zero between takes</span></span>
+    </div>
+
+    <div class="check">
+      <h3>The script — run the beats in order</h3>
+      <table>
+        <thead>
+          <tr><th class="n">#</th><th class="tc">Target</th><th>Do this</th><th>Expect this</th><th class="verdict">Verdict</th><th class="notes">🎤 Note</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="voicebox">
+      <h3>🎤 Director's note <button class="micbig" id="bigmic">🎤 Tap &amp; talk</button></h3>
+      <p class="hint">How did the whole take feel — did the camera catch first try, did "make a label" make sense, did the
+        first sale land with weight? Anything to polish before we film for real. Talk it; it transcribes here.</p>
+      <textarea id="bigtext" data-k="bignote" placeholder="e.g. 'Camera caught instantly. The make-a-label photo step felt natural. But the New Sale header shows a random #80535 — kills the first-sale feeling, want TXN-...-0001 there instead.'"></textarea>
+      <div class="micnote" id="micstatus">Mic ready (Chrome/Edge). First tap asks permission.</div>
+    </div>
+
+    <div class="result">
+      <h3>Verdict</h3>
+      <label><input type="radio" name="overall" data-k="overall" value="pass"> ✅ PASS — Day One holds together, ready to film</label>
+      <label><input type="radio" name="overall" data-k="overall" value="fail"> ❌ FAIL — see notes, fix first</label>
+      <div class="sig">
+        <span>Signature: <input class="txt" data-k="sig" type="text"></span>
+        <span>Date: <input class="txt" data-k="sigdate" type="text"></span>
+      </div>
+    </div>
+  </div>
+
+  <footer><span>Confidential — Internal Use Only</span><span>TEST-BANCO-DAY1-001 · Rev 1 · 2026-06-22</span></footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var LSKEY = 'banco_day1_first_sale_v1';
+  var state = load();
+
+  // Each beat: {tc, do, exp, big?} OR an act divider {act, t}.
+  var CHECKS = [
+    { act:"Act I — the empty shop", t:"0:00–0:25" },
+    { tc:"~10s", do:"<b>On the phone, open</b> <code>sandbox-banco.lapiazza.app</code> and wait for the login screen.",
+      exp:"Clean <b>Staff Login</b>, padlock in the address bar (HTTPS). No error." },
+    { tc:"~15s", do:"Tap <b>Login</b> → enter <code>pam</code> / <code>helix_pass</code> → <b>Sign in</b>.",
+      exp:"Lands on the dashboard: <b>“Welcome, pam 👋”</b>, <b>Sales CHF 0.00</b>, <b>Transactions 0</b>, <b>Drawer Closed</b>. <i>This is your opening shot — the shop before anything.</i>", big:true },
+
+    { act:"Act II — an item is born, the first sale", t:"0:25–2:20" },
+    { tc:"~15s", do:"Tap <b>My Drawer / Closed</b> → open the drawer, count your float (e.g. <code>200</code>), confirm.",
+      exp:"Drawer opens, shows the float. The day has started." },
+    { tc:"~10s", do:"Back to the dashboard, tap <b>New Sale · Start scanning products</b>.",
+      exp:"New Sale screen: <b>Cart (0 items)</b>, “Scan or type barcode”." },
+    { tc:"~25s", do:"Tap <b>📷 Scan with camera</b> and point it at your first product.",
+      exp:"Camera opens (this is the HTTPS payoff) and reads the code.", big:true },
+    { tc:"~30s", do:"It’s <b>not on file</b> → the <b>make-a-label / new item</b> step: snap a photo, type a <b>name</b> and a <b>price</b>, confirm.",
+      exp:"<b>The item is born from nothing</b> — it joins the catalogue and you can drop it in the cart.", big:true },
+    { tc:"~15s", do:"Check the cart.",
+      exp:"<b>Cart (1 item)</b> with the name + price you just gave it. Total is right." },
+    { tc:"~20s", do:"<b>Checkout</b> → choose <b>Cash</b> → complete.",
+      exp:"“Transaction completed”, receipt shows <b>TXN-(today)-0001</b>. <i>The first sale ever.</i>", big:true },
+
+    { act:"Act III — the proof", t:"2:20–3:00" },
+    { tc:"~15s", do:"Go back to the <b>dashboard</b>.",
+      exp:"<b>Sales</b> now shows your amount, <b>Transactions = 1</b>. The shop has made its first franc." },
+    { tc:"~10s", do:"<i>(Optional — for a clean retake.)</i> On the laptop, run the <b>make sandbox-reset</b> chip, then refresh the phone.",
+      exp:"Back to <b>CHF 0.00 / 0 transactions / no open drawer</b> — ready to film the take again." }
+  ];
+
+  // Only real beats (not act dividers) count toward progress.
+  var STEPS = CHECKS.filter(function (c) { return !c.act; });
+  var stepIndexOf = {};
+  (function () { var s = 0; CHECKS.forEach(function (c, i) { if (!c.act) stepIndexOf[i] = s++; }); })();
+
+  var tbody = document.getElementById('rows');
+  CHECKS.forEach(function (c, i) {
+    var tr = document.createElement('tr');
+    if (c.act) {
+      tr.className = 'act';
+      tr.innerHTML = '<td colspan="6">' + c.act + '<span class="t">' + c.t + '</span></td>';
+      tbody.appendChild(tr);
+      return;
+    }
+    var s = stepIndexOf[i];
+    tr.className = 'step' + (c.big ? ' big' : '');
+    tr.dataset.step = s;
+    tr.innerHTML =
+      '<td class="n">' + (s+1) + '</td>' +
+      '<td class="tc">' + c.tc + '</td>' +
+      '<td class="dox">' + c.do + '</td>' +
+      '<td class="exp">' + c.exp + '</td>' +
+      '<td class="verdict">' +
+        '<div class="vbtns">' +
+          '<button class="vbtn p" data-v="pass" title="pass">✓</button>' +
+          '<button class="vbtn f" data-v="fail" title="fail">✗</button>' +
+        '</div><span class="stamp"></span>' +
+      '</td>' +
+      '<td class="notes"><span class="micwrap"><input class="txt" data-note="' + s + '" type="text"><button class="mic" title="dictate">🎤</button></span></td>';
+    tbody.appendChild(tr);
+  });
+
+  tbody.addEventListener('click', function (e) {
+    var b = e.target.closest('.vbtn'); if (!b) return;
+    var tr = b.closest('tr'); var step = tr.dataset.step; var v = b.dataset.v;
+    var cur = (state.verdicts && state.verdicts[step]) || '';
+    var next = (cur === v) ? '' : v;
+    state.verdicts = state.verdicts || {};
+    state.verdicts[step] = next;
+    state.stamps = state.stamps || {};
+    state.stamps[step] = next ? fmtClock(elapsed()) : '';
+    save(); paintRow(tr); refresh();
+  });
+
+  document.body.addEventListener('click', function (e) {
+    var chip = e.target.closest('.chip'); if (!chip) return;
+    var val = chip.dataset.copy; if (!val) return;
+    copy(val); toast('Copied');
+  });
+
+  document.body.addEventListener('input', function (e) {
+    var el = e.target;
+    if (el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+    if (el.dataset.note != null) { state.notes = state.notes || {}; state.notes[el.dataset.note] = el.value; save(); }
+  });
+  document.body.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.type === 'radio' && el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+  });
+
+  function restore() {
+    (state.fields) && Object.keys(state.fields).forEach(function (k) {
+      var el = document.querySelector('[data-k="' + k + '"]');
+      if (!el) return;
+      if (el.type === 'radio') { var r = document.querySelector('[data-k="'+k+'"][value="'+state.fields[k]+'"]'); if (r) r.checked = true; }
+      else el.value = state.fields[k];
+    });
+    (state.notes) && Object.keys(state.notes).forEach(function (i) {
+      var el = document.querySelector('[data-note="' + i + '"]'); if (el) el.value = state.notes[i];
+    });
+    document.querySelectorAll('#rows tr.step').forEach(paintRow);
+  }
+  function paintRow(tr) {
+    if (!tr.classList.contains('step')) return;
+    var step = tr.dataset.step;
+    var v = (state.verdicts && state.verdicts[step]) || '';
+    tr.classList.toggle('pass', v === 'pass');
+    tr.classList.toggle('fail', v === 'fail');
+    tr.querySelectorAll('.vbtn').forEach(function (btn) { btn.classList.toggle('on', btn.dataset.v === v); });
+    var st = tr.querySelector('.stamp');
+    if (st) st.textContent = (state.stamps && state.stamps[step]) ? ('@ ' + state.stamps[step]) : '';
+  }
+
+  function refresh() {
+    var n = STEPS.length, p = 0, f = 0;
+    for (var i = 0; i < n; i++) { var v = state.verdicts && state.verdicts[i]; if (v === 'pass') p++; else if (v === 'fail') f++; }
+    var left = n - p - f;
+    var pctPass = Math.round(100 * p / n);
+    var pctEl = document.getElementById('pct'), fill = document.getElementById('barfill');
+    pctEl.textContent = pctPass + '%';
+    fill.style.width = pctPass + '%';
+    var allGreen = (p === n);
+    pctEl.classList.toggle('done', allGreen);
+    fill.classList.toggle('done', allGreen);
+    document.getElementById('tally').innerHTML =
+      n + ' beats · <b class="p">' + p + ' pass</b> · <b class="f">' + f + ' fail</b> · <b class="l">' + left + ' left</b>'
+      + (allGreen ? ' · 🎬 <b class="p">that’s a wrap — sign it off</b>' : '');
+  }
+
+  function elapsed() { return state.start ? (Date.now() - state.start) : 0; }
+  function fmtClock(ms) {
+    var s = Math.floor(ms / 1000), m = Math.floor(s / 60); s = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function tick() { document.getElementById('clock').textContent = fmtClock(elapsed()); }
+  if (!state.start) { state.start = Date.now(); save(); }
+  setInterval(tick, 1000); tick();
+
+  document.getElementById('btnTimer').onclick = function () { state.start = Date.now(); save(); tick(); toast('Timer reset'); };
+  document.getElementById('btnPrint').onclick = function () { window.print(); };
+  document.getElementById('btnReset').onclick = function () {
+    if (!confirm('Clear ALL verdicts, notes and the timer on this sheet?')) return;
+    localStorage.removeItem(LSKEY); location.reload();
+  };
+  document.getElementById('btnCopy').onclick = function () { copy(report()); toast('Results copied — paste them back to me'); };
+  document.getElementById('btnDownload').onclick = function () {
+    var blob = new Blob([report()], { type: 'text/plain' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'banco-day-one-' + (fld('date') || 'run').replace(/[^\w-]/g, '') + '.txt';
+    a.click(); toast('Downloaded');
+  };
+
+  function fld(k) { return (state.fields && state.fields[k]) || ''; }
+  function report() {
+    var n = STEPS.length, p = 0, f = 0, L = [];
+    L.push('Banco Day One — First Sale Ever (TEST-BANCO-DAY1-001)');
+    L.push('Build : ' + (fld('build') || '?'));
+    L.push('Tester: ' + (fld('tester') || '?') + '   Date: ' + (fld('date') || '?'));
+    L.push('Time on sheet: ' + fmtClock(elapsed()) + '   (target ~3:00)');
+    L.push('');
+    STEPS.forEach(function (c, i) {
+      var v = (state.verdicts && state.verdicts[i]) || '';
+      if (v === 'pass') p++; else if (v === 'fail') f++;
+      var mark = v === 'pass' ? '[PASS]' : v === 'fail' ? '[FAIL]' : '[ -- ]';
+      var doTxt = c.do.replace(/<[^>]+>/g, '');
+      var note = (state.notes && state.notes[i]) ? '  | note: ' + state.notes[i] : '';
+      L.push(mark + ' ' + (i+1) + '. (' + c.tc + ') ' + doTxt + note);
+    });
+    L.push('');
+    L.push('SCORE: ' + p + ' pass / ' + f + ' fail / ' + (n-p-f) + ' left  (' + Math.round(100*p/n) + '%)');
+    L.push('VERDICT: ' + (fld('overall') ? fld('overall').toUpperCase() : '(not set)'));
+    if (state.fields && state.fields.bignote) { L.push(''); L.push('DIRECTOR\'S NOTE:'); L.push(state.fields.bignote); }
+    return L.join('\n');
+  }
+
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(fallback); }
+    else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+    }
+  }
+  var toastT;
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1600);
+  }
+
+  function load() { try { return JSON.parse(localStorage.getItem(LSKEY)) || {}; } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} }
+
+  (function () {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var status = document.getElementById('micstatus');
+    if (!SR) {
+      if (status) status.textContent = 'Voice not available here — just type your notes (works in Chrome/Edge).';
+      document.querySelectorAll('.mic, .micbig').forEach(function (b) { b.style.display = 'none'; });
+      return;
+    }
+    var active = null;
+    function dictate(btn, target) {
+      if (active) { active.recognition.stop(); if (active.btn === btn) return; }
+      var rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false;
+      btn.recognition = rec; active = { btn: btn, recognition: rec }; btn.classList.add('rec');
+      if (status && btn.classList.contains('micbig')) status.textContent = 'Listening… speak now.';
+      rec.onresult = function (e) {
+        var text = ''; for (var i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+        text = text.trim(); if (!text) return;
+        target.value = (target.value ? target.value + ' ' : '') + text;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+      rec.onerror = function (e) { if (status) status.textContent = 'Mic error: ' + e.error + ' — try again or type.'; };
+      rec.onend = function () { btn.classList.remove('rec'); active = null;
+        if (status && btn.classList.contains('micbig')) status.textContent = 'Mic ready — tap to add more, or edit above.'; };
+      try { rec.start(); } catch (err) { btn.classList.remove('rec'); }
+    }
+    document.body.addEventListener('click', function (ev) {
+      var m = ev.target.closest('.mic'); if (m && !m.classList.contains('micbig')) {
+        ev.preventDefault(); dictate(m, m.parentNode.querySelector('input.txt'));
+      }
+    });
+    var bigmic = document.getElementById('bigmic'), bigtext = document.getElementById('bigtext');
+    if (bigmic && bigtext) bigmic.addEventListener('click', function (ev) { ev.preventDefault(); dictate(bigmic, bigtext); });
+  })();
+
+  restore(); refresh();
+})();
+</script>
+
+</body>
+</html>
