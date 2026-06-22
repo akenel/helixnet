@@ -66,6 +66,24 @@ haven't caught this working" — Angel). The natural P4 after the initial flow s
 with the on-the-fly + Artemis enrichment (a fast-moving on-the-fly item is a reorder candidate
 *and* an "enhance me properly" candidate).
 
+## 6. Product label printing (the seal that was never installed)
+
+**Status (verified 2026-06-22):** does NOT exist. No label queue, no N-up PDF, no "print
+label" button — searched routes/templates/services. The only trace is an *aspirational
+comment* in `scan.html` genInternalBarcode() ("a manager prints the label from the
+Catalogue") describing intent, not a feature. The on-the-fly flow correctly *mints* a valid
+internal EAN-13; nothing prints it.
+
+**Not Day-One-blocking:** find-by-name covers re-selling; a printed sticker only buys
+"scan instead of type." Convenience, not requirement.
+
+**When built (short):** "Print labels" → N-up PDF of {product name + barcode + QR} per item.
+All parts already in hand — **segno** (QR/barcode), **Puppeteer** (PDF), N-up layout math
+documented in CLAUDE.md (postcard 2/3/4-up GOLD). Likely a label queue (mark items "to
+label") → generate the sheet → print on the shop's label/sticker printer (⟶ NEED hardware
+spec from Felix). FIX-NOW (tiny): correct the misleading scan.html comment so the code stops
+claiming a feature that isn't there.
+
 ---
 
 **Recommendation:** ship the tested initial-flow core to prod first (cash drawer, on-the-fly,

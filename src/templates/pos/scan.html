@@ -681,8 +681,9 @@
             },
 
             // Internal EAN-13 — GS1 reserves the "2" prefix for in-store codes, so this
-            // never collides with a manufacturer barcode. Valid check digit = scannable
-            // and printable later (a manager prints the label from the Catalogue).
+            // never collides with a manufacturer barcode. Valid check digit = scannable,
+            // and print-ready IF/WHEN a label-printing feature is built (not built yet —
+            // see docs/BANCO-ENRICHMENT-BACKLOG.md §6). Today the item is found by name.
             genInternalBarcode() {
                 let body = '2';
                 for (let i = 0; i < 11; i++) body += Math.floor(Math.random() * 10);
