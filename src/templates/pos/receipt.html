@@ -228,6 +228,14 @@
         body { margin: 0; padding: 0; }
         .no-print { display: none !important; }
 
+        /* Only the receipt prints (BL-126, Felix #126). Two things otherwise force a
+           blank trailing page in Chrome: (1) min-h-screen (=100vh) on the body AND the
+           content wrapper pads the page to full height, and (2) the FIXED app chrome
+           (status bar, feedback button) gets painted and tips it past one A4. Collapse
+           the heights and hide the chrome so a short receipt is exactly one page. */
+        html, body, .min-h-screen { min-height: 0 !important; height: auto !important; }
+        .helix-status-bar, .lpfb-btn, .lpfb-ov, .pulse-ov { display: none !important; }
+
         .receipt-page {
             box-shadow: none !important;
             margin: 0;
