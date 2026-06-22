@@ -1,11 +1,41 @@
-# Banco Sandbox — build handoff (→ Takes)
+# Banco Sandbox — the empty Day-One instance
 
-**Purpose:** the **empty, HTTPS** Banco instance Angel films **Day One** on. This is the
-**one gate** before recording — when it's up and the born-once/photo/label flow is in it,
-Angel presses record. See `BANCO-DAY-ONE-DEMO.md` / `-RUN-SHEET.md` / `-VO-SCRIPT.md`.
+> ## ✅ BUILT & LIVE (2026-06-22)
+> | | |
+> |---|---|
+> | **URL** | **https://sandbox-banco.lapiazza.app** (lands on `/pos`, valid TLS) |
+> | **Login** | `pam` / `helix_pass` (cashier) — also `felix` / `helix_pass` (admin) |
+> | **Reset** (between takes) | `ssh root@46.62.138.218 'cd /opt/helixnet && make sandbox-reset'` |
+> | **Run sheet** | `docs/BANCO-DAY-ONE-RUN-SHEET.md` |
+>
+> Catalogue boots **empty** (0 products, 0 sales, no open drawer). Reset is sub-second,
+> idempotent, clears no staff/settings. Container `helix-platform-sandbox` :8097 on its own
+> `banco_sandbox` DB — prod's `helix_db` is never touched. Built from `main` (`ecf999d`+).
+> **One human gate left:** Angel does the on-phone pass (camera + born-once/photo/label/sell)
+> — that's the 1% only a Fairphone can verify.
 
-When it's ready, hand Angel **four things**: the **URL**, the **login**, the **reset
-command**, and a pointer to `BANCO-DAY-ONE-RUN-SHEET.md`. Then he's ready.
+**Purpose:** the **empty, HTTPS** Banco instance Angel films **Day One** on. See
+`BANCO-DAY-ONE-DEMO.md` / `-RUN-SHEET.md` / `-VO-SCRIPT.md`.
+
+---
+
+## Operating it (runs on the Hetzner box, `ssh root@46.62.138.218`)
+
+All four targets live in the repo `Makefile` (run from `/opt/helixnet`):
+
+| Command | What it does |
+|---|---|
+| `make sandbox-reset` | **The tool.** TRUNCATE the Banco tables (products, transactions, line items, barcodes, stock moves, cash shifts, customers) `RESTART IDENTITY CASCADE`. Re-zero between takes. |
+| `make sandbox-up` | Ensure worktree on `origin/main`, create `banco_sandbox` DB if missing, start the container. |
+| `make sandbox-down` | Stop the container (hands its RAM back to prod when not filming). |
+| `make sandbox-deploy` | Pull latest `origin/main` into the sandbox worktree + restart (code refresh). |
+
+**Reset from your phone (no laptop):** bookmark/alias
+`ssh root@46.62.138.218 'cd /opt/helixnet && make sandbox-reset'` — fire it between takes.
+
+**Two kinds of "empty":** reset zeroes the *server*. It can't touch the *phone* — so start
+each take with a **fresh tab → Log Out → Log In** (clears the cart + the "already logged in"
+SSO state). One line, but skip it and a flubbed take's cart survives the reset.
 
 ---
 
