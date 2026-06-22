@@ -149,6 +149,11 @@ _ADDITIVE_COLUMNS: list[str] = [
     # table lacked (verified by diffing the model against information_schema).
     "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS is_team_order BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS team_name VARCHAR(200)",
+    # Banco store profile (2026-06-22): hours + social links on store_settings.
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS opening_hours VARCHAR(500)",
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS facebook_url VARCHAR(255)",
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255)",
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS founded_year VARCHAR(10)",
 ]
 
 

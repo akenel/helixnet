@@ -146,6 +146,15 @@ class StoreSettingsModel(Base):
         comment="URL to store logo for receipts (MinIO path)"
     )
 
+    # Shop profile — hours + social links (the full storefront identity)
+    opening_hours: Mapped[str | None] = mapped_column(
+        String(500), nullable=True,
+        comment="Free text, e.g. 'Mon–Wed 11–19, Thu–Fri 11–20, Sat 11–17'")
+    facebook_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    instagram_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    founded_year: Mapped[str | None] = mapped_column(
+        String(10), nullable=True, comment="e.g. '1999'")
+
     # Discount Settings
     cashier_max_discount: Mapped[Decimal] = mapped_column(
         Numeric(5, 2),

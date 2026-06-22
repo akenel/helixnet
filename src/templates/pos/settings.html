@@ -15,7 +15,7 @@
                 </button>
                 <div>
                     <h1 class="text-xl font-bold text-gray-900">⚙️ Store Settings</h1>
-                    <p class="text-xs text-gray-500">Your shop's identity — shows on every receipt</p>
+                    <p class="text-xs text-gray-500">Your shop's profile — shows on every receipt</p>
                 </div>
             </div>
             <button @click="save()" :disabled="saving || !isAdmin" class="btn-success">
@@ -25,89 +25,93 @@
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        <!-- admins only -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
         <div x-show="!isAdmin" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm">
             🔒 Store settings are admin-only. Ask Felix (admin) to make changes.
         </div>
 
         <template x-if="isAdmin">
-        <div class="space-y-6">
-            <!-- Identity -->
-            <div class="bg-white rounded-xl shadow p-5 space-y-4">
-                <h2 class="font-bold text-gray-900 border-b pb-2">🏪 Store identity</h2>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Store name</label>
-                        <input type="text" x-model="form.store_name" class="input-field" placeholder="Artemis Lucerne - Headshop"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Legal / company name</label>
-                        <input type="text" x-model="form.legal_name" class="input-field" placeholder="Artemis GmbH"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                        <input type="text" x-model="form.address_line1" class="input-field" placeholder="Murbacherstrasse 37"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Address line 2</label>
-                        <input type="text" x-model="form.address_line2" class="input-field" placeholder="(optional)"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Postal code</label>
-                        <input type="text" x-model="form.postal_code" class="input-field" placeholder="6003"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                        <input type="text" x-model="form.city" class="input-field" placeholder="Luzern"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                        <input type="text" x-model="form.country" class="input-field" placeholder="Switzerland"></div>
-                </div>
+        <div>
+            <!-- Tabs -->
+            <div class="flex flex-wrap gap-1 border-b mb-5">
+                <template x-for="t in tabs" :key="t.id">
+                    <button @click="tab=t.id"
+                        class="px-4 py-2 text-sm font-semibold rounded-t-lg -mb-px border-b-2"
+                        :class="tab===t.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-gray-500 hover:text-gray-800'"
+                        x-text="t.label"></button>
+                </template>
             </div>
 
-            <!-- Contact -->
             <div class="bg-white rounded-xl shadow p-5 space-y-4">
-                <h2 class="font-bold text-gray-900 border-b pb-2">📞 Contact</h2>
-                <div class="grid md:grid-cols-3 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                        <input type="text" x-model="form.phone" class="input-field" placeholder="041 220 22 22"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="text" x-model="form.email" class="input-field" placeholder="contact@artemisluzern.ch"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                        <input type="text" x-model="form.website" class="input-field" placeholder="artemisluzern.ch"></div>
-                </div>
-            </div>
 
-            <!-- VAT -->
-            <div class="bg-white rounded-xl shadow p-5 space-y-4">
-                <h2 class="font-bold text-gray-900 border-b pb-2">🧾 Swiss VAT (MWST)</h2>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">VAT number (UID)</label>
-                        <input type="text" x-model="form.vat_number" class="input-field font-mono" placeholder="CHE-XXX.XXX.XXX MWST">
-                        <p class="text-xs text-amber-600 mt-1" x-show="!form.vat_number || form.vat_number.includes('X')">⟶ enter Felix's real CHE-UID before going live</p></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">VAT rate (%)</label>
-                        <input type="number" step="0.1" min="0" max="100" x-model="form.vat_rate" class="input-field" placeholder="8.1"></div>
-                </div>
-            </div>
-
-            <!-- Receipt -->
-            <div class="bg-white rounded-xl shadow p-5 space-y-4">
-                <h2 class="font-bold text-gray-900 border-b pb-2">🖨️ Receipt</h2>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Header line</label>
-                    <input type="text" x-model="form.receipt_header" class="input-field" placeholder="Thank you for shopping at Artemis!"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Footer line</label>
-                    <input type="text" x-model="form.receipt_footer" class="input-field" placeholder="Kräuter &amp; Düfte seit 1999 🌿"></div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                    <input type="text" x-model="form.receipt_logo_url" class="input-field font-mono text-xs" placeholder="/static/artemis-logo.png">
-                    <div x-show="form.receipt_logo_url" class="mt-2 p-3 bg-gray-50 rounded-lg border inline-block">
-                        <img :src="form.receipt_logo_url" class="h-16" alt="logo preview" @error="$el.style.opacity=0.2">
+                <!-- IDENTITY & ADDRESS -->
+                <div x-show="tab==='identity'" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="lbl">Store name</label><input type="text" x-model="form.store_name" class="input-field" placeholder="Artemis Lucerne - Headshop"></div>
+                        <div><label class="lbl">Legal / company name</label><input type="text" x-model="form.legal_name" class="input-field" placeholder="Artemis GmbH"></div>
+                        <div><label class="lbl">Address</label><input type="text" x-model="form.address_line1" class="input-field" placeholder="Murbacherstrasse 37"></div>
+                        <div><label class="lbl">Address line 2</label><input type="text" x-model="form.address_line2" class="input-field" placeholder="(optional)"></div>
+                        <div><label class="lbl">Postal code</label><input type="text" x-model="form.postal_code" class="input-field" placeholder="6003"></div>
+                        <div><label class="lbl">City</label><input type="text" x-model="form.city" class="input-field" placeholder="Luzern"></div>
+                        <div><label class="lbl">Country</label><input type="text" x-model="form.country" class="input-field" placeholder="Switzerland"></div>
+                        <div><label class="lbl">Founded (year)</label><input type="text" x-model="form.founded_year" class="input-field" placeholder="1999"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Discounts -->
-            <div class="bg-white rounded-xl shadow p-5 space-y-4">
-                <h2 class="font-bold text-gray-900 border-b pb-2">🏷️ Discount limits (by role)</h2>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Cashier max (%)</label>
-                        <input type="number" step="1" min="0" max="100" x-model="form.cashier_max_discount" class="input-field" placeholder="10"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Manager max (%)</label>
-                        <input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
+                <!-- CONTACT & LINKS -->
+                <div x-show="tab==='contact'" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="lbl">Phone</label><input type="text" x-model="form.phone" class="input-field" placeholder="041 220 22 22"></div>
+                        <div><label class="lbl">Email</label><input type="text" x-model="form.email" class="input-field" placeholder="contact@artemisluzern.ch"></div>
+                        <div><label class="lbl">Website</label><input type="text" x-model="form.website" class="input-field" placeholder="artemisluzern.ch"></div>
+                        <div><label class="lbl">Facebook</label><input type="text" x-model="form.facebook_url" class="input-field" placeholder="facebook.com/…"></div>
+                        <div><label class="lbl">Instagram</label><input type="text" x-model="form.instagram_url" class="input-field" placeholder="instagram.com/…"></div>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-500">Admin is always unlimited. These caps are enforced at checkout.</p>
+
+                <!-- HOURS -->
+                <div x-show="tab==='hours'" class="space-y-2">
+                    <label class="lbl">Opening hours</label>
+                    <textarea x-model="form.opening_hours" rows="4" class="input-field"
+                        placeholder="Mon–Wed: 11:00–19:00&#10;Thu–Fri: 11:00–20:00&#10;Sat: 11:00–17:00"></textarea>
+                    <p class="text-xs text-gray-500">Free text — one line per range. Shows on the receipt / shop profile.</p>
+                </div>
+
+                <!-- TAX -->
+                <div x-show="tab==='tax'" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="lbl">VAT number (UID)</label>
+                            <input type="text" x-model="form.vat_number" class="input-field font-mono" placeholder="CHE-XXX.XXX.XXX MWST">
+                            <p class="text-xs text-amber-600 mt-1" x-show="!form.vat_number || (form.vat_number||'').includes('X')">⟶ enter the real CHE-UID before going live</p></div>
+                        <div><label class="lbl">VAT rate (%)</label><input type="number" step="0.1" min="0" max="100" x-model="form.vat_rate" class="input-field" placeholder="8.1"></div>
+                    </div>
+                </div>
+
+                <!-- RECEIPT & GRAPHICS -->
+                <div x-show="tab==='graphics'" class="space-y-4">
+                    <div><label class="lbl">Receipt header line</label><input type="text" x-model="form.receipt_header" class="input-field" placeholder="Thank you for shopping at Artemis!"></div>
+                    <div><label class="lbl">Receipt footer line</label><input type="text" x-model="form.receipt_footer" class="input-field" placeholder="Kräuter &amp; Düfte seit 1999 🌿"></div>
+                    <div>
+                        <label class="lbl">Logo URL</label>
+                        <input type="text" x-model="form.receipt_logo_url" class="input-field font-mono text-xs" placeholder="/static/artemis-logo.png">
+                        <div x-show="form.receipt_logo_url" class="mt-2 p-3 bg-gray-50 rounded-lg border inline-block">
+                            <img :src="form.receipt_logo_url" class="h-16" alt="logo preview" @error="$el.style.opacity=0.2">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DISCOUNTS -->
+                <div x-show="tab==='discounts'" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="lbl">Cashier max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.cashier_max_discount" class="input-field" placeholder="10"></div>
+                        <div><label class="lbl">Manager max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
+                    </div>
+                    <p class="text-xs text-gray-500">Admin is always unlimited. Enforced server-side at checkout.</p>
+                </div>
+
             </div>
 
-            <div class="flex justify-end">
+            <div class="flex justify-end mt-5">
                 <button @click="save()" :disabled="saving" class="btn-success">
                     <span x-show="!saving">💾 Save settings</span>
                     <span x-show="saving" style="display:none;">Saving…</span>
@@ -118,12 +122,23 @@
     </div>
 </div>
 
+<style>.lbl{display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;}</style>
+
 <script>
     function settingsData() {
         return {
             isAdmin: false,
             saving: false,
             form: {},
+            tab: 'identity',
+            tabs: [
+                { id:'identity', label:'🏪 Identity & Address' },
+                { id:'contact',  label:'📞 Contact & Links' },
+                { id:'hours',    label:'🕒 Hours' },
+                { id:'tax',      label:'🧾 Tax' },
+                { id:'graphics', label:'🖨️ Receipt & Graphics' },
+                { id:'discounts',label:'🏷️ Discounts' },
+            ],
             STORE: 1,
 
             async init() {
@@ -134,36 +149,29 @@
             },
 
             async load() {
-                try {
-                    this.form = await API.get(`/api/v1/pos/settings/${this.STORE}`);
-                } catch (e) {
-                    console.error('load settings failed', e);
-                    showToast('Could not load settings', 'error');
-                }
+                try { this.form = await API.get(`/api/v1/pos/settings/${this.STORE}`); }
+                catch (e) { console.error('load settings failed', e); showToast('Could not load settings', 'error'); }
             },
 
             async save() {
                 if (!this.isAdmin) { showToast('Admins only', 'warning'); return; }
                 this.saving = true;
-                // Send only the editable fields (the API ignores the rest).
                 const F = this.form;
                 const payload = {
                     store_name: F.store_name, legal_name: F.legal_name,
                     address_line1: F.address_line1, address_line2: F.address_line2,
-                    city: F.city, postal_code: F.postal_code, country: F.country,
+                    city: F.city, postal_code: F.postal_code, country: F.country, founded_year: F.founded_year,
                     phone: F.phone, email: F.email, website: F.website,
+                    facebook_url: F.facebook_url, instagram_url: F.instagram_url, opening_hours: F.opening_hours,
                     vat_number: F.vat_number, vat_rate: F.vat_rate,
-                    receipt_header: F.receipt_header, receipt_footer: F.receipt_footer,
-                    receipt_logo_url: F.receipt_logo_url,
-                    cashier_max_discount: F.cashier_max_discount,
-                    manager_max_discount: F.manager_max_discount,
+                    receipt_header: F.receipt_header, receipt_footer: F.receipt_footer, receipt_logo_url: F.receipt_logo_url,
+                    cashier_max_discount: F.cashier_max_discount, manager_max_discount: F.manager_max_discount,
                 };
                 try {
                     this.form = await API.put(`/api/v1/pos/settings/${this.STORE}`, payload);
-                    showToast('Saved — this is now on every receipt', 'success');
-                } catch (e) {
-                    showToast(e.message || 'Save failed', 'error');
-                } finally { this.saving = false; }
+                    showToast('Saved — live on every receipt', 'success');
+                } catch (e) { showToast(e.message || 'Save failed', 'error'); }
+                finally { this.saving = false; }
             },
         };
     }

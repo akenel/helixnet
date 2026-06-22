@@ -290,6 +290,10 @@ class StoreSettingsBase(BaseModel):
     receipt_header: Optional[str] = Field(None, max_length=500)
     receipt_footer: Optional[str] = Field(None, max_length=500)
     receipt_logo_url: Optional[str] = Field(None, max_length=500)
+    opening_hours: Optional[str] = Field(None, max_length=500)
+    facebook_url: Optional[str] = Field(None, max_length=255)
+    instagram_url: Optional[str] = Field(None, max_length=255)
+    founded_year: Optional[str] = Field(None, max_length=10)
 
     # Discount Settings
     cashier_max_discount: Decimal = Field(default=Decimal("10.0"), ge=0, le=100)
@@ -327,6 +331,10 @@ class StoreSettingsUpdate(BaseModel):
     receipt_header: Optional[str] = Field(None, max_length=500)
     receipt_footer: Optional[str] = Field(None, max_length=500)
     receipt_logo_url: Optional[str] = Field(None, max_length=500)
+    opening_hours: Optional[str] = Field(None, max_length=500)
+    facebook_url: Optional[str] = Field(None, max_length=255)
+    instagram_url: Optional[str] = Field(None, max_length=255)
+    founded_year: Optional[str] = Field(None, max_length=10)
     cashier_max_discount: Optional[Decimal] = Field(None, ge=0, le=100)
     manager_max_discount: Optional[Decimal] = Field(None, ge=0, le=100)
     loyalty_tier1_threshold: Optional[Decimal] = Field(None, ge=0)

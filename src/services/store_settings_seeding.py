@@ -65,6 +65,12 @@ async def seed_store_settings(db: AsyncSession) -> None:
         receipt_footer="Kräuter & Düfte seit 1999 🌿",
         receipt_logo_url="/static/artemis-logo.png",
 
+        # Shop profile (⟶ Felix fills the social links via Settings → Contact & Links)
+        opening_hours="Mon–Wed: 11:00–19:00\nThu–Fri: 11:00–20:00\nSat: 11:00–17:00",
+        founded_year="1999",
+        facebook_url=None,
+        instagram_url=None,
+
         # Discount Settings
         cashier_max_discount=Decimal("10.0"),  # Pam can give max 10%
         manager_max_discount=Decimal("100.0"),  # Felix/Ralph unlimited
