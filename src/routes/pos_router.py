@@ -7,7 +7,7 @@ Sprint 4: Added HTML interface routes for Pam's POS system.
 """
 import json
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -344,6 +344,98 @@ async def delete_product(
     await db.commit()
 
     logger.info(f"Product deactivated: {product.sku} by user {current_user['username']}")
+
+
+# ================================================================
+# PRODUCT PHOTO — the picture IS the label for unmarked goods.
+# Stored in MinIO, served back through the app (GET below) so we need no public
+# bucket or presigned URLs. Tidied + shrunk by the BL-92 Pillow pipeline when
+# Pillow is in the image; stored as-is otherwise so the feature works either way.
+# ================================================================
+
+_MAX_IMAGE_BYTES = 15 * 1024 * 1024  # a phone photo, not a video
+
+
+def _product_image_key(product_id) -> str:
+    return f"pos-products/{product_id}.jpg"
+
+
+@router.post("/products/{product_id}/image")
+async def upload_product_image(
+    product_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
+):
+    """Attach a photo to a product (manager/developer/admin). Born-once items
+    carry their own picture — for ~100%-unmarked goods that photo is how you
+    recognise the item in the catalogue later."""
+    import io as _io
+    import asyncio as _asyncio
+    from src.services.minio_service import minio_service
+
+    result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty file")
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
+    if not (file.content_type or "").lower().startswith("image/"):
+        raise HTTPException(status_code=415, detail="Please upload an image")
+
+    # Tidy + shrink with the Pillow pipeline if it's present in this image; fall
+    # back to the original bytes so the feature works before any image rebuild.
+    out_bytes = raw
+    try:
+        from src.services.image_intake import process, PRODUCT, ImageIntakeError
+        try:
+            out_bytes = process(raw, PRODUCT).main
+        except ImageIntakeError:
+            raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
+    except ImportError:
+        logger.warning("Pillow not in image — storing product photo as-is (no resize).")
+
+    key = _product_image_key(product_id)
+    loop = _asyncio.get_running_loop()
+    try:
+        await loop.run_in_executor(
+            None, minio_service.client.put_object,
+            minio_service.bucket_name, key, _io.BytesIO(out_bytes), len(out_bytes), "image/jpeg",
+        )
+    except Exception as e:
+        logger.error(f"MinIO product image upload failed for {key}: {e}")
+        raise HTTPException(status_code=500, detail="Photo upload to storage failed")
+
+    # Point image_url back at our own streamer; ?v= busts the browser cache on re-upload.
+    product.image_url = f"/api/v1/pos/products/{product_id}/image?v={len(out_bytes)}"
+    product.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    logger.info(f"Product photo set: {product.sku} ({len(out_bytes)} bytes) by {current_user['username']}")
+    return {"image_url": product.image_url}
+
+
+@router.get("/products/{product_id}/image")
+async def get_product_image(
+    product_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Stream a product photo from MinIO (public — catalogue images need no auth)."""
+    import asyncio as _asyncio
+    from src.services.minio_service import minio_service
+
+    loop = _asyncio.get_running_loop()
+    try:
+        data = await loop.run_in_executor(None, minio_service.download_artifact, _product_image_key(product_id))
+    except Exception:
+        data = None
+    if not data:
+        raise HTTPException(status_code=404, detail="No photo for this product")
+    return Response(content=data, media_type="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=3600"})
 
 
 # ================================================================
@@ -1146,6 +1238,27 @@ async def create_transaction(
 
     logger.info(f"Transaction created: {transaction_number} by cashier {current_user['username']}")
     return new_transaction
+
+
+@router.get("/transactions/next-number")
+async def next_transaction_number(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Preview the number the NEXT sale will get (TXN-YYYYMMDD-NNNN).
+
+    Display-only, so the New Sale header reads the real next number instead of a
+    random placeholder. The authoritative number is still assigned atomically in
+    create_transaction; this preview can differ if another till rings up first.
+    (Declared BEFORE /transactions/{transaction_id} so 'next-number' isn't parsed
+    as a UUID.)
+    """
+    today = date.today().strftime("%Y%m%d")
+    count_result = await db.execute(
+        select(func.count()).where(TransactionModel.transaction_number.like(f"TXN-{today}-%"))
+    )
+    count = count_result.scalar() or 0
+    return {"transaction_number": f"TXN-{today}-{count + 1:04d}"}
 
 
 @router.get("/transactions/{transaction_id}")

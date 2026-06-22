@@ -397,6 +397,18 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
                     <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" class="input-field">
                 </div>
+                <!-- Photo of the item — for unmarked goods the picture IS the label. -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Photo of the item</label>
+                    <div class="flex items-center gap-3">
+                        <label class="btn-secondary cursor-pointer flex-none">
+                            📸 <span x-text="lazyPhotoData ? 'Retake' : 'Take photo'"></span>
+                            <input type="file" accept="image/*" capture="environment" class="hidden" @change="onLazyPhoto($event)">
+                        </label>
+                        <img x-show="lazyPhotoData" :src="lazyPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
+                        <span x-show="!lazyPhotoData" class="text-xs text-gray-400">Optional — snap the item itself</span>
+                    </div>
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
@@ -405,6 +417,27 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
                         <input type="number" step="1" min="1" x-model.number="lazyQty" @keyup.enter="saveLazyCapture()" class="input-field text-2xl font-bold">
+                    </div>
+                </div>
+                <!-- Cost / unit (your buy price) — optional, the customer never sees it.
+                     Bought a box? Split it to a per-unit cost (papers, singles, etc.). -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Cost / unit (CHF)</label>
+                        <button type="button" @click="boxOpen=!boxOpen" class="text-xs text-blue-600 hover:underline"
+                                x-text="boxOpen ? '← enter cost directly' : 'bought a box? split it →'"></button>
+                    </div>
+                    <input x-show="!boxOpen" type="number" step="0.01" min="0" x-model="lazyCost" placeholder="0.00" class="input-field">
+                    <div x-show="boxOpen" style="display:none;" class="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-3">
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">Box cost (CHF)</label>
+                            <input type="number" step="0.01" min="0" x-model.number="boxCost" @input="calcUnitCost()" placeholder="0.00" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">Units in box</label>
+                            <input type="number" step="1" min="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="1" class="input-field">
+                        </div>
+                        <div class="col-span-2 text-sm text-gray-700">Per unit: <b x-text="'CHF ' + (lazyCost || '0.00')"></b></div>
                     </div>
                 </div>
                 <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">
@@ -443,7 +476,7 @@
     function scanData() {
         return {
             user: {},
-            transactionId: '#' + Math.floor(Math.random() * 100000),
+            transactionId: 'New Sale',   // replaced on init() with the real next TXN-…-NNNN
             searchMode: 'barcode', // 'barcode', 'search', or 'catalog'
 
             // Barcode mode
@@ -459,8 +492,15 @@
             lazyBarcode: '',
             lazyName: '',
             lazyPrice: '',
+            lazyCost: '',          // your buy price (per unit) — optional, invisible to the customer
             lazyQty: 1,
             lazySaving: false,
+            lazyPhotoFile: null,   // the snapped item photo (File) to upload after create
+            lazyPhotoData: '',     // data URL for the in-modal preview
+            // box-split helper: bought a box, sell singles → per-unit cost
+            boxOpen: false,
+            boxCost: null,
+            boxUnits: null,
 
             // BL-90: link an unknown barcode to an EXISTING product (alias) instead
             // of creating a duplicate.
@@ -528,6 +568,18 @@
                 }
 
                 this.loadCategories();
+                this.loadNextTransactionNumber();
+            },
+
+            // Show the real next number in the header (TXN-…-NNNN), not a placeholder.
+            // Display-only; the authoritative number is stamped server-side at checkout.
+            async loadNextTransactionNumber() {
+                // A restored in-progress cart keeps its own number.
+                if (this.transactionId && this.transactionId.indexOf('TXN-') === 0) return;
+                try {
+                    const r = await API.get('/api/v1/pos/transactions/next-number');
+                    if (r && r.transaction_number) this.transactionId = r.transaction_number;
+                } catch (e) { /* header stays "New Sale" — never block the till */ }
             },
 
             async searchByBarcode() {
@@ -601,12 +653,35 @@
                 this.lazyBarcode = barcode || '';
                 this.lazyName = '';
                 this.lazyPrice = '';
+                this.lazyCost = '';
                 this.lazyQty = 1;
                 this.lazySaving = false;
+                this.lazyPhotoFile = null;
+                this.lazyPhotoData = '';
+                this.boxOpen = false;
+                this.boxCost = null;
+                this.boxUnits = null;
                 this.lazyLinkOpen = false;
                 this.lazyLinkQuery = '';
                 this.lazyLinkResults = [];
                 this.lazyOpen = true;
+            },
+
+            // Snap/choose the item photo: keep the File for upload + a preview data URL.
+            onLazyPhoto(e) {
+                const f = e.target.files && e.target.files[0];
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                this.lazyPhotoFile = f;
+                const reader = new FileReader();
+                reader.onload = () => { this.lazyPhotoData = reader.result; };
+                reader.readAsDataURL(f);
+            },
+
+            // Box-split: a box cost over N units → the per-unit cost.
+            calcUnitCost() {
+                const c = parseFloat(this.boxCost), u = parseInt(this.boxUnits, 10);
+                this.lazyCost = (c > 0 && u > 0) ? (c / u).toFixed(2) : '';
             },
 
             // BL-90: link the scanned barcode to an existing product (alias).
@@ -658,17 +733,36 @@
                 const bc = (this.lazyBarcode || '').trim();
                 // Operator never types a SKU — derive a stable one from the barcode.
                 const sku = bc ? ('LZ-' + bc) : ('LZ-' + Date.now());
+                const cost = parseFloat(this.lazyCost);
                 const payload = {
                     barcode: bc || null,
                     sku,
                     name: this.lazyName.trim(),
                     price,
+                    cost: (!isNaN(cost) && cost >= 0) ? cost : null,
                     // Zero perpetual inventory: no stock_quantity to set. A product is born
                     // once and is always sellable; velocity comes from the sales log, not a count.
                 };
                 try {
                     // Persist a REAL product (manager/admin/dev). Known on every future scan.
                     const product = await API.post('/api/v1/pos/products', payload);
+                    // Attach the photo (if one was taken) — the picture is the label.
+                    if (this.lazyPhotoFile && product && product.id) {
+                        try {
+                            const fd = new FormData();
+                            fd.append('file', this.lazyPhotoFile);
+                            const r = await fetch(`/api/v1/pos/products/${product.id}/image`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` },
+                                body: fd,
+                            });
+                            if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
+                            else { showToast('Saved, but the photo did not upload', 'warning'); }
+                        } catch (imgErr) {
+                            console.warn('Photo upload failed:', imgErr);
+                            showToast('Saved, but the photo did not upload', 'warning');
+                        }
+                    }
                     this.addToCart(product, qty);
                     this.lazyOpen = false;
                     this.barcodeInput = '';
