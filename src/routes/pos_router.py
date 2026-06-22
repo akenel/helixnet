@@ -1684,6 +1684,15 @@ async def checkout_transaction(
 
     # Validate cash payment
     if checkout.payment_method == PaymentMethod.CASH:
+        # A cash sale physically lands in the drawer, so it MUST belong to an OPEN
+        # cash shift — otherwise the money is unassigned and can't be reconciled at
+        # close (the bug Angel hit: cash taken before the drawer was opened). Card /
+        # TWINT / debit never touch the drawer, so they're not gated. 409 = the till
+        # prompts the cashier to open + initialise their drawer first.
+        if not await _open_shift_for(db, _uid(current_user)):
+            raise HTTPException(
+                status_code=409,
+                detail="Open your cash drawer before taking a cash sale.")
         if not checkout.amount_tendered:
             raise HTTPException(status_code=400, detail="Cash payment requires amount_tendered")
         if checkout.amount_tendered < transaction.total:

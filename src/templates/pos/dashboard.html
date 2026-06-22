@@ -64,15 +64,18 @@
                 </div>
             </div>
 
-            <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/shift'">
+            <div class="card hover:shadow-xl transition cursor-pointer border-l-4"
+                 :class="drawer ? 'border-green-500' : 'border-amber-400'"
+                 onclick="window.location.href='/pos/shift'">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-600 font-medium">My Drawer</p>
-                        <p class="text-2xl font-bold" :class="drawer ? 'text-green-600' : 'text-gray-400'"
+                        <p class="text-2xl font-bold" :class="drawer ? 'text-green-600' : 'text-amber-600'"
                            x-text="drawer ? formatPrice(parseFloat(drawer.expected_cash)) : 'Closed'"></p>
-                        <p class="text-xs text-gray-500" x-text="drawer ? 'Open — expected in drawer →' : 'Tap to open your drawer →'"></p>
+                        <p class="text-xs" :class="drawer ? 'text-gray-500' : 'text-amber-600 font-semibold'"
+                           x-text="drawer ? 'Open ✓ — expected in drawer →' : 'Open it to take cash →'"></p>
                     </div>
-                    <span class="text-4xl" x-text="drawer ? '💵' : '🔒'"></span>
+                    <span class="text-4xl" x-text="drawer ? '💵' : '🔓'"></span>
                 </div>
             </div>
         </div>

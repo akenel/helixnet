@@ -441,6 +441,20 @@
                     return;
                 }
 
+                // Cash needs an OPEN drawer — check before ringing anything up, so the
+                // money always lands in a shift that reconciles at close. Card/TWINT skip this.
+                if (this.paymentMethod === 'cash') {
+                    let drawerOpen = false;
+                    try { const s = await API.get('/api/v1/pos/shift/current'); drawerOpen = !!(s && s.open); } catch (e) {}
+                    if (!drawerOpen) {
+                        sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // keep the sale
+                        if (confirm('Open your cash drawer before taking a cash sale.\n\nOpen it now? Your cart is saved — come back here to finish.')) {
+                            window.location.href = '/pos/shift';
+                        }
+                        return;
+                    }
+                }
+
                 // For cash, show change in confirmation
                 let confirmMsg = `Complete transaction for ${formatPrice(this.cartData.totals.total)}?`;
                 if (this.paymentMethod === 'cash' && this.changeAmount > 0) {
