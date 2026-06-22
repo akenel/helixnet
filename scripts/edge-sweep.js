@@ -164,6 +164,9 @@ function validEan13(b){ if(!/^\d{13}$/.test(b||''))return false; let s=0; for(le
   // ---- EAN13 validity of a quick item ----
   rec('O6', 'quick item barcode is a valid EAN-13 (if minted)', q.json && (q.json.barcode ? validEan13(q.json.barcode) : true), `barcode ${q.json && q.json.barcode}`);
 
+  let ds = await api(F, 'GET', '/reports/daily-summary');
+  rec('RPT1', 'daily summary returns top_seller after sales', !!(ds.json && ds.json.top_seller), 'top=' + (ds.json && ds.json.top_seller));
+
   await browser.close();
 
   // ---- report ----

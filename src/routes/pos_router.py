@@ -1935,7 +1935,32 @@ async def get_daily_summary(
             giveaway_count += q
             giveaway_cost += Decimal(str(cost or 0)) * q
 
+    # Best seller today: the item (catalog product OR custom line) with the most units
+    # sold, excluding free treats. The schema always had the field; it was never filled
+    # (always showed "No sales yet today"). On a one-sale day it's just the item sold.
+    top_seller = None
+    top_seller_quantity = None
+    if tx_ids:
+        name_expr = func.coalesce(ProductModel.name, LineItemModel.notes, "Item")
+        ts = await db.execute(
+            select(name_expr.label("name"), func.sum(LineItemModel.quantity).label("qty"))
+            .join(ProductModel, ProductModel.id == LineItemModel.product_id, isouter=True)
+            .where(and_(
+                LineItemModel.transaction_id.in_(tx_ids),
+                LineItemModel.is_giveaway == False,
+            ))
+            .group_by(name_expr)
+            .order_by(func.sum(LineItemModel.quantity).desc())
+            .limit(1)
+        )
+        row = ts.first()
+        if row and row.qty:
+            top_seller = row.name
+            top_seller_quantity = int(row.qty)
+
     return DailySummary(
+        top_seller=top_seller,
+        top_seller_quantity=top_seller_quantity,
         date=target_date.isoformat(),
         total_transactions=len(transactions),
         total_sales=Decimal(str(total_sales)),
