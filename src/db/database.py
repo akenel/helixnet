@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager, contextmanager
 from typing import AsyncGenerator, Iterator, Optional
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
@@ -162,21 +163,8 @@ _DDL_MIGRATIONS: list[str] = [
     # Giveaway flag: a 'treat' is a real product given free (zero revenue) but it
     # leaves inventory -- flagged so reports/accounting can track COGS for tax.
     "ALTER TABLE line_items ADD COLUMN IF NOT EXISTS is_giveaway BOOLEAN NOT NULL DEFAULT FALSE",
-    # Seed the Treats catalog so giveaways decrement real stock + carry a cost.
-    # Idempotent (ON CONFLICT on the unique sku). gen_random_uuid() is built-in (PG13+).
-    """
-    INSERT INTO products (id, sku, name, description, price, cost, stock_quantity,
-        stock_alert_threshold, category, is_active, is_age_restricted, vending_compatible,
-        sync_override, created_at, updated_at)
-    VALUES
-      (gen_random_uuid(),'TREAT-LOLLIPOP','Lollipop','Treat / giveaway',0.50,0.10,200,20,'Treats',true,false,false,false,now(),now()),
-      (gen_random_uuid(),'TREAT-STICKER','Sticker','Treat / giveaway',0.30,0.05,200,20,'Treats',true,false,false,false,now(),now()),
-      (gen_random_uuid(),'TREAT-PAPERS','Rolling Papers','Treat / giveaway',0.60,0.15,200,20,'Treats',true,false,false,false,now(),now()),
-      (gen_random_uuid(),'TREAT-GUMMY','CBD Gummy','Treat / giveaway',0.45,0.12,200,20,'Treats',true,false,false,false,now(),now()),
-      (gen_random_uuid(),'TREAT-LIGHTER','Lighter','Treat / giveaway',1.50,0.40,200,20,'Treats',true,false,false,false,now(),now()),
-      (gen_random_uuid(),'TREAT-GRINDERCARD','Grinder Card','Treat / giveaway',1.80,0.50,200,20,'Treats',true,false,false,false,now(),now())
-    ON CONFLICT (sku) DO NOTHING
-    """,
+    # (The Treats catalog INSERT moved to _DEMO_DDL below -- it is demo *content*,
+    #  gated by HX_SEED_DEMO so the Banco Day-One sandbox boots with an empty shop.)
     # pg_trgm powers similarity() for the POS product search.
     "CREATE EXTENSION IF NOT EXISTS pg_trgm",
     # GIN trigram index keeps fuzzy/ILIKE name search fast on a big (thousands) catalog.
@@ -256,10 +244,34 @@ _DDL_MIGRATIONS: list[str] = [
 ]
 
 
+# Demo *content* DDL -- skipped when HX_SEED_DEMO=false (the Banco Day-One sandbox),
+# so the shop boots empty. Everything in _DDL_MIGRATIONS above is schema/infra and
+# always runs; only seed rows live here.
+_DEMO_DDL: list[str] = [
+    # Seed the Treats catalog so giveaways decrement real stock + carry a cost.
+    # Idempotent (ON CONFLICT on the unique sku). gen_random_uuid() is built-in (PG13+).
+    """
+    INSERT INTO products (id, sku, name, description, price, cost, stock_quantity,
+        stock_alert_threshold, category, is_active, is_age_restricted, vending_compatible,
+        sync_override, created_at, updated_at)
+    VALUES
+      (gen_random_uuid(),'TREAT-LOLLIPOP','Lollipop','Treat / giveaway',0.50,0.10,200,20,'Treats',true,false,false,false,now(),now()),
+      (gen_random_uuid(),'TREAT-STICKER','Sticker','Treat / giveaway',0.30,0.05,200,20,'Treats',true,false,false,false,now(),now()),
+      (gen_random_uuid(),'TREAT-PAPERS','Rolling Papers','Treat / giveaway',0.60,0.15,200,20,'Treats',true,false,false,false,now(),now()),
+      (gen_random_uuid(),'TREAT-GUMMY','CBD Gummy','Treat / giveaway',0.45,0.12,200,20,'Treats',true,false,false,false,now(),now()),
+      (gen_random_uuid(),'TREAT-LIGHTER','Lighter','Treat / giveaway',1.50,0.40,200,20,'Treats',true,false,false,false,now(),now()),
+      (gen_random_uuid(),'TREAT-GRINDERCARD','Grinder Card','Treat / giveaway',1.80,0.50,200,20,'Treats',true,false,false,false,now(),now())
+    ON CONFLICT (sku) DO NOTHING
+    """,
+]
+
+
 async def _ensure_lightweight_columns() -> None:
     """Run the additive ALTERs above. Each is independent and forgiving -- one failure
     (e.g. table not created yet on a brand-new DB) must not block the others or boot."""
-    for stmt in _ADDITIVE_COLUMNS + _DDL_MIGRATIONS:
+    seed_demo = os.getenv("HX_SEED_DEMO", "true").strip().lower() not in ("false", "0", "no")
+    statements = _ADDITIVE_COLUMNS + _DDL_MIGRATIONS + (_DEMO_DDL if seed_demo else [])
+    for stmt in statements:
         try:
             async with async_engine.begin() as conn:
                 await conn.execute(text(stmt))
