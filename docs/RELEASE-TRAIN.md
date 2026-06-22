@@ -26,7 +26,23 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Boarding (awaiting the next prod train)
 
-_(empty — nothing boarding. BL-90 SHIPPED, see below. Next build: BL-91 receiving.)_
+> **BL-91 receiving ("scan a delivery in — stock goes up")** — lean goods-in: scan/lookup
+> an item, type the count, stock rises by exactly that, an audit movement is written. New
+> Banco-native `pos_stock_movements` table (FK→products; NOT the inventory_model table).
+> Manager-gated `POST /api/v1/pos/receiving` (atomic batch — one bad product_id → 404,
+> nothing applied) + `/pos/receiving` page (reuses the hardened `PosScanner`, lazy-creates
+> an unknown item at stock 0). Dashboard card added. **STAGED @ `0d2f28e` —
+> staging-banco.lapiazza.app, 2026-06-22.** `pos_stock_movements` auto-created on the
+> shared DB; pages 200. 114 POS tests pass (110 + 4 new `test_pos_receiving.py`).
+> **Awaiting Angel Fairphone PASS** (receive a delivery, watch stock go up).
+>
+> **BL-FB feedback button draggable** — the 💬 feedback button covered the Submit button
+> on some phones (Felix reported it twice). Button is now draggable (defaults mid-right,
+> position persists to localStorage; a real drag doesn't open the modal). **STAGED @
+> `0d2f28e` — staging-banco.lapiazza.app, 2026-06-22.** Awaiting Angel PASS. On ship,
+> close feedback items `895c3080` + `8a4f5dda`.
+>
+> Next build after the train: backlog tidy + 🔴 `219d42a1` "Report totals are wrong".
 
 > **BL-90 scan-recognition hardening ("scan once, known forever")** — fixes the bug
 > where the same item got captured under different/garbage barcodes so a clean scan
