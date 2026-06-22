@@ -192,10 +192,14 @@
                     this.addProduct(p);
                     this.barcodeInput = '';
                 } catch (err) {
-                    if (String(err.message || err).includes('404') || err.status === 404) {
+                    // The API helper throws Error(detail) with no .status, so match the
+                    // 404 detail text ("...not found") to open the create modal. Anything
+                    // else (network/500) is a real error worth showing.
+                    const msg = String(err.message || err);
+                    if (/not found/i.test(msg) || err.status === 404) {
                         this.openNew(bc);
                     } else {
-                        this.lookupMsg = err.message || 'Lookup failed';
+                        this.lookupMsg = msg || 'Lookup failed';
                     }
                 }
             },
