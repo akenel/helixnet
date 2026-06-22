@@ -52,8 +52,7 @@
                 </label>
             </div>
             <p class="text-sm text-gray-600 mt-2">
-                <span x-show="!showDiscontinued && total > 0">Found <span x-text="total"></span> active</span>
-                <span x-show="!showDiscontinued && q.length===0 && !category">Type to search, or pick a category</span>
+                <span x-show="!showDiscontinued && total > 0"><span x-text="total"></span> active <span x-show="q.length===0 && !category">— type to filter</span></span>
                 <span x-show="showDiscontinued">Showing discontinued products</span>
             </p>
         </div>
@@ -254,6 +253,7 @@
                 if (!userInfo) { window.location.href = '/pos'; return; }
                 this.user = { ...userInfo, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
                 this.loadCategories();
+                this.search();   // list the catalogue by default — no need to type first
             },
 
             async loadCategories() {
@@ -271,9 +271,8 @@
 
             async search() {
                 if (this.showDiscontinued) return;  // discontinued view is separate
-                if (this.q.length < 2 && !this.category) {
-                    this.results = []; this.total = 0; this.skip = 0; return;
-                }
+                // No early-out on empty q: an empty query lists the whole catalogue
+                // (paginated), so items always "come out in a list" without typing.
                 this.loading = true; this.skip = 0;
                 try {
                     const data = await API.get(this._url(0));

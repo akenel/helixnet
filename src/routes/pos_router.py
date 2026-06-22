@@ -633,8 +633,13 @@ async def search_products_fast(
     """
     from sqlalchemy import text
 
-    if not q and not category:
-        return {"items": [], "total": 0, "skip": skip, "limit": limit}
+    # Normalize blanks: the UI sends `category=` (empty string) when no filter is
+    # picked. Treated as a real filter it became `category ILIKE '%%'`, which
+    # EXCLUDES every product whose category IS NULL (e.g. born-once items) — they
+    # vanished from search. Empty → None = "no category filter". Empty q is fine:
+    # it lists all active products (the catalogue browses by default).
+    q = (q or "").strip()
+    category = (category or "").strip() or None
 
     # One query: ranked page + total matches via count(*) OVER().
     query = text("""
