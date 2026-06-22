@@ -51,7 +51,7 @@
                             @click="searchMode = 'catalog'"
                             :class="searchMode === 'catalog' ? 'btn-primary' : 'btn-secondary'"
                             class="flex-1 py-3">
-                            🆕 On the fly
+                            🆕 New item
                         </button>
                     </div>
 
@@ -94,28 +94,41 @@
                         </p>
                     </div>
 
-                    <!-- No-barcode mode: sell on the fly. Fast (name + price), persists as a
-                         flagged "On-the-fly" item so it's sellable again + enhanced later. -->
+                    <!-- New item on the fly: fast cashier create for no-barcode goods.
+                         Name + price (photo optional), auto-filed under "On the fly" so
+                         Pam never picks a category; a manager enhances/discontinues later. -->
                     <div x-show="searchMode === 'catalog'" class="space-y-4">
                         <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
-                            <p class="text-sm font-semibold text-yellow-800 mb-2">🆕 No barcode? Sell it on the fly</p>
+                            <p class="text-sm font-semibold text-yellow-800 mb-2">🆕 New item — no barcode</p>
                             <p class="text-sm text-yellow-700">
-                                Name + price, that's it. It's <b>saved as an “On-the-fly” item</b> and added to the cart —
-                                so you can <b>find it by name and sell it again</b> next time. Add a photo / proper details
-                                later in the Catalogue.
+                                Name + price, photo if you've got a second. It's <b>saved</b> (filed under
+                                <b>“On the fly”</b>) and added to the cart — so you can <b>find it by name and sell it
+                                again</b>. Tidy it up later in the Catalogue, or discontinue it if it was a one-off.
                             </p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Item name</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item name <span class="text-red-500">*</span></label>
                             <input type="text" x-model="catalogDescription" @keyup.enter="createNoCodeItem()"
                                    placeholder="e.g. Cynthia cup — red" class="input-field">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Price (CHF)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price (CHF) <span class="text-red-500">*</span></label>
                             <input type="number" step="0.05" min="0" x-model="catalogPrice" @keyup.enter="createNoCodeItem()"
                                    placeholder="0.00" class="input-field text-2xl font-bold">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Photo <span class="text-gray-400 font-normal">(optional)</span></label>
+                            <div class="flex items-center gap-3">
+                                <label class="btn-secondary cursor-pointer flex-none">
+                                    📸 <span x-text="otfPhotoData ? 'Retake' : 'Take photo'"></span>
+                                    <input type="file" accept="image/*" capture="environment" class="hidden" @change="onOtfPhoto($event)">
+                                </label>
+                                <img x-show="otfPhotoData" :src="otfPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
+                                <span x-show="!otfPhotoData" class="text-xs text-gray-400">Helps you recognise it next time</span>
+                            </div>
                         </div>
 
                         <button @click="createNoCodeItem()" :disabled="lazySaving" class="btn-success w-full">
@@ -505,6 +518,8 @@
             catalogCategory: '',
             catalogDescription: '',
             catalogPrice: '',
+            otfPhotoFile: null,   // optional photo for an on-the-fly item
+            otfPhotoData: '',     // preview data URL
 
             // Cart
             cart: [],
@@ -635,22 +650,44 @@
             // "On-the-fly" so it's a separate thing to enhance later — but searchable by
             // name and sellable again right away (Christina's cups in a rush). Falls back
             // to a one-off line if the user can't create (cashier) so the sale never blocks.
+            // Pick/snap an optional photo for the on-the-fly item.
+            onOtfPhoto(e) {
+                const f = e.target.files && e.target.files[0];
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                this.otfPhotoFile = f;
+                const reader = new FileReader();
+                reader.onload = () => { this.otfPhotoData = reader.result; };
+                reader.readAsDataURL(f);
+            },
+
             async createNoCodeItem() {
                 const name = (this.catalogDescription || '').trim();
                 if (!name) { showToast('Enter a name', 'warning'); return; }
                 const price = parseFloat(this.catalogPrice);
                 if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
                 this.lazySaving = true;
-                const payload = { sku: 'OTF-' + Date.now(), barcode: null, name, price, category: 'On-the-fly' };
+                const payload = { sku: 'OTF-' + Date.now(), barcode: null, name, price, category: 'On the fly' };
                 try {
                     const product = await API.post('/api/v1/pos/products', payload);
+                    // Optional photo — upload it to the gallery (becomes the cover).
+                    if (this.otfPhotoFile && product && product.id) {
+                        try {
+                            const fd = new FormData(); fd.append('file', this.otfPhotoFile);
+                            const r = await fetch(`/api/v1/pos/products/${product.id}/images`, {
+                                method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
+                            if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
+                        } catch (imgErr) { console.warn('photo upload failed', imgErr); }
+                    }
                     this.addToCart(product, 1);
                     this.catalogDescription = ''; this.catalogPrice = '';
-                    showToast('Saved on-the-fly — find it by name next time', 'success');
+                    this.otfPhotoFile = null; this.otfPhotoData = '';
+                    showToast('Saved on the fly — find it by name next time', 'success');
                 } catch (err) {
                     console.warn('On-the-fly create failed; one-off line:', err);
                     this.cart.push({ id: 'otf-' + Date.now(), name: '[NEW] ' + name, price, quantity: 1, isCatalogItem: true });
                     this.catalogDescription = ''; this.catalogPrice = '';
+                    this.otfPhotoFile = null; this.otfPhotoData = '';
                     showToast('Added for this sale. Ask a manager to add it permanently.', 'info');
                 } finally { this.lazySaving = false; }
             },
