@@ -165,3 +165,35 @@ test('receiving: scanning the same item twice does not add a 2nd line', async ({
   // Still exactly ONE list row for this item — no count, no 2nd line.
   await expect(page.getByText(name, { exact: true })).toHaveCount(1);
 });
+
+test('receiving lazy-create captures purchase cost via the box helper (box -> per-unit)', async ({ page }) => {
+  await login(page);
+  const barcode = '902' + Math.floor(100000000 + Math.random() * 800000000);
+
+  await page.goto('/pos/receiving');
+  await page.getByPlaceholder('e.g. 7610000123463').fill(barcode);
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+
+  // Unknown barcode -> the lazy-create modal opens.
+  await expect(page.getByText('New item')).toBeVisible({ timeout: 10_000 });
+  await page.locator('[x-model="newName"]').fill('E2E Cost ' + Math.random().toString(36).slice(2, 7));
+  await page.locator('[x-model="newPrice"]').fill('2.00');
+
+  // Box helper: paid CHF 50 for a box of 100 -> 0.50 per unit, auto-filled as cost.
+  await page.getByPlaceholder('box').fill('50');
+  await page.getByPlaceholder('units').fill('100');
+  await expect(page.getByText(/0\.50\/unit/)).toBeVisible();
+
+  await page.getByRole('button', { name: /Add to delivery/i }).click();
+  // Wait for the create to finish: the modal closes and the item lands on the list.
+  await expect(page.getByText('New item')).toBeHidden({ timeout: 10_000 });
+
+  // The created product carries the per-unit cost (margin = price - cost works).
+  const cost = await page.evaluate(async (bc) => {
+    const t = sessionStorage.getItem('pos_token');
+    const lookup = await (await fetch('/api/v1/pos/products/barcode/' + bc, { headers: { 'Authorization': 'Bearer ' + t } })).json();
+    const full = await (await fetch('/api/v1/pos/products/' + lookup.id, { headers: { 'Authorization': 'Bearer ' + t } })).json();
+    return full.cost;
+  }, barcode);
+  expect(Number(cost)).toBeCloseTo(0.50, 2);
+});
