@@ -711,10 +711,11 @@
                         name, price, description, category,
                     };
                     try {
-                        product = await API.post('/api/v1/pos/products', payload);
+                        // Cashier-safe quick create (cashiers can make on-the-fly items).
+                        product = await API.post('/api/v1/pos/products/quick', payload);
                     } catch (err) {
                         if (/already exists/i.test(String(err.message || err))) continue;  // collision → retry
-                        blocked = true; break;   // 403 / other → stop, fall back below
+                        blocked = true; break;   // hard failure → one-off fallback below
                     }
                 }
 

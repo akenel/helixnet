@@ -477,7 +477,12 @@
                         // Treats are real products given free (is_giveaway) -> stock + COGS tracked.
                         // Manual catalog entries ('catalog...') are still custom (no product_id).
                         const isGiveaway = !!item.isGiveaway;
-                        const isCustom = !isGiveaway && (item.id.toString().startsWith('catalog') || item.id.toString().startsWith('change_'));
+                        // A "custom line" has no real product_id: a manual one-off (catalog…/
+                        // otf… fallback), a product-as-change treat (change_…), or anything
+                        // flagged isCatalogItem. Detect by the flag OR the id prefix so the
+                        // line posts name+unit_price instead of a bogus product_id (→ 422).
+                        const isCustom = !isGiveaway && (item.isCatalogItem === true
+                            || /^(catalog|change_|otf)/.test(item.id.toString()));
                         await API.post(`/api/v1/pos/transactions/${transaction.id}/items`, {
                             product_id: isCustom ? null : (item.product_id || item.id),
                             quantity: item.quantity,

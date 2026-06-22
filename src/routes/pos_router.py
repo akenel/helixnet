@@ -152,6 +152,42 @@ async def create_product(
     return new_product
 
 
+@router.post("/products/quick", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
+async def quick_create_product(
+    product: ProductCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Cashier-safe on-the-fly create for no-barcode goods.
+
+    Unlike full catalogue management (manager-only), a CASHIER can do this quick
+    create — so Pam can ring up and re-sell a brand-new item in a rush (Christina's
+    cups) without a manager. Minimal fields; auto-filed under "On the fly" if no
+    category is given, so a manager can enhance or discontinue it later.
+    """
+    data = product.model_dump()
+    if not (data.get("name") or "").strip():
+        raise HTTPException(status_code=422, detail="Name is required")
+    if data.get("price") is None:
+        raise HTTPException(status_code=422, detail="Price is required")
+    if not (data.get("category") or "").strip():
+        data["category"] = "On the fly"
+    data["is_active"] = True
+    new_product = ProductModel(**data)
+    db.add(new_product)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A product with this barcode or SKU already exists.",
+        )
+    await db.refresh(new_product)
+    logger.info(f"Quick on-the-fly product: {new_product.sku} by {current_user['username']}")
+    return new_product
+
+
 @router.get("/products", response_model=list[ProductRead])
 async def list_products(
     skip: int = 0,
