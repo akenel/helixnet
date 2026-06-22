@@ -22,27 +22,29 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last: BL-90 scan-recognition hardening shipped to banco.lapiazza.app @ `8e27725`, 2026-06-21 — Tigs, Angel Fairphone PASS.)
+`🟢 IDLE` — no train running. (Last: the zero-inventory train shipped to banco.lapiazza.app @ `b7f083a`, 2026-06-22 — Tigs, Angel Fairphone PASS 12/12 + 24 E2E green.)
 
 ## Boarding (awaiting the next prod train)
 
-> **BL-91 receiving ("scan a delivery in — stock goes up")** — lean goods-in: scan/lookup
-> an item, type the count, stock rises by exactly that, an audit movement is written. New
-> Banco-native `pos_stock_movements` table (FK→products; NOT the inventory_model table).
-> Manager-gated `POST /api/v1/pos/receiving` (atomic batch — one bad product_id → 404,
-> nothing applied) + `/pos/receiving` page (reuses the hardened `PosScanner`, lazy-creates
-> an unknown item at stock 0). Dashboard card added. **STAGED @ `0d2f28e` —
-> staging-banco.lapiazza.app, 2026-06-22.** `pos_stock_movements` auto-created on the
-> shared DB; pages 200. 114 POS tests pass (110 + 4 new `test_pos_receiving.py`).
-> **Awaiting Angel Fairphone PASS** (receive a delivery, watch stock go up).
+_(empty — the zero-inventory train SHIPPED, see below. Next: 🔴 `219d42a1` "Report totals are wrong"; backlog tidy.)_
+
+> **Zero-inventory train — SHIPPED to banco.lapiazza.app @ `b7f083a`, 2026-06-22**
+> (Angel Fairphone PASS, full mobile sheet 12/12; 24 Playwright E2E green on staging).
+> One train, the whole sprint:
+> - **BL-91 receiving** — goods-in as **cataloguing** (no counts): scan an arrival → it
+>   joins the catalogue (one row, no qty), `pos_stock_movements` audit. New lazy-create
+>   captures **purchase cost + box→per-unit helper**.
+> - **BL-93 QR** — scanner reads QR *and* EAN/UPC (our own labels + unbarcoded goods).
+> - **BL-94 full zero perpetual inventory** — a sale is never blocked by a count and
+>   never moves it; refund money-only; low-stock/reorder signal dropped; no stock badge.
+> - **BL-95** — receiving opens the create-modal for unknown items (404-detect fix, caught by E2E).
+> - **BL-126** — receipt prints ONE page (kill blank page 2).
+> - **BL-FB** — feedback button draggable. On ship, close feedback items "Feedback covers submit" (#86, #88).
+> - **BL-92 image intake** (Pillow) — PARKED, not on this train (needs an image rebuild,
+>   nothing imports it yet; waits for the slip-reader).
 >
-> **BL-FB feedback button draggable** — the 💬 feedback button covered the Submit button
-> on some phones (Felix reported it twice). Button is now draggable (defaults mid-right,
-> position persists to localStorage; a real drag doesn't open the modal). **STAGED @
-> `0d2f28e` — staging-banco.lapiazza.app, 2026-06-22.** Awaiting Angel PASS. On ship,
-> close feedback items `895c3080` + `8a4f5dda`.
->
-> Next build after the train: backlog tidy + 🔴 `219d42a1` "Report totals are wrong".
+> Verified in the running prod container: `Insufficient stock`=0, QR_CODE present,
+> receipt min-height reset, receiving 404-detect, "Scan arrivals into the catalogue".
 
 > **BL-90 scan-recognition hardening ("scan once, known forever")** — fixes the bug
 > where the same item got captured under different/garbage barcodes so a clean scan
