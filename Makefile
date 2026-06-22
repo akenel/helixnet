@@ -266,3 +266,53 @@ nuke-all:
 	@echo " Run 'make up' for fresh install (realms auto-import)"
 	@echo "============================================================"
 	@echo ""
+
+# ===================================================================
+# BANCO SANDBOX -- the empty Day-One demo instance (runs on the Hetzner box)
+#   sandbox-banco.lapiazza.app  ::  container helix-platform-sandbox :8097
+#   separate DB banco_sandbox   ::  HX_SEED_DEMO=false (empty catalogue)
+# ===================================================================
+.PHONY: sandbox-up sandbox-down sandbox-reset sandbox-deploy sandbox-logs
+
+SANDBOX_TREE    := /opt/helix-sandbox-tree
+SANDBOX_DB      := banco_sandbox
+SANDBOX_COMPOSE := cd hetzner && docker compose -p hetzner \
+	-f docker-compose.uat.yml \
+	-f docker-compose.helix-staging.yml \
+	-f docker-compose.banco-prod.yml \
+	-f docker-compose.banco-sandbox.yml
+
+# Bring the sandbox up: ensure the worktree exists (on origin/main), create the
+# empty DB if missing, then start the container. Tables are auto-created on boot.
+sandbox-up:
+	@echo "==> Ensuring sandbox worktree at origin/main..."
+	@git fetch origin -q
+	@if [ ! -d "$(SANDBOX_TREE)" ]; then git worktree add --force "$(SANDBOX_TREE)" origin/main; \
+	 else git -C "$(SANDBOX_TREE)" checkout --force origin/main -q; fi
+	@echo "==> Ensuring database $(SANDBOX_DB) exists..."
+	@docker exec postgres psql -U helix_user -d helix_db -tc \
+	  "SELECT 1 FROM pg_database WHERE datname='$(SANDBOX_DB)'" | grep -q 1 \
+	  || docker exec postgres createdb -U helix_user "$(SANDBOX_DB)"
+	@echo "==> Starting helix-platform-sandbox..."
+	@$(SANDBOX_COMPOSE) up -d helix-platform-sandbox
+	@echo "Sandbox up -> https://sandbox-banco.lapiazza.app/pos"
+
+# Stop the sandbox (hands its RAM back to prod when you are not filming).
+sandbox-down:
+	@$(SANDBOX_COMPOSE) stop helix-platform-sandbox
+	@echo "Sandbox stopped. 'make sandbox-up' to bring it back."
+
+# THE TOOL: zero the shop between takes. Sub-second, idempotent, no restart.
+sandbox-reset:
+	@docker exec -i postgres psql -U helix_user -d $(SANDBOX_DB) -v ON_ERROR_STOP=1 < scripts/sandbox_reset.sql
+	@echo "Sandbox zeroed -- 0 products, 0 sales, no open drawer. Fresh take ready."
+
+# Pull the latest origin/main into the sandbox worktree and restart (code refresh).
+sandbox-deploy:
+	@git fetch origin -q
+	@git -C "$(SANDBOX_TREE)" checkout --force origin/main -q
+	@docker restart helix-platform-sandbox
+	@echo "Sandbox redeployed at: $$(git -C $(SANDBOX_TREE) rev-parse --short HEAD)"
+
+sandbox-logs:
+	@docker logs -f --tail 80 helix-platform-sandbox

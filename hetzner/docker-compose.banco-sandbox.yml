@@ -1,0 +1,81 @@
+# =============================================================
+# BANCO SANDBOX -- the empty, HTTPS Day-One demo instance.
+# A third helix-platform sibling next to prod Banco (8098) and
+# staging (8099). Boots with an EMPTY catalogue and a SEPARATE
+# database (banco_sandbox) so Angel can film the first-sale-ever
+# story and re-zero it between takes with `make sandbox-reset`.
+#
+# Launch (from /opt/helixnet/hetzner -- uat.env lives here):
+#   docker compose -p hetzner \
+#     -f docker-compose.uat.yml \
+#     -f docker-compose.helix-staging.yml \
+#     -f docker-compose.banco-prod.yml \
+#     -f docker-compose.banco-sandbox.yml \
+#     up -d helix-platform-sandbox
+#
+# Worktree (independent, read-only -- on the SHA with the seed flag):
+#   git -C /opt/helixnet fetch origin
+#   git worktree add /opt/helix-sandbox-tree origin/main
+#
+# Public route: sandbox-banco.lapiazza.app -> helix-platform-sandbox:8000
+# (Caddy block + TLS, see Caddyfile). HTTPS is non-negotiable -- the
+# phone camera will not open without a secure context.
+# =============================================================
+
+services:
+
+  helix-platform-sandbox:
+    image: helix-platform:latest          # reuse the built image; code comes from the mounted worktree
+    container_name: helix-platform-sandbox
+    restart: unless-stopped
+    env_file:
+      - ./uat.env
+    environment:
+      SERVICE_TYPE: platform
+      # EMPTY CATALOGUE: skip the Artemis product + CRACK customer demo seeders.
+      # Staff, store settings and login users still seed, so Pam can log in and
+      # VAT is correct -- only the catalogue/customer content is withheld.
+      HX_SEED_DEMO: "false"
+      # SEPARATE DATABASE. The app builds its async/sync URIs from POSTGRES_DB
+      # (src/core/config.py), so this one var redirects ALL connections to the
+      # fresh sandbox DB -- prod's helix_db is never touched. The raw URL vars
+      # are overridden too for hygiene (the engine ignores them, but no surprises).
+      POSTGRES_DB: banco_sandbox
+      ASYNC_DATABASE_URL: postgresql+asyncpg://helix_user:helix_pass@postgres:5432/banco_sandbox
+      SYNC_DATABASE_URL: postgresql+psycopg://helix_user:helix_pass@postgres:5432/banco_sandbox
+      POSTGRES_DSN: postgresql+psycopg://helix_user:helix_pass@postgres:5432/banco_sandbox
+      DATABASE_URL: postgres://helix_user:helix_pass@postgres:5432/banco_sandbox
+      # Mirror prod Banco's bridge/realm wiring (inherited values, kept explicit).
+      LP_REALM: borrowhood-staging
+      LP_CLIENT: lapiazza_web
+      SQUARE_DB: borrowhood_staging
+      SQUARE_API_URL: http://borrowhood_staging:8000
+      SQUARE_PUBLIC_URL: https://staging.lapiazza.app
+      LP_KC_PUBLIC_URL: https://sandbox-banco.lapiazza.app
+      RENDER_WORKER_URL: http://render-worker:8800
+      BOTTEGA_MEDIA_DIR: /var/bottega-media
+    volumes:
+      - /opt/helix-sandbox-tree/src:/app/src:ro
+      - bottega_media:/var/bottega-media
+    ports:
+      - "127.0.0.1:8097:8000"
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    # Same starve-proofing as staging: a transient demo box can't OOM prod.
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/healthz', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

@@ -95,6 +95,14 @@ async def lifespan(app: FastAPI):
     """Handle HelixNet startup and shutdown lifecycle events."""
     logger.info("🚀 Starting up HelixNet Core (Lifespan)")
 
+    # Demo-content seeding gate. Default ON (every existing env keeps seeding the
+    # Artemis catalogue + CRACK customers). The Banco Day-One sandbox sets
+    # HX_SEED_DEMO=false so it boots with an EMPTY catalogue — staff, store
+    # settings and login users still seed, so Pam can log in and VAT is correct.
+    seed_demo = os.getenv("HX_SEED_DEMO", "true").strip().lower() not in ("false", "0", "no")
+    if not seed_demo:
+        logger.warning("🌱 HX_SEED_DEMO=false — skipping catalogue + customer demo seeding (empty sandbox).")
+
     # --- DB Init ---
     try:
         logger.info("🧱 Initializing database tables...")
@@ -132,13 +140,14 @@ async def lifespan(app: FastAPI):
         logger.warning(f"⚠️ Artemis staff seeding encountered an issue: {e}", exc_info=True)
 
     # --- Seed POS Products (Felix's Artemis Store) ---
-    try:
-        logger.info("🛒 Seeding POS demo products...")
-        async with get_db_session_context() as db:
-            await seed_artemis_products(db)
-        logger.info("✅ POS product seeding completed successfully.")
-    except Exception as e:
-        logger.warning(f"⚠️ POS product seeding encountered an issue: {e}", exc_info=True)
+    if seed_demo:
+        try:
+            logger.info("🛒 Seeding POS demo products...")
+            async with get_db_session_context() as db:
+                await seed_artemis_products(db)
+            logger.info("✅ POS product seeding completed successfully.")
+        except Exception as e:
+            logger.warning(f"⚠️ POS product seeding encountered an issue: {e}", exc_info=True)
 
     # --- Seed Store Settings (Felix's Artemis Store Config) ---
     try:
@@ -150,13 +159,14 @@ async def lifespan(app: FastAPI):
         logger.warning(f"⚠️ Store settings seeding encountered an issue: {e}", exc_info=True)
 
     # --- Seed Customers (The CRACKs - External Customers) ---
-    try:
-        logger.info("🎮 Seeding customers (The CRACKs)...")
-        async with get_db_session_context() as db:
-            await seed_customers(db)
-        logger.info("✅ Customer seeding completed successfully.")
-    except Exception as e:
-        logger.warning(f"⚠️ Customer seeding encountered an issue: {e}", exc_info=True)
+    if seed_demo:
+        try:
+            logger.info("🎮 Seeding customers (The CRACKs)...")
+            async with get_db_session_context() as db:
+                await seed_customers(db)
+            logger.info("✅ Customer seeding completed successfully.")
+        except Exception as e:
+            logger.warning(f"⚠️ Customer seeding encountered an issue: {e}", exc_info=True)
 
     # --- Seed Sourcing System (Suppliers + Requests for Felix) ---
     try:
