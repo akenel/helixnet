@@ -1567,6 +1567,16 @@ async def add_item_to_transaction(
     if transaction.status != TransactionStatus.OPEN:
         raise HTTPException(status_code=400, detail="Transaction is not open")
 
+    # Manual-discount ceiling by role (cashier 10% / manager 25% / admin unlimited).
+    # The till caps this in the UI, but enforce it server-side too so the API can't
+    # be used to over-discount past a cashier's limit (edge-sweep finding D1).
+    if item.discount_percent is not None:
+        cap = _max_discount_pct(current_user)
+        if item.discount_percent > cap:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Discount {item.discount_percent}% exceeds your {cap}% limit.")
+
     if item.product_id is not None:
         # Catalog product: price from the catalog (client unit_price ignored -> no
         # tampering). A real product on the shelf is ALWAYS sellable — Banco never
@@ -2282,6 +2292,17 @@ def _uid(current_user: dict) -> str:
 
 def _uname(current_user: dict) -> str:
     return current_user.get("preferred_username", current_user.get("username", "Unknown"))
+
+
+def _max_discount_pct(current_user: dict) -> Decimal:
+    """Per-role manual-discount ceiling: cashier 10%, manager 25%, admin/dev unlimited."""
+    roles = (current_user.get("user_roles")
+             or current_user.get("realm_access", {}).get("roles", []) or [])
+    if any(("admin" in r or "developer" in r) for r in roles):
+        return Decimal("100")
+    if any("manager" in r for r in roles):
+        return Decimal("25")
+    return Decimal("10")
 
 
 async def _open_shift_for(db: AsyncSession, user_id: str) -> Optional[CashShiftModel]:
