@@ -35,13 +35,15 @@ def test_checkout_deducts_stock_by_qty_sold(session):
     assert after == before - 2, f"stock {before} -> {after}, expected {before - 2}"
 
 
-def test_cannot_oversell_stock(session):
-    """The cart REJECTS more than on-hand stock (400) -- the real guard against
-    negative stock is at add_item, not a floor at checkout. Available is reported."""
+def test_oversell_is_allowed_sell_to_seed(session):
+    """BL-94 / Felix #91: a sale is NEVER blocked by a stock count. The count is a
+    lie for ~100% unmarked goods, so a real product on the shelf is ALWAYS sellable.
+    Adding MORE than on-hand must be accepted (no 400) -- stock is still tracked and
+    deducted (floored at 0), just never a gate."""
     products = list_products(session)
-    low = next((p for p in products if 0 < p["stock_quantity"] <= 3), None)
+    low = next((p for p in products if 0 <= p["stock_quantity"] <= 3 and p["is_active"]), None)
     if not low:
-        pytest.skip("no low-stock product available to test the guard")
+        pytest.skip("no low-stock active product to test sell-to-seed")
 
     tx = session.post(f"{POS}/transactions", json={})
     tx.raise_for_status()
@@ -50,10 +52,10 @@ def test_cannot_oversell_stock(session):
         f"{POS}/transactions/{tx['id']}/items",
         json={
             "product_id": low["id"],
-            "quantity": low["stock_quantity"] + 5,  # over-sell
+            "quantity": low["stock_quantity"] + 5,  # deliberately over on-hand
             "unit_price": str(low["price"]),
             "discount_percent": "0",
         },
     )
-    assert r.status_code == 400, f"over-sell should be rejected, got {r.status_code}"
-    assert "stock" in r.text.lower(), f"expected an insufficient-stock message, got {r.text[:120]}"
+    assert r.status_code in (200, 201), \
+        f"sell-to-seed: an over-sell must NOT be blocked, got {r.status_code} {r.text[:140]}"
