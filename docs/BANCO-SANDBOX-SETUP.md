@@ -30,9 +30,11 @@ container on the **same Hetzner box** (reuses Caddy + the public IP + TLS).
    flubbed take restarts from zero. Must be **one command**, idempotent.
 
 ## DNS — Angel's 2 minutes (do first / in parallel)
-- If `*.lapiazza.app` has a **wildcard A record** → nothing to do, just the Caddy route.
-- If not → Angel adds one A record `sandbox-banco` → the **Hetzner IP** (same box as
-  `banco.lapiazza.app`). Porkbun, ~2 min. **Takes: confirm which, tell Angel.**
+- **CONFIRMED 2026-06-22 (Takes):** there is **NO `*.lapiazza.app` wildcard** (a random
+  subdomain resolves to nothing). `sandbox-banco.lapiazza.app` does **not** resolve yet.
+- **→ Angel adds one A record on Porkbun:** `sandbox-banco` → `46.62.138.218` (same Hetzner
+  box as `banco.lapiazza.app`). ~2 min. Without it, Caddy can't issue the TLS cert and the
+  camera won't open. (Or hand Takes a Porkbun API token and he'll add it.)
 
 ---
 
