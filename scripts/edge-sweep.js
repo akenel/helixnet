@@ -131,6 +131,16 @@ function validEan13(b){ if(!/^\d{13}$/.test(b||''))return false; let s=0; for(le
   rec('R2', 'cashier CANNOT full-create (403)', pf.status === 403, `status ${pf.status}`);
   let pd = await api(P, 'DELETE', `/products/${zero.id}`);
   rec('R3', 'cashier CANNOT discontinue (403)', pd.status === 403, `status ${pd.status}`);
+  // R4: cashier CAN attach a photo (born-once sibling of quick-create) — was 403
+  let pimg = await api(P, 'POST', '/products/quick', { sku: 'PIMG-' + Date.now(), name: 'Pam Photo ' + Date.now(), price: '2.00', barcode: genEan() });
+  let pimgStatus = await P.evaluate(async (pid) => {
+    const cv = document.createElement('canvas'); cv.width = 8; cv.height = 8;
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    const fd = new FormData(); fd.append('file', blob, 'x.png');
+    const r = await fetch('/api/v1/pos/products/' + pid + '/images', { method: 'POST', headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('pos_token') }, body: fd });
+    return r.status;
+  }, pimg.json.id);
+  rec('R4', 'cashier CAN attach a photo (200)', pimgStatus === 200, `status ${pimgStatus}`);
 
   // ============ DISCOUNT CAP (server-enforced by role) ============
   let dtx = (await api(P, 'POST', '/transactions', {})).json;

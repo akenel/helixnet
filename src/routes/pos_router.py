@@ -428,10 +428,14 @@ async def add_product_image(
     product_id: UUID,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Add a photo to a product's gallery (manager/developer/admin). The first
-    photo also becomes the cover (products.image_url) if none is set yet."""
+    """Add a photo to a product's gallery (any POS role). A cashier snapping a
+    photo during the born-once flow IS the same action as creating the item
+    (which /products/quick already allows), so the photo add matches that gate —
+    NOT manager-only. Catalogue management (price edits, cover, delete) stays
+    manager-gated; only the benign photo-add opens up. The first photo also
+    becomes the cover (products.image_url) if none is set yet."""
     import io as _io
     import asyncio as _asyncio
     from src.services.minio_service import minio_service

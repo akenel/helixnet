@@ -727,7 +727,11 @@
                             const r = await fetch(`/api/v1/pos/products/${product.id}/images`, {
                                 method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
                             if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
-                        } catch (imgErr) { console.warn('photo upload failed', imgErr); }
+                            else { showToast("Saved, but the photo couldn't be attached", 'warning'); }
+                        } catch (imgErr) {
+                            console.warn('photo upload failed', imgErr);
+                            showToast("Saved, but the photo couldn't be attached", 'warning');
+                        }
                     }
                     this.addToCart(product, 1);
                     showToast('Saved on the fly — find it by name next time', 'success');
