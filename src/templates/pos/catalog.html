@@ -151,18 +151,37 @@
                         <input type="text" x-model="form.supplier_name" class="input-field" placeholder="(optional)">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Picture</label>
-                        <div class="flex items-center gap-3">
-                            <label class="btn-secondary cursor-pointer flex-none">
-                                📸 <span x-text="(photoData || form.image_url) ? 'Change photo' : 'Take / upload photo'"></span>
-                                <input type="file" accept="image/*" capture="environment" class="hidden" @change="onPhoto($event)">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Photos
+                            <span class="text-xs text-gray-400 font-normal">— a few angles; tap one to make it the cover</span></label>
+                        <div class="flex flex-wrap gap-2">
+                            <!-- existing photos (edit mode) -->
+                            <template x-for="img in gallery" :key="img.id">
+                                <div class="relative w-20 h-20 rounded-lg border overflow-hidden"
+                                     :class="img.is_cover ? 'ring-2 ring-indigo-500' : ''">
+                                    <img :src="img.url" class="w-full h-full object-cover cursor-pointer" @click="makeCover(img)"
+                                         title="Make cover" alt="">
+                                    <span x-show="img.is_cover" class="absolute bottom-0 inset-x-0 bg-indigo-600 text-white text-[10px] text-center leading-tight">cover</span>
+                                    <button @click="removeImage(img)" type="button"
+                                            class="absolute top-0 right-0 bg-red-600 text-white w-5 h-5 text-xs leading-none rounded-bl">✕</button>
+                                </div>
+                            </template>
+                            <!-- queued photos (create mode — uploaded on save) -->
+                            <template x-for="(ph, i) in pendingPhotos" :key="i">
+                                <div class="relative w-20 h-20 rounded-lg border border-dashed overflow-hidden">
+                                    <img :src="ph.preview" class="w-full h-full object-cover" alt="">
+                                    <button @click="removePending(i)" type="button"
+                                            class="absolute top-0 right-0 bg-red-600 text-white w-5 h-5 text-xs leading-none rounded-bl">✕</button>
+                                </div>
+                            </template>
+                            <!-- add another -->
+                            <label class="w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:border-indigo-400 hover:text-indigo-500 flex-none">
+                                <span class="text-2xl leading-none">📸</span>
+                                <span class="text-[10px] mt-1" x-text="uploadingPhoto ? '…' : 'Add'"></span>
+                                <input type="file" accept="image/*" capture="environment" class="hidden" @change="onPhoto($event)" :disabled="uploadingPhoto">
                             </label>
-                            <div x-show="photoData || form.image_url" class="w-20 h-20 rounded-lg border bg-white flex items-center justify-center overflow-hidden flex-none">
-                                <img :src="photoData || form.image_url" class="w-full h-full object-cover" @error="$el.style.display='none'" @load="$el.style.display='block'" alt="">
-                            </div>
-                            <span x-show="!photoData && !form.image_url" class="text-xs text-gray-400">Snap the item itself — that's the label for unmarked goods</span>
                         </div>
-                        <input type="text" x-model="form.image_url" class="input-field mt-2 text-xs text-gray-500" placeholder="…or paste an image URL (https://…)">
+                        <input type="text" x-model="form.image_url" x-show="gallery.length===0 && pendingPhotos.length===0"
+                               class="input-field mt-2 text-xs text-gray-500" placeholder="…or paste an image URL (https://…)">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -222,8 +241,9 @@
             editing: false,
             saving: false,
             form: {},
-            photoFile: null,    // a snapped/chosen item photo to upload on save
-            photoData: '',      // data URL for the in-form preview
+            gallery: [],          // existing photos (edit mode): [{id, url, is_cover}]
+            pendingPhotos: [],    // photos queued before the product exists (create): [{file, preview}]
+            uploadingPhoto: false,
 
             // BL-89: barcode scan on the form
             scanOpen: false,
@@ -306,31 +326,68 @@
             openCreate() {
                 this.editing = false;
                 this.form = this._blankForm();
-                this.photoFile = null; this.photoData = '';
+                this.gallery = []; this.pendingPhotos = []; this.uploadingPhoto = false;
                 this.modalOpen = true;
             },
 
-            // Snap/choose a photo: hold the File for upload-on-save + a preview data URL.
-            onPhoto(e) {
+            // Add a photo. Editing an existing product → upload now (append to gallery).
+            // Creating → queue it; it uploads when the product is saved.
+            async onPhoto(e) {
                 const f = e.target.files && e.target.files[0];
+                e.target.value = '';   // let the same file be picked again
                 if (!f) return;
                 if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
-                this.photoFile = f;
-                const reader = new FileReader();
-                reader.onload = () => { this.photoData = reader.result; };
-                reader.readAsDataURL(f);
+                if (this.editing && this.form.id) {
+                    await this._uploadPhoto(this.form.id, f);
+                    await this.loadGallery(this.form.id);
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = () => { this.pendingPhotos.push({ file: f, preview: reader.result }); };
+                    reader.readAsDataURL(f);
+                }
+            },
+
+            async _uploadPhoto(pid, file) {
+                this.uploadingPhoto = true;
+                try {
+                    const fd = new FormData(); fd.append('file', file);
+                    const r = await fetch(`/api/v1/pos/products/${pid}/images`, {
+                        method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
+                    if (!r.ok) showToast('A photo did not upload', 'warning');
+                } catch (e) { console.warn('photo upload failed', e); showToast('A photo did not upload', 'warning'); }
+                finally { this.uploadingPhoto = false; }
+            },
+
+            async loadGallery(pid) {
+                try { const d = await API.get(`/api/v1/pos/products/${pid}/images`); this.gallery = d.items || []; }
+                catch (e) { this.gallery = []; }
+            },
+
+            removePending(i) { this.pendingPhotos.splice(i, 1); },
+
+            async removeImage(img) {
+                if (!confirm('Remove this photo?')) return;
+                try { await API.delete(`/api/v1/pos/products/${this.form.id}/images/${img.id}`); await this.loadGallery(this.form.id); }
+                catch (e) { showToast('Could not remove photo', 'error'); }
+            },
+
+            async makeCover(img) {
+                if (img.is_cover) return;
+                try { await API.put(`/api/v1/pos/products/${this.form.id}/images/${img.id}/cover`, {}); await this.loadGallery(this.form.id); }
+                catch (e) { showToast('Could not set cover', 'error'); }
             },
 
             async openEdit(p) {
                 this.editing = true;
                 this.form = { id: p.id, ...this._blankForm(), ...p };  // start with row data
-                this.photoFile = null; this.photoData = '';
+                this.gallery = []; this.pendingPhotos = []; this.uploadingPhoto = false;
                 this.modalOpen = true;
                 try {
                     // Enrich with the full record (cost, thresholds, supplier, etc.).
                     const full = await API.get(`/api/v1/pos/products/${p.id}`);
                     this.form = { ...this.form, ...full };
                 } catch (e) { /* keep row data */ }
+                this.loadGallery(p.id);
             },
 
             _payload() {
@@ -361,21 +418,10 @@
                         const created = await API.post('/api/v1/pos/products', this._payload());
                         productId = created.id;
                     }
-                    // Upload the snapped photo (if any) now that the product exists.
-                    if (this.photoFile && productId) {
-                        try {
-                            const fd = new FormData();
-                            fd.append('file', this.photoFile);
-                            const r = await fetch(`/api/v1/pos/products/${productId}/image`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` },
-                                body: fd,
-                            });
-                            if (!r.ok) showToast('Saved, but the photo did not upload', 'warning');
-                        } catch (imgErr) {
-                            console.warn('Photo upload failed:', imgErr);
-                            showToast('Saved, but the photo did not upload', 'warning');
-                        }
+                    // Upload any queued photos (create mode) now that the product exists.
+                    if (productId && this.pendingPhotos.length) {
+                        for (const ph of this.pendingPhotos) { await this._uploadPhoto(productId, ph.file); }
+                        this.pendingPhotos = [];
                     }
                     showToast(this.editing ? 'Saved' : 'Product created', 'success');
                     this.modalOpen = false;

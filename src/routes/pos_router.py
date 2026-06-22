@@ -23,6 +23,7 @@ from src.db.database import get_db_session
 from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
+    ProductImageModel,
     PosStockMovementModel,
     TransactionModel,
     LineItemModel,
@@ -347,59 +348,73 @@ async def delete_product(
 
 
 # ================================================================
-# PRODUCT PHOTO — the picture IS the label for unmarked goods.
-# Stored in MinIO, served back through the app (GET below) so we need no public
-# bucket or presigned URLs. Tidied + shrunk by the BL-92 Pillow pipeline when
-# Pillow is in the image; stored as-is otherwise so the feature works either way.
+# PRODUCT PHOTO GALLERY — many pictures per product. The picture IS the label
+# for ~100%-unmarked goods; a few angles is how you recognise an item later.
+# Bytes live in MinIO; product_images rows index + order them; products.image_url
+# is the cover. Served back through the app (no public bucket / presigned URLs).
+# Tidied + shrunk by the BL-92 Pillow pipeline when present; stored as-is otherwise.
 # ================================================================
 
 _MAX_IMAGE_BYTES = 15 * 1024 * 1024  # a phone photo, not a video
 
 
-def _product_image_key(product_id) -> str:
-    return f"pos-products/{product_id}.jpg"
+def _gallery_image_key(product_id, image_id) -> str:
+    return f"pos-products/{product_id}/{image_id}.jpg"
 
 
-@router.post("/products/{product_id}/image")
-async def upload_product_image(
+def _image_serve_url(product_id, image_id) -> str:
+    return f"/api/v1/pos/products/{product_id}/images/{image_id}"
+
+
+def _process_image_upload(raw: bytes, content_type: str) -> bytes:
+    """Validate + (optionally) tidy/shrink an uploaded photo. Raises HTTPException."""
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty file")
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
+    if not (content_type or "").lower().startswith("image/"):
+        raise HTTPException(status_code=415, detail="Please upload an image")
+    # Pillow pipeline if it's in the image; otherwise keep the original bytes so the
+    # feature works before any image rebuild (Pillow==10.4.0 is queued in requirements).
+    try:
+        from src.services.image_intake import process, PRODUCT, ImageIntakeError
+        try:
+            return process(raw, PRODUCT).main
+        except ImageIntakeError:
+            raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
+    except ImportError:
+        logger.warning("Pillow not in image — storing product photo as-is (no resize).")
+        return raw
+
+
+@router.post("/products/{product_id}/images")
+async def add_product_image(
     product_id: UUID,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
 ):
-    """Attach a photo to a product (manager/developer/admin). Born-once items
-    carry their own picture — for ~100%-unmarked goods that photo is how you
-    recognise the item in the catalogue later."""
+    """Add a photo to a product's gallery (manager/developer/admin). The first
+    photo also becomes the cover (products.image_url) if none is set yet."""
     import io as _io
     import asyncio as _asyncio
     from src.services.minio_service import minio_service
 
-    result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
-    product = result.scalar_one_or_none()
+    product = (await db.execute(select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    raw = await file.read()
-    if not raw:
-        raise HTTPException(status_code=400, detail="Empty file")
-    if len(raw) > _MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
-    if not (file.content_type or "").lower().startswith("image/"):
-        raise HTTPException(status_code=415, detail="Please upload an image")
+    out_bytes = _process_image_upload(await file.read(), file.content_type)
 
-    # Tidy + shrink with the Pillow pipeline if it's present in this image; fall
-    # back to the original bytes so the feature works before any image rebuild.
-    out_bytes = raw
-    try:
-        from src.services.image_intake import process, PRODUCT, ImageIntakeError
-        try:
-            out_bytes = process(raw, PRODUCT).main
-        except ImageIntakeError:
-            raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
-    except ImportError:
-        logger.warning("Pillow not in image — storing product photo as-is (no resize).")
+    # Next sort_order = current count (append to the end of the gallery).
+    existing = (await db.execute(
+        select(func.count()).where(ProductImageModel.product_id == product_id)
+    )).scalar() or 0
+    image = ProductImageModel(product_id=product_id, sort_order=existing)
+    db.add(image)
+    await db.flush()   # assign image.id before we build the key/url
 
-    key = _product_image_key(product_id)
+    key = _gallery_image_key(product_id, image.id)
     loop = _asyncio.get_running_loop()
     try:
         await loop.run_in_executor(
@@ -407,35 +422,126 @@ async def upload_product_image(
             minio_service.bucket_name, key, _io.BytesIO(out_bytes), len(out_bytes), "image/jpeg",
         )
     except Exception as e:
+        await db.rollback()
         logger.error(f"MinIO product image upload failed for {key}: {e}")
         raise HTTPException(status_code=500, detail="Photo upload to storage failed")
 
-    # Point image_url back at our own streamer; ?v= busts the browser cache on re-upload.
-    product.image_url = f"/api/v1/pos/products/{product_id}/image?v={len(out_bytes)}"
+    url = _image_serve_url(product_id, image.id)
+    is_cover = False
+    # No cover yet (or it pointed at the legacy single slot)? Make this the cover.
+    if not product.image_url or "/images/" not in (product.image_url or ""):
+        product.image_url = url
+        is_cover = True
     product.updated_at = datetime.now(timezone.utc)
     await db.commit()
-    logger.info(f"Product photo set: {product.sku} ({len(out_bytes)} bytes) by {current_user['username']}")
-    return {"image_url": product.image_url}
+    logger.info(f"Gallery photo added: {product.sku} #{existing+1} ({len(out_bytes)} bytes) by {current_user['username']}")
+    return {"id": str(image.id), "url": url, "is_cover": is_cover, "image_url": product.image_url}
 
 
-@router.get("/products/{product_id}/image")
-async def get_product_image(
+@router.get("/products/{product_id}/images")
+async def list_product_images(
     product_id: UUID,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Stream a product photo from MinIO (public — catalogue images need no auth)."""
+    """List a product's gallery (public). Cover first if it's one of these."""
+    rows = (await db.execute(
+        select(ProductImageModel).where(ProductImageModel.product_id == product_id)
+        .order_by(ProductImageModel.sort_order, ProductImageModel.created_at)
+    )).scalars().all()
+    product = (await db.execute(select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
+    cover = product.image_url if product else None
+    items = [
+        {"id": str(r.id), "url": _image_serve_url(product_id, r.id),
+         "is_cover": _image_serve_url(product_id, r.id) == cover}
+        for r in rows
+    ]
+    return {"items": items, "cover": cover}
+
+
+@router.get("/products/{product_id}/images/{image_id}")
+async def get_product_image(
+    product_id: UUID,
+    image_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Stream one gallery photo from MinIO (public — catalogue images need no auth)."""
     import asyncio as _asyncio
     from src.services.minio_service import minio_service
 
     loop = _asyncio.get_running_loop()
     try:
-        data = await loop.run_in_executor(None, minio_service.download_artifact, _product_image_key(product_id))
+        data = await loop.run_in_executor(
+            None, minio_service.download_artifact, _gallery_image_key(product_id, image_id))
     except Exception:
         data = None
     if not data:
-        raise HTTPException(status_code=404, detail="No photo for this product")
+        raise HTTPException(status_code=404, detail="No such photo")
     return Response(content=data, media_type="image/jpeg",
-                    headers={"Cache-Control": "public, max-age=3600"})
+                    headers={"Cache-Control": "public, max-age=86400"})
+
+
+@router.put("/products/{product_id}/images/{image_id}/cover")
+async def set_product_cover(
+    product_id: UUID,
+    image_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
+):
+    """Pick which gallery photo is the cover (the one shown in lists + the cart)."""
+    image = (await db.execute(
+        select(ProductImageModel).where(
+            ProductImageModel.id == image_id, ProductImageModel.product_id == product_id)
+    )).scalar_one_or_none()
+    if not image:
+        raise HTTPException(status_code=404, detail="No such photo")
+    product = (await db.execute(select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
+    product.image_url = _image_serve_url(product_id, image_id)
+    product.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    return {"image_url": product.image_url}
+
+
+@router.delete("/products/{product_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_image(
+    product_id: UUID,
+    image_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
+):
+    """Remove one gallery photo. If it was the cover, repoint to the next remaining."""
+    import asyncio as _asyncio
+    from src.services.minio_service import minio_service
+
+    image = (await db.execute(
+        select(ProductImageModel).where(
+            ProductImageModel.id == image_id, ProductImageModel.product_id == product_id)
+    )).scalar_one_or_none()
+    if not image:
+        raise HTTPException(status_code=404, detail="No such photo")
+
+    serve_url = _image_serve_url(product_id, image_id)
+    await db.delete(image)
+
+    # Best-effort remove the object from MinIO (don't fail the request if it's gone).
+    loop = _asyncio.get_running_loop()
+    try:
+        await loop.run_in_executor(
+            None, minio_service.client.remove_object,
+            minio_service.bucket_name, _gallery_image_key(product_id, image_id))
+    except Exception as e:
+        logger.warning(f"MinIO remove_object skipped for {image_id}: {e}")
+
+    # If we just deleted the cover, repoint it to the first remaining photo (or clear).
+    product = (await db.execute(select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
+    if product and product.image_url == serve_url:
+        nxt = (await db.execute(
+            select(ProductImageModel).where(
+                ProductImageModel.product_id == product_id, ProductImageModel.id != image_id)
+            .order_by(ProductImageModel.sort_order, ProductImageModel.created_at).limit(1)
+        )).scalar_one_or_none()
+        product.image_url = _image_serve_url(product_id, nxt.id) if nxt else None
+        product.updated_at = datetime.now(timezone.utc)
+    await db.commit()
 
 
 # ================================================================

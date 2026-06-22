@@ -751,7 +751,7 @@
                         try {
                             const fd = new FormData();
                             fd.append('file', this.lazyPhotoFile);
-                            const r = await fetch(`/api/v1/pos/products/${product.id}/image`, {
+                            const r = await fetch(`/api/v1/pos/products/${product.id}/images`, {
                                 method: 'POST',
                                 headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` },
                                 body: fd,

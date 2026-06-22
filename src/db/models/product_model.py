@@ -193,6 +193,11 @@ class ProductModel(Base):
         back_populates="product",
         cascade="all, delete-orphan"
     )
+    images: Mapped[list["ProductImageModel"]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+        order_by="ProductImageModel.sort_order, ProductImageModel.created_at",
+    )
 
     def __repr__(self):
         return f"<ProductModel(sku='{self.sku}', name='{self.name}', price={self.price} CHF)>"
@@ -242,3 +247,44 @@ class ProductBarcodeModel(Base):
 
     def __repr__(self):
         return f"<ProductBarcodeModel(barcode='{self.barcode}', product_id='{self.product_id}')>"
+
+
+class ProductImageModel(Base):
+    """
+    Product photos — one product, many pictures (the gallery).
+
+    For ~100%-unmarked head-shop goods the PHOTO is the label: a couple of angles
+    is how you recognise an item in the catalogue later. The bytes live in MinIO at
+    `pos-products/{product_id}/{id}.jpg`; this row is the index + ordering. The
+    product's cover stays on products.image_url (points at the chosen image's serve
+    URL, or an external paste).
+    """
+    __tablename__ = 'product_images'
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('products.id', ondelete='CASCADE'),
+        index=True,
+        nullable=False,
+    )
+    sort_order: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+        comment="Display order in the gallery; lower = first",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    product: Mapped["ProductModel"] = relationship(back_populates="images")
+
+    def __repr__(self):
+        return f"<ProductImageModel(id='{self.id}', product_id='{self.product_id}')>"
