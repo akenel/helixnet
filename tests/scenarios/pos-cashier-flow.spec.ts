@@ -60,16 +60,17 @@ test('@smoke cashier can log in and reach the dashboard', async ({ page }) => {
   await expect(page.getByText(/already logged in/i)).toHaveCount(0);
 });
 
-test('search actually filters + shows on-hand stock badges', async ({ page }) => {
+test('search actually filters (zero perpetual inventory: NO stock badge)', async ({ page }) => {
   await login(page);
   await searchProducts(page, 'grinder');
   // Honest paginated count is shown.
   await expect(page.getByText(/of \d+ matches/)).toBeVisible({ timeout: 15_000 });
-  // A grinder appears in the RESULTS list (scope past the category dropdown option),
-  // and stock badges render.
+  // A grinder appears in the RESULTS list (scope past the category dropdown option).
   const results = page.locator('.max-h-96');
   await expect(results.getByText(/grinder/i).first()).toBeVisible({ timeout: 15_000 });
-  await expect(results.getByText(/in stock|out of stock/i).first()).toBeVisible();
+  // Zero perpetual inventory: the count is dormant, so the sale search shows NO
+  // "in stock / out of stock" badge (it would lie on a sellable 0-count item).
+  await expect(results.getByText(/in stock|out of stock/i)).toHaveCount(0);
 });
 
 test('search paginates: Show more loads the next page (big catalog)', async ({ page }) => {
