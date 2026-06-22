@@ -54,8 +54,9 @@ def test_giveaway_is_free_total_unchanged(session):
     assert Decimal(str(gv["line_total"])) == Decimal("0.00")
 
 
-def test_giveaway_decrements_real_stock(session):
-    """Giving a treat reduces that product's on-hand stock by the quantity given."""
+def test_giveaway_does_not_decrement_stock(session):
+    """Zero perpetual inventory: a treat is recorded (free line, COGS in the summary)
+    but never moves the stock count — same as any other sale."""
     treat = _treat(session)
     sku = treat["sku"]
     before = treat["stock_quantity"]
@@ -69,7 +70,7 @@ def test_giveaway_decrements_real_stock(session):
 
     after = next(t for t in session.get(f"{POS}/products", params={"category": "Treats", "limit": 50}).json()
                  if t["sku"] == sku)["stock_quantity"]
-    assert after == before - 1, f"treat stock {before} -> {after}, expected {before - 1}"
+    assert after == before, f"a giveaway must not move the count: {before} -> {after}"
 
 
 def test_giveaway_tracked_in_daily_summary(session):
