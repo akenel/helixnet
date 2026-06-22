@@ -225,13 +225,10 @@
                             </span>
                         </div>
 
-                        <!-- Price & Stock -->
+                        <!-- Price -->
                         <div class="flex items-center justify-between">
                             <span class="text-xl font-bold text-indigo-600"
                                   x-text="formatPrice(product.price)"></span>
-                            <span class="text-sm"
-                                  :class="product.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'"
-                                  x-text="product.stock_quantity > 0 ? 'In Stock' : 'Out'"></span>
                         </div>
 
                         <!-- Add button -->
@@ -322,12 +319,6 @@
                             <div class="bg-gray-50 p-3 rounded-lg">
                                 <p class="text-gray-500">Barcode</p>
                                 <p class="font-mono font-semibold" x-text="selectedProduct.barcode || 'N/A'"></p>
-                            </div>
-                            <div class="bg-gray-50 p-3 rounded-lg">
-                                <p class="text-gray-500">Stock</p>
-                                <p class="font-semibold"
-                                   :class="selectedProduct.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'"
-                                   x-text="selectedProduct.stock_quantity + ' units'"></p>
                             </div>
                             <div class="bg-indigo-50 p-3 rounded-lg">
                                 <p class="text-indigo-600">Price</p>

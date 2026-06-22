@@ -278,7 +278,7 @@
                 try {
                     const treats = await API.get('/api/v1/pos/products?category=Treats&limit=50');
                     this.changeProducts = (treats || [])
-                        .filter(t => t.is_active && t.stock_quantity > 0)
+                        .filter(t => t.is_active)
                         .map(t => ({ id: t.id, name: t.name, retailValue: parseFloat(t.price || 0),
                                      emoji: this.treatEmoji[t.sku] || '🎁' }));
                 } catch (e) { console.warn('treats unavailable', e); }

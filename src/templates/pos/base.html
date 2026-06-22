@@ -558,7 +558,6 @@
           <div class="pulse-tile sales span2"><div class="k">Today's sales</div><div class="v" id="pulse-sales">—</div></div>
           <div class="pulse-tile"><div class="k">Members</div><div class="v" id="pulse-members">—</div></div>
           <div class="pulse-tile"><div class="k">Open drawers</div><div class="v" id="pulse-drawers">—</div></div>
-          <div class="pulse-tile" id="pulse-lowstock-tile"><div class="k">Low stock</div><div class="v" id="pulse-lowstock">—</div></div>
           <div class="pulse-tile"><div class="k">Catalog</div><div class="v" id="pulse-catalog">—</div></div>
         </div>
         <div class="pulse-foot">
@@ -587,9 +586,7 @@
           document.getElementById('pulse-sales').innerHTML=chf(t.sales)+' <small>· '+(t.transactions||0)+' sale'+((t.transactions===1)?'':'s')+'</small>';
           set('pulse-members',j.members!=null?j.members:'—');
           set('pulse-drawers',j.open_drawers!=null?j.open_drawers:'—');
-          set('pulse-lowstock',j.low_stock!=null?j.low_stock:'—');
           set('pulse-catalog',j.catalog!=null?j.catalog:'—');
-          document.getElementById('pulse-lowstock-tile').classList.toggle('alert',(j.low_stock||0)>0);
           set('pulse-shop',j.shop?('· '+j.shop):'');
           var b=j.build||{};
           set('pulse-build',(b.version?('v'+b.version):'')+(b.sha?(' ('+b.sha+')'):''));
