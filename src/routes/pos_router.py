@@ -3173,9 +3173,9 @@ async def pos_settings(request: Request):
     - Tax rate settings
     - Receipt header/footer
     - Printer configuration
-    - Discount limits
     - Category management
 
-    For now: Placeholder
+    Live: store identity, contact, VAT, receipt header/footer/logo, discount caps —
+    editable by admin (Felix), shown on every receipt. Wired to GET/PUT /settings/{n}.
     """
-    return templates.TemplateResponse("pos/dashboard.html", {"request": request})
+    return templates.TemplateResponse("pos/settings.html", {"request": request})

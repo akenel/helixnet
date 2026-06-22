@@ -40,30 +40,30 @@ async def seed_store_settings(db: AsyncSession) -> None:
     # Create default Store #1 settings
     store1 = StoreSettingsModel(
         store_number=1,
-        store_name="Artemis Store - Zurich",
+        store_name="Artemis Lucerne - Headshop",
         is_active=True,
 
-        # Company Information
-        legal_name="Artemis Growing Supplies GmbH",
-        address_line1="Bahnhofstrasse 42",
+        # Company Information (Felix's real shop — Artemis GmbH, Luzern, since 1999)
+        legal_name="Artemis GmbH",
+        address_line1="Murbacherstrasse 37",
         address_line2="",  # Optional
-        city="Zurich",
-        postal_code="8001",
+        city="Luzern",
+        postal_code="6003",
         country="Switzerland",
 
         # Contact Information
-        phone="+41 44 123 45 67",
-        email="info@artemis-store.ch",
-        website="https://artemis-store.ch",
+        phone="041 220 22 22",
+        email="contact@artemisluzern.ch",
+        website="artemisluzern.ch",
 
-        # Swiss VAT Information (2025 rate)
-        vat_number="CHE-123.456.789 MWST",
-        vat_rate=Decimal("8.1"),  # Swiss VAT rate for 2025
+        # Swiss VAT Information. ⟶ TODO: replace with Felix's real CHE-UID before go-live.
+        vat_number="CHE-XXX.XXX.XXX MWST",
+        vat_rate=Decimal("8.1"),  # Swiss VAT standard rate
 
         # Receipt Settings
         receipt_header="Thank you for shopping at Artemis!",
-        receipt_footer="Growing your dreams, one plant at a time 🌱",
-        receipt_logo_url=None,  # TODO: Upload logo to MinIO
+        receipt_footer="Kräuter & Düfte seit 1999 🌿",
+        receipt_logo_url="/static/artemis-logo.png",
 
         # Discount Settings
         cashier_max_discount=Decimal("10.0"),  # Pam can give max 10%
