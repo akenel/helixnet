@@ -82,7 +82,18 @@ All parts already in hand — **segno** (QR/barcode), **Puppeteer** (PDF), N-up 
 documented in CLAUDE.md (postcard 2/3/4-up GOLD). Likely a label queue (mark items "to
 label") → generate the sheet → print on the shop's label/sticker printer (⟶ NEED hardware
 spec from Felix). FIX-NOW (tiny): correct the misleading scan.html comment so the code stops
-claiming a feature that isn't there.
+claiming a feature that isn't there. *(Done 2026-06-22.)*
+
+**Label TEMPLATES — Settings → "Labels" tab (Angel 2026-06-22):** Felix configures a small
+library of label templates and picks one per article. A template = {physical size, layout,
+how much space for the description, barcode type EAN vs QR, what's printed}. Different
+articles want different labels — a tiny item needs a tiny label (EAN only), a normal item
+gets a bigger easy-to-scan one (name + QR). **This maps EXACTLY onto the postcard GOLD-template
+system we already built** (pick a template → fixed mm dimensions → element placement) — labels
+are just small postcards. So: a Labels tab in Settings (choose/define templates) + a per-product
+"label type" field + the print queue. STILL gated on Felix's real label stock/printer sizes —
+you can't design a 30mm label without knowing it's 30mm (the postcard lesson). Build with the
+label-printing project, after cutover core.
 
 ---
 
