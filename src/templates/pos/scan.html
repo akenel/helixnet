@@ -109,13 +109,13 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Item name <span class="text-red-500">*</span></label>
-                            <input type="text" x-model="catalogDescription" @keyup.enter="createNoCodeItem()"
+                            <input type="text" x-model="otfName" @keyup.enter="createNoCodeItem()"
                                    placeholder="e.g. Cynthia cup — red" class="input-field">
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Price (CHF) <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.05" min="0" x-model="catalogPrice" @keyup.enter="createNoCodeItem()"
+                            <input type="number" step="0.05" min="0" x-model="otfPrice" @keyup.enter="createNoCodeItem()"
                                    placeholder="0.00" class="input-field text-2xl font-bold">
                         </div>
 
@@ -130,6 +130,22 @@
                                 <span x-show="!otfPhotoData" class="text-xs text-gray-400">Helps you recognise it next time</span>
                             </div>
                         </div>
+
+                        <!-- Optional extras — fill if you know them, otherwise skip. -->
+                        <details class="border rounded-lg">
+                            <summary class="cursor-pointer select-none px-3 py-2 text-sm text-gray-600">➕ Add details <span class="text-gray-400">(optional)</span></summary>
+                            <div class="p-3 pt-0 space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <input type="text" x-model="otfDescription" placeholder="(optional) any extra detail" class="input-field">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <input type="text" x-model="otfCategory" list="otf-cats" placeholder="(optional) leave blank = On the fly" class="input-field">
+                                    <datalist id="otf-cats"><template x-for="c in categories" :key="c.name"><option :value="c.name"></option></template></datalist>
+                                </div>
+                            </div>
+                        </details>
 
                         <button @click="createNoCodeItem()" :disabled="lazySaving" class="btn-success w-full">
                             <span x-show="!lazySaving">➕ Create &amp; add to cart</span>
@@ -515,11 +531,14 @@
             detailProduct: null,
 
             // Catalog mode
-            catalogCategory: '',
-            catalogDescription: '',
-            catalogPrice: '',
-            otfPhotoFile: null,   // optional photo for an on-the-fly item
-            otfPhotoData: '',     // preview data URL
+            // On-the-fly "New item" fields. Required: name + price. Optional: photo,
+            // description, category (blank category → auto-filed under "On the fly").
+            otfName: '',
+            otfPrice: '',
+            otfDescription: '',
+            otfCategory: '',
+            otfPhotoFile: null,
+            otfPhotoData: '',
 
             // Cart
             cart: [],
@@ -661,17 +680,47 @@
                 reader.readAsDataURL(f);
             },
 
+            // Internal EAN-13 — GS1 reserves the "2" prefix for in-store codes, so this
+            // never collides with a manufacturer barcode. Valid check digit = scannable
+            // and printable later (a manager prints the label from the Catalogue).
+            genInternalBarcode() {
+                let body = '2';
+                for (let i = 0; i < 11; i++) body += Math.floor(Math.random() * 10);
+                let sum = 0;
+                for (let i = 0; i < 12; i++) sum += (+body[i]) * (i % 2 === 0 ? 1 : 3);
+                return body + ((10 - (sum % 10)) % 10);
+            },
+
             async createNoCodeItem() {
-                const name = (this.catalogDescription || '').trim();
+                const name = (this.otfName || '').trim();
                 if (!name) { showToast('Enter a name', 'warning'); return; }
-                const price = parseFloat(this.catalogPrice);
+                const price = parseFloat(this.otfPrice);
                 if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
                 this.lazySaving = true;
-                const payload = { sku: 'OTF-' + Date.now(), barcode: null, name, price, category: 'On the fly' };
-                try {
-                    const product = await API.post('/api/v1/pos/products', payload);
+
+                // Optional extras — use them if filled, otherwise auto-file under "On the fly".
+                const description = (this.otfDescription || '').trim() || null;
+                const category = (this.otfCategory || '').trim() || 'On the fly';
+
+                // Create the product, regenerating the auto code on the rare collision.
+                let product = null, blocked = false;
+                for (let attempt = 0; attempt < 3 && !product; attempt++) {
+                    const stamp = Date.now() + '-' + Math.floor(Math.random() * 1000);
+                    const payload = {
+                        sku: 'OTF-' + stamp, barcode: this.genInternalBarcode(),
+                        name, price, description, category,
+                    };
+                    try {
+                        product = await API.post('/api/v1/pos/products', payload);
+                    } catch (err) {
+                        if (/already exists/i.test(String(err.message || err))) continue;  // collision → retry
+                        blocked = true; break;   // 403 / other → stop, fall back below
+                    }
+                }
+
+                if (product) {
                     // Optional photo — upload it to the gallery (becomes the cover).
-                    if (this.otfPhotoFile && product && product.id) {
+                    if (this.otfPhotoFile && product.id) {
                         try {
                             const fd = new FormData(); fd.append('file', this.otfPhotoFile);
                             const r = await fetch(`/api/v1/pos/products/${product.id}/images`, {
@@ -680,16 +729,16 @@
                         } catch (imgErr) { console.warn('photo upload failed', imgErr); }
                     }
                     this.addToCart(product, 1);
-                    this.catalogDescription = ''; this.catalogPrice = '';
-                    this.otfPhotoFile = null; this.otfPhotoData = '';
                     showToast('Saved on the fly — find it by name next time', 'success');
-                } catch (err) {
-                    console.warn('On-the-fly create failed; one-off line:', err);
+                } else {
+                    // No create rights (cashier) or a hard failure → one-off line so the sale never blocks.
+                    if (blocked) console.warn('On-the-fly create blocked; using one-off line');
                     this.cart.push({ id: 'otf-' + Date.now(), name: '[NEW] ' + name, price, quantity: 1, isCatalogItem: true });
-                    this.catalogDescription = ''; this.catalogPrice = '';
-                    this.otfPhotoFile = null; this.otfPhotoData = '';
                     showToast('Added for this sale. Ask a manager to add it permanently.', 'info');
-                } finally { this.lazySaving = false; }
+                }
+                this.otfName = ''; this.otfPrice = ''; this.otfDescription = ''; this.otfCategory = '';
+                this.otfPhotoFile = null; this.otfPhotoData = '';
+                this.lazySaving = false;
             },
 
             openLazyCapture(barcode, prefillName) {
