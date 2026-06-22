@@ -51,7 +51,7 @@
                             @click="searchMode = 'catalog'"
                             :class="searchMode === 'catalog' ? 'btn-primary' : 'btn-secondary'"
                             class="flex-1 py-3">
-                            📖 Catalog
+                            🆕 On the fly
                         </button>
                     </div>
 
@@ -94,51 +94,33 @@
                         </p>
                     </div>
 
-                    <!-- Catalog Mode (for items without barcodes) -->
+                    <!-- No-barcode mode: sell on the fly. Fast (name + price), persists as a
+                         flagged "On-the-fly" item so it's sellable again + enhanced later. -->
                     <div x-show="searchMode === 'catalog'" class="space-y-4">
                         <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
-                            <p class="text-sm font-semibold text-yellow-800 mb-2">📖 Catalog Mode</p>
+                            <p class="text-sm font-semibold text-yellow-800 mb-2">🆕 No barcode? Sell it on the fly</p>
                             <p class="text-sm text-yellow-700">
-                                For items without barcodes: Scan the catalog page code, then enter the price manually.
+                                Name + price, that's it. It's <b>saved as an “On-the-fly” item</b> and added to the cart —
+                                so you can <b>find it by name and sell it again</b> next time. Add a photo / proper details
+                                later in the Catalogue.
                             </p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Category Code</label>
-                            <select x-model="catalogCategory" class="input-field">
-                                <option value="">Select category...</option>
-                                <option value="growing-a">🌱 Growing Supplies - A Items (CHF 250+)</option>
-                                <option value="growing-b">🌱 Growing Supplies - B Items (CHF 21-50)</option>
-                                <option value="growing-c">🌱 Growing Supplies - C Items (CHF 20 or less)</option>
-                                <option value="decoration-a">🎨 Decorations - A Items (CHF 250+)</option>
-                                <option value="decoration-b">🎨 Decorations - B Items (CHF 21-50)</option>
-                                <option value="decoration-c">🎨 Decorations - C Items (CHF 20 or less)</option>
-                                <option value="misc-under-75">🔧 Miscellaneous - Under CHF 75</option>
-                                <option value="misc-over-75">🔧 Miscellaneous - Over CHF 75 (A Item)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
-                            <input
-                                type="text"
-                                x-model="catalogDescription"
-                                placeholder="Enter product name..."
-                                class="input-field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item name</label>
+                            <input type="text" x-model="catalogDescription" @keyup.enter="createNoCodeItem()"
+                                   placeholder="e.g. Cynthia cup — red" class="input-field">
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Price (CHF)</label>
-                            <input
-                                type="number"
-                                step="0.10"
-                                x-model="catalogPrice"
-                                placeholder="0.00"
-                                class="input-field text-2xl font-bold">
+                            <input type="number" step="0.05" min="0" x-model="catalogPrice" @keyup.enter="createNoCodeItem()"
+                                   placeholder="0.00" class="input-field text-2xl font-bold">
                         </div>
 
-                        <button @click="addCatalogItem()" class="btn-success w-full">
-                            ➕ Add Catalog Item to Cart
+                        <button @click="createNoCodeItem()" :disabled="lazySaving" class="btn-success w-full">
+                            <span x-show="!lazySaving">➕ Create &amp; add to cart</span>
+                            <span x-show="lazySaving" style="display:none;">Saving…</span>
                         </button>
                     </div>
                 </div>
@@ -649,9 +631,33 @@
                 this.scanLive = '';
             },
 
-            openLazyCapture(barcode) {
+            // No-barcode on-the-fly: persist a REAL product fast (name + price), flagged
+            // "On-the-fly" so it's a separate thing to enhance later — but searchable by
+            // name and sellable again right away (Christina's cups in a rush). Falls back
+            // to a one-off line if the user can't create (cashier) so the sale never blocks.
+            async createNoCodeItem() {
+                const name = (this.catalogDescription || '').trim();
+                if (!name) { showToast('Enter a name', 'warning'); return; }
+                const price = parseFloat(this.catalogPrice);
+                if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+                this.lazySaving = true;
+                const payload = { sku: 'OTF-' + Date.now(), barcode: null, name, price, category: 'On-the-fly' };
+                try {
+                    const product = await API.post('/api/v1/pos/products', payload);
+                    this.addToCart(product, 1);
+                    this.catalogDescription = ''; this.catalogPrice = '';
+                    showToast('Saved on-the-fly — find it by name next time', 'success');
+                } catch (err) {
+                    console.warn('On-the-fly create failed; one-off line:', err);
+                    this.cart.push({ id: 'otf-' + Date.now(), name: '[NEW] ' + name, price, quantity: 1, isCatalogItem: true });
+                    this.catalogDescription = ''; this.catalogPrice = '';
+                    showToast('Added for this sale. Ask a manager to add it permanently.', 'info');
+                } finally { this.lazySaving = false; }
+            },
+
+            openLazyCapture(barcode, prefillName) {
                 this.lazyBarcode = barcode || '';
-                this.lazyName = '';
+                this.lazyName = prefillName || '';
                 this.lazyPrice = '';
                 this.lazyCost = '';
                 this.lazyQty = 1;
@@ -845,37 +851,6 @@
                 } catch (e) { console.warn('categories unavailable', e); }
             },
 
-            addCatalogItem() {
-                if (!this.catalogCategory) {
-                    showToast('Please select a category', 'warning');
-                    return;
-                }
-                if (!this.catalogDescription.trim()) {
-                    showToast('Please enter a description', 'warning');
-                    return;
-                }
-                if (!this.catalogPrice || parseFloat(this.catalogPrice) <= 0) {
-                    showToast('Please enter a valid price', 'warning');
-                    return;
-                }
-
-                // Create catalog item
-                const catalogItem = {
-                    id: 'catalog-' + Date.now(),
-                    name: `[CATALOG] ${this.catalogDescription}`,
-                    category: this.catalogCategory,
-                    price: parseFloat(this.catalogPrice),
-                    quantity: 1,
-                    isCatalogItem: true
-                };
-
-                this.cart.push(catalogItem);
-                showToast('Catalog item added!', 'success');
-
-                // Clear form
-                this.catalogDescription = '';
-                this.catalogPrice = '';
-            },
 
             addToCart(product, qty = 1) {
                 const existing = this.cart.find(item => item.id === product.id);
