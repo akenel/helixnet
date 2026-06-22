@@ -32,6 +32,22 @@
             </div>
         </div>
 
+        <!-- Day at a glance -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="card text-center">
+                <p class="text-gray-500 text-xs uppercase tracking-wide">Avg basket</p>
+                <p class="text-2xl font-bold text-teal-600" x-text="formatPrice(summary.average_sale)"></p>
+            </div>
+            <div class="card text-center">
+                <p class="text-gray-500 text-xs uppercase tracking-wide">Items sold</p>
+                <p class="text-2xl font-bold text-gray-900" x-text="summary.items_sold"></p>
+            </div>
+            <div class="card text-center">
+                <p class="text-gray-500 text-xs uppercase tracking-wide">Busiest hour</p>
+                <p class="text-2xl font-bold text-gray-900" x-text="summary.busiest_hour || '—'"></p>
+            </div>
+        </div>
+
         <!-- Payment method breakdown -->
         <div class="card mb-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Payment Method Breakdown</h2>
@@ -62,12 +78,14 @@
         <!-- Top seller + cashiers -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div class="card">
-                <h2 class="text-lg font-semibold text-gray-900 mb-2">🏆 Top Seller</h2>
-                <p x-show="summary.top_seller" class="text-gray-800">
-                    <span class="font-semibold" x-text="summary.top_seller"></span>
-                    &mdash; <span x-text="summary.top_seller_quantity"></span> sold
-                </p>
-                <p x-show="!summary.top_seller" class="text-gray-400">No sales yet today.</p>
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">🏆 Top Sellers</h2>
+                <template x-for="(p, i) in (summary.top_sellers || [])" :key="p.name">
+                    <div class="flex justify-between items-center text-sm py-1 border-b last:border-0">
+                        <span><span x-text="['🥇','🥈','🥉'][i] || '•'"></span> <span class="font-semibold" x-text="p.name"></span></span>
+                        <span class="text-gray-600"><span x-text="p.quantity"></span> sold</span>
+                    </div>
+                </template>
+                <p x-show="!(summary.top_sellers && summary.top_sellers.length)" class="text-gray-400">No sales yet today.</p>
             </div>
             <div class="card">
                 <h2 class="text-lg font-semibold text-gray-900 mb-2">👥 By Cashier</h2>
@@ -105,6 +123,7 @@
                 cash_total: 0, twint_total: 0, visa_total: 0,
                 debit_total: 0, crypto_total: 0, other_total: 0,
                 top_seller: null, top_seller_quantity: 0,
+                top_sellers: [], items_sold: 0, average_sale: 0, busiest_hour: null,
                 cashier_performance: {},
                 giveaway_count: 0, giveaway_cost: 0
             },
@@ -128,6 +147,10 @@
                         other_total: parseFloat(data.other_total || 0),
                         top_seller: data.top_seller || null,
                         top_seller_quantity: data.top_seller_quantity || 0,
+                        top_sellers: data.top_sellers || [],
+                        items_sold: data.items_sold || 0,
+                        average_sale: parseFloat(data.average_sale || 0),
+                        busiest_hour: data.busiest_hour || null,
                         cashier_performance: data.cashier_performance || {},
                         giveaway_count: data.giveaway_count || 0,
                         giveaway_cost: parseFloat(data.giveaway_cost || 0)

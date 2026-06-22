@@ -1935,14 +1935,15 @@ async def get_daily_summary(
             giveaway_count += q
             giveaway_cost += Decimal(str(cost or 0)) * q
 
-    # Best seller today: the item (catalog product OR custom line) with the most units
-    # sold, excluding free treats. The schema always had the field; it was never filled
-    # (always showed "No sales yet today"). On a one-sale day it's just the item sold.
+    # Best sellers + units sold today (catalog products + custom lines, excl. free treats).
+    # The leaderboard fills the once-empty "Top Seller" + gives items-sold for free.
     top_seller = None
     top_seller_quantity = None
+    top_sellers: list[dict] = []
+    items_sold = 0
     if tx_ids:
         name_expr = func.coalesce(ProductModel.name, LineItemModel.notes, "Item")
-        ts = await db.execute(
+        rows = (await db.execute(
             select(name_expr.label("name"), func.sum(LineItemModel.quantity).label("qty"))
             .join(ProductModel, ProductModel.id == LineItemModel.product_id, isouter=True)
             .where(and_(
@@ -1951,16 +1952,46 @@ async def get_daily_summary(
             ))
             .group_by(name_expr)
             .order_by(func.sum(LineItemModel.quantity).desc())
-            .limit(1)
-        )
-        row = ts.first()
-        if row and row.qty:
-            top_seller = row.name
-            top_seller_quantity = int(row.qty)
+        )).all()
+        items_sold = sum(int(r.qty or 0) for r in rows)
+        top_sellers = [{"name": r.name, "quantity": int(r.qty)} for r in rows[:3]]
+        if top_sellers:
+            top_seller = top_sellers[0]["name"]
+            top_seller_quantity = top_sellers[0]["quantity"]
+
+    # Average basket.
+    n = len(transactions)
+    average_sale = (Decimal(str(total_sales)) / n).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) if n else Decimal("0.00")
+
+    # Busiest hour (by transaction count) — a velocity hint.
+    busiest_hour = None
+    if transactions:
+        from collections import Counter
+        hrs = Counter(t.completed_at.hour for t in transactions if t.completed_at)
+        if hrs:
+            h = hrs.most_common(1)[0][0]
+            busiest_hour = f"{h:02d}:00–{(h + 1) % 24:02d}:00"
+
+    # Per-cashier takings today, resolved to names (BL-83: cashier_id = users.id).
+    cashier_performance: dict = {}
+    _raw: dict = {}
+    for t in transactions:
+        if t.cashier_id:
+            _raw[t.cashier_id] = _raw.get(t.cashier_id, Decimal("0")) + Decimal(str(t.total))
+    if _raw:
+        urows = await db.execute(
+            select(UserModel.id, UserModel.first_name, UserModel.username).where(UserModel.id.in_(_raw.keys())))
+        nm = {uid: (first or uname) for uid, first, uname in urows.all()}
+        cashier_performance = {(nm.get(cid) or str(cid)[:8]): amt for cid, amt in _raw.items()}
 
     return DailySummary(
         top_seller=top_seller,
         top_seller_quantity=top_seller_quantity,
+        top_sellers=top_sellers,
+        items_sold=items_sold,
+        average_sale=average_sale,
+        busiest_hour=busiest_hour,
+        cashier_performance=cashier_performance,
         date=target_date.isoformat(),
         total_transactions=len(transactions),
         total_sales=Decimal(str(total_sales)),

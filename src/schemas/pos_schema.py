@@ -253,6 +253,10 @@ class DailySummary(BaseModel):
     other_total: Decimal
     top_seller: Optional[str] = None
     top_seller_quantity: Optional[int] = None
+    top_sellers: list[dict] = Field(default_factory=list)   # top 3: [{name, quantity}]
+    items_sold: int = 0
+    average_sale: Decimal = Decimal("0.00")
+    busiest_hour: Optional[str] = None
     cashier_performance: dict[str, Decimal] = Field(default_factory=dict)
     # Promotional treats given free today: count + their cost (COGS, for tax).
     giveaway_count: int = 0
