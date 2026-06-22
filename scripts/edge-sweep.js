@@ -41,6 +41,7 @@ async function install(page) {
 }
 const api = (page, m, p, b) => page.evaluate(([m, p, b]) => window._api(m, p, b), [m, p, b]);
 const sale = (page, o) => page.evaluate((o) => window._sale(o), o);
+function genEan(){ let b='2'; for(let i=0;i<11;i++)b+=Math.floor(Math.random()*10); let s=0; for(let i=0;i<12;i++)s+=(+b[i])*(i%2?3:1); return b+((10-(s%10))%10); }
 function validEan13(b){ if(!/^\d{13}$/.test(b||''))return false; let s=0; for(let i=0;i<12;i++)s+=(+b[i])*(i%2?3:1); return (10-(s%10))%10===+b[12]; }
 
 (async () => {
@@ -108,14 +109,14 @@ function validEan13(b){ if(!/^\d{13}$/.test(b||''))return false; let s=0; for(le
   rec('S4', 'empty-cart checkout handled (not a 500)', eres.status < 500, `status ${eres.status}`);
 
   // ============ ON-THE-FLY / CATALOG ============
-  let q = await api(F, 'POST', '/products/quick', { sku: 'OTF-'+Date.now(), name: 'Sweep OTF ' + Date.now(), price: '4.00', barcode: '2' + Math.floor(Math.random()*1e11) });
+  let q = await api(F, 'POST', '/products/quick', { sku: 'OTF-'+Date.now(), name: 'Sweep OTF ' + Date.now(), price: '4.00', barcode: genEan() });
   rec('O1', 'quick create -> On the fly category', q.status === 201 && q.json.category === 'On the fly', `status ${q.status} cat ${q.json && q.json.category}`);
   let qn = await api(F, 'POST', '/products/quick', { price: '4.00' });
   rec('O2', 'quick missing name -> 422', qn.status === 422, `status ${qn.status}`);
   let qp = await api(F, 'POST', '/products/quick', { name: 'NoPrice' });
   rec('O3', 'quick missing price -> 422', qp.status === 422, `status ${qp.status}`);
   // dup barcode
-  let bc = '2' + Math.floor(Math.random()*1e11);
+  let bc = genEan();
   await api(F, 'POST', '/products', { sku: 'DUP-' + Date.now(), name: 'Dup A', price: '1.00', barcode: bc, is_age_restricted: false });
   let dup = await api(F, 'POST', '/products', { sku: 'DUP2-' + Date.now(), name: 'Dup B', price: '1.00', barcode: bc, is_age_restricted: false });
   rec('O4', 'duplicate barcode -> 409', dup.status === 409, `status ${dup.status}`);
@@ -124,7 +125,7 @@ function validEan13(b){ if(!/^\d{13}$/.test(b||''))return false; let s=0; for(le
   rec('O5', 'search finds on-the-fly (empty category)', (sr.items || []).length > 0, `hits ${(sr.items||[]).length}`);
 
   // ============ ROLES (pam = cashier) ============
-  let pq = await api(P, 'POST', '/products/quick', { sku: 'POTF-'+Date.now(), name: 'Pam OTF ' + Date.now(), price: '3.00', barcode: '2' + Math.floor(Math.random()*1e11) });
+  let pq = await api(P, 'POST', '/products/quick', { sku: 'POTF-'+Date.now(), name: 'Pam OTF ' + Date.now(), price: '3.00', barcode: genEan() });
   rec('R1', 'cashier CAN quick-create (201)', pq.status === 201, `status ${pq.status}`);
   let pf = await api(P, 'POST', '/products', { sku: 'PF-' + Date.now(), name: 'Pam full', price: '3.00', is_age_restricted: false });
   rec('R2', 'cashier CANNOT full-create (403)', pf.status === 403, `status ${pf.status}`);
