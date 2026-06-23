@@ -1,0 +1,17 @@
+Welcome back. This is a little explanation of what zero perpetual inventory means.
+Big companies, they have systems like SAP, ERP, MRP, materials, resource planning, for example.
+And they keep what you call a perpetual inventory, a running count of every unit.
+Now this is great for a warehouse with a hundred SKUs that never change.
+It's useless for a kiosk or a head shop with a thousand products.
+New stuff weekly, half of it unbarcoded, old stock piling up.
+There the count is wrong, the moment you write it down.
+A wrong number is worse than no number.
+So, Banco, the Helix POS that we are going to demonstrate here, does the opposite.
+Zero perpetual inventory.
+Don't count. Learn the shop by watching what sells.
+Always true, it actually happened.
+Every item is born once, the first time, you meet it, then known forever.
+The catalog builds itself.
+The question MRP exists to answer, what do I re-buy?
+We answer from velocity, not a count nobody keeps honest.
+And that's a take there.
