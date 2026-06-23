@@ -258,6 +258,30 @@ Merge → Generate SRT (Whisper) → YouTube kit
 Use when: fixing real bugs live, authentic workflow recordings.
 Full SOP: `videos/bug-fixes/BUG-FIX-VIDEO-SOP.md`
 
+### 3.5T The Teleprompter -- read the voice-over without fumbling
+
+Any path with voiceover (Options B and D): **don't read the VO off a wall of markdown.**
+Render the VO/card script as a **teleprompter HTML page** and read aloud from that -- big VO
+lines, the title cards shown as actual cards, one beat per block. You read clean, one clip
+per beat, no stumbling, no losing your place.
+
+**Make one** (from the `*-VO-SCRIPT.md`):
+- Source: the VO/card script -- cold open -> beats -> outro, each beat = a CARD line + a VO line.
+- Render a self-contained HTML page (inline CSS, no CDN, opens anywhere, print-friendly):
+  a header (prop + how-to), acts as dividers, and **each beat as a block** = the **CARD** in a
+  dark title-card box + the **VO** line in large readable type + any *(dir.)* notes muted/italic.
+- **Reference example:** `docs/testing/banco/BANCO-ENRICHMENT-DEMO-VO-SCRIPT.html`
+  (rendered from `BANCO-ENRICHMENT-DEMO-VO-SCRIPT.md`).
+
+**Use it:**
+1. Open the teleprompter on a second screen (or beside the phone you record VO on).
+2. Read each **VO** line aloud into Telegram -- **one clip per beat** (a flub costs one beat, not the take).
+3. Big text = no squinting, no losing your place; the card reminds you what's on screen for that line.
+4. Delivery: say the striking thing first, explain after; the *(dir.)* notes tell you where to pause.
+
+**Pairs with:** the markdown `*-VO-SCRIPT.md` is the *source of truth*; the teleprompter `.html`
+is the *read-from* surface. Edit the words in the `.md`, re-render the `.html`.
+
 ### 3.6 Verify Final
 
 - Play the full video start to finish
