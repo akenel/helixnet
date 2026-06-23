@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco — Enrichment Demo: VO &amp; Card Script</title>
+<style>
+  :root{
+    --ink:#1a1d21; --muted:#6b7280; --line:#e5e7eb; --paper:#ffffff; --bg:#f4f5f7;
+    --banco:#8B0000; --card:#11151c; --cardink:#f3f4f6; --accent:#0d9488;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:780px;margin:0 auto;padding:28px 22px 80px;}
+  header.top{border-bottom:3px solid var(--banco);padding-bottom:14px;margin-bottom:8px;}
+  .brand{font-weight:800;font-size:15px;letter-spacing:.04em;color:var(--banco);}
+  .brand small{color:var(--muted);font-weight:600;letter-spacing:0;}
+  h1{font-size:26px;margin:10px 0 4px;line-height:1.15;}
+  .sub{color:var(--muted);font-size:14px;margin:0;}
+  .prop{margin:16px 0 6px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:8px;padding:12px 14px;font-size:13.5px;}
+  .prop b{color:var(--ink);}
+  .howto{margin:10px 0 26px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;
+    padding:10px 14px;font-size:13px;color:#7c2d12;}
+  .act{margin:34px 0 14px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--banco);border-bottom:1px solid var(--line);padding-bottom:6px;}
+  .beat{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  .beat .label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+  /* the on-screen title CARD, shown as a real card */
+  .titlecard{background:var(--card);color:var(--cardink);border-radius:10px;
+    padding:18px 16px;text-align:center;margin:0 0 12px;}
+  .titlecard .k{font-size:10px;letter-spacing:.18em;color:#9ca3af;text-transform:uppercase;margin-bottom:8px;}
+  .titlecard .t{font-size:19px;font-weight:700;line-height:1.25;}
+  .titlecard .t em{color:#5eead4;font-style:normal;}
+  /* the VO line — big, easy to read aloud */
+  .vo{display:flex;gap:10px;align-items:flex-start;}
+  .vo .k{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--accent);
+    text-transform:uppercase;padding-top:5px;flex:none;}
+  .vo .line{font-size:18px;line-height:1.55;color:var(--ink);}
+  .dir{color:var(--muted);font-style:italic;font-size:15px;}
+  .big .titlecard{background:#3b0a0a;}
+  .big .label{color:var(--banco);}
+  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:12px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  @media print{ body{background:#fff;} .wrap{max-width:none;} .beat{break-inside:avoid;box-shadow:none;} .howto{display:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Banco <small>· on the HelixNet engine</small></div>
+    <h1>Enrichment Demo — Voice-Over &amp; Cards</h1>
+    <p class="sub">Desktop demo · the hot item that's not in the till yet · francs</p>
+  </header>
+
+  <div class="prop">
+    <b>Hero prop (real, from the Tamar webshop):</b> SWEED Royal Kush 5g · <b>CHF 23.90</b> ·
+    THC 0.8% / CBD 13.7% · CBD&nbsp;›&nbsp;Marijuana&nbsp;›&nbsp;Blossoms.
+    Photo from <a href="https://www.artemisluzern.ch/en/product/sweed-royal-kush-5g-20287" target="_blank">the Tamar product page</a>.
+  </div>
+
+  <div class="howto">
+    <b>How to record:</b> screen-record the desktop walkthrough silently, then read each <b>VO</b>
+    line into Telegram (one clip per beat). <em>(dir.)</em> notes are delivery, not spoken.
+    Say the striking thing first, explain after.
+  </div>
+
+  <div class="act">Cold open — pain first</div>
+
+  <div class="beat big">
+    <div class="label">Cold open</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">A hot new item. No price in the till. Customer waiting.</div></div>
+    <div class="titlecard"><div class="k">Card</div><div class="t"><em>BANCO</em> — the hot item is never a dead end.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"This happens in every shop, every day: the hottest new item lands, it's not in the system yet, and the customer's standing there while the cashier hunts for a price. Watch how that's <em>supposed</em> to go — start to sold, under a minute."</div></div>
+  </div>
+
+  <div class="act">Act I — the pain</div>
+
+  <div class="beat">
+    <div class="label">Beat 1 · Pam hunts</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">"Royal Kush?" … not on file.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Customer wants the SWEED Royal Kush — just came in this week. Pam searches the till. Nothing. It's not in the system. The old way, this is where everybody waits."</div></div>
+  </div>
+
+  <div class="act">Act II — born once, then enrich</div>
+
+  <div class="beat">
+    <div class="label">Beat 2 · born once</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Not on file? Make it. Now.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Banco doesn't stall — new item, right here in the sale. And here's the part that matters: we don't just slap in a name and guess a price. We make it <em>right</em>."</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="label">Beat 3 · enrich from Tamar</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Pull the real info — from the shop's own webshop.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Twenty-three francs ninety. Category, CBD flower. The real description — Hindu Kush, earthy and pine. THC under one percent, CBD thirteen-seven — the numbers that keep you legal. Straight off our own website. <span class="dir">(dir.: small beat)</span> Nobody's making this up."</div></div>
+  </div>
+
+  <div class="beat big">
+    <div class="label">Beat 4 · the photo</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Its real picture, in seconds.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"And the photo — the actual product shot. Now it's not a line in a spreadsheet. It's a <em>product</em>."</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="label">Beat 5 · save</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Born once. Perfect. Forever.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Save. It's in the catalogue now — searchable, scannable, photo, price, the lot. Made once, made right, and never again."</div></div>
+  </div>
+
+  <div class="act">Act III — relate &amp; sell</div>
+
+  <div class="beat">
+    <div class="label">Beat 6 · the member</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">And it's a member at the counter.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"This customer? She's a member. So she goes on the sale. She's not a transaction — she's a regular, and she earns for being one."</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="label">Beat 7 · sell</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Sold. She earns. Receipt prints.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Ring it through. She gets her points, the receipt's got the shop's real name and number on it, and the whole thing took less than a minute."</div></div>
+  </div>
+
+  <div class="act">Act IV — the payoff</div>
+
+  <div class="beat big">
+    <div class="label">Beat 8 · instant next time</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Next customer? Instant.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"And the next person who wants one? <span class="dir">(dir.: pause — let the instant result land)</span> There it is. Name, price, picture — instant. Nobody hunts for that price ever again."</div></div>
+  </div>
+
+  <div class="act">Outro</div>
+
+  <div class="beat big">
+    <div class="label">Outro</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t"><em>BANCO</em> — a hot item, a perfect product, a happy member. Under a minute.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"A new item used to mean a customer left waiting. Now it means a perfect product and a member who feels looked after — in under a minute. That's the whole difference."</div></div>
+  </div>
+
+  <div class="act">Alternate</div>
+  <div class="beat">
+    <div class="label">Shorter cold open</div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Hottest item in the shop, and it's not in the till. Watch it go from 'hang on, let me find a price' to sold — under a minute."</div></div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>DEMO-ENRICH · VO &amp; Cards · 2026-06-23</span>
+  </footer>
+</div>
+</body>
+</html>
