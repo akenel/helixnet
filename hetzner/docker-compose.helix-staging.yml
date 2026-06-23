@@ -34,6 +34,7 @@ services:
       - ./uat.env
     environment:
       SERVICE_TYPE: platform
+      HX_ENVIRONMENT: staging   # overrides uat.env so the env badge reads STG (amber), not SANDBOX
       # CONSOLIDATED REALM (2026-06-18): both staging apps now share `borrowhood-staging`
       # (frontendUrl=staging-bottega.lapiazza.app), mirroring the Option-A prod target where
       # `borrowhood` is the one CUA. Marketplace (borrowhood_staging) reads the same realm from
