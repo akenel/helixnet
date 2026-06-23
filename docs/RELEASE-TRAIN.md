@@ -22,11 +22,11 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last shipped: **Settings + photo + reports train @ `acf337a` → banco.lapiazza.app, 2026-06-23** — Angel staging PASS 10/11; prod smoke green: `artemis-logo.png` 200, login 200. Rollback `ad4ad07`.)
+`🟢 IDLE` — no train running. (Last shipped: **cashier barcode-create PHANTOM hotfix @ `3a38874` (fix `110f101`) → banco.lapiazza.app, 2026-06-23** — Angel mobile PASS 6/6 functional checks; prod smoke green (`/pos` 200, fix in served scan.html ×3). Rollback `acf337a`. Prior: Settings+photo+reports @ `acf337a`.)
 
 ## Boarding (awaiting the next prod train)
 
-> 🔴 **HOTFIX — cashier barcode born-once PHANTOM — `110f101`, STAGED, awaiting Angel mobile PASS** (2026-06-23):
+> ✅ **HOTFIX — cashier barcode born-once PHANTOM — SHIPPED to banco.lapiazza.app @ `3a38874` (fix `110f101`), 2026-06-23** (Angel mobile PASS 6/6 functional; the 1 "fail" was the staging env-badge mislabel, not the fix; rollback `acf337a`):
 > A **cashier** scanning a **brand-new barcode** → product **sold but never catalogued** (silent data
 > loss; breaks "scan once, known forever"). Found by Angel on the Fairphone. Root cause: `scan.html`
 > `saveLazyCapture()` posted to **manager-only `POST /products`** → cashier 403 → silent one-off `[NEW]`
@@ -36,7 +36,10 @@ so sessions don't fall over each other or push half-baked work to a live box.
 > **→ FORGE:** sibling seal `receiving.html:263` hits the same manager-only `/products` (fails *loudly*,
 > no phantom) — route to `/products/quick` too if cashiers receive. `catalog.html:417` is correctly
 > manager-only — leave it.
-> **→ ANGEL:** test on your phone as **pam**; all-green = flip this to `APPROVED` → rolls on the next prod train.
+> **→ SHIPPED** — prod-banco worktree moved `acf337a → 3a38874`, container restarted, smoke green.
+> Follow-ups (separate, NOT blockers): (a) staging `HX_ENVIRONMENT=uat` mislabels staging as SANDBOX —
+> set it to `staging` for the amber STG badge; (b) cash-drawer UX question Angel raised (cash sale needs
+> own open drawer + `amount_tendered ≥ total`; TWINT skips both) — awaiting the exact on-screen error.
 
 > **NEXT TRAIN — built/queued, NOT yet staged:**
 > - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.
