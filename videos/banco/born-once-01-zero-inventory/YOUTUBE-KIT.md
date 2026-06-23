@@ -1,5 +1,9 @@
 # YouTube Kit — Born Once #01: "Zero Perpetual Inventory"
 
+## ✅ PUBLISHED — 2026-06-23
+**Live:** https://youtube.com/shorts/0rzPvQbiv_Q
+The first Banco video ever. Series "Born Once" #01.
+
 *Hand-someone-a-USB kit. Everything to upload one Short. Format = portrait 564×1080, 1:59 —
 YouTube auto-classifies portrait videos under 3 min as a **Short**.*
 
