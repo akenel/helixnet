@@ -26,21 +26,99 @@ plumbing.
 | **A little lift** | "CHF 40 past yesterday," a streak, a personal best | daily report vs yesterday |
 | **Your sales (drill-in)** | a list of today's sales → tap → the items → tap an item → what it is + how it's moving | `GET /transactions?date=today` (own) |
 
+### Make it juicy — suggestions, tips, FAQ
+A cockpit doesn't just *report* — it **teaches and nudges**, so Pam is never stranded and gets a
+little better at the job every shift. Three layers, kept clean (a few smart things, not clutter):
+
+- **Suggestions (data-driven — from HER day, so they're relevant not generic):**
+  - "**3 items you sold today still need tags** — tidy them up" *(closes the needs-tags loop)*
+  - "You're **CHF 40 from beating yesterday**"
+  - "Papers + filters sell together — **suggest the pair**" *(basket affinity)*
+  - "**A walk-in spent CHF 60 today** — worth a member invite?"
+- **Tips (one rotating how-to at a time — teaches the system + the trade):**
+  - "No barcode? **Take a photo → make a label.**"
+  - "**Open your drawer before the first cash sale.**"
+  - "Found a hot item? **Tag it so it shows in the reports.**"
+- **FAQ / help (in-app, collapsible — she helps herself instead of waiting on Felix):**
+  - "How do I add a member?" · "Item has no barcode?" · "Customer wants a refund? → **ask a
+    manager.**" · "Stuck / something broke? → **the feedback button**, or call Ralph."
+  - **The content lives in the existing KB** (`kb_router` — we already have it). Tips + FAQ are
+    **KB articles**, surfaced contextually on the cockpit; **Felix/Ralph curate them in the KB**,
+    the cockpit just shows the relevant ones. **One knowledge base, many windows — never build a
+    second help system.** (The KB is an asset we already own; the cockpit is its front door for Pam.)
+
+**Keep it clean:** a handful of *relevant* nudges + a tidy help corner. Juicy ≠ cluttered — one
+good suggestion she acts on beats ten she scrolls past. (This is the anti-stranded, dignity
+layer: she's looked after, so she looks after the customer.)
+
+### Gamify it — but gamify the RIGHT things
+Make the shift a game Pam *wants* to win — but **reward care + quality, not raw sales.** A sales
+leaderboard breeds hard-selling and pressure (death to a CRACK community). Reward the behaviours
+that feed the flywheel, and the sales come as the byproduct.
+
+**What to reward (the good behaviours):**
+- **Drawer accuracy** — "Balanced to the franc, 7 days straight." Integrity, streaked.
+- **Member care** — "Member Maker: 5 sign-ups this week." Serving regulars. *(the Relate layer)*
+- **Enrichment** — "Enricher: 12 items tagged / photographed this week." *(feeds the metadata graph)*
+- **Consistency** — show-up streaks, "first sale of the day."
+
+**Mechanics (light, tasteful — not a kids' app):**
+- **Personal bests** — "New best day!", biggest basket, fastest clean close. *Compete with yourself.*
+- **Daily goal** — a progress bar to "beat yesterday"; hit it → a small celebration (a green
+  flourish, not a slot machine).
+- **Badges / streaks** — earned for the good behaviours above, shown on her cockpit.
+- **Leaderboard = manager view.** Ralph sees the cross-cashier board; **a cashier sees only her
+  own rank** ("you're #2 this week"), never others' numbers — respects "she sees only her own."
+
+**Why it's more than morale:** the game makes Pam *want* to tag items, sign up members, and
+balance her drawer — the exact actions that feed velocity, the community, and clean data.
+**The gamification IS an engine for the flywheel,** not a sticker chart.
+
+**Gotcha:** never gamify revenue/sales directly — it corrupts the customer relationship and
+invites gaming. Reward the *care*; the money follows.
+
+### Earn points for growing the KB — staff now, members next
+The KB isn't a maybe — **it already exists, with a full workflow.** `kb_router` is tagged
+*"📚 KB Contributions"*: a **cashier can already submit** a KB (`POST /kb`, any-pos-role), it goes
+**pending → review → approve/reject** (manager-gated), and staff can **review** each other's
+(`/kb/{id}/review`). Model: `kb_contribution_model`. The contribution engine is done.
+
+**Gamify the contribution (staff — buildable now):**
+- Points + badges for **approved** KBs ("Author") and for **reviews** ("Reviewer"). The workflow
+  already records who submitted / reviewed / approved — points are mostly *counting existing events*.
+- **Points on APPROVAL, not submission** — the quality gate (manager review) is what pays. Kills
+  spam, rewards *useful* knowledge. Pam writes "how I handle a returned Zippo," it's approved, she
+  earns, the shop's knowledge grows. She previews her own drafts too.
+
+**Members too (the vision — same engine, extended):** open contribution to **members** —
+**product write-ups, extra details, photos, videos** — earning **loyalty credits** when approved.
+The CRACK community **co-authors the catalogue**: who knows the Royal Kush better than the regular
+who buys it every week? Moderated by the same review gate. That's **crowd-sourced enrichment + the
+Relate layer fused** — the community makes the products richer, and is rewarded for it.
+
+**Gotchas:** points on *approval* not submission (no spam) · member content is **moderated** —
+quality *and* legal (a member can't claim "cures cancer"; the review gate catches it) · **videos
+are the bigger lift** (storage/MinIO + the video pipeline) — write-ups first, videos later.
+
 ### Rules
 - **Read-only.** No editing a completed sale (it's a financial record — *reverse, never edit*).
   Corrections are rare and handled elsewhere: the buck-fifty lighter = a giveaway/replace, the
   rare CHF-80 Zippo = the existing manager-gated refund. **Build no cashier edit/refund here.**
-- **Scope = her own by default.** The endpoint already does this. **"See the whole shop /
-  everyone's sales + the day's takings" is a Felix decision, not the silent default** — fine in
-  a small trusted CRACK shop, a leak/trust risk in a bigger one. Make it a setting or a manager
-  view, not reflex.
+- **Scope (DECIDED — keep it simple):** a **cashier sees ONLY her own** — her own cash drawer,
+  her own sales. A **manager (Ralph) sees all.** **No cashier "see-all" toggle, no setting** —
+  revisit *only if/when* Pam is promoted to manager. The back-end **already enforces this**
+  (`/transactions`: "managers see all, cashiers see their own"; daily-summary `mine`), so the
+  cockpit just surfaces the already-scoped data. Nothing to gate.
 - **Personal, not a ledger.** It should make her go *"that's my day"* — motivating, hers.
 
 ### Acceptance
 - [ ] Pam's dashboard has a **"Today's Sales"** view: her transactions, drill-in to items.
 - [ ] It shows her juicy stats (best item, busiest hour, avg basket) — her own.
 - [ ] It is **read-only**; no edit/refund controls for a cashier.
-- [ ] By default she sees **only her own**; store-wide is gated/optional.
+- [ ] Pam sees **only her own** (own drawer + own sales). A **manager (Ralph) sees all**. No cashier see-all toggle — revisit only on promotion.
+- [ ] **Data-driven suggestions** (needs-tags, beat-yesterday, basket pair, member invite) + a **rotating tip** + a **collapsible FAQ** — tips/FAQ content from the **existing KB** (`kb_router`), curated by Felix/Ralph, not a second help system.
+- [ ] **Gamification rewards care/quality** (drawer accuracy, member sign-ups, enrichment, KB contributions) via streaks/badges/personal-bests + a "beat yesterday" goal — **never raw sales**; leaderboard manager-only (cashier sees own rank).
+- [ ] **Points for APPROVED KB contributions** (staff, buildable now). Member contributions (write-ups/photos/videos → loyalty credits, moderated by the review gate) = the next-phase vision.
 
 ---
 
