@@ -100,6 +100,42 @@ Relate layer fused** — the community makes the products richer, and is rewarde
 quality *and* legal (a member can't claim "cures cancer"; the review gate catches it) · **videos
 are the bigger lift** (storage/MinIO + the video pipeline) — write-ups first, videos later.
 
+### The Clipper case — product knowledge at the point of sale (why all this matters)
+A real example that ties the cockpit, the KB, and the suggestions into one job. A **Clipper lighter**
+comes in **small and large** — and the **replaceable flints are size-specific to match**, which is
+**NOT obvious from the packaging.** Buy the wrong flint, you can't replace it. The **gas refill** needs
+the **Clipper nozzle** (a standard, but some bottles refill cleaner than others). Tribal knowledge —
+the kind that lives in Felix's head and walks out the door the day he's not there.
+
+This is **two different things, with two different homes:**
+- **Knowledge note (a write-up):** *"Flints are size-specific — match the lighter. Gas needs the
+  Clipper nozzle; Brand-X refills cleanest."* → a **KB article attached to the product** (staff write
+  it, members add to it, the review gate keeps it honest).
+- **Compatibility / cross-sell link (structured):** *this lighter → its matching flint(s) → its gas.*
+  A **"fits / goes-with" relationship**, not free text — because the till needs to *act* on it.
+
+**The payoff at the counter:** Pam rings a Clipper → the cockpit **pops the note** ("small or large?
+flints must match") **and suggests the right flint + the right gas.** She looks like she's worked there
+twenty years, the customer doesn't go home with the wrong flint, and the basket grows by two items —
+*correctly.* Suggestion engine + KB + compatibility, doing one real job.
+
+**And it's the perfect member-KB case:** who knows the flint-size gotcha better than the regular who's
+refilled his Clipper fifty times? Let members write it; staff approve it; everyone benefits.
+
+**Build order (incremental, don't boil the ocean):** KB notes on products first (reuse the KB) →
+compatibility links (structured "fits/goes-with") → the point-of-sale pop. The note alone already
+saves the wrong-flint sale.
+
+**And don't judge the lighter by its margin.** A buck-fifty lighter is one of the *most important*
+items in the shop — the everyday essential people walk in for, the anchor of half the baskets, the
+**razor in razor-and-blades.** By *revenue* it's nothing; by *role* it's a **traffic driver.** So the
+reports and the cockpit should recognise that **role** (a "key item / everyday essential" flag), not
+rank by money alone — it's the other half of the by-units-vs-by-revenue story. And the **cross-sell
+writes itself:** lighter → matching flint → the right gas → a **leash** (Felix wears his on a
+belt-buckle chain, slings right back) so they never lose it. A buck-fifty becomes a five-franc basket,
+*and* the customer's actual problem — "I always lose my lighter" — is solved. That's the shop being
+helpful, not just ringing a sale.
+
 ### Rules
 - **Read-only.** No editing a completed sale (it's a financial record — *reverse, never edit*).
   Corrections are rare and handled elsewhere: the buck-fifty lighter = a giveaway/replace, the
