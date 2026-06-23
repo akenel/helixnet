@@ -422,6 +422,66 @@ rm music-processed.m4a
 
 ---
 
+## Phase 3C: The Portrait Slideshow Explainer (The Banco Method)
+
+**The engine for the teaching-video series.** First proven on the Banco "Zero Perpetual
+Inventory" intro (2026-06-23). Use this for any **phone-first how-to**: making a new product,
+looking up a member, doing a sale/checkout, opening the cash drawer, the day-close, admin-vs-
+manager differences, logging in/out, and reporting feedback live.
+
+### Why a slideshow, not a screen-recording
+A real-time screen capture has lag -- typing, loading, mouse-hunting. Chopping it out is fiddly
+and still feels jerky. **A slideshow of the key *moments* (clean screenshots, smooth cross-fades)
+kills the lag entirely and looks deliberate.** The voice-over carries the narrative; the slides
+just illustrate the beat. This is how good explainers are actually made.
+
+### The shape
+- **Audio = the VO** (record once on the teleprompter, clean it per 3.5T + the voiceover pipeline).
+- **Video = a portrait slideshow** (600x1080) of the flow's key states, cross-fading.
+- **Card bar = the VO's header lines**, drawn as a solid brand bar **over the browser chrome**
+  (hides the URL/tabs/bookmarks, brands the frame). Banco red = `0x8B0000`.
+- **Sync** each card to land as the voice says it.
+
+### Recipe
+```bash
+V='recording.mp4'                       # one rough take of the whole flow (exploratory is fine)
+FONT=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
+CROP='crop=600:1080:1320:0'             # the app pane -> portrait (tune x-offset to your layout)
+
+# 1. CONTACT SHEET -- find the clean states fast (one thumb every ~38s, tiled)
+ffmpeg -y -i "$V" -vf "$CROP,fps=1/38,scale=170:-1,tile=4x4:padding=4:color=white" -frames:v 1 contact.jpg
+#    -> open contact.jpg, note the timestamp of each clean beat you want as a slide
+
+# 2. SLIDES -- crop portrait + solid card bar + header text, one per beat
+#    (taller bar h=200+ and @1.0 opacity hides the browser chrome completely)
+ffmpeg -y -ss <T> -i "$V" -frames:v 1 \
+  -vf "$CROP,drawbox=x=0:y=0:w=600:h=210:color=0x8B0000:t=fill,drawtext=fontfile='$FONT':text='<CARD LINE>':fontcolor=white:fontsize=30:x=(w-text_w)/2:y=92" \
+  slide_N.png
+#    keep card lines short so they fit 600px at fontsize 30; pick the frame that nails the punchline
+
+# 3. SLIDESHOW + VO -- cross-fade the slides, mux the cleaned VO, -shortest to the VO length
+#    offsets = k*(D-T): for D=24s slides, T=1s fade -> 23, 46, 69, 92 ...
+ffmpeg -y \
+  -loop 1 -t 24 -i slide_1.png -loop 1 -t 24 -i slide_2.png -loop 1 -t 24 -i slide_3.png \
+  -loop 1 -t 24 -i slide_4.png -loop 1 -t 24 -i slide_5.png -i VO-clean.mp4 \
+  -filter_complex "[0:v]fps=30,format=yuv420p,setsar=1[v0];[1:v]fps=30,format=yuv420p,setsar=1[v1];[2:v]fps=30,format=yuv420p,setsar=1[v2];[3:v]fps=30,format=yuv420p,setsar=1[v3];[4:v]fps=30,format=yuv420p,setsar=1[v4];[v0][v1]xfade=transition=fade:duration=1:offset=23[x1];[x1][v2]xfade=transition=fade:duration=1:offset=46[x2];[x2][v3]xfade=transition=fade:duration=1:offset=69[x3];[x3][v4]xfade=transition=fade:duration=1:offset=92[vout]" \
+  -map "[vout]" -map "5:a" -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart \
+  intro-draft.mp4
+```
+
+### Rules
+- **Pick the payoff frame deliberately** -- the "search → found" slide must show the right product,
+  not a lookalike. Verify by pulling a frame from the draft (`ffmpeg -ss <t> -i draft.mp4 -frames:v 1 chk.jpg`).
+- **Solid bar, tall enough** -- semi-transparent bars let the bookmarks ghost through. Use `@1.0` and
+  `h>=210`.
+- **Sync to the voice** -- tune each slide's duration/offset so its card lands on the spoken line.
+- **One take is enough** -- the recording can be rough and exploratory; you're harvesting stills, not
+  using the motion. Lag and fumbles don't matter; you only keep the clean frames.
+- **Feedback live** -- when a teaching take surfaces a bug, hit the in-app Feedback button on camera;
+  that clip becomes both a bug report and a "how to give good feedback" lesson.
+
+---
+
 ## Phase 4: Distribution
 
 ### 4.1 File Organization
