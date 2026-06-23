@@ -97,6 +97,10 @@ templates = Jinja2Templates(directory=str(templates_dir))
 from src.build_info import get_version, get_git_sha  # noqa: E402
 templates.env.globals["app_version"] = get_version()
 templates.env.globals["git_sha"] = get_git_sha()
+import os  # noqa: E402
+# Env code (SBX/STG/PRD) for the status-bar pill. POS pages render via THIS templates instance
+# (not main.py's), so the app_env global must be set here too. Read os.environ directly.
+templates.env.globals["app_env"] = os.environ.get("HX_ENVIRONMENT", "")
 
 
 # ================================================================
