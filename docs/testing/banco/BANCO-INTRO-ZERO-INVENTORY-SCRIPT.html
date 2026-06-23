@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco — Intro: "Zero Perpetual Inventory" (teleprompter)</title>
+<style>
+  :root{
+    --ink:#1a1d21; --muted:#6b7280; --line:#e5e7eb; --paper:#ffffff; --bg:#f4f5f7;
+    --banco:#8B0000; --card:#11151c; --cardink:#f3f4f6; --accent:#0d9488;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:780px;margin:0 auto;padding:28px 22px 80px;}
+  header.top{border-bottom:3px solid var(--banco);padding-bottom:14px;margin-bottom:8px;}
+  .brand{font-weight:800;font-size:15px;letter-spacing:.04em;color:var(--banco);}
+  .brand small{color:var(--muted);font-weight:600;letter-spacing:0;}
+  h1{font-size:26px;margin:10px 0 4px;line-height:1.15;}
+  .sub{color:var(--muted);font-size:14px;margin:0;}
+  .argument{margin:16px 0 6px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:8px;padding:14px 16px;font-size:14px;}
+  .argument h3{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);}
+  .argument p{margin:0 0 8px;}
+  .howto{margin:10px 0 26px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;
+    padding:10px 14px;font-size:13px;color:#7c2d12;}
+  .beat{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  .beat .label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+  .titlecard{background:var(--card);color:var(--cardink);border-radius:10px;
+    padding:18px 16px;text-align:center;margin:0 0 12px;}
+  .titlecard .k{font-size:10px;letter-spacing:.18em;color:#9ca3af;text-transform:uppercase;margin-bottom:8px;}
+  .titlecard .t{font-size:20px;font-weight:700;line-height:1.25;}
+  .titlecard .t em{color:#5eead4;font-style:normal;}
+  .vo{display:flex;gap:10px;align-items:flex-start;}
+  .vo .k{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--accent);
+    text-transform:uppercase;padding-top:6px;flex:none;}
+  .vo .line{font-size:19px;line-height:1.6;color:var(--ink);}
+  .dir{color:var(--muted);font-style:italic;font-size:15px;}
+  .big .titlecard{background:#3b0a0a;}
+  .big .label{color:var(--banco);}
+  /* the live screen-demo insert */
+  .live{border:2px solid var(--accent);background:#ecfdf5;}
+  .live .label{color:var(--accent);}
+  .live .vo .line{font-size:18px;}
+  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:12px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  @media print{ body{background:#fff;} .wrap{max-width:none;} .beat{break-inside:avoid;box-shadow:none;} .howto{display:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Banco <small>· on the HelixNet engine</small></div>
+    <h1>Intro — "Zero Perpetual Inventory"</h1>
+    <p class="sub">The <em>why</em> video · ~3 min · explainer + a live "enter a new product" insert</p>
+  </header>
+
+  <div class="argument">
+    <h3>The argument (read this first)</h3>
+    <p>Big-company systems (SAP, ERP, MRP) keep a <b>perpetual inventory</b> — a running count of
+    every unit. Great for a warehouse with a hundred SKUs that never change. <b>Useless</b> for a
+    kiosk or head shop with a thousand products, new stuff weekly, half of it unbarcoded, old stock
+    piling up. There the count is <b>wrong the moment you write it down</b> — and a wrong number is
+    worse than no number.</p>
+    <p>So Banco does the opposite: <b>zero perpetual inventory.</b> Don't count — learn the shop by
+    <b>watching what sells</b> (always true; it actually happened). Every item is <b>born once</b> the
+    first time you meet it, then known forever. The catalogue builds itself. The question MRP exists
+    to answer — <i>"what do I re-buy?"</i> — we answer from <b>velocity</b>, not a count nobody keeps honest.</p>
+  </div>
+
+  <div class="howto">
+    <b>How to read it:</b> read the <b>VO</b> lines aloud (big text), one beat at a time. The <em>(dir.)</em>
+    notes are delivery. Say the punch first, explain after. The <b>green LIVE block</b> = switch to the
+    screen and actually enter a product.
+  </div>
+
+  <div class="beat big">
+    <div class="label">Cold open — the punch</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Stop counting your inventory.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"If you've ever worked with a big inventory system — SAP, an ERP, an MRP — you know the drill: count everything, track every unit, reorder points, stock levels, cycle counts. It works great… for a warehouse. <b>You don't run a warehouse.</b>"</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="label">The problem</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">A thousand products. New stuff weekly. Half with no barcode.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"You run a <i>shop.</i> A kiosk, a head shop — a thousand different products, new things coming in every week, a pile of old stock in the back you're not even sure what to do with. For <i>you</i>, that corporate inventory system isn't just overkill. It's a <b>lie.</b>"</div></div>
+  </div>
+
+  <div class="beat big">
+    <div class="label">Why it's a lie</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">The count is wrong the moment you write it down.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Half your stuff has no barcode. New things show up daily. Things walk off the shelf. To keep a 'perpetual inventory' honest you'd have to count <i>constantly</i> — and nobody does. So the system says you've got four, you've actually got one, and now it <b>won't even let you sell</b> the thing in your customer's hand. A wrong number in your books is worse than no number at all."</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="label">The reframe</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">So… don't.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"So we asked a stupid-simple question: what if you just <b>didn't</b>? What if you stopped counting entirely — and instead the system learned your shop by watching the one thing that's always true: <b>what actually sells.</b>"</div></div>
+  </div>
+
+  <div class="beat big">
+    <div class="label">How it works — born once</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Every item is born once.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Here's the counter. A customer brings something up. You scan it — or if it's got no barcode, you snap a photo and name it. The <b>first</b> time the system sees it, it's a brand-new product, born right there in the sale. Twenty seconds, and the sale never stops. Scan that same thing again tomorrow? <b>Instant</b> — name, price, picture, all there. <i>Scan once, known forever.</i> Your catalogue isn't something you build at midnight in a spreadsheet. <b>It builds itself, one sale at a time, while you work.</b>"</div></div>
+  </div>
+
+  <div class="beat live">
+    <div class="label">▶ Live insert — show it (switch to the screen)</div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Let me show you. Here's something that's never been in the system…" <span class="dir">(walk the born-once flow: not on file → name → price → photo → save → it's real, searchable, done)</span> "…and that's it. It's in the catalogue now, forever — and I never counted a thing."</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="label">The contrast</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">MRP, reorder points, kanban — all to answer one question.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"Now — the old way. MRP, min/max stock, reorder points, kanban cards: all of it exists to answer <b>one</b> question — <i>what do I need to re-buy?</i> And it answers it by tracking counts you can't keep honest. We answer the <b>same</b> question a different way: <b>velocity.</b> What's selling fast? What hasn't moved in a month? The sales log knows — for real, no counting. Re-buy what's moving, clear out what's dead. Same answer. Honest data. <b>Zero counting.</b>"</div></div>
+  </div>
+
+  <div class="beat big">
+    <div class="label">Close</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t">Built for your shop. Not a corporation's warehouse.</div></div>
+    <div class="vo"><div class="k">VO</div><div class="line">"No cycle counts. No system telling you you can't sell what's right there on your shelf. You just sell — and it learns your shop. <b>That's zero perpetual inventory.</b> Built for the way your shop actually works… not the way a warehouse does."</div></div>
+  </div>
+
+  <div class="beat big">
+    <div class="label">Outro</div>
+    <div class="titlecard"><div class="k">Card</div><div class="t"><em>BANCO</em> — sell. it learns. that's the whole trick.</div></div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>INTRO · Zero Perpetual Inventory · 2026-06-23</span>
+  </footer>
+</div>
+</body>
+</html>
