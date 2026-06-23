@@ -1,0 +1,63 @@
+1
+00:00:00,000 --> 00:00:09,000
+Welcome back. This is a little explanation of what zero perpetual inventory means.
+
+2
+00:00:09,000 --> 00:00:21,000
+Big companies, they have systems like SAP, ERP, MRP, materials, resource planning, for example.
+
+3
+00:00:21,000 --> 00:00:29,000
+And they keep what you call a perpetual inventory, a running count of every unit.
+
+4
+00:00:29,000 --> 00:00:36,000
+Now this is great for a warehouse with a hundred SKUs that never change.
+
+5
+00:00:36,000 --> 00:00:42,000
+It's useless for a kiosk or a head shop with a thousand products.
+
+6
+00:00:42,000 --> 00:00:49,000
+New stuff weekly, half of it unbarcoded, old stock piling up.
+
+7
+00:00:49,000 --> 00:00:55,000
+There the count is wrong, the moment you write it down.
+
+8
+00:00:55,000 --> 00:00:59,000
+A wrong number is worse than no number.
+
+9
+00:00:59,000 --> 00:01:07,000
+So, Banco, the Helix POS that we are going to demonstrate here, does the opposite.
+
+10
+00:01:07,000 --> 00:01:11,000
+Zero perpetual inventory.
+
+11
+00:01:11,000 --> 00:01:16,000
+Don't count. Learn the shop by watching what sells.
+
+12
+00:01:16,000 --> 00:01:20,000
+Always true, it actually happened.
+
+13
+00:01:20,000 --> 00:01:28,000
+Every item is born once, the first time, you meet it, then known forever.
+
+14
+00:01:28,000 --> 00:01:32,000
+The catalog builds itself.
+
+15
+00:01:32,000 --> 00:01:39,000
+The question MRP exists to answer, what do I re-buy?
+
+16
+00:01:39,000 --> 00:01:53,000
+We answer from velocity, not a count nobody keeps honest.
