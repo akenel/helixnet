@@ -2665,7 +2665,10 @@ async def pos_login(request: Request):
 
     No authentication required (this is the login page)
     """
-    return templates.TemplateResponse("pos/login.html", {"request": request})
+    return templates.TemplateResponse("pos/login.html", {
+        "request": request,
+        "environment": getattr(get_settings(), "HX_ENVIRONMENT", "") or "",
+    })
 
 
 @html_router.get("/pos/callback")

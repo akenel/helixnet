@@ -268,6 +268,11 @@
         .receipt-page .p-4  { padding: 6px !important; }
         .receipt-page .space-y-2 > * + * { margin-top: 2px !important; }
         .receipt-page svg { height: 28px !important; width: auto !important; }   /* tiny barcode */
+        /* The store logo (img, h-20=80px) was NOT capped in print — that + the new
+           identity lines ate ~half a page. Keep the whole company header tight. */
+        .receipt-page img { max-height: 34px !important; width: auto !important; }
+        .receipt-page .border-b-2 { padding-bottom: 4px !important; margin-bottom: 5px !important; }
+        .receipt-page .border-b-2 p { line-height: 1.15 !important; margin-top: 1px !important; }
         .receipt-page .watermark { font-size: 80px !important; }
 
         @page { size: A4; margin: 0; }
