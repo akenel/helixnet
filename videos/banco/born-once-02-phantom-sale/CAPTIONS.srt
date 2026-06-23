@@ -1,0 +1,111 @@
+1
+00:00:00,000 --> 00:00:02,140
+We sold a product that didn't exist.
+
+2
+00:00:03,300 --> 00:00:06,920
+Watch a cashier scans something brand new, names it,
+
+3
+00:00:07,640 --> 00:00:10,320
+prices it, snaps a photo, sells it,
+
+4
+00:00:11,200 --> 00:00:13,380
+The receipt prints. The points land.
+
+5
+00:00:14,360 --> 00:00:18,560
+the customer walks out happy. Everything looks perfect.
+
+6
+00:00:19,500 --> 00:00:22,200
+Two minutes later she goes to ring up another one.
+
+7
+00:00:23,120 --> 00:00:27,040
+She searches the name. Nothing, no matches.
+
+8
+00:00:27,040 --> 00:00:30,940
+The product she just made and sold is gone.
+
+9
+00:00:31,660 --> 00:00:35,620
+The sale was real, the money was real, the points were real,
+
+10
+00:00:36,400 --> 00:00:38,960
+but the product never saved, never in the catalog.
+
+11
+00:00:39,740 --> 00:00:42,900
+It vanished the second the receipt printed. A phantom.
+
+12
+00:00:44,680 --> 00:00:49,980
+Now imagine that's your shop. Every new barcode a cashier scans sold once
+
+13
+00:00:49,980 --> 00:00:54,000
+then gone. A catalog full of holes. The one
+
+14
+00:00:54,000 --> 00:00:56,620
+promised this whole thing makes scan once,
+
+15
+00:00:57,520 --> 00:01:01,220
+known forever, silently broken, and nobody notices
+
+16
+00:01:02,020 --> 00:01:04,400
+because the sale never fails.
+
+17
+00:01:05,740 --> 00:01:08,500
+So we hunted it. There are two ways to make a product.
+
+18
+00:01:08,760 --> 00:01:11,340
+One, let the cashier straight through. It's twin.
+
+19
+00:01:12,120 --> 00:01:16,480
+The one that fires when you scan a fresh barcode, slam the door.
+
+20
+00:01:17,260 --> 00:01:20,720
+A permission error, swallowed in silence. One seal worked.
+
+21
+00:01:20,840 --> 00:01:22,840
+The identical seal right next to it
+
+22
+00:01:23,640 --> 00:01:28,820
+leaked. We found it. One line. We sent the barcode through
+
+23
+00:01:28,820 --> 00:01:31,800
+the same door. The cashier was already allowed through.
+
+24
+00:01:32,940 --> 00:01:36,260
+And now she scans, creates, sells, searches.
+
+25
+00:01:37,100 --> 00:01:42,420
+There it is. It's stuck forever. Found on a phone,
+
+26
+00:01:42,620 --> 00:01:46,400
+killed before ever touched a real shop because if one seal fails,
+
+27
+00:01:46,400 --> 00:01:51,460
+you check all the seals. That's the difference between software that's
+
+28
+00:01:51,460 --> 00:01:55,020
+tested and the software that has been lived in.
