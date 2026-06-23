@@ -54,6 +54,14 @@ doesn't.** *If one seal works, check the identical seal next to it.*
   (`is_active=true`, category "On the fly", barcode set) **and** that searching its name returns it.
 - Guard both paths (with-barcode and no-barcode) so this can't drift apart again.
 
+## Check-all-the-seals sweep (other POST /products callers)
+- **`scan.html:846`** — the reported phantom. **FIXED** → now `POST /products/quick` (cashier-safe).
+- **`catalog.html:417`** — full catalogue CRUD. **Correctly manager-only — leave as-is.**
+- **`receiving.html:263`** — goods-in create. Hits the same manager-only `/products`, BUT it **fails
+  loudly** (`showToast('Could not create the product','error')`, no one-off phantom) — so it's a UX
+  block, not silent data loss. **For the forge (its active file):** if cashiers do receiving, route
+  this to `/products/quick` too (carries `stock_quantity:0`, which `/products/quick` accepts).
+
 ## Note for the intro video
 The "scan once, known forever" demo must be shown on a path that actually persists (no-barcode quick
 create, or as a manager) until this lands — otherwise the very claim the video makes is the bug.

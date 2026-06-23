@@ -842,8 +842,11 @@
                     // once and is always sellable; velocity comes from the sales log, not a count.
                 };
                 try {
-                    // Persist a REAL product (manager/admin/dev). Known on every future scan.
-                    const product = await API.post('/api/v1/pos/products', payload);
+                    // Persist a REAL product via the CASHIER-SAFE quick endpoint (require_any_pos_role).
+                    // BL-BUG fix (2026-06-23): was POST /products (manager-only) — a cashier scanning a
+                    // NEW barcode 403'd → silent one-off [NEW] phantom (sold but never catalogued).
+                    // /products/quick takes the same payload, sets is_active, files under "On the fly".
+                    const product = await API.post('/api/v1/pos/products/quick', payload);
                     // Attach the photo (if one was taken) — the picture is the label.
                     if (this.lazyPhotoFile && product && product.id) {
                         try {
