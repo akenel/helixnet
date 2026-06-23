@@ -73,6 +73,13 @@
             <!-- Watermark -->
             <div class="watermark" x-show="transaction.status === 'completed'" x-text="`PAID by ${transaction.payment_method?.toUpperCase() || 'CARD'}`"></div>
 
+            {# Non-prod receipts get a clear TEST banner so a sandbox/staging receipt is never mistaken for a real sale. Prints too. #}
+            {% set _re = (app_env | default('')) | lower %}
+            {% if _re and 'prod' not in _re %}
+            <div class="text-center mb-4" style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:4px 6px;font-weight:700;color:#92400e;font-size:12px;">
+              ⚠ {{ 'SANDBOX' if ('sandbox' in _re or 'uat' in _re) else ('STAGING' if 'staging' in _re else app_env|upper) }} — TEST RECEIPT (not a real sale)
+            </div>
+            {% endif %}
             <!-- Company Header -->
             <div class="text-center border-b-2 border-gray-300 pb-6 mb-6">
                 <div x-show="storeSettings.receipt_logo_url" class="mb-4">
