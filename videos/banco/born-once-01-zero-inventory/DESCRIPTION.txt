@@ -1,0 +1,18 @@
+Your inventory system is lying to you.
+
+Big-company systems — SAP, ERP, MRP — keep a "perpetual inventory": a running count of every unit. Great for a warehouse with a hundred SKUs that never change. Useless for a kiosk or a head shop with a thousand products, new stuff weekly, half of it unbarcoded, old stock piling up. There, the count is wrong the moment you write it down. And a wrong number is worse than no number.
+
+So Banco does the opposite: zero perpetual inventory.
+
+Don't count. Learn the shop by watching what actually sells. Every product is born once the first time you meet it — scan it, or snap a photo and name it — then it's known forever. The catalogue builds itself, one sale at a time, while you work. The question MRP exists to answer — "what do I re-buy?" — we answer from velocity: what's moving, what's dead. Honest data, zero counting.
+
+Built for the way your shop actually works. Not the way a warehouse does.
+
+This is "Born Once" — short films on Banco, a Swiss-made till built for the counter, not the warehouse.
+
+NEXT UP: "The Phantom Sale" — we sold a product that didn't exist.
+
+Built on HelixNet (FastAPI, Keycloak, Docker).
+GitHub: https://github.com/akenel/helixnet
+
+#Shorts #POS #retail #smallbusiness #inventory #headshop #SwissMade #pointofsale
