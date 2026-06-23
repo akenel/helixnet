@@ -26,6 +26,18 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Boarding (awaiting the next prod train)
 
+> 🔴 **HOTFIX — cashier barcode born-once PHANTOM — `110f101`, STAGED, awaiting Angel mobile PASS** (2026-06-23):
+> A **cashier** scanning a **brand-new barcode** → product **sold but never catalogued** (silent data
+> loss; breaks "scan once, known forever"). Found by Angel on the Fairphone. Root cause: `scan.html`
+> `saveLazyCapture()` posted to **manager-only `POST /products`** → cashier 403 → silent one-off `[NEW]`
+> phantom. **Fix (1 line): route to cashier-safe `POST /products/quick`.** DB-confirmed (0 rows for the
+> "created" product). Doc: `docs/testing/banco/BL-BUG-cashier-barcode-create-phantom.md`.
+> Mobile test sheet: `docs/testing/banco/BANCO-BUGFIX-CASHIER-CREATE-TEST-SHEET.html`.
+> **→ FORGE:** sibling seal `receiving.html:263` hits the same manager-only `/products` (fails *loudly*,
+> no phantom) — route to `/products/quick` too if cashiers receive. `catalog.html:417` is correctly
+> manager-only — leave it.
+> **→ ANGEL:** test on your phone as **pam**; all-green = flip this to `APPROVED` → rolls on the next prod train.
+
 > **NEXT TRAIN — built/queued, NOT yet staged:**
 > - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.
 > - **Fix-after from Angel's staging PASS (2026-06-23):**
