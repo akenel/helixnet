@@ -22,11 +22,20 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. **Next train is STAGED on staging-banco @ `acf337a`, awaiting Angel Fairphone PASS** (sheet: `docs/testing/banco/BANCO-STAGING-TEST-3.html`). On PASS → prod. (Last shipped: zero-inventory train @ `b7f083a`, 2026-06-22 — Angel PASS 12/12.)
+`🟢 IDLE` — no train running. (Last shipped: **Settings + photo + reports train @ `acf337a` → banco.lapiazza.app, 2026-06-23** — Angel staging PASS 10/11; prod smoke green: `artemis-logo.png` 200, login 200. Rollback `ad4ad07`.)
 
 ## Boarding (awaiting the next prod train)
 
-> **Settings + photo + reports train — STAGED on staging-banco.lapiazza.app @ `acf337a`, 2026-06-22** (war-room terminal). Verified: staging serves the new build (`/static/artemis-logo.png` 200 on staging, 404 on prod). App code == the sandbox SHA `92d4368` Angel already phone-passed (only a docs commit between). **Awaiting Angel Fairphone PASS on `BANCO-STAGING-TEST-3` → then prod.** Cargo:
+> **NEXT TRAIN — built/queued, NOT yet staged:**
+> - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.
+> - **Fix-after from Angel's staging PASS (2026-06-23):**
+>   - create-form papercuts ("Pam's fat fingers"): category needs a default, description should autopop, name-first ordering — make it forgiving.
+>   - logo: simple **file-upload → auto thumbnail + logo** (not a URL field).
+>   - cash-variance **tolerance configurable in Settings** (±0.20 / 5-CHF).
+>   - receipt: header+footer double-spacing — header capped (`4587189`), **footer still needs tightening**.
+>   - version stamp shows a **stale baked SHA** (`5f0cef7`) not the live worktree HEAD — cosmetic, fix `get_git_sha`.
+
+> **Settings + photo + reports train — ✅ SHIPPED to banco.lapiazza.app @ `acf337a`, 2026-06-23** (rollback `ad4ad07`). Angel staging PASS 10/11 (the 1 = create-form papercut, a "nothing-burger"). Prod smoke green. Cargo:
 > - **cashier-photo-403 fix** — Pam's born-once photo now attaches (was silently swallowed).
 > - **real Settings control centre** `/pos/settings` (was a stub) — tabbed + Artemis Lucerne identity + `/static/artemis-logo.png` + store-profile (hours, socials).
 > - **Best-Seller report fixed** (was an empty field) + juicy daily report (per-cashier by NAME, top-3 leaderboard, avg basket, items sold, busiest hour).
