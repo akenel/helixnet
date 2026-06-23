@@ -372,7 +372,7 @@ templates.env.globals["lp_kc_url"] = get_settings().LP_KC_PUBLIC_URL  # browser-
 from src.build_info import get_version, get_git_sha  # noqa: E402
 templates.env.globals["app_version"] = get_version()
 templates.env.globals["git_sha"] = get_git_sha()
-templates.env.globals["app_env"] = getattr(get_settings(), "HX_ENVIRONMENT", "") or ""  # env code (SBX/STG/PRD) for the status bar + receipt tag
+templates.env.globals["app_env"] = os.environ.get("HX_ENVIRONMENT", "")  # env code (SBX/STG/PRD); read os.environ directly — get_settings() is cached too early at import time
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # ================================================================
