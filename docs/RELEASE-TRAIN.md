@@ -51,8 +51,9 @@ so sessions don't fall over each other or push half-baked work to a live box.
 > (`scan.html`), no models/migrations/routes (low collision risk w/ KC terminal). Live-verified on staging
 > (new title present, old "Item not on file" gone). **Demo dependency:** the 420 catalog must be loaded in the
 > staging-banco DB or the search-first screen looks empty.
-> **→ NEXT (bigger idea, discussing):** a separate **reference catalog** DB (the full 420/TMR dump, CSV-fed,
-> maintained apart) that Banco **cherry-picks** real items into the live catalog from — so we never invent data.
+> **→ NEXT — BL-97 reference catalog (SPEC'd, not built):** a `reference_products` product master (the full
+> 420/TMR dump, CSV-fed via `scripts/import_reference_catalog.py`, maintained apart) that Banco **cherry-picks**
+> real items into the live catalog from — so we never invent data. Spec: `docs/SPEC-BL-97-reference-catalog.md`.
 
 > **NEXT TRAIN — built/queued, NOT yet staged:**
 > - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.
