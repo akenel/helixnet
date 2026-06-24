@@ -241,3 +241,34 @@ docs/testing/archive/
 
 # Deploy build stamp (written per-deploy, not source)
 src/static/build-sha.txt
+
+# ====================================================================
+# 🎬 BORN ONCE VIDEO RENDER ARTIFACTS
+# Slides/shots are regenerable Puppeteer/slideshow frames (249M+).
+# Only the YouTube kit (CAPTIONS.srt / DESCRIPTION.txt / TAGS.txt /
+# YOUTUBE-KIT.md / thumbnail.png) is tracked per episode.
+# ====================================================================
+videos/**/assets/slides/
+videos/**/assets/slides2/
+videos/**/assets/shots/
+videos/**/assets/concat.txt
+
+# ====================================================================
+# 🧪 BANCO TEST CAPTURES & EXPORTS (generated, not source)
+# Receipts, Z-reports, test-sheet PDF prints, screenshots, voice
+# notes, transcripts, data dumps. The .md/.html test-SHEET SOURCES
+# stay tracked (they're the "best sheet ever" templates).
+# ====================================================================
+docs/testing/banco/**/*.pdf
+docs/testing/banco/**/*.png
+docs/testing/banco/**/*.jpeg
+docs/testing/banco/**/*.jpg
+docs/testing/banco/**/*.ogg
+docs/testing/banco/**/*.csv
+docs/testing/banco/**/*.json
+docs/testing/banco/banco-pos-test-run*report.html
+docs/testing/banco/banco-pos-test-run*report.txt
+
+# Local inventory exports (real product-data dumps, regenerable)
+docs/business/inventory/inventory-local-*.csv
+docs/business/inventory/inventory-local-*.md

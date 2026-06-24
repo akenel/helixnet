@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Piazza · Bottega — 2-Minute Walkthrough (Teleprompter)</title>
+<style>
+  :root{
+    --bg:#0a0c12; --panel:#121622; --panel2:#0f1320; --ink:#f4f6fb; --muted:#9aa6bd;
+    --do:#39c0ff; --do-bg:rgba(57,192,255,.10); --do-bd:rgba(57,192,255,.45);
+    --say:#ffffff; --say-bg:rgba(255,255,255,.05); --say-bd:rgba(255,80,90,.55);
+    --red:#e23744; --amber:#ffb020; --amber-bg:rgba(255,176,32,.10);
+    --ok:#36d399;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45; padding:0 0 120px;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:linear-gradient(90deg,#1a0f12,#14171f);
+    border-bottom:2px solid var(--red);
+    padding:14px 26px; display:flex; align-items:center; gap:16px;
+    box-shadow:0 6px 24px rgba(0,0,0,.5);
+  }
+  .rec{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.04em;font-size:15px}
+  .dot{width:13px;height:13px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+  header h1{font-size:17px;margin:0;font-weight:600}
+  header h1 b{color:var(--red)}
+  header .runtime{margin-left:auto;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 26px 0}
+
+  .preflight{
+    background:var(--amber-bg); border:1px solid rgba(255,176,32,.4);
+    border-radius:14px; padding:18px 22px; margin-bottom:30px;
+  }
+  .preflight h2{margin:0 0 10px;color:var(--amber);font-size:16px;letter-spacing:.03em}
+  .preflight ol{margin:0;padding-left:22px}
+  .preflight li{margin:8px 0;font-size:16px;color:#e9e2cf}
+  .preflight b{color:#fff}
+  .warn{margin-top:14px;padding:12px 16px;border-left:4px solid var(--red);
+        background:rgba(226,55,68,.10);border-radius:0 10px 10px 0;font-size:15px;color:#ffd6da}
+
+  .scene{
+    background:var(--panel); border:1px solid #1e2535; border-radius:16px;
+    padding:22px 24px; margin:0 0 22px; box-shadow:0 4px 18px rgba(0,0,0,.35);
+  }
+  .scene-head{display:flex;align-items:baseline;gap:14px;margin-bottom:16px;border-bottom:1px solid #1e2535;padding-bottom:12px}
+  .badge{background:var(--red);color:#fff;font-weight:700;font-size:14px;
+         padding:4px 11px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .scene-head h3{margin:0;font-size:20px;font-weight:600}
+  .scene-head .t{margin-left:auto;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  .do, .say{border-radius:12px;padding:14px 16px;margin:12px 0}
+  .do{background:var(--do-bg);border:1px solid var(--do-bd)}
+  .say{background:var(--say-bg);border:1px solid var(--say-bd)}
+  .tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.12em;
+       text-transform:uppercase;margin-bottom:7px}
+  .do .tag{color:var(--do)}
+  .say .tag{color:var(--red)}
+  .do p{margin:0;font-size:17px;color:#dbeeff}
+  .do b{color:#fff}
+  .say p{margin:0;font-size:23px;line-height:1.4;color:var(--say);font-weight:500}
+  .say p.q::before{content:"“";color:var(--red);font-size:1.1em;margin-right:2px}
+  .say p.q::after{content:"”";color:var(--red);font-size:1.1em;margin-left:2px}
+  .note{font-size:14px;color:var(--muted);font-style:italic;margin:8px 0 0;padding-left:4px}
+  .note b{color:#cdd6e6;font-style:normal}
+
+  .close-banner{
+    background:linear-gradient(90deg,#16110f,#101620);
+    border:1px solid #2a2030;border-left:4px solid var(--red);
+    border-radius:14px;padding:20px 24px;margin-top:8px
+  }
+  .close-banner .end{color:var(--ok);font-weight:700;font-size:15px;letter-spacing:.05em}
+  footer{max-width:880px;margin:34px auto 0;padding:0 26px;color:var(--muted);font-size:14px}
+  footer .tagline{color:#c7d0e0;font-size:15px;border-top:1px solid #1e2535;padding-top:16px;margin-top:8px}
+  .kbd{font-size:13px;color:var(--muted);margin-left:8px}
+</style>
+</head>
+<body>
+<header>
+  <span class="rec"><span class="dot"></span>REC</span>
+  <h1><b>La Piazza</b> · Bottega — 2-Minute Walkthrough</h1>
+  <span class="runtime">target 2:00 · ~230 words · speak slow</span>
+</header>
+
+<div class="wrap">
+
+  <div class="preflight">
+    <h2>☐ PRE-FLIGHT — finish ALL of this before you press record</h2>
+    <ol>
+      <li><b>Right screen:</b> logged in at <b>bottega.lapiazza.app</b>. <b>Left screen:</b> this page.</li>
+      <li><b>CREDITS CHECK</b> — top-right shows a <b>positive</b> number. Last take died on
+          <span style="color:var(--red)">“not enough credits − 18”.</span> Top up if needed.</li>
+      <li><b>Narrow the app window</b> (phone width) — looks best and crops to Shorts later.</li>
+      <li><b>Ask Cleo → “Start fresh”</b> so the chat is clean.</li>
+      <li><b>Write your ONE opening sentence</b> on a sticky (example in Scene 2).</li>
+      <li><b>Pick your Scene-4 recipe</b> and confirm it runs. Default: <b>Find Your Edge</b>.</li>
+      <li><b>Mic check</b> — say one line, play it back. Close other tabs &amp; notifications.</li>
+    </ol>
+    <div class="warn"><b>Golden rule:</b> if anything errors on camera — stop, reload, redo the scene.
+      Never narrate over a red error. We cut clean takes.</div>
+  </div>
+
+  <!-- SCENE 1 -->
+  <div class="scene">
+    <div class="scene-head"><span class="badge">0:00</span><h3>The promise</h3><span class="t">0:00 – 0:15</span></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Start on the <b>La Piazza Square</b> (home). Scroll down once, slowly, then back to top.</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">This is La Piazza. If a system ever judged you without reading your story — this is the opposite of that. No forms. No CV upload. You just talk.</p></div>
+  </div>
+
+  <!-- SCENE 2 -->
+  <div class="scene">
+    <div class="scene-head"><span class="badge">0:15</span><h3>Meet Cleo</h3><span class="t">0:15 – 0:35</span></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Click <b>Ask Cleo</b> in the top nav. Click into the chat box.</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">This is Cleopatra — the front desk. I tell her one true thing about me.</p></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Type your sentence. Press <b>Send</b>.</p></div>
+    <p class="note">Example (use your own real one): <b>“I've spent fifteen years deep in SAP integration, and I want to start working for myself.”</b></p>
+  </div>
+
+  <!-- SCENE 3 -->
+  <div class="scene">
+    <div class="scene-head"><span class="badge">0:35</span><h3>She listens — the card fills</h3><span class="t">0:35 – 1:05</span></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Let Cleo reply. Tap <b>one</b> answer chip, or type a short reply.</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">She doesn't interrogate me. She listens, asks one sharp question back, and writes my card while we talk.</p></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Click <b>You</b> (your profile / My Rebuild) to open the portrait.</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">Two minutes of conversation — and here's a real profile. Most of it written from a short chat, in my own words. That's a bio I'd actually send to a client.</p></div>
+  </div>
+
+  <!-- SCENE 4 -->
+  <div class="scene">
+    <div class="scene-head"><span class="badge">1:05</span><h3>She points to the move</h3><span class="t">1:05 – 1:40</span></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">And she doesn't leave me standing there. She points me to the move that fits what I already have.</p></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Click <b>Workshop</b>. Pick <b>Find Your Edge</b> (or Cover Letter / CV → Bio — any recipe you have credits for).</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">Everything here is a recipe. Pick one. Answer a couple of questions. Get the thing.</p></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Fill the one field. Click <b>▶ Run recipe</b>. Wait for the <b>OUTPUT</b>, then scroll it gently so it's readable.</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">A few seconds on a shared brain… and that's mine. Written for me, ready to use.</p></div>
+  </div>
+
+  <!-- SCENE 5 -->
+  <div class="scene">
+    <div class="scene-head"><span class="badge">1:40</span><h3>The close</h3><span class="t">1:40 – 2:00</span></div>
+    <div class="do"><span class="tag">▸ Do</span>
+      <p>Scroll once to show the footer line — <i>“every recipe is a menu entry, not an app · we host the square, not the model”</i> — then back to the output.</p></div>
+    <div class="say"><span class="tag">🎙 Say</span>
+      <p class="q">No algorithm deciding who I am. No monthly ransom. My data stays mine. That's the whole idea — a town square where everybody gets a five-star welcome, not just the ones who already fit in. Come find your leverage. This is La Piazza.</p></div>
+    <div class="close-banner"><span class="end">● END · ~2:00 — watch it back before you move. Clean audio? No errors? One scene per beat?</span></div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Source script: <span class="kbd">videos/bottega-walkthrough/SCRIPT-2min.md</span> · Output: <span class="kbd">~/Videos/HelixNet-YouTube/Bottega-LP-Exchange/</span></p>
+  <p class="tagline">This master cuts into 4–5 Shorts on the same 9:16 pipeline we built: Cleo's reply · the card filling · Run-recipe → output · the close.</p>
+</footer>
+</body>
+</html>

@@ -1,129 +1,60 @@
-# SESSION STATE - February 17, 2026
+# SESSION STATE — June 24, 2026
 
-*Last Updated: Mon Feb 17, 2026 ~12:00am - PuntaTipa Room 101, Trapani. EP4 on YouTube. Anne onboarding at 10:30 CET.*
+*Last updated: Wed Jun 24, 2026 — Trapani. Banco is the center of gravity; Keycloak identity cleanup in flight.*
 
----
-
-## TODAY'S PLAN (Mon Feb 17)
-
-### 10:30 CET -- Anne Onboarding Meeting
-- Anne is the new human tester for HelixNet
-- Needs: test account, orientation, testing checklist
-- Good opportunity to document the testing workflow properly
+> The durable, shared signals live in **`docs/RELEASE-TRAIN.md`** (staging→prod ledger) and
+> the memory index (`~/.claude/.../memory/MEMORY.md`). This file is the human-readable "where
+> are we today" snapshot. When in doubt, the release train wins.
 
 ---
 
-## YESTERDAY'S WINS (Sun Feb 16)
+## 🚦 RIGHT NOW
 
-1. **CT EP4 ON YOUTUBE** -- https://youtu.be/e9bJpoSyOZU -- "The Workshop Floor" - appointments, walk-in, bay timeline, 1:38 runtime
-2. **CT EP3 ON YOUTUBE** -- https://youtu.be/L9g4MBRDr6I -- "The Full Lifecycle" - 3 roles, 8 workflow steps, 4:18 runtime
-3. **Wipro SAP PI/PO contract** -- RTR signed, updated CV submitted to Cholleti (EUR 320/day, 100% remote, Czechia)
-4. **i18n system complete** -- Full English mode via `?lang=en` across all 14 Camper templates
-5. **Video Production SOP updated** -- Tags file now mandatory in YouTube kit
+- **Release train:** `🟢 IDLE`. Last shipped = cashier barcode born-once **phantom hotfix** `3a38874` → `banco.lapiazza.app` (Angel mobile PASS 6/6).
+- **Two terminals live on `main`:** one on **Keycloak identity cleanup**, one on **Banco**. Coordinate via the release train; don't cross streams (KC config vs app code).
 
 ---
 
-## CAMPER & TOUR VIDEO SERIES
+## ON DECK (priority order)
 
-| EP | Title | Duration | Status | YouTube |
-|----|-------|----------|--------|---------|
-| 1 | First Impressions | 2:33 | FINAL | Published |
-| 2 | Quote to Invoice | 3:00 | FINAL | Published |
-| 3 | The Full Lifecycle | 4:18 | FINAL | [YouTube](https://youtu.be/L9g4MBRDr6I) |
-| 4 | The Workshop Floor | 1:38 | FINAL | [YouTube](https://youtu.be/e9bJpoSyOZU) |
+### 1. Banco — next prod train (built, NOT yet staged)
+- **env-colour login** (per-env organic/mystical palette) + **tighter receipt header** — committed `4587189`, local only.
+- **Fix-after from Angel's 06-23 staging PASS:**
+  - create-form papercuts ("Pam's fat fingers"): default category, autopop description, name-first ordering — make it forgiving.
+  - logo: **file-upload → auto thumbnail + logo** (not a URL field).
+  - cash-variance **tolerance configurable in Settings** (±0.20 / 5-CHF).
+  - receipt **footer** still needs tightening (header capped in `4587189`).
+  - version stamp shows a **stale baked SHA** — fix `get_git_sha` to read live worktree HEAD.
+- Then: 🔴 `219d42a1` "Report totals are wrong"; velocity report #2.
 
-### Known Issue: Appointment Seed Data
-- Sophie Dupont and Tourist walk-in appointments don't appear after `make up`
-- Seeding code uses `today = date.today()` which should work
-- Possibly a timing issue with container startup vs seeding execution
-- EP4 worked around this with walk-in creation fallback
-- **TODO:** Investigate and fix before any future appointment demos
+### 2. Identity North Star — Keycloak cleanup (other terminal)
+- **Four nouns:** Realm = environment (×3: dev/staging/prod), Client = app, Role = permission, Group = shop.
+- Cleanup: messy realms → 3 clean ones. Box audit landed `5f13ab3` (12 realms; prod=305 users; `lapiazza-realm-staging` on box = 162 real users, marked INVESTIGATE). **Box deletes stay staging-rehearsal-then-go.**
+- Toolbox: `scripts/kc_admin.py` (export-realm backup + provision-business-account). Doc: `docs/HELIX-IDENTITY-ARCHITECTURE.md`.
 
----
+### 3. Artemis Premium cutover (Banco item → La Piazza listing)
+- Path B locked: sold item comes to rest **on La Piazza**, public, premium design + QR. ~80% wired (`square_bridge.create_draft_listing`). Phase-0 schema shipped (`fc152ee`). Depends on the KC business-account wiring. Doc: `docs/BANCO-ARTEMIS-PREMIUM-CUTOVER-PLAN.md`.
 
-## WIPRO SAP PI/PO CONTRACT
-
-**Status:** RTR signed, CV submitted, waiting for interview
-**Role:** SAP PI/PO Development Lead / Architect
-**Client:** Wipro, Czechia (100% Remote)
-**Rate:** EUR 320/day all-inclusive
-**Recruiter:** Cholleti (WiseStep / Avance Services)
-**CV:** `/home/angel/Documents/2026 KENEL CV Infos/CV_Angelo_Kenel_WIPRO.pdf`
-**Availability:** Immediate, anytime with 1 day notice
-
-**Plan:** Work 9-5 CET on Wipro contract, HelixNet in off-hours. Set boundary early for working hours.
+### 4. Cleo concierge PoC (design locked, nothing built)
+- Ten Lego blocks; first slice = a **service**; scorecard auto-runs; hand-off = prefilled deep-link into La Piazza's existing post flow. Docs: `docs/LP-CLEO-POC-KICKOFF.md`, `docs/LP-CLEO-LEVERAGE-WORKFLOW.md`. Build order: verify the existing post flow → discuss → build the Bottega→Square bridge.
 
 ---
 
-## NEXT UP (Priority Order)
+## SHIPPED RECENTLY (Banco, June)
 
-### 1. Anne Onboarding (TODAY 10:30 CET)
-- Test account setup, orientation, testing checklist
-- Document the testing workflow
+Banco live on prod in its own clean container `helix-platform-banco` (`banco.lapiazza.app`).
+Zero-perpetual-inventory sprint, BL-87→95 (camera scan, lazy capture, catalog CRUD, scan
+hardening, receiving-as-cataloguing, QR), CRM Phase 0, per-cashier cash drawer, Settings +
+photo + juicy reports, phantom hotfix. Full ledger: `docs/RELEASE-TRAIN.md`.
 
-### 2. Fix Appointment Seed Data
-- Sophie + Tourist not appearing on appointments page
-- Need to debug seeding service timing
-
-### 3. KC Video Series Voiceovers
-- EP5-EP8 have silent videos ready, need voiceover
-- Pipeline proven with EP4 (Telegram voice messages, Whisper, ffmpeg)
-
----
-
-## KC VIDEO SERIES
-
-| EP | Title | Duration | Video | Voice | YouTube |
-|----|-------|----------|-------|-------|---------|
-| 4 | Keys to the Kingdom | 2:32 | FINAL | VOICED | [YouTube](https://youtu.be/_ap7-hgtC9o) |
-| 5 | RBAC Deep Dive | 3:19 | FINAL | TODO | -- |
-| 6 | Client Architecture | 2:30 | FINAL | TODO | -- |
-| 7 | Authentication Flows | 2:35 | FINAL | TODO | -- |
-| 8 | Multi-Tenant Platform | 2:30 | FINAL | TODO | -- |
-
----
-
-## AXA INSURANCE CLAIM
-
-**Claim:** 22.831.735/0001
-**Submit docs to:** schaden@axa.ch
-**Status:** Invoices submitted (EUR 2,405.50), waiting for response
-**Water damage:** EUR 5,000-10,000 est., pending preventivo from C&T
-
----
-
-## UFA POSTCARDS - CLIENT STATUS
-
-| # | Client | Status |
-|---|--------|--------|
-| 1 | Color Clean | Delivered, needs detailed feedback |
-| 2 | Pizza Planet | Delivered, done for now |
-| 3 | Marghe Trapani | PDFs done, not delivered |
-
----
-
-## KEY CONTACTS
-
-| Who | Details |
-|-----|---------|
-| **Cholleti (Wipro recruiter)** | WiseStep / Avance Services |
-| **Camper & Tour** | Sebastiano/Nino, Via F. Culcasi 4, Trapani |
-| **AXA** | schaden@axa.ch, Claim 22.831.735/0001 |
-| **Anne** | New tester, onboarding 10:30 CET today |
-
----
-
-## VIDEO PRODUCTION LESSONS (Feb 16)
-
-- **No `<` `>` or `->` in YouTube descriptions** -- YouTube strips angled brackets
-- **Re-encode when trimming** -- `-c:v copy` skips keyframes, can miss intro cards
-- **Alpine.js @click rows** -- don't click in Puppeteer, navigate by URL instead
-- **Always include TAGS file** in YouTube kit -- added to SOP
-- **SOP updated:** `videos/keycloak/VIDEO-PRODUCTION-SOP.md`
+## Born Once video series
+Season 1 COMPLETE (#01–#08), 5+ live on YouTube. Pipeline: voice + Puppeteer screen capture +
+slideshow. Render artifacts (slides/shots, ~249M) are gitignored; only the YouTube kit +
+thumbnail per episode is tracked. Bible: `videos/banco/SERIES-BIBLE.md`.
 
 ---
 
 *This file is Tigs' working memory. Update it often.*
-*"The shop floor shouldn't need a spreadsheet." -- CT EP4 tagline*
-*"Don't fight the rate before you have the offer." -- Wipro lesson*
-*"4 Episodes. 1 System. Ready for Production."*
+*"Scan once, known forever." — Banco*
+*"One person, one account, one login — that walks into any module they have a role in." — Identity North Star*
+*"If one seal fails, check all the seals."*

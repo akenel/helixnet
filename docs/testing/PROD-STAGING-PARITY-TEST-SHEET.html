@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prod ↔ Staging Parity — Workshop / Locandina / Member Card (TEST-PARITY-007)</title>
+<!-- Self-contained: system fonts, no deps. White bg = print-friendly.
+     FILLABLE IN THE BROWSER: tick boxes + type on screen, THEN Print -> Save as PDF.
+     A browser-printed PDF freezes the fields, so fill BEFORE printing. -->
+<style>
+  :root { --red:#C0392B; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8;
+          --stg:#1d4ed8; --prod:#15803d; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1;
+         margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 960px; margin:0 auto; background:#fff; padding:0 0 32px;
+           box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--red); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--red); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee;
+           border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:16px; }
+  .urls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .urlbox { border:1px solid var(--line); border-radius:6px; padding:10px 13px; font-size:13px; }
+  .urlbox.stg { border-left:4px solid var(--stg); }
+  .urlbox.prod { border-left:4px solid var(--prod); }
+  .urlbox b { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .urlbox.stg b { color:var(--stg); } .urlbox.prod b { color:var(--prod); }
+  .kbd { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
+         padding:1px 5px; font-size:12px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:11.5px; }
+  th.stg { background:var(--stg); } th.prod { background:var(--prod); }
+  td.n { text-align:center; font-weight:bold; color:var(--red); width:24px; }
+  td.chk { text-align:center; width:62px; }
+  td.notes { width:160px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .what b { color:var(--head); }
+  .exp { color:#445; font-size:12px; }
+  .finding { font-size:11px; color:#7a5; font-style:italic; }
+  .finding.gap { color:#b45309; }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit;
+              color:var(--ink); padding:2px 4px; width:100%; min-width:50px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--red); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  .yn { display:inline-flex; gap:8px; align-items:center; justify-content:center; }
+  .yn label { font-size:11px; color:#556; }
+  input[type=checkbox] {
+    appearance:none; -webkit-appearance:none; width:17px; height:17px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; border-radius:3px;
+    print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  input[type=checkbox]:checked { background:var(--red); border-color:var(--red); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:12px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio] { appearance:none; -webkit-appearance:none; width:16px; height:16px;
+    border:1.6px solid #667; background:#fff; cursor:pointer; vertical-align:middle; border-radius:50%;
+    print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  input[type=radio]:checked { background:var(--red); border-color:var(--red); box-shadow:inset 0 0 0 3px #fff; }
+  .result { margin-top:20px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 8px; color:var(--head); font-size:14px; }
+  .sig { margin-top:12px; font-size:13px; color:#445; display:flex; gap:28px; }
+  .sig span { flex:1; }
+  .gaps { margin-top:20px; border:1px dashed #b45309; border-radius:6px; padding:14px 16px; background:#fffbeb; }
+  .gaps h3 { margin:0 0 4px; color:#92400e; font-size:14px; }
+  .gaps .hint { font-size:12px; color:#a16207; margin:0 0 10px; }
+  .gaps ol { margin:0; padding-left:20px; } .gaps li { margin-bottom:8px; }
+  .gaps li input.txt { border-bottom:1px solid #d9b; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 28px 0;
+           font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:960px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--red); color:#fff; border:0; border-radius:5px;
+                 padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; max-width:100%; }
+    .btns,.no-print { display:none !important; } input.txt:focus { background:transparent; } }
+</style>
+</head>
+<body>
+
+<div class="btns no-print"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · La Piazza</div>
+    <div class="title">Prod ↔ Staging Parity Check<br>Workshop nav · Locandina · Member card</div>
+    <div class="docid">TEST-PARITY-007</div>
+  </header>
+
+  <div class="body">
+    <h1>🔀 Prod ↔ Staging Parity — see exactly what's where</h1>
+    <p class="sub">For each item, open BOTH environments and tick what you actually see. "Match?" tells us
+      whether a feature truly didn't ship to prod, or just looks different on your device.</p>
+
+    <div class="howto">📝 <b>How to use:</b> open each URL on the <b>same device</b>, side by side if you can.
+      Tick STAGING and PROD as you observe them, mark Match Y/N, jot notes. Fill <b>on screen</b>, then
+      <span class="kbd">🖨️ Print / Save as PDF</span>. <b>Hard-refresh</b> each page first (pull-to-refresh on
+      mobile) so you're not seeing a cached copy — cache is the #1 cause of "it's on staging but not prod".</p>
+    </div>
+
+    <div class="urls">
+      <div class="urlbox stg"><b>Staging</b>
+        Marketplace: <span class="kbd">staging.lapiazza.app</span><br>
+        Workshop: <span class="kbd">staging-bottega.lapiazza.app/compute/bottega</span></div>
+      <div class="urlbox prod"><b>Production</b>
+        Marketplace: <span class="kbd">lapiazza.app</span><br>
+        Workshop: <span class="kbd">bottega.lapiazza.app/compute/bottega</span></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>What to check &nbsp;·&nbsp; where to look</th>
+          <th class="stg" style="width:62px">STAGING</th><th class="prod" style="width:62px">PROD</th>
+          <th style="width:74px">Match?</th><th class="notes">Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="n">1</td>
+          <td class="what"><b>🔧 Workshop link — desktop top nav.</b> Marketplace home, wide screen / desktop.
+            <div class="finding">Tigs verified: present on BOTH (rendered HTML identical). Expect MATCH.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m1"><label>N</label><input type="radio" name="m1"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">2</td>
+          <td class="what"><b>🔧 Workshop — mobile hamburger menu.</b> Marketplace on phone → open the ☰ menu → look for
+            "Open the Workshop".
+            <div class="finding">Tigs verified: in the hamburger on BOTH. (It is NOT in the bottom icon-bar on either.)</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m2"><label>N</label><input type="radio" name="m2"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">3</td>
+          <td class="what"><b>The icon rail in your screenshot.</b> Whatever surface showed the wrench icon —
+            note the EXACT url in the address bar on each env.
+            <div class="finding gap">Tigs: the marketplace mobile bottom-bar has NO wrench on either env — so this rail is a different surface. The url pins it down.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m3"><label>N</label><input type="radio" name="m3"></span></td>
+          <td class="notes"><input class="txt" type="text" placeholder="exact url here"></td>
+        </tr>
+        <tr>
+          <td class="n">4</td>
+          <td class="what"><b>Clicking 🔧 actually opens the Bottega workshop.</b> Tap it on each env; the workshop page loads
+            and you can pick a recipe.</td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m4"><label>N</label><input type="radio" name="m4"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">5</td>
+          <td class="what"><b>Locandina poster — the PHOTO shows.</b> Open an item → print/share the Locandina →
+            the cover photo is visible (not a grey box).
+            <div class="finding gap">Tigs: PROD = blank photo (WeasyPrint self-request timeout). Fix validated, NOT yet deployed. Expect PROD ✗ until we ship it.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m5"><label>N</label><input type="radio" name="m5"></span></td>
+          <td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr>
+          <td class="n">6</td>
+          <td class="what"><b>Member card.</b> The print-a-postcard-for-a-member feature you remember. Find where it
+            lives on each env; note if it exists.
+            <div class="finding">Tigs: source exists in the tree (lapiazza-member-card) — deployment status UNVERIFIED. This row tells us.</div></td>
+          <td class="chk"><input type="checkbox"></td><td class="chk"><input type="checkbox"></td>
+          <td class="chk"><span class="yn"><label>Y</label><input type="radio" name="m6"><label>N</label><input type="radio" name="m6"></span></td>
+          <td class="notes"><input class="txt" type="text" placeholder="where is it?"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall</h3>
+      <label style="font-size:14px;margin-right:20px;"><input type="radio" name="overall"> ✅ Prod matches staging (no real gaps)</label>
+      <label style="font-size:14px;"><input type="radio" name="overall"> ⚠️ Real gaps found — listed below</label>
+      <div class="sig">
+        <span>Tester: <input class="txt" type="text" placeholder="angel"></span>
+        <span>Date: <input class="txt" type="text" placeholder="dd/mm/yyyy"></span>
+        <span>Device: <input class="txt" type="text" placeholder="Fairphone / desktop"></span>
+      </div>
+    </div>
+
+    <div class="gaps">
+      <h3>⚠️ Confirmed prod gaps (what genuinely needs to ship)</h3>
+      <p class="hint">Only list a row where PROD ✗ but STAGING ✓ AND you hard-refreshed (so it's a real gap, not cache).
+        These become the deploy list — staging → sign-off → prod.</p>
+      <ol>
+        <li><input class="txt" type="text" placeholder="e.g. #5 Locandina photo — fix ready, deploy"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>TEST-PARITY-007 · Rev 1 · 2026-06-17</span>
+  </footer>
+</div>
+
+</body>
+</html>
