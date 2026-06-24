@@ -394,88 +394,105 @@
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
             <div class="flex justify-between items-start p-5 border-b">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900">🆕 Item not on file</h2>
-                    <p class="text-sm text-gray-600 mt-1">Add it now — it'll scan instantly every time after.</p>
+                    <h2 class="text-xl font-bold text-gray-900">Not on file — find it first</h2>
+                    <p class="text-sm text-gray-600 mt-1">It's almost always already in the catalog. Find it and bind the barcode — don't re-type it.</p>
                 </div>
                 <button @click="lazyOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Scanned barcode</label>
                     <input type="text" x-model="lazyBarcode" readonly class="input-field bg-gray-100 font-mono">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
-                    <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" class="input-field">
-                </div>
-                <!-- Photo of the item — for unmarked goods the picture IS the label. -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Photo of the item</label>
-                    <div class="flex items-center gap-3">
-                        <label class="btn-secondary cursor-pointer flex-none">
-                            📸 <span x-text="lazyPhotoData ? 'Retake' : 'Take photo'"></span>
-                            <input type="file" accept="image/*" capture="environment" class="hidden" @change="onLazyPhoto($event)">
-                        </label>
-                        <img x-show="lazyPhotoData" :src="lazyPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
-                        <span x-show="!lazyPhotoData" class="text-xs text-gray-400">Optional — snap the item itself</span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
-                        <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                        <input type="number" step="1" min="1" x-model.number="lazyQty" @keyup.enter="saveLazyCapture()" class="input-field text-2xl font-bold">
-                    </div>
-                </div>
-                <!-- Cost / unit (your buy price) — optional, the customer never sees it.
-                     Bought a box? Split it to a per-unit cost (papers, singles, etc.). -->
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block text-sm font-medium text-gray-700">Cost / unit (CHF)</label>
-                        <button type="button" @click="boxOpen=!boxOpen" class="text-xs text-blue-600 hover:underline"
-                                x-text="boxOpen ? '← enter cost directly' : 'bought a box? split it →'"></button>
-                    </div>
-                    <input x-show="!boxOpen" type="number" step="0.01" min="0" x-model="lazyCost" placeholder="0.00" class="input-field">
-                    <div x-show="boxOpen" style="display:none;" class="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-3">
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">Box cost (CHF)</label>
-                            <input type="number" step="0.01" min="0" x-model.number="boxCost" @input="calcUnitCost()" placeholder="0.00" class="input-field">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">Units in box</label>
-                            <input type="number" step="1" min="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="1" class="input-field">
-                        </div>
-                        <div class="col-span-2 text-sm text-gray-700">Per unit: <b x-text="'CHF ' + (lazyCost || '0.00')"></b></div>
-                    </div>
-                </div>
-                <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">
-                    <span x-show="!lazySaving">➕ Save &amp; add to cart</span>
-                    <span x-show="lazySaving" style="display:none;">Saving…</span>
-                </button>
 
-                <!-- BL-90: this code might be a 2nd barcode on an item already in the
-                     catalog. Link it instead of creating a duplicate. -->
+                <!-- PRIMARY (BL-96 search-first): find the real product, bind the code to it.
+                     The picture + name + category come from the catalog, not from memory. -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">What is it? Find it in the catalog</label>
+                    <input type="text" x-model="lazyLinkQuery" x-ref="lazyLinkInput"
+                           @input.debounce.300ms="searchExisting()"
+                           placeholder="Type a name or keyword — e.g. papers, grinder, Gizeh" class="input-field">
+                    <p class="text-xs text-gray-500 mt-1">Tap the right product to bind this barcode to it — it'll scan instantly next time.</p>
+                    <div x-show="lazyLinkResults.length" class="mt-2 max-h-64 overflow-y-auto divide-y border rounded-lg" style="display:none;">
+                        <template x-for="p in lazyLinkResults" :key="p.id">
+                            <button @click="linkToExisting(p)" :disabled="lazySaving"
+                                    class="w-full text-left px-3 py-2 hover:bg-blue-50 flex items-center gap-3">
+                                <img x-show="p.image_url" :src="p.image_url" loading="lazy" alt=""
+                                     class="w-12 h-12 rounded object-cover border flex-none">
+                                <span x-show="!p.image_url" class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 flex-none">📦</span>
+                                <span class="flex-1 min-w-0">
+                                    <span x-text="p.name" class="block text-sm font-medium text-gray-900 truncate"></span>
+                                    <span x-show="p.category" x-text="p.category" class="block text-xs text-gray-400 truncate"></span>
+                                </span>
+                                <span x-text="'CHF ' + p.price" class="text-sm text-gray-600 flex-none"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <p x-show="lazyLinkQuery.length > 1 && !lazyLinkResults.length && !lazyLinkSearching"
+                       class="text-xs text-amber-600 mt-2" style="display:none;">
+                        No match in the catalog. If it's genuinely new, add it below.
+                    </p>
+                </div>
+
+                <!-- FALLBACK: genuinely new item — collapsed so create-new is the last resort,
+                     not the default. Opening it spawns a NEW catalog row. -->
                 <div class="border-t pt-3">
-                    <button x-show="!lazyLinkOpen" @click="openLazyLink()" class="text-sm text-blue-600 hover:underline">
-                        Already in the catalog? Link this barcode instead →
+                    <button x-show="!lazyCreateOpen" @click="lazyCreateOpen=true" class="text-sm text-blue-600 hover:underline">
+                        Not in the catalog? Add it as a new item →
                     </button>
-                    <div x-show="lazyLinkOpen" style="display:none;" class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Find the existing product</label>
-                        <input type="text" x-model="lazyLinkQuery" @input.debounce.300ms="searchExisting()"
-                               placeholder="Type a name…" class="input-field">
-                        <div x-show="lazyLinkResults.length" class="max-h-48 overflow-y-auto divide-y border rounded-lg" style="display:none;">
-                            <template x-for="p in lazyLinkResults" :key="p.id">
-                                <button @click="linkToExisting(p)" :disabled="lazySaving"
-                                        class="w-full text-left px-3 py-2 hover:bg-blue-50 flex justify-between items-center">
-                                    <span x-text="p.name" class="text-sm"></span>
-                                    <span x-text="'CHF ' + p.price" class="text-xs text-gray-500 flex-none ml-2"></span>
-                                </button>
-                            </template>
+                    <div x-show="lazyCreateOpen" style="display:none;" class="space-y-4">
+                        <p class="text-xs text-amber-700 bg-amber-50 rounded-lg p-2">New catalog item — only do this if it truly isn't in the search above.</p>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
+                            <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" class="input-field">
                         </div>
-                        <p x-show="lazyLinkQuery.length > 1 && !lazyLinkResults.length" class="text-xs text-gray-400" style="display:none;">No match — save as new above.</p>
+                        <!-- Photo of the item — for unmarked goods the picture IS the label. -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Photo of the item</label>
+                            <div class="flex items-center gap-3">
+                                <label class="btn-secondary cursor-pointer flex-none">
+                                    📸 <span x-text="lazyPhotoData ? 'Retake' : 'Take photo'"></span>
+                                    <input type="file" accept="image/*" capture="environment" class="hidden" @change="onLazyPhoto($event)">
+                                </label>
+                                <img x-show="lazyPhotoData" :src="lazyPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
+                                <span x-show="!lazyPhotoData" class="text-xs text-gray-400">Optional — snap the item itself</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
+                                <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                <input type="number" step="1" min="1" x-model.number="lazyQty" @keyup.enter="saveLazyCapture()" class="input-field text-2xl font-bold">
+                            </div>
+                        </div>
+                        <!-- Cost / unit (your buy price) — optional, the customer never sees it.
+                             Bought a box? Split it to a per-unit cost (papers, singles, etc.). -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Cost / unit (CHF)</label>
+                                <button type="button" @click="boxOpen=!boxOpen" class="text-xs text-blue-600 hover:underline"
+                                        x-text="boxOpen ? '← enter cost directly' : 'bought a box? split it →'"></button>
+                            </div>
+                            <input x-show="!boxOpen" type="number" step="0.01" min="0" x-model="lazyCost" placeholder="0.00" class="input-field">
+                            <div x-show="boxOpen" style="display:none;" class="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-3">
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">Box cost (CHF)</label>
+                                    <input type="number" step="0.01" min="0" x-model.number="boxCost" @input="calcUnitCost()" placeholder="0.00" class="input-field">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">Units in box</label>
+                                    <input type="number" step="1" min="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="1" class="input-field">
+                                </div>
+                                <div class="col-span-2 text-sm text-gray-700">Per unit: <b x-text="'CHF ' + (lazyCost || '0.00')"></b></div>
+                            </div>
+                        </div>
+                        <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">
+                            <span x-show="!lazySaving">➕ Save &amp; add to cart</span>
+                            <span x-show="lazySaving" style="display:none;">Saving…</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -515,9 +532,15 @@
 
             // BL-90: link an unknown barcode to an EXISTING product (alias) instead
             // of creating a duplicate.
+            // BL-96 (search-first): on a scan-miss we lead with "find it in the catalog"
+            // — Felix's catalog is PRE-LOADED rich (≈6–7k from 420), the product almost
+            // always already exists, only its barcode is missing. Binding the scanned code
+            // to the real item beats letting Pam re-type made-up data. Create-new = fallback.
             lazyLinkOpen: false,
             lazyLinkQuery: '',
             lazyLinkResults: [],
+            lazyLinkSearching: false,
+            lazyCreateOpen: false,   // the "genuinely new" fallback form, collapsed by default
 
             // Search mode (paginated)
             searchInput: '',
@@ -759,10 +782,19 @@
                 this.boxOpen = false;
                 this.boxCost = null;
                 this.boxUnits = null;
-                this.lazyLinkOpen = false;
-                this.lazyLinkQuery = '';
+                // BL-96 search-first: lead with "find it in the catalog", create-new collapsed.
+                this.lazyCreateOpen = false;
+                this.lazyLinkOpen = true;
+                this.lazyLinkQuery = prefillName || '';
                 this.lazyLinkResults = [];
+                this.lazyLinkSearching = false;
                 this.lazyOpen = true;
+                // If we already have a name (camera OCR / typed), search straight away;
+                // otherwise focus the box so Pam can type a keyword.
+                this.$nextTick(() => {
+                    if (this.lazyLinkQuery.trim().length > 1) this.searchExisting();
+                    if (this.$refs.lazyLinkInput) this.$refs.lazyLinkInput.focus();
+                });
             },
 
             // Snap/choose the item photo: keep the File for upload + a preview data URL.
@@ -791,13 +823,16 @@
 
             async searchExisting() {
                 const q = this.lazyLinkQuery.trim();
-                if (q.length < 2) { this.lazyLinkResults = []; return; }
+                if (q.length < 2) { this.lazyLinkResults = []; this.lazyLinkSearching = false; return; }
+                this.lazyLinkSearching = true;
                 try {
                     const res = await API.get(`/api/v1/pos/search?q=${encodeURIComponent(q)}&limit=8`);
                     this.lazyLinkResults = (res.items || []).slice(0, 8);
                 } catch (err) {
                     console.warn('Existing-product search failed:', err);
                     this.lazyLinkResults = [];
+                } finally {
+                    this.lazyLinkSearching = false;
                 }
             },
 
