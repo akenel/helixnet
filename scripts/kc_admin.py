@@ -112,19 +112,47 @@ def export_realm(
             typer.secho("\nDRY-RUN -- nothing written. Add --apply to take the backup.", fg="yellow", bold=True)
             return
 
-        # --apply: take the real partial export (the importable backup)
+        # --apply: take the real partial export (realm config + clients + roles + groups)
         exp = c.post(
             f"{base}/{realm}/partial-export",
             headers=h,
             params={"exportClients": "true", "exportGroupsAndRoles": "true"},
         )
         exp.raise_for_status()
+        snapshot = exp.json()
+
+        # partial-export OMITS users -- page through /users and embed them ourselves,
+        # else the "backup" can't restore a single account. Each user's realm-role
+        # mappings come along too, so re-import rebuilds who-had-what.
+        # NOTE: credential hashes are NOT returned by the admin REST API, so restored
+        # users would need a password reset. For these dead realms that's acceptable;
+        # the point is to preserve identity + attributes + role mappings.
+        embedded, page, PAGE = [], 0, 100
+        while True:
+            batch = c.get(f"{base}/{realm}/users", headers=h,
+                          params={"first": page * PAGE, "max": PAGE}).json()
+            if not batch:
+                break
+            for u in batch:
+                rm = c.get(f"{base}/{realm}/users/{u['id']}/role-mappings/realm",
+                           headers=h).json()
+                u["realmRoles"] = [r["name"] for r in rm]
+            embedded.extend(batch)
+            if len(batch) < PAGE:
+                break
+            page += 1
+        snapshot["users"] = embedded
+
         out_dir.mkdir(parents=True, exist_ok=True)
         stamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
         dest = out_dir / f"{realm}-{stamp}.json"
-        dest.write_text(json.dumps(exp.json(), indent=2))
-        _did(f"wrote {dest}  ({dest.stat().st_size:,} bytes)")
-        typer.secho(f"\n✅ realm '{realm}' backed up. Safe to delete (re-import this JSON to restore).",
+        dest.write_text(json.dumps(snapshot, indent=2))
+        _did(f"wrote {dest}  ({dest.stat().st_size:,} bytes, {len(embedded)} users embedded)")
+        if len(embedded) != users:
+            typer.secho(f"  ⚠ embedded {len(embedded)} users but realm reports {users} -- check before deleting",
+                        fg="red")
+        typer.secho(f"\n✅ realm '{realm}' backed up (config+clients+roles+{len(embedded)} users). "
+                    f"Re-import to restore; users need a password reset (hashes not exported).",
                     fg="green", bold=True)
 
 
