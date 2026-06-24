@@ -102,14 +102,28 @@ shop = a second group in the *same* realm. (When we upgrade past KC 24 → 26, G
 | ~~`blowup-v2`~~ | dev | 2 | ✅ **DELETED** 2026-06-24 (undocumented demo found during verify; backup banked) |
 | ~~`lapiazza-realm-staging`~~ | — | 1 | ✅ **DELETED** 2026-06-24 (FK check clean, backup banked) |
 
-### Hetzner box KC (prod/staging) — separate machine, harder gate
+### Hetzner box KC (`helixnet-uat`, prod/staging) — AUDITED 2026-06-24 (read-only), 12 realms
 | Realm | Env | Users | Fate |
 |---|---|---|---|
-| `borrowhood` | prod | 262 | **KEEP** — the canonical prod realm (CUA) |
-| `borrowhood-staging` | staging | 17 | **KEEP** — already unified ✅ |
+| `borrowhood` | prod | **305** | **KEEP** — canonical prod realm (CUA). Display already "La Piazza - Community Marketplace". *(was "262"; grown to 305)* |
+| `borrowhood-staging` | staging | **140** | **KEEP** — the live staging realm. *(was "17"; actually 140)* |
+| `lapiazza-realm-dev` | prod Bottega | 7 | **FOLD** → borrowhood (Phase 1) |
+| `kc-pos-realm-dev` | dev/stg/sandbox | 9 | **FOLD** Banco/POS (Phase 2) |
+| `artemis` | dev | 4 | **RETIRE** → group `shop:artemis` (Phase 2) |
+| `kc-camper-service-realm-dev` | dev | 10 | **FOLD** → `garage` client (Phase 3) |
+| `kc-isotto-print-realm-dev` | dev | 5 | **FOLD** → `isotto` client (Phase 3) |
+| `kc-realm-dev` | dev | 6 | **FOLD** → `helix-dev` (Phase 4) |
+| `master` | — | 2 | KC admin — **KEEP** |
+| `fourtwenty` | dev | 4 | **DEAD** — demo, kill candidate (backup+delete, box-gated) |
+| `blowup` | dev | 2 | **DEAD** — demo, kill candidate (backup+delete, box-gated) |
+| `lapiazza-realm-staging` | staging | **162** | ⚠ **INVESTIGATE, NOT a clean kill** — 162 users on the box (the original "162" was THIS realm all along; the *local* same-named realm had 1 and was deleted). Looks superseded by `borrowhood-staging` but 162 accounts need a look before any disposition. |
 
-*(The box KC has not been fully inventoried here — its realm list is its own audit, gated behind a
-staging rehearsal + explicit go. Do NOT assume it mirrors the local dev list.)*
+> **Correction of an earlier correction (own it):** the 162→1 fix on 2026-06-24 was right for the
+> LOCAL `lapiazza-realm-staging` (1 user, deleted clean) but wrongly dismissed the 162 as
+> "unverified." The 162 is real — it's the BOX realm. Two different instances, two different
+> populations, same name. Don't delete the box one without investigating those 162 accounts.
+
+*(Box realm DELETES remain gated behind a staging rehearsal + explicit go. The audit is read-only.)*
 
 **KC 24.0.4** — token-exchange GA, multi-realm JWT validation already working (`keycloak_auth.py`
 reads the `iss` claim + fetches per-realm JWKS), JIT provisioning ready. Organizations available but
