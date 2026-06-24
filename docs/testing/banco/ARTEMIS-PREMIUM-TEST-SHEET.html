@@ -259,7 +259,7 @@
     { do:"<b>Open the shop's listing</b> — <span class='chip' data-copy='https://staging.lapiazza.app/items/hemp-sana-cbd-cream-40ml-3'>…/items/hemp-sana-cbd-cream-40ml-3</span>",
       exp:"The Hemp Sana CBD Cream page loads: product photo, <b>FOR SALE</b>, <b>€40</b>, the description." },
     { do:"<b>The big one — who's selling it?</b> On that listing, read the seller line (the 'by …').",
-      exp:"It reads the <b>business — Artemis Store</b>, NOT 'Felix Business'. The item rests on La Piazza under the shop.", big:true },
+      exp:"It reads the <b>business — Artemis GmbH</b> (the shop's name from its config), NOT 'Felix Business'. The item rests on La Piazza under the shop.", big:true },
     { do:"<b>Category sanity.</b> Check the listing's category (open it in edit if you like).",
       exp:"It's <code>other</code> — not 'apartment', not blank. (A real Health &amp; Wellness category is a tracked TODO.)" },
     { do:"<b>The business profile.</b> On La Piazza go to <b>Dashboard → Settings</b> (<code>?tab=settings</code>), scroll to <b>Seller Type</b>.",
@@ -267,7 +267,7 @@
     { do:"<b>The QR / Locandina.</b> Generate the printable promo (Locandina) for the listing and scan its QR with your phone.",
       exp:"The QR opens the same La Piazza listing page; the poster shows the product, price, FOR SALE + the shop." },
     { do:"<b>No duplicates.</b> Browse/search La Piazza for <code>Artemis</code> and <code>Hemp Sana</code> — count the shops + the listings.",
-      exp:"Exactly ONE Artemis shop (<b>Artemis Store</b>) and ONE Hemp Sana listing — no 'Artemis Store Business' / 'Artemis GmbH' doubles, no residual hempsana." },
+      exp:"Exactly ONE Artemis shop (<b>Artemis GmbH</b>) and ONE Hemp Sana listing — no second shop persona, no residual hempsana. (The button now always publishes under the one linked account.)" },
     { do:"<b>Overall.</b> Did it hang together — log in once, the item lives on La Piazza as the shop, nothing weird or stuck?",
       exp:"Feels logical end-to-end. Flag anything clunky, any <b>broken image</b>, anything Felix would trip on — in the 🎤 box below." }
   ];
