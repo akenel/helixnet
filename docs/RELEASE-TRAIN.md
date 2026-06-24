@@ -50,6 +50,12 @@ so sessions don't fall over each other or push half-baked work to a live box.
 >   - receipt: header+footer double-spacing — header capped (`4587189`), **footer still needs tightening**.
 >   - version stamp shows a **stale baked SHA** (`5f0cef7`) not the live worktree HEAD — cosmetic, fix `get_git_sha`.
 
+> **🔴 219d42a1 "Report totals are wrong" — FIXED, built/queued, NOT yet staged** (commits `72b5b08` + `3669fd9`, 2026-06-24, Tigs). Two real bugs in `/reports/daily-summary`, both with new regression tests; full POS suite green (124 passed):
+> - **Partial refund erased the whole sale.** `refund_transaction` flipped *any* refund (incl. partial) to `REFUNDED`, and the report counts `COMPLETED` only → refunding CHF 5 of a CHF 50 sale dropped all 50 from the day. Now a partial refund stays `COMPLETED` at its **net** (kept) value; only a full refund flips to `REFUNDED`.
+> - **Day boundary used naive server-local date** vs tz-aware (UTC) `completed_at` → a UTC box split the evening's takings across two reports. Now the window is built in the shop tz (`Europe/Zurich`, env `HX_SHOP_TZ`).
+> - **Also fixed a migration-chain typo**: `004_helix_studio.down_revision` was `'003_add_spine_and_equipment'` (dangling) → `'003_spine_equipment'`. Blocked alembic from resolving the chain; local DB had been stuck at `003` (3 migrations behind).
+> - **⚠️ FORGE / for the KC+Artemis terminal:** the **006 La Piazza-bridge columns may be MISSING on staging/prod.** `create_all` makes *new* tables but never ALTERs *existing* ones, and the broken chain meant `alembic upgrade` never ran — so `products.lapiazza_listing_id` + `store_settings.lapiazza_*` were absent locally (I added them by hand + stamped local to `006`). **Verify on the box before Artemis Premium assumes those columns exist.** The create_all↔alembic drift is a real follow-up (a fresh `alembic upgrade` still collides with create_all-made studio types).
+
 > **Settings + photo + reports train — ✅ SHIPPED to banco.lapiazza.app @ `acf337a`, 2026-06-23** (rollback `ad4ad07`). Angel staging PASS 10/11 (the 1 = create-form papercut, a "nothing-burger"). Prod smoke green. Cargo:
 > - **cashier-photo-403 fix** — Pam's born-once photo now attaches (was silently swallowed).
 > - **real Settings control centre** `/pos/settings` (was a stub) — tabbed + Artemis Lucerne identity + `/static/artemis-logo.png` + store-profile (hours, socials).
