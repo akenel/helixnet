@@ -162,6 +162,23 @@
                 </div>
             </div>
 
+            <!-- Wire 2 — community loop: a "scan to discuss + join" QR for each showcased item -->
+            <template x-if="showcasedItems().length">
+                <div class="border-t-2 border-dashed border-teal-400 mt-4 pt-4 text-center">
+                    <p class="text-sm font-semibold text-teal-700 mb-1">💬 Talk about it on La Piazza</p>
+                    <p class="text-xs text-gray-500 mb-3">Scan to see it, leave a review &amp; join the community.</p>
+                    <div class="flex flex-wrap justify-center gap-5">
+                        <template x-for="item in showcasedItems()" :key="item.id">
+                            <div class="text-center">
+                                <img class="mx-auto border border-gray-200 rounded" width="120" height="120"
+                                     :src="qrUrl(item)" :alt="'La Piazza QR for ' + item.product_name" loading="lazy">
+                                <p class="text-xs text-gray-600 mt-1 max-w-[130px] truncate" x-text="item.product_name"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
             <!-- Loyalty member (only when a member was on the sale) -->
             <div x-show="member" class="border-t-2 border-dashed border-gray-400 mt-4 pt-3 space-y-1 text-sm">
                 <div class="flex justify-between">
@@ -398,6 +415,20 @@
             // Points earned on this sale = 1 per CHF paid, floored (matches the server).
             pointsEarned() {
                 return Math.floor(parseFloat(this.transaction.total || 0));
+            },
+
+            // Wire 2 — community loop: line items the shop has SHOWCASED on La Piazza get a QR on
+            // the receipt. The QR points at the Banco-owned permalink (this host + /p/{id}), which
+            // 302s to the listing (or La Piazza's door) — so it's stable + works even before/after
+            // publish. Only showcased items show a QR; a papers-only receipt stays clean.
+            showcasedItems() {
+                return (this.transaction.line_items || []).filter(i => i.lapiazza_slug && i.product_id);
+            },
+            qrUrl(item) {
+                const permalink = window.location.origin + '/p/' + item.product_id;
+                // TODO(prod-hardening): self-host the QR (vendored lib / server endpoint) instead of
+                // this image service — fine for the test, but a printed receipt shouldn't need the net.
+                return 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=' + encodeURIComponent(permalink);
             },
 
             formatAddress() {

@@ -1682,12 +1682,15 @@ async def get_transaction(
     # Resolve product names so the receipt shows "CBD Oil 20%", not a generic "Product"
     # (one batched lookup, no N+1).
     product_names: dict = {}
+    product_lapiazza: dict = {}   # product_id -> La Piazza slug (showcased items only) for the receipt QR
     product_ids = {item.product_id for item in line_items if item.product_id is not None}
     if product_ids:
         prod_rows = await db.execute(
             select(ProductModel).where(ProductModel.id.in_(product_ids))
         )
-        product_names = {p.id: p.name for p in prod_rows.scalars().all()}
+        for p in prod_rows.scalars().all():
+            product_names[p.id] = p.name
+            product_lapiazza[p.id] = p.lapiazza_slug
 
     # Manually construct response to avoid async issues
     return {
@@ -1723,6 +1726,8 @@ async def get_transaction(
                 "line_total": str(item.line_total),
                 "notes": item.notes,
                 "is_giveaway": bool(item.is_giveaway),
+                # showcased on La Piazza? -> the receipt shows a "scan to discuss" QR for this line
+                "lapiazza_slug": product_lapiazza.get(item.product_id),
                 "created_at": item.created_at.isoformat()
             }
             for item in line_items
@@ -3383,6 +3388,22 @@ async def pos_receipt(request: Request, transaction_id: UUID):
     4. Note for Banana journal entry
     """
     return templates.TemplateResponse("pos/receipt.html", {"request": request})
+
+
+@html_router.get("/p/{product_id}", name="banco_permalink")
+async def banco_permalink(product_id: UUID, db: AsyncSession = Depends(get_db_session)):
+    """Banco-owned permalink — the receipt-QR target (Wire 2 of the community loop).
+
+    It's known at SALE time (just the product id), so the QR can print on the receipt before the
+    shop ever showcases the item. When scanned it 302s to the La Piazza listing IF the shop has
+    showcased it, otherwise to La Piazza's door (discover + join the community). Decoupled from
+    publish timing — the printed QR never goes stale. PUBLIC by design (it's a redirect, no data)."""
+    from fastapi.responses import RedirectResponse
+    base = settings.SQUARE_PUBLIC_URL.rstrip("/")
+    result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
+    product = result.scalar_one_or_none()
+    target = f"{base}/items/{product.lapiazza_slug}" if (product and product.lapiazza_slug) else base
+    return RedirectResponse(target, status_code=302)
 
 
 @html_router.get("/pos/products", response_class=HTMLResponse, name="pos_products")
