@@ -40,16 +40,23 @@ banco-prod is still pinned at `1588cb4` (pre-BL-97) until its train — shipping
 `006` columns + reference table on `banco_prod` (create_all makes the table; the `lapiazza_*` columns need the
 manual ALTER like before).
 
-## 🏪 La Piazza Artemis shop — deduped + identity pinned (2026-06-24, Tigs)
+## 🏪 La Piazza Artemis shop — MODEL A (owner-as-business) is the ONE TRUTH (2026-06-24, Tigs + Angel)
 
-The "two Felix shops" were duplicate HempSana listings + stale business accounts from repeated
-publishes. Cleaned (soft-delete): now **one live business shop** on `borrowhood_staging` —
-`biz-artemis-lucerne-headshop` ("Artemis GmbH"); `felix` demoted to personal; `biz-artemis` stub gone.
-**Stopgap so it stays one:** `store_name` locked ("Artemis Lucerne - Headshop") + `lapiazza_business_id`
-= `f7ea475a-8678-49a9-b6a6-c19b9af714ae` pinned on BOTH `banco_prod` + `banco_staging` store_settings.
-**⚠ ROOT-CAUSE FIX for the KC/Artemis terminal:** `lp_publish.ensure_business_identity` keys the shop on
-`biz-<slug(store_name)>`, so any store rename spawns a NEW shop. Make it reuse `store.lapiazza_business_id`
-(now populated) instead of re-deriving from the name — then the pin above becomes the real fix, not a stopgap.
+**SUPERSEDES the earlier `biz-artemis-lucerne-headshop` dedup.** Two terminals diverged on the Artemis
+identity; **Angel chose Model A**: the shop = the OWNER's one account (`felix` = "Artemis GmbH"), NOT a
+separate shop persona. Felix logs in once → he IS the business. Reconciled to that everywhere:
+- `felix` (KC `9369fcd4-d28d-42e2-be51-61e24613684f`, realm `borrowhood-staging`) = the single business;
+  the `biz-artemis*` accounts are deleted (KC) + bh_user soft-removed. **Live Artemis business sellers = 1.**
+- `lapiazza_business_id` repointed to `felix` on `banco_sandbox` + `banco_staging`. ⚠ `banco_prod` still
+  pins the OLD `f7ea475a` (now a DELETED account) — **inert** (banco-prod publish targets staging, R1) —
+  gets re-provisioned to a PROD-realm business account at the prod cutover; don't rely on it meanwhile.
+- **ROOT-CAUSE FIX DONE** (`523d5d6`): `ensure_business_identity` now REUSES `store.lapiazza_business_id`
+  (the linked account); it only derives `biz-<slug(store_name)>` for an UNLINKED shop. Rename no longer
+  spawns a shop. Plus: product photo carried as a decoupled upload (`c201eb7`/`c9ce251`), shop logo on the
+  profile avatar.
+- **Proven green:** sandbox TEST-ARTEMIS-PREMIUM-001 (all 9, Angel) + verified on staging-banco
+  (publish → `felix`, photo carried). **Prod = the gated cutover** (flip the publish target staging→prod
+  La Piazza + provision the business account in the PROD `borrowhood` realm + staging rehearsal).
 
 ## Boarding (awaiting the next prod train)
 
