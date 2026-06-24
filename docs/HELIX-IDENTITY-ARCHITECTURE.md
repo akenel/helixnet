@@ -86,20 +86,20 @@ shop = a second group in the *same* realm. (When we upgrade past KC 24 → 26, G
 > real prod/staging logins and is gated far harder. `borrowhood` exists as a realm id on BOTH (dev
 > data locally, the 262 real users on the box).
 
-### Local dev KC (`keycloak.helix.local`) — **9 realms** after Phase 0
+### Local dev KC (`keycloak.helix.local`) — **8 realms** after Phase 0 (all dead realms cleared)
 | Realm | Env | Users | Fate |
 |---|---|---|---|
 | `borrowhood` | dev | 11 | dev mirror of prod realm id (the 262 live on the box, not here) |
-| `lapiazza-realm-dev` | dev Bottega | 7 | **FOLD** into the unified realm (Phase 1 template) |
+| `lapiazza-realm-dev` | dev Bottega | 5 | **FOLD** into the unified realm (Phase 1 template) |
 | `kc-pos-realm-dev` | dev/stg/sandbox | 9 | **FOLD** Banco/POS into the unified realm (Phase 2) |
-| `artemis` | dev | 4 | **RETIRE** → becomes group `shop:artemis` (Phase 2) |
+| `artemis` | dev | 5 | **RETIRE** → becomes group `shop:artemis` (Phase 2) |
 | `kc-camper-service-realm-dev` | dev | 10 | **FOLD** → `garage` client (Phase 3) |
 | `kc-isotto-print-realm-dev` | dev | 5 | **FOLD** → `isotto` client (Phase 3) |
 | `kc-realm-dev` | dev | 6 | **FOLD** → `helix-dev` (Phase 4) |
-| `blowup-v2` | dev | 2 | **DEAD** — undocumented demo (BlowUp V2), sibling of deleted `blowup` → delete next (backup first) |
-| `master` | — | — | KC admin realm — **KEEP** |
+| `master` | — | 2 | KC admin realm — **KEEP** |
 | ~~`fourtwenty`~~ | dev | 4 | ✅ **DELETED** 2026-06-24 (backup `backups/kc/fourtwenty-*.json`) |
 | ~~`blowup`~~ | dev | 2 | ✅ **DELETED** 2026-06-24 (backup banked) |
+| ~~`blowup-v2`~~ | dev | 2 | ✅ **DELETED** 2026-06-24 (undocumented demo found during verify; backup banked) |
 | ~~`lapiazza-realm-staging`~~ | — | 1 | ✅ **DELETED** 2026-06-24 (FK check clean, backup banked) |
 
 ### Hetzner box KC (prod/staging) — separate machine, harder gate
@@ -120,11 +120,11 @@ must become config-driven (env → realm) before POS can join the unified realm.
 
 ## 5. Cleanup roadmap — phased, parallel/sequential, with rollback
 
-### Phase 0 — Decommission the dead (quick win, zero risk) — ✅ MOSTLY DONE 2026-06-24
-Done on the **local dev KC**: `fourtwenty`, `blowup`, and `lapiazza-realm-staging` (FK-checked clean)
-exported + deleted via `scripts/kc_admin.py` (12 → 9 realms). **Remaining:** `blowup-v2` (the
-undocumented demo found during verification) — backup + delete it the same way. *Rollback:* re-import
-the JSON in `backups/kc/`. Box-KC dead-realm audit is a separate, harder-gated pass.
+### Phase 0 — Decommission the dead (quick win, zero risk) — ✅ DONE 2026-06-24
+All four dead realms cleared from the **local dev KC**: `fourtwenty`, `blowup`, `blowup-v2`, and
+`lapiazza-realm-staging` (FK-checked clean) exported + deleted via `scripts/kc_admin.py` (**12 → 8
+realms**). Backups in `backups/kc/`. *Rollback:* re-import the JSON. The box-KC dead-realm audit is a
+separate, harder-gated pass and has NOT been done.
 
 ### Phase 1 — Bottega → `borrowhood` (prod) — IN FLIGHT
 Finish the Option-A cutover already live on staging: add the `lapiazza_web` client + `lapiazza-*`
