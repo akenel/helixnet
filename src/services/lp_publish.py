@@ -131,10 +131,35 @@ async def set_lp_business_profile(token: str, store) -> None:
 
 
 async def _business_token(c: httpx.AsyncClient, username: str) -> str:
-    r = await c.post(f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.LP_REALM}/protocol/openid-connect/token",
-                     data={"grant_type": "password", "client_id": settings.LP_CLIENT,
-                           "username": username, "password": _business_password(),
-                           "scope": "openid profile"})
+    """Get a token to act AS the shop's account.
+
+    PROD path — KC TOKEN-EXCHANGE: impersonate the account via a confidential publisher client +
+    secret. No password is used, so it works even though the owner sets their own password (Model A:
+    the shop IS the owner's account). Active when LP_PUBLISHER_SECRET is configured; if it's set but
+    the exchange fails we RAISE rather than fall back to a weak password (prod must not degrade).
+
+    DEV/sandbox fallback — provisioned-credential password grant (only when no publisher secret)."""
+    base = f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.LP_REALM}/protocol/openid-connect/token"
+    secret = getattr(settings, "LP_PUBLISHER_SECRET", "") or ""
+    if secret:
+        pub = getattr(settings, "LP_PUBLISHER_CLIENT", "") or "lapiazza_publisher"
+        sa = await c.post(base, data={"grant_type": "client_credentials",
+                                      "client_id": pub, "client_secret": secret})
+        if sa.status_code == 200:
+            ex = await c.post(base, data={
+                "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+                "client_id": pub, "client_secret": secret,
+                "subject_token": sa.json()["access_token"], "requested_subject": username})
+            if ex.status_code == 200:
+                return ex.json()["access_token"]
+            logger.warning("lp_publish: token-exchange for %s -> %s %s", username, ex.status_code, ex.text[:120])
+        else:
+            logger.warning("lp_publish: publisher client_credentials -> %s", sa.status_code)
+        raise SquareBridgeError("couldn't act as the shop's account (token-exchange)")
+
+    r = await c.post(base, data={"grant_type": "password", "client_id": settings.LP_CLIENT,
+                                 "username": username, "password": _business_password(),
+                                 "scope": "openid profile"})
     if r.status_code != 200:
         raise SquareBridgeError("couldn't sign in the shop's La Piazza account")
     return r.json()["access_token"]
