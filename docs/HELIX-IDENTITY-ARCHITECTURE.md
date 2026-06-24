@@ -85,7 +85,7 @@ shop = a second group in the *same* realm. (When we upgrade past KC 24 → 26, G
 | `borrowhood` | prod | 262 | **KEEP** — the canonical prod realm (CUA) |
 | `borrowhood-staging` | staging | 17 | **KEEP** — already unified ✅ |
 | `lapiazza-realm-dev` | prod(!) Bottega | 7 | **FOLD** into `borrowhood` (Phase 1, in flight) |
-| `lapiazza-realm-staging` | — | 1 | **DEAD** — orphaned (only `angel` left), no app points here → export + delete. *(Earlier "162" was an unverified number; live count on 2026-06-24 = 1.)* |
+| `lapiazza-realm-staging` | — | 1 | **DEAD** — orphaned (only `angel` left). FK check 2026-06-24 **CLEAN**: sub `44218e3a…e7a9` referenced by zero app rows (`borrowhood.bh_user` swept = 0; `helix_db.users` = 0; only KC's own `user_entity`/`credential` hold it, removed by the realm-delete). Backup banked → safe to delete. *(Earlier "162" was unverified; live count = 1.)* |
 | `kc-pos-realm-dev` | dev/stg/sandbox | 9 | **FOLD** Banco/POS into the unified realm (Phase 2) |
 | `artemis` | dev | 4 | **RETIRE** → becomes group `shop:artemis` (Phase 2) |
 | `kc-camper-service-realm-dev` | dev | 10 | **FOLD** → `garage` client (Phase 3) |
