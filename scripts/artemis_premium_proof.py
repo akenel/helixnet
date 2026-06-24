@@ -21,6 +21,7 @@ Idempotent: re-running reuses the business account, makes a fresh draft each tim
 (re-push = a new product, never an update — decision D3).
 """
 import asyncio
+import os
 
 import httpx
 
@@ -34,8 +35,15 @@ ADMIN_U = settings.KEYCLOAK_ADMIN_USER
 ADMIN_P = settings.KEYCLOAK_ADMIN_PASSWORD.get_secret_value()
 
 # The shop's business identity (keyed by a verifiable email — decision D2/R4).
-BIZ_USER, BIZ_PASS = "biz-artemis", "helix_pass"
-BIZ_EMAIL, BIZ_NAME, BIZ_VAT = "artemis@artemis.example", "Artemis Store", "CHE-123.456.789"
+# Parametrised via env so the SAME internal-provisioning motion serves any business
+# (this is the core of the future POST /pos/products/{id}/publish-to-lapiazza).
+BIZ_USER = os.environ.get("BIZ_USER", "biz-artemis")
+BIZ_PASS = os.environ.get("BIZ_PASS", "helix_pass")
+BIZ_EMAIL = os.environ.get("BIZ_EMAIL", "artemis@artemis.example")
+BIZ_FIRST = os.environ.get("BIZ_FIRST", "Artemis Store")   # the login person's name
+BIZ_LAST = os.environ.get("BIZ_LAST", "Business")
+BIZ_NAME = os.environ.get("BIZ_NAME", "Artemis Store")     # the business display name (attribute)
+BIZ_VAT = os.environ.get("BIZ_VAT", "CHE-123.456.789")
 ROLES = ["bh-member", "bh-lender", "lapiazza-user", "lapiazza-business"]
 ATTRS = {"account_type": ["business"], "business_name": [BIZ_NAME], "vat_number": [BIZ_VAT]}
 
@@ -73,7 +81,7 @@ async def main():
         if not found:
             cr = await c.post(f"{base}/users", headers=h, json={
                 "username": BIZ_USER, "email": BIZ_EMAIL, "enabled": True, "emailVerified": True,
-                "firstName": BIZ_NAME, "lastName": "Business", "requiredActions": [],
+                "firstName": BIZ_FIRST, "lastName": BIZ_LAST, "requiredActions": [],
                 "credentials": [{"type": "password", "value": BIZ_PASS, "temporary": False}]})
             if cr.status_code not in (201, 409):
                 print(f"  ! user create failed ({cr.status_code}): {cr.text[:200]}")
@@ -87,7 +95,7 @@ async def main():
         # so firstName/lastName MUST be included or KC nulls them → "Account is not fully set up".
         ar = await c.put(f"{base}/users/{uid}", headers=h, json={
             "enabled": True, "emailVerified": True, "email": BIZ_EMAIL,
-            "firstName": BIZ_NAME, "lastName": "Business", "requiredActions": [],
+            "firstName": BIZ_FIRST, "lastName": BIZ_LAST, "requiredActions": [],
             "attributes": ATTRS})
         print(f"  {'= business attributes set (VAT/name)' if ar.status_code < 300 else f'~ attributes skipped ({ar.status_code}) — user-profile is strict, not needed for the proof'}")
         for rn in ROLES:
