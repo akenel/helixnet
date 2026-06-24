@@ -190,7 +190,7 @@
     <div class="links">
       <a class="go" href="https://staging-bottega.lapiazza.app" target="_blank">🔗 Bottega (Workshop) <span class="arr">↗</span></a>
       <a class="go" href="https://staging.lapiazza.app" target="_blank">🔗 La Piazza (the Square) <span class="arr">↗</span></a>
-      <a class="go" href="https://staging.lapiazza.app/items/hemp-sana-cbd-cream-40ml-3" target="_blank">🔗 The shop's listing <span class="arr">↗</span></a>
+      <a class="go" href="https://staging.lapiazza.app/items/hempsana-4" target="_blank">🔗 The shop's listing <span class="arr">↗</span></a>
     </div>
     <div class="creds">Log in with <code>felix / helix_pass</code>. (Add/remove links above as needed.)</div>
 
@@ -201,7 +201,7 @@
       <p>Tap a chip to copy it, then paste where you need it.</p>
       <span class="chip" data-copy="felix">felix <span class="tag">· username</span></span>
       <span class="chip" data-copy="helix_pass">helix_pass <span class="tag">· password</span></span>
-      <span class="chip" data-copy="https://staging.lapiazza.app/items/hemp-sana-cbd-cream-40ml-3">…/items/hemp-sana-cbd-cream-40ml-3 <span class="tag">· the listing</span></span>
+      <span class="chip" data-copy="https://staging.lapiazza.app/items/hempsana-4">…/items/hempsana-4 <span class="tag">· the listing</span></span>
     </div>
 
     <!-- ===== the checks ===== -->
@@ -256,7 +256,7 @@
       exp:"Lands in the Workshop — no 'invalid username/password'. (This is the exact login that used to fail.)" },
     { do:"<b>Same login on La Piazza.</b> Open <code>staging.lapiazza.app</code> and sign in with the <b>same</b> <code>felix / helix_pass</code>.",
       exp:"Your La Piazza dashboard loads with the same credentials. One account, both apps — that's the SSO." },
-    { do:"<b>Open the shop's listing</b> — <span class='chip' data-copy='https://staging.lapiazza.app/items/hemp-sana-cbd-cream-40ml-3'>…/items/hemp-sana-cbd-cream-40ml-3</span>",
+    { do:"<b>Open the shop's listing</b> — <span class='chip' data-copy='https://staging.lapiazza.app/items/hempsana-4'>…/items/hempsana-4</span>",
       exp:"The Hemp Sana CBD Cream page loads: product photo, <b>FOR SALE</b>, <b>€40</b>, the description." },
     { do:"<b>The big one — who's selling it?</b> On that listing, read the seller line (the 'by …').",
       exp:"It reads the <b>business — Artemis GmbH</b> (the shop's name from its config), NOT 'Felix Business'. The item rests on La Piazza under the shop.", big:true },
