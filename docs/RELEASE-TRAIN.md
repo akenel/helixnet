@@ -41,6 +41,19 @@ so sessions don't fall over each other or push half-baked work to a live box.
 > set it to `staging` for the amber STG badge; (b) cash-drawer UX question Angel raised (cash sale needs
 > own open drawer + `amount_tendered ≥ total`; TWINT skips both) — awaiting the exact on-screen error.
 
+> **🟡 BL-96 scan-miss → search-first — STAGED on `staging-banco`, awaiting Angel PASS** (commit `cd18321`, 2026-06-24, Tigs).
+> Felix's catalog is **pre-loaded rich** (~6–7k from 420 ≈ 80% of sales) — the product almost always already
+> exists, only its **barcode** is missing/wrong, so a scan-miss is the *common* case. The lazy-capture modal
+> led with **create-new** (one tap → duplicate twin) and buried link-to-existing. **Inverted it:** scan-miss now
+> opens **search-first** ("What is it? Find it in the catalog") with **thumbnail** results; one tap **binds** the
+> scanned barcode to the real product (reuses BL-90 alias + `/products/{id}/barcodes`). Create-new collapses to a
+> guarded fallback. Pulls name/photo/price from the catalog — stops Pam re-typing made-up data. **Template-only**
+> (`scan.html`), no models/migrations/routes (low collision risk w/ KC terminal). Live-verified on staging
+> (new title present, old "Item not on file" gone). **Demo dependency:** the 420 catalog must be loaded in the
+> staging-banco DB or the search-first screen looks empty.
+> **→ NEXT (bigger idea, discussing):** a separate **reference catalog** DB (the full 420/TMR dump, CSV-fed,
+> maintained apart) that Banco **cherry-picks** real items into the live catalog from — so we never invent data.
+
 > **NEXT TRAIN — built/queued, NOT yet staged:**
 > - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.
 > - **Fix-after from Angel's staging PASS (2026-06-23):**
