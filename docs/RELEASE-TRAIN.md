@@ -63,7 +63,11 @@ so sessions don't fall over each other or push half-baked work to a live box.
 > **→ DEMO DATA:** 8 `DEMO`-supplier reference rows seeded on staging-banco so the cherry-pick demos immediately.
 > Before BL-97 ships to prod, replace with a real 420 import (and note staging-banco SHARES `products` + `helix_db`
 > with banco-prod — adoptions write the live catalog; my test adoption was cleaned up).
-> **→ FOLLOW-UP (BL-97b):** demote the existing 6–7k dump from `products` → `reference_products`.
+> **✅ BL-97c (image-copy-on-adopt) — STAGED too** (commit `274ff19`): adopt now pulls the supplier image
+> into our MinIO (reusing the BL-92 pipeline) instead of hotlinking — best-effort, never blocks adopt (keeps
+> the external URL on failure). Verified on staging: picsum image copied → own `/images/` URL, serves 200
+> image/jpeg (10 KB). Suite still 130. **→ FOLLOW-UP (BL-97b, NOT started):** demote the existing 6–7k dump
+> from `products` → `reference_products` — prod-affecting (shared `products`), do deliberately w/ Angel sign-off.
 >
 > **🛠️ DRIFT FIX APPLIED to the shared `helix_db` (2026-06-24, Tigs) — heads up KC/Artemis terminal:**
 > Confirmed the FORGE warning: **`helix_db` has NO `alembic_version` table at all** — alembic has *never* run on
