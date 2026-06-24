@@ -17,7 +17,8 @@ COPY compose/helix-core/traefik/ca/rootCA.pem \
 RUN /opt/keycloak/bin/kc.sh build \
     --db=postgres \
     --health-enabled=true \
-    --metrics-enabled=true
+    --metrics-enabled=true \
+    --features=token-exchange
 
 # -----------------------------------------------------------
 # Final runtime image
