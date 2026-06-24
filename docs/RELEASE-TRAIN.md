@@ -40,6 +40,17 @@ banco-prod is still pinned at `1588cb4` (pre-BL-97) until its train — shipping
 `006` columns + reference table on `banco_prod` (create_all makes the table; the `lapiazza_*` columns need the
 manual ALTER like before).
 
+## 🏪 La Piazza Artemis shop — deduped + identity pinned (2026-06-24, Tigs)
+
+The "two Felix shops" were duplicate HempSana listings + stale business accounts from repeated
+publishes. Cleaned (soft-delete): now **one live business shop** on `borrowhood_staging` —
+`biz-artemis-lucerne-headshop` ("Artemis GmbH"); `felix` demoted to personal; `biz-artemis` stub gone.
+**Stopgap so it stays one:** `store_name` locked ("Artemis Lucerne - Headshop") + `lapiazza_business_id`
+= `f7ea475a-8678-49a9-b6a6-c19b9af714ae` pinned on BOTH `banco_prod` + `banco_staging` store_settings.
+**⚠ ROOT-CAUSE FIX for the KC/Artemis terminal:** `lp_publish.ensure_business_identity` keys the shop on
+`biz-<slug(store_name)>`, so any store rename spawns a NEW shop. Make it reuse `store.lapiazza_business_id`
+(now populated) instead of re-deriving from the name — then the pin above becomes the real fix, not a stopgap.
+
 ## Boarding (awaiting the next prod train)
 
 > ✅ **HOTFIX — cashier barcode born-once PHANTOM — SHIPPED to banco.lapiazza.app @ `3a38874` (fix `110f101`), 2026-06-23** (Angel mobile PASS 6/6 functional; the 1 "fail" was the staging env-badge mislabel, not the fix; rollback `acf337a`):
