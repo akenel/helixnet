@@ -47,17 +47,24 @@ BIZ_VAT = os.environ.get("BIZ_VAT", "CHE-123.456.789")
 ROLES = ["bh-member", "bh-lender", "lapiazza-user", "lapiazza-business"]
 ATTRS = {"account_type": ["business"], "business_name": [BIZ_NAME], "vat_number": [BIZ_VAT]}
 
-# The Banco product to publish — the Born Once star, framed as a marketplace good.
+# THE CANONICAL MAPPING — Banco product → La Piazza listing. Do-it-right-but-simple:
+# PULL the 4 essentials from the product (title · image · description · price); DEFAULT the rest.
+# No per-product category guessing ("other" beats guessing). Manager can refine any field later.
+#   name        ← product.name                 (required)
+#   description ← product.description
+#   cover_url   ← product.image_url            (the image — falls back to og-default)
+#   price       ← product.sell_price
+#   currency    ← store currency (CHF for a Swiss shop)
+#   item_type   = "physical"   (head-shop goods; enum: physical|digital|service|space|made_to_order)
+#   listing_type= "sell"       (enum: rent|sell|commission|offer|service|training|auction|giveaway|event|raffle)
+#   category    = "other"      (BorrowHood has NO health/wellness category yet — see TODO doc; never guess)
 PRODUCT = {
     "name": "Hemp Sana CBD Cream 40ml",
     "description": "Swiss-made CBD cream, 40ml. Soothing hemp balm for tired muscles and joints.",
-    "story": "The star of Banco's first sale ever — published straight from the Artemis head-shop counter.",
-    # BorrowHood enums: item_type physical|digital|service|space|made_to_order;
-    # listing_type rent|sell|commission|offer|service|training|auction|giveaway|event|raffle
-    # (a head-shop item can be ANY of these — sell today, raffle/giveaway tomorrow, decision in the data).
     "item_type": "physical", "listing_type": "sell",
-    "category": "wellness", "subcategory": "cbd", "tags": "cbd,hemp,wellness,swiss",
+    "category": "other", "tags": "cbd,hemp,swiss",
     "price": 40, "price_unit": "each", "currency": "CHF", "content_language": "en",
+    # "cover_url": product.image_url  ← wired in P2 from the real Banco product image
 }
 
 
