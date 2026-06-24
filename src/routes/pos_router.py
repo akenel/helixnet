@@ -3399,7 +3399,7 @@ async def banco_permalink(product_id: UUID, db: AsyncSession = Depends(get_db_se
     showcased it, otherwise to La Piazza's door (discover + join the community). Decoupled from
     publish timing — the printed QR never goes stale. PUBLIC by design (it's a redirect, no data)."""
     from fastapi.responses import RedirectResponse
-    base = settings.SQUARE_PUBLIC_URL.rstrip("/")
+    base = get_settings().SQUARE_PUBLIC_URL.rstrip("/")
     result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
     product = result.scalar_one_or_none()
     target = f"{base}/items/{product.lapiazza_slug}" if (product and product.lapiazza_slug) else base
