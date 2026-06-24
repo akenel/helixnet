@@ -20,6 +20,8 @@ from typing import Optional
 from pathlib import Path
 
 from src.db.database import get_db_session
+from src.services.lp_publish import publish_product
+from src.services.square_bridge import SquareBridgeError
 from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
@@ -238,6 +240,35 @@ async def get_product(
         raise HTTPException(status_code=404, detail="Product not found")
 
     return product
+
+
+@router.post("/products/{product_id}/publish-to-lapiazza", status_code=status.HTTP_201_CREATED)
+async def publish_to_lapiazza(
+    product_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
+):
+    """Publish a product to La Piazza as a DRAFT listing under the shop's business account (manager-only).
+
+    The shop must have the La Piazza module enabled (store_settings.lapiazza_enabled). The listing is
+    created as a DRAFT for the owner to review + publish (push-once-then-decouple — re-publishing makes
+    a NEW listing, never an update). Returns the bridge result incl. view_url. The listing id/slug are
+    recorded on the product so the UI can show 'on La Piazza' + the Banco QR can resolve to it later."""
+    product = (await db.execute(select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    store = (await db.execute(
+        select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
+    if not store:
+        raise HTTPException(status_code=400, detail="Store is not configured")
+    if not store.lapiazza_enabled:
+        raise HTTPException(status_code=400,
+                            detail="The La Piazza module is off for this shop — enable it first")
+    try:
+        res = await publish_product(db, product, store)
+    except SquareBridgeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    return {"published": True, **res}
 
 
 async def _find_product_by_any_barcode(db: AsyncSession, barcode: str) -> Optional[ProductModel]:
