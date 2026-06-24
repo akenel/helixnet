@@ -8,6 +8,27 @@
 
 ---
 
+## 🚀 START HERE NEXT SESSION (handoff from 2026-06-24 PM, Tigs)
+
+**What I shipped to `main` today (local-verified, NOT staged/prod):**
+- `ccda123` — tidied the working tree (gitignored 249M render/test artifacts, kept sources).
+- `72b5b08` — **`219d42a1` "Report totals are wrong" FIXED**: partial-refund no longer erases the whole sale (stays COMPLETED at net); daily-report day-window now shop-tz (`Europe/Zurich`). + fixed a migration-chain typo (`004.down_revision`).
+- `3669fd9` — green'd the POS suite under the cash-drawer guard (**124 passed**, was 111/13-fail).
+- `8e82afd` — logged it + the column-drift warning in the release train.
+
+**Pick up here (in order):**
+1. **Stage the report-totals fix** → Angel PASS on staging-banco → prod train. (It's in the release-train "Boarding" block, built/queued.) The earlier **NEXT TRAIN** items (env-colour login `4587189`, create-form papercuts, logo upload, cash-tolerance, receipt footer, stale-SHA stamp) ride the same train — confirm with the other terminal whether they got built (Angel thought they were done elsewhere; the code still showed logo-as-URL etc. when I last looked — re-verify before rebuilding).
+2. **⚠️ VERIFY the 006 columns exist on staging/prod** before Artemis Premium assumes them — `products.lapiazza_listing_id` etc. may be missing (see [[schema-create-all-alembic-drift]] / release-train FORGE item). This is the KC/Artemis terminal's lane.
+3. **Real follow-up:** reconcile `create_all` ↔ alembic (run `alembic upgrade head` at startup) so envs stop silently disagreeing on schema.
+
+**Gotchas for next time:**
+- Local container (`helix-platform`) was 29h stale; `RELEASE=true` does NOT actually reload — `docker restart helix-platform` to load `src/` changes, then re-run tests (it warms up ~12s; first calls can JSONDecode-flake).
+- Local DB caught up to alembic `006` by hand today; if a fresh DB, see the catch-up recipe in [[schema-create-all-alembic-drift]].
+- Test gate: `. .venv/bin/activate && ENV=local python -m pytest tests/pos -q` (black-box HTTP; needs the container up + a drawer — conftest now auto-opens one).
+- Two terminals on `main`; HEAD moved 3× during my session with no collisions. Keep KC config vs app code separated; coordinate via the release train.
+
+---
+
 ## 🚦 RIGHT NOW
 
 - **Release train:** `🟢 IDLE`. Last shipped = cashier barcode born-once **phantom hotfix** `3a38874` → `banco.lapiazza.app` (Angel mobile PASS 6/6).
