@@ -179,14 +179,41 @@ async def _carry_product_image(token: str, item_id: str, product) -> None:
             return
         ct = r.headers.get("content-type", "image/jpeg")
         ext = "png" if "png" in ct else ("webp" if "webp" in ct else "jpg")
+        h = {"Authorization": f"Bearer {token}"}
         async with httpx.AsyncClient(base_url=settings.SQUARE_API_URL, verify=False, timeout=30.0) as lc:
-            up = await lc.post(f"/api/v1/items/{item_id}/upload",
-                               headers={"Authorization": f"Bearer {token}"},
+            up = await lc.post(f"/api/v1/items/{item_id}/upload", headers=h,
                                files={"file": (f"product.{ext}", r.content, ct)})
             if up.status_code not in (200, 201):
                 logger.warning("lp_publish: image upload -> %s %s", up.status_code, up.text[:120])
+                return
+            # the bridge attached an og-default placeholder as the FIRST media (the cover). Drop it
+            # so the real photo we just uploaded becomes the cover.
+            det = await lc.get(f"/api/v1/items/{item_id}", headers=h)
+            if det.status_code == 200:
+                for mid in _default_media_ids(det.json()):
+                    await lc.delete(f"/api/v1/items/{item_id}/media/{mid}", headers=h)
     except Exception:  # noqa: BLE001
         logger.warning("lp_publish: carry product image failed", exc_info=True)
+
+
+def _default_media_ids(obj) -> list:
+    """Find media entries that are the og-default placeholder (a dict with an id + an 'og-default'
+    url), anywhere in the item-detail JSON — shape-agnostic so it survives BorrowHood response tweaks."""
+    found = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            u = o.get("url")
+            if o.get("id") and isinstance(u, str) and "og-default" in u:
+                found.append(o["id"])
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for x in o:
+                walk(x)
+
+    walk(obj)
+    return found
 
 
 async def publish_product(db, product, store) -> dict:
