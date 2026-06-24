@@ -51,9 +51,28 @@ so sessions don't fall over each other or push half-baked work to a live box.
 > (`scan.html`), no models/migrations/routes (low collision risk w/ KC terminal). Live-verified on staging
 > (new title present, old "Item not on file" gone). **Demo dependency:** the 420 catalog must be loaded in the
 > staging-banco DB or the search-first screen looks empty.
-> **→ NEXT — BL-97 reference catalog (SPEC'd, not built):** a `reference_products` product master (the full
-> 420/TMR dump, CSV-fed via `scripts/import_reference_catalog.py`, maintained apart) that Banco **cherry-picks**
-> real items into the live catalog from — so we never invent data. Spec: `docs/SPEC-BL-97-reference-catalog.md`.
+> **🟡 BL-97 P1 reference catalog — STAGED on `staging-banco`, awaiting Angel PASS** (commit `181ec56`, 2026-06-24, Tigs).
+> A `reference_products` product master (the full 420/TMR dump) the POS searches but never sells from. The BL-96
+> search-first modal now shows a SECOND source — **"From reference"** — and one tap **adopts** the row into the
+> live catalog (copies canonical title/description/photo, binds the scanned barcode as PRIMARY = cashier-safe,
+> cashier confirms price). Idempotent (no twins), falls back to suggested price. Model + alembic migration `007`
+> + Typer CSV importer (`scripts/import_reference_catalog.py`) + `GET /reference/search` + `POST /reference/{id}/adopt`.
+> **Tests:** `tests/pos/test_pos_reference.py` 6/6; full POS suite **130 passed**. Importer **verified end-to-end
+> on staging** (8-row demo set, supplier `DEMO`, idempotent). Live adopt verified on staging-banco (201 → scan
+> resolves → re-adopt idempotent). Spec: `docs/SPEC-BL-97-reference-catalog.md`.
+> **→ DEMO DATA:** 8 `DEMO`-supplier reference rows seeded on staging-banco so the cherry-pick demos immediately.
+> Before BL-97 ships to prod, replace with a real 420 import (and note staging-banco SHARES `products` + `helix_db`
+> with banco-prod — adoptions write the live catalog; my test adoption was cleaned up).
+> **→ FOLLOW-UP (BL-97b):** demote the existing 6–7k dump from `products` → `reference_products`.
+>
+> **🛠️ DRIFT FIX APPLIED to the shared `helix_db` (2026-06-24, Tigs) — heads up KC/Artemis terminal:**
+> Confirmed the FORGE warning: **`helix_db` has NO `alembic_version` table at all** — alembic has *never* run on
+> it; it's 100% `create_all`-built, so the `006` La Piazza-bridge columns (`products.lapiazza_listing_id|slug|
+> pushed_at`, `store_settings.lapiazza_*`) were **absent**. The newer model (from `fc152ee`) expects them → any
+> full `ProductModel` ORM select 500'd on staging once I deployed current `main`. banco-prod was unaffected (it's
+> pinned at `1588cb4`, the pre-`fc152ee` model). **Fix:** applied the exact `006` DDL idempotently
+> (`ADD COLUMN IF NOT EXISTS`) to `helix_db` — additive/nullable, safe for live banco-prod. **Real reconcile still
+> owed:** stand up `alembic_version` + run `alembic upgrade head` at startup so envs stop silently disagreeing.
 
 > **NEXT TRAIN — built/queued, NOT yet staged:**
 > - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.

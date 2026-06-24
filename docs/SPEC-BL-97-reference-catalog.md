@@ -115,16 +115,18 @@ This table is **read-only at the counter** — only the importer writes to it.
 
 `scripts/import_reference_catalog.py` (Typer CLI):
 
-- `import-reference-catalog FILE.csv --supplier 420 [--map mapping.yaml] [--dry-run]`
-- **Idempotent upsert** on `(supplier, supplier_sku)` (or `(supplier, barcode)`): re-running a fresh dump
-  updates changed rows, inserts new ones, leaves the rest. Never deletes silently — report adds/updates/
-  unchanged counts (no-silent-cap rule).
-- Column mapping via a small YAML (420's headers → our columns) so a new supplier = a new mapping file,
-  not new code.
-- Stash the original row in `raw` jsonb.
-- Validates with Pydantic; bad rows are collected and reported, not dropped silently.
-- Runs from the host venv against the DB, or inside the container — document both (the venv has no
-  fastapi but asyncpg is enough for a direct import).
+- `python scripts/import_reference_catalog.py FILE.csv --supplier 420 [--map mapping.yaml] [--dry-run]`
+- **Idempotent upsert** on `(supplier, ref_key)` where `ref_key` = supplier_sku, else barcode, else a
+  title slug: re-running a fresh dump updates changed rows in place, inserts new ones. Reports parsed /
+  with-barcode / with-price counts; skips (no title) reported, not dropped silently.
+- Column mapping via `--map` YAML (420's headers → our fields) with sensible header auto-guessing, so a
+  new supplier = a new mapping file, not new code.
+- Stashes the original row in `raw` jsonb.
+- Connection: SQLAlchemy async (asyncpg); DB URL from `--db-url` / `$REFERENCE_DB_URL` / `POSTGRES_*`.
+- **On the box:** postgres only resolves inside the docker network and the host lacks asyncpg, so
+  `docker cp` the script + CSV into the app container (which has typer+asyncpg) and `docker exec -w /app
+  … python imp.py …`. **Verified end-to-end on staging 2026-06-24** (8-row demo set, supplier `DEMO`,
+  re-import idempotent: 8 → 8).
 
 ---
 

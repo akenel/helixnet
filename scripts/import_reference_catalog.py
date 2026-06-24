@@ -15,9 +15,14 @@ $REFERENCE_DB_URL, else built from the standard POSTGRES_* env (host defaults to
 which resolves on the box / inside the docker network). Postgres is not exposed to the host
 locally, so run this on the box from /opt/helixnet, or pass --db-url with a reachable host.
 
-Usage:
-  python scripts/import_reference_catalog.py import-catalog dump.csv --supplier 420
-  python scripts/import_reference_catalog.py import-catalog dump.csv --supplier 420 --map map.yaml --dry-run
+Usage (single command — no subcommand name needed):
+  python scripts/import_reference_catalog.py dump.csv --supplier 420
+  python scripts/import_reference_catalog.py dump.csv --supplier 420 --map map.yaml --dry-run
+
+On the box (postgres only resolves inside the docker network; the app image has typer+asyncpg):
+  docker cp scripts/import_reference_catalog.py <container>:/app/imp.py
+  docker cp dump.csv <container>:/app/dump.csv
+  docker exec -w /app <container> python imp.py dump.csv --supplier 420
 
 Column mapping: pass --map a YAML of {our_field: csv_header}. Our fields:
   title (required), barcode, supplier_sku, description, image_url, category,
