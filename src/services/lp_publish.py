@@ -70,6 +70,21 @@ async def ensure_business_identity(c: httpx.AsyncClient, store) -> tuple[str, st
     if (await c.get(f"{base}/roles/lapiazza-business", headers=h)).status_code == 404:
         await c.post(f"{base}/roles", headers=h, json={"name": "lapiazza-business"})
 
+    # MODEL A (owner-as-business): if the shop is already LINKED to a La Piazza account, publish AS
+    # it — one account, no duplicate shop personas. Use it as-is: ensure the lapiazza-business role,
+    # but DON'T reset its password or rewrite its name here (it's the owner's account). The token
+    # comes via the provisioned credential (sandbox) / KC token-exchange (prod). A stale link (the
+    # account was deleted) falls through to provision a fresh shop account + re-link.
+    linked = getattr(store, "lapiazza_business_id", None)
+    if linked:
+        u = await c.get(f"{base}/users/{linked}", headers=h)
+        if u.status_code == 200:
+            uname = u.json().get("username")
+            rb = await c.get(f"{base}/roles/lapiazza-business", headers=h)
+            if rb.status_code == 200:
+                await c.post(f"{base}/users/{linked}/role-mappings/realm", headers=h, json=[rb.json()])
+            return uname, linked
+
     found = (await c.get(f"{base}/users", headers=h, params={"username": username, "exact": "true"})).json()
     if not found:
         cr = await c.post(f"{base}/users", headers=h, json={
