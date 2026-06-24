@@ -155,6 +155,27 @@ class StoreSettingsModel(Base):
     founded_year: Mapped[str | None] = mapped_column(
         String(10), nullable=True, comment="e.g. '1999'")
 
+    # La Piazza module (Artemis Premium) -- the switch the shop flips to tie its
+    # catalog to the public marketplace. ON => products can be pushed as drafts to
+    # La Piazza (the env-matching instance) under the shop's own business account.
+    lapiazza_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="Master switch: is the La Piazza module turned on for this shop?"
+    )
+    lapiazza_autodraft: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="Override: auto-push every new product as a La Piazza draft (owner still publishes)"
+    )
+    lapiazza_business_id: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+        comment="The shop's La Piazza (borrowhood realm) business account id -- publishes AS this"
+    )
+
     # Discount Settings
     cashier_max_discount: Mapped[Decimal] = mapped_column(
         Numeric(5, 2),

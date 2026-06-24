@@ -25,8 +25,10 @@ _jwks_cache: Optional[dict] = None
 # Cache for multiple realms
 _jwks_cache_by_realm: dict = {}
 
-# POS realm - hardcoded because POS frontend uses this specific realm
-POS_REALM = "kc-pos-realm-dev"
+# POS realm - now env-driven (settings.POS_REALM, default "kc-pos-realm-dev").
+# Was hardcoded; made config-driven for Phase 2 of the identity consolidation so POS
+# can be repointed at the unified realm without a code edit. See HELIX-IDENTITY-ARCHITECTURE.md.
+POS_REALM = settings.POS_REALM
 
 
 async def get_jwks(realm: str = None) -> dict:

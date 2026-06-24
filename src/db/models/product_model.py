@@ -171,6 +171,27 @@ class ProductModel(Base):
         comment="Primary product image URL"
     )
 
+    # La Piazza bridge (Artemis Premium) -- push-once-then-decouple.
+    # When the shop publishes this product to the La Piazza marketplace it lands as a
+    # DRAFT under the shop's business account; we record the listing id/slug so we can
+    # find it + build the QR target. We do NOT keep syncing -- once seeded, the listing
+    # is the shop owner's to maintain. A re-push creates a NEW listing, not an update.
+    lapiazza_listing_id: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+        comment="La Piazza listing id this product was seeded as (null = never pushed)"
+    )
+    lapiazza_slug: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        comment="La Piazza listing slug -- the QR target resolves to /items/{slug}"
+    )
+    lapiazza_pushed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="When this product was seeded to La Piazza (the one-shot push)"
+    )
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

@@ -38,14 +38,18 @@ unlocks the points payout · customers are CRM (`CustomerModel`), never Keycloak
 one-pager cleanup** can run in parallel today (no dependency, and the QR lives there). Build behind
 a flag, test on sandbox, then film Season 2 against the real thing.
 
-## NEXT SESSION — start the DESIGN CUTOVER PLAN (Angel's ask 2026-06-24)
-Before/alongside the loop build, draft a **cutover plan** for the prep on the design concept:
-plugging in **QR codes** + the **La Piazza item design** + **Banco/Artemis items** → a premium
-public presentation ("**Artemis Premium**" — the rich, La Piazza-style face for the shop's items).
-This is the execution prep for **Path A** (port La Piazza's design into Banco's public product page)
-with **Path B** (publish to the La Piazza marketplace) kept open. Deliverable: a phased cutover plan
-(what migrates, in what order, behind a flag, with rollback) — write it next session. Pairs with
-`BANCO-SEASON2-PROJECT-PLAN.md` (workstream B + the architectural forks A2/A3).
+## ✅ ARTEMIS PREMIUM CUTOVER PLAN — STARTED 2026-06-24
+Written → **`docs/BANCO-ARTEMIS-PREMIUM-CUTOVER-PLAN.md`**. The prep for plugging **QR codes** +
+the **La Piazza item design** + **Banco/Artemis items** → a premium public face ("Artemis Premium").
+**Key finding (audited, not talk): the wiring is ~80% already built.** `create_draft_listing()` in
+`square_bridge.py:145` already publishes items into La Piazza (Bottega uses it); `StoreSettingsModel`
+already holds Artemis's VAT + company + storefront profile; `create_product()` `pos_router.py:134` is
+the lifecycle seam. **Greenfield = small:** a module-toggle column, a `lapiazza_listing_id` column, and
+the ONE hard seam — a **business-account identity on the `borrowhood` realm** to publish AS Artemis
+(= Angel's "flip the switch → create account → verify email"). **The fork resolved to Path B** (item
+rests on La Piazza, reuse the hosted face — no separate Banco page).
+**Awaiting Angel** on the 4 open questions in §6 of the plan (business-account-singular? draft-on-create?
+one-way-only? QR→La-Piazza-listing?). Then Phase 0 schema → Phase 1 identity → Phase 2 hook.
 
 ## The records (so nothing gets re-taught)
 - `videos/banco/BORN-ONCE-VIDEO-SOP.md` — end-to-end video procedure (the cycle + capture/build commands).

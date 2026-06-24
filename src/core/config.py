@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     # point at its own dedicated realm (lapiazza-realm-staging) without code edits.
     LP_REALM: str = "lapiazza-realm-dev"
     LP_CLIENT: str = "lapiazza_web"
+    # POS (HelixPOS / Banco) auth realm. Env-driven (was hardcoded in keycloak_auth.py)
+    # so Phase 2 of the identity consolidation can repoint POS at the unified realm
+    # WITHOUT a code edit. Default keeps today's behavior. See HELIX-IDENTITY-ARCHITECTURE.md.
+    POS_REALM: str = "kc-pos-realm-dev"
     # Browser-facing Keycloak host for the LP realm — MUST match the realm's frontendUrl, or the
     # interactive login dead-ends on "you are already logged in" when app host != KC host.
     # prod borrowhood frontendUrl = lapiazza.app (default); staging overrides to staging-bottega.
