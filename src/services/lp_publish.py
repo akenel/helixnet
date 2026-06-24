@@ -92,6 +92,29 @@ async def ensure_business_identity(c: httpx.AsyncClient, store) -> tuple[str, st
     return username, uid
 
 
+async def set_lp_business_profile(token: str, store) -> None:
+    """Fill the shop's La Piazza PUBLIC business profile — the dashboard's Seller Type=Business +
+    Business Name + VAT/Tax ID. Crucially sets display_name = the business name, so every listing
+    shows the SHOP (e.g. 'Artemis GmbH'), not a person. This is the 'call to LP' that makes the
+    provisioned account look like a real verified business. Best-effort — a profile hiccup must
+    never block the publish."""
+    biz_name = (getattr(store, "legal_name", None) or getattr(store, "store_name", None) or "Shop").strip()
+    vat = getattr(store, "vat_number", None) or ""
+    body = {
+        "display_name": biz_name[:120],      # the seller name shown on listings + the Locandina
+        "seller_type": "business",
+        "business_name": biz_name[:200],
+        "vat_number": str(vat)[:50],
+    }
+    try:
+        async with httpx.AsyncClient(base_url=settings.SQUARE_API_URL, verify=False, timeout=20.0) as c:
+            r = await c.patch("/api/v1/users/me", headers={"Authorization": f"Bearer {token}"}, json=body)
+            if r.status_code >= 300:
+                logger.warning("lp_publish: set business profile -> %s %s", r.status_code, r.text[:120])
+    except Exception:  # noqa: BLE001
+        logger.warning("lp_publish: set business profile failed", exc_info=True)
+
+
 async def _business_token(c: httpx.AsyncClient, username: str) -> str:
     r = await c.post(f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.LP_REALM}/protocol/openid-connect/token",
                      data={"grant_type": "password", "client_id": settings.LP_CLIENT,
@@ -129,6 +152,9 @@ async def publish_product(db, product, store) -> dict:
     async with httpx.AsyncClient(verify=False, timeout=30.0) as c:
         username, uid = await ensure_business_identity(c, store)
         token = await _business_token(c, username)
+    # fill the LP business profile FIRST (display_name = business name) so the listing is born
+    # showing the shop as a verified business, not a person.
+    await set_lp_business_profile(token, store)
     res = await create_draft_listing(token, product_to_listing(product, store))
 
     product.lapiazza_listing_id = res.get("listing_id")
