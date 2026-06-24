@@ -201,8 +201,7 @@
       <p>Tap a chip to copy it, then paste where you need it.</p>
       <span class="chip" data-copy="felix">felix <span class="tag">· username</span></span>
       <span class="chip" data-copy="helix_pass">helix_pass <span class="tag">· password</span></span>
-      <span class="chip" data-copy="https://staging.lapiazza.app/items/hemp-sana-cbd-cream-40ml-3">…/items/hemp-sana-cbd-cream-40ml-3 <span class="tag">· listing 1</span></span>
-      <span class="chip" data-copy="https://staging.lapiazza.app/items/hempsana">…/items/hempsana <span class="tag">· listing 2</span></span>
+      <span class="chip" data-copy="https://staging.lapiazza.app/items/hemp-sana-cbd-cream-40ml-3">…/items/hemp-sana-cbd-cream-40ml-3 <span class="tag">· the listing</span></span>
     </div>
 
     <!-- ===== the checks ===== -->
@@ -267,8 +266,8 @@
       exp:"<b>Business</b> is selected, with <b>Business Name</b> + <b>VAT / Tax ID</b> filled in — provisioned automatically, not typed by hand." },
     { do:"<b>The QR / Locandina.</b> Generate the printable promo (Locandina) for the listing and scan its QR with your phone.",
       exp:"The QR opens the same La Piazza listing page; the poster shows the product, price, FOR SALE + the shop." },
-    { do:"<b>Second listing — the Banco button's output.</b> Open <span class='chip' data-copy='https://staging.lapiazza.app/items/hempsana'>…/items/hempsana</span>",
-      exp:"Loads; seller reads <b>by Artemis GmbH</b>. (This one was published straight through the Banco publish endpoint.)" },
+    { do:"<b>No duplicates.</b> Browse/search La Piazza for <code>Artemis</code> and <code>Hemp Sana</code> — count the shops + the listings.",
+      exp:"Exactly ONE Artemis shop (<b>Artemis Store</b>) and ONE Hemp Sana listing — no 'Artemis Store Business' / 'Artemis GmbH' doubles, no residual hempsana." },
     { do:"<b>Overall.</b> Did it hang together — log in once, the item lives on La Piazza as the shop, nothing weird or stuck?",
       exp:"Feels logical end-to-end. Flag anything clunky, any <b>broken image</b>, anything Felix would trip on — in the 🎤 box below." }
   ];
