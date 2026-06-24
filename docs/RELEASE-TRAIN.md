@@ -22,7 +22,7 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
-`🟢 IDLE` — no train running. (Last shipped: **cashier barcode-create PHANTOM hotfix @ `3a38874` (fix `110f101`) → banco.lapiazza.app, 2026-06-23** — Angel mobile PASS 6/6 functional checks; prod smoke green (`/pos` 200, fix in served scan.html ×3). Rollback `acf337a`. Prior: Settings+photo+reports @ `acf337a`.)
+`🟢 IDLE` — no train running. (Last shipped: **BL-96/97/97c REFERENCE CATALOG + cherry-pick @ `e67b4ca` → banco.lapiazza.app, 2026-06-24** — Angel signed off after the staging drive (TEST-BANCO-CHERRY-001). banco-prod worktree advanced `1588cb4 → e67b4ca`; `006` lapiazza columns applied to `banco_prod` + create_all built `reference_products`; 7,272-item 420 catalog imported into prod reference. Live e2e verified: search 402 grinders, adopt copies real title/photo + binds barcode, re-scan no twin, image into MinIO. Prior: cashier-phantom hotfix `3a38874`.)
 
 ## 🧱 INFRA (done 2026-06-24) — Banco DBs separated; staging-banco moved off the bottega container
 
@@ -57,6 +57,7 @@ manual ALTER like before).
 > set it to `staging` for the amber STG badge; (b) cash-drawer UX question Angel raised (cash sale needs
 > own open drawer + `amount_tendered ≥ total`; TWINT skips both) — awaiting the exact on-screen error.
 
+> ✅ **SHIPPED TO PROD `e67b4ca` (banco.lapiazza.app, 2026-06-24)** — BL-96 + BL-97 P1 + BL-97c together, after the staging drive sign-off. (Original staging entry below.)
 > **🟡 BL-96 scan-miss → search-first — STAGED on `staging-banco`, awaiting Angel PASS** (commit `cd18321`, 2026-06-24, Tigs).
 > Felix's catalog is **pre-loaded rich** (~6–7k from 420 ≈ 80% of sales) — the product almost always already
 > exists, only its **barcode** is missing/wrong, so a scan-miss is the *common* case. The lazy-capture modal
