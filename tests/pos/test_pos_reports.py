@@ -35,6 +35,33 @@ def test_daily_summary_methods_sum_to_total(session):
     assert methods == total, f"payment methods {methods} != total_sales {total}"
 
 
+def test_partial_refund_keeps_net_in_daily_total(session):
+    """Regression for '219d42a1 Report totals are wrong': a partial refund must leave the
+    NET (kept) amount in the day's total_sales, not erase the whole original sale. Measures
+    the report delta around one ring + partial refund (pytest runs serially, so the delta
+    is just this test's own activity)."""
+    import uuid
+    before = Decimal(str(session.get(f"{POS}/reports/daily-summary").json()["total_sales"]))
+
+    prod = session.post(f"{POS}/products", json={
+        "sku": "TEST-RPT-" + uuid.uuid4().hex[:8], "name": "TEST report widget",
+        "price": "20.00", "stock_quantity": 10}).json()
+    tx = session.post(f"{POS}/transactions", json={}).json()
+    session.post(f"{POS}/transactions/{tx['id']}/items", json={
+        "product_id": prod["id"], "quantity": 2, "unit_price": "20.00"}).raise_for_status()
+    session.post(f"{POS}/transactions/{tx['id']}/checkout",
+                 json={"payment_method": "visa"}).raise_for_status()  # total 40.00
+
+    r = session.post(f"{POS}/transactions/{tx['id']}/refund",
+                     json={"reason": "TEST goodwill", "partial_amount": "10.00"})
+    r.raise_for_status()
+    assert r.json()["status"] == "completed"
+
+    after = Decimal(str(session.get(f"{POS}/reports/daily-summary").json()["total_sales"]))
+    assert after - before == Decimal("30.00"), \
+        f"partial refund should keep net 30.00 in the day's total, got delta {after - before}"
+
+
 def test_csv_requires_auth():
     """Raw URL with NO token must be rejected -- explains the test-sheet 'Not authenticated'."""
     r = requests.get(f"{POS}/reports/daily-summary.csv", verify=False, timeout=15)

@@ -59,8 +59,10 @@ def test_full_refund_flips_status_stock_untouched(session):
     assert _stock(session, p["id"]) == 10, "refund moves money only — count unchanged"
 
 
-def test_partial_refund_is_money_only_stock_untouched(session):
-    """A refund returns cash but never touches the count (there is no perpetual stock)."""
+def test_partial_refund_keeps_sale_completed_at_net(session):
+    """A partial refund returns cash for PART of the sale. The sale STAYS COMPLETED at its
+    net (kept) value — flipping the whole txn to REFUNDED made the day's report drop the
+    entire original sale (the '219d42a1 totals are wrong' bug). Money-only: count untouched."""
     p = _new_product(session, stock=10, price="20.00")
     tx = _ring(session, p["id"], qty=2, unit_price="20.00")  # total 40.00; count never moves
     assert _stock(session, p["id"]) == 10
@@ -68,7 +70,9 @@ def test_partial_refund_is_money_only_stock_untouched(session):
     r = session.post(f"{POS}/transactions/{tx['id']}/refund",
                      json={"reason": "TEST goodwill", "partial_amount": "10.00"})
     r.raise_for_status()
-    assert r.json()["status"] == "refunded"
+    body = r.json()
+    assert body["status"] == "completed", "partial refund keeps the sale completed, not refunded"
+    assert Decimal(str(body["total"])) == Decimal("30.00"), "total drops to the net kept amount"
     assert _stock(session, p["id"]) == 10, "refund is money-only — count unchanged"
 
 

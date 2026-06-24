@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = '004_helix_studio'
-down_revision = '003_add_spine_and_equipment'
+down_revision = '003_spine_equipment'
 branch_labels = None
 depends_on = None
 

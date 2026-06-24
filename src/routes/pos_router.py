@@ -102,6 +102,12 @@ import os  # noqa: E402
 # (not main.py's), so the app_env global must be set here too. Read os.environ directly.
 templates.env.globals["app_env"] = os.environ.get("HX_ENVIRONMENT", "")
 
+# Shop timezone for "what counts as today" on daily reports. Sales timestamps are stored
+# tz-aware (UTC); the report day-window must be built in the SHOP's local day, or late-night
+# sales get attributed to the wrong calendar day. Felix's shop is Lucerne; env-overridable.
+from zoneinfo import ZoneInfo  # noqa: E402
+SHOP_TZ = ZoneInfo(os.environ.get("HX_SHOP_TZ", "Europe/Zurich"))
+
 
 # ================================================================
 # POS CONFIGURATION ENDPOINT
@@ -1828,7 +1834,8 @@ async def refund_transaction(
         refund: RefundRequest with reason and optional partial amount
 
     Returns:
-        Updated transaction with REFUNDED status
+        Updated transaction — REFUNDED on a full refund, or COMPLETED at its net
+        (kept) value on a partial refund (so the daily report counts what was retained).
     """
     # Get transaction
     trans_result = await db.execute(
@@ -1854,13 +1861,30 @@ async def refund_transaction(
             detail=f"Refund amount ({refund_amount}) cannot exceed transaction total ({transaction.total})"
         )
 
+    refund_amount = Decimal(str(refund_amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    original_total = Decimal(str(transaction.total))
+    is_partial = Decimal("0") < refund_amount < original_total
+
     # Update transaction
-    transaction.status = TransactionStatus.REFUNDED
     transaction.updated_at = datetime.now(timezone.utc)
+    if is_partial:
+        # Partial refund: the sale STAYS COMPLETED at its net (kept) value so the daily
+        # report counts the money actually retained. The old code flipped the WHOLE txn to
+        # REFUNDED, and the report (COMPLETED-only) then dropped the entire original sale —
+        # so refunding CHF 5 of a CHF 50 sale erased all 50 from the day's takings.
+        net = (original_total - refund_amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        transaction.total = net
+        transaction.tax_amount = _inclusive_vat(net)
+        transaction.subtotal = (net - transaction.tax_amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # status stays COMPLETED
+    else:
+        # Full refund: the sale is reversed entirely and drops out of sales totals.
+        transaction.status = TransactionStatus.REFUNDED
 
     # Add refund note with cashier info
     cashier_name = current_user.get('preferred_username', 'Unknown')
-    refund_note = f"REFUNDED: CHF {refund_amount} cash back | Reason: {refund.reason} | Processed by: {cashier_name} | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
+    label = "PARTIAL REFUND" if is_partial else "REFUNDED"
+    refund_note = f"{label}: CHF {refund_amount} cash back | Reason: {refund.reason} | Processed by: {cashier_name} | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
 
     if transaction.notes:
         transaction.notes = f"{transaction.notes}\n{refund_note}"
@@ -1892,15 +1916,17 @@ async def get_daily_summary(
 
     mine=true filters to the CALLER's own sales (so a cashier's dashboard shows their
     own takings, not the whole store). Default false = store-wide (for managers/Felix)."""
-    # Default to today
+    # Default to today — in the SHOP's timezone, not the server's (a UTC box would roll
+    # the day over at 01:00/02:00 Swiss time and split the evening's takings across two reports).
     if not report_date:
-        target_date = date.today()
+        target_date = datetime.now(SHOP_TZ).date()
     else:
         target_date = datetime.strptime(report_date, "%Y-%m-%d").date()
 
-    # Query completed transactions for the day
-    start_of_day = datetime.combine(target_date, datetime.min.time())
-    end_of_day = datetime.combine(target_date, datetime.max.time())
+    # The day window is the shop's local calendar day, tz-aware, so it compares correctly
+    # against the tz-aware (UTC) completed_at column in Postgres.
+    start_of_day = datetime.combine(target_date, datetime.min.time(), tzinfo=SHOP_TZ)
+    end_of_day = datetime.combine(target_date, datetime.max.time(), tzinfo=SHOP_TZ)
 
     conditions = [
         TransactionModel.status == TransactionStatus.COMPLETED,
