@@ -149,7 +149,9 @@ def product_to_listing(product, store) -> dict:
     return {
         "name": product.name,
         "description": product.description or "",
-        "cover_url": product.image_url or "",        # the image; bridge falls back to og-default
+        # cover is NOT set here — product.image_url is a relative Banco path La Piazza can't render.
+        # The real photo is UPLOADED to La Piazza after create (decoupled) by _carry_product_image.
+        "cover_url": "",
         "price": product.price,
         "currency": str(currency)[:3],
         "item_type": "physical",                     # head-shop goods
@@ -158,6 +160,33 @@ def product_to_listing(product, store) -> dict:
         "content_language": "en",
         "tags": (product.barcode or ""),
     }
+
+
+async def _carry_product_image(token: str, item_id: str, product) -> None:
+    """Carry the product photo onto the listing — DECOUPLED. Fetch the bytes from THIS Banco's own
+    image endpoint (localhost, inside the container) and UPLOAD them to La Piazza so the listing owns
+    its copy (survives a Banco reset / product change). Best-effort: a missing/failed image must
+    NEVER block the publish."""
+    img = getattr(product, "image_url", None)
+    if not img or not item_id:
+        return
+    try:
+        src = img if str(img).startswith("http") else f"http://localhost:8000{img}"
+        async with httpx.AsyncClient(verify=False, timeout=30.0) as c:
+            r = await c.get(src)
+        if r.status_code != 200 or not r.content:
+            logger.info("lp_publish: no product image to carry (%s -> %s)", src, r.status_code)
+            return
+        ct = r.headers.get("content-type", "image/jpeg")
+        ext = "png" if "png" in ct else ("webp" if "webp" in ct else "jpg")
+        async with httpx.AsyncClient(base_url=settings.SQUARE_API_URL, verify=False, timeout=30.0) as lc:
+            up = await lc.post(f"/api/v1/items/{item_id}/upload",
+                               headers={"Authorization": f"Bearer {token}"},
+                               files={"file": (f"product.{ext}", r.content, ct)})
+            if up.status_code not in (200, 201):
+                logger.warning("lp_publish: image upload -> %s %s", up.status_code, up.text[:120])
+    except Exception:  # noqa: BLE001
+        logger.warning("lp_publish: carry product image failed", exc_info=True)
 
 
 async def publish_product(db, product, store) -> dict:
@@ -171,6 +200,7 @@ async def publish_product(db, product, store) -> dict:
     # showing the shop as a verified business, not a person.
     await set_lp_business_profile(token, store)
     res = await create_draft_listing(token, product_to_listing(product, store))
+    await _carry_product_image(token, res.get("item_id"), product)   # decoupled: upload the real photo
 
     product.lapiazza_listing_id = res.get("listing_id")
     product.lapiazza_slug = res.get("slug")
