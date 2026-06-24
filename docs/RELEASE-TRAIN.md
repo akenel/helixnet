@@ -24,6 +24,22 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 `🟢 IDLE` — no train running. (Last shipped: **cashier barcode-create PHANTOM hotfix @ `3a38874` (fix `110f101`) → banco.lapiazza.app, 2026-06-23** — Angel mobile PASS 6/6 functional checks; prod smoke green (`/pos` 200, fix in served scan.html ×3). Rollback `acf337a`. Prior: Settings+photo+reports @ `acf337a`.)
 
+## 🧱 INFRA (done 2026-06-24) — Banco DBs separated; staging-banco moved off the bottega container
+
+The shared-`helix_db` problem class is **fixed for Banco**. Each Banco env now owns its DB, mirroring sandbox:
+- `helix-platform-banco` (banco.lapiazza.app) → **`banco_prod`** (was `helix_db`).
+- **NEW** `helix-platform-banco-staging` (staging-banco.lapiazza.app, :8096) → **`banco_staging`**, own worktree
+  `/opt/helix-banco-staging-tree`, `HX_ENVIRONMENT=staging`. Caddy reroutes staging-banco to it.
+- `helix-platform-staging` now serves **bottega-staging ONLY** (still on `helix_db`, untouched).
+- New compose `hetzner/docker-compose.banco-staging.yml`; banco-prod compose sets `POSTGRES_DB=banco_prod`.
+
+Both new DBs fresh-seeded (demo catalog, store "Artemis Lucerne - Headshop"). All 4 hosts verified 200. A
+staging-banco write can no longer reach banco-prod → BL-97b demotion / test exhaust are now safe per-env.
+**⚠ for the KC/Artemis terminal:** `helix_db` is still shared by Bottega prod+staging (your lane, unchanged);
+banco-prod is still pinned at `1588cb4` (pre-BL-97) until its train — shipping BL-97 to it will need the
+`006` columns + reference table on `banco_prod` (create_all makes the table; the `lapiazza_*` columns need the
+manual ALTER like before).
+
 ## Boarding (awaiting the next prod train)
 
 > ✅ **HOTFIX — cashier barcode born-once PHANTOM — SHIPPED to banco.lapiazza.app @ `3a38874` (fix `110f101`), 2026-06-23** (Angel mobile PASS 6/6 functional; the 1 "fail" was the staging env-badge mislabel, not the fix; rollback `acf337a`):
