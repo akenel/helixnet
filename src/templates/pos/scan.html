@@ -410,7 +410,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">What is it? Find it in the catalog</label>
                     <input type="text" x-model="lazyLinkQuery" x-ref="lazyLinkInput"
-                           @input.debounce.300ms="searchExisting()"
+                           @input.debounce.300ms="searchExisting(); searchReference()"
                            placeholder="Type a name or keyword — e.g. papers, grinder, Gizeh" class="input-field">
                     <p class="text-xs text-gray-500 mt-1">Tap the right product to bind this barcode to it — it'll scan instantly next time.</p>
                     <div x-show="lazyLinkResults.length" class="mt-2 max-h-64 overflow-y-auto divide-y border rounded-lg" style="display:none;">
@@ -428,9 +428,52 @@
                             </button>
                         </template>
                     </div>
-                    <p x-show="lazyLinkQuery.length > 1 && !lazyLinkResults.length && !lazyLinkSearching"
+                    <!-- BL-97: SECOND source — the reference catalog (420/TMR master). Not in the
+                         shop yet, but the real data exists. Tap → copy it in (no re-typing). -->
+                    <div x-show="refResults.length" class="mt-3" style="display:none;">
+                        <p class="text-xs font-semibold text-purple-700 mb-1 flex items-center gap-1">
+                            <span class="inline-block px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">From reference</span>
+                            <span class="text-gray-500 font-normal">add to your shop — title &amp; photo come from the supplier</span>
+                        </p>
+                        <div class="max-h-64 overflow-y-auto divide-y border border-purple-200 rounded-lg">
+                            <template x-for="r in refResults" :key="r.id">
+                                <button @click="selectReference(r)" :disabled="lazySaving"
+                                        class="w-full text-left px-3 py-2 hover:bg-purple-50 flex items-center gap-3"
+                                        :class="refSelected && refSelected.id === r.id ? 'bg-purple-50' : ''">
+                                    <img x-show="r.image_url" :src="r.image_url" loading="lazy" alt=""
+                                         class="w-12 h-12 rounded object-cover border flex-none">
+                                    <span x-show="!r.image_url" class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 flex-none">📦</span>
+                                    <span class="flex-1 min-w-0">
+                                        <span x-text="r.title" class="block text-sm font-medium text-gray-900 truncate"></span>
+                                        <span class="block text-xs text-gray-400 truncate">
+                                            <span x-text="r.supplier"></span><span x-show="r.category" x-text="' · ' + r.category"></span>
+                                        </span>
+                                    </span>
+                                    <span x-show="r.suggested_price !== null" x-text="'CHF ' + r.suggested_price" class="text-sm text-gray-600 flex-none"></span>
+                                </button>
+                            </template>
+                        </div>
+                        <!-- Price-confirm: keeps the canonical title/description/photo regardless of price. -->
+                        <div x-show="refSelected" style="display:none;" class="mt-2 border border-purple-300 rounded-lg p-3 bg-purple-50 space-y-2">
+                            <p class="text-sm font-medium text-gray-900" x-text="refSelected ? refSelected.title : ''"></p>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-1">
+                                    <label class="block text-xs text-gray-600 mb-1">Price (CHF)</label>
+                                    <input type="number" step="0.05" min="0" x-model="refPrice"
+                                           @keyup.enter="confirmAdopt()" placeholder="0.00"
+                                           class="input-field text-xl font-bold">
+                                </div>
+                                <button @click="confirmAdopt()" :disabled="lazySaving" class="btn-success flex-none">
+                                    <span x-show="!lazySaving">Add to shop</span>
+                                    <span x-show="lazySaving" style="display:none;">Saving…</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p x-show="lazyLinkQuery.length > 1 && !lazyLinkResults.length && !refResults.length && !lazyLinkSearching && !refSearching"
                        class="text-xs text-amber-600 mt-2" style="display:none;">
-                        No match in the catalog. If it's genuinely new, add it below.
+                        No match in the catalog or reference. If it's genuinely new, add it below.
                     </p>
                 </div>
 
@@ -541,6 +584,12 @@
             lazyLinkResults: [],
             lazyLinkSearching: false,
             lazyCreateOpen: false,   // the "genuinely new" fallback form, collapsed by default
+            // BL-97 reference catalog (product master): a SECOND source under the live results.
+            // Found here = not yet in the shop, but canonical data exists → "adopt" copies it in.
+            refResults: [],
+            refSearching: false,
+            refSelected: null,       // the reference row the cashier tapped (price-confirm panel)
+            refPrice: '',
 
             // Search mode (paginated)
             searchInput: '',
@@ -788,11 +837,16 @@
                 this.lazyLinkQuery = prefillName || '';
                 this.lazyLinkResults = [];
                 this.lazyLinkSearching = false;
+                // BL-97 reference second source — reset.
+                this.refResults = [];
+                this.refSearching = false;
+                this.refSelected = null;
+                this.refPrice = '';
                 this.lazyOpen = true;
                 // If we already have a name (camera OCR / typed), search straight away;
                 // otherwise focus the box so Pam can type a keyword.
                 this.$nextTick(() => {
-                    if (this.lazyLinkQuery.trim().length > 1) this.searchExisting();
+                    if (this.lazyLinkQuery.trim().length > 1) { this.searchExisting(); this.searchReference(); }
                     if (this.$refs.lazyLinkInput) this.$refs.lazyLinkInput.focus();
                 });
             },
@@ -833,6 +887,57 @@
                     this.lazyLinkResults = [];
                 } finally {
                     this.lazyLinkSearching = false;
+                }
+            },
+
+            // BL-97: search the reference catalog (product master) as a second source.
+            async searchReference() {
+                const q = this.lazyLinkQuery.trim();
+                const bc = (this.lazyBarcode || '').trim();
+                if (q.length < 2 && !bc) { this.refResults = []; this.refSearching = false; return; }
+                this.refSearching = true;
+                try {
+                    const params = new URLSearchParams({ q, limit: '8' });
+                    if (bc) params.set('barcode', bc);
+                    const res = await API.get(`/api/v1/pos/reference/search?${params.toString()}`);
+                    this.refResults = (res.items || []).slice(0, 8);
+                } catch (err) {
+                    console.warn('Reference search failed:', err);
+                    this.refResults = [];
+                } finally {
+                    this.refSearching = false;
+                }
+            },
+
+            // Tap a reference hit → confirm the price (suggested pre-filled), keeping the
+            // canonical title/description/photo whatever the price ends up being.
+            selectReference(r) {
+                this.refSelected = r;
+                this.refPrice = (r.suggested_price !== null && r.suggested_price !== undefined)
+                    ? String(r.suggested_price) : '';
+            },
+
+            // Adopt: copy the reference item into the live catalog, bind the barcode, add to cart.
+            async confirmAdopt() {
+                if (!this.refSelected) return;
+                const price = parseFloat(this.refPrice);
+                if (isNaN(price) || price < 0) { showToast('Enter a valid price', 'warning'); return; }
+                const qty = Math.max(1, parseInt(this.lazyQty, 10) || 1);
+                const bc = (this.lazyBarcode || '').trim();
+                this.lazySaving = true;
+                try {
+                    const product = await API.post(
+                        `/api/v1/pos/reference/${this.refSelected.id}/adopt`,
+                        { barcode: bc || null, price: String(price) });
+                    this.addToCart(product, qty);
+                    this.lazyOpen = false;
+                    this.barcodeInput = '';
+                    showToast(`Added from reference — ${product.name} scans instantly next time`, 'success');
+                } catch (err) {
+                    console.warn('Adopt failed:', err);
+                    showToast('Could not add it from reference. Try "add as new" below.', 'warning');
+                } finally {
+                    this.lazySaving = false;
                 }
             },
 

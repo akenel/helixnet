@@ -24,6 +24,7 @@ from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
     ProductImageModel,
+    ReferenceProductModel,
     PosStockMovementModel,
     TransactionModel,
     LineItemModel,
@@ -335,6 +336,156 @@ async def add_product_barcode(
 
     logger.info(f"Barcode '{barcode}' linked to product {product.sku} by {current_user['username']}")
     return {"status": "linked", "product_id": str(product.id), "barcode": barcode}
+
+
+# ============================================================================
+# BL-97 — REFERENCE CATALOG (product master): search + adopt
+# A supplier-fed lookup list. Search it, then ADOPT a row into the live `products`
+# catalog (copying the real title/description/photo) instead of re-typing made-up data.
+# Lookup-only; never sells from here. Zero-perpetual-inventory unchanged.
+# ============================================================================
+
+@router.get("/reference/search")
+async def search_reference_catalog(
+    q: str = "",
+    barcode: str = "",
+    limit: int = 8,
+    skip: int = 0,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Search the reference catalog (trigram on title + exact barcode). Same envelope
+    shape as /search. Public (catalog lookup). `name`/`price` are aliased from
+    title/suggested_price so the scan modal can render reference + live hits the same way."""
+    from sqlalchemy import text
+
+    q = (q or "").strip()
+    barcode = (barcode or "").strip()
+    limit = max(1, min(int(limit or 8), 50))
+
+    query = text("""
+        SELECT id, supplier, supplier_sku, barcode, title, description, image_url,
+               category, suggested_price,
+               count(*) OVER() AS total_count
+        FROM reference_products
+        WHERE (
+            (:barcode <> '' AND barcode = :barcode)
+            OR (:q <> '' AND (title ILIKE '%' || :q || '%' OR similarity(title, :q) > 0.1))
+        )
+        ORDER BY
+          CASE WHEN :barcode <> '' AND barcode = :barcode THEN 0 ELSE 1 END,
+          CASE WHEN title ILIKE :q || '%' THEN 0 ELSE 1 END,
+          similarity(title, :q) DESC, title
+        LIMIT :limit OFFSET :skip
+    """)
+    rows = (await db.execute(query, {
+        "q": q, "barcode": barcode, "limit": limit, "skip": skip,
+    })).fetchall()
+
+    total = int(rows[0].total_count) if rows else 0
+    items = [
+        {
+            "id": str(row.id), "supplier": row.supplier, "supplier_sku": row.supplier_sku,
+            "barcode": row.barcode, "title": row.title, "name": row.title,
+            "description": row.description, "image_url": row.image_url, "category": row.category,
+            "suggested_price": float(row.suggested_price) if row.suggested_price is not None else None,
+            "price": float(row.suggested_price) if row.suggested_price is not None else None,
+            "is_reference": True,
+        }
+        for row in rows
+    ]
+    return {"items": items, "total": total, "skip": skip, "limit": limit}
+
+
+class AdoptReferenceRequest(BaseModel):
+    barcode: Optional[str] = None       # the scanned code to bind (usually the scan-miss)
+    price: Optional[Decimal] = None     # cashier's price; falls back to suggested_price
+
+
+def _ref_adopt_sku(supplier: str, supplier_sku: Optional[str], barcode: Optional[str], ref_id) -> str:
+    """A stable, unique-ish SKU for an adopted reference item so re-adopting is idempotent."""
+    tail = (supplier_sku or barcode or str(ref_id)[:8] or "").strip()
+    return ("REF-" + supplier + "-" + tail).upper().replace(" ", "")[:100]
+
+
+@router.post("/reference/{ref_id}/adopt", response_model=ProductRead,
+             status_code=status.HTTP_201_CREATED)
+async def adopt_reference_product(
+    ref_id: UUID,
+    body: AdoptReferenceRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Cherry-pick a reference item into the live catalog (cashier-safe).
+
+    Copies the canonical title/description/image/category across, binds the scanned barcode
+    as the new product's PRIMARY barcode (so it stays cashier-safe — no manager-only alias
+    call), and sets the price (cashier's, else the supplier's suggested). Idempotent: if the
+    barcode or the derived SKU already resolves to a live product, that product is returned
+    instead of creating a duplicate twin."""
+    ref = (await db.execute(
+        select(ReferenceProductModel).where(ReferenceProductModel.id == ref_id)
+    )).scalar_one_or_none()
+    if not ref:
+        raise HTTPException(status_code=404, detail="Reference product not found")
+
+    barcode = (body.barcode or ref.barcode or "").strip() or None
+
+    # Idempotency guard 1: this barcode already points at a live product → return it.
+    if barcode:
+        existing = await _find_product_by_any_barcode(db, barcode)
+        if existing is not None:
+            return existing
+
+    sku = _ref_adopt_sku(ref.supplier, ref.supplier_sku, ref.barcode, ref.id)
+
+    # Idempotency guard 2: already adopted under this SKU → return it.
+    existing_sku = (await db.execute(
+        select(ProductModel).where(ProductModel.sku == sku)
+    )).scalar_one_or_none()
+    if existing_sku is not None:
+        return existing_sku
+
+    price = body.price if body.price is not None else ref.suggested_price
+    if price is None:
+        raise HTTPException(status_code=422, detail="Price is required (no suggested price on file)")
+    price = Decimal(str(price)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    if price < 0:
+        raise HTTPException(status_code=422, detail="Price must be >= 0")
+
+    new_product = ProductModel(
+        barcode=barcode,
+        sku=sku,
+        name=ref.title,
+        description=ref.description,
+        price=price,
+        cost=ref.cost,
+        category=(ref.category or "").strip() or "On the fly",
+        image_url=ref.image_url,    # P1: keep the reference URL; copy-into-storage is a follow-up
+        supplier_name=ref.supplier,
+        supplier_sku=ref.supplier_sku,
+        is_active=True,
+    )
+    db.add(new_product)
+    try:
+        await db.commit()
+    except IntegrityError:
+        # Race / duplicate barcode|sku → return whatever now exists rather than 500.
+        await db.rollback()
+        if barcode:
+            existing = await _find_product_by_any_barcode(db, barcode)
+            if existing is not None:
+                return existing
+        existing_sku = (await db.execute(
+            select(ProductModel).where(ProductModel.sku == sku)
+        )).scalar_one_or_none()
+        if existing_sku is not None:
+            return existing_sku
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Could not adopt — a conflicting product already exists.")
+    await db.refresh(new_product)
+    logger.info(f"Adopted reference '{ref.title}' ({ref.supplier}) → product {sku} "
+                f"by {current_user['username']}")
+    return new_product
 
 
 @router.put("/products/{product_id}", response_model=ProductRead)
