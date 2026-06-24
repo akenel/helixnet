@@ -1,0 +1,77 @@
+# =============================================================
+# docker-compose.banco-staging.yml  —  Banco STAGING, own container + own DB
+# =============================================================
+# Why this exists: staging-banco USED to ride helix-platform-staging (shared with
+# staging-bottega) on the shared helix_db. That coupled Banco staging to both prod
+# (same DB) and to the Bottega lane. This gives Banco staging its own dedicated
+# container + database (banco_staging), mirroring sandbox + prod. Now the Banco trio
+# is fully isolated:
+#   sandbox-banco.lapiazza.app  ::  helix-platform-sandbox        ::  banco_sandbox
+#   staging-banco.lapiazza.app  ::  helix-platform-banco-staging  ::  banco_staging  (this)
+#   banco.lapiazza.app          ::  helix-platform-banco          ::  banco_prod
+# helix-platform-staging keeps serving staging-bottega on helix_db, untouched.
+#
+# Launch (from /opt/helixnet/hetzner, with the full overlay stack):
+#   git worktree add /opt/helix-banco-staging-tree <sha>
+#   docker exec postgres createdb -U helix_user banco_staging   # if missing
+#   docker compose -p hetzner -f docker-compose.uat.yml -f docker-compose.helix-staging.yml \
+#     -f docker-compose.banco-prod.yml -f docker-compose.banco-sandbox.yml \
+#     -f docker-compose.banco-staging.yml up -d helix-platform-banco-staging
+#   # then point staging-banco.lapiazza.app at helix-platform-banco-staging:8000 in Caddy
+# =============================================================
+
+services:
+
+  helix-platform-banco-staging:
+    image: helix-platform:latest          # reuse the built image; code comes from the mounted worktree
+    container_name: helix-platform-banco-staging
+    restart: unless-stopped
+    env_file:
+      - ./uat.env
+    environment:
+      SERVICE_TYPE: platform
+      HX_ENVIRONMENT: staging   # amber STG badge (fixes the old uat->SANDBOX mislabel)
+      # SEPARATE BANCO STAGING DATABASE. The app builds its async/sync URIs from POSTGRES_DB
+      # (src/core/config.py); raw URL vars overridden for hygiene. prod's banco_prod + the shared
+      # helix_db are never touched from here.
+      POSTGRES_DB: banco_staging
+      ASYNC_DATABASE_URL: postgresql+asyncpg://helix_user:helix_pass@postgres:5432/banco_staging
+      SYNC_DATABASE_URL: postgresql+psycopg://helix_user:helix_pass@postgres:5432/banco_staging
+      POSTGRES_DSN: postgresql+psycopg://helix_user:helix_pass@postgres:5432/banco_staging
+      DATABASE_URL: postgres://helix_user:helix_pass@postgres:5432/banco_staging
+      # Mirror Banco's bridge/realm wiring (the publish-to-La-Piazza side).
+      LP_REALM: borrowhood-staging
+      LP_CLIENT: lapiazza_web
+      SQUARE_DB: borrowhood_staging
+      SQUARE_API_URL: http://borrowhood_staging:8000
+      SQUARE_PUBLIC_URL: https://staging.lapiazza.app
+      LP_KC_PUBLIC_URL: https://staging-banco.lapiazza.app
+      RENDER_WORKER_URL: http://render-worker:8800
+      BOTTEGA_MEDIA_DIR: /var/bottega-media
+    volumes:
+      # Independent worktree at the staging SHA, read-only.
+      - /opt/helix-banco-staging-tree/src:/app/src:ro
+      - bottega_media:/var/bottega-media
+    ports:
+      # localhost-only: Caddy fronts the public host; reachable for curl/SSH-tunnel verification.
+      - "127.0.0.1:8096:8000"
+    networks:
+      - helixnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    # Starve-proofing: a runaway staging can't OOM the box and take prod down.
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/healthz', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

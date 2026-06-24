@@ -35,6 +35,14 @@ services:
     environment:
       SERVICE_TYPE: platform
       HX_ENVIRONMENT: production   # overrides uat.env so prod reads PRD (green), not SANDBOX
+      # SEPARATE BANCO DATABASE (2026-06-24): Banco prod now owns banco_prod, fully isolated
+      # from staging (banco_staging) and from the shared helix_db. The app builds its async/sync
+      # URIs from POSTGRES_DB (src/core/config.py); the raw URL vars are overridden for hygiene.
+      POSTGRES_DB: banco_prod
+      ASYNC_DATABASE_URL: postgresql+asyncpg://helix_user:helix_pass@postgres:5432/banco_prod
+      SYNC_DATABASE_URL: postgresql+psycopg://helix_user:helix_pass@postgres:5432/banco_prod
+      POSTGRES_DSN: postgresql+psycopg://helix_user:helix_pass@postgres:5432/banco_prod
+      DATABASE_URL: postgres://helix_user:helix_pass@postgres:5432/banco_prod
       # CONSOLIDATED REALM (2026-06-18): both staging apps now share `borrowhood-staging`
       # (frontendUrl=staging-bottega.lapiazza.app), mirroring the Option-A prod target where
       # `borrowhood` is the one CUA. Marketplace (borrowhood_staging) reads the same realm from
