@@ -97,6 +97,25 @@ def _timeout_wrapper(fn):
     return wrapped
 
 
+@pytest.fixture(autouse=True)
+def _ensure_open_drawer(request):
+    """A cash sale now requires an open cash drawer (guard shipped in 9617589). Most POS
+    tests ring cash without opening one, so ensure felix has a drawer open before each test.
+    test_pos_cash_shift owns its drawer lifecycle (and tests the guard's window semantics),
+    so it's skipped here. Left open between tests on purpose — the next test reuses it."""
+    if "test_pos_cash_shift" in request.node.nodeid:
+        yield
+        return
+    s = request.getfixturevalue("session")
+    try:
+        cur = s.get(f"{POS}/shift/current").json()
+    except Exception:
+        cur = {}
+    if not cur.get("open"):
+        s.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
+    yield
+
+
 # ---- small API helpers shared across tests -------------------------------
 
 def list_products(session):

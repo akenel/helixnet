@@ -178,10 +178,15 @@ def test_shift_transactions_itemized_log(felix):
 
 
 def test_shift_transactions_scoped_to_window_and_cashier(felix):
-    """A sale rung BEFORE the shift opened must not appear in the shift log."""
-    _ring_custom_cash(felix, "99.00")          # before opening
+    """A sale rung in a PRIOR shift must not appear in a later shift's log. (Cash sales
+    require an open drawer now, so the 'before' sale lives in its own earlier shift rather
+    than being rung drawer-less.)"""
     felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
-    _ring_custom_cash(felix, "42.00")          # during
+    _ring_custom_cash(felix, "99.00")          # in the FIRST shift
+    felix.post(f"{POS}/shift/close", json={"counted_cash": "199.00"})
+
+    felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"})
+    _ring_custom_cash(felix, "42.00")          # in the SECOND (current) shift
     closed = felix.post(f"{POS}/shift/close", json={"counted_cash": "142.00"}).json()
     log = felix.get(f"{POS}/shift/{closed['shift_id']}/transactions").json()
     totals = [Decimal(t["total"]) for t in log["transactions"]]
