@@ -4,7 +4,11 @@
 const puppeteer = require('puppeteer');
 
 const SQUARE = process.env.SQUARE || 'https://staging.lapiazza.app';
-const BOTTEGA = process.env.BOTTEGA || 'https://staging-bottega.lapiazza.app';
+// The signup (Ep 1) MINTS a throwaway user, so it runs against the SANDBOX — the disposable box —
+// not a kept env. Combined with the self-clean at the end, the staging realm never accumulates
+// bots again. Square has no sandbox peer (no marketplace sandbox), so it stays on staging.
+const BOTTEGA = process.env.BOTTEGA || 'https://sandbox-banco.lapiazza.app';
+const BOT_EMAIL = `angel.kenel+reg${Date.now()}@gmail.com`;  // captured so we can self-clean it after
 const EVENT_ITEM = 'garage-moving-day-tool-sale-trapani';
 // 18+ gate test items (real age_restricted listings — NOT story items that get toggled). Pass if EITHER renders the gate.
 const AGE_ITEMS = ['10-hours-of-ux-debugging-help', 'helping-hand-with-moving-garage-space'];
@@ -29,7 +33,7 @@ const ok = (cond, name) => { if (cond) { pass++; console.log('  ✅ ' + name); }
     console.log('— Ep 1: signup -> workshop menu (the role-bug regression) —');
     await page.goto(BOTTEGA + '/get-started', { waitUntil: 'networkidle2', timeout: 30000 });
     await page.type('input[placeholder="Flora Ferrara"]', 'Regression Bot', { delay: 4 });
-    await page.type('input[placeholder="you@example.com"]', `angel.kenel+reg${Date.now()}@gmail.com`, { delay: 3 });
+    await page.type('input[placeholder="you@example.com"]', BOT_EMAIL, { delay: 3 });
     await page.type('input[placeholder="at least 6 characters"]', 'helix_pass', { delay: 4 });
     await page.type('textarea[placeholder*="cook with"]', 'Regression user, fixes motorbikes.', { delay: 2 });
     await page.evaluate(() => { [...document.querySelectorAll('input[type=checkbox]')].forEach(x => { const m = (x.getAttribute('x-model') || ''); if ((m === 'age16' || m === 'tos') && !x.checked) x.click(); }); });  // 16+ AND Terms gate (both required)
@@ -63,6 +67,17 @@ const ok = (cond, name) => { if (cond) { pass++; console.log('  ✅ ' + name); }
     fails.push('regression threw: ' + e.message);
     console.log('  ❌ regression threw: ' + e.message);
   }
+
+  // Self-clean: sweep the regression bot we just minted (+ any strays from dead runs) so the
+  // realm never piles up again. Best-effort — a cleanup hiccup must NEVER fail the prod gate.
+  try {
+    await page.goto(BOTTEGA + '/get-started', { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
+    const swept = await page.evaluate(async () => {
+      const r = await fetch('/api/v1/compute/bottega/cleanup-regression', { method: 'POST' });  // no args = sweep all bots
+      return r.ok ? await r.json() : { error: r.status };
+    });
+    console.log('  🧹 self-clean:', JSON.stringify(swept));
+  } catch (e) { console.log('  ⚠️  self-clean skipped:', e.message); }
 
   await b.close();
   console.log(`\n════ ${pass} passed, ${fails.length} failed ════`);

@@ -257,6 +257,57 @@ async def get_started(name: str = Form(...), email: str = Form(""), password: st
     return {"username": username, "slug": slug, "token": token, "profile": profile_view}
 
 
+# Hard gate: a real member can NEVER match this — 'regression-bot*' usernames are only ever
+# minted by the e2e gate (tests/e2e/dream-weavers-regression.js). See the endpoint below.
+_REGRESSION_USER_RE = re.compile(r"^regression-bot")
+
+
+@router.post("/cleanup-regression")
+async def cleanup_regression(email: str = Form(""), username: str = Form(""),
+                             db: AsyncSession = Depends(get_db_session)):
+    """PUBLIC but HARD-GUARDED self-clean for the Dream Weavers e2e gate.
+
+    The gate signs up a brand-new 'Regression Bot' every run (it MUST be fresh — it's the
+    new-signup role regression), which used to leave a KC user + Bottega rows behind forever
+    (121 piled up in staging before this). The gate runs from CI / a laptop with NO Keycloak-
+    admin access, so it self-cleans over plain HTTP by calling this at the end.
+
+    Two guards make it impossible to weaponise:
+      1. It ONLY ever deletes accounts whose username starts 'regression-bot' — no real member
+         can match, even if a caller passes someone else's email.
+      2. It refuses to run against the prod realm at all.
+    With no args it SWEEPS every regression bot in the realm (self-heals dead/past runs)."""
+    if LP_REALM == "borrowhood":   # prod realm — this test affordance must never run there
+        raise HTTPException(status_code=404, detail="not available")
+
+    deleted = []
+    async with httpx.AsyncClient(verify=False, timeout=30.0) as c:
+        tok = await _kc_admin_token(c)
+        base = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{LP_REALM}"
+        hdr = {"Authorization": f"Bearer {tok}"}
+        if username:
+            found = (await c.get(f"{base}/users", headers=hdr, params={"username": username, "exact": "true"})).json()
+        elif email:
+            found = (await c.get(f"{base}/users", headers=hdr, params={"email": email, "exact": "true"})).json()
+        else:   # sweep mode
+            found = (await c.get(f"{base}/users", headers=hdr, params={"username": "regression-bot", "max": 1000})).json()
+        for u in found:
+            un = u.get("username", "")
+            if not _REGRESSION_USER_RE.match(un):   # the hard gate — skip anything that isn't a bot
+                continue
+            await c.delete(f"{base}/users/{u['id']}", headers=hdr)
+            deleted.append(un)
+
+    db_rows = 0   # purge the Bottega rows (profile + sessions + history + tasks) for the deleted bots
+    for un in deleted:
+        for Model in (BottegaProfileModel, BottegaSessionModel, BottegaProfileHistoryModel, BottegaTaskModel):
+            for row in (await db.execute(select(Model).where(Model.username == un))).scalars().all():
+                await db.delete(row)
+                db_rows += 1
+    await db.commit()
+    return {"deleted_accounts": len(deleted), "deleted_db_rows": db_rows, "usernames": deleted}
+
+
 @router.get("/recipes")
 async def recipes():
     """The Chinese menu -- every recipe + its input spec. PUBLIC: the menu is a catalog (no
