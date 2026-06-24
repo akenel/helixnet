@@ -78,21 +78,38 @@ shop = a second group in the *same* realm. (When we upgrade past KC 24 → 26, G
 
 ---
 
-## 4. Where we are today — the honest sprawl (11 realms)
+## 4. Where we are today — the honest sprawl (TWO KC instances)
 
+> **Correction (2026-06-24):** the original single 11-row table conflated TWO separate Keycloak
+> instances. They are different machines with different data — the cleanup is per-instance. The
+> local dev KC (`keycloak.helix.local`) is what a laptop sweep touches; the Hetzner box KC holds the
+> real prod/staging logins and is gated far harder. `borrowhood` exists as a realm id on BOTH (dev
+> data locally, the 262 real users on the box).
+
+### Local dev KC (`keycloak.helix.local`) — **9 realms** after Phase 0
 | Realm | Env | Users | Fate |
 |---|---|---|---|
-| `borrowhood` | prod | 262 | **KEEP** — the canonical prod realm (CUA) |
-| `borrowhood-staging` | staging | 17 | **KEEP** — already unified ✅ |
-| `lapiazza-realm-dev` | prod(!) Bottega | 7 | **FOLD** into `borrowhood` (Phase 1, in flight) |
-| `lapiazza-realm-staging` | — | 1 | **DEAD** — orphaned (only `angel` left). FK check 2026-06-24 **CLEAN**: sub `44218e3a…e7a9` referenced by zero app rows (`borrowhood.bh_user` swept = 0; `helix_db.users` = 0; only KC's own `user_entity`/`credential` hold it, removed by the realm-delete). Backup banked → safe to delete. *(Earlier "162" was unverified; live count = 1.)* |
+| `borrowhood` | dev | 11 | dev mirror of prod realm id (the 262 live on the box, not here) |
+| `lapiazza-realm-dev` | dev Bottega | 7 | **FOLD** into the unified realm (Phase 1 template) |
 | `kc-pos-realm-dev` | dev/stg/sandbox | 9 | **FOLD** Banco/POS into the unified realm (Phase 2) |
 | `artemis` | dev | 4 | **RETIRE** → becomes group `shop:artemis` (Phase 2) |
 | `kc-camper-service-realm-dev` | dev | 10 | **FOLD** → `garage` client (Phase 3) |
 | `kc-isotto-print-realm-dev` | dev | 5 | **FOLD** → `isotto` client (Phase 3) |
 | `kc-realm-dev` | dev | 6 | **FOLD** → `helix-dev` (Phase 4) |
-| `fourtwenty` | dev | 4 | **DEAD** — unused POS demo → delete |
-| `blowup` | dev | 2 | **DEAD** — unused POS demo → delete |
+| `blowup-v2` | dev | 2 | **DEAD** — undocumented demo (BlowUp V2), sibling of deleted `blowup` → delete next (backup first) |
+| `master` | — | — | KC admin realm — **KEEP** |
+| ~~`fourtwenty`~~ | dev | 4 | ✅ **DELETED** 2026-06-24 (backup `backups/kc/fourtwenty-*.json`) |
+| ~~`blowup`~~ | dev | 2 | ✅ **DELETED** 2026-06-24 (backup banked) |
+| ~~`lapiazza-realm-staging`~~ | — | 1 | ✅ **DELETED** 2026-06-24 (FK check clean, backup banked) |
+
+### Hetzner box KC (prod/staging) — separate machine, harder gate
+| Realm | Env | Users | Fate |
+|---|---|---|---|
+| `borrowhood` | prod | 262 | **KEEP** — the canonical prod realm (CUA) |
+| `borrowhood-staging` | staging | 17 | **KEEP** — already unified ✅ |
+
+*(The box KC has not been fully inventoried here — its realm list is its own audit, gated behind a
+staging rehearsal + explicit go. Do NOT assume it mirrors the local dev list.)*
 
 **KC 24.0.4** — token-exchange GA, multi-realm JWT validation already working (`keycloak_auth.py`
 reads the `iss` claim + fetches per-realm JWKS), JIT provisioning ready. Organizations available but
@@ -103,10 +120,11 @@ must become config-driven (env → realm) before POS can join the unified realm.
 
 ## 5. Cleanup roadmap — phased, parallel/sequential, with rollback
 
-### Phase 0 — Decommission the dead (quick win, zero risk, do now)
-Export then delete `fourtwenty`, `blowup`, and (after confirming no `keycloak_id` FKs point at it)
-`lapiazza-realm-staging`. **Parallel, independent.** Drops 11 realms → 8 in an afternoon.
-*Rollback:* re-import the JSON export.
+### Phase 0 — Decommission the dead (quick win, zero risk) — ✅ MOSTLY DONE 2026-06-24
+Done on the **local dev KC**: `fourtwenty`, `blowup`, and `lapiazza-realm-staging` (FK-checked clean)
+exported + deleted via `scripts/kc_admin.py` (12 → 9 realms). **Remaining:** `blowup-v2` (the
+undocumented demo found during verification) — backup + delete it the same way. *Rollback:* re-import
+the JSON in `backups/kc/`. Box-KC dead-realm audit is a separate, harder-gated pass.
 
 ### Phase 1 — Bottega → `borrowhood` (prod) — IN FLIGHT
 Finish the Option-A cutover already live on staging: add the `lapiazza_web` client + `lapiazza-*`
