@@ -491,7 +491,7 @@ async def adopt_reference_product(
         price=price,
         cost=ref.cost,
         category=(ref.category or "").strip() or "On the fly",
-        image_url=ref.image_url,    # P1: keep the reference URL; copy-into-storage is a follow-up
+        image_url=ref.image_url,    # provisional — copied into our storage below (best-effort)
         supplier_name=ref.supplier,
         supplier_sku=ref.supplier_sku,
         is_active=True,
@@ -514,6 +514,10 @@ async def adopt_reference_product(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Could not adopt — a conflicting product already exists.")
     await db.refresh(new_product)
+    # BL-97c: copy the supplier image into our own storage so we don't hotlink a URL that may
+    # rot. Best-effort — on any failure the product keeps the external URL set above.
+    if ref.image_url:
+        await _copy_external_image_to_storage(db, new_product, ref.image_url)
     logger.info(f"Adopted reference '{ref.title}' ({ref.supplier}) → product {sku} "
                 f"by {current_user['username']}")
     return new_product
@@ -613,6 +617,56 @@ def _process_image_upload(raw: bytes, content_type: str) -> bytes:
     except ImportError:
         logger.warning("Pillow not in image — storing product photo as-is (no resize).")
         return raw
+
+
+async def _copy_external_image_to_storage(db: AsyncSession, product, source_url: str):
+    """Best-effort: pull an external image (e.g. a supplier's reference URL) into MinIO as a
+    gallery photo + cover, so we own the bytes instead of hotlinking a URL that may rot. (BL-97c)
+
+    Returns the served URL on success, else None (the caller keeps the external URL). NEVER
+    raises — adopting a reference item must not fail because an image couldn't be copied."""
+    import io as _io
+    import asyncio as _asyncio
+
+    url = (source_url or "").strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        return None
+    # Already one of ours? Nothing to copy.
+    if "/api/v1/pos/products/" in url and "/images/" in url:
+        return None
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as c:
+            resp = await c.get(url)
+        if resp.status_code != 200 or not resp.content:
+            return None
+        out_bytes = _process_image_upload(resp.content, resp.headers.get("content-type", "image/jpeg"))
+    except HTTPException:
+        return None   # not a usable image — keep the external URL
+    except Exception as e:
+        logger.warning(f"Reference image fetch failed ({url[:80]}): {e}")
+        return None
+    try:
+        from src.services.minio_service import minio_service
+        image = ProductImageModel(product_id=product.id, sort_order=0)
+        db.add(image)
+        await db.flush()
+        key = _gallery_image_key(product.id, image.id)
+        loop = _asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None, minio_service.client.put_object,
+            minio_service.bucket_name, key, _io.BytesIO(out_bytes), len(out_bytes), "image/jpeg",
+        )
+        serve = _image_serve_url(product.id, image.id)
+        product.image_url = serve
+        product.updated_at = datetime.now(timezone.utc)
+        await db.commit()
+        logger.info(f"Copied reference image into storage for {product.sku} ({len(out_bytes)} bytes)")
+        return serve
+    except Exception as e:
+        await db.rollback()
+        logger.warning(f"Reference image store failed for {product.sku}: {e}")
+        return None
 
 
 @router.post("/products/{product_id}/images")

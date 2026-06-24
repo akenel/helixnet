@@ -93,6 +93,9 @@ def test_adopt_creates_live_product_with_canonical_data(session):
     assert p["description"].startswith("4-piece alloy")     # description copied
     assert p["barcode"] == BC_GRINDER                       # scanned code bound as primary
     assert Decimal(str(p["price"])) == Decimal("16.50")     # cashier's price
+    # BL-97c image-copy is best-effort: this seed's URL is unreachable (example.test), so it
+    # falls back to keeping the external URL — proving adopt never breaks when a copy fails.
+    # The success path (image pulled into MinIO → /images/ URL) is verified on staging w/ picsum.
     assert p["image_url"] == "https://example.test/grinder.jpg"
 
     # And it now resolves on a real scan → "scan once, known forever".
