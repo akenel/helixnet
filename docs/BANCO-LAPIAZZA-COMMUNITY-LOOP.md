@@ -1,10 +1,16 @@
 # Banco ⇄ La Piazza — The Community Loop
 
 *Written 2026-06-24. The LOCKED strategy for how the Banco POS (the till) and La Piazza (the
-community square) connect. Stop re-deriving this — decisions here are settled; only the build
-order is open. Supersedes the "build a Community Catalog inside Banco" idea in
-`BANCO-CRM-STRATEGY.md` Phase 4 (we reuse La Piazza instead). Pairs with
-`BANCO-ARTEMIS-PREMIUM-CUTOVER-PLAN.md` (the publish bridge) + `BANCO-CRM-STRATEGY.md` (loyalty).*
+community square) connect. Stop re-deriving this — decisions here are settled. Supersedes the
+"build a Community Catalog inside Banco" idea in `BANCO-CRM-STRATEGY.md` Phase 4 (we reuse La
+Piazza). Pairs with `BANCO-ARTEMIS-PREMIUM-CUTOVER-PLAN.md` (the publish bridge) +
+`BANCO-CRM-STRATEGY.md` (loyalty).*
+
+> **⚡ SIMPLIFIED 2026-06-24 (Angel): the connection is a ONE-WAY FUNNEL.** The receipt QR just opens
+> the door INTO La Piazza; **nothing flows back to HelixPOS.** Tying a La Piazza review back to a POS
+> customer for points = the single most complex thing in the whole plan (cross-system identity), and
+> it's CUT. The till does loyalty internally (already built); La Piazza is the community; the QR is a
+> one-way door. The pull to engage isn't points — it's **belonging.** This kills Wires 3 & 4 below.
 
 ---
 
@@ -41,16 +47,15 @@ inside the POS (which would make the POS heavier than it should ever be).
 ```
 Felix HANDPICKS a few special items
    → pushed to La Piazza as a DISPLAY listing (showcase — discuss, not buy)
-   → a buyer at the till gets a receipt with a QR
-   → scans it → "Join La Piazza to comment on this"
-   → signs up (email confirm) → comments / reviews / upvotes
-   → earns CREDITS → redeems them at the till (next purchase)
+   → a buyer at the till gets a receipt with ONE "join La Piazza" QR
+   → scans it → lands on La Piazza → signs up → comments / reviews / gets involved
    → and while they're there: "wait… I could put my edible cookies here. I could teach growing.
       Maybe this is the community for me." → becomes a member → tells Sally + Larry.
 ```
 
-The receipt QR is the seed. The community is the soil. Commerce funds the community; the community
-feeds commerce.
+The receipt QR is the seed; the community is the soil. **It's a one-way funnel** — the buyer walks
+from the till into the square and stays. Loyalty/points live in the till (internal); they do NOT
+ride back from La Piazza. Keep it that way — the cross-system link is where it gets ugly.
 
 ---
 
@@ -96,31 +101,29 @@ content + a flywheel. That's the strategic core, not an afterthought.
 
 ---
 
-## 7. The FOUR WIRES (all that's new)
+## 7. The wires — only TWO survive the one-way-funnel simplification
 
 1. **Showcase listing type** *(La Piazza side)* — a display listing with **no Buy button** ("discuss /
    buy in-store / message the shop"). Small one-time BorrowHood addition (like the health-wellness
-   category fix). The Banco publish then maps handpicked items to `showcase` instead of `sell`.
+   category fix). The Banco publish then maps handpicked items to `showcase` instead of `sell`. *(Open.)*
 
-2. **Receipt QR → join-La-Piazza on-ramp** — a QR on the receipt that opens La Piazza with a "join to
-   comment on this" hook. Uses a **Banco-owned permalink** (`banco.lapiazza.app/p/{product_id}`, R3)
-   so the code is known at sale time regardless of publish state, and 302s to the listing (or a "this
-   shop on La Piazza" / join page if the item isn't showcased).
+2. **✅ BUILT — Receipt QR → join La Piazza** (`BL-93`, commit on `main`). A **single** "Come find us on
+   La Piazza" QR on every receipt (NOT per-product — most items never go to LP). It encodes a Banco-owned
+   permalink **`{bancohost}/join`** that 302s to La Piazza's door. One-way funnel, no tie-back. Also
+   shipped: a per-product permalink **`{bancohost}/p/{product_id}`** (302 → the listing if showcased,
+   else La Piazza's door) for use on the Locandina / product promos — not on the receipt.
 
-3. **Identity link** *(Banco customer ↔ La Piazza member)* — when a buyer joins La Piazza from the
-   receipt QR, tie that new member to the Banco customer (DB row) the sale was rung under. The one
-   real cross-system integration; it's the North Star (`HELIX-IDENTITY-ARCHITECTURE.md`) paying off.
-   Note: a Banco member is a DB row (no login); becoming a La Piazza member is the optional login
-   upgrade — the link is what makes "review here → credit there" possible.
+3. **~~Identity link~~ — CUT** *(Banco customer ↔ La Piazza member)*. This was the cross-system join that
+   would let "review on La Piazza → points at the till" work. **Dropped 2026-06-24** — too complex, and
+   the one-way funnel doesn't need it. (If we ever want the points-back loop, this is where it starts —
+   it stands on `HELIX-IDENTITY-ARCHITECTURE.md`. Not now.)
 
-4. **Credit event** *(La Piazza contribution → Banco wallet)* — a La Piazza review/upvote/approved
-   contribution emits an event that awards credits to the linked Banco customer's ledger (the value
-   ladder + anti-junk gates are already settled in `BANCO-CRM-STRATEGY.md`: pay for value not volume,
-   Verified-Buyer-gated, daily caps, staff/trusted-CRACK approval). Depends on wire 3.
+4. **~~Credit event~~ — CUT** *(La Piazza contribution → Banco wallet)*. Depended on wire 3. Dropped with it.
+   La Piazza contributions earn status/credits **inside La Piazza**; the till's loyalty stays inside the
+   till. No currency crosses the wire.
 
-**Dependencies:** wire 1 is independent. Wires 2 + 3 are the on-ramp pair (the QR establishes the
-link). Wire 4 needs wire 3 (identity) first. So the natural order is **1 → 2+3 → 4**, but the build
-order is the open question to decide next.
+**So the live plan is just wire 1 (showcase type, open) — wire 2 is done.** The whole "two ladders, one
+currency" *cross-system* loop is parked indefinitely; each system keeps its own ladder.
 
 ---
 

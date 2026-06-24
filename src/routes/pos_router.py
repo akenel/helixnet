@@ -3406,6 +3406,17 @@ async def banco_permalink(product_id: UUID, db: AsyncSession = Depends(get_db_se
     return RedirectResponse(target, status_code=302)
 
 
+@html_router.get("/join", name="banco_join_lapiazza")
+async def banco_join_lapiazza():
+    """Banco-owned 'join La Piazza' permalink — the single QR printed on every receipt (Wire 2).
+    A ONE-WAY funnel: it 302s the buyer to La Piazza so they discover + join the community. By
+    design there is NO tie-back to HelixPOS — the till does loyalty internally, La Piazza is the
+    community, and this QR is just the door between them. Banco-owned so the destination can change
+    without reprinting receipts. PUBLIC (redirect, no data)."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(get_settings().SQUARE_PUBLIC_URL.rstrip("/"), status_code=302)
+
+
 @html_router.get("/pos/products", response_class=HTMLResponse, name="pos_products")
 async def pos_products(request: Request):
     """
