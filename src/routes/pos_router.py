@@ -1742,6 +1742,29 @@ async def create_transaction(
     count = count_result.scalar() or 0
     transaction_number = f"TXN-{today}-{count + 1:04d}"
 
+    # Ensure the cashier has a users row — transactions.cashier_id FK-references users.id
+    # (BL-83: cashier_id == the Keycloak sub). Seeded + Staff-tab-provisioned cashiers already
+    # have one; this self-heals anyone who logged in but was never provisioned on THIS env
+    # (otherwise the INSERT 500s on a cashier_id foreign-key violation). Idempotent + safe.
+    _sub = current_user.get('sub')
+    if _sub:
+        try:
+            _cid = UUID(str(_sub))
+        except (ValueError, TypeError):
+            _cid = None
+        if _cid is not None and await db.get(UserModel, _cid) is None:
+            _uname = (current_user.get('preferred_username') or str(_cid)[:8]).strip().lower()
+            _clash = (await db.execute(
+                select(UserModel).where(func.lower(UserModel.username) == _uname)
+            )).scalar_one_or_none()
+            if _clash:  # username taken by a different id — keep the FK target, vary the name
+                _uname = f"{_uname}-{str(_cid)[:8]}"
+            db.add(UserModel(
+                id=_cid, keycloak_id=_cid, username=_uname, email=f"{_uname}@pos.local",
+                first_name=current_user.get('given_name'), last_name=current_user.get('family_name'),
+            ))
+            await db.flush()
+
     new_transaction = TransactionModel(
         transaction_number=transaction_number,
         cashier_id=current_user.get('sub', current_user.get('preferred_username', 'unknown')),
