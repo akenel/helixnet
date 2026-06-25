@@ -49,6 +49,9 @@ def class_is_age_restricted(cls: str | None) -> bool:
 _AGE_NEG = re.compile(r"tabakfrei|tobacco.?free|nikotinfrei|nicotine.?free|ohne\s+nikotin|0\s*mg|alkoholfrei|alcohol.?free|kräuter.?mischung|herbal", re.I)
 _TOBACCO = re.compile(r"tabak|tobacco|zigar|cigaret|nikotin|nicotin\b|\bsnus\b", re.I)
 _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liqueur|likör|absinth|\bbier\b|\bwein\b", re.I)
+# Looks like tobacco/alcohol but is an ACCESSORY (a bag / holder / case), not the 18+ substance —
+# so it never gets the age gate. (Kavatza Tabaktasche, Zigarettenhalter, Tabakbefeuchter…)
+_SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|\bhalter\b|befeuchter|\betui\b|humidor|aufbewahr", re.I)
 
 # Ordered keyword -> category; first match wins. CBD checked before creams so "CBD oil" lands in CBD.
 _CATEGORY_RULES = [
@@ -62,8 +65,8 @@ _CATEGORY_RULES = [
     (re.compile(r"creme|cream|salbe|\bbalm|lotion|topical|massage", re.I),        "Creams & Topicals"),
     (re.compile(r"edible|gummi|schoko|chocolate|cookie|keks|\btee\b|\btea\b|honig|honey|lutsch|sirup", re.I), "Edibles"),
     (re.compile(r"\bgrow|dünger|substrat|\berde\b|\bseed|\bsamen|\bzelt|grow.?lamp|nährstoff", re.I), "Grow Supplies"),
-    (re.compile(r"shirt|hoodie|\bcap\b|mütze|sticker|poster|tasche|\bbag\b|patch|pin\b", re.I), "Merch"),
-    (re.compile(r"tray|ashtray|aschenbecher|storage|\bbox\b|\betui|stash|waage|scale|brush|reinig", re.I), "Accessories"),
+    (re.compile(r"shirt|hoodie|\bcap\b|mütze|sticker|poster|patch|\bpin\b", re.I),     "Merch"),
+    (re.compile(r"tray|ashtray|aschenbecher|storage|\bbox\b|\betui|stash|waage|scale|brush|reinig|tasche|portemonnaie|\bhalter\b|befeuchter|humidor", re.I), "Accessories"),
 ]
 
 # FourTwenty's own clean buckets we trust as-is (only "Accessories"/"Themed"/"Promotions" are the dump).
@@ -80,9 +83,9 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
 
     # CLASS first (it drives the age flag).
     cls = DEFAULT_CLASS
-    if _TOBACCO.search(t) and not _AGE_NEG.search(t):
+    if _TOBACCO.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
-    elif _ALCOHOL.search(t) and not _AGE_NEG.search(t):
+    elif _ALCOHOL.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "alcohol"
     elif ref_category == "CBD" or re.search(r"cbd|cannabidiol", t, re.I):
         cls = "cbd_hemp"
