@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banco — Pain → Swat Battle Card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4 portrait; margin: 9mm 10mm; }
+  html, body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; background: #fff; font-size: 9.2pt; }
+  .hdr { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2.5px solid #C0392B; padding-bottom: 4px; margin-bottom: 6px; }
+  .hdr h1 { font-size: 17pt; font-weight: 800; }
+  .hdr h1 b { color: #C0392B; }
+  .hdr .sub { font-size: 8pt; color: #666; }
+  .hdr .right { text-align: right; font-size: 8pt; color: #444; }
+  .lead { background: #fff4e6; border-left: 3px solid #e08a2b; padding: 5px 8px; font-size: 8.6pt; margin-bottom: 7px; border-radius: 3px; }
+  .lead b { color: #C0392B; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #C0392B; color: #fff; font-size: 7.6pt; text-transform: uppercase; letter-spacing: .4px; padding: 4px 5px; text-align: left; }
+  td { border-bottom: 1px solid #e7e7e7; padding: 4px 5px; vertical-align: top; font-size: 8.6pt; line-height: 1.28; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .pain { font-weight: 700; }
+  .pain .quote { font-weight: 400; font-style: italic; color: #555; display: block; font-size: 8pt; }
+  .score { font-weight: 800; text-align: center; white-space: nowrap; }
+  .swat b { color: #1a1a1a; }
+  .pill { display: inline-block; font-size: 6.8pt; font-weight: 700; padding: 1px 5px; border-radius: 8px; color: #fff; vertical-align: middle; }
+  .p-built { background: #2e9e5b; } .p-now { background: #3a7bd5; } .p-design { background: #e08a2b; } .p-partial { background: #7b8494; }
+  .colnum { width: 14px; color: #bbb; font-weight: 700; text-align: center; }
+  .colsc { width: 34px; }
+  .heat10 { color: #C0392B; } .heat9 { color: #C0392B; } .heat8 { color: #d2691e; } .heat7 { color: #c8901a; } .heat6 { color: #8a9a1a; } .heat5 { color: #6b8e23; }
+  .bonus { margin-top: 7px; border: 1px dashed #C0392B; border-radius: 5px; padding: 5px 8px; font-size: 8.2pt; }
+  .bonus b { color: #C0392B; }
+  .bonus .row { margin: 2px 0; }
+  .foot { margin-top: 7px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 4px; font-size: 7.6pt; color: #777; }
+  .foot .tag { font-weight: 800; color: #C0392B; letter-spacing: 1px; }
+  .legend { font-size: 7pt; color: #888; }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <div>
+      <h1>Ban<b>co</b> — Pain → Swat <b>Battle Card</b></h1>
+      <div class="sub">Swiss head-shop / CBD ERP · what hurts them → what we hit back with · the walk-in cheat sheet</div>
+    </div>
+    <div class="right">😖 = how much it hurts /10<br>🎯 = how well we answer it /10</div>
+  </div>
+
+  <div class="lead">
+    <b>LEAD WITH #3, #4, #7</b> — high pain + we crush them today (the live demo). <b>Sell the VISION on #1</b>
+    (biggest pain &amp; moat, designed not shipped — don't over-promise). <b>#2 (banking) you can't fix</b> — but
+    "Swiss-native, cash-bulletproof, audit-ready" is exactly what a debanked shop needs to hear.
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="colnum">#</th><th>Pain (their words)</th><th class="colsc">😖</th>
+        <th>Swat — module · status</th><th class="colsc">🎯</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="colnum">1</td>
+        <td class="pain">Compliance &amp; traceability<span class="quote">"One bad lab number and I'm shut down." 1% THC, lab certs, lot/batch, audits</span></td>
+        <td class="score heat10">10</td>
+        <td class="swat">Seed-to-sale (<b>farm→batch→lab_test→trace_event</b>) + <b>lab_report vision</b> (snap a cert → THC%/lot/lab№) <span class="pill p-design">DESIGNED</span></td>
+        <td class="score">4→9</td>
+      </tr>
+      <tr>
+        <td class="colnum">2</td>
+        <td class="pain">Banking &amp; payments <span style="color:#e08a2b">⚠ unverified for CH</span><span class="quote">"My bank keeps closing my account." debanking — real abroad, NOT yet confirmed in CH; ask each shop</span></td>
+        <td class="score heat9">9?</td>
+        <td class="swat">Not a bank — we harden the forced-cash life: <b>per-cashier drawer</b>, <b>Swiss QR-bill</b>, audit-ready books <span class="pill p-partial">PARTIAL</span></td>
+        <td class="score">5</td>
+      </tr>
+      <tr>
+        <td class="colnum">3</td>
+        <td class="pain">Unmarked / loose stock<span class="quote">"Half my goods have no barcode and never will."</span></td>
+        <td class="score heat8">8</td>
+        <td class="swat"><b>Sell-to-seed</b> catalog + <b>camera scan</b> + <b>photo→product AI</b> (Snap &amp; fill) <span class="pill p-built">BUILT</span></td>
+        <td class="score">9</td>
+      </tr>
+      <tr>
+        <td class="colnum">4</td>
+        <td class="pain">Swiss VAT minefield<span class="quote">dine-in 8.1 / takeaway 2.6, ≥20-seat cap, tobacco/alcohol always 8.1</span></td>
+        <td class="score heat8">8</td>
+        <td class="swat"><b>Per-line VAT split + Z-report</b> — no US POS does it <span class="pill p-built">BUILT</span></td>
+        <td class="score">9</td>
+      </tr>
+      <tr>
+        <td class="colnum">5</td>
+        <td class="pain">Can't advertise<span class="quote">smokable CBD is under TabPG (law, Oct 2024) = tobacco ad rules ✓verified; + Google/Meta bans</span></td>
+        <td class="score heat8">8</td>
+        <td class="swat"><b>La Piazza</b> (owned community channel, not paid ads) + <b>print QR → reviews</b> + member KB <span class="pill p-built">BUILT</span></td>
+        <td class="score">8</td>
+      </tr>
+      <tr>
+        <td class="colnum">6</td>
+        <td class="pain">Thin margins<span class="quote">✓verified: flower €10/g→CHF 2.50/g in months (2017), now a commodity</span></td>
+        <td class="score heat7">7</td>
+        <td class="swat">Partial: <b>loyalty/CRM</b> + attach/upsell + <b>one Swiss stack</b> vs 4 foreign subs <span class="pill p-partial">PARTIAL</span></td>
+        <td class="score">5</td>
+      </tr>
+      <tr>
+        <td class="colnum">7</td>
+        <td class="pain">Staff &amp; till accountability<span class="quote">"Who's short in the drawer, who worked when."</span></td>
+        <td class="score heat6">6</td>
+        <td class="swat"><b>HR</b> (system of record) + <b>per-cashier drawer</b> + <b>My Day</b> timesheet <span class="pill p-built">BUILT</span></td>
+        <td class="score">8</td>
+      </tr>
+      <tr>
+        <td class="colnum">8</td>
+        <td class="pain">Age-restricted sales<span class="quote">"Selling 18+ goods without getting burned."</span></td>
+        <td class="score heat6">6</td>
+        <td class="swat"><b>18+ flagging at POS</b> (product_class) — a TabPG legal duty ✓ <span class="pill p-now">SHIPPING NOW</span></td>
+        <td class="score">8</td>
+      </tr>
+      <tr>
+        <td class="colnum">9</td>
+        <td class="pain">Reorder / stockouts<span class="quote">"What do I restock, and when?"</span></td>
+        <td class="score heat5">5</td>
+        <td class="swat"><b>Reorder</b> (stock ≤ min) + supplier fields + reference catalog <span class="pill p-built">BUILT</span></td>
+        <td class="score">6</td>
+      </tr>
+      <tr>
+        <td class="colnum">10</td>
+        <td class="pain">Isolation<span class="quote">"I figure out compliance &amp; sourcing alone."</span></td>
+        <td class="score heat5">5</td>
+        <td class="swat"><b>KB + La Piazza community</b> (stickers → members → Swiss CBD knowledge base) <span class="pill p-built">BUILT</span></td>
+        <td class="score">7</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="bonus">
+    <div class="row"><b>🎁 BONUS — the pains not fully felt yet:</b></div>
+    <div class="row"><b>B1</b> "Adult-use is coming and I won't be ready." → seed-to-sale readiness = a story nobody else tells.</div>
+    <div class="row"><b>B2</b> "My tools are all USD &amp; English." → one Swiss-native stack (franc, law, DE/FR/IT). The meta-pain.</div>
+    <div class="row"><b>B3</b> "My webshop and till are two worlds." → Artemis Premium bridge (Banco item → La Piazza listing), ~80% wired.</div>
+    <div class="row"><b>B4</b> "Cash + small high-value product = invisible shrink." → drawer variance + audit trail.</div>
+  </div>
+
+  <div class="foot">
+    <span class="legend">Status: <b style="color:#2e9e5b">BUILT</b> = demo today · <b style="color:#3a7bd5">SHIPPING NOW</b> · <b style="color:#e08a2b">DESIGNED</b> = vision · <b style="color:#7b8494">PARTIAL</b></span>
+    <span class="tag">ONE SWISS STACK, NOT FOUR FOREIGN APPS.</span>
+  </div>
+</body>
+</html>
