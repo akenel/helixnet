@@ -51,7 +51,9 @@ _TOBACCO = re.compile(r"tabak|tobacco|zigar|cigaret|nikotin|nicotin\b|\bsnus\b",
 _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liqueur|likör|absinth|\bbier\b|\bwein\b", re.I)
 # Looks like tobacco/alcohol but is an ACCESSORY (a bag / holder / case), not the 18+ substance —
 # so it never gets the age gate. (Kavatza Tabaktasche, Zigarettenhalter, Tabakbefeuchter…)
-_SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|\bhalter\b|befeuchter|\betui\b|humidor|aufbewahr", re.I)
+_SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|halter|befeuchter|\betui\b|humidor|aufbewahr", re.I)
+# Rum / whisky etc. as a FLAVOUR on papers/wraps/blunts — not alcohol. (Juicy Jay's Rum papers…)
+_FLAVOUR_PAPER = re.compile(r"paper|\bwrap|blunt|blättchen|\bcone|juicy\s*jay", re.I)
 
 # Ordered keyword -> category; first match wins. CBD checked before creams so "CBD oil" lands in CBD.
 _CATEGORY_RULES = [
@@ -85,7 +87,7 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     cls = DEFAULT_CLASS
     if _TOBACCO.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
-    elif _ALCOHOL.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t):
+    elif _ALCOHOL.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
     elif ref_category == "CBD" or re.search(r"cbd|cannabidiol", t, re.I):
         cls = "cbd_hemp"
