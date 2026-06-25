@@ -102,7 +102,15 @@ class ProductModel(Base):
         Boolean,
         default=False,
         nullable=False,
-        comment="Requires 18+ ID verification (CBD products)"
+        comment="Requires 18+ ID verification (DERIVED from product_class on save; CRUD-overridable)"
+    )
+    # BL-96: behaviour CLASS (standard | tobacco_nicotine | alcohol | cbd_hemp | cafe_food).
+    # Drives the age gate + VAT; see src/services/catalog_taxonomy.py for the rules.
+    product_class: Mapped[str] = mapped_column(
+        String(40),
+        default="standard",
+        nullable=False,
+        comment="Behaviour class — drives 18+ gate + VAT (catalog_taxonomy.PRODUCT_CLASSES)"
     )
 
     # Vending Machine Compatibility

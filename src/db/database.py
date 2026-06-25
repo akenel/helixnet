@@ -149,6 +149,13 @@ _ADDITIVE_COLUMNS: list[str] = [
     # table lacked (verified by diffing the model against information_schema).
     "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS is_team_order BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE isotto_orders ADD COLUMN IF NOT EXISTS team_name VARCHAR(200)",
+    # BL-96 taxonomy (2026-06-25): product CLASS (behaviour — age/VAT/compliance) on products,
+    # and the reclassify enricher's mapping on the reference catalogue (our skeleton category +
+    # class + 18+ flag) so adopting a reference item carries category, class AND the age gate.
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_class VARCHAR(40) NOT NULL DEFAULT 'standard'",
+    "ALTER TABLE reference_products ADD COLUMN IF NOT EXISTS our_category VARCHAR(60)",
+    "ALTER TABLE reference_products ADD COLUMN IF NOT EXISTS our_class VARCHAR(40)",
+    "ALTER TABLE reference_products ADD COLUMN IF NOT EXISTS age_restricted BOOLEAN NOT NULL DEFAULT FALSE",
     # Banco store profile (2026-06-22): hours + social links on store_settings.
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS opening_hours VARCHAR(500)",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS facebook_url VARCHAR(255)",

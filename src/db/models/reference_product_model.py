@@ -18,7 +18,7 @@ counter. Fed by periodic CSV dumps from the supplier.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, DateTime, Numeric, Text, UniqueConstraint, Index
+from sqlalchemy import String, DateTime, Numeric, Text, UniqueConstraint, Index, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -64,6 +64,12 @@ class ReferenceProductModel(Base):
     cost: Mapped[float | None] = mapped_column(
         Numeric(10, 2), nullable=True, comment="Supplier buy price, if present",
     )
+
+    # BL-96: our skeleton mapping, set by scripts/reclassify_reference.py (re-runnable). Adopt
+    # copies these onto the new product so a received item lands categorised + classed + age-gated.
+    our_category: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    our_class: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    age_restricted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # The original CSV row, kept verbatim for audit / future fields.
     raw: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
