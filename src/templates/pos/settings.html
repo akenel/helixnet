@@ -170,6 +170,13 @@
                                         x-text="e._saving ? 'Saving…' : ((e._pw && e._pw.trim()) ? '🔑 Create sign-in' : (e.is_linked ? '💾 Update' : '🔗 Link'))"></button>
                                 <button x-show="e.is_linked" @click="unlinkCashier(e)" :disabled="e._saving" class="btn-secondary text-lg">Unlink</button>
                             </div>
+                            <div x-show="e.is_linked" class="mt-2">
+                                <button @click="emailSetup(e)" :disabled="e._saving"
+                                        class="text-base px-4 py-3 rounded-lg font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+                                        title="Email this person a link so they pick their own password">
+                                    📧 Email them a setup link instead</button>
+                                <span class="text-sm text-gray-400 ml-2">(needs a real email on their card)</span>
+                            </div>
                             <p x-show="e._msg" class="text-base mt-2" :class="e._ok ? 'text-green-600' : 'text-red-600'" x-text="e._msg"></p>
 
                             <!-- edit details / delete -->
@@ -303,6 +310,19 @@
                     await API.post('/api/v1/hr/employees/' + e.id + '/link', { username: '' });
                     e.is_linked = false; e.login_username = null; e._draft = ''; e._ok = true; e._msg = 'Unlinked.';
                 } catch (err) { e._ok = false; e._msg = err.message || 'Could not unlink.'; }
+                e._saving = false;
+            },
+
+            // Self-set password: email the hire a Keycloak link so THEY pick their password.
+            // Needs SMTP on the realm (run scripts/configure_kc_smtp.py once) + a real email.
+            async emailSetup(e) {
+                e._saving = true; e._msg = '';
+                try {
+                    const res = await API.post('/api/v1/hr/employees/' + e.id + '/email-setup',
+                                               { email: (e.email || '').trim() });
+                    e._ok = true; e._msg = res.message || 'Setup link sent.';
+                    showToast('📧 Link sent', 'success');
+                } catch (err) { e._ok = false; e._msg = err.message || 'Could not send the setup link.'; }
                 e._saving = false;
             },
 

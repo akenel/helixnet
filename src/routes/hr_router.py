@@ -855,6 +855,74 @@ async def provision_login(
             "message": f"Sign-in ready — {username} can log in now."}
 
 
+@router.post("/employees/{employee_id}/email-setup")
+async def email_login_setup(
+    employee_id: UUID,
+    payload: dict = Body(default={}),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Self-set password path: email the employee a Keycloak link to set their OWN password
+    (and verify their email), instead of Felix inventing one. The counter-password path
+    (provision-login) still works offline — this is the upgrade for when you'd rather the
+    new hire choose their password from their inbox.
+
+    Needs: (1) the employee already has a sign-in (provision-login first), (2) a REAL email
+    on file, and (3) SMTP configured on the realm. If SMTP isn't set up yet we say so plainly
+    and tell Felix to use the password field — we never throw a raw 500 in his face.
+
+    Optional payload: {"email": "real@address"} to set/correct the address first."""
+    employee = (await db.execute(
+        select(EmployeeModel).where(EmployeeModel.id == employee_id)
+    )).scalar_one_or_none()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    if not employee.user_id:
+        raise HTTPException(status_code=409,
+            detail="Create a sign-in first (set a username), then you can email a setup link.")
+
+    # A real, deliverable email is required — our default @pos.local addresses go nowhere.
+    new_email = (payload.get("email") or employee.email or "").strip().lower()
+    if not new_email or new_email.endswith("@pos.local") or "@" not in new_email:
+        raise HTTPException(status_code=422,
+            detail="Add a real email address for this person first (the inbox the link goes to).")
+
+    uid = str(employee.user_id)
+    try:
+        async with httpx.AsyncClient(timeout=20) as c:
+            kc = await _kc_pos_admin(c)
+            h, base = kc["h"], kc["base"]
+            # Set the real email (and mark it unverified so the link verifies it too).
+            await c.put(f"{base}/users/{uid}", headers=h,
+                        json={"email": new_email, "emailVerified": False})
+            # Fire the self-service email: set password + verify email. lifespan = 12h.
+            r = await c.put(
+                f"{base}/users/{uid}/execute-actions-email",
+                headers=h, params={"lifespan": 43200},
+                json=["UPDATE_PASSWORD", "VERIFY_EMAIL"],
+            )
+            r.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        # The classic cause is "SMTP not configured on the realm" → KC 500 on send.
+        logger.warning("email-setup send failed (%s) — likely SMTP not configured", e)
+        raise HTTPException(status_code=503, detail=(
+            "Couldn't send the email — this shop's login server has no email (SMTP) set up yet. "
+            "Use the password field to set one directly for now."))
+    except httpx.HTTPError as e:
+        logger.error("email-setup Keycloak error: %s", e)
+        raise HTTPException(status_code=502, detail="Could not reach the login server. Try again.")
+
+    # Mirror the corrected email onto the card so it's not lost.
+    if employee.email != new_email:
+        employee.email = new_email
+        await db.commit()
+
+    logger.info("Email setup link sent to %s for %s %s",
+                new_email, employee.first_name, employee.last_name)
+    return {"id": str(employee.id), "email": new_email,
+            "message": f"Setup link sent to {new_email} — they pick their own password from their inbox."}
+
+
 def _employee_card(e: EmployeeModel, login_username: Optional[str] = None) -> dict:
     """Full employee card payload (the 'who's who')."""
     return {
