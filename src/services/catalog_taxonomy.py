@@ -24,12 +24,18 @@ CATEGORIES = [
 
 # --- CLASSES (behaviour — controlled; each drives age / VAT / compliance) ---------------------
 # vat: "standard" = 8.1% · "reduced" = 2.6% · "cafe_split" = dine-in 8.1% / takeaway 2.6% (asked at sale)
+# promo_restricted: True = promotional discounts + loyalty-credit redemption are restricted.
+#   * Tobacco / Nicotine — sales-promotion restrictions (Tabakproduktegesetz + cantonal rules).
+#   * Alcohol — no below-cost / loss-leader / giveaway promos (Alkoholgesetz).
+#   CBD / Hemp / standard / café are NOT promo-regulated — discount freely.
+#   (Flag only — enforcement (warn-on-discount + block credit redemption) lands in Phase F.
+#    Exact scope still needs Felix's Treuhänder/lawyer sign-off.)
 PRODUCT_CLASSES = {
-    "standard":         {"label": "Standard goods",      "age_restricted": False, "vat": "standard",   "compliance": None},
-    "tobacco_nicotine": {"label": "Tobacco / Nicotine",  "age_restricted": True,  "vat": "standard",   "compliance": None},
-    "alcohol":          {"label": "Alcohol",             "age_restricted": True,  "vat": "standard",   "compliance": None},
-    "cbd_hemp":         {"label": "CBD / Hemp",          "age_restricted": False, "vat": "standard",   "compliance": "thc_report"},
-    "cafe_food":        {"label": "Café food & drink",   "age_restricted": False, "vat": "cafe_split", "compliance": None},
+    "standard":         {"label": "Standard goods",      "age_restricted": False, "vat": "standard",   "compliance": None,         "promo_restricted": False},
+    "tobacco_nicotine": {"label": "Tobacco / Nicotine",  "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
+    "alcohol":          {"label": "Alcohol",             "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
+    "cbd_hemp":         {"label": "CBD / Hemp",          "age_restricted": False, "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},
+    "cafe_food":        {"label": "Café food & drink",   "age_restricted": False, "vat": "cafe_split", "compliance": None,         "promo_restricted": False},
 }
 DEFAULT_CLASS = "standard"
 
@@ -41,6 +47,11 @@ def class_meta(cls: str | None) -> dict:
 def class_is_age_restricted(cls: str | None) -> bool:
     """Single rule: a product is 18+ iff its class says so (the till + receiving read this)."""
     return class_meta(cls)["age_restricted"]
+
+
+def class_promo_restricted(cls: str | None) -> bool:
+    """True iff promotional discounts / loyalty-credit redemption are restricted (tobacco, alcohol)."""
+    return class_meta(cls).get("promo_restricted", False)
 
 
 # --- CLASSIFIER: (title + FourTwenty category) -> (our_category, our_class, age_restricted) ---

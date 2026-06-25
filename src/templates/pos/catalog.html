@@ -77,6 +77,7 @@
                             <div class="flex items-center gap-2">
                                 <p class="font-semibold text-gray-900 truncate" x-text="p.name"></p>
                                 <span x-show="p.is_age_restricted" class="flex-none inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5">🔞 18+</span>
+                                <span x-show="p.promo_restricted" class="flex-none inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5">🚫 no promo</span>
                             </div>
                             <p class="text-sm text-gray-600 truncate">
                                 SKU: <span x-text="p.sku"></span>
@@ -174,6 +175,8 @@
                         </select>
                         <p class="text-xs mt-1" :class="form.is_age_restricted ? 'text-red-600 font-medium' : 'text-gray-400'"
                            x-text="form.is_age_restricted ? '🔞 This class is 18+ — age-gated at the till.' : 'Standard — no age gate.'"></p>
+                        <p class="text-xs mt-0.5" :class="classPromo() ? 'text-amber-700 font-medium' : 'text-gray-400'"
+                           x-text="classPromo() ? '🚫 No promotional discounts / loyalty redemption (regulated).' : '🏷️ Discountable — promos OK.'"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
@@ -268,11 +271,11 @@
                 "Grow Supplies", "Café", "Merch", "Accessories", "Other",
             ],
             classes: [
-                { value: "standard",         label: "Standard goods",      age: false },
-                { value: "tobacco_nicotine", label: "Tobacco / Nicotine",  age: true  },
-                { value: "alcohol",          label: "Alcohol",             age: true  },
-                { value: "cbd_hemp",         label: "CBD / Hemp",          age: false },
-                { value: "cafe_food",        label: "Café food & drink",   age: false },
+                { value: "standard",         label: "Standard goods",      age: false, promo: false },
+                { value: "tobacco_nicotine", label: "Tobacco / Nicotine",  age: true,  promo: true  },
+                { value: "alcohol",          label: "Alcohol",             age: true,  promo: true  },
+                { value: "cbd_hemp",         label: "CBD / Hemp",          age: false, promo: false },
+                { value: "cafe_food",        label: "Café food & drink",   age: false, promo: false },
             ],
             results: [],
             total: 0,
@@ -325,6 +328,12 @@
             onClassChange() {
                 const c = this.classes.find(x => x.value === this.form.product_class);
                 if (c) this.form.is_age_restricted = c.age;
+            },
+
+            // Promo policy of the currently-picked class (flag only — Phase F enforces).
+            classPromo() {
+                const c = this.classes.find(x => x.value === this.form.product_class);
+                return c ? !!c.promo : false;
             },
 
             _url(skip) {

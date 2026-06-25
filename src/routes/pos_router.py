@@ -996,6 +996,8 @@ async def search_products_fast(
         "q": q or "", "category": category, "limit": limit, "skip": skip,
     })).fetchall()
 
+    from src.services.catalog_taxonomy import class_promo_restricted
+
     total = int(rows[0].total_count) if rows else 0
     items = [
         {
@@ -1004,6 +1006,7 @@ async def search_products_fast(
             "stock_quantity": row.stock_quantity or 0, "image_url": row.image_url,
             "is_age_restricted": bool(row.is_age_restricted),
             "product_class": row.product_class,
+            "promo_restricted": class_promo_restricted(row.product_class),
             "relevance": float(row.relevance) if row.relevance else 0,
         }
         for row in rows
