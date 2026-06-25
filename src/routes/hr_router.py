@@ -13,10 +13,10 @@ Endpoints for:
 import logging
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID, uuid4
 from typing import Optional, List
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
@@ -52,62 +52,83 @@ async def get_employee_from_token(
     token_payload: dict
 ) -> Optional[EmployeeModel]:
     """
-    Find the employee record for the authenticated POS user.
+    Find the employee record for the authenticated POS user — and SELF-HEAL the link.
 
-    PRIMARY (the real link): Keycloak sub → users.keycloak_id → users.id → employees.user_id.
+    1. PRIMARY (the real link): sub → users.keycloak_id → users.id → employees.user_id.
+    2. USERNAME LINK (Felix-owned, the "Settings ▸ Cashiers" mapping): the employee is linked
+       to a `users` row whose `username` matches the token's `preferred_username`. When this
+       matches but the primary missed, we **write `users.keycloak_id = sub`** so the primary
+       path resolves on every future login (lazy self-heal — first login stitches the identity).
+    3. LAST-RESORT heuristics (email / first name): only if no explicit link exists yet, so a
+       brand-new seeded cast still resolves. Unambiguous single-row matches only; logged.
 
-    FALLBACK (demo-safe identity bridge): the POS realm (kc-pos-realm-dev) and the HR
-    employee rows were seeded independently — Pam logs in with a real Keycloak sub that was
-    never stitched to the placeholder employees.user_id. Until identities are unified
-    (the Felix/SSO gap), fall back to matching the token's email / preferred_username to an
-    employee by email or first name (case-insensitive). This is what lets "My Day" actually
-    resolve for Pam/Felix today. It's gated behind the primary lookup failing, only ever
-    matches a single unambiguous row, and is logged — so it never silently mis-links.
+    No schema change: the link lives entirely in the existing `users` table (username + keycloak_id).
     """
     keycloak_sub = token_payload.get("sub")
     if not keycloak_sub:
         return None
-
-    # PRIMARY: the proper users.keycloak_id → employees.user_id join.
     try:
+        sub_uuid = UUID(keycloak_sub)
+    except (ValueError, TypeError):
+        sub_uuid = None
+
+    # 1. PRIMARY: the proper users.keycloak_id → employees.user_id join.
+    if sub_uuid is not None:
         result = await db.execute(
             select(EmployeeModel)
             .join(UserModel, EmployeeModel.user_id == UserModel.id)
-            .where(UserModel.keycloak_id == UUID(keycloak_sub))
+            .where(UserModel.keycloak_id == sub_uuid)
         )
         employee = result.scalar_one_or_none()
-    except (ValueError, TypeError):
-        employee = None  # malformed sub — fall through to the bridge
-    if employee:
-        return employee
+        if employee:
+            return employee
 
-    # FALLBACK: bridge by identity claims while SSO is not yet unified.
     email = (token_payload.get("email") or "").strip().lower()
     username = (token_payload.get("preferred_username") or "").strip().lower()
 
+    # 2. USERNAME LINK: employee → users.username == token username. Self-heal keycloak_id.
+    if username:
+        result = await db.execute(
+            select(EmployeeModel, UserModel)
+            .join(UserModel, EmployeeModel.user_id == UserModel.id)
+            .where(func.lower(UserModel.username) == username)
+        )
+        row = result.first()
+        if row:
+            employee, user = row
+            if sub_uuid is not None and user.keycloak_id != sub_uuid:
+                try:
+                    user.keycloak_id = sub_uuid  # stitch the real identity, once
+                    await db.commit()
+                    logger.info("HR identity link self-healed: users.keycloak_id set for '%s' → %s %s",
+                                username, employee.first_name, employee.last_name)
+                except Exception:
+                    await db.rollback()  # resolution still succeeds; heal next time
+            return employee
+
+    # 3. LAST-RESORT heuristics (only until Felix links them in Settings ▸ Cashiers).
     if email:
         result = await db.execute(
             select(EmployeeModel).where(func.lower(EmployeeModel.email) == email)
         )
         employee = result.scalar_one_or_none()
         if employee:
-            logger.info("HR identity bridge: matched %s by email → %s %s",
+            logger.info("HR identity bridge (email): %s → %s %s",
                         email, employee.first_name, employee.last_name)
             return employee
 
     if username:
-        # Only accept an UNAMBIGUOUS first-name match (one row) — never guess between two.
         result = await db.execute(
             select(EmployeeModel).where(func.lower(EmployeeModel.first_name) == username)
         )
         matches = result.scalars().all()
         if len(matches) == 1:
-            logger.info("HR identity bridge: matched username '%s' → %s %s",
+            logger.info("HR identity bridge (first-name): '%s' → %s %s",
                         username, matches[0].first_name, matches[0].last_name)
             return matches[0]
         if len(matches) > 1:
             logger.warning("HR identity bridge: username '%s' matched %d employees — "
-                           "refusing to guess; link users.keycloak_id properly.",
+                           "refusing to guess; link them in Settings ▸ Cashiers.",
                            username, len(matches))
 
     return None
@@ -601,6 +622,98 @@ async def get_my_hr_profile(
         "health_insurance_active": employee.health_insurance_active,
         "bvg_insured": employee.bvg_insured,
     }
+
+
+# ================================================================
+# EMPLOYEES — roster + login link (Settings ▸ Cashiers)
+# ================================================================
+
+@router.get("/employees")
+async def list_employees(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """The roster for Settings ▸ Cashiers — every employee + the POS login they're linked to.
+    Manager/admin only."""
+    result = await db.execute(
+        select(EmployeeModel, UserModel)
+        .outerjoin(UserModel, EmployeeModel.user_id == UserModel.id)
+        .order_by(EmployeeModel.first_name)
+    )
+    rows = result.all()
+    return {
+        "employees": [
+            {
+                "id": str(e.id),
+                "first_name": e.first_name,
+                "last_name": e.last_name,
+                "email": e.email,
+                "employee_number": e.employee_number,
+                "status": e.status,
+                "contract_type": e.contract_type,
+                "login_username": (u.username if u else None),
+                "is_linked": u is not None,
+            }
+            for (e, u) in rows
+        ],
+        "total": len(rows),
+    }
+
+
+@router.post("/employees/{employee_id}/link")
+async def link_employee_login(
+    employee_id: UUID,
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Link an HR employee to a POS login username — the real identity link Felix controls.
+    Finds the `users` row by username (creates a placeholder if absent) and points
+    employee.user_id at it. The real Keycloak sub is stitched on that person's next login
+    (self-heal in get_employee_from_token). Pass an empty username to UNLINK. Manager/admin only."""
+    username = (payload.get("username") or "").strip().lower()
+    employee = (await db.execute(
+        select(EmployeeModel).where(EmployeeModel.id == employee_id)
+    )).scalar_one_or_none()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    if not username:
+        employee.user_id = None
+        await db.commit()
+        return {"id": str(employee.id), "login_username": None, "is_linked": False,
+                "message": "Login unlinked."}
+
+    user = (await db.execute(
+        select(UserModel).where(func.lower(UserModel.username) == username)
+    )).scalar_one_or_none()
+    if not user:
+        user = UserModel(
+            keycloak_id=uuid4(),  # placeholder — self-healed on first login
+            username=username,
+            email=(employee.email or f"{username}@artemis.local"),
+        )
+        db.add(user)
+        await db.flush()
+
+    # One login = one employee. Don't steal a username already linked elsewhere.
+    other = (await db.execute(
+        select(EmployeeModel).where(
+            EmployeeModel.user_id == user.id, EmployeeModel.id != employee.id
+        )
+    )).scalar_one_or_none()
+    if other:
+        raise HTTPException(
+            status_code=409,
+            detail=f"'{username}' is already linked to {other.first_name} {other.last_name}."
+        )
+
+    employee.user_id = user.id
+    await db.commit()
+    logger.info("Cashier link: employee %s %s → login '%s'",
+                employee.first_name, employee.last_name, username)
+    return {"id": str(employee.id), "login_username": user.username,
+            "is_linked": True, "message": f"Linked to {username}."}
 
 
 # ================================================================

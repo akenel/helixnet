@@ -26,6 +26,19 @@
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Cashiers / staff logins (the identity link) -->
+        <div class="card hover:shadow-xl transition cursor-pointer mb-5 flex items-center justify-between"
+             onclick="window.location.href='/pos/cashiers'">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">👥</span>
+                <div>
+                    <h3 class="font-bold text-gray-900">Cashiers &amp; staff logins</h3>
+                    <p class="text-sm text-gray-600">Link each staff card to the till login it uses</p>
+                </div>
+            </div>
+            <span class="text-gray-400 text-2xl">›</span>
+        </div>
+
         <div x-show="!isAdmin" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm">
             🔒 Store settings are admin-only. Ask Felix (admin) to make changes.
         </div>

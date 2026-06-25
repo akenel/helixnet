@@ -226,13 +226,12 @@ async def ai_suggest_product(
     if not (file.content_type or "").lower().startswith("image/"):
         raise HTTPException(status_code=415, detail="Please upload an image")
 
-    from src.services.vision_product_analyzer import suggest_product_from_image
-    from src.services.image_intake import ImageIntakeError
+    from src.services.vision_product_analyzer import suggest_product_from_image, VisionImageError
     try:
         result = await suggest_product_from_image(
             raw, file.content_type or "image/jpeg", hint=hint, provider=provider,
         )
-    except ImageIntakeError:
+    except VisionImageError:
         raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
 
     logger.info(
@@ -2670,6 +2669,33 @@ async def pos_feedback(
             "severity": severity, "priority": priority.value}
 
 
+# Self-test sentinel: the feedback regression tests file REAL rows against a live
+# server (black-box). Every test hides its title behind this prefix so the rows are
+# swept after the run and never clutter the shared board ("test exhaust belongs in
+# the bin"). A genuine human report never carries this string.
+_SELFTEST_PREFIX = "[selftest] "
+
+
+@router.post("/feedback/cleanup-selftest")
+async def cleanup_selftest_feedback(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Sweep self-test feedback rows ('[selftest] …' titles) off the backlog board.
+
+    HARD-scoped to the sentinel prefix — so a real report can NEVER be deleted.
+    backlog_activities cascade on delete. The POS feedback tests call this in
+    teardown to keep the shared /backlog board readable."""
+    from sqlalchemy import delete as _sa_delete
+    res = await db.execute(
+        _sa_delete(BacklogItemModel).where(BacklogItemModel.title.like(_SELFTEST_PREFIX + "%"))
+    )
+    await db.commit()
+    deleted = res.rowcount or 0
+    logger.info(f"Swept {deleted} [selftest] feedback rows by {current_user['username']}")
+    return {"ok": True, "deleted": deleted}
+
+
 # ================================================================
 # CASH SHIFT -- per-cashier drawer accountability (the lockbox loop)
 # ================================================================
@@ -3610,3 +3636,15 @@ async def pos_settings(request: Request):
     editable by admin (Felix), shown on every receipt. Wired to GET/PUT /settings/{n}.
     """
     return templates.TemplateResponse("pos/settings.html", {"request": request})
+
+
+@html_router.get("/pos/cashiers", response_class=HTMLResponse, name="pos_cashiers")
+async def pos_cashiers(request: Request):
+    """
+    Settings ▸ Cashiers — link each HR staff card to the POS login it uses at the till.
+
+    The real identity link (manager/admin): reads the HR roster (/api/v1/hr/employees) and
+    sets employee.user_id; the person's real Keycloak identity self-heals on next login.
+    POS never creates an employee here — staff are onboarded in HR.
+    """
+    return templates.TemplateResponse("pos/cashiers.html", {"request": request})
