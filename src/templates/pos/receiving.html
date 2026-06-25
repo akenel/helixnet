@@ -113,15 +113,43 @@
             <div class="flex justify-between items-start p-5 border-b">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900">🆕 New item</h2>
-                    <p class="text-sm text-gray-600 mt-1">Not in the catalog yet — add it, then receive it.</p>
+                    <p class="text-sm text-gray-600 mt-1">Find it in the catalogue (photo + price come with it), or add it fresh.</p>
                 </div>
                 <button @click="newOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
-            <div class="p-5 space-y-4">
+            <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
                     <input type="text" x-model="newBarcode" readonly class="input-field bg-gray-100 font-mono">
                 </div>
+
+                <!-- Adopt from the 7k reference catalogue: auto on a scan-miss, or search by name. -->
+                <div class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-3">
+                    <label class="block text-sm font-medium text-emerald-800 mb-1">🔎 Find it in the catalogue</label>
+                    <input type="text" x-model="refQuery" @input.debounce.350ms="searchRef(refQuery, '')"
+                           placeholder="search by name…" class="input-field">
+                    <p x-show="refSearching" class="text-xs text-gray-400 mt-1" style="display:none;">searching…</p>
+                    <div x-show="refMatches.length" class="mt-2 max-h-52 overflow-y-auto divide-y border rounded-lg bg-white" style="display:none;">
+                        <template x-for="r in refMatches" :key="r.id">
+                            <button type="button" @click="useRef(r)"
+                                    class="w-full flex items-center gap-3 p-2 text-left hover:bg-emerald-50"
+                                    :class="selectedRef && selectedRef.id===r.id ? 'bg-emerald-100' : ''">
+                                <img x-show="r.image_url" :src="r.image_url" loading="lazy" alt=""
+                                     class="w-10 h-10 object-cover rounded flex-none bg-gray-100">
+                                <span class="flex-1 min-w-0">
+                                    <span class="block text-sm font-medium text-gray-900 truncate" x-text="r.name"></span>
+                                    <span class="block text-xs text-gray-500"
+                                          x-text="(r.price!=null ? ('CHF '+r.price.toFixed(2)) : 'no price') + (r.supplier ? ' · '+r.supplier : '')"></span>
+                                </span>
+                                <span x-show="selectedRef && selectedRef.id===r.id" class="text-emerald-600 font-bold flex-none">✓</span>
+                            </button>
+                        </template>
+                    </div>
+                    <p x-show="selectedRef" class="text-xs text-emerald-700 mt-1" style="display:none;">
+                        ✓ Using <b x-text="selectedRef?.name"></b> — its photo &amp; details come with it. Set your price/cost below.
+                    </p>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
                     <input type="text" x-model="newName" @keyup.enter="createAndAdd()" placeholder="e.g. Grinder 4-part 50mm" class="input-field">
@@ -144,7 +172,7 @@
                     </div>
                 </div>
                 <button @click="createAndAdd()" :disabled="newSaving" class="btn-success w-full">
-                    <span x-show="!newSaving">➕ Add to delivery</span>
+                    <span x-show="!newSaving" x-text="selectedRef ? '📦 Adopt &amp; add to delivery' : '➕ Add to delivery'"></span>
                     <span x-show="newSaving" style="display:none;">Saving…</span>
                 </button>
             </div>
@@ -177,6 +205,12 @@
             boxCost: '',          // box helper: paid this for the box…
             boxUnits: '',         // …split across this many units
             newSaving: false,
+
+            // adopt-from-reference (the 7k catalogue): pre-fills name+price, carries the photo
+            refQuery: '',
+            refMatches: [],
+            refSearching: false,
+            selectedRef: null,
 
             init() {
                 const info = (AuthHelper.getUserInfo && AuthHelper.getUserInfo()) || {};
@@ -244,7 +278,32 @@
                 this.newBarcode = barcode || '';
                 this.newName = ''; this.newPrice = ''; this.newCost = '';
                 this.boxCost = ''; this.boxUnits = ''; this.newSaving = false;
+                this.refQuery = ''; this.refMatches = []; this.selectedRef = null;
                 this.newOpen = true;
+                // Auto-look up the scanned code in the 7k reference catalogue — if it's on file,
+                // a tap fills name+price+photo (adopt) instead of typing it all by hand.
+                if (barcode) this.searchRef('', barcode);
+            },
+
+            // Search the reference catalogue (by typed name, or by the scanned barcode).
+            async searchRef(q, bc) {
+                q = (q || '').trim(); bc = (bc || '').trim();
+                if (!q && !bc) { this.refMatches = []; return; }
+                this.refSearching = true;
+                try {
+                    const res = await API.get(`/api/v1/pos/reference/search?q=${encodeURIComponent(q)}&barcode=${encodeURIComponent(bc)}&limit=6`);
+                    this.refMatches = (res && res.items) || [];
+                } catch (e) {
+                    this.refMatches = [];
+                } finally {
+                    this.refSearching = false;
+                }
+            },
+            // Pick a reference match → pre-fill the form. Photo + details ride along on adopt (save).
+            useRef(r) {
+                this.selectedRef = r;
+                this.newName = r.name || this.newName;
+                if (r.price != null) this.newPrice = r.price;
             },
             // Box → single: bought a box, sell singles. Per-unit cost = box / units.
             calcUnitCost() {
@@ -252,27 +311,41 @@
                 if (c > 0 && n > 0) this.newCost = (c / n).toFixed(2);
             },
             async createAndAdd() {
-                if (!this.newName.trim()) { showToast('Enter a product name', 'warning'); return; }
                 const price = parseFloat(this.newPrice);
                 if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
                 const cost = parseFloat(this.newCost);          // optional purchase cost/unit
-                this.newSaving = true;
                 const bc = (this.newBarcode || '').trim();
+                this.newSaving = true;
                 try {
-                    // Zero perpetual inventory: receiving just catalogues the item.
-                    const p = await API.post('/api/v1/pos/products', {
-                        barcode: bc || null,
-                        sku: bc ? ('LZ-' + bc) : ('LZ-' + Date.now()),
-                        name: this.newName.trim(),
-                        price,
-                        cost: (!isNaN(cost) && cost >= 0) ? cost : null,
-                        stock_quantity: 0,
-                    });
+                    let p;
+                    if (this.selectedRef) {
+                        // Adopt from the reference catalogue — copies title/photo/details, binds the
+                        // scanned barcode, sets the price (idempotent if already adopted).
+                        p = await API.post(`/api/v1/pos/reference/${this.selectedRef.id}/adopt`, {
+                            barcode: bc || null,
+                            price,
+                        });
+                        // Override the cost with what was actually paid on the slip, if entered.
+                        if (!isNaN(cost) && cost >= 0) {
+                            try { p = await API.put(`/api/v1/pos/products/${p.id}`, { cost }); } catch (e) {}
+                        }
+                    } else {
+                        if (!this.newName.trim()) { showToast('Enter a product name', 'warning'); this.newSaving = false; return; }
+                        // Zero perpetual inventory: receiving just catalogues the item.
+                        p = await API.post('/api/v1/pos/products', {
+                            barcode: bc || null,
+                            sku: bc ? ('LZ-' + bc) : ('LZ-' + Date.now()),
+                            name: this.newName.trim(),
+                            price,
+                            cost: (!isNaN(cost) && cost >= 0) ? cost : null,
+                            stock_quantity: 0,
+                        });
+                    }
                     this.addProduct(p);
                     this.newOpen = false;
                     this.barcodeInput = '';
                 } catch (err) {
-                    showToast(err.message || 'Could not create the product', 'error');
+                    showToast(err.message || 'Could not add the product', 'error');
                 } finally {
                     this.newSaving = false;
                 }
