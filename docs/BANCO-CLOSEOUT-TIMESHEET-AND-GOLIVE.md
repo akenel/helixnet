@@ -264,18 +264,22 @@ HR product later.
 
 ---
 
-## Build order (revised after the 2026-06-25 auto-tally + HR-system-of-record calls)
-- ✅ **Shipped (this session):** "My Day" mobile-first screen (`templates/pos/my_day.html`,
-  route `/pos/my-day`, dashboard tile) on the existing HR API; **interim** username/email
-  identity bridge in `get_employee_from_token` so it resolves for the seeded cast.
-- **Next 1 — auto-tally (the kicker):** derive the day's hours from `ShiftSessionModel`
-  login/logout; My Day **pre-fills** start + running hours; close = one-tap confirm. Manual
-  form becomes the override.
-- **Next 2 — the proper identity link:** POS **Settings ▸ Cashiers** — Felix picks HR
-  employees → store `users.id ↔ employees` link (retires the bridge).
-- **Next 3 — AI survey** draft recipe (sales-of-the-day → pre-filled survey; one-tap confirm).
-- **Later — HR module surface:** new-employee onboarding (AHV/DOB/address), calendar/rota,
-  weekly/monthly rollup. Lives in **HR (system of record)**, not the POS. Payroll stays dark.
+## Build order — status as of 2026-06-25 (sandbox @ 9636975)
+- ✅ **My Day** — mobile-first daily checkout (`templates/pos/my_day.html`, `/pos/my-day`).
+- ✅ **Brick A — identity link.** Self-healing username-join bridge + **Settings ▸ 👥 Staff &
+  Logins tab** (Felix links each staff card to a till login). Schema-free.
+- ✅ **Brick B — add employees.** `GET/POST/PUT /api/v1/hr/employees`; the Staff tab's
+  **➕ Add new employee** (who's-who card; auto BLQ-NNN; pay/IBAN later).
+- ✅ **Brick C — auto-tally.** Login records presence (`/shift/start`), My Day **pre-fills
+  start** from the first login (`GET /shift/today`) + "✓ tracked you in" banner; manual = override.
+- ✅ **Brick D — create a real sign-in + password.** `POST /employees/{id}/provision-login`
+  creates the Keycloak user (POS_REALM) + password + cashier role + real link. The Staff row's
+  **🔑 Create sign-in**. Re-run = password reset. *This is what actually lets a new hire log in.*
+- ⏳ **Next — AI end-of-day survey** (sales-of-the-day → pre-filled survey; one-tap confirm).
+- ⏳ **Cleanup brick (proposed) — plain-ASCII role names.** Move the emoji out of the role
+  *identifier* into a display label (it's a latent foot-gun; see the emoji note). Do with
+  explicit go + careful auth testing — never blind.
+- **Later — HR module surface:** calendar/rota, weekly/monthly rollup, payroll (stays dark).
 
 **Resilience acceptance test for all of it:** a cashier sick on day N+1 never blocks day N's
 closeout, books, or anyone else's drawer.
