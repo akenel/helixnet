@@ -12,6 +12,13 @@ one deliberate run. (CLAUDE.md rule 11: Python + Typer + getpass, not bash.)
 
 Examples
 --------
+  # Resend (what staging + prod Banco realms use — domain noreply@lapiazza.app is verified):
+  #   SMTP password = your Resend API key (entered at the prompt).
+  python scripts/configure_kc_smtp.py \
+      --kc-url https://lapiazza.app --realm kc-pos-realm-prd \
+      --host smtp.resend.com --port 587 --starttls --auth --smtp-user resend \
+      --from noreply@lapiazza.app --from-name "Banco" --test angel.kenel@gmail.com
+
   # Gmail app-password (recommended for a quick start):
   python scripts/configure_kc_smtp.py \
       --kc-url https://auth.lapiazza.app --realm kc-pos-realm-dev \
