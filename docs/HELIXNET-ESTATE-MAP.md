@@ -98,10 +98,15 @@ schemas, just not wired into an app:
 > **Why it matters for Banco:** Swiss CBD compliance (THC%, lot, lab number = the compliance receipt) is
 > a differentiator nobody has — and **the data model is already prototyped**
 > (`farm → batch → lab_test → traceable_item → trace_event`). A wheel already cut, needs mounting.
+> **The mount now exists:** the vision engine's `lab_report` domain (`src/services/vision`) reads a lab
+> certificate's THC%/lot/lab№ — wiring that read into `lab_test`/`batch`/`trace_event` is the next brick
+> (domain DEFINED, consumer not yet built).
 
 ## 6. The shared ENGINE (HelixNet platform — invisible to customers)
-Auth (Keycloak multi-realm), `src/llm` (run_llm, model-as-data), `src/compute` (recipes/runner = a BOM
-engine), the ~72-model DB layer, the print pipeline (`sop-to-pdf.js`, `postcard-to-pdf.js`), RabbitMQ
+Auth (Keycloak multi-realm), `src/llm` (run_llm, model-as-data), **`src/services/vision`
+(vision-as-data — read a photo into structured data; one brain, a registry of `VisionDomain`
+tasks; model-agnostic, Gemini default)**, `src/compute` (recipes/runner = a BOM engine), the
+~72-model DB layer, the print pipeline (`sop-to-pdf.js`, `postcard-to-pdf.js`), RabbitMQ
 fair-share queue, the backlog/feedback tooling. **This is the trunk. It never gets a customer-facing name.**
 
 ## 7. Naming & subdomain convention (the decision that prevents mess)
@@ -137,4 +142,8 @@ Banco is **assembly, not invention.** Already in the repo:
 - **Compliance/traceability:** `farm`/`batch`/`lab_test`/`trace_event` (designed — the Swiss CBD differentiator).
 - **Production/BOM:** `recipes.py`/`runner.py` (a recipe IS a BOM).
 - **Labeling/white-label:** ISOTTO catalog + the print pipeline.
-- **AI-assist:** `src/llm` + Cleo.
+- **AI-assist:** `src/llm` (text, model-as-data) + Cleo + **`src/services/vision` (photo→structured
+  data, model-agnostic).** First consumer WIRED: POS `/products/ai-suggest` ("Snap & fill" on the
+  catalog + scan screens — photo of an unmarked item → drafted name/category/price). Next consumers
+  (same brain, just register a `VisionDomain`): ISOTTO catalog photos, La Piazza photo listings, and —
+  the moat — **seed-to-sale lab reports** (the `lab_report` domain is already DEFINED, §5).
