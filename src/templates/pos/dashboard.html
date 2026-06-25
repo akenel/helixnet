@@ -188,22 +188,13 @@
             </template>
 
             <!-- ADMIN ACTIONS -->
-            <template x-if="user.isAdmin">
-                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/admin'">
-                    <div class="text-center py-8">
-                        <span class="text-6xl mb-4 block">👥</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">User Management</h3>
-                        <p class="text-gray-600">Manage staff & roles</p>
-                    </div>
-                </div>
-            </template>
-
+            <!-- Staff & roles now live inside Settings ▸ Staff & Logins (no separate User Management). -->
             <template x-if="user.isAdmin">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/settings'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">⚙️</span>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2">Settings</h3>
-                        <p class="text-gray-600">Configure POS system</p>
+                        <p class="text-gray-600">Store profile, staff &amp; logins, tax</p>
                     </div>
                 </div>
             </template>

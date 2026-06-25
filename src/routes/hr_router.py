@@ -36,6 +36,8 @@ from src.schemas.hr_schema import (
     TimeEntryApproval,
     EmployeeTimesheet,
 )
+from sqlalchemy.exc import IntegrityError
+
 from src.core.keycloak_auth import require_any_pos_role, require_manager_or_admin, verify_token
 
 logger = logging.getLogger(__name__)
@@ -714,6 +716,182 @@ async def link_employee_login(
                 employee.first_name, employee.last_name, username)
     return {"id": str(employee.id), "login_username": user.username,
             "is_linked": True, "message": f"Linked to {username}."}
+
+
+def _employee_card(e: EmployeeModel, login_username: Optional[str] = None) -> dict:
+    """Full employee card payload (the 'who's who')."""
+    return {
+        "id": str(e.id),
+        "employee_number": e.employee_number,
+        "first_name": e.first_name,
+        "last_name": e.last_name,
+        "date_of_birth": e.date_of_birth.isoformat() if e.date_of_birth else None,
+        "nationality": e.nationality,
+        "ahv_number": e.ahv_number,
+        "email": e.email,
+        "phone": e.phone,
+        "street": e.street,
+        "postal_code": e.postal_code,
+        "city": e.city,
+        "canton": e.canton,
+        "iban": e.iban,
+        "bank_name": e.bank_name,
+        "contract_type": e.contract_type,
+        "status": e.status,
+        "start_date": e.start_date.isoformat() if e.start_date else None,
+        "hours_per_week": float(e.hours_per_week),
+        "hourly_rate": float(e.hourly_rate),
+        "emergency_contact_name": e.emergency_contact_name,
+        "emergency_contact_phone": e.emergency_contact_phone,
+        "notes": e.notes,
+        "login_username": login_username,
+        "is_linked": login_username is not None,
+    }
+
+
+async def _next_employee_number(db: AsyncSession) -> str:
+    """Auto-number new hires as BLQ-NNN (max existing + 1)."""
+    result = await db.execute(select(EmployeeModel.employee_number))
+    mx = 0
+    for (num,) in result.all():
+        if num and "-" in num:
+            tail = num.rsplit("-", 1)[-1]
+            if tail.isdigit():
+                mx = max(mx, int(tail))
+    return f"BLQ-{mx + 1:03d}"
+
+
+@router.get("/employees/{employee_id}")
+async def get_employee(
+    employee_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Full employee card. Manager/admin only."""
+    row = (await db.execute(
+        select(EmployeeModel, UserModel)
+        .outerjoin(UserModel, EmployeeModel.user_id == UserModel.id)
+        .where(EmployeeModel.id == employee_id)
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    e, u = row
+    return _employee_card(e, u.username if u else None)
+
+
+@router.post("/employees", status_code=status.HTTP_201_CREATED)
+async def create_employee(
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Onboard a new employee — the one-time 'who's who' card (Leanna: name, AHV, DOB, address).
+    Only the human essentials are required; employment/payroll fields default and are edited
+    later. employee_number is auto-generated. Manager/admin only."""
+    def req(k):
+        v = (str(payload.get(k) or "")).strip()
+        if not v:
+            raise HTTPException(status_code=422, detail=f"'{k}' is required")
+        return v
+
+    first_name = req("first_name")
+    last_name = req("last_name")
+    ahv_number = req("ahv_number")
+    email = req("email")
+    street = req("street")
+    postal_code = req("postal_code")
+    city = req("city")
+
+    # Dates
+    try:
+        dob = date.fromisoformat(req("date_of_birth"))
+    except ValueError:
+        raise HTTPException(status_code=422, detail="date_of_birth must be YYYY-MM-DD")
+    start_raw = (str(payload.get("start_date") or "")).strip()
+    try:
+        start = date.fromisoformat(start_raw) if start_raw else date.today()
+    except ValueError:
+        raise HTTPException(status_code=422, detail="start_date must be YYYY-MM-DD")
+
+    def dec(k, default):
+        try:
+            return Decimal(str(payload.get(k))) if payload.get(k) not in (None, "") else Decimal(default)
+        except Exception:
+            return Decimal(default)
+
+    emp = EmployeeModel(
+        first_name=first_name,
+        last_name=last_name,
+        date_of_birth=dob,
+        nationality=(str(payload.get("nationality") or "CH")).strip() or "CH",
+        ahv_number=ahv_number,
+        email=email,
+        phone=(str(payload.get("phone") or "")).strip() or None,
+        street=street,
+        postal_code=postal_code,
+        city=city,
+        canton=(str(payload.get("canton") or "LU")).strip().upper()[:2] or "LU",
+        iban=(str(payload.get("iban") or "")).strip(),  # fill later
+        bank_name=(str(payload.get("bank_name") or "")).strip() or None,
+        employee_number=await _next_employee_number(db),
+        contract_type=(str(payload.get("contract_type") or "fulltime")).strip(),
+        status=(str(payload.get("status") or "probation")).strip(),
+        start_date=start,
+        hours_per_week=dec("hours_per_week", "40"),
+        hourly_rate=dec("hourly_rate", "0"),
+    )
+    db.add(emp)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="That AHV number or employee already exists.")
+    await db.refresh(emp)
+    logger.info("Employee onboarded: %s %s (%s)", emp.first_name, emp.last_name, emp.employee_number)
+    return _employee_card(emp)
+
+
+@router.put("/employees/{employee_id}")
+async def update_employee(
+    employee_id: UUID,
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Edit an employee card. Manager/admin only."""
+    emp = (await db.execute(
+        select(EmployeeModel).where(EmployeeModel.id == employee_id)
+    )).scalar_one_or_none()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    text_fields = ["first_name", "last_name", "email", "phone", "street", "postal_code",
+                   "city", "canton", "ahv_number", "iban", "bank_name", "contract_type",
+                   "status", "nationality", "emergency_contact_name", "emergency_contact_phone", "notes"]
+    for f in text_fields:
+        if f in payload:
+            v = payload.get(f)
+            setattr(emp, f, (str(v).strip() or None) if v is not None else None)
+    for f in ["date_of_birth", "start_date"]:
+        if payload.get(f):
+            try:
+                setattr(emp, f, date.fromisoformat(str(payload[f])))
+            except ValueError:
+                raise HTTPException(status_code=422, detail=f"{f} must be YYYY-MM-DD")
+    for f in ["hours_per_week", "hourly_rate"]:
+        if payload.get(f) not in (None, ""):
+            try:
+                setattr(emp, f, Decimal(str(payload[f])))
+            except Exception:
+                raise HTTPException(status_code=422, detail=f"{f} must be a number")
+
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="That AHV number is already in use.")
+    await db.refresh(emp)
+    return _employee_card(emp)
 
 
 # ================================================================
