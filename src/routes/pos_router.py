@@ -3107,6 +3107,19 @@ async def pos_dashboard(request: Request):
     return templates.TemplateResponse("pos/dashboard.html", {"request": request})
 
 
+@html_router.get("/pos/my-day", response_class=HTMLResponse, name="pos_my_day")
+async def pos_my_day(request: Request):
+    """
+    My Day — the employee-facing daily checkup (timesheet + living day view).
+
+    Felix's spreadsheet, made a no-brainer on a phone: see your hours and sales so far,
+    then close out your day (start/finish/lunch → hours) in one tap. Rides the existing
+    HR engine (/api/v1/hr/*). Auth is client-side JWT like the other POS screens; the HR
+    API resolves the employee from the token (with a demo-safe username/email bridge).
+    """
+    return templates.TemplateResponse("pos/my_day.html", {"request": request})
+
+
 @html_router.get("/pos/scan", response_class=HTMLResponse, name="pos_scan")
 async def pos_scan(request: Request):
     """

@@ -1,0 +1,413 @@
+{% extends "pos/base.html" %}
+
+{% block title %}My Day - HelixPOS{% endblock %}
+{% block page_name %}My Day{% endblock %}
+
+{#
+  My Day — the employee-facing daily checkup (timesheet + living day view).
+  Felix's proud spreadsheet, but a no-brainer on a phone: big buttons, tooltips,
+  an inline "how this works" SOP so a first-day worker feels welcome, never lost.
+  Rides the EXISTING dark HR engine: GET /api/v1/hr/me, /time-entries/my, /stats/my-month,
+  POST /api/v1/hr/time-entries. Trust-first: she self-reports start/finish; she can fix it.
+#}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="myDayData()" x-init="init()">
+
+    <!-- Top Bar -->
+    <div class="bg-white shadow-md border-b-4 border-indigo-600">
+        <div class="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="goDashboard()" title="Back to dashboard" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">📅 My Day</h1>
+                    <p class="text-sm text-gray-600" x-text="todayLabel"></p>
+                </div>
+            </div>
+            <button @click="helpOpen = true" title="How this works" class="btn-secondary text-sm">❓ Help</button>
+        </div>
+    </div>
+
+    <div class="max-w-2xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- Loading -->
+        <div x-show="loading" class="text-center py-20 text-gray-400">Loading your day…</div>
+
+        <!-- Error banner -->
+        <div x-show="error" class="bg-red-100 text-red-800 rounded-lg p-3 text-sm" x-text="error"></div>
+
+        <!-- ============ NO HR CARD YET (graceful, welcoming) ============ -->
+        <div x-show="!loading && noProfile" class="card text-center py-10">
+            <div class="text-5xl mb-3">👋</div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Welcome! Let's get you set up.</h2>
+            <p class="text-gray-600 max-w-md mx-auto">Your staff card isn't linked to this login yet.
+                Ask <span class="font-semibold">Felix</span> to add you in <span class="font-semibold">Staff</span>,
+                then your timesheet shows up right here — and closing your day takes one tap.</p>
+            <button @click="goDashboard()" class="btn-secondary mt-6">🏪 Back to dashboard</button>
+        </div>
+
+        <!-- ============ MAIN: MY DAY ============ -->
+        <template x-if="!loading && !noProfile">
+        <div class="space-y-6">
+
+            <!-- Greeting -->
+            <div class="card bg-gradient-to-br from-indigo-600 to-indigo-700 text-white">
+                <p class="text-indigo-100 text-sm" x-text="greeting"></p>
+                <h2 class="text-2xl font-extrabold mt-1" x-text="'Hi ' + (profile.first_name || user.username || 'there') + ' 👋'"></h2>
+                <p class="text-indigo-100 text-sm mt-1" x-show="profile.role" x-text="profile.role"></p>
+            </div>
+
+            <!-- Living day view: my sales so far -->
+            <div class="card">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="text-lg font-bold text-gray-900">🛒 My sales so far today</h3>
+                    <button @click="goDrawer()" class="text-sm text-indigo-600 hover:underline">See each sale →</button>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Updates as you ring sales. The detail lives in My Drawer.</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Sales</p>
+                        <p class="price-display mt-1" x-text="formatPrice(sales.total)"></p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Transactions</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-1" x-text="sales.count"></p>
+                    </div>
+                </div>
+                <p x-show="!sales.available" class="text-xs text-gray-400 mt-3">
+                    Open your drawer in <button @click="goDrawer()" class="text-indigo-600 underline">My Drawer</button>
+                    to track today's takings.</p>
+            </div>
+
+            <!-- ============ TODAY ALREADY CLOSED OUT ============ -->
+            <div x-show="todayEntry && !editing" class="card border-2 border-green-500">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">✅</span>
+                    <h3 class="text-lg font-bold text-gray-900">Your day is closed out</h3>
+                </div>
+                <div class="grid grid-cols-3 gap-3 text-center mb-4">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500">Started</p>
+                        <p class="text-lg font-bold text-gray-800" x-text="(todayEntry && todayEntry.start_time) || '—'"></p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500">Finished</p>
+                        <p class="text-lg font-bold text-gray-800" x-text="(todayEntry && todayEntry.end_time) || '—'"></p>
+                    </div>
+                    <div class="bg-indigo-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500">Hours</p>
+                        <p class="text-lg font-bold text-indigo-700" x-text="(todayEntry ? Number(todayEntry.hours).toFixed(2) : '0') + 'h'"></p>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600" x-show="todayEntry && todayEntry.description">
+                    📝 <span x-text="todayEntry && todayEntry.description"></span></p>
+                <div class="flex items-center justify-between mt-4">
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full"
+                          :class="statusClass(todayEntry && todayEntry.status)"
+                          x-text="statusLabel(todayEntry && todayEntry.status)"></span>
+                    <button x-show="todayEntry && todayEntry.status === 'draft'" @click="startEdit()"
+                            class="text-sm text-indigo-600 hover:underline">✏️ Fix it</button>
+                </div>
+                <p x-show="todayEntry && todayEntry.status !== 'draft'" class="text-xs text-gray-400 mt-2">
+                    Already sent to Felix — ask him if it needs a change.</p>
+            </div>
+
+            <!-- ============ CLOSE OUT MY DAY (the form) ============ -->
+            <div x-show="!todayEntry || editing" class="card">
+                <h3 class="text-lg font-bold text-gray-900 mb-1">⏱️ Close out my day</h3>
+                <p class="text-sm text-gray-500 mb-5">Put the time you walked in and the time you're walking out.
+                    It's yours to enter — be honest, it's that simple.</p>
+
+                <!-- Start / Finish -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">
+                            Start time
+                            <span title="When you walked in this morning." class="text-gray-400 cursor-help">ⓘ</span>
+                        </label>
+                        <input type="time" x-model="form.start_time" class="input-field text-center">
+                        <button @click="form.start_time = nowHHMM()" class="text-xs text-indigo-600 hover:underline mt-1">Set to now</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">
+                            Finish time
+                            <span title="When you're walking out. You can put the time you're about to leave." class="text-gray-400 cursor-help">ⓘ</span>
+                        </label>
+                        <input type="time" x-model="form.end_time" class="input-field text-center">
+                        <button @click="form.end_time = nowHHMM()" class="text-xs text-indigo-600 hover:underline mt-1">Set to now</button>
+                    </div>
+                </div>
+
+                <!-- Lunch / break -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Lunch / break
+                        <span title="Unpaid break time. Swiss rule: 30 min if you work over 5.5h." class="text-gray-400 cursor-help">ⓘ</span>
+                    </label>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="b in breakChoices" :key="b">
+                            <button @click="form.break_minutes = b"
+                                    class="px-4 py-3 rounded-lg font-semibold border-2 transition"
+                                    :class="form.break_minutes === b ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'"
+                                    x-text="b === 0 ? 'None' : b + ' min'"></button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Type of day (default Regular) -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Type of day</label>
+                    <select x-model="form.entry_type" class="input-field">
+                        <option value="regular">🟢 Regular shift</option>
+                        <option value="overtime">⏫ Overtime</option>
+                        <option value="holiday">🏖️ Holiday (Ferien)</option>
+                        <option value="sick">🤒 Sick (Krankheit)</option>
+                    </select>
+                </div>
+
+                <!-- Computed hours -->
+                <div class="bg-indigo-50 rounded-lg p-4 mb-4 flex items-center justify-between">
+                    <span class="font-semibold text-gray-700">Hours worked</span>
+                    <span class="text-3xl font-extrabold text-indigo-700" x-text="computedHours().toFixed(2) + 'h'"></span>
+                </div>
+                <p x-show="form.start_time && form.end_time && computedHours() <= 0"
+                   class="text-sm text-amber-600 -mt-2 mb-4">Finish time should be after start time.</p>
+
+                <!-- Comment / how did it go (optional) -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Note <span class="text-gray-400 font-normal">(optional — how did it go?)</span>
+                    </label>
+                    <textarea x-model="form.description" rows="2" maxlength="500"
+                              placeholder="Busy afternoon, a few regulars in…"
+                              class="input-field text-base"></textarea>
+                </div>
+
+                <button @click="closeMyDay()"
+                        :disabled="processing || computedHours() <= 0 && form.entry_type === 'regular'"
+                        class="btn-success w-full text-lg">
+                    <span x-show="!processing" x-text="editing ? '💾 Save changes' : '✅ Close out my day'"></span>
+                    <span x-show="processing">Saving…</span>
+                </button>
+                <button x-show="editing" @click="cancelEdit()" class="btn-secondary w-full mt-2">Cancel</button>
+            </div>
+
+            <!-- ============ RECENT DAYS ============ -->
+            <div class="card" x-show="recent.length">
+                <h3 class="text-lg font-bold text-gray-900 mb-3">📖 My recent days</h3>
+                <div class="divide-y">
+                    <template x-for="e in recent" :key="e.id">
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-semibold text-gray-800" x-text="prettyDate(e.entry_date)"></p>
+                                <p class="text-xs text-gray-500"
+                                   x-text="(e.start_time || '—') + ' – ' + (e.end_time || '—') + ' · ' + typeLabel(e.entry_type)"></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-800" x-text="Number(e.hours).toFixed(2) + 'h'"></p>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                      :class="statusClass(e.status)" x-text="statusLabel(e.status)"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <div class="mt-4 pt-3 border-t flex items-center justify-between text-sm" x-show="monthHours !== null">
+                    <span class="text-gray-500">Hours this month</span>
+                    <span class="font-bold text-gray-800" x-text="Number(monthHours).toFixed(2) + 'h'"></span>
+                </div>
+            </div>
+
+        </div>
+        </template>
+    </div>
+
+    <!-- ============ HELP / SOP PANEL (the welcoming, built-in how-to) ============ -->
+    <div x-show="helpOpen" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4"
+         @click.self="helpOpen = false">
+        <div class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-900">📅 How "My Day" works</h3>
+                <button @click="helpOpen = false" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <ol class="space-y-4 text-gray-700">
+                <li class="flex gap-3"><span class="text-xl">1️⃣</span><span>
+                    <span class="font-semibold">Through the day,</span> peek here any time to see your hours
+                    and what you've sold so far.</span></li>
+                <li class="flex gap-3"><span class="text-xl">2️⃣</span><span>
+                    <span class="font-semibold">When you leave,</span> put your <em>start time</em> and
+                    <em>finish time</em>, pick your lunch break, and the hours add up for you.</span></li>
+                <li class="flex gap-3"><span class="text-xl">3️⃣</span><span>
+                    <span class="font-semibold">Tap "Close out my day."</span> That's it — Felix gets it
+                    for the books and your pay. No paper, no math.</span></li>
+                <li class="flex gap-3"><span class="text-xl">🤝</span><span>
+                    <span class="font-semibold">It's on trust.</span> You enter your own times honestly —
+                    you can even put the minute you're about to walk out. It's your call.</span></li>
+            </ol>
+            <div class="mt-5 bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+                <span class="font-semibold">Not a cashier today?</span> No problem — just cleaning or stocking
+                still counts. Close out your hours the same way.
+            </div>
+            <button @click="helpOpen = false" class="btn-primary w-full mt-6">Got it 👍</button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>[x-cloak]{display:none!important}</style>
+<script>
+function myDayData() {
+    return {
+        loading: true,
+        processing: false,
+        error: '',
+        noProfile: false,
+        helpOpen: false,
+        editing: false,
+        user: {},
+        profile: {},                 // /api/v1/hr/me
+        todayLabel: '',
+        greeting: '',
+        todayEntry: null,            // today's saved entry, if any
+        recent: [],
+        monthHours: null,
+        sales: { total: 0, count: 0, available: false },
+        breakChoices: [0, 30, 60],
+        form: { start_time: '', end_time: '', break_minutes: 30, entry_type: 'regular', description: '' },
+
+        async init() {
+            this.user = AuthHelper.getUserInfo() || {};
+            const now = new Date();
+            this.todayLabel = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+            const h = now.getHours();
+            this.greeting = h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening');
+            await this.loadProfile();
+            if (this.noProfile) { this.loading = false; return; }
+            await Promise.all([this.loadEntries(), this.loadStats(), this.loadSales()]);
+            this.loading = false;
+        },
+
+        async loadProfile() {
+            try {
+                this.profile = await API.get('/api/v1/hr/me') || {};
+            } catch (e) {
+                // 404 = no staff card linked to this login yet → welcoming empty state.
+                if ((e.message || '').includes('No employee') || (e.message || '').includes('404')) {
+                    this.noProfile = true;
+                } else {
+                    this.error = 'Could not load your profile. ' + (e.message || '');
+                }
+            }
+        },
+
+        async loadEntries() {
+            try {
+                const data = await API.get('/api/v1/hr/time-entries/my');
+                const entries = (data && data.entries) || [];
+                const today = this.isoToday();
+                this.todayEntry = entries.find(e => e.entry_date === today) || null;
+                this.recent = entries.filter(e => e.entry_date !== today).slice(0, 5);
+                if (this.todayEntry) this.prefillFrom(this.todayEntry);
+            } catch (e) { /* non-fatal — form still usable */ }
+        },
+
+        async loadStats() {
+            try {
+                const s = await API.get('/api/v1/hr/stats/my-month');
+                if (s && s.total_hours != null) this.monthHours = s.total_hours;
+                else if (s && s.hours != null) this.monthHours = s.hours;
+            } catch (e) { /* optional */ }
+        },
+
+        async loadSales() {
+            // Living "my sales so far" — best-effort from the open drawer; degrade silently.
+            try {
+                const cur = await API.get('/api/v1/pos/shift/current');
+                if (cur && cur.open) {
+                    this.sales.total = this.num(cur.cash_sales) + this.num(cur.card_sales);
+                    this.sales.count = cur.transaction_count || 0;
+                    this.sales.available = true;
+                }
+            } catch (e) { /* no drawer / not available — tile shows the hint */ }
+        },
+
+        prefillFrom(e) {
+            this.form.start_time = e.start_time || '';
+            this.form.end_time = e.end_time || '';
+            this.form.break_minutes = (e.break_minutes != null) ? e.break_minutes : 30;
+            this.form.entry_type = e.entry_type || 'regular';
+            this.form.description = e.description || '';
+        },
+
+        num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; },
+        isoToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); },
+        nowHHMM() { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); },
+
+        // Hours = (finish − start) − break, rounded to the nearest 0.25 (schema increment).
+        computedHours() {
+            const s = this.toMin(this.form.start_time), e = this.toMin(this.form.end_time);
+            if (s == null || e == null || e <= s) return 0;
+            let h = (e - s - (parseInt(this.form.break_minutes) || 0)) / 60;
+            if (h < 0) h = 0;
+            return Math.round(h * 4) / 4;
+        },
+        toMin(hhmm) { if (!hhmm || !/^\d{2}:\d{2}$/.test(hhmm)) return null; const [h,m] = hhmm.split(':').map(Number); return h*60+m; },
+
+        prettyDate(iso) { try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' }); } catch(e){ return iso; } },
+        typeLabel(t) { return ({regular:'Regular', overtime:'Overtime', holiday:'Holiday', sick:'Sick', remote:'Remote', unpaid:'Unpaid', public_holiday:'Public holiday', training:'Training'})[t] || t; },
+        statusLabel(s) { return ({draft:'Draft', submitted:'Sent to Felix', approved:'Approved', rejected:'Needs a fix', paid:'Paid'})[s] || s; },
+        statusClass(s) {
+            return ({
+                draft: 'bg-gray-100 text-gray-600',
+                submitted: 'bg-blue-100 text-blue-700',
+                approved: 'bg-green-100 text-green-700',
+                rejected: 'bg-red-100 text-red-700',
+                paid: 'bg-indigo-100 text-indigo-700',
+            })[s] || 'bg-gray-100 text-gray-600';
+        },
+
+        startEdit() { this.editing = true; this.prefillFrom(this.todayEntry); },
+        cancelEdit() { this.editing = false; this.prefillFrom(this.todayEntry); },
+
+        async closeMyDay() {
+            const hours = this.computedHours();
+            if (hours <= 0 && this.form.entry_type === 'regular') {
+                this.error = 'Add your start and finish time first.'; return;
+            }
+            this.processing = true; this.error = '';
+            const payload = {
+                entry_date: this.isoToday(),
+                entry_type: this.form.entry_type,
+                hours: hours,
+                start_time: this.form.start_time || null,
+                end_time: this.form.end_time || null,
+                break_minutes: parseInt(this.form.break_minutes) || 0,
+                description: (this.form.description || '').trim() || null,
+            };
+            try {
+                if (this.editing && this.todayEntry) {
+                    await API.put('/api/v1/hr/time-entries/' + this.todayEntry.id, payload);
+                } else {
+                    await API.post('/api/v1/hr/time-entries', payload);
+                }
+                this.editing = false;
+                await this.loadEntries();
+                await this.loadStats();
+                showToast(this.editing ? 'Saved.' : 'Your day is closed out — nice work! 🐺', 'success');
+            } catch (e) {
+                this.error = e.message || 'Could not save your day.';
+            }
+            this.processing = false;
+        },
+
+        goDashboard() { window.location.href = '/pos/dashboard'; },
+        goDrawer() { window.location.href = '/pos/shift'; },
+    };
+}
+</script>
+{% endblock %}

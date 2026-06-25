@@ -52,20 +52,65 @@ async def get_employee_from_token(
     token_payload: dict
 ) -> Optional[EmployeeModel]:
     """
-    Find employee record linked to the authenticated user.
-    Lookup: Keycloak sub → users.keycloak_id → users.id → employees.user_id
+    Find the employee record for the authenticated POS user.
+
+    PRIMARY (the real link): Keycloak sub → users.keycloak_id → users.id → employees.user_id.
+
+    FALLBACK (demo-safe identity bridge): the POS realm (kc-pos-realm-dev) and the HR
+    employee rows were seeded independently — Pam logs in with a real Keycloak sub that was
+    never stitched to the placeholder employees.user_id. Until identities are unified
+    (the Felix/SSO gap), fall back to matching the token's email / preferred_username to an
+    employee by email or first name (case-insensitive). This is what lets "My Day" actually
+    resolve for Pam/Felix today. It's gated behind the primary lookup failing, only ever
+    matches a single unambiguous row, and is logged — so it never silently mis-links.
     """
     keycloak_sub = token_payload.get("sub")
     if not keycloak_sub:
         return None
 
-    # Join employees → users via keycloak_id match
-    result = await db.execute(
-        select(EmployeeModel)
-        .join(UserModel, EmployeeModel.user_id == UserModel.id)
-        .where(UserModel.keycloak_id == UUID(keycloak_sub))
-    )
-    return result.scalar_one_or_none()
+    # PRIMARY: the proper users.keycloak_id → employees.user_id join.
+    try:
+        result = await db.execute(
+            select(EmployeeModel)
+            .join(UserModel, EmployeeModel.user_id == UserModel.id)
+            .where(UserModel.keycloak_id == UUID(keycloak_sub))
+        )
+        employee = result.scalar_one_or_none()
+    except (ValueError, TypeError):
+        employee = None  # malformed sub — fall through to the bridge
+    if employee:
+        return employee
+
+    # FALLBACK: bridge by identity claims while SSO is not yet unified.
+    email = (token_payload.get("email") or "").strip().lower()
+    username = (token_payload.get("preferred_username") or "").strip().lower()
+
+    if email:
+        result = await db.execute(
+            select(EmployeeModel).where(func.lower(EmployeeModel.email) == email)
+        )
+        employee = result.scalar_one_or_none()
+        if employee:
+            logger.info("HR identity bridge: matched %s by email → %s %s",
+                        email, employee.first_name, employee.last_name)
+            return employee
+
+    if username:
+        # Only accept an UNAMBIGUOUS first-name match (one row) — never guess between two.
+        result = await db.execute(
+            select(EmployeeModel).where(func.lower(EmployeeModel.first_name) == username)
+        )
+        matches = result.scalars().all()
+        if len(matches) == 1:
+            logger.info("HR identity bridge: matched username '%s' → %s %s",
+                        username, matches[0].first_name, matches[0].last_name)
+            return matches[0]
+        if len(matches) > 1:
+            logger.warning("HR identity bridge: username '%s' matched %d employees — "
+                           "refusing to guess; link users.keycloak_id properly.",
+                           username, len(matches))
+
+    return None
 
 
 # ================================================================
