@@ -341,7 +341,7 @@
                 const keycloakUrl = (_h === 'helix.local' || _h === 'localhost' || _h === '127.0.0.1')
                     ? 'https://keycloak.helix.local'
                     : 'https://lapiazza.app';
-                const realm = 'kc-pos-realm-dev';
+                const realm = '{{ pos_realm }}';   // env-driven (settings.POS_REALM) — per-env realm split
                 const redirectUri = encodeURIComponent(window.location.origin + '/pos');
 
                 // Redirect to Keycloak logout endpoint

@@ -223,8 +223,8 @@ async def verify_pos_users_exist() -> bool:
         if not admin_token:
             return False
 
-        # Check for POS realm
-        pos_realm = "kc-pos-realm-dev"
+        # Check for POS realm (env-driven — per-env realm split)
+        pos_realm = settings.POS_REALM
         users_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{pos_realm}/users"
         headers = {"Authorization": f"Bearer {admin_token}"}
 

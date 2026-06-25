@@ -105,6 +105,10 @@ import os  # noqa: E402
 # Env code (SBX/STG/PRD) for the status-bar pill. POS pages render via THIS templates instance
 # (not main.py's), so the app_env global must be set here too. Read os.environ directly.
 templates.env.globals["app_env"] = os.environ.get("HX_ENVIRONMENT", "")
+# The POS realm the BROWSER login leg must hit — same env-driven value the server validates
+# tokens against (settings.POS_REALM). Was hardcoded 'kc-pos-realm-dev' in login.html/base.html,
+# which broke the per-env realm split (the app accepted -stg tokens but sent login to -dev).
+templates.env.globals["pos_realm"] = get_settings().POS_REALM
 
 # Shop timezone for "what counts as today" on daily reports. Sales timestamps are stored
 # tz-aware (UTC); the report day-window must be built in the SHOP's local day, or late-night
@@ -3131,7 +3135,7 @@ async def pos_oauth_callback(request: Request, code: str = None, error: str = No
     # Keycloak config
     # IMPORTANT: Use internal Docker URL for server-to-server calls
     keycloak_internal_url = "http://keycloak:8080"
-    realm = "kc-pos-realm-dev"
+    realm = get_settings().POS_REALM   # env-driven — per-env realm split (was hardcoded -dev)
     client_id = "helix_pos_web"
 
     # Build redirect_uri - MUST match EXACTLY what browser sent to Keycloak
@@ -3206,7 +3210,7 @@ async def pos_token_refresh(request: Request):
         return JSONResponse(status_code=400, content={"detail": "missing refresh_token"})
 
     keycloak_internal_url = "http://keycloak:8080"
-    realm = "kc-pos-realm-dev"
+    realm = get_settings().POS_REALM   # env-driven — per-env realm split (was hardcoded -dev)
     client_id = "helix_pos_web"
     token_endpoint = f"{keycloak_internal_url}/realms/{realm}/protocol/openid-connect/token"
 

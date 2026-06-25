@@ -89,7 +89,7 @@ async def get_user_by_id(admin_token: str, user_id: str) -> Optional[dict]:
         User details dict or None if not found
     """
     try:
-        user_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/kc-pos-realm-dev/users/{user_id}"
+        user_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}/users/{user_id}"
         headers = {"Authorization": f"Bearer {admin_token}"}
 
         async with httpx.AsyncClient(verify=False) as client:
@@ -195,7 +195,7 @@ async def get_user_roles(
 
     # Fetch user's realm roles
     try:
-        roles_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/kc-pos-realm-dev/users/{user_id}/role-mappings/realm"
+        roles_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}/users/{user_id}/role-mappings/realm"
         headers = {"Authorization": f"Bearer {admin_token}"}
 
         async with httpx.AsyncClient(verify=False) as client:
@@ -288,7 +288,7 @@ async def assign_role_to_user(
 
     try:
         # Step 1: Get the role definition from realm
-        realm_roles_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/kc-pos-realm-dev/roles/{role_assignment.role_name}"
+        realm_roles_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}/roles/{role_assignment.role_name}"
         headers = {"Authorization": f"Bearer {admin_token}"}
 
         async with httpx.AsyncClient(verify=False) as client:
@@ -303,7 +303,7 @@ async def assign_role_to_user(
             role_data = role_response.json()
 
             # Step 2: Assign role to user
-            assign_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/kc-pos-realm-dev/users/{user_id}/role-mappings/realm"
+            assign_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}/users/{user_id}/role-mappings/realm"
             assign_response = await client.post(
                 assign_url,
                 headers={**headers, "Content-Type": "application/json"},
@@ -378,7 +378,7 @@ async def remove_role_from_user(
 
     try:
         # Step 1: Get the role definition from realm
-        realm_roles_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/kc-pos-realm-dev/roles/{role_name}"
+        realm_roles_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}/roles/{role_name}"
         headers = {"Authorization": f"Bearer {admin_token}"}
 
         async with httpx.AsyncClient(verify=False) as client:
@@ -393,7 +393,7 @@ async def remove_role_from_user(
             role_data = role_response.json()
 
             # Step 2: Remove role from user
-            remove_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/kc-pos-realm-dev/users/{user_id}/role-mappings/realm"
+            remove_url = f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}/users/{user_id}/role-mappings/realm"
             remove_response = await client.delete(
                 remove_url,
                 headers={**headers, "Content-Type": "application/json"},

@@ -121,7 +121,7 @@
             : 'https://lapiazza.app';
         return {
             keycloakUrl,
-            realm: 'kc-pos-realm-dev',
+            realm: '{{ pos_realm }}',   // env-driven (settings.POS_REALM) — per-env realm split
             clientId: 'helix_pos_web',
             redirectUri: window.location.origin + '/pos/callback',
         };
