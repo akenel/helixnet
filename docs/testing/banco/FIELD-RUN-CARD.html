@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Run Card — Banco @ Artemis</title>
+<style>
+  :root{--banco:#0f766e;--red:#C0392B;--ink:#222;--line:#d9dee3;--shade:#f4f6f8;--amber:#b45309;}
+  *{box-sizing:border-box;}
+  body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#eceff1;margin:0;padding:16px;line-height:1.5;}
+  .card{max-width:760px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.12);border-radius:10px;overflow:hidden;}
+  header{background:var(--banco);color:#fff;padding:16px 20px;}
+  header h1{margin:0;font-size:19px;}
+  header p{margin:4px 0 0;font-size:12.5px;opacity:.9;}
+  .body{padding:18px 20px;}
+  h2{font-size:15px;color:var(--banco);border-bottom:2px solid var(--line);padding-bottom:5px;margin:22px 0 10px;}
+  .login{background:var(--shade);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:13.5px;}
+  .login code{background:#e6f2f0;border:1px solid #bfe0da;border-radius:4px;padding:1px 6px;font-family:monospace;}
+  ol.run{padding-left:22px;margin:0;}
+  ol.run>li{margin:9px 0;font-size:14px;}
+  ol.run b{color:#114;}
+  .sub{margin:6px 0 0;padding:8px 12px;background:#f0fbf9;border-left:3px solid var(--banco);border-radius:0 6px 6px 0;font-size:13px;}
+  .sub div{margin:3px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;}
+  th{background:#2C3E50;color:#fff;font-size:11.5px;}
+  td.k{width:42%;color:var(--red);font-weight:600;}
+  .reh{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .reh span{flex:1;min-width:140px;background:var(--shade);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;}
+  .reh b{color:var(--banco);}
+  .notes{width:100%;min-height:80px;border:1px dashed #99a;border-radius:8px;padding:8px;font:inherit;margin-top:8px;}
+  .foot{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid var(--amber);border-radius:6px;padding:10px 14px;font-size:13px;margin-top:18px;}
+  .foot b{color:var(--amber);}
+</style>
+</head>
+<body>
+<div class="card">
+  <header>
+    <h1>🏪 Field Run Card — Banco @ Artemis</h1>
+    <p>Rehearse at the table → run it for real in Felix's shop. Open this on the phone while you scan.</p>
+  </header>
+  <div class="body">
+
+    <div class="login">
+      <b>Where:</b> <code>staging-banco.lapiazza.app</code> &nbsp;·&nbsp;
+      <b>Log in as:</b> <code>felix / helix_pass</code> (manager — full flow) &nbsp;or&nbsp; <code>pam / helix_pass</code> (cashier).
+      <br><span style="font-size:12px;color:#667;">Rehearse as <b>felix</b> — managers get the full create/adopt flow. Pam shows the cashier fallback.</span>
+    </div>
+
+    <h2>The run — walk-in to walk-out</h2>
+    <ol class="run">
+      <li>Open the app → <b>log in</b> → tap <b>🛒 New Sale</b>.</li>
+      <li><b>Scan a KNOWN item</b> (one already in the catalog) → it drops into the cart. ✓ <i>(the happy path)</i></li>
+      <li><b>Scan an UNKNOWN item</b> (a fridge thing, a cig pack) → the <b>capture modal</b> pops up. Three ways out:
+        <div class="sub">
+          <div>🔎 <b>Adopt</b> — search the <b>7,272-item reference catalog</b> → tap the match → title + photo + barcode bound, in the cart, <b>saved to your catalog forever</b>.</div>
+          <div>🔗 <b>Link</b> — you already stock it (no/old barcode)? Search your own catalog → Link → the barcode binds to it.</div>
+          <div>➕ <b>Create fresh</b> — not in either? Type a <b>name + price</b> → Create &amp; add. 📷 Snap a photo if you like.</div>
+        </div>
+      </li>
+      <li><b>No barcode at all</b> (loose item)? → <b>➕ Create no-code item</b> (name + price).</li>
+      <li>Scan more items · scan the same one twice = qty 2 · remove a wrong line.</li>
+      <li><b>💳 Checkout</b> → enter the payment → <b>Complete</b>.</li>
+      <li><b>🧾 Receipt</b> shows the items + the <b>“Come find us on La Piazza” QR</b>.</li>
+      <li><b>📱 Scan that QR</b> with the phone camera → it lands on La Piazza. <i>(the on-ramp — the thing we just built)</i></li>
+      <li><i>(optional)</i> <b>👤 Members</b> → enroll a buyer by name → points land on the sale.</li>
+    </ol>
+
+    <h2>The dodges — when it fights back</h2>
+    <table>
+      <tr><th>If…</th><th>Do this</th></tr>
+      <tr><td class="k">Camera won't read the barcode</td><td>Type the number into the box → <b>Search</b>.</td></tr>
+      <tr><td class="k">Barcode damaged / missing</td><td><b>➕ Create no-code item</b> (name + price).</td></tr>
+      <tr><td class="k">Unknown barcode</td><td>Capture modal → <b>Adopt</b> / <b>Link</b> / <b>Create</b>.</td></tr>
+      <tr><td class="k">“Can't create product” (logged in as Pam)</td><td>It adds a one-off <b>[NEW]</b> line — sell it now, tidy it in the catalogue later.</td></tr>
+      <tr><td class="k">Scanned twice by mistake</td><td>Drop the qty or remove the line.</td></tr>
+      <tr><td class="k">Camera permission blocked</td><td>Allow camera in the browser, reload the page.</td></tr>
+      <tr><td class="k">Anything weird / slow / ugly</td><td>Tap <b>💬 Feedback</b> → it files the snag with a screenshot + diagnostics. Don't lose it.</td></tr>
+    </table>
+
+    <h2>Rehearse 3×</h2>
+    <div class="reh">
+      <span><b>Run 1</b> — slow, read each step.</span>
+      <span><b>Run 2</b> — smoother, glance at the card.</span>
+      <span><b>Run 3</b> — no card. Muscle memory.</span>
+    </div>
+    <p style="font-size:12.5px;color:#667;margin:10px 0 4px;">What tripped you / what to fix:</p>
+    <textarea class="notes" placeholder="e.g. 'adopt search was slow on item 4' · 'camera lost focus in dim light' · 'create-fresh needs a bigger Save button'"></textarea>
+
+    <div class="foot">
+      <b>At the store:</b> same flow, real items, real Felix watching. Hit <b>💬</b> for every snag — that's gold. The clean ~100-item run is exactly what earns Felix's <b>“let's go live”</b> — then we clone him his own box and he's real.
+    </div>
+  </div>
+</div>
+</body>
+</html>
