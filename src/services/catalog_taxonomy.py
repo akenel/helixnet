@@ -59,7 +59,7 @@ def class_promo_restricted(cls: str | None) -> bool:
 
 # Negative guard so "tobacco-free" / "nikotinfrei" / "0mg" never trip the 18+ flag.
 _AGE_NEG = re.compile(r"tabakfrei|tobacco.?free|nikotinfrei|nicotine.?free|ohne\s+nikotin|0\s*mg|alkoholfrei|alcohol.?free|kräuter.?mischung|herbal", re.I)
-_TOBACCO = re.compile(r"tabak|tobacco|zigar|cigaret|nikotin|nicotin\b|\bsnus\b", re.I)
+_TOBACCO = re.compile(r"tabak|tabacc|tobacco|zigar|sigaret|cigaret|nikotin|nicotin\b|\bsnus\b", re.I)
 _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liqueur|likör|absinth|\bbier\b|\bwein\b", re.I)
 # Looks like tobacco/alcohol but is an ACCESSORY (a bag / holder / case), not the 18+ substance —
 # so it never gets the age gate. (Kavatza Tabaktasche, Zigarettenhalter, Tabakbefeuchter…)
@@ -120,7 +120,7 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
         cat = "Accessories" if ref_category == "Accessories" else "Other"
 
     # A real cigarette/tobacco product belongs in its own category, not "Papers".
-    if cls == "tobacco_nicotine" and re.search(r"zigar|cigaret|tabak\b|tobacco|\bsnus\b", t, re.I):
+    if cls == "tobacco_nicotine" and re.search(r"zigar|sigaret|cigaret|tabak\b|tabacc|tobacco|\bsnus\b", t, re.I):
         cat = "Tobacco & Cigarettes"
 
     return cat, cls, class_meta(cls)["age_restricted"]
