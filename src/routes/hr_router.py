@@ -689,32 +689,43 @@ async def link_employee_login(
     user = (await db.execute(
         select(UserModel).where(func.lower(UserModel.username) == username)
     )).scalar_one_or_none()
-    if not user:
+
+    if user:
+        # One login = one employee. Don't steal a username already linked elsewhere.
+        other = (await db.execute(
+            select(EmployeeModel).where(
+                EmployeeModel.user_id == user.id, EmployeeModel.id != employee.id
+            )
+        )).scalar_one_or_none()
+        if other:
+            raise HTTPException(
+                status_code=409,
+                detail=f"'{username}' is already linked to {other.first_name} {other.last_name}."
+            )
+        employee.user_id = user.id
+    else:
+        # New login row. `users.email` is UNIQUE — derive it from the (unique) username,
+        # NOT the employee's email, which already belongs to their existing user row
+        # (re-linking to a new username would otherwise collide → 500).
         user = UserModel(
             keycloak_id=uuid4(),  # placeholder — self-healed on first login
             username=username,
-            email=(employee.email or f"{username}@artemis.local"),
+            email=f"{username}@pos.local",
         )
         db.add(user)
-        await db.flush()
+        employee.user = user  # SQLAlchemy fills employee.user_id on flush
 
-    # One login = one employee. Don't steal a username already linked elsewhere.
-    other = (await db.execute(
-        select(EmployeeModel).where(
-            EmployeeModel.user_id == user.id, EmployeeModel.id != employee.id
-        )
-    )).scalar_one_or_none()
-    if other:
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
         raise HTTPException(
             status_code=409,
-            detail=f"'{username}' is already linked to {other.first_name} {other.last_name}."
+            detail=f"Could not link '{username}' — that login name or email is already in use."
         )
-
-    employee.user_id = user.id
-    await db.commit()
     logger.info("Cashier link: employee %s %s → login '%s'",
                 employee.first_name, employee.last_name, username)
-    return {"id": str(employee.id), "login_username": user.username,
+    return {"id": str(employee.id), "login_username": username,
             "is_linked": True, "message": f"Linked to {username}."}
 
 
