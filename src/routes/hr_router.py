@@ -832,11 +832,14 @@ async def provision_login(
     if user:
         user.username = username
         user.keycloak_id = kc_uuid
+        user.first_name = employee.first_name
+        user.last_name = employee.last_name
         if not user.email:
             user.email = f"{username}@pos.local"
     else:
         user = UserModel(id=kc_uuid, keycloak_id=kc_uuid, username=username,
-                         email=f"{username}@pos.local")
+                         email=f"{username}@pos.local",
+                         first_name=employee.first_name, last_name=employee.last_name)
         db.add(user)
     employee.user_id = kc_uuid
     try:
