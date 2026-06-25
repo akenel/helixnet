@@ -37,7 +37,9 @@ from src.schemas.hr_schema import (
     EmployeeTimesheet,
 )
 from sqlalchemy.exc import IntegrityError
+import httpx
 
+from src.core.config import settings
 from src.core.keycloak_auth import require_any_pos_role, require_manager_or_admin, verify_token
 
 logger = logging.getLogger(__name__)
@@ -727,6 +729,109 @@ async def link_employee_login(
                 employee.first_name, employee.last_name, username)
     return {"id": str(employee.id), "login_username": username,
             "is_linked": True, "message": f"Linked to {username}."}
+
+
+async def _kc_pos_admin(c: httpx.AsyncClient) -> dict:
+    """Master-realm admin token + the POS-realm admin base URL."""
+    r = await c.post(
+        f"{settings.KEYCLOAK_SERVER_URL}/realms/master/protocol/openid-connect/token",
+        data={"grant_type": "password", "client_id": "admin-cli",
+              "username": settings.KEYCLOAK_ADMIN_USER,
+              "password": settings.KEYCLOAK_ADMIN_PASSWORD.get_secret_value()},
+    )
+    r.raise_for_status()
+    return {"h": {"Authorization": f"Bearer {r.json()['access_token']}"},
+            "base": f"{settings.KEYCLOAK_SERVER_URL}/admin/realms/{settings.POS_REALM}"}
+
+
+@router.post("/employees/{employee_id}/provision-login")
+async def provision_login(
+    employee_id: UUID,
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Create (or update) a REAL Keycloak sign-in for an employee: set their password, give
+    them the cashier role, and link it to their card. This is what actually lets a new hire
+    log in. Re-running with a new password = a password reset. Manager/admin only."""
+    username = (payload.get("username") or "").strip().lower()
+    password = (payload.get("password") or "").strip()
+    if not username:
+        raise HTTPException(status_code=422, detail="Give the login a username (e.g. leanna).")
+    if len(password) < 6:
+        raise HTTPException(status_code=422, detail="Password must be at least 6 characters.")
+
+    employee = (await db.execute(
+        select(EmployeeModel).where(EmployeeModel.id == employee_id)
+    )).scalar_one_or_none()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    uid = None
+    try:
+        async with httpx.AsyncClient(timeout=20) as c:
+            kc = await _kc_pos_admin(c)
+            h, base = kc["h"], kc["base"]
+
+            existing = (await c.get(f"{base}/users", headers=h,
+                                    params={"username": username, "exact": "true"})).json()
+            if existing:
+                uid = existing[0]["id"]
+            else:
+                cr = await c.post(f"{base}/users", headers=h, json={
+                    "username": username,
+                    "email": employee.email or f"{username}@pos.local",
+                    "enabled": True, "emailVerified": True,
+                    "firstName": (employee.first_name or username)[:60],
+                    "lastName": (employee.last_name or "")[:60],
+                    "requiredActions": [],
+                    "credentials": [{"type": "password", "value": password, "temporary": False}],
+                })
+                cr.raise_for_status()
+                uid = (await c.get(f"{base}/users", headers=h,
+                                   params={"username": username, "exact": "true"})).json()[0]["id"]
+
+            # (Re)set the password — covers both create and reset.
+            await c.put(f"{base}/users/{uid}/reset-password", headers=h,
+                        json={"type": "password", "value": password, "temporary": False})
+
+            # Cashier role — match by substring (role names carry an emoji prefix).
+            roles = (await c.get(f"{base}/roles", headers=h)).json()
+            cashier = next((r for r in roles if "pos-cashier" in (r.get("name") or "")), None)
+            if cashier:
+                await c.post(f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[cashier])
+            else:
+                logger.warning("provision-login: no pos-cashier role in %s", settings.POS_REALM)
+    except httpx.HTTPError as e:
+        logger.error("provision-login Keycloak error: %s", e)
+        raise HTTPException(status_code=502, detail="Could not reach the login server. Try again.")
+
+    # Link locally with the REAL Keycloak id (primary path resolves immediately).
+    try:
+        kc_uuid = UUID(uid)
+    except (ValueError, TypeError):
+        kc_uuid = uuid4()
+    user = (await db.execute(
+        select(UserModel).where(func.lower(UserModel.username) == username)
+    )).scalar_one_or_none()
+    if user:
+        user.keycloak_id = kc_uuid
+        employee.user_id = user.id
+    else:
+        user = UserModel(keycloak_id=kc_uuid, username=username, email=f"{username}@pos.local")
+        db.add(user)
+        employee.user = user
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409,
+                            detail=f"'{username}' could not be linked — name or email already in use.")
+
+    logger.info("Login provisioned: %s %s → '%s' (cashier)",
+                employee.first_name, employee.last_name, username)
+    return {"id": str(employee.id), "login_username": username, "is_linked": True,
+            "message": f"Sign-in ready — {username} can log in now."}
 
 
 def _employee_card(e: EmployeeModel, login_username: Optional[str] = None) -> dict:

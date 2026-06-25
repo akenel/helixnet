@@ -155,13 +155,19 @@
                                       x-text="e.is_linked ? '● login linked' : '○ no login'"></span>
                             </div>
                             <div class="mt-3 flex flex-wrap items-end gap-3">
-                                <div class="flex-1 min-w-[180px]">
+                                <div class="flex-1 min-w-[150px]">
                                     <label class="lbl">Till login (username)</label>
                                     <input type="text" x-model="e._draft" placeholder="e.g. pam"
                                            autocomplete="off" autocapitalize="none" class="input-field text-lg lowercase">
                                 </div>
+                                <div class="flex-1 min-w-[150px]">
+                                    <label class="lbl">Password <span class="text-gray-400 font-normal">(to create a sign-in)</span></label>
+                                    <input type="text" x-model="e._pw" placeholder="leave blank to keep"
+                                           autocomplete="off" class="input-field text-lg">
+                                </div>
                                 <button @click="saveCashierLink(e)" :disabled="e._saving || !(e._draft && e._draft.trim())"
-                                        class="btn-primary text-lg" x-text="e._saving ? 'Saving…' : (e.is_linked ? '💾 Update' : '🔗 Link')"></button>
+                                        class="btn-primary text-lg"
+                                        x-text="e._saving ? 'Saving…' : ((e._pw && e._pw.trim()) ? '🔑 Create sign-in' : (e.is_linked ? '💾 Update' : '🔗 Link'))"></button>
                                 <button x-show="e.is_linked" @click="unlinkCashier(e)" :disabled="e._saving" class="btn-secondary text-lg">Unlink</button>
                             </div>
                             <p x-show="e._msg" class="text-base mt-2" :class="e._ok ? 'text-green-600' : 'text-red-600'" x-text="e._msg"></p>
@@ -221,7 +227,7 @@
                 try {
                     const d = await API.get('/api/v1/hr/employees');
                     this.staff = (d.employees || []).map(e => ({
-                        ...e, _draft: e.login_username || '', _saving: false, _msg: '', _ok: false,
+                        ...e, _draft: e.login_username || '', _pw: '', _saving: false, _msg: '', _ok: false,
                     }));
                 } catch (e) { showToast('Could not load staff', 'error'); }
                 this.staffLoading = false;
@@ -247,13 +253,19 @@
             async saveCashierLink(e) {
                 const username = (e._draft || '').trim().toLowerCase();
                 if (!username) { e._ok = false; e._msg = 'Type a login first.'; return; }
+                const pw = (e._pw || '').trim();
+                if (pw && pw.length < 6) { e._ok = false; e._msg = 'Password needs 6+ characters.'; return; }
                 e._saving = true; e._msg = '';
                 try {
-                    const res = await API.post('/api/v1/hr/employees/' + e.id + '/link', { username });
-                    e.is_linked = res.is_linked; e.login_username = res.login_username; e._draft = res.login_username || '';
-                    e._ok = true; e._msg = res.message || 'Linked.';
-                    showToast(e.first_name + ' → ' + username + ' ✓', 'success');
-                } catch (err) { e._ok = false; e._msg = err.message || 'Could not link.'; }
+                    // With a password → create/reset a REAL sign-in (Keycloak). Without → just link the label.
+                    const res = pw
+                        ? await API.post('/api/v1/hr/employees/' + e.id + '/provision-login', { username, password: pw })
+                        : await API.post('/api/v1/hr/employees/' + e.id + '/link', { username });
+                    e.is_linked = (res.is_linked !== false); e.login_username = res.login_username || username;
+                    e._draft = e.login_username; e._pw = '';
+                    e._ok = true; e._msg = res.message || 'Saved.';
+                    showToast(e.first_name + ' ✓', 'success');
+                } catch (err) { e._ok = false; e._msg = err.message || 'Could not save.'; }
                 e._saving = false;
             },
 
