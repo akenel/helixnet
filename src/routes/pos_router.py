@@ -1483,6 +1483,21 @@ async def shift_today_presence(
     }
 
 
+@router.post("/day-survey/draft")
+async def draft_end_of_day_survey(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The AI End-of-Day Survey: Banco reads the caller's day at the till and DRAFTS the
+    shift note for them — busy/steady/slow, a rough footfall, and a warm 1–2 line summary.
+    The cashier just confirms or tweaks (My Day folds it into their closeout note).
+
+    Resilient: if no brain is configured / it's down, returns an honest deterministic draft
+    built from the numbers (ai=false). The survey never blocks closeout."""
+    from src.services.day_survey import draft_day_survey
+    return await draft_day_survey(db, _uid(current_user))
+
+
 @router.get("/shift/active")
 async def get_active_sessions(
     store_number: int = 1,
