@@ -275,7 +275,18 @@ HR product later.
 - ✅ **Brick D — create a real sign-in + password.** `POST /employees/{id}/provision-login`
   creates the Keycloak user (POS_REALM) + password + cashier role + real link. The Staff row's
   **🔑 Create sign-in**. Re-run = password reset. *This is what actually lets a new hire log in.*
-- ⏳ **Next — AI end-of-day survey** (sales-of-the-day → pre-filled survey; one-tap confirm).
+- ✅ **AI end-of-day survey** (`src/services/day_survey.py` + `POST /pos/day-survey/draft`).
+  My Day's "🌙 How did the day go?" → **✨ Draft it for me** reads the cashier's day (sales,
+  top sellers, span, busiest hour) and drafts busy/steady/slow + footfall + a warm 1–2 line
+  note. The human confirms/tweaks; it folds into the time entry's `description` (capture-only,
+  no schema change). BYO-brain via `run_llm`; **resilient** — zero-sales / brain-down both
+  degrade to an honest deterministic draft, never blocking closeout. *Sandbox-verified
+  `ai:true` end-to-end.* 8 unit + 2 black-box tests.
+- ✅ **Self-set password (email path)** — `POST /hr/employees/{id}/email-setup` fires
+  Keycloak's `UPDATE_PASSWORD`+`VERIFY_EMAIL` email so a hire picks their own password from
+  their inbox; Staff row **📧 Email them a setup link instead**. Graceful: no SMTP / no real
+  email → plain message to use the password field (the counter-password path is unchanged).
+  Gated on realm SMTP → `scripts/configure_kc_smtp.py` (Typer; set/show/test, run once).
 - ⏳ **Cleanup brick (proposed) — plain-ASCII role names.** Move the emoji out of the role
   *identifier* into a display label (it's a latent foot-gun; see the emoji note). Do with
   explicit go + careful auth testing — never blind.
