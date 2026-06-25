@@ -413,6 +413,15 @@
                            @input.debounce.300ms="searchExisting(); searchReference()"
                            placeholder="Type a name or keyword — e.g. papers, grinder, Gizeh" class="input-field">
                     <p class="text-xs text-gray-500 mt-1">Tap the right product to bind this barcode to it — it'll scan instantly next time.</p>
+                    <!-- ✨ Snap & fill: photograph the item, AI names it + searches for you -->
+                    <div class="mt-2 flex items-center gap-3">
+                        <label class="btn-secondary cursor-pointer flex-none" :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
+                            <span x-text="aiBusy ? '🔍 Reading…' : '✨ Snap & fill'"></span>
+                            <input type="file" accept="image/*" capture="environment" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
+                        </label>
+                        <span class="text-xs text-gray-500">No barcode? Photograph it — AI names it &amp; searches the catalog.</span>
+                    </div>
+                    <p x-show="aiNote" x-text="aiNote" class="text-xs text-indigo-700 font-medium mt-1" style="display:none;"></p>
                     <div x-show="lazyLinkResults.length" class="mt-2 max-h-64 overflow-y-auto divide-y border rounded-lg" style="display:none;">
                         <template x-for="p in lazyLinkResults" :key="p.id">
                             <button @click="linkToExisting(p)" :disabled="lazySaving"
@@ -568,6 +577,8 @@
             lazySaving: false,
             lazyPhotoFile: null,   // the snapped item photo (File) to upload after create
             lazyPhotoData: '',     // data URL for the in-modal preview
+            aiBusy: false,         // photo→product AI suggest in flight
+            aiNote: '',            // AI result line (confidence + ms) or graceful fallback
             // box-split helper: bought a box, sell singles → per-unit cost
             boxOpen: false,
             boxCost: null,
@@ -828,6 +839,8 @@
                 this.lazySaving = false;
                 this.lazyPhotoFile = null;
                 this.lazyPhotoData = '';
+                this.aiBusy = false;
+                this.aiNote = '';
                 this.boxOpen = false;
                 this.boxCost = null;
                 this.boxUnits = null;
@@ -860,6 +873,44 @@
                 const reader = new FileReader();
                 reader.onload = () => { this.lazyPhotoData = reader.result; };
                 reader.readAsDataURL(f);
+            },
+
+            // ✨ Snap & fill: photograph an unmarked item → AI names it → drive the
+            // search-first lookup with that name (maybe it's already in the catalog),
+            // and pre-fill the create form for the no-match case. Keeps the shot as
+            // the product photo (uploaded on save).
+            async aiSnapFill(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                this.lazyPhotoFile = f;
+                const reader = new FileReader();
+                reader.onload = () => { this.lazyPhotoData = reader.result; };
+                reader.readAsDataURL(f);
+                this.aiBusy = true; this.aiNote = '';
+                try {
+                    const fd = new FormData(); fd.append('file', f);
+                    const r = await fetch('/api/v1/pos/products/ai-suggest', {
+                        method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
+                    if (!r.ok) throw new Error('ai-suggest failed');
+                    const d = await r.json();
+                    const s = d.suggestion || {};
+                    const blank = v => v === '' || v === null || v === undefined;
+                    if (s.name) {
+                        // search-first: let the AI name look it up in catalog + reference
+                        this.lazyLinkQuery = s.name;
+                        this.searchExisting(); this.searchReference();
+                    }
+                    if (blank(this.lazyName) && s.name) this.lazyName = s.name;
+                    if (blank(this.lazyPrice) && s.price_estimate != null) this.lazyPrice = s.price_estimate;
+                    this.aiNote = d.note
+                        ? d.note
+                        : `Read by ${d.provider} in ${(d.elapsed_ms/1000).toFixed(1)}s · confidence ${Math.round((s.confidence||0)*100)}% — pick a catalog match above, or save as new below.`;
+                } catch (err) {
+                    console.warn('ai snap', err);
+                    this.aiNote = 'AI unavailable — search or type it in.';
+                } finally { this.aiBusy = false; }
             },
 
             // Box-split: a box cost over N units → the per-unit cost.
