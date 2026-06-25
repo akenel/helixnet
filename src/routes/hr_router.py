@@ -809,21 +809,36 @@ async def provision_login(
         logger.error("provision-login Keycloak error: %s", e)
         raise HTTPException(status_code=502, detail="Could not reach the login server. Try again.")
 
-    # Link locally with the REAL Keycloak id (primary path resolves immediately).
+    # Link locally. CRITICAL: users.id MUST equal the Keycloak sub — checkout writes
+    # transactions.cashier_id = sub and that FK-references users.id (BL-83). A mismatch means
+    # the cashier's first sale 500s with a cashier_id foreign-key violation.
     try:
         kc_uuid = UUID(uid)
     except (ValueError, TypeError):
         kc_uuid = uuid4()
+
+    # Drop any stale local row for this username carrying the WRONG id (older provisioning).
+    # employees.user_id is ON DELETE SET NULL, so this won't orphan the card.
+    stale = (await db.execute(
+        select(UserModel).where(func.lower(UserModel.username) == username, UserModel.id != kc_uuid)
+    )).scalar_one_or_none()
+    if stale:
+        await db.delete(stale)
+        await db.flush()
+
     user = (await db.execute(
-        select(UserModel).where(func.lower(UserModel.username) == username)
+        select(UserModel).where(UserModel.id == kc_uuid)
     )).scalar_one_or_none()
     if user:
+        user.username = username
         user.keycloak_id = kc_uuid
-        employee.user_id = user.id
+        if not user.email:
+            user.email = f"{username}@pos.local"
     else:
-        user = UserModel(keycloak_id=kc_uuid, username=username, email=f"{username}@pos.local")
+        user = UserModel(id=kc_uuid, keycloak_id=kc_uuid, username=username,
+                         email=f"{username}@pos.local")
         db.add(user)
-        employee.user = user
+    employee.user_id = kc_uuid
     try:
         await db.commit()
     except IntegrityError:
