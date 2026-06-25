@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banco — Go-Live Proposal · Artemis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4 portrait; margin: 11mm 14mm; }
+  html, body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; font-size: 10pt; line-height: 1.38; }
+  .hdr { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #C0392B; padding-bottom: 8px; margin-bottom: 14px; }
+  .hdr h1 { font-size: 22pt; font-weight: 800; letter-spacing: .5px; }
+  .hdr h1 b { color: #C0392B; }
+  .hdr .sub { font-size: 9pt; color: #666; margin-top: 2px; }
+  .hdr .right { text-align: right; font-size: 9pt; color: #444; line-height: 1.5; }
+  .hdr .right b { color: #1a1a1a; }
+  h2 { font-size: 11pt; color: #C0392B; text-transform: uppercase; letter-spacing: .5px; margin: 10px 0 5px; }
+  p { margin-bottom: 6px; }
+  .to { background: #fafafa; border-left: 3px solid #C0392B; padding: 8px 12px; margin-bottom: 6px; font-size: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 8px; }
+  th { background: #C0392B; color: #fff; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .4px; text-align: left; padding: 6px 8px; }
+  td { border-bottom: 1px solid #e7e7e7; padding: 6px 8px; vertical-align: top; }
+  td.amt { text-align: right; font-weight: 700; white-space: nowrap; }
+  .freq { color: #777; font-size: 9pt; }
+  .totals { margin-top: 6px; width: 100%; }
+  .totals td { border: none; padding: 3px 8px; }
+  .totals .lbl { text-align: right; color: #555; }
+  .totals .val { text-align: right; font-weight: 800; width: 90px; white-space: nowrap; }
+  .totals .big { font-size: 12pt; color: #C0392B; }
+  .incl { font-size: 9.5pt; color: #333; }
+  .incl li { margin: 1px 0 1px 16px; }
+  .payback { border: 1px dashed #C0392B; border-radius: 6px; padding: 9px 12px; margin: 10px 0; font-size: 9.8pt; background: #fffaf8; }
+  .payback b { color: #C0392B; }
+  .terms { font-size: 9pt; color: #555; }
+  .terms li { margin: 1px 0 1px 16px; }
+  .accept { margin-top: 10px; border-top: 1px solid #ddd; padding-top: 8px; font-size: 9.5pt; }
+  .sig { margin-top: 11px; display: flex; gap: 30px; }
+  .sig div { flex: 1; border-top: 1px solid #999; padding-top: 3px; font-size: 8.5pt; color: #777; }
+  .foot { margin-top: 10px; border-top: 1px solid #eee; padding-top: 6px; font-size: 8pt; color: #999; display: flex; justify-content: space-between; }
+  .foot .tag { font-weight: 800; color: #C0392B; letter-spacing: .5px; }
+  .founder { display: inline-block; font-size: 7.5pt; font-weight: 700; background: #2e9e5b; color: #fff; padding: 1px 6px; border-radius: 8px; vertical-align: middle; }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <div>
+      <h1>Ban<b>co</b></h1>
+      <div class="sub">The Swiss counter · on the HelixNet engine</div>
+    </div>
+    <div class="right">
+      <b>Go-Live Proposal</b><br>
+      Ref: BANCO-ARTEMIS-001<br>
+      Date: 25 June 2026<br>
+      Valid 30 days
+    </div>
+  </div>
+
+  <div class="to">
+    <b>For:</b> Artemis Store — Felix, Lucerne &nbsp;·&nbsp; <b>From:</b> Angelo Kenel (HelixNet / Banco)
+  </div>
+
+  <p>A Swiss-native till and back office — Swiss francs, Swiss VAT, your staff and your members — set up,
+  rehearsed, and taken live without the SAP price tag. You own the data; there are <b>no per-user fees, ever.</b></p>
+
+  <h2>Pricing</h2>
+  <table>
+    <thead><tr><th>Item</th><th>What it covers</th><th style="text-align:right">Amount</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Go-Live package</b> <span class="founder">FOUNDER RATE</span><br><span class="freq">one-time</span></td>
+        <td>Real-identity setup, VAT config, cashier accounts, payment methods, catalogue plan, sandbox
+            rehearsal, ~3-day parallel run, go-live, and week-1 hypercare.</td>
+        <td class="amt">CHF 1,500</td>
+      </tr>
+      <tr>
+        <td><b>Steward Care</b><br><span class="freq">monthly</span></td>
+        <td>Monthly check-in, software updates, small tweaks, and on-call support. Bigger changes billed hourly.</td>
+        <td class="amt">CHF 80 / mo</td>
+      </tr>
+      <tr>
+        <td><b>Managed hosting</b><br><span class="freq">monthly</span></td>
+        <td>Your Banco instance hosted &amp; maintained — backups, updates, uptime. (Or self-host at your own cost.)</td>
+        <td class="amt">CHF 40 / mo</td>
+      </tr>
+      <tr>
+        <td><b>Changes &amp; extra work</b><br><span class="freq">as needed</span></td>
+        <td>Anything outside the package — new features, integrations, training beyond hypercare.</td>
+        <td class="amt">CHF 120 / hr</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="totals">
+    <tr><td class="lbl">Year one (package + 12× Care + 12× hosting):</td><td class="val big">≈ CHF 1,940</td></tr>
+    <tr><td class="lbl">Ongoing per year (Care + hosting):</td><td class="val">≈ CHF 1,440</td></tr>
+  </table>
+
+  <h2>What you get</h2>
+  <ul class="incl">
+    <li>Born-once catalogue — photograph an unmarked item, the AI drafts it; no barcoding marathon.</li>
+    <li>Per-line Swiss VAT, Z-report, per-cashier cash drawer, daily close-out.</li>
+    <li>Staff &amp; My Day — hours and the daily checkout, built in.</li>
+    <li>Add as many cashiers as you like — <b>free</b>.</li>
+  </ul>
+
+  <div class="payback">
+    <b>The payback:</b> a per-user ERP like SAP Business One charges for every cashier, every month, plus an
+    expensive implementation partner — easily five figures in year one. Banco is a <b>fraction of that</b>,
+    with <b>no per-user fees</b> — and adding staff costs nothing.
+  </div>
+
+  <h2>Terms</h2>
+  <ul class="terms">
+    <li><b>Founder rate:</b> the CHF 1,500 go-live reflects Artemis as our first reference customer.</li>
+    <li>Not included: hardware (till, receipt/label printer, scanner, drawer) — yours to supply; we advise on choice.</li>
+    <li>Hosting is monthly and cancellable; you can move to self-hosting at any time (you own your data).</li>
+    <li>Go-live package invoiced on acceptance; Care + hosting begin at go-live.</li>
+  </ul>
+
+  <div class="accept">
+    <b>To proceed:</b> sign below (or reply "agreed") and we book the go-live. First invoice follows on acceptance.
+    <div class="sig">
+      <div>Signature — Artemis / Felix</div>
+      <div>Date</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Angelo Kenel · Telegram @BigKingFisher · Banco on the HelixNet engine · Confidential</span>
+    <span class="tag">ONE SWISS STACK, NOT FOUR FOREIGN APPS.</span>
+  </div>
+</body>
+</html>
