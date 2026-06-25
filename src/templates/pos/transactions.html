@@ -107,6 +107,7 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Receipt #</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Date/Time</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Cashier</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Payment</th>
                             <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
@@ -129,6 +130,9 @@
                                 </td>
                                 <td class="px-4 py-3 text-sm font-medium text-gray-900">
                                     <span x-text="txn.cashier_name || '—'"></span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-700">
+                                    <span x-text="txn.customer_name || '—'"></span>
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"

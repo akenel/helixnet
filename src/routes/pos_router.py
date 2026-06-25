@@ -1545,8 +1545,15 @@ async def list_transactions(
     """List transactions with optional filters. Managers see all, cashiers see their own."""
     query = select(TransactionModel)
 
-    # Date filter
-    if date:
+    # Read-only visibility (BL-95): cashiers see ALL of TODAY's sales, not just their own —
+    # small-shop transparency, and they can't change anything (refund/void/edit stay
+    # manager-only). Managers/admins/auditors may also browse other dates. (Flip back to
+    # per-cashier privacy by re-adding `where(cashier_id == sub)` for a larger shop.)
+    user_roles = current_user.get("user_roles", [])
+    is_manager = any("pos-manager" in r or "pos-admin" in r or "pos-auditor" in r for r in user_roles)
+
+    # Date filter — cashiers are pinned to today; managers may pick a date.
+    if date and is_manager:
         target_date = datetime.strptime(date, "%Y-%m-%d").date()
     else:
         target_date = datetime.now(timezone.utc).date()
@@ -1576,12 +1583,6 @@ async def list_transactions(
         except ValueError:
             pass
 
-    # Cashiers only see their own transactions; managers/admins see all
-    user_roles = current_user.get("user_roles", [])
-    is_manager = any("pos-manager" in r or "pos-admin" in r or "pos-auditor" in r for r in user_roles)
-    if not is_manager:
-        query = query.where(TransactionModel.cashier_id == current_user.get("sub"))
-
     query = query.order_by(TransactionModel.created_at.desc())
     result = await db.execute(query)
     txns = result.scalars().all()
@@ -1599,6 +1600,19 @@ async def list_transactions(
         names = {uid: (first or uname) for uid, first, uname in urows.all()}
     for t in txns:
         t.cashier_name = names.get(t.cashier_id)
+
+    # Resolve the loyalty member each sale was rung under, so the list shows WHO she sold to
+    # (anonymous walk-ins stay blank). One batched lookup.
+    customer_ids = {t.customer_id for t in txns if t.customer_id}
+    cust_names: dict = {}
+    if customer_ids:
+        crows = await db.execute(
+            select(CustomerModel.id, CustomerModel.real_name, CustomerModel.handle)
+            .where(CustomerModel.id.in_(customer_ids))
+        )
+        cust_names = {cid: (real or handle) for cid, real, handle in crows.all()}
+    for t in txns:
+        t.customer_name = cust_names.get(t.customer_id)
     return txns
 
 

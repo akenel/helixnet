@@ -160,6 +160,7 @@ class TransactionRead(TransactionBase):
     transaction_number: str
     cashier_id: UUID
     cashier_name: Optional[str] = None  # BL-83: resolved display name (Pam/Felix/Ralph)
+    customer_name: Optional[str] = None  # BL-95: loyalty member the sale was rung under (else blank)
     customer_id: Optional[UUID]
     status: TransactionStatus
     payment_method: Optional[PaymentMethod]

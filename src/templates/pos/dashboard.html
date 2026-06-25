@@ -44,21 +44,23 @@
 
         <!-- Stats Cards (if cashier or manager) -->
         <div x-show="user.isCashier" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card">
+            <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/transactions'">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-600 font-medium" x-text="salesIsMine ? 'My Sales Today' : 'Store Sales Today'"></p>
                         <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(stats.todaySales)"></p>
+                        <p class="text-xs text-indigo-600 font-semibold mt-1">tap to see today's sales →</p>
                     </div>
                     <span class="text-4xl">💰</span>
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/transactions'">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-600 font-medium">Transactions</p>
                         <p class="text-2xl font-bold text-gray-900" x-text="stats.transactionCount"></p>
+                        <p class="text-xs text-indigo-600 font-semibold mt-1">tap to open the list →</p>
                     </div>
                     <span class="text-4xl">🧾</span>
                 </div>
