@@ -56,8 +56,15 @@
                 <template x-for="(l, i) in lines" :key="l.product_id">
                     <div class="px-4 py-3 border-b flex items-center gap-3">
                         <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-900 truncate" x-text="l.name"></p>
-                            <p class="text-xs text-gray-500 font-mono" x-text="l.barcode || 'no barcode'"></p>
+                            <div class="flex items-center gap-2">
+                                <p class="font-medium text-gray-900 truncate" x-text="l.name"></p>
+                                <!-- BL-96: age flag rides in from the product (class-derived). Cashier sees 18+ at receiving. -->
+                                <span x-show="l.age_restricted" class="flex-none inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5">🔞 18+</span>
+                            </div>
+                            <p class="text-xs text-gray-500 font-mono">
+                                <span x-text="l.barcode || 'no barcode'"></span>
+                                <span x-show="l.category" class="text-gray-400"> · <span x-text="l.category"></span></span>
+                            </p>
                         </div>
                         <div class="flex items-center flex-none">
                             <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-2" title="Remove">&times;</button>
@@ -244,7 +251,10 @@
                     showToast(`${p.name} already on the list`, 'info');
                     return;
                 }
-                this.lines.unshift({ product_id: p.id, name: p.name, barcode: p.barcode });
+                this.lines.unshift({
+                    product_id: p.id, name: p.name, barcode: p.barcode,
+                    age_restricted: !!p.is_age_restricted, category: p.category || '',
+                });
                 showToast(`${p.name} added`, 'success');
             },
 
