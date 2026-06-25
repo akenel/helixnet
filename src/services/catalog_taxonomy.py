@@ -34,7 +34,7 @@ PRODUCT_CLASSES = {
     "standard":         {"label": "Standard goods",      "age_restricted": False, "vat": "standard",   "compliance": None,         "promo_restricted": False},
     "tobacco_nicotine": {"label": "Tobacco / Nicotine",  "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
     "alcohol":          {"label": "Alcohol",             "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
-    "cbd_hemp":         {"label": "CBD / Hemp",          "age_restricted": False, "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},
+    "cbd_hemp":         {"label": "CBD / Hemp",          "age_restricted": True,  "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},
     "cafe_food":        {"label": "Café food & drink",   "age_restricted": False, "vat": "cafe_split", "compliance": None,         "promo_restricted": False},
 }
 DEFAULT_CLASS = "standard"
