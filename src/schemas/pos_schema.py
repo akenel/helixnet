@@ -28,7 +28,8 @@ class ProductBase(BaseModel):
     category: Optional[str] = Field(None, max_length=100)
     tags: Optional[str] = Field(None, description="Comma-separated tags")
     is_active: bool = Field(default=True, description="Product available for sale")
-    is_age_restricted: bool = Field(default=False, description="Requires 18+ ID")
+    is_age_restricted: bool = Field(default=False, description="Requires 18+ ID (derived from product_class)")
+    product_class: str = Field(default="standard", max_length=40, description="Behaviour class — drives 18+ + VAT (catalog_taxonomy)")
     vending_compatible: bool = Field(default=False, description="Can be sold via vending machine")
     vending_slot: Optional[int] = Field(None, description="Vending machine slot number")
     # Catalog picture + supplier + reorder fields (BL-88 catalog dashboard / P4 reorder)
@@ -58,6 +59,7 @@ class ProductUpdate(BaseModel):
     tags: Optional[str] = None
     is_active: Optional[bool] = None
     is_age_restricted: Optional[bool] = None
+    product_class: Optional[str] = Field(None, max_length=40)
     vending_compatible: Optional[bool] = None
     vending_slot: Optional[int] = None
     image_url: Optional[str] = Field(None, max_length=500)
@@ -74,6 +76,32 @@ class ProductRead(ProductBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductSuggestion(BaseModel):
+    """AI-drafted product fields from a photo (cashier confirms before saving)."""
+    name: str = ""
+    brand: str = ""
+    category: Optional[str] = None
+    size: str = ""
+    description: Optional[str] = None
+    tags: Optional[str] = None
+    price_estimate: Optional[Decimal] = None
+    confidence: float = 0.0
+
+
+class ProductSuggestResponse(BaseModel):
+    """Wrapper: the suggestion + which brain answered + how long it took.
+
+    `elapsed_ms` is the AI round-trip — the number we time for the demo KPI.
+    `note` is set (and the suggestion blank) when the AI was unavailable, so the
+    UI degrades to plain typing instead of erroring.
+    """
+    suggestion: ProductSuggestion
+    provider: str
+    model: str = ""
+    elapsed_ms: int
+    note: Optional[str] = None
 
 
 # ================================================================

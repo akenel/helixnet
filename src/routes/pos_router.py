@@ -57,6 +57,7 @@ from src.schemas.pos_schema import (
     ProductCreate,
     ProductUpdate,
     ProductRead,
+    ProductSuggestResponse,
     TransactionCreate,
     TransactionRead,
     TransactionWithItems,
@@ -199,6 +200,48 @@ async def quick_create_product(
     await db.refresh(new_product)
     logger.info(f"Quick on-the-fly product: {new_product.sku} by {current_user['username']}")
     return new_product
+
+
+@router.post("/products/ai-suggest", response_model=ProductSuggestResponse)
+async def ai_suggest_product(
+    file: UploadFile = File(...),
+    hint: Optional[str] = None,
+    provider: Optional[str] = None,
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Snap a photo of an unmarked item → AI drafts the product fields.
+
+    Same gate as the quick on-the-fly create (any POS role): a cashier holding a
+    new, barcode-less item can shoot it and get name/category/description back to
+    confirm. This endpoint ONLY suggests — it does not persist. The flow is:
+        /products/ai-suggest (photo) → cashier confirms → /products/quick → /images.
+
+    Brain is model-agnostic (BANCO_VISION_PROVIDER: gemini default / claude / ollama);
+    `?provider=` overrides per call (handy for the timing probe). The AI round-trip
+    is returned as `elapsed_ms`.
+    """
+    raw = await file.read()
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
+    if not (file.content_type or "").lower().startswith("image/"):
+        raise HTTPException(status_code=415, detail="Please upload an image")
+
+    from src.services.vision_product_analyzer import suggest_product_from_image
+    from src.services.image_intake import ImageIntakeError
+    try:
+        result = await suggest_product_from_image(
+            raw, file.content_type or "image/jpeg", hint=hint, provider=provider,
+        )
+    except ImageIntakeError:
+        raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
+
+    logger.info(
+        "AI product suggest: provider=%s model=%s %dms conf=%.2f name=%r by %s",
+        result["provider"], result["model"], result["elapsed_ms"],
+        result["suggestion"]["confidence"], result["suggestion"]["name"],
+        current_user["username"],
+    )
+    return result
 
 
 @router.get("/products", response_model=list[ProductRead])
@@ -490,7 +533,11 @@ async def adopt_reference_product(
         description=ref.description,
         price=price,
         cost=ref.cost,
-        category=(ref.category or "").strip() or "On the fly",
+        # BL-96: carry our skeleton category + behaviour class + 18+ flag (set by the enricher),
+        # falling back to FourTwenty's raw category if the item wasn't reclassified yet.
+        category=(ref.our_category or ref.category or "").strip() or "Other",
+        product_class=ref.our_class or "standard",
+        is_age_restricted=bool(ref.age_restricted),
         image_url=ref.image_url,    # provisional — copied into our storage below (best-effort)
         supplier_name=ref.supplier,
         supplier_sku=ref.supplier_sku,
