@@ -791,6 +791,9 @@ async def provision_login(
                 uid = (await c.get(f"{base}/users", headers=h,
                                    params={"username": username, "exact": "true"})).json()[0]["id"]
 
+            # Make sure the account is ENABLED (re-enables a previously disabled login).
+            await c.put(f"{base}/users/{uid}", headers=h, json={"enabled": True})
+
             # (Re)set the password — covers both create and reset.
             await c.put(f"{base}/users/{uid}/reset-password", headers=h,
                         json={"type": "password", "value": password, "temporary": False})
@@ -1018,38 +1021,21 @@ async def delete_employee(
 ):
     """Delete an employee record (for fixing a mistake like a mis-typed new hire).
 
-    Removes the card + its time entries/payslips (model cascade). The local users row is
-    left (it's just a mirror); the Keycloak login, if one was provisioned, is **disabled**
-    (best-effort) so the person can no longer sign in — reversible in Keycloak if needed.
+    Removes the card + its time entries/payslips (model cascade). It does **NOT** touch the
+    Keycloak login — deleting a card shouldn't silently disable someone's sign-in (that caused
+    a confusing 'account disabled' half-state). To remove a login, do it explicitly.
     Manager/admin only.
     """
-    row = (await db.execute(
-        select(EmployeeModel, UserModel)
-        .outerjoin(UserModel, EmployeeModel.user_id == UserModel.id)
-        .where(EmployeeModel.id == employee_id)
-    )).first()
-    if not row:
+    emp = (await db.execute(
+        select(EmployeeModel).where(EmployeeModel.id == employee_id)
+    )).scalar_one_or_none()
+    if not emp:
         raise HTTPException(status_code=404, detail="Employee not found")
-    emp, user = row
     name = f"{emp.first_name} {emp.last_name}"
-    username = user.username if user else None
-
-    # Best-effort: disable the Keycloak login so a deleted hire can't sign in.
-    if username:
-        try:
-            async with httpx.AsyncClient(timeout=15) as c:
-                kc = await _kc_pos_admin(c)
-                h, base = kc["h"], kc["base"]
-                found = (await c.get(f"{base}/users", headers=h,
-                                     params={"username": username, "exact": "true"})).json()
-                if found:
-                    await c.put(f"{base}/users/{found[0]['id']}", headers=h, json={"enabled": False})
-        except httpx.HTTPError as e:
-            logger.warning("delete_employee: could not disable KC login '%s': %s", username, e)
 
     await db.delete(emp)
     await db.commit()
-    logger.info("Employee deleted: %s (login '%s' disabled)", name, username)
+    logger.info("Employee deleted: %s (Keycloak login left untouched)", name)
     return {"deleted": True, "name": name, "message": f"{name} removed."}
 
 
