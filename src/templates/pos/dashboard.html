@@ -248,6 +248,10 @@
                     return;
                 }
 
+                // Record presence — the auto-tally source for My Day ("it shows when they
+                // logged in"). Idempotent: a 400 just means they're already on shift today.
+                API.post('/api/v1/pos/shift/start', {}).catch(() => {});
+
                 // Get user info from token
                 const userInfo = AuthHelper.getUserInfo();
                 if (!userInfo || userInfo.posRoles.length === 0) {

@@ -1423,6 +1423,59 @@ async def end_shift_session(
     }
 
 
+@router.get("/shift/today")
+async def shift_today_presence(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Today's presence tally for the logged-in user, derived from login sessions.
+
+    Powers My Day's auto-fill — "it shows when they logged in, so we tally it for them."
+    Returns the first login of the day + minutes on shift so far; the employee just confirms.
+    """
+    user_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
+    now = datetime.now(timezone.utc)
+    start_of_day = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+
+    result = await db.execute(
+        select(ShiftSessionModel)
+        .where(ShiftSessionModel.user_id == user_id)
+        .where(ShiftSessionModel.started_at >= start_of_day)
+        .order_by(ShiftSessionModel.started_at.asc())
+    )
+    sessions = list(result.scalars().all())
+
+    # Fallback: still on a shift that began before midnight.
+    if not sessions:
+        result = await db.execute(
+            select(ShiftSessionModel)
+            .where(ShiftSessionModel.user_id == user_id)
+            .where(ShiftSessionModel.status == SessionStatus.ACTIVE)
+            .order_by(ShiftSessionModel.started_at.asc())
+        )
+        sessions = list(result.scalars().all())
+
+    if not sessions:
+        return {"present": False, "first_login": None, "total_minutes": 0,
+                "suggested_hours": 0.0, "active": False}
+
+    total = 0.0
+    active = False
+    for s in sessions:
+        end = s.ended_at or now
+        if s.ended_at is None and s.status == SessionStatus.ACTIVE:
+            active = True
+        total += max(0.0, (end - s.started_at).total_seconds() / 60.0)
+
+    return {
+        "present": True,
+        "first_login": sessions[0].started_at.isoformat(),
+        "total_minutes": int(round(total)),
+        "suggested_hours": round((total / 60.0) * 4) / 4,  # nearest 0.25h
+        "active": active,
+    }
+
+
 @router.get("/shift/active")
 async def get_active_sessions(
     store_number: int = 1,

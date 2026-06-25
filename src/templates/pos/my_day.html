@@ -119,8 +119,14 @@
             <!-- ============ CLOSE OUT MY DAY (the form) ============ -->
             <div x-show="!todayEntry || editing" class="card">
                 <h3 class="text-lg font-bold text-gray-900 mb-1">⏱️ Close out my day</h3>
-                <p class="text-sm text-gray-500 mb-5">Put the time you walked in and the time you're walking out.
+                <p class="text-sm text-gray-500 mb-4">Put the time you walked in and the time you're walking out.
                     It's yours to enter — be honest, it's that simple.</p>
+
+                <!-- Auto-tally: start time pre-filled from your login -->
+                <div x-show="presence.present" class="bg-green-50 border border-green-200 text-green-800 rounded-lg p-3 text-sm mb-4">
+                    ✓ We tracked you in at <b x-text="hhmmLocal(presence.first_login)"></b> — your start time is
+                    filled in for you. Just set your finish time when you leave.
+                </div>
 
                 <!-- Start / Finish -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -277,6 +283,7 @@ function myDayData() {
         recent: [],
         monthHours: null,
         sales: { total: 0, count: 0, available: false },
+        presence: { present: false, first_login: null, suggested_hours: 0, active: false },
         breakChoices: [0, 30, 60],
         form: { start_time: '', end_time: '', break_minutes: 30, entry_type: 'regular', description: '' },
 
@@ -288,8 +295,25 @@ function myDayData() {
             this.greeting = h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening');
             await this.loadProfile();
             if (this.noProfile) { this.loading = false; return; }
-            await Promise.all([this.loadEntries(), this.loadStats(), this.loadSales()]);
+            await this.loadEntries();   // sets todayEntry first so presence doesn't overwrite a saved start
+            await Promise.all([this.loadStats(), this.loadSales(), this.loadPresence()]);
             this.loading = false;
+        },
+
+        async loadPresence() {
+            // Auto-tally source: when did you first log in today.
+            try {
+                const p = await API.get('/api/v1/pos/shift/today');
+                if (p) this.presence = p;
+                if (this.presence.present && this.presence.first_login && !this.todayEntry && !this.form.start_time) {
+                    this.form.start_time = this.hhmmLocal(this.presence.first_login);
+                }
+            } catch (e) { /* presence is a nicety — never block the screen */ }
+        },
+        hhmmLocal(iso) {
+            if (!iso) return '';
+            try { const d = new Date(iso); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+            catch (e) { return ''; }
         },
 
         async loadProfile() {

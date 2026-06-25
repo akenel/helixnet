@@ -317,6 +317,19 @@
             },
 
             logout() {
+                // Close the presence session first (auto-tally end), best-effort —
+                // don't let it hold up logout. Uses the token before we clear it.
+                try {
+                    const t = this.getToken();
+                    if (t) {
+                        fetch('/api/v1/pos/shift/end', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+                            keepalive: true,
+                        }).catch(() => {});
+                    }
+                } catch (e) {}
+
                 this.clearToken();
                 // Also clear cart
                 sessionStorage.removeItem('pos_cart');
