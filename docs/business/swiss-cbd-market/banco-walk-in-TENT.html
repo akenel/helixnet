@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banco — Walk-in Tent Card (B2B, Swiss CBD / Head Shops)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4 portrait; margin: 0; }
+  html, body { width: 210mm; height: 297mm; font-family: 'Helvetica Neue', Arial, sans-serif; background: white; }
+  .page { width: 210mm; height: 297mm; background: white; display: flex; flex-direction: column; position: relative; }
+
+  /* fold ticks */
+  .fold-line { width: 100%; height: 0; flex-shrink: 0; position: relative; overflow: visible; }
+  .fold-tick { position: absolute; top: -0.15mm; width: 8mm; height: 0.3mm; }
+  .fold-tick svg { width: 100%; height: 100%; display: block; }
+  .fold-tick-l { left: 0; } .fold-tick-r { right: 0; }
+
+  /* tabs */
+  .top-tab { width:100%; height:42mm; background:#fafafa; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .bottom-tab { width:100%; height:55mm; background:#fafafa; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .tab-instruction { font-size:8pt; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:2mm; }
+  .tab-arrow { font-size:24pt; color:#bbb; }
+  .bottom-tab .tab-arrow { transform:rotate(180deg); margin-bottom:2mm; }
+
+  /* ===== FRONT PANEL (100mm) rotated 180 ===== */
+  .front-panel { width:100%; height:100mm; transform:rotate(180deg); padding:9mm 16mm; background:#fff; display:flex; flex-direction:column; justify-content:space-between; }
+  .front-top { text-align:center; }
+  .main-title { font-size:76pt; font-weight:200; letter-spacing:6px; color:#1a1a1a; line-height:0.85; }
+  .main-title b { color:#C0392B; font-weight:300; }
+  .main-subtitle { font-size:18pt; font-weight:300; color:#666; letter-spacing:3px; margin-top:3mm; }
+  .front-middle { display:flex; justify-content:center; padding:2mm 0; }
+  .pillar-band { width:170mm; height:24mm; border-radius:2mm; background:#C0392B; display:flex; align-items:center; justify-content:center; }
+  .pillar-band span { color:#fff; font-size:15pt; font-weight:600; letter-spacing:4px; }
+  .pillar-band .dot { color:#ffffff; opacity:.55; margin:0 5mm; font-weight:300; }
+  .front-bottom { text-align:center; }
+  .tagline { font-size:11pt; color:#555; line-height:1.5; }
+  .tagline .de { font-style:italic; color:#888; }
+  .company-tag { font-size:16pt; font-weight:600; letter-spacing:6px; color:#1a1a1a; margin-top:3mm; }
+
+  /* ===== BACK PANEL (100mm) ===== */
+  .back-panel { width:100%; height:100mm; padding:5mm 12mm; display:flex; flex-direction:column; }
+  .back-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2.5px solid #C0392B; padding-bottom:2mm; margin-bottom:2.5mm; }
+  .brand-title { font-size:22pt; font-weight:400; color:#1a1a1a; }
+  .brand-title b { color:#C0392B; font-weight:700; }
+  .brand-subtitle { font-size:8pt; color:#666; margin-top:1mm; letter-spacing:.3px; }
+  .contact-block { text-align:right; font-size:8.5pt; color:#444; line-height:1.5; }
+  .contact-block .who { font-weight:700; color:#1a1a1a; font-size:9.5pt; }
+  .contact-block .tg { color:#C0392B; font-weight:600; }
+
+  .back-quote { font-style:italic; font-size:11pt; color:#222; text-align:center; padding:2mm 8mm; border-left:3px solid #C0392B; border-right:3px solid #C0392B; margin-bottom:2.5mm; background:#fafafa; }
+  .back-quote .de { display:block; font-style:normal; font-size:9.5pt; color:#777; margin-top:1mm; }
+
+  .back-main { display:flex; flex:1; gap:6mm; }
+  .col { flex:1; }
+  .col-mid { flex:1.05; padding:0 5mm; border-left:1px solid #e2e2e2; border-right:1px solid #e2e2e2; }
+  .col-qr { width:46mm; flex:none; text-align:center; }
+  .section-label { font-size:7.5pt; text-transform:uppercase; letter-spacing:.7px; color:#999; margin-bottom:2.5mm; font-weight:700; }
+
+  .pkg-item { margin-bottom:2mm; }
+  .pkg-item .h { font-size:9.5pt; font-weight:700; color:#1a1a1a; }
+  .pkg-item .h i { display:inline-block; width:2.6mm; height:2.6mm; border-radius:50%; margin-right:2mm; vertical-align:middle; }
+  .pkg-item .d { font-size:8pt; color:#555; line-height:1.3; margin-left:4.6mm; }
+
+  .win-row { margin-bottom:3.5mm; }
+  .win-row .pain { font-size:8pt; color:#999; }
+  .win-row .win { font-size:9pt; color:#1a1a1a; font-weight:600; }
+  .win-row .win b { color:#C0392B; }
+
+  .qr-img { width:34mm; height:34mm; margin:0 auto 2mm; display:block; image-rendering:pixelated; }
+  .qr-cap { font-size:9pt; font-weight:700; color:#1a1a1a; line-height:1.3; }
+  .qr-sub { font-size:7.5pt; color:#777; margin-top:1.5mm; line-height:1.4; }
+
+  .back-footer { display:flex; justify-content:space-between; align-items:center; padding-top:2.5mm; border-top:1px solid #eee; font-size:7pt; color:#999; }
+  .footer-tagline { font-size:11pt; font-weight:700; color:#C0392B; letter-spacing:2px; }
+
+  @media print { html, body { background:white; } .page { margin:0; } }
+</style>
+</head>
+<body>
+<!--
+  ================================================================
+  BANCO B2B WALK-IN TENT CARD  (Swiss CBD / head shops)
+  Layout: top tab 42 + front 100 + back 100 + bottom tab 55 = 297mm
+  Front panel rotated 180 (reads upright when tent stands).
+  ZERO CUTS — fold and tape. QR -> https://t.me/BigKingFisher
+  PDF: node scripts/postcard-to-pdf.js docs/business/swiss-cbd-market/banco-walk-in-TENT.html UFA_r2p/banco-walk-in-TENT.pdf
+  ================================================================
+-->
+<div class="page">
+
+  <!-- TOP TAB -->
+  <div class="top-tab">
+    <span class="tab-instruction">Fold Down</span>
+    <span class="tab-arrow">&#8595;</span>
+  </div>
+  <div class="fold-line">
+    <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+  </div>
+
+  <!-- FRONT PANEL (rotated 180) -->
+  <div class="front-panel">
+    <div class="front-top">
+      <div class="main-title">Ban<b>co</b></div>
+      <div class="main-subtitle">THE SWISS COUNTER</div>
+    </div>
+    <div class="front-middle">
+      <div class="pillar-band">
+        <span>TILL<i class="dot">&bull;</i>MARKETPLACE<i class="dot">&bull;</i>PRINT<i class="dot">&bull;</i>LAB</span>
+      </div>
+    </div>
+    <div class="front-bottom">
+      <div class="tagline">
+        Built in Switzerland for head shops &amp; CBD.<br>
+        <span class="de">In der Schweiz gebaut — für Hanf &amp; CBD.</span>
+      </div>
+      <div class="company-tag">HELIXNET</div>
+    </div>
+  </div>
+
+  <!-- MAIN FOLD -->
+  <div class="fold-line">
+    <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+  </div>
+
+  <!-- BACK PANEL -->
+  <div class="back-panel">
+    <div class="back-header">
+      <div>
+        <div class="brand-title">Ban<b>co</b> &middot; POS</div>
+        <div class="brand-subtitle">Swiss-native till &bull; VAT 8.1% / 2.6% &bull; per-cashier drawer &bull; loyalty</div>
+      </div>
+      <div class="contact-block">
+        <span class="who">Angelo Kenel</span><br>
+        Telegram <span class="tg">&#64;BigKingFisher</span><br>
+        helixnet &bull; La Piazza
+      </div>
+    </div>
+
+    <div class="back-quote">
+      "One Swiss stack instead of four foreign apps."
+      <span class="de">Eine Schweizer Lösung statt vier ausländischer Apps.</span>
+    </div>
+
+    <div class="back-main">
+      <!-- COL 1: THE PACKAGE -->
+      <div class="col">
+        <div class="section-label">The Package</div>
+        <div class="pkg-item">
+          <div class="h"><i style="background:#C0392B"></i>Banco POS</div>
+          <div class="d">Swiss francs, dine-in 8.1% / takeaway 2.6% VAT split, Z-report, per-cashier drawer.</div>
+        </div>
+        <div class="pkg-item">
+          <div class="h"><i style="background:#2e9e5b"></i>La Piazza</div>
+          <div class="d">Community marketplace + loyalty. Your shop, your members — not paid ads.</div>
+        </div>
+        <div class="pkg-item">
+          <div class="h"><i style="background:#3a7bd5"></i>ISOTTO Print</div>
+          <div class="d">In-store cards, tent cards, signage, QR — compliant, on brand.</div>
+        </div>
+        <div class="pkg-item">
+          <div class="h"><i style="background:#e08a2b"></i>The Lab</div>
+          <div class="d">Make-your-own merch &amp; product recipes — equipment + know-how.</div>
+        </div>
+      </div>
+
+      <!-- COL 2: PAIN -> WIN -->
+      <div class="col col-mid">
+        <div class="section-label">Your pain &rarr; our win</div>
+        <div class="win-row">
+          <div class="pain">Swiss VAT 8.1 / 2.6 is a headache</div>
+          <div class="win">Split <b>per line, automatically</b>.</div>
+        </div>
+        <div class="win-row">
+          <div class="pain">Loose flower, no barcodes</div>
+          <div class="win"><b>Snap a photo</b> — the AI fills in the product.</div>
+        </div>
+        <div class="win-row">
+          <div class="pain">You can't advertise freely</div>
+          <div class="win">QR + <b>community</b>, not banned ads.</div>
+        </div>
+        <div class="win-row">
+          <div class="pain">Three foreign subscriptions</div>
+          <div class="win">One <b>Swiss</b> stack, one bill.</div>
+        </div>
+      </div>
+
+      <!-- COL 3: QR / DEMO -->
+      <div class="col-qr">
+        <div class="section-label">Scan &amp; reach me</div>
+        <img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUQAAAFEAQMAAABlJNWFAAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAEqSURBVGiB7djRDYMwDARQb8D+W2YDt8X22QFV4rfXsxAKyQtfJnEwfxomSSWXIT7Ph797Ppf7PiTJJjMFAlwe0Zbkk2cmZOOoJCmcQ5Lc0hLPHkly6Qkk/0L2sp+5AfZ175D8fYnI0XH1kCSZnIFKIJaILSS55Pz8UQnUPaaccyW5pPt43FIlG5LEsgoAlP2YW6kiySbN2ncZgDccVQFKcsnAnRLRWPtmIUkmV/bbON17pQ0WB0k+6fUbB+tAJIltpaAknfTbWQ9nfKSNJKPsUWwKFfkqSTI5Y6wJyJwak+SSWATG/5zOjfaSbBLpMe8x8ZIhklSyKkBMmVH9ksyy68As+M/27YwgySd91R8esCXJKCOGxHTrfUGSTSJgRmLgFCDJJZ+GJJN8AYAWpocxGMRhAAAAAElFTkSuQmCC" alt="Telegram @BigKingFisher QR">
+        <div class="qr-cap">Book a demo<br>Join the Piazza</div>
+        <div class="qr-sub">t.me/BigKingFisher<br>I'll come to your counter.</div>
+      </div>
+    </div>
+
+    <div class="back-footer">
+      <span>Swiss-built &bull; CBD &lt; 1% THC ready &bull; 2026</span>
+      <span class="footer-tagline">YOUR SHOP, SWISS-BUILT.</span>
+    </div>
+  </div>
+
+  <!-- BOTTOM FOLD -->
+  <div class="fold-line">
+    <div class="fold-tick fold-tick-l"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+    <div class="fold-tick fold-tick-r"><svg xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#888"/></svg></div>
+  </div>
+
+  <!-- BOTTOM TAB -->
+  <div class="bottom-tab">
+    <span class="tab-arrow">&#8593;</span>
+    <span class="tab-instruction">Fold Up</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Swiss CBD / Head-Shop Field Map — Banco Go-To-Town</title>
+<!-- Real Leaflet (full lib, CDN) — no bundled subset (CLAUDE.md rule 9) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --ink:#e8eaed; --muted:#9aa3b2;
+    --line:#262b36; --red:#C0392B; --green:#2e9e5b; --blue:#3a7bd5;
+    --orange:#e08a2b; --gray:#7b8494;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  #wrap{display:flex;height:100vh;overflow:hidden}
+  #side{width:380px;min-width:300px;max-width:46vw;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column}
+  #map{flex:1}
+  header{padding:14px 16px;border-bottom:1px solid var(--line)}
+  header h1{font-size:16px;margin:0 0 4px}
+  header p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+  .filters{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:11px;padding:4px 9px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;user-select:none}
+  .chip.on{color:#fff}
+  .chip[data-k="storefront"].on{background:var(--green);border-color:var(--green)}
+  .chip[data-k="lead"].on{background:var(--orange);border-color:var(--orange)}
+  .chip[data-k="producer"].on{background:var(--gray);border-color:var(--gray)}
+  .list{overflow-y:auto;flex:1;padding:6px 0}
+  .city{padding:9px 16px 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--line)}
+  .city .n{color:var(--ink);background:#222733;border-radius:10px;padding:0 7px}
+  .row{padding:8px 16px;cursor:pointer;border-left:3px solid transparent}
+  .row:hover{background:#1d212a}
+  .row .nm{font-size:13px;font-weight:600}
+  .row .ad{font-size:11px;color:var(--muted);margin-top:1px}
+  .row .tg{font-size:10px;color:var(--muted);margin-top:3px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .d-storefront{background:var(--green)} .d-lead{background:var(--orange)} .d-producer{background:var(--gray)}
+  .lp .leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.45;color:#1a1d22}
+  .lp h3{margin:0 0 4px;font-size:14px}
+  .lp .meta{color:#5a6370;font-size:12px;margin-bottom:6px}
+  .lp .hook{background:#fff4e6;border-left:3px solid var(--orange);padding:6px 8px;font-size:12px;margin:6px 0;border-radius:3px}
+  .lp a{color:var(--blue);text-decoration:none}
+  .badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:10px;color:#fff;margin-right:4px}
+  .b-store{background:var(--green)} .b-lead{background:var(--orange)} .b-prod{background:var(--gray)}
+  .b-chain{background:var(--blue)} .b-indie{background:#555c6b}
+  footer{padding:8px 16px;font-size:10px;color:var(--muted);border-top:1px solid var(--line)}
+  .legend{position:absolute;z-index:500;right:12px;bottom:24px;background:rgba(23,26,33,.92);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--ink)}
+  .legend div{margin:2px 0}
+  @media(max-width:680px){#side{display:none}}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="side">
+    <header>
+      <h1>🇨🇭 Swiss CBD / Head-Shop Field Map</h1>
+      <p>Bottom-up, walk-in targets for the Banco / La Piazza / ISOTTO package. Click a pin or a row. Coordinates approximate — verify on site.</p>
+    </header>
+    <div class="filters" id="filters">
+      <span class="chip on" data-k="storefront">● Walk-in storefront</span>
+      <span class="chip on" data-k="lead">● Lead (verify)</span>
+      <span class="chip on" data-k="producer">● Producer / B2B</span>
+    </div>
+    <div class="list" id="list"></div>
+    <footer>Source: deep-research run 2026-06-25 · primary sites + local.ch/search.ch + IG Hanf · re-verify address &amp; hours before driving.</footer>
+  </div>
+  <div id="map"></div>
+  <div class="legend">
+    <div><span class="dot d-storefront"></span> Walk-in storefront (verified)</div>
+    <div><span class="dot d-lead"></span> Lead — name/address to confirm</div>
+    <div><span class="dot d-producer"></span> Producer / wholesale (B2B lead)</div>
+  </div>
+</div>
+<script>
+// cat: storefront | lead | producer ; kind: chain | independent | producer
+const SHOPS = [
+  // ---- ZÜRICH (canton ZH) ----
+  {name:"Green Passion",city:"Zürich",canton:"ZH",region:"DE",addr:"Badenerstrasse 249, 8003 Zürich",lat:47.3766,lng:8.5170,cat:"storefront",kind:"chain",web:"https://www.greenpassion.ch",
+   hook:"Already runs a B2B wholesale arm (b2b.greenpassion.ch, 500+ partners) & founding IG Hanf member — they GET wholesale. Lead with La Piazza marketplace + loyalty + Swiss POS."},
+  {name:"Hanftheke",city:"Winterthur",canton:"ZH",region:"DE",addr:"Eduard-Steiner-Strasse 1, 8400 Winterthur",lat:47.4950,lng:8.7180,cat:"storefront",kind:"chain",web:"https://hanfthekewinterthur.ch",
+   hook:"Multilingual (also targets Lugano/Ticino online). POS + bilingual receipts + La Piazza could unify their DE/IT reach."},
+  {name:"uWeed — Zürich Wiedikon",city:"Zürich",canton:"ZH",region:"DE",addr:"Aegertenstrasse 56, 8003 Zürich",lat:47.3720,lng:8.5150,cat:"lead",kind:"chain",web:"https://uweed.ch",
+   hook:"uWeed is primarily e-commerce; a /laden/ page claims a Zürich store. CONFIRM it's a real walk-in before counting it."},
+  {name:"uWeed — Zürich Altstadt",city:"Zürich",canton:"ZH",region:"DE",addr:"Niederdorfstrasse 58, 8001 Zürich",lat:47.3730,lng:8.5440,cat:"lead",kind:"chain",web:"https://uweed.ch",
+   hook:"Same caveat — verify walk-in status. If real, two doors in Zürich's busiest foot-traffic strip."},
+
+  // ---- BASEL (BS) ----
+  {name:"Tempel Store",city:"Basel",canton:"BS",region:"DE",addr:"Utengasse 24, 4058 Basel",lat:47.5616,lng:7.5930,cat:"storefront",kind:"independent",web:"https://www.tempel-store.ch",
+   hook:"\"Basel's finest grow & head shop since 1997\", already omnichannel. Independent + long history = perfect Swiss-POS + VAT + community story."},
+  {name:"Weedy Shopping — Basel",city:"Basel",canton:"BS",region:"DE",addr:"Steinenvorstadt 16, 4051 Basel",lat:47.5530,lng:7.5870,cat:"storefront",kind:"chain",web:"https://www.weedyshopping.com",
+   hook:"Romandie chain's German-region outpost. Multi-store chain = multi-till / per-cashier drawer / consolidated Z-report pitch."},
+  {name:"Hanf-Tempel GmbH",city:"Basel",canton:"BS",region:"DE",addr:"St. Johanns-Vorstadt 18, 4056 Basel",lat:47.5650,lng:7.5840,cat:"lead",kind:"independent",web:"https://www.tempel-store.ch",
+   hook:"Sister/related entity to Tempel Store — confirm if it's a second walk-in counter."},
+  {name:"CBD shop — Feldbergstrasse (name TBD)",city:"Basel",canton:"BS",region:"DE",addr:"Feldbergstrasse 9, 4057 Basel",lat:47.5680,lng:7.5950,cat:"lead",kind:"independent",web:"",
+   hook:"Address surfaced in directories without a confirmed name. Walk by, get the name, qualify."},
+
+  // ---- BERN (BE) ----
+  {name:"Fourtwenty Trendshop",city:"Bern",canton:"BE",region:"DE",addr:"Kramgasse 3, 3011 Bern",lat:46.9479,lng:7.4515,cat:"storefront",kind:"chain",web:"https://fourtwenty.ch",
+   hook:"4-store chain HQ'd in canton Bern. Old-town flagship. Multi-location = the strongest fit for Banco's multi-till + reorder."},
+  {name:"Fourtwenty World of Vape",city:"Bern",canton:"BE",region:"DE",addr:"Neuengass Passage 3, 3011 Bern",lat:46.9490,lng:7.4430,cat:"storefront",kind:"chain",web:"https://fourtwenty.ch",
+   hook:"Second Bern door, vape-focused. Same owner as Trendshop — one decision-maker, four sites."},
+  {name:"Hanftheke Bern",city:"Bern",canton:"BE",region:"DE",addr:"Kramgasse 37, 3011 Bern",lat:46.9478,lng:7.4520,cat:"storefront",kind:"independent",web:"https://hanfthekebern.ch",
+   hook:"IG Hanf member, same old-town lane as Fourtwenty. Independent — community/loyalty angle lands hard."},
+  {name:"Herba di Berna",city:"Bern",canton:"BE",region:"DE",addr:"Moserstrasse 46, 3014 Bern",lat:46.9620,lng:7.4490,cat:"lead",kind:"independent",web:"",
+   hook:"Named in a Bern shop roundup. Verify it's open + walk-in, then qualify."},
+
+  // ---- ITTIGEN (BE) ----
+  {name:"Fourtwenty Growcenter (HQ)",city:"Ittigen",canton:"BE",region:"DE",addr:"Worblentalstrasse 30, 3063 Ittigen",lat:46.9760,lng:7.4790,cat:"storefront",kind:"chain",web:"https://fourtwenty.ch",
+   hook:"Company seat + growshop. This is where the OWNER is — the room where the buy decision for all 4 stores happens."},
+
+  // ---- FRIBOURG (FR) ----
+  {name:"Fourtwenty Fribourg",city:"Fribourg",canton:"FR",region:"FR",addr:"Rue de Romont 10, 1700 Fribourg",lat:46.8030,lng:7.1510,cat:"storefront",kind:"chain",web:"https://fourtwenty.ch",
+   hook:"French-region outpost of the Bern chain. Bilingual receipts (DE/FR) = a concrete Swiss-native POS demo."},
+
+  // ---- ST. GALLEN (SG) ----
+  {name:"BREAKshop (Headshop)",city:"St. Gallen",canton:"SG",region:"DE",addr:"Linsebühlstrasse 9, 9000 St. Gallen",lat:47.4222,lng:9.3730,cat:"storefront",kind:"chain",web:"https://www.breakshop.ch",
+   hook:"City-centre head+grow shop, same-day shipping already. SG is also a pilot-trial city (CanLeg) — regulated-retail conversation is live here."},
+  {name:"BREAKshop (Growshop / pickup)",city:"St. Gallen",canton:"SG",region:"DE",addr:"Gaiserwaldstrasse 16a, 9015 St. Gallen",lat:47.4280,lng:9.3170,cat:"lead",kind:"chain",web:"https://www.breakshop.ch",
+   hook:"Warehouse/pickup, not a classic retail floor — receiving/goods-in (BL-91) demo could land here, not the walk-in pitch."},
+
+  // ---- ROMANDIE: GLAND / THÔNEX / SIGNY (VD/GE) ----
+  {name:"Weedy Shopping — Gland",city:"Gland",canton:"VD",region:"FR",addr:"Avenue du Mont-Blanc 28, 1196 Gland",lat:46.4200,lng:6.2680,cat:"storefront",kind:"chain",web:"https://www.weedyshopping.com",
+   hook:"Romandie chain home turf. Possible relocation reported — confirm address on site."},
+  {name:"Weedy Shopping — Thônex (Genève)",city:"Thônex",canton:"GE",region:"FR",addr:"Avenue de Genève 109, 1226 Thônex",lat:46.1930,lng:6.1960,cat:"storefront",kind:"chain",web:"https://www.weedyshopping.com",
+   hook:"Geneva-area door. Geneva runs the Cannabinothèque pilot — French-language POS + loyalty pitch."},
+  {name:"Weedy Shopping — Signy",city:"Signy",canton:"VD",region:"FR",addr:"Rue des Fléchères 7a, 1274 Signy-Avenex",lat:46.2870,lng:6.2300,cat:"storefront",kind:"chain",web:"https://www.weedyshopping.com",
+   hook:"In the Signy Centre. (Source mislabeled postcode 1174 → correct is 1274.)"},
+
+  // ---- TICINO / ITALIAN GRISONS ----
+  {name:"CBD360",city:"Grono",canton:"GR",region:"IT",addr:"Via Pascolet 49, 6537 Grono (Mesolcina)",lat:46.2540,lng:9.1490,cat:"storefront",kind:"independent",web:"https://cbd360.ch",
+   hook:"ONLY confirmed Italian-region walk-in — AND it has an in-store bar (AL 4:20). That's the dine-in/takeaway VAT + cafe demo, live. Crown jewel for the IT pitch."},
+
+  // ---- PRODUCER / B2B ----
+  {name:"Pure Production AG",city:"Laufenburg",canton:"AG",region:"DE",addr:"Schützenmattstrasse 16, 5080 Laufenburg",lat:47.5610,lng:8.0640,cat:"producer",kind:"producer",web:"https://pureproduction.pureholding.ch",
+   hook:"NOT a store — vertically-integrated grower w/ ~3500 distribution partners. A supply/marketplace partner for La Piazza, not a walk-in."}
+];
+
+const map = L.map('map',{scrollWheelZoom:true}).setView([46.85,8.0],8);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+
+const COLOR={storefront:'#2e9e5b',lead:'#e08a2b',producer:'#7b8494'};
+const active={storefront:true,lead:true,producer:true};
+const markers={};
+
+function popupHTML(s){
+  const kindBadge = s.kind==='chain'?'<span class="badge b-chain">CHAIN</span>'
+    : s.kind==='producer'?'<span class="badge b-prod">PRODUCER</span>'
+    : '<span class="badge b-indie">INDEPENDENT</span>';
+  const catBadge = s.cat==='storefront'?'<span class="badge b-store">WALK-IN</span>'
+    : s.cat==='lead'?'<span class="badge b-lead">VERIFY</span>'
+    : '<span class="badge b-prod">B2B</span>';
+  const web = s.web?`<a href="${s.web}" target="_blank" rel="noopener">${s.web.replace('https://','')}</a>`:'<i>website TBD</i>';
+  const gmap = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name+' '+s.addr)}`;
+  return `<h3>${s.name}</h3>
+    <div class="meta">${catBadge}${kindBadge} · ${s.city} (${s.canton}) · ${s.region}-region</div>
+    <div>📍 ${s.addr}</div>
+    <div class="hook">🎯 ${s.hook}</div>
+    <div>🔗 ${web}<br>🗺️ <a href="${gmap}" target="_blank" rel="noopener">Open in Google Maps</a></div>`;
+}
+
+SHOPS.forEach((s,i)=>{
+  const m=L.circleMarker([s.lat,s.lng],{
+    radius:8,color:'#0c0e12',weight:1,fillColor:COLOR[s.cat],fillOpacity:.95
+  }).bindPopup(popupHTML(s),{className:'lp',maxWidth:300});
+  m._shop=s; markers[i]=m; m.addTo(map);
+});
+
+// sidebar list grouped by city
+function renderList(){
+  const byCity={};
+  SHOPS.forEach((s,i)=>{ if(!active[s.cat])return; (byCity[s.city]=byCity[s.city]||[]).push({s,i}); });
+  const cities=Object.keys(byCity).sort((a,b)=>byCity[b].length-byCity[a].length||a.localeCompare(b));
+  const el=document.getElementById('list'); el.innerHTML='';
+  let total=0;
+  cities.forEach(c=>{
+    const items=byCity[c]; total+=items.length;
+    const h=document.createElement('div'); h.className='city';
+    h.innerHTML=`<span>${c} · ${items[0].s.canton}</span><span class="n">${items.length}</span>`;
+    el.appendChild(h);
+    items.forEach(({s,i})=>{
+      const r=document.createElement('div'); r.className='row';
+      r.style.borderLeftColor=COLOR[s.cat];
+      r.innerHTML=`<div class="nm"><span class="dot d-${s.cat}"></span>${s.name}</div>
+        <div class="ad">${s.addr}</div>
+        <div class="tg">${s.kind} · ${s.region}-region</div>`;
+      r.onclick=()=>{ map.setView([s.lat,s.lng],15); markers[i].openPopup(); };
+      el.appendChild(r);
+    });
+  });
+  document.querySelector('header p').dataset.total=total;
+}
+renderList();
+
+document.getElementById('filters').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c)return;
+  const k=c.dataset.k; active[k]=!active[k]; c.classList.toggle('on',active[k]);
+  SHOPS.forEach((s,i)=>{ active[s.cat]?markers[i].addTo(map):map.removeLayer(markers[i]); });
+  renderList();
+});
+</script>
+</body>
+</html>
