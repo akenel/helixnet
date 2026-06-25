@@ -145,9 +145,13 @@ async def get_pos_config():
 async def create_product(
     product: ProductCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(require_roles(["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"])),
+    current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Create a new product in the catalog (manager/developer/admin only)"""
+    """Create a new product in the catalog.
+
+    Any cashier can CAPTURE a new item (Banco's born-once / sell-to-seed spirit — the person
+    on the floor grows the catalog by selling). Destructive edits stay manager-only: changing
+    price/details (PUT) and deleting (DELETE) still require a manager/admin."""
 
     new_product = ProductModel(**product.model_dump())
     db.add(new_product)
@@ -362,7 +366,7 @@ async def add_product_barcode(
     product_id: UUID,
     body: AddBarcodeRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(require_manager_or_admin()),
+    current_user: dict = Depends(require_any_pos_role()),  # cashiers capture: link a scanned code
 ):
     """
     Attach an additional barcode to an existing product (BL-90 alias barcodes).
