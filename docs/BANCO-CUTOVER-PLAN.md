@@ -36,6 +36,53 @@ Each gate is a **go/no-go**: if it's red, you do not advance. The only irreversi
 
 ---
 
+## Intake snapshot — DRY RUN (Angel from memory, 2026-06-25 · confirm ✔ with Felix)
+
+> Angel filled the intake as a dry run from what he knows. The **real data** below de-risks most of
+> the build; the four ⚠ items are the only things that truly need Felix before go-live.
+
+**The big reframe:** Artemis has run **all on paper since 1999** — *there is no legacy POS to migrate
+from.* This is a **greenfield cutover**: no export, no integration, no old till to reconcile. The
+"parallel run" is simply *keep the paper tally going 3 days while also ringing on Banco.* Easiest
+possible switch.
+
+**The killer feature (his words):** *"don't know what really sold — reporting."* 25+ years with no
+item-level sales data. Banco's one-line pitch **and** payback story = **"you'll finally know what
+actually sold, by item, every day."** Not VAT, not inventory — *reporting.* Lead the demo with it.
+
+| Topic | Captured (dry run) | Status |
+|---|---|---|
+| Identity | Artemis GmbH, Murbacherstrasse 37, 6003 Luzern · 041 220 22 22 · contact@artemisluzern.ch · "Since 1999" | ✔ build it (kill the Zurich placeholder) |
+| MWST no. | "na" | ⚠ **BLOCKER** — legally required on the receipt |
+| Today's till | **All paper.** 6 numbers → 1 line/day into Banana, manual. | ✔ greenfield; Banco's Z-report = those 6 numbers |
+| Pain | "don't know what really sold / reporting" | ✔ the headline feature |
+| Cashiers | 3 | ✔ 3 logins, per-cashier drawer |
+| Counter device | **"nothing"** | ⚠ **BLOCKER** — no device to run Banco on |
+| Cash receipts | card terminal prints card receipts; cash = none today | ⚠ decide: thermal printer vs receipt-optional |
+| Scanner | none → **phone camera** | ✔ our camera scan (BL-87/90) |
+| Cash drawer | "just a bag" | ✔ software drawer works; physical optional |
+| Labels | no thermal; office printer in back room | ✔ A4 sticker sheets, post-cutover |
+| Catalogue | **Mozy export published daily online — just download.** 7–8k products. | ✔ load it; need the download link |
+| Weight goods | none — all pre-packaged | ✔ simplifies pricing (no by-weight) |
+| No-barcode | "lots" | ✔ sell-to-seed + Snap & fill |
+| Members | seed as they pay | ✔ start fresh |
+| VAT | head-shop goods standard-rated | ✔ **8.1% flat** for now; 2.6% only for the future café |
+| Go-live date | "when ready" — none yet | set after rehearsal (not a blocker to start) |
+
+**The 4 things only Felix can clear (the real Gate-A list):**
+1. ⚠ **MWST number** — the real VAT no. (or confirm registration). The receipt can't be legal without it.
+2. ⚠ **A counter device** — he has nothing. Cheapest path: a tablet (camera-scans, runs Banco in Chrome).
+   *We advise, he buys* — billable steward work, not a Banco cost.
+3. ⚠ **Cash-sale receipts** — buy a small thermal receipt printer, or go receipt-optional/email? One small
+   decision, maybe one cheap purchase.
+4. **Mozy export access** — the download link/login so we can pull the 7–8k catalogue (prices current daily — excellent).
+
+**What I can start now, no Felix needed:** stand up the shop on the sandbox with the real Luzern identity,
+set VAT 8.1% flat, create 3 cashier logins, load the Mozy catalogue the moment we have the link. **Build
+first → book the Monday once hardware + a sandbox rehearsal exist.**
+
+---
+
 ## 1. Scope — what Banco IS, what it hands off, what it never touches
 
 Banco owns **Order-to-Cash (the till)**. Everything else stays as-is and Banco *feeds* it.
