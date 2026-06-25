@@ -35,6 +35,7 @@ Examples
 from __future__ import annotations
 
 import getpass
+import os
 import sys
 
 import httpx
@@ -73,7 +74,8 @@ def main(
     test: str = typer.Option(None, "--test", help="After saving, send a Keycloak test email to this address"),
 ):
     """Read or set a realm's SMTP server settings via the Keycloak admin API."""
-    admin_pass = getpass.getpass(f"Keycloak admin password for '{admin_user}': ")
+    # Env fallbacks for automation (CI / box runs): $KC_ADMIN_PASSWORD, $SMTP_PASSWORD.
+    admin_pass = os.getenv("KC_ADMIN_PASSWORD") or getpass.getpass(f"Keycloak admin password for '{admin_user}': ")
 
     with httpx.Client(timeout=30) as client:
         token = _admin_token(client, kc_url, admin_user, admin_pass)
@@ -115,7 +117,7 @@ def main(
                 smtp["replyTo"] = reply_to
             if auth:
                 smtp["user"] = smtp_user or typer.prompt("SMTP username")
-                smtp["password"] = getpass.getpass("SMTP password (app password): ")
+                smtp["password"] = os.getenv("SMTP_PASSWORD") or getpass.getpass("SMTP password (app password): ")
 
             realm_cfg["smtpServer"] = smtp
             pr = client.put(base, headers=h, json=realm_cfg)

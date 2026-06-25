@@ -112,13 +112,24 @@ provisioned in the new realm simply go unused; no data loss.)
 - All three Banco containers currently resolve `POS_REALM=kc-pos-realm-dev` (the default; no
   per-container override yet — that's the one knob we add).
 
-## Build list (on Angel's go)
+## Build list
 
-1. `scripts/clone_pos_realm.py` — Typer: partial-export `-dev` → retarget id + redirects →
-   create realm. (`--src`, `--dst`, `--host` for redirect trim, `--dry-run`.)
-2. Run Phase 1 (staging) end-to-end; green-light on a real inbox.
-3. Run Phase 2 (prod) at a quiet moment; re-provision staff; smoke.
-4. Persist `POS_REALM` in the staging/prod compose files so a redeploy keeps the realm.
+1. ✅ `scripts/clone_pos_realm.py` — Typer: copy realm login-settings + `helix_pos_web`
+   (redirects trimmed to the env host) + the pos-* roles, optional `--seed-admin`. Idempotent.
+2. ✅ **Phase 1 (staging) — DONE 2026-06-26.** `kc-pos-realm-stg` created (client + 5 roles +
+   felix=pos-admin); **Resend SMTP set** (`smtp.resend.com:587`, from `noreply@lapiazza.app`,
+   key from `borrowhood.env:BH_RESEND_API_KEY`); a real `execute-actions-email` sent **204 via
+   Resend** (not MailHog); `POS_REALM=kc-pos-realm-stg` added to
+   `docker-compose.banco-staging.yml` + container recreated; **end-to-end verified** — felix
+   token from `-stg` accepted by the app (`GET /hr/employees` 200, `POST /day-survey/draft`
+   200). Staging worktree synced to latest main.
+3. ⏳ **Phase 2 (prod)** — same steps for `kc-pos-realm-prd` at a quiet moment; re-provision the
+   real prod staff via Staff tab; smoke. **Awaiting Angel's go** (re-points live prod login).
+4. ⏳ Persist `POS_REALM` in the prod compose (`docker-compose.banco-prod.yml`) at cutover.
+
+**Phase-1 follow-up (operator):** re-provision the rest of staging's staff in `-stg` via
+**Settings ▸ Staff ▸ 🔑 Create sign-in** (only felix is seeded so far). Existing staging
+cashiers live in `-dev` and won't appear until re-provisioned.
 
 *Net: dev/sbx unchanged on MailHog; staging + prod each get their own realm on Resend; real
 hires get real mail; rollback is one env var. No app code changes.*
