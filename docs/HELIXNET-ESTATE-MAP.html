@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HelixNet Estate Map — living sitemap</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1220; --panel:#111a2e; --panel2:#0e1626; --line:#243049;
+    --ink:#e8eef9; --dim:#93a1bd; --faint:#5f6f8c;
+    --product:#34d399; --client:#60a5fa; --internal:#f59e0b; --engine:#a78bfa; --concept:#64748b;
+    --red:#C0392B;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1220,#0a1020 60%,#090e1a);color:var(--ink);
+    font-family:Inter,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 80px}
+  header.hero{padding:26px 22px;border-radius:18px;background:radial-gradient(120% 140% at 0% 0%,#15233f,#0d1730);
+    border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .hero h1{margin:0;font-size:30px;font-weight:900;letter-spacing:-.02em}
+  .hero h1 small{font-weight:600;color:var(--dim);font-size:15px}
+  .hero p{margin:8px 0 0;color:var(--dim);max-width:760px}
+  .stamp{display:inline-block;margin-top:14px;font-size:12px;color:var(--faint);
+    border:1px solid var(--line);padding:3px 10px;border-radius:999px}
+  .rule{margin:18px 0 6px;padding:14px 16px;border-left:3px solid var(--red);background:var(--panel2);
+    border-radius:10px;color:var(--dim);font-size:14px}
+  .rule b{color:var(--ink)}
+  code{font-family:ui-monospace,Menlo,monospace;background:#0a1322;border:1px solid var(--line);
+    padding:1px 6px;border-radius:6px;color:#cbd5e1;font-size:.92em}
+
+  h2.sec{display:flex;align-items:center;gap:10px;margin:34px 0 4px;font-size:13px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.12em;color:var(--dim)}
+  h2.sec .pill{width:10px;height:10px;border-radius:50%}
+  h2.sec .hint{font-weight:500;text-transform:none;letter-spacing:0;color:var(--faint);font-size:12px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;
+    position:relative;transition:transform .15s,border-color .15s}
+  .card:hover{transform:translateY(-2px);border-color:#37496e}
+  .card .top{display:flex;align-items:center;gap:10px}
+  .card .emoji{font-size:24px;line-height:1}
+  .card h3{margin:0;font-size:17px;font-weight:800}
+  .card .what{margin:8px 0 10px;color:var(--dim);font-size:13.5px}
+  .card .surface{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+    text-decoration:none;color:#bcd0f5;background:#0c1626;border:1px solid var(--line);
+    padding:4px 9px;border-radius:8px}
+  .card .surface:hover{border-color:var(--product);color:#fff}
+  .card .surface.path{color:var(--dim);cursor:default}
+  .badge{position:absolute;top:14px;right:14px;font-size:10px;font-weight:800;letter-spacing:.06em;
+    padding:2px 8px;border-radius:999px;text-transform:uppercase}
+  .b-live{background:rgba(52,211,153,.16);color:#6ee7b7;border:1px solid rgba(52,211,153,.35)}
+  .b-built{background:rgba(96,165,250,.16);color:#93c5fd;border:1px solid rgba(96,165,250,.32)}
+  .b-design{background:rgba(100,116,139,.2);color:#cbd5e1;border:1px solid rgba(100,116,139,.4)}
+  .b-sep{background:rgba(245,158,11,.16);color:#fcd34d;border:1px solid rgba(245,158,11,.35)}
+  .l{border-left:4px solid var(--product)}.l.client{border-color:var(--client)}
+  .l.internal{border-color:var(--internal)}.l.engine{border-color:var(--engine)}.l.concept{border-color:var(--concept)}
+
+  /* Banco cluster */
+  .cluster{margin-top:12px;background:linear-gradient(180deg,#10203a,#0d1830);border:1px solid #28456e;
+    border-radius:16px;padding:18px}
+  .cluster .chead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .cluster .chead .emoji{font-size:30px}
+  .cluster .chead h3{margin:0;font-size:20px;font-weight:900}
+  .cluster .chead a{font-size:12.5px;text-decoration:none;color:#6ee7b7;border:1px solid rgba(52,211,153,.35);
+    background:rgba(52,211,153,.1);padding:4px 10px;border-radius:8px}
+  .cluster .csub{margin:6px 0 14px;color:var(--dim);font-size:13.5px}
+  .mods{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .mod{background:#0c1626;border:1px solid var(--line);border-radius:11px;padding:12px}
+  .mod h4{margin:0 0 3px;font-size:14.5px;font-weight:800}
+  .mod p{margin:0;font-size:12px;color:var(--dim)}
+  .mod .tag{display:inline-block;margin-top:7px;font-size:10.5px;color:var(--faint);font-family:ui-monospace,monospace}
+  .seam{margin-top:14px;font-size:13px;color:var(--dim);border-top:1px dashed var(--line);padding-top:12px}
+  .seam b{color:#fcd34d}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:12.5px;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:50%}
+  footer{margin-top:40px;color:var(--faint);font-size:12.5px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>🗺️ HelixNet Estate Map <small>— the living sitemap</small></h1>
+    <p>One engine (<b>HelixNet</b>), many apps under the <b>La Piazza</b> roof. ~19 app surfaces · ~72 domain
+       models · ~710 docs. Products get a <b>subdomain</b>; internal modules get a <b>path</b>; the engine never
+       gets a customer name. <b>We don't split repos</b> — it's a modular monolith.</p>
+    <span class="stamp">Refreshed 2026-06-25 · pairs with <code>HELIXNET-ESTATE-MAP.md</code></span>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--product)"></i>Product (subdomain)</span>
+      <span><i class="dot" style="background:var(--client)"></i>Client / partner app</span>
+      <span><i class="dot" style="background:var(--internal)"></i>Internal module (path)</span>
+      <span><i class="dot" style="background:var(--engine)"></i>Engine</span>
+      <span><i class="dot" style="background:var(--concept)"></i>Concept (designed)</span>
+    </div>
+  </header>
+
+  <div class="rule">A <b>module</b> = <code>routes/&lt;x&gt;_router.py</code> + <code>templates/&lt;x&gt;/</code>
+     + <code>db/models/&lt;x&gt;_*.py</code> + <code>services/&lt;x&gt;_seeding.py</code> — all in one FastAPI app,
+     one DB, one Keycloak. That's how <b>print (ISOTTO)</b>, <b>garage (Camper)</b> and <b>Bottega</b> were each built.</div>
+
+  <!-- ========================= PRODUCTS ========================= -->
+  <h2 class="sec"><span class="pill" style="background:var(--product)"></span>Products <span class="hint">a brand a customer uses</span></h2>
+
+  <!-- Banco cluster -->
+  <div class="cluster">
+    <div class="chead">
+      <span class="emoji">🛒</span>
+      <h3>BANCO — the head-shop ERP</h3>
+      <a href="https://banco.lapiazza.app" target="_blank">banco.lapiazza.app ↗</a>
+      <span class="badge b-live" style="position:static">live</span>
+    </div>
+    <p class="csub">Not one app — a <b>cluster</b> of four modules assembled into Felix's shop ERP.</p>
+    <div class="mods">
+      <div class="mod"><h4>🛒 POS</h4><p>The till — sell, scan, drawer, Z-report, born-once catalog.</p><span class="tag">/pos/* · 1,906 ln</span></div>
+      <div class="mod"><h4>👔 HR</h4><p><b>System of record for people</b> — employees, time, payroll.</p><span class="tag">/hr/* · 976 ln</span></div>
+      <div class="mod"><h4>🎮 Customer</h4><p>CRACK loyalty / member records / QR.</p><span class="tag">/pos/customer-* · 633 ln</span></div>
+      <div class="mod"><h4>📚 KB</h4><p>Knowledge base / contributions.</p><span class="tag">/kb/* · 628 ln</span></div>
+    </div>
+    <div class="seam">
+      <b>POS ↔ HR seam (locked):</b> HR <b>owns</b> people; POS <b>consumes</b> them.
+      <a class="surface" href="https://sandbox-banco.lapiazza.app/pos/my-day" target="_blank" style="margin:0 4px">📅 My Day ↗</a>
+      is the till-side view of HR (lives in <code>templates/pos/</code> on purpose, reads <code>/api/v1/hr</code>).
+      The HR module owns onboarding + the employee card (its own <code>templates/hr/</code> when built); Felix
+      <b>picks cashiers from the HR list</b> in Settings — POS never creates an employee.
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card l">
+      <span class="badge b-live">live</span>
+      <div class="top"><span class="emoji">🏛️</span><h3>Bottega</h3></div>
+      <p class="what">The workshop — Cleo concierge, recipes-as-procedure, compute. 2,093 lines.</p>
+      <a class="surface" href="https://bottega.lapiazza.app" target="_blank">bottega.lapiazza.app ↗</a>
+    </div>
+    <div class="card l">
+      <span class="badge b-sep">sep. repo</span>
+      <div class="top"><span class="emoji">🪪</span><h3>La Piazza</h3></div>
+      <p class="what">The marketplace + the family roof everything sits under. The one thing that's its own repo (BorrowHood, different stack).</p>
+      <a class="surface" href="https://lapiazza.app" target="_blank">lapiazza.app ↗</a>
+    </div>
+  </div>
+
+  <!-- ========================= CLIENT / PARTNER ========================= -->
+  <h2 class="sec"><span class="pill" style="background:var(--client)"></span>Client / partner apps <span class="hint">own subdomain when they run it live</span></h2>
+  <div class="grid">
+    <div class="card l client">
+      <span class="badge b-built">built</span>
+      <div class="top"><span class="emoji">🚐</span><h3>Camper &amp; Tour</h3></div>
+      <p class="what">"The garage" (Sebastino) — service jobs, QA, quotes, invoices. The most-built surface here (4,044 lines).</p>
+      <span class="surface path">camper · /camper/*</span>
+    </div>
+    <div class="card l client">
+      <span class="badge b-built">built</span>
+      <div class="top"><span class="emoji">🖨️</span><h3>ISOTTO Sport</h3></div>
+      <p class="what">"The print shop" — catalog, suppliers, purchase orders, label/print pipeline. 1,386 + 949 lines.</p>
+      <span class="surface path">isotto · /isotto/*</span>
+    </div>
+  </div>
+
+  <!-- ========================= INTERNAL ========================= -->
+  <h2 class="sec"><span class="pill" style="background:var(--internal)"></span>Internal modules <span class="hint">staff/dev — a path, no subdomain</span></h2>
+  <div class="grid">
+    <div class="card l internal">
+      <span class="badge b-built">built</span>
+      <div class="top"><span class="emoji">👔</span><h3>HR</h3></div>
+      <p class="what">System of record for people. Employees, time entries, payroll, payslips. Surfaces inside Banco.</p>
+      <span class="surface path">hr · /hr/*</span>
+    </div>
+    <div class="card l internal">
+      <span class="badge b-built">built</span>
+      <div class="top"><span class="emoji">🐞</span><h3>Backlog</h3></div>
+      <p class="what">Unified board + the 💬 feedback intake button.</p>
+      <span class="surface path">/backlog</span>
+    </div>
+    <div class="card l internal">
+      <span class="badge b-built">built</span>
+      <div class="top"><span class="emoji">🧪</span><h3>QA</h3></div>
+      <p class="what">QA dashboard — bugs / tests.</p>
+      <span class="surface path">/qa</span>
+    </div>
+    <div class="card l internal">
+      <span class="badge b-built">built</span>
+      <div class="top"><span class="emoji">👑</span><h3>Admin</h3></div>
+      <p class="what">Admin surface / role management.</p>
+      <span class="surface path">/api/v1/admin</span>
+    </div>
+    <div class="card l internal">
+      <div class="top"><span class="emoji">🔌</span><h3>Plumbing</h3></div>
+      <p class="what">auth · users · jobs · tasks · health — engine wiring, not verticals.</p>
+      <span class="surface path">/api/v1/*</span>
+    </div>
+  </div>
+
+  <!-- ========================= ENGINE ========================= -->
+  <h2 class="sec"><span class="pill" style="background:var(--engine)"></span>The engine <span class="hint">never customer-named — the trunk</span></h2>
+  <div class="grid">
+    <div class="card l engine">
+      <div class="top"><span class="emoji">⚙️</span><h3>HelixNet platform</h3></div>
+      <p class="what"><code>src/llm</code> (model-as-data) · <code>src/compute</code> (recipe = BOM) · Keycloak
+        multi-realm · the ~72-model DB · print pipeline · RabbitMQ fair-share queue.</p>
+      <span class="surface path">src/* · shared</span>
+    </div>
+  </div>
+
+  <!-- ========================= CONCEPTS ========================= -->
+  <h2 class="sec"><span class="pill" style="background:var(--concept)"></span>Concepts <span class="hint">models/schemas only — designed, not wired (the hidden gold)</span></h2>
+  <div class="grid">
+    <div class="card l concept">
+      <span class="badge b-design">design</span>
+      <div class="top"><span class="emoji">🌱</span><h3>Seed-to-sale</h3></div>
+      <p class="what"><code>farm → batch → lab_test → traceable_item → trace_event</code> — Swiss CBD compliance
+        (THC%, lot, lab №). The differentiator, data model already cut.</p>
+      <span class="surface path">models only</span>
+    </div>
+    <div class="card l concept">
+      <span class="badge b-design">design</span>
+      <div class="top"><span class="emoji">☕</span><h3>Cafe / farm-to-locker</h3></div>
+      <p class="what"><code>headshop_cafe</code>, <code>helix_studio</code> + a stack of supply-chain schemas. Felix's 2027 cafe.</p>
+      <span class="surface path">models only</span>
+    </div>
+    <div class="card l concept">
+      <span class="badge b-design">proto</span>
+      <div class="top"><span class="emoji">🧸</span><h3>Experiments</h3></div>
+      <p class="what"><code>pets</code> · <code>bookstore</code> — early prototypes. Labelled so they don't read as verticals.</p>
+      <span class="surface path">light routers</span>
+    </div>
+  </div>
+
+  <footer>
+    <b>Is it messy?</b> The code seams are clean. Watch three smells: flat <code>db/models/</code> (prefix later),
+    experiments sitting next to verticals (label them), and this map drifting from <code>src/</code> (regenerate
+    after each cluster change). Verdict: modular monolith is the right shape — refresh the map, don't split repos.
+    <br>· Full detail: <code>docs/HELIXNET-ESTATE-MAP.md</code> · Banco design: <code>docs/BANCO-CLOSEOUT-TIMESHEET-AND-GOLIVE.md</code>
+  </footer>
+
+</div>
+</body>
+</html>
