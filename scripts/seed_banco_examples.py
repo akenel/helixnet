@@ -20,9 +20,10 @@ EXAMPLES = [
     ("RAW Classic King Size Slim Papers",   "Papers & Filters",     "standard",          "716165179924", 2.50),
     ("Clipper Lighter Classic Large",       "Lighters",             "standard",          "8412679110014", 3.00),
     ("Black Leaf 4-Part Grinder 50mm",      "Grinders",             "standard",          None,            24.90),
-    ("HempSana CBD Cream 40ml",             "Creams & Topicals",    "cbd_hemp",          None,            39.00),
-    ("CBD Blüten Gorilla Glue 5g",          "CBD & Hemp",           "cbd_hemp",          None,            45.00),
-    ("CBD Gummibärchen 10er",               "Edibles",              "cbd_hemp",          None,            19.00),
+    ("CBD Blüten Gorilla Glue 5g",          "CBD & Hemp",           "cbd_hemp",          None,            45.00),  # flower → 18+
+    ("CBD Gummibärchen 10er",               "Edibles",              "cbd_hemp",          None,            19.00),  # edible → 18+
+    ("CBD Öl Vollspektrum 10% 10ml",        "CBD & Hemp",           "cbd_open",          None,            49.00),  # oil → open (no ID)
+    ("HempSana CBD Cream 40ml",             "Creams & Topicals",    "cbd_open",          None,            39.00),  # cosmetic → open (no ID)
     ("Pueblo Classic Tabak RYO 25g",        "Tobacco & Cigarettes", "tobacco_nicotine",  "7613311110014", 9.20),
     ("Swiss Smoke Shisha Tabak Mango 50g",  "Tobacco & Cigarettes", "tobacco_nicotine",  None,            12.90),
     ("Glass Beaker Ice Bong 30cm",          "Pipes & Bongs",        "standard",          None,            59.00),

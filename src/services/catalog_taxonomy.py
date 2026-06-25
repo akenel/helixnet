@@ -34,7 +34,8 @@ PRODUCT_CLASSES = {
     "standard":         {"label": "Standard goods",      "age_restricted": False, "vat": "standard",   "compliance": None,         "promo_restricted": False},
     "tobacco_nicotine": {"label": "Tobacco / Nicotine",  "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
     "alcohol":          {"label": "Alcohol",             "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
-    "cbd_hemp":         {"label": "CBD / Hemp",          "age_restricted": True,  "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},
+    "cbd_hemp":         {"label": "CBD / Hemp — 18+ (flower·hash·vape·edibles)", "age_restricted": True,  "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},
+    "cbd_open":         {"label": "CBD / Hemp — open (oils·seeds·cosmetics)",     "age_restricted": False, "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},
     "cafe_food":        {"label": "Café food & drink",   "age_restricted": False, "vat": "cafe_split", "compliance": None,         "promo_restricted": False},
 }
 DEFAULT_CLASS = "standard"
@@ -65,6 +66,10 @@ _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liq
 _SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|halter|befeuchter|\betui\b|humidor|aufbewahr", re.I)
 # Rum / whisky etc. as a FLAVOUR on papers/wraps/blunts — not alcohol. (Juicy Jay's Rum papers…)
 _FLAVOUR_PAPER = re.compile(r"paper|\bwrap|blunt|blättchen|\bcone|juicy\s*jay", re.I)
+# CBD in a NON-smokable, non-recreational form (oil / tincture / drops / seeds / cosmetics) — NOT
+# age-gated (Angel: "the oils are not"). Everything else CBD (flower, hash, vape, edibles) stays 18+.
+# Conservative on purpose: only CLEAR open forms land here, because this is the one no-ID class.
+_CBD_OPEN = re.compile(r"\böl\b|\boil\b|\boel\b|tinktur|tincture|\bdrops?\b|tropfen|\bseed\b|\bseeds\b|\bsamen\b|kosmetik|cosmetic|creme|cream|salbe|\bbalm\b|lotion|serum", re.I)
 
 # Ordered keyword -> category; first match wins. CBD checked before creams so "CBD oil" lands in CBD.
 _CATEGORY_RULES = [
@@ -101,7 +106,8 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     elif _ALCOHOL.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
     elif ref_category == "CBD" or re.search(r"cbd|cannabidiol", t, re.I):
-        cls = "cbd_hemp"
+        # Split CBD by form: clear oils/seeds/cosmetics = open (no ID); the rest stays 18+.
+        cls = "cbd_open" if _CBD_OPEN.search(t) else "cbd_hemp"
 
     # CATEGORY: honour FourTwenty's clean buckets, else keyword-classify the dump.
     cat = _REF_CATEGORY_MAP.get(ref_category or "")
