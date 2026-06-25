@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco Go-Live — Intake · Artemis / Felix</title>
+<!-- =====================================================================
+     FELIX INTAKE SHEET — free-text Q&A with 🎤 voice dictation (DE/FR/IT/EN),
+     autosave to this browser, and one-click "Copy answers" to paste back via
+     WhatsApp/Telegram. Same engine as the Banco quick-test sheet. No deps;
+     open in Chrome/Edge. Print → Save as PDF for a paper version.
+     Source of truth for the questions: docs/business/FELIX-INTAKE.md
+     ===================================================================== -->
+<style>
+  :root { --red:#C0392B; --green:#15803d; --ink:#222; --head:#2C3E50; --line:#d9dee3;
+          --banco:#0f766e; --shade:#f4f6f8; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial,Helvetica,sans-serif; color:var(--ink); background:#eceff1; margin:0;
+         padding:24px; line-height:1.5; }
+  .sheet { max-width:860px; margin:0 auto; background:#fff; box-shadow:0 2px 14px rgba(0,0,0,.12);
+           padding:0 0 32px; }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--banco); padding:18px 28px; gap:12px; flex-wrap:wrap; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--banco); letter-spacing:.5px; }
+  header .brand small { color:#789; font-weight:normal; font-size:12px; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding:22px 28px; }
+  h1 { font-size:21px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 16px; }
+  .howto { font-size:12.5px; color:#444; background:#e9f7f5; border:1px solid #b5ddd7;
+           border-left:4px solid var(--banco); border-radius:6px; padding:10px 14px; margin-bottom:16px; }
+  .howto b { color:var(--banco); }
+
+  /* ---- sticky dashboard ---- */
+  .dash { position:sticky; top:0; z-index:5; background:#fff; border:1px solid var(--line);
+          border-radius:10px; padding:12px 16px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .dash .row1 { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .pct { font-size:30px; font-weight:bold; color:var(--banco); min-width:78px; }
+  .pct.done { color:var(--green); }
+  .tally { font-size:13px; color:#556; }
+  .langwrap { margin-left:auto; font-size:12.5px; color:#667; display:flex; align-items:center; gap:6px; }
+  .langwrap select { font:inherit; font-size:12.5px; border:1px solid var(--line); border-radius:6px;
+                     padding:4px 8px; color:var(--head); background:var(--shade); cursor:pointer; }
+  .bar { height:12px; background:#e7ebee; border-radius:7px; overflow:hidden; margin-top:10px; }
+  .bar > i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--banco),#22a08f);
+             transition:width .35s ease; }
+  .bar > i.done { background:linear-gradient(90deg,var(--green),#3bbf6f); }
+  .dashbtns { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .dashbtns button { border:1px solid var(--line); background:#fafbfc; color:var(--head);
+                     border-radius:6px; padding:6px 11px; font-size:12.5px; cursor:pointer; font-weight:600; }
+  .dashbtns button:hover { border-color:var(--banco); background:#f1faf8; color:var(--banco); }
+  .dashbtns button.primary { background:var(--banco); color:#fff; border-color:var(--banco); }
+  .dashbtns button.danger:hover { border-color:var(--red); color:var(--red); background:#fdecec; }
+
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; font-size:13px; background:var(--shade);
+          border:1px solid var(--line); border-radius:6px; padding:12px 16px; margin-bottom:18px; }
+  .meta b { color:var(--head); }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit; color:var(--ink);
+              padding:2px 4px; width:100%; min-width:50px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--banco); background:#fffce8; }
+
+  /* ---- sections + questions ---- */
+  .sec { margin:0 0 6px; }
+  .sec > h2 { font-size:14.5px; color:#fff; background:var(--banco); border-radius:6px 6px 0 0;
+              margin:18px 0 0; padding:9px 14px; }
+  .sec .qs { border:1px solid var(--line); border-top:0; border-radius:0 0 6px 6px; padding:6px 14px 12px; }
+  .q { padding:11px 0 4px; border-bottom:1px dashed #e6eaee; }
+  .q:last-child { border-bottom:0; }
+  .q .lab { font-size:13.5px; color:var(--head); font-weight:600; margin-bottom:5px; }
+  .q .hint { font-size:11.5px; color:#8a93a0; font-weight:normal; }
+  .ansrow { display:flex; gap:7px; align-items:flex-start; }
+  .ansrow textarea { flex:1; min-height:40px; border:1px solid var(--line); border-radius:6px; padding:8px 10px;
+    font:inherit; font-size:13px; resize:vertical; }
+  .ansrow textarea:focus { outline:none; border-color:var(--banco); background:#fffef8; }
+  .ansrow textarea.filled { border-color:#b5ddd7; background:#f6fcfb; }
+  .mic { border:1px solid var(--line); background:#fff; border-radius:6px; cursor:pointer; font-size:15px;
+         padding:6px 9px; line-height:1; align-self:stretch; }
+  .mic:hover { border-color:var(--banco); background:#f1faf8; }
+  .mic.rec { background:#fdecec; border-color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.5);} 50%{box-shadow:0 0 0 4px rgba(192,57,43,0);} }
+
+  .micnote { font-size:11px; color:#999; margin:10px 0 0; }
+  .signoff { margin-top:20px; border:1px dashed var(--banco); border-radius:8px; padding:14px 16px; background:#f3fbfa; }
+  .signoff h3 { margin:0 0 8px; color:var(--banco); font-size:14px; }
+  .signoff p { font-size:12.5px; color:#456; margin:0 0 10px; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 28px 0; font-size:11px; color:#8a93a0;
+           display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--head); color:#fff;
+           padding:9px 18px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .25s; z-index:50; }
+  .toast.show { opacity:1; }
+  @media (max-width:680px){ .meta{grid-template-columns:1fr;} .langwrap{margin-left:0;} }
+  @media print {
+    body{background:#fff;padding:0;} .sheet{box-shadow:none;max-width:100%;}
+    .dash{position:static;box-shadow:none;} .dashbtns,.mic,.langwrap{display:none!important;}
+    .ansrow textarea{background:transparent;border-color:#bbb;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <header>
+    <div class="brand">Banco <small>· on the HelixNet engine</small></div>
+    <div class="docid">BANCO-ARTEMIS-INTAKE</div>
+  </header>
+
+  <div class="body">
+    <h1>Go-Live Intake — what I need from you</h1>
+    <p class="sub">~15 minutes. This is everything I need to build your shop and book your go-live Monday. — Angelo</p>
+
+    <div class="howto">📝 <b>How to use:</b> answer each box — <b>type</b>, or tap the <b>🎤</b> and just
+      <b>talk</b> (pick your language top-right). Everything <b>auto-saves in this browser</b> — close it,
+      come back, your answers are still here. When you're done, hit <b>📋 Copy answers</b> and paste them
+      back to me on WhatsApp/Telegram. Don't know one? Leave it — we'll fill it together over coffee.</div>
+
+    <!-- ===== dashboard ===== -->
+    <div class="dash">
+      <div class="row1">
+        <div class="pct" id="pct">0%</div>
+        <div class="tally" id="tally">— answered</div>
+        <div class="langwrap">🎤 <label for="lang">Voice:</label>
+          <select id="lang">
+            <option value="de-DE" selected>Deutsch</option>
+            <option value="fr-FR">Français</option>
+            <option value="it-IT">Italiano</option>
+            <option value="en-US">English</option>
+          </select>
+        </div>
+      </div>
+      <div class="bar"><i id="barfill"></i></div>
+      <div class="dashbtns">
+        <button class="primary" id="btnCopy">📋 Copy answers</button>
+        <button id="btnDownload">💾 Download .txt</button>
+        <button id="btnPrint">🖨️ Print / PDF</button>
+        <button class="danger" id="btnReset">♻️ Reset</button>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div><b>Shop:</b> <input class="txt" data-k="shop" type="text" placeholder="Artemis, Luzern"></div>
+      <div><b>Your name:</b> <input class="txt" data-k="who" type="text" placeholder="Felix"></div>
+      <div><b>Date:</b> <input class="txt" data-k="date" type="text" placeholder="dd/mm/yyyy"></div>
+      <div><b>Best contact:</b> <input class="txt" data-k="contact" type="text" placeholder="phone / WhatsApp"></div>
+    </div>
+
+    <!-- questions injected by JS from QUESTIONS -->
+    <div id="form"></div>
+
+    <div class="signoff">
+      <h3>That's it 🎉</h3>
+      <p>Tap <b>📋 Copy answers</b> above and paste them back to me. With this I build your shop on the
+        sandbox, load the catalogue, and we sit down so you can throw every weird case at it before we
+        flip the switch.</p>
+      <div class="micnote" id="micstatus">Mic ready (Chrome/Edge). First tap asks permission.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Angelo Kenel · Telegram @BigKingFisher · Banco on the HelixNet engine · Confidential</span>
+    <span>BANCO-ARTEMIS-INTAKE · feeds Gate A of the cutover plan</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================================================================
+//  Felix intake — free-text Q&A, autosave, voice, copy-back. No deps.
+// ===================================================================
+(function () {
+  var LSKEY = 'felix_intake_v1';
+  var state = load();
+
+  // ---- the questions (mirror docs/business/FELIX-INTAKE.md) ----
+  var QUESTIONS = [
+    { sec: "1. Your shop, on the receipt", items: [
+      { k:"legal",   q:"Legal name + the address you want printed on the receipt", hint:"exactly as it should appear" },
+      { k:"mwst",    q:"MWST / VAT number" },
+      { k:"footer",  q:"Anything else on the receipt footer?", hint:"phone, “Danke”, opening hours…" },
+    ]},
+    { sec: "2. How you do it today", items: [
+      { k:"till_now", q:"What till / POS do you run now? (brand)" },
+      { k:"till_good",q:"What does it do well (keep)?" },
+      { k:"till_bad", q:"What annoys you (fix)?" },
+      { k:"banana",   q:"How do numbers get into Banana today — type them, or export? Which figures?" },
+    ]},
+    { sec: "3. The day's shape", items: [
+      { k:"cashiers", q:"How many cashiers / people ring sales?" },
+      { k:"cashmix",  q:"A typical day: roughly how much cash vs card / TWINT?" },
+      { k:"other_pay",q:"Do you take anything else?", hint:"vouchers, account, deposit…" },
+    ]},
+    { sec: "4. Hardware (what's on your counter)", items: [
+      { k:"device",   q:"Till device — PC, tablet, phone?" },
+      { k:"receipt",  q:"Receipt printer — model + how it connects (USB / network / Bluetooth)?" },
+      { k:"scanner",  q:"Barcode scanner? (or phone camera)" },
+      { k:"drawer",   q:"Cash drawer?" },
+      { k:"label",    q:"Label printer — what do you stick on a product, on what?", hint:"thermal label + size, or A4 sticker sheets" },
+    ]},
+    { sec: "5. The catalogue", items: [
+      { k:"mozy",     q:"Can you get me a current Mozy export (products + prices)? When?" },
+      { k:"count",    q:"Roughly how many products?" },
+      { k:"loose",    q:"Anything sold by weight / loose / no barcode?" },
+    ]},
+    { sec: "6. Your members (the CRACKs)", items: [
+      { k:"members",  q:"Is the member/loyalty list anywhere I can import, or start fresh and seed as they shop?" },
+    ]},
+    { sec: "7. The date", items: [
+      { k:"monday",   q:"Which Monday do you want to go live?", hint:"a clean week, your call" },
+      { k:"parallel", q:"A quiet stretch the week before for a 3-day parallel run alongside the old till?" },
+    ]},
+  ];
+
+  // ---- build the form ----
+  var form = document.getElementById('form');
+  var TOTAL = 0;
+  QUESTIONS.forEach(function (grp) {
+    var sec = document.createElement('div'); sec.className = 'sec';
+    var inner = '<h2>' + grp.sec + '</h2><div class="qs">';
+    grp.items.forEach(function (it) {
+      TOTAL++;
+      inner +=
+        '<div class="q">' +
+          '<div class="lab">' + it.q + (it.hint ? ' <span class="hint">— ' + it.hint + '</span>' : '') + '</div>' +
+          '<div class="ansrow">' +
+            '<textarea data-a="' + it.k + '" rows="1" placeholder="type or tap 🎤"></textarea>' +
+            '<button class="mic" title="dictate" data-mic="' + it.k + '">🎤</button>' +
+          '</div>' +
+        '</div>';
+    });
+    inner += '</div>';
+    sec.innerHTML = inner;
+    form.appendChild(sec);
+  });
+
+  // ---- autosave (answers + meta) ----
+  document.body.addEventListener('input', function (e) {
+    var el = e.target;
+    if (el.dataset.a != null) {
+      state.answers = state.answers || {};
+      state.answers[el.dataset.a] = el.value;
+      el.classList.toggle('filled', !!el.value.trim());
+      save(); refresh();
+    }
+    if (el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+  });
+
+  // ---- restore ----
+  function restore() {
+    (state.answers) && Object.keys(state.answers).forEach(function (k) {
+      var el = document.querySelector('[data-a="' + k + '"]');
+      if (el) { el.value = state.answers[k]; el.classList.toggle('filled', !!state.answers[k].trim()); }
+    });
+    (state.fields) && Object.keys(state.fields).forEach(function (k) {
+      var el = document.querySelector('[data-k="' + k + '"]'); if (el) el.value = state.fields[k];
+    });
+  }
+
+  // ---- progress ----
+  function refresh() {
+    var done = 0;
+    if (state.answers) Object.keys(state.answers).forEach(function (k) { if (state.answers[k] && state.answers[k].trim()) done++; });
+    var pct = Math.round(100 * done / TOTAL);
+    var pctEl = document.getElementById('pct'), fill = document.getElementById('barfill');
+    pctEl.textContent = pct + '%'; fill.style.width = pct + '%';
+    var all = (done >= TOTAL);
+    pctEl.classList.toggle('done', all); fill.classList.toggle('done', all);
+    document.getElementById('tally').innerHTML = done + ' / ' + TOTAL + ' answered'
+      + (all ? ' · 🎉 <b>done — copy &amp; send</b>' : '');
+  }
+
+  // ---- build the text to copy/send ----
+  function fld(k) { return (state.fields && state.fields[k]) || ''; }
+  function report() {
+    var L = [];
+    L.push('BANCO GO-LIVE INTAKE — ' + (fld('shop') || 'Artemis') + ' / ' + (fld('who') || 'Felix'));
+    L.push('Date: ' + (fld('date') || '?') + '   Contact: ' + (fld('contact') || '?'));
+    L.push('=========================================');
+    QUESTIONS.forEach(function (grp) {
+      L.push(''); L.push(grp.sec.toUpperCase());
+      grp.items.forEach(function (it) {
+        var a = (state.answers && state.answers[it.k]) ? state.answers[it.k].trim() : '—';
+        L.push('• ' + it.q); L.push('  ' + a);
+      });
+    });
+    return L.join('\n');
+  }
+
+  // ---- buttons ----
+  document.getElementById('btnCopy').onclick = function () { copy(report()); toast('Answers copied — paste them back to me'); };
+  document.getElementById('btnPrint').onclick = function () { window.print(); };
+  document.getElementById('btnDownload').onclick = function () {
+    var blob = new Blob([report()], { type: 'text/plain' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'banco-intake-' + (fld('who') || 'felix').replace(/[^\w-]/g, '') + '.txt'; a.click();
+    toast('Downloaded');
+  };
+  document.getElementById('btnReset').onclick = function () {
+    if (!confirm('Clear all answers on this sheet?')) return;
+    localStorage.removeItem(LSKEY); location.reload();
+  };
+
+  // ---- clipboard + toast ----
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(fallback); }
+    else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+    }
+  }
+  var toastT;
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1700);
+  }
+
+  // ---- persistence ----
+  function load() { try { return JSON.parse(localStorage.getItem(LSKEY)) || {}; } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---- voice dictation (language-aware) ----
+  (function () {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var status = document.getElementById('micstatus');
+    var langSel = document.getElementById('lang');
+    if (!SR) {
+      if (status) status.textContent = 'Voice not available here — just type your answers (works in Chrome/Edge).';
+      document.querySelectorAll('.mic, .langwrap').forEach(function (b) { b.style.display = 'none'; });
+      return;
+    }
+    var active = null;
+    document.body.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('.mic'); if (!btn) return;
+      ev.preventDefault();
+      var ta = btn.parentNode.querySelector('textarea'); if (!ta) return;
+      if (active) { active.rec.stop(); if (active.btn === btn) return; }
+      var rec = new SR(); rec.lang = langSel.value; rec.interimResults = false; rec.continuous = false;
+      active = { btn: btn, rec: rec }; btn.classList.add('rec');
+      if (status) status.textContent = 'Listening (' + langSel.value + ')… speak now.';
+      rec.onresult = function (e) {
+        var text = ''; for (var i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+        text = text.trim(); if (!text) return;
+        ta.value = (ta.value ? ta.value + ' ' : '') + text;
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+      rec.onerror = function (e) { if (status) status.textContent = 'Mic error: ' + e.error + ' — try again or type.'; };
+      rec.onend = function () { btn.classList.remove('rec'); active = null;
+        if (status) status.textContent = 'Mic ready — tap a 🎤 to add more, or edit the box.'; };
+      try { rec.start(); } catch (err) { btn.classList.remove('rec'); }
+    });
+  })();
+
+  // ---- go ----
+  restore(); refresh();
+})();
+</script>
+
+</body>
+</html>
