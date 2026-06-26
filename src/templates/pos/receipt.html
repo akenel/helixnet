@@ -125,6 +125,7 @@
                         <th class="text-center py-2">Qty</th>
                         <th class="text-right py-2">Price</th>
                         <th class="text-right py-2">Total</th>
+                        <th class="text-center py-2 w-6" title="VAT rate code">VAT</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,10 +138,17 @@
                             <td class="text-center" x-text="item.quantity"></td>
                             <td class="text-right" x-text="formatPrice(item.unit_price)"></td>
                             <td class="text-right font-semibold" x-text="formatPrice(item.line_total)"></td>
+                            <!-- Per-line VAT rate code (A=standard / B=reduced) — legend below -->
+                            <td class="text-center text-sm font-bold" :class="rateCode(item)==='B' ? 'text-teal-700' : 'text-gray-700'" x-text="rateCode(item)"></td>
                         </tr>
                     </template>
                 </tbody>
             </table>
+
+            <!-- VAT rate legend (FTA: coded per-line rates require a legend explaining the codes) -->
+            <div class="text-xs text-gray-500 mb-3">
+                VAT: <b>A</b> = <span x-text="STD()"></span>%<span x-show="hasReduced()"> · <b class="text-teal-700">B</b> = <span x-text="RED()"></span>% (takeaway food &amp; drink)</span>
+            </div>
 
             <!-- Totals -->
             <div class="border-t-2 border-gray-300 pt-4 space-y-2">
@@ -157,8 +165,16 @@
                     <span x-text="formatPrice(transaction.total)"></span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>incl. VAT (<span x-text="storeSettings.vat_rate || '8.1'"></span>%):</span>
+                    <span>incl. VAT:</span>
                     <span x-text="formatPrice(transaction.tax_amount)"></span>
+                </div>
+                <!-- Per-rate VAT split (shown when the sale mixes 8.1% + 2.6% lines) -->
+                <div x-show="hasReduced()" class="flex justify-between text-xs text-gray-500">
+                    <span>
+                        <b>A</b> <span x-text="STD()"></span>% <span x-text="formatPrice(vatSplit().std)"></span>
+                        · <b class="text-teal-700">B</b> <span x-text="RED()"></span>% <span class="text-teal-700" x-text="formatPrice(vatSplit().red)"></span>
+                    </span>
+                    <span></span>
                 </div>
             </div>
 
@@ -402,6 +418,35 @@
             },
             discountTotal() {
                 return this.grossSubtotal() - parseFloat(this.transaction.total || 0);
+            },
+
+            // --- Per-line VAT rate codes + split (INC4 receipt legend) -----------------
+            // FTA: a receipt may code the per-line rate as long as a legend explains it.
+            // A = standard (8.1%), B = reduced (2.6%, takeaway cafe food/drink).
+            STD() { return parseFloat(POSConfig.vat_rate || 8.1); },
+            RED() { return parseFloat(POSConfig.vat_rate_reduced != null ? POSConfig.vat_rate_reduced : 2.6); },
+            isReduced(item) {
+                // A line is reduced only if its snapshotted rate IS the reduced rate.
+                const r = parseFloat((item && item.vat_rate) || this.STD());
+                return Math.abs(r - this.RED()) < 0.01;
+            },
+            rateCode(item) { return this.isReduced(item) ? 'B' : 'A'; },
+            hasReduced() { return (this.transaction.line_items || []).some(i => this.isReduced(i)); },
+            // Contained VAT split by code, prorated to the discounted total (mirrors the server's
+            // INC3 rollup) so the receipt's A/B figures reconcile to incl. VAT.
+            vatSplit() {
+                const lines = this.transaction.line_items || [];
+                const sub = lines.reduce((s, i) => s + parseFloat(i.line_total || 0), 0);
+                const total = parseFloat(this.transaction.total || 0);
+                const factor = sub > 0 ? total / sub : 1;
+                let std = 0, red = 0;
+                lines.forEach(i => {
+                    const g = parseFloat(i.line_total || 0) * factor;
+                    const rate = this.isReduced(i) ? this.RED() : this.STD();
+                    const v = g * rate / (100 + rate);
+                    if (this.isReduced(i)) red += v; else std += v;
+                });
+                return { std, red };
             },
             // Points earned on this sale = 1 per CHF paid, floored (matches the server).
             pointsEarned() {

@@ -1893,6 +1893,9 @@ async def get_transaction(
                 "line_total": str(item.line_total),
                 "notes": item.notes,
                 "is_giveaway": bool(item.is_giveaway),
+                # Per-line VAT (INC2/4): the receipt prints a rate code (A=8.1% / B=2.6%) + legend.
+                "consumption": item.consumption,
+                "vat_rate": str(item.vat_rate) if item.vat_rate is not None else None,
                 # showcased on La Piazza? -> the receipt shows a "scan to discuss" QR for this line
                 "lapiazza_slug": product_lapiazza.get(item.product_id),
                 "created_at": item.created_at.isoformat()
