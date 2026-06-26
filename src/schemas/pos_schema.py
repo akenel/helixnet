@@ -9,6 +9,7 @@ from decimal import Decimal
 from uuid import UUID
 from typing import Optional
 from src.db.models.transaction_model import TransactionStatus, PaymentMethod
+from src.services.vat_resolver import Consumption
 
 
 # ================================================================
@@ -135,6 +136,11 @@ class LineItemCreate(BaseModel):
     unit_price: Optional[Decimal] = Field(default=None, ge=0)
     # A free promotional treat: real product, zero revenue, stock still leaves.
     is_giveaway: bool = False
+    # Cafe multi-line VAT: dine-in (8.1%) vs takeaway (2.6%). Defaults to the safe,
+    # legally-conservative dine-in; any value outside the enum is rejected with 422.
+    consumption: Consumption = Field(
+        default=Consumption.DINE_IN,
+        description="dine_in | takeaway -- sets the per-line VAT rate (cafe food/drink)")
 
 
 class LineItemRead(LineItemBase):
@@ -142,6 +148,11 @@ class LineItemRead(LineItemBase):
     id: UUID
     transaction_id: UUID
     created_at: datetime
+    # Per-line VAT snapshot (cafe multi-line tax). consumption always present; rate/amount
+    # are null on lines rung before this shipped.
+    consumption: str = "dine_in"
+    vat_rate: Optional[Decimal] = None
+    vat_amount: Optional[Decimal] = None
 
     model_config = ConfigDict(from_attributes=True)
 

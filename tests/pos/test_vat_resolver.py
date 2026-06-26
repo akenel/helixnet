@@ -20,7 +20,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.services.vat_resolver import (  # noqa: E402
     Consumption, DEFAULT_CONSUMPTION,
-    normalize_consumption, vat_treatment, resolve_vat_rate, contained_vat,
+    normalize_consumption, vat_treatment, resolve_vat_rate, contained_vat, line_vat,
 )
 
 STD = Decimal("8.1")   # standard rate
@@ -131,3 +131,31 @@ def test_contained_vat_exact_boundary():
 def test_contained_vat_rounds_half_up_to_cents():
     assert contained_vat("89.90", STD).as_tuple().exponent == -2  # always 2 dp
     assert contained_vat(10, "2.6") == Decimal("0.25")  # 10*2.6/102.6 = 0.2534 -> 0.25
+
+
+# --- line_vat: the per-line snapshot (INC2) ----------------------------------
+
+def lv(product_class, consumption, gross):
+    return line_vat(product_class, consumption, gross, standard_rate=STD, reduced_rate=RED)
+
+
+def test_line_vat_same_coffee_two_amounts():
+    # A CHF 5.00 coffee: dine-in carries 8.1% (0.37); takeaway carries 2.6% (0.13).
+    assert lv("cafe_food", Consumption.DINE_IN, "5.00") == (STD, Decimal("0.37"))
+    assert lv("cafe_food", Consumption.TAKEAWAY, "5.00") == (RED, Decimal("0.13"))
+
+
+def test_line_vat_alcohol_never_discounts():
+    # CHF 10.00 alcohol, takeaway: still 8.1% -> 0.75 contained.
+    assert lv("alcohol", Consumption.TAKEAWAY, "10.00") == (STD, Decimal("0.75"))
+
+
+def test_line_vat_custom_line_defaults_standard():
+    # A custom line has no class ("standard") and defaults dine-in -> full rate.
+    assert lv("standard", DEFAULT_CONSUMPTION, "40.00") == (STD, Decimal("3.00"))
+
+
+def test_line_vat_zero_gross():
+    # A giveaway (gross 0) snapshots the rate but zero VAT.
+    rate, amt = lv("cafe_food", Consumption.TAKEAWAY, "0.00")
+    assert rate == RED and amt == Decimal("0.00")

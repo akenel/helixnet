@@ -85,6 +85,28 @@ class LineItemModel(Base):
                 "leaves inventory -- tracked for COGS / tax."
     )
 
+    # --- Per-line Swiss VAT (cafe multi-line tax: dine-in 8.1% / takeaway 2.6%) -----
+    # `consumption` drives the rate for cafe food/drink (alcohol + tobacco stay 8.1%
+    # regardless). `vat_rate` and `vat_amount` are SNAPSHOTTED at sale time (resolved
+    # from the product's class via vat_resolver.line_vat) so a later rate change never
+    # rewrites a past receipt. Rate/amount are nullable for lines rung before this shipped.
+    consumption: Mapped[str] = mapped_column(
+        String(16),
+        default="dine_in",
+        nullable=False,
+        comment="dine_in | takeaway -- sets the per-line VAT rate (cafe food/drink)"
+    )
+    vat_rate: Mapped[float | None] = mapped_column(
+        Numeric(4, 2),
+        nullable=True,
+        comment="VAT rate % snapshotted at sale (8.10 / 2.60); null on legacy lines"
+    )
+    vat_amount: Mapped[float | None] = mapped_column(
+        Numeric(10, 2),
+        nullable=True,
+        comment="VAT contained in this line's gross at vat_rate; null on legacy lines"
+    )
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

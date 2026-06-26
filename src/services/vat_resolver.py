@@ -93,6 +93,20 @@ def contained_vat(gross, rate) -> Decimal:
     return (g * r / (Decimal("100") + r)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
+def line_vat(product_class, consumption=DEFAULT_CONSUMPTION, gross=Decimal("0"),
+             *, standard_rate=None, reduced_rate=None) -> tuple[Decimal, Decimal]:
+    """The (rate, contained-VAT) pair for one sale line — what gets SNAPSHOTTED onto it.
+
+    Resolves the legal rate from the product's class + consumption mode, then computes
+    the VAT contained in the line's VAT-inclusive gross. Both numbers are frozen onto the
+    line at sale time so a later rate change never rewrites a past receipt. Pure — the
+    endpoint just stores what this returns.
+    """
+    rate = resolve_vat_rate(product_class, consumption,
+                            standard_rate=standard_rate, reduced_rate=reduced_rate)
+    return rate, contained_vat(gross, rate)
+
+
 def _rates(standard_rate, reduced_rate) -> tuple[Decimal, Decimal]:
     """(standard, reduced) rates as Decimals. Both injectable; else read from config."""
     if standard_rate is not None and reduced_rate is not None:
