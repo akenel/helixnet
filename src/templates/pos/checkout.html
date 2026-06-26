@@ -43,6 +43,28 @@
                 </div>
             </div>
 
+            <!-- 🍽️ Dine-in / Takeaway — Swiss cafe VAT (8.1% in / 2.6% to-go) -->
+            <div class="mb-6" x-show="cartData.cart.some(i => i.product_class === 'cafe_food')">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🍽️ Service</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button @click="setConsumption('dine_in')"
+                        :class="consumption === 'dine_in' ? 'border-4 border-indigo-500 bg-indigo-50' : 'border-2 border-gray-300'"
+                        class="card py-5 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-3xl mb-1 block">🍽️</span>
+                        <p class="font-semibold">Dine in</p>
+                        <p class="text-xs text-gray-500">café food/drink @ 8.1%</p>
+                    </button>
+                    <button @click="setConsumption('takeaway')"
+                        :class="consumption === 'takeaway' ? 'border-4 border-teal-500 bg-teal-50' : 'border-2 border-gray-300'"
+                        class="card py-5 text-center cursor-pointer hover:shadow-lg transition">
+                        <span class="text-3xl mb-1 block">🥡</span>
+                        <p class="font-semibold">Takeaway</p>
+                        <p class="text-xs text-gray-500">café food/drink @ 2.6%</p>
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">🇨🇭 Swiss law: a café seat makes the same item two prices. Alcohol & tobacco stay 8.1%.</p>
+            </div>
+
             <!-- 🏷️ Quick Discount (Pam's Rounding) -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ Discount</h2>
@@ -75,8 +97,17 @@
                     <span class="text-indigo-600" x-text="formatPrice(cartData.totals.total)"></span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-500">
-                    <span>incl. VAT (<span x-text="POSConfig.vat_rate"></span>%):</span>
+                    <span>incl. VAT:</span>
                     <span x-text="formatPrice(cartData.totals.vat)"></span>
+                </div>
+                <!-- Per-rate split: appears once any line carries the reduced (takeaway) rate -->
+                <div x-show="cartData.totals.vatReduced > 0" class="flex justify-between text-xs">
+                    <span class="text-gray-400">
+                        <span x-text="POSConfig.vat_rate"></span>% <span x-text="formatPrice(cartData.totals.vatStandard)"></span>
+                        ·
+                        <span class="text-teal-600 font-semibold"><span x-text="POSConfig.vat_rate_reduced"></span>% <span x-text="formatPrice(cartData.totals.vatReduced)"></span></span>
+                    </span>
+                    <span class="text-teal-600 font-semibold uppercase tracking-wide">takeaway</span>
                 </div>
             </div>
 
@@ -241,6 +272,7 @@
             processing: false,
             discount: 0,
             discountAmount: 0,
+            consumption: 'dine_in',   // dine-in (8.1%) vs takeaway (2.6%) — cafe food/drink only
 
             // Cash Quick Round
             cashReceived: 0,
@@ -267,6 +299,7 @@
 
                 this.cartData = JSON.parse(stored);
                 this.discount = this.cartData.discount || 0;
+                this.consumption = this.cartData.consumption || 'dine_in';
                 // A member may have been picked on the lookup page ("Use for Checkout").
                 try {
                     const m = sessionStorage.getItem('checkout_customer');
@@ -388,8 +421,22 @@
                 }
             },
 
+            setConsumption(mode) {
+                // dine_in (cafe food/drink @ 8.1%) vs takeaway (@ 2.6%). Alcohol, tobacco
+                // and retail goods are unaffected (always 8.1%) — the per-line class decides.
+                this.consumption = mode;
+                this.cartData.consumption = mode;
+                this.recalculateTotals();
+                this.calculateChange();
+                sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
+            },
+
             recalculateTotals() {
-                const subtotal = this.cartData.totals.subtotal || 0;
+                // Sum the lines, then split the contained VAT by each line's Swiss rate so the
+                // breakdown shows 8.1% vs 2.6% live as the cashier flips dine-in/takeaway.
+                const lineSum = this.cartData.cart.reduce(
+                    (s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
+                const subtotal = lineSum || this.cartData.totals.subtotal || 0;
                 this.discountAmount = subtotal * (this.discount / 100);
                 const afterDiscount = subtotal - this.discountAmount;  // after the manual discount
                 // Member tier discount stacks on top (display-only here -- the server applies
@@ -397,13 +444,27 @@
                 const memberPct = (this.member && this.member.tier_discount_percent) || 0;
                 this.memberDiscountAmount = afterDiscount * (memberPct / 100);
                 const gross = afterDiscount - this.memberDiscountAmount;  // gross paid
-                // Inclusive Swiss VAT: shelf prices already contain VAT, so the gross IS
-                // the total and VAT is the contained portion (gross * rate / (100 + rate)).
-                const vat = gross * POSConfig.vat_rate / (100 + POSConfig.vat_rate);
+                // Spread the discount evenly across lines so each line's contained VAT
+                // reflects its share of the discounted gross.
+                const factor = subtotal > 0 ? gross / subtotal : 1;
+                const STD = POSConfig.vat_rate;                       // 8.1
+                const RED = POSConfig.vat_rate_reduced != null ? POSConfig.vat_rate_reduced : 2.6;
+                let vatStd = 0, vatRed = 0;
+                this.cartData.cart.forEach(it => {
+                    const lineGross = (it.price || 0) * (it.quantity || 0) * factor;
+                    // Cafe food/drink is 8.1% dine-in, 2.6% takeaway; everything else 8.1%.
+                    const reduced = (it.product_class === 'cafe_food' && this.consumption === 'takeaway');
+                    const rate = reduced ? RED : STD;
+                    const v = lineGross * rate / (100 + rate);         // inclusive VAT contained in the gross
+                    if (reduced) vatRed += v; else vatStd += v;
+                });
                 this.cartData.totals.discountAmount = this.discountAmount;
                 this.cartData.totals.memberDiscountAmount = this.memberDiscountAmount;
-                this.cartData.totals.vat = vat;
+                this.cartData.totals.vatStandard = vatStd;
+                this.cartData.totals.vatReduced = vatRed;
+                this.cartData.totals.vat = vatStd + vatRed;
                 this.cartData.totals.total = gross;
+                this.cartData.consumption = this.consumption;
             },
 
             clearMember() {
@@ -489,7 +550,8 @@
                             unit_price: item.price.toString(),
                             discount_percent: this.cartData.discount.toString(),
                             name: isCustom ? item.name : null,
-                            is_giveaway: isGiveaway
+                            is_giveaway: isGiveaway,
+                            consumption: this.consumption   // dine_in | takeaway -> server snapshots the per-line VAT
                         });
                     }
 
