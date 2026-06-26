@@ -62,6 +62,29 @@ the box (not the empty local one). Audit before disposition.
 
 ---
 
+## Box realm reconciliation — CONFIRMED 2026-06-26 (read-only `list-realms`)
+
+The box KC holds **13 realms**. The staging rename happened and went exactly one realm deep —
+**no stray `kc-community-*`/`kc-workforce-sbx/prd`**; the 6-realm detour is contained.
+
+| Box realm | Role today | Verdict → 3-realm model |
+|---|---|---|
+| `borrowhood` (305) | PROD community | **rename → `kc-production`** (Phase 4); apps fold in as clients |
+| `borrowhood-staging` (140) | STAGING community | **rename → `kc-staging`**; apps fold in |
+| `kc-workforce-stg` | STAGING Banco (the rename) | fold into `kc-staging` as `helixpos` client → **DELETE** |
+| `kc-pos-realm-dev` (~12) | dev+sandbox+**prod** Banco | split: sandbox→`kc-sandbox`, prod Banco→`kc-production`; retire |
+| `artemis` (~4) | Felix's shop POC | → group `shop:artemis`; retire realm |
+| `kc-camper-service-realm-dev` (~10) | Camper POC | → `garage` client; retire |
+| `kc-isotto-print-realm-dev` (~5) | ISOTTO POC | → `isotto` client; retire |
+| `lapiazza-realm-dev` (~7) | Bottega POC | → fold into env realm; retire |
+| `kc-realm-dev` (~6) | HelixNet core POC | → `platform` client; retire |
+| `lapiazza-realm-staging` (~162) | old LP staging | **⚠ INVESTIGATE** before disposition (likely superseded by borrowhood-staging) |
+| `blowup`, `fourtwenty` | dead demos | **DELETE** (backup first — gated box deletes never done) |
+| `master` (2) | KC admin | **KEEP, untouched** |
+
+Must also **CREATE `kc-sandbox`** (no sandbox realm exists; sandbox borrows `kc-pos-realm-dev` today).
+End state: `master` + `kc-sandbox` + `kc-staging` + `kc-production`.
+
 ## Guiding rules
 
 1. **One environment at a time, throwaway first:** sandbox → staging → prod. Sandbox is the full rehearsal.
