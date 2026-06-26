@@ -107,20 +107,50 @@ This is the part that "works both ways" for every future app (printing, garage, 
   `lapiazza-realm-*`). They map onto the two populations (below) and can be renamed
   opportunistically — the *model* is what's locked, not the strings.
 
-## Current realms → target mapping (no rename forced today)
+## Environments (Angel's promotion path)
 
-| Today | Population | Target name (when convenient) |
-|-------|-----------|-------------------------------|
-| `kc-pos-realm-dev` / `-stg` / `-prd` | **Workforce** (Banco is its first client) | `helix-workforce-<env>` |
-| `borrowhood` / `lapiazza-realm-*` / `borrowhood-staging` | **Community** (La Piazza + Bottega) | `helix-community-<env>` |
+- **dev** = the laptop. Source code lives here; we barely test Keycloak here. Runs a **local**
+  Keycloak (`keycloak.helix.local`) for coding only — NOT on the box, NOT in the promotion path.
+- **sandbox (sbx)** = **first** real test (empty-DB, throwaway).
+- **staging (stg)** = **second** test.
+- **prod (prd)** = go-live; first pass is a **hypercare** test.
 
-- The `kc-pos-realm-*` realms from the Banco split **are** the workforce realm — POS is just the
-  first client. HR, admin, and future internal apps (garage, print) join as **clients here**,
-  **not** as new realms.
-- La Piazza / Bottega stay on the community realm. The earlier "unify Bottega + BorrowHood"
-  consolidation is the community-realm cleanup; it stays on track.
-- Mail routing already follows this: workforce staging/prod → Resend; community → its own; dev +
-  sandbox → MailHog. (See `BANCO-POS-REALM-SPLIT-PLAN.md`.)
+Identity is exercised **sbx → stg → prd**. Those three live on the **box** Keycloak (`lapiazza.app`).
+
+## Naming convention (LOCKED 2026-06-26)
+
+The realm name says **population + environment** — never the app. Pattern: **`kc-<population>-<env>`**,
+`env ∈ {sbx, stg, prd}` on the box (+ a local `dev` pair on the laptop KC). **6 realms on the box**
+(2 populations × 3 promotion environments).
+
+| Population | sandbox | staging | prod | *(laptop dev)* |
+|------------|---------|---------|------|----------------|
+| **Workforce** (people who do the work) | `kc-workforce-sbx` | `kc-workforce-stg` | `kc-workforce-prd` | *`kc-workforce-dev` (local KC)* |
+| **Community** (customers — La Piazza/Bottega) | `kc-community-sbx` | `kc-community-stg` | `kc-community-prd` | *`kc-community-dev` (local KC)* |
+
+**Why rename off `kc-pos-realm-*`:** that name says "POS" (one app), but the realm holds the
+*workforce* of *every* business (Banco cashiers today; Camper & Tour mechanics, ISOTTO printers
+tomorrow — all as **clients**). The name must describe the population, or the next person assumes
+it's Banco-only and spins up another app-named realm — the exact sprawl we're killing.
+
+### Migration mapping (current → target)
+
+| Today (box KC) | Population / env | Target | When |
+|----------------|------------------|--------|------|
+| `kc-pos-realm-stg` | Workforce / staging | `kc-workforce-stg` | **now** (only felix seeded — cheap) |
+| `kc-pos-realm-dev` *(backs sandbox **and** prod today)* | Workforce / sandbox | `kc-workforce-sbx` | **after** prod leaves it (Phase 2) |
+| *(none yet)* | Workforce / prod | `kc-workforce-prd` | **Phase 2** — created fresh with the right name |
+| `borrowhood` / `lapiazza-realm-*` / `borrowhood-staging` | Community | `kc-community-<env>` | separate effort (Bottega+BorrowHood consolidation) — not now |
+
+- ⚠ **The box's `kc-pos-realm-dev` currently backs BOTH sandbox AND prod** (prod isn't split yet —
+  Phase 2). So it can't be renamed until prod moves onto `kc-workforce-prd`. Order:
+  **(1)** rename staging now → **(2)** Phase 2 stands prod up fresh on `kc-workforce-prd` →
+  **(3)** THEN rename the leftover sandbox realm to `kc-workforce-sbx` and repoint sandbox.
+- The laptop's local KC (`dev`) is independent and low-stakes — rename its realms to
+  `kc-workforce-dev` / `kc-community-dev` whenever convenient; it never blocks the box.
+- Community realms (La Piazza/Bottega) are a **separate, larger** system (real public users);
+  their rename to `kc-community-*` rides the Bottega+BorrowHood consolidation, not this ADR.
+- Mail routing unchanged: workforce stg/prd → Resend; community → its own; sandbox + laptop-dev → MailHog.
 
 ## What does NOT change right now
 

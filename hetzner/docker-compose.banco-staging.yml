@@ -41,7 +41,7 @@ services:
       DATABASE_URL: postgres://helix_user:helix_pass@postgres:5432/banco_staging
       # POS realm split (BANCO-POS-REALM-SPLIT-PLAN): staging gets its OWN realm on
       # Resend (real email), carved from kc-pos-realm-dev. dev/sbx stay on -dev+MailHog.
-      POS_REALM: kc-pos-realm-stg
+      POS_REALM: kc-workforce-stg
       # Mirror Banco's bridge/realm wiring (the publish-to-La-Piazza side).
       LP_REALM: borrowhood-staging
       LP_CLIENT: lapiazza_web
