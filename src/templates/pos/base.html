@@ -280,6 +280,7 @@
 
             setToken(token) {
                 sessionStorage.setItem('pos_token', token);
+                this._revealChrome();
             },
 
             // Store the full session from the OAuth callback (access + refresh + expiry)
@@ -291,6 +292,15 @@
                     const expAt = Date.now() + (parseInt(expiresIn, 10) * 1000);
                     sessionStorage.setItem('pos_token_exp', String(expAt));
                 }
+                if (access) this._revealChrome();
+            },
+
+            // The OAuth callback hands the token back in the URL FRAGMENT, parsed a tick
+            // AFTER first paint — by which time the pre-auth gate has already hidden the app
+            // chrome. Reveal it the instant a token is stored, so the dashboard comes alive
+            // without a manual refresh (the "dead page until I hit refresh" bug).
+            _revealChrome() {
+                try { document.body.classList.remove('pre-auth'); } catch (e) {}
             },
 
             getRefreshToken() {
@@ -495,6 +505,7 @@
         // POS Configuration (loaded from backend, updated annually)
         const POSConfig = {
             vat_rate: 8.1,      // Default: 2025 Swiss VAT rate
+            vat_rate_reduced: 2.6, // Reduced: cafe takeaway food/drink
             vat_decimal: 0.081, // For calculations
             vat_year: 2025,
             currency: 'CHF',
@@ -507,6 +518,7 @@
                     if (response.ok) {
                         const config = await response.json();
                         this.vat_rate = config.vat_rate;
+                        if (config.vat_rate_reduced != null) this.vat_rate_reduced = config.vat_rate_reduced;
                         this.vat_decimal = config.vat_decimal;
                         this.vat_year = config.vat_year;
                         this.currency = config.currency;
@@ -1077,7 +1089,10 @@
       window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
 
       // App-shell: hide chrome before login, light the current tab, badge the cart.
-      if(!sessionStorage.getItem('pos_token')) document.body.classList.add('pre-auth');
+      // A token in the URL fragment means the OAuth callback just landed us here and is about
+      // to store it — treat that as authed so we don't flash the chrome away then need a refresh.
+      var _authInFlight = location.hash && location.hash.indexOf('token=') !== -1;
+      if(!sessionStorage.getItem('pos_token') && !_authInFlight) document.body.classList.add('pre-auth');
       var path = location.pathname;
       Array.prototype.forEach.call(document.querySelectorAll('#app-nav a'), function(a){
         var t=a.getAttribute('data-tab');
