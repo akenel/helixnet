@@ -29,6 +29,20 @@ so sessions don't fall over each other or push half-baked work to a live box.
 further down were **stale** (their items already shipped); corrected inline. Real state:
 
 **✅ Live now**
+- **Banco checkout 500 fix — cashier-identity resolver** (`581817c` on `feat/banco-offline-pwa`,
+  pushed 2026-06-26). SUPERSEDES the buggy `ed38c2b`/`091c8f2` self-heal: that one looked the cashier
+  up by `id=sub`, missed seeded cashiers (fixed PK + sub in `keycloak_id`), and INSERTed a dup →
+  `ix_users_keycloak_id` 500 on every seeded-cashier sale; it also split cashier identity (sub vs
+  users.id) so the drawer mis-counted. New `_resolve_cashier_uid` (by id→keycloak_id→create, returns
+  users.id) used by ALL ~10 cashier paths. Deployed as a SURGICAL per-tree overlay (skew-safe patcher;
+  prod predates the day-survey call site) to **sandbox + staging-banco + banco-prod** — each verified
+  health 200, resolver present, 0 leftover sites. Sandbox + staging smoke = 2× create_txn → 201 (was
+  500). Prod txns unchanged (7, no test writes). Overlay until the next worktree advance.
+- **Banco PWA "dead page after login" fix + SW v3** (`efc3e84` same branch). OAuth token arrives in
+  the URL fragment after first paint; the pre-auth gate had hidden the chrome with nothing to reveal it
+  → manual-refresh needed. Now reveals on token store + recognises the fragment; `CACHE_NAME` v2→v3
+  auto-updates installed PWAs. Live on **staging-banco + sandbox** (PWA gated off prod). Angel signed
+  off on mobile staging 2026-06-26.
 - **Universal System Info view + honest health grading** — `f5feade` on `main`. Deployed as a
   file-overlay (the documented overlay-deploy pattern) on all 4 active worktrees + verified
   healthy (prod `/health/system` = OK). Becomes a tracked SHA at the next worktree advance.
