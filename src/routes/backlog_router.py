@@ -25,6 +25,7 @@ from src.schemas.backlog_schema import (
     BacklogActivityRead, BacklogSummary,
 )
 from src.core.constants import HelixApplication
+from src.core.config import settings  # CAMPER_REALM — env-driven realm (identity consolidation)
 from src.core.keycloak_auth import require_roles
 
 
@@ -43,6 +44,7 @@ html_router = APIRouter(tags=["Backlog - Web UI"])
 
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+templates.env.globals["camper_realm"] = settings.CAMPER_REALM  # backlog reuses the camper realm
 
 
 # ================================================================
@@ -432,7 +434,7 @@ async def backlog_oauth_callback(request: Request, code: str = None, error: str 
         return RedirectResponse(url="/backlog/login?error=no_code")
 
     keycloak_internal_url = "http://keycloak:8080"
-    realm = "kc-camper-service-realm-dev"
+    realm = settings.CAMPER_REALM
     client_id = "camper_service_web"
 
     forwarded_proto = request.headers.get("x-forwarded-proto", "https")

@@ -273,7 +273,7 @@
             async _silentReauth() {
                 // Open KC login in a popup -- if the SSO session is still active, it auto-completes
                 const keycloakUrl = window.location.hostname === 'helix.local' ? 'https://keycloak.helix.local' : window.location.origin;
-                const realm = 'kc-camper-service-realm-dev';
+                const realm = '{{ camper_realm }}';
                 const redirectUri = encodeURIComponent(window.location.origin + '/camper/dashboard');
                 const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?client_id=camper_service_web&redirect_uri=${redirectUri}&response_type=token&scope=openid`;
 
@@ -344,7 +344,7 @@
             logout() {
                 this.clearToken();
                 const keycloakUrl = window.location.hostname === 'helix.local' ? 'https://keycloak.helix.local' : window.location.origin;
-                const realm = 'kc-camper-service-realm-dev';
+                const realm = '{{ camper_realm }}';
                 const redirectUri = encodeURIComponent(window.location.origin + '/camper');
                 window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?post_logout_redirect_uri=${redirectUri}&client_id=camper_service_web`;
             }

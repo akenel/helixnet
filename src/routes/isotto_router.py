@@ -20,6 +20,7 @@ from uuid import UUID
 from typing import Optional
 from pathlib import Path
 
+from src.core.config import settings  # ISOTTO_REALM — env-driven realm (identity consolidation)
 from src.db.database import get_db_session
 from src.db.models.isotto_customer_model import IsottoCustomerModel
 from src.db.models.isotto_order_model import IsottoOrderModel, OrderStatus, ProductType
@@ -50,6 +51,7 @@ html_router = APIRouter(tags=["ISOTTO Sport - Print Shop UI"])
 # Setup Jinja2 templates
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+templates.env.globals["isotto_realm"] = settings.ISOTTO_REALM  # injected into login/base JS
 
 
 # ================================================================
@@ -1294,7 +1296,7 @@ async def isotto_oauth_callback(request: Request, code: str = None, error: str =
 
     # Keycloak config -- internal Docker URL for server-to-server
     keycloak_internal_url = "http://keycloak:8080"
-    realm = "kc-isotto-print-realm-dev"
+    realm = settings.ISOTTO_REALM
     client_id = "isotto_print_web"
 
     # Reconstruct redirect_uri from forwarded headers (must match browser's original)

@@ -23,6 +23,7 @@ from pathlib import Path
 import io
 import asyncio
 
+from src.core.config import settings  # CAMPER_REALM — env-driven realm (identity consolidation)
 from src.db.database import get_db_session
 from src.db.models.camper_vehicle_model import CamperVehicleModel, VehicleStatus
 from src.db.models.camper_customer_model import CamperCustomerModel
@@ -81,6 +82,7 @@ html_router = APIRouter(tags=["Camper & Tour - Web UI"])
 # Setup Jinja2 templates
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+templates.env.globals["camper_realm"] = settings.CAMPER_REALM  # injected into login/base JS
 
 
 # ================================================================
@@ -3922,7 +3924,7 @@ async def camper_oauth_callback(request: Request, code: str = None, error: str =
 
     # Keycloak config -- internal Docker URL for server-to-server
     keycloak_internal_url = "http://keycloak:8080"
-    realm = "kc-camper-service-realm-dev"
+    realm = settings.CAMPER_REALM
     client_id = "camper_service_web"
 
     # Reconstruct redirect_uri from forwarded headers (must match browser's original)

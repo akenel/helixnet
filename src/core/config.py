@@ -55,6 +55,13 @@ class Settings(BaseSettings):
     # so Phase 2 of the identity consolidation can repoint POS at the unified realm
     # WITHOUT a code edit. Default keeps today's behavior. See HELIX-IDENTITY-ARCHITECTURE.md.
     POS_REALM: str = "kc-pos-realm-dev"
+    # Camper & Tour (garage) auth realm. Env-driven (was hardcoded in camper_router /
+    # backlog_router / qa_router + their templates) so the identity consolidation can repoint it
+    # at the unified env realm WITHOUT a code edit. See IDENTITY-CONSOLIDATION-PLAN.md.
+    CAMPER_REALM: str = "kc-camper-service-realm-dev"
+    # ISOTTO (print shop) auth realm. Env-driven (was hardcoded in isotto_router + templates)
+    # for the same reason. Default keeps today's behavior.
+    ISOTTO_REALM: str = "kc-isotto-print-realm-dev"
     # Browser-facing Keycloak host for the LP realm — MUST match the realm's frontendUrl, or the
     # interactive login dead-ends on "you are already logged in" when app host != KC host.
     # prod borrowhood frontendUrl = lapiazza.app (default); staging overrides to staging-bottega.

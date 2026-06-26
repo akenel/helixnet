@@ -28,6 +28,7 @@ from src.schemas.qa_schema import (
     DashboardSummary, PhaseProgress,
 )
 from src.core.constants import HelixApplication
+from src.core.config import settings  # CAMPER_REALM — env-driven realm (identity consolidation)
 from src.core.keycloak_auth import require_roles
 
 
@@ -45,6 +46,7 @@ html_router = APIRouter(tags=["QA Testing Dashboard - Web UI"])
 
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+templates.env.globals["camper_realm"] = settings.CAMPER_REALM  # testing dash reuses the camper realm
 
 
 # ================================================================
@@ -553,7 +555,7 @@ async def testing_oauth_callback(request: Request, code: str = None, error: str 
         return RedirectResponse(url="/testing/login?error=no_code")
 
     keycloak_internal_url = "http://keycloak:8080"
-    realm = "kc-camper-service-realm-dev"
+    realm = settings.CAMPER_REALM
     client_id = "camper_service_web"
 
     forwarded_proto = request.headers.get("x-forwarded-proto", "https")
