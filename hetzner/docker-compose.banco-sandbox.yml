@@ -32,6 +32,10 @@ services:
       - ./uat.env
     environment:
       SERVICE_TYPE: platform
+      # Label this env correctly. The shared uat.env sets HX_ENVIRONMENT=uat, but this
+      # is the SANDBOX — override it so the System Info view badges/themes it as SANDBOX
+      # (blue), not UAT (teal). Truthful env labels are a deploy guardrail.
+      HX_ENVIRONMENT: sandbox
       # EMPTY CATALOGUE: skip the Artemis product + CRACK customer demo seeders.
       # Staff, store settings and login users still seed, so Pam can log in and
       # VAT is correct -- only the catalogue/customer content is withheld.
