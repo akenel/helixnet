@@ -20,7 +20,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.services.vat_resolver import (  # noqa: E402
     Consumption, DEFAULT_CONSUMPTION,
-    normalize_consumption, vat_treatment, resolve_vat_rate, contained_vat, line_vat,
+    normalize_consumption, vat_treatment, resolve_vat_rate, contained_vat, line_vat, split_vat,
 )
 
 STD = Decimal("8.1")   # standard rate
@@ -159,3 +159,48 @@ def test_line_vat_zero_gross():
     # A giveaway (gross 0) snapshots the rate but zero VAT.
     rate, amt = lv("cafe_food", Consumption.TAKEAWAY, "0.00")
     assert rate == RED and amt == Decimal("0.00")
+
+
+# --- split_vat: the two turnover streams (INC3) -------------------------------
+
+def sv(lines, total, subtotal):
+    return split_vat(lines, total, subtotal, standard_rate=STD, reduced_rate=RED)
+
+
+def test_split_vat_two_streams_no_discount():
+    # Coffee 5.00 @ 2.6% (takeaway) + beer 8.00 @ 8.1%. Total 13, no discount.
+    s = sv([(RED, "5.00"), (STD, "8.00")], "13.00", "13.00")
+    assert s["turnover_reduced"] == Decimal("5.00")
+    assert s["turnover_standard"] == Decimal("8.00")
+    assert s["vat_reduced"] == Decimal("0.13")     # 5.00 @ 2.6%
+    assert s["vat_standard"] == Decimal("0.60")    # 8.00 @ 8.1%
+    assert s["vat_total"] == Decimal("0.73")
+
+
+def test_split_vat_prorates_discount():
+    # Same cart, 10% off -> total 11.70, subtotal 13. Each line scaled by 0.9.
+    s = sv([(RED, "5.00"), (STD, "8.00")], "11.70", "13.00")
+    assert s["turnover_reduced"] == Decimal("4.50")   # 5.00 * 0.9
+    assert s["turnover_standard"] == Decimal("7.20")  # 8.00 * 0.9
+    assert s["vat_reduced"] == Decimal("0.11")        # 4.50 @ 2.6%
+    assert s["vat_standard"] == Decimal("0.54")       # 7.20 @ 8.1%
+    assert s["vat_total"] == Decimal("0.65")
+
+
+def test_split_vat_all_standard():
+    # A pure head-shop cart: no reduced stream at all.
+    s = sv([(STD, "40.00"), (STD, "10.00")], "50.00", "50.00")
+    assert s["turnover_reduced"] == Decimal("0.00") and s["vat_reduced"] == Decimal("0.00")
+    assert s["turnover_standard"] == Decimal("50.00")
+    assert s["vat_total"] == s["vat_standard"]
+
+
+def test_split_vat_null_rate_defaults_standard():
+    # A legacy line with no snapshotted rate counts as standard (safe default).
+    s = sv([(None, "10.00")], "10.00", "10.00")
+    assert s["turnover_standard"] == Decimal("10.00") and s["turnover_reduced"] == Decimal("0.00")
+
+
+def test_split_vat_empty():
+    s = sv([], "0.00", "0.00")
+    assert s["vat_total"] == Decimal("0.00")
