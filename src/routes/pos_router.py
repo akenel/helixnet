@@ -22,6 +22,7 @@ from pathlib import Path
 from src.db.database import get_db_session
 from src.services.lp_publish import publish_product
 from src.services.square_bridge import SquareBridgeError
+from src.services.vat_resolver import line_vat
 from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
@@ -2035,6 +2036,15 @@ async def add_item_to_transaction(
     line_gross = unit_price * item.quantity
     line_total = line_gross
 
+    # Per-line Swiss VAT (cafe multi-line tax). The product's behaviour class drives the
+    # rate (alcohol/tobacco always 8.1%; cafe food/drink splits dine-in 8.1% / takeaway
+    # 2.6%); a custom line has no class -> "standard" (8.1%, the legal default). The rate
+    # + amount are SNAPSHOTTED here so a later rate change never rewrites this receipt.
+    # (INC2: line-level only; the transaction total still uses the single-rate rollup
+    # below — INC3 sums these per-line amounts.)
+    prod_class = product.product_class if item.product_id is not None else "standard"
+    line_rate, line_vat_amount = line_vat(prod_class, item.consumption, line_total)
+
     new_line_item = LineItemModel(
         transaction_id=transaction_id,
         product_id=item.product_id,
@@ -2045,6 +2055,9 @@ async def add_item_to_transaction(
         line_total=line_total,
         notes=line_notes,
         is_giveaway=item.is_giveaway,
+        consumption=item.consumption.value,
+        vat_rate=line_rate,
+        vat_amount=line_vat_amount,
     )
 
     db.add(new_line_item)
