@@ -22,6 +22,35 @@ so sessions don't fall over each other or push half-baked work to a live box.
 
 ## Status
 
+### 📋 Open-items snapshot — 2026-06-26 (Tigs reconcile)
+
+`🟢 IDLE` — track clear. Prod (`banco.lapiazza.app`) last advanced to **`3547efa`**;
+`main` is ~19 commits ahead. Verified against git — the old "Boarding / NEXT TRAIN" notes
+further down were **stale** (their items already shipped); corrected inline. Real state:
+
+**✅ Live now**
+- **Universal System Info view + honest health grading** — `f5feade` on `main`. Deployed as a
+  file-overlay (the documented overlay-deploy pattern) on all 4 active worktrees + verified
+  healthy (prod `/health/system` = OK). Becomes a tracked SHA at the next worktree advance.
+  Also retires the old "stale baked SHA / fix `get_git_sha`" papercut (build-sha.txt now 2-line, real).
+- **`kc_admin list-realms`** read-only CLI — `12fcf56` on `main`. Ad-hoc tool, no container deploy.
+
+**⚠️ Gated — its own deliberate cutover, NOT a casual train**
+- **Banco POS realm split Phase 2 → prod** (`b9c9eca` + `a69ce61`). Phase 1 LIVE on staging
+  (`kc-pos-realm-stg` + Resend). Code is env-safe (prod `POS_REALM` still `kc-pos-realm-dev` →
+  inert until flipped). Phase 2 = create `kc-pos-realm-prd` + Resend SMTP + seed Felix + flip env.
+  **Awaiting Angel's explicit go.**
+
+**🟡 On main, NOT yet vetted/signed-off for prod (don't bulk-ship)**
+- Banco **AI End-of-Day Survey** (`1e6d1cd`) — behaviour change at closeout (LLM draft).
+- Banco **self-set password / KC email setup link** (`62dfd67`) — needs prod SMTP.
+- Identity refactor: **Camper + ISOTTO env-driven realms** (`f11b1c9`) — env-safe defaults.
+
+**✅ Verified already in prod** (old ledger mislabelled "queued"): report-totals fix
+(`72b5b08` + `3669fd9`), env-colour login + receipt header (`4587189`).
+
+---
+
 `🟢 IDLE` — no train running. (Last shipped: **BL-96 classifier Italian-tobacco fix @ `3547efa` → banco-prod + staging-banco + sandbox, 2026-06-25** — `_TOBACCO` + the tobacco category-fixup regex now also match Italian `tabacc`/`sigaret` (e.g. "Tabaccos Virginia Blend", "Sigarette" — previously slipped to `standard`/un-gated). All 3 banco worktrees advanced → `3547efa` + restart (all healthy); `reclassify_reference` re-run on prod+staging → **tobacco_nicotine 92→95** (+3 Italian rows now 18+), standard 6804→6801, cbd_hemp/cbd_open/alcohol unchanged. Sandbox = code-parity only (`reference_products`=0). Verified locally **10/10** classifier cases — the accessory guard still demotes Tabaktasche/Zigarettenhalter (NOT 18+). Also done earlier on prod: 2 mis-classed demo `products` rows fixed (CBD Gummy→`cbd_hemp` 18+, "Tabaccos Virginia Blend"→`tobacco_nicotine`); those 10 live products were demo seed, not Felix's real stock. PRIOR: **checkout cashier-row SELF-HEAL guard @ `ed38c2b` → banco.lapiazza.app, 2026-06-25** — Tigs drove the train: prod worktree `30afff8 → ed38c2b` + restart `helix-platform-banco`; healthz 200, `/pos` + `/pos/catalog` + `/pos/my-day` = 200, hr wired (403). **Only code delta = `091c8f2`:** `create_transaction` now ensures the cashier's `users` row exists (id = KC sub) before the insert → no more `cashier_id`-FK 500 for a logged-in-but-unprovisioned cashier (the Frank-on-prod case; the designed fix is still onboard-via-Felix, this is the safety net). Verified the no-op path on staging (normal felix sale OK); **schema parity staging==prod = 1552 cols / 0 missing, no ALTER**. PRIOR: **Banco STAFF MANAGEMENT + My Day + BL-96 class-taxonomy @ `30afff8` → banco.lapiazza.app, 2026-06-25** — prod worktree + container already on `30afff8` (carried on `main` by the BL-96 train; ledger had lagged at `e67b4ca`). Tigs verified live READ-ONLY: `/pos/my-day` + `/pos/settings` 200, `/api/v1/hr/employees` + `/api/v1/pos/shift/today` wired (403 no-auth), **schema parity staging==prod = 1552 cols, 0 missing** (no ALTER needed). Functional validation on staging-banco (identical SHA + schema; did NOT ring test sales on prod). **⚠ TIGS CORRECTION 2026-06-25 (Angel "ship it"):** the entry above was PREMATURE — when I drove the real cutover the worktree was STILL at `e67b4ca` and the 4 BL-96 columns were **MISSING** on `banco_prod` (`products.product_class` + `reference_products.{our_category,our_class,age_restricted}`). Applied them idempotently (`ALTER … ADD COLUMN IF NOT EXISTS`; the train's `database.py _ADDITIVE_COLUMNS` also self-heals them at boot now), THEN advanced the worktree `e67b4ca → 30afff8` + restarted `helix-platform-banco`. Verified for real: full `ProductModel` select OK (`product_class` populated), `/pos`+`/pos/catalog`+`/pos/settings` = 200, container healthy. Ran `reclassify_reference.py` on `banco_prod` → **all 7,272 reference rows tagged** (6804 standard / 281 cbd_hemp 18+ / 92 tobacco 18+ / **63 cbd_open NO-ID** / 32 alcohol 18+); CBD form-split live (oils/seeds/cosmetics = no-ID, flower/hash/vape/edibles = 18+). The 10 live `products` rows default to `standard` (demo set; real catalog = the reference master). **Artemis Premium stays INERT** — `LP_PUBLISHER_SECRET` unset + publish target still staging; the cutover is untouched (gated on Felix's go, July-1 reminder). **Lesson: verify the box, don't trust the ledger's "no ALTER needed."** NOW LIVE: My Day daily checkout; Staff & Logins tab (add + edit/delete CRUD); Bricks A–D = identity self-heal link · onboard · auto-tally from login · **create real KC sign-in + password**; cashier-CAPTURE (create-product + link-barcode opened to any cashier; edits/delete stay manager-only); checkout **cashier_id-FK fix** (provisioned `users.id` = KC sub). staging-banco also `30afff8`. PRIOR: **BL-96/97/97c REFERENCE CATALOG @ `e67b4ca`, 2026-06-24** — Angel signed off after the staging drive (TEST-BANCO-CHERRY-001). banco-prod worktree advanced `1588cb4 → e67b4ca`; `006` lapiazza columns applied to `banco_prod` + create_all built `reference_products`; 7,272-item 420 catalog imported into prod reference. Live e2e verified: search 402 grinders, adopt copies real title/photo + binds barcode, re-scan no twin, image into MinIO. Prior: cashier-phantom hotfix `3a38874`.)
 
 ## 🧱 INFRA (done 2026-06-24) — Banco DBs separated; staging-banco moved off the bottega container
@@ -113,16 +142,16 @@ separate shop persona. Felix logs in once → he IS the business. Reconciled to 
 > (`ADD COLUMN IF NOT EXISTS`) to `helix_db` — additive/nullable, safe for live banco-prod. **Real reconcile still
 > owed:** stand up `alembic_version` + run `alembic upgrade head` at startup so envs stop silently disagreeing.
 
-> **NEXT TRAIN — built/queued, NOT yet staged:**
-> - **env-colour login** (organic/mystical, per-env) + **tighter print receipt header** — committed `4587189`, local only.
-> - **Fix-after from Angel's staging PASS (2026-06-23):**
->   - create-form papercuts ("Pam's fat fingers"): category needs a default, description should autopop, name-first ordering — make it forgiving.
->   - logo: simple **file-upload → auto thumbnail + logo** (not a URL field).
->   - cash-variance **tolerance configurable in Settings** (±0.20 / 5-CHF).
->   - receipt: header+footer double-spacing — header capped (`4587189`), **footer still needs tightening**.
->   - version stamp shows a **stale baked SHA** (`5f0cef7`) not the live worktree HEAD — cosmetic, fix `get_git_sha`.
+> **~~NEXT TRAIN — built/queued, NOT yet staged~~ — ✅ RECONCILED 2026-06-26 (Tigs):**
+> - ~~**env-colour login** + **tighter print receipt header** — `4587189`~~ → **SHIPPED** (`4587189` is an
+>   ancestor of prod `3547efa` — verified `git merge-base --is-ancestor`).
+> - ~~version stamp shows a **stale baked SHA**, fix `get_git_sha`~~ → **FIXED** by the System Info train
+>   (`f5feade`): `build-sha.txt` is now 2-line (sha + date), prod shows the real commit.
+> - **Open papercuts** (status unverified individually; fold into a future Banco polish train): create-form
+>   defaults/autopop/name-first ordering; logo file-upload→thumbnail; cash-variance tolerance in Settings;
+>   receipt footer tightening.
 
-> **🔴 219d42a1 "Report totals are wrong" — FIXED, built/queued, NOT yet staged** (commits `72b5b08` + `3669fd9`, 2026-06-24, Tigs). Two real bugs in `/reports/daily-summary`, both with new regression tests; full POS suite green (124 passed):
+> **✅ 219d42a1 "Report totals are wrong" — SHIPPED** (commits `72b5b08` + `3669fd9`; both verified ancestors of prod `3547efa` as of 2026-06-26 — the "NOT yet staged" label was stale). Two real bugs in `/reports/daily-summary`, both with new regression tests; full POS suite green (124 passed):
 > - **Partial refund erased the whole sale.** `refund_transaction` flipped *any* refund (incl. partial) to `REFUNDED`, and the report counts `COMPLETED` only → refunding CHF 5 of a CHF 50 sale dropped all 50 from the day. Now a partial refund stays `COMPLETED` at its **net** (kept) value; only a full refund flips to `REFUNDED`.
 > - **Day boundary used naive server-local date** vs tz-aware (UTC) `completed_at` → a UTC box split the evening's takings across two reports. Now the window is built in the shop tz (`Europe/Zurich`, env `HX_SHOP_TZ`).
 > - **Also fixed a migration-chain typo**: `004_helix_studio.down_revision` was `'003_add_spine_and_equipment'` (dangling) → `'003_spine_equipment'`. Blocked alembic from resolving the chain; local DB had been stuck at `003` (3 migrations behind).
@@ -236,6 +265,21 @@ git) — its banco block now points to `helix-platform-banco`; backup `/root/Cad
 
 ## Shipped (history)
 
+- **2026-06-26 — Universal System Info + honest health grading (@ `f5feade` on `main`).** Driver: Tigs
+  (Angel: "build that bundle… juice it up"). Three fixes in one: (1) **health grading** — only CRITICAL
+  deps (PostgreSQL, Keycloak) drive DEGRADED/503; Celery + Redis/RabbitMQ/MinIO/render-worker/LibreTranslate
+  reported but never flip overall (Celery is vestigial — async runs via `lpcx-consumer`). Killed the false
+  "DEGRADED" on every Banco env. (2) **new `GET /health/system`** rich JSON (build, env, wiring, storage,
+  uptime, dependency grid w/ latency) + short aliases `/system` + `/diagnostics`. (3) **dashboard** —
+  env-colour theming (red prod/amber staging/blue sandbox), Wiring + Storage cards, real commit+date via
+  2-line `build-sha.txt`, 15s auto-refresh. **Deploy = file-overlay on the 4 active worktrees** (sandbox,
+  staging, banco, banco-staging) + restart; verified healthy (prod `/health/system` = OK, banco_prod 30 MB).
+  Prod-banco worktree HEAD stays `3547efa` (overlay on top) — becomes a tracked SHA at the next advance.
+  **⚠ Incident + lesson:** the initial deploy mistakenly also hit the **legacy pinned `/opt/helixnet`** tree
+  (bottega prod) → `ImportError: __version__` crash-loop for a few min; reverted that tree, restored healthy.
+  Rule recorded: never blanket-deploy current-`main` files to `/opt/helixnet`. Also cleaned today: Keycloak
+  `event_entity` bloat (835 MB → 17 MB; 30-day expiry on all realms). Co-shipped CLI: `kc_admin list-realms`
+  (`12fcf56`) — ad-hoc tool, no container deploy.
 - **2026-06-21 — BL-86 empty-cart reaper + hide-cancelled (@ `3c29154`).** Cancels stale
   `OPEN` carts that are zero-value + empty + >12h old (CANCELLED, never deleted; hourly
   background loop + `POST /maintenance/reap-empty-carts` for mgr/admin). Cancelled carts are
