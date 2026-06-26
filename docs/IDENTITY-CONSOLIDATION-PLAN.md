@@ -119,6 +119,10 @@ dry-run default) created **`kc-sandbox`** on the box with all 15 app clients + 4
 (`member`/`business`/`staff`/`admin`, member=default) + 30 plain app roles + `shop:artemis` group.
 Idempotent verified (re-run = all `=`). Run pattern: `docker exec -e KC_ADMIN_PASSWORD=$(from kc
 container) helix-platform-sandbox /app/venv/bin/python /tmp/build_unified_realm.py …`.
+**✅ Proof passed (`scripts/proof_unified_realm.py`):** one account `pam` in `kc-sandbox` carries
+`pos-cashier` (workforce) + `member` (public tier) — token issued, both roles present. **Fold
+lesson:** migrated users need a complete profile (email + first/last name) or KC's Verify-Profile
+required action blocks direct-grant login ("Account is not fully set up").
 Per environment (sandbox first), in the env realm:
 - [ ] Add clients: `lapiazza`, `bottega`, `helixpos`, `garage`, `isotto`, `platform` (+ `*-api` pairs).
 - [ ] Add roles as client roles (`pos-*`, `camper-*`, `isotto-*`) + the cross-app tiers
