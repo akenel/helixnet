@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}HelixPOS{% endblock %} - Artemis Store</title>
+
+    <!-- PWA (Phase 0): installable, standalone, phone-first. Service worker registered below. -->
+    <link rel="manifest" href="/static/pos/manifest.webmanifest">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Banco">
+    <link rel="apple-touch-icon" href="/static/pos/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/pos/icons/icon-512.png">
 
     <!-- Diagnostics ring buffer: loaded FIRST so the feedback widget can attach the
          last console errors + failed network calls to a bug report. Cheap text only.
@@ -52,16 +62,19 @@
       window.__lpfbDiag={ get:function(){ return buf.slice(); }, clear:function(){ buf.length=0; } };
     })();</script>
 
+    <!-- VENDORED LOCALLY (PWA Phase 0) — was the Tailwind Play CDN + jsdelivr. Local copies
+         work offline AND fix the dev-only-CDN production caveat. Proper Tailwind build
+         (PostCSS, purged CSS) is a follow-up; this is the full in-browser engine. -->
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/vendor/tailwind.js"></script>
 
     <!-- Alpine.js for reactive components -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="/static/vendor/alpine.min.js"></script>
 
     <!-- html2canvas: lets the feedback widget grab a screenshot of the current screen -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="/static/vendor/html2canvas.min.js"></script>
 
-    <!-- Inter font -->
+    <!-- Inter font (still CDN — falls back to system sans offline; vendor in a later phase) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -1002,5 +1015,23 @@
           send.disabled=false;send.textContent='Send';});
       };
     })();</script>
+
+    <!-- PWA service worker (Phase 0) + offline indicator. Scope /pos, served from /pos/sw.js. -->
+    <div id="lp-offline-pill" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;background:#b45309;color:#fff;font:600 12px/1 Inter,system-ui,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.3)">⚠ Offline — showing last-loaded data</div>
+    <script>
+    (function(){
+      // Online/offline pill — in P0 this is a heads-up only (writes still need the network).
+      var pill=document.getElementById('lp-offline-pill');
+      function sync(){ if(pill) pill.style.display = navigator.onLine ? 'none' : 'block'; }
+      window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
+      // Register the service worker. Scope /pos (allowed via Service-Worker-Allowed header).
+      if('serviceWorker' in navigator){
+        window.addEventListener('load', function(){
+          navigator.serviceWorker.register('/pos/sw.js', {scope:'/pos'})
+            .catch(function(e){ console.warn('SW register failed:', e); });
+        });
+      }
+    })();
+    </script>
 </body>
 </html>
