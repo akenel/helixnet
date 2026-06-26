@@ -194,5 +194,6 @@ Phase 2. *Decouple them — keep both moving.*
 | ID3 | Keep prod realm id `borrowhood`; rebrand the *theme* to La Piazza; true rename = a separate future sweep | ✅ LOCKED |
 | ID4 | Decommission dead realms (`fourtwenty`, `blowup`, `lapiazza-realm-staging`) — export first | ✅ LOCKED |
 | ID5 | Artemis Premium provisioning built **realm-agnostic now**, simplifies after Phase 2 — decouple | ✅ LOCKED |
+| ID6 | **Workforce vs public = a ROLE TIER, not a realm.** Stay at **3 realms** (one per env). `member`/`business` = public; `staff`/`admin` = workforce — on **one account per person**. Supersedes the 6-realm `HELIX-TWO-REALM-IDENTITY-ADR.md`. Plain-language: `IDENTITY-THREE-REALMS-LEGO.md` | ✅ LOCKED 2026-06-26 |
 
 *One account. Many modules. Three environments. Clean the house once, live in it for years.*

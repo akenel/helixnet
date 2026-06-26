@@ -1,6 +1,30 @@
 # ADR: The Two-Realm Identity Model — workforce + community, per environment
 
-- **Status:** Accepted — 2026-06-26 (Angel)
+> ⛔ **SUPERSEDED — 2026-06-26 (Angel, later same-day reconfirmation).** Angel chose **THREE realms
+> total — one per environment** (`sandbox`, `staging`, `prod`), with **workforce-vs-public modelled
+> as ROLE TIERS, not realms**. See [`IDENTITY-THREE-REALMS-LEGO.md`](IDENTITY-THREE-REALMS-LEGO.md)
+> (the canonical, plain-language version) and [`HELIX-IDENTITY-ARCHITECTURE.md`](HELIX-IDENTITY-ARCHITECTURE.md).
+>
+> **Why this ADR was set aside (read it — the reasoning below is still good):** this model splits by
+> *population* (workforce + community) into **6 realms** (2 × 3 envs) to get hard security isolation.
+> The deciding cost: a person who is **both** a worker and a customer — Pam (cashier + Bottega
+> member), Ralph (manager + browses La Piazza), Felix (POS admin + business shopfront) — would need
+> **two separate accounts**, because Keycloak realms do not share users. That is the *exact* friction
+> Angel set out to kill ("one person, one account, walks into every app — no special setups like
+> Frank's"). So the **one-account-everywhere requirement wins over population isolation.**
+>
+> **What we keep from this ADR:** the security goals are recovered *inside* the single env realm —
+> staff roles are **admin-granted only** (no self-service cashiers), **MFA is conditional on the
+> staff/admin role**, and self-registration **defaults to `member`-only**. The only genuine losses
+> vs. this model are per-population password policy and DB-level breach isolation — accepted at
+> Swiss-SME scale. The "realms are populations not apps" instinct is right in spirit; we express it
+> as **role tiers** (`member`/`business` vs `staff`/`admin`) within one realm.
+>
+> **Action for the other terminal:** do **not** create `kc-workforce-*` / `kc-community-*` realms.
+> Target stays 3 env realms; Banco folds into the env realm as the `helixpos` **client** (North-Star
+> Phase 2). The content below is preserved for the record only.
+
+- **Status:** ⛔ Superseded by `IDENTITY-THREE-REALMS-LEGO.md` (2026-06-26) — *was* Accepted earlier same day
 - **Refines:** `HELIX-IDENTITY-ARCHITECTURE.md` (the "realm = environment, app = client" north-star)
 - **Triggered by:** the Banco POS realm split (`BANCO-POS-REALM-SPLIT-PLAN.md`) — building a
   per-app realm made us ask the bigger question before the pattern repeated for every app.

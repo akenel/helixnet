@@ -1,12 +1,21 @@
 # Banco POS realm split — dev/sbx → staging → prod (the simple fix)
 
-*Scoped 2026-06-26. Pairs with `HELIX-TWO-REALM-IDENTITY-ADR.md` and the BANCO-CLOSEOUT email path.*
+*Scoped 2026-06-26. Pairs with `IDENTITY-THREE-REALMS-LEGO.md` and the BANCO-CLOSEOUT email path.*
 
-> **Model note (per `HELIX-TWO-REALM-IDENTITY-ADR.md`):** the `kc-pos-realm-*` realms below ARE
-> the **workforce realm** — Banco/POS is just its first client. Future internal apps (HR, admin,
-> the Camper & Tour garage app, the ISOTTO print app) join here as **clients**, *not* as new
-> realms. Realms are populations, not apps. Customers of every business live on La Piazza/Bottega
-> (the community realm).
+> ⚠️ **DIRECTION CORRECTED — 2026-06-26 (Angel).** The model is **3 realms total — one per
+> environment** (`sandbox`, `staging`, `prod`); workforce-vs-public is a **ROLE TIER, not a realm**.
+> See [`IDENTITY-THREE-REALMS-LEGO.md`](IDENTITY-THREE-REALMS-LEGO.md). The earlier
+> `HELIX-TWO-REALM-IDENTITY-ADR.md` (6-realm workforce+community model) is **SUPERSEDED**.
+>
+> - The per-env POS realms here (`kc-pos-realm-stg`, since renamed `kc-workforce-stg`) are a
+>   **temporary silo**, not the end state. They keep staging running today (one-env-var reversible).
+> - **End state = North-Star Phase 2:** staging Banco folds into the env realm `borrowhood-staging`
+>   as the `helixpos` **client** (+ `pos-*` roles); the standalone POS realm is then **deleted**, not
+>   renamed again. Prod Banco joins `borrowhood` the same way. Do **not** stand up
+>   `kc-community-*` / further `kc-workforce-*` realms.
+> - The email/blast-radius problem this doc solved is real; the mechanics built
+>   (`clone_pos_realm.py`, `configure_kc_smtp.py`, the self-heal guard, the `POS_REALM` knob) all
+>   stay useful — the env realm `borrowhood-staging` already runs Resend, so the fold keeps email working.
 
 ---
 
