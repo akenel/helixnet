@@ -135,6 +135,7 @@ async def get_pos_config():
     settings = get_settings()
     return {
         "vat_rate": settings.POS_VAT_RATE,
+        "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
         "vat_year": settings.POS_VAT_YEAR,
         "currency": settings.POS_CURRENCY,
         "locale": settings.POS_LOCALE,
@@ -1500,7 +1501,7 @@ async def draft_end_of_day_survey(
     Resilient: if no brain is configured / it's down, returns an honest deterministic draft
     built from the numbers (ai=false). The survey never blocks closeout."""
     from src.services.day_survey import draft_day_survey
-    return await draft_day_survey(db, _uid(current_user))
+    return await draft_day_survey(db, await _resolve_cashier_uid(db, current_user))
 
 
 @router.get("/shift/active")
@@ -1762,32 +1763,15 @@ async def create_transaction(
     count = count_result.scalar() or 0
     transaction_number = f"TXN-{today}-{count + 1:04d}"
 
-    # Ensure the cashier has a users row — transactions.cashier_id FK-references users.id
-    # (BL-83: cashier_id == the Keycloak sub). Seeded + Staff-tab-provisioned cashiers already
-    # have one; this self-heals anyone who logged in but was never provisioned on THIS env
-    # (otherwise the INSERT 500s on a cashier_id foreign-key violation). Idempotent + safe.
-    _sub = current_user.get('sub')
-    if _sub:
-        try:
-            _cid = UUID(str(_sub))
-        except (ValueError, TypeError):
-            _cid = None
-        if _cid is not None and await db.get(UserModel, _cid) is None:
-            _uname = (current_user.get('preferred_username') or str(_cid)[:8]).strip().lower()
-            _clash = (await db.execute(
-                select(UserModel).where(func.lower(UserModel.username) == _uname)
-            )).scalar_one_or_none()
-            if _clash:  # username taken by a different id — keep the FK target, vary the name
-                _uname = f"{_uname}-{str(_cid)[:8]}"
-            db.add(UserModel(
-                id=_cid, keycloak_id=_cid, username=_uname, email=f"{_uname}@pos.local",
-                first_name=current_user.get('given_name'), last_name=current_user.get('family_name'),
-            ))
-            await db.flush()
+    # Resolve the cashier to their stable users.id (FK target). One resolver, used by every
+    # cashier-scoped path, so the sale, the drawer and "My Day" all key on the SAME value —
+    # otherwise a 2nd sale collides on ix_users_keycloak_id and the drawer mis-counts. See
+    # _resolve_cashier_uid for the seeded-PK-vs-sub story.
+    cashier_uid = await _resolve_cashier_uid(db, current_user)
 
     new_transaction = TransactionModel(
         transaction_number=transaction_number,
-        cashier_id=current_user.get('sub', current_user.get('preferred_username', 'unknown')),
+        cashier_id=cashier_uid,
         status=TransactionStatus.OPEN,
         notes=transaction.notes,
         subtotal=Decimal("0.00"),
@@ -2169,7 +2153,7 @@ async def checkout_transaction(
         # close (the bug Angel hit: cash taken before the drawer was opened). Card /
         # TWINT / debit never touch the drawer, so they're not gated. 409 = the till
         # prompts the cashier to open + initialise their drawer first.
-        if not await _open_shift_for(db, _uid(current_user)):
+        if not await _open_shift_for(db, await _resolve_cashier_uid(db, current_user)):
             raise HTTPException(
                 status_code=409,
                 detail="Open your cash drawer before taking a cash sale.")
@@ -2354,7 +2338,7 @@ async def get_daily_summary(
         TransactionModel.completed_at <= end_of_day,
     ]
     if mine:
-        conditions.append(TransactionModel.cashier_id == _uid(current_user))
+        conditions.append(TransactionModel.cashier_id == await _resolve_cashier_uid(db, current_user))
 
     result = await db.execute(select(TransactionModel).where(and_(*conditions)))
     transactions = result.scalars().all()
@@ -2796,8 +2780,45 @@ async def pos_feedback(
 # expected vs counted, flags variance beyond the tolerance, and the open/close
 # timestamps double as shift hours. Each cashier owns their own drawer.
 
-def _uid(current_user: dict) -> str:
-    return current_user.get("sub", current_user.get("preferred_username", "unknown"))
+async def _resolve_cashier_uid(db: AsyncSession, current_user: dict) -> str:
+    """The cashier's STABLE users.id (as a string) — the single identity used for
+    transactions.cashier_id, cash-shift ownership and every per-cashier report.
+
+    Why this exists: transactions.cashier_id is a hard FK to users.id, and SEEDED demo
+    cashiers carry a fixed PK (e.g. Pam = 0000…0001) while storing their Keycloak sub in
+    keycloak_id. The raw sub (_uid) therefore does NOT equal users.id for them, so keying
+    some writes on the sub and others on users.id silently de-syncs the drawer ("My Day"
+    shows the sale, the drawer doesn't count it). Resolving by id THEN keycloak_id and
+    returning users.id keeps EVERY cashier-scoped query pointing at the same value, on every
+    env, with no data migration. Self-provisions a row for a never-seeded login (id == sub).
+    """
+    sub = current_user.get("sub")
+    try:
+        cid = UUID(str(sub)) if sub else None
+    except (ValueError, TypeError):
+        cid = None
+    if cid is None:                      # no usable sub — never key on None
+        return current_user.get("preferred_username", "unknown")
+    user = await db.get(UserModel, cid)
+    if user is None:
+        user = (await db.execute(
+            select(UserModel).where(UserModel.keycloak_id == cid)
+        )).scalar_one_or_none()
+    if user is not None:
+        return str(user.id)
+    # Never provisioned on THIS env — create with id == keycloak_id == sub (the convention).
+    uname = (current_user.get("preferred_username") or str(cid)[:8]).strip().lower()
+    clash = (await db.execute(
+        select(UserModel).where(func.lower(UserModel.username) == uname)
+    )).scalar_one_or_none()
+    if clash:                            # username taken by a different id — vary the name
+        uname = f"{uname}-{str(cid)[:8]}"
+    db.add(UserModel(
+        id=cid, keycloak_id=cid, username=uname, email=f"{uname}@pos.local",
+        first_name=current_user.get("given_name"), last_name=current_user.get("family_name"),
+    ))
+    await db.flush()
+    return str(cid)
 
 
 def _uname(current_user: dict) -> str:
@@ -2871,7 +2892,7 @@ async def open_cash_shift(
     current_user: dict = Depends(require_any_pos_role()),
 ):
     """Start your drawer: count the float in. One open shift per cashier."""
-    user_id, username = _uid(current_user), _uname(current_user)
+    user_id, username = await _resolve_cashier_uid(db, current_user), _uname(current_user)
     if await _open_shift_for(db, user_id):
         raise HTTPException(status_code=400,
             detail="You already have an open cash shift. Close it first.")
@@ -2896,7 +2917,7 @@ async def shift_paid_in_out(
 ):
     """Record non-sale cash moving in/out of the drawer (with a reason) so the
     drawer can still balance at close."""
-    user_id, username = _uid(current_user), _uname(current_user)
+    user_id, username = await _resolve_cashier_uid(db, current_user), _uname(current_user)
     shift = await _open_shift_for(db, user_id)
     if not shift:
         raise HTTPException(status_code=404, detail="No open cash shift to adjust.")
@@ -2930,7 +2951,7 @@ async def current_cash_shift(
     current_user: dict = Depends(require_any_pos_role()),
 ):
     """The caller's open drawer with the live expected-cash-so-far (or open:false)."""
-    user_id = _uid(current_user)
+    user_id = await _resolve_cashier_uid(db, current_user)
     shift = await _open_shift_for(db, user_id)
     if not shift:
         return {"open": False}
@@ -2959,7 +2980,7 @@ async def close_cash_shift(
 ):
     """Count the drawer out. Computes expected vs counted; a variance beyond the
     tolerance needs a note. Open->close timestamps are the shift hours."""
-    user_id, username = _uid(current_user), _uname(current_user)
+    user_id, username = await _resolve_cashier_uid(db, current_user), _uname(current_user)
     shift = await _open_shift_for(db, user_id)
     if not shift:
         raise HTTPException(status_code=404, detail="No open cash shift to close.")
@@ -3024,7 +3045,7 @@ async def last_cash_shift(
 ):
     """The caller's most recent CLOSED shift -- so the report screen survives a reload."""
     shift = (await db.execute(select(CashShiftModel).where(
-        CashShiftModel.user_id == _uid(current_user),
+        CashShiftModel.user_id == await _resolve_cashier_uid(db, current_user),
         CashShiftModel.status == CashShiftStatus.CLOSED,
     ).order_by(CashShiftModel.closed_at.desc()).limit(1))).scalar_one_or_none()
     if not shift:
@@ -3049,7 +3070,7 @@ async def shift_transactions(
     roles = (current_user.get("user_roles")
              or current_user.get("realm_access", {}).get("roles", []) or [])
     is_mgr = any(("manager" in r or "admin" in r or "developer" in r) for r in roles)
-    if shift.user_id != _uid(current_user) and not is_mgr:
+    if shift.user_id != await _resolve_cashier_uid(db, current_user) and not is_mgr:
         raise HTTPException(status_code=403, detail="Not your shift.")
 
     end = shift.closed_at or datetime.now(timezone.utc)
