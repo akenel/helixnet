@@ -1095,8 +1095,18 @@
 
       // Register the service worker. Scope /pos (allowed via Service-Worker-Allowed header).
       if('serviceWorker' in navigator){
+        var refreshing=false;
+        // When a NEW service worker takes control (we deployed an update), reload ONCE so the
+        // user gets fresh assets without a manual hard-refresh — but never yank the page out
+        // from under an in-progress sale (cart has items). Fixes the "had to refresh" clunk.
+        navigator.serviceWorker.addEventListener('controllerchange', function(){
+          if(refreshing) return;
+          try{ if((JSON.parse(sessionStorage.getItem('pos_cart')||'[]')).length) return; }catch(e){}
+          refreshing=true; window.location.reload();
+        });
         window.addEventListener('load', function(){
           navigator.serviceWorker.register('/pos/sw.js', {scope:'/pos'})
+            .then(function(reg){ reg.update && reg.update(); })   // check for an update each load
             .catch(function(e){ console.warn('SW register failed:', e); });
         });
       }
