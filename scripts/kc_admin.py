@@ -67,6 +67,50 @@ def _same(msg: str) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# command: list-realms  (read-only -- the reconciliation lens)                 #
+# --------------------------------------------------------------------------- #
+@app.command("list-realms")
+def list_realms(
+    kc_url: str = typer.Option("https://keycloak.helix.local", help="Keycloak base URL"),
+    admin_user: str = typer.Option("helix_user"),
+    admin_pass: str = typer.Option("helix_pass"),
+    grep: str = typer.Option("", help="Only show realms whose id contains this substring"),
+):
+    """List every realm on a KC instance with counts -- nothing is written.
+
+    The seal-inspection lens: before any identity change, see ALL the realms, not
+    just the one on the ticket. For the box KC:
+
+      python scripts/kc_admin.py list-realms \\
+          --kc-url https://<box-kc-url> --admin-user <u> --admin-pass <p>
+    """
+    kc = kc_url.rstrip("/")
+    with httpx.Client(verify=False, timeout=60.0) as c:
+        h = {"Authorization": f"Bearer {_admin_token(c, kc, admin_user, admin_pass)}"}
+        r = c.get(f"{kc}/admin/realms", headers=h)
+        r.raise_for_status()
+        rows = sorted(r.json(), key=lambda x: x["realm"])
+        shown = [rm for rm in rows if not grep or grep in rm["realm"]]
+        typer.secho(f"\n{len(rows)} realms on {kc}"
+                    + (f"  ({len(shown)} match '{grep}')" if grep else ""),
+                    fg="cyan", bold=True)
+        for rm in shown:
+            rid = rm["realm"]
+            try:
+                users = c.get(f"{kc}/admin/realms/{rid}/users/count", headers=h).json()
+            except Exception:
+                users = "?"
+            try:
+                clients = len(c.get(f"{kc}/admin/realms/{rid}/clients", headers=h).json())
+            except Exception:
+                clients = "?"
+            flag = "on " if rm.get("enabled") else "OFF"
+            disp = rm.get("displayName") or ""
+            typer.echo(f"  [{flag}] {rid:<28} users={str(users):<5} clients={str(clients):<3} {disp}")
+        typer.secho("\nread-only -- nothing written.", fg="bright_black")
+
+
+# --------------------------------------------------------------------------- #
 # command: export-realm  (P0 safe backup)                                      #
 # --------------------------------------------------------------------------- #
 @app.command("export-realm")
