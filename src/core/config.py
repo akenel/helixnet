@@ -130,6 +130,7 @@ class Settings(BaseSettings):
 
 # POS Configuration (HelixPOS)
     POS_VAT_RATE: float = 8.1  # Swiss VAT rate (2025: 8.1%, 2024: 7.7%)
+    POS_VAT_RATE_REDUCED: float = 2.6  # Reduced rate -- takeaway food / non-alc drink (Art. 25 MWSTG)
     POS_VAT_YEAR: int = 2025
     POS_CURRENCY: str = "CHF"
     POS_LOCALE: str = "de-CH"
