@@ -114,6 +114,11 @@ Kill the 7 hardcodes so every app picks its realm from config, exactly like POS/
 - [ ] `make test` green. Ship to staging behind unchanged realm values (no behaviour change yet).
 
 ### Phase 2 — Build the unified realm per env + fold the apps in
+**✅ Engine built + sandbox realm LIVE (2026-06-26):** `scripts/build_unified_realm.py` (idempotent,
+dry-run default) created **`kc-sandbox`** on the box with all 15 app clients + 4 tier roles
+(`member`/`business`/`staff`/`admin`, member=default) + 30 plain app roles + `shop:artemis` group.
+Idempotent verified (re-run = all `=`). Run pattern: `docker exec -e KC_ADMIN_PASSWORD=$(from kc
+container) helix-platform-sandbox /app/venv/bin/python /tmp/build_unified_realm.py …`.
 Per environment (sandbox first), in the env realm:
 - [ ] Add clients: `lapiazza`, `bottega`, `helixpos`, `garage`, `isotto`, `platform` (+ `*-api` pairs).
 - [ ] Add roles as client roles (`pos-*`, `camper-*`, `isotto-*`) + the cross-app tiers
