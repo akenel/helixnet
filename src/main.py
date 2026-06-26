@@ -385,10 +385,10 @@ async def home(request: Request):
 
 @app.get("/health/dashboard", tags=["💓 Health"], response_class=HTMLResponse)
 async def health_dashboard(request: Request):
-    """Standalone diagnostic page: server health, build/system info, and the
-    visitor's own browser + screen specs. No login required -- it's pure
-    diagnostics (shop figures live behind the in-app 📊 Shop Pulse card).
-    build version/sha are Jinja globals; env + shop come from settings."""
+    """Universal HelixNet System Info view: live health grid, build/env/wiring,
+    storage and the visitor's browser + screen specs. No login required -- pure
+    diagnostics (shop figures live behind the in-app 📊 Shop Pulse card). The
+    page is JS-driven off GET /health/system; env + shop seed the shell/colour."""
     from datetime import datetime, timezone
     _s = get_settings()
     return templates.TemplateResponse("health_dashboard.html", {
@@ -397,6 +397,13 @@ async def health_dashboard(request: Request):
         "shop": getattr(_s, "STORE_NAME", None) or "Artemis Store",
         "server_time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     })
+
+# Universal short aliases so ANY HelixNet app can link to the System Info view with
+# one memorable path (e.g. <app-host>/system). Both land on the shared dashboard.
+@app.get("/system", include_in_schema=False, response_class=HTMLResponse)
+@app.get("/diagnostics", include_in_schema=False, response_class=HTMLResponse)
+async def system_info_page(request: Request):
+    return await health_dashboard(request)
 
 @app.get("/api/maintenance", include_in_schema=False)
 async def maintenance_notice():

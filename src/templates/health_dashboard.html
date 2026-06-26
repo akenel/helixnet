@@ -3,62 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>System Diagnostics — HelixNet</title>
+  <title>System Info — HelixNet</title>
   <style>
-    :root{--bg:#070d18;--card:#0b1220;--line:rgba(48,63,84,.8);--ink:#e2e8f0;--mut:#94a3b8;--dim:#64748b;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;--red:#C0392B}
+    :root{
+      --bg:#070d18;--card:#0b1220;--line:rgba(48,63,84,.8);--ink:#e2e8f0;
+      --mut:#94a3b8;--dim:#64748b;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
+      --accent:#C0392B;--accent-soft:rgba(192,57,43,.18);
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;padding:24px;line-height:1.5}
-    .wrap{max-width:860px;margin:0 auto}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.5}
+    .topbar{height:5px;background:var(--accent)}
+    .wrap{max-width:920px;margin:0 auto;padding:22px 24px 40px}
     header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px}
     header h1{font-size:22px;font-weight:900;margin:0}
     .badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
-    .badge.env{background:rgba(192,57,43,.18);border-color:var(--red);color:#fca5a5}
-    .sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+    .badge.env{background:var(--accent-soft);border-color:var(--accent);color:#fff}
+    .pill{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+    .sub{color:var(--mut);font-size:13px;margin:0 0 18px}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media(max-width:640px){.grid{grid-template-columns:1fr}}
+    @media(max-width:680px){.grid{grid-template-columns:1fr}}
     .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+    .card.span2{grid-column:1 / -1}
     .card h2{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin:0 0 12px;display:flex;align-items:center;gap:8px}
     .row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border-bottom:1px solid rgba(48,63,84,.35);font-size:13px}
     .row:last-child{border-bottom:none}
     .row .k{color:var(--mut);flex:none}
     .row .v{color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right;word-break:break-word}
-    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
-    .dot.ok{background:var(--ok);box-shadow:0 0 6px var(--ok)}.dot.warn{background:var(--warn)}.dot.err{background:var(--err)}.dot.idle{background:var(--dim)}
+    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+    .dot.ok{background:var(--ok);box-shadow:0 0 6px var(--ok)}.dot.warn{background:var(--warn)}.dot.err{background:var(--err);box-shadow:0 0 6px var(--err)}.dot.idle{background:var(--dim)}
+    .overall{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 12px;padding:10px 12px;border-radius:10px;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.35);font-weight:800;font-size:15px}
+    .overall.bad{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.4)}
+    .tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:1px 6px;border-radius:999px;border:1px solid var(--line);color:var(--dim);margin-left:7px;vertical-align:middle}
+    .tag.crit{border-color:rgba(239,68,68,.5);color:#fca5a5}
+    .lat{color:var(--dim);font-size:11px;margin-left:8px}
     .foot{margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
     .foot .build{font-family:ui-monospace,Menlo,monospace;color:var(--dim);font-size:12px}
     .btn{padding:8px 16px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);font-weight:600;cursor:pointer;font-size:13px;text-decoration:none}
-    .btn:hover{border-color:var(--ok)}
-    .btn.primary{background:var(--red);border-color:var(--red)}
+    .btn:hover{border-color:var(--accent)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .spin{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);animation:p 1.6s ease-in-out infinite}
+    @keyframes p{0%,100%{opacity:.3}50%{opacity:1}}
   </style>
 </head>
-<body>
+<body data-env="{{ env or 'local' }}">
+  <div class="topbar"></div>
   <div class="wrap">
     <header>
-      <h1>🩺 System Diagnostics</h1>
-      <span class="badge env">{{ env | upper if env else 'LOCAL' }}</span>
+      <h1>🩺 System Info</h1>
+      <span class="badge env" id="env-badge">{{ env | upper if env else 'LOCAL' }}</span>
       <span class="badge">{{ shop }}</span>
+      <span class="pill"><span class="spin"></span><span id="last-checked">checking…</span></span>
     </header>
-    <p class="sub">Health, system &amp; build, and your device specs. No login needed — shop figures live behind the in-app 📊 Shop Pulse.</p>
+    <p class="sub">Live platform health, build &amp; service wiring, storage, and your device specs. No login needed — shop figures live behind the in-app 📊 Shop Pulse.</p>
 
     <div class="grid">
       <!-- HEALTH -->
-      <div class="card">
+      <div class="card span2">
         <h2>💓 Health</h2>
-        <div class="row"><span class="k">API</span><span class="v"><span class="dot idle" id="h-api"></span><span id="h-api-t">checking…</span></span></div>
-        <div class="row"><span class="k">Database</span><span class="v"><span class="dot idle" id="h-db"></span><span id="h-db-t">—</span></span></div>
-        <div class="row"><span class="k">Workers</span><span class="v"><span class="dot idle" id="h-cel"></span><span id="h-cel-t">—</span></span></div>
-        <div class="row"><span class="k">Overall</span><span class="v" id="h-overall">—</span></div>
+        <div class="overall" id="overall-box"><span id="h-overall">checking…</span><span class="v" style="font-weight:600;font-size:12px;color:var(--dim)" id="h-api">API —</span></div>
+        <div id="checks"><div class="row"><span class="k">Loading dependencies…</span><span class="v"></span></div></div>
       </div>
 
       <!-- SYSTEM / BUILD -->
       <div class="card">
         <h2>🧱 System &amp; Build</h2>
-        <div class="row"><span class="k">Version</span><span class="v">v{{ app_version or '?' }}</span></div>
-        <div class="row"><span class="k">Commit</span><span class="v">{{ git_sha[:7] if git_sha else 'dev' }}</span></div>
-        <div class="row"><span class="k">Environment</span><span class="v">{{ env or 'local' }}</span></div>
+        <div class="row"><span class="k">Version</span><span class="v" id="b-ver">v{{ app_version or '?' }}</span></div>
+        <div class="row"><span class="k">Commit</span><span class="v" id="b-sha">{{ git_sha if git_sha else 'dev' }}</span></div>
+        <div class="row"><span class="k">Build date</span><span class="v" id="b-date">—</span></div>
+        <div class="row"><span class="k">Environment</span><span class="v" id="b-env">{{ env or 'local' }}</span></div>
         <div class="row"><span class="k">Host</span><span class="v" id="s-host">—</span></div>
-        <div class="row"><span class="k">Server time</span><span class="v">{{ server_time }}Z</span></div>
+        <div class="row"><span class="k">Uptime</span><span class="v" id="s-up">—</span></div>
+        <div class="row"><span class="k">Server time (UTC)</span><span class="v" id="s-srv">—</span></div>
         <div class="row"><span class="k">Local time</span><span class="v" id="s-clock">—</span></div>
+      </div>
+
+      <!-- WIRING + STORAGE -->
+      <div class="card">
+        <h2>🔌 Wiring &amp; Storage</h2>
+        <div class="row"><span class="k">Database</span><span class="v" id="w-db">—</span></div>
+        <div class="row"><span class="k">DB size</span><span class="v" id="w-dbsize">—</span></div>
+        <div class="row"><span class="k">Largest table</span><span class="v" id="w-toptable">—</span></div>
+        <div class="row"><span class="k">POS realm</span><span class="v" id="w-pos">—</span></div>
+        <div class="row"><span class="k">La Piazza realm</span><span class="v" id="w-lp">—</span></div>
+        <div class="row"><span class="k">Keycloak</span><span class="v" id="w-kc">—</span></div>
       </div>
 
       <!-- USER / SESSION -->
@@ -87,9 +114,9 @@
     </div>
 
     <div class="foot">
-      <span class="build">HelixNet v{{ app_version or '?' }} ({{ git_sha[:7] if git_sha else 'dev' }}) · {{ env or 'local' }}</span>
+      <span class="build" id="foot-build">HelixNet v{{ app_version or '?' }} ({{ git_sha if git_sha else 'dev' }}) · {{ env or 'local' }}</span>
       <span>
-        <button class="btn" id="refresh" type="button">Refresh</button>
+        <button class="btn" id="refresh" type="button">↻ Refresh</button>
         <a class="btn primary" href="/pos">← Back to POS</a>
       </span>
     </div>
@@ -98,32 +125,79 @@
   <script>
   (function(){
     function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-    function dot(id,cls){var e=document.getElementById(id);if(e)e.className='dot '+cls;}
 
-    // ---- Server health (public endpoints; deep check may 503 if Workers down) ----
-    async function health(){
-      // soft: API up?
-      try{ var r=await fetch('/health/healthz',{cache:'no-store'});
-        if(r.ok){dot('h-api','ok');set('h-api-t','up');}else{dot('h-api','warn');set('h-api-t','HTTP '+r.status);} }
-      catch(e){dot('h-api','err');set('h-api-t','offline');}
-      // deep: DB + workers (503 still carries the checks in .detail)
-      try{
-        var r2=await fetch('/health/health',{cache:'no-store'});
-        var j=await r2.json().catch(function(){return {};});
-        var p=j.checks?j:(j.detail||{});
-        var checks=p.checks||[];
-        checks.forEach(function(c){
-          var ok=c.status==='OK';
-          if(/postgres|db/i.test(c.component)){dot('h-db',ok?'ok':'err');set('h-db-t',ok?'connected':'FAIL');}
-          if(/celery|worker|broker/i.test(c.component)){dot('h-cel',ok?'ok':'warn');set('h-cel-t',ok?'online':'none');}
-        });
-        var overall=p.overall_status||(r2.ok?'OK':'DEGRADED');
-        set('h-overall',overall);
-        document.getElementById('h-overall').style.color = overall==='OK' ? 'var(--ok)' : 'var(--warn)';
-      }catch(e){ set('h-db-t','unknown'); set('h-cel-t','unknown'); set('h-overall','unknown'); }
+    // ---- Environment colour theming (instant from data-env; no flash) ----
+    var ACCENTS={
+      production:['#ef4444','rgba(239,68,68,.20)'], prod:['#ef4444','rgba(239,68,68,.20)'], prd:['#ef4444','rgba(239,68,68,.20)'],
+      staging:['#f59e0b','rgba(245,158,11,.20)'], stg:['#f59e0b','rgba(245,158,11,.20)'],
+      sandbox:['#3b82f6','rgba(59,130,246,.20)'], sbx:['#3b82f6','rgba(59,130,246,.20)'],
+      uat:['#14b8a6','rgba(20,184,166,.20)'],
+      local:['#64748b','rgba(100,116,139,.20)'], dev:['#64748b','rgba(100,116,139,.20)']
+    };
+    (function(){
+      var env=(document.body.getAttribute('data-env')||'local').toLowerCase();
+      var a=ACCENTS[env]||ACCENTS['local'];
+      document.documentElement.style.setProperty('--accent',a[0]);
+      document.documentElement.style.setProperty('--accent-soft',a[1]);
+    })();
+
+    function fmtUptime(s){
+      s=Math.max(0,Math.floor(s||0));
+      var d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);
+      if(d) return d+'d '+h+'h'; if(h) return h+'h '+m+'m'; if(m) return m+'m'; return s+'s';
+    }
+    function fmtUTC(iso){ try{ return new Date(iso).toISOString().replace('T',' ').replace(/\..*/,'')+' UTC'; }catch(e){ return iso||'—'; } }
+
+    function renderChecks(checks){
+      var host=document.getElementById('checks'); host.innerHTML='';
+      (checks||[]).forEach(function(c){
+        var st=c.status, ok=st==='OK', none=st==='NONE';
+        var cls = ok?'ok':(none?'idle':(c.critical?'err':'warn'));
+        var word = ok?'OK':(none?'n/a':(c.critical?'DOWN':'unavailable'));
+        var lat = (c.latency_ms!=null)?('<span class="lat">'+c.latency_ms+' ms</span>'):'';
+        var tag = c.critical?'<span class="tag crit">critical</span>':'<span class="tag">optional</span>';
+        var row=document.createElement('div'); row.className='row';
+        row.innerHTML='<span class="k">'+c.component+tag+'</span>'+
+                      '<span class="v" title="'+(c.detail||'').replace(/"/g,'')+'"><span class="dot '+cls+'"></span>'+word+lat+'</span>';
+        host.appendChild(row);
+      });
     }
 
-    // ---- This tab's session (token is per-tab sessionStorage; may be empty in a fresh tab) ----
+    // ---- One call powers the whole server side: /health/system ----
+    async function system(){
+      try{ var ra=await fetch('/health/healthz',{cache:'no-store'}); set('h-api', ra.ok?'API up':'API HTTP '+ra.status); }
+      catch(e){ set('h-api','API offline'); }
+      try{
+        var r=await fetch('/health/system',{cache:'no-store'});
+        var j=await r.json().catch(function(){return {};});
+        var p=j.checks?j:(j.detail||{});            // 503 carries the body in .detail
+        renderChecks(p.checks);
+        var overall=p.overall_status||(r.ok?'OK':'DEGRADED');
+        set('h-overall', overall==='OK'?'✅ All systems OK':'⚠️ '+overall);
+        document.getElementById('overall-box').className='overall'+(overall==='OK'?'':' bad');
+
+        if(p.build){ set('b-sha', p.build.sha||'dev'); set('b-date', p.build.date?fmtUTC(p.build.date):'—'); }
+        if(p.version) set('b-ver','v'+p.version);
+        if(p.environment) set('b-env', p.environment);
+        if(p.uptime_seconds!=null) set('s-up', fmtUptime(p.uptime_seconds));
+        if(p.server_time) set('s-srv', fmtUTC(p.server_time));
+        var w=p.wiring||{};
+        set('w-db', w.database||'—');
+        set('w-pos', w.pos_realm||'—');
+        set('w-lp', w.lp_realm||'—');
+        set('w-kc', w.keycloak_url||'—');
+        var s=p.storage||{};
+        set('w-dbsize', s.db_size||'—');
+        set('w-toptable', s.largest_table?(s.largest_table+' ('+(s.largest_table_size||'')+')'):'—');
+        if(p.build) set('foot-build','HelixNet v'+(p.version||'?')+' ('+(p.build.sha||'dev')+') · '+(p.environment||'local'));
+      }catch(e){
+        document.getElementById('checks').innerHTML='<div class="row"><span class="k">Could not reach /health/system</span><span class="v"><span class="dot err"></span>error</span></div>';
+        set('h-overall','⚠️ unknown');
+      }
+      set('last-checked','updated '+new Date().toLocaleTimeString());
+    }
+
+    // ---- This tab's session ----
     function session(){
       try{
         var tok=sessionStorage.getItem('pos_token');
@@ -132,7 +206,7 @@
       }catch(e){ set('u-user','—'); }
     }
 
-    // ---- Browser + screen specs (pure client-side) ----
+    // ---- Browser + screen specs (client-side) ----
     function specs(){
       var n=navigator;
       set('s-host', location.host);
@@ -145,7 +219,7 @@
       var mem=n.deviceMemory?(' / '+n.deviceMemory+' GB'):'';
       set('u-hw', cores+mem);
       var c=n.connection||n.mozConnection||n.webkitConnection;
-      set('u-net', c?((c.effectiveType||'?')+(c.downlink?(' · '+c.downlink+' Mbps'):'')):'—');
+      set('u-net', c?((c.effectiveType||'?')+(c.downlink?(' · '+c.downlink+' Mbps'):'')):'n/a (browser)');
 
       var s=window.screen||{};
       set('sc-screen', (s.width||'?')+' × '+(s.height||'?'));
@@ -158,9 +232,9 @@
 
     function clock(){ set('s-clock', new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})); }
 
-    function refresh(){ health(); session(); specs(); clock(); }
+    function refresh(){ system(); session(); specs(); clock(); }
     document.getElementById('refresh').onclick=refresh;
-    refresh(); setInterval(clock,1000);
+    refresh(); setInterval(clock,1000); setInterval(system,15000);  // live auto-refresh every 15s
   })();
   </script>
 </body>

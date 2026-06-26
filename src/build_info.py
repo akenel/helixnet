@@ -29,18 +29,24 @@ def get_version() -> str:
     return __version__
 
 
+def _stamp_lines() -> list:
+    """Lines of the deploy stamp file, or []. Line 1 = sha, line 2 = ISO build date."""
+    try:
+        if _STAMP.exists():
+            return [ln.strip() for ln in _STAMP.read_text().splitlines() if ln.strip()]
+    except Exception:
+        pass
+    return []
+
+
 @lru_cache(maxsize=1)
 def get_git_sha() -> str:
     sha = (os.environ.get("HELIX_GIT_SHA") or "").strip()
     if sha:
         return sha[:7]
-    try:
-        if _STAMP.exists():
-            stamped = _STAMP.read_text().strip()
-            if stamped:
-                return stamped[:7]
-    except Exception:
-        pass
+    lines = _stamp_lines()
+    if lines:
+        return lines[0][:7]
     try:
         out = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
@@ -49,3 +55,23 @@ def get_git_sha() -> str:
         return out or "dev"
     except Exception:
         return "dev"
+
+
+@lru_cache(maxsize=1)
+def get_build_date() -> str:
+    """ISO date of the deployed build. From env, then stamp line 2, then the
+    HEAD commit date (local dev), then "" (never crashes the status bar)."""
+    d = (os.environ.get("HELIX_BUILD_DATE") or "").strip()
+    if d:
+        return d
+    lines = _stamp_lines()
+    if len(lines) >= 2:
+        return lines[1]
+    try:
+        out = subprocess.check_output(
+            ["git", "show", "-s", "--format=%cI", "HEAD"],
+            cwd=str(_REPO_ROOT), text=True, stderr=subprocess.DEVNULL,
+        ).strip()
+        return out
+    except Exception:
+        return ""
