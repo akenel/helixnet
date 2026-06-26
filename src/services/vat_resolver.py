@@ -107,6 +107,36 @@ def line_vat(product_class, consumption=DEFAULT_CONSUMPTION, gross=Decimal("0"),
     return rate, contained_vat(gross, rate)
 
 
+def split_vat(lines, total, subtotal, *, standard_rate=None, reduced_rate=None) -> dict:
+    """Roll a sale's lines up into the two Swiss turnover streams (INC3).
+
+    `lines` = iterable of (rate, line_total) — the per-line snapshotted VAT rate and its
+    GROSS (pre-discount). `total`/`subtotal` = the sale's discounted gross and pre-discount
+    subtotal; their ratio prorates a cart-wide discount evenly across lines so each line's
+    contained VAT reflects what was actually charged.
+
+    Returns the contained VAT and turnover split by rate — standard (8.1%) vs reduced (2.6%) —
+    which is exactly what the FTA wants booked separately, plus vat_total. Pure + cents-rounded.
+    """
+    std, red = _rates(standard_rate, reduced_rate)
+    sub = Decimal(str(subtotal or 0))
+    factor = (Decimal(str(total)) / sub) if sub > 0 else Decimal("1")
+    o = {"turnover_standard": Decimal("0"), "turnover_reduced": Decimal("0"),
+         "vat_standard": Decimal("0"), "vat_reduced": Decimal("0")}
+    for rate, line_total in lines:
+        r = Decimal(str(rate if rate is not None else std))
+        gross = Decimal(str(line_total or 0)) * factor
+        vat = contained_vat(gross, r)
+        if r == red:
+            o["turnover_reduced"] += gross; o["vat_reduced"] += vat
+        else:
+            o["turnover_standard"] += gross; o["vat_standard"] += vat
+    cents = lambda d: d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    o = {k: cents(v) for k, v in o.items()}
+    o["vat_total"] = o["vat_standard"] + o["vat_reduced"]
+    return o
+
+
 def _rates(standard_rate, reduced_rate) -> tuple[Decimal, Decimal]:
     """(standard, reduced) rates as Decimals. Both injectable; else read from config."""
     if standard_rate is not None and reduced_rate is not None:

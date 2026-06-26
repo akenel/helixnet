@@ -284,6 +284,12 @@ class DailySummary(BaseModel):
     total_transactions: int
     total_sales: Decimal
     vat_total: Decimal = Decimal("0.00")  # VAT contained in the day's gross sales (inclusive)
+    # Swiss VAT split (INC3) — the two turnover streams booked apart for the FTA:
+    # standard 8.1% (dine-in cafe + retail/alcohol/tobacco) vs reduced 2.6% (takeaway cafe).
+    vat_standard: Decimal = Decimal("0.00")
+    vat_reduced: Decimal = Decimal("0.00")
+    turnover_standard: Decimal = Decimal("0.00")
+    turnover_reduced: Decimal = Decimal("0.00")
     cash_total: Decimal
     visa_total: Decimal
     debit_total: Decimal

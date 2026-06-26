@@ -22,7 +22,7 @@ from pathlib import Path
 from src.db.database import get_db_session
 from src.services.lp_publish import publish_product
 from src.services.square_bridge import SquareBridgeError
-from src.services.vat_resolver import line_vat
+from src.services.vat_resolver import line_vat, split_vat
 from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
@@ -2169,9 +2169,19 @@ async def checkout_transaction(
     transaction.completed_at = datetime.now(timezone.utc)
     transaction.updated_at = datetime.now(timezone.utc)
 
-    # Keep VAT consistent with the final gross total (inclusive VAT) so the receipt and the
-    # daily Z-report always show the right contained VAT.
-    transaction.tax_amount = _inclusive_vat(transaction.total)
+    # VAT is the SUM of the per-line contained VAT at each line's snapshotted rate (INC3) — so a
+    # mixed cafe cart (8.1% dine-in lines + 2.6% takeaway lines) gets the legally-correct total,
+    # not a single blanket rate. The cart-wide discount is prorated across lines. Falls back to
+    # the single-rate inclusive VAT if the sale has no priced lines (defensive).
+    _lines = (await db.execute(
+        select(LineItemModel.vat_rate, LineItemModel.line_total)
+        .where(LineItemModel.transaction_id == transaction.id)
+    )).all()
+    if _lines:
+        _split = split_vat([(r, lt) for r, lt in _lines], transaction.total, transaction.subtotal)
+        transaction.tax_amount = _split["vat_total"]
+    else:
+        transaction.tax_amount = _inclusive_vat(transaction.total)
 
     # Generate receipt number
     transaction.receipt_number = f"REC-{transaction.transaction_number}"
@@ -2369,6 +2379,29 @@ async def get_daily_summary(
             giveaway_count += q
             giveaway_cost += Decimal(str(cost or 0)) * q
 
+    # Swiss VAT split (INC3): the two turnover streams the FTA wants booked apart —
+    # standard-rated (8.1%: dine-in cafe + all retail/alcohol/tobacco) vs reduced-rated
+    # (2.6%: takeaway cafe food/drink). Computed per-transaction from the line snapshots so
+    # each sale's cart-wide discount is prorated correctly, then summed across the day.
+    vat_standard = vat_reduced = turnover_standard = turnover_reduced = Decimal("0.00")
+    if tx_ids:
+        _s = get_settings()
+        _std, _red = Decimal(str(_s.POS_VAT_RATE)), Decimal(str(_s.POS_VAT_RATE_REDUCED))
+        _money = {t.id: (t.total, t.subtotal) for t in transactions}
+        _lrows = (await db.execute(
+            select(LineItemModel.transaction_id, LineItemModel.vat_rate, LineItemModel.line_total)
+            .where(LineItemModel.transaction_id.in_(tx_ids))
+        )).all()
+        from collections import defaultdict as _dd
+        _bytx: dict = _dd(list)
+        for _txid, _rate, _lt in _lrows:
+            _bytx[_txid].append((_rate, _lt))
+        for _txid, _lines in _bytx.items():
+            _tot, _sub = _money.get(_txid, (Decimal("0"), Decimal("0")))
+            _sp = split_vat(_lines, _tot, _sub, standard_rate=_std, reduced_rate=_red)
+            vat_standard += _sp["vat_standard"]; vat_reduced += _sp["vat_reduced"]
+            turnover_standard += _sp["turnover_standard"]; turnover_reduced += _sp["turnover_reduced"]
+
     # Best sellers + units sold today (catalog products + custom lines, excl. free treats).
     # The leaderboard fills the once-empty "Top Seller" + gives items-sold for free.
     top_seller = None
@@ -2430,6 +2463,10 @@ async def get_daily_summary(
         total_transactions=len(transactions),
         total_sales=Decimal(str(total_sales)),
         vat_total=Decimal(str(vat_total)),
+        vat_standard=vat_standard,
+        vat_reduced=vat_reduced,
+        turnover_standard=turnover_standard,
+        turnover_reduced=turnover_reduced,
         cash_total=Decimal(str(cash_total)),
         visa_total=Decimal(str(visa_total)),
         debit_total=Decimal(str(debit_total)),
