@@ -72,8 +72,13 @@ security posture we'd otherwise have split realms for. Public users simply never
 3. **`lapiazza-realm-staging` (162)** = superseded old staging, mostly test accounts (`art-*`,
    `cara-cardseed`). NOT the staging target. Backup → delete (after a glance for any real account).
    The live staging realm is **`borrowhood-staging` (20 users — our "140" was wrong)** → becomes `kc-staging`.
-4. **Emoji role names** (`💰️ pos-cashier`, `👑 admin`…) — normalize to plain ASCII during the fold;
-   apps match role strings, and emoji in role names invite encoding bugs.
+4. **Emoji role names** (`💰️ pos-cashier`, `👑 admin`…) — **DECISION 2026-06-26 (Angel): drop emoji
+   everywhere in the identity config; plain ASCII role names long-term.** Safe to do: `require_roles`
+   (`keycloak_auth.py:227`) substring-matches both ways, so a plain KC role `pos-cashier` satisfies
+   app checks written as either `pos-cashier` OR `💰️ pos-cashier` — existing checks keep working
+   against plain roles. ⚠ One synced cleanup required: `admin_router.py` hardcodes the emoji role
+   *catalog* for create/assign (lines ~133–265) — update to plain names **when its target realm is
+   plain** (i.e. with the cutover, not before — prod KC still has emoji roles until renamed).
 5. **`default-roles-borrowhood` appears inside `borrowhood-staging`** (stray, alongside its own
    `default-roles-borrowhood-staging`) — verify/clean during the staging fold.
 
