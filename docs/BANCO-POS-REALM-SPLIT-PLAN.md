@@ -1,7 +1,12 @@
 # Banco POS realm split — dev/sbx → staging → prod (the simple fix)
 
-*Scoped 2026-06-26. Implements the locked identity north-star (realm = environment) for the
-POS/Banco realm. Pairs with [[helix-identity-architecture]] and BANCO-CLOSEOUT email path.*
+*Scoped 2026-06-26. Pairs with `HELIX-TWO-REALM-IDENTITY-ADR.md` and the BANCO-CLOSEOUT email path.*
+
+> **Model note (per `HELIX-TWO-REALM-IDENTITY-ADR.md`):** the `kc-pos-realm-*` realms below ARE
+> the **workforce realm** — Banco/POS is just its first client. Future internal apps (HR, admin,
+> the Camper & Tour garage app, the ISOTTO print app) join here as **clients**, *not* as new
+> realms. Realms are populations, not apps. Customers of every business live on La Piazza/Bottega
+> (the community realm).
 
 ---
 
