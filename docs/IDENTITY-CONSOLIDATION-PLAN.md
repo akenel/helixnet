@@ -21,10 +21,12 @@ Inside each realm: every app is a **client**, every person is **one account**, w
 is a **role tier** (`member`/`business` vs `staff`/`admin`), every shop is a **group**
 (`shop:artemis`). No per-app realms, no per-population realms.
 
-> **Naming decision (supersedes ID3's "keep `borrowhood`"):** Angel wants the clean `kc-<env>`
-> names *done*, not deferred. So the prod realm **is** renamed `borrowhood → kc-production` — but as
-> the **last, separately-gated step**, rehearsed on sandbox + staging first (see Phase 4). Until that
-> cutover, prod keeps id `borrowhood` and just carries a clean display name.
+> **Naming decision — AUTHORIZED by Angel 2026-06-26 (supersedes ID3's "keep `borrowhood`"):**
+> the prod realm **is** renamed `borrowhood → kc-production`, "gated and rehearsed." It is the
+> **last, separately-gated step**, rehearsed on a throwaway realm + sandbox + staging first (see
+> Phase 4). Until that cutover, prod keeps id `borrowhood` with a clean display name.
+> **Pre-req proven before any real rename:** an in-place rename must preserve password hashes (else
+> it's export/reimport = mass password reset; if so, STOP and reassess). Probed on local KC first.
 
 ---
 
@@ -105,24 +107,30 @@ Per env, remove the folded realms: `lapiazza-realm-dev`, `artemis` (→ group), 
 `kc-camper-service-realm-dev`, `kc-isotto-print-realm-dev`, the Banco POS realms. Resolve the
 `lapiazza-realm-staging` 162 users first.
 
-### Phase 4 — The rename to clean names (LAST, rehearsed, gated)
-Only after each env runs on ONE realm:
-- [ ] **Prove the rename method on sandbox:** in-place rename via KC admin API (PUT realm `realm`
-      field) — confirm it **preserves users + password hashes + sub**, only changing `iss`. If it
-      loses passwords (i.e. it's really export/reimport), STOP and reassess prod.
-- [ ] sandbox realm → `kc-sandbox`; update app config + redirect URIs; re-login smoke.
-- [ ] **staging:** `borrowhood-staging` → `kc-staging` (rehearsal on 140 real users).
-- [ ] **prod:** `borrowhood` → `kc-production` — own cutover window, full backup first, every client
-      redirect + app `*_REALM` + the `bottega_router.py:280` literal updated, 305 users re-login.
-      **Explicit Angel go.**
+### Phase 4 — The rename to clean names (LAST, rehearsed, gated) — AUTHORIZED
+Only after each env runs on ONE realm. **Rename is AUTHORIZED** (Angel 2026-06-26).
+- [x] **Rename method proven (local KC, 2026-06-26):** in-place rename = PUT realm rep with a changed
+      `realm` field. **Preserves the password credential row untouched** (identical credential
+      id+hash+createdDate before/after; old name → 404 = true rename, not a copy). Verdict: **no
+      password reset** — users only re-login (the `iss` changes → sessions invalidate). Probe =
+      `scratchpad/rename_probe.py` (credential-fingerprint method; login-flow can't be used on the
+      customized local KC). ⚠ Re-confirm on the box during the sandbox/staging rehearsal.
+- [ ] **The lockstep that MUST accompany each rename** (or logins break): every `helix_pos_web` /
+      `lapiazza_web` / app client's **redirect URIs**; each app's `*_REALM` env (`POS_REALM`,
+      `LP_REALM`, `CAMPER_REALM`, `ISOTTO_REALM`, `KEYCLOAK_REALM`); the realm **`frontendUrl`**;
+      the `bottega_router.py:280` `if LP_REALM == "borrowhood"` literal; `LP_KC_PUBLIC_URL`.
+- [ ] sandbox realm → `kc-sandbox`; update the above; re-login smoke. (throwaway = real rehearsal)
+- [ ] **staging:** `borrowhood-staging` → `kc-staging` (rehearsal on 140 real users + the box).
+- [ ] **prod:** `borrowhood` → `kc-production` — own quiet cutover window, full `export-realm --apply`
+      backup first, the lockstep above applied, 305 users re-login. **Final explicit Angel go.**
 
 ---
 
 ## What's needed from Angel
 1. **Run the read-only box `list-realms`** (Phase 0) — the one command from the prior message.
-2. **Authorize the prod-realm rename** as the final gated step (it touches 305 live logins —
-   rehearsed on sandbox+staging first, full backup, re-login required). This is the one genuinely
-   risky decision; the rest is reversible.
+2. ✅ **Prod-realm rename AUTHORIZED 2026-06-26** ("yes rename prod to kc-production, gated and
+   rehearsed"). Executed only at Phase 4, after the rename method is proven (password hashes
+   survive) on a throwaway realm + sandbox + staging, with a full backup, at a quiet window.
 
 *3 realms. One account per person. Hats, not walls. Clean the house once.*
 </content>
