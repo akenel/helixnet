@@ -550,6 +550,21 @@
             </div>
         </div>
     </div>
+
+    <!-- Clear-cart confirm modal (replaces the native confirm) -->
+    <div x-show="showClearModal" x-transition.opacity
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+         @click.self="showClearModal = false" @keydown.escape.window="showClearModal = false" style="display:none;">
+        <div class="card w-full max-w-sm text-center">
+            <span class="text-4xl block mb-2">🗑️</span>
+            <h3 class="text-xl font-bold text-gray-900 mb-1">Clear the whole cart?</h3>
+            <p class="text-sm text-gray-500 mb-5">This removes every item. You can't undo it.</p>
+            <div class="flex gap-3">
+                <button @click="showClearModal = false" class="btn-secondary flex-1">Keep cart</button>
+                <button @click="confirmClearCart()" class="btn-danger flex-1">Clear it</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -626,6 +641,7 @@
             // Cart
             cart: [],
             discount: 0,
+            showClearModal: false,   // clear-cart confirm modal (replaces native confirm)
             discountError: '',
             maxDiscount: 100,
             discountMode: 'percent', // 'percent' or 'target'
@@ -1257,11 +1273,13 @@
             },
 
             clearCart() {
-                if (confirm('Clear entire cart?')) {
-                    this.cart = [];
-                    this.discount = 0;
-                    showToast('Cart cleared', 'info');
-                }
+                this.showClearModal = true;
+            },
+            confirmClearCart() {
+                this.cart = [];
+                this.discount = 0;
+                this.showClearModal = false;
+                showToast('Cart cleared', 'info');
             },
 
             goToCheckout() {

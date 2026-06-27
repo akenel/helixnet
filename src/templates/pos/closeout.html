@@ -69,7 +69,7 @@
                     <p class="text-sm text-gray-500 mb-3">
                         Artemis Luzern &middot; <span x-text="summary.date"></span> &middot; Cashier: <span x-text="user.username"></span>
                     </p>
-                    <table class="w-full text-sm">
+                    <table class="w-full text-sm data-table">
                         <tbody>
                             <tr x-show="summary.cashSales > 0"><td class="py-1">Cash</td><td class="py-1 text-right" x-text="formatPrice(summary.cashSales)"></td></tr>
                             <tr x-show="summary.twintSales > 0"><td class="py-1">TWINT</td><td class="py-1 text-right" x-text="formatPrice(summary.twintSales)"></td></tr>

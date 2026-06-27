@@ -37,7 +37,8 @@
                 <div class="flex gap-2">
                     <input type="text" x-model="searchQuery"
                            @keyup.enter="searchCustomer()"
-                           class="flex-1 px-4 py-3 border-2 rounded-lg text-lg"
+                           class="input-field flex-1"
+                           autofocus
                            placeholder="Handle, Instagram, email, or phone...">
                     <button @click="searchCustomer()"
                             class="btn-primary px-6">

@@ -158,6 +158,17 @@
             padding: 1.5rem;                 /* p-6 */
         }
 
+        /* Data tables — zebra rows, strong header, row hover (add class="data-table") */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table thead th {
+            background-color: #eef2ff;       /* indigo-50 */
+            color: #3730a3;                  /* indigo-800 */
+            border-bottom: 2px solid #c7d2fe;/* indigo-200 */
+        }
+        .data-table tbody tr { transition: background-color .12s ease; }
+        .data-table tbody tr:nth-child(even) { background-color: #f9fafb; }  /* zebra */
+        .data-table tbody tr:hover { background-color: #eef2ff; }            /* hover */
+
         /* Input styling - BIG for fat fingers (real CSS — @apply is dead in this plain block) */
         .input-field {
             width: 100%;

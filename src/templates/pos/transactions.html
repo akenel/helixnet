@@ -130,7 +130,7 @@
         <!-- Transactions Table -->
         <div x-show="!loading && processedList().length > 0" class="card overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full data-table">
                     <thead class="bg-gray-100">
                         <tr>
                             <th @click="sortByCol('receipt')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Receipt # <span x-text="sortIcon('receipt')"></span></th>
