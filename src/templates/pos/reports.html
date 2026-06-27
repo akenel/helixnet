@@ -27,8 +27,12 @@
                 <p class="text-3xl font-bold text-gray-900" x-text="summary.total_transactions"></p>
             </div>
             <div class="card">
-                <p class="text-gray-600 text-sm">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</p>
+                <p class="text-gray-600 text-sm">incl. VAT (total)</p>
                 <p class="text-3xl font-bold text-indigo-600" x-text="formatPrice(summary.vat_total)"></p>
+                <p class="text-xs text-gray-400 mt-1" x-show="summary.turnover_reduced > 0">
+                    <span x-text="POSConfig.vat_rate"></span>% <span x-text="formatPrice(summary.vat_standard)"></span>
+                    · <span x-text="POSConfig.vat_rate_reduced"></span>% <span x-text="formatPrice(summary.vat_reduced)"></span>
+                </p>
             </div>
         </div>
 
@@ -64,8 +68,16 @@
                         <td class="py-2 text-right font-bold text-lg" x-text="formatPrice(summary.total_sales)"></td>
                     </tr>
                     <tr>
-                        <td class="py-1 text-gray-500">incl. VAT (<span x-text="POSConfig.vat_rate"></span>%)</td>
-                        <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_total)"></td>
+                        <td class="py-1 text-gray-500">incl. VAT <span x-text="POSConfig.vat_rate"></span>%<span x-show="summary.turnover_reduced > 0"> (on <span x-text="formatPrice(summary.turnover_standard)"></span>)</span></td>
+                        <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_standard)"></td>
+                    </tr>
+                    <tr x-show="summary.turnover_reduced > 0">
+                        <td class="py-1 text-gray-500">incl. VAT <span x-text="POSConfig.vat_rate_reduced"></span>% (on <span x-text="formatPrice(summary.turnover_reduced)"></span>)</td>
+                        <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_reduced)"></td>
+                    </tr>
+                    <tr x-show="summary.turnover_reduced > 0">
+                        <td class="py-1 text-gray-600 font-semibold">VAT total</td>
+                        <td class="py-1 text-right text-gray-600 font-semibold" x-text="formatPrice(summary.vat_total)"></td>
                     </tr>
                     <tr x-show="summary.giveaway_count > 0">
                         <td class="py-1 text-pink-600">🎁 Treats given (free) — <span x-text="summary.giveaway_count"></span> · cost</td>
@@ -120,6 +132,7 @@
                 total_transactions: 0,
                 total_sales: 0,
                 vat_total: 0,
+                vat_standard: 0, vat_reduced: 0, turnover_standard: 0, turnover_reduced: 0,
                 cash_total: 0, twint_total: 0, visa_total: 0,
                 debit_total: 0, crypto_total: 0, other_total: 0,
                 top_seller: null, top_seller_quantity: 0,
@@ -139,6 +152,10 @@
                         total_transactions: data.total_transactions || 0,
                         total_sales: parseFloat(data.total_sales || 0),
                         vat_total: parseFloat(data.vat_total || 0),
+                        vat_standard: parseFloat(data.vat_standard || 0),
+                        vat_reduced: parseFloat(data.vat_reduced || 0),
+                        turnover_standard: parseFloat(data.turnover_standard || 0),
+                        turnover_reduced: parseFloat(data.turnover_reduced || 0),
                         cash_total: parseFloat(data.cash_total || 0),
                         twint_total: parseFloat(data.twint_total || 0),
                         visa_total: parseFloat(data.visa_total || 0),
