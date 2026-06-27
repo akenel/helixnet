@@ -2144,6 +2144,15 @@ async def checkout_transaction(
     if transaction.status != TransactionStatus.OPEN:
         raise HTTPException(status_code=400, detail="Transaction already processed")
 
+    # Guard: never complete an empty cart — a CHF 0 sale with no lines is meaningless
+    # and pollutes the day's count (found by the monkey/fuzz pass 2026-06-27).
+    li_count = await db.scalar(
+        select(func.count()).select_from(LineItemModel)
+        .where(LineItemModel.transaction_id == transaction_id)
+    )
+    if not li_count:
+        raise HTTPException(status_code=400, detail="Cannot check out an empty cart — add at least one item.")
+
     # --- CRM: attach the loyalty member + apply their tier discount (before the cash
     # check, so the member pays the discounted total). The total already reflects any
     # manual cart discount; the tier discount stacks on top of it. ---

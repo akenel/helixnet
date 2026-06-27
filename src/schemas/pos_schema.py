@@ -128,7 +128,8 @@ class LineItemCreate(BaseModel):
     For real products the server always prices from the catalog (client unit_price
     is ignored, so it can't be tampered with)."""
     product_id: Optional[UUID] = None
-    quantity: int = Field(default=1, ge=1)
+    # Upper cap = fat-finger guard (monkey/fuzz 2026-06-27 accepted qty 10,000,000).
+    quantity: int = Field(default=1, ge=1, le=10000)
     discount_percent: Decimal = Field(default=Decimal("0.00"), ge=0, le=100)
     notes: Optional[str] = None
     # Only used for custom lines (product_id is None):
