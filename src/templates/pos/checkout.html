@@ -502,6 +502,15 @@
                     return;
                 }
 
+                // Offline: finishing a sale needs the server (P2 outbox not built yet). Don't
+                // throw a scary error — tell the cashier plainly and keep the cart so they can
+                // finish the moment they're back online.
+                if (!navigator.onLine) {
+                    sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // keep the sale
+                    showToast("You're offline — keep scanning. This sale will finish when you're back online.", 'warning');
+                    return;
+                }
+
                 // Cash needs an OPEN drawer — check before ringing anything up, so the
                 // money always lands in a shift that reconciles at close. Card/TWINT skip this.
                 if (this.paymentMethod === 'cash') {
@@ -581,7 +590,13 @@
                     }, 500);
 
                 } catch (error) {
-                    showToast('Error: ' + error.message, 'error');
+                    // Dropped mid-checkout? Say it plainly and keep the cart, rather than a raw error.
+                    if (!navigator.onLine) {
+                        sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // keep the sale
+                        showToast("Lost the network mid-sale — your cart is saved. Finish it once you're back online.", 'warning');
+                    } else {
+                        showToast('Error: ' + error.message, 'error');
+                    }
                     this.processing = false;
                 }
             },
