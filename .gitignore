@@ -272,3 +272,6 @@ docs/testing/banco/banco-pos-test-run*report.txt
 # Local inventory exports (real product-data dumps, regenerable)
 docs/business/inventory/inventory-local-*.csv
 docs/business/inventory/inventory-local-*.md
+
+# Banco videos — local only, already on YouTube; never to git (would bloat the repo)
+videos/banco/
