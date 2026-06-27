@@ -9,6 +9,13 @@ or the relationship if we get them wrong.*
 - **TODAY:** ① offsite copy of the banco_prod backups (currently box-only), ② push alerting
   (Telegram/email) on a non-zero daily smoke or backup, ③ clean prod identity (deterministic
   staff provisioning — no self-provision drift — + password-reset SMTP).
+- **Fiscal robustness (found 2026-06-27 e2e):** harden the daily-summary turnover-split so the
+  Z-report ALWAYS reconciles to total_sales, even on odd/legacy data. Per-sale VAT is exact and
+  a CLEAN day reconciles to 0 (proven), but a transaction with `subtotal≤0` (e.g. giveaway-only,
+  or pre-VAT legacy rows) makes split_vat unable to prorate → turnover can drift from total_sales
+  on a messy mixed pile. Defensive fix: when `subtotal≤0` fall back to total (or reconcile the
+  rounding/residual into the standard bucket) so the turnover-by-rate always ties out. Pre-existing
+  (INC3 aggregation), NOT this batch; surfaced now because we display the split. Test-gate + ride.
 - **AFTER Felix's live demo:** send the fiscal receipt + Z-report PDFs to his Treuhänder.
 - Status note: UX+fiscal batch PASSED TEST-B01 (15/15) → rode to staging (green) → prod on Angel's go.
 
