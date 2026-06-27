@@ -687,18 +687,35 @@
                     return;
                 }
 
+                const code = this.barcodeInput.trim();
                 try {
                     // Exact barcode lookup (the dedicated endpoint -- /search fuzzy-ranks
                     // the exact match too low to trust for a scan).
-                    const product = await API.get(`/api/v1/pos/products/barcode/${encodeURIComponent(this.barcodeInput.trim())}`);
+                    const product = await API.get(`/api/v1/pos/products/barcode/${encodeURIComponent(code)}`);
                     this.addToCart(product);
+                    if (window.CatalogCache) CatalogCache.put(product);   // P1: keep the offline mirror warm
                     this.barcodeInput = '';
                     showToast('Product added!', 'success');
 
                 } catch (error) {
+                    // P1 read-offline: if the lookup failed because we're OFFLINE, answer from the
+                    // cached catalog so the sale keeps moving (finalising still needs the network —
+                    // that's P2). Only fall through to lazy-capture when we're ONLINE and the
+                    // barcode is genuinely not on file.
+                    if (!navigator.onLine && window.CatalogCache) {
+                        const cached = await CatalogCache.findByBarcode(code).catch(() => null);
+                        if (cached) {
+                            this.addToCart(cached);
+                            this.barcodeInput = '';
+                            showToast('Added from offline catalog', 'success');
+                            return;
+                        }
+                        showToast("Offline — this barcode isn't in the cached catalog yet", 'warning');
+                        return;
+                    }
                     // BL-87: not on file → lazy capture. Save it as a real product now so
                     // it's known on every future scan (cashiers fall back to a one-off line).
-                    this.openLazyCapture(this.barcodeInput.trim());
+                    this.openLazyCapture(code);
                 }
             },
 
@@ -1138,6 +1155,22 @@
             },
 
 
+            // Keep sessionStorage in lockstep with the in-memory cart so a removed or
+            // cleared item can NEVER resurrect on the next page init (BL-12: the cart "kept
+            // coming back with the one item" — init() restores from pos_cart, but the
+            // mutators below used to change only this.cart, leaving stale sessionStorage).
+            // Empty cart -> drop the key entirely so a fresh /pos/scan starts clean.
+            syncCart() {
+                if (!this.cart || this.cart.length === 0) {
+                    sessionStorage.removeItem('pos_cart');
+                } else {
+                    sessionStorage.setItem('pos_cart', JSON.stringify({
+                        cart: this.cart, discount: this.discount,
+                        totals: this.totals, transactionId: this.transactionId
+                    }));
+                }
+            },
+
             addToCart(product, qty = 1) {
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
@@ -1148,19 +1181,23 @@
                         quantity: qty
                     });
                 }
+                this.syncCart();
             },
 
             removeFromCart(index) {
                 this.cart.splice(index, 1);
+                this.syncCart();
             },
 
             increaseQuantity(index) {
                 this.cart[index].quantity++;
+                this.syncCart();
             },
 
             decreaseQuantity(index) {
                 if (this.cart[index].quantity > 1) {
                     this.cart[index].quantity--;
+                    this.syncCart();
                 } else {
                     this.removeFromCart(index);
                 }
@@ -1243,6 +1280,7 @@
                 if (confirm('Clear entire cart?')) {
                     this.cart = [];
                     this.discount = 0;
+                    this.syncCart();   // BL-12: wipe pos_cart too, or it resurrects on re-init
                     showToast('Cart cleared', 'info');
                 }
             },
@@ -1267,9 +1305,11 @@
             goBack() {
                 if (this.cart.length > 0) {
                     if (confirm('Abandon current transaction?')) {
+                        this.cart = []; this.syncCart();   // BL-12: abandon must clear pos_cart
                         window.location.href = '/pos/dashboard';
                     }
                 } else {
+                    this.syncCart();   // belt-and-braces: ensure no stale cart lingers
                     window.location.href = '/pos/dashboard';
                 }
             },
