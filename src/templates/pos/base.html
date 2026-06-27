@@ -378,19 +378,22 @@
 
             hasRole(role) {
                 const user = this.getUserInfo();
-                return user && user.posRoles.includes(role);
+                // Emoji-tolerant: the unified realm uses plain names ('pos-admin'); legacy
+                // realms used '👑️ pos-admin'. Match on the bare role substring so BOTH
+                // resolve (the identity fold dropped emoji → felix lost admin without this).
+                return !!(user && user.posRoles.some(r => r.includes(role)));
             },
 
             isAdmin() {
-                return this.hasRole('👑️ pos-admin');
+                return this.hasRole('pos-admin');
             },
 
             isManager() {
-                return this.hasRole('👔️ pos-manager') || this.isAdmin();
+                return this.hasRole('pos-manager') || this.isAdmin();
             },
 
             isCashier() {
-                return this.hasRole('💰️ pos-cashier') || this.isManager();
+                return this.hasRole('pos-cashier') || this.isManager();
             },
 
             logout() {
