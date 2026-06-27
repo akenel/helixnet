@@ -150,9 +150,12 @@
         .btn-secondary:hover { background-color: #f9fafb; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); }
         .btn-secondary:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #d1d5db; }
 
-        /* Card styling */
+        /* Card styling — real CSS (@apply is dead in this plain <style>) */
         .card {
-            @apply bg-white rounded-xl shadow-lg p-6;
+            background-color: #fff;
+            border-radius: 0.75rem;          /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.05);
+            padding: 1.5rem;                 /* p-6 */
         }
 
         /* Input styling - BIG for fat fingers (real CSS — @apply is dead in this plain block) */
@@ -176,13 +179,17 @@
             box-shadow: 0 0 0 3px rgba(99,102,241,.25);  /* focus ring */
         }
 
-        /* Price display - VERY visible */
+        /* Price display - VERY visible (real CSS — @apply is dead in this plain block) */
         .price-display {
-            @apply text-3xl font-bold text-indigo-600;
+            font-size: 1.875rem;             /* text-3xl */
+            font-weight: 700;
+            color: #4f46e5;                  /* indigo-600 */
         }
 
         .price-display-large {
-            @apply text-5xl font-extrabold text-indigo-600;
+            font-size: 3rem;                 /* text-5xl */
+            font-weight: 800;
+            color: #4f46e5;                  /* indigo-600 */
         }
 
         /* Status Footer - Minimal pulse check for Felix */
@@ -280,8 +287,8 @@
         }
         .app-bottomnav a {
             position: relative; flex: 1 1 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 3px; padding: 7px 2px 5px;
-            text-decoration: none; color: #94a3b8; font: 600 10px/1 Inter, system-ui, sans-serif;
+            align-items: center; justify-content: center; gap: 4px; padding: 9px 2px 7px;
+            text-decoration: none; color: #94a3b8; font: 600 12px/1 Inter, system-ui, sans-serif;
         }
         .app-bottomnav a .ico { position: relative; font-size: 20px; line-height: 1; }
         .app-bottomnav a.active { color: #fff; }

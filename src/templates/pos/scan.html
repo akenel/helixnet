@@ -216,15 +216,15 @@
                                             <span x-text="formatPrice(item.price)"></span> × <span x-text="item.quantity"></span>
                                         </p>
                                     </div>
-                                    <button @click="removeFromCart(index)" class="text-red-600 hover:text-red-800">
+                                    <button @click="removeFromCart(index)" class="text-red-600 hover:text-red-800 text-xl px-3 py-2 rounded-lg hover:bg-red-50" aria-label="Remove item">
                                         ❌
                                     </button>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <button @click="decreaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">-</button>
-                                        <span class="font-semibold" x-text="item.quantity"></span>
-                                        <button @click="increaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">+</button>
+                                    <div class="flex items-center space-x-3">
+                                        <button @click="decreaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 w-12 h-12 rounded-full text-2xl font-bold leading-none flex items-center justify-center" aria-label="Decrease quantity">−</button>
+                                        <span class="font-bold text-xl w-8 text-center" x-text="item.quantity"></span>
+                                        <button @click="increaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 w-12 h-12 rounded-full text-2xl font-bold leading-none flex items-center justify-center" aria-label="Increase quantity">+</button>
                                     </div>
                                     <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(item.price * item.quantity)"></p>
                                 </div>

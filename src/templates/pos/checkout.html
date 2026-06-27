@@ -68,7 +68,7 @@
             <!-- 🏷️ Quick Discount (Pam's Rounding) -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ Discount</h2>
-                <div class="grid grid-cols-5 gap-2">
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
                     <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3">None</button>
                     <button @click="applyDiscount(5)" :class="discount === 5 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">5%</button>
                     <button @click="applyDiscount(10)" :class="discount === 10 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">10%</button>
@@ -151,7 +151,7 @@
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">💵 Cash Received</h2>
 
                 <!-- Quick Amount Buttons -->
-                <div class="grid grid-cols-5 gap-2 mb-4">
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-4">
                     <button @click="setCashReceived(10)"
                         :class="cashReceived === 10 ? 'bg-green-500 text-white' : 'bg-green-100'"
                         class="btn-secondary py-3 font-bold">10</button>
