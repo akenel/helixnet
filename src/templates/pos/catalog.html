@@ -34,8 +34,12 @@
             <div class="flex flex-col md:flex-row gap-3 md:items-end">
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input type="text" x-model="q" @input.debounce.300ms="search()"
-                           placeholder="Name, SKU or barcode…" class="input-field">
+                    <div class="flex gap-2">
+                        <input type="text" x-model="q" @input.debounce.300ms="search()"
+                               placeholder="Name, SKU or barcode…" class="input-field flex-1">
+                        <!-- BL-10 (Felix): scan a barcode to pull the item up, no typing. -->
+                        <button type="button" @click="startSearchScan()" class="btn-secondary flex-none px-4" title="Scan to find">📷</button>
+                    </div>
                 </div>
                 <div class="w-full md:w-56">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
@@ -574,6 +578,30 @@
                         PosScanner.vibrate(60); PosScanner.beep();
                         this.scanOpen = false;
                         showToast('Barcode scanned', 'success');
+                    },
+                    (err) => {
+                        const n = String((err && (err.name || err)) || '');
+                        this.scanError = /permission|denied|NotAllowed/i.test(n)
+                            ? 'Camera permission denied. Type the barcode instead.'
+                            : 'Could not open the camera. Type it instead.';
+                        setTimeout(() => { this.scanOpen = false; }, 2500);
+                    });
+            },
+
+            // BL-10 (Felix): scan a barcode to FIND an item in the catalogue instead of
+            // typing it. On a hit the code drops into the search box and the list filters
+            // to it. Reuses the same overlay (#cat-reader) as the create-form scanner.
+            async startSearchScan() {
+                this.scanError = '';
+                this.scanOpen = true;
+                await this.$nextTick();
+                window.PosScanner.start('cat-reader',
+                    (text) => {
+                        this.q = text;
+                        PosScanner.vibrate(60); PosScanner.beep();
+                        this.scanOpen = false;
+                        this.search();
+                        showToast('Scanned — showing matches', 'success');
                     },
                     (err) => {
                         const n = String((err && (err.name || err)) || '');
