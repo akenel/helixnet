@@ -127,9 +127,53 @@
             <p class="text-gray-600">Try adjusting your filters or select a different date.</p>
         </div>
 
-        <!-- Transactions Table -->
-        <div x-show="!loading && processedList().length > 0" class="card overflow-hidden">
-            <div class="overflow-x-auto">
+        <!-- Sales — app-style cards on mobile, full table on desktop -->
+        <div x-show="!loading && processedList().length > 0">
+            <!-- MOBILE: card list (no horizontal scroll, View/Reprint inline) -->
+            <div class="md:hidden">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-sm font-semibold text-gray-600 flex-none">Sort:</span>
+                    <select x-model="mobileSort" @change="setMobileSort()" class="input-field flex-1 !py-2.5 text-base">
+                        <option value="time:desc">Newest first</option>
+                        <option value="time:asc">Oldest first</option>
+                        <option value="total:desc">Total — high to low</option>
+                        <option value="total:asc">Total — low to high</option>
+                        <option value="cashier:asc">Cashier (A–Z)</option>
+                        <option value="customer:asc">Customer (A–Z)</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <template x-for="txn in processedList()" :key="'m-'+txn.id">
+                        <div class="card !p-4 cursor-pointer active:opacity-80 transition" @click="viewReceipt(txn.id)">
+                            <div class="flex justify-between items-start gap-3">
+                                <div class="min-w-0">
+                                    <p class="font-bold text-gray-900 truncate" x-text="txn.receipt_number || txn.transaction_number"></p>
+                                    <p class="text-xs text-gray-500" x-text="formatDate(txn.completed_at || txn.created_at) + ' · ' + formatTime(txn.completed_at || txn.created_at)"></p>
+                                </div>
+                                <span class="flex-none inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                      :class="{ 'bg-green-100 text-green-800': txn.status==='completed', 'bg-yellow-100 text-yellow-800': txn.status==='open', 'bg-red-100 text-red-800': txn.status==='voided' }"
+                                      x-text="txn.status.toUpperCase()"></span>
+                            </div>
+                            <div class="flex justify-between items-end gap-3 mt-3">
+                                <div class="text-sm space-y-0.5 min-w-0">
+                                    <p class="text-gray-700 truncate"><span class="text-gray-400">Cashier:</span> <span class="font-medium" x-text="txn.cashier_name || '—'"></span></p>
+                                    <p class="text-gray-700 truncate"><span class="text-gray-400">Customer:</span> <span x-text="txn.customer_name || '—'"></span></p>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1" :class="methodClass(txn.payment_method)" x-text="methodLabel(txn.payment_method)"></span>
+                                </div>
+                                <p class="text-2xl font-bold text-gray-900 flex-none" x-text="formatPrice(txn.total)"></p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-4" @click.stop>
+                                <button @click="viewReceipt(txn.id)" class="bg-indigo-600 active:bg-indigo-700 text-white rounded-full py-2.5 font-semibold text-sm">View</button>
+                                <button @click="reprintReceipt(txn.id)" class="bg-green-600 active:bg-green-700 text-white rounded-full py-2.5 font-semibold text-sm">Reprint</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- DESKTOP: full table -->
+            <div class="hidden md:block card overflow-hidden">
+                <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead class="bg-gray-100">
                         <tr>
@@ -194,6 +238,7 @@
                         </template>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -229,6 +274,7 @@
             filterCustomer: '',  // client-side facet
             sortKey: 'time',     // default newest-first
             sortDir: 'desc',
+            mobileSort: 'time:desc',  // mobile card-list sort selector (key:dir)
             activePreset: 'today',
             datePresets: [
                 { key: 'today', label: 'Today' },
@@ -331,6 +377,10 @@
             sortIcon(key) {
                 if (this.sortKey !== key) return '⇅';
                 return this.sortDir === 'asc' ? '▲' : '▼';
+            },
+            setMobileSort() {
+                const [k, d] = this.mobileSort.split(':');
+                this.sortKey = k; this.sortDir = d;
             },
             cashierOptions() {
                 return [...new Set(this.transactions.map(t => t.cashier_name).filter(Boolean))].sort();
