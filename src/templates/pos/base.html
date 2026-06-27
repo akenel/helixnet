@@ -74,6 +74,9 @@
     <!-- html2canvas: lets the feedback widget grab a screenshot of the current screen -->
     <script src="/static/vendor/html2canvas.min.js"></script>
 
+    <!-- P1 offline catalog: IndexedDB mirror so the till can scan + price with no network -->
+    <script src="/static/pos/catalog-cache.js"></script>
+
     <!-- Inter font (still CDN — falls back to system sans offline; vendor in a later phase) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -1087,6 +1090,19 @@
       var pill=document.getElementById('lp-offline-pill');
       function sync(){ if(pill) pill.style.display = navigator.onLine ? 'none' : 'block'; }
       window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
+
+      // P1 offline catalog: warm the IndexedDB mirror in the background whenever we're online
+      // and logged in — and again the moment we come back online — so a network drop still
+      // lets the till scan + price from cache. Non-blocking; failures are silent.
+      function warmCatalog(){
+        try{
+          if(navigator.onLine && window.CatalogCache && sessionStorage.getItem('pos_token')){
+            CatalogCache.sync().catch(function(){});
+          }
+        }catch(e){}
+      }
+      window.addEventListener('online', warmCatalog);
+      setTimeout(warmCatalog, 1200);   // after first paint + token settle
 
       // App-shell: hide chrome before login, light the current tab, badge the cart.
       // A token in the URL fragment means the OAuth callback just landed us here and is about

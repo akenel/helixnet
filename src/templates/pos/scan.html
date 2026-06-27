@@ -1155,22 +1155,6 @@
             },
 
 
-            // Keep sessionStorage in lockstep with the in-memory cart so a removed or
-            // cleared item can NEVER resurrect on the next page init (BL-12: the cart "kept
-            // coming back with the one item" — init() restores from pos_cart, but the
-            // mutators below used to change only this.cart, leaving stale sessionStorage).
-            // Empty cart -> drop the key entirely so a fresh /pos/scan starts clean.
-            syncCart() {
-                if (!this.cart || this.cart.length === 0) {
-                    sessionStorage.removeItem('pos_cart');
-                } else {
-                    sessionStorage.setItem('pos_cart', JSON.stringify({
-                        cart: this.cart, discount: this.discount,
-                        totals: this.totals, transactionId: this.transactionId
-                    }));
-                }
-            },
-
             addToCart(product, qty = 1) {
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
@@ -1181,23 +1165,19 @@
                         quantity: qty
                     });
                 }
-                this.syncCart();
             },
 
             removeFromCart(index) {
                 this.cart.splice(index, 1);
-                this.syncCart();
             },
 
             increaseQuantity(index) {
                 this.cart[index].quantity++;
-                this.syncCart();
             },
 
             decreaseQuantity(index) {
                 if (this.cart[index].quantity > 1) {
                     this.cart[index].quantity--;
-                    this.syncCart();
                 } else {
                     this.removeFromCart(index);
                 }
@@ -1280,7 +1260,6 @@
                 if (confirm('Clear entire cart?')) {
                     this.cart = [];
                     this.discount = 0;
-                    this.syncCart();   // BL-12: wipe pos_cart too, or it resurrects on re-init
                     showToast('Cart cleared', 'info');
                 }
             },
@@ -1305,11 +1284,9 @@
             goBack() {
                 if (this.cart.length > 0) {
                     if (confirm('Abandon current transaction?')) {
-                        this.cart = []; this.syncCart();   // BL-12: abandon must clear pos_cart
                         window.location.href = '/pos/dashboard';
                     }
                 } else {
-                    this.syncCart();   // belt-and-braces: ensure no stale cart lingers
                     window.location.href = '/pos/dashboard';
                 }
             },
