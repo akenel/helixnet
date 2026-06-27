@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco UX + Fiscal Polish Batch — Quick Test (TEST-B01)</title>
+<!-- =====================================================================
+     QUICK-TEST SHEET TEMPLATE — the "with the works" one: live progress % +
+     bar, session timer, quick PASS/FAIL toggles, per-row 🎤 voice notes,
+     autosave to this browser, one-click Copy/Download results. No deps; open
+     in Chrome/Edge (Web Speech mic). Fill on screen → tick as you go → Copy
+     results to send back (or Print → Save as PDF).
+
+     COPY THIS FILE per feature, then change ONLY these — the engine is done:
+       1. <title> + .docid + <h1> + .sub   -> name the test
+       2. .links block                     -> your click-to-test URLs
+       3. meta build/login values          -> what's under test + how to log in
+       4. var LSKEY = '...'                -> a UNIQUE key (saved state per sheet)
+       5. var CHECKS = [
+    { do:"<b>Open the app</b> &amp; log in (<code>pam</code> or <code>felix</code> / <code>helix_pass</code>).",
+      exp:"Lands clean. Action buttons are rounded <b>pills</b> with a slight gradient, not flat squares." },
+    { do:"On <b>Scan</b>: look at the <code>Scan or type barcode…</code> box and the Barcode/Search/New-item toggle.",
+      exp:"Input is big &amp; tall (fat-finger friendly). The selected toggle is a <b>bold filled pill</b>." },
+    { do:"Add a couple of items to the cart, then use the qty <b>−/+</b> and the <b>❌ remove</b>.",
+      exp:"−/+ are big round buttons; ❌ has a real tap zone — easy on a phone." },
+    { do:"Tap <b>Clear</b> cart.",
+      exp:"A clean in-app modal appears (“Keep cart / Clear it”) — NOT an ugly browser popup. Tap outside dismisses." },
+    { do:"<b>Checkout with a café item</b> (e.g. Cappuccino). Toggle <b>Dine-in / Takeaway</b>.",
+      exp:"The selected option is a BOLD filled card with “✓ SELECTED”. No way to mistake which VAT applies.", big:true },
+    { do:"Pick a <b>payment method</b> (Cash/TWINT/Visa/Debit).",
+      exp:"The selected one is solid green-filled, not just a thin outline." },
+    { do:"Open <b>Discount → Custom</b>.",
+      exp:"A clean modal with a big number box + Cancel/Apply — NOT a browser prompt." },
+    { do:"<b>Complete the sale.</b>",
+      exp:"A spinner shows, the button can’t be double-tapped, then the receipt opens." },
+    { do:"<b>Look at the receipt.</b>",
+      exp:"Per-line VAT codes <b>A=8.1% / B=2.6%</b> + legend, and the split totals at the bottom. No app nav bar on it.", big:true },
+    { do:"Go to <b>My Day / Transactions</b> sales list on the phone.",
+      exp:"Each sale is a <b>card</b> with View/Reprint inline — you can reach everything with <b>NO sideways scrolling</b>.", big:true },
+    { do:"In Transactions: tap <b>Last 7 days</b>, use the <b>Sort</b> dropdown (Cashier / Total), pick a <b>Customer</b> filter.",
+      exp:"List re-orders / narrows instantly; totals update to the filter." },
+    { do:"<b>Close Shift (⏰) → Daily Z-Report.</b>",
+      exp:"Shows BOTH <b>incl. VAT 8.1%</b> and <b>incl. VAT 2.6%</b> lines (with turnover) + VAT total.", big:true },
+    { do:"Tap <b>🖨️ Print Z-Report</b> (and on a desktop, the print preview).",
+      exp:"Printed/PDF version shows both VAT rates and has NO app nav/chrome on it." },
+    { do:"Glance across screens: bottom-nav labels, card depth.",
+      exp:"Nav labels readable; white panels have shadow + rounded corners (not flat)." },
+    { do:"<b>Overall.</b> Did the whole thing feel like a real app — nothing weird, stuck, or scrolling sideways?",
+      exp:"It hangs together. Note anything clunky in the 🎤 box below." }
+  ];
+
+  // ---- build rows ----
+  var tbody = document.getElementById('rows');
+  CHECKS.forEach(function (c, i) {
+    var tr = document.createElement('tr');
+    tr.className = 'step' + (c.big ? ' big' : '');
+    tr.dataset.step = i;
+    tr.innerHTML =
+      '<td class="n">' + (i+1) + '</td>' +
+      '<td class="dox">' + c.do + '</td>' +
+      '<td class="exp">' + c.exp + '</td>' +
+      '<td class="verdict">' +
+        '<div class="vbtns">' +
+          '<button class="vbtn p" data-v="pass" title="pass">✓</button>' +
+          '<button class="vbtn f" data-v="fail" title="fail">✗</button>' +
+        '</div><span class="stamp"></span>' +
+      '</td>' +
+      '<td class="notes"><span class="micwrap"><input class="txt" data-note="' + i + '" type="text"><button class="mic" title="dictate">🎤</button></span></td>';
+    tbody.appendChild(tr);
+  });
+
+  // ---- verdict clicks ----
+  tbody.addEventListener('click', function (e) {
+    var b = e.target.closest('.vbtn'); if (!b) return;
+    var tr = b.closest('tr'); var step = tr.dataset.step; var v = b.dataset.v;
+    var cur = (state.verdicts && state.verdicts[step]) || '';
+    var next = (cur === v) ? '' : v;            // tap again to clear
+    state.verdicts = state.verdicts || {};
+    state.verdicts[step] = next;
+    state.stamps = state.stamps || {};
+    state.stamps[step] = next ? fmtClock(elapsed()) : '';
+    save(); paintRow(tr); refresh();
+  });
+
+  // ---- copy chips (event-delegated; works for chips inside rows too) ----
+  document.body.addEventListener('click', function (e) {
+    var chip = e.target.closest('.chip'); if (!chip) return;
+    var val = chip.dataset.copy; if (!val) return;
+    copy(val); toast('Copied ' + val);
+  });
+
+  // ---- text fields (meta, notes, big note, sig) autosave ----
+  document.body.addEventListener('input', function (e) {
+    var el = e.target;
+    if (el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+    if (el.dataset.note != null) { state.notes = state.notes || {}; state.notes[el.dataset.note] = el.value; save(); }
+  });
+  document.body.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.type === 'radio' && el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+  });
+
+  // ---- restore saved values ----
+  function restore() {
+    (state.fields) && Object.keys(state.fields).forEach(function (k) {
+      var el = document.querySelector('[data-k="' + k + '"]');
+      if (!el) return;
+      if (el.type === 'radio') { var r = document.querySelector('[data-k="'+k+'"][value="'+state.fields[k]+'"]'); if (r) r.checked = true; }
+      else el.value = state.fields[k];
+    });
+    (state.notes) && Object.keys(state.notes).forEach(function (i) {
+      var el = document.querySelector('[data-note="' + i + '"]'); if (el) el.value = state.notes[i];
+    });
+    document.querySelectorAll('#rows tr').forEach(paintRow);
+  }
+  function paintRow(tr) {
+    var step = tr.dataset.step;
+    var v = (state.verdicts && state.verdicts[step]) || '';
+    tr.classList.toggle('pass', v === 'pass');
+    tr.classList.toggle('fail', v === 'fail');
+    tr.querySelectorAll('.vbtn').forEach(function (btn) { btn.classList.toggle('on', btn.dataset.v === v); });
+    var st = tr.querySelector('.stamp');
+    if (st) st.textContent = (state.stamps && state.stamps[step]) ? ('@ ' + state.stamps[step]) : '';
+  }
+
+  // ---- progress + tally ----
+  function refresh() {
+    var n = CHECKS.length, p = 0, f = 0;
+    for (var i = 0; i < n; i++) { var v = state.verdicts && state.verdicts[i]; if (v === 'pass') p++; else if (v === 'fail') f++; }
+    var left = n - p - f;
+    var pctPass = Math.round(100 * p / n);
+    var pctEl = document.getElementById('pct'), fill = document.getElementById('barfill');
+    pctEl.textContent = pctPass + '%';
+    fill.style.width = pctPass + '%';
+    var allGreen = (p === n);
+    pctEl.classList.toggle('done', allGreen);
+    fill.classList.toggle('done', allGreen);
+    document.getElementById('tally').innerHTML =
+      n + ' steps · <b class="p">' + p + ' pass</b> · <b class="f">' + f + ' fail</b> · <b class="l">' + left + ' left</b>'
+      + (allGreen ? ' · 🎉 <b class="p">100% — sign it off</b>' : '');
+  }
+
+  // ---- session timer (persisted start) ----
+  function elapsed() { return state.start ? (Date.now() - state.start) : 0; }
+  function fmtClock(ms) {
+    var s = Math.floor(ms / 1000), m = Math.floor(s / 60); s = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function tick() { document.getElementById('clock').textContent = fmtClock(elapsed()); }
+  if (!state.start) { state.start = Date.now(); save(); }
+  setInterval(tick, 1000); tick();
+
+  // ---- buttons ----
+  document.getElementById('btnTimer').onclick = function () { state.start = Date.now(); save(); tick(); toast('Timer reset'); };
+  document.getElementById('btnPrint').onclick = function () { window.print(); };
+  document.getElementById('btnReset').onclick = function () {
+    if (!confirm('Clear ALL verdicts, notes and the timer on this sheet?')) return;
+    localStorage.removeItem(LSKEY); location.reload();
+  };
+  document.getElementById('btnCopy').onclick = function () { copy(report()); toast('Results copied — paste them back to me'); };
+  document.getElementById('btnDownload').onclick = function () {
+    var blob = new Blob([report()], { type: 'text/plain' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'banco-receiving-poc-' + (fld('date') || 'run').replace(/[^\w-]/g, '') + '.txt';
+    a.click(); toast('Downloaded');
+  };
+
+  // ---- build the text report for copy/download ----
+  function fld(k) { return (state.fields && state.fields[k]) || ''; }
+  function report() {
+    var n = CHECKS.length, p = 0, f = 0, L = [];
+    L.push('Banco UX + Fiscal Polish Batch — quick test (TEST-B01)');
+    L.push('Build : ' + (fld('build') || '?'));
+    L.push('Tester: ' + (fld('tester') || '?') + '   Date: ' + (fld('date') || '?'));
+    L.push('Time on sheet: ' + fmtClock(elapsed()));
+    L.push('');
+    CHECKS.forEach(function (c, i) {
+      var v = (state.verdicts && state.verdicts[i]) || '';
+      if (v === 'pass') p++; else if (v === 'fail') f++;
+      var mark = v === 'pass' ? '[PASS]' : v === 'fail' ? '[FAIL]' : '[ -- ]';
+      var doTxt = c.do.replace(/<[^>]+>/g, '');
+      var note = (state.notes && state.notes[i]) ? '  | note: ' + state.notes[i] : '';
+      L.push(mark + ' ' + (i+1) + '. ' + doTxt + note);
+    });
+    L.push('');
+    L.push('SCORE: ' + p + ' pass / ' + f + ' fail / ' + (n-p-f) + ' left  (' + Math.round(100*p/n) + '%)');
+    L.push('VERDICT: ' + (fld('overall') ? fld('overall').toUpperCase() : '(not set)'));
+    if (state.fields && state.fields.bignote) { L.push(''); L.push('OVERALL NOTE:'); L.push(state.fields.bignote); }
+    return L.join('\n');
+  }
+
+  // ---- clipboard + toast helpers ----
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(fallback); }
+    else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+    }
+  }
+  var toastT;
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1600);
+  }
+
+  // ---- persistence ----
+  function load() { try { return JSON.parse(localStorage.getItem(LSKEY)) || {}; } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---- Web Speech dictation (per-row + overall) ----
+  (function () {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var status = document.getElementById('micstatus');
+    if (!SR) {
+      if (status) status.textContent = 'Voice not available here — just type your notes (works in Chrome/Edge).';
+      document.querySelectorAll('.mic, .micbig').forEach(function (b) { b.style.display = 'none'; });
+      return;
+    }
+    var active = null;
+    function dictate(btn, target, append) {
+      if (active) { active.recognition.stop(); if (active.btn === btn) return; }
+      var rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false;
+      btn.recognition = rec; active = { btn: btn, recognition: rec }; btn.classList.add('rec');
+      if (status && btn.classList.contains('micbig')) status.textContent = 'Listening… speak now.';
+      rec.onresult = function (e) {
+        var text = ''; for (var i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+        text = text.trim(); if (!text) return;
+        target.value = (target.value ? target.value + ' ' : '') + text;
+        target.dispatchEvent(new Event('input', { bubbles: true }));   // persist it
+      };
+      rec.onerror = function (e) { if (status) status.textContent = 'Mic error: ' + e.error + ' — try again or type.'; };
+      rec.onend = function () { btn.classList.remove('rec'); active = null;
+        if (status && btn.classList.contains('micbig')) status.textContent = 'Mic ready — tap to add more, or edit above.'; };
+      try { rec.start(); } catch (err) { btn.classList.remove('rec'); }
+    }
+    document.body.addEventListener('click', function (ev) {
+      var m = ev.target.closest('.mic'); if (m && !m.classList.contains('micbig')) {
+        ev.preventDefault(); dictate(m, m.parentNode.querySelector('input.txt'), false);
+      }
+    });
+    var bigmic = document.getElementById('bigmic'), bigtext = document.getElementById('bigtext');
+    if (bigmic && bigtext) bigmic.addEventListener('click', function (ev) { ev.preventDefault(); dictate(bigmic, bigtext, true); });
+  })();
+
+  // ---- go ----
+  restore(); refresh();
+})();
+</script>
+
+</body>
+</html>
