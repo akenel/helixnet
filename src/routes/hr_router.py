@@ -104,10 +104,15 @@ async def get_employee_from_token(
                 try:
                     user.keycloak_id = sub_uuid  # stitch the real identity, once
                     await db.commit()
-                    logger.info("HR identity link self-healed: users.keycloak_id set for '%s' → %s %s",
-                                username, employee.first_name, employee.last_name)
+                    logger.info("HR identity link self-healed: users.keycloak_id set for '%s'", username)
                 except Exception:
                     await db.rollback()  # resolution still succeeds; heal next time
+                # commit OR rollback EXPIRES the ORM identity map (expire_on_commit). Reload
+                # `employee` inside the async context so the caller's `employee.id` (and the
+                # log above using only `username`, not ORM attrs) never triggers a sync
+                # lazy-load → sqlalchemy MissingGreenlet 500. Surfaced post realm-fold when
+                # every user's sub changed and forced this self-heal path on first login.
+                await db.refresh(employee)
             return employee
 
     # 3. LAST-RESORT heuristics (only until Felix links them in Settings ▸ Cashiers).
