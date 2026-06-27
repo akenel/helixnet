@@ -155,9 +155,25 @@
             @apply bg-white rounded-xl shadow-lg p-6;
         }
 
-        /* Input styling - BIG for Pam */
+        /* Input styling - BIG for fat fingers (real CSS — @apply is dead in this plain block) */
         .input-field {
-            @apply w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all;
+            width: 100%;
+            padding: 1rem 1.25rem;          /* tall touch target */
+            font-size: 1.125rem;             /* text-lg */
+            line-height: 1.5;
+            color: #111827;
+            background-color: #fff;
+            border: 2px solid #d1d5db;       /* gray-300 */
+            border-radius: 0.75rem;          /* rounded-xl — complements the pills */
+            transition: border-color .2s ease, box-shadow .2s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .input-field::placeholder { color: #9ca3af; }
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;           /* indigo-500 */
+            box-shadow: 0 0 0 3px rgba(99,102,241,.25);  /* focus ring */
         }
 
         /* Price display - VERY visible */
