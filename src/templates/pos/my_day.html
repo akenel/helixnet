@@ -65,9 +65,9 @@
             <div class="card">
                 <div class="flex items-center justify-between mb-1">
                     <h3 class="text-lg font-bold text-gray-900">🛒 My sales so far today</h3>
-                    <button @click="goDrawer()" class="text-sm text-indigo-600 hover:underline">See each sale →</button>
+                    <button @click="goSales()" class="text-sm text-indigo-600 hover:underline">See each sale →</button>
                 </div>
-                <p class="text-sm text-gray-500 mb-4">Updates as you ring sales. The detail lives in My Drawer.</p>
+                <p class="text-sm text-gray-500 mb-4">Updates as you ring sales. Tap "See each sale" for today's list of receipts.</p>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <p class="text-xs text-gray-500 uppercase tracking-wide">Sales</p>
@@ -505,6 +505,7 @@ function myDayData() {
 
         goDashboard() { window.location.href = '/pos/dashboard'; },
         goDrawer() { window.location.href = '/pos/shift'; },
+        goSales() { window.location.href = '/pos/transactions'; },   // BL-012: list the sales she rang today, not the cash drawer
     };
 }
 </script>
