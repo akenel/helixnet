@@ -392,15 +392,16 @@ function myDayData() {
         },
 
         async loadSales() {
-            // Living "my sales so far" — best-effort from the open drawer; degrade silently.
+            // "My sales so far today" — scoped to ME via daily-summary?mine=true (same cashier
+            // resolver the sales use). Was reading the OPEN DRAWER only, so it showed 0 for
+            // card/TWINT sales (no drawer) and after the drawer closed, even though the sales
+            // were really there (Angel's TEST-B01 finding). Day-scoped is the correct meaning.
             try {
-                const cur = await API.get('/api/v1/pos/shift/current');
-                if (cur && cur.open) {
-                    this.sales.total = this.num(cur.cash_sales) + this.num(cur.card_sales);
-                    this.sales.count = cur.transaction_count || 0;
-                    this.sales.available = true;
-                }
-            } catch (e) { /* no drawer / not available — tile shows the hint */ }
+                const ds = await API.get('/api/v1/pos/reports/daily-summary?mine=true');
+                this.sales.total = this.num(ds.total_sales);
+                this.sales.count = ds.total_transactions || 0;
+                this.sales.available = true;
+            } catch (e) { /* not available — tile shows the hint */ }
         },
 
         prefillFrom(e) {
