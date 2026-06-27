@@ -48,7 +48,11 @@ services:
       SQUARE_DB: borrowhood_staging
       SQUARE_API_URL: http://borrowhood_staging:8000
       SQUARE_PUBLIC_URL: https://staging.lapiazza.app
-      LP_KC_PUBLIC_URL: https://staging-banco.lapiazza.app
+      # MUST equal the borrowhood-staging realm's frontendUrl (= staging-bottega), or the
+      # KC login form posts to a different host than it was served from → auth-session cookie
+      # is lost → 400 on login-actions/authenticate. (Was staging-banco.lapiazza.app, which
+      # mismatched the realm frontendUrl; matches helix-staging + banco-prod now.)
+      LP_KC_PUBLIC_URL: https://staging-bottega.lapiazza.app
       RENDER_WORKER_URL: http://render-worker:8800
       BOTTEGA_MEDIA_DIR: /var/bottega-media
     volumes:

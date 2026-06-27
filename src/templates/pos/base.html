@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}HelixPOS{% endblock %} - Artemis Store</title>
+
+    <!-- PWA (Phase 0): installable, standalone, phone-first. Service worker registered below. -->
+    <link rel="manifest" href="/static/pos/manifest.webmanifest">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Banco">
+    <link rel="apple-touch-icon" href="/static/pos/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/pos/icons/icon-512.png">
 
     <!-- Diagnostics ring buffer: loaded FIRST so the feedback widget can attach the
          last console errors + failed network calls to a bug report. Cheap text only.
@@ -52,16 +62,22 @@
       window.__lpfbDiag={ get:function(){ return buf.slice(); }, clear:function(){ buf.length=0; } };
     })();</script>
 
+    <!-- VENDORED LOCALLY (PWA Phase 0) — was the Tailwind Play CDN + jsdelivr. Local copies
+         work offline AND fix the dev-only-CDN production caveat. Proper Tailwind build
+         (PostCSS, purged CSS) is a follow-up; this is the full in-browser engine. -->
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/vendor/tailwind.js"></script>
 
     <!-- Alpine.js for reactive components -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="/static/vendor/alpine.min.js"></script>
 
     <!-- html2canvas: lets the feedback widget grab a screenshot of the current screen -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="/static/vendor/html2canvas.min.js"></script>
 
-    <!-- Inter font -->
+    <!-- P1 offline catalog: IndexedDB mirror so the till can scan + price with no network -->
+    <script src="/static/pos/catalog-cache.js"></script>
+
+    <!-- Inter font (still CDN — falls back to system sans offline; vendor in a later phase) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -194,17 +210,68 @@
             .helix-status-bar .status-section { gap: 8px; }
             .helix-status-bar .sm-hide { display: none; }
         }
-        /* Adjust body padding to not overlap footer */
-        body {
-            padding-bottom: 32px;
+        /* ===== PWA app-shell (Phase 0.5): fixed frame, internal scroll, native feel ===== */
+        html { height: 100%; }
+        body.app-shell {
+            height: 100dvh; min-height: 0; margin: 0; overflow: hidden;
+            display: flex; flex-direction: column;
+            -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
         }
+        /* content scrolls INSIDE the frame; the bars stay put */
+        body.app-shell .app-content {
+            order: 1; flex: 1 1 auto; min-height: 0;
+            overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f9fafb;
+        }
+        /* legacy pages used min-h-screen to fill the VIEWPORT; now they fill the CONTENT area */
+        body.app-shell .app-content .min-h-screen { min-height: 100%; }
+        /* the existing status bar becomes the TOP bar (flex order, no longer bottom-fixed) */
+        body.app-shell .helix-status-bar {
+            order: 0; position: static !important; bottom: auto !important; flex: 0 0 auto;
+            padding-top: calc(6px + env(safe-area-inset-top)) !important;
+        }
+        /* bottom tab nav — the thing that makes it read as an app */
+        .app-bottomnav {
+            order: 2; flex: 0 0 auto; display: flex; align-items: stretch;
+            background: #0b1220; border-top: 1px solid rgba(255,255,255,.08);
+            padding-bottom: env(safe-area-inset-bottom); user-select: none;
+        }
+        .app-bottomnav a {
+            position: relative; flex: 1 1 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 3px; padding: 7px 2px 5px;
+            text-decoration: none; color: #94a3b8; font: 600 10px/1 Inter, system-ui, sans-serif;
+        }
+        .app-bottomnav a .ico { position: relative; font-size: 20px; line-height: 1; }
+        .app-bottomnav a.active { color: #fff; }
+        .app-bottomnav a.active .ico { filter: drop-shadow(0 0 6px rgba(99,102,241,.9)); }
+        .app-bottomnav a.active::before {
+            content: ""; position: absolute; top: 0; left: 22%; right: 22%; height: 3px;
+            border-radius: 0 0 3px 3px; background: #6366f1;
+        }
+        .app-bottomnav .badge {
+            position: absolute; top: -6px; right: -11px; min-width: 16px; height: 16px;
+            padding: 0 4px; background: #ef4444; color: #fff; border-radius: 999px;
+            font-size: 10px; line-height: 16px; text-align: center; box-sizing: border-box;
+        }
+        /* before login (no token): hide app chrome, let the login screen own the viewport */
+        body.pre-auth .app-bottomnav, body.pre-auth .helix-status-bar { display: none; }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 app-shell">
 
+    <main class="app-content">
     {% block content %}{% endblock %}
+    </main>
+
+    <!-- App-shell bottom navigation (PWA Phase 0.5) — the permanent, thumb-reach nav -->
+    <nav class="app-bottomnav" id="app-nav">
+      <a href="/pos/scan" data-tab="/pos/scan"><span class="ico">📷</span><span>Scan</span></a>
+      <a href="/pos/checkout" data-tab="/pos/checkout"><span class="ico">🛒<span class="badge" id="nav-cart-badge" style="display:none">0</span></span><span>Cart</span></a>
+      <a href="/pos/catalog" data-tab="/pos/catalog"><span class="ico">📦</span><span>Catalog</span></a>
+      <a href="/pos/customer-lookup" data-tab="/pos/customer-lookup"><span class="ico">👤</span><span>Customers</span></a>
+      <a href="/pos/my-day" data-tab="/pos/my-day"><span class="ico">📅</span><span>My Day</span></a>
+    </nav>
 
     <!-- Global JavaScript utilities -->
     <script>
@@ -216,6 +283,7 @@
 
             setToken(token) {
                 sessionStorage.setItem('pos_token', token);
+                this._revealChrome();
             },
 
             // Store the full session from the OAuth callback (access + refresh + expiry)
@@ -227,6 +295,15 @@
                     const expAt = Date.now() + (parseInt(expiresIn, 10) * 1000);
                     sessionStorage.setItem('pos_token_exp', String(expAt));
                 }
+                if (access) this._revealChrome();
+            },
+
+            // The OAuth callback hands the token back in the URL FRAGMENT, parsed a tick
+            // AFTER first paint — by which time the pre-auth gate has already hidden the app
+            // chrome. Reveal it the instant a token is stored, so the dashboard comes alive
+            // without a manual refresh (the "dead page until I hit refresh" bug).
+            _revealChrome() {
+                try { document.body.classList.remove('pre-auth'); } catch (e) {}
             },
 
             getRefreshToken() {
@@ -301,19 +378,22 @@
 
             hasRole(role) {
                 const user = this.getUserInfo();
-                return user && user.posRoles.includes(role);
+                // Emoji-tolerant: the unified realm uses plain names ('pos-admin'); legacy
+                // realms used '👑️ pos-admin'. Match on the bare role substring so BOTH
+                // resolve (the identity fold dropped emoji → felix lost admin without this).
+                return !!(user && user.posRoles.some(r => r.includes(role)));
             },
 
             isAdmin() {
-                return this.hasRole('👑️ pos-admin');
+                return this.hasRole('pos-admin');
             },
 
             isManager() {
-                return this.hasRole('👔️ pos-manager') || this.isAdmin();
+                return this.hasRole('pos-manager') || this.isAdmin();
             },
 
             isCashier() {
-                return this.hasRole('💰️ pos-cashier') || this.isManager();
+                return this.hasRole('pos-cashier') || this.isManager();
             },
 
             logout() {
@@ -431,6 +511,7 @@
         // POS Configuration (loaded from backend, updated annually)
         const POSConfig = {
             vat_rate: 8.1,      // Default: 2025 Swiss VAT rate
+            vat_rate_reduced: 2.6, // Reduced: cafe takeaway food/drink
             vat_decimal: 0.081, // For calculations
             vat_year: 2025,
             currency: 'CHF',
@@ -443,6 +524,7 @@
                     if (response.ok) {
                         const config = await response.json();
                         this.vat_rate = config.vat_rate;
+                        if (config.vat_rate_reduced != null) this.vat_rate_reduced = config.vat_rate_reduced;
                         this.vat_decimal = config.vat_decimal;
                         this.vat_year = config.vat_year;
                         this.currency = config.currency;
@@ -1002,5 +1084,67 @@
           send.disabled=false;send.textContent='Send';});
       };
     })();</script>
+
+    <!-- PWA service worker (Phase 0) + offline indicator + app-shell wiring. Scope /pos. -->
+    <div id="lp-offline-pill" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(72px + env(safe-area-inset-bottom));z-index:9999;background:#b45309;color:#fff;font:600 12px/1 Inter,system-ui,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.3)">⚠ Offline — showing last-loaded data</div>
+    <script>
+    (function(){
+      // Online/offline pill — in P0 this is a heads-up only (writes still need the network).
+      var pill=document.getElementById('lp-offline-pill');
+      function sync(){ if(pill) pill.style.display = navigator.onLine ? 'none' : 'block'; }
+      window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
+
+      // P1 offline catalog: warm the IndexedDB mirror in the background whenever we're online
+      // and logged in — and again the moment we come back online — so a network drop still
+      // lets the till scan + price from cache. Non-blocking; failures are silent.
+      function warmCatalog(){
+        try{
+          if(navigator.onLine && window.CatalogCache && sessionStorage.getItem('pos_token')){
+            CatalogCache.sync().catch(function(){});
+          }
+        }catch(e){}
+      }
+      window.addEventListener('online', warmCatalog);
+      setTimeout(warmCatalog, 1200);   // after first paint + token settle
+
+      // App-shell: hide chrome before login, light the current tab, badge the cart.
+      // A token in the URL fragment means the OAuth callback just landed us here and is about
+      // to store it — treat that as authed so we don't flash the chrome away then need a refresh.
+      var _authInFlight = location.hash && location.hash.indexOf('token=') !== -1;
+      if(!sessionStorage.getItem('pos_token') && !_authInFlight) document.body.classList.add('pre-auth');
+      var path = location.pathname;
+      Array.prototype.forEach.call(document.querySelectorAll('#app-nav a'), function(a){
+        var t=a.getAttribute('data-tab');
+        if(path===t || path.indexOf(t+'/')===0 || path===t) a.classList.add('active');
+      });
+      function cartBadge(){
+        try{
+          var c=JSON.parse(sessionStorage.getItem('pos_cart')||'[]');
+          var n=c.reduce(function(s,i){return s+(parseInt(i.quantity,10)||1);},0);
+          var b=document.getElementById('nav-cart-badge');
+          if(b){ if(n>0){ b.textContent=n; b.style.display=''; } else { b.style.display='none'; } }
+        }catch(e){}
+      }
+      cartBadge(); window.addEventListener('storage', cartBadge); setInterval(cartBadge, 1500);
+
+      // Register the service worker. Scope /pos (allowed via Service-Worker-Allowed header).
+      if('serviceWorker' in navigator){
+        var refreshing=false;
+        // When a NEW service worker takes control (we deployed an update), reload ONCE so the
+        // user gets fresh assets without a manual hard-refresh — but never yank the page out
+        // from under an in-progress sale (cart has items). Fixes the "had to refresh" clunk.
+        navigator.serviceWorker.addEventListener('controllerchange', function(){
+          if(refreshing) return;
+          try{ if((JSON.parse(sessionStorage.getItem('pos_cart')||'[]')).length) return; }catch(e){}
+          refreshing=true; window.location.reload();
+        });
+        window.addEventListener('load', function(){
+          navigator.serviceWorker.register('/pos/sw.js', {scope:'/pos'})
+            .then(function(reg){ reg.update && reg.update(); })   // check for an update each load
+            .catch(function(e){ console.warn('SW register failed:', e); });
+        });
+      }
+    })();
+    </script>
 </body>
 </html>

@@ -391,7 +391,7 @@
 
     <!-- BL-87: Lazy capture. Unknown scan → save as a real product, known forever. -->
     <div x-show="lazyOpen" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" @click.self="lazyOpen=false" style="display:none;">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-start p-5 border-b">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900">Not on file — find it first</h2>
@@ -687,18 +687,35 @@
                     return;
                 }
 
+                const code = this.barcodeInput.trim();
                 try {
                     // Exact barcode lookup (the dedicated endpoint -- /search fuzzy-ranks
                     // the exact match too low to trust for a scan).
-                    const product = await API.get(`/api/v1/pos/products/barcode/${encodeURIComponent(this.barcodeInput.trim())}`);
+                    const product = await API.get(`/api/v1/pos/products/barcode/${encodeURIComponent(code)}`);
                     this.addToCart(product);
+                    if (window.CatalogCache) CatalogCache.put(product);   // P1: keep the offline mirror warm
                     this.barcodeInput = '';
                     showToast('Product added!', 'success');
 
                 } catch (error) {
+                    // P1 read-offline: if the lookup failed because we're OFFLINE, answer from the
+                    // cached catalog so the sale keeps moving (finalising still needs the network —
+                    // that's P2). Only fall through to lazy-capture when we're ONLINE and the
+                    // barcode is genuinely not on file.
+                    if (!navigator.onLine && window.CatalogCache) {
+                        const cached = await CatalogCache.findByBarcode(code).catch(() => null);
+                        if (cached) {
+                            this.addToCart(cached);
+                            this.barcodeInput = '';
+                            showToast('Added from offline catalog', 'success');
+                            return;
+                        }
+                        showToast("Offline — this barcode isn't in the cached catalog yet", 'warning');
+                        return;
+                    }
                     // BL-87: not on file → lazy capture. Save it as a real product now so
                     // it's known on every future scan (cashiers fall back to a one-off line).
-                    this.openLazyCapture(this.barcodeInput.trim());
+                    this.openLazyCapture(code);
                 }
             },
 

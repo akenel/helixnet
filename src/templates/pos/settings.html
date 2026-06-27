@@ -187,7 +187,11 @@
                                         class="text-base px-4 py-3 rounded-lg font-semibold text-red-700 bg-red-50 hover:bg-red-100">🗑️ Delete</button>
                             </div>
 
-                            <div x-show="e._editing && e._card" class="mt-3 bg-gray-50 rounded-xl p-4 space-y-3">
+                            <!-- BL-11: x-if (not x-show) so the e._card.* x-models only exist in the
+                                 DOM once the card is fetched. x-show kept them bound while _card was
+                                 null → "Cannot read properties of null (ahv_number…)" on page load. -->
+                            <template x-if="e._editing && e._card">
+                            <div class="mt-3 bg-gray-50 rounded-xl p-4 space-y-3">
                                 <div class="grid md:grid-cols-2 gap-3">
                                     <div><label class="lbl">First name</label><input type="text" x-model="e._card.first_name" class="input-field text-lg"></div>
                                     <div><label class="lbl">Last name</label><input type="text" x-model="e._card.last_name" class="input-field text-lg"></div>
@@ -205,6 +209,7 @@
                                         x-text="e._cardSaving ? 'Saving…' : '💾 Save changes'"></button>
                                 <span x-show="e._cardMsg" class="text-base ml-2" :class="e._cardOk ? 'text-green-600' : 'text-red-600'" x-text="e._cardMsg"></span>
                             </div>
+                            </template>
                         </div>
                     </template>
                 </div>

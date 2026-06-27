@@ -29,6 +29,30 @@ so sessions don't fall over each other or push half-baked work to a live box.
 further down were **stale** (their items already shipped); corrected inline. Real state:
 
 **✅ Live now**
+- **🚂 PROD TRAIN 2026-06-27 — PWA + P1 offline + BL-13 + offline-checkout soften → banco.lapiazza.app.**
+  Angel green-lit the train after offline validated on staging. Brought Felix's live till (banco-prod
+  `3547efa` tree) up to full parity via SURGICAL overlays (worktree NOT advanced — keeps the gated realm
+  /AI-survey/VAT work off prod): pushed the whole PWA static set (manifest, sw.js v4, catalog-cache.js,
+  4 icons, vendor tailwind.js + html2canvas.min.js), HEAD `base.html` (app-shell + dead-page fix) +
+  `scan.html` (P1 offline + BL-13 modal scroll), prod-base `checkout.html` + offline soften, and added
+  the `/pos/sw.js` route to prod `pos_router` (on top of the cashier fix). Verified: health/`pos`/`scan`/
+  `checkout` = 200, all 7 static assets 200, SW v4, P1+modal+soften markers present, no startup errors.
+  ⚠ This is prod's FIRST PWA — big UI change (bottom-tab app-shell); Angel to eyeball on phone. All 3
+  banco envs now identical. Commits on `feat/banco-offline-pwa`: `581817c` `efc3e84` `59f1882` `57c8ffa` `fd5e954`.
+- **Banco checkout 500 fix — cashier-identity resolver** (`581817c` on `feat/banco-offline-pwa`,
+  pushed 2026-06-26). SUPERSEDES the buggy `ed38c2b`/`091c8f2` self-heal: that one looked the cashier
+  up by `id=sub`, missed seeded cashiers (fixed PK + sub in `keycloak_id`), and INSERTed a dup →
+  `ix_users_keycloak_id` 500 on every seeded-cashier sale; it also split cashier identity (sub vs
+  users.id) so the drawer mis-counted. New `_resolve_cashier_uid` (by id→keycloak_id→create, returns
+  users.id) used by ALL ~10 cashier paths. Deployed as a SURGICAL per-tree overlay (skew-safe patcher;
+  prod predates the day-survey call site) to **sandbox + staging-banco + banco-prod** — each verified
+  health 200, resolver present, 0 leftover sites. Sandbox + staging smoke = 2× create_txn → 201 (was
+  500). Prod txns unchanged (7, no test writes). Overlay until the next worktree advance.
+- **Banco PWA "dead page after login" fix + SW v3** (`efc3e84` same branch). OAuth token arrives in
+  the URL fragment after first paint; the pre-auth gate had hidden the chrome with nothing to reveal it
+  → manual-refresh needed. Now reveals on token store + recognises the fragment; `CACHE_NAME` v2→v3
+  auto-updates installed PWAs. Live on **staging-banco + sandbox** (PWA gated off prod). Angel signed
+  off on mobile staging 2026-06-26.
 - **Universal System Info view + honest health grading** — `f5feade` on `main`. Deployed as a
   file-overlay (the documented overlay-deploy pattern) on all 4 active worktrees + verified
   healthy (prod `/health/system` = OK). Becomes a tracked SHA at the next worktree advance.
@@ -45,6 +69,15 @@ further down were **stale** (their items already shipped); corrected inline. Rea
 - Banco **AI End-of-Day Survey** (`1e6d1cd`) — behaviour change at closeout (LLM draft).
 - Banco **self-set password / KC email setup link** (`62dfd67`) — needs prod SMTP.
 - Identity refactor: **Camper + ISOTTO env-driven realms** (`f11b1c9`) — env-safe defaults.
+- 🆕 **Banco café multi-line VAT (CornerStones)** on `feat/banco-offline-pwa`, 2026-06-26 — INC1 Brain
+  `74a0227`, INC2 per-line snapshot `32001f9`, checkout toggle `1c00c92`, INC3 rollup+Z-report streams
+  `00bdea4` (+`base.html`/`/config` reduced-rate, swept into `581817c` et al). Per-line dine-in 8.1% /
+  takeaway 2.6%; alcohol+tobacco always 8.1%; sale total + daily-summary now split standard vs reduced
+  turnover. **30 pure tests green**; integration suite needs in-container run. Additive migration
+  `008_add_line_vat` (server_default dine_in). NOT on staging yet. **Needs:** staging deploy + Angel
+  sign-off + the `make test-pos` gate before prod.
+- 🆕 **Staging-banco KC login 400 fix** `ae507d0` (same branch) — `LP_KC_PUBLIC_URL` → `staging-bottega`
+  to match the realm frontendUrl. Config-only; needs a `helix-platform-banco-staging` container recreate.
 
 **✅ Verified already in prod** (old ledger mislabelled "queued"): report-totals fix
 (`72b5b08` + `3669fd9`), env-colour login + receipt header (`4587189`).

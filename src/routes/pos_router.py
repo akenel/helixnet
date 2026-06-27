@@ -3161,6 +3161,20 @@ async def shift_transactions(
 # HTML WEB UI ROUTES (Sprint 4 - Pam's Interface)
 # ================================================================
 
+@html_router.get("/pos/sw.js", include_in_schema=False)
+async def pos_service_worker():
+    """Serve the Banco POS service worker from /pos so its scope covers every /pos page.
+    The `Service-Worker-Allowed: /pos` header lets a SW served at /pos/sw.js claim the
+    broader /pos scope (including the /pos login). PWA Phase 0."""
+    from fastapi.responses import FileResponse
+    sw_path = Path(__file__).parent.parent / "static" / "pos" / "sw.js"
+    return FileResponse(
+        sw_path,
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/pos", "Cache-Control": "no-cache"},
+    )
+
+
 @html_router.get("/pos", response_class=HTMLResponse, name="pos_login")
 async def pos_login(request: Request):
     """

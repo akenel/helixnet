@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco PWA / App-shell — Quick Test (TEST-PWA-01)</title>
+<!-- Built from QUICK-TEST-SHEET-TEMPLATE.html. Read on desktop, tap through on the Fairphone. -->
+<style>
+  :root { --red:#C0392B; --green:#15803d; --ink:#222; --head:#2C3E50; --line:#d9dee3;
+          --banco:#0f766e; --shade:#f4f6f8; --amber:#e0a800; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial,Helvetica,sans-serif; color:var(--ink); background:#eceff1; margin:0;
+         padding:24px; line-height:1.5; }
+  .sheet { max-width:1000px; margin:0 auto; background:#fff; box-shadow:0 2px 14px rgba(0,0,0,.12);
+           padding:0 0 32px; }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--banco); padding:18px 28px; gap:12px; flex-wrap:wrap; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--banco); letter-spacing:.5px; }
+  header .brand small { color:#789; font-weight:normal; font-size:12px; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding:22px 28px; }
+  h1 { font-size:21px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 16px; }
+  .howto { font-size:12.5px; color:#444; background:#e9f7f5; border:1px solid #b5ddd7;
+           border-left:4px solid var(--banco); border-radius:6px; padding:10px 14px; margin-bottom:16px; }
+  .howto b { color:var(--banco); }
+  .prep { font-size:12.5px; color:#5a3d00; background:#fff8e6; border:1px solid #f0d999;
+          border-left:4px solid var(--amber); border-radius:6px; padding:10px 14px; margin-bottom:16px; }
+  .prep b { color:#8a6400; }
+  .prep ol { margin:6px 0 0; padding-left:20px; }
+
+  /* ---- sticky progress + timer dashboard ---- */
+  .dash { position:sticky; top:0; z-index:5; background:#fff; border:1px solid var(--line);
+          border-radius:10px; padding:12px 16px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .dash .row1 { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .pct { font-size:30px; font-weight:bold; color:var(--banco); min-width:78px; }
+  .pct.done { color:var(--green); }
+  .tally { font-size:13px; color:#556; }
+  .tally b.p { color:var(--green); } .tally b.f { color:var(--red); } .tally b.l { color:#8a93a0; }
+  .timer { margin-left:auto; font-family:monospace; font-size:15px; color:var(--head);
+           background:var(--shade); border:1px solid var(--line); border-radius:6px; padding:4px 10px; }
+  .timer b { color:var(--banco); }
+  .bar { height:12px; background:#e7ebee; border-radius:7px; overflow:hidden; margin-top:10px; }
+  .bar > i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--banco),#22a08f);
+             transition:width .35s ease; }
+  .bar > i.done { background:linear-gradient(90deg,var(--green),#3bbf6f); }
+  .dashbtns { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .dashbtns button { border:1px solid var(--line); background:#fafbfc; color:var(--head);
+                     border-radius:6px; padding:6px 11px; font-size:12.5px; cursor:pointer; font-weight:600; }
+  .dashbtns button:hover { border-color:var(--banco); background:#f1faf8; color:var(--banco); }
+  .dashbtns button.primary { background:var(--banco); color:#fff; border-color:var(--banco); }
+  .dashbtns button.danger:hover { border-color:var(--red); color:var(--red); background:#fdecec; }
+
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; font-size:13px; background:var(--shade);
+          border:1px solid var(--line); border-radius:6px; padding:12px 16px; margin-bottom:16px; }
+  .meta b { color:var(--head); }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit; color:var(--ink);
+              padding:2px 4px; width:100%; min-width:50px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--banco); background:#fffce8; }
+
+  /* ---- click-to-test links ---- */
+  .links { display:flex; gap:9px; flex-wrap:wrap; margin-bottom:8px; }
+  a.go { display:flex; align-items:center; gap:8px; text-decoration:none; border:1px solid var(--line);
+         border-radius:8px; padding:9px 13px; font-size:13.5px; color:var(--head); font-weight:600; background:#fafbfc; }
+  a.go:hover { border-color:var(--banco); background:#f1faf8; color:var(--banco); }
+  a.go .arr { color:#aab; font-weight:400; }
+  .creds { font-size:12px; color:#667; margin:2px 0 16px; }
+  .creds code, .chip { background:#eef1f4; border:1px solid #cdd3da; border-radius:4px; padding:1px 6px;
+                       font-family:monospace; font-size:12px; }
+
+  /* ---- tap-to-copy chips ---- */
+  .qrbox { border:1px dashed var(--banco); border-radius:8px; padding:11px 14px; margin-bottom:18px; background:#f3fbfa; }
+  .qrbox h3 { margin:0 0 4px; color:var(--banco); font-size:13.5px; }
+  .qrbox p { font-size:12px; color:#577; margin:0 0 9px; }
+  .chip { cursor:pointer; display:inline-block; margin:2px 4px 2px 0; padding:3px 9px; }
+  .chip:hover { border-color:var(--banco); background:#e4f5f2; }
+  .chip .tag { color:#789; font-family:Arial; font-size:11px; }
+
+  /* ---- checks table ---- */
+  .check h3 { font-size:14px; color:var(--head); margin:18px 0 8px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--head); color:#fff; font-size:11.5px; }
+  td.n { text-align:center; font-weight:bold; color:var(--banco); width:24px; }
+  td.verdict { width:122px; text-align:center; }
+  td.notes { width:230px; padding:4px; }
+  tr.big td { background:#e6f5f2; }
+  tr.pass td { background:#eafaf0 !important; }
+  tr.fail td { background:#fdecec !important; }
+  .step b { color:var(--head); }
+  .vbtns { display:flex; gap:5px; justify-content:center; }
+  .vbtn { border:1.5px solid var(--line); background:#fff; border-radius:6px; cursor:pointer;
+          padding:4px 9px; font-size:12px; font-weight:bold; color:#889; }
+  .vbtn.p.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .vbtn.f.on { background:var(--red); color:#fff; border-color:var(--red); }
+  .vbtn:hover { border-color:#aab; }
+  .stamp { display:block; font-size:10px; color:#9aa; font-family:monospace; margin-top:4px; min-height:12px; }
+  .micwrap { display:flex; align-items:center; gap:4px; }
+  .mic { border:1px solid var(--line); background:#fff; border-radius:5px; cursor:pointer; font-size:13px;
+         padding:2px 6px; line-height:1; }
+  .mic:hover { border-color:var(--banco); background:#f1faf8; }
+  .mic.rec { background:#fdecec; border-color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.5);} 50%{box-shadow:0 0 0 4px rgba(192,57,43,0);} }
+
+  .voicebox { margin-top:22px; border:1px dashed var(--banco); border-radius:8px; padding:14px 16px; background:#f3fbfa; }
+  .voicebox h3 { margin:0 0 4px; color:var(--banco); font-size:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .voicebox p.hint { font-size:12px; color:#577; margin:0 0 10px; }
+  .voicebox textarea { width:100%; min-height:80px; border:1px solid var(--line); border-radius:6px; padding:10px;
+    font:inherit; font-size:13px; resize:vertical; }
+  .voicebox textarea:focus { outline:none; border-color:var(--banco); }
+  .micbig { background:var(--banco); color:#fff; border:0; border-radius:6px; padding:7px 13px; font-size:12.5px;
+    font-weight:bold; cursor:pointer; }
+  .micbig.rec { background:var(--red); animation:pulse 1s infinite; }
+  .micnote { font-size:11px; color:#999; margin-top:6px; }
+
+  .result { margin-top:22px; border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:14px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  input[type=radio] { appearance:none; -webkit-appearance:none; width:17px; height:17px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; border-radius:50%; print-color-adjust:exact;
+    -webkit-print-color-adjust:exact; }
+  input[type=radio]:checked { background:var(--banco); border-color:var(--banco); box-shadow:inset 0 0 0 3px #fff; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; flex-wrap:wrap; }
+  .sig span { flex:1; min-width:180px; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 28px 0; font-size:11px; color:#8a93a0;
+           display:flex; justify-content:space-between; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--head); color:#fff;
+           padding:9px 18px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .25s; z-index:50; }
+  .toast.show { opacity:1; }
+  @media (max-width:680px){ .meta,.cols{grid-template-columns:1fr;} td.notes{width:auto;} .timer{margin-left:0;} }
+  @media print {
+    body{background:#fff;padding:0;} .sheet{box-shadow:none;max-width:100%;}
+    .dash{position:static;box-shadow:none;} .dashbtns,.mic,.micbig,.chip{display:none!important;}
+    a.go{background:#fff;} input.txt:focus{background:transparent;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <header>
+    <div class="brand">Banco <small>· on the HelixNet engine</small></div>
+    <div class="docid">TEST-PWA-01</div>
+  </header>
+
+  <div class="body">
+    <h1>Banco PWA &amp; app-shell — quick test</h1>
+    <p class="sub">Proves Banco installs to the home screen, runs full-screen like its own app (bottom tab nav,
+      no browser bars), survives flaky/no network on the read side, and self-updates without the old "had to
+      refresh" clunk. Green all the way = sign-off to keep building (P1 offline catalog next).</p>
+
+    <div class="howto">📝 <b>How to use:</b> read these steps on the desktop, do each one on your Fairphone, then tap
+      <b>✓ PASS</b> or <b>✗ FAIL</b> on that row. Talk a note with <b>🎤</b> if you like. Everything
+      <b>auto-saves in this browser</b> — close it, come back, progress is still here. When it's green
+      (or you want to send me state), hit <b>📋 Copy results</b> and paste it back.</p></div>
+
+    <div class="prep">⚠️ <b>Do this first — clean slate (you had a stale v1 install):</b>
+      <ol>
+        <li>On the phone: delete any existing <b>Banco</b> home-screen icon.</li>
+        <li>In the phone browser: open the site, menu → <b>clear site data / cookies for this site</b>
+            (kills the old cached service worker).</li>
+        <li>Now start at step 1 below with a fresh load.</li>
+      </ol>
+    </div>
+
+    <!-- ===== live dashboard ===== -->
+    <div class="dash">
+      <div class="row1">
+        <div class="pct" id="pct">0%</div>
+        <div class="tally" id="tally">— steps · <b class="p">0 pass</b> · <b class="f">0 fail</b> · <b class="l">— left</b></div>
+        <div class="timer">⏱ <b id="clock">00:00</b></div>
+      </div>
+      <div class="bar"><i id="barfill"></i></div>
+      <div class="dashbtns">
+        <button class="primary" id="btnCopy">📋 Copy results</button>
+        <button id="btnDownload">💾 Download .txt</button>
+        <button id="btnPrint">🖨️ Print / PDF</button>
+        <button id="btnTimer">⏱ Reset timer</button>
+        <button class="danger" id="btnReset">♻️ Reset sheet</button>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div><b>Tester:</b> <input class="txt" data-k="tester" type="text" placeholder="Angel"></div>
+      <div><b>Date:</b> <input class="txt" data-k="date" type="text" placeholder="dd/mm/yyyy"></div>
+      <div><b>Build:</b> <input class="txt" data-k="build" type="text" value="staging-banco · feat/banco-offline-pwa (P0 + P0.5 + SW v2)"></div>
+      <div><b>Phone / browser:</b> <input class="txt" data-k="device" type="text" placeholder="Fairphone · Chrome"></div>
+    </div>
+
+    <!-- ===== click-to-test ===== -->
+    <div class="links">
+      <a class="go" href="https://staging-banco.lapiazza.app/pos" target="_blank">🔗 Open Banco POS <span class="arr">↗</span></a>
+      <a class="go" href="https://staging-banco.lapiazza.app/pos/scan" target="_blank">🔗 Scan screen <span class="arr">↗</span></a>
+    </div>
+    <div class="creds">Log in with <code>pam / helix_pass</code> (cashier).</div>
+
+    <!-- ===== tap-to-copy (handy if you open this sheet on the phone too) ===== -->
+    <div class="qrbox">
+      <h3>🔢 Tap to copy</h3>
+      <p>Tap a chip to copy it (login fields, the URL).</p>
+      <span class="chip" data-copy="https://staging-banco.lapiazza.app/pos">staging-banco.lapiazza.app/pos <span class="tag">· URL</span></span>
+      <span class="chip" data-copy="pam">pam <span class="tag">· user</span></span>
+      <span class="chip" data-copy="helix_pass">helix_pass <span class="tag">· pass</span></span>
+    </div>
+
+    <!-- ===== the checks ===== -->
+    <div class="check">
+      <h3>The checks — do them in order</h3>
+      <table>
+        <thead>
+          <tr><th class="n">#</th><th>Do this</th><th>Expect this</th><th class="verdict">Verdict</th><th class="notes">🎤 Note</th></tr>
+        </thead>
+        <tbody id="rows">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="voicebox">
+      <h3>🎤 Overall voice note <button class="micbig" id="bigmic">🎤 Tap &amp; talk</button></h3>
+      <p class="hint">Does it feel like its own app now, or still like a website? Anything clunky on tab taps,
+        any flash, any cut-off content, anything Felix would trip on. Talk it — it transcribes here. Edit freely.</p>
+      <textarea id="bigtext" data-k="bignote" placeholder="e.g. 'launches full-screen clean, but the Catalog tab flashes white for a beat when I tap it'"></textarea>
+      <div class="micnote" id="micstatus">Mic ready (Chrome/Edge). First tap asks permission.</div>
+    </div>
+
+    <div class="result">
+      <h3>Verdict</h3>
+      <label><input type="radio" name="overall" data-k="overall" value="pass"> ✅ PASS — all green, keep building (P1 next)</label>
+      <label><input type="radio" name="overall" data-k="overall" value="fail"> ❌ FAIL — see notes, fix first</label>
+      <div class="sig">
+        <span>Signature: <input class="txt" data-k="sig" type="text"></span>
+        <span>Date: <input class="txt" data-k="sigdate" type="text"></span>
+      </div>
+    </div>
+  </div>
+
+  <footer><span>Confidential — Internal Use Only</span><span>TEST-PWA-01 · Rev 1 · 2026-06-26</span></footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================================================================
+//  Banco PWA test log — verdicts, progress, timer, voice, autosave
+// ===================================================================
+(function () {
+  var LSKEY = 'quicktest_pwa_banco_v1';   // unique per sheet
+  var state = load();
+
+  // ---- the checks. big:true = make-or-break ----
+  var CHECKS = [
+    { do:"<b>Fresh load + log in.</b> Open <span class='chip' data-copy='https://staging-banco.lapiazza.app/pos'>/pos</span> in the phone browser, log in <code>pam / helix_pass</code>.",
+      exp:"Lands on the Scan screen, no error." },
+
+    { do:"<b>Install prompt.</b> Browser menu → <b>Add to Home screen</b> / <b>Install app</b>. Confirm it.",
+      exp:"A <b>Banco</b> icon (wolf) lands on your home screen — named “Banco”, not the browser." },
+
+    { do:"<b>Launch standalone</b> from the home-screen icon (not from the browser).",
+      exp:"Opens <b>full-screen</b> — NO address bar, NO browser tabs/buttons. Looks like an app.", big:true },
+
+    { do:"<b>App frame.</b> Look at the top and bottom edges.",
+      exp:"Top status strip fixed up top, <b>bottom tab bar</b> fixed at the bottom (Scan · Cart · Catalog · Customers · My Day). Only the middle scrolls." },
+
+    { do:"<b>Tap each of the 5 tabs</b> along the bottom.",
+      exp:"Each opens its screen and the tapped tab <b>highlights</b> as active." },
+
+    { do:"<b>No sideways scroll.</b> On every screen, try to drag left/right.",
+      exp:"Nothing scrolls right — it all fits one phone-width. Never have to scroll across.", big:true },
+
+    { do:"<b>Cart badge.</b> Scan/add an item, then glance at the Cart tab.",
+      exp:"A little number badge appears on Cart and matches how many items you added." },
+
+    { do:"<b>Bottom not cut off.</b> Open <b>Catalog</b> (a long list) and scroll to the very bottom.",
+      exp:"The last row sits <b>above</b> the bottom tab bar — nothing hidden behind it." },
+
+    { do:"<b>Offline read</b> — turn ON airplane mode, then re-open the Banco app from the icon.",
+      exp:"The app shell still loads (you see Banco, not the browser dinosaur/“no internet” page). Sales still need network in this phase — that's expected.", big:true },
+
+    { do:"<b>Back online.</b> Turn airplane mode OFF, then do a normal action (search/scan/ring).",
+      exp:"It reconnects and works — no stuck spinner, no need to force-kill the app." },
+
+    { do:"<b>No clunk / self-update.</b> Close and re-open the app a couple of times; pull-to-refresh once.",
+      exp:"Content is current, no “I had to refresh to fix it” weirdness, no white stuck screen.", big:true },
+
+    { do:"<b>Overall feel.</b> Use it for a minute like Pam would.",
+      exp:"Feels like its <b>own app</b>, not a website. Note anything clunky in the 🎤 box below." }
+  ];
+
+  // ---- build rows ----
+  var tbody = document.getElementById('rows');
+  CHECKS.forEach(function (c, i) {
+    var tr = document.createElement('tr');
+    tr.className = 'step' + (c.big ? ' big' : '');
+    tr.dataset.step = i;
+    tr.innerHTML =
+      '<td class="n">' + (i+1) + '</td>' +
+      '<td class="dox">' + c.do + '</td>' +
+      '<td class="exp">' + c.exp + '</td>' +
+      '<td class="verdict">' +
+        '<div class="vbtns">' +
+          '<button class="vbtn p" data-v="pass" title="pass">✓</button>' +
+          '<button class="vbtn f" data-v="fail" title="fail">✗</button>' +
+        '</div><span class="stamp"></span>' +
+      '</td>' +
+      '<td class="notes"><span class="micwrap"><input class="txt" data-note="' + i + '" type="text"><button class="mic" title="dictate">🎤</button></span></td>';
+    tbody.appendChild(tr);
+  });
+
+  // ---- verdict clicks ----
+  tbody.addEventListener('click', function (e) {
+    var b = e.target.closest('.vbtn'); if (!b) return;
+    var tr = b.closest('tr'); var step = tr.dataset.step; var v = b.dataset.v;
+    var cur = (state.verdicts && state.verdicts[step]) || '';
+    var next = (cur === v) ? '' : v;
+    state.verdicts = state.verdicts || {};
+    state.verdicts[step] = next;
+    state.stamps = state.stamps || {};
+    state.stamps[step] = next ? fmtClock(elapsed()) : '';
+    save(); paintRow(tr); refresh();
+  });
+
+  // ---- copy chips ----
+  document.body.addEventListener('click', function (e) {
+    var chip = e.target.closest('.chip'); if (!chip) return;
+    var val = chip.dataset.copy; if (!val) return;
+    copy(val); toast('Copied ' + val);
+  });
+
+  // ---- text fields autosave ----
+  document.body.addEventListener('input', function (e) {
+    var el = e.target;
+    if (el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+    if (el.dataset.note != null) { state.notes = state.notes || {}; state.notes[el.dataset.note] = el.value; save(); }
+  });
+  document.body.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.type === 'radio' && el.dataset.k) { state.fields = state.fields || {}; state.fields[el.dataset.k] = el.value; save(); }
+  });
+
+  // ---- restore ----
+  function restore() {
+    (state.fields) && Object.keys(state.fields).forEach(function (k) {
+      var el = document.querySelector('[data-k="' + k + '"]');
+      if (!el) return;
+      if (el.type === 'radio') { var r = document.querySelector('[data-k="'+k+'"][value="'+state.fields[k]+'"]'); if (r) r.checked = true; }
+      else el.value = state.fields[k];
+    });
+    (state.notes) && Object.keys(state.notes).forEach(function (i) {
+      var el = document.querySelector('[data-note="' + i + '"]'); if (el) el.value = state.notes[i];
+    });
+    document.querySelectorAll('#rows tr').forEach(paintRow);
+  }
+  function paintRow(tr) {
+    var step = tr.dataset.step;
+    var v = (state.verdicts && state.verdicts[step]) || '';
+    tr.classList.toggle('pass', v === 'pass');
+    tr.classList.toggle('fail', v === 'fail');
+    tr.querySelectorAll('.vbtn').forEach(function (btn) { btn.classList.toggle('on', btn.dataset.v === v); });
+    var st = tr.querySelector('.stamp');
+    if (st) st.textContent = (state.stamps && state.stamps[step]) ? ('@ ' + state.stamps[step]) : '';
+  }
+
+  // ---- progress + tally ----
+  function refresh() {
+    var n = CHECKS.length, p = 0, f = 0;
+    for (var i = 0; i < n; i++) { var v = state.verdicts && state.verdicts[i]; if (v === 'pass') p++; else if (v === 'fail') f++; }
+    var left = n - p - f;
+    var pctPass = Math.round(100 * p / n);
+    var pctEl = document.getElementById('pct'), fill = document.getElementById('barfill');
+    pctEl.textContent = pctPass + '%';
+    fill.style.width = pctPass + '%';
+    var allGreen = (p === n);
+    pctEl.classList.toggle('done', allGreen);
+    fill.classList.toggle('done', allGreen);
+    document.getElementById('tally').innerHTML =
+      n + ' steps · <b class="p">' + p + ' pass</b> · <b class="f">' + f + ' fail</b> · <b class="l">' + left + ' left</b>'
+      + (allGreen ? ' · 🎉 <b class="p">100% — sign it off</b>' : '');
+  }
+
+  // ---- timer ----
+  function elapsed() { return state.start ? (Date.now() - state.start) : 0; }
+  function fmtClock(ms) {
+    var s = Math.floor(ms / 1000), m = Math.floor(s / 60); s = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function tick() { document.getElementById('clock').textContent = fmtClock(elapsed()); }
+  if (!state.start) { state.start = Date.now(); save(); }
+  setInterval(tick, 1000); tick();
+
+  // ---- buttons ----
+  document.getElementById('btnTimer').onclick = function () { state.start = Date.now(); save(); tick(); toast('Timer reset'); };
+  document.getElementById('btnPrint').onclick = function () { window.print(); };
+  document.getElementById('btnReset').onclick = function () {
+    if (!confirm('Clear ALL verdicts, notes and the timer on this sheet?')) return;
+    localStorage.removeItem(LSKEY); location.reload();
+  };
+  document.getElementById('btnCopy').onclick = function () { copy(report()); toast('Results copied — paste them back to me'); };
+  document.getElementById('btnDownload').onclick = function () {
+    var blob = new Blob([report()], { type: 'text/plain' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'banco-pwa-test-' + (fld('date') || 'run').replace(/[^\w-]/g, '') + '.txt';
+    a.click(); toast('Downloaded');
+  };
+
+  // ---- report ----
+  function fld(k) { return (state.fields && state.fields[k]) || ''; }
+  function report() {
+    var n = CHECKS.length, p = 0, f = 0, L = [];
+    L.push('Banco PWA & app-shell — quick test (TEST-PWA-01)');
+    L.push('Build : ' + (fld('build') || '?'));
+    L.push('Tester: ' + (fld('tester') || '?') + '   Date: ' + (fld('date') || '?') + '   Device: ' + (fld('device') || '?'));
+    L.push('Time on sheet: ' + fmtClock(elapsed()));
+    L.push('');
+    CHECKS.forEach(function (c, i) {
+      var v = (state.verdicts && state.verdicts[i]) || '';
+      if (v === 'pass') p++; else if (v === 'fail') f++;
+      var mark = v === 'pass' ? '[PASS]' : v === 'fail' ? '[FAIL]' : '[ -- ]';
+      var doTxt = c.do.replace(/<[^>]+>/g, '');
+      var note = (state.notes && state.notes[i]) ? '  | note: ' + state.notes[i] : '';
+      L.push(mark + ' ' + (i+1) + '. ' + doTxt + note);
+    });
+    L.push('');
+    L.push('SCORE: ' + p + ' pass / ' + f + ' fail / ' + (n-p-f) + ' left  (' + Math.round(100*p/n) + '%)');
+    L.push('VERDICT: ' + (fld('overall') ? fld('overall').toUpperCase() : '(not set)'));
+    if (state.fields && state.fields.bignote) { L.push(''); L.push('OVERALL NOTE:'); L.push(state.fields.bignote); }
+    return L.join('\n');
+  }
+
+  // ---- clipboard + toast ----
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(fallback); }
+    else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+    }
+  }
+  var toastT;
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 1600);
+  }
+
+  // ---- persistence ----
+  function load() { try { return JSON.parse(localStorage.getItem(LSKEY)) || {}; } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---- Web Speech dictation ----
+  (function () {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var status = document.getElementById('micstatus');
+    if (!SR) {
+      if (status) status.textContent = 'Voice not available here — just type your notes (works in Chrome/Edge).';
+      document.querySelectorAll('.mic, .micbig').forEach(function (b) { b.style.display = 'none'; });
+      return;
+    }
+    var active = null;
+    function dictate(btn, target, append) {
+      if (active) { active.recognition.stop(); if (active.btn === btn) return; }
+      var rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false;
+      btn.recognition = rec; active = { btn: btn, recognition: rec }; btn.classList.add('rec');
+      if (status && btn.classList.contains('micbig')) status.textContent = 'Listening… speak now.';
+      rec.onresult = function (e) {
+        var text = ''; for (var i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+        text = text.trim(); if (!text) return;
+        target.value = (target.value ? target.value + ' ' : '') + text;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+      rec.onerror = function (e) { if (status) status.textContent = 'Mic error: ' + e.error + ' — try again or type.'; };
+      rec.onend = function () { btn.classList.remove('rec'); active = null;
+        if (status && btn.classList.contains('micbig')) status.textContent = 'Mic ready — tap to add more, or edit above.'; };
+      try { rec.start(); } catch (err) { btn.classList.remove('rec'); }
+    }
+    document.body.addEventListener('click', function (ev) {
+      var m = ev.target.closest('.mic'); if (m && !m.classList.contains('micbig')) {
+        ev.preventDefault(); dictate(m, m.parentNode.querySelector('input.txt'), false);
+      }
+    });
+    var bigmic = document.getElementById('bigmic'), bigtext = document.getElementById('bigtext');
+    if (bigmic && bigtext) bigmic.addEventListener('click', function (ev) { ev.preventDefault(); dictate(bigmic, bigtext, true); });
+  })();
+
+  // ---- go ----
+  restore(); refresh();
+})();
+</script>
+
+</body>
+</html>
