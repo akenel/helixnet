@@ -35,6 +35,8 @@ services:
     environment:
       SERVICE_TYPE: platform
       HX_ENVIRONMENT: production   # overrides uat.env so prod reads PRD (green), not SANDBOX
+      POS_REALM: kc-pos-realm-dev  # prod's POS realm — uat.env leaves it empty, which broke the
+                                   # env-driven {{ pos_realm }} logout/login URLs (2026-06-27)
       # SEPARATE BANCO DATABASE (2026-06-24): Banco prod now owns banco_prod, fully isolated
       # from staging (banco_staging) and from the shared helix_db. The app builds its async/sync
       # URIs from POSTGRES_DB (src/core/config.py); the raw URL vars are overridden for hygiene.
