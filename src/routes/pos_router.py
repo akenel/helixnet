@@ -2547,6 +2547,249 @@ async def get_daily_summary_csv(
 
 
 # ================================================================
+# PRODUCT-SALES + CUSTOMER DRILL-DOWNS (Felix day-one wishlist, read-only)
+# Windows onto data we already capture: line items already carry product +
+# qty + line_total; transactions already carry customer_id. No new writes.
+# See docs/BANCO-DAY-ONE-WISHLIST.md. Manager/admin only.
+# ================================================================
+
+# Manager-tier guard reused across the drill-down reports.
+_REPORT_ROLES = ["👔️ pos-manager", "🛠️ pos-developer", "👑️ pos-admin"]
+
+
+def _parse_report_range(date_from: Optional[str], date_to: Optional[str]):
+    """Resolve an inclusive [from, to] day range in the SHOP's timezone (defaults to
+    today). Returns (d_from, d_to, start_dt, end_dt) — the datetimes are tz-aware so
+    they compare correctly against the UTC completed_at column, same as daily-summary."""
+    today = datetime.now(SHOP_TZ).date()
+    d_from = datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else today
+    d_to = datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else d_from
+    if d_to < d_from:
+        d_from, d_to = d_to, d_from
+    start = datetime.combine(d_from, datetime.min.time(), tzinfo=SHOP_TZ)
+    end = datetime.combine(d_to, datetime.max.time(), tzinfo=SHOP_TZ)
+    return d_from, d_to, start, end
+
+
+@router.get("/reports/product-sales")
+async def get_product_sales(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(_REPORT_ROLES)),
+):
+    """What actually sold over a date range — per product, by quantity AND revenue.
+
+    Answers Felix's most-likely first question ('what did I sell this week?'). Read-only
+    aggregate over completed sales' line items; giveaways excluded from revenue. Each row
+    drills to 'who bought it' via /reports/product-sales/{product_id}. Custom (off-catalog)
+    lines have no product_id and group by their name — they show but don't drill."""
+    d_from, d_to, start, end = _parse_report_range(date_from, date_to)
+
+    tx_rows = (await db.execute(
+        select(TransactionModel.id).where(and_(
+            TransactionModel.status == TransactionStatus.COMPLETED,
+            TransactionModel.completed_at >= start,
+            TransactionModel.completed_at <= end,
+        ))
+    )).all()
+    tx_ids = [r[0] for r in tx_rows]
+    if not tx_ids:
+        return {"date_from": d_from.isoformat(), "date_to": d_to.isoformat(),
+                "products": [], "categories": [],
+                "totals": {"qty_sold": 0, "revenue": 0.0, "vat": 0.0, "product_count": 0}}
+
+    name_expr = func.coalesce(ProductModel.name, LineItemModel.notes, "Item")
+    cat_expr = func.coalesce(ProductModel.category, "Uncategorized")
+    rows = (await db.execute(
+        select(
+            LineItemModel.product_id.label("product_id"),
+            name_expr.label("name"),
+            cat_expr.label("category"),
+            func.sum(LineItemModel.quantity).label("qty"),
+            func.sum(LineItemModel.line_total).label("revenue"),
+            func.coalesce(func.sum(LineItemModel.vat_amount), 0).label("vat"),
+            func.count(func.distinct(LineItemModel.transaction_id)).label("txns"),
+        )
+        .join(ProductModel, ProductModel.id == LineItemModel.product_id, isouter=True)
+        .where(and_(
+            LineItemModel.transaction_id.in_(tx_ids),
+            LineItemModel.is_giveaway == False,
+        ))
+        .group_by(LineItemModel.product_id, name_expr, cat_expr)
+        .order_by(func.sum(LineItemModel.line_total).desc())
+    )).all()
+
+    products = []
+    cat_tot: dict = {}
+    tot_qty = 0
+    tot_rev = Decimal("0.00")
+    tot_vat = Decimal("0.00")
+    for r in rows:
+        rev = Decimal(str(r.revenue or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        vat = Decimal(str(r.vat or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        qty = int(r.qty or 0)
+        products.append({
+            "product_id": str(r.product_id) if r.product_id else None,
+            "name": r.name,
+            "category": r.category,
+            "qty_sold": qty,
+            "revenue": float(rev),
+            "vat": float(vat),
+            "txn_count": int(r.txns or 0),
+        })
+        tot_qty += qty
+        tot_rev += rev
+        tot_vat += vat
+        c = cat_tot.setdefault(r.category, {"qty_sold": 0, "revenue": Decimal("0.00")})
+        c["qty_sold"] += qty
+        c["revenue"] += rev
+
+    categories = sorted(
+        [{"category": k, "qty_sold": v["qty_sold"], "revenue": float(v["revenue"])}
+         for k, v in cat_tot.items()],
+        key=lambda x: x["revenue"], reverse=True)
+
+    return {
+        "date_from": d_from.isoformat(),
+        "date_to": d_to.isoformat(),
+        "products": products,
+        "categories": categories,
+        "totals": {"qty_sold": tot_qty, "revenue": float(tot_rev),
+                   "vat": float(tot_vat), "product_count": len(products)},
+    }
+
+
+@router.get("/reports/product-sales/{product_id}")
+async def get_product_sales_detail(
+    product_id: UUID,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(_REPORT_ROLES)),
+):
+    """Who bought this product in the window — one row per sale it appeared in
+    (time, cashier, customer, qty, line total). The drill behind a product-sales row."""
+    d_from, d_to, start, end = _parse_report_range(date_from, date_to)
+
+    rows = (await db.execute(
+        select(
+            TransactionModel.transaction_number,
+            TransactionModel.completed_at,
+            TransactionModel.cashier_id,
+            TransactionModel.customer_id,
+            LineItemModel.quantity,
+            LineItemModel.line_total,
+        )
+        .join(TransactionModel, TransactionModel.id == LineItemModel.transaction_id)
+        .where(and_(
+            LineItemModel.product_id == product_id,
+            LineItemModel.is_giveaway == False,
+            TransactionModel.status == TransactionStatus.COMPLETED,
+            TransactionModel.completed_at >= start,
+            TransactionModel.completed_at <= end,
+        ))
+        .order_by(TransactionModel.completed_at.desc())
+    )).all()
+
+    # Resolve cashier + customer display names in batch (BL-83: cashier_id = users.id).
+    cashier_ids = {r.cashier_id for r in rows if r.cashier_id}
+    customer_ids = {r.customer_id for r in rows if r.customer_id}
+    cashier_nm: dict = {}
+    if cashier_ids:
+        urows = await db.execute(select(UserModel.id, UserModel.first_name, UserModel.username)
+                                 .where(UserModel.id.in_(cashier_ids)))
+        cashier_nm = {uid: (first or uname) for uid, first, uname in urows.all()}
+    customer_nm: dict = {}
+    if customer_ids:
+        crows = await db.execute(select(CustomerModel.id, CustomerModel.handle, CustomerModel.real_name)
+                                 .where(CustomerModel.id.in_(customer_ids)))
+        customer_nm = {cid: (handle or real or "Member") for cid, handle, real in crows.all()}
+
+    prod_name = (await db.execute(
+        select(ProductModel.name).where(ProductModel.id == product_id))).scalar_one_or_none()
+
+    sales = [{
+        "transaction_number": r.transaction_number,
+        "time": r.completed_at.isoformat() if r.completed_at else None,
+        "cashier_name": cashier_nm.get(r.cashier_id, "—") if r.cashier_id else "—",
+        "customer_name": customer_nm.get(r.customer_id) if r.customer_id else None,
+        "qty": int(r.quantity or 0),
+        "line_total": float(Decimal(str(r.line_total or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+    } for r in rows]
+
+    return {
+        "product_id": str(product_id),
+        "product_name": prod_name or "Item",
+        "date_from": d_from.isoformat(),
+        "date_to": d_to.isoformat(),
+        "sales": sales,
+        "total_qty": sum(s["qty"] for s in sales),
+        "total_revenue": float(sum((Decimal(str(s["line_total"])) for s in sales), Decimal("0.00"))),
+    }
+
+
+@router.get("/customers/{customer_id}/summary")
+async def get_customer_summary(
+    customer_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(_REPORT_ROLES)),
+):
+    """One customer's at-a-glance: tier, lifetime value, visit stats, and what they
+    usually buy. Read-only over the data we already write (transactions carry customer_id;
+    the customer record carries tier + lifetime_spend). The detail behind the Customer
+    column that currently dead-ends. Full purchase list = /transactions?customer_id=."""
+    cust = (await db.execute(
+        select(CustomerModel).where(CustomerModel.id == customer_id))).scalar_one_or_none()
+    if not cust:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    txs = (await db.execute(
+        select(TransactionModel).where(and_(
+            TransactionModel.customer_id == customer_id,
+            TransactionModel.status == TransactionStatus.COMPLETED,
+        )).order_by(TransactionModel.completed_at.desc())
+    )).scalars().all()
+
+    visit_count = len(txs)
+    spent = sum((Decimal(str(t.total)) for t in txs), Decimal("0.00"))
+    avg_basket = (spent / visit_count).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) if visit_count else Decimal("0.00")
+    dates = [t.completed_at for t in txs if t.completed_at]
+    first_seen = min(dates).isoformat() if dates else None
+    last_seen = max(dates).isoformat() if dates else None
+
+    top_items: list = []
+    tx_ids = [t.id for t in txs]
+    if tx_ids:
+        name_expr = func.coalesce(ProductModel.name, LineItemModel.notes, "Item")
+        irows = (await db.execute(
+            select(name_expr.label("name"), func.sum(LineItemModel.quantity).label("qty"))
+            .join(ProductModel, ProductModel.id == LineItemModel.product_id, isouter=True)
+            .where(and_(LineItemModel.transaction_id.in_(tx_ids), LineItemModel.is_giveaway == False))
+            .group_by(name_expr).order_by(func.sum(LineItemModel.quantity).desc())
+        )).all()
+        top_items = [{"name": r.name, "qty": int(r.qty or 0)} for r in irows[:5]]
+
+    return {
+        "id": str(cust.id),
+        "handle": cust.handle,
+        "real_name": cust.real_name,
+        "loyalty_tier": cust.loyalty_tier.value if cust.loyalty_tier else None,
+        "tier_discount_percent": cust.tier_discount_percent,
+        "lifetime_spend": float(Decimal(str(cust.lifetime_spend or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "credits_balance": cust.credits_balance,
+        "crack_level": cust.crack_level.value if cust.crack_level else None,
+        "is_vip": cust.is_vip,
+        "first_seen": first_seen,
+        "last_seen": last_seen,
+        "visit_count": visit_count,
+        "spend_in_system": float(spent.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+        "avg_basket": float(avg_basket),
+        "top_items": top_items,
+    }
+
+
+# ================================================================
 # STORE SETTINGS ENDPOINTS
 # ================================================================
 
@@ -3757,6 +4000,14 @@ async def pos_reports(request: Request):
     - Category analysis
     """
     return templates.TemplateResponse("pos/reports.html", {"request": request})
+
+
+@html_router.get("/pos/reports/products", response_class=HTMLResponse, name="pos_product_sales")
+async def pos_product_sales(request: Request):
+    """Product Sales report (Felix day-one wishlist) - what sold by qty/revenue over a
+    date range, tap a product to drill into who bought it. Manager/admin (the API endpoints
+    enforce the role; this just serves the shell). See docs/BANCO-DAY-ONE-WISHLIST.md."""
+    return templates.TemplateResponse("pos/product_sales.html", {"request": request})
 
 
 @html_router.get("/pos/transactions", response_class=HTMLResponse, name="pos_transactions")
