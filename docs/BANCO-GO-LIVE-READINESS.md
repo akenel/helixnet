@@ -5,10 +5,19 @@ and "Felix runs his real shop on this next Monday without us scrambling"? Sized 
 ONE small shop — not enterprise SRE, but the things that can sink a small business
 or the relationship if we get them wrong.*
 
-## 📌 Backlog queued (2026-06-27, Angel's call)
-- **TODAY:** ① offsite copy of the banco_prod backups (currently box-only), ② push alerting
-  (Telegram/email) on a non-zero daily smoke or backup, ③ clean prod identity (deterministic
-  staff provisioning — no self-provision drift — + password-reset SMTP).
+## 📌 Backlog (2026-06-27, Angel's call)
+- ✅ **DONE today:** backups are now **GPG-encrypted at rest** (AES256), drill decrypts+restores+
+  verifies. Key at `/root/.banco-backup-key` (root-only) — Angel must keep an OFF-BOX copy or the
+  `.gpg` blobs are unrecoverable once they go offsite.
+- 🔴 **DECIDE WITH FELIX (after the demo, BEFORE cutover) — HIGH:** these three are good-to-go
+  solutions but Felix should pick the path (cost + his preferences):
+  - **① Offsite backup destination** — Hetzner Storage Box vs S3/Backblaze vs his own Google/NAS.
+    (Encryption already done; just needs a place to push + his account/creds. No spend until he chooses.)
+  - **② Offline / airplane-mode scope** — build the P2 offline-sales outbox vs cash-only-offline vs
+    keep graceful-degrade (browse offline, sell online). Depends on how often his shop really loses net.
+  - **③ Realm names** — align to kc-staging/kc-production. ⚠ prod rides the SHARED `borrowhood` realm
+    (La Piazza/Bottega too) → it's a migration, not a rename. Staging is low-risk to align first.
+- 🟠 **Push alerting** (Telegram/email on a failed smoke/backup) — also for the Felix conversation / soon.
 - **Fiscal robustness (found 2026-06-27 e2e):** harden the daily-summary turnover-split so the
   Z-report ALWAYS reconciles to total_sales, even on odd/legacy data. Per-sale VAT is exact and
   a CLEAN day reconciles to 0 (proven), but a transaction with `subtotal≤0` (e.g. giveaway-only,
