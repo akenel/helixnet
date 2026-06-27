@@ -315,6 +315,10 @@
         }
         /* before login (no token): hide app chrome, let the login screen own the viewport */
         body.pre-auth .app-bottomnav, body.pre-auth .helix-status-bar { display: none; }
+        /* Print/PDF: drop the app chrome so receipts & reports print clean (thermal + PDF). */
+        @media print {
+            .app-bottomnav, .helix-status-bar, .lpfb-btn { display: none !important; }
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
