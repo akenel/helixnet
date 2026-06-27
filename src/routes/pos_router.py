@@ -1668,6 +1668,8 @@ async def get_my_session(
 @router.get("/transactions", response_model=list[TransactionRead])
 async def list_transactions(
     date: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     status_filter: Optional[str] = None,
     payment_method: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
@@ -1683,14 +1685,24 @@ async def list_transactions(
     user_roles = current_user.get("user_roles", [])
     is_manager = any("pos-manager" in r or "pos-admin" in r or "pos-auditor" in r for r in user_roles)
 
-    # Date filter — cashiers are pinned to today; managers may pick a date.
-    if date and is_manager:
-        target_date = datetime.strptime(date, "%Y-%m-%d").date()
-    else:
-        target_date = datetime.now(timezone.utc).date()
+    # Date filter — cashiers are pinned to today; managers may pick a single date OR a range
+    # (date_from..date_to, for "last 2 weeks" style reporting). An open bound collapses to
+    # the other; a reversed range is swapped so from<=to always holds.
+    def _parse(d):
+        return datetime.strptime(d, "%Y-%m-%d").date()
 
-    start_of_day = datetime.combine(target_date, datetime.min.time(), tzinfo=timezone.utc)
-    end_of_day = datetime.combine(target_date, datetime.max.time(), tzinfo=timezone.utc)
+    if is_manager and (date_from or date_to):
+        lo = _parse(date_from) if date_from else _parse(date_to)
+        hi = _parse(date_to) if date_to else _parse(date_from)
+        if lo > hi:
+            lo, hi = hi, lo
+    elif date and is_manager:
+        lo = hi = _parse(date)
+    else:
+        lo = hi = datetime.now(timezone.utc).date()
+
+    start_of_day = datetime.combine(lo, datetime.min.time(), tzinfo=timezone.utc)
+    end_of_day = datetime.combine(hi, datetime.max.time(), tzinfo=timezone.utc)
     query = query.where(TransactionModel.created_at >= start_of_day)
     query = query.where(TransactionModel.created_at <= end_of_day)
 

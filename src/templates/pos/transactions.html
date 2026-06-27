@@ -22,10 +22,23 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Filter Bar -->
         <div class="card mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Quick date-range presets -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <template x-for="p in datePresets" :key="p.key">
+                    <button @click="setPreset(p.key)"
+                            class="px-4 py-2 rounded-full text-sm font-semibold transition"
+                            :class="activePreset === p.key ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            x-text="p.label"></button>
+                </template>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Date:</label>
-                    <input type="date" x-model="filterDate" @change="loadTransactions()" class="input-field">
+                    <label class="text-sm font-semibold text-gray-700">From:</label>
+                    <input type="date" x-model="filterFrom" @change="onRangeChange()" class="input-field">
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">To:</label>
+                    <input type="date" x-model="filterTo" @change="onRangeChange()" class="input-field">
                 </div>
                 <div>
                     <label class="text-sm font-semibold text-gray-700">Status:</label>
@@ -37,7 +50,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Payment Method:</label>
+                    <label class="text-sm font-semibold text-gray-700">Payment:</label>
                     <select x-model="filterPayment" @change="loadTransactions()" class="input-field">
                         <option value="">All</option>
                         <option value="cash">Cash</option>
@@ -49,11 +62,27 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <div class="flex items-end">
-                    <button @click="resetFilters()" class="btn-secondary w-full">
-                        Reset Filters
-                    </button>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">Cashier:</label>
+                    <select x-model="filterCashier" @change="calculateSummary()" class="input-field">
+                        <option value="">All cashiers</option>
+                        <template x-for="c in cashierOptions()" :key="c">
+                            <option :value="c" x-text="c"></option>
+                        </template>
+                    </select>
                 </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">Customer:</label>
+                    <select x-model="filterCustomer" @change="calculateSummary()" class="input-field">
+                        <option value="">All customers</option>
+                        <template x-for="c in customerOptions()" :key="c">
+                            <option :value="c" x-text="c"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button @click="resetFilters()" class="btn-secondary">Reset Filters</button>
             </div>
         </div>
 
@@ -92,30 +121,30 @@
         </div>
 
         <!-- Empty State -->
-        <div x-show="!loading && transactions.length === 0" class="card text-center py-12">
+        <div x-show="!loading && processedList().length === 0" class="card text-center py-12">
             <span class="text-6xl mb-4 block">📭</span>
             <h3 class="text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h3>
             <p class="text-gray-600">Try adjusting your filters or select a different date.</p>
         </div>
 
         <!-- Transactions Table -->
-        <div x-show="!loading && transactions.length > 0" class="card overflow-hidden">
+        <div x-show="!loading && processedList().length > 0" class="card overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Receipt #</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Date/Time</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Cashier</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Payment</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
+                            <th @click="sortByCol('receipt')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Receipt # <span x-text="sortIcon('receipt')"></span></th>
+                            <th @click="sortByCol('time')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Date/Time <span x-text="sortIcon('time')"></span></th>
+                            <th @click="sortByCol('cashier')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Cashier <span x-text="sortIcon('cashier')"></span></th>
+                            <th @click="sortByCol('customer')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Customer <span x-text="sortIcon('customer')"></span></th>
+                            <th @click="sortByCol('payment')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Payment <span x-text="sortIcon('payment')"></span></th>
+                            <th @click="sortByCol('total')" class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Total <span x-text="sortIcon('total')"></span></th>
+                            <th @click="sortByCol('status')" class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Status <span x-text="sortIcon('status')"></span></th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        <template x-for="txn in transactions" :key="txn.id">
+                        <template x-for="txn in processedList()" :key="txn.id">
                             <tr class="hover:bg-gray-50 transition cursor-pointer" @click="viewReceipt(txn.id)">
                                 <td class="px-4 py-3">
                                     <p class="font-semibold text-gray-900" x-text="txn.receipt_number || txn.transaction_number"></p>
@@ -192,9 +221,21 @@
                 other:         { label: 'Other',         cls: 'bg-gray-100 text-gray-800' }
             },
             loading: false,
-            filterDate: new Date().toISOString().split('T')[0], // Today
+            filterFrom: new Date().toISOString().split('T')[0], // Today
+            filterTo: new Date().toISOString().split('T')[0],   // Today
             filterStatus: '',
             filterPayment: '',
+            filterCashier: '',   // client-side facet
+            filterCustomer: '',  // client-side facet
+            sortKey: 'time',     // default newest-first
+            sortDir: 'desc',
+            activePreset: 'today',
+            datePresets: [
+                { key: 'today', label: 'Today' },
+                { key: '7d',    label: 'Last 7 days' },
+                { key: '2wk',   label: 'Last 2 weeks' },
+                { key: 'month', label: 'This month' },
+            ],
 
             async init() {
                 const userInfo = AuthHelper.getUserInfo();
@@ -211,13 +252,18 @@
                 this.loading = true;
 
                 try {
-                    // Build query parameters
+                    // Build query parameters — server filters by date range / status / payment;
+                    // cashier & customer are client-side facets on the returned set.
                     const params = new URLSearchParams();
-                    if (this.filterDate) params.append('date', this.filterDate);
+                    if (this.filterFrom) params.append('date_from', this.filterFrom);
+                    if (this.filterTo) params.append('date_to', this.filterTo);
                     if (this.filterStatus) params.append('status_filter', this.filterStatus);
                     if (this.filterPayment) params.append('payment_method', this.filterPayment);
 
                     this.transactions = await API.get(`/api/v1/pos/transactions?${params}`);
+                    // A facet may no longer exist in the new result set — clear stale ones.
+                    if (this.filterCashier && !this.cashierOptions().includes(this.filterCashier)) this.filterCashier = '';
+                    if (this.filterCustomer && !this.customerOptions().includes(this.filterCustomer)) this.filterCustomer = '';
 
                     // Calculate summary
                     this.calculateSummary();
@@ -231,17 +277,88 @@
             },
 
             calculateSummary() {
-                this.summary.count = this.transactions.length;
-                this.summary.total = this.transactions.reduce((sum, t) => sum + parseFloat(t.total || 0), 0);
+                // Summary reflects the facet-filtered view (so "Larry" or "Pam" totals are real).
+                const list = this.filteredList();
+                this.summary.count = list.length;
+                this.summary.total = list.reduce((sum, t) => sum + parseFloat(t.total || 0), 0);
                 // BL-84: bucket every sale by its real payment method (don't lump as "cash").
                 const by = {};
-                for (const t of this.transactions) {
+                for (const t of list) {
                     const m = t.payment_method || 'other';
                     if (!by[m]) by[m] = { total: 0, count: 0 };
                     by[m].total += parseFloat(t.total || 0);
                     by[m].count += 1;
                 }
                 this.summary.byMethod = by;
+            },
+
+            // ---- client-side facets + sorting -------------------------------------
+            filteredList() {
+                let list = this.transactions;
+                if (this.filterCashier) list = list.filter(t => (t.cashier_name || '—') === this.filterCashier);
+                if (this.filterCustomer) list = list.filter(t => (t.customer_name || '—') === this.filterCustomer);
+                return list;
+            },
+            processedList() {
+                const list = [...this.filteredList()];
+                const dir = this.sortDir === 'asc' ? 1 : -1;
+                const val = (t) => {
+                    switch (this.sortKey) {
+                        case 'cashier':  return (t.cashier_name || '').toLowerCase();
+                        case 'customer': return (t.customer_name || '').toLowerCase();
+                        case 'total':    return parseFloat(t.total || 0);
+                        case 'payment':  return (t.payment_method || '');
+                        case 'status':   return (t.status || '');
+                        case 'receipt':  return (t.receipt_number || t.transaction_number || '');
+                        default:         return new Date(t.completed_at || t.created_at || 0).getTime();
+                    }
+                };
+                list.sort((a, b) => {
+                    const av = val(a), bv = val(b);
+                    return av < bv ? -dir : av > bv ? dir : 0;
+                });
+                return list;
+            },
+            sortByCol(key) {
+                if (this.sortKey === key) {
+                    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortKey = key;
+                    // numbers + time default to newest/biggest first; text defaults A→Z
+                    this.sortDir = (key === 'total' || key === 'time') ? 'desc' : 'asc';
+                }
+            },
+            sortIcon(key) {
+                if (this.sortKey !== key) return '⇅';
+                return this.sortDir === 'asc' ? '▲' : '▼';
+            },
+            cashierOptions() {
+                return [...new Set(this.transactions.map(t => t.cashier_name).filter(Boolean))].sort();
+            },
+            customerOptions() {
+                return [...new Set(this.transactions.map(t => t.customer_name).filter(Boolean))].sort();
+            },
+
+            // ---- date range presets ----------------------------------------------
+            setPreset(key) {
+                const fmt = d => {
+                    // local-date YYYY-MM-DD (avoid UTC off-by-one near midnight)
+                    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+                };
+                const today = new Date();
+                let from = new Date(today);
+                if (key === 'today')      from = today;
+                else if (key === '7d')    from.setDate(today.getDate() - 6);
+                else if (key === '2wk')   from.setDate(today.getDate() - 13);
+                else if (key === 'month') from = new Date(today.getFullYear(), today.getMonth(), 1);
+                this.filterFrom = fmt(from);
+                this.filterTo = fmt(today);
+                this.activePreset = key;
+                this.loadTransactions();
+            },
+            onRangeChange() {
+                this.activePreset = '';   // manual edit clears the preset highlight
+                this.loadTransactions();
             },
 
             // BL-84: the payment breakdown rows, in enum order, only methods actually used.
@@ -269,10 +386,13 @@
             },
 
             resetFilters() {
-                this.filterDate = new Date().toISOString().split('T')[0];
                 this.filterStatus = '';
                 this.filterPayment = '';
-                this.loadTransactions();
+                this.filterCashier = '';
+                this.filterCustomer = '';
+                this.sortKey = 'time';
+                this.sortDir = 'desc';
+                this.setPreset('today');   // resets range + reloads
             },
 
             viewReceipt(transactionId) {
