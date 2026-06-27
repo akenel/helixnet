@@ -106,22 +106,49 @@
             background: #555;
         }
 
-        /* Big PILL buttons for Pam — gradient, lift on hover, press feedback, focus ring */
+        /* Big PILL buttons for Pam — REAL CSS (not @apply: the Play CDN only compiles
+           @apply inside <style type="text/tailwind">, and this is a plain <style>, so
+           @apply was silently dead. Plain CSS works regardless). */
+        .btn-primary, .btn-secondary, .btn-danger, .btn-success {
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            font-weight: 600; font-size: 1rem; line-height: 1.5;
+            padding: 1rem 2rem; border-radius: 9999px; border: none; cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, background-image .2s ease;
+        }
+        .btn-primary:hover, .btn-secondary:hover, .btn-danger:hover, .btn-success:hover { transform: scale(1.05); }
+        .btn-primary:active, .btn-secondary:active, .btn-danger:active, .btn-success:active { transform: scale(.95); }
+        .btn-primary:focus, .btn-secondary:focus, .btn-danger:focus, .btn-success:focus { outline: none; }
+
         .btn-primary {
-            @apply bg-gradient-to-b from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold text-base py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2;
+            background-image: linear-gradient(to bottom, #6366f1, #4f46e5); color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
         }
-
-        .btn-secondary {
-            @apply bg-white hover:bg-gray-50 text-gray-700 font-semibold text-base py-4 px-8 rounded-full border border-gray-300 shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2;
-        }
-
-        .btn-danger {
-            @apply bg-gradient-to-b from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold text-base py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2;
-        }
+        .btn-primary:hover { background-image: linear-gradient(to bottom, #4f46e5, #4338ca);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,.15), 0 8px 10px -6px rgba(0,0,0,.1); }
+        .btn-primary:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #818cf8; }
 
         .btn-success {
-            @apply bg-gradient-to-b from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold text-base py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2;
+            background-image: linear-gradient(to bottom, #10b981, #16a34a); color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
         }
+        .btn-success:hover { background-image: linear-gradient(to bottom, #059669, #15803d);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,.15), 0 8px 10px -6px rgba(0,0,0,.1); }
+        .btn-success:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4ade80; }
+
+        .btn-danger {
+            background-image: linear-gradient(to bottom, #ef4444, #dc2626); color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+        }
+        .btn-danger:hover { background-image: linear-gradient(to bottom, #dc2626, #b91c1c);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,.15), 0 8px 10px -6px rgba(0,0,0,.1); }
+        .btn-danger:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #f87171; }
+
+        .btn-secondary {
+            background-color: #fff; color: #374151; border: 1px solid #d1d5db;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
+        }
+        .btn-secondary:hover { background-color: #f9fafb; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); }
+        .btn-secondary:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #d1d5db; }
 
         /* Card styling */
         .card {
