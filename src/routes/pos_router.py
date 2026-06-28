@@ -2183,9 +2183,15 @@ async def checkout_transaction(
                 detail="Open your cash drawer before taking a cash sale.")
         if not checkout.amount_tendered:
             raise HTTPException(status_code=400, detail="Cash payment requires amount_tendered")
-        if checkout.amount_tendered < transaction.total:
+        # Compare money at CENT precision. A JSON number like 226.17 reaches us as an
+        # imprecise Decimal (226.16999…), so a strict `tendered < total` falsely rejected an
+        # EXACT payment (the till already cent-rounds, so it showed change 0.00 then got a
+        # 400). Quantize both to cents before comparing + computing change.
+        tendered = Decimal(str(checkout.amount_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        total_due = Decimal(str(transaction.total)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if tendered < total_due:
             raise HTTPException(status_code=400, detail="Insufficient payment amount")
-        transaction.change_given = checkout.amount_tendered - transaction.total
+        transaction.change_given = tendered - total_due
 
     transaction.payment_method = checkout.payment_method
     transaction.amount_tendered = checkout.amount_tendered
