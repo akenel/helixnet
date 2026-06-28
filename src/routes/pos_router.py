@@ -962,6 +962,7 @@ async def receive_stock(
 async def search_products_fast(
     q: str = "",
     category: Optional[str] = None,
+    sort: Optional[str] = None,
     limit: int = 50,
     skip: int = 0,
     db: AsyncSession = Depends(get_db_session),
@@ -984,8 +985,21 @@ async def search_products_fast(
     q = (q or "").strip()
     category = (category or "").strip() or None
 
-    # One query: ranked page + total matches via count(*) OVER().
-    query = text("""
+    # Sort is interpolated from a FIXED whitelist (never user text) → no injection surface;
+    # q/category/limit/skip stay bound params. (No stock/reorder filter on purpose: the shop
+    # reorders by eyeballing the shelf + a pencil list, not thresholds — and under
+    # zero-perpetual-inventory the raw stock count is unreliable anyway.)
+    order_clause = {
+        "name":       "name ASC",
+        "price_asc":  "price ASC, name",
+        "price_desc": "price DESC, name",
+        "recent":     "created_at DESC NULLS LAST, name",
+        "stock":      "stock_quantity ASC, name",   # informational view, not a stock claim
+    }.get((sort or "").strip().lower(),
+          # default: relevance when searching, else name
+          "CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END, similarity(name, :q) DESC, name")
+
+    query = text(f"""
         SELECT id, sku, barcode, name, category, price, stock_quantity, image_url,
                is_age_restricted, product_class,
                similarity(name, :q) AS relevance,
@@ -997,9 +1011,7 @@ async def search_products_fast(
             OR barcode ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1
           )
           AND (CAST(:category AS TEXT) IS NULL OR category ILIKE '%' || CAST(:category AS TEXT) || '%')
-        ORDER BY
-          CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
-          similarity(name, :q) DESC, name
+        ORDER BY {order_clause}
         LIMIT :limit OFFSET :skip
     """)
     rows = (await db.execute(query, {
