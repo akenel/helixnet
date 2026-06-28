@@ -64,6 +64,40 @@ Sized for a Swiss micro-retailer, the genuine alternatives — and the one thing
 
 ---
 
+## 2¾. SWOT — THE WHOLE PICTURE ON ONE SCREEN
+
+*Added 2026-06-28. The strategic read that falls out of the Swiss-market research. The detailed sections below (§3 moat, §4 weakness) flesh out the S and W; this is the at-a-glance.*
+
+**STRENGTHS — what's actually yours**
+- You speak Swiss. The dine-in 8.1 / takeaway 2.6 split is the law above 20 seats and the foreign tills fudge it. You don't.
+- You show up. With SAP, Felix is ticket #84,000. With you, the person who built it walks into his shop. Nobody can buy that back.
+- Cheap to *own*, not just cheap to start. No per-seat bleed, no consultant, no audit true-up — and you're the installer.
+- You sell Monday morning, not a database — software + SOPs + AI help. The part no big guy bundles.
+- Continuity *proof*, not a promise: nightly backup that test-restores itself.
+
+**WEAKNESSES — the soft spots, named honest**
+- One man. Sick, gone, hit by a bus — the real fear, and it's fair.
+- No 24/7, no call center, no "500 engineers." Small support surface.
+- Not feature-deep, never will be against Odoo or Abacus. Don't pretend otherwise.
+- Thin proof. Felix is the *template*, not yet the *case study with a payback number*. One live shop isn't a track record.
+
+**OPPORTUNITIES — the open water**
+- Soft Swiss law is a gift on the *demand* side: nobody's been forced to modernize, so the paper/Excel installed base is enormous and untouched. Greenfield.
+- The thresholds are timed knock-on-the-door moments: crossing **CHF 100k** → suddenly owes quarterly VAT; crossing **CHF 500k** → suddenly owes real books. That's when the notebook hurts — that's the entry.
+- The gap is genuinely empty: nobody serves the 25-seat CBD/cafe with Swiss-correct fit *plus* a human who shows up.
+- bexio/Abacus are accounting-first with a thin generic till — room to be the *POS layer* that feeds them, not fight them.
+- The steward guild is the distribution answer — and softens the bus-factor.
+
+**THREATS — what bites back**
+- The same soft law is the biggest enemy on the *sell* side: no legal gun to anyone's head means "you don't *have* to switch" is always true. You manufacture the urgency yourself.
+- A motivated incumbent (bexio/KLARA) *could* localize the VAT split tomorrow. The moat is execution + relationships, not a tech wall — speed and closeness are the whole defense.
+- The good-enough trap: SumUp/Square/Lightspeed are cheap, easy, foreign, "fine for now." You lose shops to *fine-for-now* more than to SAP.
+- The real bottleneck isn't software — it's money and being alone (see [SOLO-FOUNDER-PLAN.md](SOLO-FOUNDER-PLAN.md)). And squeezed CBD margins mean cash-careful customers.
+
+> **The one-liner that falls out of it:** *The law won't sell Banco for you — so stop trying to scare them and start saving them their evening. The pain is real even when the fine isn't.*
+
+---
+
 ## 3. THE MOAT — and none of it is feature-count
 
 You will never out-feature Odoo. Don't try. You win on what doesn't fit in a feature matrix:
