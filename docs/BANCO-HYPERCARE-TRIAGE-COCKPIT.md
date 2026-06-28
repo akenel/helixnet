@@ -73,6 +73,21 @@ cleaned + SLA lifecycle + points. Decide → ship (even straight to prod within 
 
 ---
 
+## Dedup (Angel) — don't make the same ticket twice
+
+Before creating a new clean ticket, the AI checks OPEN tickets for similarity (title/description,
+later embeddings). If it's a likely repeat → don't duplicate; reply to the reporter: *"We already
+have **BL-X — '{title}'**. Confirm and we'll add your note to it."* Two people (or the same person
+hours later, not knowing it's logged) get merged onto one ticket + their info appended.
+
+## User-facing view (Angel) — "is my ticket being worked on?"
+
+Hung off the **diagnostics / 📊 button** (NOT the cockpit): a **read-only** "my tickets / my team"
+list + a little **scorecard** (how many open, ticket numbers, what stage). Drill into a ticket for
+a clean read-only view; the cashier can **add a note + confirm** (the confirm-back loop) but NOT
+edit. Plus a **"software updates"** button = a changelog of what shipped (so they see their
+feedback turned into a real change). Full QA/cockpit access stays role-gated (across realms).
+
 ## Build phases (smallest-magic-first)
 
 - **PoC-1 — the Triage Brain (build first).** A script: take ONE backlog ticket (messy title +
