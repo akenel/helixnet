@@ -3209,29 +3209,32 @@ async def triage_pending_feedback(
     from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
     from src.services.feedback_triage import triage_feedback
 
-    # Feedback tickets with NO ai-triage activity yet (idempotent).
+    # Feedback tickets with NO ai-triage activity yet (idempotent). Select COLUMNS, not the
+    # ORM entity — screenshot_data is a big/deferred column, and lazy-loading it on an entity
+    # would do sync IO in async context (MissingGreenlet). Plain columns = already loaded.
     already = (select(BacklogActivityModel.id)
                .where(BacklogActivityModel.item_id == BacklogItemModel.id,
                       BacklogActivityModel.actor == "ai-triage").exists())
-    items = (await db.execute(
-        select(BacklogItemModel)
+    rows = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
+               BacklogItemModel.description, BacklogItemModel.screenshot_data)
         .where(BacklogItemModel.tags.ilike("%feedback%"), ~already)
         .order_by(BacklogItemModel.created_at.desc())
-        .limit(max(1, min(int(limit or 5), 25))))).scalars().all()
+        .limit(max(1, min(int(limit or 5), 25))))).all()
 
     out = []
-    for item in items:
-        shot, mime = _decode_data_url(item.screenshot_data)
+    for r in rows:
+        shot, mime = _decode_data_url(r.screenshot_data)
         res = await triage_feedback(
-            title=item.title, description=item.description or "", metadata=None,
+            title=r.title, description=r.description or "", metadata=None,
             screenshot=shot, screenshot_mime=mime or "image/png")
         clean = res["clean"]
         db.add(BacklogActivityModel(
-            item_id=item.id, activity_type=BacklogActivityType.COMMENT, actor="ai-triage",
-            old_value=json.dumps({"title": item.title, "description": item.description})[:4000],
+            item_id=r.id, activity_type=BacklogActivityType.COMMENT, actor="ai-triage",
+            old_value=json.dumps({"title": r.title, "description": r.description})[:4000],
             new_value=json.dumps(clean)[:4000],
             comment=f"AI triage (model={res['model'] or 'fallback'}, ai={res['ai']})"))
-        out.append({"item_number": item.item_number, "ai": res["ai"],
+        out.append({"item_number": r.item_number, "ai": res["ai"],
                     "clean_title": clean.get("title"), "type": clean.get("type"),
                     "severity": clean.get("severity"), "confidence": clean.get("confidence"),
                     "decipherable": clean.get("decipherable")})
