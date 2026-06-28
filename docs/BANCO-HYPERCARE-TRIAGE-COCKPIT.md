@@ -88,6 +88,25 @@ a clean read-only view; the cashier can **add a note + confirm** (the confirm-ba
 edit. Plus a **"software updates"** button = a changelog of what shipped (so they see their
 feedback turned into a real change). Full QA/cockpit access stays role-gated (across realms).
 
+## Shared image tool (Angel) — clean photos + annotate screenshots
+
+A reusable in-POS image editor, used in TWO places:
+- **Product photos (catalog):** a quick snap → auto **white-background cleanup** + crop, so a
+  phone photo becomes a clean catalog/listing image (pairs with Snap-&-fill vision).
+- **Feedback screenshots:** **annotate** — circle "this is wrong", crop, arrow "move this here" —
+  before submitting, so the AI (and the human) get a far clearer signal. One tool, both jobs.
+*Moderate build (canvas draw/crop + a bg-removal model/service). Backlog.*
+
+## Productization (Angel) — feedback-widget-as-a-plugin
+
+The end-game: the 💬 button is a **drop-in widget** on ANY client's site; the backend is OUR
+AI-QA ticketing (no Jira). The reporter **opens AND closes their own loop**: AI triages → user
+confirms ("yes that's what I meant") → dev fixes → verify sandbox→staging→prod → the SAME user
+confirms it's fixed and closes it (a hypercare re-check ticket). Delivered + run by stewards.
+This is the steward/distribution model made concrete → see [[steward-guild-why-now]] [[solo-founder-plan]].
+**Do a market study first** (Userback/Marker.io/BugHerd/Usersnap/Jam.dev do capture; AI-triage is
+emerging; the user-closes-their-own-loop + owned backend + steward delivery looks like the gap).
+
 ## Build phases (smallest-magic-first)
 
 - **PoC-1 — the Triage Brain (build first).** A script: take ONE backlog ticket (messy title +
