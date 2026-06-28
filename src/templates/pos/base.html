@@ -850,19 +850,17 @@
          (Felix: "the feedback button is over it... drag it out of the way").
          Defaults to mid-right edge — clear of both the header and the bottom
          action row — and remembers wherever it's dragged (localStorage). */
-      /* Default to the bottom-right corner, ABOVE the bottom nav + status bar, so it never
-         sits over content (it used to be pinned center-right = worst spot; Felix had to drag
-         it). Still draggable; a saved position overrides this. */
-      .lpfb-btn{position:fixed;right:14px;bottom:104px;top:auto;z-index:70;display:none;align-items:center;gap:7px;
-        padding:10px 15px;border:none;border-radius:999px;background:#C0392B;color:#fff;font:700 14px Inter,system-ui,sans-serif;
-        cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+      /* A small circular 💬 FAB in the bottom-right corner, ABOVE the bottom nav, so it never
+         sits over content (it used to be a wide pill pinned center-right = worst spot; Felix
+         had to drag it). Icon only — the title gives the label on hover. Still draggable. */
+      .lpfb-btn{position:fixed;right:14px;bottom:104px;top:auto;z-index:70;display:none;
+        align-items:center;justify-content:center;width:48px;height:48px;padding:0;
+        border:none;border-radius:50%;background:#C0392B;color:#fff;font-size:22px;line-height:1;
+        cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;opacity:.92;
+        box-shadow:0 6px 20px rgba(0,0,0,.35)}
+      .lpfb-btn .lpfb-label{display:none}
       .lpfb-btn.dragging{cursor:grabbing;opacity:.85}
-      .lpfb-btn:hover{background:#8B0000}
-      /* On a phone: a compact circular 💬 (drop the label) so it's a small unobtrusive FAB. */
-      @media (max-width:480px){
-        .lpfb-btn{padding:0;width:46px;height:46px;justify-content:center;font-size:20px;border-radius:50%;gap:0;opacity:.92}
-        .lpfb-btn .lpfb-label{display:none}
-      }
+      .lpfb-btn:hover{background:#8B0000;opacity:1}
       .lpfb-ov{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
         background:rgba(2,6,12,.7);backdrop-filter:blur(3px);padding:16px;font-family:Inter,system-ui,sans-serif}
       .lpfb-card{width:100%;max-width:430px;background:#0b1220;border:1px solid rgba(48,63,84,.8);border-radius:14px;
@@ -920,7 +918,7 @@
         color:#cbd5e1;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px}
       .lpfb-board:hover{border-color:#34d399;color:#fff}
     </style>
-    <button class="lpfb-btn" id="lpfb-open">💬<span class="lpfb-label">&nbsp;Feedback</span></button>
+    <button class="lpfb-btn" id="lpfb-open" title="Send feedback" aria-label="Send feedback">💬<span class="lpfb-label">&nbsp;Feedback</span></button>
     <div class="lpfb-ov" id="lpfb-ov">
       <div class="lpfb-card" role="dialog" aria-modal="true" aria-label="Send feedback">
         <div id="lpfb-form">
