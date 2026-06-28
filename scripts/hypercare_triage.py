@@ -18,8 +18,7 @@ import re
 import sys
 
 from sqlalchemy import desc, select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from src.core.config import get_settings
 from src.db.models.backlog_model import (
@@ -44,7 +43,7 @@ async def main(item_number=None):
     # Build a fresh async engine INSIDE the running loop (a module-level engine made at
     # import time binds its pool to no-loop → greenlet error in a standalone script).
     engine = create_async_engine(get_settings().POSTGRES_ASYNC_URI)
-    Session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    Session = async_sessionmaker(engine, expire_on_commit=False)
     async with Session() as db:
         q = select(BacklogItemModel)
         if item_number:
