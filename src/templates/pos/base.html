@@ -712,9 +712,80 @@
         <div class="status-section">
             <span id="status-screen" class="sm-hide" title="screen">{% block page_name %}POS{% endblock %}</span>
             <span title="cashier">👤 <span id="status-user">--</span></span>
+            <button id="bell-open" title="Notifications" style="position:relative;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🔔<span id="bell-badge" style="display:none;position:absolute;top:-6px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:14px;height:14px;line-height:14px;border-radius:7px;padding:0 3px;text-align:center;">0</span></button>
             <button id="pulse-open" title="Shop Pulse — live stats" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">📊</button>
         </div>
     </footer>
+
+    <!-- ===== Reporter Bell: a user's own notifications (Hypercare PoC-3) ===== -->
+    <style>
+      .bell-panel{position:fixed;right:10px;bottom:54px;z-index:90;width:min(340px,92vw);max-height:60vh;
+        display:none;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+        box-shadow:0 12px 40px rgba(2,6,12,.28);overflow:hidden;font-family:Inter,system-ui,sans-serif}
+      .bell-panel.open{display:flex}
+      .bell-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #f1f5f9}
+      .bell-head b{font-size:14px;color:#0f172a}
+      .bell-head button{background:none;border:none;color:#6366f1;font-size:12px;cursor:pointer;font-weight:600}
+      .bell-list{overflow-y:auto;padding:4px}
+      .bell-item{padding:10px 10px;border-radius:8px;display:block}
+      .bell-item:hover{background:#f8fafc}
+      .bell-item.unread{background:#eef2ff}
+      .bell-item .t{font-size:13px;font-weight:700;color:#0f172a}
+      .bell-item .b{font-size:12px;color:#475569;margin-top:2px;line-height:1.35}
+      .bell-item .ts{font-size:10px;color:#94a3b8;margin-top:3px}
+      .bell-empty{padding:24px 12px;text-align:center;color:#94a3b8;font-size:13px}
+    </style>
+    <div class="bell-panel" id="bell-panel">
+      <div class="bell-head">
+        <b>🔔 Notifications</b>
+        <button id="bell-markread">Mark all read</button>
+      </div>
+      <div class="bell-list" id="bell-list">
+        <div class="bell-empty">No notifications yet.</div>
+      </div>
+    </div>
+    <script>
+    (function(){
+      var panel=document.getElementById('bell-panel'), list=document.getElementById('bell-list'),
+          badge=document.getElementById('bell-badge'), btn=document.getElementById('bell-open'),
+          mark=document.getElementById('bell-markread');
+      if(!btn) return;
+      function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+      function ago(s){ if(!s) return ''; var d=new Date(s), m=Math.round((Date.now()-d)/60000);
+        if(m<1) return 'just now'; if(m<60) return m+'m ago'; var h=Math.round(m/60);
+        if(h<24) return h+'h ago'; return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit'}); }
+      function render(d){
+        var items=d.items||[];
+        badge.style.display = d.unread>0 ? 'inline-block':'none';
+        badge.textContent = d.unread>9 ? '9+' : d.unread;
+        if(!items.length){ list.innerHTML='<div class="bell-empty">No notifications yet.</div>'; return; }
+        list.innerHTML = items.map(function(n){
+          var inner='<div class="t">'+esc(n.title)+'</div><div class="b">'+esc(n.body)+'</div><div class="ts">'+ago(n.created_at)+'</div>';
+          var cls='bell-item'+(n.read?'':' unread');
+          return n.link ? '<a class="'+cls+'" href="'+esc(n.link)+'">'+inner+'</a>'
+                        : '<div class="'+cls+'">'+inner+'</div>';
+        }).join('');
+      }
+      function load(){
+        if(!(window.token&&token())) return;
+        API.get('/api/v1/pos/notifications?limit=20').then(render).catch(function(){});
+      }
+      btn.addEventListener('click',function(e){
+        e.stopPropagation();
+        var opening=!panel.classList.contains('open');
+        panel.classList.toggle('open', opening);
+        if(opening && badge.style.display!=='none'){
+          API.post('/api/v1/pos/notifications/read',{}).then(function(){ badge.style.display='none'; load(); }).catch(function(){});
+        }
+      });
+      mark&&mark.addEventListener('click',function(e){ e.stopPropagation();
+        API.post('/api/v1/pos/notifications/read',{}).then(load).catch(function(){}); });
+      document.addEventListener('click',function(e){ if(!panel.contains(e.target)&&e.target!==btn) panel.classList.remove('open'); });
+      // first load shortly after boot, then poll quietly
+      setTimeout(load, 1500);
+      setInterval(load, 45000);
+    })();
+    </script>
 
     <!-- ===== Shop Pulse: a live system card behind the 📊 (replaces the dead /health link) ===== -->
     <style>

@@ -92,6 +92,9 @@ from .qa_test_result_model import QATestResultModel, TestStatus, QABugReportMode
 # Backlog (Unified Board -- dev tasks, bug fixes, camper jobs, business ops)
 from .backlog_model import BacklogItemModel, BacklogItemType, BacklogStatus, BacklogPriority, BacklogActivityModel, BacklogActivityType
 
+# POS in-app notifications (Hypercare reporter bell)
+from .pos_notification_model import POSNotificationModel
+
 # LPCX -- La Piazza Compute Exchange (jobs + credit ledger + template catalog)
 from .compute_model import (
     ComputeJobModel, ComputeJobStatus, ComputeLedgerModel, ComputeLedgerKind,
@@ -255,6 +258,7 @@ __all__ = [
     "BacklogPriority",
     "BacklogActivityModel",
     "BacklogActivityType",
+    "POSNotificationModel",
     # LPCX -- La Piazza Compute Exchange
     "ComputeJobModel",
     "ComputeJobStatus",

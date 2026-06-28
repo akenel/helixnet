@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFi
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, update
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
@@ -3207,6 +3207,7 @@ async def triage_pending_feedback(
     Runs INSIDE the app (working async session) — unlike a standalone script. Idempotent:
     a ticket that already has an `ai-triage` activity is skipped, so no re-triage/double-work."""
     from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    from src.db.models.pos_notification_model import POSNotificationModel
     from src.services.feedback_triage import triage_feedback
 
     # Feedback tickets with NO ai-triage activity yet (idempotent). Select COLUMNS, not the
@@ -3217,7 +3218,8 @@ async def triage_pending_feedback(
                       BacklogActivityModel.actor == "ai-triage").exists())
     rows = (await db.execute(
         select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
-               BacklogItemModel.description, BacklogItemModel.screenshot_data)
+               BacklogItemModel.description, BacklogItemModel.screenshot_data,
+               BacklogItemModel.created_by)
         .where(BacklogItemModel.tags.ilike("%feedback%"), ~already)
         .order_by(BacklogItemModel.created_at.desc())
         .limit(max(1, min(int(limit or 5), 25))))).all()
@@ -3240,6 +3242,14 @@ async def triage_pending_feedback(
                 "original": {"title": r.title, "description": r.description},
                 "clean": clean, "vision": res.get("vision"),
             }, ensure_ascii=False)))
+        # Ring the reporter's bell — they never see the AI, just "we're on it".
+        if r.created_by and r.created_by not in ("unknown", "ai-triage"):
+            ct = (clean.get("title") or r.title or "your feedback")[:160]
+            db.add(POSNotificationModel(
+                recipient=r.created_by, kind="triaged", item_number=r.item_number,
+                title="🛠️ We're on it",
+                body=f"BL-{r.item_number:03d} — “{ct}” — thanks, we're looking into it now.",
+                link=None))   # → /pos/my-tickets once the user-facing view ships (next increment)
         out.append({"item_number": r.item_number, "ai": res["ai"],
                     "clean_title": clean.get("title"), "type": clean.get("type"),
                     "severity": clean.get("severity"), "confidence": clean.get("confidence"),
@@ -3301,6 +3311,53 @@ async def hypercare_queue(
                 and i["triaged"].get("clean", {}).get("decipherable") is False)
     return {"total": len(items), "triaged": triaged_n, "untriaged": len(items) - triaged_n,
             "undecipherable": undec, "items": items}
+
+
+@router.get("/notifications")
+async def my_notifications(
+    limit: int = 20,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The reporter BELL — a user's own in-app notifications + unread count. Any POS user
+    sees ONLY their own (recipient = their username)."""
+    from src.db.models.pos_notification_model import POSNotificationModel
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    rows = (await db.execute(
+        select(POSNotificationModel.id, POSNotificationModel.kind, POSNotificationModel.title,
+               POSNotificationModel.body, POSNotificationModel.item_number,
+               POSNotificationModel.link, POSNotificationModel.read_at,
+               POSNotificationModel.created_at)
+        .where(POSNotificationModel.recipient == me)
+        .order_by(POSNotificationModel.created_at.desc())
+        .limit(max(1, min(int(limit or 20), 50))))).all()
+    unread = (await db.execute(
+        select(func.count()).select_from(POSNotificationModel)
+        .where(POSNotificationModel.recipient == me,
+               POSNotificationModel.read_at.is_(None)))).scalar() or 0
+    items = [{
+        "id": str(r.id), "kind": r.kind, "title": r.title, "body": r.body,
+        "item_number": r.item_number, "link": r.link,
+        "read": r.read_at is not None,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    } for r in rows]
+    return {"unread": int(unread), "items": items}
+
+
+@router.post("/notifications/read")
+async def mark_notifications_read(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Mark ALL of the current user's notifications as read (bell opened)."""
+    from src.db.models.pos_notification_model import POSNotificationModel
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    await db.execute(
+        update(POSNotificationModel)
+        .where(POSNotificationModel.recipient == me, POSNotificationModel.read_at.is_(None))
+        .values(read_at=datetime.now(timezone.utc)))
+    await db.commit()
+    return {"ok": True}
 
 
 # ================================================================
