@@ -83,12 +83,12 @@
                 <template x-for="p in results" :key="p.id">
                     <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                          :class="p.is_active === false ? 'opacity-60' : ''">
-                        <div class="w-14 h-14 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden">
+                        <div @click="openDetail(p)" title="Tap for details" class="w-14 h-14 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden cursor-pointer">
                             <img x-show="p.image_url" :src="p.image_url" loading="lazy" alt=""
                                  class="w-full h-full object-cover" @error="p.image_url=''">
                             <span x-show="!p.image_url" class="text-2xl">📦</span>
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div @click="openDetail(p)" title="Tap for details" class="flex-1 min-w-0 cursor-pointer">
                             <div class="flex items-center gap-2">
                                 <p class="font-semibold text-gray-900 truncate" x-text="p.name"></p>
                                 <span x-show="p.is_age_restricted" class="flex-none inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5">🔞 18+</span>
@@ -100,6 +100,7 @@
                                 <span x-show="p.category"> · <span x-text="p.category"></span></span>
                             </p>
                             <p class="text-base sm:text-lg font-bold text-indigo-600 truncate" x-text="formatPrice(p.price)"></p>
+                            <p class="text-xs text-indigo-400">Tap for details ›</p>
                         </div>
                         <div class="text-right flex-none">
                             <div>
@@ -121,6 +122,54 @@
                     class="btn-secondary w-full mt-3">
                 Show more (<span x-text="total - results.length"></span> more)
             </button>
+        </div>
+    </div>
+
+    <!-- Product detail / PREVIEW modal (read-only look at the item; Edit is separate) -->
+    <div x-show="detailProduct" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="detailProduct=null" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start p-5 border-b">
+                <h2 class="text-xl font-bold text-gray-900 pr-4" x-text="detailProduct?.name"></h2>
+                <button @click="detailProduct=null" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-5 p-5">
+                <div>
+                    <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden">
+                        <img x-show="detailProduct?.image_url" :src="detailProduct?.image_url" class="w-full h-full object-contain" @error="if(detailProduct) detailProduct.image_url=''" alt="">
+                        <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
+                    </div>
+                    <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
+                    <div class="flex gap-2 mt-2">
+                        <span x-show="detailProduct?.is_age_restricted" class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5">🔞 18+</span>
+                        <span x-show="detailProduct?.promo_restricted" class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5">🚫 no promo</span>
+                    </div>
+                    <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
+                            class="btn-primary w-full mt-4">✏️ Edit this product</button>
+                </div>
+                <div class="text-sm">
+                    <h3 class="font-semibold text-gray-900 mb-2">Details</h3>
+                    <dl class="divide-y border-y">
+                        <div class="flex justify-between py-2"><dt class="text-gray-500">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500">Barcode</dt><dd class="font-medium text-right break-all" x-text="detailProduct?.barcode"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.category"><dt class="text-gray-500">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.product_class"><dt class="text-gray-500">Class</dt><dd class="font-medium text-right" x-text="detailProduct?.product_class"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-500">Stock (info)</dt><dd class="font-medium text-right" x-text="(detailProduct?.stock_quantity ?? 0) + ' (not a sell gate)'"></dd></div>
+                    </dl>
+                    <template x-if="detailProduct?.description">
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-gray-900 mb-1">Description</h3>
+                            <p class="text-gray-700" x-text="detailProduct?.description"></p>
+                        </div>
+                    </template>
+                    <template x-if="detailProduct?.tags">
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-gray-900 mb-1">Tags</h3>
+                            <p class="text-gray-600" x-text="detailProduct?.tags"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -302,6 +351,7 @@
             sort: '',
             pageSize: 25,
             loading: false,
+            detailProduct: null,   // product shown in the read-only preview modal
             showDiscontinued: false,
 
             modalOpen: false,
@@ -514,6 +564,20 @@
                 if (img.is_cover) return;
                 try { await API.put(`/api/v1/pos/products/${this.form.id}/images/${img.id}/cover`, {}); await this.loadGallery(this.form.id); }
                 catch (e) { showToast('Could not set cover', 'error'); }
+            },
+
+            // Read-only preview — tap a product's image/info to SEE it (distinct from Edit).
+            // Pam and Felix both get this; the Edit button inside is manager-only. Show the
+            // list row immediately, then enrich with the full record (description/supplier/tags
+            // aren't in the search payload).
+            async openDetail(p) {
+                this.detailProduct = p;
+                try {
+                    const full = await API.get(`/api/v1/pos/products/${p.id}`);
+                    if (this.detailProduct && this.detailProduct.id === p.id) {
+                        this.detailProduct = { ...full, promo_restricted: p.promo_restricted };
+                    }
+                } catch (e) { /* keep the list-row data */ }
             },
 
             async openEdit(p) {
