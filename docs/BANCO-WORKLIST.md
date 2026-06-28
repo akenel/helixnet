@@ -8,6 +8,16 @@
 
 ---
 
+## ⚠️ FIRST THING TOMORROW — identity terminal collision recovery
+Tonight's Product Sales deploy (`checkout --force origin/main` on the sandbox + banco-staging box trees) **reverted the identity terminal's uncommitted code patches** on those two envs (orphan `.bak`s prove it). PROD untouched + safe. The identity terminal still holds its **3 fix commits** — nothing lost. Fix:
+- [ ] Identity terminal: **land the 3 commits onto `main` (`92aabaa`) + push.** (It was waiting for this terminal to finish on main — now done.)
+- [ ] Then **redeploy sandbox + banco-staging from updated main** (restores the fixes, committed this time).
+- [ ] **Don't** `make sandbox-deploy` / force-checkout sandbox|staging before that — it just re-reverts.
+- [ ] Verify prod actually carries the fold (its tree source matches plain main — may be KC-realm config, not code).
+*Full detail: memory `banco-terminal-collision-2026-06-28`.*
+
+---
+
 ## 🔥 RIGHT NOW — tonight, 5 minutes, your hands
 - [ ] **Test the Product Sales report** on staging (Fairphone): https://staging-banco.lapiazza.app/pos/reports/products (login *felix*). Tap a product → "who bought it", try Export CSV + Print. **If it's good → tell Tigs "ship it" → it's on prod in one clean step** (already committed `9dc9641`, no migration). 🧍
 
