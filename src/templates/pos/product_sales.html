@@ -37,7 +37,7 @@
                 <button @click="goTransactions()" class="btn-secondary">💳 Transactions</button>
             </div>
         </div>
-        <p class="text-gray-600 mb-4 no-print">What sold &mdash; by quantity and revenue. Tap a product to see <span class="font-semibold">who bought it</span>.</p>
+        <p class="text-gray-600 mb-4 no-print">What sold &mdash; by quantity and revenue. Tap <span class="font-semibold text-indigo-600">👥 Who bought it</span> on any product to see every buyer. Showing <span class="font-semibold" x-text="presets.find(p => p.key === activePreset)?.label || 'custom range'"></span> &mdash; use the buttons below for a wider range.</p>
 
         <!-- Date range -->
         <div class="card mb-4 no-print">
@@ -118,11 +118,16 @@
                 </thead>
                 <tbody>
                     <template x-for="p in sortedProducts()" :key="p.name + (p.product_id || '')">
-                        <tr class="border-b last:border-0 hover:bg-indigo-50 cursor-pointer"
+                        <tr class="border-b last:border-0"
+                            :class="p.product_id ? 'hover:bg-indigo-50 cursor-pointer' : ''"
                             @click="p.product_id && openDrill(p)">
                             <td class="py-2 font-medium">
-                                <span x-text="p.name"></span>
-                                <span x-show="p.product_id" class="text-indigo-400 no-print">›</span>
+                                <div x-text="p.name"></div>
+                                <button x-show="p.product_id" @click.stop="openDrill(p)"
+                                        class="no-print mt-1 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-full px-2 py-0.5 active:bg-indigo-100">
+                                    👥 Who bought it ›
+                                </button>
+                                <span x-show="!p.product_id" class="no-print text-xs text-gray-400">one-off item</span>
                             </td>
                             <td class="py-2 text-gray-600" x-text="p.category"></td>
                             <td class="py-2 text-right" x-text="p.qty_sold"></td>
