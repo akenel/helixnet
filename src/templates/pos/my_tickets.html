@@ -163,17 +163,21 @@ function myTickets() {
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
       finally { this.loading = false; }
     },
-    // Plain-language "first read" of the report, from the AI's type + severity.
+    // Plain-language "first read" of the report. Tolerant of however the AI worded
+    // type/severity (it doesn't always stick to fixed labels).
     assess(t) {
       if (!t.understood || t.merged_into) return null;
-      const kinds = { bug:{e:'🐞',w:'a bug'}, idea:{e:'💡',w:'an idea'}, cosmetic:{e:'🎨',w:'a visual tweak'},
-                      question:{e:'❓',w:'a question'}, other:{e:'📌',w:'a note'} };
-      const km = kinds[(t.kind||'').toLowerCase()] || kinds.other;
-      const s = (t.severity||'').toLowerCase();
+      const k = (t.kind || '').toLowerCase(), s = (t.severity || '').toLowerCase();
+      let km;
+      if (/bug|error|broke|crash|fault/.test(k)) km = { e:'🐞', w:'a bug' };
+      else if (/feature|idea|request|enhanc|improv|nice/.test(k)) km = { e:'💡', w:'an idea' };
+      else if (/ui|visual|cosmetic|layout|style|design/.test(k)) km = { e:'🎨', w:'a visual tweak' };
+      else if (/question|how|help/.test(k)) km = { e:'❓', w:'a question' };
+      else km = { e:'📌', w:'a note' };
       let effort = '';
-      if (s === 'cosmetic') effort = 'a small visual fix';
-      else if (s === 'annoying') effort = 'a minor fix';
-      else if (s === 'blocking') effort = 'important — bumped up the list';
+      if (/cosmetic|trivial|low|minor/.test(s)) effort = 'a small one';
+      else if (/annoy|medium|moderate/.test(s)) effort = 'a minor fix';
+      else if (/block|high|critical|severe|urgent/.test(s)) effort = 'important — bumped up the list';
       return { emoji: km.e, text: 'Looks like ' + km.w + (effort ? ' · ' + effort : '') };
     },
     async confirm(t) {
