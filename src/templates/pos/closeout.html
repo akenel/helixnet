@@ -32,12 +32,12 @@
         <div class="card">
 
             <!-- Shift Summary (Auto-calculated) -->
-            <div class="bg-indigo-50 rounded-lg p-6 mb-6">
+            <div class="bg-indigo-50 rounded-lg p-4 sm:p-6 mb-6">
                 <h2 class="text-xl font-semibold text-indigo-900 mb-4">📊 Shift Summary</h2>
-                <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
                     <div>
                         <p class="text-gray-600">Cashier:</p>
-                        <p class="font-semibold" x-text="user.username"></p>
+                        <p class="font-semibold truncate" x-text="user.username"></p>
                     </div>
                     <div>
                         <p class="text-gray-600">Shift Time:</p>
@@ -45,11 +45,11 @@
                     </div>
                     <div>
                         <p class="text-gray-600">Transactions:</p>
-                        <p class="font-semibold text-2xl" x-text="summary.transactionCount"></p>
+                        <p class="font-semibold text-xl sm:text-2xl" x-text="summary.transactionCount"></p>
                     </div>
                     <div>
                         <p class="text-gray-600">Total Sales:</p>
-                        <p class="font-semibold text-2xl text-green-600" x-text="formatPrice(summary.totalSales)"></p>
+                        <p class="font-semibold text-xl sm:text-2xl text-green-600 truncate" x-text="formatPrice(summary.totalSales)"></p>
                     </div>
                     <div>
                         <p class="text-gray-600">Cash:</p>

@@ -11,7 +11,7 @@
             <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
             <span x-show="transaction.status === 'refunded'" class="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-semibold">REFUNDED</span>
         </div>
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-2">
             <button x-show="transaction.status === 'completed' && canRefund" @click="showRefundModal()" class="btn-danger">
                 ↩️ Refund
             </button>
@@ -68,7 +68,7 @@
     </div>
 
     <!-- A4 Receipt Container -->
-    <div class="max-w-4xl mx-auto p-8 print:p-0">
+    <div class="max-w-4xl mx-auto p-2 sm:p-8 print:p-0">
         <!-- Receipt Paper (A4 optimized) -->
         <div class="bg-white shadow-2xl print:shadow-none receipt-page" style="min-height: 297mm;">
             <!-- Watermark -->
@@ -327,6 +327,16 @@
     .receipt-page {
         position: relative;
         z-index: 1;
+    }
+
+    /* Screen on a phone (NOT print): the receipt is A4-shaped, so the big watermark +
+       generous padding push it wider than the screen. Trim them for on-screen mobile;
+       the @media print block above is untouched, so a printed receipt is unchanged. */
+    @media screen and (max-width: 480px) {
+        .receipt-page { padding: 10px; }
+        .receipt-page .watermark { font-size: 56px; }
+        .receipt-page .p-8 { padding: 12px; }
+        .receipt-page .text-3xl { font-size: 1.5rem; }
     }
 </style>
 

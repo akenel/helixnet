@@ -200,7 +200,7 @@
                     <!-- How busy -->
                     <div class="mb-3">
                         <label class="block text-xs font-semibold text-gray-600 mb-1">How busy was it?</label>
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
                             <template x-for="lvl in ['busy','steady','slow']" :key="lvl">
                                 <button @click="survey.busy_level = (survey.busy_level === lvl ? '' : lvl)" type="button"
                                         class="px-4 py-2 rounded-lg font-semibold border-2 capitalize transition"

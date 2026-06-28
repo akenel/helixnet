@@ -8,8 +8,8 @@
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h1 class="text-3xl font-bold text-gray-900">📊 Sales Reports</h1>
-            <div class="flex space-x-2">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">📊 Sales Reports</h1>
+            <div class="flex flex-wrap gap-2">
                 <button @click="goDashboard()" class="btn-secondary">🏠 Dashboard</button>
                 <button @click="goProductSales()" class="btn-secondary">📦 Product Sales</button>
                 <button @click="goTransactions()" class="btn-secondary">💳 All Transactions</button>
@@ -38,18 +38,18 @@
         </div>
 
         <!-- Day at a glance -->
-        <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">Avg basket</p>
-                <p class="text-2xl font-bold text-teal-600" x-text="formatPrice(summary.average_sale)"></p>
+                <p class="text-lg sm:text-2xl font-bold text-teal-600 truncate" x-text="formatPrice(summary.average_sale)"></p>
             </div>
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">Items sold</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="summary.items_sold"></p>
+                <p class="text-lg sm:text-2xl font-bold text-gray-900 truncate" x-text="summary.items_sold"></p>
             </div>
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">Busiest hour</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="summary.busiest_hour || '—'"></p>
+                <p class="text-lg sm:text-2xl font-bold text-gray-900 truncate" x-text="summary.busiest_hour || '—'"></p>
             </div>
         </div>
 
