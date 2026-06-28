@@ -203,6 +203,28 @@
             color: #4f46e5;                  /* indigo-600 */
         }
 
+        /* ===== PHONE SIZING (≤480px) — same design, right-sized ==========================
+           The components above are tuned BIG for a counter tablet (fat-finger taps). On a
+           phone the screen shrank but the finger didn't, so we keep tap targets ≥44px tall
+           (Apple HIG) while trimming font + padding so content fits and reads like a native
+           app instead of a blown-up tablet. Tablet/desktop are unaffected. */
+        @media (max-width: 480px) {
+            .btn-primary, .btn-secondary, .btn-danger, .btn-success {
+                font-size: 0.9375rem;        /* 15px */
+                padding: 0.5rem 1rem;        /* was 1rem 2rem — far less monstrous */
+                min-height: 44px;            /* still a comfortable thumb target */
+                gap: .35rem;
+            }
+            .input-field {
+                font-size: 1rem;             /* was 1.125rem — lets a full date show, no clipping */
+                padding: 0.625rem 0.75rem;   /* ~44px tall, fits the value */
+                border-radius: 0.5rem;
+            }
+            .price-display      { font-size: 1.25rem; }   /* was 1.875rem */
+            .price-display-large{ font-size: 1.875rem; }  /* was 3rem */
+            .card               { padding: 1rem; }        /* was 1.5rem — reclaims content width */
+        }
+
         /* Status Footer - Minimal pulse check for Felix */
         .helix-status-bar {
             position: fixed;
