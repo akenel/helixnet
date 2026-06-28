@@ -3229,11 +3229,17 @@ async def triage_pending_feedback(
             title=r.title, description=r.description or "", metadata=None,
             screenshot=shot, screenshot_mime=mime or "image/png")
         clean = res["clean"]
+        # old/new_value are varchar(200) → short titles only; the FULL dual-version payload
+        # (original + cleaned + vision + model) lives in `comment` (Text, unlimited).
         db.add(BacklogActivityModel(
             item_id=r.id, activity_type=BacklogActivityType.COMMENT, actor="ai-triage",
-            old_value=json.dumps({"title": r.title, "description": r.description})[:4000],
-            new_value=json.dumps(clean)[:4000],
-            comment=f"AI triage (model={res['model'] or 'fallback'}, ai={res['ai']})"))
+            old_value=(r.title or "")[:200],
+            new_value=(clean.get("title") or "")[:200],
+            comment=json.dumps({
+                "ai": res["ai"], "model": res["model"],
+                "original": {"title": r.title, "description": r.description},
+                "clean": clean, "vision": res.get("vision"),
+            }, ensure_ascii=False)))
         out.append({"item_number": r.item_number, "ai": res["ai"],
                     "clean_title": clean.get("title"), "type": clean.get("type"),
                     "severity": clean.get("severity"), "confidence": clean.get("confidence"),
