@@ -2,6 +2,12 @@
 
 *Single resume point after a compaction. Detail lives in memory files + the docs linked below.*
 
+## 🟢🟢 PROD (2026-06-28): Hypercare LIVE on banco.lapiazza.app + prod tree CLEANED
+- TEST-HC2 17/17 on staging → shipped to PROD. Verified backup of `banco_prod` first (`/opt/backups/banco/banco_prod-prehypercare-20260628-204141.sql.gz`, restore-tested→products=13→dropped).
+- **"Fix everything" DONE**: the prod tree was an overlay-pile but PROVED to be `main` minus hypercare (zero orphaned overlays — the identity prod-fold CODE was already merged to main; only its KC realm config lives in Keycloak, untouched). Overlaid `main`→prod `src/` → `git diff origin/main` = **ZERO** → removed 5 `.bak` junk → aligned HEAD to `origin/main` (`cced8cc`, **0 changed files = pristine checkout**). `pos_notifications` auto-created in `banco_prod`. Brain smoke PASSED on prod (triaged, then test ticket deleted). Prod cron `* * * * *` cadence=**medium** (hourly, NOT war-room).
+- **All 3 banco envs now on Hypercare** (sandbox+staging cadence=hypercare/1min, prod=medium/hourly). branch `feat/hypercare-triage` can be deleted; trunk = main.
+- ⏳ Optional follow-up: align sandbox + staging tree HEADs to main too (they're still overlay-piles; non-prod, low stakes).
+
 ## 🟢 STAGING (2026-06-28): Hypercare MERGED to main (314cd5a) + deployed to banco-staging
 - TEST-HC2 = **17/17 PASS** on sandbox → merged `feat/hypercare-triage`→`main` (FF) → surgical overlay onto `/opt/helix-banco-staging-tree` (foreign identity/HR overlays PRESERVED — verified my branch is a superset, 0 staging-only lines lost) → `helix-platform-banco-staging` restarted → `pos_notifications` table auto-created in `banco_staging`. Brain smoke PASSED on staging. Cron: `* * * * *` env=staging realm=borrowhood-staging cadence=hypercare.
 - Staging URLs: app `staging-banco.lapiazza.app` (felix/pam · helix_pass · realm borrowhood-staging); test sheet `/static/TEST-hypercare-loop-v2.html`.
