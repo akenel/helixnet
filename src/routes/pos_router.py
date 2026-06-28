@@ -3499,6 +3499,29 @@ async def dispute_rejection(
     return {"ok": True}
 
 
+@router.post("/feedback/mine/{item_number}/cancel")
+async def cancel_my_ticket(
+    item_number: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Reporter withdraws their own report ('never mind' / not needed any more)."""
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    await db.execute(update(BacklogItemModel)
+                     .where(BacklogItemModel.id == row.id)
+                     .values(status=BacklogStatus.ARCHIVED))
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=me,
+        new_value="reporter-cancelled", comment="✕ Reporter withdrew this report."))
+    await db.commit()
+    return {"ok": True}
+
+
 @router.get("/notifications")
 async def my_notifications(
     limit: int = 20,
@@ -3595,6 +3618,7 @@ async def my_tickets(
         .order_by(BacklogItemModel.created_at.desc()).limit(50))).all()
     ids = [r.id for r in rows]
     triage, confirmed, closed, merged = {}, set(), set(), {}
+    cancelled = set()                      # reporter withdrew it
     reject_state, reject_reason = {}, {}   # item_id -> pending|confirmed|disputed
     if ids:
         acts = (await db.execute(
@@ -3624,10 +3648,12 @@ async def my_tickets(
                         triage[a.item_id] = json.loads(a.comment).get("clean", {})
                     except Exception:
                         triage[a.item_id] = {}
-            elif a.actor == me and a.new_value == "confirmed":
-                confirmed.add(a.item_id)
+            elif a.actor == me and a.new_value in ("confirmed", "reporter-note"):
+                confirmed.add(a.item_id)   # adding detail IS a reply → stop re-asking
             elif a.actor == me and a.new_value == "closed-confirmed":
                 closed.add(a.item_id)
+            elif a.actor == me and a.new_value == "reporter-cancelled":
+                cancelled.add(a.item_id)
     items = []
     for r in rows:
         cl = triage.get(r.id)
@@ -3661,9 +3687,11 @@ async def my_tickets(
         status_val = r.status.value if r.status else "pending"
         is_done = status_val == "done"               # fixed, awaiting reporter's OK
         reject_closed = reject_state.get(r.id) == "confirmed"
-        is_closed = status_val == "archived" or r.id in closed
-        st = _friendly_stage("archived" if (r.id in closed or reject_closed) else status_val,
-                             cl is not None)
+        is_cancelled = r.id in cancelled
+        is_closed = status_val == "archived" or r.id in closed or is_cancelled
+        st = _friendly_stage(
+            "archived" if (r.id in closed or reject_closed or is_cancelled) else status_val,
+            cl is not None)
         items.append({
             "item_number": r.item_number,
             "you_said": r.title,
@@ -3676,7 +3704,8 @@ async def my_tickets(
             "needs_confirm_fix": is_done and not is_closed,   # 🎉 "we fixed it, confirm?"
             "rejected_pending": False, "reject_reason": None,
             "closed": is_closed,
-            "closed_kind": "rejected" if reject_closed else "fixed",
+            "closed_kind": ("cancelled" if is_cancelled
+                            else "rejected" if reject_closed else "fixed"),
             "merged_into": None,
             "created_at": r.created_at.isoformat() if r.created_at else None,
         })

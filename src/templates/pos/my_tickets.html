@@ -29,6 +29,17 @@
       </div>
     </div>
 
+    <!-- filters: hide closed by default; one tap to what needs you -->
+    <div class="flex gap-2 mb-4 text-sm" x-show="!loading && items.length">
+      <button @click="filter='active'" class="px-3 py-1 rounded-full font-medium border transition"
+              :class="filter==='active' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">Active</button>
+      <button @click="filter='needs'" class="px-3 py-1 rounded-full font-medium border transition"
+              :class="filter==='needs' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">
+        Needs you<span x-show="needsCount()" x-text="' · '+needsCount()"></span></button>
+      <button @click="filter='all'" class="px-3 py-1 rounded-full font-medium border transition"
+              :class="filter==='all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">All</button>
+    </div>
+
     <div x-show="loading" class="text-center py-12 text-gray-400">Loading…</div>
 
     <!-- empty -->
@@ -38,9 +49,15 @@
       <p class="text-gray-500 text-sm mt-1 max-w-xs mx-auto">See something off, or have an idea? Tap the <b>💬</b> button anytime — we read every one.</p>
     </div>
 
+    <!-- nothing in this filter -->
+    <div x-show="!loading && items.length && !shown().length" class="card text-center py-10 text-gray-400">
+      <span x-show="filter==='needs'">Nothing needs your reply right now. 🎉</span>
+      <span x-show="filter==='active'">No active reports — all caught up!</span>
+    </div>
+
     <!-- list -->
     <div class="space-y-4" x-show="!loading">
-      <template x-for="t in items" :key="t.item_number">
+      <template x-for="t in shown()" :key="t.item_number">
         <div class="card">
           <div class="flex items-center justify-between gap-2">
             <span class="text-[11px] font-mono text-gray-400" x-text="'Report #' + t.item_number"></span>
@@ -88,21 +105,23 @@
           </details>
 
           <!-- confirm-back -->
-          <div x-show="t.needs_confirm && t.confirmState!=='done'" class="mt-4 border-t pt-3">
+          <div x-show="t.needs_confirm && t.confirmState!=='done' && t.confirmState!=='withdrawn'" class="mt-4 border-t pt-3">
             <p class="text-sm font-semibold text-gray-800">Did we get it right?</p>
             <p class="text-sm text-gray-600 mt-1">We understood it as: <span class="font-medium text-gray-900" x-text="'“'+(t.understood||t.you_said)+'”'"></span></p>
-            <div x-show="t.confirmState!=='note'" class="flex flex-wrap gap-2 mt-3">
-              <button class="btn-primary" @click="confirm(t)" title="Confirm we understood your report correctly">✅ Yes, that's it</button>
-              <button class="btn-secondary" @click="t.confirmState='note'" title="Add more detail to help us get it right">✏️ Add more</button>
+            <div x-show="t.confirmState!=='note'" class="flex flex-wrap gap-2 mt-3 items-center">
+              <button class="btn-primary" @click="confirm(t)" title="Confirm we understood it correctly">✅ Yes, that's it</button>
+              <button class="btn-secondary" @click="t.confirmState='note'" title="Tell us more, or correct us">✏️ Add detail</button>
+              <button class="text-sm text-gray-400 hover:text-red-600 ml-auto" @click="withdraw(t)" title="You don't need this any more — withdraw it">✕ Never mind</button>
             </div>
             <div x-show="t.confirmState==='note'" class="mt-3">
-              <textarea x-model="t.noteText" rows="3" class="input-field w-full" placeholder="Tell us a bit more — what should we know?"></textarea>
+              <textarea x-model="t.noteText" rows="3" class="input-field w-full" placeholder="Tell us more, or what we got wrong…"></textarea>
               <div class="flex gap-2 mt-2">
-                <button class="btn-primary" @click="sendNote(t)" :disabled="!t.noteText || t.busy">Send</button>
-                <button class="btn-secondary" @click="t.confirmState=null">Cancel</button>
+                <button class="btn-primary" @click="sendNote(t)" :disabled="!t.noteText || t.busy">Send note</button>
+                <button class="btn-secondary" @click="t.confirmState=null">← Back</button>
               </div>
             </div>
           </div>
+          <div x-show="t.confirmState==='withdrawn'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">✕ You withdrew this report.</div>
 
           <!-- understanding confirmed (only while still being worked on) -->
           <div x-show="(t.confirmed || t.confirmState==='done') && !t.needs_confirm_fix && !t.closed" class="mt-4 text-sm text-green-700 font-medium">✓ Thanks — your reply is in. We've got it from here.</div>
@@ -145,8 +164,9 @@
           <div x-show="t.rejState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back with your note — thanks, we'll take another look.</div>
 
           <!-- closed by reporter -->
-          <div x-show="(t.closed || t.fixState==='closed') && t.closed_kind!=='rejected'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold">🎉 Closed by you — thank you for helping make this better!</div>
+          <div x-show="(t.closed || t.fixState==='closed') && t.closed_kind==='fixed'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold">🎉 Closed by you — thank you for helping make this better!</div>
           <div x-show="t.closed && t.closed_kind==='rejected'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">👍 Closed — we agreed no change was needed.</div>
+          <div x-show="t.closed && t.closed_kind==='cancelled'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">✕ You withdrew this report.</div>
           <!-- sent back -->
           <div x-show="t.fixState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back to the team — thanks, we'll keep at it.</div>
         </div>
@@ -160,7 +180,7 @@
 <script>
 function myTickets() {
   return {
-    items: [], openN: 0, doneN: 0, loading: false, updatedAt: '',
+    items: [], openN: 0, doneN: 0, loading: false, updatedAt: '', filter: 'active',
     steps: [
       { icon:'📨', label:'Received',   tip:"We've got your message." },
       { icon:'👀', label:'Understood', tip:"We've read it and understood what you mean." },
@@ -252,6 +272,23 @@ function myTickets() {
         showToast('Sent back to the team', 'success');
       } catch (e) { showToast('Could not send — try again', 'error'); }
       finally { t.busy = false; }
+    },
+    async withdraw(t) {
+      if (!confirm('Withdraw this report? It will be closed.')) return;
+      t.busy = true;
+      try {
+        await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/cancel', {});
+        t.confirmState = 'withdrawn'; t.closed = true; t.closed_kind = 'cancelled';
+        showToast('Withdrawn', 'success');
+      } catch (e) { showToast('Could not withdraw — try again', 'error'); }
+      finally { t.busy = false; }
+    },
+    needsReply(t) { return t.needs_confirm || t.needs_confirm_fix || t.rejected_pending; },
+    needsCount() { return this.items.filter(t => this.needsReply(t)).length; },
+    shown() {
+      if (this.filter === 'all') return this.items;
+      if (this.filter === 'needs') return this.items.filter(t => this.needsReply(t));
+      return this.items.filter(t => !t.closed);   // 'active' (default) — hide closed/withdrawn
     },
     fmt(s) {
       if (!s) return '';

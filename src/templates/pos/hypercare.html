@@ -28,9 +28,16 @@
     <div x-show="loading" class="text-center py-10 text-gray-500">Loading the queue…</div>
     <div x-show="!loading && items.length === 0" class="card text-center py-10 text-gray-400">No feedback yet. When the floor fires the 💬 button, it lands here.</div>
 
+    <!-- filters: hide closed/merged by default -->
+    <div class="flex gap-2 mb-4 text-sm" x-show="!loading && items.length">
+      <button @click="filter='todo'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='todo' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">To do</button>
+      <button @click="filter='active'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='active' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">Active</button>
+      <button @click="filter='all'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">All</button>
+    </div>
+
     <!-- Queue -->
     <div class="space-y-3" x-show="!loading">
-      <template x-for="t in items" :key="t.item_number">
+      <template x-for="t in shownQ()" :key="t.item_number">
         <div class="card">
           <div class="flex justify-between items-start gap-3 flex-wrap">
             <div class="min-w-0">
@@ -98,12 +105,17 @@
 function hypercareData() {
   return {
     items: [], sc: { total:0, triaged:0, untriaged:0, undecipherable:0 },
-    loading: false, triaging: false,
+    loading: false, triaging: false, filter: 'active',
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
       this.load();
       document.addEventListener('visibilitychange', () => { if (!document.hidden) this.load(); });
+    },
+    shownQ() {
+      if (this.filter === 'all') return this.items;
+      if (this.filter === 'todo') return this.items.filter(t => t.status !== 'archived' && t.status !== 'done' && !t.merged_into);
+      return this.items.filter(t => t.status !== 'archived' && !t.merged_into);   // 'active'
     },
     async load() {
       this.loading = true;
