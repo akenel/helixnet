@@ -102,10 +102,13 @@
                 </template>
             </div>
 
-            <button x-show="!showDiscontinued && results.length < total" @click="loadMore()"
-                    class="btn-secondary w-full mt-3" :disabled="loading">
-                <span x-show="!loading">Show more (<span x-text="total - results.length"></span> more)</span>
-                <span x-show="loading" style="display:none;">Loading…</span>
+            <!-- Infinite scroll: this sentinel auto-loads the next page when it nears view.
+                 The button stays as a manual fallback (and for browsers without IO). -->
+            <div x-ref="moreSentinel" style="height:1px"></div>
+            <p x-show="loading && results.length > 0" class="text-center text-gray-400 text-sm mt-3">Loading more…</p>
+            <button x-show="!showDiscontinued && !loading && results.length < total" @click="loadMore()"
+                    class="btn-secondary w-full mt-3">
+                Show more (<span x-text="total - results.length"></span> more)
             </button>
         </div>
     </div>
@@ -309,6 +312,17 @@
                 this.user = { ...userInfo, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
                 this.loadCategories();
                 this.search();   // list the catalogue by default — no need to type first
+                // Infinite scroll: load the next page as the sentinel nears the viewport.
+                this.$nextTick(() => {
+                    const sentinel = this.$refs.moreSentinel;
+                    if (!sentinel || !('IntersectionObserver' in window)) return;
+                    new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting && !this.loading
+                            && !this.showDiscontinued && this.results.length < this.total) {
+                            this.loadMore();
+                        }
+                    }, { rootMargin: '300px' }).observe(sentinel);
+                });
             },
 
             async loadCategories() {
