@@ -20,10 +20,11 @@ Spec: `docs/BANCO-HYPERCARE-TRIAGE-COCKPIT.md`. Memory: `banco-hypercare-triage-
 - **PoC-1 brain** ✅ `src/services/feedback_triage.py` — vision lens (TRIAGE_VISION) + `run_llm` (gpt-oss:120b on Turbo via `BH_OLLAMA_KEY`) → clean ticket {title,description,type,severity,area,confidence,decipherable,questions}. Graceful fallback.
 - **PoC-2 automation** ✅ `POST /api/v1/pos/feedback/triage` (in-app session, idempotent, writes dual-version to `BacklogActivity.comment`=full JSON, old/new_value=titles). **Cadence cron** `/opt/hypercare/triage_cron.py` (repo `scripts/ops/`), per-env knob `/opt/hypercare/<env>.cadence` (hypercare15/high30/medium60/low1440/off), crontab `*/5`, sandbox=hypercare. PROVEN end-to-end (seed→cron→clean).
 - **PoC-3 cockpit** ✅ `/pos/hypercare` (`pos/hypercare.html` + `GET /feedback/queue`) — scorecard + queue showing RAW↔AI-CLEANED side by side + "Run AI triage now". Manager/admin gated.
+- **PoC-3 reporter BELL** ✅ new `POSNotificationModel` (auto-created table) → emit on triage to `created_by` ("🛠️ We're on it — BL-X …"). `GET /pos/notifications` (own only + unread) + `POST /pos/notifications/read`. 🔔 in status bar (`base.html`) w/ unread badge + dropdown, opens→marks read, polls 45s. Guard uses `sessionStorage.pos_token` (NOT `window.token` — it's a top-level const, undefined on window). PROVEN end-to-end (felix file→triage→bell). sw v13.
 
 ## ⏳ NEXT (PoC-3 increments, on the branch, sandbox)
-1. **Reporter BELL notifications** (in-app, by the name) ← do next.
-2. Confirm-back loop ("is this what you meant?") · **dedup** (don't make same ticket twice) · SLA scorecard + reporter **points** · read-only user "my tickets / team" view + changelog (off the 📊 button, role-gated).
+1. **User-facing "my tickets" view** (`/pos/my-tickets`) ← do next — the bell link target: read-only "my tickets / team" list + stage + add-note+confirm (the confirm-back loop) + a "what shipped" changelog. Off the 📊 button, role-gated.
+2. **dedup** (don't make same ticket twice — AI checks open tickets before creating) · SLA scorecard (open→picked→assessed→shipped+SHA) + reporter **points**.
 3. **Vision key**: Angel runs the safe `read -rs` command → `BH_GOOGLE_API_KEY` into `/opt/helixnet/hetzner/uat.env` → recreate sandbox container → screenshots get read. (`scripts/rotate-secrets.sh` now lists it.)
 4. **Market study** (Userback/Marker.io/BugHerd/Usersnap/Jam.dev do capture; gap = user-closes-own-loop + owned backend). Then merge decision (it's the secret weapon — Angel's go required).
 
