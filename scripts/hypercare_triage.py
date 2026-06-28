@@ -18,8 +18,10 @@ import re
 import sys
 
 from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
-from src.db.database import AsyncSessionLocal
+from src.core.config import get_settings
 from src.db.models.backlog_model import (
     BacklogActivityModel,
     BacklogActivityType,
@@ -39,7 +41,11 @@ def _decode_shot(data_url):
 
 
 async def main(item_number=None):
-    async with AsyncSessionLocal() as db:
+    # Build a fresh async engine INSIDE the running loop (a module-level engine made at
+    # import time binds its pool to no-loop → greenlet error in a standalone script).
+    engine = create_async_engine(get_settings().POSTGRES_ASYNC_URI)
+    Session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    async with Session() as db:
         q = select(BacklogItemModel)
         if item_number:
             q = q.where(BacklogItemModel.item_number == int(item_number))
@@ -89,6 +95,7 @@ async def main(item_number=None):
         await db.commit()
         print("-" * 64)
         print(f"✓ stored AI triage as a BacklogActivity on BL-{item.item_number} (original untouched)")
+    await engine.dispose()
 
 
 if __name__ == "__main__":
