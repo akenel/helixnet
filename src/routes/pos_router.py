@@ -3183,6 +3183,63 @@ async def pos_feedback(
             "severity": severity, "priority": priority.value}
 
 
+def _decode_data_url(data_url):
+    import base64 as _b64, re as _re
+    m = _re.match(r"data:(image/[^;]+);base64,(.*)", data_url or "", _re.S)
+    if not m:
+        return None, None
+    try:
+        return _b64.b64decode(m.group(2)), m.group(1)
+    except Exception:
+        return None, None
+
+
+@router.post("/feedback/triage")
+async def triage_pending_feedback(
+    limit: int = 5,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """Hypercare PoC-2 — run the AI triage brain over feedback tickets that haven't been
+    triaged yet, and write each clean version back as a BacklogActivity (dual-version:
+    original untouched). The per-env cadence cron just curls this every N minutes.
+
+    Runs INSIDE the app (working async session) — unlike a standalone script. Idempotent:
+    a ticket that already has an `ai-triage` activity is skipped, so no re-triage/double-work."""
+    from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    from src.services.feedback_triage import triage_feedback
+
+    # Feedback tickets with NO ai-triage activity yet (idempotent).
+    already = (select(BacklogActivityModel.id)
+               .where(BacklogActivityModel.item_id == BacklogItemModel.id,
+                      BacklogActivityModel.actor == "ai-triage").exists())
+    items = (await db.execute(
+        select(BacklogItemModel)
+        .where(BacklogItemModel.tags.ilike("%feedback%"), ~already)
+        .order_by(BacklogItemModel.created_at.desc())
+        .limit(max(1, min(int(limit or 5), 25))))).scalars().all()
+
+    out = []
+    for item in items:
+        shot, mime = _decode_data_url(item.screenshot_data)
+        res = await triage_feedback(
+            title=item.title, description=item.description or "", metadata=None,
+            screenshot=shot, screenshot_mime=mime or "image/png")
+        clean = res["clean"]
+        db.add(BacklogActivityModel(
+            item_id=item.id, activity_type=BacklogActivityType.COMMENT, actor="ai-triage",
+            old_value=json.dumps({"title": item.title, "description": item.description})[:4000],
+            new_value=json.dumps(clean)[:4000],
+            comment=f"AI triage (model={res['model'] or 'fallback'}, ai={res['ai']})"))
+        out.append({"item_number": item.item_number, "ai": res["ai"],
+                    "clean_title": clean.get("title"), "type": clean.get("type"),
+                    "severity": clean.get("severity"), "confidence": clean.get("confidence"),
+                    "decipherable": clean.get("decipherable")})
+    await db.commit()
+    logger.info("Hypercare triage: processed %d pending feedback ticket(s)", len(out))
+    return {"triaged": len(out), "items": out}
+
+
 # ================================================================
 # CASH SHIFT -- per-cashier drawer accountability (the lockbox loop)
 # ================================================================
