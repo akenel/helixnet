@@ -121,6 +121,11 @@ Customer steps away mid-ring; Pam serves the next; resumes later. Real cashier n
 
 ---
 
+## FROM TEST-B02 (Product Sales report — Angel field notes, 2026-06-28, staging 11/11 PASS)
+
+- **BL — Category subtotals as a chart + print.** The "By category" pills are correct but flat. Add a small **bar or pie chart** of revenue-by-category on the Product Sales report, and a **print/PDF button for that chart/section** too (not just the table). *(Angel note on check #3: "could have a simple bar chart or pie chart display and print report too button.")* Lightweight — the category aggregate already ships in the endpoint; a tiny inline SVG/canvas chart, no heavy lib.
+- **BL — Buyer row → full transaction invoice.** In the "👥 Who bought it" panel, make each buyer row a **hyperlink to the actual full transaction/receipt** (the complete invoice for that sale), not just the line summary. *(Angel note on check #5: "a hyperlink from the txn to display the actual full transaction invoice would be nice.")* The receipt/transaction view already exists (`/pos/transactions` + receipt render) — wire `transaction_number` → that view. Read-only, manager-gated.
+
 ## LOGGED BL ITEMS (don't forget — Felix will want these)
 
 - **BL — XLSX export (native Excel).** openpyxl (full lib, rule #9) + server endpoint `/reports/*.xlsx` building a formatted multi-sheet workbook (Summary · Transactions · Products, frozen header, bold totals) + **requirements.txt line + container-image rebuild**. Don't claim it works until openpyxl is actually in the image (Pillow gotcha). Build after CSV/PDF land. *(Felix asked 2026-06-27.)*
