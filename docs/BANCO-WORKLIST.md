@@ -1,5 +1,7 @@
 # Banco Go-Live Worklist — THE ordered list
 
+> 🔑 **Code word "ON DECK"** → you're reading the right file. State the top items and start executing the first actionable one. No re-planning, no re-asking.
+
 *Open this, work top-down, finish one tier before opening the next. Don't fan out across five things. 2026-06-28.*
 
 *Owners: 🧍 = Angel's hands needed (physical / decision / external call) · 🐯 = Tigs can do it · 👥 = both, together.*

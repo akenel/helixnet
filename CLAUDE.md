@@ -4,6 +4,20 @@
 
 ---
 
+## 🔑 RESUME CODE WORD — "ON DECK"
+
+When Angel says **"ON DECK"** (after a compaction, a laptop reboot, or any fresh start), it means:
+**stop, open `docs/BANCO-WORKLIST.md`, state the top items, and immediately start executing the first actionable one — do NOT re-plan, re-ask, or re-litigate what's already decided.**
+
+- The worklist is the single source of truth for what's next, in order.
+- Detail lives in memory files: `banco-day-one-wishlist`, `banco-terminal-collision-2026-06-28`, and the `BANCO-GO-LIVE-READINESS.md` doc.
+- As of 2026-06-28 the top of the deck is: (1) identity-terminal collision recovery, (2) test Product Sales → ship to prod, (3) go-live blockers (fiscal/offline/hardware/prod-identity).
+- Angel can change the code word or the deck anytime — update this section and the worklist.
+
+> "ON DECK" = read the worklist and GO. No fumbling, no re-deriving — act on the top item.
+
+---
+
 ## THE ORIGIN STORY
 
 **November 26, 2025, 08:13am** - The first Claude co-authored commit.
