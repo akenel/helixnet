@@ -102,6 +102,7 @@ function hypercareData() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
       this.load();
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.load(); });
     },
     async load() {
       this.loading = true;

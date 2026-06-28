@@ -6,10 +6,16 @@
 <div class="min-h-screen bg-gray-50" x-data="myTickets()" x-init="init()">
   <div class="max-w-xl mx-auto px-4 py-6">
 
-    <div class="mb-5">
-      <h1 class="text-2xl font-bold text-gray-900">📬 Your reports</h1>
-      <p class="text-gray-600 text-sm mt-1">Everything you've told us — and exactly where it's at. Thanks for helping make this better.</p>
+    <div class="flex justify-between items-start mb-2 gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">📬 Your reports</h1>
+        <p class="text-gray-600 text-sm mt-1">Everything you've told us — and exactly where it's at. Thanks for helping make this better.</p>
+      </div>
+      <button @click="load()" class="btn-secondary shrink-0" title="Get the latest — refresh after you do something in the Cockpit">
+        <span x-show="!loading">↻ Refresh</span><span x-show="loading" style="display:none;">…</span>
+      </button>
     </div>
+    <p x-show="updatedAt" class="text-xs text-gray-400 mb-4" x-text="'Updated at ' + updatedAt + ' — tap ↻ Refresh after any change.'"></p>
 
     <!-- tiny counters -->
     <div class="flex gap-3 mb-5" x-show="!loading && items.length">
@@ -36,16 +42,26 @@
     <div class="space-y-4" x-show="!loading">
       <template x-for="t in items" :key="t.item_number">
         <div class="card">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-mono text-gray-400" x-text="'Report #' + t.item_number"></span>
+            <span class="text-[11px] text-gray-400" x-text="'sent ' + fmt(t.created_at)"></span>
+          </div>
           <!-- friendly title -->
-          <p class="font-bold text-gray-900 text-lg leading-snug" x-text="t.understood || t.you_said"></p>
-          <p class="text-xs text-gray-400 mt-0.5" x-text="'You sent this ' + fmt(t.created_at)"></p>
+          <p class="font-bold text-gray-900 text-lg leading-snug mt-1" x-text="t.understood || t.you_said"></p>
+          <!-- our first read (the AI's assessment, in plain words) -->
+          <div x-show="assess(t)" class="mt-1.5">
+            <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600" title="Our first read of your report — an estimate, not the final word">
+              <span x-text="assess(t) && assess(t).emoji"></span><span x-text="assess(t) && assess(t).text"></span>
+            </span>
+          </div>
 
           <!-- journey stepper -->
           <div class="flex items-center mt-4 mb-1">
             <template x-for="(s,i) in steps" :key="i">
               <div class="flex items-center" :class="i < steps.length-1 ? 'flex-1' : ''">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 transition"
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 transition cursor-help"
                      :class="(i+1) <= t.stage.step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-400'"
+                     :title="s.tip"
                      x-text="(i+1) < t.stage.step ? '✓' : s.icon"></div>
                 <div x-show="i < steps.length-1" class="h-1 flex-1 mx-1 rounded"
                      :class="(i+1) < t.stage.step ? 'bg-indigo-600' : 'bg-gray-200'"></div>
@@ -76,8 +92,8 @@
             <p class="text-sm font-semibold text-gray-800">Did we get it right?</p>
             <p class="text-sm text-gray-600 mt-1">We understood it as: <span class="font-medium text-gray-900" x-text="'“'+(t.understood||t.you_said)+'”'"></span></p>
             <div x-show="t.confirmState!=='note'" class="flex flex-wrap gap-2 mt-3">
-              <button class="btn-primary" @click="confirm(t)">✅ Yes, that's it</button>
-              <button class="btn-secondary" @click="t.confirmState='note'">✏️ Add more</button>
+              <button class="btn-primary" @click="confirm(t)" title="Confirm we understood your report correctly">✅ Yes, that's it</button>
+              <button class="btn-secondary" @click="t.confirmState='note'" title="Add more detail to help us get it right">✏️ Add more</button>
             </div>
             <div x-show="t.confirmState==='note'" class="mt-3">
               <textarea x-model="t.noteText" rows="3" class="input-field w-full" placeholder="Tell us a bit more — what should we know?"></textarea>
@@ -96,8 +112,8 @@
             <p class="text-sm font-semibold text-gray-900">🎉 We think this is fixed!</p>
             <p class="text-sm text-gray-600 mt-1">Have a quick look — did it sort it out?</p>
             <div x-show="t.fixState!=='note'" class="flex flex-wrap gap-2 mt-3">
-              <button class="btn-primary" @click="closeIt(t)" :disabled="t.busy">✓ Looks good, close it</button>
-              <button class="btn-secondary" @click="t.fixState='note'">✗ Still not right</button>
+              <button class="btn-primary" @click="closeIt(t)" :disabled="t.busy" title="You're happy it's fixed — close this report">✓ Looks good, close it</button>
+              <button class="btn-secondary" @click="t.fixState='note'" title="It's not fixed — send it back with a note">✗ Still not right</button>
             </div>
             <div x-show="t.fixState==='note'" class="mt-3">
               <textarea x-model="t.fixNote" rows="3" class="input-field w-full" placeholder="What's still wrong? (optional)"></textarea>
@@ -123,15 +139,19 @@
 <script>
 function myTickets() {
   return {
-    items: [], openN: 0, doneN: 0, loading: false,
+    items: [], openN: 0, doneN: 0, loading: false, updatedAt: '',
     steps: [
-      { icon:'📨', label:'Received' }, { icon:'👀', label:'Understood' },
-      { icon:'🔧', label:'Fixing' },   { icon:'✅', label:'Done' },
+      { icon:'📨', label:'Received',   tip:"We've got your message." },
+      { icon:'👀', label:'Understood', tip:"We've read it and understood what you mean." },
+      { icon:'🔧', label:'Fixing',     tip:"Someone's working on it." },
+      { icon:'✅', label:'Done',       tip:"Fixed — and you've confirmed it." },
     ],
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
       this.load();
+      // Auto-refresh when you come back to this tab (e.g. after the Cockpit).
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.load(); });
     },
     async load() {
       this.loading = true;
@@ -139,8 +159,22 @@ function myTickets() {
         const d = await API.get('/api/v1/pos/feedback/mine');
         this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', busy: false }));
         this.openN = d.open || 0; this.doneN = d.done || 0;
+        this.updatedAt = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
       finally { this.loading = false; }
+    },
+    // Plain-language "first read" of the report, from the AI's type + severity.
+    assess(t) {
+      if (!t.understood || t.merged_into) return null;
+      const kinds = { bug:{e:'🐞',w:'a bug'}, idea:{e:'💡',w:'an idea'}, cosmetic:{e:'🎨',w:'a visual tweak'},
+                      question:{e:'❓',w:'a question'}, other:{e:'📌',w:'a note'} };
+      const km = kinds[(t.kind||'').toLowerCase()] || kinds.other;
+      const s = (t.severity||'').toLowerCase();
+      let effort = '';
+      if (s === 'cosmetic') effort = 'a small visual fix';
+      else if (s === 'annoying') effort = 'a minor fix';
+      else if (s === 'blocking') effort = 'important — bumped up the list';
+      return { emoji: km.e, text: 'Looks like ' + km.w + (effort ? ' · ' + effort : '') };
     },
     async confirm(t) {
       try {

@@ -3559,6 +3559,8 @@ async def my_tickets(
             "item_number": r.item_number,
             "you_said": r.title,
             "understood": (cl or {}).get("title") if cl else None,
+            "kind": (cl or {}).get("type") if cl else None,
+            "severity": (cl or {}).get("severity") if cl else None,
             "stage": st,
             "needs_confirm": cl is not None and r.id not in confirmed and not is_done and not is_closed,
             "confirmed": r.id in confirmed,
