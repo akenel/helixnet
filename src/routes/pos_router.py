@@ -2044,6 +2044,18 @@ async def add_item_to_transaction(
     prod_class = product.product_class if item.product_id is not None else "standard"
     line_rate, line_vat_amount = line_vat(prod_class, item.consumption, line_total)
 
+    # Compliance: NO promotional discount on a promo-restricted class (tobacco, alcohol).
+    # Swiss law (Tabakproduktegesetz / Alkoholgesetz) restricts sales promotions on these,
+    # and it's about the SALE, not the operator — so this blocks cashier AND manager alike
+    # (a role cap isn't enough). Exact scope is still pending the Treuhänder; this is the
+    # safe default. A real markdown path (e.g. damaged goods) would be a separate flow.
+    from src.services.catalog_taxonomy import class_promo_restricted, class_meta
+    if item.discount_percent and item.discount_percent > 0 and class_promo_restricted(prod_class):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Discounts aren't allowed on {class_meta(prod_class)['label']} — "
+                   f"sales promotions on these are restricted by law.")
+
     new_line_item = LineItemModel(
         transaction_id=transaction_id,
         product_id=item.product_id,
