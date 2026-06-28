@@ -74,6 +74,14 @@
               <p x-show="!t.triaged" class="text-xs text-gray-400">Not yet triaged — runs on the next cadence pass, or hit “Run AI triage now”.</p>
             </div>
           </div>
+
+          <!-- action row: mark fixed → reporter gets the 'please confirm' notification -->
+          <div class="mt-3 pt-3 border-t flex items-center justify-end gap-2">
+            <span x-show="t.status==='done'" class="text-xs text-amber-600 font-medium">🎉 Fixed — waiting for reporter to confirm</span>
+            <span x-show="t.status==='archived'" class="text-xs text-green-600 font-medium">✅ Closed by reporter — done!</span>
+            <span x-show="t.status==='in_progress'" class="text-xs text-indigo-500 font-medium mr-auto">↩️ reporter reopened / in progress</span>
+            <button x-show="t.status!=='done' && t.status!=='archived'" @click="markFixed(t)" class="btn-secondary text-sm">✅ Mark fixed</button>
+          </div>
         </div>
       </template>
     </div>
@@ -107,6 +115,15 @@ function hypercareData() {
         await this.load();
       } catch (e) { console.error(e); showToast('Triage failed', 'error'); }
       finally { this.triaging = false; }
+    },
+    async markFixed(t) {
+      const commit = prompt('Mark fixed — optional commit/SHA to credit (or leave blank):', '');
+      if (commit === null) return;   // cancelled
+      try {
+        await API.post('/api/v1/pos/feedback/' + t.item_number + '/done', { commit: commit });
+        showToast('Marked fixed — reporter notified to confirm', 'success');
+        await this.load();
+      } catch (e) { console.error(e); showToast('Could not mark fixed', 'error'); }
     },
     sevClass(s) {
       s = (s||'').toLowerCase();

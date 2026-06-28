@@ -3313,6 +3313,43 @@ async def hypercare_queue(
             "undecipherable": undec, "items": items}
 
 
+@router.post("/feedback/{item_number}/done")
+async def mark_feedback_fixed(
+    item_number: int,
+    payload: dict = Body(default={}),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """Manager marks a feedback ticket FIXED → status=done + the reporter gets a 'please
+    confirm it's fixed' notification. The reporter then closes their OWN ticket."""
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
+    from src.db.models.pos_notification_model import POSNotificationModel
+    actor = current_user.get("username") or current_user.get("preferred_username", "manager")
+    row = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.title, BacklogItemModel.created_by)
+        .where(BacklogItemModel.item_number == item_number,
+               BacklogItemModel.tags.ilike("%feedback%")))).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="No such feedback ticket")
+    commit = (payload.get("commit") or "").strip()[:80]
+    await db.execute(update(BacklogItemModel)
+                     .where(BacklogItemModel.id == row.id)
+                     .values(status=BacklogStatus.DONE))
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=actor,
+        new_value="done",
+        comment="🔧 Fixed" + (f" in {commit}" if commit else "") + " — awaiting reporter confirmation."))
+    if row.created_by and row.created_by not in ("unknown", "ai-triage"):
+        db.add(POSNotificationModel(
+            recipient=row.created_by, kind="shipped", item_number=item_number,
+            title="✅ Fixed — please take a look",
+            body=f"We fixed “{(row.title or 'your report')[:120]}”. Tap to check it and confirm.",
+            link="/pos/my-tickets"))
+    await db.commit()
+    return {"ok": True}
+
+
 @router.get("/notifications")
 async def my_notifications(
     limit: int = 20,
@@ -3364,9 +3401,12 @@ async def mark_notifications_read(
 def _friendly_stage(status: str, has_triage: bool) -> dict:
     """Map the internal status → a plain-language journey step (1..4) for a non-techie."""
     s = (status or "pending").lower()
-    if s in ("done", "archived"):
-        return {"step": 4, "label": "Done", "emoji": "✅",
+    if s == "archived":
+        return {"step": 4, "label": "Closed", "emoji": "✅",
                 "blurb": "All sorted — thank you for helping make this better!"}
+    if s == "done":
+        return {"step": 4, "label": "Fixed!", "emoji": "🎉",
+                "blurb": "We fixed it — please take a look and let us know it's good."}
     if s == "in_progress":
         return {"step": 3, "label": "Being fixed", "emoji": "🔧",
                 "blurb": "Someone's working on this right now."}
@@ -3405,7 +3445,7 @@ async def my_tickets(
         .where(BacklogItemModel.created_by == me, BacklogItemModel.tags.ilike("%feedback%"))
         .order_by(BacklogItemModel.created_at.desc()).limit(50))).all()
     ids = [r.id for r in rows]
-    triage, confirmed = {}, set()
+    triage, confirmed, closed = {}, set(), set()
     if ids:
         acts = (await db.execute(
             select(BacklogActivityModel.item_id, BacklogActivityModel.actor,
@@ -3421,21 +3461,28 @@ async def my_tickets(
                     triage[a.item_id] = {}
             elif a.actor == me and a.new_value == "confirmed":
                 confirmed.add(a.item_id)
+            elif a.actor == me and a.new_value == "closed-confirmed":
+                closed.add(a.item_id)
     items = []
     for r in rows:
         cl = triage.get(r.id)
-        st = _friendly_stage(r.status.value if r.status else "pending", cl is not None)
+        status_val = r.status.value if r.status else "pending"
+        is_done = status_val == "done"               # fixed, awaiting reporter's OK
+        is_closed = status_val == "archived" or r.id in closed
+        st = _friendly_stage("archived" if r.id in closed else status_val, cl is not None)
         items.append({
             "item_number": r.item_number,
             "you_said": r.title,
             "understood": (cl or {}).get("title") if cl else None,
             "stage": st,
-            "needs_confirm": cl is not None and r.id not in confirmed,
+            "needs_confirm": cl is not None and r.id not in confirmed and not is_done and not is_closed,
             "confirmed": r.id in confirmed,
+            "needs_confirm_fix": is_done and not is_closed,   # 🎉 "we fixed it, confirm?"
+            "closed": is_closed,
             "created_at": r.created_at.isoformat() if r.created_at else None,
         })
-    open_n = sum(1 for i in items if i["stage"]["step"] < 4)
-    done_n = sum(1 for i in items if i["stage"]["step"] == 4)
+    done_n = sum(1 for i in items if i["closed"])
+    open_n = len(items) - done_n
     return {"open": open_n, "done": done_n, "items": items}
 
 
@@ -3477,6 +3524,58 @@ async def add_note_to_my_ticket(
     db.add(BacklogActivityModel(
         item_id=row.id, activity_type=BacklogActivityType.COMMENT, actor=me,
         new_value="reporter-note", comment="📝 Reporter added: " + note[:1000]))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/feedback/mine/{item_number}/close")
+async def close_my_ticket(
+    item_number: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The reporter confirms the fix is good and CLOSES their own ticket → status=archived."""
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    if (row.status.value if row.status else "") != "done":
+        raise HTTPException(status_code=409, detail="Ticket isn't marked fixed yet")
+    await db.execute(update(BacklogItemModel)
+                     .where(BacklogItemModel.id == row.id)
+                     .values(status=BacklogStatus.ARCHIVED))
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=me,
+        new_value="closed-confirmed",
+        comment="🎉 Reporter confirmed the fix is good and closed the ticket."))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/feedback/mine/{item_number}/reopen")
+async def reopen_my_ticket(
+    item_number: int,
+    payload: dict = Body(default={}),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The reporter says 'still not right' → back to In progress, with their note for the team."""
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    note = (payload.get("note") or "").strip()
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    await db.execute(update(BacklogItemModel)
+                     .where(BacklogItemModel.id == row.id)
+                     .values(status=BacklogStatus.IN_PROGRESS))
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=me,
+        new_value="reopened",
+        comment="↩️ Reporter says it's not fixed yet" + (f": {note[:800]}" if note else ".")))
     await db.commit()
     return {"ok": True}
 

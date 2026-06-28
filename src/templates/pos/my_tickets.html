@@ -88,8 +88,30 @@
             </div>
           </div>
 
-          <!-- confirmed / note done -->
-          <div x-show="t.confirmed || t.confirmState==='done'" class="mt-4 text-sm text-green-700 font-medium">✓ Thanks — your reply is in. We've got it from here.</div>
+          <!-- understanding confirmed (only while still being worked on) -->
+          <div x-show="(t.confirmed || t.confirmState==='done') && !t.needs_confirm_fix && !t.closed" class="mt-4 text-sm text-green-700 font-medium">✓ Thanks — your reply is in. We've got it from here.</div>
+
+          <!-- confirm the FIX (the done-loop: you close your own ticket) -->
+          <div x-show="t.needs_confirm_fix && t.fixState!=='closed' && t.fixState!=='sent'" class="mt-4 border-t pt-3">
+            <p class="text-sm font-semibold text-gray-900">🎉 We think this is fixed!</p>
+            <p class="text-sm text-gray-600 mt-1">Have a quick look — did it sort it out?</p>
+            <div x-show="t.fixState!=='note'" class="flex flex-wrap gap-2 mt-3">
+              <button class="btn-primary" @click="closeIt(t)" :disabled="t.busy">✓ Looks good, close it</button>
+              <button class="btn-secondary" @click="t.fixState='note'">✗ Still not right</button>
+            </div>
+            <div x-show="t.fixState==='note'" class="mt-3">
+              <textarea x-model="t.fixNote" rows="3" class="input-field w-full" placeholder="What's still wrong? (optional)"></textarea>
+              <div class="flex gap-2 mt-2">
+                <button class="btn-primary" @click="reopen(t)" :disabled="t.busy">Send it back</button>
+                <button class="btn-secondary" @click="t.fixState=null">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- closed by reporter -->
+          <div x-show="t.closed || t.fixState==='closed'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold">🎉 Closed by you — thank you for helping make this better!</div>
+          <!-- sent back -->
+          <div x-show="t.fixState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back to the team — thanks, we'll keep at it.</div>
         </div>
       </template>
     </div>
@@ -115,7 +137,7 @@ function myTickets() {
       this.loading = true;
       try {
         const d = await API.get('/api/v1/pos/feedback/mine');
-        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', busy: false }));
+        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', busy: false }));
         this.openN = d.open || 0; this.doneN = d.done || 0;
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
       finally { this.loading = false; }
@@ -133,6 +155,24 @@ function myTickets() {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/note', { note: t.noteText });
         t.confirmState = 'done';
         showToast('Got it — thanks for the detail!', 'success');
+      } catch (e) { showToast('Could not send — try again', 'error'); }
+      finally { t.busy = false; }
+    },
+    async closeIt(t) {
+      t.busy = true;
+      try {
+        await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/close', {});
+        t.fixState = 'closed'; t.closed = true;
+        showToast('Closed — thank you! 🎉', 'success');
+      } catch (e) { showToast('Could not close — try again', 'error'); }
+      finally { t.busy = false; }
+    },
+    async reopen(t) {
+      t.busy = true;
+      try {
+        await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/reopen', { note: t.fixNote });
+        t.fixState = 'sent';
+        showToast('Sent back to the team', 'success');
       } catch (e) { showToast('Could not send — try again', 'error'); }
       finally { t.busy = false; }
     },
