@@ -2,6 +2,11 @@
 
 *Single resume point after a compaction. Detail lives in memory files + the docs linked below.*
 
+## 🟢 STAGING (2026-06-28): Hypercare MERGED to main (314cd5a) + deployed to banco-staging
+- TEST-HC2 = **17/17 PASS** on sandbox → merged `feat/hypercare-triage`→`main` (FF) → surgical overlay onto `/opt/helix-banco-staging-tree` (foreign identity/HR overlays PRESERVED — verified my branch is a superset, 0 staging-only lines lost) → `helix-platform-banco-staging` restarted → `pos_notifications` table auto-created in `banco_staging`. Brain smoke PASSED on staging. Cron: `* * * * *` env=staging realm=borrowhood-staging cadence=hypercare.
+- Staging URLs: app `staging-banco.lapiazza.app` (felix/pam · helix_pass · realm borrowhood-staging); test sheet `/static/TEST-hypercare-loop-v2.html`.
+- **PROD (banco) UNTOUCHED** — next: Angel mobile-retest on staging → then prod (overlay onto `/opt/helix-banco-tree` + restart; backup banco_prod first).
+
 ## 🔑 RESUME
 - Code word **"ON DECK"** → open `docs/BANCO-WORKLIST.md`, execute the top item.
 - To continue the new build: say **"continue hypercare"** → pick up the **reporter bell** (next PoC-3 increment) on branch `feat/hypercare-triage`.
