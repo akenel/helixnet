@@ -304,6 +304,8 @@
         body.app-shell .app-content {
             order: 1; flex: 1 1 auto; min-height: 0;
             overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f9fafb;
+            /* BL-23: bottom clearance so the floating 💬 button never covers the last item */
+            padding-bottom: 6rem;
         }
         /* legacy pages used min-h-screen to fill the VIEWPORT; now they fill the CONTENT area */
         body.app-shell .app-content .min-h-screen { min-height: 100%; }
