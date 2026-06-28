@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from typing import Any, Optional
 
 from src.llm import run_llm
@@ -102,7 +103,10 @@ async def triage_feedback(
     vision = None
     if screenshot:
         try:
-            res = await analyze_image(screenshot, screenshot_mime, domain=TRIAGE_VISION)
+            # Reuse the same Ollama (Turbo) brain that powers the text rewrite — no Gemini key
+            # needed. Falls back gracefully if the hosted vision model isn't available.
+            res = await analyze_image(screenshot, screenshot_mime, domain=TRIAGE_VISION,
+                                      provider=os.getenv("BANCO_VISION_PROVIDER", "ollama"))
             vision = res.get("data")
             if res.get("note"):
                 logger.info("triage vision note: %s", res["note"])
