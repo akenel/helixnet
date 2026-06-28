@@ -2674,6 +2674,7 @@ async def get_product_sales_detail(
 
     rows = (await db.execute(
         select(
+            TransactionModel.id,
             TransactionModel.transaction_number,
             TransactionModel.completed_at,
             TransactionModel.cashier_id,
@@ -2710,6 +2711,7 @@ async def get_product_sales_detail(
         select(ProductModel.name).where(ProductModel.id == product_id))).scalar_one_or_none()
 
     sales = [{
+        "transaction_id": str(r.id),
         "transaction_number": r.transaction_number,
         "time": r.completed_at.isoformat() if r.completed_at else None,
         "cashier_name": cashier_nm.get(r.cashier_id, "—") if r.cashier_id else "—",

@@ -161,33 +161,33 @@
             <div class="flex gap-2 mb-3">
                 <button @click="exportDrillCSV()" class="btn-secondary text-xs">📥 CSV</button>
             </div>
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-left text-gray-500 border-b">
-                        <th class="py-1">Receipt</th>
-                        <th class="py-1">Time</th>
-                        <th class="py-1">Cashier</th>
-                        <th class="py-1">Customer</th>
-                        <th class="py-1 text-right">Qty</th>
-                        <th class="py-1 text-right">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="s in drill.sales" :key="s.transaction_number + s.time">
-                        <tr class="border-b last:border-0">
-                            <td class="py-1 font-mono text-xs" x-text="s.transaction_number"></td>
-                            <td class="py-1 text-gray-600" x-text="fmtTime(s.time)"></td>
-                            <td class="py-1" x-text="s.cashier_name"></td>
-                            <td class="py-1" x-text="s.customer_name || '— walk-in'"></td>
-                            <td class="py-1 text-right" x-text="s.qty"></td>
-                            <td class="py-1 text-right font-semibold" x-text="formatPrice(s.line_total)"></td>
-                        </tr>
-                    </template>
-                    <tr x-show="!drill.sales.length">
-                        <td colspan="6" class="py-4 text-center text-gray-400">No sales found.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Buyers as cards (mobile-friendly). Tap a card → the full receipt/invoice. -->
+            <div class="space-y-2">
+                <template x-for="s in drill.sales" :key="s.transaction_id || (s.transaction_number + s.time)">
+                    <a :href="s.transaction_id ? ('/pos/receipt/' + s.transaction_id) : '#'"
+                       class="block border border-gray-200 rounded-xl p-3 hover:bg-indigo-50 active:bg-indigo-100 transition">
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-gray-900 truncate" x-text="s.customer_name || '— Walk-in'"></p>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    <span x-text="fmtTime(s.time)"></span>
+                                    <span class="text-gray-300">·</span>
+                                    <span x-text="s.cashier_name"></span>
+                                </p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <p class="font-bold text-green-600" x-text="formatPrice(s.line_total)"></p>
+                                <p class="text-xs text-gray-500" x-text="s.qty + (s.qty == 1 ? ' unit' : ' units')"></p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                            <span class="font-mono text-xs text-gray-400" x-text="s.transaction_number"></span>
+                            <span class="text-xs font-semibold text-indigo-600" x-show="s.transaction_id">View receipt ›</span>
+                        </div>
+                    </a>
+                </template>
+                <p x-show="!drill.sales.length" class="py-4 text-center text-gray-400">No sales found.</p>
+            </div>
         </div>
     </div>
 </div>
