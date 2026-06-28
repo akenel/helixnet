@@ -40,6 +40,30 @@ Sized for a Swiss micro-retailer, the genuine alternatives — and the one thing
 
 ---
 
+## 2½. THE LAW LETS HIM KEEP THE NOTEBOOK — so sell on pain, not fear
+
+*Added 2026-06-28 after a fact-checked research pass on the Swiss POS landscape. This corrects a framing trap: do NOT pitch Banco as "get compliant or get fined." In Switzerland that argument is mostly false, and Felix (or a Treuhänder) will know it.*
+
+**The Swiss fiscal regime is deliberately soft — verified from five independent angles:**
+
+- **No cash-register mandate.** There is no *Registrierkassenpflicht*. A Swiss business is not legally required to own a cash register at all. (Contrast: Italy, where Felix's neighbours are.)
+- **No fiscalization / TSE.** Unlike Germany (KassenSichV, 2020) and Austria (RKSV, 2016), Switzerland has **no certified tamper-proof device requirement.** "Swiss law does not yet provide for technical manipulation prevention such as certified modules."
+- **What he DOES owe:** records must be *complete, comprehensible, and unalterable* and kept **10 years** (OR Art. 958f + GeBüV). Digital equals paper if it's immutable and readable.
+
+**Why this changes the pitch:** a German shop is *forced* by law to buy a fiscal device — a Swiss shop is not. So "you're breaking the law" is **not** the lever. The law lets Felix keep his notebook for years. **We win on pain and time, not compliance fear:** reconciling who-sold-what across two cashiers, getting the VAT split right every time, closing the day in minutes instead of an evening with a calculator. (Where compliance *does* bite — the Treuhänder-grade Z-report and the mandatory 8.1/2.6 split above 20 seats — keep using it. Just don't bluff a fine that isn't coming.)
+
+**The threshold staircase — where paper actually breaks (all high-confidence):**
+
+| Threshold | What it triggers | Felix-relevance |
+|-----------|------------------|-----------------|
+| **CHF 100,000** turnover | Mandatory **VAT registration** + commercial-register entry | First real crack — now he owes quarterly VAT and needs the 8.1/2.6 split reliably |
+| **CHF 500,000** turnover | Full **double-entry bookkeeping** (below = simplified "Milchbüechli") | The books get serious; the spreadsheet starts to groan |
+| **AG / GmbH** (any revenue) | Double-entry **regardless** of turnover | Legal form, not size, can force the jump |
+
+**The real-world break is not a revenue number — it's the second employee touching the till + the VAT split.** One owner with a notebook scales surprisingly far. The moment two cashiers ring sales, "who sold what" stops being reconcilable from memory. *That's* the pain to name in the room, not a phantom fine.
+
+---
+
 ## 3. THE MOAT — and none of it is feature-count
 
 You will never out-feature Odoo. Don't try. You win on what doesn't fit in a feature matrix:
@@ -82,6 +106,10 @@ No 24/7. No 99.99% uptime guarantee for a solo op. No "we have 500 engineers." *
 **If pushed on support / "what if you get hit by a bus":**
 
 > "Fair question, and I won't bluff it. You're not buying a 500-engineer call center, and you don't need one. You're buying: your shop running Monday, support during your hours with a response window I'll put in writing, your data backed up and test-restored every night, a copy of the system that's yours to keep, and — increasingly — other stewards who can run it if I can't. That's more continuity than being ticket #84,000 in a queue gives you."
+
+**If they say "but is paper even legal? / do I have to switch?":**
+
+> "Honestly — in Switzerland you don't *have* to. There's no cash-register law here like in Germany or Italy; you just have to keep complete, unchangeable records for ten years. So I'm not selling you fear of a fine. I'm selling you your evening back: the day closed in minutes, the VAT split right every time, and knowing which of your two cashiers rang what — the stuff a notebook stops being able to do the moment a second person touches the till."
 
 **If they name a specific incumbent:**
 - *Bexio / KLARA:* "Great accounting. Ask them to handle your dine-in/takeaway VAT split and CBD age-gate. They won't — it's not their shop."
