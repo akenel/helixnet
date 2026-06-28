@@ -34,8 +34,8 @@
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print">
-            <h1 class="text-3xl font-bold text-gray-900">📦 Product Sales</h1>
-            <div class="flex space-x-2">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">📦 Product Sales</h1>
+            <div class="flex flex-wrap gap-2">
                 <button @click="goDashboard()" class="btn-secondary">🏠 Dashboard</button>
                 <button @click="goReports()" class="btn-secondary">📊 Reports</button>
                 <button @click="goTransactions()" class="btn-secondary">💳 Transactions</button>
@@ -53,16 +53,16 @@
                                 class="px-3 py-1 rounded text-sm font-medium" x-text="p.label"></button>
                     </template>
                 </div>
-                <div class="flex gap-2 items-end ml-auto">
-                    <div>
+                <div class="flex flex-wrap gap-2 items-end w-full sm:w-auto sm:ml-auto">
+                    <div class="flex-1 min-w-0">
                         <label class="block text-xs text-gray-500">From</label>
-                        <input type="date" x-model="dateFrom" @change="activePreset='custom'" class="input-field py-1">
+                        <input type="date" x-model="dateFrom" @change="activePreset='custom'" class="input-field py-1 w-full">
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <label class="block text-xs text-gray-500">To</label>
-                        <input type="date" x-model="dateTo" @change="activePreset='custom'" class="input-field py-1">
+                        <input type="date" x-model="dateTo" @change="activePreset='custom'" class="input-field py-1 w-full">
                     </div>
-                    <button @click="load()" class="btn-primary py-1">Apply</button>
+                    <button @click="load()" class="btn-primary py-1 w-full sm:w-auto">Apply</button>
                 </div>
             </div>
         </div>
@@ -71,19 +71,19 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">Revenue</p>
-                <p class="text-2xl font-bold text-green-600" x-text="formatPrice(totals.revenue)"></p>
+                <p class="text-xl sm:text-2xl font-bold text-green-600 truncate" x-text="formatPrice(totals.revenue)"></p>
             </div>
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">Items sold</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="totals.qty_sold"></p>
+                <p class="text-xl sm:text-2xl font-bold text-gray-900 truncate" x-text="totals.qty_sold"></p>
             </div>
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">Products</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="totals.product_count"></p>
+                <p class="text-xl sm:text-2xl font-bold text-gray-900 truncate" x-text="totals.product_count"></p>
             </div>
             <div class="card text-center">
                 <p class="text-gray-500 text-xs uppercase tracking-wide">incl. VAT</p>
-                <p class="text-2xl font-bold text-indigo-600" x-text="formatPrice(totals.vat)"></p>
+                <p class="text-xl sm:text-2xl font-bold text-indigo-600 truncate" x-text="formatPrice(totals.vat)"></p>
             </div>
         </div>
 
