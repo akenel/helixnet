@@ -85,6 +85,28 @@ def test_open_ring_close_balances(felix):
     assert res["hours"] >= 0
 
 
+def test_exact_cash_payment_as_number_not_rejected(felix):
+    """Regression (Angel, prod test sale): an EXACT cash payment sent as a JSON NUMBER
+    (the till's behaviour) must NOT be falsely rejected as 'Insufficient'. 226.17 round-
+    trips through float as 226.16999…, which a naive `tendered < total` rejected with a
+    400 even though the till showed change 0.00. Server now compares at cent precision."""
+    felix.post(f"{POS}/shift/open", json={"opening_float": "100.00"}).raise_for_status()
+    tx = felix.post(f"{POS}/transactions", json={}).json()
+    felix.post(f"{POS}/transactions/{tx['id']}/items", json={
+        "product_id": None, "name": "Exact-pay regression", "unit_price": "226.17",
+        "quantity": 1}).raise_for_status()
+    # amount_tendered as a NUMBER equal to the total — exactly what the EXACT button sends.
+    done = felix.post(f"{POS}/transactions/{tx['id']}/checkout", json={
+        "payment_method": "cash", "amount_tendered": 226.17})
+    assert done.status_code in (200, 201), f"EXACT cash wrongly rejected: {done.status_code} {done.text}"
+    body = done.json()
+    assert body["status"] == "completed"
+    assert Decimal(body["total"]) == Decimal("226.17")
+    assert Decimal(body["change_given"]) == Decimal("0.00")
+    cur = felix.get(f"{POS}/shift/current").json()
+    felix.post(f"{POS}/shift/close", json={"counted_cash": cur["expected_cash"]}).raise_for_status()
+
+
 def test_open_with_denominations_totals_the_float(felix):
     # 2x50 + 11x0.05 = 100.55
     op = felix.post(f"{POS}/shift/open", json={"opening_denoms": {"50": 2, "0.05": 11}}).json()
