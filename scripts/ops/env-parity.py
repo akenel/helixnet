@@ -35,9 +35,10 @@ for spec in {specs}; do
   label="${{spec%%:*}}"; d="${{spec#*:}}"
   sha=$(git -C "$d" rev-parse --short HEAD 2>/dev/null || echo "?")
   br=$(git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
-  dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l | tr -d " ")
+  mod=$(git -C "$d" status --porcelain --untracked-files=no 2>/dev/null | wc -l | tr -d " ")
+  new=$(git -C "$d" ls-files --others --exclude-standard 2>/dev/null | grep -vc "\.bak$")
   baks=$(find "$d/src" -name "*.bak" 2>/dev/null | wc -l | tr -d " ")
-  echo "PARITY|$label|$br|$sha|$dirty|$baks"
+  echo "PARITY|$label|$br|$sha|$mod|$new|$baks"
 done
 '''
 
@@ -58,8 +59,9 @@ def run_remote(host: str) -> list[dict]:
     for line in out.splitlines():
         if not line.startswith("PARITY|"):
             continue
-        _, label, br, sha, dirty, baks = line.split("|")
-        rows[label] = {"branch": br, "sha": sha, "dirty": int(dirty), "baks": int(baks)}
+        _, label, br, sha, mod, new, baks = line.split("|")
+        rows[label] = {"branch": br, "sha": sha, "mod": int(mod), "new": int(new),
+                       "baks": int(baks)}
     # preserve TREES order
     role = {label: r for label, _, r in TREES}
     return [{"label": l, "role": role[l], **rows[l]} for l, _, _ in TREES if l in rows]
@@ -85,20 +87,25 @@ def main() -> int:
     rows = run_remote(args.host)
 
     print(f"\n  ENV PARITY  —  root@{args.host}  (read-only)\n")
-    print(f"  {'':<3}{'tree':<16}{'branch':<10}{'sha':<10}{'dirty':>6}{'.bak':>6}  state")
+    print(f"  {'':<3}{'tree':<16}{'branch':<8}{'sha':<10}{'mod':>5}{'new':>5}{'.bak':>6}  state")
     print("  " + "-" * 64)
     banco_shas = set()
     issues = []
     for r in rows:
-        flag = "CLEAN" if r["dirty"] == 0 and r["baks"] == 0 else "OVERLAY"
-        mark = "OK " if flag == "CLEAN" else "** "
+        # 'mod' = tracked drift, '.bak' = leftover overlays → the real signal.
+        # 'new' = untracked scratch (e.g. sandbox TEST sheets) → noted, not a failure.
+        clean = r["mod"] == 0 and r["baks"] == 0
+        flag = "CLEAN" if clean else "DRIFT"
+        if clean and r["new"]:
+            flag = "CLEAN*"          # clean tracked, has untracked scratch
+        mark = "OK " if clean else "** "
         dim = "" if r["role"] == "banco" else "  (context)"
-        print(f"  {mark:<3}{r['label']:<16}{r['branch']:<10}{r['sha']:<10}"
-              f"{r['dirty']:>6}{r['baks']:>6}  {flag}{dim}")
+        print(f"  {mark:<3}{r['label']:<16}{r['branch']:<8}{r['sha']:<10}"
+              f"{r['mod']:>5}{r['new']:>5}{r['baks']:>6}  {flag}{dim}")
         if r["role"] == "banco":
             banco_shas.add(r["sha"])
-            if flag != "CLEAN":
-                issues.append(f"{r['label']} has {r['dirty']} dirty + {r['baks']} .bak overlay(s)")
+            if not clean:
+                issues.append(f"{r['label']}: {r['mod']} tracked-modified + {r['baks']} .bak")
 
     print("  " + "-" * 66)
     if args.local:
