@@ -7,6 +7,7 @@
     <!-- Print Button Bar (hidden when printing) -->
     <div class="no-print bg-white shadow-md sticky top-0 z-10 px-4 py-3 flex justify-between items-center flex-wrap gap-2">
         <div class="flex items-center space-x-2">
+            <button @click="goBack()" class="btn-secondary" title="Back to where you were">← Back</button>
             <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
             <span x-show="transaction.status === 'refunded'" class="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-semibold">REFUNDED</span>
         </div>
@@ -545,6 +546,14 @@
                     console.error('Refund failed:', error);
                     showToast('Refund failed: ' + error.message, 'error');
                 }
+            },
+
+            // Return to wherever the user came from (the report drill, transactions, …).
+            // history.back() keeps their place; fall back to dashboard on a cold open
+            // (direct link / fresh PWA tab) where there's no in-app history to return to.
+            goBack() {
+                if (window.history.length > 1) window.history.back();
+                else window.location.href = '/pos/dashboard';
             },
 
             goDashboard() {
