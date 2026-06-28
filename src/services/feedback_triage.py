@@ -103,10 +103,11 @@ async def triage_feedback(
     vision = None
     if screenshot:
         try:
-            # Reuse the same Ollama (Turbo) brain that powers the text rewrite — no Gemini key
-            # needed. Falls back gracefully if the hosted vision model isn't available.
+            # Vision provider is configurable; default Gemini (the shop's Snap-&-fill provider).
+            # Lights up when BH_GOOGLE_API_KEY is set; degrades gracefully otherwise. (Turbo
+            # hosts the text model but not a vision one, so ollama isn't a working default here.)
             res = await analyze_image(screenshot, screenshot_mime, domain=TRIAGE_VISION,
-                                      provider=os.getenv("BANCO_VISION_PROVIDER", "ollama"))
+                                      provider=os.getenv("BANCO_VISION_PROVIDER", "gemini"))
             vision = res.get("data")
             if res.get("note"):
                 logger.info("triage vision note: %s", res["note"])
