@@ -19,6 +19,40 @@ def test_empty_cart_checkout_is_blocked(session):
     assert "empty" in r.text.lower()
 
 
+def _find_by_class(session, classes):
+    items = session.get(f"{POS}/search", params={"q": "", "limit": 300}).json().get("items", [])
+    return next((p for p in items if p.get("product_class") in classes), None)
+
+
+def test_discount_blocked_on_promo_restricted_class(session):
+    """Tobacco/alcohol are promotion-restricted by law (Tabakproduktegesetz/Alkoholgesetz)
+    — a discount on those lines must be rejected, for cashier AND manager. (Angel: Pam
+    discounted cigarettes; the role cap alone let it through.)"""
+    import pytest
+    _open_drawer(session)
+    prod = _find_by_class(session, ("tobacco_nicotine", "alcohol"))
+    if not prod:
+        pytest.skip("no tobacco/alcohol product seeded")
+    tx = session.post(f"{POS}/transactions", json={}).json()
+    r = session.post(f"{POS}/transactions/{tx['id']}/items",
+                     json={"product_id": prod["id"], "quantity": 1, "discount_percent": 10})
+    assert r.status_code == 400, r.text
+    assert "restricted" in r.text.lower()
+
+
+def test_discount_still_works_on_standard_goods(session):
+    """The block is class-scoped — a normal item still discounts fine."""
+    import pytest
+    _open_drawer(session)
+    prod = _find_by_class(session, (None, "standard"))
+    if not prod:
+        pytest.skip("no standard product")
+    tx = session.post(f"{POS}/transactions", json={}).json()
+    r = session.post(f"{POS}/transactions/{tx['id']}/items",
+                     json={"product_id": prod["id"], "quantity": 1, "discount_percent": 10})
+    assert r.status_code == 200, r.text
+
+
 def test_line_quantity_is_capped(session):
     """A fat-finger 10,000,000 quantity must be rejected (cap = 10000)."""
     # find any product
