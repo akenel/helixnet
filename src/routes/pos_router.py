@@ -2731,6 +2731,75 @@ async def get_product_sales_detail(
     }
 
 
+@router.get("/reports/category-sales")
+async def get_category_sales_detail(
+    category: str,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(_REPORT_ROLES)),
+):
+    """Who bought items in this category in the window — one row per sale a product
+    of that category appeared in. The drill behind a 'By category' pill. Same shape
+    as the product drill so the buyer-card panel can render it unchanged."""
+    d_from, d_to, start, end = _parse_report_range(date_from, date_to)
+
+    rows = (await db.execute(
+        select(
+            TransactionModel.id,
+            TransactionModel.transaction_number,
+            TransactionModel.completed_at,
+            TransactionModel.cashier_id,
+            TransactionModel.customer_id,
+            LineItemModel.quantity,
+            LineItemModel.line_total,
+        )
+        .join(TransactionModel, TransactionModel.id == LineItemModel.transaction_id)
+        .join(ProductModel, ProductModel.id == LineItemModel.product_id)
+        .where(and_(
+            ProductModel.category == category,
+            LineItemModel.is_giveaway == False,
+            TransactionModel.status == TransactionStatus.COMPLETED,
+            TransactionModel.completed_at >= start,
+            TransactionModel.completed_at <= end,
+        ))
+        .order_by(TransactionModel.completed_at.desc())
+    )).all()
+
+    cashier_ids = {r.cashier_id for r in rows if r.cashier_id}
+    customer_ids = {r.customer_id for r in rows if r.customer_id}
+    cashier_nm: dict = {}
+    if cashier_ids:
+        urows = await db.execute(select(UserModel.id, UserModel.first_name, UserModel.username)
+                                 .where(UserModel.id.in_(cashier_ids)))
+        cashier_nm = {uid: (first or uname) for uid, first, uname in urows.all()}
+    customer_nm: dict = {}
+    if customer_ids:
+        crows = await db.execute(select(CustomerModel.id, CustomerModel.handle, CustomerModel.real_name)
+                                 .where(CustomerModel.id.in_(customer_ids)))
+        customer_nm = {cid: (handle or real or "Member") for cid, handle, real in crows.all()}
+
+    sales = [{
+        "transaction_id": str(r.id),
+        "transaction_number": r.transaction_number,
+        "time": r.completed_at.isoformat() if r.completed_at else None,
+        "cashier_name": cashier_nm.get(r.cashier_id, "—") if r.cashier_id else "—",
+        "customer_name": customer_nm.get(r.customer_id) if r.customer_id else None,
+        "qty": int(r.quantity or 0),
+        "line_total": float(Decimal(str(r.line_total or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+    } for r in rows]
+
+    return {
+        "category": category,
+        "product_name": category,
+        "date_from": d_from.isoformat(),
+        "date_to": d_to.isoformat(),
+        "sales": sales,
+        "total_qty": sum(s["qty"] for s in sales),
+        "total_revenue": float(sum((Decimal(str(s["line_total"])) for s in sales), Decimal("0.00"))),
+    }
+
+
 @router.get("/customers/{customer_id}/summary")
 async def get_customer_summary(
     customer_id: UUID,
