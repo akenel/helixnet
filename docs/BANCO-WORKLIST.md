@@ -20,8 +20,12 @@ Tonight's Product Sales deploy (`checkout --force origin/main` on the sandbox + 
 
 ---
 
-## 🔥 RIGHT NOW — tonight, 5 minutes, your hands
-- [ ] **Test the Product Sales report** on staging (Fairphone): https://staging-banco.lapiazza.app/pos/reports/products (login *felix*). Tap a product → "who bought it", try Export CSV + Print. **If it's good → tell Tigs "ship it" → it's on prod in one clean step** (already committed `9dc9641`, no migration). 🧍
+## ✅ SHIPPED + SIGNED OFF — 2026-06-28
+- [x] **Product Sales report** — what sold, tap → who-bought-it (cards), category drill + emoji, card → receipt, origin-gated ← Back, CSV/print, manager-gated (pam 403). LIVE on prod, human-green.
+- [x] **Mobile responsive pass** — POS was tablet-sized; added a ≤480px breakpoint (tablet untouched) + per-screen fixes. iPhone SE clean. Audit harness = `scripts/testing/mobile-overflow-audit.js`.
+- [x] **EXACT cash-payment bug** — false "Insufficient payment" on `.17`-type totals (JSON number → imprecise Decimal). Fixed at cent precision + regression test. Angel verified the sale on prod.
+- [x] **Refund policy = manager-only** (confirmed keep) — pam can't refund, felix can; enforced UI + server.
+- **Sign-off:** TEST-B03 hypercare 14/15 PASS, "really good". All 3 envs byte-identical to main `0707093`. Fresh verified prod backup taken before deploy.
 
 ---
 
@@ -45,7 +49,10 @@ Tonight's Product Sales deploy (`checkout --force origin/main` on the sandbox + 
 ---
 
 ## ✨ POLISH BACKLOG — after go-live, only on demand
-*(All specced in [BANCO-DAY-ONE-WISHLIST.md](BANCO-DAY-ONE-WISHLIST.md). Don't build ahead of need.)*
+*(Most specced in [BANCO-DAY-ONE-WISHLIST.md](BANCO-DAY-ONE-WISHLIST.md). Don't build ahead of need.)*
+- **Cosmetics queue (2026-06-28, agreed next):** ① **Feedback button** reposition (overlaps content on mobile — annoying) ← *starting now* · ② **Pagination** on long lists (transactions, catalog, buyer drill).
+- **Category** chart on the report + the **hierarchy/CRUD + emoji picker** (specced in `BANCO-CATEGORY-MANAGEMENT-PLAN.md`; emoji seam already shipped).
+- Mobile tail: catalog card overflow on sub-375 phones (prod data); `cdn.tailwindcss.com` prod warning → proper Tailwind build (rule #9).
 - Product Sales #2 customer-detail screen · #3 dashboard cards · XLSX export · **Export-to-Google-Drive (sellable feature)** · audited PII/HR export.
 
 ---
