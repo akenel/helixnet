@@ -7,7 +7,7 @@ Sprint 4: Added HTML interface routes for Pam's POS system.
 """
 import json
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFile, File, Body
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -3248,8 +3248,8 @@ async def triage_pending_feedback(
             db.add(POSNotificationModel(
                 recipient=r.created_by, kind="triaged", item_number=r.item_number,
                 title="🛠️ We're on it",
-                body=f"BL-{r.item_number:03d} — “{ct}” — thanks, we're looking into it now.",
-                link=None))   # → /pos/my-tickets once the user-facing view ships (next increment)
+                body=f"“{ct}” — thanks, we're looking into it now. Tap to see how we understood it.",
+                link="/pos/my-tickets"))
         out.append({"item_number": r.item_number, "ai": res["ai"],
                     "clean_title": clean.get("title"), "type": clean.get("type"),
                     "severity": clean.get("severity"), "confidence": clean.get("confidence"),
@@ -3356,6 +3356,127 @@ async def mark_notifications_read(
         update(POSNotificationModel)
         .where(POSNotificationModel.recipient == me, POSNotificationModel.read_at.is_(None))
         .values(read_at=datetime.now(timezone.utc)))
+    await db.commit()
+    return {"ok": True}
+
+
+# ===== "My tickets" — the friendly, no-jargon view of a user's OWN feedback (PoC-3) =========
+def _friendly_stage(status: str, has_triage: bool) -> dict:
+    """Map the internal status → a plain-language journey step (1..4) for a non-techie."""
+    s = (status or "pending").lower()
+    if s in ("done", "archived"):
+        return {"step": 4, "label": "Done", "emoji": "✅",
+                "blurb": "All sorted — thank you for helping make this better!"}
+    if s == "in_progress":
+        return {"step": 3, "label": "Being fixed", "emoji": "🔧",
+                "blurb": "Someone's working on this right now."}
+    if s == "blocked":
+        return {"step": 3, "label": "On hold", "emoji": "⏳",
+                "blurb": "Paused for a moment — we haven't forgotten it."}
+    if has_triage:
+        return {"step": 2, "label": "We understand it", "emoji": "👀",
+                "blurb": "We've read it and we're looking into it."}
+    return {"step": 1, "label": "Received", "emoji": "📨",
+            "blurb": "Thanks! We've got your message."}
+
+
+async def _my_feedback_item(db, me, item_number):
+    """Fetch ONE feedback item that belongs to `me` (id + status), or None."""
+    row = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.status)
+        .where(BacklogItemModel.item_number == item_number,
+               BacklogItemModel.created_by == me,
+               BacklogItemModel.tags.ilike("%feedback%")))).first()
+    return row
+
+
+@router.get("/feedback/mine")
+async def my_tickets(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """A user's OWN feedback, in plain language: what they said, how we understood it, what
+    stage it's at, and whether they've confirmed. No severities, no jargon."""
+    from src.db.models.backlog_model import BacklogActivityModel
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    rows = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
+               BacklogItemModel.description, BacklogItemModel.status, BacklogItemModel.created_at)
+        .where(BacklogItemModel.created_by == me, BacklogItemModel.tags.ilike("%feedback%"))
+        .order_by(BacklogItemModel.created_at.desc()).limit(50))).all()
+    ids = [r.id for r in rows]
+    triage, confirmed = {}, set()
+    if ids:
+        acts = (await db.execute(
+            select(BacklogActivityModel.item_id, BacklogActivityModel.actor,
+                   BacklogActivityModel.new_value, BacklogActivityModel.comment,
+                   BacklogActivityModel.created_at)
+            .where(BacklogActivityModel.item_id.in_(ids))
+            .order_by(BacklogActivityModel.created_at.desc()))).all()
+        for a in acts:
+            if a.actor == "ai-triage" and a.item_id not in triage:
+                try:
+                    triage[a.item_id] = json.loads(a.comment).get("clean", {})
+                except Exception:
+                    triage[a.item_id] = {}
+            elif a.actor == me and a.new_value == "confirmed":
+                confirmed.add(a.item_id)
+    items = []
+    for r in rows:
+        cl = triage.get(r.id)
+        st = _friendly_stage(r.status.value if r.status else "pending", cl is not None)
+        items.append({
+            "item_number": r.item_number,
+            "you_said": r.title,
+            "understood": (cl or {}).get("title") if cl else None,
+            "stage": st,
+            "needs_confirm": cl is not None and r.id not in confirmed,
+            "confirmed": r.id in confirmed,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        })
+    open_n = sum(1 for i in items if i["stage"]["step"] < 4)
+    done_n = sum(1 for i in items if i["stage"]["step"] == 4)
+    return {"open": open_n, "done": done_n, "items": items}
+
+
+@router.post("/feedback/mine/{item_number}/confirm")
+async def confirm_my_ticket(
+    item_number: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The confirm-back loop: 'yes, that's what I meant'. Recorded as the reporter's own activity."""
+    from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.COMMENT, actor=me,
+        new_value="confirmed", comment="✅ Reporter confirmed the AI's understanding is correct."))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/feedback/mine/{item_number}/note")
+async def add_note_to_my_ticket(
+    item_number: int,
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """'Not quite — here's more.' The reporter adds a clarifying note to their own ticket."""
+    from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    note = (payload.get("note") or "").strip()
+    if not note:
+        raise HTTPException(status_code=400, detail="Empty note")
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.COMMENT, actor=me,
+        new_value="reporter-note", comment="📝 Reporter added: " + note[:1000]))
     await db.commit()
     return {"ok": True}
 
@@ -3880,6 +4001,13 @@ async def pos_hypercare(request: Request):
     """The Hypercare Cockpit — Angel's command center for AI-triaged feedback (the API
     behind it, /feedback/queue + /feedback/triage, is manager/admin gated)."""
     return templates.TemplateResponse("pos/hypercare.html", {"request": request})
+
+
+@html_router.get("/pos/my-tickets", response_class=HTMLResponse, name="pos_my_tickets")
+async def pos_my_tickets(request: Request):
+    """The friendly, no-jargon view of a user's OWN feedback — where the bell sends them.
+    Any logged-in POS user; the API (/feedback/mine) returns only their own."""
+    return templates.TemplateResponse("pos/my_tickets.html", {"request": request})
 
 
 @html_router.get("/pos/dashboard", response_class=HTMLResponse, name="pos_dashboard")
