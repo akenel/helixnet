@@ -165,7 +165,7 @@
             <div class="space-y-2">
                 <template x-for="s in drill.sales" :key="s.transaction_id || (s.transaction_number + s.time)">
                     <a :href="s.transaction_id ? ('/pos/receipt/' + s.transaction_id) : '#'"
-                       class="block border border-gray-200 rounded-xl p-3 hover:bg-indigo-50 active:bg-indigo-100 transition">
+                       class="block no-underline text-gray-900 border border-gray-200 rounded-xl p-3 hover:bg-indigo-50 active:bg-indigo-100 transition">
                         <div class="flex justify-between items-start gap-3">
                             <div class="min-w-0">
                                 <p class="font-semibold text-gray-900 truncate" x-text="s.customer_name || '— Walk-in'"></p>
@@ -182,7 +182,7 @@
                         </div>
                         <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                             <span class="font-mono text-xs text-gray-400" x-text="s.transaction_number"></span>
-                            <span class="text-xs font-semibold text-indigo-600" x-show="s.transaction_id">View receipt ›</span>
+                            <span class="text-xs font-semibold text-indigo-600 underline" x-show="s.transaction_id">View receipt ›</span>
                         </div>
                     </a>
                 </template>
