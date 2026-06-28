@@ -2296,17 +2296,19 @@ async def refund_transaction(
             detail=f"Can only refund completed transactions. Current status: {transaction.status.value}"
         )
 
-    # Calculate refund amount
-    refund_amount = refund.partial_amount if refund.partial_amount else transaction.total
+    # Calculate refund amount. Quantize to cents BEFORE comparing — a partial_amount sent
+    # as a JSON number is an imprecise Decimal, same class of bug as the cash-tendered check,
+    # so an un-rounded `> total` could falsely reject a valid full-value partial refund.
+    raw_refund = refund.partial_amount if refund.partial_amount else transaction.total
+    refund_amount = Decimal(str(raw_refund)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    original_total = Decimal(str(transaction.total)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-    if refund_amount > transaction.total:
+    if refund_amount > original_total:
         raise HTTPException(
             status_code=400,
-            detail=f"Refund amount ({refund_amount}) cannot exceed transaction total ({transaction.total})"
+            detail=f"Refund amount ({refund_amount}) cannot exceed transaction total ({original_total})"
         )
 
-    refund_amount = Decimal(str(refund_amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    original_total = Decimal(str(transaction.total))
     is_partial = Decimal("0") < refund_amount < original_total
 
     # Update transaction
