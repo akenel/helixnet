@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Product Sales report — Quick Test (TEST-B02)</title>
+<title>Product Sales — PROD Hypercare (TEST-B03)</title>
 <!-- Built from QUICK-TEST-SHEET-TEMPLATE.html. Relative links → tests whichever
      env (sandbox/staging) you opened this sheet from. Autosave is per-origin, so
      the sandbox run and the staging run keep separate progress automatically. -->
@@ -121,14 +121,19 @@
 <div class="sheet">
   <header>
     <div class="brand">Banco <small>· on the HelixNet engine</small></div>
-    <div class="docid">TEST-B02</div>
+    <div class="docid">TEST-B03 · PROD</div>
   </header>
 
   <div class="body">
-    <h1>Product Sales report — quick test</h1>
-    <p class="sub">Proves: the "📦 Product Sales" button works, you can drill into <b>👥 Who bought it</b>, export, and that a cashier can't open the report. Run it on <b>sandbox</b>, then on <b>staging</b>. Green on both → ship to prod.</p>
+    <h1>Product Sales report — PROD hypercare</h1>
+    <p class="sub">Go-live sign-off — <b>mobile responsiveness</b> + Product Sales, on the real shop. Proves the whole feature: Reports→Product Sales, date range + sort, <b>👥 Who bought it</b> cards, <b>tappable category</b> pills (with emoji), card→<b>full receipt</b>, the <b>← Back to report</b> (and that it's NOT there after a sale), exports, and the <b>cashier can't open the report</b>. Run on <b>desktop</b> AND on <b>mobile</b>, as <b>felix</b> (manager) and <b>pam</b> (cashier).</p>
 
-    <div class="howto">📝 <b>How to use:</b> the links below open the env <b>this sheet is served from</b> (so open it from sandbox to test sandbox, from staging to test staging). Do each step on your Fairphone, tap <b>✓ PASS</b> or <b>✗ FAIL</b>. Talk a note with <b>🎤</b>. Everything <b>auto-saves in this browser</b> (sandbox &amp; staging keep separate progress). All green → hit <b>📋 Copy results</b> and paste back to me.</div>
+    <div class="howto">📝 <b>How to use:</b> run this twice — once on <b>desktop</b>, once on your <b>phone</b> (the two device links below keep separate progress). The app links open the <b>real prod shop</b>. Do each step, tap <b>✓ PASS</b>/<b>✗ FAIL</b>, talk a <b>🎤</b> note. <b>Auto-saves in this browser.</b> All green on both devices → <b>📋 Copy results</b> and paste back. ⚠ This is the LIVE shop — only the optional test-sale step (#12) writes data, and you refund it right after.</div>
+
+    <div class="howto" style="background:#fff7ed;border-color:#fed7aa;border-left-color:#ea580c;">📱💻 <b>Device runs (separate progress):</b>
+      &nbsp;<a class="go" style="display:inline-flex;padding:4px 10px;" href="?d=desktop">💻 Desktop run ↗</a>
+      &nbsp;<a class="go" style="display:inline-flex;padding:4px 10px;" href="?d=mobile">📱 Mobile run ↗</a>
+      &nbsp;<span style="font-size:12px;color:#9a3412;">— open the one you're on; each keeps its own checklist.</span></div>
 
     <div class="dash">
       <div class="row1">
@@ -149,15 +154,15 @@
     <div class="meta">
       <div><b>Tester:</b> <input class="txt" data-k="tester" type="text" placeholder="Angel"></div>
       <div><b>Date:</b> <input class="txt" data-k="date" type="text" placeholder="dd/mm/yyyy"></div>
-      <div><b>Env under test:</b> <input class="txt" data-k="build" type="text" placeholder="sandbox  OR  staging"></div>
-      <div><b>Build:</b> <input class="txt" data-k="commit" type="text" value="commit f0b4cbd"></div>
+      <div><b>Device:</b> <input class="txt" data-k="build" type="text" placeholder="desktop  OR  mobile"></div>
+      <div><b>Build:</b> <input class="txt" data-k="commit" type="text" value="PROD · banco.lapiazza.app · 311afb9"></div>
     </div>
 
     <div class="links">
       <a class="go" href="/pos/reports" target="_blank">🔗 Open Reports <span class="arr">↗</span></a>
       <a class="go" href="/pos/reports/products" target="_blank">🔗 Product Sales (direct) <span class="arr">↗</span></a>
     </div>
-    <div class="creds">Manager login <code>felix / helix_pass</code> · Cashier login <code>pam / helix_pass</code>. The Reports link opens the current env (sandbox or staging).</div>
+    <div class="creds">Manager login <code>felix / helix_pass</code> · Cashier login <code>pam / helix_pass</code>. The links open the <b>live prod shop</b> (banco.lapiazza.app).</div>
 
     <div class="check">
       <h3>The checks — do them in order</h3>
@@ -187,39 +192,51 @@
     </div>
   </div>
 
-  <footer><span>Confidential — Internal Use Only</span><span>TEST-B02 · Rev 1 · Product Sales report</span></footer>
+  <footer><span>Confidential — Internal Use Only</span><span>TEST-B03 · PROD hypercare · Product Sales</span></footer>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 (function () {
-  var LSKEY = 'quicktest_product_sales_v1';
+  // Namespace saved progress per device so the desktop run and the mobile run don't collide.
+  var DEV = (new URLSearchParams(location.search).get('d') || 'main').replace(/[^a-z]/gi,'').toLowerCase();
+  var LSKEY = 'hypercare_product_sales_v3_' + DEV;
   var state = load();
 
   var CHECKS = [
+    { do:"<b>📱 MOBILE FIT —</b> on your phone, open <b>Dashboard</b>, <b>Scan</b>, <b>Catalog</b>; swipe each left/right.",
+      exp:"<b>No sideways scroll</b> on any of them. Buttons/fonts look right-sized — not monstrous.", big:true },
+    { do:"<b>📱 Reports + Product Sales</b> — open both; look at the date fields and the big numbers.",
+      exp:"Date shows the <b>full</b> date (e.g. 28/06/2026, not '28/06/2('); CHF figures fit their cards; no sideways scroll.", big:true },
+    { do:"<b>📱 Closeout + Cash Drawer Count</b> — open both.",
+      exp:"Totals fit; denomination tiles sit 3-across and read cleanly; no sideways scroll." },
+    { do:"<b>📱 A receipt</b> — open one (Product Sales → Who bought it → a buyer card).",
+      exp:"Header reads 'Receipt' with <b>#TXN-… on its own line</b>; '← Back to report' is one line; the whole receipt fits; no sideways scroll.", big:true },
     { do:"<b>Log in as the manager</b> (<code>felix / helix_pass</code>) and go to <b>Reports</b>.",
       exp:"Reports screen opens, no error." },
     { do:"Tap the <b>📦 Product Sales</b> button on the Reports screen.",
-      exp:"It navigates to the Product Sales report. <b>No</b> 'goProductSales is not defined' error, no dead button." },
-    { do:"Look at the four cards (Revenue / Items sold / Products / incl. VAT) and the line under the title.",
-      exp:"Cards show numbers. The line says you're viewing <b>Today</b>." },
-    { do:"Tap the <b>Last 30 days</b> range button.",
-      exp:"The product table fills with more rows — sales beyond just today." },
-    { do:"<b>The big one —</b> tap the <b>👥 Who bought it ›</b> pill under any product.",
-      exp:"A panel slides up: <b>Who bought: [product]</b>, with rows of Receipt · Time · Cashier · Customer · Qty · Total.", big:true },
-    { do:"In that buyers panel, tap <b>📥 CSV</b>.",
-      exp:"A CSV file downloads (the buyer list for that product)." },
-    { do:"Close the panel (× or tap outside). Back on the report, tap <b>📥 Export CSV</b>.",
-      exp:"A CSV of the whole product list downloads." },
-    { do:"Tap a column header like <b>Qty</b> or <b>Revenue</b>.",
-      exp:"The table re-sorts by that column (tap again to flip direction)." },
+      exp:"It navigates to the Product Sales report. No error, no dead button." },
+    { do:"Check the four cards (Revenue / Items sold / Products / incl. VAT) + the line under the title; then tap <b>Last 30 days</b>.",
+      exp:"Cards show real numbers; line said <b>Today</b>; after Last-30-days the table fills with more rows." },
+    { do:"Tap a column header (<b>Qty</b> / <b>Revenue</b>).",
+      exp:"The table re-sorts by that column (tap again flips direction)." },
+    { do:"<b>The big one —</b> tap a <b>👥 Who bought it ›</b> pill under a product.",
+      exp:"A panel of clean <b>cards</b> — customer + total on top, time · cashier below, receipt # + <b>View receipt ›</b> footer. Only 'View receipt' is underlined.", big:true },
+    { do:"<b>Category drill —</b> close that, then tap a <b>category pill</b> (it has an emoji, e.g. ☕ Café).",
+      exp:"Same card panel showing everyone who bought that whole category. The emoji + name match the pill.", big:true },
+    { do:"Tap a <b>buyer card</b> → then on the receipt tap <b>← Back to report</b>.",
+      exp:"Card opens the <b>full receipt</b>; <b>← Back to report</b> takes you back to the Product Sales report (NOT into a checkout).", big:true },
+    { do:"Back on the report: tap <b>📥 Export CSV</b>, and inside a buyer panel tap <b>📥 CSV</b>.",
+      exp:"Both download a CSV (whole list / one product's buyers)." },
     { do:"Tap <b>🖨️ Print / PDF</b>.",
-      exp:"A clean print view — no app menus/buttons, just the title stamp + table. (Cancel out after.)" },
-    { do:"<b>Security gate —</b> log out, log back in as the cashier (<code>pam / helix_pass</code>), try to open <code>/pos/reports/products</code>.",
-      exp:"Pam is <b>blocked</b> — the report does not open for a cashier (403 / sent away). Only managers see it.", big:true },
-    { do:"<b>Overall feel on the phone.</b> Was 'Who bought it' obvious? Panel readable? No weird sideways scrolling?",
-      exp:"It hangs together. Note anything clunky in the 🎤 box below." }
+      exp:"Clean print view — no app menus, just the title stamp + table. (Cancel after.)" },
+    { do:"<b>Security gate —</b> log out, log in as the cashier (<code>pam / helix_pass</code>), try to open <code>/pos/reports/products</code>.",
+      exp:"Pam is <b>blocked</b> (403 / sent away). Only managers see the report.", big:true },
+    { do:"<b>(Optional, writes data)</b> As pam, ring ONE cheap test item &amp; finish the sale; on the receipt look for a back button; then <b>Refund</b> it.",
+      exp:"The receipt after a sale has <b>NO</b> '← Back to report' button (so you can't fall back into checkout). Refund works + cleans up." },
+    { do:"<b>Overall.</b> Did the whole thing feel right on <b>this device</b> (desktop or mobile)? Nothing weird, stuck, or ugly?",
+      exp:"It hangs together. Note anything in the 🎤 box. (Remember to run the OTHER device too.)" }
   ];
 
   var tbody = document.getElementById('rows');
@@ -325,8 +342,8 @@
   function fld(k) { return (state.fields && state.fields[k]) || ''; }
   function report() {
     var n = CHECKS.length, p = 0, f = 0, L = [];
-    L.push('Product Sales report — quick test (TEST-B02)');
-    L.push('Env   : ' + (fld('build') || '?') + '   ' + (fld('commit') || ''));
+    L.push('Product Sales — PROD hypercare (TEST-B03)');
+    L.push('Device: ' + (fld('build') || '?') + '   ' + (fld('commit') || ''));
     L.push('Tester: ' + (fld('tester') || '?') + '   Date: ' + (fld('date') || '?'));
     L.push('Time on sheet: ' + fmtClock(elapsed()));
     L.push('');
