@@ -3249,6 +3249,60 @@ async def triage_pending_feedback(
     return {"triaged": len(out), "items": out}
 
 
+@router.get("/feedback/queue")
+async def hypercare_queue(
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """The Hypercare COCKPIT queue — feedback tickets with their AI triage (raw → cleaned),
+    status, reporter, and a scorecard. Read-only; the cockpit page renders this."""
+    from src.db.models.backlog_model import BacklogActivityModel
+    rows = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
+               BacklogItemModel.description, BacklogItemModel.status, BacklogItemModel.priority,
+               BacklogItemModel.created_by, BacklogItemModel.created_at,
+               (BacklogItemModel.screenshot_data.isnot(None)).label("has_shot"))
+        .where(BacklogItemModel.tags.ilike("%feedback%"))
+        .order_by(BacklogItemModel.created_at.desc())
+        .limit(max(1, min(int(limit or 50), 200))))).all()
+
+    ids = [r.id for r in rows]
+    triage: dict = {}
+    if ids:
+        acts = (await db.execute(
+            select(BacklogActivityModel.item_id, BacklogActivityModel.comment,
+                   BacklogActivityModel.created_at)
+            .where(BacklogActivityModel.item_id.in_(ids),
+                   BacklogActivityModel.actor == "ai-triage")
+            .order_by(BacklogActivityModel.created_at.desc()))).all()
+        for a in acts:
+            if a.item_id not in triage:   # keep only the latest triage per item
+                try:
+                    triage[a.item_id] = {"data": json.loads(a.comment),
+                                         "at": a.created_at.isoformat() if a.created_at else None}
+                except Exception:
+                    pass
+
+    items = []
+    for r in rows:
+        t = triage.get(r.id)
+        items.append({
+            "item_number": r.item_number, "raw_title": r.title, "raw_description": r.description,
+            "status": r.status.value if r.status else None,
+            "priority": r.priority.value if r.priority else None,
+            "reporter": r.created_by,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "has_screenshot": bool(r.has_shot),
+            "triaged": (t or {}).get("data"), "triaged_at": (t or {}).get("at"),
+        })
+    triaged_n = sum(1 for i in items if i["triaged"])
+    undec = sum(1 for i in items if i["triaged"]
+                and i["triaged"].get("clean", {}).get("decipherable") is False)
+    return {"total": len(items), "triaged": triaged_n, "untriaged": len(items) - triaged_n,
+            "undecipherable": undec, "items": items}
+
+
 # ================================================================
 # CASH SHIFT -- per-cashier drawer accountability (the lockbox loop)
 # ================================================================
@@ -3762,6 +3816,13 @@ async def pos_token_refresh(request: Request):
     except Exception as e:
         logger.error(f"Token refresh exception: {e}")
         return JSONResponse(status_code=500, content={"detail": "refresh_error"})
+
+
+@html_router.get("/pos/hypercare", response_class=HTMLResponse, name="pos_hypercare")
+async def pos_hypercare(request: Request):
+    """The Hypercare Cockpit — Angel's command center for AI-triaged feedback (the API
+    behind it, /feedback/queue + /feedback/triage, is manager/admin gated)."""
+    return templates.TemplateResponse("pos/hypercare.html", {"request": request})
 
 
 @html_router.get("/pos/dashboard", response_class=HTMLResponse, name="pos_dashboard")

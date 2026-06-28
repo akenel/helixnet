@@ -1,0 +1,121 @@
+{% extends "pos/base.html" %}
+{% block title %}Hypercare Cockpit - Banco{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="hypercareData()" x-init="init()">
+  <div class="max-w-5xl mx-auto px-4 py-8">
+
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">🛰️ Hypercare Cockpit</h1>
+      <div class="flex flex-wrap gap-2">
+        <button @click="runTriage()" :disabled="triaging" class="btn-primary">
+          <span x-show="!triaging">🤖 Run AI triage now</span>
+          <span x-show="triaging" style="display:none;">Triaging…</span>
+        </button>
+        <button @click="load()" class="btn-secondary">↻ Refresh</button>
+      </div>
+    </div>
+    <p class="text-gray-600 mb-4 text-sm">Feedback from the floor, auto-rewritten by AI into clean tickets. The raw is never changed — you see both, and decide.</p>
+
+    <!-- Scorecard -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">Tickets</p><p class="text-xl sm:text-2xl font-bold text-gray-900" x-text="sc.total"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">AI-assessed</p><p class="text-xl sm:text-2xl font-bold text-green-600" x-text="sc.triaged"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">Awaiting AI</p><p class="text-xl sm:text-2xl font-bold text-amber-600" x-text="sc.untriaged"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">Needs questions</p><p class="text-xl sm:text-2xl font-bold text-red-600" x-text="sc.undecipherable"></p></div>
+    </div>
+
+    <div x-show="loading" class="text-center py-10 text-gray-500">Loading the queue…</div>
+    <div x-show="!loading && items.length === 0" class="card text-center py-10 text-gray-400">No feedback yet. When the floor fires the 💬 button, it lands here.</div>
+
+    <!-- Queue -->
+    <div class="space-y-3" x-show="!loading">
+      <template x-for="t in items" :key="t.item_number">
+        <div class="card">
+          <div class="flex justify-between items-start gap-3 flex-wrap">
+            <div class="min-w-0">
+              <span class="font-mono text-xs text-gray-400">BL-<span x-text="String(t.item_number).padStart(3,'0')"></span></span>
+              <span class="text-xs text-gray-500">· <span x-text="t.reporter"></span> · <span x-text="fmt(t.created_at)"></span></span>
+              <span x-show="t.has_screenshot" class="text-xs text-indigo-400">· 📎 shot</span>
+            </div>
+            <div class="flex gap-1 flex-wrap">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="t.triaged ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'" x-text="t.triaged ? '🤖 assessed' : '⏳ awaiting AI'"></span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" x-text="t.status"></span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-3 mt-3">
+            <!-- RAW -->
+            <div class="bg-gray-50 rounded-lg p-3">
+              <p class="text-[11px] font-bold text-gray-400 uppercase mb-1">Raw — as filed</p>
+              <p class="font-semibold text-gray-800 text-sm" x-text="t.raw_title"></p>
+              <p class="text-xs text-gray-500 mt-1 whitespace-pre-line" x-text="(t.raw_description||'').slice(0,300)"></p>
+            </div>
+            <!-- CLEANED -->
+            <div class="rounded-lg p-3" :class="t.triaged ? 'bg-indigo-50' : 'bg-gray-50'">
+              <p class="text-[11px] font-bold text-indigo-400 uppercase mb-1">AI-cleaned</p>
+              <template x-if="t.triaged">
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm" x-text="t.triaged.clean?.title"></p>
+                  <p class="text-xs text-gray-600 mt-1" x-text="t.triaged.clean?.description"></p>
+                  <div class="flex flex-wrap gap-1 mt-2 items-center">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border" x-text="(t.triaged.clean?.type||'?')"></span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="sevClass(t.triaged.clean?.severity)" x-text="(t.triaged.clean?.severity||'?')"></span>
+                    <span class="text-[10px] text-gray-500" x-show="t.triaged.clean?.area" x-text="'· '+t.triaged.clean?.area"></span>
+                    <span class="text-[10px] text-gray-400 ml-auto" x-text="'conf '+Math.round((t.triaged.clean?.confidence||0)*100)+'%'"></span>
+                  </div>
+                  <div x-show="t.triaged.clean?.decipherable === false" class="mt-2 text-xs text-red-600">
+                    ❓ Needs the reporter to clarify:
+                    <ul class="list-disc ml-4"><template x-for="q in (t.triaged.clean?.questions||[])" :key="q"><li x-text="q"></li></template></ul>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-2" x-text="'model: '+(t.triaged.model||'?')+(t.triaged.ai?'':' (fallback)')"></p>
+                </div>
+              </template>
+              <p x-show="!t.triaged" class="text-xs text-gray-400">Not yet triaged — runs on the next cadence pass, or hit “Run AI triage now”.</p>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<script>
+function hypercareData() {
+  return {
+    items: [], sc: { total:0, triaged:0, untriaged:0, undecipherable:0 },
+    loading: false, triaging: false,
+    init() {
+      const u = AuthHelper.getUserInfo();
+      if (!u) { window.location.href = '/pos'; return; }
+      this.load();
+    },
+    async load() {
+      this.loading = true;
+      try {
+        const d = await API.get('/api/v1/pos/feedback/queue?limit=100');
+        this.items = d.items || [];
+        this.sc = { total:d.total||0, triaged:d.triaged||0, untriaged:d.untriaged||0, undecipherable:d.undecipherable||0 };
+      } catch (e) { console.error(e); showToast('Could not load the cockpit', 'error'); }
+      finally { this.loading = false; }
+    },
+    async runTriage() {
+      this.triaging = true;
+      try {
+        const r = await API.post('/api/v1/pos/feedback/triage?limit=15', {});
+        showToast('Triaged ' + (r.triaged||0) + ' ticket(s)', 'success');
+        await this.load();
+      } catch (e) { console.error(e); showToast('Triage failed', 'error'); }
+      finally { this.triaging = false; }
+    },
+    sevClass(s) {
+      s = (s||'').toLowerCase();
+      if (s.includes('block')||s==='high') return 'bg-red-100 text-red-700';
+      if (s.includes('annoy')||s==='medium') return 'bg-amber-100 text-amber-700';
+      return 'bg-gray-100 text-gray-600';
+    },
+    fmt(s) { return s ? new Date(s).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; },
+  };
+}
+</script>
+{% endblock %}
