@@ -171,7 +171,7 @@
             <!-- Buyers as cards (mobile-friendly). Tap a card → the full receipt/invoice. -->
             <div class="space-y-2">
                 <template x-for="s in drill.sales" :key="s.transaction_id || (s.transaction_number + s.time)">
-                    <a :href="s.transaction_id ? ('/pos/receipt/' + s.transaction_id) : '#'"
+                    <a :href="s.transaction_id ? ('/pos/receipt/' + s.transaction_id + '?from=report') : '#'"
                        class="buyer-card block text-gray-900 border border-gray-200 rounded-xl p-3 hover:bg-indigo-50 active:bg-indigo-100 transition">
                         <div class="flex justify-between items-start gap-3">
                             <div class="min-w-0">

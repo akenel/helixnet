@@ -7,7 +7,7 @@
     <!-- Print Button Bar (hidden when printing) -->
     <div class="no-print bg-white shadow-md sticky top-0 z-10 px-4 py-3 flex justify-between items-center flex-wrap gap-2">
         <div class="flex items-center space-x-2">
-            <button @click="goBack()" class="btn-secondary" title="Back to where you were">← Back</button>
+            <button x-show="cameFromReport" style="display: none;" @click="goBack()" class="btn-secondary" title="Back to the sales report">← Back to report</button>
             <h1 class="text-xl font-bold">Receipt #<span x-text="transaction.transaction_number"></span></h1>
             <span x-show="transaction.status === 'refunded'" class="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-semibold">REFUNDED</span>
         </div>
@@ -367,13 +367,19 @@
             },
             cashierName: 'Cashier',
             member: null,              // loyalty member on this sale (if any)
+            cameFromReport: false,     // only true when opened via the sales report drill (?from=report)
             canRefund: false,
             refundModalOpen: false,
             refundReason: '',
             refundReasonOther: '',
 
             async init() {
-                // Get transaction ID from URL
+                // Only offer "Back to report" when we actually arrived from the report drill.
+                // After a sale (checkout -> receipt) there's no tag, so no Back button -> we
+                // never risk history.back() dropping the cashier back into the checkout.
+                this.cameFromReport = new URLSearchParams(window.location.search).get('from') === 'report';
+
+                // Get transaction ID from URL (path, ignoring any ?query)
                 const pathParts = window.location.pathname.split('/');
                 const transactionId = pathParts[pathParts.length - 1];
 
@@ -548,12 +554,10 @@
                 }
             },
 
-            // Return to wherever the user came from (the report drill, transactions, …).
-            // history.back() keeps their place; fall back to dashboard on a cold open
-            // (direct link / fresh PWA tab) where there's no in-app history to return to.
+            // Only reachable when ?from=report. Go straight to the report (deterministic,
+            // never back into a checkout). The button is hidden otherwise.
             goBack() {
-                if (window.history.length > 1) window.history.back();
-                else window.location.href = '/pos/dashboard';
+                window.location.href = '/pos/reports/products';
             },
 
             goDashboard() {
