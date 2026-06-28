@@ -59,8 +59,10 @@ _CLEAN_SCHEMA = {
         "confidence": {"type": "number"},
         "decipherable": {"type": "boolean"},
         "questions": {"type": "array", "items": {"type": "string"}},
+        "duplicate_of": {"type": "integer"},
     },
-    "required": ["title", "description", "type", "severity", "confidence", "decipherable"],
+    "required": ["title", "description", "type", "severity", "confidence", "decipherable",
+                 "duplicate_of"],
 }
 
 _SYSTEM = (
@@ -70,7 +72,11 @@ _SYSTEM = (
     "their MEANING, never invent features they didn't ask for; write a crisp imperative title and "
     "a clear 2-4 sentence description; classify type + severity; set `area` to the screen if known; "
     "give a 0..1 confidence. If you genuinely can't tell what they want, set decipherable=false and "
-    "put 1-3 specific questions in `questions`. Output JSON only."
+    "put 1-3 specific questions in `questions`. "
+    "DEDUP: you may be given a list of EXISTING OPEN tickets. If this report is essentially the "
+    "SAME underlying problem as one of them, set `duplicate_of` to that ticket's number; otherwise "
+    "set `duplicate_of` to 0. Only call it a duplicate if it's clearly the same issue, not merely "
+    "the same screen. Output JSON only."
 )
 
 
@@ -94,6 +100,7 @@ async def triage_feedback(
     metadata: Any = None,
     screenshot: Optional[bytes] = None,
     screenshot_mime: str = "image/png",
+    existing: Optional[list] = None,
 ) -> dict:
     """Messy ticket in → clean ticket out. Returns:
         {clean: {...schema...}, vision: {screen,visible,anomalies}|None,
@@ -121,6 +128,9 @@ async def triage_feedback(
         parts.append(f"SYSTEM METADATA: {meta}")
     if vision:
         parts.append("SCREENSHOT (vision): " + json.dumps(vision))
+    if existing:
+        listing = "; ".join(f"[#{e['n']}] {e['title']}" for e in existing[:30])
+        parts.append("EXISTING OPEN TICKETS (for dedup): " + listing)
     user_prompt = "\n".join(parts) + "\n\nReturn the clean ticket as JSON."
 
     # 3) Rewrite via the BYO-brain with an enforced schema.
@@ -140,6 +150,7 @@ async def triage_feedback(
                 "area": (vision or {}).get("screen", ""),
                 "confidence": 0.0, "decipherable": False,
                 "questions": ["AI triage was unavailable — please review the raw ticket by hand."],
+                "duplicate_of": 0,
             },
             "vision": vision, "model": "", "tokens": 0, "ai": False,
             "note": f"AI unavailable ({type(e).__name__})",

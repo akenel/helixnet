@@ -3206,7 +3206,8 @@ async def triage_pending_feedback(
 
     Runs INSIDE the app (working async session) — unlike a standalone script. Idempotent:
     a ticket that already has an `ai-triage` activity is skipped, so no re-triage/double-work."""
-    from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
     from src.db.models.pos_notification_model import POSNotificationModel
     from src.services.feedback_triage import triage_feedback
 
@@ -3224,15 +3225,61 @@ async def triage_pending_feedback(
         .order_by(BacklogItemModel.created_at.desc())
         .limit(max(1, min(int(limit or 5), 25))))).all()
 
+    # Dedup candidates: OPEN feedback tickets the new one might duplicate (number → row).
+    cand_rows = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title)
+        .where(BacklogItemModel.tags.ilike("%feedback%"),
+               BacklogItemModel.status.in_([BacklogStatus.PENDING,
+                                            BacklogStatus.IN_PROGRESS])))).all()
+    cand_by_num = {c.item_number: c for c in cand_rows}
+
     out = []
+    merged_nums: set = set()   # archived-as-dup this run → never offer them as a canonical
     for r in rows:
         shot, mime = _decode_data_url(r.screenshot_data)
+        existing = [{"n": c.item_number, "title": c.title} for c in cand_rows
+                    if c.item_number != r.item_number and c.item_number not in merged_nums]
         res = await triage_feedback(
             title=r.title, description=r.description or "", metadata=None,
-            screenshot=shot, screenshot_mime=mime or "image/png")
+            screenshot=shot, screenshot_mime=mime or "image/png", existing=existing)
         clean = res["clean"]
-        # old/new_value are varchar(200) → short titles only; the FULL dual-version payload
-        # (original + cleaned + vision + model) lives in `comment` (Text, unlimited).
+        dup = clean.get("duplicate_of") or 0
+        is_dup = (isinstance(dup, int) and dup > 0 and dup in cand_by_num
+                  and dup != r.item_number and dup not in merged_nums)
+
+        if is_dup:
+            # MERGE: archive this one, breadcrumb the canonical, tell the reporter it's linked.
+            # The merge marker is an `ai-triage` activity (so it counts as triaged → idempotent)
+            # whose new_value `dup-of-N` is how the UIs detect a merged ticket. The breadcrumb on
+            # the canonical uses actor `ai-dedup` so it never collides with triage detection.
+            canonical = cand_by_num[dup]
+            await db.execute(update(BacklogItemModel)
+                             .where(BacklogItemModel.id == r.id)
+                             .values(status=BacklogStatus.ARCHIVED))
+            db.add(BacklogActivityModel(
+                item_id=r.id, activity_type=BacklogActivityType.COMMENT, actor="ai-triage",
+                old_value=(r.title or "")[:200], new_value=f"dup-of-{dup}",
+                comment=json.dumps({"ai": res["ai"], "model": res["model"], "duplicate_of": dup,
+                                    "original": {"title": r.title, "description": r.description},
+                                    "clean": clean, "vision": res.get("vision")},
+                                   ensure_ascii=False)))
+            db.add(BacklogActivityModel(
+                item_id=canonical.id, activity_type=BacklogActivityType.COMMENT, actor="ai-dedup",
+                comment=f"🔁 Also reported by {r.created_by or 'someone'} (was BL-{r.item_number:03d})."))
+            if r.created_by and r.created_by not in ("unknown", "ai-triage"):
+                db.add(POSNotificationModel(
+                    recipient=r.created_by, kind="dedup", item_number=r.item_number,
+                    title="👀 Already on our radar",
+                    body="Good catch — this was already reported. We've linked your report to it "
+                         "and we'll let you know the moment it's fixed.",
+                    link="/pos/my-tickets"))
+            merged_nums.add(r.item_number)
+            out.append({"item_number": r.item_number, "ai": res["ai"],
+                        "clean_title": clean.get("title"), "duplicate_of": dup})
+            continue
+
+        # NORMAL: store the dual-version triage + ring "we're on it".
+        # old/new_value are varchar(200) → short titles; the FULL payload lives in `comment` (Text).
         db.add(BacklogActivityModel(
             item_id=r.id, activity_type=BacklogActivityType.COMMENT, actor="ai-triage",
             old_value=(r.title or "")[:200],
@@ -3242,7 +3289,6 @@ async def triage_pending_feedback(
                 "original": {"title": r.title, "description": r.description},
                 "clean": clean, "vision": res.get("vision"),
             }, ensure_ascii=False)))
-        # Ring the reporter's bell — they never see the AI, just "we're on it".
         if r.created_by and r.created_by not in ("unknown", "ai-triage"):
             ct = (clean.get("title") or r.title or "your feedback")[:160]
             db.add(POSNotificationModel(
@@ -3279,14 +3325,20 @@ async def hypercare_queue(
 
     ids = [r.id for r in rows]
     triage: dict = {}
+    merged: dict = {}
     if ids:
         acts = (await db.execute(
             select(BacklogActivityModel.item_id, BacklogActivityModel.comment,
-                   BacklogActivityModel.created_at)
+                   BacklogActivityModel.new_value, BacklogActivityModel.created_at)
             .where(BacklogActivityModel.item_id.in_(ids),
                    BacklogActivityModel.actor == "ai-triage")
             .order_by(BacklogActivityModel.created_at.desc()))).all()
         for a in acts:
+            if a.new_value and a.new_value.startswith("dup-of-") and a.item_id not in merged:
+                try:
+                    merged[a.item_id] = int(a.new_value.rsplit("-", 1)[-1])
+                except Exception:
+                    pass
             if a.item_id not in triage:   # keep only the latest triage per item
                 try:
                     triage[a.item_id] = {"data": json.loads(a.comment),
@@ -3305,6 +3357,7 @@ async def hypercare_queue(
             "created_at": r.created_at.isoformat() if r.created_at else None,
             "has_screenshot": bool(r.has_shot),
             "triaged": (t or {}).get("data"), "triaged_at": (t or {}).get("at"),
+            "merged_into": merged.get(r.id),
         })
     triaged_n = sum(1 for i in items if i["triaged"])
     undec = sum(1 for i in items if i["triaged"]
@@ -3346,6 +3399,19 @@ async def mark_feedback_fixed(
             title="✅ Fixed — please take a look",
             body=f"We fixed “{(row.title or 'your report')[:120]}”. Tap to check it and confirm.",
             link="/pos/my-tickets"))
+    # Fan-out: also tell anyone whose duplicate was merged into this ticket.
+    dups = (await db.execute(
+        select(BacklogItemModel.created_by, BacklogItemModel.item_number)
+        .join(BacklogActivityModel, BacklogActivityModel.item_id == BacklogItemModel.id)
+        .where(BacklogActivityModel.new_value == f"dup-of-{item_number}"))).all()
+    for d in dups:
+        if d.created_by and d.created_by not in ("unknown", "ai-triage"):
+            db.add(POSNotificationModel(
+                recipient=d.created_by, kind="shipped", item_number=d.item_number,
+                title="✅ Fixed — please take a look",
+                body="The issue you flagged was just fixed (we'd linked it with others who hit "
+                     "it too). Tap to check it out.",
+                link="/pos/my-tickets"))
     await db.commit()
     return {"ok": True}
 
@@ -3445,7 +3511,7 @@ async def my_tickets(
         .where(BacklogItemModel.created_by == me, BacklogItemModel.tags.ilike("%feedback%"))
         .order_by(BacklogItemModel.created_at.desc()).limit(50))).all()
     ids = [r.id for r in rows]
-    triage, confirmed, closed = {}, set(), set()
+    triage, confirmed, closed, merged = {}, set(), set(), {}
     if ids:
         acts = (await db.execute(
             select(BacklogActivityModel.item_id, BacklogActivityModel.actor,
@@ -3454,11 +3520,17 @@ async def my_tickets(
             .where(BacklogActivityModel.item_id.in_(ids))
             .order_by(BacklogActivityModel.created_at.desc()))).all()
         for a in acts:
-            if a.actor == "ai-triage" and a.item_id not in triage:
-                try:
-                    triage[a.item_id] = json.loads(a.comment).get("clean", {})
-                except Exception:
-                    triage[a.item_id] = {}
+            if a.actor == "ai-triage":
+                if a.new_value and a.new_value.startswith("dup-of-") and a.item_id not in merged:
+                    try:
+                        merged[a.item_id] = int(a.new_value.rsplit("-", 1)[-1])
+                    except Exception:
+                        pass
+                if a.item_id not in triage:
+                    try:
+                        triage[a.item_id] = json.loads(a.comment).get("clean", {})
+                    except Exception:
+                        triage[a.item_id] = {}
             elif a.actor == me and a.new_value == "confirmed":
                 confirmed.add(a.item_id)
             elif a.actor == me and a.new_value == "closed-confirmed":
@@ -3466,6 +3538,19 @@ async def my_tickets(
     items = []
     for r in rows:
         cl = triage.get(r.id)
+        # A merged duplicate is its own friendly state — never "Closed/Done".
+        if r.id in merged:
+            items.append({
+                "item_number": r.item_number, "you_said": r.title,
+                "understood": (cl or {}).get("title") if cl else None,
+                "stage": {"step": 2, "label": "Linked", "emoji": "🔁",
+                          "blurb": "Someone else flagged this too — we've linked your report so it "
+                                   "counts. We'll let you know when it's sorted."},
+                "needs_confirm": False, "confirmed": False, "needs_confirm_fix": False,
+                "closed": False, "merged_into": merged[r.id],
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            })
+            continue
         status_val = r.status.value if r.status else "pending"
         is_done = status_val == "done"               # fixed, awaiting reporter's OK
         is_closed = status_val == "archived" or r.id in closed
@@ -3479,6 +3564,7 @@ async def my_tickets(
             "confirmed": r.id in confirmed,
             "needs_confirm_fix": is_done and not is_closed,   # 🎉 "we fixed it, confirm?"
             "closed": is_closed,
+            "merged_into": None,
             "created_at": r.created_at.isoformat() if r.created_at else None,
         })
     done_n = sum(1 for i in items if i["closed"])

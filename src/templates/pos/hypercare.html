@@ -77,10 +77,15 @@
 
           <!-- action row: mark fixed → reporter gets the 'please confirm' notification -->
           <div class="mt-3 pt-3 border-t flex items-center justify-end gap-2">
-            <span x-show="t.status==='done'" class="text-xs text-amber-600 font-medium">🎉 Fixed — waiting for reporter to confirm</span>
-            <span x-show="t.status==='archived'" class="text-xs text-green-600 font-medium">✅ Closed by reporter — done!</span>
-            <span x-show="t.status==='in_progress'" class="text-xs text-indigo-500 font-medium mr-auto">↩️ reporter reopened / in progress</span>
-            <button x-show="t.status!=='done' && t.status!=='archived'" @click="markFixed(t)" class="btn-secondary text-sm">✅ Mark fixed</button>
+            <span x-show="t.merged_into" class="text-xs text-purple-600 font-medium mr-auto">🔁 Duplicate — merged into BL-<span x-text="String(t.merged_into).padStart(3,'0')"></span></span>
+            <template x-if="!t.merged_into">
+              <div class="flex items-center gap-2 w-full justify-end">
+                <span x-show="t.status==='done'" class="text-xs text-amber-600 font-medium">🎉 Fixed — waiting for reporter to confirm</span>
+                <span x-show="t.status==='archived'" class="text-xs text-green-600 font-medium">✅ Closed by reporter — done!</span>
+                <span x-show="t.status==='in_progress'" class="text-xs text-indigo-500 font-medium mr-auto">↩️ reporter reopened / in progress</span>
+                <button x-show="t.status!=='done' && t.status!=='archived'" @click="markFixed(t)" class="btn-secondary text-sm">✅ Mark fixed</button>
+              </div>
+            </template>
           </div>
         </div>
       </template>
