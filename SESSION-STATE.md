@@ -14,8 +14,9 @@
 - **PROD (banco) UNTOUCHED** — next: Angel mobile-retest on staging → then prod (overlay onto `/opt/helix-banco-tree` + restart; backup banco_prod first).
 
 ## 🔑 RESUME
+- **NEXT = Hypercare v1 TUNE-UP round.** Hypercare v1 is LIVE on all 3 banco envs (prod hourly). Angel did an in-depth review (in another terminal) and has a SHORT LIST of minor "warning signs" / polish items to address. Plan: he pastes the list → triage each as **quick sandbox fix** vs **backlog** → fix the easy ones on sandbox (branch off `main`), test (TEST-HC2 / quick check), then promote staging→prod the same proven way (backup → superset-verify → overlay → smoke). Work on `main` or a fresh `feat/hypercare-tuneup` branch.
+- Hypercare code lives in: `src/services/feedback_triage.py`, `src/routes/pos_router.py` (feedback/triage/queue/mine/done/reject/notifications endpoints), `src/templates/pos/{hypercare,my_tickets}.html` + base.html bell, `src/db/models/pos_notification_model.py`. Cron `scripts/ops/hypercare_triage_cron.py` (+ `/opt/hypercare/<env>.cadence`).
 - Code word **"ON DECK"** → open `docs/BANCO-WORKLIST.md`, execute the top item.
-- To continue the new build: say **"continue hypercare"** → pick up the **reporter bell** (next PoC-3 increment) on branch `feat/hypercare-triage`.
 - Git: `main @ d64b50b` (prod trunk, all pushed) · `feat/hypercare-triage @ a68f3c4` (sandbox-only, pushed, **NOT merged** — secret weapon). Working tree clean.
 
 ## ✅ SHIPPED TO PROD today (banco.lapiazza.app, on `main`, signed off, byte-identical sbx/stg/prd)
