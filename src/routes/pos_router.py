@@ -2645,8 +2645,10 @@ async def get_product_sales(
         c["qty_sold"] += qty
         c["revenue"] += rev
 
+    from src.services.catalog_taxonomy import category_emoji
     categories = sorted(
-        [{"category": k, "qty_sold": v["qty_sold"], "revenue": float(v["revenue"])}
+        [{"category": k, "emoji": category_emoji(k),
+          "qty_sold": v["qty_sold"], "revenue": float(v["revenue"])}
          for k, v in cat_tot.items()],
         key=lambda x: x["revenue"], reverse=True)
 
@@ -2789,8 +2791,10 @@ async def get_category_sales_detail(
         "line_total": float(Decimal(str(r.line_total or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
     } for r in rows]
 
+    from src.services.catalog_taxonomy import category_emoji
     return {
         "category": category,
+        "emoji": category_emoji(category),
         "product_name": category,
         "date_from": d_from.isoformat(),
         "date_to": d_to.isoformat(),

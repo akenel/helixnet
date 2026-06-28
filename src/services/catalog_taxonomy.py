@@ -22,6 +22,56 @@ CATEGORIES = [
     "Grow Supplies", "Café", "Merch", "Accessories", "Other",
 ]
 
+# --- CATEGORY EMOJI (display only — never behaviour) -----------------------------------------
+# One server-owned place so every category ALWAYS shows a consistent emoji, including ones a
+# shop types on the fly. Resolution order:
+#   1. an explicit override (the future Category-CRUD will store a chosen emoji → pass it here)
+#   2. a curated emoji for a known category (skeleton + common aliases) — looks "right"
+#   3. a STABLE deterministic pick from the pool (same name → same emoji, forever; never blank)
+# When the Category table + emoji-picker build lands, only step 1 changes — callers/UI stay put.
+CATEGORY_EMOJI = {
+    # skeleton (CATEGORIES above)
+    "CBD & Hemp": "🌿", "Edibles": "🍬", "Creams & Topicals": "🧴", "Papers & Filters": "📄",
+    "Grinders": "⚙️", "Lighters": "🔥", "Pipes & Bongs": "🌀", "Vaporizers": "💨",
+    "E-Liquids": "🧪", "Tobacco & Cigarettes": "🚬", "Grow Supplies": "🌱", "Café": "☕",
+    "Merch": "👕", "Accessories": "🎒", "Other": "🏷️",
+    # common aliases / demo-seed names so existing data also looks right
+    "CBD": "🌿", "Hemp": "🌿", "Cafe": "☕", "Coffee": "☕", "Bar": "🍺", "Beer": "🍺",
+    "Wine": "🍷", "Drinks": "🥤", "Beverages": "🥤", "Food": "🍴", "Bakery": "🥐",
+    "Snacks": "🍫", "Equipment": "⚙️", "Tobacco": "🚬", "Papers": "📄", "Vape": "💨",
+}
+
+# A pool of distinct, retail-neutral emojis for categories with no curated entry. Deterministic
+# indexing means a typed-on-the-fly category gets a stable, intentional-looking icon every time.
+_EMOJI_POOL = [
+    "🛍️", "📦", "🎁", "🏷️", "🧺", "🧴", "🧪", "⚗️", "🔮", "💎", "🪙", "🔑", "🧰", "🛠️",
+    "🔧", "🔩", "🧲", "🔋", "💡", "🕯️", "🔦", "📐", "📎", "✂️", "🖊️", "📒", "📕", "📗",
+    "📘", "📙", "🗂️", "📌", "🧷", "🎒", "👜", "👛", "🧳", "👕", "👖", "🧢", "🧤", "🧣",
+    "👟", "🕶️", "⌚", "💍", "🌿", "🍃", "🌱", "🌵", "🌴", "🌷", "🌹", "🌻", "🍀", "🍄",
+    "🌰", "🫘", "🌶️", "🫚", "🧄", "🧅", "🥕", "🌽", "🥔", "🍅", "🍆", "🥑", "🍇", "🍈",
+    "🍉", "🍊", "🍋", "🍌", "🍍", "🥭", "🍎", "🍐", "🍑", "🍒", "🍓", "🫐", "🥝", "🥥",
+    "🍫", "🍬", "🍭", "🍯", "🍪", "🥐", "🥨", "🥯", "🧀", "🍵", "☕", "🧃", "🥤", "🧉",
+    "🍶", "🍷", "🍸", "🍹", "🍺", "🥃", "🧊", "🍴", "🥢", "🧫", "🔬", "🧯", "🪔", "🎨",
+    "🖌️", "🪕", "🎲", "🧩", "🎯", "🪀", "🪁", "🎏", "🎐", "🪴",
+]
+
+
+def category_emoji(category, override=None):
+    """Display emoji for a category name. Never returns blank; stable for a given name.
+    `override` (future Category-CRUD) wins so a shop can curate its own icon later."""
+    if override:
+        return override
+    if not category:
+        return "🏷️"
+    name = str(category).strip()
+    if name in CATEGORY_EMOJI:
+        return CATEGORY_EMOJI[name]
+    h = 0
+    for ch in name:
+        h = (h * 31 + ord(ch)) & 0xFFFFFFFF
+    return _EMOJI_POOL[h % len(_EMOJI_POOL)]
+
+
 # --- CLASSES (behaviour — controlled; each drives age / VAT / compliance) ---------------------
 # vat: "standard" = 8.1% · "reduced" = 2.6% · "cafe_split" = dine-in 8.1% / takeaway 2.6% (asked at sale)
 # promo_restricted: True = promotional discounts + loyalty-credit redemption are restricted.
