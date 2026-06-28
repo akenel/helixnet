@@ -83,6 +83,7 @@
                 <span x-show="t.status==='done'" class="text-xs text-amber-600 font-medium">🎉 Fixed — waiting for reporter to confirm</span>
                 <span x-show="t.status==='archived'" class="text-xs text-green-600 font-medium">✅ Closed by reporter — done!</span>
                 <span x-show="t.status==='in_progress'" class="text-xs text-indigo-500 font-medium mr-auto">↩️ reporter reopened / in progress</span>
+                <button x-show="t.status!=='done' && t.status!=='archived'" @click="reject(t)" class="btn-secondary text-sm">🚫 Reject</button>
                 <button x-show="t.status!=='done' && t.status!=='archived'" @click="markFixed(t)" class="btn-secondary text-sm">✅ Mark fixed</button>
               </div>
             </template>
@@ -130,6 +131,15 @@ function hypercareData() {
         showToast('Marked fixed — reporter notified to confirm', 'success');
         await this.load();
       } catch (e) { console.error(e); showToast('Could not mark fixed', 'error'); }
+    },
+    async reject(t) {
+      const reason = prompt('Reject this ticket — short reason the reporter will see (e.g. "can\'t reproduce", "works as intended", "not a real ticket"):', '');
+      if (reason === null) return;   // cancelled
+      try {
+        await API.post('/api/v1/pos/feedback/' + t.item_number + '/reject', { reason: reason });
+        showToast('Rejected — reporter asked to confirm or dispute', 'success');
+        await this.load();
+      } catch (e) { console.error(e); showToast('Could not reject', 'error'); }
     },
     sevClass(s) {
       s = (s||'').toLowerCase();

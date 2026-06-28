@@ -3416,6 +3416,89 @@ async def mark_feedback_fixed(
     return {"ok": True}
 
 
+@router.post("/feedback/{item_number}/reject")
+async def reject_feedback(
+    item_number: int,
+    payload: dict = Body(default={}),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """Manager rejects a ticket (can't reproduce / works as intended / not a real ask). The
+    reporter is asked to CONFIRM the rejection or DISPUTE it — never a silent close."""
+    from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    from src.db.models.pos_notification_model import POSNotificationModel
+    actor = current_user.get("username") or current_user.get("preferred_username", "manager")
+    reason = (payload.get("reason") or "").strip() or \
+        "We looked into it and don't think it needs a change."
+    row = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.title, BacklogItemModel.created_by)
+        .where(BacklogItemModel.item_number == item_number,
+               BacklogItemModel.tags.ilike("%feedback%")))).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="No such feedback ticket")
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=actor,
+        new_value="rejected", comment=reason[:1000]))
+    if row.created_by and row.created_by not in ("unknown", "ai-triage"):
+        db.add(POSNotificationModel(
+            recipient=row.created_by, kind="rejected", item_number=item_number,
+            title="🤔 About your report — a quick check",
+            body=f"We looked at “{(row.title or 'your report')[:120]}” and don't think it needs "
+                 "a change. Tap to see why — confirm, or tell us we got it wrong.",
+            link="/pos/my-tickets"))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/feedback/mine/{item_number}/accept-reject")
+async def accept_rejection(
+    item_number: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Reporter agrees with the rejection → closes the ticket (no change needed)."""
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    await db.execute(update(BacklogItemModel)
+                     .where(BacklogItemModel.id == row.id)
+                     .values(status=BacklogStatus.ARCHIVED))
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=me,
+        new_value="reject-confirmed", comment="👍 Reporter agreed no change was needed."))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/feedback/mine/{item_number}/dispute")
+async def dispute_rejection(
+    item_number: int,
+    payload: dict = Body(default={}),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Reporter disagrees with the rejection → back to the team with their reason."""
+    from src.db.models.backlog_model import (BacklogActivityModel, BacklogActivityType,
+                                             BacklogStatus)
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    note = (payload.get("note") or "").strip()
+    row = await _my_feedback_item(db, me, item_number)
+    if not row:
+        raise HTTPException(status_code=404, detail="Not your ticket")
+    await db.execute(update(BacklogItemModel)
+                     .where(BacklogItemModel.id == row.id)
+                     .values(status=BacklogStatus.IN_PROGRESS))
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.STATUS_CHANGE, actor=me,
+        new_value="disputed",
+        comment="↩️ Reporter disagrees with the rejection" + (f": {note[:800]}" if note else ".")))
+    await db.commit()
+    return {"ok": True}
+
+
 @router.get("/notifications")
 async def my_notifications(
     limit: int = 20,
@@ -3512,6 +3595,7 @@ async def my_tickets(
         .order_by(BacklogItemModel.created_at.desc()).limit(50))).all()
     ids = [r.id for r in rows]
     triage, confirmed, closed, merged = {}, set(), set(), {}
+    reject_state, reject_reason = {}, {}   # item_id -> pending|confirmed|disputed
     if ids:
         acts = (await db.execute(
             select(BacklogActivityModel.item_id, BacklogActivityModel.actor,
@@ -3520,6 +3604,15 @@ async def my_tickets(
             .where(BacklogActivityModel.item_id.in_(ids))
             .order_by(BacklogActivityModel.created_at.desc()))).all()
         for a in acts:
+            # Reject lifecycle: the NEWEST reject-related activity per item wins.
+            if a.item_id not in reject_state and a.new_value in (
+                    "rejected", "reject-confirmed", "disputed"):
+                if a.new_value == "rejected":
+                    reject_state[a.item_id] = "pending"; reject_reason[a.item_id] = a.comment or ""
+                elif a.new_value == "reject-confirmed":
+                    reject_state[a.item_id] = "confirmed"
+                else:
+                    reject_state[a.item_id] = "disputed"
             if a.actor == "ai-triage":
                 if a.new_value and a.new_value.startswith("dup-of-") and a.item_id not in merged:
                     try:
@@ -3551,10 +3644,26 @@ async def my_tickets(
                 "created_at": r.created_at.isoformat() if r.created_at else None,
             })
             continue
+        # A rejection awaiting the reporter's call — confirm it, or dispute it.
+        if reject_state.get(r.id) == "pending":
+            items.append({
+                "item_number": r.item_number, "you_said": r.title,
+                "understood": (cl or {}).get("title") if cl else None,
+                "kind": None, "severity": None,
+                "stage": {"step": 2, "label": "Reviewed", "emoji": "🤔",
+                          "blurb": "We took a look and don't think this one needs a change."},
+                "needs_confirm": False, "confirmed": False, "needs_confirm_fix": False,
+                "rejected_pending": True, "reject_reason": reject_reason.get(r.id),
+                "closed": False, "closed_kind": None, "merged_into": None,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            })
+            continue
         status_val = r.status.value if r.status else "pending"
         is_done = status_val == "done"               # fixed, awaiting reporter's OK
+        reject_closed = reject_state.get(r.id) == "confirmed"
         is_closed = status_val == "archived" or r.id in closed
-        st = _friendly_stage("archived" if r.id in closed else status_val, cl is not None)
+        st = _friendly_stage("archived" if (r.id in closed or reject_closed) else status_val,
+                             cl is not None)
         items.append({
             "item_number": r.item_number,
             "you_said": r.title,
@@ -3565,7 +3674,9 @@ async def my_tickets(
             "needs_confirm": cl is not None and r.id not in confirmed and not is_done and not is_closed,
             "confirmed": r.id in confirmed,
             "needs_confirm_fix": is_done and not is_closed,   # 🎉 "we fixed it, confirm?"
+            "rejected_pending": False, "reject_reason": None,
             "closed": is_closed,
+            "closed_kind": "rejected" if reject_closed else "fixed",
             "merged_into": None,
             "created_at": r.created_at.isoformat() if r.created_at else None,
         })

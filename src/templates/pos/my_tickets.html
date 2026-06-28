@@ -124,8 +124,29 @@
             </div>
           </div>
 
+          <!-- REJECT loop: we don't think it needs a change — your call -->
+          <div x-show="t.rejected_pending && t.rejState!=='done' && t.rejState!=='sent'" class="mt-4 border-t pt-3">
+            <p class="text-sm font-semibold text-gray-900">🤔 We took a look</p>
+            <p class="text-sm text-gray-600 mt-1" x-text="t.reject_reason || 'We don\'t think this one needs a change.'"></p>
+            <p class="text-sm text-gray-700 mt-2 font-medium">Does that make sense?</p>
+            <div x-show="t.rejState!=='note'" class="flex flex-wrap gap-2 mt-2">
+              <button class="btn-primary" @click="acceptReject(t)" :disabled="t.busy" title="You're OK with this — close the report">✓ OK, makes sense</button>
+              <button class="btn-secondary" @click="t.rejState='note'" title="You disagree — tell us what we missed">✗ No, here's why</button>
+            </div>
+            <div x-show="t.rejState==='note'" class="mt-3">
+              <textarea x-model="t.rejNote" rows="3" class="input-field w-full" placeholder="Tell us what we're missing — how to see it, why it matters…"></textarea>
+              <div class="flex gap-2 mt-2">
+                <button class="btn-primary" @click="dispute(t)" :disabled="t.busy">Send it back</button>
+                <button class="btn-secondary" @click="t.rejState=null">Cancel</button>
+              </div>
+            </div>
+          </div>
+          <div x-show="t.rejState==='done'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">👍 Closed — we agreed no change was needed. Thanks for the report!</div>
+          <div x-show="t.rejState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back with your note — thanks, we'll take another look.</div>
+
           <!-- closed by reporter -->
-          <div x-show="t.closed || t.fixState==='closed'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold">🎉 Closed by you — thank you for helping make this better!</div>
+          <div x-show="(t.closed || t.fixState==='closed') && t.closed_kind!=='rejected'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold">🎉 Closed by you — thank you for helping make this better!</div>
+          <div x-show="t.closed && t.closed_kind==='rejected'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">👍 Closed — we agreed no change was needed.</div>
           <!-- sent back -->
           <div x-show="t.fixState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back to the team — thanks, we'll keep at it.</div>
         </div>
@@ -157,7 +178,7 @@ function myTickets() {
       this.loading = true;
       try {
         const d = await API.get('/api/v1/pos/feedback/mine');
-        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', busy: false }));
+        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false }));
         this.openN = d.open || 0; this.doneN = d.done || 0;
         this.updatedAt = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
@@ -210,6 +231,24 @@ function myTickets() {
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/reopen', { note: t.fixNote });
         t.fixState = 'sent';
+        showToast('Sent back to the team', 'success');
+      } catch (e) { showToast('Could not send — try again', 'error'); }
+      finally { t.busy = false; }
+    },
+    async acceptReject(t) {
+      t.busy = true;
+      try {
+        await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/accept-reject', {});
+        t.rejState = 'done';
+        showToast('Closed — thanks!', 'success');
+      } catch (e) { showToast('Could not close — try again', 'error'); }
+      finally { t.busy = false; }
+    },
+    async dispute(t) {
+      t.busy = true;
+      try {
+        await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/dispute', { note: t.rejNote });
+        t.rejState = 'sent';
         showToast('Sent back to the team', 'success');
       } catch (e) { showToast('Could not send — try again', 'error'); }
       finally { t.busy = false; }

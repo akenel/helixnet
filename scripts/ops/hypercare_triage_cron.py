@@ -5,11 +5,12 @@ Cron fires this often (e.g. every 5 min); the SCRIPT decides whether it's actual
 on a per-env **cadence setting** file. That's Angel's one knob:
 
     /opt/hypercare/<env>.cadence  contains one of:  hypercare | high | medium | low | off
-        hypercare = every 15 min   (war-room)
-        high      = every 30 min
+        hypercare = every  1 min   (live war-room — feedback gets cleaned almost instantly)
+        high      = every 15 min
         medium    = every 60 min
         low       = once a day
         off       = paused
+    (cron must fire at least as often as the tightest tier — set the crontab to * * * * *.)
 
 It gets a felix token off the KC docker network, POSTs /pos/feedback/triage (the in-app brain),
 logs the count, and stamps last-run. Idempotent end-to-end (the endpoint skips already-triaged).
@@ -25,7 +26,7 @@ import sys
 import time
 import urllib.request as u
 
-CADENCE_MIN = {"hypercare": 15, "high": 30, "medium": 60, "low": 1440, "off": None}
+CADENCE_MIN = {"hypercare": 1, "high": 15, "medium": 60, "low": 1440, "off": None}
 STATE = pathlib.Path("/opt/hypercare")
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else "https://sandbox-banco.lapiazza.app"
