@@ -767,7 +767,7 @@
         }).join('');
       }
       function load(){
-        if(!(window.token&&token())) return;
+        if(!sessionStorage.getItem('pos_token')) return;   // not logged in yet
         API.get('/api/v1/pos/notifications?limit=20').then(render).catch(function(){});
       }
       btn.addEventListener('click',function(e){
