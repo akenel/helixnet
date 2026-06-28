@@ -278,6 +278,7 @@ rotate           "BH_KC_CLIENT_SECRET"     "Keycloak borrowhood-web OIDC client 
 rotate           "BH_TELEGRAM_BOT_TOKEN"   "Telegram bot API token (from @BotFather, format <id>:<hash>)."
 rotate           "BH_RESEND_API_KEY"       "Resend email API key (re_xxx...)."
 rotate           "BH_OLLAMA_KEY"           "Ollama Cloud API key (gemma3:12b model)."
+rotate           "BH_GOOGLE_API_KEY"       "Gemini (Google AI Studio) vision key (AIza...). Powers Snap-&-fill + Hypercare screenshot triage."
 rotate           "BH_PAYPAL_CLIENT_SECRET" "PayPal sandbox client secret (developer.paypal.com)."
 rotate           "KC_GITHUB_CLIENT_SECRET" "Keycloak GitHub IDP secret (github.com/settings/developers)."
 rotate           "KC_GOOGLE_CLIENT_SECRET" "Keycloak Google IDP secret (console.cloud.google.com)."
