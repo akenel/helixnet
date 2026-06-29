@@ -3798,8 +3798,10 @@ async def my_ticket_resolution(
         .where(BacklogActivityModel.item_id == row.id)
         .order_by(BacklogActivityModel.created_at.asc()))).all()
 
+    # Only a TRUE ending earns a resolution — fixed-but-awaiting-confirm is not closed yet, and
+    # summarising it early makes the AI over-claim a close that hasn't happened.
     terminal = {"closed-confirmed", "reject-confirmed", "reporter-cancelled"}
-    is_resolved = (row.status or "").lower() in ("done", "archived") \
+    is_resolved = (row.status or "").lower() == "archived" \
         or any(a.new_value in terminal for a in acts)
     if not is_resolved:
         return {"resolved": False}

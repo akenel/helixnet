@@ -165,7 +165,8 @@ _RESOLUTION_SYSTEM = (
     "what the person reported, what we understood/decided, what was actually done (mention the code "
     "change / commit short-hash if there was one), and the outcome (fixed and confirmed, or no "
     "change was needed, or it was withdrawn). Write it like a little story someone can read at a "
-    "glance. 3-4 sentences, nothing more."
+    "glance. 3-4 sentences, nothing more. Stick to the facts in the history — never invent a step "
+    "(like a confirmation or a close) that isn't there."
 )
 
 

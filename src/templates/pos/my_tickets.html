@@ -308,7 +308,7 @@ function myTickets() {
     },
     openViewer(m) { this.viewer = { open: true, url: m.url, name: m.name, isImage: m.is_image }; },
     // A ticket is "resolved" once it's fixed/closed/rejected/withdrawn — then it earns a Resolution.
-    isResolved(t) { return !!(t.closed || t.needs_confirm_fix || (t.stage && t.stage.step === 4)); },
+    isResolved(t) { return !!t.closed; },   // a true ending only (closed / agreed / withdrawn)
     loadResolution(t) {
       if (t.resLoading || t.resolution) return;
       t.resLoading = true;
