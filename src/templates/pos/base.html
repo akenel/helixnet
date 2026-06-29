@@ -710,8 +710,8 @@
             {% elif 'local' in _e or 'dev' in _e %}{% set _ec = 'LCL' %}{% set _ecc = 'env-lcl' %}
             {% else %}{% set _ec = '' %}{% set _ecc = '' %}{% endif %}
             {% if _ec %}<span class="env-pill {{ _ecc }}" title="environment: {{ app_env }}">{{ _ec }}</span>{% endif %}
-            <span id="status-time" title="time">--:--</span>
-            <span class="sb-build" title="build {{ app_version }} · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · {{ build_date }}{% endif %}">⚙ <span id="status-version">{{ app_version or '3.3.0' }}</span> · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · {{ build_date }}{% endif %}</span>
+            <span id="status-time" title="local time">--:--</span>
+            <span class="sb-build" data-build-iso="{{ build_date_iso or '' }}" title="build {{ app_version }} · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · deployed {{ build_date }} (your local time){% endif %}">⚙ <span id="status-version">{{ app_version or '3.3.0' }}</span> · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · <span id="status-build-date">{{ build_date }}</span>{% endif %}</span>
         </div>
         <div class="status-section">
             <span id="status-screen" class="sm-hide" title="screen">{% block page_name %}POS{% endblock %}</span>
@@ -882,11 +882,38 @@
     <script>
         // Status bar auto-update
         (function() {
+            // BL-012: ONE timezone — the shop's (device-local). Label it once so a cashier
+            // never wonders "is this my time or server time". The short tz name (e.g. CEST)
+            // comes from the device; it auto-flips CET↔CEST with daylight saving.
+            function tzLabel(d) {
+                try {
+                    const parts = new Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).formatToParts(d);
+                    const p = parts.find((x) => x.type === 'timeZoneName');
+                    return p ? p.value : '';
+                } catch (e) { return ''; }
+            }
+            const TZ = tzLabel(new Date());
+
+            // BL-012: the build stamp is committed in the author's tz (offset-carrying ISO).
+            // Render it in the SAME device-local zone as the live clock so both always agree.
+            (function localizeBuild() {
+                const span = document.querySelector('.sb-build');
+                const out = document.getElementById('status-build-date');
+                if (!span || !out) return;
+                const iso = span.getAttribute('data-build-iso');
+                if (!iso) return;
+                const d = new Date(iso);
+                if (isNaN(d.getTime())) return;
+                const p2 = (n) => String(n).padStart(2, '0');
+                const local = `${p2(d.getDate())}/${p2(d.getMonth() + 1)} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+                out.textContent = TZ ? `${local} ${TZ}` : local;
+            })();
+
             function updateStatusBar() {
-                // Update time
+                // Update time — device-local, labeled with the local tz (BL-012)
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                document.getElementById('status-time').textContent = timeStr;
+                document.getElementById('status-time').textContent = TZ ? `${timeStr} ${TZ}` : timeStr;
 
                 // Update user from auth
                 const user = AuthHelper.getUserInfo();

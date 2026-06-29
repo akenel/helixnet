@@ -369,10 +369,11 @@ BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 templates.env.globals["lp_kc_url"] = get_settings().LP_KC_PUBLIC_URL  # browser-facing KC host for LP login
 # Real build stamp for the status bar (version + the SHA actually deployed).
-from src.build_info import get_version, get_git_sha, get_build_date_short  # noqa: E402
+from src.build_info import get_version, get_git_sha, get_build_date_short, get_build_date  # noqa: E402
 templates.env.globals["app_version"] = get_version()
 templates.env.globals["git_sha"] = get_git_sha()
 templates.env.globals["build_date"] = get_build_date_short()  # BL-010: '29 Jun' freshness in the bar
+templates.env.globals["build_date_iso"] = get_build_date()  # BL-012: offset-carrying ISO → client localizes to device tz
 templates.env.globals["app_env"] = os.environ.get("HX_ENVIRONMENT", "")  # env code (SBX/STG/PRD); read os.environ directly — get_settings() is cached too early at import time
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
