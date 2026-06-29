@@ -714,6 +714,7 @@
         <div class="status-section">
             <span id="status-screen" class="sm-hide" title="screen">{% block page_name %}POS{% endblock %}</span>
             <span title="cashier">👤 <span id="status-user">--</span></span>
+            <a id="cockpit-link" href="/pos/hypercare" title="Cockpit — manage all reports" style="display:none;text-decoration:none;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🎛️</a>
             <button id="bell-open" title="Notifications" style="position:relative;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🔔<span id="bell-badge" style="display:none;position:absolute;top:-6px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:14px;height:14px;line-height:14px;border-radius:7px;padding:0 3px;text-align:center;">0</span></button>
             <button id="pulse-open" title="Shop Pulse — live stats" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">📊</button>
         </div>
@@ -783,9 +784,14 @@
       mark&&mark.addEventListener('click',function(e){ e.stopPropagation();
         API.post('/api/v1/pos/notifications/read',{}).then(load).catch(function(){}); });
       document.addEventListener('click',function(e){ if(!panel.contains(e.target)&&e.target!==btn) panel.classList.remove('open'); });
+      // Reveal the 🎛️ Cockpit entry only for managers/admins (the bell → reports is for everyone).
+      var cockpit=document.getElementById('cockpit-link');
+      function revealCockpit(){ try{
+        if(cockpit && sessionStorage.getItem('pos_token') && AuthHelper.isManager()) cockpit.style.display='inline-block';
+      }catch(e){} }
       // first load shortly after boot, then poll quietly
-      setTimeout(load, 1500);
-      setInterval(load, 45000);
+      setTimeout(function(){ load(); revealCockpit(); }, 1500);
+      setInterval(function(){ load(); revealCockpit(); }, 45000);
     })();
     </script>
 
