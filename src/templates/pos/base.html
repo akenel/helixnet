@@ -559,7 +559,9 @@
                     // Handle other errors
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
-                        throw new Error(error.detail || `Request failed with status ${response.status}`);
+                        const err = new Error(error.detail || `Request failed with status ${response.status}`);
+                        err.status = response.status;   // so callers can tell a 4xx rejection from a 5xx server blip
+                        throw err;
                     }
 
                     // Handle 204 No Content

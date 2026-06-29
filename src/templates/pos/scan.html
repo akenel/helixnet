@@ -1279,6 +1279,9 @@
                 this.cart = [];
                 this.discount = 0;
                 this.showClearModal = false;
+                // New sale → drop the old idempotency key, so a previous (maybe-committed-but-
+                // -blipped) sale can never be shadowed/adopted by the next one. Fresh cart, fresh key.
+                sessionStorage.removeItem('pos_sale_uuid');
                 showToast('Cart cleared', 'info');
             },
 

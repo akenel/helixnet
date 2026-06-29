@@ -628,13 +628,23 @@
                     }, 500);
 
                 } catch (error) {
-                    // Connection dropped mid-sale? The sale did NOT go through. Keep the cart and
-                    // say it plainly — reconnect (mobile data / hotspot) and tap Complete again.
-                    if (!navigator.onLine) {
-                        sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // cart is safe
-                        showToast("Lost the connection — the sale didn't go through. Your cart is safe. Reconnect (mobile data / hotspot) and tap Complete again.", 'warning');
+                    // Tell a SERVER BLIP apart from a real REJECTION. A blip = offline, a 5xx, or a
+                    // deploy restart cutting the request off (no status at all). A rejection = 4xx
+                    // (drawer not open, insufficient payment, discount cap) — actionable, retrying
+                    // won't help. A blip is RETRY-SAFE: the sale either never committed, or it did and
+                    // the persisted client_uuid makes the retry adopt it ONCE — it can't ring twice.
+                    // So on a blip we keep the cart + key and say "try again"; on a rejection we show
+                    // the real reason. (This is what makes a deploy mid-checkout a non-event.)
+                    const status = error && error.status;
+                    const blip = !status || status >= 500;
+                    if (blip) {
+                        sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // cart safe; key kept
+                        showToast(navigator.onLine
+                            ? "Couldn't reach the server for a moment — your cart is safe. Tap Complete again (it can't ring twice)."
+                            : "No internet — the sale didn't go through. Your cart is safe. Reconnect (mobile data / hotspot) and tap Complete again.",
+                            'warning');
                     } else {
-                        showToast('Error: ' + error.message, 'error');
+                        showToast(error.message || 'Could not complete the sale.', 'warning');
                     }
                     this.processing = false;
                 }
