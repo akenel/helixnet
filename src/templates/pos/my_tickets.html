@@ -58,7 +58,7 @@
     <!-- list -->
     <div class="space-y-4" x-show="!loading">
       <template x-for="t in shown()" :key="t.item_number">
-        <div class="card">
+        <div class="card" :id="'report-'+t.item_number" style="scroll-margin-top:60px;transition:box-shadow .3s">
           <div class="flex items-center justify-between gap-2">
             <span class="text-[11px] font-mono text-gray-400" x-text="'Report #' + t.item_number"></span>
             <span class="text-[11px] text-gray-400" x-text="'sent ' + fmt(t.created_at)"></span>
@@ -239,7 +239,7 @@
 <script>
 function myTickets() {
   return {
-    items: [], openN: 0, doneN: 0, loading: false, updatedAt: '', filter: 'active',
+    items: [], openN: 0, doneN: 0, loading: false, updatedAt: '', filter: 'active', focusN: null,
     viewer: { open: false, url: null, name: '', isImage: true },
     steps: [
       { icon:'📨', label:'Received',   tip:"We've got your message." },
@@ -250,6 +250,7 @@ function myTickets() {
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
+      this.focusN = new URLSearchParams(location.search).get('focus');   // ?focus=NNN from a bell tap
       this.load();
       // Auto-refresh when you come back to this tab (e.g. after the Cockpit).
       document.addEventListener('visibilitychange', () => { if (!document.hidden) this.load(); });
@@ -260,6 +261,7 @@ function myTickets() {
         const d = await API.get('/api/v1/pos/feedback/mine');
         this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false, open: false, timeline: null, tlLoading: false, resolution: null, resLoading: false }));
         this.items.forEach(t => { if (this.isResolved(t)) this.loadResolution(t); });
+        if (this.focusN) this.$nextTick(() => this.scrollToReport(this.focusN));
         this.openN = d.open || 0; this.doneN = d.done || 0;
         this.updatedAt = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
@@ -309,6 +311,16 @@ function myTickets() {
     openViewer(m) { this.viewer = { open: true, url: m.url, name: m.name, isImage: m.is_image }; },
     // A ticket is "resolved" once it's fixed/closed/rejected/withdrawn — then it earns a Resolution.
     isResolved(t) { return !!t.closed; },   // a true ending only (closed / agreed / withdrawn)
+    // a bell tap lands here with ?focus=NNN — scroll to that report and flash it
+    scrollToReport(n) {
+      let el = document.getElementById('report-' + n);
+      if (!el && this.filter !== 'all') { this.filter = 'all'; this.$nextTick(() => this.scrollToReport(n)); return; }
+      if (!el) { this.focusN = null; return; }
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.boxShadow = '0 0 0 3px #818cf8';
+      setTimeout(() => { el.style.boxShadow = ''; }, 2200);
+      this.focusN = null;
+    },
     loadResolution(t) {
       if (t.resLoading || t.resolution) return;
       t.resLoading = true;

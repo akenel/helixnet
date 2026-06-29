@@ -734,6 +734,7 @@
       .bell-item:hover{background:#f8fafc}
       .bell-item.unread{background:#eef2ff}
       .bell-item .t{font-size:13px;font-weight:700;color:#0f172a}
+      .bell-ref{display:inline-block;font:600 10px ui-monospace,SFMono-Regular,monospace;color:#6366f1;background:#eef2ff;border-radius:4px;padding:0 4px;margin-right:5px;vertical-align:1px}
       .bell-item .b{font-size:12px;color:#475569;margin-top:2px;line-height:1.35}
       .bell-item .ts{font-size:10px;color:#94a3b8;margin-top:3px}
       .bell-empty{padding:24px 12px;text-align:center;color:#94a3b8;font-size:13px}
@@ -763,10 +764,13 @@
         badge.textContent = d.unread>9 ? '9+' : d.unread;
         if(!items.length){ list.innerHTML='<div class="bell-empty">No notifications yet.</div>'; return; }
         list.innerHTML = items.map(function(n){
-          var inner='<div class="t">'+esc(n.title)+'</div><div class="b">'+esc(n.body)+'</div><div class="ts">'+ago(n.created_at)+'</div>';
+          var ref = n.item_number ? '<span class="bell-ref">BL-'+String(n.item_number).padStart(3,'0')+'</span>' : '';
+          var inner='<div class="t">'+ref+esc(n.title)+'</div><div class="b">'+esc(n.body)+'</div><div class="ts">'+ago(n.created_at)+'</div>';
           var cls='bell-item'+(n.read?'':' unread');
-          return n.link ? '<a class="'+cls+'" href="'+esc(n.link)+'">'+inner+'</a>'
-                        : '<div class="'+cls+'">'+inner+'</div>';
+          // deep-link straight to THE report so "which one was that?" is answered in one tap
+          var href = n.link ? (esc(n.link)+(n.item_number?'?focus='+n.item_number:'')) : '';
+          return href ? '<a class="'+cls+'" href="'+href+'">'+inner+'</a>'
+                      : '<div class="'+cls+'">'+inner+'</div>';
         }).join('');
       }
       function load(){
@@ -1040,7 +1044,7 @@
           <h3>Filed as <span class="ref" id="lpfb-done-ref">BL-000</span></h3>
           <p class="sub" id="lpfb-done-sub">Thanks — it's on the workbench. 🐺</p>
           <div class="lpfb-row">
-            <a class="lpfb-board" id="lpfb-done-board" href="/backlog" target="_blank">View on board ↗</a>
+            <a class="lpfb-board" id="lpfb-done-board" href="/pos/my-tickets">View my report ↗</a>
             <button class="lpfb-send" id="lpfb-done-ok">Done</button>
           </div>
         </div>
@@ -1061,6 +1065,7 @@
         metaEl=document.getElementById('lpfb-meta'),
         formEl=document.getElementById('lpfb-form'),doneEl=document.getElementById('lpfb-done'),
         doneRef=document.getElementById('lpfb-done-ref'),doneSub=document.getElementById('lpfb-done-sub'),
+        doneBoard=document.getElementById('lpfb-done-board'),
         doneOk=document.getElementById('lpfb-done-ok'),kind='bug',sev='annoying',shot=null,attachments=[];
       // Caps mirror the server (_clean_attachments): images + PDFs, 5 files, ~4.4MB each.
       var ATTACH_MAX=5, ATTACH_MAX_BYTES=4400000;
@@ -1105,11 +1110,17 @@
       function showForm(){formEl.style.display='';doneEl.style.display='none';}
       // The result stays put -- the cashier reads the BL number and dismisses it
       // themselves (the old auto-close vanished before you could read it).
-      function showDone(ref,hadShot,nFiles){doneRef.textContent=ref;
+      function showDone(ref,num,hadShot,nFiles){doneRef.textContent=ref;
+        doneRef.title='Tap to copy';doneRef.style.cursor='pointer';doneRef.dataset.copy=ref;
+        if(num&&doneBoard){doneBoard.href='/pos/my-tickets?focus='+num;}
         var bits=[];if(hadShot)bits.push('Screenshot attached.');
         if(nFiles)bits.push(nFiles+' file'+(nFiles>1?'s':'')+' attached.');
-        doneSub.textContent=(bits.length?bits.join(' ')+' ':'')+"Thanks — it's on the workbench. 🐺";
+        doneSub.textContent=(bits.length?bits.join(' ')+' ':'')+"Tap the number to copy it. 🐺";
         formEl.style.display='none';doneEl.style.display='block';}
+      doneRef.addEventListener('click',function(){var v=doneRef.dataset.copy||doneRef.textContent;
+        try{navigator.clipboard.writeText(v);}catch(e){}
+        var old=doneSub.textContent;doneSub.textContent='Copied '+v+' ✓ — note it down.';
+        setTimeout(function(){doneSub.textContent=old;},1800);});
       function clearShot(){shot=null;thumb.style.display='none';thumbImg.removeAttribute('src');capture.textContent='📸 Capture screen';}
       function clearAttachments(){attachments=[];fileInput.value='';camInput.value='';renderFiles();}
       function reset(){title.value='';body.value='';msg.textContent='';msg.className='lpfb-msg';send.disabled=false;send.textContent='Send';
@@ -1249,7 +1260,7 @@
         API.post('/api/v1/pos/feedback',{kind:kind,severity:sev,title:t,body:(body.value||'').trim(),
           screenshot:shot||null,attachments:attachments,meta:collectMeta(),diagnostics:collectDiag()})
         .then(function(j){
-          if(j&&j.ok){showDone(j.ref,!!(j.screenshot||shot),(j.attachments!=null?j.attachments:attachments.length));}
+          if(j&&j.ok){showDone(j.ref,j.item_number,!!(j.screenshot||shot),(j.attachments!=null?j.attachments:attachments.length));}
           else{msg.textContent=(j&&j.detail)?j.detail:'Something went wrong — try again.';
             msg.className='lpfb-msg err';send.disabled=false;send.textContent='Send';}})
         .catch(function(){msg.textContent='Network error — try again.';msg.className='lpfb-msg err';
