@@ -3639,6 +3639,19 @@ def _timeline_event(actor, new_value, comment, created_at, *, linked=False):
     return None
 
 
+def _decode_any_data_url(data_url):
+    """data:<mime>;base64,<payload>  →  (bytes, mime).  Handles images AND PDFs."""
+    import base64 as _b64
+    import re as _re
+    m = _re.match(r"data:([^;]+);base64,(.*)", data_url or "", _re.S)
+    if not m:
+        return None, None
+    try:
+        return _b64.b64decode(m.group(2)), m.group(1)
+    except Exception:
+        return None, None
+
+
 async def _my_feedback_item(db, me, item_number):
     """Fetch ONE feedback item that belongs to `me` (id + status), or None."""
     row = (await db.execute(
@@ -3663,15 +3676,30 @@ async def my_ticket_timeline(
     me = current_user.get("username") or current_user.get("preferred_username", "unknown")
     row = (await db.execute(
         select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
-               BacklogItemModel.created_at)
+               BacklogItemModel.created_at,
+               (BacklogItemModel.screenshot_data.isnot(None)).label("has_shot"),
+               BacklogItemModel.attachments)
         .where(BacklogItemModel.item_number == item_number,
                BacklogItemModel.created_by == me,
                BacklogItemModel.tags.ilike("%feedback%")))).first()
     if not row:
         raise HTTPException(status_code=404, detail="Report not found")
 
+    # What they attached to the original report — screenshot first (idx 0), then files.
+    # Metadata only (names/types); the bytes are served lazily by /attachment/{idx}.
+    media = []
+    if row.has_shot:
+        media.append({"idx": 0, "name": "Screenshot", "is_image": True})
+    try:
+        base = 1 if row.has_shot else 0
+        for i, a in enumerate(json.loads(row.attachments or "[]")):
+            media.append({"idx": base + i, "name": a.get("name") or f"file {i + 1}",
+                          "is_image": str(a.get("type", "")).startswith("image/")})
+    except Exception:
+        pass
+
     events = [{"icon": "📨", "text": "You reported it", "detail": (row.title or "")[:200],
-               "at": row.created_at.isoformat() if row.created_at else None}]
+               "at": row.created_at.isoformat() if row.created_at else None, "media": media}]
 
     acts = (await db.execute(
         select(BacklogActivityModel.actor, BacklogActivityModel.new_value,
@@ -3708,6 +3736,39 @@ async def my_ticket_timeline(
 
     events.sort(key=lambda x: x["at"] or "")
     return {"item_number": row.item_number, "events": events}
+
+
+@router.get("/feedback/mine/{item_number}/attachment/{idx}")
+async def my_ticket_attachment(
+    item_number: int, idx: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Serve ONE attachment from my report as real bytes (so <img> shows it and PDFs open).
+    Order matches the timeline: screenshot is idx 0, then files. Reporter-owned only."""
+    from fastapi import Response
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = (await db.execute(
+        select(BacklogItemModel.screenshot_data, BacklogItemModel.attachments)
+        .where(BacklogItemModel.item_number == item_number,
+               BacklogItemModel.created_by == me,
+               BacklogItemModel.tags.ilike("%feedback%")))).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Report not found")
+    blobs = []
+    if row.screenshot_data:
+        blobs.append(row.screenshot_data)
+    try:
+        blobs.extend(a["data"] for a in json.loads(row.attachments or "[]") if a.get("data"))
+    except Exception:
+        pass
+    if idx < 0 or idx >= len(blobs):
+        raise HTTPException(status_code=404, detail="Attachment not found")
+    data, mime = _decode_any_data_url(blobs[idx])
+    if data is None:
+        raise HTTPException(status_code=415, detail="Unreadable attachment")
+    return Response(content=data, media_type=mime or "application/octet-stream",
+                    headers={"Content-Disposition": "inline", "Cache-Control": "private, max-age=300"})
 
 
 @router.get("/feedback/mine")

@@ -121,6 +121,18 @@
                       <span class="text-[10px] text-gray-400 shrink-0" x-text="clock(ev.at)"></span>
                     </div>
                     <p x-show="ev.detail" class="text-xs text-gray-500 italic mt-0.5" x-text="'“'+ev.detail+'”'"></p>
+                    <!-- what they attached to the original report -->
+                    <div x-show="ev.media && ev.media.length" class="mt-2 flex flex-wrap gap-2">
+                      <template x-for="(m,mi) in ev.media" :key="mi">
+                        <a :href="m.url || '#'" target="_blank" rel="noopener" @click="!m.url && $event.preventDefault()" class="block" :title="m.name">
+                          <img x-show="m.is_image && m.url" :src="m.url" :alt="m.name" loading="lazy"
+                               class="w-20 h-20 object-cover rounded border border-gray-200 hover:ring-2 hover:ring-indigo-300" />
+                          <span x-show="!m.is_image || !m.url"
+                                class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-200 bg-gray-50 text-gray-600"
+                                x-text="(m.is_image?'🖼️ ':'📄 ')+m.name"></span>
+                        </a>
+                      </template>
+                    </div>
                   </li>
                 </template>
               </ol>
@@ -251,7 +263,19 @@ function myTickets() {
         t.tlLoading = true;
         try {
           const d = await API.get('/api/v1/pos/feedback/mine/' + t.item_number + '/timeline');
-          t.timeline = d.events || [];
+          const events = d.events || [];
+          // resolve attachment bytes via authenticated blob fetch → object URLs (img can't send a Bearer)
+          const tok = AuthHelper.getToken();
+          for (const ev of events) {
+            for (const m of (ev.media || [])) {
+              try {
+                const r = await fetch('/api/v1/pos/feedback/mine/' + t.item_number + '/attachment/' + m.idx,
+                                      { headers: { Authorization: 'Bearer ' + tok } });
+                if (r.ok) m.url = URL.createObjectURL(await r.blob());
+              } catch (e) { /* leave it as a chip */ }
+            }
+          }
+          t.timeline = events;
         } catch (e) { showToast('Could not load the story', 'error'); t.open = false; }
         finally { t.tlLoading = false; }
       }
