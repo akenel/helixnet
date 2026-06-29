@@ -3662,9 +3662,10 @@ async def my_tickets(
             items.append({
                 "item_number": r.item_number, "you_said": r.title,
                 "understood": (cl or {}).get("title") if cl else None,
-                "stage": {"step": 2, "label": "Linked", "emoji": "🔁",
-                          "blurb": "Someone else flagged this too — we've linked your report so it "
-                                   "counts. We'll let you know when it's sorted."},
+                "stage": {"step": 2, "label": "Known issue", "emoji": "🔁",
+                          "blurb": "Someone reported this first, so it's already on our list. "
+                                   "Nothing more you need to do — we'll let you know right here "
+                                   "the moment it's fixed."},
                 "needs_confirm": False, "confirmed": False, "needs_confirm_fix": False,
                 "closed": False, "merged_into": merged[r.id],
                 "created_at": r.created_at.isoformat() if r.created_at else None,
