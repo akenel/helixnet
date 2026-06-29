@@ -3741,12 +3741,18 @@ async def my_ticket_timeline(
         .where(BacklogActivityModel.item_id == row.id)
         .order_by(BacklogActivityModel.created_at.asc()))).all()
     linked_to = None
+    fixed_at = closed_at = None  # SLA milestones (acts are asc → first match = earliest)
     for a in acts:
-        if a.actor == "ai-triage" and (a.new_value or "").startswith("dup-of-"):
+        nv = a.new_value or ""
+        if a.actor == "ai-triage" and nv.startswith("dup-of-"):
             try:
-                linked_to = int(a.new_value.rsplit("-", 1)[-1])
+                linked_to = int(nv.rsplit("-", 1)[-1])
             except Exception:
                 pass
+        if nv == "done" and fixed_at is None:
+            fixed_at = a.created_at
+        if nv in ("closed-confirmed", "reject-confirmed") and closed_at is None:
+            closed_at = a.created_at
         e = _timeline_event(a.actor, a.new_value, a.comment, a.created_at)
         if e:
             events.append(e)
@@ -3764,12 +3770,17 @@ async def my_ticket_timeline(
                        BacklogActivityModel.new_value == "done")
                 .order_by(BacklogActivityModel.created_at.asc()))).all()
             for a in cacts:
+                if a.new_value == "done" and fixed_at is None:
+                    fixed_at = a.created_at  # linked report heals when the canonical was fixed
                 e = _timeline_event(a.actor, a.new_value, a.comment, a.created_at, linked=True)
                 if e:
                     events.append(e)
 
     events.sort(key=lambda x: x["at"] or "")
-    return {"item_number": row.item_number, "events": events}
+    from src.services.ticket_timing import ticket_timing
+    timing = ticket_timing(row.created_at, fixed_at, closed_at,
+                           now=datetime.now(timezone.utc))
+    return {"item_number": row.item_number, "events": events, "timing": timing}
 
 
 @router.get("/feedback/mine/{item_number}/attachment/{idx}")
@@ -3820,7 +3831,7 @@ async def my_ticket_resolution(
     me = current_user.get("username") or current_user.get("preferred_username", "unknown")
     row = (await db.execute(
         select(BacklogItemModel.id, BacklogItemModel.title, BacklogItemModel.status,
-               BacklogItemModel.created_by)
+               BacklogItemModel.created_by, BacklogItemModel.created_at)
         .where(BacklogItemModel.item_number == item_number,
                BacklogItemModel.created_by == me,
                BacklogItemModel.tags.ilike("%feedback%")))).first()
@@ -3832,16 +3843,27 @@ async def my_ticket_resolution(
         .where(BacklogActivityModel.item_id == row.id)
         .order_by(BacklogActivityModel.created_at.asc()))).all()
 
+    # SLA on screen: how fast did the loop heal it? (acts asc → first match = earliest)
+    from src.services.ticket_timing import ticket_timing
+    fixed_at = closed_at = None
+    for a in acts:
+        if a.new_value == "done" and fixed_at is None:
+            fixed_at = a.created_at
+        if a.new_value in ("closed-confirmed", "reject-confirmed") and closed_at is None:
+            closed_at = a.created_at
+    timing = ticket_timing(row.created_at, fixed_at, closed_at,
+                           now=datetime.now(timezone.utc))
+
     # Only a TRUE ending earns a resolution — fixed-but-awaiting-confirm is not closed yet, and
     # summarising it early makes the AI over-claim a close that hasn't happened.
     terminal = {"closed-confirmed", "reject-confirmed", "reporter-cancelled"}
     is_resolved = (row.status or "").lower() == "archived" \
         or any(a.new_value in terminal for a in acts)
     if not is_resolved:
-        return {"resolved": False}
+        return {"resolved": False, "timing": timing}
     for a in acts:                                   # already written? serve the cached one
         if a.actor == "ai-resolution" and a.comment:
-            return {"resolved": True, "text": a.comment, "cached": True}
+            return {"resolved": True, "text": a.comment, "cached": True, "timing": timing}
 
     # Build the ordered story beats for the brain.
     lines = ['Reported by %s: "%s"' % (row.created_by or "a teammate", (row.title or "").strip())]
@@ -3880,7 +3902,7 @@ async def my_ticket_resolution(
         item_id=row.id, activity_type=BacklogActivityType.COMMENT, actor="ai-resolution",
         new_value="resolution", comment=(res["text"] or "")[:4000]))
     await db.commit()
-    return {"resolved": True, "text": res["text"], "ai": res["ai"], "cached": False}
+    return {"resolved": True, "text": res["text"], "ai": res["ai"], "cached": False, "timing": timing}
 
 
 @router.get("/feedback/mine")

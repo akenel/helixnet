@@ -100,7 +100,12 @@
 
           <!-- resolution — the whole story in 3-4 plain sentences (resolved tickets only) -->
           <div x-show="isResolved(t)" class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2">
-            <p class="text-xs font-bold text-emerald-800 flex items-center gap-1">📋 Resolution</p>
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-xs font-bold text-emerald-800 flex items-center gap-1">📋 Resolution</p>
+              <span x-show="slaText(t)" :title="slaDetail(t)"
+                    class="text-[11px] font-semibold text-emerald-700 bg-white/70 border border-emerald-200 rounded-full px-2 py-0.5 shrink-0"
+                    x-text="slaText(t)"></span>
+            </div>
             <p x-show="t.resLoading && !t.resolution" class="text-xs text-emerald-700/70 italic mt-1">Writing it up…</p>
             <p x-show="t.resolution" class="text-sm text-gray-700 mt-1 leading-relaxed" x-text="t.resolution"></p>
           </div>
@@ -119,6 +124,7 @@
             </button>
             <div x-show="t.open" x-cloak class="mt-3">
               <div x-show="t.tlLoading" class="text-xs text-gray-400 py-2">Loading the story…</div>
+              <div x-show="!t.tlLoading && slaText(t)" class="mb-3 text-xs font-semibold text-indigo-700" x-text="slaText(t) + ' · ' + slaDetail(t)"></div>
               <ol x-show="!t.tlLoading" class="relative border-l-2 border-indigo-100 ml-2 space-y-3">
                 <template x-for="(ev,i) in (t.timeline||[])" :key="i">
                   <li class="ml-4">
@@ -259,7 +265,7 @@ function myTickets() {
       this.loading = true;
       try {
         const d = await API.get('/api/v1/pos/feedback/mine');
-        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false, open: false, timeline: null, tlLoading: false, resolution: null, resLoading: false }));
+        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false, open: false, timeline: null, tlLoading: false, resolution: null, resLoading: false, timing: null }));
         this.items.forEach(t => { if (this.isResolved(t)) this.loadResolution(t); });
         if (this.focusN) this.$nextTick(() => this.scrollToReport(this.focusN));
         this.openN = d.open || 0; this.doneN = d.done || 0;
@@ -304,6 +310,7 @@ function myTickets() {
             }
           }
           t.timeline = events;
+          t.timing = d.timing || t.timing;
         } catch (e) { showToast('Could not load the story', 'error'); t.open = false; }
         finally { t.tlLoading = false; }
       }
@@ -325,9 +332,25 @@ function myTickets() {
       if (t.resLoading || t.resolution) return;
       t.resLoading = true;
       API.get('/api/v1/pos/feedback/mine/' + t.item_number + '/resolution')
-        .then(d => { if (d && d.resolved) t.resolution = d.text; })
+        .then(d => { if (d) { t.timing = d.timing || t.timing; if (d.resolved) t.resolution = d.text; } })
         .catch(() => {})
         .finally(() => { t.resLoading = false; });
+    },
+    // The hypercare SLA, in one glance: report → fixed = "Healed in 2h 37m" (open age while in flight).
+    slaText(t) {
+      const tm = t.timing; if (!tm) return '';
+      if (tm.healed_human) return '🩹 Healed in ' + tm.healed_human;
+      if (tm.open_human) return '⏳ Open ' + tm.open_human;
+      return '';
+    },
+    // Tooltip detail: the actual clock moments behind the span.
+    slaDetail(t) {
+      const tm = t.timing; if (!tm) return '';
+      const parts = [];
+      if (tm.opened_at) parts.push('Opened ' + this.clock(tm.opened_at));
+      if (tm.fixed_at) parts.push('fixed ' + this.clock(tm.fixed_at));
+      else if (tm.closed_at) parts.push('closed ' + this.clock(tm.closed_at));
+      return parts.join(' · ');
     },
     // Compact timeline clock: just the time today, "DD Mon HH:MM" if older.
     clock(s) {
