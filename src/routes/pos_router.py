@@ -3592,6 +3592,53 @@ def _friendly_stage(status: str, has_triage: bool) -> dict:
             "blurb": "Thanks! We've got your message."}
 
 
+# Plain-language translation of ONE activity-log row → a timeline event (or None to skip).
+# The append-only activity chain IS the audit trail; this just renders it as a human story.
+_TL_MAP = {
+    "done":               ("🔧", "Marked fixed"),
+    "closed-confirmed":   ("🎉", "You closed it — fixed"),
+    "rejected":           ("🤔", "We took a look — no change needed"),
+    "reject-confirmed":   ("👍", "You agreed — closed"),
+    "disputed":           ("↩️", "You sent it back"),
+    "reporter-cancelled": ("✕", "You withdrew it"),
+    "confirmed":          ("✅", "You confirmed our understanding"),
+    "reporter-note":      ("✏️", "You added detail"),
+    "reopened":           ("↩️", "You sent it back — the fix didn't work"),
+}
+
+
+def _timeline_event(actor, new_value, comment, created_at, *, linked=False):
+    nv = new_value or ""
+    at = created_at.isoformat() if created_at else None
+
+    def ev(icon, text, detail=""):
+        return {"icon": icon, "text": text, "detail": (detail or "")[:200], "at": at}
+
+    if actor == "ai-dedup":
+        return None  # internal breadcrumb on the canonical — not the reporter's story
+    if actor == "ai-triage":
+        if nv.startswith("dup-of-"):
+            return ev("🔁", f"Linked to report #{nv.rsplit('-', 1)[-1]}",
+                      "Same issue — joined to the earlier report")
+        clean_title = ""
+        try:
+            clean_title = (json.loads(comment).get("clean") or {}).get("title", "")
+        except Exception:
+            pass
+        return ev("👀", "We understood it", clean_title)
+    if nv in _TL_MAP:
+        if linked and nv == "done":
+            return ev("✅", "The linked issue was fixed — you're all set")
+        icon, text = _TL_MAP[nv]
+        detail = ""
+        if nv == "rejected":
+            detail = comment or ""
+        elif nv == "reporter-note":
+            detail = (comment or "").replace("📝 Reporter added: ", "")
+        return ev(icon, text, detail)
+    return None
+
+
 async def _my_feedback_item(db, me, item_number):
     """Fetch ONE feedback item that belongs to `me` (id + status), or None."""
     row = (await db.execute(
@@ -3600,6 +3647,67 @@ async def _my_feedback_item(db, me, item_number):
                BacklogItemModel.created_by == me,
                BacklogItemModel.tags.ilike("%feedback%")))).first()
     return row
+
+
+@router.get("/feedback/mine/{item_number}/timeline")
+async def my_ticket_timeline(
+    item_number: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The full story of ONE of my tickets — report → resolution — in plain language, built
+    straight from the append-only activity log (plus the canonical's "fixed" milestone if this
+    report was linked to an earlier one, so a linked report visibly resolves). Reporter sees
+    only their own; read-only."""
+    from src.db.models.backlog_model import BacklogActivityModel
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
+               BacklogItemModel.created_at)
+        .where(BacklogItemModel.item_number == item_number,
+               BacklogItemModel.created_by == me,
+               BacklogItemModel.tags.ilike("%feedback%")))).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    events = [{"icon": "📨", "text": "You reported it", "detail": (row.title or "")[:200],
+               "at": row.created_at.isoformat() if row.created_at else None}]
+
+    acts = (await db.execute(
+        select(BacklogActivityModel.actor, BacklogActivityModel.new_value,
+               BacklogActivityModel.comment, BacklogActivityModel.created_at)
+        .where(BacklogActivityModel.item_id == row.id)
+        .order_by(BacklogActivityModel.created_at.asc()))).all()
+    linked_to = None
+    for a in acts:
+        if a.actor == "ai-triage" and (a.new_value or "").startswith("dup-of-"):
+            try:
+                linked_to = int(a.new_value.rsplit("-", 1)[-1])
+            except Exception:
+                pass
+        e = _timeline_event(a.actor, a.new_value, a.comment, a.created_at)
+        if e:
+            events.append(e)
+
+    # If this report was linked, append the EARLIER report's resolution so it visibly resolves.
+    if linked_to:
+        canon_id = (await db.execute(
+            select(BacklogItemModel.id)
+            .where(BacklogItemModel.item_number == linked_to))).scalar_one_or_none()
+        if canon_id:
+            cacts = (await db.execute(
+                select(BacklogActivityModel.actor, BacklogActivityModel.new_value,
+                       BacklogActivityModel.comment, BacklogActivityModel.created_at)
+                .where(BacklogActivityModel.item_id == canon_id,
+                       BacklogActivityModel.new_value == "done")
+                .order_by(BacklogActivityModel.created_at.asc()))).all()
+            for a in cacts:
+                e = _timeline_event(a.actor, a.new_value, a.comment, a.created_at, linked=True)
+                if e:
+                    events.append(e)
+
+    events.sort(key=lambda x: x["at"] or "")
+    return {"item_number": row.item_number, "events": events}
 
 
 @router.get("/feedback/mine")

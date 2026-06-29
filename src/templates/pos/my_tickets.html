@@ -104,6 +104,29 @@
             <p class="text-sm text-gray-600 mt-1 italic" x-text="'“' + t.you_said + '”'"></p>
           </details>
 
+          <!-- full story (timeline) — expand in place -->
+          <div class="mt-3 border-t pt-2">
+            <button @click="toggleStory(t)" class="w-full flex items-center justify-between text-xs text-gray-500 hover:text-indigo-600 select-none">
+              <span x-text="t.open ? '📖 Hide the story' : '📖 See the full story'"></span>
+              <span x-text="t.open ? '▲' : '▼'"></span>
+            </button>
+            <div x-show="t.open" x-cloak class="mt-3">
+              <div x-show="t.tlLoading" class="text-xs text-gray-400 py-2">Loading the story…</div>
+              <ol x-show="!t.tlLoading" class="relative border-l-2 border-indigo-100 ml-2 space-y-3">
+                <template x-for="(ev,i) in (t.timeline||[])" :key="i">
+                  <li class="ml-4">
+                    <span class="absolute -left-[11px] text-sm bg-white leading-none" x-text="ev.icon"></span>
+                    <div class="flex items-baseline justify-between gap-2">
+                      <span class="text-sm font-medium text-gray-800" x-text="ev.text"></span>
+                      <span class="text-[10px] text-gray-400 shrink-0" x-text="clock(ev.at)"></span>
+                    </div>
+                    <p x-show="ev.detail" class="text-xs text-gray-500 italic mt-0.5" x-text="'“'+ev.detail+'”'"></p>
+                  </li>
+                </template>
+              </ol>
+            </div>
+          </div>
+
           <!-- confirm-back -->
           <div x-show="t.needs_confirm && t.confirmState!=='done' && t.confirmState!=='withdrawn'" class="mt-4 border-t pt-3">
             <p class="text-sm font-semibold text-gray-800">Did we get it right?</p>
@@ -198,7 +221,7 @@ function myTickets() {
       this.loading = true;
       try {
         const d = await API.get('/api/v1/pos/feedback/mine');
-        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false }));
+        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false, open: false, timeline: null, tlLoading: false }));
         this.openN = d.open || 0; this.doneN = d.done || 0;
         this.updatedAt = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
@@ -220,6 +243,27 @@ function myTickets() {
       else if (/annoy|medium|moderate/.test(s)) effort = 'a minor fix';
       else if (/block|high|critical|severe|urgent/.test(s)) effort = 'important — bumped up the list';
       return { emoji: km.e, text: 'Looks like ' + km.w + (effort ? ' · ' + effort : '') };
+    },
+    // Expand-in-place: lazy-load the full report→resolution story from the activity log.
+    async toggleStory(t) {
+      t.open = !t.open;
+      if (t.open && !t.timeline) {
+        t.tlLoading = true;
+        try {
+          const d = await API.get('/api/v1/pos/feedback/mine/' + t.item_number + '/timeline');
+          t.timeline = d.events || [];
+        } catch (e) { showToast('Could not load the story', 'error'); t.open = false; }
+        finally { t.tlLoading = false; }
+      }
+    },
+    // Compact timeline clock: just the time today, "DD Mon HH:MM" if older.
+    clock(s) {
+      if (!s) return '';
+      const d = new Date(s), now = new Date();
+      const day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+      const t = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      return Math.round((day0(now) - day0(d)) / 86400000) === 0
+        ? t : d.toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) + ' ' + t;
     },
     async confirm(t) {
       try {
