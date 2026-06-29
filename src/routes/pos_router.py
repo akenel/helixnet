@@ -99,9 +99,10 @@ html_router = APIRouter(tags=["🖥️ POS Web UI"])
 templates_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
 # Real build stamp in the POS status bar (version + the SHA actually deployed).
-from src.build_info import get_version, get_git_sha  # noqa: E402
+from src.build_info import get_version, get_git_sha, get_build_date_short  # noqa: E402
 templates.env.globals["app_version"] = get_version()
 templates.env.globals["git_sha"] = get_git_sha()
+templates.env.globals["build_date"] = get_build_date_short()  # BL-010: '29 Jun' freshness (POS instance)
 import os  # noqa: E402
 # Env code (SBX/STG/PRD) for the status-bar pill. POS pages render via THIS templates instance
 # (not main.py's), so the app_env global must be set here too. Read os.environ directly.
