@@ -124,13 +124,13 @@
                     <!-- what they attached to the original report -->
                     <div x-show="ev.media && ev.media.length" class="mt-2 flex flex-wrap gap-2">
                       <template x-for="(m,mi) in ev.media" :key="mi">
-                        <a :href="m.url || '#'" target="_blank" rel="noopener" @click="!m.url && $event.preventDefault()" class="block" :title="m.name">
+                        <button type="button" @click="m.url && openViewer(m)" :disabled="!m.url" class="block cursor-pointer" :title="m.name">
                           <img x-show="m.is_image && m.url" :src="m.url" :alt="m.name" loading="lazy"
                                class="w-20 h-20 object-cover rounded border border-gray-200 hover:ring-2 hover:ring-indigo-300" />
                           <span x-show="!m.is_image || !m.url"
                                 class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-200 bg-gray-50 text-gray-600"
                                 x-text="(m.is_image?'🖼️ ':'📄 ')+m.name"></span>
-                        </a>
+                        </button>
                       </template>
                     </div>
                   </li>
@@ -210,12 +210,30 @@
 
     <p class="text-center text-xs text-gray-400 mt-8">See something off? Tap the 💬 button anywhere, anytime.</p>
   </div>
+
+  <!-- attachment lightbox — tap a thumbnail to view; ✕ / backdrop / Esc to close -->
+  <div x-show="viewer.open" x-cloak @keydown.escape.window="viewer.open=false"
+       class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" @click.self="viewer.open=false">
+    <div class="relative max-w-full max-h-full" @click.stop>
+      <button @click="viewer.open=false" title="Close" aria-label="Close"
+              class="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-white text-gray-800 shadow-lg flex items-center justify-center text-xl font-bold hover:bg-gray-100">✕</button>
+      <img x-show="viewer.isImage" :src="viewer.url" :alt="viewer.name"
+           class="max-w-[92vw] max-h-[82vh] object-contain rounded-lg shadow-2xl bg-white" />
+      <iframe x-show="!viewer.isImage" :src="viewer.url" class="w-[92vw] h-[82vh] bg-white rounded-lg shadow-2xl"></iframe>
+      <div class="flex items-center justify-center gap-3 mt-3">
+        <p class="text-white/80 text-xs" x-text="viewer.name"></p>
+        <a :href="viewer.url" :download="viewer.name" class="text-white/80 text-xs underline hover:text-white">Download ↓</a>
+      </div>
+      <button @click="viewer.open=false" class="block mx-auto mt-2 text-white/70 text-xs underline hover:text-white">Close window</button>
+    </div>
+  </div>
 </div>
 
 <script>
 function myTickets() {
   return {
     items: [], openN: 0, doneN: 0, loading: false, updatedAt: '', filter: 'active',
+    viewer: { open: false, url: null, name: '', isImage: true },
     steps: [
       { icon:'📨', label:'Received',   tip:"We've got your message." },
       { icon:'👀', label:'Understood', tip:"We've read it and understood what you mean." },
@@ -280,6 +298,7 @@ function myTickets() {
         finally { t.tlLoading = false; }
       }
     },
+    openViewer(m) { this.viewer = { open: true, url: m.url, name: m.name, isImage: m.is_image }; },
     // Compact timeline clock: just the time today, "DD Mon HH:MM" if older.
     clock(s) {
       if (!s) return '';
