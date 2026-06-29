@@ -25,7 +25,18 @@ _REPO_ROOT = _SRC_DIR.parent
 _STAMP = _SRC_DIR / "static" / "build-sha.txt"
 
 
+@lru_cache(maxsize=1)
 def get_version() -> str:
+    """CalVer (#3): a REAL version derived from the build date — 'YY.MM.DD' (e.g. 26.06.29) — so it
+    bumps itself on every deploy and can never go stale, instead of a hardcoded '3.3.0'. Falls back
+    to __version__ only when no build date is stamped (local dev)."""
+    d = get_build_date()
+    if d:
+        try:
+            from datetime import datetime
+            return datetime.fromisoformat(d).strftime("%y.%m.%d")
+        except Exception:
+            pass
     return __version__
 
 
@@ -79,13 +90,13 @@ def get_build_date() -> str:
 
 @lru_cache(maxsize=1)
 def get_build_date_short() -> str:
-    """Human freshness for the status bar — '29 Jun' from the deployed build date, or '' (BL-010)."""
+    """Numeric freshness for the status bar — 'dd/mm' (e.g. 29/06) from the build date, or '' (#3)."""
     d = get_build_date()
     if not d:
         return ""
     try:
         from datetime import datetime
         dt = datetime.fromisoformat(d)
-        return f"{dt.day} {dt.strftime('%b')}"
+        return f"{dt.day:02d}/{dt.month:02d}"
     except Exception:
         return d[:10]
