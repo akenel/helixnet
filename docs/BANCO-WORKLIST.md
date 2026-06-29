@@ -33,11 +33,10 @@ The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's 
 
 - [ ] **P1 — Fiscal sign-off. START THIS FIRST.** Send the Treuhänder the receipt + Z-report samples (already generated in `docs/business/banco-fiscal/`) and get the thumbs-up on gapless/immutable numbering. 🧍
   *Why first: it's the only item that waits on a human outside our control. Everything else we can do in days — this we can't rush, so start the clock now.*
-- **P2 — Offline outbox.** A dropped network must never kill a sale (queue → replay when back). 🐯 build · spec + review in `BANCO-OFFLINE-AND-PWA-PLAN.md` §10. *Sub-incremented:*
-  - [x] **P2.1 — atomic, idempotent `POST /pos/sales`** (whole cart + payment in ONE call, idempotent on a client UUID; till switched). **SHIPPED prod `9cf8f9e`/`b1391` 2026-06-29** — human-green TEST-P21 (11/11 on Fairphone, signed PDF in `docs/testing/banco/Test-Scripts/`), per-env `client_uuid` proof on all 3, atomic==legacy parity test, backup-gated + re-probed. Legacy 3-step endpoints kept as a safety net.
-  - [ ] **P2.2 — outbox (IndexedDB) + provisional receipt** offline (P0 PWA + P1 read-cache already shipped). ⚠ provisional-receipt compliance = the SAME Treuhänder ask as P1 fiscal.
-  - [ ] **P2.3 — sync worker** replays outbox → "⏳ N pending" badge.
-  *Why: highest in-shop risk. The keystone (P2.1) is in; P2.2/P2.3 remain.*
+- **P2 — Network resilience.** *Re-scoped 2026-06-29 (see `BANCO-OFFLINE-AND-PWA-PLAN.md` decision banner).*
+  - [x] **P2.1 — atomic, idempotent `POST /pos/sales`** (whole cart + payment in ONE call, idempotent on a client UUID; till switched). **SHIPPED prod `9cf8f9e`/`b1391`** — human-green TEST-P21 (11/11 Fairphone, signed PDF in `docs/testing/banco/Test-Scripts/`), per-env `client_uuid` proof, atomic==legacy parity test, backup-gated. Kept the better online checkout.
+  - [x] **Offline = clear warning + block (NOT offline sales).** Built P2.2 outbox, tested it (TEST-P22), then **Angel killed offline-mode** (tiny use case, huge fiscal cost). Instead: big "⚠ no internet — sales paused, use mobile data/hotspot" banner + honest checkout block (cart kept safe). Outbox branch deleted.
+  - ~~P2.2 outbox / P2.3 sync~~ **DROPPED** — don't re-open without a named customer demand.
 - [ ] **P3 — Hardware dry-run at the shop.** Thermal printer + barcode scanner on real metal — never tested live. 👥 (must be at Artemis). *Effort: half a day on-site.*
 - [ ] **P4 — Prod identity cleanup + SMTP.** Clean prod realm (the pam split-brain) + wire shop email. 👥 — **NOT tonight** (your call). *Effort: one focused session.*
 

@@ -1269,7 +1269,10 @@
     })();</script>
 
     <!-- PWA service worker (Phase 0) + offline indicator + app-shell wiring. Scope /pos. -->
-    <div id="lp-offline-pill" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(72px + env(safe-area-inset-bottom));z-index:9999;background:#b45309;color:#fff;font:600 12px/1 Inter,system-ui,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.3)">⚠ Offline — showing last-loaded data</div>
+    <!-- Offline = no sales (by design — we deliberately don't do offline sales; the use case is
+         tiny and the fiscal/compliance cost huge). A big, can't-miss banner that says WHY and HOW
+         to fix it, so nobody wastes time ringing a sale that won't go through. Toggled by sync(). -->
+    <div id="lp-offline-pill" role="alert" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:#b45309;color:#fff;font:600 13px/1.45 Inter,system-ui,sans-serif;padding:11px 16px;padding-top:calc(11px + env(safe-area-inset-top));text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)">⚠ <b>No internet — sales are paused.</b> Your cart is safe. Switch to mobile data or a hotspot, then carry on.</div>
     <script>
     (function(){
       // Online/offline pill — in P0 this is a heads-up only (writes still need the network).

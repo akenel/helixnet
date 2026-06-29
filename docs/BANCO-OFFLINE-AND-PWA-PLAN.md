@@ -1,6 +1,17 @@
 # Banco POS — Offline Mode + PWA: Investigation & Plan
 
-*Status: PLAN / discussion draft — nothing built yet. Tigs + Angel, 2026-06-26.*
+*Status: PLAN / discussion draft. Tigs + Angel, 2026-06-26.*
+
+> **⛔ DECISION 2026-06-29 — OFFLINE SALES (P2.2 / P2.3) ARE DROPPED.** We built P2.2 (IndexedDB
+> outbox + provisional receipt + auto-sync) and tested it on the phone (TEST-P22). Angel's call
+> after the run: **don't do offline sales.** The use case is tiny (a cashier in a shop has a data
+> plan / hotspot / can fix the wifi), and the cost is huge (provisional receipts, fiscal numbering,
+> sync edge cases, a Treuhänder sign-off). The real failure mode is a **confused cashier ringing a
+> sale that silently won't go through** — and that's solved by a **big, honest "no internet — sales
+> paused, use mobile data/hotspot" banner + a clear block** (cart kept safe). That shipped instead.
+> **P0 (PWA) and P1 (read-offline catalog) stay** (harmless, already live). **P2.1 (atomic /sales)
+> stays** — it made online checkout better and is on prod. Only the offline *write* is abandoned.
+> Don't re-open P2.2/P2.3 without a real, named customer demand. The outbox branch was deleted.
 
 > "So that we're never down, and we're always running, and it's always smooth
 > operation. Because we are smooth operators." — Angel

@@ -531,12 +531,13 @@
                     return;
                 }
 
-                // Offline: finishing a sale needs the server (P2 outbox not built yet). Don't
-                // throw a scary error — tell the cashier plainly and keep the cart so they can
-                // finish the moment they're back online.
+                // No connection = no sale. We deliberately do NOT do offline sales (the use case
+                // is tiny and the fiscal/compliance cost is huge) — we just tell the cashier
+                // plainly and keep the cart so nothing is lost. The persistent banner explains
+                // the fix (mobile data / hotspot); the moment they reconnect, Complete works.
                 if (!navigator.onLine) {
-                    sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // keep the sale
-                    showToast("You're offline — keep scanning. This sale will finish when you're back online.", 'warning');
+                    sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // cart is safe
+                    showToast("No internet — can't complete the sale. Your cart is safe. Switch to mobile data or a hotspot, then tap Complete again.", 'warning');
                     return;
                 }
 
@@ -627,10 +628,11 @@
                     }, 500);
 
                 } catch (error) {
-                    // Dropped mid-checkout? Say it plainly and keep the cart, rather than a raw error.
+                    // Connection dropped mid-sale? The sale did NOT go through. Keep the cart and
+                    // say it plainly — reconnect (mobile data / hotspot) and tap Complete again.
                     if (!navigator.onLine) {
-                        sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // keep the sale
-                        showToast("Lost the network mid-sale — your cart is saved. Finish it once you're back online.", 'warning');
+                        sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // cart is safe
+                        showToast("Lost the connection — the sale didn't go through. Your cart is safe. Reconnect (mobile data / hotspot) and tap Complete again.", 'warning');
                     } else {
                         showToast('Error: ' + error.message, 'error');
                     }
