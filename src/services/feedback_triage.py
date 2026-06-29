@@ -155,3 +155,33 @@ async def triage_feedback(
             "vision": vision, "model": "", "tokens": 0, "ai": False,
             "note": f"AI unavailable ({type(e).__name__})",
         }
+
+
+# --- Resolution summary: the whole ticket as a 3-4 sentence story a busy owner can skim ------
+_RESOLUTION_SYSTEM = (
+    "You write the RESOLUTION for a small shop's feedback ticket — so a busy owner can read 3-4 "
+    "short sentences and understand the whole story without digging into the details. Use plain, "
+    "concrete, friendly words. NO jargon, NO bullet points — ONE short paragraph. Cover, in order: "
+    "what the person reported, what we understood/decided, what was actually done (mention the code "
+    "change / commit short-hash if there was one), and the outcome (fixed and confirmed, or no "
+    "change was needed, or it was withdrawn). Write it like a little story someone can read at a "
+    "glance. 3-4 sentences, nothing more."
+)
+
+
+async def summarize_resolution(story_lines: list) -> dict:
+    """Turn an ordered list of plain story beats → one Lego-language resolution paragraph.
+    Always returns SOMETHING readable: falls back to joining the beats if the brain is down."""
+    beats = [s for s in (story_lines or []) if s]
+    story = "\n".join(f"- {s}" for s in beats)
+    try:
+        target = turbo_or_local(_TRIAGE_MODEL_TURBO, _TRIAGE_MODEL_LOCAL)
+        result = await run_llm("Ticket history (oldest first):\n" + story +
+                               "\n\nWrite the resolution paragraph.",
+                               target=target, system=_RESOLUTION_SYSTEM)
+        text = (result.text or "").strip()
+        if text:
+            return {"text": text, "model": result.model, "ai": True}
+    except Exception as e:  # noqa: BLE001 — brain down → a plain, still-useful fallback
+        logger.warning("resolution summary failed: %s", e)
+    return {"text": " ".join(beats) or "This report has been closed.", "model": "", "ai": False}

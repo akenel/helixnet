@@ -98,6 +98,13 @@
             <span><b x-text="t.stage.label"></b> — <span x-text="t.stage.blurb"></span></span>
           </div>
 
+          <!-- resolution — the whole story in 3-4 plain sentences (resolved tickets only) -->
+          <div x-show="isResolved(t)" class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2">
+            <p class="text-xs font-bold text-emerald-800 flex items-center gap-1">📋 Resolution</p>
+            <p x-show="t.resLoading && !t.resolution" class="text-xs text-emerald-700/70 italic mt-1">Writing it up…</p>
+            <p x-show="t.resolution" class="text-sm text-gray-700 mt-1 leading-relaxed" x-text="t.resolution"></p>
+          </div>
+
           <!-- what you told us (their own words) -->
           <details class="mt-3" x-show="t.understood">
             <summary class="text-xs text-gray-500 cursor-pointer select-none">In your words</summary>
@@ -251,7 +258,8 @@ function myTickets() {
       this.loading = true;
       try {
         const d = await API.get('/api/v1/pos/feedback/mine');
-        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false, open: false, timeline: null, tlLoading: false }));
+        this.items = (d.items || []).map(t => ({ ...t, confirmState: null, noteText: '', fixState: null, fixNote: '', rejState: null, rejNote: '', busy: false, open: false, timeline: null, tlLoading: false, resolution: null, resLoading: false }));
+        this.items.forEach(t => { if (this.isResolved(t)) this.loadResolution(t); });
         this.openN = d.open || 0; this.doneN = d.done || 0;
         this.updatedAt = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
@@ -299,6 +307,16 @@ function myTickets() {
       }
     },
     openViewer(m) { this.viewer = { open: true, url: m.url, name: m.name, isImage: m.is_image }; },
+    // A ticket is "resolved" once it's fixed/closed/rejected/withdrawn — then it earns a Resolution.
+    isResolved(t) { return !!(t.closed || t.needs_confirm_fix || (t.stage && t.stage.step === 4)); },
+    loadResolution(t) {
+      if (t.resLoading || t.resolution) return;
+      t.resLoading = true;
+      API.get('/api/v1/pos/feedback/mine/' + t.item_number + '/resolution')
+        .then(d => { if (d && d.resolved) t.resolution = d.text; })
+        .catch(() => {})
+        .finally(() => { t.resLoading = false; });
+    },
     // Compact timeline clock: just the time today, "DD Mon HH:MM" if older.
     clock(s) {
       if (!s) return '';

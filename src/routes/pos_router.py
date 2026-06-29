@@ -3771,6 +3771,82 @@ async def my_ticket_attachment(
                     headers={"Content-Disposition": "inline", "Cache-Control": "private, max-age=300"})
 
 
+@router.get("/feedback/mine/{item_number}/resolution")
+async def my_ticket_resolution(
+    item_number: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """A plain-language RESOLUTION for a resolved ticket — what was reported, what we decided,
+    what we did (commit), and the outcome — in 3-4 sentences anyone can skim. Generated once by
+    the AI from the activity log, then cached as an `ai-resolution` activity. {resolved:false}
+    until the ticket actually reaches an end (fixed, no-change-needed, or withdrawn)."""
+    import re as _re
+    from src.db.models.backlog_model import BacklogActivityModel, BacklogActivityType
+    me = current_user.get("username") or current_user.get("preferred_username", "unknown")
+    row = (await db.execute(
+        select(BacklogItemModel.id, BacklogItemModel.title, BacklogItemModel.status,
+               BacklogItemModel.created_by)
+        .where(BacklogItemModel.item_number == item_number,
+               BacklogItemModel.created_by == me,
+               BacklogItemModel.tags.ilike("%feedback%")))).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Report not found")
+    acts = (await db.execute(
+        select(BacklogActivityModel.actor, BacklogActivityModel.new_value,
+               BacklogActivityModel.comment, BacklogActivityModel.created_at)
+        .where(BacklogActivityModel.item_id == row.id)
+        .order_by(BacklogActivityModel.created_at.asc()))).all()
+
+    terminal = {"closed-confirmed", "reject-confirmed", "reporter-cancelled"}
+    is_resolved = (row.status or "").lower() in ("done", "archived") \
+        or any(a.new_value in terminal for a in acts)
+    if not is_resolved:
+        return {"resolved": False}
+    for a in acts:                                   # already written? serve the cached one
+        if a.actor == "ai-resolution" and a.comment:
+            return {"resolved": True, "text": a.comment, "cached": True}
+
+    # Build the ordered story beats for the brain.
+    lines = ['Reported by %s: "%s"' % (row.created_by or "a teammate", (row.title or "").strip())]
+    for a in acts:
+        nv = a.new_value or ""
+        if a.actor == "ai-triage" and nv.startswith("dup-of-"):
+            lines.append("Linked to earlier report #%s (same issue)." % nv.rsplit("-", 1)[-1])
+        elif a.actor == "ai-triage":
+            try:
+                ct = (json.loads(a.comment).get("clean") or {}).get("title")
+                if ct:
+                    lines.append('We understood it as: "%s"' % ct)
+            except Exception:
+                pass
+        elif nv == "confirmed":
+            lines.append("The reporter confirmed we understood it correctly.")
+        elif nv == "reporter-note":
+            lines.append("The reporter added more detail.")
+        elif nv == "done":
+            m = _re.search(r"Fixed in ([0-9a-f]{6,40})", a.comment or "")
+            lines.append("Fixed in commit %s." % m.group(1) if m else "Marked fixed.")
+        elif nv == "rejected":
+            lines.append(("We decided no change was needed: " + (a.comment or "")).strip())
+        elif nv == "closed-confirmed":
+            lines.append("The reporter checked it and closed the ticket — confirmed good.")
+        elif nv == "reject-confirmed":
+            lines.append("The reporter agreed no change was needed and closed it.")
+        elif nv == "reporter-cancelled":
+            lines.append("The reporter withdrew the report.")
+        elif nv == "reopened":
+            lines.append("An earlier fix didn't work, so it went back to the team.")
+
+    from src.services.feedback_triage import summarize_resolution
+    res = await summarize_resolution(lines)
+    db.add(BacklogActivityModel(
+        item_id=row.id, activity_type=BacklogActivityType.COMMENT, actor="ai-resolution",
+        new_value="resolution", comment=(res["text"] or "")[:4000]))
+    await db.commit()
+    return {"resolved": True, "text": res["text"], "ai": res["ai"], "cached": False}
+
+
 @router.get("/feedback/mine")
 async def my_tickets(
     db: AsyncSession = Depends(get_db_session),
