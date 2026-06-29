@@ -189,3 +189,89 @@ For a Swiss head shop the risks live here — call them out now:
 on flaky Wi-Fi, and it lays the service-worker foundation every later phase needs — all
 with zero change to how sales actually work (so zero money risk). Then we drive P1/P2 with
 eyes open.
+
+---
+
+# 10. SPEC REVIEW — grounded against shipped code (2026-06-29)
+
+*Re-read the whole plan against what's actually in the tree today. The headline: this plan
+is further along than it reads — **P0 and P1 are already shipped.** We are standing exactly
+on the P2 doorstep, which is where the money/compliance weight begins.*
+
+## 10.1 Where we actually are (verified in code)
+
+| Phase | Plan status | **Reality today** |
+|---|---|---|
+| P0 — PWA shell | "do first" | ✅ **DONE.** `sw.js` (CACHE v20, cache-first shell / network-first pages / `/api/` network-only), `manifest.webmanifest`, icons, **CDN deps vendored** (`/static/vendor/`: tailwind built CSS, alpine, html2canvas, html5-qrcode + fonts). Update-nudge shipped. |
+| P1 — Read-offline | future | ✅ **DONE.** `src/static/pos/catalog-cache.js` — dependency-free IndexedDB mirror (`CatalogCache.sync/findByBarcode/search/meta`); scan + search + price work with no network. Online/offline indicator present (`navigator.onLine` in scan/checkout/base). |
+| P2 — Write-offline outbox | future | ⛔ **NOT built.** Offline checkout is currently **friendly-blocked**: `checkout.html:534` → toast *"You're offline — keep scanning. This sale will finish when you're back online."* The sale is held, not lost — but it cannot finish offline. |
+| P3 — Hardening | future | ⛔ Not started. |
+
+So the daily-feel + read-resilience Angel asked for is **live now**. The remaining gap is
+the hard one by design: **finishing a sale with no server.**
+
+## 10.2 What the atomic endpoint must absorb (the honest weight)
+
+Checkout today is the 3-round-trip the plan named (`checkout.html:571/585/608`):
+`POST /transactions` → `POST /transactions/{id}/items` (per line) → `POST /transactions/{id}/checkout`.
+Collapsing it into one server-authoritative call means one endpoint has to carry **everything
+the three do today** — all of it stays server-side (one source of truth):
+
+1. **Server-authoritative price snapshot** — catalog price wins; client `unit_price` is ignored for catalog items (anti-tamper, `pos_router:2015`). Custom lines supply their own price+name.
+2. **Per-line VAT snapshot** — `line_vat(prod_class, consumption, line_total)`: alcohol/tobacco always 8.1 %, cafe food/drink dine-in 8.1 % / takeaway 2.6 %; rate **snapshotted** so a later rate change never rewrites the receipt.
+3. **Promo-restricted guard** — no discount on tobacco/alcohol (law, blocks cashier *and* manager).
+4. **Role discount ceiling** — cashier 10 % / manager 25 % / admin ∞, enforced server-side.
+5. **Cash drawer gate** — a CASH sale needs an OPEN shift or **409** ("open your drawer first"); card/TWINT exempt.
+6. **Cent-precision tender check** — quantize both sides (the `.17` float bug, `2215`).
+7. **VAT rollup** — `split_vat(...)` sums per-line VAT for a mixed cart; cart-wide discount prorated.
+8. **Member tier discount + CRM** — tier % off, credits earned (1/CHF), lifetime/basket/tier recalculated.
+9. **Receipt + transaction number** — ⚠ today `transaction_number` is a **count-based sequence** with a literal `TODO: Make this atomic` (`1784`). Two cashiers ringing at the same instant can collide. This is **already** a latent bug online, and it's load-bearing for the fiscal **gapless-numbering** requirement — the atomic endpoint is the natural place to fix it (DB sequence / per-device block).
+
+## 10.3 P2, sub-incremented (each ships on its own)
+
+**P2.1 — Atomic, idempotent `create-sale` endpoint.** `POST /pos/sales` takes the whole cart
++ payment + customer + a **client-generated UUID** in ONE request, does create+lines+checkout
+in ONE DB transaction (no partial-failure window), and is **idempotent on the UUID** (replaying
+the same UUID returns the same sale, never double-rings). Switch the online till to use it.
+**Zero offline behaviour change yet** — but this is the keystone, and it's *strictly better
+online* (kills the fragile 3-round-trip). Reuses every rule in §10.2 verbatim. ← **THE FIRST BUILD.**
+
+**P2.2 — Outbox + provisional receipt.** Offline, write the sale to an IndexedDB outbox, print
+a **provisional** receipt (clearly marked, no official fiscal number), show "pending". Online
+path can route through the outbox too (write→sync immediately) for one code path.
+
+**P2.3 — Sync worker.** On reconnect, replay each outbox entry to the P2.1 endpoint (idempotent),
+let the **server** compute authoritative totals/VAT/credits at replay time, reconcile the
+official receipt number back onto the provisional, mark synced. **"⏳ N pending sync"** badge.
+
+Then **P3** hardening: provisional→final numbering, offline PIN + bounded window + device
+binding, **closeout-blocks-on-pending**, duplicate/conflict view.
+
+## 10.4 The one real risk in P2.1: a schema migration
+
+Idempotency needs a **`client_uuid` column on `transactions`** (nullable, **unique index**).
+That's a migration — and per memory `schema-create-all-alembic-drift`, `create_all` makes new
+*tables* but **never ALTERs** existing ones, and the alembic chain has bitten us before
+(new columns silently missing per-env). **Mitigation, non-negotiable:** write a real alembic
+migration AND *prove* the column exists on sandbox→staging→prod after deploy (a one-line
+`information_schema` probe per env) before the endpoint goes hot. No assuming. This is the
+seal-inspection rule applied to schema.
+
+## 10.5 Money/compliance gates that still hold
+
+The plan's §4 stands unchanged and **gates P2.2 onward, not P2.1**:
+- **Provisional vs final receipt** — never fake an official fiscal number offline. Needs the
+  **Treuhänder nod** — which is the *same* P1 fiscal sign-off already in flight (the cover note
+  in `docs/business/banco-fiscal/`). One ask covers both: "is a provisional-offline →
+  finalized-on-sync receipt acceptable?"
+- Offline PIN + bounded window (lost-tablet), closeout-blocks-on-pending, clock-skew (trust
+  server time for ordering). All P3.
+
+## 10.6 Recommendation
+
+Build **P2.1 now** — the atomic idempotent endpoint. It's the highest-leverage single change
+(better online *today*, foundation for offline), it carries **zero offline/compliance weight
+yet** (the till behaves identically; offline is still friendly-blocked until P2.2), and its
+only real risk — the migration — is one we know how to de-risk (real alembic + per-env proof).
+Dogfood it test-first the Perfect-Ticket way: unit-test the idempotency + the money rules
+before wiring the till. Then P2.2/P2.3 with the Treuhänder answer in hand.
