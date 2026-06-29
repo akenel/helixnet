@@ -10,7 +10,9 @@
 
 **The question contains a category error, and once you see it, it's your whole defense.** Felix is not choosing between Banco and SAP Business One. He never was — a €15k–50k+ ERP implementation with a 3–6 month consultant project attached was never on the table for a 25-seat shop, and any vendor who says it was is about to sell him a project he'll regret. You're not in a fight with SAP. You're in a fight with **a spreadsheet, a generic foreign POS, and doing nothing** — and that's a fight a tailored, in-person, low-cost tool wins.
 
-Don't compete on feature-count or global SLA theater. You'll lose both and you don't need to win either. Win on **fit, proximity, total cost, and the SOPs** — and be honest about the one real weakness (continuity), then answer it.
+Don't compete on feature-count or global SLA theater. You'll lose both and you don't need to win either. Win on **the hypercare loop, fit, proximity, total cost, and the SOPs** — and be honest about the one real weakness (continuity), then answer it.
+
+**Lead with the hypercare loop.** It's the one thing the big rigid rigs structurally *can't* copy, and it flips their best move — "hypercare" — into our permanent operating model. Open the pitch with it (§3.0).
 
 ---
 
@@ -69,6 +71,7 @@ Sized for a Swiss micro-retailer, the genuine alternatives — and the one thing
 *Added 2026-06-28. The strategic read that falls out of the Swiss-market research. The detailed sections below (§3 moat, §4 weakness) flesh out the S and W; this is the at-a-glance.*
 
 **STRENGTHS — what's actually yours**
+- Hypercare that never ends. The big rigs' best support is a *phase* that stops; yours is a permanent, AI-triaged, self-closing loop in the till ("Healed in 2h 37m"). The lead wedge — see §3.0.
 - You speak Swiss. The dine-in 8.1 / takeaway 2.6 split is the law above 20 seats and the foreign tills fudge it. You don't.
 - You show up. With SAP, Felix is ticket #84,000. With you, the person who built it walks into his shop. Nobody can buy that back.
 - Cheap to *own*, not just cheap to start. No per-seat bleed, no consultant, no audit true-up — and you're the installer.
@@ -100,12 +103,38 @@ Sized for a Swiss micro-retailer, the genuine alternatives — and the one thing
 
 ## 3. THE MOAT — and none of it is feature-count
 
-You will never out-feature Odoo. Don't try. You win on what doesn't fit in a feature matrix:
+You will never out-feature Odoo. Don't try. You win on what doesn't fit in a feature matrix — and the *first* thing you lead with is the one the giants can't copy:
 
-1. **Fit, not features.** The dine-in 8.1% / takeaway 2.6% split is *legally mandatory* for his 25-seat cafe (he exceeds the 20-seat flat-rate cap) and most foreign POS fudge it. CBD age-gating, the Z-report a Swiss Treuhänder will actually sign — built *because you sat in his shop.* No global vendor will make that for a niche this small.
-2. **Proximity / accountability.** With SAP, Felix is ticket #84,221. With you, the person who feels the problem is the person who *built the thing* and already knows his shop. Enterprises pay millions trying to buy that closeness back. You give it for free by being small.
-3. **TCO, not sticker price.** No per-seat licensing, no implementation consultant, no annual audit true-up. You're cheaper *and* you're the implementer. That's a real number to put on the table.
-4. **The SOPs and the stewardship.** You don't sell a database. You sell *his shop running well Monday morning* — software + procedures + AI help. That's the genuinely-yours part (see solo-founder & steward notes), and it's the part no incumbent bundles.
+### 3.0 THE LEAD WEDGE — hypercare that never ends
+
+*This is the new front of the pitch (2026-06-29). It's not a feature; it's the **support model itself**, turned into the product.*
+
+**Start with the word they own.** "Hypercare" is an *enterprise ERP term* — in SAP Activate and every Abacus / SAP Business One rollout, Hypercare is a **named, temporary phase**: the 2–4 weeks after go-live when the implementation team stays glued to the customer, before handing them to a ticket queue or a partner SLA. The dirty secret: **the big guys' best support is the part that ends.** You get white-glove for a month while the consultant is still billing, then you're ticket #84,000.
+
+**Banco inverts it: hypercare is permanent, AI-mediated, and self-closing.** The loop is built into the till, not bolted on:
+
+> a cashier taps 💬 feedback → the AI triages messy → clean ticket → it lands on a backlog → the work ships → the **reporter confirms and closes their own loop** → the screen says *"Healed in 2h 37m."*
+
+Why this is a moat and not just a nice-to-have:
+
+- **It's permanent, not a phase.** The incumbents *can't* make their best support permanent — it's human-armies-expensive. AI doing the messy→clean triage is what makes "forever" affordable for a solo steward. That's the structural gap.
+- **The reporter closes their own loop.** They confirm the fix landed. That kills the question no enterprise queue ever answers — *"did anyone even read my ticket?"* It closes the **trust** gap, not just the bug.
+- **It's native, not a horizontal tool taped on.** The SaaS bar (Intercom bubble, Linear "your request shipped") reset everyone's expectations — but bexio or a foreign POS has to *buy and wire* a generic Intercom/Zendesk. Ours is shop-shaped and free to the operator, living in the product.
+- **Visible responsiveness as a feature.** "Healed in 2h 37m" on screen makes speed *legible*. A queue hides its latency; we advertise ours because we can keep it.
+
+**Honest line on maturity:** the loop is real and substantially shipped (feedback → AI triage → backlog → "Healed in Xh Ym" ticket-timing, AI resolution write-ups, the full-story timeline are live on prod). The richer cockpit/notification surface is still hardening — say "live and improving," not "finished." It pairs with proximity (3.2): proximity is *the person* being close; hypercare is *the loop* being built in.
+
+### 3.1 Fit, not features
+The dine-in 8.1% / takeaway 2.6% split is *legally mandatory* for his 25-seat cafe (he exceeds the 20-seat flat-rate cap) and most foreign POS fudge it. CBD age-gating, the Z-report a Swiss Treuhänder will actually sign — built *because you sat in his shop.* No global vendor will make that for a niche this small.
+
+### 3.2 Proximity / accountability
+With SAP, Felix is ticket #84,221. With you, the person who feels the problem is the person who *built the thing* and already knows his shop. Enterprises pay millions trying to buy that closeness back. You give it for free by being small.
+
+### 3.3 TCO, not sticker price
+No per-seat licensing, no implementation consultant, no annual audit true-up. You're cheaper *and* you're the implementer. That's a real number to put on the table.
+
+### 3.4 The SOPs and the stewardship
+You don't sell a database. You sell *his shop running well Monday morning* — software + procedures + AI help. That's the genuinely-yours part (see solo-founder & steward notes), and it's the part no incumbent bundles.
 
 ---
 
@@ -133,6 +162,10 @@ No 24/7. No 99.99% uptime guarantee for a solo op. No "we have 500 engineers." *
 
 ## 5. THE SCRIPT — what to actually say when asked
 
+**Lead with the loop (open here):**
+
+> "You know how the big systems give you 'hypercare' — a team glued to you for the first few weeks after go-live? Then it stops and you're a ticket number. Mine doesn't stop. There's a feedback button on the till; you tap it, the system sorts your problem into a clean ticket on its own, and when it's fixed *you* get told — 'healed in two hours thirty-seven.' That's not a launch phase for me. That's just how your shop runs, forever. No giant can afford to do that for a 25-seat shop — I can, because the AI does the sorting and I'm the one who shows up."
+
 **Short version (the skeptic at the counter):**
 
 > "SAP and Odoo are built for companies with an IT department. You don't have one — you have me. They'll sell you a six-month project and a per-seat bill; I'll set up your exact shop, handle your Swiss VAT and CBD rules they don't bother with, and you can call the person who built it. You're not too small for them by accident — they genuinely don't want a shop your size. I do."
@@ -148,7 +181,7 @@ No 24/7. No 99.99% uptime guarantee for a solo op. No "we have 500 engineers." *
 **If they name a specific incumbent:**
 - *Bexio / KLARA:* "Great accounting. Ask them to handle your dine-in/takeaway VAT split and CBD age-gate. They won't — it's not their shop."
 - *Square / SumUp / Lightspeed:* "Easy to start, foreign-built. Ask if their Z-report passes a Swiss Treuhänder and does 8.1/2.6 per line. It doesn't."
-- *Zoho:* "Broad and cheap. You'll be a tiny account configuring it yourself, with support in another timezone. I configure it *for* you, for your trade."
+- *Zoho:* "Broad and cheap. You'll be a tiny account configuring it yourself, with support in another timezone. I configure it *for* you, for your trade — and when something's off, the till tells you when it's fixed, not a ticket robot in a queue."
 
 ---
 
@@ -160,6 +193,46 @@ No 24/7. No 99.99% uptime guarantee for a solo op. No "we have 500 engineers." *
 
 ---
 
+## 7. THE EVIDENCE — market-scan receipts (2026-06-29)
+
+*Three independent deep-research scans (fan-out web search → source fetch → 3-vote adversarial verification, ~12M tokens total) testing whether two Banco edges already exist in the market. Use this section when someone asks "are you sure nobody does this?" — it's the receipts behind §3.0. **Read the honest limit at the end before you over-claim.***
+
+### 7a. The hypercare loop — unoccupied in everything scanned
+
+**Verdict (high confidence, synthesis of 16 unanimous 3-0 verified claims):** no POS or SME business software vendor scanned — large, small, indie, open-source, or market-vendor — ships the full *merchant-facing* self-healing loop (in-product feedback → AI-triaged clean backlog ticket → ships → original reporter notified & self-closes → visible "Healed in Xh Ym" SLA).
+
+- **What they ship as "AI" instead:** business-intelligence/NL-analytics, demand forecasting, OCR/age-verification, recommendations, AI voice ordering. Feedback, where present, routes to a **public vote board or a black hole** — neither qualifies. (Square AI press release; Loyverse + Merchant Maverick review; Clover/SumUp/Toast/Helcim via comparison reviews; MobiDev POS-AI category overview.)
+- **Closest implementation of the AI-triage step on Earth:** **Linear Intake "Triage Intelligence"** — but it is *developer/product-team* tooling, **not** merchant-facing, and even it lacks the original-reporter self-close *and* the heal-time SLA. (linear.app/intake, linear.app/docs/triage-intelligence)
+- **Naming collision to know about:** "Razorpay Self-Healing POS" exists but is **device/hardware** auto-troubleshooting, not a feedback-to-backlog loop. (razorpay.com/pos/selfhealing) Don't get blindsided by the phrase.
+- **Even SAP's *peak* hypercare** is humans typing into ServiceNow/Jira under an SLA — no AI triage, no feedback-to-backlog. And "hypercare" remains industry-defined as a **temporary post-go-live phase**, not a permanent model — which is exactly the inversion §3.0 leads with.
+
+*Sources:* squareup.com/us/en/press/square-releases-ai · loyverse.com + merchantmaverick.com/reviews/loyverse-review · capterra.com (Clover vs SumUp) · tech.co (Toast/Square/Clover) · nerdwallet.com (Helcim) · marketspread.com · vendorsmap.com · mobidev.biz/blog/upgrade-pos-point-of-sale-software-with-ai · linear.app/intake · razorpay.com/pos/selfhealing
+
+### 7b. Zero-perpetual "sell-first, define-after" — also unoccupied
+
+**Verdict (high confidence, multiple 3-0 verified claims):** the full *"sell the item → snap its photo at the sale → capture the buyer → enrich product **and** customer afterward for follow-up"* workflow does **not** exist as a first-class design in any POS examined. Every system splits it into two halves that never meet:
+
+- **Custom-amount / quick-sale** rings with no catalog — but captures only a price, **no reusable named or photographed product**. (Square art. 5429; Shopify quick-sales & custom-sales help.)
+- **Create-named-item-with-photo** exists — but as a **separate catalog/back-office action**, not born at the sale. (Square art. 6387; Loyverse back-office.)
+- **No POS is zero-perpetual by design.** Square for Retail and Loyverse are conventional perpetual-inventory systems you *opt out of* via a "track stock" toggle; the heavy machinery is even a paid add-on in Loyverse. The closest real behavior is **oversell-tolerance** (a sale isn't blocked at zero stock) — tolerance, *not* a designed no-inventory model. (Square art. 7746; Loyverse inventory docs + Advanced Inventory.)
+- **Snap-a-photo-to-create-a-product at the till: not found.** Square's auto-item-creation is **barcode/GTIN-keyed** (useless for unlabeled handmade goods); its Photo Studio AI makes *imagery, not catalog records*; Rain's craft POS advertises no photo-to-product. (Square art. 7992; rainpos.com/craft-store-pos.)
+- The scan's own words: *"the engine described in the user's own Banco notes (Snap & fill photo-to-product + zero-perpetual + post-sale enrichment) is genuinely differentiated."*
+
+*Sources:* squareup.com help arts. 5429 / 6387 / 7746 / 7992 · help.shopify.com (quick-sales, custom-sales, pop-up) · help.loyverse.com (make-sales, add-items, inventory) · loyverse.com/advanced-inventory · rainpos.com/craft-store-pos · community.squareup.com threads (custom-amount naming, disable-tracking)
+
+### 7c. ⚠️ The honest limit — say this, not more
+
+The defensible claim is **"unoccupied in the market we surveyed,"** *not* "provably world-first." Three reasons, straight from the scans' own caveats:
+
+1. **Negative findings are inherently soft** — a private beta, a regional release, or unindexed release-notes could exist.
+2. **~12 named vendors were only category-inferred, not per-vendor-verified:** Abacus, KLARA, Vectron, Korona, Tiller, myPOS, Epos Now, Hike, Erply, Nobly, Lightspeed Retail/X-Series (Vend) — and Toast/Clover/SumUp on the zero-perpetual question. The conclusion for those rests on the category pattern, not a confirmed look at their docs.
+3. **The space ships fast** — Square AI launched Oct 2025; this is a mid-2026 snapshot that could be overtaken.
+
+So in the room: *"Nobody in the market I surveyed does this, and the one company that does the hardest piece does it for software engineers, not shopkeepers."* That sentence is true and strong. "Patent's already ours" is not — that needs a professional prior-art search (see [BANCO-INVENTION-DISCLOSURE.md](BANCO-INVENTION-DISCLOSURE.md)).
+
+---
+
 *"You're not too small for them by accident — they genuinely don't want a shop your size. I do."*
-*"Win on fit, proximity, total cost, and the SOPs. Never on feature-count or SLA theater."*
+*"Their hypercare is a phase that ends. Mine is how the shop runs, forever."*
+*"Win on the hypercare loop, fit, proximity, total cost, and the SOPs. Never on feature-count or SLA theater."*
 *"A small kept SLA beats a grand SLA that's really a call-center in another country."*
