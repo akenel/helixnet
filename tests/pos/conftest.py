@@ -34,6 +34,11 @@ _ENVS = {
         os.environ.get("POS_API", "https://staging-banco.lapiazza.app"),
         os.environ.get("POS_KC", "https://lapiazza.app"),
     ),
+    # ENV=sandbox POS_REALM=kc-sandbox -> the box sandbox tree (deploy-banco.py sandbox).
+    "sandbox": (
+        os.environ.get("POS_API", "https://sandbox-banco.lapiazza.app"),
+        os.environ.get("POS_KC", "https://lapiazza.app"),
+    ),
 }
 
 API_BASE, KC_BASE = _ENVS[ENV]

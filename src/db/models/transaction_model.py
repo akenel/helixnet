@@ -57,6 +57,19 @@ class TransactionModel(Base):
         comment="Sequential receipt number (e.g., 'TXN-20251126-0001')"
     )
 
+    # Offline outbox idempotency key (P2.1). A client-generated UUID that makes the
+    # atomic create-sale endpoint idempotent: a replayed sale (network retry, or an
+    # offline outbox draining on reconnect) is adopted EXACTLY ONCE instead of double-
+    # ringing. Null for sales rung the legacy 3-step way (online only). Unique among
+    # non-null values — Postgres treats NULLs as distinct, so legacy rows never collide.
+    client_uuid: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True,
+        unique=True,
+        index=True,
+        comment="Client idempotency key for the atomic/offline sale path (P2.1)"
+    )
+
     # Foreign Keys
     cashier_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
