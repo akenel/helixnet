@@ -75,3 +75,17 @@ def get_build_date() -> str:
         return out
     except Exception:
         return ""
+
+
+@lru_cache(maxsize=1)
+def get_build_date_short() -> str:
+    """Human freshness for the status bar — '29 Jun' from the deployed build date, or '' (BL-010)."""
+    d = get_build_date()
+    if not d:
+        return ""
+    try:
+        from datetime import datetime
+        dt = datetime.fromisoformat(d)
+        return f"{dt.day} {dt.strftime('%b')}"
+    except Exception:
+        return d[:10]
