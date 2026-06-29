@@ -11,7 +11,7 @@
  * Phases 1–2 build on this: P1 adds an IndexedDB catalog read-cache; P2 adds the
  * offline sales OUTBOX + background sync. Bump CACHE_NAME on any shell change.
  */
-const CACHE_NAME = 'banco-pos-v17';
+const CACHE_NAME = 'banco-pos-v18';
 
 // The shell we want available instantly / offline. Kept small + safe (GET, same-origin).
 const SHELL = [
@@ -34,7 +34,8 @@ self.addEventListener('install', (event) => {
       Promise.all(SHELL.map((url) => cache.add(url).catch(() => null)))
     )
   );
-  self.skipWaiting();
+  // BL-011: do NOT skipWaiting automatically — let the new SW WAIT so the page can show a
+  // "New version — tap to update" nudge; the cashier picks the moment (never mid-sale).
 });
 
 self.addEventListener('activate', (event) => {
@@ -44,6 +45,11 @@ self.addEventListener('activate', (event) => {
     )
   );
   self.clients.claim();
+});
+
+// BL-011: page → SW. Activate the waiting worker only when the user taps the update nudge.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
