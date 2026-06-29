@@ -1,6 +1,6 @@
 {% extends "pos/base.html" %}
 {% block title %}Your Reports - Banco{% endblock %}
-{% block page_name %}My Reports{% endblock %}
+{% block page_name %}{% endblock %}{# BL-019: the 🔔/🎛️ icons carry it — drop the redundant "My Reports" text to save bar space #}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50" x-data="myTickets()" x-init="init()">
