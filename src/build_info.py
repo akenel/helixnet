@@ -27,9 +27,12 @@ _STAMP = _SRC_DIR / "static" / "build-sha.txt"
 
 @lru_cache(maxsize=1)
 def get_version() -> str:
-    """CalVer (#3): a REAL version derived from the build date — 'YY.MM.DD' (e.g. 26.06.29) — so it
-    bumps itself on every deploy and can never go stale, instead of a hardcoded '3.3.0'. Falls back
-    to __version__ only when no build date is stamped (local dev)."""
+    """#3 (opt-B): a REAL auto build number — 'bNNN' from the git commit count stamped at deploy —
+    so it ticks up every single deploy and can never go stale, instead of a hardcoded '3.3.0'.
+    Falls back to CalVer (YY.MM.DD from the build date), then __version__, in local dev."""
+    lines = _stamp_lines()
+    if len(lines) >= 3 and lines[2].strip().isdigit():
+        return "b" + lines[2].strip()
     d = get_build_date()
     if d:
         try:
@@ -90,13 +93,14 @@ def get_build_date() -> str:
 
 @lru_cache(maxsize=1)
 def get_build_date_short() -> str:
-    """Numeric freshness for the status bar — 'dd/mm' (e.g. 29/06) from the build date, or '' (#3)."""
+    """Numeric freshness for the bar — 'dd/mm HH:MM' (e.g. 29/06 14:52), when the change occurred,
+    from the build date, or '' (#3 opt-B: date + TIME so we can track how fast the loop heals)."""
     d = get_build_date()
     if not d:
         return ""
     try:
         from datetime import datetime
         dt = datetime.fromisoformat(d)
-        return f"{dt.day:02d}/{dt.month:02d}"
+        return f"{dt.day:02d}/{dt.month:02d} {dt.hour:02d}:{dt.minute:02d}"
     except Exception:
         return d[:10]

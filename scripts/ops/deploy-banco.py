@@ -46,12 +46,13 @@ def main():
     sh(["git", "-C", tree, "checkout", "--quiet", ref])
     sha = sh(["git", "-C", tree, "rev-parse", "--short", "HEAD"])
     date = sh(["git", "-C", tree, "show", "-s", "--format=%cI", "HEAD"])
+    count = sh(["git", "-C", tree, "rev-list", "--count", "HEAD"])  # auto build number → bNNN
 
-    # THE FIX: stamp the real build so the status bar never lies again.
+    # THE FIX: stamp the real build so the status bar never lies again. (#3 opt-B: + build number)
     stamp = f"{tree}/src/static/build-sha.txt"
     with open(stamp, "w") as f:
-        f.write(f"{sha}\n{date}\n")
-    print(f"[deploy] stamped build-sha.txt = {sha}  ({date})")
+        f.write(f"{sha}\n{date}\n{count}\n")
+    print(f"[deploy] stamped build-sha.txt = b{count} {sha}  ({date})")
 
     sh(["docker", "restart", container])
     # brief health wait so the caller sees green, not a mid-restart blip
