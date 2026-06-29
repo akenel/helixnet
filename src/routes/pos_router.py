@@ -3212,19 +3212,44 @@ async def triage_pending_feedback(
     from src.db.models.pos_notification_model import POSNotificationModel
     from src.services.feedback_triage import triage_feedback
 
-    # Feedback tickets with NO ai-triage activity yet (idempotent). Select COLUMNS, not the
-    # ORM entity — screenshot_data is a big/deferred column, and lazy-loading it on an entity
-    # would do sync IO in async context (MissingGreenlet). Plain columns = already loaded.
-    already = (select(BacklogActivityModel.id)
-               .where(BacklogActivityModel.item_id == BacklogItemModel.id,
-                      BacklogActivityModel.actor == "ai-triage").exists())
+    # BL-011: triage tickets that (a) have NEVER been triaged, OR (b) were reopened / had detail
+    # added by the reporter AFTER the last triage — so a reopen/comment RE-READS the spec instead
+    # of staying frozen. Select COLUMNS, not the ORM entity — screenshot_data is deferred, and
+    # lazy-loading it on an entity does sync IO in async context (MissingGreenlet).
+    from sqlalchemy import func, or_
+    _A = BacklogActivityModel
+    _last_triage = (select(func.max(_A.created_at))
+                    .where(_A.item_id == BacklogItemModel.id, _A.actor == "ai-triage")
+                    .correlate(BacklogItemModel).scalar_subquery())
+    _never = ~(select(_A.id).where(_A.item_id == BacklogItemModel.id, _A.actor == "ai-triage")
+               .correlate(BacklogItemModel).exists())
+    _newer_input = (select(_A.id)
+                    .where(_A.item_id == BacklogItemModel.id,
+                           _A.new_value.in_(["reporter-note", "reopened", "disputed"]),
+                           _A.created_at > _last_triage)
+                    .correlate(BacklogItemModel).exists())
     rows = (await db.execute(
         select(BacklogItemModel.id, BacklogItemModel.item_number, BacklogItemModel.title,
                BacklogItemModel.description, BacklogItemModel.screenshot_data,
                BacklogItemModel.created_by)
-        .where(BacklogItemModel.tags.ilike("%feedback%"), ~already)
+        .where(BacklogItemModel.tags.ilike("%feedback%"), or_(_never, _newer_input))
         .order_by(BacklogItemModel.created_at.desc())
         .limit(max(1, min(int(limit or 5), 25))))).all()
+
+    # Which selected rows already have a triage (→ re-triage), + the reporter's follow-up text.
+    prior_triage: set = set()
+    extra_ctx: dict = {}
+    _ids = [r.id for r in rows]
+    if _ids:
+        for a in (await db.execute(
+                select(_A.item_id, _A.actor, _A.new_value, _A.comment)
+                .where(_A.item_id.in_(_ids)))).all():
+            if a.actor == "ai-triage":
+                prior_triage.add(a.item_id)
+            elif a.new_value in ("reporter-note", "reopened", "disputed") and a.comment:
+                _txt = (a.comment or "").replace("📝 Reporter added: ", "").strip()
+                if _txt:
+                    extra_ctx.setdefault(a.item_id, []).append(_txt)
 
     # Dedup candidates: OPEN feedback tickets the new one might duplicate (number → row).
     cand_rows = (await db.execute(
@@ -3237,15 +3262,20 @@ async def triage_pending_feedback(
     out = []
     merged_nums: set = set()   # archived-as-dup this run → never offer them as a canonical
     for r in rows:
+        retriage = r.id in prior_triage   # BL-011: reopened / detail-added → re-read, don't re-dedup
         shot, mime = _decode_data_url(r.screenshot_data)
-        existing = [{"n": c.item_number, "title": c.title} for c in cand_rows
+        desc = r.description or ""
+        if retriage and extra_ctx.get(r.id):
+            desc += ("\n\nREPORTER FOLLOW-UP (they reopened or added detail — re-read this and "
+                     "UPDATE your understanding):\n- " + "\n- ".join(extra_ctx[r.id]))
+        existing = [] if retriage else [{"n": c.item_number, "title": c.title} for c in cand_rows
                     if c.item_number != r.item_number and c.item_number not in merged_nums]
         res = await triage_feedback(
-            title=r.title, description=r.description or "", metadata=None,
+            title=r.title, description=desc, metadata=None,
             screenshot=shot, screenshot_mime=mime or "image/png", existing=existing)
         clean = res["clean"]
         dup = clean.get("duplicate_of") or 0
-        is_dup = (isinstance(dup, int) and dup > 0 and dup in cand_by_num
+        is_dup = (not retriage and isinstance(dup, int) and dup > 0 and dup in cand_by_num
                   and dup != r.item_number and dup not in merged_nums)
 
         if is_dup:
@@ -3293,11 +3323,14 @@ async def triage_pending_feedback(
         if r.created_by and r.created_by not in ("unknown", "ai-triage"):
             ct = (clean.get("title") or r.title or "your feedback")[:160]
             db.add(POSNotificationModel(
-                recipient=r.created_by, kind="triaged", item_number=r.item_number,
-                title="🛠️ We're on it",
-                body=f"“{ct}” — thanks, we're looking into it now. Tap to see how we understood it.",
+                recipient=r.created_by,
+                kind="re-triaged" if retriage else "triaged", item_number=r.item_number,
+                title="🔄 We re-read your update" if retriage else "🛠️ We're on it",
+                body=(f"“{ct}” — we took another look and updated how we understand it. Tap to see."
+                      if retriage else
+                      f"“{ct}” — thanks, we're looking into it now. Tap to see how we understood it."),
                 link="/pos/my-tickets"))
-        out.append({"item_number": r.item_number, "ai": res["ai"],
+        out.append({"item_number": r.item_number, "ai": res["ai"], "retriage": retriage,
                     "clean_title": clean.get("title"), "type": clean.get("type"),
                     "severity": clean.get("severity"), "confidence": clean.get("confidence"),
                     "decipherable": clean.get("decipherable")})
