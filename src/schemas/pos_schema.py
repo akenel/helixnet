@@ -187,6 +187,25 @@ class CheckoutRequest(BaseModel):
     customer_id: Optional[UUID] = Field(None, description="Loyalty member this sale belongs to (CRM)")
 
 
+class SaleCreate(BaseModel):
+    """Atomic create-sale (P2.1): the WHOLE cart + payment in ONE idempotent request —
+    the keystone for the offline outbox and strictly better online (no fragile 3-round-trip
+    partial-failure window). `client_uuid` is the idempotency key: replaying the same sale
+    (a network retry, or an offline outbox draining on reconnect) adopts it EXACTLY ONCE
+    instead of double-ringing. The server prices + taxes authoritatively (same rules as the
+    3-step path — catalog price wins, per-line VAT snapshot, promo guard); the client only
+    captures intent. `discount_percent` is the cart-wide discount (mirrors the legacy flow,
+    where it was echoed on every line); per-line discounts on `lines` are not used here."""
+    client_uuid: UUID = Field(..., description="Client idempotency key — replay-safe, adopted once")
+    lines: list[LineItemCreate] = Field(..., min_length=1, description="The cart (≥1 line)")
+    payment_method: PaymentMethod
+    amount_tendered: Optional[Decimal] = Field(None, ge=0, description="For cash payments")
+    customer_id: Optional[UUID] = Field(None, description="Loyalty member this sale belongs to (CRM)")
+    discount_percent: Decimal = Field(default=Decimal("0.00"), ge=0, le=100,
+                                      description="Cart-wide % discount applied once to the total")
+    notes: Optional[str] = None
+
+
 class RefundRequest(BaseModel):
     """Schema for refund/return processing"""
     reason: str = Field(..., min_length=3, max_length=500, description="Reason for refund (e.g., 'Broken item', 'Wrong product')")

@@ -161,6 +161,13 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS facebook_url VARCHAR(255)",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255)",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS founded_year VARCHAR(10)",
+    # Offline outbox idempotency (P2.1, 2026-06-29): the atomic create-sale endpoint keys
+    # on a client-generated UUID so a replayed sale (network retry / offline outbox sync)
+    # is adopted exactly once, never double-rung. Nullable (legacy 3-step sales have none);
+    # the index is UNIQUE among non-null values — Postgres counts NULLs as distinct, so the
+    # backfill is a no-op and existing rows never collide. (Mirrors TransactionModel.client_uuid.)
+    "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS client_uuid UUID",
+    "CREATE UNIQUE INDEX IF NOT EXISTS ix_transactions_client_uuid ON transactions (client_uuid)",
 ]
 
 

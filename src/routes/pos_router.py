@@ -15,7 +15,7 @@ from sqlalchemy import select, func, and_, update
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
-from uuid import UUID
+from uuid import UUID, uuid4
 from typing import Optional
 from pathlib import Path
 
@@ -67,6 +67,7 @@ from src.schemas.pos_schema import (
     BarcodeScanRequest,
     BarcodeScanResponse,
     CheckoutRequest,
+    SaleCreate,
     RefundRequest,
     DailySummary,
     StoreSettingsRead,
@@ -2282,6 +2283,186 @@ async def checkout_transaction(
     logger.info(f"Transaction completed: {transaction.transaction_number} - Total: {transaction.total} CHF"
                 + (f" - member {customer.handle} +{int(Decimal(str(transaction.total)))}cr" if customer else ""))
     return transaction
+
+
+@router.post("/sales", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
+async def create_sale(
+    sale: SaleCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["💰️ pos-cashier", "👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """P2.1 — atomic, idempotent create-sale: the WHOLE cart + payment in ONE request and ONE
+    DB transaction. The keystone for the offline outbox, and strictly better online (no fragile
+    3-round-trip partial-failure window). Idempotent on `client_uuid`: a replayed sale — a
+    network retry, or an offline outbox draining on reconnect — is adopted EXACTLY ONCE, never
+    double-rung. Same server-authoritative money rules as the legacy 3-step path (catalog price
+    wins, per-line VAT snapshot, promo guard, role discount cap, cash-drawer gate, member tier +
+    CRM) — proven equivalent by tests/pos/test_create_sale_atomic.py so the two paths never drift."""
+    from src.services.catalog_taxonomy import class_promo_restricted, class_meta
+
+    # --- Idempotency: if this client_uuid already rang, return that sale untouched (replay-safe). ---
+    existing = (await db.execute(
+        select(TransactionModel).where(TransactionModel.client_uuid == sale.client_uuid))).scalar_one_or_none()
+    if existing is not None:
+        logger.info(f"Idempotent replay adopted: client_uuid={sale.client_uuid} -> {existing.transaction_number}")
+        return existing
+
+    # --- Discount cap by role, once, cart-wide (same ceiling the legacy /items enforces per line). ---
+    cap = _max_discount_pct(current_user)
+    if sale.discount_percent and sale.discount_percent > cap:
+        raise HTTPException(status_code=403,
+                            detail=f"Discount {sale.discount_percent}% exceeds your {cap}% limit.")
+
+    cashier_uid = await _resolve_cashier_uid(db, current_user)
+
+    # Transaction number: same count-based scheme as the legacy path (the "make this atomic"
+    # TODO carries forward — client_uuid is the new idempotency guard either way).
+    today = date.today().strftime("%Y%m%d")
+    count = (await db.execute(
+        select(func.count()).where(TransactionModel.transaction_number.like(f"TXN-{today}-%")))).scalar() or 0
+    transaction_number = f"TXN-{today}-{count + 1:04d}"
+
+    # Explicit id so line-item FKs resolve before the single flush/commit.
+    txn = TransactionModel(
+        id=uuid4(),
+        transaction_number=transaction_number,
+        client_uuid=sale.client_uuid,
+        cashier_id=cashier_uid,
+        status=TransactionStatus.OPEN,
+        notes=sale.notes,
+        subtotal=Decimal("0.00"), discount_amount=Decimal("0.00"),
+        tax_amount=Decimal("0.00"), total=Decimal("0.00"),
+    )
+    db.add(txn)
+
+    # --- Build every line server-authoritatively: catalog price wins, VAT snapshot, promo guard. ---
+    built_lines = []
+    subtotal = Decimal("0.00")
+    for ln in sale.lines:
+        if ln.product_id is not None:
+            product = (await db.execute(
+                select(ProductModel).where(ProductModel.id == ln.product_id))).scalar_one_or_none()
+            if not product:
+                raise HTTPException(status_code=404, detail=f"Product not found: {ln.product_id}")
+            if not product.is_active:
+                raise HTTPException(status_code=400, detail=f"Product is inactive: {product.name}")
+            unit_price = Decimal("0.00") if ln.is_giveaway else product.price
+            line_notes = ("🎁 Treat — on the house" if ln.is_giveaway else ln.notes)
+            prod_class = product.product_class
+        else:
+            if ln.unit_price is None:
+                raise HTTPException(status_code=422, detail="Custom line item requires unit_price")
+            unit_price = ln.unit_price
+            line_notes = ln.name or ln.notes
+            prod_class = "standard"
+
+        # Compliance: NO cart discount on a promo-restricted class (tobacco/alcohol) — law,
+        # blocks every role (it's about the sale, not the operator). Same guard as /items.
+        if sale.discount_percent and sale.discount_percent > 0 and class_promo_restricted(prod_class):
+            raise HTTPException(status_code=400,
+                detail=f"Discounts aren't allowed on {class_meta(prod_class)['label']} — "
+                       f"sales promotions on these are restricted by law.")
+
+        line_gross = unit_price * ln.quantity
+        line_total = line_gross
+        line_rate, line_vat_amount = line_vat(prod_class, ln.consumption, line_total)
+        line = LineItemModel(
+            transaction_id=txn.id, product_id=ln.product_id, quantity=ln.quantity,
+            unit_price=unit_price, discount_percent=Decimal("0.00"),
+            discount_amount=Decimal("0.00"), line_total=line_total, notes=line_notes,
+            is_giveaway=ln.is_giveaway, consumption=ln.consumption.value,
+            vat_rate=line_rate, vat_amount=line_vat_amount,
+        )
+        db.add(line)
+        built_lines.append(line)
+        subtotal += line_gross
+
+    # --- Cart totals (inclusive VAT; the EXACT formula the till displays, so charged == shown). ---
+    keep = (Decimal("100") - sale.discount_percent) / Decimal("100")
+    txn.subtotal = subtotal
+    txn.total = (subtotal * keep).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    txn.discount_amount = subtotal - txn.total
+
+    # --- Member tier discount + attach (before the cash check, so the member pays discounted). ---
+    customer = None
+    if sale.customer_id is not None:
+        customer = await db.get(CustomerModel, sale.customer_id)
+        if customer is None:
+            raise HTTPException(status_code=404, detail="Customer (loyalty member) not found")
+        txn.customer_id = customer.id
+        tier_pct = int(customer.tier_discount_percent or 0)
+        if tier_pct > 0:
+            before = Decimal(str(txn.total))
+            tier_disc = (before * Decimal(tier_pct) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            txn.total = before - tier_disc
+            txn.discount_amount = Decimal(str(txn.discount_amount)) + tier_disc
+
+    # --- Cash drawer gate + cent-precision tender (identical rules to legacy checkout). ---
+    if sale.payment_method == PaymentMethod.CASH:
+        if not await _open_shift_for(db, cashier_uid):
+            raise HTTPException(status_code=409, detail="Open your cash drawer before taking a cash sale.")
+        if not sale.amount_tendered:
+            raise HTTPException(status_code=400, detail="Cash payment requires amount_tendered")
+        tendered = Decimal(str(sale.amount_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        total_due = Decimal(str(txn.total)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if tendered < total_due:
+            raise HTTPException(status_code=400, detail="Insufficient payment amount")
+        txn.change_given = tendered - total_due
+
+    txn.payment_method = sale.payment_method
+    txn.amount_tendered = sale.amount_tendered
+    txn.status = TransactionStatus.COMPLETED
+    txn.completed_at = datetime.now(timezone.utc)
+    txn.updated_at = datetime.now(timezone.utc)
+
+    # VAT = sum of per-line contained VAT at each snapshotted rate (mixed cart legally correct),
+    # computed from the in-memory lines (no flush needed). Falls back to single-rate if no lines.
+    _lines = [(l.vat_rate, l.line_total) for l in built_lines]
+    txn.tax_amount = split_vat(_lines, txn.total, txn.subtotal)["vat_total"] if _lines else _inclusive_vat(txn.total)
+
+    txn.receipt_number = f"REC-{transaction_number}"
+
+    # --- CRM: member earns 1 credit/CHF (floored) + record updates + re-tier (same as legacy). ---
+    if customer is not None:
+        paid = Decimal(str(txn.total))
+        earned = int(paid)
+        now = txn.completed_at
+        customer.lifetime_spend = Decimal(str(customer.lifetime_spend or 0)) + paid
+        customer.purchase_count = (customer.purchase_count or 0) + 1
+        if customer.first_purchase is None:
+            customer.first_purchase = now
+        customer.last_purchase = now
+        customer.last_visit = now
+        customer.average_basket = (customer.lifetime_spend / customer.purchase_count).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if earned > 0:
+            customer.credits_balance = (customer.credits_balance or 0) + earned
+            customer.credits_earned_total = (customer.credits_earned_total or 0) + earned
+            db.add(CreditTransactionModel(
+                customer_id=customer.id, transaction_type=CreditTransactionType.PURCHASE,
+                credits=earned, balance_after=customer.credits_balance,
+                reference_id=txn.id, reference_type="order",
+                description=f"Purchase {transaction_number}: +{earned} credits"))
+        customer.recalculate_tier()
+
+    # ONE commit. The UNIQUE index on client_uuid is the real idempotency guard: if a concurrent
+    # replay raced us, the INSERT loses the unique race — roll back and return the sale that won.
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        won = (await db.execute(
+            select(TransactionModel).where(TransactionModel.client_uuid == sale.client_uuid))).scalar_one_or_none()
+        if won is not None:
+            logger.info(f"Idempotent race resolved: client_uuid={sale.client_uuid} -> {won.transaction_number}")
+            return won
+        raise
+    await db.refresh(txn)
+
+    logger.info(f"Sale rung (atomic): {transaction_number} - Total: {txn.total} CHF"
+                + (f" - member {customer.handle} +{int(Decimal(str(txn.total)))}cr" if customer else "")
+                + f" [client_uuid={sale.client_uuid}]")
+    return txn
 
 
 @router.post("/transactions/{transaction_id}/refund", response_model=TransactionRead)

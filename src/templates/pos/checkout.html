@@ -567,55 +567,63 @@
                 this.processing = true;
 
                 try {
-                    // Create transaction
-                    const transaction = await API.post('/api/v1/pos/transactions', {});
+                    // P2.1: ring the WHOLE cart + payment in ONE atomic, idempotent call.
+                    // One idempotency key per sale attempt, PERSISTED so a double-tap or a
+                    // timed-out retry rings the SAME sale exactly once (the server adopts it on
+                    // the client_uuid) — never twice. Cleared only on success; kept on error so
+                    // a retry reuses it.
+                    let clientUuid = sessionStorage.getItem('pos_sale_uuid');
+                    if (!clientUuid) {
+                        clientUuid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+                            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                                const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                            });
+                        sessionStorage.setItem('pos_sale_uuid', clientUuid);
+                    }
 
-                    // Add line items. Custom lines (manual catalog 'catalog...' + change
-                    // 'change_...') have no product_id: send name + unit_price instead.
-                    for (const item of this.cartData.cart) {
-                        // Treats are real products given free (is_giveaway) -> stock + COGS tracked.
-                        // Manual catalog entries ('catalog...') are still custom (no product_id).
+                    // Build the cart lines. Custom lines (manual catalog 'catalog…' + change
+                    // 'change_…') have no product_id: send name + unit_price instead. Treats are
+                    // real products given free (is_giveaway) -> stock + COGS still tracked.
+                    const lines = this.cartData.cart.map(item => {
                         const isGiveaway = !!item.isGiveaway;
-                        // A "custom line" has no real product_id: a manual one-off (catalog…/
-                        // otf… fallback), a product-as-change treat (change_…), or anything
-                        // flagged isCatalogItem. Detect by the flag OR the id prefix so the
-                        // line posts name+unit_price instead of a bogus product_id (→ 422).
                         const isCustom = !isGiveaway && (item.isCatalogItem === true
                             || /^(catalog|change_|otf)/.test(item.id.toString()));
-                        await API.post(`/api/v1/pos/transactions/${transaction.id}/items`, {
+                        return {
                             product_id: isCustom ? null : (item.product_id || item.id),
                             quantity: item.quantity,
                             unit_price: item.price.toString(),
-                            discount_percent: this.cartData.discount.toString(),
                             name: isCustom ? item.name : null,
                             is_giveaway: isGiveaway,
-                            consumption: this.consumption   // dine_in | takeaway -> server snapshots the per-line VAT
-                        });
-                    }
+                            consumption: this.consumption   // dine_in | takeaway -> server snapshots per-line VAT
+                        };
+                    });
 
-                    // Checkout - cash payments use the pre-selected amount
-                    const checkoutData = {
-                        payment_method: this.paymentMethod
+                    const body = {
+                        client_uuid: clientUuid,
+                        lines: lines,
+                        payment_method: this.paymentMethod,
+                        discount_percent: this.cartData.discount.toString()   // cart-wide, applied once
                     };
                     if (this.paymentMethod === 'cash') {
-                        // Use the cash received from Quick Round buttons
-                        checkoutData.amount_tendered = this.cashReceived.toFixed(2);
+                        body.amount_tendered = this.cashReceived.toFixed(2);   // from the Quick Round buttons
                     }
                     // Attach the loyalty member -> server applies tier discount + earns points.
                     if (this.member && this.member.id) {
-                        checkoutData.customer_id = this.member.id;
+                        body.customer_id = this.member.id;
                     }
-                    await API.post(`/api/v1/pos/transactions/${transaction.id}/checkout`, checkoutData);
 
-                    // Clear cart + the attached member (the sale is done).
+                    const sale = await API.post('/api/v1/pos/sales', body);
+
+                    // Sale is done: clear cart + member + the spent idempotency key.
                     sessionStorage.removeItem('pos_cart');
                     sessionStorage.removeItem('checkout_customer');
+                    sessionStorage.removeItem('pos_sale_uuid');
 
                     showToast('Transaction completed! Displaying receipt...', 'success');
 
                     // Redirect to receipt page
                     setTimeout(() => {
-                        window.location.href = `/pos/receipt/${transaction.id}`;
+                        window.location.href = `/pos/receipt/${sale.id}`;
                     }, 500);
 
                 } catch (error) {
