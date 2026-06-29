@@ -86,6 +86,59 @@ Owner-triggered deploys need bulletproof mechanics, regardless of how many peopl
 - Promotion = **backup → deploy → smoke → auto-rollback on fail.** Sandbox-promote first; **prod-promote last.**
 - Sign-offs gate the *decision*; the rails guarantee the *mechanism*.
 
+## THE ROLLOUT — *when* the restart happens + telling everyone (the last mile)
+
+*(Angel's design, 2026-06-29. This is the piece that turns "approved" into "live" gracefully.)*
+
+**The enabler:** a Banco deploy is **10–20 seconds**. That changes the whole shape of it — you don't
+need a maintenance window, you need a **courtesy notice**. So the prod gate isn't a blind "deploy
+now"; it's **Felix picks the moment, because he knows his shop** (lunch is dead, 5pm is closing).
+
+### Felix's choice when he approves a prod change (recommendation driven by severity)
+- **Now (with notice).** "Now" ≠ instant — it's a short **countdown** (default ~2 min, Felix-set), so
+  people can wrap up. Offered + **recommended for critical / hot** tickets.
+- **Schedule.** Pick a time — tonight after close, the lunch lull, 3am. **Recommended for cosmetic /
+  low** ("not high priority — just put it in tonight"). Felix sets it; he knows when it's quiet.
+- **Next window.** Roll out on a fixed **interval grid** (e.g. every :00/:15/:30/:45, or a 10-min grid)
+  so the next slot is predictable — max ~one interval's wait, always "the next train."
+
+The **severity 1–10 score** (above) drives the *recommendation*: 1–3 → "schedule tonight"; 8–10 →
+"do it now, with notice." Felix always gets the final say.
+
+### The notice (to everyone online) — a banner + a countdown
+> *"⚙ Admin approved BL-XXX. We're updating in **2:00**. Please wrap up and sign off if you're away
+> from the till — your work is saved, you can pick right back up. You'll be on build `bXXXX`.
+> See you on the other side."*
+
+- Shows the **incoming build/SHA** ("you're on `b1393` → going to `b1395`") — transparent, not a black box.
+- Countdown configurable (2–3 min; 2 is reasonable for a small shop).
+- **The reassurance is now TRUE:** today's graceful-checkout + idempotent `/sales` mean a sale caught
+  mid-restart is kept + retry-safe. The banner isn't a lie — it's backed by the code.
+
+### Lifecycle notifications (this is what closes the workflow)
+- **Scheduled** → "📅 BL-XXX scheduled for tonight 02:15" lands in everyone's 🔔.
+- **Rolling out** → the countdown banner above.
+- **Done** → "✅ BL-XXX rolled out — you're on `bXXXX`" in everyone's 🔔; **the reporter's ticket closes.**
+  The SLA loop now runs *all the way*: report → triage → fix → **scheduled rollout → notified → closed.**
+- **Stale-session catch** → a user logged in across the deploy gets "things changed since you were last
+  here — you're on `bXXXX` now" (reuse the PWA update-nudge we already built).
+
+### Principles Angel set (keep these)
+1. **Felix sets the time — he knows his shop.** System recommends by severity; the owner decides.
+2. **Attended beats unattended for non-critical.** Felix *wants* to watch it land and catch a surprise —
+   not wake up to "holy shit, undo that." So "now, with notice, while I'm at my seat" often beats "3am."
+   Reserve unattended/3am for the truly hands-off + migration-heavy ones.
+3. **Migration-required is flagged + steered to a real window.** Code-only = cheap, near-anytime;
+   schema change (e.g. "add lat/long to customers for the delivery map → serve housebound customers")
+   = scheduled, tonight. Same train, a clearer label.
+4. **Felix-simple, not SAP.** "Do it now / schedule it" is the whole UX. Don't gold-plate.
+5. **Scales to multitenant.** A handful of staff now (Felix can even just *tell* them) — but the *same*
+   notice/schedule/force-window machinery covers 1500 shops × 10k users for a forced critical patch
+   ("security fix — we're rolling at the next window, no opt-out"). Design for the shop, generalise up.
+6. **It's the last mile of Hypercare.** In hypercare mode (watching every 1–2 min), fixes land
+   bang-bang-boom — "20 things fixed today, now it's exactly what we want." The scheduled rollout +
+   the done-notification is *how each fix reaches the till and finishes the loop, start to end.*
+
 ## GUARDRAILS (don't break what's good)
 
 1. **One-tap, or it's Jira.** Mandatory fields must feel like *finishing the test*, not paperwork. The
