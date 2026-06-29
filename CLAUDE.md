@@ -418,6 +418,11 @@ ClientName-ISOTTO/
   stripped in the recipe runner.
 - **Test gate:** `make test` runs pytest INSIDE the `helix-platform` container (the real
   app env -- the host `.venv` is the aux toolbox with no fastapi). Use it before promoting.
+- **Banco deploy SOP (2026-06-29):** ship through the gate ladder sandbox→staging→prod with
+  `scripts/ops/deploy-banco.py <env> [ref]` (stamps the real SHA). **Backup gates prod.**
+  **PROVE, don't assume -- re-probe after every restart** (the healthcheck greens a beat before
+  the first request serves; a "before" snapshot can masquerade as "after"). Parity:
+  `scripts/ops/env-parity.py --local`. Full SOP: `docs/BANCO-DEPLOY-SOP.md`.
 
 ---
 
