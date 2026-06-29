@@ -10,12 +10,12 @@
 
 ---
 
-## ⚠️ FIRST THING TOMORROW — identity terminal collision recovery
-Tonight's Product Sales deploy (`checkout --force origin/main` on the sandbox + banco-staging box trees) **reverted the identity terminal's uncommitted code patches** on those two envs (orphan `.bak`s prove it). PROD untouched + safe. The identity terminal still holds its **3 fix commits** — nothing lost. Fix:
-- [ ] Identity terminal: **land the 3 commits onto `main` (`92aabaa`) + push.** (It was waiting for this terminal to finish on main — now done.)
-- [ ] Then **redeploy sandbox + banco-staging from updated main** (restores the fixes, committed this time).
-- [ ] **Don't** `make sandbox-deploy` / force-checkout sandbox|staging before that — it just re-reverts.
-- [ ] Verify prod actually carries the fold (its tree source matches plain main — may be KC-realm config, not code).
+## ✅ RESOLVED 2026-06-29 — identity terminal collision recovery
+The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's uncommitted patches on sandbox + banco-staging) is **fully recovered**:
+- [x] Identity terminal's commits **landed on `main`** — `92aabaa` is in `main` history.
+- [x] All 3 envs **redeployed from updated main** — sandbox/staging/prod parity-green at `aae0629`, build stamp `b1384` uniform.
+- [x] **Zero orphan `.bak` files** remain anywhere in the tree (the collision fingerprint is gone); `origin/main` = local `main` = live prod.
+- [ ] *Carry-forward into P4:* confirm prod's KC-realm config carries the fold (code is verified; realm config is the open piece — folded into the prod-identity blocker below).
 *Full detail: memory `banco-terminal-collision-2026-06-28`.*
 
 ---
