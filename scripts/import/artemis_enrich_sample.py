@@ -53,7 +53,7 @@ except ImportError:
     )
 
 PAPERS_SLUG = "papers-co"
-BATCH = 8
+BATCH = 10   # items per LLM call — 10-to-1 batching keeps calls (and throttle pressure) ~10x lower; quality unchanged (schema-bounded, sku-keyed). Tune 8–12 if the model ever drops an item.
 
 # §6a — the Artemis DETAIL page carries the rich metadata the LIST API omits:
 #   * the full description in   <div ... id="Description"> ... </div>
