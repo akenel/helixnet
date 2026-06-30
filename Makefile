@@ -276,6 +276,7 @@ nuke-all:
 
 SANDBOX_TREE    := /opt/helix-sandbox-tree
 SANDBOX_DB      := banco_sandbox
+SANDBOX_SEED    := scripts/sandbox_seed_catalog.sql
 SANDBOX_COMPOSE := cd hetzner && docker compose -p hetzner \
 	-f docker-compose.uat.yml \
 	-f docker-compose.helix-staging.yml \
@@ -303,9 +304,17 @@ sandbox-down:
 	@echo "Sandbox stopped. 'make sandbox-up' to bring it back."
 
 # THE TOOL: zero the shop between takes. Sub-second, idempotent, no restart.
+# Then re-apply the persistent demo catalog (the enriched Artemis TAM-* products) so
+# it SURVIVES every reset -- the seed is OPTIONAL (a no-op if the file is absent), so
+# this stays safe on any tree that hasn't generated one. Regenerate the seed with
+# scripts/ops/gen_sandbox_seed.py after the demo catalog changes.
 sandbox-reset:
 	@docker exec -i postgres psql -U helix_user -d $(SANDBOX_DB) -v ON_ERROR_STOP=1 < scripts/sandbox_reset.sql
-	@echo "Sandbox zeroed -- 0 products, 0 sales, no open drawer. Fresh take ready."
+	@if [ -f "$(SANDBOX_SEED)" ]; then \
+		docker exec -i postgres psql -U helix_user -d $(SANDBOX_DB) -v ON_ERROR_STOP=1 < $(SANDBOX_SEED) >/dev/null \
+		&& echo "Persistent catalog re-seeded ($$(grep -c '^INSERT INTO public.products' $(SANDBOX_SEED)) products)."; \
+	fi
+	@echo "Sandbox zeroed -- sales/drawers cleared, persistent catalog restored. Fresh take ready."
 
 # Pull the latest origin/main into the sandbox worktree and restart (code refresh).
 sandbox-deploy:
