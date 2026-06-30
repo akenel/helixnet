@@ -134,6 +134,31 @@ record's value is its *descriptive richness*. Capture it in the one pass; backfi
   it's **deltas-aware** (only re-fetch changed SKUs). Run it as a tier: basics first (fast), rich-metadata
   pass second, both inside the watched/throttled job.
 
+## 6b. Per-type attributes · multi-image · minted codes + the printed scan catalog
+
+**Attributes are per-TYPE, not fixed.** Papers (material, sheets/pack, length-cm) share nothing with a bong
+(height, glass thickness, joint-size, percolator) or a vape (battery, capacity, resistance). So the recipe
+carries a **per-category attribute template** — it knows *which* questions to ask per type — and the flexible
+`attributes` bag (§6a) holds whatever's relevant. Thin types stay thin; deep types go deep. No rigid columns.
+
+**Multiple images per product = our edge.** Most sources ship one stock photo. We keep **N images** (the
+shop's own shots + the source cover). The snap flow already takes pictures — we just retain them all.
+
+**Minted internal barcodes — this SOLVES the no-EAN finding.** Artemis carries no EAN. So we **mint our own
+internal EAN-13** (private `20–29` prefix — a real, scannable code we own) for **every** product at import.
+Result: the whole imported catalog becomes **scannable even though the source had no barcode.** This is
+[[banco-bl97-house-scan-sheet]] (BL-97) — the internal-EAN-13 mechanism — extended from "a binder of unmarked
+staples" to "the whole catalog."
+
+**The printed scan catalog (the no-barcode bridge).** Until products carry their own codes, **print the
+catalog 20–40 per page** (thumbnail + name + price + minted barcode), using the **same print engine as the
+transaction reports**. The cashier **zaps items off the page** — manufacturer barcode or not. A few pages, not
+500 labels.
+
+**Closes the new-product loop too:** brand-new item not in the catalog → snap photo(s) → OpenCV clean →
+read-the-package draft → **mint a code** → it's in the catalog *and* on the next printed sheet. No dead end,
+no missing code. *(ZPI isn't "winging it" — it's pragmatic: a few catalog pages beats barcode-labelling 6,000 items.)*
+
 ## 7. The recipe as procedure-as-code
 
 ```
