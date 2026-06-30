@@ -253,6 +253,14 @@ Nothing reaches the DB until step 5, and nothing reaches prod until step 7.
 3. **Images** — hotlink for the sandbox test; download to MinIO (`pos-products/`) for the real load.
 4. **SKU namespace** — `ART-<id>` to avoid demo collisions. *(Recommend: yes.)*
 5. **Model choice** — Turbo vs a smaller model for the enrichment step; decide after the sample-run cost shows.
+6. **Source link = feature** — keep `linkUrl` per item → a "View on Artemis" link in the live app (same shop,
+   no conflict; doubles as a price-parity check). Free, already captured.
+7. **Price parity (Felix's ask)** — price **auto-syncs from Artemis** via deltas (till = online). A manager
+   override is preserved (`sync_override`) but **flagged as diverged** so parity is the default and overrides
+   are deliberate + visible.
+8. **Discounts / coupon cards** — Artemis runs coupon + discount cards. This is a **checkout feature, separate
+   from the catalog** (does not block import). TODO: recon what Artemis's cards actually do (%-off / loyalty /
+   item-specific), then scope whether Banco mirrors it. Unknown if Banco handles coupons today — verify.
 
 ---
 
