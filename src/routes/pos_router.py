@@ -1002,9 +1002,17 @@ async def search_products_fast(
           # default: relevance when searching, else name
           "CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END, similarity(name, :q) DESC, name")
 
+    # image fallback: a product's cover lives in products.image_url, but a cashier-
+    # uploaded gallery photo only sets the cover when none exists yet — so a product can
+    # have a perfectly good photo (visible in the edit gallery) while image_url is NULL,
+    # and the LIST avatar then shows the placeholder. COALESCE to the product's FIRST
+    # gallery image so the list renders the SAME picture the edit modal shows.
     query = text(f"""
-        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url,
+        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url, updated_at,
                is_age_restricted, product_class,
+               (SELECT pi.id FROM product_images pi
+                  WHERE pi.product_id = products.id
+                  ORDER BY pi.sort_order, pi.created_at LIMIT 1) AS first_image_id,
                similarity(name, :q) AS relevance,
                count(*) OVER() AS total_count
         FROM products
@@ -1028,7 +1036,13 @@ async def search_products_fast(
         {
             "id": str(row.id), "sku": row.sku, "barcode": row.barcode, "name": row.name,
             "category": row.category, "price": float(row.price) if row.price else 0,
-            "stock_quantity": row.stock_quantity or 0, "image_url": row.image_url,
+            "stock_quantity": row.stock_quantity or 0,
+            # Cover, else the first gallery photo (so an uploaded photo always shows here).
+            "image_url": row.image_url or (
+                _image_serve_url(row.id, row.first_image_id) if row.first_image_id else None),
+            # updated_at lets the UI cache-bust the avatar so a freshly-added photo shows
+            # without a hard refresh.
+            "updated_at": row.updated_at.isoformat() if row.updated_at else None,
             "is_age_restricted": bool(row.is_age_restricted),
             "product_class": row.product_class,
             "promo_restricted": class_promo_restricted(row.product_class),

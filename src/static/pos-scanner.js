@@ -126,5 +126,51 @@
     vibrate(ms) {
       try { navigator.vibrate && navigator.vibrate(ms || 60); } catch (e) {}
     },
+
+    // No-camera fallback (desktop/laptop): decode a barcode from a still photo the
+    // operator picked off disc. Same retail-format gate as the live scanner. Uses a
+    // throwaway off-screen Html5Qrcode instance so it never disturbs the live one.
+    // Returns the decoded text (string) or '' when nothing readable was found.
+    async decodeFile(file) {
+      if (typeof window.Html5Qrcode === 'undefined') throw new Error('scanner-not-loaded');
+      const host = document.createElement('div');
+      host.id = 'posscan-file-' + Date.now();
+      // off-screen but with real layout (the lib draws to an internal canvas)
+      host.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;';
+      document.body.appendChild(host);
+      const inst = new window.Html5Qrcode(host.id, {
+        formatsToSupport: SCAN_FORMATS(), verbose: false,
+      });
+      try {
+        let text = '';
+        try {
+          const r = await inst.scanFileV2(file, false);
+          text = (r && (r.decodedText || (r.result && r.result.text))) || '';
+        } catch (e) {
+          // Older API shape, or no code at full frame — try the plain scanFile.
+          const r = await inst.scanFile(file, false);
+          text = (typeof r === 'string') ? r : (r && r.decodedText) || '';
+        }
+        return (text || '').trim();
+      } finally {
+        try { await inst.clear(); } catch (e) { /* already gone */ }
+        host.remove();
+      }
+    },
+  };
+
+  // Device hint for the file-input `capture` attribute. On a TOUCH device we keep
+  // capture="environment" (go straight to the rear camera — the mobile behaviour we
+  // want). On a desktop/laptop we DROP it so the input opens a normal file picker
+  // (load from disc) instead of dead-ending on a missing camera.
+  window.posIsTouchDevice = function () {
+    try {
+      return (navigator.maxTouchPoints || 0) > 0
+        || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    } catch (e) { return false; }
+  };
+  // Value to bind onto an <input type=file :capture="...">: 'environment' or false.
+  window.posCaptureAttr = function () {
+    return window.posIsTouchDevice() ? 'environment' : false;
   };
 })();

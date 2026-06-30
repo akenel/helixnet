@@ -105,7 +105,17 @@
         </div>
         <div class="flex-1 relative flex items-center justify-center overflow-hidden">
             <div id="rcv-reader" class="w-full max-w-md"></div>
-            <p x-show="scanError" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
+            <!-- No-camera fallback: a calm note + "choose a photo from disc". Never a dead-end. -->
+            <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
+                <span class="text-5xl">📁</span>
+                <p class="text-white text-base max-w-xs" x-text="scanError || 'No camera on this device.'"></p>
+                <label class="btn-primary cursor-pointer">
+                    📁 Choose a photo from your computer
+                    <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
+                </label>
+                <p class="text-white/60 text-xs max-w-xs">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+            </div>
+            <p x-show="scanError && !scanFallback" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
         </div>
         <div class="px-4 py-4 bg-black/80 text-center">
             <p x-show="scanLive" class="text-green-300 font-mono text-lg mb-2" x-text="'Reading: ' + scanLive" style="display:none;"></p>
@@ -201,6 +211,7 @@
             // camera
             scanOpen: false,
             scanError: '',
+            scanFallback: false,   // no-camera: show the "choose a photo from disc" fallback
             scanLive: '',
 
             // lazy create
@@ -263,7 +274,7 @@
             // ---- camera (shared, hardened PosScanner) ----
             async startScan() {
                 if (typeof window.PosScanner === 'undefined') { showToast('Scanner not loaded', 'warning'); return; }
-                this.scanError = ''; this.scanLive = ''; this.scanOpen = true;
+                this.scanError = ''; this.scanFallback = false; this.scanLive = ''; this.scanOpen = true;
                 await this.$nextTick();
                 window.PosScanner.start('rcv-reader',
                     (text) => {
@@ -273,15 +284,36 @@
                         this.lookup();
                     },
                     (err) => {
+                        // Don't dead-end: keep the overlay open with a calm message + a
+                        // "choose a photo from disc" fallback (decodes the barcode from a still).
                         const n = String((err && (err.name || err)) || '');
                         this.scanError = /permission|denied|NotAllowed/i.test(n)
-                            ? 'Camera permission denied. Type the barcode instead.'
-                            : 'Could not open the camera. Type it instead.';
-                        setTimeout(() => { this.scanOpen = false; }, 2500);
+                            ? 'Camera blocked. Pick a photo of the barcode instead, or type it.'
+                            : 'No camera here. Pick a photo of the barcode instead, or type it.';
+                        this.scanFallback = true;
                     },
                     { onProgress: (t) => { this.scanLive = t; } });
             },
-            async stopScan() { await window.PosScanner.stop(); this.scanOpen = false; this.scanLive = ''; },
+            // No-camera path: decode the barcode from a still photo chosen off disc.
+            async onScanFile(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                this.scanError = 'Reading the photo…';
+                try {
+                    const text = await window.PosScanner.decodeFile(f);
+                    if (!text) throw new Error('no-code');
+                    this.scanOpen = false; this.scanFallback = false; this.scanLive = '';
+                    window.PosScanner.vibrate(60); window.PosScanner.beep();
+                    this.barcodeInput = text;
+                    this.lookup();
+                } catch (err) {
+                    console.warn('file decode', err);
+                    this.scanError = "Couldn't read a barcode in that photo. Try another, or type it in.";
+                }
+            },
+            async stopScan() { await window.PosScanner.stop(); this.scanOpen = false; this.scanFallback = false; this.scanLive = ''; },
 
             // ---- lazy create ----
             openNew(barcode) {
@@ -390,5 +422,5 @@
 {% block extra_scripts %}
 <!-- BL-91: vendored scanner + shared PosScanner (no runtime CDN) -->
 <script src="/static/vendor/html5-qrcode.min.js"></script>
-<script src="/static/pos-scanner.js?v=qr1"></script>
+<script src="/static/pos-scanner.js?v=qr2"></script>
 {% endblock %}

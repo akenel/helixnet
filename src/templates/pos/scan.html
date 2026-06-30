@@ -124,7 +124,7 @@
                             <div class="flex items-center gap-3">
                                 <label class="btn-secondary cursor-pointer flex-none">
                                     📸 <span x-text="otfPhotoData ? 'Retake' : 'Take photo'"></span>
-                                    <input type="file" accept="image/*" capture="environment" class="hidden" @change="onOtfPhoto($event)">
+                                    <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="onOtfPhoto($event)">
                                 </label>
                                 <img x-show="otfPhotoData" :src="otfPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
                                 <span x-show="!otfPhotoData" class="text-xs text-gray-400">Helps you recognise it next time</span>
@@ -162,10 +162,12 @@
                             <div @click="openDetail(product)" title="Tap for details"
                                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
                                 <!-- Product photo (from the supplier feed); falls back to a tile. -->
-                                <div class="w-14 h-14 rounded-lg border bg-white mr-3 flex-none flex items-center justify-center overflow-hidden">
-                                    <img x-show="product.image_url" :src="product.image_url" loading="lazy" alt=""
-                                         class="w-full h-full object-cover" @error="product.image_url=''">
-                                    <span x-show="!product.image_url" class="text-2xl">📦</span>
+                                <div class="w-14 h-14 rounded-lg border bg-white mr-3 flex-none flex items-center justify-center overflow-hidden"
+                                     :class="(product.image_url && !product._imgerr) ? 'cursor-zoom-in' : ''"
+                                     @click.stop="(product.image_url && !product._imgerr) && openLightbox(thumbSrc(product), product.name)">
+                                    <img x-show="product.image_url && !product._imgerr" :src="thumbSrc(product)" loading="lazy" alt=""
+                                         class="w-full h-full object-cover" @error="product._imgerr=true" @load="product._imgerr=false">
+                                    <span x-show="!product.image_url || product._imgerr" class="text-2xl">📦</span>
                                 </div>
                                 <div class="flex-1">
                                     <p class="font-semibold text-gray-900" x-text="product.name"></p>
@@ -210,11 +212,22 @@
                         <template x-for="(item, index) in cart" :key="index">
                             <div class="bg-gray-50 rounded-lg p-3">
                                 <div class="flex justify-between items-start mb-2">
-                                    <div class="flex-1">
-                                        <p class="font-semibold text-gray-900" x-text="item.name"></p>
-                                        <p class="text-sm text-gray-600">
-                                            <span x-text="formatPrice(item.price)"></span> × <span x-text="item.quantity"></span>
-                                        </p>
+                                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                                        <!-- Small product thumb — a ≥44px button; tap to see the picture bigger. -->
+                                        <div class="w-11 h-11 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden"
+                                             :class="(item.image_url && !item._imgerr) ? 'cursor-zoom-in' : ''"
+                                             @click="(item.image_url && !item._imgerr) && openLightbox(thumbSrc(item), item.name)"
+                                             :title="(item.image_url && !item._imgerr) ? 'Tap to enlarge' : ''">
+                                            <img x-show="item.image_url && !item._imgerr" :src="thumbSrc(item)" loading="lazy" alt=""
+                                                 class="w-full h-full object-cover" @error="item._imgerr=true" @load="item._imgerr=false">
+                                            <span x-show="!item.image_url || item._imgerr" class="text-xl">📦</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900" x-text="item.name"></p>
+                                            <p class="text-sm text-gray-600">
+                                                <span x-text="formatPrice(item.price)"></span> × <span x-text="item.quantity"></span>
+                                            </p>
+                                        </div>
                                     </div>
                                     <button @click="removeFromCart(index)" class="text-red-600 hover:text-red-800 text-xl px-3 py-2 rounded-lg hover:bg-red-50" aria-label="Remove item">
                                         ❌
@@ -335,8 +348,10 @@
             <div class="grid md:grid-cols-2 gap-5 p-5">
                 <!-- Left: big image + price + add -->
                 <div>
-                    <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden">
-                        <img x-show="detailProduct?.image_url" :src="detailProduct?.image_url" class="w-full h-full object-contain" @error="if(detailProduct) detailProduct.image_url=''" alt="">
+                    <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden"
+                         :class="detailProduct?.image_url ? 'cursor-zoom-in' : ''"
+                         @click="detailProduct?.image_url && openLightbox(thumbSrc(detailProduct), detailProduct?.name)">
+                        <img x-show="detailProduct?.image_url" :src="thumbSrc(detailProduct)" class="w-full h-full object-contain" alt="">
                         <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
@@ -378,7 +393,17 @@
         <div class="flex-1 relative flex items-center justify-center overflow-hidden">
             <!-- html5-qrcode injects the <video> here -->
             <div id="reader" class="w-full max-w-md"></div>
-            <p x-show="scanError"
+            <!-- No-camera fallback: a calm note + "choose a photo from disc". Never a dead-end. -->
+            <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
+                <span class="text-5xl">📁</span>
+                <p class="text-white text-base max-w-xs" x-text="scanError || 'No camera on this device.'"></p>
+                <label class="btn-primary cursor-pointer">
+                    📁 Choose a photo from your computer
+                    <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
+                </label>
+                <p class="text-white/60 text-xs max-w-xs">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+            </div>
+            <p x-show="scanError && !scanFallback"
                class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3"
                x-text="scanError" style="display:none;"></p>
         </div>
@@ -417,7 +442,7 @@
                     <div class="mt-2 flex items-center gap-3">
                         <label class="btn-secondary cursor-pointer flex-none" :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
                             <span x-text="aiBusy ? '🔍 Reading…' : '✨ Snap & fill'"></span>
-                            <input type="file" accept="image/*" capture="environment" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
+                            <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
                         </label>
                         <span class="text-xs text-gray-500">No barcode? Photograph it — AI names it &amp; searches the catalog.</span>
                     </div>
@@ -504,7 +529,7 @@
                             <div class="flex items-center gap-3">
                                 <label class="btn-secondary cursor-pointer flex-none">
                                     📸 <span x-text="lazyPhotoData ? 'Retake' : 'Take photo'"></span>
-                                    <input type="file" accept="image/*" capture="environment" class="hidden" @change="onLazyPhoto($event)">
+                                    <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="onLazyPhoto($event)">
                                 </label>
                                 <img x-show="lazyPhotoData" :src="lazyPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
                                 <span x-show="!lazyPhotoData" class="text-xs text-gray-400">Optional — snap the item itself</span>
@@ -565,6 +590,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Image lightbox — tap a product photo (cart thumb, search row, detail) to see it big. -->
+    <div x-show="lightboxSrc" x-transition class="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
+         @click="closeLightbox()" @keydown.escape.window="closeLightbox()" style="display:none;">
+        <img :src="lightboxSrc" :alt="lightboxAlt" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" @click.stop>
+        <button @click="closeLightbox()" class="absolute top-4 right-4 text-white text-5xl leading-none px-2" aria-label="Close">&times;</button>
+    </div>
 </div>
 
 <script>
@@ -580,6 +612,7 @@
             // BL-87 camera scan (BL-90: scanner state lives in window.PosScanner)
             scanOpen: false,
             scanError: '',
+            scanFallback: false,   // no-camera: show the "choose a photo from disc" fallback
             scanLive: '',     // live (unconfirmed) read shown in the overlay
 
             // BL-87: lazy capture (unknown scan → persisted product)
@@ -637,6 +670,10 @@
             otfCategory: '',
             otfPhotoFile: null,
             otfPhotoData: '',
+
+            // Image lightbox (tap a product photo → see it big)
+            lightboxSrc: '',
+            lightboxAlt: '',
 
             // Cart
             cart: [],
@@ -744,6 +781,7 @@
                     return;
                 }
                 this.scanError = '';
+                this.scanFallback = false;
                 this.scanLive = '';
                 this.scanOpen = true;
                 // Let the overlay (#reader) render before the camera attaches.
@@ -754,13 +792,37 @@
                     (err) => {
                         console.error('Camera start failed:', err);
                         const name = String((err && (err.name || err)) || '');
+                        // Don't dead-end: keep the overlay open with a calm message + a
+                        // "choose a photo from disc" fallback (decodes the barcode from a still).
                         this.scanError = /permission|denied|NotAllowed/i.test(name)
-                            ? 'Camera permission denied. Type the barcode instead.'
-                            : 'Could not open the camera. Type the barcode instead.';
-                        setTimeout(() => { this.scanOpen = false; }, 2500);
+                            ? 'Camera blocked. Pick a photo of the barcode instead, or type it.'
+                            : 'No camera here. Pick a photo of the barcode instead, or type it.';
+                        this.scanFallback = true;
                     },
                     { onProgress: (text) => { this.scanLive = text; } }
                 );
+            },
+
+            // No-camera path: decode the barcode from a still photo chosen off disc,
+            // then feed the EXACT same path a live scan / manual entry uses.
+            async onScanFile(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                this.scanError = 'Reading the photo…';
+                try {
+                    const text = await window.PosScanner.decodeFile(f);
+                    if (!text) throw new Error('no-code');
+                    this.scanOpen = false; this.scanFallback = false; this.scanLive = '';
+                    window.PosScanner.vibrate(60); window.PosScanner.beep();
+                    this.barcodeInput = text;
+                    this.searchMode = 'barcode';
+                    await this.searchByBarcode();
+                } catch (err) {
+                    console.warn('file decode', err);
+                    this.scanError = "Couldn't read a barcode in that photo. Try another, or type it in.";
+                }
             },
 
             async onScanDecode(decodedText) {
@@ -778,6 +840,7 @@
             async stopScan() {
                 await window.PosScanner.stop();
                 this.scanOpen = false;
+                this.scanFallback = false;
                 this.scanLive = '';
             },
 
@@ -1159,7 +1222,12 @@
                 this.detailProduct = { ...p };
                 try {
                     const full = await API.get(`/api/v1/pos/products/${p.id}`);
-                    this.detailProduct = { ...this.detailProduct, ...full };
+                    // Keep the list row's image (gallery-photo fallback) when full lacks a cover.
+                    this.detailProduct = {
+                        ...this.detailProduct, ...full,
+                        image_url: full.image_url || p.image_url,
+                        updated_at: full.updated_at || p.updated_at,
+                    };
                 } catch (e) { /* keep the basic view */ }
             },
 
@@ -1314,7 +1382,23 @@
 
             formatPrice(amount) {
                 return formatPrice(amount);
-            }
+            },
+
+            // Build a product image src with a cache-buster on OUR serve URLs (keyed on
+            // updated_at, else id) so a freshly-(re)uploaded photo shows without a hard
+            // refresh. External supplier URLs are left untouched.
+            thumbSrc(p) {
+                if (!p || !p.image_url) return '';
+                let u = p.image_url;
+                if (u.indexOf('/api/v1/pos/products/') !== -1) {
+                    const bust = String(p.updated_at || p.id || '').replace(/[^0-9A-Za-z]/g, '');
+                    if (bust) u += (u.indexOf('?') === -1 ? '?' : '&') + 'v=' + bust;
+                }
+                return u;
+            },
+
+            openLightbox(src, alt) { this.lightboxSrc = src || ''; this.lightboxAlt = alt || ''; },
+            closeLightbox() { this.lightboxSrc = ''; this.lightboxAlt = ''; },
         }
     }
 </script>
@@ -1324,5 +1408,5 @@
 <!-- BL-87: vendored locally (no runtime CDN). Powers the camera barcode scan. -->
 <script src="/static/vendor/html5-qrcode.min.js"></script>
 <!-- BL-90: shared hardened scanner (retail formats + 2-in-a-row stable read). BL-93: + QR. -->
-<script src="/static/pos-scanner.js?v=qr1"></script>
+<script src="/static/pos-scanner.js?v=qr2"></script>
 {% endblock %}

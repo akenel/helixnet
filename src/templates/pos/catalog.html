@@ -175,10 +175,17 @@
             <div class="cat-list">
                 <template x-for="p in results" :key="p.id">
                     <div class="cat-card" :class="p.is_active === false ? 'is-inactive' : ''">
-                        <div class="cat-thumb" @click="openDetail(p)" title="Tap for details">
-                            <img x-show="p.image_url" :src="p.image_url" loading="lazy" alt=""
-                                 @error="p.image_url=''">
-                            <span x-show="!p.image_url" class="ph">📦</span>
+                        <!-- Tappable photo: a big (≥72px) button → opens the picture bigger (lightbox).
+                             No photo (or a broken load) → falls back to the placeholder + opens details.
+                             Error is NON-destructive (tracks p._imgerr; never wipes image_url) so a
+                             cache-busted refetch can recover it. -->
+                        <div class="cat-thumb" role="button" tabindex="0"
+                             @click="(p.image_url && !p._imgerr) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
+                             @keydown.enter="(p.image_url && !p._imgerr) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
+                             :title="(p.image_url && !p._imgerr) ? 'Tap to enlarge' : 'Tap for details'">
+                            <img x-show="p.image_url && !p._imgerr" :src="thumbSrc(p)" loading="lazy" alt=""
+                                 @error="p._imgerr = true" @load="p._imgerr = false">
+                            <span x-show="!p.image_url || p._imgerr" class="ph">📦</span>
                         </div>
                         <div class="cat-body" @click="openDetail(p)" title="Tap for details">
                             <div class="cat-meta">
@@ -227,8 +234,10 @@
             </div>
             <div class="grid md:grid-cols-2 gap-5 p-5">
                 <div>
-                    <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden">
-                        <img x-show="detailProduct?.image_url" :src="detailProduct?.image_url" class="w-full h-full object-contain" @error="if(detailProduct) detailProduct.image_url=''" alt="">
+                    <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden"
+                         :class="detailProduct?.image_url ? 'cursor-zoom-in' : ''"
+                         @click="detailProduct?.image_url && openLightbox(thumbSrc(detailProduct), detailProduct?.name)">
+                        <img x-show="detailProduct?.image_url" :src="thumbSrc(detailProduct)" class="w-full h-full object-contain" alt="">
                         <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
@@ -298,7 +307,7 @@
                         <label class="btn-primary flex-none cursor-pointer flex items-center gap-2"
                                :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
                             <span x-text="aiBusy ? '🔍 Reading…' : '✨ Snap & fill'"></span>
-                            <input type="file" accept="image/*" capture="environment" class="hidden"
+                            <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden"
                                    @change="aiSuggest($event)" :disabled="aiBusy">
                         </label>
                         <div class="text-sm text-gray-600">
@@ -392,7 +401,7 @@
                             <label class="w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:border-indigo-400 hover:text-indigo-500 flex-none">
                                 <span class="text-2xl leading-none">📸</span>
                                 <span class="text-[10px] mt-1" x-text="uploadingPhoto ? '…' : 'Add'"></span>
-                                <input type="file" accept="image/*" capture="environment" class="hidden" @change="onPhoto($event)" :disabled="uploadingPhoto">
+                                <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="onPhoto($event)" :disabled="uploadingPhoto">
                             </label>
                         </div>
                         <input type="text" x-model="form.image_url" x-show="gallery.length===0 && pendingPhotos.length===0"
@@ -431,11 +440,28 @@
         </div>
         <div class="flex-1 relative flex items-center justify-center overflow-hidden">
             <div id="cat-reader" class="w-full max-w-md"></div>
-            <p x-show="scanError" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
+            <!-- No-camera fallback: a calm note + "choose a photo from disc". Never a dead-end. -->
+            <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
+                <span class="text-5xl">📁</span>
+                <p class="text-white text-base max-w-xs" x-text="scanError || 'No camera on this device.'"></p>
+                <label class="btn-primary cursor-pointer">
+                    📁 Choose a photo from your computer
+                    <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
+                </label>
+                <p class="text-white/60 text-xs max-w-xs">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+            </div>
+            <p x-show="scanError && !scanFallback" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
         </div>
         <div class="px-4 py-4 bg-black/80 text-center">
             <button @click="stopScan()" class="btn-secondary">Cancel — type it instead</button>
         </div>
+    </div>
+
+    <!-- Image lightbox — tap a product photo to see it big. Tap anywhere / × / Esc to close. -->
+    <div x-show="lightboxSrc" x-transition class="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
+         @click="closeLightbox()" @keydown.escape.window="closeLightbox()" style="display:none;">
+        <img :src="lightboxSrc" :alt="lightboxAlt" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" @click.stop>
+        <button @click="closeLightbox()" class="absolute top-4 right-4 text-white text-5xl leading-none px-2" aria-label="Close">&times;</button>
     </div>
 </div>
 
@@ -483,6 +509,12 @@
             // BL-89: barcode scan on the form
             scanOpen: false,
             scanError: '',
+            scanFallback: false,   // no-camera: show the "choose a photo from disc" fallback
+            scanMode: '',          // 'search' | 'barcode' — where a fallback decode routes to
+
+            // Image lightbox (tap a product photo → see it big)
+            lightboxSrc: '',
+            lightboxAlt: '',
 
             init() {
                 const userInfo = AuthHelper.getUserInfo();
@@ -691,7 +723,14 @@
                 try {
                     const full = await API.get(`/api/v1/pos/products/${p.id}`);
                     if (this.detailProduct && this.detailProduct.id === p.id) {
-                        this.detailProduct = { ...full, promo_restricted: p.promo_restricted };
+                        // Keep the list row's image (it may carry the gallery-photo fallback the
+                        // single-product record's bare cover lacks) when full has none.
+                        this.detailProduct = {
+                            ...full,
+                            image_url: full.image_url || p.image_url,
+                            updated_at: full.updated_at || p.updated_at,
+                            promo_restricted: p.promo_restricted,
+                        };
                     }
                 } catch (e) { /* keep the list-row data */ }
             },
@@ -785,6 +824,8 @@
 
             async startBarcodeScan() {
                 this.scanError = '';
+                this.scanFallback = false;
+                this.scanMode = 'barcode';
                 this.scanOpen = true;
                 await this.$nextTick();
                 window.PosScanner.start('cat-reader',
@@ -794,13 +835,7 @@
                         this.scanOpen = false;
                         showToast('Barcode scanned', 'success');
                     },
-                    (err) => {
-                        const n = String((err && (err.name || err)) || '');
-                        this.scanError = /permission|denied|NotAllowed/i.test(n)
-                            ? 'Camera permission denied. Type the barcode instead.'
-                            : 'Could not open the camera. Type it instead.';
-                        setTimeout(() => { this.scanOpen = false; }, 2500);
-                    });
+                    (err) => this.onScanCameraFail(err));
             },
 
             // BL-10 (Felix): scan a barcode to FIND an item in the catalogue instead of
@@ -808,6 +843,8 @@
             // to it. Reuses the same overlay (#cat-reader) as the create-form scanner.
             async startSearchScan() {
                 this.scanError = '';
+                this.scanFallback = false;
+                this.scanMode = 'search';
                 this.scanOpen = true;
                 await this.$nextTick();
                 window.PosScanner.start('cat-reader',
@@ -818,21 +855,67 @@
                         this.search();
                         showToast('Scanned — showing matches', 'success');
                     },
-                    (err) => {
-                        const n = String((err && (err.name || err)) || '');
-                        this.scanError = /permission|denied|NotAllowed/i.test(n)
-                            ? 'Camera permission denied. Type the barcode instead.'
-                            : 'Could not open the camera. Type it instead.';
-                        setTimeout(() => { this.scanOpen = false; }, 2500);
-                    });
+                    (err) => this.onScanCameraFail(err));
+            },
+
+            // Camera couldn't open (no device / permission). Don't dead-end: keep the
+            // overlay open with a calm message + a "choose a photo from disc" fallback.
+            onScanCameraFail(err) {
+                const n = String((err && (err.name || err)) || '');
+                this.scanError = /permission|denied|NotAllowed/i.test(n)
+                    ? 'Camera blocked. Pick a photo of the barcode instead, or type it.'
+                    : 'No camera here. Pick a photo of the barcode instead, or type it.';
+                this.scanFallback = true;   // reveal the file picker, keep the modal open
+            },
+
+            // No-camera path: decode the barcode from a still photo chosen off disc.
+            async onScanFile(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                this.scanError = 'Reading the photo…';
+                try {
+                    const text = await window.PosScanner.decodeFile(f);
+                    if (!text) throw new Error('no-code');
+                    PosScanner.vibrate(60); PosScanner.beep();
+                    this.scanOpen = false; this.scanFallback = false;
+                    if (this.scanMode === 'search') {
+                        this.q = text; this.search();
+                        showToast('Scanned — showing matches', 'success');
+                    } else {
+                        this.form.barcode = text;
+                        showToast('Barcode scanned', 'success');
+                    }
+                } catch (err) {
+                    console.warn('file decode', err);
+                    this.scanError = "Couldn't read a barcode in that photo. Try another, or type it in.";
+                }
             },
 
             async stopScan() {
                 await window.PosScanner.stop();
                 this.scanOpen = false;
+                this.scanFallback = false;
             },
 
             formatPrice(amount) { return formatPrice(amount); },
+
+            // Build a product image src with a cache-buster on OUR serve URLs (keyed on
+            // updated_at, else id) so a freshly-(re)uploaded photo shows without a hard
+            // refresh. External supplier URLs are left untouched.
+            thumbSrc(p) {
+                if (!p || !p.image_url) return '';
+                let u = p.image_url;
+                if (u.indexOf('/api/v1/pos/products/') !== -1) {
+                    const bust = String(p.updated_at || p.id || '').replace(/[^0-9A-Za-z]/g, '');
+                    if (bust) u += (u.indexOf('?') === -1 ? '?' : '&') + 'v=' + bust;
+                }
+                return u;
+            },
+
+            openLightbox(src, alt) { this.lightboxSrc = src || ''; this.lightboxAlt = alt || ''; },
+            closeLightbox() { this.lightboxSrc = ''; this.lightboxAlt = ''; },
 
             // Friendly label for the behaviour class pill (mirrors the class list above).
             classLabel(value) {
@@ -873,5 +956,5 @@
 {% block extra_scripts %}
 <!-- BL-89: vendored scanner + shared PosScanner helper (no runtime CDN) -->
 <script src="/static/vendor/html5-qrcode.min.js"></script>
-<script src="/static/pos-scanner.js?v=qr1"></script>
+<script src="/static/pos-scanner.js?v=qr2"></script>
 {% endblock %}
