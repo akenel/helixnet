@@ -1040,6 +1040,12 @@ async def search_products_fast(
             # Cover, else the first gallery photo (so an uploaded photo always shows here).
             "image_url": row.image_url or (
                 _image_serve_url(row.id, row.first_image_id) if row.first_image_id else None),
+            # The uploaded gallery photo, ALWAYS surfaced when one exists — even if the cover
+            # (image_url) is set to something that won't render (e.g. a supplier PRODUCT-PAGE
+            # URL, not an image). The UI swaps to this if the cover image fails to load, so a
+            # photo the cashier actually uploaded never hides behind a broken cover.
+            "fallback_image_url": (
+                _image_serve_url(row.id, row.first_image_id) if row.first_image_id else None),
             # updated_at lets the UI cache-bust the avatar so a freshly-added photo shows
             # without a hard refresh.
             "updated_at": row.updated_at.isoformat() if row.updated_at else None,

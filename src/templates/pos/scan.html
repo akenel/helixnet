@@ -163,11 +163,11 @@
                                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
                                 <!-- Product photo (from the supplier feed); falls back to a tile. -->
                                 <div class="w-14 h-14 rounded-lg border bg-white mr-3 flex-none flex items-center justify-center overflow-hidden"
-                                     :class="(product.image_url && !product._imgerr) ? 'cursor-zoom-in' : ''"
-                                     @click.stop="(product.image_url && !product._imgerr) && openLightbox(thumbSrc(product), product.name)">
-                                    <img x-show="product.image_url && !product._imgerr" :src="thumbSrc(product)" loading="lazy" alt=""
-                                         class="w-full h-full object-cover" @error="product._imgerr=true" @load="product._imgerr=false">
-                                    <span x-show="!product.image_url || product._imgerr" class="text-2xl">📦</span>
+                                     :class="hasImg(product) ? 'cursor-zoom-in' : ''"
+                                     @click.stop="hasImg(product) && openLightbox(thumbSrc(product), product.name)">
+                                    <img x-show="hasImg(product)" :src="thumbSrc(product)" loading="lazy" alt=""
+                                         class="w-full h-full object-cover" @error="onImgError(product)" @load="product._imgerr=false">
+                                    <span x-show="!hasImg(product)" class="text-2xl">📦</span>
                                 </div>
                                 <div class="flex-1">
                                     <p class="font-semibold text-gray-900" x-text="product.name"></p>
@@ -215,12 +215,12 @@
                                     <div class="flex items-start gap-3 flex-1 min-w-0">
                                         <!-- Small product thumb — a ≥44px button; tap to see the picture bigger. -->
                                         <div class="w-11 h-11 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden"
-                                             :class="(item.image_url && !item._imgerr) ? 'cursor-zoom-in' : ''"
-                                             @click="(item.image_url && !item._imgerr) && openLightbox(thumbSrc(item), item.name)"
-                                             :title="(item.image_url && !item._imgerr) ? 'Tap to enlarge' : ''">
-                                            <img x-show="item.image_url && !item._imgerr" :src="thumbSrc(item)" loading="lazy" alt=""
-                                                 class="w-full h-full object-cover" @error="item._imgerr=true" @load="item._imgerr=false">
-                                            <span x-show="!item.image_url || item._imgerr" class="text-xl">📦</span>
+                                             :class="hasImg(item) ? 'cursor-zoom-in' : ''"
+                                             @click="hasImg(item) && openLightbox(thumbSrc(item), item.name)"
+                                             :title="hasImg(item) ? 'Tap to enlarge' : ''">
+                                            <img x-show="hasImg(item)" :src="thumbSrc(item)" loading="lazy" alt=""
+                                                 class="w-full h-full object-cover" @error="onImgError(item)" @load="item._imgerr=false">
+                                            <span x-show="!hasImg(item)" class="text-xl">📦</span>
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="font-semibold text-gray-900" x-text="item.name"></p>
@@ -349,10 +349,11 @@
                 <!-- Left: big image + price + add -->
                 <div>
                     <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden"
-                         :class="detailProduct?.image_url ? 'cursor-zoom-in' : ''"
-                         @click="detailProduct?.image_url && openLightbox(thumbSrc(detailProduct), detailProduct?.name)">
-                        <img x-show="detailProduct?.image_url" :src="thumbSrc(detailProduct)" class="w-full h-full object-contain" alt="">
-                        <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
+                         :class="hasImg(detailProduct) ? 'cursor-zoom-in' : ''"
+                         @click="hasImg(detailProduct) && openLightbox(thumbSrc(detailProduct), detailProduct?.name)">
+                        <img x-show="hasImg(detailProduct)" :src="thumbSrc(detailProduct)" class="w-full h-full object-contain" alt=""
+                             @error="onImgError(detailProduct)" @load="if(detailProduct) detailProduct._imgerr=false">
+                        <span x-show="!hasImg(detailProduct)" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
                     <button @click="addToCart(detailProduct); detailProduct=null"
@@ -1384,17 +1385,30 @@
                 return formatPrice(amount);
             },
 
+            // Is there a renderable photo? (cover OR uploaded gallery photo, not permanently failed)
+            hasImg(p) { return !!(p && (p.image_url || p.fallback_image_url) && !p._imgerr); },
+
             // Build a product image src with a cache-buster on OUR serve URLs (keyed on
             // updated_at, else id) so a freshly-(re)uploaded photo shows without a hard
-            // refresh. External supplier URLs are left untouched.
+            // refresh. External supplier URLs are left untouched. Once a cover URL has failed
+            // to load (_useFallback), serve the uploaded gallery photo instead.
             thumbSrc(p) {
-                if (!p || !p.image_url) return '';
-                let u = p.image_url;
+                if (!p) return '';
+                let u = (p._useFallback && p.fallback_image_url) ? p.fallback_image_url : p.image_url;
+                if (!u) return '';
                 if (u.indexOf('/api/v1/pos/products/') !== -1) {
                     const bust = String(p.updated_at || p.id || '').replace(/[^0-9A-Za-z]/g, '');
                     if (bust) u += (u.indexOf('?') === -1 ? '?' : '&') + 'v=' + bust;
                 }
                 return u;
+            },
+
+            // Image failed to load. Swap to the uploaded gallery photo once if the cover was a
+            // non-image URL; otherwise fall back to the placeholder. Never wipes data.
+            onImgError(p) {
+                if (p && p.fallback_image_url && !p._useFallback
+                    && p.image_url !== p.fallback_image_url) { p._useFallback = true; }
+                else if (p) { p._imgerr = true; }
             },
 
             openLightbox(src, alt) { this.lightboxSrc = src || ''; this.lightboxAlt = alt || ''; },

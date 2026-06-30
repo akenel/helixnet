@@ -180,12 +180,12 @@
                              Error is NON-destructive (tracks p._imgerr; never wipes image_url) so a
                              cache-busted refetch can recover it. -->
                         <div class="cat-thumb" role="button" tabindex="0"
-                             @click="(p.image_url && !p._imgerr) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
-                             @keydown.enter="(p.image_url && !p._imgerr) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
-                             :title="(p.image_url && !p._imgerr) ? 'Tap to enlarge' : 'Tap for details'">
-                            <img x-show="p.image_url && !p._imgerr" :src="thumbSrc(p)" loading="lazy" alt=""
-                                 @error="p._imgerr = true" @load="p._imgerr = false">
-                            <span x-show="!p.image_url || p._imgerr" class="ph">📦</span>
+                             @click="hasImg(p) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
+                             @keydown.enter="hasImg(p) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
+                             :title="hasImg(p) ? 'Tap to enlarge' : 'Tap for details'">
+                            <img x-show="hasImg(p)" :src="thumbSrc(p)" loading="lazy" alt=""
+                                 @error="onImgError(p)" @load="p._imgerr = false">
+                            <span x-show="!hasImg(p)" class="ph">📦</span>
                         </div>
                         <div class="cat-body" @click="openDetail(p)" title="Tap for details">
                             <div class="cat-meta">
@@ -235,10 +235,11 @@
             <div class="grid md:grid-cols-2 gap-5 p-5">
                 <div>
                     <div class="w-full aspect-square bg-gray-50 rounded-xl border flex items-center justify-center overflow-hidden"
-                         :class="detailProduct?.image_url ? 'cursor-zoom-in' : ''"
-                         @click="detailProduct?.image_url && openLightbox(thumbSrc(detailProduct), detailProduct?.name)">
-                        <img x-show="detailProduct?.image_url" :src="thumbSrc(detailProduct)" class="w-full h-full object-contain" alt="">
-                        <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
+                         :class="hasImg(detailProduct) ? 'cursor-zoom-in' : ''"
+                         @click="hasImg(detailProduct) && openLightbox(thumbSrc(detailProduct), detailProduct?.name)">
+                        <img x-show="hasImg(detailProduct)" :src="thumbSrc(detailProduct)" class="w-full h-full object-contain" alt=""
+                             @error="onImgError(detailProduct)" @load="if(detailProduct) detailProduct._imgerr=false">
+                        <span x-show="!hasImg(detailProduct)" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
                     <div class="cat-meta mt-2">
@@ -728,6 +729,7 @@
                         this.detailProduct = {
                             ...full,
                             image_url: full.image_url || p.image_url,
+                            fallback_image_url: p.fallback_image_url,
                             updated_at: full.updated_at || p.updated_at,
                             promo_restricted: p.promo_restricted,
                         };
@@ -901,17 +903,31 @@
 
             formatPrice(amount) { return formatPrice(amount); },
 
+            // Is there a renderable photo for this product? (cover OR uploaded gallery photo,
+            // and the load hasn't permanently failed).
+            hasImg(p) { return !!(p && (p.image_url || p.fallback_image_url) && !p._imgerr); },
+
             // Build a product image src with a cache-buster on OUR serve URLs (keyed on
             // updated_at, else id) so a freshly-(re)uploaded photo shows without a hard
-            // refresh. External supplier URLs are left untouched.
+            // refresh. External supplier URLs are left untouched. Once a cover URL has failed
+            // to load (_useFallback), serve the uploaded gallery photo instead.
             thumbSrc(p) {
-                if (!p || !p.image_url) return '';
-                let u = p.image_url;
+                if (!p) return '';
+                let u = (p._useFallback && p.fallback_image_url) ? p.fallback_image_url : p.image_url;
+                if (!u) return '';
                 if (u.indexOf('/api/v1/pos/products/') !== -1) {
                     const bust = String(p.updated_at || p.id || '').replace(/[^0-9A-Za-z]/g, '');
                     if (bust) u += (u.indexOf('?') === -1 ? '?' : '&') + 'v=' + bust;
                 }
                 return u;
+            },
+
+            // Image failed to load. If the cover was a non-image URL but a real uploaded photo
+            // exists, swap to it once; otherwise fall back to the placeholder. Never wipes data.
+            onImgError(p) {
+                if (p && p.fallback_image_url && !p._useFallback
+                    && p.image_url !== p.fallback_image_url) { p._useFallback = true; }
+                else if (p) { p._imgerr = true; }
             },
 
             openLightbox(src, alt) { this.lightboxSrc = src || ''; this.lightboxAlt = alt || ''; },
