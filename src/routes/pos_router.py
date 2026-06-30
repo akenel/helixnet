@@ -1061,6 +1061,7 @@ async def search_products_fast(
 
 @router.get("/search/categories")
 async def get_product_categories(
+    response: Response,
     db: AsyncSession = Depends(get_db_session),
 ):
     """Get all product categories with counts.
@@ -1090,6 +1091,14 @@ async def get_product_categories(
 
     result = await db.execute(query)
     rows = result.fetchall()
+
+    # The WHERE is_active = true + GROUP BY + count(*) already guarantees every row
+    # returned has >= 1 ACTIVE product, so a category whose last product was
+    # deleted/deactivated simply drops out. But the URL is stable, so a browser can
+    # serve a STALE category list from its HTTP cache (the "Grinders (1)" ghost: count
+    # > 0 in the dropdown while the product list is empty). Forbid caching so the
+    # dropdown always reflects the live catalog.
+    response.headers["Cache-Control"] = "no-store, max-age=0"
 
     return [
         {

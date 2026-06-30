@@ -304,17 +304,21 @@ sandbox-down:
 	@echo "Sandbox stopped. 'make sandbox-up' to bring it back."
 
 # THE TOOL: zero the shop between takes. Sub-second, idempotent, no restart.
-# Then re-apply the persistent demo catalog (the enriched Artemis TAM-* products) so
-# it SURVIVES every reset -- the seed is OPTIONAL (a no-op if the file is absent), so
-# this stays safe on any tree that hasn't generated one. Regenerate the seed with
+# SOURCE-SCOPED: the reset clears the SALES/transactional tables AND deletes only the
+# TAM- demo catalog (sandbox_reset.sql); this step then RE-SEEDS the TAM- products so
+# the demo catalog is crisp every night. Manually-created products (LZ-..., future
+# MOS-/FTW-) are NEVER touched by the reset -- they persist until a human deletes them,
+# so a product a user makes on the fly survives the night. Because the TAM- rows were
+# just deleted, the seed re-inserts with no collision; on a brand-new empty DB it simply
+# bootstraps. The seed is OPTIONAL (a no-op if absent). Regenerate it with
 # scripts/ops/gen_sandbox_seed.py after the demo catalog changes.
 sandbox-reset:
 	@docker exec -i postgres psql -U helix_user -d $(SANDBOX_DB) -v ON_ERROR_STOP=1 < scripts/sandbox_reset.sql
 	@if [ -f "$(SANDBOX_SEED)" ]; then \
 		docker exec -i postgres psql -U helix_user -d $(SANDBOX_DB) -v ON_ERROR_STOP=1 < $(SANDBOX_SEED) >/dev/null \
-		&& echo "Persistent catalog re-seeded ($$(grep -c '^INSERT INTO public.products' $(SANDBOX_SEED)) products)."; \
+		&& echo "TAM- demo catalog re-seeded ($$(grep -c '^INSERT INTO public.products' $(SANDBOX_SEED)) products)."; \
 	fi
-	@echo "Sandbox zeroed -- sales/drawers cleared, persistent catalog restored. Fresh take ready."
+	@echo "Sandbox zeroed -- sales/drawers cleared, TAM- catalog refreshed, manual products preserved. Fresh take ready."
 
 # Pull the latest origin/main into the sandbox worktree and restart (code refresh).
 sandbox-deploy:
