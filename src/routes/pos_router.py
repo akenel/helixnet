@@ -712,7 +712,10 @@ async def update_supplier(
         supplier.code = update_data["prefix"]  # keep legacy `code` mirrored to the prefix
     for field, value in update_data.items():
         setattr(supplier, field, value)
-    supplier.updated_at = datetime.now(timezone.utc)
+    # NOTE: do NOT set updated_at here. The legacy `suppliers` table uses a NAIVE
+    # DateTime column with onupdate=datetime.utcnow (which fires automatically on
+    # flush). Assigning a tz-AWARE value (datetime.now(timezone.utc)) makes asyncpg
+    # raise "can't subtract offset-naive and offset-aware datetimes" -> 500.
     try:
         await db.commit()
     except IntegrityError:
