@@ -16,6 +16,7 @@ Machines confirm it didn't break; a human confirms it's actually *good*.
 | 2 | **Console-sweep** | client-side render errors, blank panels, mixed-content | `tests/e2e/console-sweep.js` (anon + 3 personas) |
 | 2b | **O2C end-to-end ("the works")** | the full sell-side journey actually holds (login → catalog → cart → checkout → payment → receipt) | **`make e2e`** → `scripts/testing/e2e_sandbox.js` |
 | 2c | **MOAT end-to-end (the fiscal differentiators)** | the Swiss VAT engine + drawer closeout/Z-report are EXACT (the two things that make Banco Swiss-fit, not a generic POS) | **`make e2e-moat`** → `scripts/testing/e2e_moat_sandbox.js` |
+| 2d | **MONEY-PATH end-to-end (the four cashier flows)** | refund reverses money+VAT · 18+ age-gate fires at the till · manual mixed-VAT + receipt split · wrong drawer count is detected+flagged | **`make e2e-money`** → `scripts/testing/e2e_money_sandbox.js` |
 | 3 | **Human sanity check** | "it works but feels wrong" — UX, copy, the thing a user actually does | **fillable HTML sign-off sheet** (this folder) |
 
 Gates 1–2b run on **staging first**, then again on **prod after deploy**. Gate 3 runs on
@@ -66,13 +67,48 @@ screenshots to `$E2E_OUT`).
   standard), contained VAT = `round_half_up(gross × rate / (100 + rate))`, and the standard /
   reduced rates are pulled live from `/api/v1/pos/config`. A future rate change (8.1 → 8.5) is
   data; the suite still asserts correctly.
-- **Run the whole standard suite** with `make e2e-all` (= `make e2e` + `make e2e-moat`).
+- **Run the whole standard suite** with `make e2e-all` (= `make e2e` + `make e2e-moat` + `make e2e-money`).
 - **Subsets:** `make e2e-vat` (VAT only) · `make e2e-closeout` (drawer/Z-report only) — via the
   `MOAT_ONLY=vat|close` env var.
 - **Self-cleaning / idempotent** — every sale is refunded (nets to zero in the day), every
   throwaway `MOAT-` product deactivated, and the drawer is always **closed** (a stale open drawer
   from a crashed prior run is closed at start, so re-runs never hit "you already have an open cash
   shift"). No functional residue.
+
+### Gate 2d — MONEY-PATH end-to-end (the four flows a real cashier hits)
+
+`make e2e-money` drives the four money paths where a wrong number is a wrong franc in the drawer
+or a broken law (`scripts/testing/e2e_money_sandbox.js`, same harness shape as gates 2b/2c:
+parameterized, self-cleaning, GREEN/RED table, exit 1 on RED, screenshots `money_*.png` to
+`$E2E_OUT`).
+
+```
+💸 MONEY-REFUND   Ring a 2-line sale (8.1% + 2.6%) → REFUND it → assert the day's total_sales,
+                  turnover split AND per-rate VAT all return to EXACTLY their pre-sale values
+                  (money + VAT fully reversed), and the txn flips to REFUNDED.
+🔞 MONEY-AGE      Ring an 18+ product at the till → assert the age-verification gate FIRES
+                  (dialog / modal / blocking flag at the client add path + server /sales gate),
+                  and a non-18+ Lifestyle control fires NOTHING. Proves the gate TRIGGERS, not
+                  just that the data flag exists on the row.
+🧾 MONEY-MIXEDVAT Manual mixed cart (dine-in 8.1% + takeaway 2.6% + alcohol-takeaway 8.1%) →
+                  assert per-line VAT rate, cent-exact totals, AND that the receipt actually
+                  DRAWS the A/B rate-code split in the DOM (extends MOAT-VAT, which only screenshots it).
+⚖️ MONEY-VARIANCE Open a drawer → cash sales → close it COUNTED SHORT → assert a silent close
+                  (no note) is REFUSED (400) and the forced close records variance < 0,
+                  within_tolerance=false, short=true (a real mismatch is caught, never zeroed).
+```
+
+- **Subsets:** `make e2e-refund` · `make e2e-age` · `make e2e-mixedvat` · `make e2e-variance`
+  (via the `MONEY_ONLY=refund|age|mixedvat|variance` env var).
+- **Self-cleaning / idempotent** — every sale refunded, every throwaway `MONEY-` product
+  deactivated, the drawer always closed (stale open drawer closed at start). No functional residue.
+- ⚠️ **KNOWN RED (real bug, 2026-06-30): MONEY-AGE.** The 18+ flag rides on the product
+  (`is_age_restricted`) and surfaces visually in the catalog/receiving screens, but **no
+  age-verification gate fires in the sell flow** — adding an 18+ item to the cart and checking
+  out produces no prompt, no ID-check, no blocking flag at the client till, and the server
+  `/sales` accepts the 18+ sale with no age field. `catalog.html` claims 18+ classes are
+  "age-gated at the till"; that claim is currently **unmet**. The suite is RED on this by design
+  until a real till-side gate is built (do **not** suppress it).
 
 > Note: `smoke-test.sh hetzner` (the on-box self-signed target) is currently broken — it
 > aborts on the first TLS check. Verify prod via the **public hostnames** instead

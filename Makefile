@@ -364,6 +364,31 @@ e2e-closeout:
 	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
 	@MOAT_ONLY=close E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_moat_sandbox.js
 
-# The full standard end-to-end run: the O2C "the works" gate + both MOAT differentiators.
+# MONEY-PATH end-to-end — the four flows a real cashier hits, asserted against a live env:
+#   e2e-money     all four: 💸 Refund · 🔞 Age-gate · 🧾 Mixed-VAT · ⚖️ Variance
+#   e2e-refund    only the refund-reverses-money+VAT journey
+#   e2e-age       only the 18+ age-gate-fires-at-the-till journey
+#   e2e-mixedvat  only the manual mixed-VAT cart + receipt A/B split journey
+#   e2e-variance  only the wrong-drawer-count is detected+flagged journey
+# Same harness shape as `make e2e` (parameterized, self-cleaning, exit 1 on RED, screenshots).
+.PHONY: e2e-money e2e-refund e2e-age e2e-mixedvat e2e-variance
+e2e-money:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_money_sandbox.js
+e2e-refund:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@MONEY_ONLY=refund E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_money_sandbox.js
+e2e-age:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@MONEY_ONLY=age E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_money_sandbox.js
+e2e-mixedvat:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@MONEY_ONLY=mixedvat E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_money_sandbox.js
+e2e-variance:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@MONEY_ONLY=variance E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_money_sandbox.js
+
+# The full standard end-to-end run: the O2C "the works" gate + both MOAT differentiators
+# + the four money paths a cashier hits.
 .PHONY: e2e-all
-e2e-all: e2e e2e-moat
+e2e-all: e2e e2e-moat e2e-money
