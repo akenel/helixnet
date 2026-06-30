@@ -221,6 +221,7 @@ def main():
     ap.add_argument("--no-pillow", action="store_true", help="skip the Pillow re-ensure")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--doctor", action="store_true", help="check key health only — change nothing")
+    ap.add_argument("--pick", action="store_true", help="choose which key to set from a numbered menu")
     a = ap.parse_args()
 
     if not os.path.exists(ENV_FILE):
@@ -228,6 +229,16 @@ def main():
 
     if a.doctor:
         sys.exit(1 if doctor() else 0)
+
+    if a.pick:
+        print("  Pick a key to set:")
+        for i, k in enumerate(KNOWN, 1):
+            print(f"    {i:>2}. {k}")
+        sel = input("  # (empty = abort): ").strip()
+        if not (sel.isdigit() and 1 <= int(sel) <= len(KNOWN)):
+            say("y", "  No valid pick — aborted."); sys.exit(0)
+        a.key = KNOWN[int(sel) - 1]
+        say("g", f"  → selected {a.key}")
 
     targets = list(ENVS) if a.env == "all" else [a.env]
     say("b", "╔══════════════════════════════════════════════════════╗")
