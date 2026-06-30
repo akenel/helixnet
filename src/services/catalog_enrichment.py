@@ -130,10 +130,103 @@ _ALLOWED_PAPERS = ["Rolling Papers", "Filters & Tips", "Rolling Machines", "Cone
                    "Pre-rolled", "Cigarette Tubes", "Blunts & Wraps", "Lighters",
                    "Storage", "Accessories"]
 
-# Per-group consolidation table + allowed set. (Papers & Co is built out for the
-# sample; other groups fall through to title-cased lvl2 + LLM assist — extend here.)
+# --- Headshop -------------------------------------------------------------- #
+# Two real Artemis paths drove a category-of-one mess before this table existed:
+#   headshop/bong-pfeifenzubehoer/koepfe-schliff-14mm  -> bong heads/bowls/sockets
+#   headshop/verstecktresore                           -> hidden safes / stash / pill tins
+# Order matters: the Bong-Heads matcher MUST precede the bare "Bongs" matcher, because
+# the slug "bong-pfeifenzubehoer" also contains the word "bong".
+_CONSOLIDATE_HEADSHOP = [
+    (re.compile(r"tresor|versteck|\bsafe\b|stash|aufbewahr|\bdose\b|pillen|\bpill\b|keychain|schl[uü]sselanh|tabaktasche|phone|handytasche", re.I), "Storage & Safes"),
+    (re.compile(r"k[oö]pfe|koepfe|schliff|\bbowl|bong.?head|pfeifenkopf|\bkopf\b|socket|sockel|\bns\s?\d", re.I),                                  "Bong Heads & Bowls"),
+    (re.compile(r"grinder|m[üu]hle|crusher|\bmill\b|h[äa]cksler",                                       re.I),                                     "Grinders"),
+    (re.compile(r"\bbong\b|wasserpfeife|beaker|bubbler|recycler|percolator",                            re.I),                                     "Bongs"),
+    (re.compile(r"pfeife|\bpipe\b|chillum|onehit|one.?hitter|sebsi",                                    re.I),                                     "Pipes"),
+    (re.compile(r"adapter|diffusor|kupplung|glas.?zubeh|downstem|vork[uü]hler|precooler",               re.I),                                     "Glass Accessories"),
+    (re.compile(r"rolling.?tray|drehunterlage|\btray\b|rolltablett",                                    re.I),                                     "Rolling Trays"),
+    (re.compile(r"waage|\bscale\b|feinwaage",                                                            re.I),                                     "Scales"),
+    (re.compile(r"zubeh|accessor|reinig|cleaning|b[üu]rste|\bbrush\b",                                   re.I),                                     "Accessories"),
+]
+_ALLOWED_HEADSHOP = ["Bongs", "Bong Heads & Bowls", "Grinders", "Pipes",
+                     "Storage & Safes", "Glass Accessories", "Rolling Trays",
+                     "Scales", "Accessories"]
+
+# --- CBD ------------------------------------------------------------------- #
+# All current CBD items live under cbd/extrakte/hasch -> CBD Hash. The "hasch" matcher
+# MUST precede "extrakt" (the slug carries both "extrakte" and "hasch").
+_CONSOLIDATE_CBD = [
+    (re.compile(r"hasch|\bhash\b|pollen|temple.?ball|piatella|bubble",          re.I), "CBD Hash"),
+    (re.compile(r"bl[üu]ten|\bflower|\bgras\b|\bweed\b|knospe|\bbud\b",          re.I), "CBD Flowers"),
+    (re.compile(r"extrakt|extract|\b[öo]l\b|\boil\b|oel|tinktur|tincture|crystal|kristall|\bwax\b|rosin|\bdab", re.I), "CBD Extracts"),
+    (re.compile(r"kosmetik|cosmetic|creme|cream|salbe|\bbalm|lotion|serum|pflege|massage", re.I),        "CBD Cosmetics"),
+]
+_ALLOWED_CBD = ["CBD Hash", "CBD Flowers", "CBD Extracts", "CBD Cosmetics", "CBD Other"]
+
+# --- Vape & Co ------------------------------------------------------------- #
+# All current items: vape-co/prefilled/vozol — prefilled (Vozol) pod systems. The
+# "prefilled/pod" matcher precedes the disposable-brand matcher so they land as
+# Vape Pods (the closest shopper bucket); true single-use sticks fall to Disposables.
+_CONSOLIDATE_VAPE = [
+    (re.compile(r"e.?liquid|\bliquid\b|\baroma\b|\bbase\b|shake.?&?.?vape|nikotinshot|nic.?shot|\bsalt", re.I), "E-Liquids"),
+    (re.compile(r"prefilled|pre.?filled|\bpod\b|\bpods\b|cartridge|kapsel",     re.I),                          "Vape Pods"),
+    (re.compile(r"disposable|einweg|\bpuff\b|wegwerf|elfbar",                   re.I),                          "Disposables"),
+    (re.compile(r"\bkit\b|starter|\bmod\b|\btank\b|verdampfer|\bcoil|\bakku\b|battery|zubeh|accessor", re.I),   "Vape Accessories"),
+]
+_ALLOWED_VAPE = ["Vape Kits", "Vape Pods", "E-Liquids", "Disposables", "Vape Accessories"]
+
+# --- Shisha / Lifestyle / Grow (sensible defaults; no items loaded yet) ----- #
+_CONSOLIDATE_SHISHA = [
+    (re.compile(r"tabak|tobacco|molasse|\bflavou?r",        re.I), "Shisha Tobacco"),
+    (re.compile(r"\bkohle|\bcoal|naturkohle|heat.?manage",  re.I), "Coals & Heat"),
+    (re.compile(r"shisha|hookah|wasserpfeife|\bbowl|\bhead|schlauch|hose|mundst", re.I), "Shisha Pipes"),
+    (re.compile(r"zubeh|accessor|reinig|cleaning",          re.I), "Shisha Accessories"),
+]
+_ALLOWED_SHISHA = ["Shisha Tobacco", "Shisha Pipes", "Coals & Heat", "Shisha Accessories"]
+
+_CONSOLIDATE_LIFESTYLE = [
+    (re.compile(r"shirt|hoodie|\bcap\b|m[üu]tze|apparel|textil|kleidung", re.I), "Apparel"),
+    (re.compile(r"poster|sticker|aufkleber|patch|\bpin\b|fahne|flag",     re.I), "Posters & Stickers"),
+    (re.compile(r"geschenk|\bgift|gutschein|voucher",                     re.I), "Gifts"),
+    (re.compile(r"zubeh|accessor|deko|decoration",                       re.I), "Lifestyle Accessories"),
+]
+_ALLOWED_LIFESTYLE = ["Apparel", "Posters & Stickers", "Gifts", "Lifestyle Accessories"]
+
+_CONSOLIDATE_GROW = [
+    (re.compile(r"\blamp|\blight|led|ndl|leuchtmittel",            re.I), "Grow Lights"),
+    (re.compile(r"d[üu]nger|nutrient|n[äa]hrstoff|substrat|\berde\b|soil", re.I), "Nutrients & Soil"),
+    (re.compile(r"\bzelt\b|\btent\b|klima|l[üu]fter|ventilat|filter|climate", re.I), "Tents & Climate"),
+    (re.compile(r"zubeh|accessor|topf|\bpot\b|messger",            re.I), "Grow Accessories"),
+]
+_ALLOWED_GROW = ["Grow Lights", "Nutrients & Soil", "Tents & Climate", "Grow Accessories"]
+
+# Per-group consolidation table + allowed set. Every loaded group now has one so the
+# recipe (rules first, LLM only for the genuinely ambiguous, constrained to the allowed
+# set) produces a CLEAN coarse category — never a category-of-one from a product name.
+# Tune these lists freely; this is the maintenance seam (§6e: fix the recipe, re-run).
 _GROUP_CONSOLIDATION = {
     "Papers & Co": (_CONSOLIDATE_PAPERS, _ALLOWED_PAPERS),
+    "Headshop":    (_CONSOLIDATE_HEADSHOP, _ALLOWED_HEADSHOP),
+    "CBD":         (_CONSOLIDATE_CBD, _ALLOWED_CBD),
+    "Vape & Co":   (_CONSOLIDATE_VAPE, _ALLOWED_VAPE),
+    "Shisha":      (_CONSOLIDATE_SHISHA, _ALLOWED_SHISHA),
+    "Lifestyle":   (_CONSOLIDATE_LIFESTYLE, _ALLOWED_LIFESTYLE),
+    "Grow":        (_CONSOLIDATE_GROW, _ALLOWED_GROW),
+}
+
+# --------------------------------------------------------------------------- #
+# §5 18+ REFINE (LAW axis — PENDING Treuhänder sign-off).                       #
+# A handful of clean categories are PURE storage / lifestyle objects — not      #
+# age-restricted by their nature (a hidden safe, a phone pouch, a keychain tin,  #
+# a rolling tray, a pill box). They were caught only by the GROUP-DEFAULT age    #
+# gate (Headshop = 18+), never by a substance rule. We carve them OUT of the     #
+# auto-18+: if NO substance rule fired AND the item landed in one of these       #
+# categories, it carries no age gate. Smoking / CBD / vape / tobacco items keep  #
+# their 18+ (substance rule or group default). This is the LAW axis — the rule   #
+# is sensible but DRAFT until the Treuhänder signs the age policy.               #
+# --------------------------------------------------------------------------- #
+_NON_AGE_CATEGORIES = {
+    "Storage & Safes",       # hidden safes, stash tins, pill boxes, phone pouches
+    "Rolling Trays",         # a tray is a surface, not a controlled good
 }
 
 
@@ -268,14 +361,17 @@ def mine_tags(name: str, group: str, category: str, artemis_path: str,
 # --------------------------------------------------------------------------- #
 # Step 2 — classify_compliance (RULE).  behavior_class + age + age_reason      #
 # --------------------------------------------------------------------------- #
-def classify_compliance(name: str, group: str, group_slug: str) -> dict:
+def classify_compliance(name: str, group: str, group_slug: str,
+                        category: Optional[str] = None) -> dict:
     """LAW axis. Deterministic. Returns behavior_class, age_restricted, age_reason,
     plus a `class_review` flag when the rule's class looks looser than the group expects.
 
     Precedence:
       1. catalog_taxonomy.classify() reads the NAME (the real, live rules).
       2. The §5 group policy can only RAISE the age gate (never lower it).
-      3. A class looser than the group's expected class -> flag for human review
+      3. §5 18+ REFINE: a PURE storage/lifestyle category (no substance rule) is carved
+         OUT of the group-default gate — a safe/tin/tray is not age-restricted by nature.
+      4. A class looser than the group's expected class -> flag for human review
          (we do NOT silently tighten the legal class from a group hint)."""
     _cat, cls, rule_age = classify(name, _GROUP_CLASS_HINT.get(group_slug))
     policy = GROUP_POLICY.get(group, {"age": False, "age_reason": "no-group-policy",
@@ -284,6 +380,11 @@ def classify_compliance(name: str, group: str, group_slug: str) -> dict:
     if rule_age:
         age = True
         age_reason = f"class:{cls}"            # a substance rule set it (auditable)
+    elif policy["age"] and category in _NON_AGE_CATEGORIES:
+        # §5 18+ REFINE (PENDING Treuhänder): pure storage/lifestyle object — the group
+        # default would gate it, but its nature does not. No substance rule fired, so drop.
+        age = False
+        age_reason = "storage-lifestyle-not-age-restricted (DRAFT, pending Treuhänder)"
     elif policy["age"]:
         age = True
         age_reason = policy["age_reason"]      # group default raised the gate
@@ -417,8 +518,11 @@ def enrich_rules(raw: RawProduct) -> EnrichmentRecord:
     record is flagged needs_description until the LLM pass fills it (or it stays
     [LLM-pending] if the brain is unreachable)."""
     price = parse_price(raw.price_text)
-    comp = classify_compliance(raw.name, raw.group, raw.group_slug)
+    # Category first: the §5 18+ REFINE needs the resolved category to carve pure
+    # storage/lifestyle out of the group-default age gate.
     catmap = map_category_rule(raw.group, raw.artemis_segments)
+    comp = classify_compliance(raw.name, raw.group, raw.group_slug,
+                               category=catmap["category"])
     # §6a: normalize the rich detail-page facets, mine from them, keep raw verbatim.
     norm_facets = normalize_facets(raw.facets)
     tags, attrs = mine_tags(raw.name, raw.group, catmap["category"], raw.artemis_path, norm_facets)
