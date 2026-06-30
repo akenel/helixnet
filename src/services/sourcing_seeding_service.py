@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 EASY_SUPPLIERS = [
     {
         "code": "420",
+        "prefix": "BRK",
         "name": "BR Break Shop",
         "country": "CH",
         "lead_time_days_min": 2,
@@ -36,6 +37,7 @@ EASY_SUPPLIERS = [
     },
     {
         "code": "WR",
+        "prefix": "WEL",
         "name": "Wellauer AG",
         "country": "CH",
         "lead_time_days_min": 1,
@@ -48,6 +50,7 @@ EASY_SUPPLIERS = [
     },
     {
         "code": "ND",
+        "prefix": "NDK",
         "name": "Near Dark GmbH",
         "country": "DE",
         "lead_time_days_min": 3,
@@ -60,6 +63,7 @@ EASY_SUPPLIERS = [
     },
     {
         "code": "Hem",
+        "prefix": "HMG",
         "name": "Hemag Nova",
         "country": "CH",
         "lead_time_days_min": 2,
@@ -134,6 +138,7 @@ EASY_REQUESTS = [
 CHUCK_NORRIS_SUPPLIERS = [
     {
         "code": "CN1",
+        "prefix": "CRH",
         "name": "Chuck's Roundhouse Supplies Ltd.",
         "country": "US",
         "lead_time_days_min": 14,
@@ -146,6 +151,7 @@ CHUCK_NORRIS_SUPPLIERS = [
     },
     {
         "code": "LONG123",
+        "prefix": "LNG",
         "name": "Extremely Long Supplier Name That Tests Database Field Limits And UI Wrapping",
         "country": "JP",
         "lead_time_days_min": 1,
@@ -157,6 +163,7 @@ CHUCK_NORRIS_SUPPLIERS = [
     },
     {
         "code": "UNI",
+        "prefix": "EDW",
         "name": "Edelweiss AG",
         "country": "CH",
         "lead_time_days_min": 1,
@@ -169,6 +176,7 @@ CHUCK_NORRIS_SUPPLIERS = [
     },
     {
         "code": "ZERO",
+        "prefix": "ZLT",
         "name": "Zero Lead Time Express",
         "country": "CH",
         "lead_time_days_min": 0,
@@ -369,6 +377,53 @@ async def seed_chuck_norris_requests(db: AsyncSession) -> int:
     return count
 
 
+async def backfill_legacy_supplier_prefixes(db: AsyncSession) -> int:
+    """Give the legacy Sourcing-System suppliers a real SKU prefix.
+
+    These 8 rows predate the Supplier Registry and were seeded with prefix=NULL,
+    so the admin screen shows "no source set" and they read as not-yet-registered.
+    The prefix now lives on each seed dict (so a FRESH DB gets it at creation), but
+    rows already in an existing DB were created before the prefix existed and the
+    seed loops skip them (they match on `code`). This backfill closes that gap.
+
+    Idempotent: only touches rows whose prefix IS NULL, matched by exact name, and
+    only if the target prefix isn't already taken by another row. Safe to re-run on
+    every boot and across `make sandbox-reset`.
+    """
+    # name -> prefix, sourced straight from the seed lists so it never drifts.
+    name_to_prefix = {
+        s["name"]: s["prefix"]
+        for s in (EASY_SUPPLIERS + CHUCK_NORRIS_SUPPLIERS)
+        if s.get("prefix")
+    }
+
+    updated = 0
+    for name, prefix in name_to_prefix.items():
+        row = (await db.execute(
+            select(SupplierModel).where(SupplierModel.name == name)
+        )).scalar_one_or_none()
+        if row is None or row.prefix:
+            continue  # missing row, or already has a prefix -> nothing to do
+
+        # Guard the UNIQUE constraint: skip if another row already owns this prefix.
+        taken = (await db.execute(
+            select(SupplierModel).where(SupplierModel.prefix == prefix)
+        )).scalar_one_or_none()
+        if taken is not None and taken.id != row.id:
+            logger.warning(
+                "Legacy prefix backfill: '%s' already owns prefix %s; skipping '%s'.",
+                taken.name, prefix, name,
+            )
+            continue
+
+        row.prefix = prefix
+        updated += 1
+
+    if updated:
+        await db.commit()
+    return updated
+
+
 async def seed_sourcing_system(db: AsyncSession) -> dict:
     """
     Full seeding for sourcing system.
@@ -381,6 +436,7 @@ async def seed_sourcing_system(db: AsyncSession) -> dict:
         "easy_requests": 0,
         "chuck_suppliers": 0,
         "chuck_requests": 0,
+        "legacy_prefixes_backfilled": 0,
     }
 
     # Easy set first (happy path)
@@ -390,6 +446,9 @@ async def seed_sourcing_system(db: AsyncSession) -> dict:
     # Chuck Norris set (edge cases)
     results["chuck_suppliers"] = await seed_chuck_norris_suppliers(db)
     results["chuck_requests"] = await seed_chuck_norris_requests(db)
+
+    # Backfill prefixes onto any legacy prefix-less rows already in the DB.
+    results["legacy_prefixes_backfilled"] = await backfill_legacy_supplier_prefixes(db)
 
     logger.info(f"Sourcing seeding complete: {results}")
     return results
