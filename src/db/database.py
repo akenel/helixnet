@@ -168,6 +168,30 @@ _ADDITIVE_COLUMNS: list[str] = [
     # backfill is a no-op and existing rows never collide. (Mirrors TransactionModel.client_uuid.)
     "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS client_uuid UUID",
     "CREATE UNIQUE INDEX IF NOT EXISTS ix_transactions_client_uuid ON transactions (client_uuid)",
+    # Artemis enriched-catalog foundation (2026-06-30, migration 010): store the enriched
+    # record losslessly on products + a per-language translations table (the latter is a
+    # NEW table, created by create_all() — only the column adds need ALTERs here).
+    # Flat hierarchy (group + category on the row; full path in tags + artemis_path) — §9.1.
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_group VARCHAR(60)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS age_reason VARCHAR(80)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode_is_internal BOOLEAN NOT NULL DEFAULT FALSE",
+    # §6a rich metadata + verbatim source facets (lossless), and enrichment provenance.
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS attributes JSONB",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS raw_facets JSONB",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS enrichment_confidence JSONB",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS enrichment_flags JSONB",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS enrichment_meta JSONB",
+    # Source provenance / parity link (§9.6 'View on Artemis') + §6d translation seam.
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS source_system VARCHAR(40)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS source_id VARCHAR(64)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS source_url VARCHAR(500)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS source_lang VARCHAR(8)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS artemis_path VARCHAR(255)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS needs_translation BOOLEAN NOT NULL DEFAULT FALSE",
+    # §6c SHARE rail permalink (QR target).
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS qr_url VARCHAR(500)",
+    "CREATE INDEX IF NOT EXISTS ix_products_product_group ON products (product_group)",
+    "CREATE INDEX IF NOT EXISTS ix_products_source_id ON products (source_id)",
 ]
 
 
