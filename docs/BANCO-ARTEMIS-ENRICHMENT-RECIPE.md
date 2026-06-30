@@ -162,7 +162,34 @@ Nothing reaches the DB until step 5, and nothing reaches prod until step 7.
 
 ---
 
-## 10. What "done right" looks like
+## 10a. Operations — an ADMIN job, throttled and watchable (Angel's requirement)
+
+The enrichment run is an **administrator** task (never a cashier action). It lives in the **admin/settings
+area**, runs as a **throttled background job**, and is **watchable** — because hammering a free/cheap model
+too fast risks getting **rate-limited or cut off**. Be fair; don't abuse.
+
+**Built from what's already in the stack** (cheap): **RabbitMQ** (`pika`/`aio-pika`) + **Celery** +
+**Redis** + **Flower** (a Celery monitor) are all present.
+
+- **Throttle:** items enqueued; a **small, configurable batch** is consumed at a time — **default 50, hard
+  ceiling ~100, admin-settable lower.** A **delay between batches** (e.g. 10–30s) keeps the rate gentle, with
+  **exponential backoff on HTTP 429 / rate-limit** errors. ~5,641 items at this pace ≈ a couple of hours, no hammering.
+- **Resumable:** a stopped/paused run resumes; the importer's **SKU snapshot deltas** mean re-runs only touch
+  new/changed items — so a re-run is cheap and never re-pays.
+- **Which model hits limits:** the **bulk enrichment runs on Turbo (`gpt-oss`)**, not Gemini — so **Google's
+  hard free limits are NOT the import bottleneck** (Gemini is reserved for the live snap-photo *vision*, low
+  volume). Turbo is paid but can still throttle us if abused → the batch+delay+backoff above keeps us fair.
+- **Schedule:** admin can schedule re-runs (Celery-redbeat is in the stack); since re-runs are deltas-only,
+  a nightly/weekly refresh is cheap.
+
+**Monitor cockpit (new admin-settings tab):** beside the address/setup tab, a **"Catalog Sync" tab** showing
+**queue depth · processed / total · current rate · errors · ETA · Pause/Resume.** Flower already exposes the
+raw queue stats; we surface a clean read-only tab so Angel can *watch* a run and stop it if it misbehaves.
+
+> Build order: this operations layer wraps the recipe **after** the enrichment *quality* is approved on the
+> sample. Quality first, then the safe-delivery harness around it.
+
+## 10b. What "done right" looks like
 A cashier searches "rolling ppaers" (fat-fingered) and finds RAW; browses a **clean** Headshop › Storage tree;
 every smoking item is correctly 18+ with an auditable reason; nothing was lost from source; and re-running the
 importer next month updates only what changed — without touching a single manager edit.
