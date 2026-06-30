@@ -69,6 +69,9 @@ def test_search_categories_endpoint(session):
     assert isinstance(cats, list)
     if cats:
         assert "name" in cats[0] and "count" in cats[0]
+        # product_group drives the 2-level <optgroup> picker in the catalog filter;
+        # it is always present (value may be null for ungrouped categories).
+        assert "product_group" in cats[0]
 
 
 def test_barcode_exact_lookup(session):

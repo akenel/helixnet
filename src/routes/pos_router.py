@@ -1063,14 +1063,29 @@ async def search_products_fast(
 async def get_product_categories(
     db: AsyncSession = Depends(get_db_session),
 ):
-    """Get all product categories with counts."""
+    """Get all product categories with counts.
+
+    Also returns the level-1 `product_group` each category belongs to (e.g.
+    Headshop, Papers & Co, CBD), so the catalog filter can nest categories under
+    group headers (a 2-level <optgroup> picker) instead of a flat ~52-long list.
+    The group is the *dominant* group across that category's products (mode);
+    a category whose products carry no group (e.g. on-the-fly manual items)
+    resolves to NULL and the UI buckets it under "Other / Ungrouped".
+    """
     from sqlalchemy import text
 
+    # Query products directly (not the product_categories view, which has no
+    # product_group). mode() ignores NULLs, so a category with a real group on
+    # most rows reports that group; an all-NULL category reports NULL.
     query = text("""
-        SELECT category as name, product_count as count, avg_price
-        FROM product_categories
-        WHERE category IS NOT NULL AND category != ''
-        ORDER BY product_count DESC
+        SELECT category AS name,
+               count(*) AS count,
+               avg(price) AS avg_price,
+               mode() WITHIN GROUP (ORDER BY product_group) AS product_group
+        FROM products
+        WHERE is_active = true AND category IS NOT NULL AND category <> ''
+        GROUP BY category
+        ORDER BY count(*) DESC
     """)
 
     result = await db.execute(query)
@@ -1080,7 +1095,8 @@ async def get_product_categories(
         {
             "name": row.name,
             "count": row.count,
-            "avg_price": float(row.avg_price) if row.avg_price else 0
+            "avg_price": float(row.avg_price) if row.avg_price else 0,
+            "product_group": row.product_group,
         }
         for row in rows
     ]

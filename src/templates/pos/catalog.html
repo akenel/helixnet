@@ -128,10 +128,18 @@
                 </div>
                 <div class="w-full md:w-56">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <!-- 2-level picker: categories nested under their level-1 group
+                         (Headshop, Papers & Co, …) via native <optgroup>. Group headers
+                         are non-selectable labels; picking a category still filters as
+                         before (x-model="category" → search()). -->
                     <select x-model="category" @change="search()" class="input-field">
                         <option value="">All categories</option>
-                        <template x-for="c in categories" :key="c.name">
-                            <option :value="c.name" x-text="c.name + ' (' + c.count + ')'"></option>
+                        <template x-for="g in groupedCategories()" :key="g.group">
+                            <optgroup :label="g.label">
+                                <template x-for="c in g.cats" :key="c.name">
+                                    <option :value="c.name" x-text="c.name + ' (' + c.count + ')'"></option>
+                                </template>
+                            </optgroup>
                         </template>
                     </select>
                 </div>
@@ -539,8 +547,50 @@
             async loadCategories() {
                 try {
                     const cats = await API.get('/api/v1/pos/search/categories');
-                    this.categories = (cats || []).map(c => ({ name: c.name, count: c.count }));
+                    // Keep product_group so the filter can nest categories under their
+                    // level-1 group (Headshop, Papers & Co, …). NULL group → Ungrouped.
+                    this.categories = (cats || []).map(c => ({
+                        name: c.name, count: c.count, group: c.product_group || null,
+                    }));
                 } catch (e) { console.warn('categories unavailable', e); }
+            },
+
+            // Preferred order of the level-1 group headers in the Category dropdown.
+            // Anything the data carries that isn't listed here is appended (alpha),
+            // and no-group categories always sink to the trailing "Other / Ungrouped".
+            catGroupOrder: [
+                "Headshop", "Papers & Co", "CBD", "Vape & Co", "Shisha",
+                "Lifestyle", "Grow",
+            ],
+            UNGROUPED_KEY: "__ungrouped__",
+
+            // Nest the flat category list into [{ group, label, cats:[...] }] for the
+            // <optgroup> picker. Categories sort A→Z within each group; groups follow
+            // catGroupOrder, then any extra real groups alphabetically, then Ungrouped.
+            groupedCategories() {
+                const buckets = {};   // key -> { label, cats: [] }
+                for (const c of this.categories) {
+                    const g = (c.group && String(c.group).trim()) || '';
+                    const key = g || this.UNGROUPED_KEY;
+                    const label = g || 'Other / Ungrouped';
+                    if (!buckets[key]) buckets[key] = { label, cats: [] };
+                    buckets[key].cats.push(c);
+                }
+                const order = this.catGroupOrder;
+                const keys = Object.keys(buckets).sort((a, b) => {
+                    if (a === this.UNGROUPED_KEY) return 1;     // Ungrouped always last
+                    if (b === this.UNGROUPED_KEY) return -1;
+                    const ia = order.indexOf(a), ib = order.indexOf(b);
+                    if (ia !== -1 && ib !== -1) return ia - ib;  // both ranked
+                    if (ia !== -1) return -1;                    // ranked before unranked
+                    if (ib !== -1) return 1;
+                    return a.localeCompare(b);                   // both unranked: alpha
+                });
+                return keys.map(key => ({
+                    group: key,
+                    label: buckets[key].label,
+                    cats: buckets[key].cats.slice().sort((x, y) => x.name.localeCompare(y.name)),
+                }));
             },
 
             // Datalist = the skeleton (always offered) ∪ whatever already exists in the catalogue.
