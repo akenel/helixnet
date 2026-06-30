@@ -56,3 +56,13 @@ jinja2
 
 # --- NETWORKING FIX: Compatible with Ollama ---
 httpx>=0.25.2,<0.27.0
+
+# --- Image processing (product photos) ---
+# Pillow: snap-photo intake (src/services/image_intake.py). Was MISSING from the image,
+#   so the snap-photo AI 500'd on every deployed env until pip-installed at runtime.
+#   Baking it in here makes the fix permanent across rebuilds.
+Pillow
+# opencv-python-headless: the durable "picture layer" — crop / straighten / square /
+#   white-background cleanup. "headless" = no GUI/X11 libs, correct for a slim server image.
+#   This ALWAYS works (deterministic), unlike AI identification which only guesses.
+opencv-python-headless
