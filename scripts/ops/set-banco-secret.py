@@ -104,6 +104,90 @@ def smoke_vision(container: str):
     return ok
 
 
+# ── --doctor: are the DEPLOYED keys actually alive? (values never printed) ──────
+def _http(url, headers=None, timeout=15):
+    req = urllib.request.Request(url, headers=headers or {})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, r.read()
+    except urllib.error.HTTPError as e:
+        return e.code, e.read()
+    except Exception as e:
+        return None, str(e).encode()
+
+
+def _chk_gemini(v):
+    c, _ = _http(f"https://generativelanguage.googleapis.com/v1beta/models?key={v}")
+    return (c == 200, f"Gemini HTTP {c}")
+
+
+def _chk_telegram(v):
+    c, b = _http(f"https://api.telegram.org/bot{v}/getMe")
+    if c == 200:
+        try:
+            return True, "Telegram @" + json.loads(b)["result"]["username"]
+        except Exception:
+            return True, "Telegram ok"
+    return False, f"Telegram HTTP {c}"
+
+
+def _chk_resend(v):
+    c, _ = _http("https://api.resend.com/api-keys", {"Authorization": f"Bearer {v}"})
+    return (c == 200, f"Resend HTTP {c}")
+
+
+def _chk_ollama(v):
+    c, _ = _http("https://ollama.com/v1/models", {"Authorization": f"Bearer {v}"})
+    return (c == 200, f"Ollama HTTP {c}")
+
+
+CHECKERS = {
+    "BH_GOOGLE_API_KEY": _chk_gemini, "TELEGRAM_BOT_TOKEN": _chk_telegram,
+    "BH_RESEND_API_KEY": _chk_resend, "BH_OLLAMA_KEY": _chk_ollama,
+}
+# The vault inventory (mirrors KeePass: "La Piazza - Production").
+KNOWN = ["BH_GOOGLE_API_KEY", "BH_OLLAMA_KEY", "BH_RESEND_API_KEY", "TELEGRAM_BOT_TOKEN",
+         "BH_KC_CLIENT_SECRET", "KC_GITHUB_CLIENT_SECRET", "KC_GOOGLE_CLIENT_SECRET",
+         "BH_PAYPAL_CLIENT_SECRET", "BH_DATABASE_URL", "BH_SECRET_KEY"]
+
+
+def _read_env(path):
+    d = {}
+    for ln in open(path):
+        s = ln.strip()
+        if "=" in s and not s.startswith("#"):
+            k, _, v = s.partition("=")
+            d[k.strip()] = v.strip().strip('"')
+    return d
+
+
+def doctor():
+    env = _read_env(ENV_FILE)
+    say("b", "╔══════════════════════════════════════════════════════════════╗")
+    say("b", "║  KEY DOCTOR — are the deployed keys alive? (values never shown)║")
+    say("b", "╚══════════════════════════════════════════════════════════════╝")
+    print(f"  source: {ENV_FILE}\n")
+    print(f"  {'KEY':<26} STATUS     DETAIL")
+    print("  " + "-" * 62)
+    dead = 0
+    for k in KNOWN:
+        v = env.get(k, "")
+        if not v:
+            print(f"  {k:<26} ⬜ MISSING  not in uat.env"); continue
+        if k in CHECKERS:
+            ok, detail = CHECKERS[k](v)
+            dead += 0 if ok else 1
+            print(f"  {k:<26} {'✅ LIVE' if ok else '❌ DEAD'}{'    ' if ok else '   '} {detail}")
+        else:
+            print(f"  {k:<26} 🔒 SET     present (len={len(v)}) — no standalone check")
+    print()
+    if dead:
+        say("r", f"  {dead} DEAD key(s) above — rotate them: python3 {sys.argv[0]} --key <NAME> --env all")
+    else:
+        say("g", "  All auto-checkable keys are LIVE ✓")
+    return dead
+
+
 def main():
     ap = argparse.ArgumentParser(description="Set a secret across the shared banco env, safely.")
     ap.add_argument("--key", default="BH_GOOGLE_API_KEY")
@@ -111,10 +195,14 @@ def main():
     ap.add_argument("--no-validate", action="store_true", help="skip the live key check")
     ap.add_argument("--no-pillow", action="store_true", help="skip the Pillow re-ensure")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--doctor", action="store_true", help="check key health only — change nothing")
     a = ap.parse_args()
 
     if not os.path.exists(ENV_FILE):
         say("r", f"ERROR: {ENV_FILE} not found — run this ON THE BOX."); sys.exit(1)
+
+    if a.doctor:
+        sys.exit(1 if doctor() else 0)
 
     targets = list(ENVS) if a.env == "all" else [a.env]
     say("b", "╔══════════════════════════════════════════════════════╗")
