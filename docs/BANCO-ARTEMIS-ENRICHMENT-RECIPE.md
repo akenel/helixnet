@@ -187,6 +187,30 @@ always the plan. The "Banksy" layer = the QR/share cards carry brand + art, not 
 > but real, because the pieces exist. Build order holds: enrich the catalog first; codes/QR/binder next;
 > postcards/sharing after.
 
+## 6d. Multilingual mechanics — shared core + per-language text "skin"
+
+A product = **one language-independent CORE + N text skins.**
+- **Core (stored once, shared):** price, EAN, QR, photo, behaviour-class, age-flag, attribute *values* (11 cm is
+  11 cm in any language).
+- **Skin (per language):** only the **name, description, labels** change. en / de / fr / it.
+
+**Storage:** a per-language text layer keyed by `SKU + lang` — a `product_translations` table OR i18n JSON
+(`name_i18n = {en, de, fr, it}`). *(Same migration as the attributes JSON column — do both at once.)* Each skin
+carries **provenance: `source` (real, from Artemis) vs `machine` (AI-translated)** — so you always know which
+German is the *real* German.
+
+**Where skins come from — three taps:**
+1. **Real DE + FR** → Artemis already has them → **re-run the importer with `languageId=2`/`=4`** → store as the
+   `de`/`fr` skin. **Free (pure fetch, no AI).**
+2. **IT** → not in Artemis → **LLM-translate** from EN/DE → store flagged `machine`. Rides the §10a throttle.
+3. **Gaps** (the German stragglers) → same LLM-fill, flagged.
+
+**Display:** POS picks the customer's language → shows that skin → **falls back to EN** if missing. Nothing breaks.
+
+**The seam is already in:** the importer pulls per-`languageId`; the enrichment records `source_lang` +
+`needs_translation`. So adding a language later = **"re-run + store the skin," not a redesign** — and it's
+**deltas-aware** (re-running DE only touches changed text). Cost: **DE/FR free, IT/gaps = throttled AI.**
+
 ## 7. The recipe as procedure-as-code
 
 ```
