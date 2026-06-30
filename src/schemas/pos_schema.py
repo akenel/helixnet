@@ -28,8 +28,10 @@ class SupplierCreate(BaseModel):
     adapter_type: Optional[Literal["tamar", "magento", "csv", "manual"]] = Field(
         None, description="Import adapter type"
     )
+    contact_name: Optional[str] = Field(None, max_length=120, description="Named contact person (handoff)")
     contact_email: Optional[str] = Field(None, max_length=255)
     contact_phone: Optional[str] = Field(None, max_length=50)
+    vat_number: Optional[str] = Field(None, max_length=50, description="Supplier VAT/UID number (handoff)")
     is_active: bool = Field(default=True)
 
     @field_validator("prefix")
@@ -45,8 +47,10 @@ class SupplierUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     source_url: Optional[str] = Field(None, max_length=500)
     adapter_type: Optional[Literal["tamar", "magento", "csv", "manual"]] = None
+    contact_name: Optional[str] = Field(None, max_length=120)
     contact_email: Optional[str] = Field(None, max_length=255)
     contact_phone: Optional[str] = Field(None, max_length=50)
+    vat_number: Optional[str] = Field(None, max_length=50)
     is_active: Optional[bool] = None
 
     @field_validator("prefix")
@@ -64,8 +68,10 @@ class SupplierRead(BaseModel):
     name: str
     source_url: Optional[str] = None
     adapter_type: Optional[str] = None
+    contact_name: Optional[str] = None
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
+    vat_number: Optional[str] = None
     is_active: bool = True
 
 

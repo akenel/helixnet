@@ -201,8 +201,11 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS prefix VARCHAR(3)",
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS source_url VARCHAR(500)",
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS adapter_type VARCHAR(40)",
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS contact_name VARCHAR(120)",
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255)",
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)",
+    # Succession/handoff: VAT + named contact so the supplier isn't trapped in one head.
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS vat_number VARCHAR(50)",
     "CREATE UNIQUE INDEX IF NOT EXISTS ix_suppliers_prefix ON suppliers (prefix)",
 ]
 

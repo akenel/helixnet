@@ -62,6 +62,14 @@
                     </select>
                 </div>
                 <div>
+                    <label class="sup-lbl">Contact name <span class="text-gray-400 font-normal">(who to call)</span></label>
+                    <input type="text" x-model="form.contact_name" placeholder="Hans Müller" class="input-field">
+                </div>
+                <div>
+                    <label class="sup-lbl">VAT number <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <input type="text" x-model="form.vat_number" placeholder="CHE-123.456.789 MWST" class="input-field font-mono">
+                </div>
+                <div>
                     <label class="sup-lbl">Contact email <span class="text-gray-400 font-normal">(optional)</span></label>
                     <input type="email" x-model="form.contact_email" placeholder="orders@supplier.ch" class="input-field">
                 </div>
@@ -99,11 +107,14 @@
                                    class="text-emerald-700 hover:underline" x-text="s.source_url"></a>
                                 <span x-show="!s.source_url && !s.adapter_type" class="text-gray-400">no source set</span>
                             </p>
-                            <p x-show="s.contact_email || s.contact_phone" class="text-xs text-gray-400 truncate">
+                            <p x-show="s.contact_name || s.contact_email || s.contact_phone" class="text-xs text-gray-400 truncate">
+                                <span x-show="s.contact_name" class="font-medium text-gray-500" x-text="s.contact_name"></span>
+                                <span x-show="s.contact_name && (s.contact_email || s.contact_phone)"> · </span>
                                 <span x-text="s.contact_email"></span>
                                 <span x-show="s.contact_email && s.contact_phone"> · </span>
                                 <span x-text="s.contact_phone"></span>
                             </p>
+                            <p x-show="s.vat_number" class="text-xs text-gray-400 font-mono truncate" x-text="'VAT ' + s.vat_number"></p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-none" x-show="canManage">
@@ -154,7 +165,7 @@
             editId: null,
             saving: false,
             formMsg: '',
-            form: { prefix: '', name: '', source_url: '', adapter_type: '', contact_email: '', contact_phone: '' },
+            form: { prefix: '', name: '', source_url: '', adapter_type: '', contact_name: '', contact_email: '', contact_phone: '', vat_number: '' },
 
             get prefixError() {
                 // No live error while editing (prefix locked) — server is source of truth.
@@ -179,7 +190,7 @@
 
             openNew() {
                 this.editing = false; this.editId = null; this.formMsg = '';
-                this.form = { prefix: '', name: '', source_url: '', adapter_type: '', contact_email: '', contact_phone: '' };
+                this.form = { prefix: '', name: '', source_url: '', adapter_type: '', contact_name: '', contact_email: '', contact_phone: '', vat_number: '' };
                 this.formOpen = true;
             },
 
@@ -187,8 +198,9 @@
                 this.editing = true; this.editId = s.id; this.formMsg = '';
                 this.form = {
                     prefix: s.prefix || '', name: s.name || '', source_url: s.source_url || '',
-                    adapter_type: s.adapter_type || '', contact_email: s.contact_email || '',
-                    contact_phone: s.contact_phone || '',
+                    adapter_type: s.adapter_type || '', contact_name: s.contact_name || '',
+                    contact_email: s.contact_email || '', contact_phone: s.contact_phone || '',
+                    vat_number: s.vat_number || '',
                 };
                 this.formOpen = true;
             },
@@ -203,8 +215,10 @@
                     name: this.form.name.trim(),
                     source_url: (this.form.source_url || '').trim() || null,
                     adapter_type: this.form.adapter_type || null,
+                    contact_name: (this.form.contact_name || '').trim() || null,
                     contact_email: (this.form.contact_email || '').trim() || null,
                     contact_phone: (this.form.contact_phone || '').trim() || null,
+                    vat_number: (this.form.vat_number || '').trim() || null,
                 };
                 try {
                     if (this.editing) {

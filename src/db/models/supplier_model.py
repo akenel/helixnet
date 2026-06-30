@@ -64,6 +64,11 @@ class SupplierModel(Base):
         nullable=True,
         comment="Import adapter: 'tamar' | 'magento' | 'csv' | 'manual'"
     )
+    contact_name: Mapped[Optional[str]] = mapped_column(
+        String(120),
+        nullable=True,
+        comment="Named contact person at the supplier (succession/handoff: who to call)"
+    )
     contact_email: Mapped[Optional[str]] = mapped_column(
         String(255),
         nullable=True,
@@ -73,6 +78,13 @@ class SupplierModel(Base):
         String(50),
         nullable=True,
         comment="Primary contact phone (registry)"
+    )
+    # Succession / handoff: documenting the supplier FULLY (VAT, named contact, phone)
+    # keeps the knowledge out of the owner's head, so a takeover/handover actually works.
+    vat_number: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="Supplier's VAT/UID number (optional but valuable for handoff/accounting)"
     )
 
     # Location & logistics

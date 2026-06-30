@@ -36,8 +36,11 @@ def upgrade() -> None:
     op.add_column('suppliers', sa.Column('prefix', sa.String(length=3), nullable=True))
     op.add_column('suppliers', sa.Column('source_url', sa.String(length=500), nullable=True))
     op.add_column('suppliers', sa.Column('adapter_type', sa.String(length=40), nullable=True))
+    # Succession/handoff: named contact + VAT document the supplier fully.
+    op.add_column('suppliers', sa.Column('contact_name', sa.String(length=120), nullable=True))
     op.add_column('suppliers', sa.Column('contact_email', sa.String(length=255), nullable=True))
     op.add_column('suppliers', sa.Column('contact_phone', sa.String(length=50), nullable=True))
+    op.add_column('suppliers', sa.Column('vat_number', sa.String(length=50), nullable=True))
     op.create_index('ix_suppliers_prefix', 'suppliers', ['prefix'], unique=True)
 
     # Seed the two known import sources (idempotent). `code` is the legacy NOT NULL
@@ -58,5 +61,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("DELETE FROM suppliers WHERE prefix IN ('TAM', 'FTW')")
     op.drop_index('ix_suppliers_prefix', table_name='suppliers')
-    for col in ('contact_phone', 'contact_email', 'adapter_type', 'source_url', 'prefix'):
+    for col in ('vat_number', 'contact_phone', 'contact_email', 'contact_name',
+                'adapter_type', 'source_url', 'prefix'):
         op.drop_column('suppliers', col)
