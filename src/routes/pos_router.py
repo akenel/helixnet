@@ -648,6 +648,20 @@ async def delete_product(
 # (TAM-=Tamar/Artemis, FTW-=FourTwenty, future CSV/manual). Foundation for
 # multi-source import + receiving ("pick a supplier or add a new one").
 # ================================================================
+async def _count_products_for_prefix(db: AsyncSession, prefix: Optional[str]) -> int:
+    """How many products carry this SKU prefix (e.g. TAM- → TAM-21577).
+
+    This is the 'is the prefix in use?' check behind the freeze guardrail: the
+    prefix is baked into every product SKU, so once products exist it can't change
+    without orphaning them. Same spirit as source-scoped sync (§6f)."""
+    if not prefix:
+        return 0
+    res = await db.execute(
+        select(func.count()).select_from(ProductModel).where(ProductModel.sku.like(f"{prefix}-%"))
+    )
+    return int(res.scalar() or 0)
+
+
 @router.get("/suppliers", response_model=list[SupplierRead])
 async def list_suppliers(
     db: AsyncSession = Depends(get_db_session),
@@ -662,7 +676,21 @@ async def list_suppliers(
         .where(SupplierModel.is_active == True)  # noqa: E712
         .order_by(SupplierModel.name)
     )
-    return result.scalars().all()
+    suppliers = result.scalars().all()
+    # Per-prefix product counts so the UI can lock the prefix field once it's in use.
+    # One grouped pass over products: first SKU segment (TAM-21577 → TAM) → count.
+    counts_res = await db.execute(
+        select(
+            func.upper(func.split_part(ProductModel.sku, "-", 1)).label("pfx"),
+            func.count().label("n"),
+        )
+        .where(ProductModel.sku.isnot(None))
+        .group_by("pfx")
+    )
+    counts = {row.pfx: int(row.n) for row in counts_res}
+    for s in suppliers:
+        s.product_count = counts.get((s.prefix or "").upper(), 0)
+    return suppliers
 
 
 @router.post("/suppliers", response_model=SupplierRead, status_code=status.HTTP_201_CREATED)
@@ -689,6 +717,7 @@ async def create_supplier(
             detail=f"A supplier with prefix '{data['prefix']}' already exists.",
         )
     await db.refresh(new_supplier)
+    new_supplier.product_count = 0  # brand new — nothing carries its prefix yet
     logger.info(f"Supplier created: {new_supplier.prefix} ({new_supplier.name}) by {current_user['username']}")
     return new_supplier
 
@@ -708,8 +737,22 @@ async def update_supplier(
         raise HTTPException(status_code=404, detail="Supplier not found")
 
     update_data = supplier_update.model_dump(exclude_unset=True)
-    if "prefix" in update_data and update_data["prefix"] is not None:
-        supplier.code = update_data["prefix"]  # keep legacy `code` mirrored to the prefix
+    # FREEZE GUARDRAIL: the prefix is baked into every product SKU (TAM-21577).
+    # Editable until used, frozen once used — changing it after products exist would
+    # orphan them. So a prefix *change* is rejected while the CURRENT prefix is in use;
+    # all other fields (name, contacts, source_url, adapter_type, vat) stay editable.
+    new_prefix = update_data.get("prefix")
+    if new_prefix is not None and new_prefix != supplier.prefix:
+        in_use = await _count_products_for_prefix(db, supplier.prefix)
+        if in_use > 0:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    f"Prefix '{supplier.prefix}' is in use by {in_use} product(s) "
+                    f"and can't be changed (it's baked into their SKUs)."
+                ),
+            )
+        supplier.code = new_prefix  # keep legacy `code` mirrored to the prefix
     for field, value in update_data.items():
         setattr(supplier, field, value)
     # NOTE: do NOT set updated_at here. The legacy `suppliers` table uses a NAIVE
@@ -725,6 +768,7 @@ async def update_supplier(
             detail="A supplier with this prefix already exists.",
         )
     await db.refresh(supplier)
+    supplier.product_count = await _count_products_for_prefix(db, supplier.prefix)
     logger.info(f"Supplier updated: {supplier.prefix} ({supplier.name}) by {current_user['username']}")
     return supplier
 

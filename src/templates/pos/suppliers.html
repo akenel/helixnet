@@ -37,11 +37,12 @@
                 <div>
                     <label class="sup-lbl">Prefix <span class="text-gray-400 font-normal">(2-3 letters)</span></label>
                     <input type="text" x-model="form.prefix" @input="form.prefix=(form.prefix||'').toUpperCase()"
-                           maxlength="3" :disabled="editing"
+                           maxlength="3" :disabled="prefixLocked"
                            placeholder="TAM" class="input-field font-mono uppercase"
                            :class="prefixError ? 'sup-input-err' : ''">
-                    <p x-show="prefixError" x-text="prefixError" class="sup-err" style="display:none;"></p>
-                    <p x-show="!prefixError && form.prefix" class="sup-ok" style="display:none;">✓ SKUs will read <span class="font-mono" x-text="form.prefix + '-…'"></span></p>
+                    <p x-show="prefixLocked" class="sup-err" style="display:none;">🔒 locked — <span x-text="editProductCount"></span> product(s) use this prefix</p>
+                    <p x-show="!prefixLocked && prefixError" x-text="prefixError" class="sup-err" style="display:none;"></p>
+                    <p x-show="!prefixLocked && !prefixError && form.prefix" class="sup-ok" style="display:none;">✓ SKUs will read <span class="font-mono" x-text="form.prefix + '-…'"></span></p>
                 </div>
                 <div>
                     <label class="sup-lbl">Full name</label>
@@ -165,11 +166,16 @@
             editId: null,
             saving: false,
             formMsg: '',
+            editProductCount: 0,
             form: { prefix: '', name: '', source_url: '', adapter_type: '', contact_name: '', contact_email: '', contact_phone: '', vat_number: '' },
 
+            // The prefix is editable until products carry it, then frozen (it's baked
+            // into every SKU). Locked = editing an in-use supplier; otherwise live-validate.
+            get prefixLocked() {
+                return this.editing && this.editProductCount > 0;
+            },
             get prefixError() {
-                // No live error while editing (prefix locked) — server is source of truth.
-                if (this.editing) return '';
+                if (this.prefixLocked) return '';
                 return validatePrefix(this.form.prefix);
             },
 
@@ -189,13 +195,14 @@
             },
 
             openNew() {
-                this.editing = false; this.editId = null; this.formMsg = '';
+                this.editing = false; this.editId = null; this.formMsg = ''; this.editProductCount = 0;
                 this.form = { prefix: '', name: '', source_url: '', adapter_type: '', contact_name: '', contact_email: '', contact_phone: '', vat_number: '' };
                 this.formOpen = true;
             },
 
             openEdit(s) {
                 this.editing = true; this.editId = s.id; this.formMsg = '';
+                this.editProductCount = s.product_count || 0;
                 this.form = {
                     prefix: s.prefix || '', name: s.name || '', source_url: s.source_url || '',
                     adapter_type: s.adapter_type || '', contact_name: s.contact_name || '',
@@ -208,7 +215,7 @@
             closeForm() { this.formOpen = false; },
 
             async save() {
-                if (!this.editing && this.prefixError) { this.formMsg = this.prefixError; return; }
+                if (!this.prefixLocked && this.prefixError) { this.formMsg = this.prefixError; return; }
                 if (!(this.form.name || '').trim()) { this.formMsg = 'Name is required.'; return; }
                 this.saving = true; this.formMsg = '';
                 const payload = {
@@ -220,12 +227,14 @@
                     contact_phone: (this.form.contact_phone || '').trim() || null,
                     vat_number: (this.form.vat_number || '').trim() || null,
                 };
+                // Send the prefix whenever it's editable (new supplier, or editing one
+                // that isn't in use yet). Frozen prefixes are never sent.
+                if (!this.prefixLocked) { payload.prefix = this.form.prefix; }
                 try {
                     if (this.editing) {
                         await API.patch('/api/v1/pos/suppliers/' + this.editId, payload);
                         showToast('Supplier updated', 'success');
                     } else {
-                        payload.prefix = this.form.prefix;
                         await API.post('/api/v1/pos/suppliers', payload);
                         showToast('Supplier added', 'success');
                     }

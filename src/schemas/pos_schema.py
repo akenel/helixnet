@@ -73,6 +73,10 @@ class SupplierRead(BaseModel):
     contact_phone: Optional[str] = None
     vat_number: Optional[str] = None
     is_active: bool = True
+    # How many products carry this supplier's SKU prefix (PREFIX-...). Drives the
+    # "prefix is frozen once in use" guardrail: >0 means the prefix is locked
+    # (changing it would orphan every product SKU baked with it). 0 means editable.
+    product_count: int = 0
 
 
 # ================================================================
