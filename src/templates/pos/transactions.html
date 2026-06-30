@@ -2,10 +2,29 @@
 
 {% block title %}Transaction History - HelixPOS{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Print / PDF: the report prints clean — hide the controls, show a stamp, and force
+       the table view (drop the phone cards + the per-row action buttons). App chrome
+       (bottom nav, status bar) is already hidden by base.html's @media print. */
+    .print-only { display: none; }
+    @media print {
+        .no-print   { display: none !important; }
+        .print-only { display: block !important; }
+        body { background:#fff !important; }
+        .card { box-shadow:none !important; border:1px solid #ddd; }
+        table { font-size: 11px; }
+        .tx-mobile  { display: none !important; }   /* drop the phone cards on paper */
+        .tx-desktop { display: block !important; }   /* always print the clean table */
+        .tx-actions { display: none !important; }    /* View/Reprint are screen-only */
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen bg-gray-50" x-data="transactionsData()">
     <!-- Header -->
-    <nav class="bg-white shadow-lg sticky top-0 z-10">
+    <nav class="bg-white shadow-lg sticky top-0 z-10 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <button @click="goBack()" class="btn-secondary">
@@ -20,8 +39,16 @@
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Print stamp (only on paper/PDF) -->
+        <div class="print-only mb-4">
+            <h1 style="font-size:18px;font-weight:bold;">Artemis Store — Transaction History</h1>
+            <p style="font-size:12px;color:#444;" x-text="rangeLabel()"></p>
+            <p style="font-size:12px;color:#444;" x-text="summary.count + ' transactions · ' + formatPrice(summary.total) + ' total'"></p>
+            <p style="font-size:10px;color:#888;" x-text="'Generated ' + generatedAt"></p>
+        </div>
+
         <!-- Filter Bar -->
-        <div class="card mb-6">
+        <div class="card mb-6 no-print">
             <!-- Quick date-range presets -->
             <div class="flex flex-wrap gap-2 mb-4">
                 <template x-for="p in datePresets" :key="p.key">
@@ -81,7 +108,11 @@
                     </select>
                 </div>
             </div>
-            <div class="mt-4 flex justify-end">
+            <div class="mt-4 flex flex-wrap justify-between gap-2">
+                <div class="flex flex-wrap gap-2" x-show="!loading && processedList().length > 0">
+                    <button @click="printView()" class="btn-secondary text-sm">🖨️ Print / PDF</button>
+                    <button @click="exportCSV()" class="btn-secondary text-sm">📥 CSV (;)</button>
+                </div>
                 <button @click="resetFilters()" class="btn-secondary">Reset Filters</button>
             </div>
         </div>
@@ -130,7 +161,7 @@
         <!-- Sales — app-style cards on mobile, full table on desktop -->
         <div x-show="!loading && processedList().length > 0">
             <!-- MOBILE: card list (no horizontal scroll, View/Reprint inline) -->
-            <div class="md:hidden">
+            <div class="md:hidden tx-mobile">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="text-sm font-semibold text-gray-600 flex-none">Sort:</span>
                     <select x-model="mobileSort" @change="setMobileSort()" class="input-field flex-1 !py-2.5 text-base">
@@ -171,8 +202,8 @@
                 </div>
             </div>
 
-            <!-- DESKTOP: full table -->
-            <div class="hidden md:block card overflow-hidden">
+            <!-- DESKTOP: full table (also the print/PDF layout) -->
+            <div class="hidden md:block tx-desktop card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead class="bg-gray-100">
@@ -184,7 +215,7 @@
                             <th @click="sortByCol('payment')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Payment <span x-text="sortIcon('payment')"></span></th>
                             <th @click="sortByCol('total')" class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Total <span x-text="sortIcon('total')"></span></th>
                             <th @click="sortByCol('status')" class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Status <span x-text="sortIcon('status')"></span></th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tx-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -226,7 +257,7 @@
                                           x-text="txn.status.toUpperCase()">
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-center" @click.stop>
+                                <td class="px-4 py-3 text-center tx-actions" @click.stop>
                                     <button @click="viewReceipt(txn.id)" class="text-indigo-600 hover:text-indigo-900 font-medium mr-3">
                                         View
                                     </button>
@@ -275,6 +306,7 @@
             sortKey: 'time',     // default newest-first
             sortDir: 'desc',
             mobileSort: 'time:desc',  // mobile card-list sort selector (key:dir)
+            generatedAt: '',          // de-CH timestamp stamped on the printout
             activePreset: 'today',
             datePresets: [
                 { key: 'today', label: 'Today' },
@@ -290,6 +322,7 @@
                     return;
                 }
                 this.user = userInfo;
+                this.generatedAt = new Date().toLocaleString('de-CH');
 
                 await this.loadTransactions();
             },
@@ -479,6 +512,44 @@
 
             roleDisplay() {
                 return this.user.posRoles?.join(', ') || 'User';
+            },
+
+            // ---- export: print / PDF / semicolon-CSV (Felix's "in the books" report) ----
+            rangeLabel() {
+                if (this.filterFrom === this.filterTo) return this.formatDate(this.filterFrom);
+                return this.formatDate(this.filterFrom) + ' – ' + this.formatDate(this.filterTo);
+            },
+            printView() { window.print(); },
+            exportCSV() {
+                const rows = [['Receipt #', 'Date', 'Time', 'Cashier', 'Customer', 'Payment', 'Total', 'Status']];
+                for (const t of this.processedList()) {
+                    const when = t.completed_at || t.created_at;
+                    rows.push([
+                        t.receipt_number || t.transaction_number || '',
+                        this.formatDate(when),
+                        this.formatTime(when),
+                        t.cashier_name || '',
+                        t.customer_name || '',
+                        this.methodLabel(t.payment_method),
+                        parseFloat(t.total || 0).toFixed(2),
+                        (t.status || '').toUpperCase()
+                    ]);
+                }
+                this._downloadCSV(rows, `banco-transactions-${this.filterFrom}_${this.filterTo}.csv`);
+                showToast('CSV exported', 'success');
+            },
+            _downloadCSV(rows, filename) {
+                // Semicolon-separated (Swiss/European convention, like a UBS export); every field
+                // quoted; UTF-8 BOM so Excel/Banana read names + CHF correctly.
+                const csv = '\ufeff' + rows.map(r =>
+                    r.map(c => `"${String(c == null ? '' : c).replace(/"/g, '""')}"`).join(';')
+                ).join('\r\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click(); a.remove();
+                URL.revokeObjectURL(url);
             },
 
             goBack() {
