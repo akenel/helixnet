@@ -291,7 +291,27 @@ raw queue stats; we surface a clean read-only tab so Angel can *watch* a run and
 > Build order: this operations layer wraps the recipe **after** the enrichment *quality* is approved on the
 > sample. Quality first, then the safe-delivery harness around it.
 
-## 10b. What "done right" looks like
+## 10c. Across environments — enrich ONCE, promote through the boxes
+
+The three banco envs are **separate databases** (`banco_sandbox` / `banco_staging` / `banco_prod`) — **not a
+unified DB.** Isolation by design (playing in sandbox can't touch prod), same as the 3 code envs.
+
+**The expensive work — the AI enrichment — runs ONCE.** It produces a portable **enriched catalog artifact**
+(the SKU-keyed snapshot carrying the full enriched record + translations). Then we **promote that same set
+through the envs with a cheap copy** — we do NOT re-run the LLM per environment. It mirrors the code lifecycle:
+**build the image once → deploy to each env**; here, **enrich once → load the artifact into each env.**
+
+- **Languages ride along:** the `product_translations` rows are part of the artifact, so EN/DE/FR/IT travel
+  *with* the catalog — nothing separate to manage per env.
+- **Flow:** fill **sandbox** (build + test) → copy to **staging** (dress-rehearsal) → copy to **prod** (the only
+  env that must be *current*; gets it **last**, gated behind fiscal/age sign-off + a backup).
+- **Deltas:** Artemis changes → re-enrich only the changed SKUs (cheap) → promote just that delta to each box.
+  Never re-enrich the whole 6,000.
+
+**Status:** NOT built yet — the current load writes per-env. The "enrich-once → load-from-artifact (no LLM)"
+promotion is the PLAN (a small build) for when we move past sandbox. It's *why* we don't waste AI per env.
+
+## 10d. What "done right" looks like
 A cashier searches "rolling ppaers" (fat-fingered) and finds RAW; browses a **clean** Headshop › Storage tree;
 every smoking item is correctly 18+ with an auditable reason; nothing was lost from source; and re-running the
 importer next month updates only what changed — without touching a single manager edit.
