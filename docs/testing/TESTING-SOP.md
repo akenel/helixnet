@@ -8,17 +8,39 @@ Machines confirm it didn't break; a human confirms it's actually *good*.
 
 ---
 
-## The three gates
+## The gates
 
 | # | Gate | What it catches | Tool |
 |---|------|-----------------|------|
 | 1 | **Smoke** | dead endpoints, 500s, auth broken, regressions | `scripts/smoke-test.sh staging\|prod` |
 | 2 | **Console-sweep** | client-side render errors, blank panels, mixed-content | `tests/e2e/console-sweep.js` (anon + 3 personas) |
+| 2b | **O2C end-to-end ("the works")** | the full sell-side journey actually holds (login → catalog → cart → checkout → payment → receipt) | **`make e2e`** → `scripts/testing/e2e_sandbox.js` |
 | 3 | **Human sanity check** | "it works but feels wrong" — UX, copy, the thing a user actually does | **fillable HTML sign-off sheet** (this folder) |
 
-Gates 1–2 run on **staging first**, then again on **prod after deploy**. Gate 3 runs on
+Gates 1–2b run on **staging first**, then again on **prod after deploy**. Gate 3 runs on
 staging before sign-off, and (for anything user-facing) once more on prod as the final
 human green-light.
+
+### Gate 2b — Order-to-Cash (O2C) end-to-end
+
+`make e2e` drives a **real browser** (Puppeteer/Chrome) through the whole sell-side cycle and
+asserts each journey GREEN/RED, printing a summary table and exit 1 on any RED (so it gates a
+pipeline). It is a **happy-path verification** (the works hold), not an adversarial fuzz.
+
+```
+SIGN-IN → BROWSE (catalog) → FILTER (grouped dropdown) → FIND (fuzzy search)
+        → IDENTIFY (scan-by-EAN) → CART → CHECKOUT → PAYMENT → RECEIPT  (+ camera fallback, manual-product sanity)
+```
+
+- **Parameterized** — defaults to sandbox; point it at any env:
+  `make e2e` or `E2E_BASE_URL=https://staging-banco.lapiazza.app E2E_USER=… E2E_PASS=… node scripts/testing/e2e_sandbox.js`
+  (env vars: `E2E_BASE_URL`, `E2E_USER`, `E2E_PASS`, `E2E_REALM`, `E2E_KC_URL`, `E2E_OUT`, `E2E_HEADFUL`).
+- **Self-cleaning / idempotent** — every run refunds its own test sale and deactivates its
+  throwaway `LZ-` product, so a nightly/CI run leaves **no residue**. Safe to re-run.
+- **Screenshots** of each key state land in `$E2E_OUT` (`e2e_*.png`).
+- **Future P2P:** the buy-side sibling (Procure-to-Pay: receiving → restock → supplier → pay)
+  plugs in as `scripts/testing/e2e_p2p_sandbox.js` + `make e2e-p2p`, reusing the same harness
+  shape (config block, `journey()` helper, GREEN/RED table, self-cleaning teardown).
 
 > Note: `smoke-test.sh hetzner` (the on-box self-signed target) is currently broken — it
 > aborts on the first TLS check. Verify prod via the **public hostnames** instead

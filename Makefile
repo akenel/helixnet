@@ -329,3 +329,21 @@ sandbox-deploy:
 
 sandbox-logs:
 	@docker logs -f --tail 80 helix-platform-sandbox
+
+# ===================================================================
+# END-TO-END WEB-CONSOLE SUITE -- the "the works" gate
+# ===================================================================
+# Order-to-Cash (O2C): drives a real browser through the full sell-side cycle
+#   SIGN-IN -> BROWSE -> FILTER -> FIND -> IDENTIFY -> CART -> CHECKOUT -> PAYMENT -> RECEIPT
+# Happy-path verification (not a fuzz/bug-hunt). Self-cleaning: refunds its test
+# sale + deactivates its throwaway product, so a nightly/CI run leaves no residue.
+# Parameterized -- defaults to sandbox; override E2E_BASE_URL/E2E_USER/... for any env.
+# Exit 1 if any journey RED, so it gates a pipeline. Screenshots -> $(E2E_OUT).
+#   make e2e                     # against sandbox (default)
+#   make e2e E2E_OUT=/tmp/shots  # custom screenshot dir
+# A future Procure-to-Pay (P2P / buy-side) sibling plugs in as `make e2e-p2p`.
+.PHONY: e2e
+E2E_OUT ?= /tmp/banco-e2e
+e2e:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_sandbox.js
