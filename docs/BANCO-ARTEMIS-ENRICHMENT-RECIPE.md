@@ -211,6 +211,21 @@ German is the *real* German.
 `needs_translation`. So adding a language later = **"re-run + store the skin," not a redesign** — and it's
 **deltas-aware** (re-running DE only touches changed text). Cost: **DE/FR free, IT/gaps = throttled AI.**
 
+## 6e. Maintenance = fix the RECIPE + re-run, NOT a bulk-edit UI (YAGNI)
+
+When enrichment is wrong systematically (the 18+ over-flag, inconsistent category names, a class
+mistake), **fix it at the SOURCE — the recipe (rules + LLM prompt) — and re-run the import.** The importer is
+**idempotent + delta-aware**, so a re-run re-enriches every affected product automatically and updates them in
+place (respecting `sync_override` so manager edits survive). **The re-run IS the mass-update engine** — there
+is no need to hand-patch 100 products.
+
+- **Human judgment goes IN as a rule, not a UI:** "which items are 18+" = a curated rule / exception list in
+  the recipe (e.g. pure storage/lifestyle ≠ auto-18+). A human sets the POLICY once; the re-run applies it to
+  all ~6,000 + every future import. Policy-as-code, not click-50-checkboxes.
+- **Bulk-edit / multi-select grid UI = YAGNI** (Angel's call, correct): agony to build (selection state, bulk
+  actions, undo), Felix would rarely use it, and the recipe + re-run already does the bulk work. It's exactly
+  the ERP bloat a pen-and-paper shop never needs. Per-product Edit covers the genuine one-offs.
+
 ## 7. The recipe as procedure-as-code
 
 ```
