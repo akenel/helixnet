@@ -3,6 +3,91 @@
 {% block title %}Catalog - HelixPOS{% endblock %}
 
 {% block content %}
+<!-- Catalog "review-card" restyle — scoped, REAL CSS (Tailwind Play CDN only compiles
+     @apply inside <style type="text/tailwind">; these are plain classes so they always apply). -->
+<style>
+    .cat-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .cat-card {
+        display: flex; gap: 16px; align-items: stretch;
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 1px 2px rgba(16,24,40,.04);
+        transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    .cat-card:hover { box-shadow: 0 8px 22px -8px rgba(16,24,40,.20); border-color: #c7d2fe; }
+    .cat-card.is-inactive { opacity: .55; }
+
+    .cat-thumb {
+        width: 96px; height: 96px; flex: none; border-radius: 12px;
+        border: 1px solid #e5e7eb; background: #fafafa;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; cursor: pointer;
+    }
+    .cat-thumb img { width: 100%; height: 100%; object-fit: contain; }
+    .cat-thumb .ph { font-size: 34px; line-height: 1; }
+
+    .cat-body { flex: 1 1 auto; min-width: 0; cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+    .cat-name { font-weight: 700; font-size: 16px; color: #1d2125; line-height: 1.3; }
+    .cat-sku  {
+        font: 600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: #f1f1ef; color: #475569; padding: 1px 8px; border-radius: 6px;
+        white-space: nowrap;
+    }
+
+    .badge-cat {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #eef1f4; color: #334155;
+        font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+        max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    .chip {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 9px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; line-height: 1.5; white-space: nowrap;
+    }
+    .chip-age     { background: #fde2e2; color: #9b1c1c; }
+    .chip-class   { background: #e7e0ff; color: #4527a0; }
+    .chip-nopromo { background: #fef3c7; color: #92400e; }
+    .chip-tag     { background: #eef1f4; color: #334155; font-weight: 600; }
+    .chip-attr    { background: #eef2ff; color: #3730a3; font-weight: 600; }
+
+    .cat-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .cat-price { font-size: 20px; font-weight: 800; color: #4f46e5; letter-spacing: -.01em; }
+    .cat-hint { font-size: 11px; color: #a5b4fc; font-weight: 600; }
+
+    .cat-actions { flex: none; display: flex; flex-direction: column; gap: 8px;
+                   align-items: stretch; justify-content: center; }
+    .cat-edit, .cat-react {
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+        min-height: 44px; padding: 0 16px; border-radius: 10px;
+        font-size: 14px; font-weight: 600; color: #fff; border: none; cursor: pointer;
+        transition: background-color .15s ease, transform .1s ease;
+    }
+    .cat-edit  { background: #4f46e5; } .cat-edit:hover  { background: #4338ca; }
+    .cat-react { background: #16a34a; } .cat-react:hover { background: #15803d; }
+    .cat-edit:active, .cat-react:active { transform: scale(.96); }
+
+    /* Summary stat strip (admin/catalog header) */
+    .cat-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .cat-stat  { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; }
+    .cat-stat .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; font-weight: 600; }
+    .cat-stat .big { font-size: 24px; font-weight: 800; color: #1d2125; margin-top: 2px; }
+
+    /* Phone trim — keep tap targets ≥44px (memory: pos/base.html @media(max-width:480px)) */
+    @media (max-width: 480px) {
+        .cat-card  { gap: 12px; padding: 12px; }
+        .cat-thumb { width: 72px; height: 72px; }
+        .cat-name  { font-size: 15px; }
+        .cat-price { font-size: 18px; }
+        .cat-stats { grid-template-columns: repeat(2, 1fr); }
+        .cat-edit, .cat-react { width: 100%; }
+    }
+    @media (max-width: 360px) {
+        .cat-actions { align-self: flex-start; }
+    }
+</style>
 <div class="min-h-screen bg-gray-50" x-data="catalogData()">
     <!-- Top Bar -->
     <div class="bg-white shadow-md border-b-4 border-indigo-600">
@@ -72,6 +157,14 @@
             </p>
         </div>
 
+        <!-- Summary stat strip — the catalog-header "feel" from the enrichment review -->
+        <div x-show="!showDiscontinued && results.length > 0" class="cat-stats">
+            <div class="cat-stat"><div class="lbl">Products</div><div class="big" x-text="total"></div></div>
+            <div class="cat-stat"><div class="lbl">Categories</div><div class="big" x-text="categories.length"></div></div>
+            <div class="cat-stat"><div class="lbl">Age-restricted (18+)</div><div class="big" x-text="ageCount()"></div></div>
+            <div class="cat-stat"><div class="lbl">Showing</div><div class="big" x-text="results.length"></div></div>
+        </div>
+
         <!-- Results -->
         <div class="card">
             <div x-show="results.length === 0" class="text-center py-10 text-gray-500">
@@ -79,36 +172,36 @@
                 <p x-text="loading ? 'Loading…' : 'No products to show'"></p>
             </div>
 
-            <div class="space-y-2">
+            <div class="cat-list">
                 <template x-for="p in results" :key="p.id">
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                         :class="p.is_active === false ? 'opacity-60' : ''">
-                        <div @click="openDetail(p)" title="Tap for details" class="w-14 h-14 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden cursor-pointer">
+                    <div class="cat-card" :class="p.is_active === false ? 'is-inactive' : ''">
+                        <div class="cat-thumb" @click="openDetail(p)" title="Tap for details">
                             <img x-show="p.image_url" :src="p.image_url" loading="lazy" alt=""
-                                 class="w-full h-full object-cover" @error="p.image_url=''">
-                            <span x-show="!p.image_url" class="text-2xl">📦</span>
+                                 @error="p.image_url=''">
+                            <span x-show="!p.image_url" class="ph">📦</span>
                         </div>
-                        <div @click="openDetail(p)" title="Tap for details" class="flex-1 min-w-0 cursor-pointer">
-                            <div class="flex items-center gap-2">
-                                <p class="font-semibold text-gray-900 truncate" x-text="p.name"></p>
-                                <span x-show="p.is_age_restricted" class="flex-none inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5">🔞 18+</span>
-                                <span x-show="p.promo_restricted" class="flex-none inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5">🚫 no promo</span>
+                        <div class="cat-body" @click="openDetail(p)" title="Tap for details">
+                            <div class="cat-meta">
+                                <span class="cat-name" x-text="p.name"></span>
                             </div>
-                            <p class="text-sm text-gray-600 truncate">
-                                SKU: <span x-text="p.sku"></span>
-                                <span x-show="p.barcode"> · <span x-text="p.barcode"></span></span>
-                                <span x-show="p.category"> · <span x-text="p.category"></span></span>
-                            </p>
-                            <p class="text-base sm:text-lg font-bold text-indigo-600 truncate" x-text="formatPrice(p.price)"></p>
-                            <p class="text-xs text-indigo-400">Tap for details ›</p>
+                            <div class="cat-meta">
+                                <span class="cat-sku" x-text="p.sku"></span>
+                                <span x-show="p.category" class="badge-cat">🏷️ <span x-text="p.category"></span></span>
+                                <span x-show="p.is_age_restricted" class="chip chip-age">🔞 18+</span>
+                                <span x-show="p.product_class && p.product_class !== 'standard'"
+                                      class="chip chip-class" x-text="classLabel(p.product_class)"></span>
+                                <span x-show="p.promo_restricted" class="chip chip-nopromo">🚫 no promo</span>
+                            </div>
+                            <div class="cat-meta" style="margin-top:auto">
+                                <span class="cat-price" x-text="formatPrice(p.price)"></span>
+                                <span class="cat-hint">Tap for details ›</span>
+                            </div>
                         </div>
-                        <div class="text-right flex-none">
-                            <div>
-                                <button x-show="user.isManager && p.is_active !== false" @click="openEdit(p)"
-                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">✏️ Edit</button>
-                                <button x-show="user.isManager && p.is_active === false" @click="reactivate(p)"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">↩️ Reactivate</button>
-                            </div>
+                        <div class="cat-actions">
+                            <button x-show="user.isManager && p.is_active !== false" @click="openEdit(p)"
+                                    class="cat-edit">✏️ Edit</button>
+                            <button x-show="user.isManager && p.is_active === false" @click="reactivate(p)"
+                                    class="cat-react">↩️ Reactivate</button>
                         </div>
                     </div>
                 </template>
@@ -139,9 +232,11 @@
                         <span x-show="!detailProduct?.image_url" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
-                    <div class="flex gap-2 mt-2">
-                        <span x-show="detailProduct?.is_age_restricted" class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5">🔞 18+</span>
-                        <span x-show="detailProduct?.promo_restricted" class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5">🚫 no promo</span>
+                    <div class="cat-meta mt-2">
+                        <span x-show="detailProduct?.is_age_restricted" class="chip chip-age">🔞 18+</span>
+                        <span x-show="detailProduct?.product_class && detailProduct?.product_class !== 'standard'"
+                              class="chip chip-class" x-text="classLabel(detailProduct?.product_class)"></span>
+                        <span x-show="detailProduct?.promo_restricted" class="chip chip-nopromo">🚫 no promo</span>
                     </div>
                     <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
                             class="btn-primary w-full mt-4">✏️ Edit this product</button>
@@ -162,10 +257,26 @@
                             <p class="text-gray-700" x-text="detailProduct?.description"></p>
                         </div>
                     </template>
-                    <template x-if="detailProduct?.tags">
+                    <!-- Enriched key:value tags (brand/material/flavor…) surface as attribute chips,
+                         the rest as plain tag chips — the review-card "attributes" look. -->
+                    <template x-if="tagChips(detailProduct?.tags).attrs.length">
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-gray-900 mb-1">Attributes</h3>
+                            <div class="cat-meta">
+                                <template x-for="a in tagChips(detailProduct?.tags).attrs" :key="a">
+                                    <span class="chip chip-attr" x-text="a"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="tagChips(detailProduct?.tags).plain.length">
                         <div class="mt-4">
                             <h3 class="font-semibold text-gray-900 mb-1">Tags</h3>
-                            <p class="text-gray-600" x-text="detailProduct?.tags"></p>
+                            <div class="cat-meta">
+                                <template x-for="t in tagChips(detailProduct?.tags).plain" :key="t">
+                                    <span class="chip chip-tag" x-text="t"></span>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -722,6 +833,38 @@
             },
 
             formatPrice(amount) { return formatPrice(amount); },
+
+            // Friendly label for the behaviour class pill (mirrors the class list above).
+            classLabel(value) {
+                const c = this.classes.find(x => x.value === value);
+                if (c) return c.label.split('(')[0].trim();
+                return (value || '').replace(/_/g, ' ');
+            },
+
+            // Header stat: how many of the loaded rows are age-gated.
+            ageCount() { return this.results.filter(p => p.is_age_restricted).length; },
+
+            // Split a comma-separated tag string into "attribute" chips (key:value, e.g.
+            // brand:Backwoods → "brand · Backwoods") and plain tag chips. Mirrors the
+            // enrichment review's attributes/tags split. Namespaced keys (artemis:, path:)
+            // stay as plain tags so the attributes row reads clean.
+            tagChips(tags) {
+                const out = { attrs: [], plain: [] };
+                if (!tags) return out;
+                const ATTR = new Set(['brand','material','flavor','size','length','width',
+                                      'measure','raw_material','color']);
+                const seen = new Set();
+                for (let raw of String(tags).split(',')) {
+                    const t = raw.trim();
+                    if (!t || seen.has(t.toLowerCase())) continue;
+                    seen.add(t.toLowerCase());
+                    const i = t.indexOf(':');
+                    const key = i > 0 ? t.slice(0, i).toLowerCase() : '';
+                    if (key && ATTR.has(key)) out.attrs.push(key + ' · ' + t.slice(i + 1));
+                    else out.plain.push(t);
+                }
+                return out;
+            },
         }
     }
 </script>
