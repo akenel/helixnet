@@ -26,9 +26,12 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import concurrent.futures
 import html
+import random
 import re
 import sys
+import time
 import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +57,11 @@ except ImportError:
 
 PAPERS_SLUG = "papers-co"
 BATCH = 10   # items per LLM call — 10-to-1 batching keeps calls (and throttle pressure) ~10x lower; quality unchanged (schema-bounded, sku-keyed). Tune 8–12 if the model ever drops an item.
+# §6a detail-page fetches are the real wall-time bottleneck (one blocking HTTP round-trip
+# per product, was serial → ~12 min for 50 items). We run them through a small thread pool:
+# the cap is BOTH the parallelism and the politeness throttle — keep it gentle (~10 in flight).
+DETAIL_CONCURRENCY = 10
+_PULL_SEED = 1337   # fixed seed → reproducible category spread (stable seed artifact)
 
 # §6a — the Artemis DETAIL page carries the rich metadata the LIST API omits:
 #   * the full description in   <div ... id="Description"> ... </div>
@@ -91,36 +99,109 @@ def fetch_detail(http: "ai.Http", source_url: str) -> tuple[str, dict]:
 
 
 # --------------------------------------------------------------------------- #
-# Pull Papers & Co from Artemis                                               #
+# Concurrent §6a detail-page fetch (the speed lever)                           #
 # --------------------------------------------------------------------------- #
-def pull_papers(http: "ai.Http", lang: str, cap: int, with_detail: bool = True) -> list[RawProduct]:
+def _fetch_one(http: "ai.Http", r: "RawProduct") -> tuple["RawProduct", str, dict]:
+    """Thread-pool worker: fetch one product's detail page. Tiny jitter so the
+    pool doesn't fire all N requests in perfect lockstep (gentler on the host)."""
+    time.sleep(random.uniform(0.0, 0.15))
+    desc, facets = fetch_detail(http, r.source_url or "")
+    return r, desc, facets
+
+
+def fetch_details_concurrent(http: "ai.Http", raws: list["RawProduct"],
+                             concurrency: int = DETAIL_CONCURRENCY) -> tuple[int, int]:
+    """Fetch every product's §6a detail page with at most `concurrency` in flight.
+    Mutates each RawProduct in place (detail_description + facets). Returns
+    (n_with_description, n_with_facets). A per-item failure degrades to ('', {})
+    exactly like the serial path — never fails the batch."""
+    n_desc = n_facets = done = 0
+    total = len(raws)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as ex:
+        futures = [ex.submit(_fetch_one, http, r) for r in raws]
+        for fut in concurrent.futures.as_completed(futures):
+            r, desc, facets = fut.result()
+            r.detail_description = desc or None
+            r.facets = facets
+            n_desc += 1 if desc else 0
+            n_facets += 1 if facets else 0
+            done += 1
+            if done % 10 == 0 or done == total:
+                print(f"      detail {done}/{total} ...", flush=True)
+    return n_desc, n_facets
+
+
+# --------------------------------------------------------------------------- #
+# Pull from Artemis — any group/category (Papers & Co is the default subset)   #
+# --------------------------------------------------------------------------- #
+def pull_catalog(http: "ai.Http", lang: str, cap: int,
+                 group_slugs: list[str] | None = None,
+                 cat_filter: str | None = None,
+                 with_detail: bool = True) -> list[RawProduct]:
+    """Generalized pull. `group_slugs` restricts to Artemis level-1 groups
+    (e.g. ['headshop','cbd','vape-co']); None = every group. `cat_filter` further
+    narrows to leaves whose path contains that segment (e.g. 'bongs'). Products are
+    interleaved round-robin across the resolved leaves so one big subcategory can't
+    swallow the whole sample. Identical enrichment downstream — only the source
+    selection differs from the original Papers-only pull."""
     print(f"[1/4] discovering categories from sitemap ...", flush=True)
     cats = ai.discover_categories(http)
-    papers_leaves = [c for c in cats if c.segments and c.segments[0] == PAPERS_SLUG and c.is_leaf]
-    # if the group has no sub-levels, the group landing itself carries products
-    if not papers_leaves:
-        papers_leaves = [c for c in cats if c.segments and c.segments[0] == PAPERS_SLUG]
-    print(f"      Papers & Co leaf categories: {len(papers_leaves)}", flush=True)
+    leaves = [c for c in cats if c.segments and c.is_leaf]
+    if group_slugs:
+        wanted = set(group_slugs)
+        leaves = [c for c in leaves if c.segments[0] in wanted]
+        # a group with no sub-levels carries products on its own landing page
+        if not leaves:
+            leaves = [c for c in cats if c.segments and c.segments[0] in wanted]
+    if cat_filter:
+        leaves = [c for c in leaves if any(cat_filter in s for s in c.segments)]
+    scope = ("+".join(group_slugs) if group_slugs else "ALL groups") + (f"/{cat_filter}" if cat_filter else "")
+    print(f"      target {scope}: {len(leaves)} leaf categories", flush=True)
 
-    print(f"[2/4] resolving product-API ids ...", flush=True)
-    resolved = []
-    for c in papers_leaves:
-        if ai.resolve_category_api(http, c):
-            resolved.append(c)
-    print(f"      resolved={len(resolved)}", flush=True)
-
-    print(f"[3/4] enumerating products ({lang.upper()}), round-robin across "
-          f"subcategories for a representative spread ...", flush=True)
-    # gather each category's product list first, then interleave round-robin so a single
-    # large subcategory (e.g. 'blunts') doesn't swallow the whole sample.
+    print(f"[2/4 + 3/4] resolving + enumerating products ({lang.upper()}) lazily, "
+          f"round-robin across subcategories ...", flush=True)
+    # A broad multi-group pull can hit hundreds of leaves; resolving AND enumerating
+    # ALL of them is wasteful when we only want `cap` items (the original Papers-only
+    # pull had a handful of leaves, so it could afford the full sweep). Shuffle for a
+    # varied, reproducible spread (fixed seed → a stable seed artifact), then
+    # resolve+enumerate category-by-category until we've gathered comfortably more than
+    # `cap` candidates (enough for a good round-robin mix), then STOP. Papers & Co has
+    # few leaves so it still gathers everything — behaviour there is unchanged.
+    rng = random.Random(_PULL_SEED)
+    # Interleave leaves round-robin BY GROUP (shuffled within each group) so a broad
+    # multi-group pull spreads evenly — otherwise the gather loop can drain one big
+    # group's categories and hit the target before ever reaching the others.
+    by_group: dict[str, list] = {}
+    for c in leaves:
+        by_group.setdefault(c.segments[0], []).append(c)
+    for g in by_group.values():
+        rng.shuffle(g)
+    buckets = list(by_group.values())
+    interleaved: list = []
+    while any(buckets):
+        for b in buckets:
+            if b:
+                interleaved.append(b.pop(0))
+    leaves = interleaved
+    target_gather = max(cap * 2, cap + 15)
     per_cat: list[list[dict]] = []
-    for c in resolved:
+    gathered = n_resolved = 0
+    for c in leaves:
+        if gathered >= target_gather:
+            break
+        if not ai.resolve_category_api(http, c):
+            continue
+        n_resolved += 1
         try:
-            prods = list(ai.iter_category_products(http, c, lang, max_pages=200))
-            if prods:
-                per_cat.append([(c, p) for p in prods])
+            prods = list(ai.iter_category_products(http, c, lang, max_pages=5))
         except Exception as e:
             print(f"      ! category {c.breadcrumb}: {e}", flush=True)
+            continue
+        if prods:
+            per_cat.append([(c, p) for p in prods])
+            gathered += len(prods)
+    print(f"      resolved={n_resolved} categories, gathered={gathered} candidate products",
+          flush=True)
 
     seen: dict[str, RawProduct] = {}
     idx = 0
@@ -149,21 +230,21 @@ def pull_papers(http: "ai.Http", lang: str, cap: int, with_detail: bool = True) 
     raws = list(seen.values())
     print(f"      unique products pulled: {len(raws)} (cap {cap})", flush=True)
 
-    # §6a rich-metadata pass: one detail fetch per product (sample is small + cheap).
+    # §6a rich-metadata pass: one detail fetch per product, now CONCURRENT (cap
+    # DETAIL_CONCURRENCY) — this is the ~10x wall-time lever over the old serial loop.
     if with_detail:
-        print(f"[3b] fetching detail pages for rich metadata ({len(raws)}) ...", flush=True)
-        n_desc = n_facets = 0
-        for i, r in enumerate(raws, 1):
-            desc, facets = fetch_detail(http, r.source_url or "")
-            r.detail_description = desc or None
-            r.facets = facets
-            n_desc += 1 if desc else 0
-            n_facets += 1 if facets else 0
-            if i % 10 == 0:
-                print(f"      detail {i}/{len(raws)} ...", flush=True)
+        print(f"[3b] fetching detail pages for rich metadata ({len(raws)}, "
+              f"concurrency {DETAIL_CONCURRENCY}) ...", flush=True)
+        n_desc, n_facets = fetch_details_concurrent(http, raws)
         print(f"      detail pages: {n_desc}/{len(raws)} with description, "
               f"{n_facets}/{len(raws)} with spec facets", flush=True)
     return raws
+
+
+def pull_papers(http: "ai.Http", lang: str, cap: int, with_detail: bool = True) -> list[RawProduct]:
+    """Back-compat thin wrapper: the original Papers & Co-only pull, now served by
+    the generalized pull_catalog. Existing callers (the load runner) keep working."""
+    return pull_catalog(http, lang, cap, group_slugs=[PAPERS_SLUG], with_detail=with_detail)
 
 
 # --------------------------------------------------------------------------- #
@@ -416,12 +497,20 @@ def main():
     ap.add_argument("--max", type=int, default=50, help="cap products (default 50)")
     ap.add_argument("--lang", default="en", choices=list(ai.LANG_IDS))
     ap.add_argument("--delay", type=float, default=0.3)
+    ap.add_argument("--group", action="append", default=None,
+                    help="Artemis level-1 group slug to pull (repeatable). "
+                         "e.g. --group headshop --group cbd --group vape-co. "
+                         "Default: papers-co (the original Papers & Co subset).")
+    ap.add_argument("--category", default=None,
+                    help="narrow to leaves whose path contains this segment (e.g. bongs)")
     ap.add_argument("--no-detail", action="store_true",
                     help="skip the §6a detail-page rich-metadata fetch (faster, basics only)")
     args = ap.parse_args()
 
     http = ai.Http(delay=args.delay, retries=4, cache_dir=None)  # no on-disk cache (dry-run)
-    raws = pull_papers(http, args.lang, args.max, with_detail=not args.no_detail)
+    groups = args.group if args.group else [PAPERS_SLUG]
+    raws = pull_catalog(http, args.lang, args.max, group_slugs=groups,
+                        cat_filter=args.category, with_detail=not args.no_detail)
     if not raws:
         print("No products pulled — aborting.", file=sys.stderr)
         sys.exit(2)

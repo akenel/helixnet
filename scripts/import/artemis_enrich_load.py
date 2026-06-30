@@ -205,11 +205,14 @@ async def _persist(records, capped: bool, db_url: str | None) -> dict:
                     stats["translations_updated"] += 1
 
             # DEACTIVATE removed — only on a FULL run (a capped sample is not authoritative).
+            # Scope deactivation to exactly the groups this run pulled, so a headshop
+            # run never deactivates Papers rows it simply didn't look at (and vice-versa).
+            loaded_groups = sorted({rec.group for rec in records if rec.group})
             if not capped and stats["seen_skus"]:
                 res = await session.execute(
                     sa_update(ProductModel)
                     .where(ProductModel.source_system == "artemis")
-                    .where(ProductModel.product_group == "Papers & Co")
+                    .where(ProductModel.product_group.in_(loaded_groups))
                     .where(ProductModel.sku.notin_(stats["seen_skus"]))
                     .where(ProductModel.sync_override.is_(False))
                     .where(ProductModel.is_active.is_(True))
@@ -235,6 +238,12 @@ def main():
     ap.add_argument("--max", type=int, default=50, help="cap products (default 50)")
     ap.add_argument("--lang", default="en", choices=list(sample.ai.LANG_IDS))
     ap.add_argument("--delay", type=float, default=0.3)
+    ap.add_argument("--group", action="append", default=None,
+                    help="Artemis level-1 group slug to load (repeatable). "
+                         "e.g. --group headshop --group cbd --group vape-co. "
+                         "Default: papers-co (the original Papers & Co subset).")
+    ap.add_argument("--category", default=None,
+                    help="narrow to leaves whose path contains this segment (e.g. bongs)")
     ap.add_argument("--no-detail", action="store_true",
                     help="skip the §6a detail-page rich-metadata fetch (faster, basics only)")
     ap.add_argument("--db-url", default=None,
@@ -244,7 +253,9 @@ def main():
     capped = args.max is not None  # a --max cap means this run is NOT the full catalog
 
     http = sample.ai.Http(delay=args.delay, retries=4, cache_dir=None)
-    raws = sample.pull_papers(http, args.lang, args.max, with_detail=not args.no_detail)
+    groups = args.group if args.group else [sample.PAPERS_SLUG]
+    raws = sample.pull_catalog(http, args.lang, args.max, group_slugs=groups,
+                               cat_filter=args.category, with_detail=not args.no_detail)
     if not raws:
         print("No products pulled — aborting.", file=sys.stderr)
         sys.exit(2)
