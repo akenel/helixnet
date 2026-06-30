@@ -117,6 +117,23 @@ Rules run first (`catalog_taxonomy.classify()` + this table). LLM only flags *ex
 
 ---
 
+## 6a. Rich metadata — grab the gazillion while we're here (ZPI rationale)
+
+**In zero-perpetual, metadata IS the inventory intelligence.** No stock counts to lean on → the product
+record's value is its *descriptive richness*. Capture it in the one pass; backfilling later is brutal.
+
+- **Flexible `attributes` bag (JSON)** on the product: brand, material, size, weight, count, flavor,
+  dimensions, color, variants, full description — **plus the raw source facets kept verbatim** (`raw_facets`)
+  = lossless. The recipe **normalizes keys** (rules + LLM) so it's queryable; nothing is discarded.
+- **Where it lives:** the products LIST API gives only basics (name/price/SKU/image). The **specific attribute
+  values + full description live on the product DETAIL page** → one **detail fetch per product** (one-time;
+  deltas after). It **folds into the same throttled job** (§10a) — same batch/backoff/delta discipline.
+- **The payoff (later, all powered by this):** faceted search ("all hemp papers"), similar-products,
+  attribute analytics ("hemp = 30% of paper sales"), the visual/snap flow, auto-tagging. **Cheap now, expensive to backfill.**
+- **Cost discipline:** the detail fetch ~doubles the per-item work → it's why §10a's throttle matters; and
+  it's **deltas-aware** (only re-fetch changed SKUs). Run it as a tier: basics first (fast), rich-metadata
+  pass second, both inside the watched/throttled job.
+
 ## 7. The recipe as procedure-as-code
 
 ```
