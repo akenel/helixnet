@@ -161,31 +161,56 @@ def _read_env(path):
     return d
 
 
+def _container_env(container):
+    """The container's ACTUAL env (uat.env + compose overrides + everything it really sees)."""
+    r = sh(["docker", "exec", container, "printenv"])
+    if r.returncode != 0:
+        return None
+    d = {}
+    for ln in r.stdout.splitlines():
+        if "=" in ln:
+            k, _, v = ln.partition("=")
+            d[k] = v
+    return d
+
+
 def doctor():
-    env = _read_env(ENV_FILE)
-    say("b", "╔══════════════════════════════════════════════════════════════╗")
-    say("b", "║  KEY DOCTOR — are the deployed keys alive? (values never shown)║")
-    say("b", "╚══════════════════════════════════════════════════════════════╝")
-    print(f"  source: {ENV_FILE}\n")
-    print(f"  {'KEY':<26} STATUS     DETAIL")
+    say("b", "╔════════════════════════════════════════════════════════════════════╗")
+    say("b", "║  KEY DOCTOR — live health of each container's REAL env (no values)  ║")
+    say("b", "╚════════════════════════════════════════════════════════════════════╝")
+    order = ["sandbox", "staging", "prod"]
+    envs = {n: _container_env(ENVS[n][1]) for n in order}
+    for n in order:
+        ok = envs[n] is not None
+        say("g" if ok else "y", f"  {n:<8} {ENVS[n][1]}: {'read ✓' if ok else 'unreadable (not running?) — column shows —'}")
+    print(f"\n  {'KEY':<26} {'SBX':^6}{'STG':^6}{'PRD':^6}  CHECK")
     print("  " + "-" * 62)
-    dead = 0
+    cache, dead = {}, set()
     for k in KNOWN:
-        v = env.get(k, "")
-        if not v:
-            print(f"  {k:<26} ⬜ MISSING  not in uat.env"); continue
-        if k in CHECKERS:
-            ok, detail = CHECKERS[k](v)
-            dead += 0 if ok else 1
-            print(f"  {k:<26} {'✅ LIVE' if ok else '❌ DEAD'}{'    ' if ok else '   '} {detail}")
-        else:
-            print(f"  {k:<26} 🔒 SET     present (len={len(v)}) — no standalone check")
-    print()
+        cells, detail = [], ""
+        for n in order:
+            e = envs[n]
+            if e is None:
+                cells.append("—"); continue
+            v = e.get(k, "")
+            if not v:
+                cells.append("⬜"); continue
+            if k in CHECKERS:
+                if v not in cache:
+                    cache[v] = CHECKERS[k](v)
+                ok, d = cache[v]
+                cells.append("✅" if ok else "❌"); detail = d
+                if not ok:
+                    dead.add(k)
+            else:
+                cells.append("🔒")
+        print(f"  {k:<26} {cells[0]:^6}{cells[1]:^6}{cells[2]:^6}  {detail}")
+    print("\n  legend: ✅ live · ❌ DEAD · 🔒 set (no standalone check) · ⬜ not set · — env unreadable")
     if dead:
-        say("r", f"  {dead} DEAD key(s) above — rotate them: python3 {sys.argv[0]} --key <NAME> --env all")
+        say("r", f"  {len(dead)} DEAD key(s): {', '.join(sorted(dead))} → rotate with --key <NAME> --env all")
     else:
-        say("g", "  All auto-checkable keys are LIVE ✓")
-    return dead
+        say("g", "  All auto-checkable keys are LIVE across every env ✓")
+    return len(dead)
 
 
 def main():
