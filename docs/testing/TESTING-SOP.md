@@ -15,6 +15,7 @@ Machines confirm it didn't break; a human confirms it's actually *good*.
 | 1 | **Smoke** | dead endpoints, 500s, auth broken, regressions | `scripts/smoke-test.sh staging\|prod` |
 | 2 | **Console-sweep** | client-side render errors, blank panels, mixed-content | `tests/e2e/console-sweep.js` (anon + 3 personas) |
 | 2b | **O2C end-to-end ("the works")** | the full sell-side journey actually holds (login → catalog → cart → checkout → payment → receipt) | **`make e2e`** → `scripts/testing/e2e_sandbox.js` |
+| 2c | **MOAT end-to-end (the fiscal differentiators)** | the Swiss VAT engine + drawer closeout/Z-report are EXACT (the two things that make Banco Swiss-fit, not a generic POS) | **`make e2e-moat`** → `scripts/testing/e2e_moat_sandbox.js` |
 | 3 | **Human sanity check** | "it works but feels wrong" — UX, copy, the thing a user actually does | **fillable HTML sign-off sheet** (this folder) |
 
 Gates 1–2b run on **staging first**, then again on **prod after deploy**. Gate 3 runs on
@@ -41,6 +42,37 @@ SIGN-IN → BROWSE (catalog) → FILTER (grouped dropdown) → FIND (fuzzy searc
 - **Future P2P:** the buy-side sibling (Procure-to-Pay: receiving → restock → supplier → pay)
   plugs in as `scripts/testing/e2e_p2p_sandbox.js` + `make e2e-p2p`, reusing the same harness
   shape (config block, `journey()` helper, GREEN/RED table, self-cleaning teardown).
+
+### Gate 2c — MOAT end-to-end (the two fiscal differentiators)
+
+`make e2e-moat` drives the two things that make Banco a Swiss-fit till and not a generic POS —
+the **moat** — and asserts they are **EXACT** end-to-end (`scripts/testing/e2e_moat_sandbox.js`,
+same harness shape as gate 2b: parameterized, self-cleaning, GREEN/RED table, exit 1 on RED,
+screenshots to `$E2E_OUT`).
+
+```
+☕ MOAT-VAT    Two-Price Coffee — dine-in food/drink 8.1% · takeaway 2.6% · alcohol ALWAYS 8.1%
+              (never reduces, even takeaway). Rings a mixed cart; asserts each line's rate +
+              contained VAT, the sale's tax, and the Z-report (daily-summary) turnover split
+              all move by EXACTLY the right turnover bases.
+🌙 MOAT-CLOSE  Close-the-Day — open a drawer → ring mixed cash/visa/TWINT, mixed-consumption
+              sales → close the drawer → assert the Z-report RECONCILES: turnover split sums to
+              total, payment-method breakdown sums to total, drawer variance = 0 within
+              tolerance, VAT split sums to the VAT total, drawer cash = day's cash.
+```
+
+- **Expected VAT numbers are DERIVED, not hardcoded** — the rate rule mirrors
+  `vat_resolver`/`catalog_taxonomy` (cafe_split collapsed by consumption; alcohol always
+  standard), contained VAT = `round_half_up(gross × rate / (100 + rate))`, and the standard /
+  reduced rates are pulled live from `/api/v1/pos/config`. A future rate change (8.1 → 8.5) is
+  data; the suite still asserts correctly.
+- **Run the whole standard suite** with `make e2e-all` (= `make e2e` + `make e2e-moat`).
+- **Subsets:** `make e2e-vat` (VAT only) · `make e2e-closeout` (drawer/Z-report only) — via the
+  `MOAT_ONLY=vat|close` env var.
+- **Self-cleaning / idempotent** — every sale is refunded (nets to zero in the day), every
+  throwaway `MOAT-` product deactivated, and the drawer is always **closed** (a stale open drawer
+  from a crashed prior run is closed at start, so re-runs never hit "you already have an open cash
+  shift"). No functional residue.
 
 > Note: `smoke-test.sh hetzner` (the on-box self-signed target) is currently broken — it
 > aborts on the first TLS check. Verify prod via the **public hostnames** instead

@@ -347,3 +347,23 @@ E2E_OUT ?= /tmp/banco-e2e
 e2e:
 	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
 	@E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_sandbox.js
+
+# MOAT end-to-end — the two Swiss fiscal differentiators, asserted EXACT against a live env:
+#   e2e-moat       both: ☕ Two-Price Coffee (per-line VAT) + 🌙 Close-the-Day (Z-report reconcile)
+#   e2e-vat        only the Two-Price Coffee VAT journey
+#   e2e-closeout   only the Close-the-Day drawer/Z-report journey
+# Same harness shape as `make e2e` (parameterized, self-cleaning, exit 1 on RED, screenshots).
+.PHONY: e2e-moat e2e-vat e2e-closeout
+e2e-moat:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_moat_sandbox.js
+e2e-vat:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@MOAT_ONLY=vat E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_moat_sandbox.js
+e2e-closeout:
+	@command -v node >/dev/null || { echo "node is required for the e2e suite"; exit 2; }
+	@MOAT_ONLY=close E2E_OUT=$(E2E_OUT) node scripts/testing/e2e_moat_sandbox.js
+
+# The full standard end-to-end run: the O2C "the works" gate + both MOAT differentiators.
+.PHONY: e2e-all
+e2e-all: e2e e2e-moat
