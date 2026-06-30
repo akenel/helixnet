@@ -192,6 +192,18 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS qr_url VARCHAR(500)",
     "CREATE INDEX IF NOT EXISTS ix_products_product_group ON products (product_group)",
     "CREATE INDEX IF NOT EXISTS ix_products_source_id ON products (source_id)",
+    # Supplier Registry (2026-06-30, migration 011): formalize each import SOURCE as a
+    # supplier row keyed by a unique SKU prefix (TAM-=Tamar/Artemis, FTW-=FourTwenty,
+    # future CSV/manual). The `suppliers` table already exists (legacy Sourcing System,
+    # created by create_all) — these are the additive registry columns. Prefix is the
+    # authoritative key: 2-3 uppercase letters, UNIQUE (the index below backstops the
+    # Pydantic validator), nullable so legacy rows (420/WR/ND/Hem) carry none.
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS prefix VARCHAR(3)",
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS source_url VARCHAR(500)",
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS adapter_type VARCHAR(40)",
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255)",
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)",
+    "CREATE UNIQUE INDEX IF NOT EXISTS ix_suppliers_prefix ON suppliers (prefix)",
 ]
 
 
@@ -284,6 +296,21 @@ _DDL_MIGRATIONS: list[str] = [
     # the Python enum NAMES (CASH, VISA, ...), so the new label is 'BANK_TRANSFER'.
     # ADD VALUE IF NOT EXISTS is idempotent; PG 12+ allows it inside a transaction.
     "ALTER TYPE paymentmethod ADD VALUE IF NOT EXISTS 'BANK_TRANSFER'",
+    # Supplier Registry seed (migration 011): the two known import sources. This is
+    # FOUNDATION config (not demo content), so it lives here in the always-run block —
+    # banco runs HX_SEED_DEMO=false, so _DEMO_DDL would skip it. Idempotent on the
+    # unique prefix. `code` is the legacy NOT NULL unique column — mirror the prefix.
+    # LZ stays a RESERVED internal code (not a row); the receiving 'LZ-' lazy-create
+    # path already covers internal/manual items.
+    """
+    INSERT INTO suppliers (id, code, prefix, name, source_url, adapter_type, country,
+        lead_time_days_min, lead_time_days_max, quality_rating, swiss_certified,
+        is_active, created_at, updated_at)
+    VALUES
+      (gen_random_uuid()::text,'TAM','TAM','Tamar Trade GmbH','https://www.artemisluzern.ch','tamar','CH',1,5,'A',true,true,now(),now()),
+      (gen_random_uuid()::text,'FTW','FTW','FourTwenty','https://fourtwenty.ch','magento','CH',1,5,'A',false,true,now(),now())
+    ON CONFLICT (prefix) DO NOTHING
+    """,
 ]
 
 

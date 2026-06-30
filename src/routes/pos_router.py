@@ -48,6 +48,7 @@ from src.db.models import (
     CustomerModel,
     CreditTransactionModel,
     CreditTransactionType,
+    SupplierModel,
 )
 from src.core.constants import HelixApplication
 from src.services.cash_shift_service import (
@@ -75,6 +76,9 @@ from src.schemas.pos_schema import (
     ReceivingRequest,
     ReceivingResponse,
     ReceivingLineResult,
+    SupplierCreate,
+    SupplierUpdate,
+    SupplierRead,
 )
 from src.schemas.customer_schema import CustomerQRScanResponse
 # Real Keycloak authentication with RBAC
@@ -637,6 +641,89 @@ async def delete_product(
     await db.commit()
 
     logger.info(f"Product deactivated: {product.sku} by user {current_user['username']}")
+
+
+# ================================================================
+# SUPPLIER REGISTRY — a supplier IS an import source, keyed by a unique SKU prefix
+# (TAM-=Tamar/Artemis, FTW-=FourTwenty, future CSV/manual). Foundation for
+# multi-source import + receiving ("pick a supplier or add a new one").
+# ================================================================
+@router.get("/suppliers", response_model=list[SupplierRead])
+async def list_suppliers(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """List active suppliers (for the receiving dropdown + admin screen).
+
+    Read is open to any POS role so the receiving screen can populate its picker;
+    creating/editing a supplier stays manager/admin (below)."""
+    result = await db.execute(
+        select(SupplierModel)
+        .where(SupplierModel.is_active == True)  # noqa: E712
+        .order_by(SupplierModel.name)
+    )
+    return result.scalars().all()
+
+
+@router.post("/suppliers", response_model=SupplierRead, status_code=status.HTTP_201_CREATED)
+async def create_supplier(
+    supplier: SupplierCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Register a new supplier / import source (manager/admin only).
+
+    The prefix is force-uppercased and validated (^[A-Z]{2,3}$, not the reserved
+    ART/LZ) by the Pydantic schema; the DB UNIQUE constraint backstops duplicates."""
+    data = supplier.model_dump()
+    # `code` is the legacy Sourcing-System NOT NULL unique column — mirror the prefix
+    # into it so a registry row satisfies the old schema without a second concept.
+    new_supplier = SupplierModel(code=data["prefix"], **data)
+    db.add(new_supplier)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"A supplier with prefix '{data['prefix']}' already exists.",
+        )
+    await db.refresh(new_supplier)
+    logger.info(f"Supplier created: {new_supplier.prefix} ({new_supplier.name}) by {current_user['username']}")
+    return new_supplier
+
+
+@router.patch("/suppliers/{supplier_id}", response_model=SupplierRead)
+async def update_supplier(
+    supplier_id: str,
+    supplier_update: SupplierUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Edit or deactivate a supplier (manager/admin only). Send is_active=false to
+    retire one (it drops out of the dropdown but the SKU prefix stays reserved)."""
+    result = await db.execute(select(SupplierModel).where(SupplierModel.id == supplier_id))
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    update_data = supplier_update.model_dump(exclude_unset=True)
+    if "prefix" in update_data and update_data["prefix"] is not None:
+        supplier.code = update_data["prefix"]  # keep legacy `code` mirrored to the prefix
+    for field, value in update_data.items():
+        setattr(supplier, field, value)
+    supplier.updated_at = datetime.now(timezone.utc)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A supplier with this prefix already exists.",
+        )
+    await db.refresh(supplier)
+    logger.info(f"Supplier updated: {supplier.prefix} ({supplier.name}) by {current_user['username']}")
+    return supplier
 
 
 # ================================================================
@@ -4969,6 +5056,16 @@ async def pos_receiving(request: Request):
     a receiving list, then POSTs the batch to /api/v1/pos/receiving (manager/admin).
     """
     return templates.TemplateResponse("pos/receiving.html", {"request": request})
+
+
+@html_router.get("/pos/suppliers", response_class=HTMLResponse, name="pos_suppliers")
+async def pos_suppliers(request: Request):
+    """Supplier Registry admin screen — list + add/edit suppliers (import sources).
+
+    Each supplier carries a unique SKU prefix (TAM-, FTW-, …). Manager/admin manage
+    the list; it feeds the receiving 'pick a supplier' dropdown.
+    """
+    return templates.TemplateResponse("pos/suppliers.html", {"request": request})
 
 
 @html_router.get("/pos/checkout", response_class=HTMLResponse, name="pos_checkout")

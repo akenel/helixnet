@@ -3,13 +3,70 @@
 Pydantic schemas for POS (Point of Sale) system.
 Used for request validation and response serialization.
 """
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Literal
 from src.db.models.transaction_model import TransactionStatus, PaymentMethod
+from src.db.models.supplier_model import normalize_supplier_prefix
 from src.services.vat_resolver import Consumption
+
+
+# ================================================================
+# SUPPLIER REGISTRY SCHEMAS
+# A supplier = an import source identified by a unique SKU prefix.
+# ================================================================
+_ADAPTER_TYPES = ("tamar", "magento", "csv", "manual")
+
+
+class SupplierCreate(BaseModel):
+    """Create a supplier. `prefix` is force-uppercased + validated server-side."""
+    prefix: str = Field(..., description="SKU prefix, 2-3 uppercase letters (e.g. TAM, FTW)")
+    name: str = Field(..., min_length=1, max_length=100, description="Full supplier name")
+    source_url: Optional[str] = Field(None, max_length=500, description="Web origin (sync / 'View on source')")
+    adapter_type: Optional[Literal["tamar", "magento", "csv", "manual"]] = Field(
+        None, description="Import adapter type"
+    )
+    contact_email: Optional[str] = Field(None, max_length=255)
+    contact_phone: Optional[str] = Field(None, max_length=50)
+    is_active: bool = Field(default=True)
+
+    @field_validator("prefix")
+    @classmethod
+    def _check_prefix(cls, v: str) -> str:
+        # Uppercases + enforces ^[A-Z]{2,3}$ and the reserved set {ART, LZ}.
+        return normalize_supplier_prefix(v)
+
+
+class SupplierUpdate(BaseModel):
+    """Edit / deactivate a supplier. Prefix re-validated only if supplied."""
+    prefix: Optional[str] = None
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    source_url: Optional[str] = Field(None, max_length=500)
+    adapter_type: Optional[Literal["tamar", "magento", "csv", "manual"]] = None
+    contact_email: Optional[str] = Field(None, max_length=255)
+    contact_phone: Optional[str] = Field(None, max_length=50)
+    is_active: Optional[bool] = None
+
+    @field_validator("prefix")
+    @classmethod
+    def _check_prefix(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        return normalize_supplier_prefix(v)
+
+
+class SupplierRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    prefix: Optional[str] = None
+    name: str
+    source_url: Optional[str] = None
+    adapter_type: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    is_active: bool = True
 
 
 # ================================================================

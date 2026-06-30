@@ -33,12 +33,46 @@ class SupplierModel(Base):
         String(10),
         unique=True,
         nullable=False,
-        comment="Short code like '420', 'WR', 'Hem'"
+        comment="Short code like '420', 'WR', 'Hem' (legacy Sourcing System)"
     )
     name: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
-        comment="Full name: 'BR Break Shop'"
+        comment="Full supplier name: 'Tamar Trade GmbH'"
+    )
+
+    # ---- Supplier Registry (import-source) fields -----------------------------
+    # A supplier IS an import source. `prefix` is the SKU prefix the source's items
+    # carry (TAM- = Tamar/Artemis, FTW- = FourTwenty, …). It is the authoritative
+    # registry key — server-validated as ^[A-Z]{2,3}$, UNIQUE, never the reserved
+    # codes {ART (article/Artemis), LZ (internal/manual)}. Nullable because legacy
+    # Sourcing-System rows (420/WR/ND/Hem) predate the registry and carry no prefix.
+    prefix: Mapped[Optional[str]] = mapped_column(
+        String(3),
+        unique=True,
+        index=True,
+        nullable=True,
+        comment="SKU prefix, 2-3 UPPERCASE letters, e.g. 'TAM', 'FTW' (registry key)"
+    )
+    source_url: Mapped[Optional[str]] = mapped_column(
+        String(500),
+        nullable=True,
+        comment="Web origin for sync/'View on source', e.g. 'https://fourtwenty.ch'"
+    )
+    adapter_type: Mapped[Optional[str]] = mapped_column(
+        String(40),
+        nullable=True,
+        comment="Import adapter: 'tamar' | 'magento' | 'csv' | 'manual'"
+    )
+    contact_email: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True,
+        comment="Primary contact email (registry)"
+    )
+    contact_phone: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="Primary contact phone (registry)"
     )
 
     # Location & logistics
@@ -109,3 +143,27 @@ class SupplierModel(Base):
 
     def __repr__(self):
         return f"<Supplier {self.code}: {self.name} ({self.quality_rating})>"
+
+
+# ---- Supplier-prefix validation (shared by the Pydantic schema + any caller) ----
+import re
+
+# Reserved: never assignable as a supplier prefix.
+#   ART — banned: collides with 'article'/Artemis itself.
+#   LZ  — reserved: internal / manual entries (the receiving 'LZ-' lazy-create SKUs).
+RESERVED_SUPPLIER_PREFIXES: set[str] = {"ART", "LZ"}
+_PREFIX_RE = re.compile(r"^[A-Z]{2,3}$")
+
+
+def normalize_supplier_prefix(value: str) -> str:
+    """Force-uppercase, trim, and validate a supplier prefix.
+
+    Rules: 2-3 letters A-Z only, and not in RESERVED_SUPPLIER_PREFIXES.
+    Raises ValueError with a human message on any violation (DB UNIQUE handles dupes).
+    """
+    p = (value or "").strip().upper()
+    if not _PREFIX_RE.match(p):
+        raise ValueError("Prefix must be 2-3 uppercase letters (A-Z), e.g. 'TAM' or 'FTW'.")
+    if p in RESERVED_SUPPLIER_PREFIXES:
+        raise ValueError(f"Prefix '{p}' is reserved (ART=article/Artemis, LZ=internal/manual). Pick another.")
+    return p

@@ -1,0 +1,238 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Suppliers - HelixPOS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="suppliersData()" x-init="init()">
+    <!-- Top Bar -->
+    <div class="bg-white shadow-md border-b-4 border-emerald-600">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button @click="window.location.href='/pos/dashboard'" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">🏭 Suppliers</h1>
+                    <p class="text-xs text-gray-500">Import sources — each one owns a unique SKU prefix</p>
+                </div>
+            </div>
+            <button @click="openNew()" :disabled="!canManage" class="btn-success" x-show="canManage">➕ Add supplier</button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-4">
+        <div x-show="!canManage" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm">
+            🔒 Managing suppliers needs a <strong>manager</strong> or <strong>admin</strong> role.
+        </div>
+
+        <!-- Add / Edit form (inline review-card) -->
+        <div x-show="formOpen" style="display:none;" class="supplier-card supplier-card--edit">
+            <div class="flex justify-between items-start mb-3">
+                <h2 class="text-lg font-bold text-gray-900" x-text="editing ? '✏️ Edit supplier' : '🆕 New supplier'"></h2>
+                <button @click="closeForm()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="sup-lbl">Prefix <span class="text-gray-400 font-normal">(2-3 letters)</span></label>
+                    <input type="text" x-model="form.prefix" @input="form.prefix=(form.prefix||'').toUpperCase()"
+                           maxlength="3" :disabled="editing"
+                           placeholder="TAM" class="input-field font-mono uppercase"
+                           :class="prefixError ? 'sup-input-err' : ''">
+                    <p x-show="prefixError" x-text="prefixError" class="sup-err" style="display:none;"></p>
+                    <p x-show="!prefixError && form.prefix" class="sup-ok" style="display:none;">✓ SKUs will read <span class="font-mono" x-text="form.prefix + '-…'"></span></p>
+                </div>
+                <div>
+                    <label class="sup-lbl">Full name</label>
+                    <input type="text" x-model="form.name" placeholder="Tamar Trade GmbH" class="input-field">
+                </div>
+                <div>
+                    <label class="sup-lbl">Source URL <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <input type="text" x-model="form.source_url" placeholder="https://fourtwenty.ch" class="input-field">
+                </div>
+                <div>
+                    <label class="sup-lbl">Adapter type</label>
+                    <select x-model="form.adapter_type" class="input-field">
+                        <option value="">— none —</option>
+                        <option value="tamar">tamar</option>
+                        <option value="magento">magento</option>
+                        <option value="csv">csv</option>
+                        <option value="manual">manual</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="sup-lbl">Contact email <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <input type="email" x-model="form.contact_email" placeholder="orders@supplier.ch" class="input-field">
+                </div>
+                <div>
+                    <label class="sup-lbl">Contact phone <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <input type="text" x-model="form.contact_phone" placeholder="+41 …" class="input-field">
+                </div>
+            </div>
+            <div class="flex items-center gap-3 mt-4">
+                <button @click="save()" :disabled="saving || !!prefixError || !(form.name||'').trim()" class="btn-success">
+                    <span x-show="!saving" x-text="editing ? '💾 Save changes' : '✅ Add supplier'"></span>
+                    <span x-show="saving" style="display:none;">Saving…</span>
+                </button>
+                <button @click="closeForm()" class="btn-secondary">Cancel</button>
+                <span x-show="formMsg" x-text="formMsg" class="text-sm text-red-600" style="display:none;"></span>
+            </div>
+        </div>
+
+        <!-- List -->
+        <div x-show="loading" class="text-center text-gray-400 py-10" style="display:none;">Loading suppliers…</div>
+        <div x-show="!loading && !suppliers.length" class="text-center text-gray-400 py-10" style="display:none;">
+            No suppliers yet. Add the first one.
+        </div>
+
+        <template x-for="s in suppliers" :key="s.id">
+            <div class="supplier-card">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="sup-prefix" x-text="s.prefix || '—'"></span>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-gray-900 truncate" x-text="s.name"></p>
+                            <p class="text-xs text-gray-500 truncate">
+                                <span x-show="s.adapter_type" class="sup-tag" x-text="s.adapter_type"></span>
+                                <a x-show="s.source_url" :href="s.source_url" target="_blank" rel="noopener"
+                                   class="text-emerald-700 hover:underline" x-text="s.source_url"></a>
+                                <span x-show="!s.source_url && !s.adapter_type" class="text-gray-400">no source set</span>
+                            </p>
+                            <p x-show="s.contact_email || s.contact_phone" class="text-xs text-gray-400 truncate">
+                                <span x-text="s.contact_email"></span>
+                                <span x-show="s.contact_email && s.contact_phone"> · </span>
+                                <span x-text="s.contact_phone"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-none" x-show="canManage">
+                        <button @click="openEdit(s)" class="btn-secondary text-sm px-3 py-2">✏️ Edit</button>
+                        <button @click="deactivate(s)" class="text-sm px-3 py-2 rounded-lg font-semibold text-red-700 bg-red-50 hover:bg-red-100">Deactivate</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<style>
+    /* Real CSS — NOT @apply (Tailwind Play CDN only compiles @apply inside a
+       <style type="text/tailwind"> block; plain <style> @apply renders nothing). */
+    .supplier-card{background:#fff;border:1px solid #e5e7eb;border-radius:.75rem;
+        box-shadow:0 1px 2px rgba(0,0,0,.05);padding:1rem 1.25rem;}
+    .supplier-card--edit{border:2px solid #34d399;background:#ecfdf5;}
+    .sup-lbl{display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:.25rem;}
+    .sup-prefix{flex:none;display:inline-flex;align-items:center;justify-content:center;
+        min-width:3rem;height:2.25rem;padding:0 .5rem;border-radius:.5rem;
+        background:#065f46;color:#fff;font-family:ui-monospace,monospace;font-weight:700;font-size:.95rem;}
+    .sup-tag{display:inline-block;background:#d1fae5;color:#065f46;border-radius:9999px;
+        padding:0 .5rem;font-size:.7rem;font-weight:600;margin-right:.35rem;}
+    .sup-input-err{border-color:#dc2626 !important;}
+    .sup-err{color:#dc2626;font-size:.78rem;margin-top:.25rem;}
+    .sup-ok{color:#047857;font-size:.78rem;margin-top:.25rem;}
+</style>
+
+<script>
+    // Mirror of the server rule normalize_supplier_prefix(): ^[A-Z]{2,3}$, not ART/LZ.
+    const RESERVED_PREFIXES = ['ART', 'LZ'];
+    function validatePrefix(raw) {
+        const p = (raw || '').trim().toUpperCase();
+        if (!p) return 'Prefix is required.';
+        if (!/^[A-Z]{2,3}$/.test(p)) return 'Must be 2-3 uppercase letters (A-Z).';
+        if (RESERVED_PREFIXES.includes(p)) return `'${p}' is reserved (ART=article, LZ=internal).`;
+        return '';
+    }
+
+    function suppliersData() {
+        return {
+            canManage: false,
+            loading: true,
+            suppliers: [],
+            formOpen: false,
+            editing: false,
+            editId: null,
+            saving: false,
+            formMsg: '',
+            form: { prefix: '', name: '', source_url: '', adapter_type: '', contact_email: '', contact_phone: '' },
+
+            get prefixError() {
+                // No live error while editing (prefix locked) — server is source of truth.
+                if (this.editing) return '';
+                return validatePrefix(this.form.prefix);
+            },
+
+            async init() {
+                const info = AuthHelper.getUserInfo && AuthHelper.getUserInfo();
+                if (!info) { window.location.href = '/pos'; return; }
+                this.canManage = AuthHelper.isManager() || AuthHelper.isAdmin();
+                await this.load();
+            },
+
+            async load() {
+                this.loading = true;
+                try {
+                    this.suppliers = await API.get('/api/v1/pos/suppliers');
+                } catch (e) { showToast(e.message || 'Could not load suppliers', 'error'); }
+                this.loading = false;
+            },
+
+            openNew() {
+                this.editing = false; this.editId = null; this.formMsg = '';
+                this.form = { prefix: '', name: '', source_url: '', adapter_type: '', contact_email: '', contact_phone: '' };
+                this.formOpen = true;
+            },
+
+            openEdit(s) {
+                this.editing = true; this.editId = s.id; this.formMsg = '';
+                this.form = {
+                    prefix: s.prefix || '', name: s.name || '', source_url: s.source_url || '',
+                    adapter_type: s.adapter_type || '', contact_email: s.contact_email || '',
+                    contact_phone: s.contact_phone || '',
+                };
+                this.formOpen = true;
+            },
+
+            closeForm() { this.formOpen = false; },
+
+            async save() {
+                if (!this.editing && this.prefixError) { this.formMsg = this.prefixError; return; }
+                if (!(this.form.name || '').trim()) { this.formMsg = 'Name is required.'; return; }
+                this.saving = true; this.formMsg = '';
+                const payload = {
+                    name: this.form.name.trim(),
+                    source_url: (this.form.source_url || '').trim() || null,
+                    adapter_type: this.form.adapter_type || null,
+                    contact_email: (this.form.contact_email || '').trim() || null,
+                    contact_phone: (this.form.contact_phone || '').trim() || null,
+                };
+                try {
+                    if (this.editing) {
+                        await API.patch('/api/v1/pos/suppliers/' + this.editId, payload);
+                        showToast('Supplier updated', 'success');
+                    } else {
+                        payload.prefix = this.form.prefix;
+                        await API.post('/api/v1/pos/suppliers', payload);
+                        showToast('Supplier added', 'success');
+                    }
+                    this.formOpen = false;
+                    await this.load();
+                } catch (e) {
+                    this.formMsg = e.message || 'Could not save the supplier.';
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            async deactivate(s) {
+                if (!confirm('Deactivate ' + s.name + '? It drops out of the receiving list (prefix stays reserved).')) return;
+                try {
+                    await API.patch('/api/v1/pos/suppliers/' + s.id, { is_active: false });
+                    showToast(s.name + ' deactivated', 'success');
+                    await this.load();
+                } catch (e) { showToast(e.message || 'Could not deactivate', 'error'); }
+            },
+        };
+    }
+</script>
+{% endblock %}

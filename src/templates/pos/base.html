@@ -594,6 +594,13 @@
                 });
             },
 
+            patch(endpoint, data) {
+                return this.call(endpoint, {
+                    method: 'PATCH',
+                    body: JSON.stringify(data)
+                });
+            },
+
             delete(endpoint) {
                 return this.call(endpoint, { method: 'DELETE' });
             }
