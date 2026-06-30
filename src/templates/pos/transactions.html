@@ -17,6 +17,13 @@
         .tx-mobile  { display: none !important; }   /* drop the phone cards on paper */
         .tx-desktop { display: block !important; }   /* always print the clean table */
         .tx-actions { display: none !important; }    /* View/Reprint are screen-only */
+        /* PAGINATION FIX: the table sits inside overflow-hidden / overflow-x-auto wrappers
+           that clip it to page ONE. Let it flow across every page instead. */
+        .tx-desktop, .tx-desktop .overflow-x-auto, .card { overflow: visible !important; }
+        .min-h-screen { min-height: 0 !important; }       /* no viewport-height clipping */
+        table { break-inside: auto; }                     /* allow page breaks inside the table */
+        thead { display: table-header-group; }            /* repeat the column headers on every page */
+        tr    { break-inside: avoid; page-break-inside: avoid; }  /* never split a row across a page */
     }
 </style>
 {% endblock %}
