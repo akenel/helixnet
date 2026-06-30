@@ -258,9 +258,9 @@ Nothing reaches the DB until step 5, and nothing reaches prod until step 7.
 7. **Price parity (Felix's ask)** — price **auto-syncs from Artemis** via deltas (till = online). A manager
    override is preserved (`sync_override`) but **flagged as diverged** so parity is the default and overrides
    are deliberate + visible.
-8. **Discounts / coupon cards** — Artemis runs coupon + discount cards. This is a **checkout feature, separate
-   from the catalog** (does not block import). TODO: recon what Artemis's cards actually do (%-off / loyalty /
-   item-specific), then scope whether Banco mirrors it. Unknown if Banco handles coupons today — verify.
+8. **Discounts — RESOLVED, no card feature needed.** Artemis "cards" are just a stated %-off → the cashier
+   enters the % at checkout (Banco already does manual discount); big/loyal buyers ("Chuck Norris") get a
+   **customer-level discount by name, not a card.** Banco's existing discount handling covers both — nothing to build.
 
 ---
 
