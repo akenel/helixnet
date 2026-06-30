@@ -69,8 +69,14 @@ async def run(commit: bool, sku_like: str) -> dict:
             group_slug = segs[0] if segs else ""
 
             catmap = map_category_rule(group, segs)
-            new_cat = catmap["category"]
-            comp = classify_compliance(p.name or "", group, group_slug, category=new_cat)
+            # Mirror apply_llm: a CONFIDENT rule mapping (llm_needed=False) is authoritative
+            # and collapses junk; an AMBIGUOUS one (llm_needed=True) must NOT clobber the
+            # existing category with a raw provisional slug — the prior LLM already resolved
+            # it into the allowed set, so that value stands (we have no brain here to re-pick).
+            confident = not catmap["llm_needed"]
+            new_cat = catmap["category"] if confident else (p.category or catmap["category"])
+            effective_cat = new_cat  # what the age carve-out sees
+            comp = classify_compliance(p.name or "", group, group_slug, category=effective_cat)
             new_age = bool(comp["age_restricted"])
             new_reason = comp["age_reason"]
 
@@ -82,7 +88,7 @@ async def run(commit: bool, sku_like: str) -> dict:
                 continue
 
             changed = False
-            if new_cat and new_cat != p.category:
+            if confident and new_cat and new_cat != p.category:
                 if len(stats["samples"]) < 25:
                     stats["samples"].append((p.category, new_cat, p.name or ""))
                 p.category = new_cat
