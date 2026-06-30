@@ -226,6 +226,19 @@ is no need to hand-patch 100 products.
   actions, undo), Felix would rarely use it, and the recipe + re-run already does the bulk work. It's exactly
   the ERP bloat a pen-and-paper shop never needs. Per-product Edit covers the genuine one-offs.
 
+## 6f. Source-scoped sync — every prefix owns ONLY its own (Angel's rule)
+
+**The SKU prefix IS the source identity, and the scope key for every sync.**
+- `TAM-` = the Tamar/Artemis import. `LZ-` = manual / on-the-fly (owned by NO sync). Future `MOS-`/`FTW-` =
+  Mosey / FourTwenty. The prefix names the **platform/source**, never the shop, never a word.
+- **`ART` is banned — triply ambiguous:** *art*icle / *Art*emis-the-shop / generic. Use `TAM` (the engine).
+- **EVERY sync / reset / delta / deactivate operates ONLY on its own prefix** — `… WHERE sku LIKE 'TAM-%'` —
+  and **never touches another source's rows or manual `LZ-` products.** The sandbox reset refreshes only `TAM-`
+  (clean demo catalog daily) and leaves `LZ-` (and any future source) intact.
+- **Why it matters:** prevents cross-contamination (a future Mosey scrape can never clobber Artemis or a
+  cashier's hand-made product) and kills the "grinder got wiped" class of bug at the root. Each source is an
+  island; the user's own creations belong to no island and are never auto-touched.
+
 ## 7. The recipe as procedure-as-code
 
 ```
