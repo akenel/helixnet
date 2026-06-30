@@ -159,6 +159,34 @@ transaction reports**. The cashier **zaps items off the page** — manufacturer 
 read-the-package draft → **mint a code** → it's in the catalog *and* on the next printed sheet. No dead end,
 no missing code. *(ZPI isn't "winging it" — it's pragmatic: a few catalog pages beats barcode-labelling 6,000 items.)*
 
+## 6c. The catalog as funnel — category=type, binder, EAN+QR, postcards
+
+**Category IS type.** Artemis hands us the category; the category *is* the product type, so it **drives the
+per-type attribute template** (§6b) — we don't invent a type system, the source provides it. (Rolling Papers →
+material/sheets/length; Bongs → height/joint-size/percolator.)
+
+**The printed catalog is a maintainable BINDER, not a one-shot dump:**
+- **Table of contents + per-category sections + page numbers** = navigable.
+- **Deltas drive page reprints** — change a product → reprint *only that page/section*, slip it into the
+  binder. Same delta engine as the till + the catalog. **A few pages, never the whole 6,000-item book.**
+- Same print engine as the transaction reports; 20–40 items/page.
+
+**Every item gets EAN *and* QR:**
+- **EAN** (minted internal, §6b) → scan to **SELL** (works without a manufacturer barcode).
+- **QR** → a **Banco-owned permalink to the item online** → **SHARE**. Catalog page prints name + barcode + QR.
+  Peelable QR stickers for the product itself.
+
+**The funnel click (this is the payoff):** with a catalog of items that each carry a photo, data, and a QR
+permalink, **every item can become a postcard (UFA business) and a shareable La Piazza listing** — same code,
+same permalink. The catalog seeds sharing + marketing, not just the till. The **publish bridge (Banco item →
+La Piazza listing) is already ~80% wired** (`square_bridge.create_draft_listing`); the QR-as-permalink was
+always the plan. The "Banksy" layer = the QR/share cards carry brand + art, not plain codes. See
+[[banco-lapiazza-community-loop]] + [[helix-identity-architecture]] (Artemis Premium cutover).
+
+> **One import → two payoffs: SELL (scan) and SHARE (QR → postcard → listing).** Roadmap, not all build-now —
+> but real, because the pieces exist. Build order holds: enrich the catalog first; codes/QR/binder next;
+> postcards/sharing after.
+
 ## 7. The recipe as procedure-as-code
 
 ```
