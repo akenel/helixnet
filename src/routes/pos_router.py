@@ -161,8 +161,8 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
         "vat_rate": settings.POS_VAT_RATE,
         "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
         "vat_year": settings.POS_VAT_YEAR,
-        "currency": settings.POS_CURRENCY,
-        "locale": settings.POS_LOCALE,
+        "currency": regime["currency"],  # PHASE 1: per-tenant (regime reads the store; CH tenant -> CHF, byte-identical)
+        "locale": regime["locale"],      # PHASE 1: per-tenant (CH tenant -> de-CH, byte-identical)
         "vat_decimal": settings.POS_VAT_RATE / 100,  # 0.081 for calculations
         "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
         "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency
