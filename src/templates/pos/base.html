@@ -643,6 +643,11 @@
                         if (Array.isArray(config.denominations) && config.denominations.length)
                             this.denominations = config.denominations;
                         this.loaded = true;
+                        // push into the reactive store so already-painted money/dates re-render
+                        try {
+                            const s = (window.Alpine && Alpine.store) ? Alpine.store('cfg') : null;
+                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; }
+                        } catch (e) {}
                         console.log(`POS Config loaded: VAT ${this.vat_rate}% (${this.vat_year})`);
                     }
                 } catch (e) {
@@ -654,16 +659,36 @@
         // Load POS config on page load
         POSConfig.load();
 
+        // --- Reactive config mirror (fixes the async-load race) --------------------
+        // POSConfig.load() is async and POSConfig is NOT Alpine-reactive, so money/dates
+        // first-painted before /config resolves would keep the CHF/de-CH defaults forever
+        // (invisible pre-euro; the EUR store exposed it as a CHF checkout on an EUR till).
+        // Mirror currency/locale/denoms into an Alpine store the seams read via _cfg();
+        // updating the store re-renders every x-text that formats money or dates.
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('cfg', {
+                currency: POSConfig.currency,
+                locale: POSConfig.locale,
+                denominations: POSConfig.denominations,
+            });
+        });
+        function _cfg(k) {
+            try {
+                const s = (window.Alpine && Alpine.store) ? Alpine.store('cfg') : null;
+                return (s && s[k] !== undefined && s[k] !== null) ? s[k] : POSConfig[k];
+            } catch (e) { return POSConfig[k]; }
+        }
+
         // Price formatting helper — currency + locale from /config (CHF/de-CH default).
         // The ONE money-display seam: every 'CHF ' + toFixed(2) leak routes through here.
         function formatPrice(amount) {
-            return new Intl.NumberFormat(POSConfig.locale, {
+            return new Intl.NumberFormat(_cfg('locale'), {
                 style: 'currency',
-                currency: POSConfig.currency
+                currency: _cfg('currency')
             }).format(amount);
         }
 
-        // Date/time locale seam — keyed off POSConfig.locale (de-CH default → Swiss
+        // Date/time locale seam — keyed off _cfg('locale') (de-CH default → Swiss
         // dd.mm.yyyy). The ONE date/time seam: every hardcoded toLocaleDateString/
         // toLocaleTimeString/toLocaleString routes through here so an IT till shows
         // Italian dates and a CH till stays byte-identical. Accepts a Date, an ISO
@@ -672,21 +697,21 @@
             if (value === null || value === undefined || value === '') return '';
             const d = (value instanceof Date) ? value : new Date(value);
             if (isNaN(d.getTime())) return '';
-            return d.toLocaleDateString(POSConfig.locale, options);
+            return d.toLocaleDateString(_cfg('locale'), options);
         }
 
         function formatTime(value, options) {
             if (value === null || value === undefined || value === '') return '';
             const d = (value instanceof Date) ? value : new Date(value);
             if (isNaN(d.getTime())) return '';
-            return d.toLocaleTimeString(POSConfig.locale, options);
+            return d.toLocaleTimeString(_cfg('locale'), options);
         }
 
         function formatDateTime(value, options) {
             if (value === null || value === undefined || value === '') return '';
             const d = (value instanceof Date) ? value : new Date(value);
             if (isNaN(d.getTime())) return '';
-            return d.toLocaleString(POSConfig.locale, options);
+            return d.toLocaleString(_cfg('locale'), options);
         }
 
         // Cash-drawer denomination grid, sourced from /config `denominations` (the tenant
@@ -696,8 +721,8 @@
         // currency-aware label. CHF stays byte-identical to the old grid ('CHF ' + key);
         // EUR shows cents as '5 c' + adds €500/1c/2c; USD shows '¢' + '$'.
         function denomList() {
-            const cur = POSConfig.currency;
-            return (POSConfig.denominations || []).map(function (k) {
+            const cur = _cfg('currency');
+            return (_cfg('denominations') || []).map(function (k) {
                 const v = parseFloat(k);
                 let display;
                 if (cur === 'EUR') {
