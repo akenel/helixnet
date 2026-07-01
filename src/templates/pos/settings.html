@@ -14,14 +14,26 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-gray-900">⚙️ Store Settings</h1>
-                    <p class="text-xs text-gray-500">Your shop's profile — shows on every receipt</p>
+                    <h1 class="text-xl font-bold text-gray-900"><span data-i18n="settings.title">⚙️ Store Settings</span></h1>
+                    <p class="text-xs text-gray-500" data-i18n="settings.subtitle">Your shop's profile — shows on every receipt</p>
                 </div>
             </div>
-            <button @click="save()" :disabled="saving || !isAdmin" class="btn-success">
+            <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-sm text-gray-600">
+                    <span data-i18n="settings.language">🌐 Language</span>
+                    <select onchange="switchLanguage(this.value)"
+                        x-init="$el.value = (window._posLang || 'en')"
+                        class="border-2 border-gray-300 rounded-lg px-2 py-1 text-sm bg-white">
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="it">Italiano</option>
+                    </select>
+                </label>
+                <button @click="save()" :disabled="saving || !isAdmin" class="btn-success">
                 <span x-show="!saving">💾 Save</span>
                 <span x-show="saving" style="display:none;">Saving…</span>
             </button>
+            </div>
         </div>
     </div>
 

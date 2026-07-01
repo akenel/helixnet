@@ -99,17 +99,17 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">📦 Catalog</h1>
-                    <p class="text-sm text-gray-600">Manage products — edit, discontinue, add</p>
+                    <h1 class="text-2xl font-bold text-gray-900">📦 <span data-i18n="catalog.title">Catalog</span></h1>
+                    <p class="text-sm text-gray-600" data-i18n="catalog.subtitle">Manage products — edit, discontinue, add</p>
                 </div>
             </div>
-            <button x-show="user.isManager" @click="openCreate()" class="btn-primary">➕ New product</button>
+            <button x-show="user.isManager" @click="openCreate()" class="btn-primary">➕ <span data-i18n="catalog.new_product">New product</span></button>
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 py-6 space-y-4">
         <!-- Manager-only notice -->
-        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800">
+        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800" data-i18n-html="catalog.manager_notice">
             You can browse the catalog, but editing, discontinuing and creating products require a
             <strong>manager</strong> role. Ask Felix or Ralph.
         </div>
@@ -118,22 +118,22 @@
         <div class="card">
             <div class="flex flex-col md:flex-row gap-3 md:items-end">
                 <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.search_label">Search</label>
                     <div class="flex gap-2">
                         <input type="text" x-model="q" @input.debounce.300ms="search()"
-                               placeholder="Name, SKU or barcode…" class="input-field flex-1">
+                               placeholder="Name, SKU or barcode…" data-i18n-placeholder="catalog.search_placeholder" class="input-field flex-1">
                         <!-- BL-10 (Felix): scan a barcode to pull the item up, no typing. -->
                         <button type="button" @click="startSearchScan()" class="btn-secondary flex-none px-4" title="Scan to find">📷</button>
                     </div>
                 </div>
                 <div class="w-full md:w-56">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.category_label">Category</label>
                     <!-- 2-level picker: categories nested under their level-1 group
                          (Headshop, Papers & Co, …) via native <optgroup>. Group headers
                          are non-selectable labels; picking a category still filters as
                          before (x-model="category" → search()). -->
                     <select x-model="category" @change="search()" class="input-field">
-                        <option value="">All categories</option>
+                        <option value="" data-i18n="catalog.all_categories">All categories</option>
                         <template x-for="g in groupedCategories()" :key="g.group">
                             <optgroup :label="g.label">
                                 <template x-for="c in g.cats" :key="c.name">
@@ -144,40 +144,40 @@
                     </select>
                 </div>
                 <div class="w-full md:w-48">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sort</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.sort_label">Sort</label>
                     <select x-model="sort" @change="search()" class="input-field">
-                        <option value="">Best match</option>
-                        <option value="name">Name A–Z</option>
-                        <option value="price_asc">Price (low → high)</option>
-                        <option value="price_desc">Price (high → low)</option>
-                        <option value="recent">Recently added</option>
-                        <option value="stock">Stock (low → high)</option>
+                        <option value="" data-i18n="catalog.sort_best_match">Best match</option>
+                        <option value="name" data-i18n="catalog.sort_name">Name A–Z</option>
+                        <option value="price_asc" data-i18n="catalog.sort_price_asc">Price (low → high)</option>
+                        <option value="price_desc" data-i18n="catalog.sort_price_desc">Price (high → low)</option>
+                        <option value="recent" data-i18n="catalog.sort_recent">Recently added</option>
+                        <option value="stock" data-i18n="catalog.sort_stock">Stock (low → high)</option>
                     </select>
                 </div>
                 <label class="flex items-center gap-2 text-sm text-gray-700 md:pb-2">
                     <input type="checkbox" x-model="showDiscontinued" @change="onToggleDiscontinued()" class="w-4 h-4">
-                    Show discontinued
+                    <span data-i18n="catalog.show_discontinued">Show discontinued</span>
                 </label>
             </div>
             <p class="text-sm text-gray-600 mt-2">
-                <span x-show="!showDiscontinued && total > 0"><span x-text="total"></span> active <span x-show="q.length===0 && !category">— type to filter</span></span>
-                <span x-show="showDiscontinued">Showing discontinued products</span>
+                <span x-show="!showDiscontinued && total > 0"><span x-text="total"></span> <span data-i18n="catalog.active_count">active</span> <span x-show="q.length===0 && !category" data-i18n="catalog.type_to_filter">— type to filter</span></span>
+                <span x-show="showDiscontinued" data-i18n="catalog.showing_discontinued">Showing discontinued products</span>
             </p>
         </div>
 
         <!-- Summary stat strip — the catalog-header "feel" from the enrichment review -->
         <div x-show="!showDiscontinued && results.length > 0" class="cat-stats">
-            <div class="cat-stat"><div class="lbl">Products</div><div class="big" x-text="total"></div></div>
-            <div class="cat-stat"><div class="lbl">Categories</div><div class="big" x-text="categories.length"></div></div>
-            <div class="cat-stat"><div class="lbl">Age-restricted (18+)</div><div class="big" x-text="ageCount()"></div></div>
-            <div class="cat-stat"><div class="lbl">Showing</div><div class="big" x-text="results.length"></div></div>
+            <div class="cat-stat"><div class="lbl" data-i18n="catalog.stat_products">Products</div><div class="big" x-text="total"></div></div>
+            <div class="cat-stat"><div class="lbl" data-i18n="catalog.stat_categories">Categories</div><div class="big" x-text="categories.length"></div></div>
+            <div class="cat-stat"><div class="lbl" data-i18n="catalog.stat_age_restricted">Age-restricted (18+)</div><div class="big" x-text="ageCount()"></div></div>
+            <div class="cat-stat"><div class="lbl" data-i18n="catalog.stat_showing">Showing</div><div class="big" x-text="results.length"></div></div>
         </div>
 
         <!-- Results -->
         <div class="card">
             <div x-show="results.length === 0" class="text-center py-10 text-gray-500">
                 <span class="text-5xl block mb-3">🗂️</span>
-                <p x-text="loading ? 'Loading…' : 'No products to show'"></p>
+                <p x-text="loading ? t('common.loading') : t('catalog.no_products')"></p>
             </div>
 
             <div class="cat-list">
@@ -190,7 +190,7 @@
                         <div class="cat-thumb" role="button" tabindex="0"
                              @click="hasImg(p) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
                              @keydown.enter="hasImg(p) ? openLightbox(thumbSrc(p), p.name) : openDetail(p)"
-                             :title="hasImg(p) ? 'Tap to enlarge' : 'Tap for details'">
+                             :title="hasImg(p) ? t('catalog.tap_to_enlarge') : t('catalog.tap_for_details')">
                             <img x-show="hasImg(p)" :src="thumbSrc(p)" loading="lazy" alt=""
                                  @error="onImgError(p)" @load="p._imgerr = false">
                             <span x-show="!hasImg(p)" class="ph">📦</span>
@@ -205,18 +205,18 @@
                                 <span x-show="p.is_age_restricted" class="chip chip-age">🔞 18+</span>
                                 <span x-show="p.product_class && p.product_class !== 'standard'"
                                       class="chip chip-class" x-text="classLabel(p.product_class)"></span>
-                                <span x-show="p.promo_restricted" class="chip chip-nopromo">🚫 no promo</span>
+                                <span x-show="p.promo_restricted" class="chip chip-nopromo">🚫 <span data-i18n="catalog.no_promo">no promo</span></span>
                             </div>
                             <div class="cat-meta" style="margin-top:auto">
                                 <span class="cat-price" x-text="formatPrice(p.price)"></span>
-                                <span class="cat-hint">Tap for details ›</span>
+                                <span class="cat-hint" data-i18n="catalog.tap_for_details_hint">Tap for details ›</span>
                             </div>
                         </div>
                         <div class="cat-actions">
                             <button x-show="user.isManager && p.is_active !== false" @click="openEdit(p)"
-                                    class="cat-edit">✏️ Edit</button>
+                                    class="cat-edit">✏️ <span data-i18n="common.edit">Edit</span></button>
                             <button x-show="user.isManager && p.is_active === false" @click="reactivate(p)"
-                                    class="cat-react">↩️ Reactivate</button>
+                                    class="cat-react">↩️ <span data-i18n="catalog.reactivate">Reactivate</span></button>
                         </div>
                     </div>
                 </template>
@@ -225,10 +225,10 @@
             <!-- Infinite scroll: this sentinel auto-loads the next page when it nears view.
                  The button stays as a manual fallback (and for browsers without IO). -->
             <div x-ref="moreSentinel" style="height:1px"></div>
-            <p x-show="loading && results.length > 0" class="text-center text-gray-400 text-sm mt-3">Loading more…</p>
+            <p x-show="loading && results.length > 0" class="text-center text-gray-400 text-sm mt-3" data-i18n="catalog.loading_more">Loading more…</p>
             <button x-show="!showDiscontinued && !loading && results.length < total" @click="loadMore()"
                     class="btn-secondary w-full mt-3">
-                Show more (<span x-text="total - results.length"></span> more)
+                <span data-i18n="catalog.show_more">Show more</span> (<span x-text="total - results.length"></span> <span data-i18n="catalog.more_count">more</span>)
             </button>
         </div>
     </div>
@@ -257,21 +257,21 @@
                         <span x-show="detailProduct?.promo_restricted" class="chip chip-nopromo">🚫 no promo</span>
                     </div>
                     <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
-                            class="btn-primary w-full mt-4">✏️ Edit this product</button>
+                            class="btn-primary w-full mt-4">✏️ <span data-i18n="catalog.edit_this_product">Edit this product</span></button>
                 </div>
                 <div class="text-sm">
-                    <h3 class="font-semibold text-gray-900 mb-2">Details</h3>
+                    <h3 class="font-semibold text-gray-900 mb-2" data-i18n="catalog.details_heading">Details</h3>
                     <dl class="divide-y border-y">
-                        <div class="flex justify-between py-2"><dt class="text-gray-500">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
-                        <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500">Barcode</dt><dd class="font-medium text-right break-all" x-text="detailProduct?.barcode"></dd></div>
-                        <div class="flex justify-between py-2" x-show="detailProduct?.category"><dt class="text-gray-500">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
-                        <div class="flex justify-between py-2" x-show="detailProduct?.product_class"><dt class="text-gray-500">Class</dt><dd class="font-medium text-right" x-text="detailProduct?.product_class"></dd></div>
-                        <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
-                        <div class="flex justify-between py-2"><dt class="text-gray-500">Stock (info)</dt><dd class="font-medium text-right" x-text="(detailProduct?.stock_quantity ?? 0) + ' (not a sell gate)'"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-500" data-i18n="catalog.field_sku">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500" data-i18n="catalog.field_barcode">Barcode</dt><dd class="font-medium text-right break-all" x-text="detailProduct?.barcode"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.category"><dt class="text-gray-500" data-i18n="catalog.field_category">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.product_class"><dt class="text-gray-500" data-i18n="catalog.field_class">Class</dt><dd class="font-medium text-right" x-text="detailProduct?.product_class"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500" data-i18n="catalog.field_supplier">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-500" data-i18n="catalog.field_stock">Stock (info)</dt><dd class="font-medium text-right" x-text="(detailProduct?.stock_quantity ?? 0) + t('catalog.not_a_sell_gate')"></dd></div>
                     </dl>
                     <template x-if="detailProduct?.description">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1">Description</h3>
+                            <h3 class="font-semibold text-gray-900 mb-1" data-i18n="catalog.description_heading">Description</h3>
                             <p class="text-gray-700" x-text="detailProduct?.description"></p>
                         </div>
                     </template>
@@ -279,7 +279,7 @@
                          the rest as plain tag chips — the review-card "attributes" look. -->
                     <template x-if="tagChips(detailProduct?.tags).attrs.length">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1">Attributes</h3>
+                            <h3 class="font-semibold text-gray-900 mb-1" data-i18n="catalog.attributes_heading">Attributes</h3>
                             <div class="cat-meta">
                                 <template x-for="a in tagChips(detailProduct?.tags).attrs" :key="a">
                                     <span class="chip chip-attr" x-text="a"></span>
@@ -289,7 +289,7 @@
                     </template>
                     <template x-if="tagChips(detailProduct?.tags).plain.length">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1">Tags</h3>
+                            <h3 class="font-semibold text-gray-900 mb-1" data-i18n="catalog.tags_heading">Tags</h3>
                             <div class="cat-meta">
                                 <template x-for="t in tagChips(detailProduct?.tags).plain" :key="t">
                                     <span class="chip chip-tag" x-text="t"></span>
@@ -306,7 +306,7 @@
     <div x-show="modalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="modalOpen=false" style="display:none;">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-start p-5 border-b sticky top-0 bg-white">
-                <h2 class="text-xl font-bold text-gray-900" x-text="editing ? '✏️ Edit product' : '➕ New product'"></h2>
+                <h2 class="text-xl font-bold text-gray-900" x-text="editing ? t('catalog.modal_edit_title') : t('catalog.modal_new_title')"></h2>
                 <button @click="modalOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
@@ -315,51 +315,51 @@
                     <div class="flex items-center gap-3">
                         <label class="btn-primary flex-none cursor-pointer flex items-center gap-2"
                                :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
-                            <span x-text="aiBusy ? '🔍 Reading…' : '✨ Snap & fill'"></span>
+                            <span x-text="aiBusy ? t('catalog.ai_reading') : t('catalog.ai_snap_fill')"></span>
                             <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden"
                                    @change="aiSuggest($event)" :disabled="aiBusy">
                         </label>
                         <div class="text-sm text-gray-600">
-                            No barcode? Photograph it — the AI drafts name, category &amp; description. You confirm.
+                            <span data-i18n="catalog.ai_help">No barcode? Photograph it — the AI drafts name, category &amp; description. You confirm.</span>
                             <p x-show="aiNote" x-text="aiNote" class="text-xs mt-1 font-medium text-indigo-700"></p>
                         </div>
                     </div>
                 </div>
                 <div class="grid md:grid-cols-2 gap-4">
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                        <input type="text" x-model="form.name" class="input-field" placeholder="Product name">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_name">Name *</label>
+                        <input type="text" x-model="form.name" class="input-field" placeholder="Product name" data-i18n-placeholder="catalog.name_placeholder">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_sku">SKU *</label>
                         <input type="text" x-model="form.sku" class="input-field font-mono" :readonly="editing"
                                :class="editing ? 'bg-gray-100' : ''">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_barcode">Barcode</label>
                         <div class="flex gap-2">
-                            <input type="text" x-model="form.barcode" class="input-field font-mono flex-1" placeholder="Scan or leave blank">
+                            <input type="text" x-model="form.barcode" class="input-field font-mono flex-1" placeholder="Scan or leave blank" data-i18n-placeholder="catalog.barcode_placeholder">
                             <button type="button" @click="startBarcodeScan()" class="btn-secondary flex-none px-3" title="Scan barcode">📷</button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">No barcode? Leave it blank — a code is generated automatically.</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="catalog.barcode_hint">No barcode? Leave it blank — a code is generated automatically.</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_price">Price (CHF) *</label>
                         <input type="number" step="0.05" min="0" x-model="form.price" class="input-field text-xl font-bold">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cost (CHF)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_cost">Cost (CHF)</label>
                         <input type="number" step="0.05" min="0" x-model="form.cost" class="input-field">
                         <p class="text-xs mt-1" x-show="parseFloat(form.cost) > 0 && parseFloat(form.price) > 0"
                            :class="parseFloat(form.cost) > parseFloat(form.price) ? 'text-red-600 font-semibold' : 'text-gray-500'">
-                            <span x-show="parseFloat(form.cost) > parseFloat(form.price)">⚠️ Cost is above price — you'd sell at a loss. </span>
-                            Markup: <b x-text="markupPct()"></b>
+                            <span x-show="parseFloat(form.cost) > parseFloat(form.price)" data-i18n="catalog.cost_above_price">⚠️ Cost is above price — you'd sell at a loss. </span>
+                            <span data-i18n="catalog.markup_label">Markup:</span> <b x-text="markupPct()"></b>
                         </p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Category
-                            <span class="text-xs text-gray-400 font-normal">— what it is (on the wall)</span></label>
-                        <input type="text" x-model="form.category" list="catlist" class="input-field" placeholder="Pick existing or type new">
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="catalog.form_category">Category</span>
+                            <span class="text-xs text-gray-400 font-normal" data-i18n="catalog.form_category_hint">— what it is (on the wall)</span></label>
+                        <input type="text" x-model="form.category" list="catlist" class="input-field" placeholder="Pick existing or type new" data-i18n-placeholder="catalog.category_placeholder">
                         <datalist id="catlist">
                             <template x-for="name in allCategoryNames()" :key="name">
                                 <option :value="name"></option>
@@ -367,25 +367,25 @@
                         </datalist>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Class
-                            <span class="text-xs text-gray-400 font-normal">— how the till treats it</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="catalog.form_class">Class</span>
+                            <span class="text-xs text-gray-400 font-normal" data-i18n="catalog.form_class_hint">— how the till treats it</span></label>
                         <select x-model="form.product_class" @change="onClassChange()" class="input-field">
                             <template x-for="c in classes" :key="c.value">
                                 <option :value="c.value" x-text="c.label"></option>
                             </template>
                         </select>
                         <p class="text-xs mt-1" :class="form.is_age_restricted ? 'text-red-600 font-medium' : 'text-gray-400'"
-                           x-text="form.is_age_restricted ? '🔞 This class is 18+ — age-gated at the till.' : 'Standard — no age gate.'"></p>
+                           x-text="form.is_age_restricted ? t('catalog.age_gated_note') : t('catalog.no_age_gate_note')"></p>
                         <p class="text-xs mt-0.5" :class="classPromo() ? 'text-amber-700 font-medium' : 'text-gray-400'"
-                           x-text="classPromo() ? '🚫 No promotional discounts / loyalty redemption (regulated).' : '🏷️ Discountable — promos OK.'"></p>
+                           x-text="classPromo() ? t('catalog.no_promo_note') : t('catalog.discountable_note')"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
-                        <input type="text" x-model="form.supplier_name" class="input-field" placeholder="(optional)">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_supplier">Supplier</label>
+                        <input type="text" x-model="form.supplier_name" class="input-field" placeholder="(optional)" data-i18n-placeholder="catalog.optional_placeholder">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Photos
-                            <span class="text-xs text-gray-400 font-normal">— a few angles; tap one to make it the cover</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="catalog.form_photos">Photos</span>
+                            <span class="text-xs text-gray-400 font-normal" data-i18n="catalog.form_photos_hint">— a few angles; tap one to make it the cover</span></label>
                         <div class="flex flex-wrap gap-2">
                             <!-- existing photos (edit mode) -->
                             <template x-for="img in gallery" :key="img.id">
@@ -393,7 +393,7 @@
                                      :class="img.is_cover ? 'ring-2 ring-indigo-500' : ''">
                                     <img :src="img.url" class="w-full h-full object-cover cursor-pointer" @click="makeCover(img)"
                                          title="Make cover" alt="">
-                                    <span x-show="img.is_cover" class="absolute bottom-0 inset-x-0 bg-indigo-600 text-white text-[10px] text-center leading-tight">cover</span>
+                                    <span x-show="img.is_cover" class="absolute bottom-0 inset-x-0 bg-indigo-600 text-white text-[10px] text-center leading-tight" data-i18n="catalog.cover_badge">cover</span>
                                     <button @click="removeImage(img)" type="button"
                                             class="absolute top-0 right-0 bg-red-600 text-white w-5 h-5 text-xs leading-none rounded-bl">✕</button>
                                 </div>
@@ -409,34 +409,34 @@
                             <!-- add another -->
                             <label class="w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:border-indigo-400 hover:text-indigo-500 flex-none">
                                 <span class="text-2xl leading-none">📸</span>
-                                <span class="text-[10px] mt-1" x-text="uploadingPhoto ? '…' : 'Add'"></span>
+                                <span class="text-[10px] mt-1" x-text="uploadingPhoto ? '…' : t('catalog.add_photo')"></span>
                                 <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="onPhoto($event)" :disabled="uploadingPhoto">
                             </label>
                         </div>
                         <input type="text" x-model="form.image_url" x-show="gallery.length===0 && pendingPhotos.length===0"
-                               class="input-field mt-2 text-xs text-gray-500" placeholder="…or paste an image URL (https://…)">
+                               class="input-field mt-2 text-xs text-gray-500" placeholder="…or paste an image URL (https://…)" data-i18n-placeholder="catalog.image_url_placeholder">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea x-model="form.description" rows="2" class="input-field" placeholder="(optional)"></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_description">Description</label>
+                        <textarea x-model="form.description" rows="2" class="input-field" placeholder="(optional)" data-i18n-placeholder="catalog.optional_placeholder"></textarea>
                     </div>
                     <!-- No min/max/reorder thresholds: Banco runs zero perpetual inventory.
                          Reorder guidance comes from sales velocity (v2), not a count. -->
                     <label class="flex items-center gap-2 text-sm text-gray-700">
-                        <input type="checkbox" x-model="form.is_age_restricted" class="w-4 h-4"> 18+ age-restricted
-                        <span class="text-xs text-gray-400">(usually set by Class — override here for an oddball)</span>
+                        <input type="checkbox" x-model="form.is_age_restricted" class="w-4 h-4"> <span data-i18n="catalog.age_restricted_check">18+ age-restricted</span>
+                        <span class="text-xs text-gray-400" data-i18n="catalog.age_restricted_hint">(usually set by Class — override here for an oddball)</span>
                     </label>
                 </div>
 
                 <div class="flex flex-wrap gap-3 pt-2 border-t">
                     <button @click="save()" :disabled="saving" class="btn-success flex-1">
-                        <span x-show="!saving" x-text="editing ? 'Save changes' : 'Create product'"></span>
-                        <span x-show="saving" style="display:none;">Saving…</span>
+                        <span x-show="!saving" x-text="editing ? t('catalog.save_changes') : t('catalog.create_product')"></span>
+                        <span x-show="saving" style="display:none;" data-i18n="catalog.saving">Saving…</span>
                     </button>
                     <button x-show="editing" @click="discontinue()" :disabled="saving"
-                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-semibold">🗑️ Discontinue</button>
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-semibold">🗑️ <span data-i18n="catalog.discontinue">Discontinue</span></button>
                 </div>
-                <p class="text-xs text-gray-500">Discontinue = soft delete. The item stops selling but history is kept; you can reactivate it later.</p>
+                <p class="text-xs text-gray-500" data-i18n="catalog.discontinue_hint">Discontinue = soft delete. The item stops selling but history is kept; you can reactivate it later.</p>
             </div>
         </div>
     </div>
@@ -444,7 +444,7 @@
     <!-- BL-89: barcode scanner overlay (shared PosScanner) for the create/edit form -->
     <div x-show="scanOpen" x-transition class="fixed inset-0 z-[70] bg-black flex flex-col" style="display:none;">
         <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
-            <span class="font-semibold">📷 Scan the barcode</span>
+            <span class="font-semibold">📷 <span data-i18n="catalog.scan_barcode_title">Scan the barcode</span></span>
             <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
         </div>
         <div class="flex-1 relative flex items-center justify-center overflow-hidden">
@@ -452,17 +452,17 @@
             <!-- No-camera fallback: a calm note + "choose a photo from disc". Never a dead-end. -->
             <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
                 <span class="text-5xl">📁</span>
-                <p class="text-white text-base max-w-xs" x-text="scanError || 'No camera on this device.'"></p>
+                <p class="text-white text-base max-w-xs" x-text="scanError || t('catalog.no_camera')"></p>
                 <label class="btn-primary cursor-pointer">
-                    📁 Choose a photo from your computer
+                    📁 <span data-i18n="catalog.choose_photo">Choose a photo from your computer</span>
                     <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
                 </label>
-                <p class="text-white/60 text-xs max-w-xs">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+                <p class="text-white/60 text-xs max-w-xs" data-i18n="catalog.scan_fallback_hint">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
             </div>
             <p x-show="scanError && !scanFallback" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
         </div>
         <div class="px-4 py-4 bg-black/80 text-center">
-            <button @click="stopScan()" class="btn-secondary">Cancel — type it instead</button>
+            <button @click="stopScan()" class="btn-secondary" data-i18n="catalog.cancel_type_instead">Cancel — type it instead</button>
         </div>
     </div>
 
@@ -694,7 +694,7 @@
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                if (!f.type.startsWith('image/')) { showToast(t('catalog.not_an_image'), 'warning'); return; }
                 this.aiBusy = true; this.aiNote = '';
                 try {
                     const fd = new FormData(); fd.append('file', f);
@@ -717,7 +717,7 @@
                         : `Drafted by ${d.provider} in ${(d.elapsed_ms/1000).toFixed(1)}s · confidence ${Math.round((s.confidence||0)*100)}% · check the price.`;
                 } catch (err) {
                     console.warn('ai suggest', err);
-                    this.aiNote = 'AI unavailable — just type it in.';
+                    this.aiNote = t('catalog.ai_unavailable');
                 } finally { this.aiBusy = false; }
             },
 
@@ -727,7 +727,7 @@
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';   // let the same file be picked again
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                if (!f.type.startsWith('image/')) { showToast(t('catalog.not_an_image'), 'warning'); return; }
                 if (this.editing && this.form.id) {
                     await this._uploadPhoto(this.form.id, f);
                     await this.loadGallery(this.form.id);
@@ -744,8 +744,8 @@
                     const fd = new FormData(); fd.append('file', file);
                     const r = await fetch(`/api/v1/pos/products/${pid}/images`, {
                         method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
-                    if (!r.ok) showToast('A photo did not upload', 'warning');
-                } catch (e) { console.warn('photo upload failed', e); showToast('A photo did not upload', 'warning'); }
+                    if (!r.ok) showToast(t('catalog.photo_upload_failed'), 'warning');
+                } catch (e) { console.warn('photo upload failed', e); showToast(t('catalog.photo_upload_failed'), 'warning'); }
                 finally { this.uploadingPhoto = false; }
             },
 
@@ -757,15 +757,15 @@
             removePending(i) { this.pendingPhotos.splice(i, 1); },
 
             async removeImage(img) {
-                if (!confirm('Remove this photo?')) return;
+                if (!confirm(t('catalog.confirm_remove_photo'))) return;
                 try { await API.delete(`/api/v1/pos/products/${this.form.id}/images/${img.id}`); await this.loadGallery(this.form.id); }
-                catch (e) { showToast('Could not remove photo', 'error'); }
+                catch (e) { showToast(t('catalog.remove_photo_failed'), 'error'); }
             },
 
             async makeCover(img) {
                 if (img.is_cover) return;
                 try { await API.put(`/api/v1/pos/products/${this.form.id}/images/${img.id}/cover`, {}); await this.loadGallery(this.form.id); }
-                catch (e) { showToast('Could not set cover', 'error'); }
+                catch (e) { showToast(t('catalog.set_cover_failed'), 'error'); }
             },
 
             // Read-only preview — tap a product's image/info to SEE it (distinct from Edit).
@@ -823,13 +823,13 @@
                 return Math.round((p - c) / c * 100) + '%';
             },
             async save() {
-                if (!this.form.name || !this.form.name.trim()) { showToast('Name is required', 'warning'); return; }
+                if (!this.form.name || !this.form.name.trim()) { showToast(t('catalog.name_required'), 'warning'); return; }
                 const price = parseFloat(this.form.price);
-                if (isNaN(price) || price < 0) { showToast('Enter a valid price', 'warning'); return; }
+                if (isNaN(price) || price < 0) { showToast(t('catalog.invalid_price'), 'warning'); return; }
                 const cost = parseFloat(this.form.cost);
                 if (!isNaN(cost) && cost > 0 && cost > price &&
                     !confirm('Cost (' + formatPrice(cost) + ') is higher than the price (' + formatPrice(price) + ') — you would sell at a loss. Save anyway?')) return;
-                if (!this.editing && (!this.form.sku || !this.form.sku.trim())) { showToast('SKU is required', 'warning'); return; }
+                if (!this.editing && (!this.form.sku || !this.form.sku.trim())) { showToast(t('catalog.sku_required'), 'warning'); return; }
 
                 this.saving = true;
                 try {
@@ -845,24 +845,24 @@
                         for (const ph of this.pendingPhotos) { await this._uploadPhoto(productId, ph.file); }
                         this.pendingPhotos = [];
                     }
-                    showToast(this.editing ? 'Saved' : 'Product created', 'success');
+                    showToast(this.editing ? t('catalog.saved') : t('catalog.product_created'), 'success');
                     this.modalOpen = false;
                     this.showDiscontinued ? this.loadDiscontinued() : this.search();
                 } catch (e) {
-                    showToast(e.message || 'Save failed', 'error');
+                    showToast(e.message || t('catalog.save_failed'), 'error');
                 } finally { this.saving = false; }
             },
 
             async discontinue() {
-                if (!confirm('Discontinue this product? It stops selling but history is kept.')) return;
+                if (!confirm(t('catalog.confirm_discontinue'))) return;
                 this.saving = true;
                 try {
                     await API.delete(`/api/v1/pos/products/${this.form.id}`);
-                    showToast('Discontinued', 'info');
+                    showToast(t('catalog.discontinued_toast'), 'info');
                     this.modalOpen = false;
                     this.search();
                 } catch (e) {
-                    showToast(e.message || 'Discontinue failed', 'error');
+                    showToast(e.message || t('catalog.discontinue_failed'), 'error');
                 } finally { this.saving = false; }
             },
 
@@ -870,10 +870,10 @@
                 this.saving = true;
                 try {
                     await API.put(`/api/v1/pos/products/${p.id}`, { is_active: true });
-                    showToast('Reactivated', 'success');
+                    showToast(t('catalog.reactivated_toast'), 'success');
                     this.loadDiscontinued();
                 } catch (e) {
-                    showToast(e.message || 'Reactivate failed', 'error');
+                    showToast(e.message || t('catalog.reactivate_failed'), 'error');
                 } finally { this.saving = false; }
             },
 
@@ -888,7 +888,7 @@
                         this.form.barcode = text;
                         PosScanner.vibrate(60); PosScanner.beep();
                         this.scanOpen = false;
-                        showToast('Barcode scanned', 'success');
+                        showToast(t('catalog.barcode_scanned'), 'success');
                     },
                     (err) => this.onScanCameraFail(err));
             },
@@ -908,7 +908,7 @@
                         PosScanner.vibrate(60); PosScanner.beep();
                         this.scanOpen = false;
                         this.search();
-                        showToast('Scanned — showing matches', 'success');
+                        showToast(t('catalog.scanned_showing_matches'), 'success');
                     },
                     (err) => this.onScanCameraFail(err));
             },
@@ -918,8 +918,8 @@
             onScanCameraFail(err) {
                 const n = String((err && (err.name || err)) || '');
                 this.scanError = /permission|denied|NotAllowed/i.test(n)
-                    ? 'Camera blocked. Pick a photo of the barcode instead, or type it.'
-                    : 'No camera here. Pick a photo of the barcode instead, or type it.';
+                    ? t('catalog.camera_blocked')
+                    : t('catalog.no_camera_here');
                 this.scanFallback = true;   // reveal the file picker, keep the modal open
             },
 
@@ -928,8 +928,8 @@
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
-                this.scanError = 'Reading the photo…';
+                if (!f.type.startsWith('image/')) { showToast(t('catalog.not_an_image'), 'warning'); return; }
+                this.scanError = t('catalog.reading_photo');
                 try {
                     const text = await window.PosScanner.decodeFile(f);
                     if (!text) throw new Error('no-code');
@@ -937,14 +937,14 @@
                     this.scanOpen = false; this.scanFallback = false;
                     if (this.scanMode === 'search') {
                         this.q = text; this.search();
-                        showToast('Scanned — showing matches', 'success');
+                        showToast(t('catalog.scanned_showing_matches'), 'success');
                     } else {
                         this.form.barcode = text;
-                        showToast('Barcode scanned', 'success');
+                        showToast(t('catalog.barcode_scanned'), 'success');
                     }
                 } catch (err) {
                     console.warn('file decode', err);
-                    this.scanError = "Couldn't read a barcode in that photo. Try another, or type it in.";
+                    this.scanError = t('catalog.no_barcode_in_photo');
                 }
             },
 

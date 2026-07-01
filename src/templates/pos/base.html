@@ -77,6 +77,10 @@
     <!-- P1 offline catalog: IndexedDB mirror so the till can scan + price with no network -->
     <script src="/static/pos/catalog-cache.js"></script>
 
+    <!-- PHASE 2 (Go-Italian) i18n string catalog: EN + IT + DE. Loaded in <head> so
+         POS_STRINGS is a global before the engine (defined below) runs its detection. -->
+    <script src="/static/pos/pos-i18n.js?v=20260701"></script>
+
     <!-- Inter font (still CDN — falls back to system sans offline; vendor in a later phase) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -365,11 +369,11 @@
 
     <!-- App-shell bottom navigation (PWA Phase 0.5) — the permanent, thumb-reach nav -->
     <nav class="app-bottomnav" id="app-nav">
-      <a href="/pos/scan" data-tab="/pos/scan"><span class="ico">📷</span><span>Scan</span></a>
-      <a href="/pos/checkout" data-tab="/pos/checkout"><span class="ico">🛒<span class="badge" id="nav-cart-badge" style="display:none">0</span></span><span>Cart</span></a>
-      <a href="/pos/catalog" data-tab="/pos/catalog"><span class="ico">📦</span><span>Catalog</span></a>
-      <a href="/pos/customer-lookup" data-tab="/pos/customer-lookup"><span class="ico">👤</span><span>Customers</span></a>
-      <a href="/pos/my-day" data-tab="/pos/my-day"><span class="ico">📅</span><span>My Day</span></a>
+      <a href="/pos/scan" data-tab="/pos/scan"><span class="ico">📷</span><span data-i18n="nav.scan">Scan</span></a>
+      <a href="/pos/checkout" data-tab="/pos/checkout"><span class="ico">🛒<span class="badge" id="nav-cart-badge" style="display:none">0</span></span><span data-i18n="nav.cart">Cart</span></a>
+      <a href="/pos/catalog" data-tab="/pos/catalog"><span class="ico">📦</span><span data-i18n="nav.catalog">Catalog</span></a>
+      <a href="/pos/customer-lookup" data-tab="/pos/customer-lookup"><span class="ico">👤</span><span data-i18n="nav.customers">Customers</span></a>
+      <a href="/pos/my-day" data-tab="/pos/my-day"><span class="ico">📅</span><span data-i18n="nav.my_day">My Day</span></a>
     </nav>
 
     <!-- Global JavaScript utilities -->
@@ -624,6 +628,10 @@
             vat_year: 2025,
             currency: 'CHF',
             locale: 'de-CH',
+            // PHASE 0/2: per-tenant fiscal regime (code + vat_number_format), CH default.
+            // Drives the receipt VAT label (P. IVA / MWST) + the IT non-fiscal banner.
+            regime: 'CH',
+            vat_number_format: 'CHE-XXX.XXX.XXX MWST',
             // Swiss default denom grid (byte-identical to the server CHF set); /config
             // overwrites this with the tenant currency's ordered face values on load.
             denominations: ['1000','200','100','50','20','10','5','2','1','0.50','0.20','0.10','0.05'],
@@ -640,14 +648,25 @@
                         this.vat_year = config.vat_year;
                         this.currency = config.currency;
                         this.locale = config.locale;
+                        // PHASE 0/2: per-tenant regime (code + VAT-number format) for the receipt
+                        // VAT label + IT non-fiscal banner. Falls back to CH defaults if absent.
+                        if (config.regime && typeof config.regime === 'object') {
+                            if (config.regime.regime) this.regime = config.regime.regime;
+                            if (config.regime.vat_number_format) this.vat_number_format = config.regime.vat_number_format;
+                        }
                         if (Array.isArray(config.denominations) && config.denominations.length)
                             this.denominations = config.denominations;
                         this.loaded = true;
                         // push into the reactive store so already-painted money/dates re-render
                         try {
                             const s = (window.Alpine && Alpine.store) ? Alpine.store('cfg') : null;
-                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; }
+                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; }
                         } catch (e) {}
+                        // PHASE 2 i18n: if the language was only a default guess (no ?lang / stored
+                        // pref / JWT locale), the tenant locale from /config may now imply a
+                        // different supported language (e.g. an IT tenant with no JWT) — re-language
+                        // the already-painted page in place, no reload needed.
+                        try { if (window.__posRelangFromConfig) window.__posRelangFromConfig(); } catch (e) {}
                         console.log(`POS Config loaded: VAT ${this.vat_rate}% (${this.vat_year})`);
                     }
                 } catch (e) {
@@ -670,6 +689,7 @@
                 currency: POSConfig.currency,
                 locale: POSConfig.locale,
                 denominations: POSConfig.denominations,
+                regime: POSConfig.regime,
             });
         });
         function _cfg(k) {
@@ -792,13 +812,204 @@
         }
     </script>
 
+    <!-- ===== PHASE 2 (Go-Italian) i18n engine — EN / IT / DE, Banco POS =====
+         Proven pattern ported from src/templates/isotto/base.html. POS_STRINGS is loaded
+         in <head> (pos-i18n.js). English is the byte-identical CH baseline; de-CH resolves
+         to German (Felix's real till); an unsupported locale falls to English, never blank. -->
+    <script>
+        // --- Language detection -------------------------------------------------------
+        // Order: ?lang= → localStorage 'pos_lang' → JWT 'locale' claim → POSConfig.locale's
+        // primary subtag → 'en'. Every branch is guarded by `POS_STRINGS[lang]`, so an
+        // unsupported locale (e.g. fr-CH until FR ships) can only ever fall back to English.
+        (function () {
+            function primary(loc) {
+                if (!loc) return null;
+                var p = String(loc).toLowerCase().split(/[-_]/)[0];
+                return (window.POS_STRINGS && POS_STRINGS[p]) ? p : null;
+            }
+            var lang = null, source = 'default';
+            var params = new URLSearchParams(location.search);
+            var urlLang = params.get('lang');
+            if (urlLang) {
+                if (window.POS_STRINGS && POS_STRINGS[urlLang]) {
+                    lang = urlLang; source = 'url'; localStorage.setItem('pos_lang', urlLang);
+                } else { lang = 'en'; source = 'url-unsupported'; }   // explicit but unsupported → English
+            }
+            if (!lang) {
+                var stored = localStorage.getItem('pos_lang');
+                if (stored && window.POS_STRINGS && POS_STRINGS[stored]) { lang = stored; source = 'stored'; }
+            }
+            if (!lang) {
+                // JWT 'locale' claim (Felix's de-CH → German). If the user's OWN locale is
+                // present but unsupported, honour "give them English" — do NOT fall through to
+                // the tenant default (so an fr-CH user lands on English, not the shop's German).
+                try {
+                    var tok = sessionStorage.getItem('pos_token');
+                    if (tok) {
+                        var payload = JSON.parse(atob(tok.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                        if (payload && payload.locale) {
+                            var jl = primary(payload.locale);
+                            if (jl) { lang = jl; source = 'jwt'; }
+                            else { lang = 'en'; source = 'jwt-unsupported'; }
+                        }
+                    }
+                } catch (e) { /* ignore bad token */ }
+            }
+            if (!lang) {
+                // Tenant default from POSConfig.locale (de-CH → German on a CH till). At first
+                // paint /config may not have resolved yet; __posRelangFromConfig() re-checks
+                // this branch once the real tenant locale arrives.
+                var cl = primary(window.POSConfig && POSConfig.locale);
+                if (cl) { lang = cl; source = 'config'; }
+            }
+            if (!lang) { lang = 'en'; source = 'fallback'; }
+            window._posLang = (window.POS_STRINGS && POS_STRINGS[lang]) ? lang : 'en';
+            window._posLangSource = source;
+            document.documentElement.lang = window._posLang;
+        })();
+
+        // Translation helper: t('checkout.title') → localized string; t('k',{n:'x'}) interpolates.
+        // Missing-key policy: fall back to English; if still missing, console.error (loud, for
+        // the parity gate) and return the raw key — but a data-i18n element keeps its literal
+        // English DOM text as fallback, so a missing key never blanks the till.
+        function t(key, replacements) {
+            var lang = window._posLang || 'en';
+            function look(L) {
+                var v = window.POS_STRINGS ? POS_STRINGS[L] : null;
+                if (!v) return undefined;
+                var ks = key.split('.');
+                for (var i = 0; i < ks.length; i++) {
+                    if (v && typeof v === 'object' && ks[i] in v) v = v[ks[i]]; else return undefined;
+                }
+                return (typeof v === 'string') ? v : undefined;
+            }
+            var val = look(lang);
+            if (val === undefined) val = look('en');
+            if (val === undefined) {
+                if (window.console && console.error) console.error('[i18n] missing key:', key);
+                return key;
+            }
+            if (replacements) {
+                for (var k in replacements) {
+                    if (Object.prototype.hasOwnProperty.call(replacements, k))
+                        val = val.split('{' + k + '}').join(replacements[k]);
+                }
+            }
+            return val;
+        }
+        window.t = t;
+
+        // Switch language and reload (cart survives in sessionStorage across the reload).
+        function switchLanguage(newLang) {
+            if (window.POS_STRINGS && POS_STRINGS[newLang]) {
+                localStorage.setItem('pos_lang', newLang);
+                window.location.reload();
+            }
+        }
+        window.switchLanguage = switchLanguage;
+
+        // --- Apply translations to the DOM --------------------------------------------
+        function applyI18n(el) {
+            if (!el || el.nodeType !== 1) return;
+            if (el.hasAttribute('data-i18n')) {
+                var v = t(el.getAttribute('data-i18n'));
+                if (v !== el.getAttribute('data-i18n')) el.textContent = v;
+            }
+            if (el.hasAttribute('data-i18n-placeholder')) {
+                var vp = t(el.getAttribute('data-i18n-placeholder'));
+                if (vp !== el.getAttribute('data-i18n-placeholder')) el.placeholder = vp;
+            }
+            if (el.hasAttribute('data-i18n-html')) {
+                var vh = t(el.getAttribute('data-i18n-html'));
+                if (vh !== el.getAttribute('data-i18n-html')) el.innerHTML = vh;
+            }
+        }
+        function sweepI18n(root) {
+            root = root || document;
+            if (root.nodeType === 1) applyI18n(root);
+            var nodes = root.querySelectorAll('[data-i18n],[data-i18n-placeholder],[data-i18n-html]');
+            for (var i = 0; i < nodes.length; i++) applyI18n(nodes[i]);
+        }
+        window.applyI18n = applyI18n;
+        window.sweepI18n = sweepI18n;
+
+        // Initial sweep (run now in case DOMContentLoaded already fired, and again on the event).
+        sweepI18n(document);
+        document.addEventListener('DOMContentLoaded', function () {
+            sweepI18n(document);
+            var sel = document.getElementById('pos-lang-switch');
+            if (sel) sel.value = window._posLang || 'en';
+            // Key-parity self-check (dev aid, cheap, once): en/it/de must share one key set.
+            try {
+                if (window.POS_STRINGS) {
+                    var flat = function (o, p, out) {
+                        for (var k in o) { if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
+                            var kk = p ? p + '.' + k : k;
+                            if (o[k] && typeof o[k] === 'object') flat(o[k], kk, out); else out[kk] = 1; }
+                        return out; };
+                    var en = flat(POS_STRINGS.en || {}, '', {});
+                    ['it', 'de'].forEach(function (L) {
+                        var loc = flat(POS_STRINGS[L] || {}, '', {}), miss = [], extra = [];
+                        for (var k in en) if (!(k in loc)) miss.push(k);
+                        for (var k2 in loc) if (!(k2 in en)) extra.push(k2);
+                        if (miss.length || extra.length)
+                            console.error('[i18n] key-parity ' + L + ' vs en — missing:', miss, 'extra:', extra);
+                    });
+                }
+            } catch (e) {}
+        });
+
+        // Scoped MutationObserver for Alpine-rendered content. childList+subtree ONLY — we do
+        // NOT observe attributes or characterData, so scan.html's per-keystroke x-text updates
+        // to EXISTING text nodes never trigger a re-sweep (no scan-input lag). We only translate
+        // data-i18n markup inside freshly-added nodes.
+        (function () {
+            var obs = new MutationObserver(function (mutations) {
+                for (var m = 0; m < mutations.length; m++) {
+                    var added = mutations[m].addedNodes;
+                    for (var n = 0; n < added.length; n++) {
+                        var node = added[n];
+                        if (node.nodeType !== 1) continue;
+                        if (node.hasAttribute && (node.hasAttribute('data-i18n') ||
+                            node.hasAttribute('data-i18n-placeholder') || node.hasAttribute('data-i18n-html')))
+                            applyI18n(node);
+                        if (node.querySelectorAll) {
+                            var kids = node.querySelectorAll('[data-i18n],[data-i18n-placeholder],[data-i18n-html]');
+                            for (var q = 0; q < kids.length; q++) applyI18n(kids[q]);
+                        }
+                    }
+                }
+            });
+            function start() { obs.observe(document.body || document.documentElement, { childList: true, subtree: true }); }
+            if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+        })();
+
+        // Re-language in place when /config resolves a tenant locale AFTER first paint — but
+        // ONLY if the language was a pure default guess (source 'config'/'default'/'fallback');
+        // an explicit ?lang / stored pref / JWT locale is never overridden.
+        window.__posRelangFromConfig = function () {
+            var src = window._posLangSource;
+            if (src !== 'config' && src !== 'default' && src !== 'fallback') return;
+            var loc = window.POSConfig && POSConfig.locale;
+            if (!loc) return;
+            var p = String(loc).toLowerCase().split(/[-_]/)[0];
+            var next = (window.POS_STRINGS && POS_STRINGS[p]) ? p : 'en';
+            if (next === window._posLang) return;
+            window._posLang = next;
+            document.documentElement.lang = next;
+            sweepI18n(document);
+            var sel = document.getElementById('pos-lang-switch');
+            if (sel) sel.value = next;
+        };
+    </script>
+
     {% block extra_scripts %}{% endblock %}
 
     <!-- Helix Status Bar — compact + icon-based; env / build / user always visible (kept SHA + version) -->
     <footer class="helix-status-bar" id="helix-status">
         <div class="status-section">
             <span class="pulse ok" id="status-pulse" title="System status"></span>
-            <span id="status-text" class="sm-hide">System OK</span>
+            <span id="status-text" class="sm-hide" data-i18n="status.ok">System OK</span>
             {% set _e = (app_env | default('')) | lower %}
             {% if 'prod' in _e %}{% set _ec = 'PRD' %}{% set _ecc = 'env-prd' %}
             {% elif 'staging' in _e %}{% set _ec = 'STG' %}{% set _ecc = 'env-stg' %}
@@ -812,6 +1023,12 @@
         <div class="status-section">
             <span id="status-screen" class="sm-hide" title="screen">{% block page_name %}POS{% endblock %}</span>
             <span title="cashier">👤 <span id="status-user">--</span></span>
+            <select id="pos-lang-switch" onchange="switchLanguage(this.value)" title="Language / Sprache / Lingua"
+                style="background:#1e293b;color:#94a3b8;border:1px solid #475569;border-radius:4px;font-size:11px;padding:1px 3px;cursor:pointer;font-family:inherit;line-height:1;">
+                <option value="en" style="background:#1e293b;">EN</option>
+                <option value="de" style="background:#1e293b;">DE</option>
+                <option value="it" style="background:#1e293b;">IT</option>
+            </select>
             <a id="cockpit-link" href="/pos/hypercare" title="Cockpit — manage all reports" style="display:none;text-decoration:none;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🎛️</a>
             <button id="bell-open" title="Notifications" style="position:relative;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🔔<span id="bell-badge" style="display:none;position:absolute;top:-6px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:14px;height:14px;line-height:14px;border-radius:7px;padding:0 3px;text-align:center;">0</span></button>
             <button id="pulse-open" title="Shop Pulse — live stats" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">📊</button>
@@ -1026,14 +1243,14 @@
 
                     if (response.ok) {
                         pulse.className = 'pulse ok';
-                        statusText.textContent = 'System OK';
+                        statusText.textContent = t('status.ok');
                     } else {
                         pulse.className = 'pulse warn';
-                        statusText.textContent = 'Degraded';
+                        statusText.textContent = t('status.degraded');
                     }
                 } catch (e) {
                     document.getElementById('status-pulse').className = 'pulse error';
-                    document.getElementById('status-text').textContent = 'Offline';
+                    document.getElementById('status-text').textContent = t('status.offline');
                 }
             }
 
@@ -1396,7 +1613,7 @@
     <!-- Offline = no sales (by design — we deliberately don't do offline sales; the use case is
          tiny and the fiscal/compliance cost huge). A big, can't-miss banner that says WHY and HOW
          to fix it, so nobody wastes time ringing a sale that won't go through. Toggled by sync(). -->
-    <div id="lp-offline-pill" role="alert" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:#b45309;color:#fff;font:600 13px/1.45 Inter,system-ui,sans-serif;padding:11px 16px;padding-top:calc(11px + env(safe-area-inset-top));text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)">⚠ <b>No internet — sales are paused.</b> Your cart is safe. Switch to mobile data or a hotspot, then carry on.</div>
+    <div id="lp-offline-pill" role="alert" data-i18n-html="status.offline_banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:#b45309;color:#fff;font:600 13px/1.45 Inter,system-ui,sans-serif;padding:11px 16px;padding-top:calc(11px + env(safe-area-inset-top));text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)">⚠ <b>No internet — sales are paused.</b> Your cart is safe. Switch to mobile data or a hotspot, then carry on.</div>
     <script>
     (function(){
       // Online/offline pill — in P0 this is a heads-up only (writes still need the network).

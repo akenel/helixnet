@@ -14,12 +14,12 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">🛍️ New Sale</h1>
-                    <p class="text-sm text-gray-600">Transaction <span x-text="transactionId"></span></p>
+                    <h1 class="text-2xl font-bold text-gray-900">🛍️ <span data-i18n="scan.heading">New Sale</span></h1>
+                    <p class="text-sm text-gray-600"><span data-i18n="scan.transaction_label">Transaction</span> <span x-text="transactionId"></span></p>
                 </div>
             </div>
             <div class="text-right">
-                <p class="text-sm text-gray-600">Cashier</p>
+                <p class="text-sm text-gray-600" data-i18n="scan.cashier">Cashier</p>
                 <p class="font-semibold" x-text="user.username"></p>
             </div>
         </div>
@@ -31,7 +31,7 @@
             <div class="space-y-6">
                 <!-- Search Methods -->
                 <div class="card">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">Find Product</h2>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4" data-i18n="scan.find_product">Find Product</h2>
 
                     <!-- Mode Selector -->
                     <div class="flex gap-2 mb-4">
@@ -39,19 +39,19 @@
                             @click="searchMode = 'barcode'"
                             :class="searchMode === 'barcode' ? 'btn-primary' : 'btn-secondary'"
                             class="flex-1 py-3">
-                            📊 Barcode
+                            📊 <span data-i18n="scan.mode_barcode">Barcode</span>
                         </button>
                         <button
                             @click="searchMode = 'search'"
                             :class="searchMode === 'search' ? 'btn-primary' : 'btn-secondary'"
                             class="flex-1 py-3">
-                            🔍 Search
+                            🔍 <span data-i18n="scan.mode_search">Search</span>
                         </button>
                         <button
                             @click="searchMode = 'catalog'"
                             :class="searchMode === 'catalog' ? 'btn-primary' : 'btn-secondary'"
                             class="flex-1 py-3">
-                            🆕 New item
+                            🆕 <span data-i18n="scan.mode_new_item">New item</span>
                         </button>
                     </div>
 
@@ -62,14 +62,15 @@
                             x-model="barcodeInput"
                             @keyup.enter="searchByBarcode()"
                             placeholder="Scan or type barcode..."
+                            data-i18n-placeholder="scan.ph_barcode"
                             class="input-field"
                             autofocus>
                         <button @click="searchByBarcode()" class="btn-success w-full">
-                            📊 Find by Barcode
+                            📊 <span data-i18n="scan.find_by_barcode">Find by Barcode</span>
                         </button>
                         <!-- BL-87: live camera scan. Manual entry above stays as fallback. -->
                         <button @click="startScan()" class="btn-primary w-full">
-                            📷 Scan with camera
+                            📷 <span data-i18n="scan.scan_camera">Scan with camera</span>
                         </button>
                     </div>
 
@@ -80,17 +81,18 @@
                             x-model="searchInput"
                             @input="searchProducts()"
                             placeholder="Type product name..."
+                            data-i18n-placeholder="scan.ph_product_search"
                             class="input-field">
                         <select x-model="searchCategory" @change="searchProducts()" class="input-field">
-                            <option value="">All categories</option>
+                            <option value="" data-i18n="scan.all_categories">All categories</option>
                             <template x-for="c in categories" :key="c.name">
                                 <option :value="c.name" x-text="c.name + ' (' + c.count + ')'"></option>
                             </template>
                         </select>
                         <p class="text-sm text-gray-600">
                             <span x-show="searchTotal > 0">Showing <span x-text="searchResults.length"></span> of <span x-text="searchTotal"></span> matches</span>
-                            <span x-show="searchInput.length >= 2 && searchTotal === 0">No matches</span>
-                            <span x-show="searchInput.length < 2 && !searchCategory">Type at least 2 letters, or pick a category</span>
+                            <span x-show="searchInput.length >= 2 && searchTotal === 0" data-i18n="scan.no_matches">No matches</span>
+                            <span x-show="searchInput.length < 2 && !searchCategory" data-i18n="scan.search_hint">Type at least 2 letters, or pick a category</span>
                         </p>
                     </div>
 
@@ -99,8 +101,8 @@
                          Pam never picks a category; a manager enhances/discontinues later. -->
                     <div x-show="searchMode === 'catalog'" class="space-y-4">
                         <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
-                            <p class="text-sm font-semibold text-yellow-800 mb-2">🆕 New item — no barcode</p>
-                            <p class="text-sm text-yellow-700">
+                            <p class="text-sm font-semibold text-yellow-800 mb-2">🆕 <span data-i18n="scan.new_item_title">New item — no barcode</span></p>
+                            <p class="text-sm text-yellow-700" data-i18n-html="scan.new_item_help">
                                 Name + price, photo if you've got a second. It's <b>saved</b> (filed under
                                 <b>“On the fly”</b>) and added to the cart — so you can <b>find it by name and sell it
                                 again</b>. Tidy it up later in the Catalogue, or discontinue it if it was a one-off.
@@ -108,55 +110,55 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Item name <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><span data-i18n="scan.item_name">Item name</span> <span class="text-red-500">*</span></label>
                             <input type="text" x-model="otfName" @keyup.enter="createNoCodeItem()"
-                                   placeholder="e.g. Cynthia cup — red" class="input-field">
+                                   placeholder="e.g. Cynthia cup — red" data-i18n-placeholder="scan.ph_item_name" class="input-field">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Price (CHF) <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><span data-i18n="scan.price_chf">Price (CHF)</span> <span class="text-red-500">*</span></label>
                             <input type="number" step="0.05" min="0" x-model="otfPrice" @keyup.enter="createNoCodeItem()"
                                    placeholder="0.00" class="input-field text-2xl font-bold">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Photo <span class="text-gray-400 font-normal">(optional)</span></label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><span data-i18n="scan.photo">Photo</span> <span class="text-gray-400 font-normal" data-i18n="scan.optional">(optional)</span></label>
                             <div class="flex items-center gap-3">
                                 <label class="btn-secondary cursor-pointer flex-none">
-                                    📸 <span x-text="otfPhotoData ? 'Retake' : 'Take photo'"></span>
+                                    📸 <span x-text="otfPhotoData ? t('scan.retake') : t('scan.take_photo')"></span>
                                     <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="onOtfPhoto($event)">
                                 </label>
                                 <img x-show="otfPhotoData" :src="otfPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
-                                <span x-show="!otfPhotoData" class="text-xs text-gray-400">Helps you recognise it next time</span>
+                                <span x-show="!otfPhotoData" class="text-xs text-gray-400" data-i18n="scan.photo_recognise">Helps you recognise it next time</span>
                             </div>
                         </div>
 
                         <!-- Optional extras — fill if you know them, otherwise skip. -->
                         <details class="border rounded-lg">
-                            <summary class="cursor-pointer select-none px-3 py-2 text-sm text-gray-600">➕ Add details <span class="text-gray-400">(optional)</span></summary>
+                            <summary class="cursor-pointer select-none px-3 py-2 text-sm text-gray-600">➕ <span data-i18n="scan.add_details">Add details</span> <span class="text-gray-400" data-i18n="scan.optional">(optional)</span></summary>
                             <div class="p-3 pt-0 space-y-3">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <input type="text" x-model="otfDescription" placeholder="(optional) any extra detail" class="input-field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.description">Description</label>
+                                    <input type="text" x-model="otfDescription" placeholder="(optional) any extra detail" data-i18n-placeholder="scan.ph_description" class="input-field">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                    <input type="text" x-model="otfCategory" list="otf-cats" placeholder="(optional) leave blank = On the fly" class="input-field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.category">Category</label>
+                                    <input type="text" x-model="otfCategory" list="otf-cats" placeholder="(optional) leave blank = On the fly" data-i18n-placeholder="scan.ph_category" class="input-field">
                                     <datalist id="otf-cats"><template x-for="c in categories" :key="c.name"><option :value="c.name"></option></template></datalist>
                                 </div>
                             </div>
                         </details>
 
                         <button @click="createNoCodeItem()" :disabled="lazySaving" class="btn-success w-full">
-                            <span x-show="!lazySaving">➕ Create &amp; add to cart</span>
-                            <span x-show="lazySaving" style="display:none;">Saving…</span>
+                            <span x-show="!lazySaving">➕ <span data-i18n="scan.create_add_cart">Create &amp; add to cart</span></span>
+                            <span x-show="lazySaving" style="display:none;" data-i18n="scan.saving">Saving…</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Search Results (for search mode) -->
                 <div x-show="searchMode === 'search' && searchResults.length > 0" class="card max-h-96 overflow-y-auto">
-                    <h3 class="text-lg font-bold text-gray-900 mb-3">Products</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-3" data-i18n="scan.products">Products</h3>
                     <div class="space-y-2">
                         <template x-for="product in searchResults" :key="product.id">
                             <div @click="openDetail(product)" title="Tap for details"
@@ -180,7 +182,7 @@
                                 <button
                                     @click.stop="addToCart(product)"
                                     class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">
-                                    ➕ Add
+                                    ➕ <span data-i18n="scan.add">Add</span>
                                 </button>
                             </div>
                         </template>
@@ -189,7 +191,7 @@
                     <button x-show="searchResults.length < searchTotal" @click="loadMore()"
                         class="btn-secondary w-full mt-3" :disabled="searchLoading">
                         <span x-show="!searchLoading">Show more (<span x-text="searchTotal - searchResults.length"></span> more)</span>
-                        <span x-show="searchLoading">Loading…</span>
+                        <span x-show="searchLoading" data-i18n="common.loading">Loading…</span>
                     </button>
                 </div>
             </div>
@@ -198,13 +200,13 @@
             <div class="space-y-6">
                 <div class="card">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">
-                        🛒 Cart (<span x-text="cart.length"></span> items)
+                        🛒 <span data-i18n="scan.cart">Cart</span> (<span x-text="cart.length"></span> <span data-i18n="scan.items">items</span>)
                     </h2>
 
                     <!-- Empty cart message -->
                     <div x-show="cart.length === 0" class="text-center py-8 text-gray-500">
                         <span class="text-6xl block mb-3">🛒</span>
-                        <p>Cart is empty. Start scanning!</p>
+                        <p data-i18n="scan.cart_empty">Cart is empty. Start scanning!</p>
                     </div>
 
                     <!-- Cart items -->
@@ -253,21 +255,21 @@
                                 @click="discountMode = 'percent'; targetTotal = ''; discountError = ''"
                                 :class="discountMode === 'percent' ? 'bg-white shadow' : ''"
                                 class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all">
-                                % Discount
+                                <span data-i18n="scan.discount_percent">% Discount</span>
                             </button>
                             <button
                                 @click="discountMode = 'target'; discount = 0; discountError = ''"
                                 :class="discountMode === 'target' ? 'bg-white shadow' : ''"
                                 class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all">
-                                Target Total
+                                <span data-i18n="scan.target_total">Target Total</span>
                             </button>
                         </div>
 
                         <!-- Percent Mode -->
                         <div x-show="discountMode === 'percent'">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Discount %
-                                <span x-show="user.isCashier && !user.isManager" class="text-yellow-600">(Max 10%)</span>
+                                <span data-i18n="scan.discount_pct_label">Discount %</span>
+                                <span x-show="user.isCashier && !user.isManager" class="text-yellow-600" data-i18n="scan.max_10">(Max 10%)</span>
                             </label>
                             <input
                                 type="number"
@@ -284,7 +286,7 @@
                         <!-- Target Total Mode -->
                         <div x-show="discountMode === 'target'">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Agreed Final Total (CHF)
+                                <span data-i18n="scan.agreed_total">Agreed Final Total (CHF)</span>
                                 <span class="text-gray-500 font-normal">
                                     (Full: <span x-text="formatPrice(totals.subtotal)"></span>)
                                 </span>
@@ -306,7 +308,7 @@
                         <!-- Totals -->
                         <div class="bg-indigo-50 rounded-lg p-4 space-y-2">
                             <div class="flex justify-between text-sm">
-                                <span>Subtotal:</span>
+                                <span data-i18n="scan.subtotal">Subtotal:</span>
                                 <span class="font-semibold" x-text="formatPrice(totals.subtotal)"></span>
                             </div>
                             <div x-show="discount > 0" class="flex justify-between text-sm text-green-600">
@@ -314,7 +316,7 @@
                                 <span class="font-semibold" x-text="'-' + formatPrice(totals.discountAmount)"></span>
                             </div>
                             <div class="border-t pt-2 flex justify-between">
-                                <span class="text-lg font-bold">TOTAL:</span>
+                                <span class="text-lg font-bold" data-i18n="scan.total">TOTAL:</span>
                                 <span class="text-2xl font-extrabold text-indigo-600" x-text="formatPrice(totals.total)"></span>
                             </div>
                             <div class="flex justify-between text-sm text-gray-500">
@@ -326,10 +328,10 @@
                         <!-- Action Buttons -->
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <button @click="clearCart()" class="btn-danger">
-                                🗑️ Clear
+                                🗑️ <span data-i18n="scan.clear">Clear</span>
                             </button>
                             <button @click="goToCheckout()" class="btn-success">
-                                💵 Checkout
+                                💵 <span data-i18n="scan.checkout">Checkout</span>
                             </button>
                         </div>
                     </div>
@@ -357,26 +359,26 @@
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
                     <button @click="addToCart(detailProduct); detailProduct=null"
-                            class="bg-green-500 hover:bg-green-600 text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ Add to Cart</button>
+                            class="bg-green-500 hover:bg-green-600 text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ <span data-i18n="scan.add_to_cart">Add to Cart</span></button>
                 </div>
                 <!-- Right: specs -->
                 <div class="text-sm">
-                    <h3 class="font-semibold text-gray-900 mb-2">Details</h3>
+                    <h3 class="font-semibold text-gray-900 mb-2" data-i18n="scan.details">Details</h3>
                     <dl class="divide-y border-y">
                         <div class="flex justify-between py-2"><dt class="text-gray-500">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500">Barcode</dt><dd class="font-medium text-right" x-text="detailProduct?.barcode"></dd></div>
-                        <div class="flex justify-between py-2"><dt class="text-gray-500">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
-                        <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-500" data-i18n="scan.category">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500" data-i18n="scan.supplier">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
                     </dl>
                     <template x-if="detailProduct?.description">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1">Description</h3>
+                            <h3 class="font-semibold text-gray-900 mb-1" data-i18n="scan.description">Description</h3>
                             <p class="text-gray-700" x-text="detailProduct?.description"></p>
                         </div>
                     </template>
                     <template x-if="detailProduct?.tags">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1">Tags</h3>
+                            <h3 class="font-semibold text-gray-900 mb-1" data-i18n="scan.tags">Tags</h3>
                             <p class="text-gray-600" x-text="detailProduct?.tags"></p>
                         </div>
                     </template>
@@ -388,7 +390,7 @@
     <!-- BL-87: Camera scan overlay. Full-screen rear camera + scan box. -->
     <div x-show="scanOpen" x-transition class="fixed inset-0 z-[60] bg-black flex flex-col" style="display:none;">
         <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
-            <span class="font-semibold">📷 Aim at the barcode</span>
+            <span class="font-semibold">📷 <span data-i18n="scan.aim_barcode">Aim at the barcode</span></span>
             <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
         </div>
         <div class="flex-1 relative flex items-center justify-center overflow-hidden">
@@ -397,12 +399,12 @@
             <!-- No-camera fallback: a calm note + "choose a photo from disc". Never a dead-end. -->
             <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
                 <span class="text-5xl">📁</span>
-                <p class="text-white text-base max-w-xs" x-text="scanError || 'No camera on this device.'"></p>
+                <p class="text-white text-base max-w-xs" x-text="scanError || t('scan.no_camera_device')"></p>
                 <label class="btn-primary cursor-pointer">
-                    📁 Choose a photo from your computer
+                    📁 <span data-i18n="scan.choose_photo">Choose a photo from your computer</span>
                     <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
                 </label>
-                <p class="text-white/60 text-xs max-w-xs">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+                <p class="text-white/60 text-xs max-w-xs" data-i18n="scan.pick_photo_help">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
             </div>
             <p x-show="scanError && !scanFallback"
                class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3"
@@ -410,8 +412,8 @@
         </div>
         <div class="px-4 py-4 bg-black/80 text-center">
             <p x-show="scanLive" class="text-green-300 font-mono text-lg mb-2" x-text="'Reading: ' + scanLive" style="display:none;"></p>
-            <p class="text-white/60 text-xs mb-2">Hold steady — confirms after reading the same code twice</p>
-            <button @click="stopScan()" class="btn-secondary">Cancel — use keyboard</button>
+            <p class="text-white/60 text-xs mb-2" data-i18n="scan.hold_steady">Hold steady — confirms after reading the same code twice</p>
+            <button @click="stopScan()" class="btn-secondary" data-i18n="scan.cancel_keyboard">Cancel — use keyboard</button>
         </div>
     </div>
 
@@ -420,32 +422,32 @@
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-start p-5 border-b">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900">Not on file — find it first</h2>
-                    <p class="text-sm text-gray-600 mt-1">It's almost always already in the catalog. Find it and bind the barcode — don't re-type it.</p>
+                    <h2 class="text-xl font-bold text-gray-900" data-i18n="scan.not_on_file">Not on file — find it first</h2>
+                    <p class="text-sm text-gray-600 mt-1" data-i18n="scan.not_on_file_help">It's almost always already in the catalog. Find it and bind the barcode — don't re-type it.</p>
                 </div>
                 <button @click="lazyOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Scanned barcode</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.scanned_barcode">Scanned barcode</label>
                     <input type="text" x-model="lazyBarcode" readonly class="input-field bg-gray-100 font-mono">
                 </div>
 
                 <!-- PRIMARY (BL-96 search-first): find the real product, bind the code to it.
                      The picture + name + category come from the catalog, not from memory. -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">What is it? Find it in the catalog</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.what_is_it">What is it? Find it in the catalog</label>
                     <input type="text" x-model="lazyLinkQuery" x-ref="lazyLinkInput"
                            @input.debounce.300ms="searchExisting(); searchReference()"
-                           placeholder="Type a name or keyword — e.g. papers, grinder, Gizeh" class="input-field">
-                    <p class="text-xs text-gray-500 mt-1">Tap the right product to bind this barcode to it — it'll scan instantly next time.</p>
+                           placeholder="Type a name or keyword — e.g. papers, grinder, Gizeh" data-i18n-placeholder="scan.ph_find" class="input-field">
+                    <p class="text-xs text-gray-500 mt-1" data-i18n="scan.bind_hint">Tap the right product to bind this barcode to it — it'll scan instantly next time.</p>
                     <!-- ✨ Snap & fill: photograph the item, AI names it + searches for you -->
                     <div class="mt-2 flex items-center gap-3">
                         <label class="btn-secondary cursor-pointer flex-none" :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
-                            <span x-text="aiBusy ? '🔍 Reading…' : '✨ Snap & fill'"></span>
+                            <span x-text="aiBusy ? '🔍 ' + t('scan.reading') : '✨ ' + t('scan.snap_fill')"></span>
                             <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
                         </label>
-                        <span class="text-xs text-gray-500">No barcode? Photograph it — AI names it &amp; searches the catalog.</span>
+                        <span class="text-xs text-gray-500" data-i18n="scan.snap_help">No barcode? Photograph it — AI names it &amp; searches the catalog.</span>
                     </div>
                     <p x-show="aiNote" x-text="aiNote" class="text-xs text-indigo-700 font-medium mt-1" style="display:none;"></p>
                     <div x-show="lazyLinkResults.length" class="mt-2 max-h-64 overflow-y-auto divide-y border rounded-lg" style="display:none;">
@@ -467,8 +469,8 @@
                          shop yet, but the real data exists. Tap → copy it in (no re-typing). -->
                     <div x-show="refResults.length" class="mt-3" style="display:none;">
                         <p class="text-xs font-semibold text-purple-700 mb-1 flex items-center gap-1">
-                            <span class="inline-block px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">From reference</span>
-                            <span class="text-gray-500 font-normal">add to your shop — title &amp; photo come from the supplier</span>
+                            <span class="inline-block px-1.5 py-0.5 rounded bg-purple-100 text-purple-700" data-i18n="scan.from_reference">From reference</span>
+                            <span class="text-gray-500 font-normal" data-i18n="scan.from_reference_help">add to your shop — title &amp; photo come from the supplier</span>
                         </p>
                         <div class="max-h-64 overflow-y-auto divide-y border border-purple-200 rounded-lg">
                             <template x-for="r in refResults" :key="r.id">
@@ -493,21 +495,21 @@
                             <p class="text-sm font-medium text-gray-900" x-text="refSelected ? refSelected.title : ''"></p>
                             <div class="flex items-end gap-2">
                                 <div class="flex-1">
-                                    <label class="block text-xs text-gray-600 mb-1">Price (CHF)</label>
+                                    <label class="block text-xs text-gray-600 mb-1" data-i18n="scan.price_chf">Price (CHF)</label>
                                     <input type="number" step="0.05" min="0" x-model="refPrice"
                                            @keyup.enter="confirmAdopt()" placeholder="0.00"
                                            class="input-field text-xl font-bold">
                                 </div>
                                 <button @click="confirmAdopt()" :disabled="lazySaving" class="btn-success flex-none">
-                                    <span x-show="!lazySaving">Add to shop</span>
-                                    <span x-show="lazySaving" style="display:none;">Saving…</span>
+                                    <span x-show="!lazySaving" data-i18n="scan.add_to_shop">Add to shop</span>
+                                    <span x-show="lazySaving" style="display:none;" data-i18n="scan.saving">Saving…</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <p x-show="lazyLinkQuery.length > 1 && !lazyLinkResults.length && !refResults.length && !lazyLinkSearching && !refSearching"
-                       class="text-xs text-amber-600 mt-2" style="display:none;">
+                       class="text-xs text-amber-600 mt-2" style="display:none;" data-i18n="scan.no_catalog_match">
                         No match in the catalog or reference. If it's genuinely new, add it below.
                     </p>
                 </div>
@@ -515,34 +517,34 @@
                 <!-- FALLBACK: genuinely new item — collapsed so create-new is the last resort,
                      not the default. Opening it spawns a NEW catalog row. -->
                 <div class="border-t pt-3">
-                    <button x-show="!lazyCreateOpen" @click="lazyCreateOpen=true" class="text-sm text-blue-600 hover:underline">
+                    <button x-show="!lazyCreateOpen" @click="lazyCreateOpen=true" class="text-sm text-blue-600 hover:underline" data-i18n="scan.add_new_item_link">
                         Not in the catalog? Add it as a new item →
                     </button>
                     <div x-show="lazyCreateOpen" style="display:none;" class="space-y-4">
-                        <p class="text-xs text-amber-700 bg-amber-50 rounded-lg p-2">New catalog item — only do this if it truly isn't in the search above.</p>
+                        <p class="text-xs text-amber-700 bg-amber-50 rounded-lg p-2" data-i18n="scan.new_catalog_warning">New catalog item — only do this if it truly isn't in the search above.</p>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
-                            <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" class="input-field">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.product_name">Product name</label>
+                            <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" data-i18n-placeholder="scan.ph_product_name" class="input-field">
                         </div>
                         <!-- Photo of the item — for unmarked goods the picture IS the label. -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Photo of the item</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.photo_of_item">Photo of the item</label>
                             <div class="flex items-center gap-3">
                                 <label class="btn-secondary cursor-pointer flex-none">
-                                    📸 <span x-text="lazyPhotoData ? 'Retake' : 'Take photo'"></span>
+                                    📸 <span x-text="lazyPhotoData ? t('scan.retake') : t('scan.take_photo')"></span>
                                     <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="onLazyPhoto($event)">
                                 </label>
                                 <img x-show="lazyPhotoData" :src="lazyPhotoData" class="w-16 h-16 rounded-lg object-cover border flex-none" alt="">
-                                <span x-show="!lazyPhotoData" class="text-xs text-gray-400">Optional — snap the item itself</span>
+                                <span x-show="!lazyPhotoData" class="text-xs text-gray-400" data-i18n="scan.photo_optional_hint">Optional — snap the item itself</span>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Price (CHF)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.price_chf">Price (CHF)</label>
                                 <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.quantity">Quantity</label>
                                 <input type="number" step="1" min="1" x-model.number="lazyQty" @keyup.enter="saveLazyCapture()" class="input-field text-2xl font-bold">
                             </div>
                         </div>
@@ -550,26 +552,26 @@
                              Bought a box? Split it to a per-unit cost (papers, singles, etc.). -->
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label class="block text-sm font-medium text-gray-700">Cost / unit (CHF)</label>
+                                <label class="block text-sm font-medium text-gray-700" data-i18n="scan.cost_unit">Cost / unit (CHF)</label>
                                 <button type="button" @click="boxOpen=!boxOpen" class="text-xs text-blue-600 hover:underline"
-                                        x-text="boxOpen ? '← enter cost directly' : 'bought a box? split it →'"></button>
+                                        x-text="boxOpen ? t('scan.cost_direct') : t('scan.cost_split')"></button>
                             </div>
                             <input x-show="!boxOpen" type="number" step="0.01" min="0" x-model="lazyCost" placeholder="0.00" class="input-field">
                             <div x-show="boxOpen" style="display:none;" class="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-3">
                                 <div>
-                                    <label class="block text-xs text-gray-600 mb-1">Box cost (CHF)</label>
+                                    <label class="block text-xs text-gray-600 mb-1" data-i18n="scan.box_cost">Box cost (CHF)</label>
                                     <input type="number" step="0.01" min="0" x-model.number="boxCost" @input="calcUnitCost()" placeholder="0.00" class="input-field">
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-gray-600 mb-1">Units in box</label>
+                                    <label class="block text-xs text-gray-600 mb-1" data-i18n="scan.units_in_box">Units in box</label>
                                     <input type="number" step="1" min="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="1" class="input-field">
                                 </div>
-                                <div class="col-span-2 text-sm text-gray-700">Per unit: <b x-text="formatPrice(lazyCost || 0)"></b></div>
+                                <div class="col-span-2 text-sm text-gray-700"><span data-i18n="scan.per_unit">Per unit:</span> <b x-text="formatPrice(lazyCost || 0)"></b></div>
                             </div>
                         </div>
                         <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">
-                            <span x-show="!lazySaving">➕ Save &amp; add to cart</span>
-                            <span x-show="lazySaving" style="display:none;">Saving…</span>
+                            <span x-show="!lazySaving">➕ <span data-i18n="scan.save_add_cart">Save &amp; add to cart</span></span>
+                            <span x-show="lazySaving" style="display:none;" data-i18n="scan.saving">Saving…</span>
                         </button>
                     </div>
                 </div>
@@ -583,11 +585,11 @@
          @click.self="showClearModal = false" @keydown.escape.window="showClearModal = false" style="display:none;">
         <div class="card w-full max-w-sm text-center">
             <span class="text-4xl block mb-2">🗑️</span>
-            <h3 class="text-xl font-bold text-gray-900 mb-1">Clear the whole cart?</h3>
-            <p class="text-sm text-gray-500 mb-5">This removes every item. You can't undo it.</p>
+            <h3 class="text-xl font-bold text-gray-900 mb-1" data-i18n="scan.clear_confirm_title">Clear the whole cart?</h3>
+            <p class="text-sm text-gray-500 mb-5" data-i18n="scan.clear_confirm_body">This removes every item. You can't undo it.</p>
             <div class="flex gap-3">
-                <button @click="showClearModal = false" class="btn-secondary flex-1">Keep cart</button>
-                <button @click="confirmClearCart()" class="btn-danger flex-1">Clear it</button>
+                <button @click="showClearModal = false" class="btn-secondary flex-1" data-i18n="scan.keep_cart">Keep cart</button>
+                <button @click="confirmClearCart()" class="btn-danger flex-1" data-i18n="scan.clear_it">Clear it</button>
             </div>
         </div>
     </div>
@@ -713,7 +715,7 @@
                         this.discount = cartData.discount || 0;
                         this.transactionId = cartData.transactionId || this.transactionId;
                         if (this.cart.length > 0) {
-                            showToast(`Cart restored: ${this.cart.length} items`, 'info');
+                            showToast(t('scan.toast_cart_restored', {n: this.cart.length}), 'info');
                         }
                     } catch (e) {
                         console.error('Failed to restore cart:', e);
@@ -737,7 +739,7 @@
 
             async searchByBarcode() {
                 if (!this.barcodeInput.trim()) {
-                    showToast('Please enter a barcode', 'warning');
+                    showToast(t('scan.toast_enter_barcode'), 'warning');
                     return;
                 }
 
@@ -749,7 +751,7 @@
                     this.addToCart(product);
                     if (window.CatalogCache) CatalogCache.put(product);   // P1: keep the offline mirror warm
                     this.barcodeInput = '';
-                    showToast('Product added!', 'success');
+                    showToast(t('scan.toast_product_added'), 'success');
 
                 } catch (error) {
                     // P1 read-offline: if the lookup failed because we're OFFLINE, answer from the
@@ -761,10 +763,10 @@
                         if (cached) {
                             this.addToCart(cached);
                             this.barcodeInput = '';
-                            showToast('Added from offline catalog', 'success');
+                            showToast(t('scan.toast_added_offline'), 'success');
                             return;
                         }
-                        showToast("Offline — this barcode isn't in the cached catalog yet", 'warning');
+                        showToast(t('scan.toast_offline_not_cached'), 'warning');
                         return;
                     }
                     // BL-87: not on file → lazy capture. Save it as a real product now so
@@ -778,7 +780,7 @@
             // read) so the counter, catalog, and receiving all behave identically.
             async startScan() {
                 if (typeof window.PosScanner === 'undefined' || typeof Html5Qrcode === 'undefined') {
-                    showToast('Scanner not loaded — type the barcode instead', 'warning');
+                    showToast(t('scan.toast_scanner_not_loaded'), 'warning');
                     return;
                 }
                 this.scanError = '';
@@ -796,8 +798,8 @@
                         // Don't dead-end: keep the overlay open with a calm message + a
                         // "choose a photo from disc" fallback (decodes the barcode from a still).
                         this.scanError = /permission|denied|NotAllowed/i.test(name)
-                            ? 'Camera blocked. Pick a photo of the barcode instead, or type it.'
-                            : 'No camera here. Pick a photo of the barcode instead, or type it.';
+                            ? t('scan.err_camera_blocked')
+                            : t('scan.err_no_camera');
                         this.scanFallback = true;
                     },
                     { onProgress: (text) => { this.scanLive = text; } }
@@ -810,8 +812,8 @@
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
-                this.scanError = 'Reading the photo…';
+                if (!f.type.startsWith('image/')) { showToast(t('scan.toast_not_image'), 'warning'); return; }
+                this.scanError = t('scan.reading_photo');
                 try {
                     const text = await window.PosScanner.decodeFile(f);
                     if (!text) throw new Error('no-code');
@@ -822,7 +824,7 @@
                     await this.searchByBarcode();
                 } catch (err) {
                     console.warn('file decode', err);
-                    this.scanError = "Couldn't read a barcode in that photo. Try another, or type it in.";
+                    this.scanError = t('scan.err_no_barcode_photo');
                 }
             },
 
@@ -853,7 +855,7 @@
             onOtfPhoto(e) {
                 const f = e.target.files && e.target.files[0];
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                if (!f.type.startsWith('image/')) { showToast(t('scan.toast_not_image'), 'warning'); return; }
                 this.otfPhotoFile = f;
                 const reader = new FileReader();
                 reader.onload = () => { this.otfPhotoData = reader.result; };
@@ -874,9 +876,9 @@
 
             async createNoCodeItem() {
                 const name = (this.otfName || '').trim();
-                if (!name) { showToast('Enter a name', 'warning'); return; }
+                if (!name) { showToast(t('scan.toast_enter_name'), 'warning'); return; }
                 const price = parseFloat(this.otfPrice);
-                if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+                if (isNaN(price) || price <= 0) { showToast(t('scan.toast_enter_valid_price'), 'warning'); return; }
                 this.lazySaving = true;
 
                 // Optional extras — use them if filled, otherwise auto-file under "On the fly".
@@ -908,19 +910,19 @@
                             const r = await fetch(`/api/v1/pos/products/${product.id}/images`, {
                                 method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
                             if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
-                            else { showToast("Saved, but the photo couldn't be attached", 'warning'); }
+                            else { showToast(t('scan.toast_photo_not_attached'), 'warning'); }
                         } catch (imgErr) {
                             console.warn('photo upload failed', imgErr);
-                            showToast("Saved, but the photo couldn't be attached", 'warning');
+                            showToast(t('scan.toast_photo_not_attached'), 'warning');
                         }
                     }
                     this.addToCart(product, 1);
-                    showToast('Saved on the fly — find it by name next time', 'success');
+                    showToast(t('scan.toast_saved_otf'), 'success');
                 } else {
                     // No create rights (cashier) or a hard failure → one-off line so the sale never blocks.
                     if (blocked) console.warn('On-the-fly create blocked; using one-off line');
                     this.cart.push({ id: 'otf-' + Date.now(), name: '[NEW] ' + name, price, quantity: 1, isCatalogItem: true });
-                    showToast('Added for this sale. Ask a manager to add it permanently.', 'info');
+                    showToast(t('scan.toast_added_one_off'), 'info');
                 }
                 this.otfName = ''; this.otfPrice = ''; this.otfDescription = ''; this.otfCategory = '';
                 this.otfPhotoFile = null; this.otfPhotoData = '';
@@ -965,7 +967,7 @@
             onLazyPhoto(e) {
                 const f = e.target.files && e.target.files[0];
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                if (!f.type.startsWith('image/')) { showToast(t('scan.toast_not_image'), 'warning'); return; }
                 this.lazyPhotoFile = f;
                 const reader = new FileReader();
                 reader.onload = () => { this.lazyPhotoData = reader.result; };
@@ -980,7 +982,7 @@
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
+                if (!f.type.startsWith('image/')) { showToast(t('scan.toast_not_image'), 'warning'); return; }
                 this.lazyPhotoFile = f;
                 const reader = new FileReader();
                 reader.onload = () => { this.lazyPhotoData = reader.result; };
@@ -1006,7 +1008,7 @@
                         : `Read by ${d.provider} in ${(d.elapsed_ms/1000).toFixed(1)}s · confidence ${Math.round((s.confidence||0)*100)}% — pick a catalog match above, or save as new below.`;
                 } catch (err) {
                     console.warn('ai snap', err);
-                    this.aiNote = 'AI unavailable — search or type it in.';
+                    this.aiNote = t('scan.ai_unavailable');
                 } finally { this.aiBusy = false; }
             },
 
@@ -1069,7 +1071,7 @@
             async confirmAdopt() {
                 if (!this.refSelected) return;
                 const price = parseFloat(this.refPrice);
-                if (isNaN(price) || price < 0) { showToast('Enter a valid price', 'warning'); return; }
+                if (isNaN(price) || price < 0) { showToast(t('scan.toast_enter_valid_price'), 'warning'); return; }
                 const qty = Math.max(1, parseInt(this.lazyQty, 10) || 1);
                 const bc = (this.lazyBarcode || '').trim();
                 this.lazySaving = true;
@@ -1080,10 +1082,10 @@
                     this.addToCart(product, qty);
                     this.lazyOpen = false;
                     this.barcodeInput = '';
-                    showToast(`Added from reference — ${product.name} scans instantly next time`, 'success');
+                    showToast(t('scan.toast_added_reference', {n: product.name}), 'success');
                 } catch (err) {
                     console.warn('Adopt failed:', err);
-                    showToast('Could not add it from reference. Try "add as new" below.', 'warning');
+                    showToast(t('scan.toast_reference_failed'), 'warning');
                 } finally {
                     this.lazySaving = false;
                 }
@@ -1100,19 +1102,19 @@
                     this.addToCart(product, qty);
                     this.lazyOpen = false;
                     this.barcodeInput = '';
-                    showToast(`Linked — ${product.name} scans instantly next time`, 'success');
+                    showToast(t('scan.toast_linked', {n: product.name}), 'success');
                 } catch (err) {
                     console.warn('Link to existing failed:', err);
-                    showToast('Could not link this barcode. Save as new, or ask a manager.', 'warning');
+                    showToast(t('scan.toast_link_failed'), 'warning');
                 } finally {
                     this.lazySaving = false;
                 }
             },
 
             async saveLazyCapture() {
-                if (!this.lazyName.trim()) { showToast('Enter a product name', 'warning'); return; }
+                if (!this.lazyName.trim()) { showToast(t('scan.toast_enter_product_name'), 'warning'); return; }
                 const price = parseFloat(this.lazyPrice);
-                if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+                if (isNaN(price) || price <= 0) { showToast(t('scan.toast_enter_valid_price'), 'warning'); return; }
                 const qty = Math.max(1, parseInt(this.lazyQty, 10) || 1);
 
                 this.lazySaving = true;
@@ -1146,16 +1148,16 @@
                                 body: fd,
                             });
                             if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
-                            else { showToast('Saved, but the photo did not upload', 'warning'); }
+                            else { showToast(t('scan.toast_photo_not_uploaded'), 'warning'); }
                         } catch (imgErr) {
                             console.warn('Photo upload failed:', imgErr);
-                            showToast('Saved, but the photo did not upload', 'warning');
+                            showToast(t('scan.toast_photo_not_uploaded'), 'warning');
                         }
                     }
                     this.addToCart(product, qty);
                     this.lazyOpen = false;
                     this.barcodeInput = '';
-                    showToast(`Saved — ${qty} added, scans instantly next time`, 'success');
+                    showToast(t('scan.toast_saved_qty', {n: qty}), 'success');
                 } catch (err) {
                     // No permission (cashier) or any failure → never block the sale.
                     // Fall back to a one-off line so the customer still gets rung up.
@@ -1169,7 +1171,7 @@
                     });
                     this.lazyOpen = false;
                     this.barcodeInput = '';
-                    showToast('Added for this sale. Ask a manager to add it permanently.', 'info');
+                    showToast(t('scan.toast_added_one_off'), 'info');
                 } finally {
                     this.lazySaving = false;
                 }
@@ -1272,7 +1274,7 @@
                 this.discountError = '';
 
                 if (this.discount > this.maxDiscount) {
-                    this.discountError = `Maximum discount is ${this.maxDiscount}%. Ask manager for approval.`;
+                    this.discountError = t('scan.err_max_discount', {n: this.maxDiscount});
                     this.discount = this.maxDiscount;
                 }
 
@@ -1307,7 +1309,7 @@
                 if (target >= fullPrice) {
                     this.discount = 0;
                     this.discountError = target > fullPrice
-                        ? `Target exceeds full price (${formatPrice(fullPrice)})`
+                        ? t('scan.err_target_exceeds', {n: formatPrice(fullPrice)})
                         : '';
                     return;
                 }
@@ -1328,7 +1330,7 @@
 
                 // Check for unreasonably high discount (>100% would be paying customer)
                 if (roundedDiscount >= 100) {
-                    this.discountError = 'Target total is too low';
+                    this.discountError = t('scan.err_target_too_low');
                     this.discount = 0;
                     return;
                 }
@@ -1351,12 +1353,12 @@
                 // New sale → drop the old idempotency key, so a previous (maybe-committed-but-
                 // -blipped) sale can never be shadowed/adopted by the next one. Fresh cart, fresh key.
                 sessionStorage.removeItem('pos_sale_uuid');
-                showToast('Cart cleared', 'info');
+                showToast(t('scan.toast_cart_cleared'), 'info');
             },
 
             goToCheckout() {
                 if (this.cart.length === 0) {
-                    showToast('Cart is empty', 'warning');
+                    showToast(t('scan.toast_cart_empty_warn'), 'warning');
                     return;
                 }
 
@@ -1373,7 +1375,7 @@
 
             goBack() {
                 if (this.cart.length > 0) {
-                    if (confirm('Abandon current transaction?')) {
+                    if (confirm(t('scan.confirm_abandon'))) {
                         window.location.href = '/pos/dashboard';
                     }
                 } else {

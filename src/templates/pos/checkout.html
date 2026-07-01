@@ -6,7 +6,7 @@
 <div class="min-h-screen bg-gray-50" x-data="checkoutData()">
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="card">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">💳 Checkout</h1>
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">💳 <span data-i18n="checkout.title">Checkout</span></h1>
 
             <!-- Member banner (loyalty) -->
             <div x-show="member" id="member-banner" class="mb-6 flex items-center justify-between rounded-lg p-4 bg-indigo-600 text-white">
@@ -23,16 +23,16 @@
                         </p>
                     </div>
                 </div>
-                <button @click="clearMember()" class="text-indigo-100 hover:text-white text-sm underline">remove</button>
+                <button @click="clearMember()" class="text-indigo-100 hover:text-white text-sm underline" data-i18n="checkout.remove_member">remove</button>
             </div>
             <div x-show="!member" class="mb-6 rounded-lg p-3 bg-gray-100 text-gray-600 text-sm flex justify-between items-center">
-                <span>No member on this sale.</span>
-                <a href="/pos/customer-lookup" class="text-indigo-600 underline font-medium">Add a member →</a>
+                <span data-i18n="checkout.no_member">No member on this sale.</span>
+                <a href="/pos/customer-lookup" class="text-indigo-600 underline font-medium"><span data-i18n="checkout.add_member">Add a member</span> →</a>
             </div>
 
             <!-- Order Summary -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4" data-i18n="checkout.order_summary">Order Summary</h2>
                 <div class="bg-gray-50 rounded-lg p-4 space-y-2">
                     <template x-for="(item, index) in cartData.cart" :key="index">
                         <div class="flex justify-between">
@@ -49,45 +49,45 @@
 
             <!-- 🍽️ Dine-in / Takeaway — Swiss cafe VAT (8.1% in / 2.6% to-go) -->
             <div class="mb-6" x-show="cartData.cart.some(i => i.product_class === 'cafe_food')">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">🍽️ Service</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🍽️ <span data-i18n="checkout.service">Service</span></h2>
                 <div class="grid grid-cols-2 gap-4">
                     <button @click="setConsumption('dine_in')"
                         :class="consumption === 'dine_in' ? 'bg-indigo-600 text-white border-4 border-indigo-700 shadow-lg scale-[1.02]' : 'bg-white text-gray-800 border-2 border-gray-300'"
                         class="card py-5 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-3xl mb-1 block">🍽️</span>
-                        <p class="font-bold text-lg">Dine in</p>
-                        <p class="text-xs opacity-70">café food/drink @ 8.1%</p>
-                        <p class="text-xs font-bold mt-1" x-show="consumption === 'dine_in'">✓ SELECTED</p>
+                        <p class="font-bold text-lg" data-i18n="checkout.dine_in">Dine in</p>
+                        <p class="text-xs opacity-70" data-i18n="checkout.dine_in_rate">café food/drink @ 8.1%</p>
+                        <p class="text-xs font-bold mt-1" x-show="consumption === 'dine_in'">✓ <span data-i18n="checkout.selected">SELECTED</span></p>
                     </button>
                     <button @click="setConsumption('takeaway')"
                         :class="consumption === 'takeaway' ? 'bg-teal-600 text-white border-4 border-teal-700 shadow-lg scale-[1.02]' : 'bg-white text-gray-800 border-2 border-gray-300'"
                         class="card py-5 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-3xl mb-1 block">🥡</span>
-                        <p class="font-bold text-lg">Takeaway</p>
-                        <p class="text-xs opacity-70">café food/drink @ 2.6%</p>
-                        <p class="text-xs font-bold mt-1" x-show="consumption === 'takeaway'">✓ SELECTED</p>
+                        <p class="font-bold text-lg" data-i18n="checkout.takeaway">Takeaway</p>
+                        <p class="text-xs opacity-70" data-i18n="checkout.takeaway_rate">café food/drink @ 2.6%</p>
+                        <p class="text-xs font-bold mt-1" x-show="consumption === 'takeaway'">✓ <span data-i18n="checkout.selected">SELECTED</span></p>
                     </button>
                 </div>
-                <p class="text-sm text-gray-500 mt-2">🇨🇭 Swiss law: a café seat makes the same item two prices. Alcohol & tobacco stay 8.1%.</p>
+                <p class="text-sm text-gray-500 mt-2">🇨🇭 <span data-i18n="checkout.swiss_law_note">Swiss law: a café seat makes the same item two prices. Alcohol & tobacco stay 8.1%.</span></p>
             </div>
 
             <!-- 🏷️ Quick Discount (Pam's Rounding) -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ Discount</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ <span data-i18n="checkout.discount">Discount</span></h2>
                 <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
-                    <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3">None</button>
+                    <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3" data-i18n="checkout.none">None</button>
                     <button @click="applyDiscount(5)" :class="discount === 5 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">5%</button>
                     <button @click="applyDiscount(10)" :class="discount === 10 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">10%</button>
                     <button @click="applyDiscount(15)" :class="discount === 15 ? 'bg-yellow-300' : 'bg-yellow-100'" class="btn-secondary py-3">15%</button>
-                    <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100">Custom</button>
+                    <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100" data-i18n="checkout.custom">Custom</button>
                 </div>
-                <p class="text-sm text-gray-500 mt-2">💡 Cashiers: max 10% | Managers: max 25% | Admin: unlimited</p>
+                <p class="text-sm text-gray-500 mt-2">💡 <span data-i18n="checkout.discount_limits_note">Cashiers: max 10% | Managers: max 25% | Admin: unlimited</span></p>
             </div>
 
             <!-- Price Breakdown -->
             <div class="bg-indigo-50 rounded-lg p-6 mb-6 space-y-3">
                 <div class="flex justify-between">
-                    <span>Subtotal:</span>
+                    <span data-i18n="checkout.subtotal">Subtotal:</span>
                     <span x-text="formatPrice(cartData.totals.subtotal)"></span>
                 </div>
                 <div x-show="discount > 0" class="flex justify-between text-green-600">
@@ -99,11 +99,11 @@
                     <span x-text="'-' + formatPrice(memberDiscountAmount)"></span>
                 </div>
                 <div class="border-t pt-3 flex justify-between text-xl font-bold">
-                    <span>TOTAL:</span>
+                    <span data-i18n="checkout.total">TOTAL:</span>
                     <span class="text-indigo-600" x-text="formatPrice(cartData.totals.total)"></span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-500">
-                    <span>incl. VAT:</span>
+                    <span data-i18n="checkout.incl_vat">incl. VAT:</span>
                     <span x-text="formatPrice(cartData.totals.vat)"></span>
                 </div>
                 <!-- Per-rate split: appears once any line carries the reduced (takeaway) rate -->
@@ -113,20 +113,20 @@
                         ·
                         <span class="text-teal-600 font-semibold"><span x-text="POSConfig.vat_rate_reduced"></span>% <span x-text="formatPrice(cartData.totals.vatReduced)"></span></span>
                     </span>
-                    <span class="text-teal-600 font-semibold uppercase tracking-wide">takeaway</span>
+                    <span class="text-teal-600 font-semibold uppercase tracking-wide" data-i18n="checkout.takeaway_tag">takeaway</span>
                 </div>
             </div>
 
             <!-- Payment Method -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Payment Method</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 <span data-i18n="checkout.payment_method">Payment Method</span></h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <button
                         @click="selectPayment('cash')"
                         :class="paymentMethod === 'cash' ? 'bg-green-600 text-white border-4 border-green-700 shadow-lg' : 'bg-white text-gray-800 border-2 border-gray-300'"
                         class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-4xl mb-2 block">💵</span>
-                        <p class="font-semibold">Cash</p>
+                        <p class="font-semibold" data-i18n="cash.cash">Cash</p>
                     </button>
                     <button
                         @click="selectPayment('visa')"
@@ -140,7 +140,7 @@
                         :class="paymentMethod === 'debit' ? 'bg-green-600 text-white border-4 border-green-700 shadow-lg' : 'bg-white text-gray-800 border-2 border-gray-300'"
                         class="card py-6 text-center cursor-pointer hover:shadow-lg transition">
                         <span class="text-4xl mb-2 block">🏦</span>
-                        <p class="font-semibold">Debit</p>
+                        <p class="font-semibold" data-i18n="cash.debit">Debit</p>
                     </button>
                     <button
                         @click="selectPayment('twint')"
@@ -154,7 +154,7 @@
 
             <!-- 💵 CASH QUICK ROUND (Only shows for CASH payments) -->
             <div x-show="paymentMethod === 'cash'" x-transition class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">💵 Cash Received</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">💵 <span data-i18n="cash.cash_received">Cash Received</span></h2>
 
                 <!-- Quick Amount Buttons -->
                 <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-4">
@@ -172,21 +172,21 @@
                         class="btn-secondary py-3 font-bold">100</button>
                     <button @click="setCashReceived(cartData.totals.total)"
                         :class="cashReceived === cartData.totals.total ? 'bg-blue-500 text-white' : 'bg-blue-100'"
-                        class="btn-secondary py-3 font-bold">EXACT</button>
+                        class="btn-secondary py-3 font-bold" data-i18n="cash.exact">EXACT</button>
                 </div>
 
                 <!-- Cash Received Display -->
                 <div x-show="cashReceived > 0" class="bg-green-50 rounded-lg p-4 mb-4">
                     <div class="flex justify-between text-lg">
-                        <span>Cash Received:</span>
+                        <span data-i18n="cash.cash_received_label">Cash Received:</span>
                         <span class="font-bold text-green-700" x-text="formatPrice(cashReceived)"></span>
                     </div>
                     <div class="flex justify-between text-lg">
-                        <span>Total Due:</span>
+                        <span data-i18n="cash.total_due">Total Due:</span>
                         <span x-text="formatPrice(cartData.totals.total)"></span>
                     </div>
                     <div class="flex justify-between text-lg border-t pt-2 mt-2">
-                        <span>Change:</span>
+                        <span data-i18n="cash.change">Change:</span>
                         <span class="font-bold" :class="changeAmount >= 0 ? 'text-green-700' : 'text-red-600'"
                               x-text="formatPrice(changeAmount)"></span>
                     </div>
@@ -200,7 +200,7 @@
 
                 <!-- Quick Round + Treat -- always available once cash is on the counter -->
                 <div x-show="cashReceived > 0" class="mb-4">
-                    <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 Quick Options</h3>
+                    <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 <span data-i18n="checkout.quick_options">Quick Options</span></h3>
                     <div class="grid grid-cols-2 gap-2">
                         <button x-show="changeAmount > 0" @click="applyQuickRound()"
                             class="bg-yellow-100 hover:bg-yellow-200 p-3 rounded-lg text-left">
@@ -209,64 +209,64 @@
                         </button>
                         <button @click="showChangeProducts = !showChangeProducts"
                             class="bg-pink-100 hover:bg-pink-200 p-3 rounded-lg text-left">
-                            <span class="block font-bold text-pink-800">🍭 Give a Treat</span>
-                            <span class="text-sm text-pink-600">On the house — free with the sale</span>
+                            <span class="block font-bold text-pink-800">🍭 <span data-i18n="checkout.give_treat">Give a Treat</span></span>
+                            <span class="text-sm text-pink-600" data-i18n="checkout.on_house_note">On the house — free with the sale</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Treats (Pink Punch Model) -- always free giveaways -->
                 <div x-show="showChangeProducts" x-transition class="bg-pink-50 rounded-lg p-4 mb-4">
-                    <h3 class="text-md font-semibold text-pink-800 mb-3">🍭 Pick a treat — on the house</h3>
+                    <h3 class="text-md font-semibold text-pink-800 mb-3">🍭 <span data-i18n="checkout.pick_treat">Pick a treat — on the house</span></h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         <template x-for="product in changeProducts" :key="product.name">
                             <button @click="addChangeProduct(product)"
                                 class="bg-white hover:bg-pink-100 p-2 rounded border text-center">
                                 <span class="block text-2xl" x-text="product.emoji"></span>
                                 <span class="block text-sm font-semibold" x-text="product.name"></span>
-                                <span class="block text-xs text-green-600 font-semibold">FREE</span>
+                                <span class="block text-xs text-green-600 font-semibold" data-i18n="checkout.free">FREE</span>
                             </button>
                         </template>
                     </div>
-                    <p class="text-xs text-pink-600 mt-2">Customer gets a treat, you keep cleaner change!</p>
+                    <p class="text-xs text-pink-600 mt-2" data-i18n="checkout.treat_note">Customer gets a treat, you keep cleaner change!</p>
                 </div>
             </div>
 
             <!-- Dry Run Preview -->
             <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
-                <h2 class="text-lg font-semibold text-yellow-800 mb-3">⚠️ Dry Run Preview</h2>
+                <h2 class="text-lg font-semibold text-yellow-800 mb-3">⚠️ <span data-i18n="checkout.dry_run_preview">Dry Run Preview</span></h2>
                 <div class="space-y-2 text-sm text-yellow-900">
-                    <p>• Cash drawer: <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : formatPrice(0) + ' (electronic)'"></span></p>
-                    <p>• Inventory: <span x-text="inventoryPreview()"></span></p>
-                    <p>• Receipt: Will print to POS printer</p>
-                    <p>• Daily total: +<span x-text="formatPrice(cartData.totals.total)"></span></p>
+                    <p>• <span data-i18n="checkout.dry_cash_drawer">Cash drawer:</span> <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : formatPrice(0) + ' (electronic)'"></span></p>
+                    <p>• <span data-i18n="checkout.dry_inventory">Inventory:</span> <span x-text="inventoryPreview()"></span></p>
+                    <p>• <span data-i18n="checkout.dry_receipt">Receipt: Will print to POS printer</span></p>
+                    <p>• <span data-i18n="checkout.dry_daily_total">Daily total:</span> +<span x-text="formatPrice(cartData.totals.total)"></span></p>
                 </div>
             </div>
 
             <!-- Confirmation -->
             <div class="mb-6 text-center">
-                <p class="text-lg text-gray-700">❓ Does everything look correct?</p>
+                <p class="text-lg text-gray-700">❓ <span data-i18n="checkout.confirm_prompt">Does everything look correct?</span></p>
             </div>
 
             <!-- Action Buttons -->
             <div class="grid grid-cols-3 gap-4">
                 <button @click="goBack()" class="btn-secondary">
-                    ❌ Cancel
+                    ❌ <span data-i18n="common.cancel">Cancel</span>
                 </button>
                 <button @click="goBack()" class="btn-secondary">
-                    ✏️ Edit Cart
+                    ✏️ <span data-i18n="checkout.edit_cart">Edit Cart</span>
                 </button>
                 <button @click="completeTransaction()"
                         :disabled="processing || cashShort()"
                         :class="cashShort() ? 'opacity-50 cursor-not-allowed' : ''"
                         class="btn-success">
-                    <span x-show="!processing">✅ Confirm &amp; Complete</span>
+                    <span x-show="!processing">✅ <span data-i18n="checkout.confirm_complete">Confirm &amp; Complete</span></span>
                     <span x-show="processing" class="inline-flex items-center gap-2">
                         <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                         </svg>
-                        Processing…
+                        <span data-i18n="checkout.processing">Processing…</span>
                     </span>
                 </button>
             </div>
@@ -278,13 +278,13 @@
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
          @click.self="showDiscountModal = false" @keydown.escape.window="showDiscountModal = false" style="display:none;">
         <div class="card w-full max-w-sm">
-            <h3 class="text-xl font-bold text-gray-900 mb-1">🏷️ Custom discount</h3>
-            <p class="text-sm text-gray-500 mb-4">Enter a percentage (0–25%).</p>
+            <h3 class="text-xl font-bold text-gray-900 mb-1">🏷️ <span data-i18n="checkout.custom_discount_title">Custom discount</span></h3>
+            <p class="text-sm text-gray-500 mb-4" data-i18n="checkout.custom_discount_hint">Enter a percentage (0–25%).</p>
             <input type="number" min="0" max="25" step="1" x-ref="discountInput" x-model="discountInput"
-                   @keyup.enter="applyCustomDiscount()" placeholder="e.g. 12" class="input-field text-2xl font-bold text-center mb-4">
+                   @keyup.enter="applyCustomDiscount()" placeholder="e.g. 12" data-i18n-placeholder="checkout.custom_discount_placeholder" class="input-field text-2xl font-bold text-center mb-4">
             <div class="flex gap-3">
-                <button @click="showDiscountModal = false" class="btn-secondary flex-1">Cancel</button>
-                <button @click="applyCustomDiscount()" class="btn-primary flex-1">Apply</button>
+                <button @click="showDiscountModal = false" class="btn-secondary flex-1" data-i18n="common.cancel">Cancel</button>
+                <button @click="applyCustomDiscount()" class="btn-primary flex-1" data-i18n="checkout.apply">Apply</button>
             </div>
         </div>
     </div>
@@ -298,8 +298,8 @@
         <div class="card w-full max-w-md">
             <div class="text-center mb-4">
                 <div class="text-4xl mb-1">🔞</div>
-                <h3 class="text-xl font-bold text-red-700">Age-restricted sale — 18+</h3>
-                <p class="text-sm text-gray-600 mt-1">
+                <h3 class="text-xl font-bold text-red-700" data-i18n="checkout.age_title">Age-restricted sale — 18+</h3>
+                <p class="text-sm text-gray-600 mt-1" data-i18n-html="checkout.age_body">
                     This cart has an <b>18+ item</b> and no of-age member is attached.
                     Verify age before completing.
                 </p>
@@ -307,31 +307,32 @@
 
             <!-- Move 1: SIGN UP a member with a real DOB (NO gender field) -->
             <div class="border border-indigo-200 rounded-lg p-4 mb-3 bg-indigo-50">
-                <p class="font-semibold text-indigo-800 mb-2">👤 Sign up a member</p>
-                <input type="text" x-model="ageForm.handle" placeholder="Name / handle"
+                <p class="font-semibold text-indigo-800 mb-2">👤 <span data-i18n="checkout.age_signup_heading">Sign up a member</span></p>
+                <input type="text" x-model="ageForm.handle" placeholder="Name / handle" data-i18n-placeholder="checkout.name_handle_placeholder"
                        class="input-field mb-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date of birth</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="checkout.dob_label">Date of birth</label>
                 <input type="date" x-model="ageForm.birthdate" class="input-field mb-1">
                 <label class="flex items-center gap-2 text-xs text-gray-600 mb-2 mt-1">
                     <input type="checkbox" x-model="ageForm.marketing_consent" class="w-4 h-4">
-                    <span>Send offers (SMS/email) — optional</span>
+                    <span data-i18n="checkout.marketing_consent">Send offers (SMS/email) — optional</span>
                 </label>
                 <button @click="ageSignup()" :disabled="ageProcessing"
-                        class="btn-primary w-full" :class="ageProcessing ? 'opacity-50 cursor-not-allowed' : ''">
+                        class="btn-primary w-full" :class="ageProcessing ? 'opacity-50 cursor-not-allowed' : ''"
+                        data-i18n="checkout.create_member_continue">
                     Create member &amp; continue
                 </button>
-                <p class="text-xs text-gray-500 mt-1">DOB proves 18+ automatically. Under 18 can join but can't buy 18+ items.</p>
+                <p class="text-xs text-gray-500 mt-1" data-i18n="checkout.dob_note">DOB proves 18+ automatically. Under 18 can join but can't buy 18+ items.</p>
             </div>
 
             <!-- Move 2: CONFIRM a walk-in is 18+ (ID checked) -->
             <button @click="ageConfirmWalkin()"
                     class="btn-success w-full mb-3">
-                ✅ Confirm 18+ walk-in — ID checked
+                ✅ <span data-i18n="checkout.confirm_walkin">Confirm 18+ walk-in — ID checked</span>
             </button>
 
             <!-- Move 3: REFUSE — drop the 18+ line(s) and cancel the gate -->
             <button @click="ageRefuse()" class="btn-danger w-full">
-                🚫 Refuse — remove 18+ item(s)
+                🚫 <span data-i18n="checkout.refuse_remove">Refuse — remove 18+ item(s)</span>
             </button>
         </div>
     </div>
@@ -374,7 +375,7 @@
             async init() {
                 const stored = sessionStorage.getItem('pos_cart');
                 if (!stored) {
-                    showToast('No cart data found', 'warning');
+                    showToast(t('checkout.toast_no_cart'), 'warning');
                     setTimeout(() => window.location.href = '/pos/scan', 1000);
                     return;
                 }
@@ -439,7 +440,7 @@
                 // Only meaningful when the customer OVERpaid -- never when cash is short
                 // (rounding up would deepen the deficit).
                 if (this.changeAmount < 0) {
-                    showToast('Cash received is less than the total — collect more cash first', 'warning');
+                    showToast(t('cash.toast_cash_less'), 'warning');
                     return;
                 }
                 // Round total UP to match cash received (customer gets clean change)
@@ -459,7 +460,7 @@
                 this.quickRoundApplied = true;
                 this.calculateChange();
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
-                showToast(`Rounded to ${formatPrice(roundedTotal)} - clean change!`, 'success');
+                showToast(t('cash.toast_rounded', {n: formatPrice(roundedTotal)}), 'success');
             },
 
             addChangeProduct(product) {
@@ -482,7 +483,7 @@
                 this.showChangeProducts = false;
 
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
-                showToast(`${product.emoji} ${product.name} - on the house!`, 'success');
+                showToast(`${product.emoji} ${product.name} ${t('checkout.on_the_house_suffix')}`, 'success');
             },
 
             applyDiscount(percent) {
@@ -492,7 +493,7 @@
                 this.recalculateTotals();
                 this.calculateChange(); // Recalculate change after discount
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
-                showToast(`${percent}% discount applied`, 'success');
+                showToast(t('checkout.toast_discount_applied', {n: percent}), 'success');
             },
 
             customDiscount() {
@@ -565,7 +566,7 @@
                         counts[item.name] = (counts[item.name] || 0) + item.quantity;
                     }
                 });
-                return Object.entries(counts).map(([name, qty]) => `-${qty} ${name}`).join(', ') || 'No inventory changes';
+                return Object.entries(counts).map(([name, qty]) => `-${qty} ${name}`).join(', ') || t('checkout.no_inventory_changes');
             },
 
             // ---- 🔞 Age gate (18+) helpers ------------------------------------
@@ -611,15 +612,15 @@
             // Move 1: sign up a member with a REAL DOB (no gender field anywhere).
             async ageSignup() {
                 if (!this.ageForm.handle || !this.ageForm.handle.trim()) {
-                    showToast('Enter a name / handle', 'warning'); return;
+                    showToast(t('checkout.toast_enter_handle'), 'warning'); return;
                 }
                 if (!this.ageForm.birthdate) {
-                    showToast('Enter the date of birth', 'warning'); return;
+                    showToast(t('checkout.toast_enter_dob'), 'warning'); return;
                 }
                 const age = this.ageFromDob(this.ageForm.birthdate);
-                if (age === null) { showToast('Invalid date of birth', 'warning'); return; }
+                if (age === null) { showToast(t('checkout.toast_invalid_dob'), 'warning'); return; }
                 if (age < 18) {
-                    showToast(`Under 18 (${age}) — can't sell 18+ items. Refuse or remove the item.`, 'warning');
+                    showToast(t('checkout.toast_under_18', {n: age}), 'warning');
                     return;
                 }
                 this.ageProcessing = true;
@@ -646,11 +647,11 @@
                     this.ageProcessing = false;
                     this.ageForm = { handle: '', birthdate: '', marketing_consent: false };
                     this.recalculateTotals();
-                    showToast(`👤 ${created.handle} signed up — 18+ verified`, 'success');
+                    showToast(`👤 ${created.handle} ${t('checkout.toast_signed_up_suffix')}`, 'success');
                     this.completeTransaction();
                 } catch (error) {
                     this.ageProcessing = false;
-                    showToast((error && error.message) || 'Could not create member', 'warning');
+                    showToast((error && error.message) || t('checkout.toast_create_member_failed'), 'warning');
                 }
             },
             // Move 2: cashier attests the walk-in is 18+ (ID checked) -> age_verified on the payload.
@@ -667,16 +668,16 @@
                 this.calculateChange();
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
                 if (this.cartData.cart.length === 0) {
-                    showToast('18+ item(s) removed — cart is empty', 'warning');
+                    showToast(t('checkout.toast_age_removed_empty'), 'warning');
                     setTimeout(() => window.location.href = '/pos/scan', 900);
                 } else {
-                    showToast('18+ item(s) removed from the sale', 'success');
+                    showToast(t('checkout.toast_age_removed'), 'success');
                 }
             },
 
             async completeTransaction() {
                 if (!this.paymentMethod) {
-                    showToast('Please select a payment method', 'warning');
+                    showToast(t('cash.toast_select_payment'), 'warning');
                     return;
                 }
 
@@ -690,14 +691,14 @@
 
                 // For cash payments, require cash received amount
                 if (this.paymentMethod === 'cash' && this.cashReceived <= 0) {
-                    showToast('Please select cash amount received', 'warning');
+                    showToast(t('cash.toast_select_cash'), 'warning');
                     return;
                 }
 
                 // Never complete an UNDERPAID cash sale (integer-cent compare).
                 if (this.cashShort()) {
                     const short = formatPrice(this.cartData.totals.total - this.cashReceived);
-                    showToast(`Cash received is ${short} short of the total. Collect more or hit EXACT.`, 'warning');
+                    showToast(t('cash.toast_cash_short', {n: short}), 'warning');
                     return;
                 }
 
@@ -707,7 +708,7 @@
                 // the fix (mobile data / hotspot); the moment they reconnect, Complete works.
                 if (!navigator.onLine) {
                     sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // cart is safe
-                    showToast("No internet — can't complete the sale. Your cart is safe. Switch to mobile data or a hotspot, then tap Complete again.", 'warning');
+                    showToast(t('checkout.toast_no_internet'), 'warning');
                     return;
                 }
 
@@ -718,7 +719,7 @@
                     try { const s = await API.get('/api/v1/pos/shift/current'); drawerOpen = !!(s && s.open); } catch (e) {}
                     if (!drawerOpen) {
                         sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // keep the sale
-                        if (confirm('Open your cash drawer before taking a cash sale.\n\nOpen it now? Your cart is saved — come back here to finish.')) {
+                        if (confirm(t('cash.confirm_open_drawer'))) {
                             window.location.href = '/pos/shift';
                         }
                         return;
@@ -726,9 +727,9 @@
                 }
 
                 // For cash, show change in confirmation
-                let confirmMsg = `Complete transaction for ${formatPrice(this.cartData.totals.total)}?`;
+                let confirmMsg = t('checkout.confirm_complete_txn', {n: formatPrice(this.cartData.totals.total)});
                 if (this.paymentMethod === 'cash' && this.changeAmount > 0) {
-                    confirmMsg += `\n\nCash received: ${formatPrice(this.cashReceived)}\nChange to give: ${formatPrice(this.changeAmount)}`;
+                    confirmMsg += `\n\n${t('cash.confirm_cash_received_label')} ${formatPrice(this.cashReceived)}\n${t('cash.confirm_change_label')} ${formatPrice(this.changeAmount)}`;
                 }
 
                 if (!confirm(confirmMsg)) {
@@ -793,7 +794,7 @@
                     sessionStorage.removeItem('checkout_customer');
                     sessionStorage.removeItem('pos_sale_uuid');
 
-                    showToast('Transaction completed! Displaying receipt...', 'success');
+                    showToast(t('checkout.toast_txn_completed'), 'success');
 
                     // Redirect to receipt page
                     setTimeout(() => {
@@ -813,11 +814,11 @@
                     if (blip) {
                         sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));  // cart safe; key kept
                         showToast(navigator.onLine
-                            ? "Couldn't reach the server for a moment — your cart is safe. Tap Complete again (it can't ring twice)."
-                            : "No internet — the sale didn't go through. Your cart is safe. Reconnect (mobile data / hotspot) and tap Complete again.",
+                            ? t('checkout.toast_server_blip_online')
+                            : t('checkout.toast_server_blip_offline'),
                             'warning');
                     } else {
-                        showToast(error.message || 'Could not complete the sale.', 'warning');
+                        showToast(error.message || t('checkout.toast_complete_failed'), 'warning');
                     }
                     this.processing = false;
                 }

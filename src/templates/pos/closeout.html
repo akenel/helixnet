@@ -14,14 +14,14 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">⏰ Close Shift</h1>
-                    <p class="text-sm text-gray-600">End your day &amp; count cash</p>
+                    <h1 class="text-2xl font-bold text-gray-900" data-i18n="closeout.title">⏰ Close Shift</h1>
+                    <p class="text-sm text-gray-600" data-i18n="closeout.subtitle">End your day &amp; count cash</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
-                <button @click="goBack()" class="btn-secondary text-sm">🏪 Dashboard</button>
+                <button @click="goBack()" class="btn-secondary text-sm" data-i18n="closeout.dashboard">🏪 Dashboard</button>
                 <div class="text-right">
-                    <p class="text-sm text-gray-600">Cashier</p>
+                    <p class="text-sm text-gray-600" data-i18n="closeout.cashier">Cashier</p>
                     <p class="font-semibold" x-text="user.username"></p>
                 </div>
             </div>
@@ -33,30 +33,30 @@
 
             <!-- Shift Summary (Auto-calculated) -->
             <div class="bg-indigo-50 rounded-lg p-4 sm:p-6 mb-6">
-                <h2 class="text-xl font-semibold text-indigo-900 mb-4">📊 Shift Summary</h2>
+                <h2 class="text-xl font-semibold text-indigo-900 mb-4" data-i18n="closeout.shift_summary">📊 Shift Summary</h2>
                 <div class="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
                     <div>
-                        <p class="text-gray-600">Cashier:</p>
+                        <p class="text-gray-600" data-i18n="closeout.cashier_colon">Cashier:</p>
                         <p class="font-semibold truncate" x-text="user.username"></p>
                     </div>
                     <div>
-                        <p class="text-gray-600">Shift Time:</p>
-                        <p class="font-semibold">8:00 AM - <span x-text="currentTime()"></span></p>
+                        <p class="text-gray-600" data-i18n="closeout.shift_time">Shift Time:</p>
+                        <p class="font-semibold"><span data-i18n="closeout.shift_start">8:00 AM</span> - <span x-text="currentTime()"></span></p>
                     </div>
                     <div>
-                        <p class="text-gray-600">Transactions:</p>
+                        <p class="text-gray-600" data-i18n="closeout.transactions_colon">Transactions:</p>
                         <p class="font-semibold text-xl sm:text-2xl" x-text="summary.transactionCount"></p>
                     </div>
                     <div>
-                        <p class="text-gray-600">Total Sales:</p>
+                        <p class="text-gray-600" data-i18n="closeout.total_sales_colon">Total Sales:</p>
                         <p class="font-semibold text-xl sm:text-2xl text-green-600 truncate" x-text="formatPrice(summary.totalSales)"></p>
                     </div>
                     <div>
-                        <p class="text-gray-600">Cash:</p>
+                        <p class="text-gray-600" data-i18n="closeout.cash_colon">Cash:</p>
                         <p class="font-semibold" x-text="formatPrice(summary.cashSales)"></p>
                     </div>
                     <div>
-                        <p class="text-gray-600">Card/Mobile:</p>
+                        <p class="text-gray-600" data-i18n="closeout.card_mobile_colon">Card/Mobile:</p>
                         <p class="font-semibold" x-text="formatPrice(summary.cardSales)"></p>
                     </div>
                 </div>
@@ -64,76 +64,76 @@
 
             <!-- Z-Report preview (on screen) + export. What Felix copies into his book. -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">🧾 Daily Z-Report</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4" data-i18n="closeout.daily_z_report">🧾 Daily Z-Report</h2>
                 <div class="bg-white border-2 border-gray-200 rounded-lg p-5">
                     <p class="text-sm text-gray-500 mb-3">
-                        Artemis Luzern &middot; <span x-text="summary.date"></span> &middot; Cashier: <span x-text="user.username"></span>
+                        Artemis Luzern &middot; <span x-text="summary.date"></span> &middot; <span data-i18n="closeout.cashier_colon">Cashier:</span> <span x-text="user.username"></span>
                     </p>
                     <table class="w-full text-sm data-table">
                         <tbody>
-                            <tr x-show="summary.cashSales > 0"><td class="py-1">Cash</td><td class="py-1 text-right" x-text="formatPrice(summary.cashSales)"></td></tr>
+                            <tr x-show="summary.cashSales > 0"><td class="py-1" data-i18n="closeout.pay_cash">Cash</td><td class="py-1 text-right" x-text="formatPrice(summary.cashSales)"></td></tr>
                             <tr x-show="summary.twintSales > 0"><td class="py-1">TWINT</td><td class="py-1 text-right" x-text="formatPrice(summary.twintSales)"></td></tr>
                             <tr x-show="summary.visaSales > 0"><td class="py-1">Visa</td><td class="py-1 text-right" x-text="formatPrice(summary.visaSales)"></td></tr>
-                            <tr x-show="summary.debitSales > 0"><td class="py-1">Debit</td><td class="py-1 text-right" x-text="formatPrice(summary.debitSales)"></td></tr>
-                            <tr x-show="summary.cryptoSales > 0"><td class="py-1">Crypto</td><td class="py-1 text-right" x-text="formatPrice(summary.cryptoSales)"></td></tr>
-                            <tr x-show="summary.otherSales > 0"><td class="py-1">Other</td><td class="py-1 text-right" x-text="formatPrice(summary.otherSales)"></td></tr>
-                            <tr class="border-t-2 border-gray-800 font-bold"><td class="py-2">TOTAL</td><td class="py-2 text-right text-lg" x-text="formatPrice(summary.totalSales)"></td></tr>
-                            <tr class="text-gray-500"><td class="py-1">incl. VAT <span x-text="POSConfig.vat_rate"></span>%<span class="text-gray-400" x-show="summary.turnoverReduced > 0"> (on <span x-text="formatPrice(summary.turnoverStandard)"></span>)</span></td><td class="py-1 text-right" x-text="formatPrice(summary.vatStandard)"></td></tr>
-                            <tr class="text-gray-500" x-show="summary.turnoverReduced > 0"><td class="py-1">incl. VAT <span x-text="POSConfig.vat_rate_reduced"></span>% (on <span x-text="formatPrice(summary.turnoverReduced)"></span>)</td><td class="py-1 text-right" x-text="formatPrice(summary.vatReduced)"></td></tr>
-                            <tr class="text-gray-600 font-semibold" x-show="summary.turnoverReduced > 0"><td class="py-1">VAT total</td><td class="py-1 text-right" x-text="formatPrice(summary.vatTotal)"></td></tr>
-                            <tr x-show="summary.giveawayCount > 0" class="text-pink-600"><td class="py-1">🎁 Treats given (free) — <span x-text="summary.giveawayCount"></span> · cost</td><td class="py-1 text-right" x-text="formatPrice(summary.giveawayCost)"></td></tr>
-                            <tr class="text-gray-500"><td class="py-1">Transactions</td><td class="py-1 text-right" x-text="summary.transactionCount"></td></tr>
+                            <tr x-show="summary.debitSales > 0"><td class="py-1" data-i18n="closeout.pay_debit">Debit</td><td class="py-1 text-right" x-text="formatPrice(summary.debitSales)"></td></tr>
+                            <tr x-show="summary.cryptoSales > 0"><td class="py-1" data-i18n="closeout.pay_crypto">Crypto</td><td class="py-1 text-right" x-text="formatPrice(summary.cryptoSales)"></td></tr>
+                            <tr x-show="summary.otherSales > 0"><td class="py-1" data-i18n="closeout.pay_other">Other</td><td class="py-1 text-right" x-text="formatPrice(summary.otherSales)"></td></tr>
+                            <tr class="border-t-2 border-gray-800 font-bold"><td class="py-2" data-i18n="closeout.total">TOTAL</td><td class="py-2 text-right text-lg" x-text="formatPrice(summary.totalSales)"></td></tr>
+                            <tr class="text-gray-500"><td class="py-1"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate"></span>%<span class="text-gray-400" x-show="summary.turnoverReduced > 0"> (<span data-i18n="vat.on">on</span> <span x-text="formatPrice(summary.turnoverStandard)"></span>)</span></td><td class="py-1 text-right" x-text="formatPrice(summary.vatStandard)"></td></tr>
+                            <tr class="text-gray-500" x-show="summary.turnoverReduced > 0"><td class="py-1"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate_reduced"></span>% (<span data-i18n="vat.on">on</span> <span x-text="formatPrice(summary.turnoverReduced)"></span>)</td><td class="py-1 text-right" x-text="formatPrice(summary.vatReduced)"></td></tr>
+                            <tr class="text-gray-600 font-semibold" x-show="summary.turnoverReduced > 0"><td class="py-1" data-i18n="vat.vat_total">VAT total</td><td class="py-1 text-right" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                            <tr x-show="summary.giveawayCount > 0" class="text-pink-600"><td class="py-1"><span data-i18n="closeout.treats_given">🎁 Treats given (free) —</span> <span x-text="summary.giveawayCount"></span> · <span data-i18n="closeout.cost">cost</span></td><td class="py-1 text-right" x-text="formatPrice(summary.giveawayCost)"></td></tr>
+                            <tr class="text-gray-500"><td class="py-1" data-i18n="closeout.transactions">Transactions</td><td class="py-1 text-right" x-text="summary.transactionCount"></td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2 justify-end">
                     <button type="button" @click="downloadCSV()" :disabled="downloading" class="btn-secondary">
-                        <span x-show="!downloading">📥 Download Banana CSV</span>
-                        <span x-show="downloading">Preparing...</span>
+                        <span x-show="!downloading" data-i18n="closeout.download_csv">📥 Download Banana CSV</span>
+                        <span x-show="downloading" data-i18n="closeout.preparing">Preparing...</span>
                     </button>
-                    <button type="button" @click="printSummary()" class="btn-secondary">🖨️ Print Z-Report</button>
+                    <button type="button" @click="printSummary()" class="btn-secondary" data-i18n="closeout.print_z_report">🖨️ Print Z-Report</button>
                 </div>
             </div>
 
             <!-- Cash Drawer Count -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">💰 Cash Drawer Count</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4" data-i18n="closeout.cash_drawer_count">💰 Cash Drawer Count</h2>
                 <div class="bg-gray-50 rounded-lg p-6 space-y-3">
-                    <p class="text-sm text-gray-600 mb-4">Enter the amount of cash in the drawer:</p>
+                    <p class="text-sm text-gray-600 mb-4" data-i18n="closeout.enter_cash">Enter the amount of cash in the drawer:</p>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="text-sm text-gray-600">Notes (CHF)</label>
+                            <label class="text-sm text-gray-600" data-i18n="closeout.notes_chf">Notes (CHF)</label>
                             <input type="number" step="0.10" x-model="cashCount.notes" @input="updateCashTotal()" class="input-field">
                         </div>
                         <div>
-                            <label class="text-sm text-gray-600">Coins (CHF)</label>
+                            <label class="text-sm text-gray-600" data-i18n="closeout.coins_chf">Coins (CHF)</label>
                             <input type="number" step="0.10" x-model="cashCount.coins" @input="updateCashTotal()" class="input-field">
                         </div>
                     </div>
 
                     <div class="border-t pt-4 mt-4">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="font-semibold">Total Counted:</span>
+                            <span class="font-semibold" data-i18n="closeout.total_counted">Total Counted:</span>
                             <span class="text-2xl font-bold" x-text="formatPrice(cashCount.total)"></span>
                         </div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="font-semibold">Expected:</span>
+                            <span class="font-semibold" data-i18n="closeout.expected">Expected:</span>
                             <span class="text-2xl font-bold" x-text="formatPrice(summary.cashSales)"></span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="font-semibold">Difference:</span>
+                            <span class="font-semibold" data-i18n="closeout.difference_colon">Difference:</span>
                             <span
                                 class="text-2xl font-bold"
                                 :class="cashDifference() === 0 ? 'text-green-600' : 'text-red-600'"
                                 x-text="formatPrice(cashDifference())"></span>
                         </div>
 
-                        <div x-show="cashDifference() === 0" class="mt-4 bg-green-100 text-green-800 rounded-lg p-3 text-center font-semibold">
+                        <div x-show="cashDifference() === 0" class="mt-4 bg-green-100 text-green-800 rounded-lg p-3 text-center font-semibold" data-i18n="closeout.drawer_matches">
                             ✅ Cash drawer matches! Perfect!
                         </div>
 
-                        <div x-show="cashDifference() !== 0" class="mt-4 bg-yellow-100 text-yellow-800 rounded-lg p-3">
+                        <div x-show="cashDifference() !== 0" class="mt-4 bg-yellow-100 text-yellow-800 rounded-lg p-3" data-i18n="closeout.difference_detected">
                             ⚠️ Cash difference detected. Please recount or request manager approval.
                         </div>
                     </div>
@@ -142,19 +142,19 @@
 
             <!-- Adjustments Needed? -->
             <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">❓ Need Adjustments?</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4" data-i18n="closeout.need_adjustments">❓ Need Adjustments?</h2>
                 <div class="space-y-2">
                     <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
                         <input type="radio" x-model="needsAdjustment" value="no" class="w-5 h-5">
-                        <span>No, close shift now</span>
+                        <span data-i18n="closeout.adjust_no">No, close shift now</span>
                     </label>
                     <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
                         <input type="radio" x-model="needsAdjustment" value="yes" class="w-5 h-5">
-                        <span>Yes, let me add a note</span>
+                        <span data-i18n="closeout.adjust_yes">Yes, let me add a note</span>
                     </label>
                     <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
                         <input type="radio" x-model="needsAdjustment" value="manager" class="w-5 h-5">
-                        <span>Request manager approval (Felix/Ralph)</span>
+                        <span data-i18n="closeout.adjust_manager">Request manager approval (Felix/Ralph)</span>
                     </label>
                 </div>
 
@@ -162,18 +162,19 @@
                     <textarea
                         x-model="adjustmentNote"
                         class="input-field h-24"
+                        data-i18n-placeholder="closeout.note_placeholder"
                         placeholder="Describe what needs fixing..."></textarea>
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="grid grid-cols-2 gap-4">
-                <button @click="goBack()" class="btn-secondary">
+                <button @click="goBack()" class="btn-secondary" data-i18n="closeout.cancel">
                     ❌ Cancel
                 </button>
                 <button @click="closeShift()" :disabled="processing" class="btn-success">
-                    <span x-show="!processing">✅ Close Shift</span>
-                    <span x-show="processing">Processing...</span>
+                    <span x-show="!processing" data-i18n="closeout.close_shift">✅ Close Shift</span>
+                    <span x-show="processing" data-i18n="closeout.processing">Processing...</span>
                 </button>
             </div>
         </div>
@@ -181,33 +182,33 @@
 
     <!-- Printable daily Z-report: hidden on screen, the ONLY thing that prints -->
     <div id="daily-print-sheet">
-        <h1 style="font-size:20px;margin:0 0 2px;">Artemis Luzern &mdash; Daily Sales Summary</h1>
+        <h1 style="font-size:20px;margin:0 0 2px;">Artemis Luzern &mdash; <span data-i18n="closeout.daily_sales_summary">Daily Sales Summary</span></h1>
         <div style="font-size:12px;color:#444;margin-bottom:14px;">
-            Date: <span x-text="summary.date"></span> &middot;
-            Cashier: <span x-text="user.username"></span> &middot;
-            Printed: <span x-text="currentTime()"></span>
+            <span data-i18n="closeout.date_colon">Date:</span> <span x-text="summary.date"></span> &middot;
+            <span data-i18n="closeout.cashier_colon">Cashier:</span> <span x-text="user.username"></span> &middot;
+            <span data-i18n="closeout.printed_colon">Printed:</span> <span x-text="currentTime()"></span>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:15px;">
             <tbody>
-                <tr><td style="padding:5px 0;">Cash</td><td style="text-align:right;" x-text="formatPrice(summary.cashSales)"></td></tr>
+                <tr><td style="padding:5px 0;" data-i18n="closeout.pay_cash">Cash</td><td style="text-align:right;" x-text="formatPrice(summary.cashSales)"></td></tr>
                 <tr><td style="padding:5px 0;">TWINT</td><td style="text-align:right;" x-text="formatPrice(summary.twintSales)"></td></tr>
                 <tr><td style="padding:5px 0;">Visa</td><td style="text-align:right;" x-text="formatPrice(summary.visaSales)"></td></tr>
-                <tr><td style="padding:5px 0;">Debit</td><td style="text-align:right;" x-text="formatPrice(summary.debitSales)"></td></tr>
-                <tr x-show="summary.cryptoSales > 0"><td style="padding:5px 0;">Crypto</td><td style="text-align:right;" x-text="formatPrice(summary.cryptoSales)"></td></tr>
-                <tr x-show="summary.otherSales > 0"><td style="padding:5px 0;">Other</td><td style="text-align:right;" x-text="formatPrice(summary.otherSales)"></td></tr>
-                <tr style="border-top:2px solid #000;font-weight:bold;"><td style="padding-top:7px;">TOTAL</td><td style="text-align:right;padding-top:7px;" x-text="formatPrice(summary.totalSales)"></td></tr>
-                <tr><td style="padding:2px 0;color:#444;">incl. VAT <span x-text="POSConfig.vat_rate"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatStandard)"></td></tr>
-                <tr x-show="summary.turnoverReduced > 0"><td style="padding:2px 0;color:#444;">incl. VAT <span x-text="POSConfig.vat_rate_reduced"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatReduced)"></td></tr>
-                <tr x-show="summary.turnoverReduced > 0"><td style="padding:2px 0;color:#444;font-weight:bold;">VAT total</td><td style="text-align:right;color:#444;font-weight:bold;" x-text="formatPrice(summary.vatTotal)"></td></tr>
-                <tr x-show="summary.giveawayCount > 0"><td style="padding:2px 0;color:#444;">Treats given (free) &mdash; <span x-text="summary.giveawayCount"></span> &middot; cost</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.giveawayCost)"></td></tr>
-                <tr><td style="padding-top:7px;color:#444;">Transactions</td><td style="text-align:right;padding-top:7px;color:#444;" x-text="summary.transactionCount"></td></tr>
+                <tr><td style="padding:5px 0;" data-i18n="closeout.pay_debit">Debit</td><td style="text-align:right;" x-text="formatPrice(summary.debitSales)"></td></tr>
+                <tr x-show="summary.cryptoSales > 0"><td style="padding:5px 0;" data-i18n="closeout.pay_crypto">Crypto</td><td style="text-align:right;" x-text="formatPrice(summary.cryptoSales)"></td></tr>
+                <tr x-show="summary.otherSales > 0"><td style="padding:5px 0;" data-i18n="closeout.pay_other">Other</td><td style="text-align:right;" x-text="formatPrice(summary.otherSales)"></td></tr>
+                <tr style="border-top:2px solid #000;font-weight:bold;"><td style="padding-top:7px;" data-i18n="closeout.total">TOTAL</td><td style="text-align:right;padding-top:7px;" x-text="formatPrice(summary.totalSales)"></td></tr>
+                <tr><td style="padding:2px 0;color:#444;"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatStandard)"></td></tr>
+                <tr x-show="summary.turnoverReduced > 0"><td style="padding:2px 0;color:#444;"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate_reduced"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatReduced)"></td></tr>
+                <tr x-show="summary.turnoverReduced > 0"><td style="padding:2px 0;color:#444;font-weight:bold;" data-i18n="vat.vat_total">VAT total</td><td style="text-align:right;color:#444;font-weight:bold;" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                <tr x-show="summary.giveawayCount > 0"><td style="padding:2px 0;color:#444;"><span data-i18n="closeout.treats_given_print">Treats given (free) &mdash;</span> <span x-text="summary.giveawayCount"></span> &middot; <span data-i18n="closeout.cost">cost</span></td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.giveawayCost)"></td></tr>
+                <tr><td style="padding-top:7px;color:#444;" data-i18n="closeout.transactions">Transactions</td><td style="text-align:right;padding-top:7px;color:#444;" x-text="summary.transactionCount"></td></tr>
             </tbody>
         </table>
         <div style="margin-top:22px;font-size:12px;color:#444;">
-            Cash counted: <span x-text="formatPrice(cashCount.total)"></span> &middot;
-            Difference: <span x-text="formatPrice(cashDifference())"></span>
+            <span data-i18n="closeout.cash_counted">Cash counted:</span> <span x-text="formatPrice(cashCount.total)"></span> &middot;
+            <span data-i18n="closeout.difference_colon">Difference:</span> <span x-text="formatPrice(cashDifference())"></span>
         </div>
-        <div style="margin-top:40px;font-size:12px;">Signature: ______________________________</div>
+        <div style="margin-top:40px;font-size:12px;"><span data-i18n="closeout.signature">Signature:</span> ______________________________</div>
     </div>
 </div>
 
@@ -309,13 +310,13 @@
 
             async closeShift() {
                 if (this.needsAdjustment === 'yes' && !this.adjustmentNote.trim()) {
-                    showToast('Please enter a note for the adjustment', 'warning');
+                    showToast(t('closeout.enter_note_warning'), 'warning');
                     return;
                 }
 
                 const message = this.needsAdjustment === 'manager'
-                    ? 'Send close shift request to manager for approval?'
-                    : `Close shift with ${formatPrice(this.summary.totalSales)} in sales?`;
+                    ? t('closeout.confirm_manager')
+                    : t('closeout.confirm_close', {n: formatPrice(this.summary.totalSales)});
 
                 if (!confirm(message)) {
                     return;
@@ -326,31 +327,31 @@
                 try {
                     // In a real system, this would create a close-out record
                     // For now, just show success
-                    showToast('Shift closed successfully!', 'success');
+                    showToast(t('closeout.shift_closed_toast'), 'success');
 
                     setTimeout(() => {
                         const summary = `
-Shift Closed Successfully!
+${t('closeout.alert_title')}
 
-Cashier: ${this.user.username}
-Transactions: ${this.summary.transactionCount}
-Total Sales: ${formatPrice(this.summary.totalSales)}
-Cash: ${formatPrice(this.summary.cashSales)}
-Card/Mobile: ${formatPrice(this.summary.cardSales)}
+${t('closeout.cashier_colon')} ${this.user.username}
+${t('closeout.transactions_colon')} ${this.summary.transactionCount}
+${t('closeout.total_sales_colon')} ${formatPrice(this.summary.totalSales)}
+${t('closeout.cash_colon')} ${formatPrice(this.summary.cashSales)}
+${t('closeout.card_mobile_colon')} ${formatPrice(this.summary.cardSales)}
 
-Cash Count: ${formatPrice(this.cashCount.total)}
-Difference: ${formatPrice(this.cashDifference())}
+${t('closeout.cash_count_colon')} ${formatPrice(this.cashCount.total)}
+${t('closeout.difference_colon')} ${formatPrice(this.cashDifference())}
 
-${this.adjustmentNote ? 'Note: ' + this.adjustmentNote : ''}
+${this.adjustmentNote ? t('closeout.note_prefix') + ' ' + this.adjustmentNote : ''}
 
-Thank you for a great shift!
+${t('closeout.thank_you')}
                         `;
                         alert(summary);
                         window.location.href = '/pos/dashboard';
                     }, 500);
 
                 } catch (error) {
-                    showToast('Error: ' + error.message, 'error');
+                    showToast(t('common.error') + ': ' + error.message, 'error');
                     this.processing = false;
                 }
             },
@@ -376,7 +377,7 @@ Thank you for a great shift!
                     const res = await fetch('/api/v1/pos/reports/daily-summary.csv', {
                         headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }
                     });
-                    if (!res.ok) { showToast('CSV download failed (' + res.status + ')', 'error'); return; }
+                    if (!res.ok) { showToast(t('closeout.csv_failed') + ' (' + res.status + ')', 'error'); return; }
                     const blob = await res.blob();
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -386,9 +387,9 @@ Thank you for a great shift!
                     a.click();
                     a.remove();
                     URL.revokeObjectURL(url);
-                    showToast('Banana CSV downloaded', 'success');
+                    showToast(t('closeout.csv_downloaded'), 'success');
                 } catch (e) {
-                    showToast('CSV download failed: ' + e.message, 'error');
+                    showToast(t('closeout.csv_failed') + ': ' + e.message, 'error');
                 } finally {
                     this.downloading = false;
                 }
