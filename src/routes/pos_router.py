@@ -147,9 +147,12 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     so the new DB read must never turn a blip into a 500 — it degrades to CH.
     """
     settings = get_settings()
+    store_name = "Banco POS"
     try:
         store = await get_active_store_settings(db)  # Store #1, may be None
         regime = resolve_regime(store)
+        if store is not None and getattr(store, "store_name", None):
+            store_name = store.store_name  # PHASE 2 fix: closeout/Z-report reads the REAL name
     except Exception:
         logger.warning("config: regime source failed; CH fallback", exc_info=True)
         regime = resolve_regime(None)
@@ -165,6 +168,7 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
         "locale": regime["locale"],      # PHASE 1: per-tenant (CH tenant -> de-CH, byte-identical)
         "vat_decimal": settings.POS_VAT_RATE / 100,  # 0.081 for calculations
         "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
+        "store_name": store_name,  # PHASE 2: the tenant store name (closeout/Z-report header)
         "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency
     }
 

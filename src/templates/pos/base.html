@@ -631,6 +631,7 @@
             // PHASE 0/2: per-tenant fiscal regime (code + vat_number_format), CH default.
             // Drives the receipt VAT label (P. IVA / MWST) + the IT non-fiscal banner.
             regime: 'CH',
+            store_name: '',
             vat_number_format: 'CHE-XXX.XXX.XXX MWST',
             // Swiss default denom grid (byte-identical to the server CHF set); /config
             // overwrites this with the tenant currency's ordered face values on load.
@@ -648,6 +649,7 @@
                         this.vat_year = config.vat_year;
                         this.currency = config.currency;
                         this.locale = config.locale;
+                        this.store_name = config.store_name || '';
                         // PHASE 0/2: per-tenant regime (code + VAT-number format) for the receipt
                         // VAT label + IT non-fiscal banner. Falls back to CH defaults if absent.
                         if (config.regime && typeof config.regime === 'object') {
@@ -660,7 +662,7 @@
                         // push into the reactive store so already-painted money/dates re-render
                         try {
                             const s = (window.Alpine && Alpine.store) ? Alpine.store('cfg') : null;
-                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; }
+                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; s.store_name = this.store_name; }
                         } catch (e) {}
                         // PHASE 2 i18n: if the language was only a default guess (no ?lang / stored
                         // pref / JWT locale), the tenant locale from /config may now imply a
@@ -690,6 +692,7 @@
                 locale: POSConfig.locale,
                 denominations: POSConfig.denominations,
                 regime: POSConfig.regime,
+                store_name: POSConfig.store_name,
             });
         });
         function _cfg(k) {

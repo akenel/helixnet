@@ -22,6 +22,18 @@ REGIMES: dict[str, dict] = {
         "locale": "de-CH",
         "vat_number_format": "CHE-XXX.XXX.XXX MWST",
     },
+    "IT": {
+        # IDENTITY ONLY — jurisdiction facts (currency/locale/VAT-number label + regime code
+        # that drives the non-fiscal receipt banner). NO Italian tax RATES here: IVA (22/10/5/4)
+        # is P3, deferred behind a commercialista gate. Until then an IT tenant honestly carries
+        # the current engine rates (Swiss, from config via _ch_rates) AND the receipt prints
+        # "Documento non fiscale — Ricevuta non valida ai fini fiscali". This is jurisdiction
+        # IDENTITY, not placeholder tax law — the seal lesson stays honored.
+        "regime": "IT",
+        "currency": "EUR",
+        "locale": "it-IT",
+        "vat_number_format": "P. IVA",
+    },
 }
 
 
