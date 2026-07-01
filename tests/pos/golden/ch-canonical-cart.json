@@ -1,0 +1,33 @@
+{
+  "scenario": {
+    "name": "CH canonical mixed cart (golden lock v1)",
+    "note": "Hand-verified against src/services/vat_resolver.split_vat with injected rates 8.1/2.6. Freezes NUMBERS + A/B split + reconciliation + /config scalars. NOT the DOM. This is the tripwire for BANCO-GO-ITALIAN-PLAN.md P0: later euro/i18n/date-locale work must leave every CH franc and the A/B VAT split byte-identical.",
+    "engine": "src/services/vat_resolver.py :: split_vat / contained_vat",
+    "created": "2026-07-01"
+  },
+  "rates": { "standard": "8.1", "reduced": "2.6" },
+  "lines": [
+    { "id": "A", "class": "alcohol",    "consumption": "takeaway", "gross": "89.90",  "expected_rate": "8.1", "expected_contained_vat": "6.74", "stream": "standard", "why": "standard 8.1 + proves alcohol ignores takeaway" },
+    { "id": "B", "class": "cafe_food",  "consumption": "takeaway", "gross": "5.00",   "expected_rate": "2.6", "expected_contained_vat": "0.13", "stream": "reduced",  "why": "cafe_split takeaway -> reduced 2.6" },
+    { "id": "C", "class": "cafe_food",  "consumption": "dine_in",  "gross": "12.00",  "expected_rate": "8.1", "expected_contained_vat": "0.90", "stream": "standard", "why": "cafe_split dine-in -> standard 8.1" },
+    { "id": "D", "class": "cafe_food",  "consumption": "takeaway", "gross": "8.00",   "expected_rate": "2.6", "expected_contained_vat": "0.20", "stream": "reduced",  "why": "second reduced-stream line" },
+    { "id": "E", "class": "historical", "consumption": "n/a",      "gross": "107.70", "expected_rate": "7.7", "expected_contained_vat": "7.70", "stream": "standard", "why": "legacy 7.7% line: VAT computed at 7.7 but buckets to standard (7.7 != 2.6)" },
+    { "id": "F", "class": "cafe_food",  "consumption": "takeaway", "gross": "0.00",   "expected_rate": "2.6", "expected_contained_vat": "0.00", "stream": "reduced",  "why": "giveaway/zero line: rate present, 0 VAT, 0 turnover (non-drop coverage)" }
+  ],
+  "expected_basis": { "subtotal": "222.60", "total": "222.60" },
+  "expected_split": {
+    "turnover_standard": "209.60",
+    "turnover_reduced":  "13.00",
+    "vat_standard":      "15.34",
+    "vat_reduced":       "0.33",
+    "vat_total":         "15.67"
+  },
+  "expected_config": {
+    "vat_rate":         { "type": "float", "value": 8.1 },
+    "vat_rate_reduced": { "type": "float", "value": 2.6 },
+    "vat_year":         { "type": "int",   "value": 2025 },
+    "currency":         { "type": "str",   "value": "CHF" },
+    "locale":           { "type": "str",   "value": "de-CH" },
+    "vat_decimal":      { "type": "float", "value": 0.081 }
+  }
+}
