@@ -45,7 +45,10 @@ The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's 
 - [ ] **P3 — Hardware dry-run at the shop.** Thermal printer + barcode scanner on real metal — never tested live. 👥 (must be at Artemis). *Effort: half a day on-site.*
 - [~] **P4 — Prod identity cleanup + SMTP.** 👥
   - [x] **SMTP wired 2026-07-01** — all 3 banco KC realms had NO email. Hybrid: `kc-sandbox`→MailHog, `borrowhood-staging` + `borrowhood`→**Resend** (`lapiazza.app` verified, smtp.resend.com:587). `testSMTPConnection` = **HTTP 204 all three**; sandbox PROVEN via MailHog. Persists across restart (IGNORE_EXISTING import, `helix_db`). Set master admin `helix_user` email = angel's Gmail (enables KC test button). ⏳ Angel confirm the 2 Resend tests hit Gmail; optional real user-flow (forgot-password) proof. Detail: memory `banco-kc-smtp-resend`.
-  - [ ] **Prod identity cleanup** — the pam split-brain in the prod realm. Still pending. *Effort: one focused session.*
+  - [x] **helix_pass quick-patch 2026-07-01** — GitGuardian flagged the shared demo password (`helix_pass`) in the PUBLIC repo. Assessed: no cloud keys leaked, Postgres not internet-exposed; the real door was KC logins. Rotated **8 real accounts** (felix/akenel/angel/pam/ralph on `borrowhood` + `borrowhood-staging`) off `helix_pass` to Angel's strong password via `scripts/ops/set-kc-passwords.py` (getpass, refuses helix_pass). Sandbox stays open by design. Detail: memory `banco-shared-password-cleanup`.
+  - [ ] **Clean Banco POS prod realm — NEXT focused session.** Prod POS realm `borrowhood` holds **365 mostly-bot users** (old public-app pile); Felix's shop shouldn't share it. Stand up a fresh clean realm (few real staff, strong per-user pw), migrate Banco off `borrowhood`, quarantine the spam realm. This structurally ends both the shared-password and the spam problem. (This is the `helix-identity-architecture` 3-realm plan.)
+  - [ ] **Infra passwords still `helix_pass`** (network-gated, not urgent): Postgres `helix_user` DB pw + KC admin pw. Careful coordinated rotation (touches every container's DATABASE_URL + compose + the DB role); `scripts/rotate-secrets.sh` exists.
+  - [ ] **Hygiene:** drop `|| 'helix_pass'` default in the e2e script + move DSN pw out of tracked compose; mark the GitGuardian incident resolved.
 
 ---
 
