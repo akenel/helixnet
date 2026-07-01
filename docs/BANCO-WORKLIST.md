@@ -43,7 +43,7 @@ The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's 
 ---
 
 ## 🛡️ HARDEN — right after the blockers, before relaxing
-- [ ] **P5 — Offsite backup copy.** Local backups + restore-drill are done; an offsite copy is still TODO. 🐯
+- [~] **P5 — Offsite backup copy.** 🐯 *v1 DONE 2026-07-01:* `scripts/ops/banco_offsite_pull.py` scp's the 13 GPG-encrypted `.gpg` blobs box→laptop (`~/backups/banco-offsite/`), sha256-verifies each bit-identical to the box, 90-day retention, idempotent; wired `@hourly` on the laptop crontab. There's now a genuine 2nd physical copy. Also fixed IaC drift (repo `banco_backup.sh` was stale plaintext; now matches the live encrypted box script). **Two pieces still open:** (a) 🧍 **KEY into KeePass** — the offsite ciphertext is unrecoverable without `/root/.banco-backup-key` (fingerprint `4de994a0ef02fd82`); it must live off-box too. (b) 🟡 **durable always-on target** — laptop pull only fires when the laptop is on; pick Hetzner Storage Box (~€4/mo, push from box, runs 24/7) vs Backblaze B2 (true third-party) vs keep laptop-only. Angel's money/account call.
 - [ ] **P6 — Push alerting.** Today the daily smoke writes pull-only status files; add a push so a failure reaches you. 🐯
 - [ ] **P7 — Fiscal-robustness fix.** The subtotal≤0 Z-report drift on messy mixed data — defensive fix is queued. 🐯
 - [ ] **P8 — Runbook + rollback + staff SOP + invoice/contract + DPA.** The paperwork that makes it a business, not a demo. 👥
