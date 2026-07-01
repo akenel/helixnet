@@ -64,6 +64,8 @@ Sized for a Swiss micro-retailer, the genuine alternatives — and the one thing
 
 **The real-world break is not a revenue number — it's the second employee touching the till + the VAT split.** One owner with a notebook scales surprisingly far. The moment two cashiers ring sales, "who sold what" stops being reconcilable from memory. *That's* the pain to name in the room, not a phantom fine.
 
+**The "over CHF 100k needs more than Excel" claim — mostly false, and here's the honest version.** Crossing 100k does NOT trigger a "buy real software" rule. It triggers **VAT registration + commercial-register entry** — nothing more. It does **not** force double-entry (that's 500k) and there is **no** POS/software mandate at any revenue. A 100k–500k shop can *legally* keep its books in a spreadsheet. The one grain of truth: Excel is trivially editable, which sits badly against the GeBüV **10-year-unalterable** requirement — a sheet you can silently overwrite is a weak audit trail if a Treuhänder ever looks. But "awkward" ≠ "illegal," and nobody gets fined for using Excel per se. So don't fear-sell the 100k line. **Sell the murder:** the day you put a second person on the till, Excel stops being bookkeeping and becomes a nightly forensic reconstruction — who rang what, which sale was dine-in 8.1 vs takeaway 2.6, whose drawer is short. One owner scales far on paper; **two-plus at the till the Excel way is murder.** That operational pain — not a phantom fine — is the entry.
+
 ---
 
 ## 2¾. SWOT — THE WHOLE PICTURE ON ONE SCREEN
