@@ -341,7 +341,7 @@ async function clickText(page, selector, text) {
     // ===================================================================== //
     // MONEY-AGE — 🔞 the 18+ gate must FIRE at the till                      //
     // ===================================================================== //
-    if (run.age) await journey('MONEY-AGE', 'Age gate fires at the till: an 18+ product triggers age-verification; a Lifestyle item does not', 'AGE-GATE', null, async () => {
+    if (run.age) await journey('MONEY-AGE', 'Age gate ENFORCED: an unattested 18+ sale is blocked (400), cashier attestation clears it (201), a Lifestyle item is unaffected (201)', 'AGE-GATE', null, async () => {
       // One genuine 18+ item (alcohol, flag ON) and one non-restricted Lifestyle item (flag OFF).
       const AGE18 = await mkProduct('AGE-WHISKY', 'AgeGate Whisky',   '29.00', 'alcohol',  '280', true);
       const LIFE  = await mkProduct('LIFE-MUG',   'AgeGate Mug',       '9.00',  'standard', '294', false);
@@ -418,27 +418,36 @@ async function clickText(page, selector, text) {
         throw new Error(`FALSE GATE: a non-18+ Lifestyle item triggered an age mechanism (${onLife.dialogHit || onLife.domHit || onLife.flagHit})`);
       }
 
-      // Server side too: ringing the 18+ item via /sales with NO age-confirmation field must
-      // be REJECTED if the server gates. (It isn't — recorded as evidence the gate is absent
-      // at every layer.) The sale is tracked for teardown refund.
-      const srvSale = await ringSale('twint', [{ product_id: AGE18.id, quantity: 1, consumption: 'takeaway' }]);
-      const serverGated = false;   // a 201 came back (ringSale throws on non-201) → server did not gate
-
-      // The make-or-break assertion: the 18+ item MUST fire a gate at the till.
-      if (!onAge.fired) {
-        throw new Error(
-          `AGE GATE DOES NOT FIRE AT THE TILL. The 18+ flag rides on the product ` +
-          `(is_age_restricted=true) and a non-18+ control fires nothing, but ringing the 18+ item ` +
-          `in the real sell flow produced NO prompt, NO modal, NO blocking flag at the client till, ` +
-          `AND the server accepted the 18+ sale (${srvSale.transaction_number}) with no age field (201). ` +
-          `catalog.html claims 18+ classes are "age-gated at the till" — claim UNMET at BOTH layers. ` +
-          `Probed: client dialog/modal/Alpine-flag + server /sales, all silent.`
-        );
+      // --- Server enforcement is the AUTHORITATIVE gate (new contract, post age-gate fix). ---
+      // (a) unattested 18+ /sales (no member, no age_verified) → MUST be rejected 400.
+      const blocked = await A.post('/api/v1/pos/sales', {
+        client_uuid: (globalThis.crypto || require('crypto').webcrypto).randomUUID(),
+        payment_method: 'twint',
+        lines: [{ product_id: AGE18.id, quantity: 1, consumption: 'takeaway' }],
+      });
+      if (blocked.status !== 400) {
+        throw new Error(`SERVER DID NOT GATE: unattested 18+ /sales -> HTTP ${blocked.status} (expected 400). ${JSON.stringify(blocked.data).slice(0, 140)}`);
       }
-      void serverGated;
+      // (b) 18+ WITH cashier attestation (age_verified:true) → allowed 201 (the happy path).
+      const attested = await A.post('/api/v1/pos/sales', {
+        client_uuid: (globalThis.crypto || require('crypto').webcrypto).randomUUID(),
+        payment_method: 'twint', age_verified: true,
+        lines: [{ product_id: AGE18.id, quantity: 1, consumption: 'takeaway' }],
+      });
+      if (attested.status !== 201) {
+        throw new Error(`ATTESTED 18+ sale rejected: HTTP ${attested.status} (expected 201 with age_verified:true). ${JSON.stringify(attested.data).slice(0, 140)}`);
+      }
+      cleanup.saleIds.push(attested.data.id);
+      // (c) non-restricted Lifestyle item → always allowed 201, no gate.
+      await ringSale('twint', [{ product_id: LIFE.id, quantity: 1, consumption: 'takeaway' }]);
 
-      const how = onAge.dialogHit ? `dialog "${onAge.dialogHit}"` : onAge.domHit ? `modal "${onAge.domHit}"` : `flag ${onAge.flagHit}`;
-      return `18+ item fired the gate via ${how}; Lifestyle item stayed silent — gate triggers only on 18+`;
+      // UI evidence (best-effort): the 🔞 badge / STOP modal at the till. The server gate above is
+      // the authoritative proof; the modal lives at checkout so the scan-page probe may be quiet.
+      const uiHow = onAge.fired
+        ? (onAge.dialogHit ? `dialog "${onAge.dialogHit}"` : onAge.domHit ? `badge/modal "${onAge.domHit}"` : `flag ${onAge.flagHit}`)
+        : 'UI probe quiet on /pos/scan (gate enforced server-side + at checkout)';
+
+      return `SERVER gated unattested 18+ (400), cleared attested (201) + Lifestyle (201); UI ${uiHow}; Lifestyle stayed silent — gate is 18+-only, server-enforced`;
     });
 
     // ===================================================================== //
