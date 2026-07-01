@@ -14,8 +14,8 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">📥 Receiving</h1>
-                    <p class="text-sm text-gray-600">Scan each item that arrived — new ones join the catalogue</p>
+                    <h1 class="text-2xl font-bold text-gray-900" data-i18n="receiving.title">📥 Receiving</h1>
+                    <p class="text-sm text-gray-600" data-i18n="receiving.subtitle">Scan each item that arrived — new ones join the catalogue</p>
                 </div>
             </div>
         </div>
@@ -23,7 +23,7 @@
 
     <div class="max-w-3xl mx-auto px-4 py-6 space-y-4">
         <!-- Manager-only notice -->
-        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800">
+        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800" data-i18n-html="receiving.manager_only">
             Receiving requires a <strong>manager</strong> role. Ask Felix or Ralph.
         </div>
 
@@ -31,50 +31,50 @@
         <div class="space-y-4">
             <!-- Supplier picker — who delivered this? Pick one or add a new source. -->
             <div class="bg-white rounded-xl shadow p-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Supplier <span class="text-gray-400 font-normal">(who delivered this?)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="receiving.supplier">Supplier</span> <span class="text-gray-400 font-normal" data-i18n="receiving.supplier_hint">(who delivered this?)</span></label>
                 <select x-model="supplierId" @change="onSupplierChange()" class="input-field">
-                    <option value="">— select a supplier —</option>
+                    <option value="" data-i18n="receiving.select_supplier">— select a supplier —</option>
                     <template x-for="s in suppliers" :key="s.id">
                         <option :value="s.id" x-text="(s.prefix ? s.prefix + ' · ' : '') + s.name"></option>
                     </template>
-                    <option value="__new__">➕ Add new supplier…</option>
+                    <option value="__new__" data-i18n="receiving.add_new_supplier">➕ Add new supplier…</option>
                 </select>
 
                 <!-- Inline add-new-supplier form (no leaving the receiving screen) -->
                 <div x-show="addingSupplier" style="display:none;" class="mt-3 border-2 border-emerald-200 bg-emerald-50 rounded-lg p-3 space-y-2">
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Prefix (2-3 letters)</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="receiving.prefix_label">Prefix (2-3 letters)</label>
                             <input type="text" x-model="newSup.prefix" @input="newSup.prefix=(newSup.prefix||'').toUpperCase()"
                                    maxlength="3" placeholder="FTW" class="input-field font-mono uppercase"
                                    :class="newSupError ? 'border-red-500' : ''">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Full name</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="receiving.full_name">Full name</label>
                             <input type="text" x-model="newSup.name" placeholder="FourTwenty" class="input-field">
                         </div>
                     </div>
-                    <input type="text" x-model="newSup.source_url" placeholder="https://… (optional)" class="input-field text-sm">
+                    <input type="text" x-model="newSup.source_url" placeholder="https://… (optional)" data-i18n-placeholder="receiving.source_url_placeholder" class="input-field text-sm">
                     <p x-show="newSupError" x-text="newSupError" class="text-xs text-red-600" style="display:none;"></p>
                     <div class="flex gap-2">
                         <button type="button" @click="saveSupplier()" :disabled="newSupSaving || !!newSupError || !(newSup.name||'').trim()" class="btn-success flex-1 text-sm">
-                            <span x-show="!newSupSaving">✅ Add supplier</span>
-                            <span x-show="newSupSaving" style="display:none;">Saving…</span>
+                            <span x-show="!newSupSaving" data-i18n="receiving.add_supplier">✅ Add supplier</span>
+                            <span x-show="newSupSaving" style="display:none;" data-i18n="receiving.saving">Saving…</span>
                         </button>
-                        <button type="button" @click="cancelAddSupplier()" class="btn-secondary text-sm">Cancel</button>
+                        <button type="button" @click="cancelAddSupplier()" class="btn-secondary text-sm" data-i18n="receiving.cancel">Cancel</button>
                     </div>
                 </div>
             </div>
 
             <!-- Scan / add row -->
             <div class="bg-white rounded-xl shadow p-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Scan or type a barcode</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.scan_or_type">Scan or type a barcode</label>
                 <div class="flex gap-2">
                     <input type="text" x-model="barcodeInput" @keyup.enter="lookup()"
                            inputmode="numeric" placeholder="e.g. 7610000123463"
                            class="input-field font-mono flex-1">
-                    <button type="button" @click="startScan()" class="btn-primary flex-none px-4">📷 Scan</button>
-                    <button type="button" @click="lookup()" class="btn-success flex-none px-4">Add</button>
+                    <button type="button" @click="startScan()" class="btn-primary flex-none px-4" data-i18n="receiving.scan_btn">📷 Scan</button>
+                    <button type="button" @click="lookup()" class="btn-success flex-none px-4" data-i18n="receiving.add">Add</button>
                 </div>
                 <p x-show="lookupMsg" x-text="lookupMsg" class="text-sm mt-2 text-gray-500" style="display:none;"></p>
             </div>
@@ -82,11 +82,11 @@
             <!-- Receiving list -->
             <div class="bg-white rounded-xl shadow">
                 <div class="px-4 py-3 border-b flex justify-between items-center">
-                    <h2 class="font-semibold text-gray-900">Delivery</h2>
-                    <span class="text-sm text-gray-500"><span x-text="lines.length"></span> item(s)</span>
+                    <h2 class="font-semibold text-gray-900" data-i18n="receiving.delivery">Delivery</h2>
+                    <span class="text-sm text-gray-500"><span x-text="lines.length"></span> <span data-i18n="receiving.items_suffix">item(s)</span></span>
                 </div>
 
-                <div x-show="!lines.length" class="px-4 py-10 text-center text-gray-400" style="display:none;">
+                <div x-show="!lines.length" class="px-4 py-10 text-center text-gray-400" style="display:none;" data-i18n="receiving.empty">
                     Nothing added yet. Scan the first item.
                 </div>
 
@@ -99,35 +99,35 @@
                                 <span x-show="l.age_restricted" class="flex-none inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5">🔞 18+</span>
                             </div>
                             <p class="text-xs text-gray-500 font-mono">
-                                <span x-text="l.barcode || 'no barcode'"></span>
+                                <span x-text="l.barcode || t('receiving.no_barcode')"></span>
                                 <span x-show="l.category" class="text-gray-400"> · <span x-text="l.category"></span></span>
                             </p>
                         </div>
                         <div class="flex items-center flex-none">
-                            <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-2" title="Remove">&times;</button>
+                            <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-2" :title="t('receiving.remove')">&times;</button>
                         </div>
                     </div>
                 </template>
 
                 <div class="px-4 py-3 space-y-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery note <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="receiving.delivery_note">Delivery note</span> <span class="text-gray-400 font-normal" data-i18n="receiving.optional">(optional)</span></label>
                         <input type="text" x-model="reference" maxlength="140" placeholder="e.g. FourTwenty invoice 4821"
                                class="input-field">
                     </div>
                     <button type="button" @click="confirm()" :disabled="!lines.length || saving"
                             class="btn-success w-full text-lg">
-                        <span x-show="!saving">✅ Receive <span x-text="lines.length"></span> item(s)</span>
-                        <span x-show="saving" style="display:none;">Receiving…</span>
+                        <span x-show="!saving"><span data-i18n="receiving.receive">✅ Receive</span> <span x-text="lines.length"></span> <span data-i18n="receiving.items_suffix">item(s)</span></span>
+                        <span x-show="saving" style="display:none;" data-i18n="receiving.receiving_progress">Receiving…</span>
                     </button>
                 </div>
             </div>
 
             <!-- Last receipt result -->
             <div x-show="result" style="display:none;" class="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-4">
-                <p class="font-semibold text-emerald-800 mb-2">✅ Catalogued <span x-text="result?.received_lines"></span> item(s)</p>
+                <p class="font-semibold text-emerald-800 mb-2"><span data-i18n="receiving.catalogued">✅ Catalogued</span> <span x-text="result?.received_lines"></span> <span data-i18n="receiving.items_suffix">item(s)</span></p>
                 <template x-for="r in (result?.lines || [])" :key="r.product_id">
-                    <p class="text-sm text-emerald-900" x-text="r.name + ' — on file'"></p>
+                    <p class="text-sm text-emerald-900" x-text="r.name + t('receiving.on_file')"></p>
                 </template>
             </div>
         </div>
@@ -137,27 +137,27 @@
     <!-- Camera scan overlay (shared PosScanner) -->
     <div x-show="scanOpen" x-transition class="fixed inset-0 z-[60] bg-black flex flex-col" style="display:none;">
         <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
-            <span class="font-semibold">📷 Aim at the barcode</span>
-            <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
+            <span class="font-semibold" data-i18n="receiving.aim_barcode">📷 Aim at the barcode</span>
+            <button @click="stopScan()" class="text-white text-3xl leading-none px-2" :aria-label="t('receiving.cancel_scan_aria')">&times;</button>
         </div>
         <div class="flex-1 relative flex items-center justify-center overflow-hidden">
             <div id="rcv-reader" class="w-full max-w-md"></div>
             <!-- No-camera fallback: a calm note + "choose a photo from disc". Never a dead-end. -->
             <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
                 <span class="text-5xl">📁</span>
-                <p class="text-white text-base max-w-xs" x-text="scanError || 'No camera on this device.'"></p>
+                <p class="text-white text-base max-w-xs" x-text="scanError || t('receiving.no_camera_device')"></p>
                 <label class="btn-primary cursor-pointer">
-                    📁 Choose a photo from your computer
+                    <span data-i18n="receiving.choose_photo">📁 Choose a photo from your computer</span>
                     <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
                 </label>
-                <p class="text-white/60 text-xs max-w-xs">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+                <p class="text-white/60 text-xs max-w-xs" data-i18n="receiving.pick_photo_hint">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
             </div>
             <p x-show="scanError && !scanFallback" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
         </div>
         <div class="px-4 py-4 bg-black/80 text-center">
-            <p x-show="scanLive" class="text-green-300 font-mono text-lg mb-2" x-text="'Reading: ' + scanLive" style="display:none;"></p>
-            <p class="text-white/60 text-xs mb-2">Hold steady — confirms after reading the same code twice</p>
-            <button @click="stopScan()" class="btn-secondary">Cancel — use keyboard</button>
+            <p x-show="scanLive" class="text-green-300 font-mono text-lg mb-2" x-text="t('receiving.reading') + scanLive" style="display:none;"></p>
+            <p class="text-white/60 text-xs mb-2" data-i18n="receiving.hold_steady">Hold steady — confirms after reading the same code twice</p>
+            <button @click="stopScan()" class="btn-secondary" data-i18n="receiving.cancel_keyboard">Cancel — use keyboard</button>
         </div>
     </div>
 
@@ -166,23 +166,23 @@
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
             <div class="flex justify-between items-start p-5 border-b">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900">🆕 New item</h2>
-                    <p class="text-sm text-gray-600 mt-1">Find it in the catalogue (photo + price come with it), or add it fresh.</p>
+                    <h2 class="text-xl font-bold text-gray-900" data-i18n="receiving.new_item">🆕 New item</h2>
+                    <p class="text-sm text-gray-600 mt-1" data-i18n="receiving.new_item_hint">Find it in the catalogue (photo + price come with it), or add it fresh.</p>
                 </div>
                 <button @click="newOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.barcode">Barcode</label>
                     <input type="text" x-model="newBarcode" readonly class="input-field bg-gray-100 font-mono">
                 </div>
 
                 <!-- Adopt from the 7k reference catalogue: auto on a scan-miss, or search by name. -->
                 <div class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-3">
-                    <label class="block text-sm font-medium text-emerald-800 mb-1">🔎 Find it in the catalogue</label>
+                    <label class="block text-sm font-medium text-emerald-800 mb-1" data-i18n="receiving.find_catalogue">🔎 Find it in the catalogue</label>
                     <input type="text" x-model="refQuery" @input.debounce.350ms="searchRef(refQuery, '')"
-                           placeholder="search by name…" class="input-field">
-                    <p x-show="refSearching" class="text-xs text-gray-400 mt-1" style="display:none;">searching…</p>
+                           placeholder="search by name…" data-i18n-placeholder="receiving.search_by_name_placeholder" class="input-field">
+                    <p x-show="refSearching" class="text-xs text-gray-400 mt-1" style="display:none;" data-i18n="receiving.searching">searching…</p>
                     <div x-show="refMatches.length" class="mt-2 max-h-52 overflow-y-auto divide-y border rounded-lg bg-white" style="display:none;">
                         <template x-for="r in refMatches" :key="r.id">
                             <button type="button" @click="useRef(r)"
@@ -193,41 +193,41 @@
                                 <span class="flex-1 min-w-0">
                                     <span class="block text-sm font-medium text-gray-900 truncate" x-text="r.name"></span>
                                     <span class="block text-xs text-gray-500"
-                                          x-text="(r.price!=null ? formatPrice(r.price) : 'no price') + (r.supplier ? ' · '+r.supplier : '')"></span>
+                                          x-text="(r.price!=null ? formatPrice(r.price) : t('receiving.no_price')) + (r.supplier ? ' · '+r.supplier : '')"></span>
                                 </span>
                                 <span x-show="selectedRef && selectedRef.id===r.id" class="text-emerald-600 font-bold flex-none">✓</span>
                             </button>
                         </template>
                     </div>
                     <p x-show="selectedRef" class="text-xs text-emerald-700 mt-1" style="display:none;">
-                        ✓ Using <b x-text="selectedRef?.name"></b> — its photo &amp; details come with it. Set your price/cost below.
+                        <span data-i18n="receiving.using_prefix">✓ Using</span> <b x-text="selectedRef?.name"></b> <span data-i18n="receiving.using_suffix">— its photo &amp; details come with it. Set your price/cost below.</span>
                     </p>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Product name</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.product_name">Product name</label>
                     <input type="text" x-model="newName" @keyup.enter="createAndAdd()" placeholder="e.g. Grinder 4-part 50mm" class="input-field">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sale price (CHF)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.sale_price">Sale price (CHF)</label>
                     <input type="number" step="0.05" min="0" x-model="newPrice" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-2xl font-bold">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cost — what you pay (CHF per unit)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.cost_label">Cost — what you pay (CHF per unit)</label>
                     <input type="number" step="0.01" min="0" x-model="newCost" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-xl font-bold">
                     <!-- Box → single helper: you buy a box (papers, cigarettes…), sell singles. -->
                     <div class="mt-2 flex items-center flex-wrap gap-2 text-xs text-gray-500">
-                        <span>Bought a box? Paid CHF</span>
-                        <input type="number" min="0" step="0.05" x-model.number="boxCost" @input="calcUnitCost()" placeholder="box" class="w-20 input-field py-1 text-sm">
-                        <span>for</span>
-                        <input type="number" min="1" step="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="units" class="w-16 input-field py-1 text-sm">
-                        <span>units</span>
-                        <span x-show="boxCost > 0 && boxUnits > 0" class="text-emerald-700 font-semibold">= <span x-text="formatPrice(boxCost / boxUnits)"></span>/unit</span>
+                        <span data-i18n="receiving.bought_box">Bought a box? Paid CHF</span>
+                        <input type="number" min="0" step="0.05" x-model.number="boxCost" @input="calcUnitCost()" placeholder="box" data-i18n-placeholder="receiving.box_placeholder" class="w-20 input-field py-1 text-sm">
+                        <span data-i18n="receiving.box_for">for</span>
+                        <input type="number" min="1" step="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="units" data-i18n-placeholder="receiving.units_placeholder" class="w-16 input-field py-1 text-sm">
+                        <span data-i18n="receiving.units">units</span>
+                        <span x-show="boxCost > 0 && boxUnits > 0" class="text-emerald-700 font-semibold">= <span x-text="formatPrice(boxCost / boxUnits)"></span><span data-i18n="receiving.per_unit_suffix">/unit</span></span>
                     </div>
                 </div>
                 <button @click="createAndAdd()" :disabled="newSaving" class="btn-success w-full">
-                    <span x-show="!newSaving" x-text="selectedRef ? '📦 Adopt &amp; add to delivery' : '➕ Add to delivery'"></span>
-                    <span x-show="newSaving" style="display:none;">Saving…</span>
+                    <span x-show="!newSaving" x-text="selectedRef ? t('receiving.adopt_add') : t('receiving.add_to_delivery')"></span>
+                    <span x-show="newSaving" style="display:none;" data-i18n="receiving.saving">Saving…</span>
                 </button>
             </div>
         </div>
@@ -283,9 +283,9 @@
             // ---- supplier picker ----
             get newSupError() {
                 const p = (this.newSup.prefix || '').trim().toUpperCase();
-                if (!p) return 'Prefix is required.';
-                if (!/^[A-Z]{2,3}$/.test(p)) return 'Must be 2-3 uppercase letters.';
-                if (['ART', 'LZ'].includes(p)) return `'${p}' is reserved.`;
+                if (!p) return t('receiving.prefix_required');
+                if (!/^[A-Z]{2,3}$/.test(p)) return t('receiving.prefix_format');
+                if (['ART', 'LZ'].includes(p)) return t('receiving.prefix_reserved', {n: p});
                 return '';
             },
             async loadSuppliers() {
@@ -312,9 +312,9 @@
                     await this.loadSuppliers();
                     this.supplierId = s.id;          // auto-select the one just added
                     this.addingSupplier = false;
-                    showToast(s.name + ' added', 'success');
+                    showToast(s.name + t('receiving.added_suffix'), 'success');
                 } catch (e) {
-                    showToast(e.message || 'Could not add supplier', 'error');
+                    showToast(e.message || t('receiving.could_not_add_supplier'), 'error');
                 } finally {
                     this.newSupSaving = false;
                 }
@@ -336,7 +336,7 @@
                     if (/not found/i.test(msg) || err.status === 404) {
                         this.openNew(bc);
                     } else {
-                        this.lookupMsg = msg || 'Lookup failed';
+                        this.lookupMsg = msg || t('receiving.lookup_failed');
                     }
                 }
             },
@@ -344,21 +344,21 @@
             addProduct(p) {
                 // No count — one row per item. Scanning the same item twice is a no-op.
                 if (this.lines.find(l => l.product_id === p.id)) {
-                    showToast(`${p.name} already on the list`, 'info');
+                    showToast(p.name + t('receiving.already_on_list'), 'info');
                     return;
                 }
                 this.lines.unshift({
                     product_id: p.id, name: p.name, barcode: p.barcode,
                     age_restricted: !!p.is_age_restricted, category: p.category || '',
                 });
-                showToast(`${p.name} added`, 'success');
+                showToast(p.name + t('receiving.added_suffix'), 'success');
             },
 
             removeLine(i) { this.lines.splice(i, 1); },
 
             // ---- camera (shared, hardened PosScanner) ----
             async startScan() {
-                if (typeof window.PosScanner === 'undefined') { showToast('Scanner not loaded', 'warning'); return; }
+                if (typeof window.PosScanner === 'undefined') { showToast(t('receiving.scanner_not_loaded'), 'warning'); return; }
                 this.scanError = ''; this.scanFallback = false; this.scanLive = ''; this.scanOpen = true;
                 await this.$nextTick();
                 window.PosScanner.start('rcv-reader',
@@ -373,8 +373,8 @@
                         // "choose a photo from disc" fallback (decodes the barcode from a still).
                         const n = String((err && (err.name || err)) || '');
                         this.scanError = /permission|denied|NotAllowed/i.test(n)
-                            ? 'Camera blocked. Pick a photo of the barcode instead, or type it.'
-                            : 'No camera here. Pick a photo of the barcode instead, or type it.';
+                            ? t('receiving.camera_blocked')
+                            : t('receiving.no_camera_here');
                         this.scanFallback = true;
                     },
                     { onProgress: (t) => { this.scanLive = t; } });
@@ -384,8 +384,8 @@
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';
                 if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast('That is not an image', 'warning'); return; }
-                this.scanError = 'Reading the photo…';
+                if (!f.type.startsWith('image/')) { showToast(t('receiving.not_an_image'), 'warning'); return; }
+                this.scanError = t('receiving.reading_photo');
                 try {
                     const text = await window.PosScanner.decodeFile(f);
                     if (!text) throw new Error('no-code');
@@ -395,7 +395,7 @@
                     this.lookup();
                 } catch (err) {
                     console.warn('file decode', err);
-                    this.scanError = "Couldn't read a barcode in that photo. Try another, or type it in.";
+                    this.scanError = t('receiving.photo_no_barcode');
                 }
             },
             async stopScan() { await window.PosScanner.stop(); this.scanOpen = false; this.scanFallback = false; this.scanLive = ''; },
@@ -439,7 +439,7 @@
             },
             async createAndAdd() {
                 const price = parseFloat(this.newPrice);
-                if (isNaN(price) || price <= 0) { showToast('Enter a valid price', 'warning'); return; }
+                if (isNaN(price) || price <= 0) { showToast(t('receiving.enter_valid_price'), 'warning'); return; }
                 const cost = parseFloat(this.newCost);          // optional purchase cost/unit
                 const bc = (this.newBarcode || '').trim();
                 this.newSaving = true;
@@ -457,7 +457,7 @@
                             try { p = await API.put(`/api/v1/pos/products/${p.id}`, { cost }); } catch (e) {}
                         }
                     } else {
-                        if (!this.newName.trim()) { showToast('Enter a product name', 'warning'); this.newSaving = false; return; }
+                        if (!this.newName.trim()) { showToast(t('receiving.enter_product_name'), 'warning'); this.newSaving = false; return; }
                         // Zero perpetual inventory: receiving just catalogues the item.
                         p = await API.post('/api/v1/pos/products', {
                             barcode: bc || null,
@@ -472,7 +472,7 @@
                     this.newOpen = false;
                     this.barcodeInput = '';
                 } catch (err) {
-                    showToast(err.message || 'Could not add the product', 'error');
+                    showToast(err.message || t('receiving.could_not_add_product'), 'error');
                 } finally {
                     this.newSaving = false;
                 }
@@ -492,9 +492,9 @@
                     const n = this.lines.length;
                     this.lines = [];
                     this.reference = '';
-                    showToast(`Catalogued ${n} item(s)`, 'success');
+                    showToast(t('receiving.catalogued_n', {n: n}), 'success');
                 } catch (err) {
-                    showToast(err.message || 'Receiving failed', 'error');
+                    showToast(err.message || t('receiving.receiving_failed'), 'error');
                 } finally {
                     this.saving = false;
                 }

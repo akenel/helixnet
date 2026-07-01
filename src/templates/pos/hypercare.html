@@ -6,34 +6,34 @@
   <div class="max-w-5xl mx-auto px-4 py-8">
 
     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">🛰️ Hypercare Cockpit</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="hypercare.title">🛰️ Hypercare Cockpit</h1>
       <div class="flex flex-wrap gap-2">
         <button @click="runTriage()" :disabled="triaging" class="btn-primary">
-          <span x-show="!triaging">🤖 Run AI triage now</span>
-          <span x-show="triaging" style="display:none;">Triaging…</span>
+          <span x-show="!triaging" data-i18n="hypercare.run_triage">🤖 Run AI triage now</span>
+          <span x-show="triaging" style="display:none;" data-i18n="hypercare.triaging">Triaging…</span>
         </button>
-        <button @click="load()" class="btn-secondary">↻ Refresh</button>
-        <a href="/pos/my-tickets" class="btn-secondary" title="Your own reports, the way the floor sees them">📬 My Reports</a>
+        <button @click="load()" class="btn-secondary" data-i18n="hypercare.refresh">↻ Refresh</button>
+        <a href="/pos/my-tickets" class="btn-secondary" :title="t('hypercare.my_reports_hint')" data-i18n="hypercare.my_reports">📬 My Reports</a>
       </div>
     </div>
-    <p class="text-gray-600 mb-4 text-sm">Feedback from the floor, auto-rewritten by AI into clean tickets. The raw is never changed — you see both, and decide.</p>
+    <p class="text-gray-600 mb-4 text-sm" data-i18n="hypercare.intro">Feedback from the floor, auto-rewritten by AI into clean tickets. The raw is never changed — you see both, and decide.</p>
 
     <!-- Scorecard -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">Tickets</p><p class="text-xl sm:text-2xl font-bold text-gray-900" x-text="sc.total"></p></div>
-      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">AI-assessed</p><p class="text-xl sm:text-2xl font-bold text-green-600" x-text="sc.triaged"></p></div>
-      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">Awaiting AI</p><p class="text-xl sm:text-2xl font-bold text-amber-600" x-text="sc.untriaged"></p></div>
-      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide">Needs questions</p><p class="text-xl sm:text-2xl font-bold text-red-600" x-text="sc.undecipherable"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="hypercare.sc_tickets">Tickets</p><p class="text-xl sm:text-2xl font-bold text-gray-900" x-text="sc.total"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="hypercare.sc_ai_assessed">AI-assessed</p><p class="text-xl sm:text-2xl font-bold text-green-600" x-text="sc.triaged"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="hypercare.sc_awaiting_ai">Awaiting AI</p><p class="text-xl sm:text-2xl font-bold text-amber-600" x-text="sc.untriaged"></p></div>
+      <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="hypercare.sc_needs_questions">Needs questions</p><p class="text-xl sm:text-2xl font-bold text-red-600" x-text="sc.undecipherable"></p></div>
     </div>
 
-    <div x-show="loading" class="text-center py-10 text-gray-500">Loading the queue…</div>
-    <div x-show="!loading && items.length === 0" class="card text-center py-10 text-gray-400">No feedback yet. When the floor fires the 💬 button, it lands here.</div>
+    <div x-show="loading" class="text-center py-10 text-gray-500" data-i18n="hypercare.loading_queue">Loading the queue…</div>
+    <div x-show="!loading && items.length === 0" class="card text-center py-10 text-gray-400" data-i18n="hypercare.empty">No feedback yet. When the floor fires the 💬 button, it lands here.</div>
 
     <!-- filters: hide closed/merged by default -->
     <div class="flex gap-2 mb-4 text-sm" x-show="!loading && items.length">
-      <button @click="filter='todo'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='todo' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">To do</button>
-      <button @click="filter='active'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='active' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">Active</button>
-      <button @click="filter='all'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">All</button>
+      <button @click="filter='todo'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='todo' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'" data-i18n="hypercare.filter_todo">To do</button>
+      <button @click="filter='active'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='active' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'" data-i18n="hypercare.filter_active">Active</button>
+      <button @click="filter='all'" class="px-3 py-1 rounded-full font-medium border transition" :class="filter==='all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'" data-i18n="hypercare.filter_all">All</button>
     </div>
 
     <!-- Queue -->
@@ -47,7 +47,7 @@
               <span x-show="t.has_screenshot" class="text-xs text-indigo-400">· 📎 shot</span>
             </div>
             <div class="flex gap-1 flex-wrap">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="t.triaged ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'" x-text="t.triaged ? '🤖 assessed' : '⏳ awaiting AI'"></span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="t.triaged ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'" x-text="t.triaged ? window.t('hypercare.badge_assessed') : window.t('hypercare.badge_awaiting')"></span>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" x-text="t.status"></span>
             </div>
           </div>
@@ -55,13 +55,13 @@
           <div class="grid md:grid-cols-2 gap-3 mt-3">
             <!-- RAW -->
             <div class="bg-gray-50 rounded-lg p-3">
-              <p class="text-[11px] font-bold text-gray-400 uppercase mb-1">Raw — as filed</p>
+              <p class="text-[11px] font-bold text-gray-400 uppercase mb-1" data-i18n="hypercare.raw_heading">Raw — as filed</p>
               <p class="font-semibold text-gray-800 text-sm" x-text="t.raw_title"></p>
               <p class="text-xs text-gray-500 mt-1 whitespace-pre-line" x-text="(t.raw_description||'').slice(0,300)"></p>
             </div>
             <!-- CLEANED -->
             <div class="rounded-lg p-3" :class="t.triaged ? 'bg-indigo-50' : 'bg-gray-50'">
-              <p class="text-[11px] font-bold text-indigo-400 uppercase mb-1">AI-cleaned</p>
+              <p class="text-[11px] font-bold text-indigo-400 uppercase mb-1" data-i18n="hypercare.ai_cleaned_heading">AI-cleaned</p>
               <template x-if="t.triaged">
                 <div>
                   <p class="font-semibold text-gray-900 text-sm" x-text="t.triaged.clean?.title"></p>
@@ -73,26 +73,26 @@
                     <span class="text-[10px] text-gray-400 ml-auto" x-text="'conf '+Math.round((t.triaged.clean?.confidence||0)*100)+'%'"></span>
                   </div>
                   <div x-show="t.triaged.clean?.decipherable === false" class="mt-2 text-xs text-red-600">
-                    ❓ Needs the reporter to clarify:
+                    <span data-i18n="hypercare.needs_clarify">❓ Needs the reporter to clarify:</span>
                     <ul class="list-disc ml-4"><template x-for="q in (t.triaged.clean?.questions||[])" :key="q"><li x-text="q"></li></template></ul>
                   </div>
-                  <p class="text-[10px] text-gray-400 mt-2" x-text="'model: '+(t.triaged.model||'?')+(t.triaged.ai?'':' (fallback)')"></p>
+                  <p class="text-[10px] text-gray-400 mt-2" x-text="window.t('hypercare.model_prefix')+(t.triaged.model||'?')+(t.triaged.ai?'':window.t('hypercare.fallback_suffix'))"></p>
                 </div>
               </template>
-              <p x-show="!t.triaged" class="text-xs text-gray-400">Not yet triaged — runs on the next cadence pass, or hit “Run AI triage now”.</p>
+              <p x-show="!t.triaged" class="text-xs text-gray-400" data-i18n="hypercare.not_triaged">Not yet triaged — runs on the next cadence pass, or hit “Run AI triage now”.</p>
             </div>
           </div>
 
           <!-- action row: mark fixed → reporter gets the 'please confirm' notification -->
           <div class="mt-3 pt-3 border-t flex items-center justify-end gap-2">
-            <span x-show="t.merged_into" class="text-xs text-purple-600 font-medium mr-auto">🔁 Duplicate — merged into BL-<span x-text="String(t.merged_into).padStart(3,'0')"></span></span>
+            <span x-show="t.merged_into" class="text-xs text-purple-600 font-medium mr-auto"><span data-i18n="hypercare.merged_into">🔁 Duplicate — merged into BL-</span><span x-text="String(t.merged_into).padStart(3,'0')"></span></span>
             <template x-if="!t.merged_into">
               <div class="flex items-center gap-2 w-full justify-end">
-                <span x-show="t.status==='done'" class="text-xs text-amber-600 font-medium">🎉 Fixed — waiting for reporter to confirm</span>
-                <span x-show="t.status==='archived'" class="text-xs text-green-600 font-medium">✅ Closed by reporter — done!</span>
-                <span x-show="t.status==='in_progress'" class="text-xs text-indigo-500 font-medium mr-auto">↩️ reporter reopened / in progress</span>
-                <button x-show="t.status!=='done' && t.status!=='archived'" @click="reject(t)" class="btn-secondary text-sm">🚫 Reject</button>
-                <button x-show="t.status!=='done' && t.status!=='archived'" @click="markFixed(t)" class="btn-secondary text-sm">✅ Mark fixed</button>
+                <span x-show="t.status==='done'" class="text-xs text-amber-600 font-medium" data-i18n="hypercare.fixed_waiting">🎉 Fixed — waiting for reporter to confirm</span>
+                <span x-show="t.status==='archived'" class="text-xs text-green-600 font-medium" data-i18n="hypercare.closed_by_reporter">✅ Closed by reporter — done!</span>
+                <span x-show="t.status==='in_progress'" class="text-xs text-indigo-500 font-medium mr-auto" data-i18n="hypercare.reopened">↩️ reporter reopened / in progress</span>
+                <button x-show="t.status!=='done' && t.status!=='archived'" @click="reject(t)" class="btn-secondary text-sm" data-i18n="hypercare.reject">🚫 Reject</button>
+                <button x-show="t.status!=='done' && t.status!=='archived'" @click="markFixed(t)" class="btn-secondary text-sm" data-i18n="hypercare.mark_fixed">✅ Mark fixed</button>
               </div>
             </template>
           </div>
@@ -124,35 +124,35 @@ function hypercareData() {
         const d = await API.get('/api/v1/pos/feedback/queue?limit=100');
         this.items = d.items || [];
         this.sc = { total:d.total||0, triaged:d.triaged||0, untriaged:d.untriaged||0, undecipherable:d.undecipherable||0 };
-      } catch (e) { console.error(e); showToast('Could not load the cockpit', 'error'); }
+      } catch (e) { console.error(e); showToast(t('hypercare.toast_load_failed'), 'error'); }
       finally { this.loading = false; }
     },
     async runTriage() {
       this.triaging = true;
       try {
         const r = await API.post('/api/v1/pos/feedback/triage?limit=15', {});
-        showToast('Triaged ' + (r.triaged||0) + ' ticket(s)', 'success');
+        showToast(t('hypercare.toast_triaged', {n: r.triaged||0}), 'success');
         await this.load();
-      } catch (e) { console.error(e); showToast('Triage failed', 'error'); }
+      } catch (e) { console.error(e); showToast(t('hypercare.toast_triage_failed'), 'error'); }
       finally { this.triaging = false; }
     },
     async markFixed(t) {
-      const commit = prompt('Mark fixed — optional commit/SHA to credit (or leave blank):', '');
+      const commit = prompt(window.t('hypercare.prompt_mark_fixed'), '');
       if (commit === null) return;   // cancelled
       try {
         await API.post('/api/v1/pos/feedback/' + t.item_number + '/done', { commit: commit });
-        showToast('Marked fixed — reporter notified to confirm', 'success');
+        showToast(window.t('hypercare.toast_marked_fixed'), 'success');
         await this.load();
-      } catch (e) { console.error(e); showToast('Could not mark fixed', 'error'); }
+      } catch (e) { console.error(e); showToast(window.t('hypercare.toast_mark_fixed_failed'), 'error'); }
     },
     async reject(t) {
-      const reason = prompt('Reject this ticket — short reason the reporter will see (e.g. "can\'t reproduce", "works as intended", "not a real ticket"):', '');
+      const reason = prompt(window.t('hypercare.prompt_reject'), '');
       if (reason === null) return;   // cancelled
       try {
         await API.post('/api/v1/pos/feedback/' + t.item_number + '/reject', { reason: reason });
-        showToast('Rejected — reporter asked to confirm or dispute', 'success');
+        showToast(window.t('hypercare.toast_rejected'), 'success');
         await this.load();
-      } catch (e) { console.error(e); showToast('Could not reject', 'error'); }
+      } catch (e) { console.error(e); showToast(window.t('hypercare.toast_reject_failed'), 'error'); }
     },
     sevClass(s) {
       s = (s||'').toLowerCase();

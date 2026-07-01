@@ -12,7 +12,7 @@
                     <span class="text-3xl">🛒</span>
                     <div>
                         <h1 class="text-xl font-bold text-gray-900">HelixPOS</h1>
-                        <p class="text-xs text-gray-500">Artemis Store</p>
+                        <p class="text-xs text-gray-500" x-text="_cfg('store_name') || 'Banco POS'"></p>
                     </div>
                 </div>
 
@@ -26,7 +26,8 @@
                     <!-- Logout button -->
                     <button
                         @click="logout()"
-                        class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                        class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition"
+                        data-i18n="dashboard.logout">
                         🔓 Logout
                     </button>
                 </div>
@@ -38,8 +39,8 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Welcome Banner -->
         <div class="card mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-            <h2 class="text-3xl font-bold mb-2" x-text="`Welcome, ${user.username}! 👋`"></h2>
-            <p class="text-lg opacity-90">What would you like to do today?</p>
+            <h2 class="text-3xl font-bold mb-2" x-text="t('dashboard.welcome_user', {n: user.username})"></h2>
+            <p class="text-lg opacity-90" data-i18n="dashboard.what_today">What would you like to do today?</p>
         </div>
 
         <!-- Stats Cards (if cashier or manager) -->
@@ -47,9 +48,9 @@
             <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/transactions'">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium" x-text="salesIsMine ? 'My Sales Today' : 'Store Sales Today'"></p>
+                        <p class="text-sm text-gray-600 font-medium" x-text="salesIsMine ? t('dashboard.my_sales_today') : t('dashboard.store_sales_today')"></p>
                         <p class="text-2xl font-bold text-gray-900" x-text="formatPrice(stats.todaySales)"></p>
-                        <p class="text-xs text-indigo-600 font-semibold mt-1">tap to see today's sales →</p>
+                        <p class="text-xs text-indigo-600 font-semibold mt-1" data-i18n="dashboard.tap_sales">tap to see today's sales →</p>
                     </div>
                     <span class="text-4xl">💰</span>
                 </div>
@@ -58,9 +59,9 @@
             <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/transactions'">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Transactions</p>
+                        <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.transactions">Transactions</p>
                         <p class="text-2xl font-bold text-gray-900" x-text="stats.transactionCount"></p>
-                        <p class="text-xs text-indigo-600 font-semibold mt-1">tap to open the list →</p>
+                        <p class="text-xs text-indigo-600 font-semibold mt-1" data-i18n="dashboard.tap_list">tap to open the list →</p>
                     </div>
                     <span class="text-4xl">🧾</span>
                 </div>
@@ -71,11 +72,11 @@
                  onclick="window.location.href='/pos/shift'">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">My Drawer</p>
+                        <p class="text-sm text-gray-600 font-medium" data-i18n="dashboard.my_drawer">My Drawer</p>
                         <p class="text-2xl font-bold" :class="drawer ? 'text-green-600' : 'text-amber-600'"
-                           x-text="drawer ? formatPrice(parseFloat(drawer.expected_cash)) : 'Closed'"></p>
+                           x-text="drawer ? formatPrice(parseFloat(drawer.expected_cash)) : t('dashboard.closed')"></p>
                         <p class="text-xs" :class="drawer ? 'text-gray-500' : 'text-amber-600 font-semibold'"
-                           x-text="drawer ? 'Open ✓ — expected in drawer →' : 'Open it to take cash →'"></p>
+                           x-text="drawer ? t('dashboard.drawer_open_expected') : t('dashboard.drawer_open_prompt')"></p>
                     </div>
                     <span class="text-4xl" x-text="drawer ? '💵' : '🔓'"></span>
                 </div>
@@ -90,8 +91,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/scan'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">🏪</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">New Sale</h3>
-                        <p class="text-gray-600">Start scanning products</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.new_sale">New Sale</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.start_scanning">Start scanning products</p>
                     </div>
                 </div>
             </template>
@@ -100,8 +101,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/products'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">📦</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Product Catalog</h3>
-                        <p class="text-gray-600">Browse all items</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.product_catalog">Product Catalog</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.browse_items">Browse all items</p>
                     </div>
                 </div>
             </template>
@@ -110,8 +111,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/customer-lookup'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">👤</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Members</h3>
-                        <p class="text-gray-600">Look up or sign up a member</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.members">Members</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.members_desc">Look up or sign up a member</p>
                     </div>
                 </div>
             </template>
@@ -120,8 +121,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/shift'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">💰</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2" x-text="drawer ? 'My Drawer · Close Shift' : 'My Drawer · Open Shift'"></h3>
-                        <p class="text-gray-600">Open float, count cash, close out</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" x-text="drawer ? t('dashboard.drawer_close_shift') : t('dashboard.drawer_open_shift')"></h3>
+                        <p class="text-gray-600" data-i18n="dashboard.shift_desc">Open float, count cash, close out</p>
                     </div>
                 </div>
             </template>
@@ -130,8 +131,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/my-day'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">📅</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">My Day</h3>
-                        <p class="text-gray-600">Your hours, sales &amp; daily close-out</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.my_day">My Day</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.my_day_desc">Your hours, sales &amp; daily close-out</p>
                     </div>
                 </div>
             </template>
@@ -141,8 +142,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/reports'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">📊</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Sales Reports</h3>
-                        <p class="text-gray-600">View analytics & trends</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.sales_reports">Sales Reports</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.sales_reports_desc">View analytics & trends</p>
                     </div>
                 </div>
             </template>
@@ -151,8 +152,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/catalog'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">📦</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Manage Catalog</h3>
-                        <p class="text-gray-600">Edit, discontinue & add products</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.manage_catalog">Manage Catalog</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.manage_catalog_desc">Edit, discontinue & add products</p>
                     </div>
                 </div>
             </template>
@@ -161,8 +162,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/receiving'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">📥</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Receiving</h3>
-                        <p class="text-gray-600">Scan arrivals into the catalogue</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.receiving">Receiving</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.receiving_desc">Scan arrivals into the catalogue</p>
                     </div>
                 </div>
             </template>
@@ -171,8 +172,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/suppliers'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">🏭</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Suppliers</h3>
-                        <p class="text-gray-600">Import sources &amp; SKU prefixes</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.suppliers">Suppliers</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.suppliers_desc">Import sources &amp; SKU prefixes</p>
                     </div>
                 </div>
             </template>
@@ -181,8 +182,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/transactions'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">💳</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">All Transactions</h3>
-                        <p class="text-gray-600">View all sales</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.all_transactions">All Transactions</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.all_transactions_desc">View all sales</p>
                     </div>
                 </div>
             </template>
@@ -191,8 +192,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/closeout'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">⏰</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Store Z-Report</h3>
-                        <p class="text-gray-600">End-of-day store totals & Banana CSV</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.store_z_report">Store Z-Report</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.store_z_report_desc">End-of-day store totals & Banana CSV</p>
                     </div>
                 </div>
             </template>
@@ -203,8 +204,8 @@
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/settings'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">⚙️</span>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Settings</h3>
-                        <p class="text-gray-600">Store profile, staff &amp; logins, tax</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.settings">Settings</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.settings_desc">Store profile, staff &amp; logins, tax</p>
                     </div>
                 </div>
             </template>
@@ -247,7 +248,7 @@
                         });
                         // Clear the hash from URL for cleaner display (and to hide tokens)
                         window.history.replaceState({}, document.title, '/pos/dashboard');
-                        showToast('Login successful!', 'success');
+                        showToast(t('dashboard.login_successful'), 'success');
                     }
                 }
 
@@ -265,7 +266,7 @@
                 // Get user info from token
                 const userInfo = AuthHelper.getUserInfo();
                 if (!userInfo || userInfo.posRoles.length === 0) {
-                    showToast('No POS access. Please contact admin.', 'error');
+                    showToast(t('dashboard.no_pos_access'), 'error');
                     setTimeout(() => {
                         AuthHelper.logout();
                     }, 2000);
@@ -323,8 +324,8 @@
             },
 
             logout() {
-                if (confirm('Are you sure you want to logout?')) {
-                    showToast('Logging out...', 'info');
+                if (confirm(t('dashboard.confirm_logout'))) {
+                    showToast(t('dashboard.logging_out'), 'info');
                     setTimeout(() => {
                         AuthHelper.logout();
                     }, 500);

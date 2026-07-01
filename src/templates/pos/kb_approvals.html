@@ -8,19 +8,20 @@
         <div class="card">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">📚 KB Approvals</h1>
-                    <p class="text-gray-600">Review and approve CRACK knowledge contributions</p>
+                    <h1 class="text-3xl font-bold text-gray-900" data-i18n="kb.title">📚 KB Approvals</h1>
+                    <p class="text-gray-600" data-i18n="kb.subtitle">Review and approve CRACK knowledge contributions</p>
                 </div>
                 <div class="flex gap-2">
                     <button @click="selectAll()"
                             class="btn-secondary px-4 py-2"
-                            :disabled="pendingKBs.length === 0">
+                            :disabled="pendingKBs.length === 0"
+                            data-i18n="kb.select_all">
                         ☑️ Select All
                     </button>
                     <button @click="approveSelected()"
                             class="btn-success px-4 py-2"
                             :disabled="selectedKBs.length === 0">
-                        ✅ Approve (<span x-text="selectedKBs.length"></span>)
+                        <span data-i18n="kb.approve_paren">✅ Approve (</span><span x-text="selectedKBs.length"></span>)
                     </button>
                 </div>
             </div>
@@ -29,19 +30,19 @@
             <div class="grid grid-cols-4 gap-4 mb-6">
                 <div class="bg-yellow-50 rounded-lg p-4 text-center">
                     <div class="text-3xl font-bold text-yellow-600" x-text="pendingKBs.length"></div>
-                    <div class="text-sm text-yellow-700">Pending Review</div>
+                    <div class="text-sm text-yellow-700" data-i18n="kb.stat_pending_review">Pending Review</div>
                 </div>
                 <div class="bg-blue-50 rounded-lg p-4 text-center">
                     <div class="text-3xl font-bold text-blue-600" x-text="inReviewKBs.length"></div>
-                    <div class="text-sm text-blue-700">In Review</div>
+                    <div class="text-sm text-blue-700" data-i18n="kb.stat_in_review">In Review</div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-4 text-center">
                     <div class="text-3xl font-bold text-green-600" x-text="approvedToday"></div>
-                    <div class="text-sm text-green-700">Approved Today</div>
+                    <div class="text-sm text-green-700" data-i18n="kb.stat_approved_today">Approved Today</div>
                 </div>
                 <div class="bg-purple-50 rounded-lg p-4 text-center">
                     <div class="text-3xl font-bold text-purple-600" x-text="totalCreditsAwarded"></div>
-                    <div class="text-sm text-purple-700">Credits Awarded</div>
+                    <div class="text-sm text-purple-700" data-i18n="kb.stat_credits_awarded">Credits Awarded</div>
                 </div>
             </div>
 
@@ -50,16 +51,17 @@
                 <button @click="filter = 'pending'"
                         :class="filter === 'pending' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500'"
                         class="px-4 py-2 font-medium">
-                    📥 Pending (<span x-text="pendingKBs.length"></span>)
+                    <span data-i18n="kb.tab_pending">📥 Pending (</span><span x-text="pendingKBs.length"></span>)
                 </button>
                 <button @click="filter = 'in_review'"
                         :class="filter === 'in_review' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500'"
                         class="px-4 py-2 font-medium">
-                    👀 In Review (<span x-text="inReviewKBs.length"></span>)
+                    <span data-i18n="kb.tab_in_review">👀 In Review (</span><span x-text="inReviewKBs.length"></span>)
                 </button>
                 <button @click="filter = 'approved'"
                         :class="filter === 'approved' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500'"
-                        class="px-4 py-2 font-medium">
+                        class="px-4 py-2 font-medium"
+                        data-i18n="kb.tab_recently_approved">
                     ✅ Recently Approved
                 </button>
             </div>
@@ -84,7 +86,7 @@
                                     <div>
                                         <h3 class="text-lg font-semibold text-gray-900" x-text="kb.title"></h3>
                                         <p class="text-sm text-gray-500">
-                                            by <span class="font-medium" x-text="kb.author_handle"></span>
+                                            <span data-i18n="kb.by">by</span> <span class="font-medium" x-text="kb.author_handle"></span>
                                             <span x-text="crackEmoji(kb.author_crack_level)"></span>
                                             • <span x-text="kb.category"></span>
                                             • <span x-text="formatDate(kb.submitted_at)"></span>
@@ -102,45 +104,45 @@
 
                                 <!-- Quality Badges -->
                                 <div class="flex gap-2 mt-3">
-                                    <span x-show="kb.has_images" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">📷 Images</span>
-                                    <span x-show="kb.has_video" class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">🎬 Video</span>
-                                    <span x-show="kb.has_bom" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">📋 BOM/Recipe</span>
-                                    <span x-show="kb.has_lab_report" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">🔬 Lab Report</span>
+                                    <span x-show="kb.has_images" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs" data-i18n="kb.badge_images">📷 Images</span>
+                                    <span x-show="kb.has_video" class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs" data-i18n="kb.badge_video">🎬 Video</span>
+                                    <span x-show="kb.has_bom" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs" data-i18n="kb.badge_bom">📋 BOM/Recipe</span>
+                                    <span x-show="kb.has_lab_report" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs" data-i18n="kb.badge_lab_report">🔬 Lab Report</span>
                                     <span x-show="kb.jh_reference" class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs" x-text="'📖 ' + kb.jh_reference"></span>
                                 </div>
 
                                 <!-- Credits Preview -->
                                 <div class="mt-3 flex items-center gap-4 text-sm">
-                                    <span class="text-gray-500">Credits if approved:</span>
-                                    <span class="font-bold text-green-600" x-text="kb.potential_credits + ' credits'"></span>
-                                    <span class="text-gray-400" x-text="'(base: 100 + bonuses: ' + (kb.potential_credits - 100) + ')'"></span>
+                                    <span class="text-gray-500" data-i18n="kb.credits_if_approved">Credits if approved:</span>
+                                    <span class="font-bold text-green-600" x-text="kb.potential_credits + ' ' + t('kb.credits')"></span>
+                                    <span class="text-gray-400" x-text="t('kb.base_bonuses', {n: (kb.potential_credits - 100)})"></span>
                                 </div>
 
                                 <!-- Review Summary -->
                                 <div x-show="kb.reviews && kb.reviews.length > 0" class="mt-3 p-3 bg-gray-50 rounded">
-                                    <div class="text-sm font-medium text-gray-700 mb-2">CRACK Reviews:</div>
+                                    <div class="text-sm font-medium text-gray-700 mb-2" data-i18n="kb.crack_reviews">CRACK Reviews:</div>
                                     <div class="flex gap-4">
-                                        <span class="text-green-600">👍 <span x-text="kb.reviews.filter(r => r.recommend).length"></span> recommend</span>
-                                        <span class="text-red-600">👎 <span x-text="kb.reviews.filter(r => !r.recommend).length"></span> concerns</span>
-                                        <span class="text-yellow-600">⭐ <span x-text="kb.average_rating.toFixed(1)"></span>/5 avg</span>
+                                        <span class="text-green-600">👍 <span x-text="kb.reviews.filter(r => r.recommend).length"></span> <span data-i18n="kb.recommend">recommend</span></span>
+                                        <span class="text-red-600">👎 <span x-text="kb.reviews.filter(r => !r.recommend).length"></span> <span data-i18n="kb.concerns">concerns</span></span>
+                                        <span class="text-yellow-600">⭐ <span x-text="kb.average_rating.toFixed(1)"></span><span data-i18n="kb.avg_suffix">/5 avg</span></span>
                                     </div>
                                 </div>
 
                                 <!-- Actions -->
                                 <div class="mt-4 flex gap-2">
-                                    <button @click="previewKB(kb)" class="btn-secondary text-sm px-3 py-1">
+                                    <button @click="previewKB(kb)" class="btn-secondary text-sm px-3 py-1" data-i18n="kb.preview">
                                         👁️ Preview
                                     </button>
-                                    <button @click="sendForReview(kb)" x-show="kb.status === 'submitted'" class="btn-secondary text-sm px-3 py-1">
+                                    <button @click="sendForReview(kb)" x-show="kb.status === 'submitted'" class="btn-secondary text-sm px-3 py-1" data-i18n="kb.send_to_cracks">
                                         📤 Send to CRACKs
                                     </button>
-                                    <button @click="approveOne(kb)" class="btn-success text-sm px-3 py-1">
+                                    <button @click="approveOne(kb)" class="btn-success text-sm px-3 py-1" data-i18n="kb.approve">
                                         ✅ Approve
                                     </button>
-                                    <button @click="rejectKB(kb)" class="text-sm px-3 py-1 text-red-600 hover:bg-red-50 rounded">
+                                    <button @click="rejectKB(kb)" class="text-sm px-3 py-1 text-red-600 hover:bg-red-50 rounded" data-i18n="kb.reject">
                                         ❌ Reject
                                     </button>
-                                    <button @click="featureKB(kb)" x-show="kb.status === 'approved'" class="text-sm px-3 py-1 text-yellow-600 hover:bg-yellow-50 rounded">
+                                    <button @click="featureKB(kb)" x-show="kb.status === 'approved'" class="text-sm px-3 py-1 text-yellow-600 hover:bg-yellow-50 rounded" data-i18n="kb.feature">
                                         ⭐ Feature
                                     </button>
                                 </div>
@@ -152,7 +154,7 @@
                 <!-- Empty State -->
                 <div x-show="filteredKBs.length === 0" class="text-center py-12 text-gray-500">
                     <div class="text-6xl mb-4">📭</div>
-                    <p>No KBs in this category</p>
+                    <p data-i18n="kb.empty_state">No KBs in this category</p>
                 </div>
             </div>
         </div>
@@ -166,10 +168,10 @@
                     <h2 class="text-2xl font-bold" x-text="previewingKB?.title"></h2>
                     <button @click="previewingKB = null" class="text-gray-500 hover:text-gray-700">✕</button>
                 </div>
-                <div class="prose max-w-none" x-html="previewingKB?.content || 'Loading...'"></div>
+                <div class="prose max-w-none" x-html="previewingKB?.content || t('kb.loading')"></div>
                 <div class="mt-6 flex gap-2 justify-end">
-                    <button @click="previewingKB = null" class="btn-secondary">Close</button>
-                    <button @click="approveOne(previewingKB); previewingKB = null" class="btn-success">✅ Approve</button>
+                    <button @click="previewingKB = null" class="btn-secondary" data-i18n="kb.close">Close</button>
+                    <button @click="approveOne(previewingKB); previewingKB = null" class="btn-success" data-i18n="kb.approve">✅ Approve</button>
                 </div>
             </div>
         </div>
@@ -197,7 +199,7 @@
                 try {
                     const token = sessionStorage.getItem('access_token');
                     if (!token) {
-                        showToast('Please log in', 'warning');
+                        showToast(t('kb.please_log_in'), 'warning');
                         return;
                     }
 
@@ -208,7 +210,7 @@
 
                     if (!response.ok) {
                         if (response.status === 403) {
-                            showToast('Manager access required', 'warning');
+                            showToast(t('kb.manager_access_required'), 'warning');
                             return;
                         }
                         throw new Error('Failed to load KBs');
@@ -223,7 +225,7 @@
 
                 } catch (error) {
                     console.error('Load KBs error:', error);
-                    showToast('Failed to load KBs', 'error');
+                    showToast(t('kb.failed_load'), 'error');
                 }
             },
 
@@ -252,7 +254,7 @@
 
             async approveSelected() {
                 const count = this.selectedKBs.length;
-                if (!confirm(`Approve ${count} KB(s)? Credits will be awarded to authors.`)) return;
+                if (!confirm(t('kb.confirm_approve_batch', {n: count}))) return;
 
                 try {
                     const token = sessionStorage.getItem('access_token');
@@ -278,7 +280,7 @@
                         throw new Error('Batch approve failed');
                     }
                 } catch (error) {
-                    showToast('Failed to approve: ' + error.message, 'error');
+                    showToast(t('kb.failed_approve') + ': ' + error.message, 'error');
                 }
             },
 
@@ -300,7 +302,7 @@
                         throw new Error('Approve failed');
                     }
                 } catch (error) {
-                    showToast('Failed to approve: ' + error.message, 'error');
+                    showToast(t('kb.failed_approve') + ': ' + error.message, 'error');
                 }
             },
 
@@ -314,15 +316,15 @@
 
                     if (response.ok) {
                         kb.status = 'in_review';
-                        showToast('Sent to CRACKs for review', 'info');
+                        showToast(t('kb.sent_for_review'), 'info');
                     }
                 } catch (error) {
-                    showToast('Failed: ' + error.message, 'error');
+                    showToast(t('kb.failed_generic') + ': ' + error.message, 'error');
                 }
             },
 
             async rejectKB(kb) {
-                const reason = prompt('Reason for rejection (will be sent to author):');
+                const reason = prompt(t('kb.reject_reason_prompt'));
                 if (reason && reason.length >= 10) {
                     try {
                         const token = sessionStorage.getItem('access_token');
@@ -332,25 +334,25 @@
                         });
 
                         if (response.ok) {
-                            showToast(`Rejected with feedback sent to ${kb.author_handle}`, 'warning');
+                            showToast(t('kb.rejected_feedback', {handle: kb.author_handle}), 'warning');
                             this.pendingKBs = this.pendingKBs.filter(k => k.id !== kb.id);
                         }
                     } catch (error) {
-                        showToast('Failed: ' + error.message, 'error');
+                        showToast(t('kb.failed_generic') + ': ' + error.message, 'error');
                     }
                 } else if (reason) {
-                    showToast('Please provide at least 10 characters of feedback', 'warning');
+                    showToast(t('kb.min_feedback'), 'warning');
                 }
             },
 
             async featureKB(kb) {
-                showToast(`"${kb.title}" is now featured! +250 bonus credits to ${kb.author_handle}`, 'success');
+                showToast(t('kb.featured', {title: kb.title, handle: kb.author_handle}), 'success');
             },
 
             previewKB(kb) {
                 this.previewingKB = kb;
                 // TODO: Load full content
-                this.previewingKB.content = `<h2>${kb.title}</h2><p>${kb.summary}</p><p><em>Full content would load here from the markdown file...</em></p>`;
+                this.previewingKB.content = `<h2>${kb.title}</h2><p>${kb.summary}</p><p><em>${t('kb.full_content_placeholder')}</em></p>`;
             },
 
             formatDate(dateStr) {

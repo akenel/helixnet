@@ -8,51 +8,51 @@
 
     <div class="flex justify-between items-start mb-2 gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">📬 Your reports</h1>
-        <p class="text-gray-600 text-sm mt-1">Everything you've told us — and exactly where it's at. Thanks for helping make this better.</p>
+        <h1 class="text-2xl font-bold text-gray-900" data-i18n="mytickets.title">📬 Your reports</h1>
+        <p class="text-gray-600 text-sm mt-1" data-i18n="mytickets.subtitle">Everything you've told us — and exactly where it's at. Thanks for helping make this better.</p>
       </div>
       <button @click="load()" class="btn-secondary shrink-0" title="Get the latest — refresh after you do something in the Cockpit">
-        <span x-show="!loading">↻ Refresh</span><span x-show="loading" style="display:none;">…</span>
+        <span x-show="!loading" data-i18n="mytickets.refresh">↻ Refresh</span><span x-show="loading" style="display:none;">…</span>
       </button>
     </div>
-    <p x-show="updatedAt" class="text-xs text-gray-400 mb-4" x-text="'Updated at ' + updatedAt + ' — tap ↻ Refresh after any change.'"></p>
+    <p x-show="updatedAt" class="text-xs text-gray-400 mb-4" x-text="window.t('mytickets.updated_at', {n: updatedAt})"></p>
 
     <!-- tiny counters -->
     <div class="flex gap-3 mb-5" x-show="!loading && items.length">
       <div class="flex-1 card text-center py-3">
         <p class="text-2xl font-bold text-indigo-600" x-text="openN"></p>
-        <p class="text-xs text-gray-500">in progress</p>
+        <p class="text-xs text-gray-500" data-i18n="mytickets.in_progress">in progress</p>
       </div>
       <div class="flex-1 card text-center py-3">
         <p class="text-2xl font-bold text-green-600" x-text="doneN"></p>
-        <p class="text-xs text-gray-500">all done</p>
+        <p class="text-xs text-gray-500" data-i18n="mytickets.all_done">all done</p>
       </div>
     </div>
 
     <!-- filters: hide closed by default; one tap to what needs you -->
     <div class="flex gap-2 mb-4 text-sm" x-show="!loading && items.length">
       <button @click="filter='active'" class="px-3 py-1 rounded-full font-medium border transition"
-              :class="filter==='active' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">Active</button>
+              :class="filter==='active' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'" data-i18n="mytickets.filter_active">Active</button>
       <button @click="filter='needs'" class="px-3 py-1 rounded-full font-medium border transition"
               :class="filter==='needs' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">
-        Needs you<span x-show="needsCount()" x-text="' · '+needsCount()"></span></button>
+        <span data-i18n="mytickets.filter_needs">Needs you</span><span x-show="needsCount()" x-text="' · '+needsCount()"></span></button>
       <button @click="filter='all'" class="px-3 py-1 rounded-full font-medium border transition"
-              :class="filter==='all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'">All</button>
+              :class="filter==='all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200'" data-i18n="mytickets.filter_all">All</button>
     </div>
 
-    <div x-show="loading" class="text-center py-12 text-gray-400">Loading…</div>
+    <div x-show="loading" class="text-center py-12 text-gray-400" data-i18n="mytickets.loading">Loading…</div>
 
     <!-- empty -->
     <div x-show="!loading && !items.length" class="card text-center py-12">
       <div class="text-5xl mb-3">🌱</div>
-      <p class="font-semibold text-gray-800">No reports yet</p>
-      <p class="text-gray-500 text-sm mt-1 max-w-xs mx-auto">See something off, or have an idea? Tap the <b>💬</b> button anytime — we read every one.</p>
+      <p class="font-semibold text-gray-800" data-i18n="mytickets.empty_title">No reports yet</p>
+      <p class="text-gray-500 text-sm mt-1 max-w-xs mx-auto" data-i18n-html="mytickets.empty_body">See something off, or have an idea? Tap the <b>💬</b> button anytime — we read every one.</p>
     </div>
 
     <!-- nothing in this filter -->
     <div x-show="!loading && items.length && !shown().length" class="card text-center py-10 text-gray-400">
-      <span x-show="filter==='needs'">Nothing needs your reply right now. 🎉</span>
-      <span x-show="filter==='active'">No active reports — all caught up!</span>
+      <span x-show="filter==='needs'" data-i18n="mytickets.needs_empty">Nothing needs your reply right now. 🎉</span>
+      <span x-show="filter==='active'" data-i18n="mytickets.active_empty">No active reports — all caught up!</span>
     </div>
 
     <!-- list -->
@@ -60,8 +60,8 @@
       <template x-for="t in shown()" :key="t.item_number">
         <div class="card" :id="'report-'+t.item_number" style="scroll-margin-top:60px;transition:box-shadow .3s">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-[11px] font-mono text-gray-400" x-text="'Report #' + t.item_number"></span>
-            <span class="text-[11px] text-gray-400" x-text="'sent ' + fmt(t.created_at)"></span>
+            <span class="text-[11px] font-mono text-gray-400" x-text="window.t('mytickets.report_num', {n: t.item_number})"></span>
+            <span class="text-[11px] text-gray-400" x-text="window.t('mytickets.sent', {n: fmt(t.created_at)})"></span>
           </div>
           <!-- friendly title -->
           <p class="font-bold text-gray-900 text-lg leading-snug mt-1" x-text="t.understood || t.you_said"></p>
@@ -101,29 +101,29 @@
           <!-- resolution — the whole story in 3-4 plain sentences (resolved tickets only) -->
           <div x-show="isResolved(t)" class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2">
             <div class="flex items-center justify-between gap-2">
-              <p class="text-xs font-bold text-emerald-800 flex items-center gap-1">📋 Resolution</p>
+              <p class="text-xs font-bold text-emerald-800 flex items-center gap-1" data-i18n="mytickets.resolution">📋 Resolution</p>
               <span x-show="slaText(t)" :title="slaDetail(t)"
                     class="text-[11px] font-semibold text-emerald-700 bg-white/70 border border-emerald-200 rounded-full px-2 py-0.5 shrink-0"
                     x-text="slaText(t)"></span>
             </div>
-            <p x-show="t.resLoading && !t.resolution" class="text-xs text-emerald-700/70 italic mt-1">Writing it up…</p>
+            <p x-show="t.resLoading && !t.resolution" class="text-xs text-emerald-700/70 italic mt-1" data-i18n="mytickets.writing_up">Writing it up…</p>
             <p x-show="t.resolution" class="text-sm text-gray-700 mt-1 leading-relaxed" x-text="t.resolution"></p>
           </div>
 
           <!-- what you told us (their own words) -->
           <details class="mt-3" x-show="t.understood">
-            <summary class="text-xs text-gray-500 cursor-pointer select-none">In your words</summary>
+            <summary class="text-xs text-gray-500 cursor-pointer select-none" data-i18n="mytickets.in_your_words">In your words</summary>
             <p class="text-sm text-gray-600 mt-1 italic" x-text="'“' + t.you_said + '”'"></p>
           </details>
 
           <!-- full story (timeline) — expand in place -->
           <div class="mt-3 border-t pt-2">
             <button @click="toggleStory(t)" class="w-full flex items-center justify-between text-xs text-gray-500 hover:text-indigo-600 select-none">
-              <span x-text="t.open ? '📖 Hide the story' : '📖 See the full story'"></span>
+              <span x-text="t.open ? window.t('mytickets.hide_story') : window.t('mytickets.see_story')"></span>
               <span x-text="t.open ? '▲' : '▼'"></span>
             </button>
             <div x-show="t.open" x-cloak class="mt-3">
-              <div x-show="t.tlLoading" class="text-xs text-gray-400 py-2">Loading the story…</div>
+              <div x-show="t.tlLoading" class="text-xs text-gray-400 py-2" data-i18n="mytickets.loading_story">Loading the story…</div>
               <div x-show="!t.tlLoading && slaText(t)" class="mb-3 text-xs font-semibold text-indigo-700" x-text="slaText(t) + ' · ' + slaDetail(t)"></div>
               <ol x-show="!t.tlLoading" class="relative border-l-2 border-indigo-100 ml-2 space-y-3">
                 <template x-for="(ev,i) in (t.timeline||[])" :key="i">
@@ -154,74 +154,74 @@
 
           <!-- confirm-back -->
           <div x-show="t.needs_confirm && t.confirmState!=='done' && t.confirmState!=='withdrawn'" class="mt-4 border-t pt-3">
-            <p class="text-sm font-semibold text-gray-800">Did we get it right?</p>
-            <p class="text-sm text-gray-600 mt-1">We understood it as: <span class="font-medium text-gray-900" x-text="'“'+(t.understood||t.you_said)+'”'"></span></p>
+            <p class="text-sm font-semibold text-gray-800" data-i18n="mytickets.confirm_q">Did we get it right?</p>
+            <p class="text-sm text-gray-600 mt-1"><span data-i18n="mytickets.understood_as">We understood it as:</span> <span class="font-medium text-gray-900" x-text="'“'+(t.understood||t.you_said)+'”'"></span></p>
             <div x-show="t.confirmState!=='note'" class="flex flex-wrap gap-2 mt-3 items-center">
-              <button class="btn-primary" @click="confirm(t)" title="Confirm we understood it correctly">✅ Yes, that's it</button>
-              <button class="btn-secondary" @click="t.confirmState='note'" title="Tell us more, or correct us">✏️ Add detail</button>
-              <button class="text-sm text-gray-400 hover:text-red-600 ml-auto" @click="withdraw(t)" title="You don't need this any more — withdraw it">✕ Never mind</button>
+              <button class="btn-primary" @click="confirm(t)" title="Confirm we understood it correctly" data-i18n="mytickets.yes_thats_it">✅ Yes, that's it</button>
+              <button class="btn-secondary" @click="t.confirmState='note'" title="Tell us more, or correct us" data-i18n="mytickets.add_detail">✏️ Add detail</button>
+              <button class="text-sm text-gray-400 hover:text-red-600 ml-auto" @click="withdraw(t)" title="You don't need this any more — withdraw it" data-i18n="mytickets.never_mind">✕ Never mind</button>
             </div>
             <div x-show="t.confirmState==='note'" class="mt-3">
-              <textarea x-model="t.noteText" rows="3" class="input-field w-full" placeholder="Tell us more, or what we got wrong…"></textarea>
+              <textarea x-model="t.noteText" rows="3" class="input-field w-full" placeholder="Tell us more, or what we got wrong…" data-i18n-placeholder="mytickets.note_placeholder"></textarea>
               <div class="flex gap-2 mt-2">
-                <button class="btn-primary" @click="sendNote(t)" :disabled="!t.noteText || t.busy">Send note</button>
-                <button class="btn-secondary" @click="t.confirmState=null">← Back</button>
+                <button class="btn-primary" @click="sendNote(t)" :disabled="!t.noteText || t.busy" data-i18n="mytickets.send_note">Send note</button>
+                <button class="btn-secondary" @click="t.confirmState=null" data-i18n="mytickets.back">← Back</button>
               </div>
             </div>
           </div>
-          <div x-show="t.confirmState==='withdrawn'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">✕ You withdrew this report.</div>
+          <div x-show="t.confirmState==='withdrawn'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium" data-i18n="mytickets.withdrew">✕ You withdrew this report.</div>
 
           <!-- understanding confirmed (only while still being worked on) -->
-          <div x-show="(t.confirmed || t.confirmState==='done') && !t.needs_confirm_fix && !t.closed" class="mt-4 text-sm text-green-700 font-medium">✓ Thanks — your reply is in. We've got it from here.</div>
+          <div x-show="(t.confirmed || t.confirmState==='done') && !t.needs_confirm_fix && !t.closed" class="mt-4 text-sm text-green-700 font-medium" data-i18n="mytickets.reply_in">✓ Thanks — your reply is in. We've got it from here.</div>
 
           <!-- confirm the FIX (the done-loop: you close your own ticket) -->
           <div x-show="t.needs_confirm_fix && t.fixState!=='closed' && t.fixState!=='sent'" class="mt-4 border-t pt-3">
-            <p class="text-sm font-semibold text-gray-900">🎉 We think this is fixed!</p>
-            <p class="text-sm text-gray-600 mt-1">Have a quick look — did it sort it out?</p>
+            <p class="text-sm font-semibold text-gray-900" data-i18n="mytickets.think_fixed">🎉 We think this is fixed!</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="mytickets.quick_look">Have a quick look — did it sort it out?</p>
             <div x-show="t.fixState!=='note'" class="flex flex-wrap gap-2 mt-3">
-              <button class="btn-primary" @click="closeIt(t)" :disabled="t.busy" title="You're happy it's fixed — close this report">✓ Looks good, close it</button>
-              <button class="btn-secondary" @click="t.fixState='note'" title="It's not fixed — send it back with a note">✗ Still not right</button>
+              <button class="btn-primary" @click="closeIt(t)" :disabled="t.busy" title="You're happy it's fixed — close this report" data-i18n="mytickets.looks_good">✓ Looks good, close it</button>
+              <button class="btn-secondary" @click="t.fixState='note'" title="It's not fixed — send it back with a note" data-i18n="mytickets.still_not_right">✗ Still not right</button>
             </div>
             <div x-show="t.fixState==='note'" class="mt-3">
-              <textarea x-model="t.fixNote" rows="3" class="input-field w-full" placeholder="What's still wrong? (optional)"></textarea>
+              <textarea x-model="t.fixNote" rows="3" class="input-field w-full" placeholder="What's still wrong? (optional)" data-i18n-placeholder="mytickets.fix_note_placeholder"></textarea>
               <div class="flex gap-2 mt-2">
-                <button class="btn-primary" @click="reopen(t)" :disabled="t.busy">Send it back</button>
-                <button class="btn-secondary" @click="t.fixState=null">Cancel</button>
+                <button class="btn-primary" @click="reopen(t)" :disabled="t.busy" data-i18n="mytickets.send_back">Send it back</button>
+                <button class="btn-secondary" @click="t.fixState=null" data-i18n="mytickets.cancel">Cancel</button>
               </div>
             </div>
           </div>
 
           <!-- REJECT loop: we don't think it needs a change — your call -->
           <div x-show="t.rejected_pending && t.rejState!=='done' && t.rejState!=='sent'" class="mt-4 border-t pt-3">
-            <p class="text-sm font-semibold text-gray-900">🤔 We took a look</p>
-            <p class="text-sm text-gray-600 mt-1" x-text="t.reject_reason || 'We don\'t think this one needs a change.'"></p>
-            <p class="text-sm text-gray-700 mt-2 font-medium">Does that make sense?</p>
+            <p class="text-sm font-semibold text-gray-900" data-i18n="mytickets.took_look">🤔 We took a look</p>
+            <p class="text-sm text-gray-600 mt-1" x-text="t.reject_reason || window.t('mytickets.reject_default')"></p>
+            <p class="text-sm text-gray-700 mt-2 font-medium" data-i18n="mytickets.make_sense_q">Does that make sense?</p>
             <div x-show="t.rejState!=='note'" class="flex flex-wrap gap-2 mt-2">
-              <button class="btn-primary" @click="acceptReject(t)" :disabled="t.busy" title="You're OK with this — close the report">✓ OK, makes sense</button>
-              <button class="btn-secondary" @click="t.rejState='note'" title="You disagree — tell us what we missed">✗ No, here's why</button>
+              <button class="btn-primary" @click="acceptReject(t)" :disabled="t.busy" title="You're OK with this — close the report" data-i18n="mytickets.ok_makes_sense">✓ OK, makes sense</button>
+              <button class="btn-secondary" @click="t.rejState='note'" title="You disagree — tell us what we missed" data-i18n="mytickets.no_heres_why">✗ No, here's why</button>
             </div>
             <div x-show="t.rejState==='note'" class="mt-3">
-              <textarea x-model="t.rejNote" rows="3" class="input-field w-full" placeholder="Tell us what we're missing — how to see it, why it matters…"></textarea>
+              <textarea x-model="t.rejNote" rows="3" class="input-field w-full" placeholder="Tell us what we're missing — how to see it, why it matters…" data-i18n-placeholder="mytickets.rej_note_placeholder"></textarea>
               <div class="flex gap-2 mt-2">
-                <button class="btn-primary" @click="dispute(t)" :disabled="t.busy">Send it back</button>
-                <button class="btn-secondary" @click="t.rejState=null">Cancel</button>
+                <button class="btn-primary" @click="dispute(t)" :disabled="t.busy" data-i18n="mytickets.send_back">Send it back</button>
+                <button class="btn-secondary" @click="t.rejState=null" data-i18n="mytickets.cancel">Cancel</button>
               </div>
             </div>
           </div>
-          <div x-show="t.rejState==='done'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">👍 Closed — we agreed no change was needed. Thanks for the report!</div>
-          <div x-show="t.rejState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back with your note — thanks, we'll take another look.</div>
+          <div x-show="t.rejState==='done'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium" data-i18n="mytickets.closed_agreed_thanks">👍 Closed — we agreed no change was needed. Thanks for the report!</div>
+          <div x-show="t.rejState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium" data-i18n="mytickets.sent_back_note">↩️ Sent back with your note — thanks, we'll take another look.</div>
 
           <!-- closed by reporter -->
-          <div x-show="(t.closed || t.fixState==='closed') && t.closed_kind==='fixed'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold">🎉 Closed by you — thank you for helping make this better!</div>
-          <div x-show="t.closed && t.closed_kind==='rejected'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">👍 Closed — we agreed no change was needed.</div>
-          <div x-show="t.closed && t.closed_kind==='cancelled'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium">✕ You withdrew this report.</div>
+          <div x-show="(t.closed || t.fixState==='closed') && t.closed_kind==='fixed'" class="mt-4 rounded-lg bg-green-50 text-green-800 px-3 py-2 text-sm font-semibold" data-i18n="mytickets.closed_by_you">🎉 Closed by you — thank you for helping make this better!</div>
+          <div x-show="t.closed && t.closed_kind==='rejected'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium" data-i18n="mytickets.closed_agreed">👍 Closed — we agreed no change was needed.</div>
+          <div x-show="t.closed && t.closed_kind==='cancelled'" class="mt-4 rounded-lg bg-slate-100 text-slate-600 px-3 py-2 text-sm font-medium" data-i18n="mytickets.withdrew">✕ You withdrew this report.</div>
           <!-- sent back -->
-          <div x-show="t.fixState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium">↩️ Sent back to the team — thanks, we'll keep at it.</div>
+          <div x-show="t.fixState==='sent'" class="mt-4 text-sm text-indigo-700 font-medium" data-i18n="mytickets.sent_back_team">↩️ Sent back to the team — thanks, we'll keep at it.</div>
         </div>
       </template>
     </div>
 
-    <p class="text-center text-xs text-gray-400 mt-8">See something off? Tap the 💬 button anywhere, anytime.</p>
+    <p class="text-center text-xs text-gray-400 mt-8" data-i18n="mytickets.footer_hint">See something off? Tap the 💬 button anywhere, anytime.</p>
   </div>
 
   <!-- attachment lightbox — tap a thumbnail to view; ✕ / backdrop / Esc to close -->
@@ -235,9 +235,9 @@
       <iframe x-show="!viewer.isImage" :src="viewer.url" class="w-[92vw] h-[82vh] bg-white rounded-lg shadow-2xl"></iframe>
       <div class="flex items-center justify-center gap-3 mt-3">
         <p class="text-white/80 text-xs" x-text="viewer.name"></p>
-        <a :href="viewer.url" :download="viewer.name" class="text-white/80 text-xs underline hover:text-white">Download ↓</a>
+        <a :href="viewer.url" :download="viewer.name" class="text-white/80 text-xs underline hover:text-white" data-i18n="mytickets.download">Download ↓</a>
       </div>
-      <button @click="viewer.open=false" class="block mx-auto mt-2 text-white/70 text-xs underline hover:text-white">Close window</button>
+      <button @click="viewer.open=false" class="block mx-auto mt-2 text-white/70 text-xs underline hover:text-white" data-i18n="mytickets.close_window">Close window</button>
     </div>
   </div>
 </div>
@@ -248,10 +248,10 @@ function myTickets() {
     items: [], openN: 0, doneN: 0, loading: false, updatedAt: '', filter: 'active', focusN: null,
     viewer: { open: false, url: null, name: '', isImage: true },
     steps: [
-      { icon:'📨', label:'Received',   tip:"We've got your message." },
-      { icon:'👀', label:'Understood', tip:"We've read it and understood what you mean." },
-      { icon:'🔧', label:'Fixing',     tip:"Someone's working on it." },
-      { icon:'✅', label:'Done',       tip:"Fixed — and you've confirmed it." },
+      { icon:'📨', label: window.t('mytickets.step_received_label'),   tip: window.t('mytickets.step_received_tip') },
+      { icon:'👀', label: window.t('mytickets.step_understood_label'), tip: window.t('mytickets.step_understood_tip') },
+      { icon:'🔧', label: window.t('mytickets.step_fixing_label'),     tip: window.t('mytickets.step_fixing_tip') },
+      { icon:'✅', label: window.t('mytickets.step_done_label'),       tip: window.t('mytickets.step_done_tip') },
     ],
     init() {
       const u = AuthHelper.getUserInfo();
@@ -270,7 +270,7 @@ function myTickets() {
         if (this.focusN) this.$nextTick(() => this.scrollToReport(this.focusN));
         this.openN = d.open || 0; this.doneN = d.done || 0;
         this.updatedAt = formatTime(new Date(), { hour:'2-digit', minute:'2-digit' });
-      } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
+      } catch (e) { console.error(e); showToast(window.t('mytickets.err_load'), 'error'); }
       finally { this.loading = false; }
     },
     // Plain-language "first read" of the report. Tolerant of however the AI worded
@@ -279,16 +279,16 @@ function myTickets() {
       if (!t.understood || t.merged_into) return null;
       const k = (t.kind || '').toLowerCase(), s = (t.severity || '').toLowerCase();
       let km;
-      if (/bug|error|broke|crash|fault/.test(k)) km = { e:'🐞', w:'a bug' };
-      else if (/feature|idea|request|enhanc|improv|nice/.test(k)) km = { e:'💡', w:'an idea' };
-      else if (/ui|visual|cosmetic|layout|style|design/.test(k)) km = { e:'🎨', w:'a visual tweak' };
-      else if (/question|how|help/.test(k)) km = { e:'❓', w:'a question' };
-      else km = { e:'📌', w:'a note' };
+      if (/bug|error|broke|crash|fault/.test(k)) km = { e:'🐞', w: window.t('mytickets.kind_bug') };
+      else if (/feature|idea|request|enhanc|improv|nice/.test(k)) km = { e:'💡', w: window.t('mytickets.kind_idea') };
+      else if (/ui|visual|cosmetic|layout|style|design/.test(k)) km = { e:'🎨', w: window.t('mytickets.kind_visual') };
+      else if (/question|how|help/.test(k)) km = { e:'❓', w: window.t('mytickets.kind_question') };
+      else km = { e:'📌', w: window.t('mytickets.kind_note') };
       let effort = '';
-      if (/cosmetic|trivial|low|minor/.test(s)) effort = 'a small one';
-      else if (/annoy|medium|moderate/.test(s)) effort = 'a minor fix';
-      else if (/block|high|critical|severe|urgent/.test(s)) effort = 'important — bumped up the list';
-      return { emoji: km.e, text: 'Looks like ' + km.w + (effort ? ' · ' + effort : '') };
+      if (/cosmetic|trivial|low|minor/.test(s)) effort = window.t('mytickets.effort_small');
+      else if (/annoy|medium|moderate/.test(s)) effort = window.t('mytickets.effort_minor');
+      else if (/block|high|critical|severe|urgent/.test(s)) effort = window.t('mytickets.effort_important');
+      return { emoji: km.e, text: window.t('mytickets.looks_like', {n: km.w}) + (effort ? ' · ' + effort : '') };
     },
     // Expand-in-place: lazy-load the full report→resolution story from the activity log.
     async toggleStory(t) {
@@ -311,7 +311,7 @@ function myTickets() {
           }
           t.timeline = events;
           t.timing = d.timing || t.timing;
-        } catch (e) { showToast('Could not load the story', 'error'); t.open = false; }
+        } catch (e) { showToast(window.t('mytickets.err_load_story'), 'error'); t.open = false; }
         finally { t.tlLoading = false; }
       }
     },
@@ -339,17 +339,17 @@ function myTickets() {
     // The hypercare SLA, in one glance: report → fixed = "Healed in 2h 37m" (open age while in flight).
     slaText(t) {
       const tm = t.timing; if (!tm) return '';
-      if (tm.healed_human) return '🩹 Healed in ' + tm.healed_human;
-      if (tm.open_human) return '⏳ Open ' + tm.open_human;
+      if (tm.healed_human) return window.t('mytickets.healed_in', {n: tm.healed_human});
+      if (tm.open_human) return window.t('mytickets.open_for', {n: tm.open_human});
       return '';
     },
     // Tooltip detail: the actual clock moments behind the span.
     slaDetail(t) {
       const tm = t.timing; if (!tm) return '';
       const parts = [];
-      if (tm.opened_at) parts.push('Opened ' + this.clock(tm.opened_at));
-      if (tm.fixed_at) parts.push('fixed ' + this.clock(tm.fixed_at));
-      else if (tm.closed_at) parts.push('closed ' + this.clock(tm.closed_at));
+      if (tm.opened_at) parts.push(window.t('mytickets.opened_at', {n: this.clock(tm.opened_at)}));
+      if (tm.fixed_at) parts.push(window.t('mytickets.fixed_at', {n: this.clock(tm.fixed_at)}));
+      else if (tm.closed_at) parts.push(window.t('mytickets.closed_at', {n: this.clock(tm.closed_at)}));
       return parts.join(' · ');
     },
     // Compact timeline clock: just the time today, "DD Mon HH:MM" if older.
@@ -365,16 +365,16 @@ function myTickets() {
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/confirm', {});
         t.confirmState = 'done'; t.confirmed = true;
-        showToast('Thank you! 🙏', 'success');
-      } catch (e) { showToast('Could not save — try again', 'error'); }
+        showToast(window.t('mytickets.toast_thanks'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_save'), 'error'); }
     },
     async sendNote(t) {
       if (!t.noteText) return; t.busy = true;
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/note', { note: t.noteText });
         t.confirmState = 'done';
-        showToast('Got it — thanks for the detail!', 'success');
-      } catch (e) { showToast('Could not send — try again', 'error'); }
+        showToast(window.t('mytickets.toast_detail'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_send'), 'error'); }
       finally { t.busy = false; }
     },
     async closeIt(t) {
@@ -382,8 +382,8 @@ function myTickets() {
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/close', {});
         t.fixState = 'closed'; t.closed = true;
-        showToast('Closed — thank you! 🎉', 'success');
-      } catch (e) { showToast('Could not close — try again', 'error'); }
+        showToast(window.t('mytickets.toast_closed'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_close'), 'error'); }
       finally { t.busy = false; }
     },
     async reopen(t) {
@@ -391,8 +391,8 @@ function myTickets() {
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/reopen', { note: t.fixNote });
         t.fixState = 'sent';
-        showToast('Sent back to the team', 'success');
-      } catch (e) { showToast('Could not send — try again', 'error'); }
+        showToast(window.t('mytickets.toast_sent_back'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_send'), 'error'); }
       finally { t.busy = false; }
     },
     async acceptReject(t) {
@@ -400,8 +400,8 @@ function myTickets() {
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/accept-reject', {});
         t.rejState = 'done';
-        showToast('Closed — thanks!', 'success');
-      } catch (e) { showToast('Could not close — try again', 'error'); }
+        showToast(window.t('mytickets.toast_closed_thanks'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_close'), 'error'); }
       finally { t.busy = false; }
     },
     async dispute(t) {
@@ -409,18 +409,18 @@ function myTickets() {
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/dispute', { note: t.rejNote });
         t.rejState = 'sent';
-        showToast('Sent back to the team', 'success');
-      } catch (e) { showToast('Could not send — try again', 'error'); }
+        showToast(window.t('mytickets.toast_sent_back'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_send'), 'error'); }
       finally { t.busy = false; }
     },
     async withdraw(t) {
-      if (!confirm('Withdraw this report? It will be closed.')) return;
+      if (!confirm(window.t('mytickets.confirm_withdraw'))) return;
       t.busy = true;
       try {
         await API.post('/api/v1/pos/feedback/mine/' + t.item_number + '/cancel', {});
         t.confirmState = 'withdrawn'; t.closed = true; t.closed_kind = 'cancelled';
-        showToast('Withdrawn', 'success');
-      } catch (e) { showToast('Could not withdraw — try again', 'error'); }
+        showToast(window.t('mytickets.toast_withdrawn'), 'success');
+      } catch (e) { showToast(window.t('mytickets.err_withdraw'), 'error'); }
       finally { t.busy = false; }
     },
     needsReply(t) { return t.needs_confirm || t.needs_confirm_fix || t.rejected_pending; },
@@ -437,10 +437,10 @@ function myTickets() {
       const day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
       const days = Math.round((day0(now) - day0(d)) / 86400000);
       const time = formatTime(d, { hour:'2-digit', minute:'2-digit' });
-      if (days <= 0) return 'today ' + time;   // today is the key window — show WHEN
-      if (days === 1) return 'yesterday';
-      if (days < 7) return days + ' days ago';
-      return 'on ' + formatDate(d, { day:'2-digit', month:'short' });
+      if (days <= 0) return window.t('mytickets.today', {n: time});   // today is the key window — show WHEN
+      if (days === 1) return window.t('mytickets.yesterday');
+      if (days < 7) return window.t('mytickets.days_ago', {n: days});
+      return window.t('mytickets.on', {n: formatDate(d, { day:'2-digit', month:'short' })});
     },
   };
 }

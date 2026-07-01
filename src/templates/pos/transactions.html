@@ -34,10 +34,10 @@
     <nav class="bg-white shadow-lg sticky top-0 z-10 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <button @click="goBack()" class="btn-secondary">
+                <button @click="goBack()" class="btn-secondary" data-i18n="transactions.back">
                     ← Back to Dashboard
                 </button>
-                <h1 class="text-2xl font-bold text-gray-900">💳 Transaction History</h1>
+                <h1 class="text-2xl font-bold text-gray-900" data-i18n="transactions.title">💳 Transaction History</h1>
                 <div class="text-sm text-gray-600">
                     <span x-text="user.username"></span> | <span x-text="roleDisplay()"></span>
                 </div>
@@ -48,10 +48,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Print stamp (only on paper/PDF) -->
         <div class="print-only mb-4">
-            <h1 style="font-size:18px;font-weight:bold;">Artemis Store — Transaction History</h1>
+            <h1 style="font-size:18px;font-weight:bold;">Artemis Store — <span data-i18n="transactions.print_title">Transaction History</span></h1>
             <p style="font-size:12px;color:#444;" x-text="rangeLabel()"></p>
-            <p style="font-size:12px;color:#444;" x-text="summary.count + ' transactions · ' + formatPrice(summary.total) + ' total'"></p>
-            <p style="font-size:10px;color:#888;" x-text="'Generated ' + generatedAt"></p>
+            <p style="font-size:12px;color:#444;" x-text="summary.count + t('transactions.print_transactions') + formatPrice(summary.total) + t('transactions.print_total')"></p>
+            <p style="font-size:10px;color:#888;" x-text="t('transactions.print_generated') + generatedAt"></p>
         </div>
 
         <!-- Filter Bar -->
@@ -67,48 +67,48 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">From:</label>
+                    <label class="text-sm font-semibold text-gray-700" data-i18n="transactions.filter_from">From:</label>
                     <input type="date" x-model="filterFrom" @change="onRangeChange()" class="input-field">
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">To:</label>
+                    <label class="text-sm font-semibold text-gray-700" data-i18n="transactions.filter_to">To:</label>
                     <input type="date" x-model="filterTo" @change="onRangeChange()" class="input-field">
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Status:</label>
+                    <label class="text-sm font-semibold text-gray-700" data-i18n="transactions.filter_status">Status:</label>
                     <select x-model="filterStatus" @change="loadTransactions()" class="input-field">
-                        <option value="">All (active)</option>
-                        <option value="completed">Completed</option>
-                        <option value="open">Open</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="" data-i18n="transactions.status_all">All (active)</option>
+                        <option value="completed" data-i18n="transactions.status_completed">Completed</option>
+                        <option value="open" data-i18n="transactions.status_open">Open</option>
+                        <option value="cancelled" data-i18n="transactions.status_cancelled">Cancelled</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Payment:</label>
+                    <label class="text-sm font-semibold text-gray-700" data-i18n="transactions.filter_payment">Payment:</label>
                     <select x-model="filterPayment" @change="loadTransactions()" class="input-field">
-                        <option value="">All</option>
-                        <option value="cash">Cash</option>
-                        <option value="debit">Debit card</option>
-                        <option value="twint">TWINT</option>
-                        <option value="visa">Visa</option>
-                        <option value="bank_transfer">Bank transfer</option>
-                        <option value="crypto">Crypto</option>
-                        <option value="other">Other</option>
+                        <option value="" data-i18n="transactions.payment_all">All</option>
+                        <option value="cash" data-i18n="transactions.pay_cash">Cash</option>
+                        <option value="debit" data-i18n="transactions.pay_debit">Debit card</option>
+                        <option value="twint" data-i18n="transactions.pay_twint">TWINT</option>
+                        <option value="visa" data-i18n="transactions.pay_visa">Visa</option>
+                        <option value="bank_transfer" data-i18n="transactions.pay_bank_transfer">Bank transfer</option>
+                        <option value="crypto" data-i18n="transactions.pay_crypto">Crypto</option>
+                        <option value="other" data-i18n="transactions.pay_other">Other</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Cashier:</label>
+                    <label class="text-sm font-semibold text-gray-700" data-i18n="transactions.filter_cashier">Cashier:</label>
                     <select x-model="filterCashier" @change="calculateSummary()" class="input-field">
-                        <option value="">All cashiers</option>
+                        <option value="" data-i18n="transactions.cashier_all">All cashiers</option>
                         <template x-for="c in cashierOptions()" :key="c">
                             <option :value="c" x-text="c"></option>
                         </template>
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-gray-700">Customer:</label>
+                    <label class="text-sm font-semibold text-gray-700" data-i18n="transactions.filter_customer">Customer:</label>
                     <select x-model="filterCustomer" @change="calculateSummary()" class="input-field">
-                        <option value="">All customers</option>
+                        <option value="" data-i18n="transactions.customer_all">All customers</option>
                         <template x-for="c in customerOptions()" :key="c">
                             <option :value="c" x-text="c"></option>
                         </template>
@@ -117,27 +117,27 @@
             </div>
             <div class="mt-4 flex flex-wrap justify-between gap-2">
                 <div class="flex flex-wrap gap-2" x-show="!loading && processedList().length > 0">
-                    <button @click="printView()" class="btn-secondary text-sm">🖨️ Print / PDF</button>
-                    <button @click="exportCSV()" class="btn-secondary text-sm">📥 CSV (;)</button>
+                    <button @click="printView()" class="btn-secondary text-sm" data-i18n="transactions.print_pdf">🖨️ Print / PDF</button>
+                    <button @click="exportCSV()" class="btn-secondary text-sm" data-i18n="transactions.export_csv">📥 CSV (;)</button>
                 </div>
-                <button @click="resetFilters()" class="btn-secondary">Reset Filters</button>
+                <button @click="resetFilters()" class="btn-secondary" data-i18n="transactions.reset_filters">Reset Filters</button>
             </div>
         </div>
 
         <!-- Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div class="card">
-                <p class="text-sm text-gray-600">Total Transactions</p>
+                <p class="text-sm text-gray-600" data-i18n="transactions.total_transactions">Total Transactions</p>
                 <p class="text-3xl font-bold text-gray-900" x-text="summary.count"></p>
             </div>
             <div class="card">
-                <p class="text-sm text-gray-600">Total Sales</p>
+                <p class="text-sm text-gray-600" data-i18n="transactions.total_sales">Total Sales</p>
                 <p class="text-3xl font-bold text-green-600" x-text="formatPrice(summary.total)"></p>
             </div>
             <!-- BL-84: full payment breakdown (cash / debit / TWINT / visa / bank transfer / ...) -->
             <div class="card md:col-span-2">
-                <p class="text-sm text-gray-600 mb-2">Payment Breakdown</p>
-                <p x-show="breakdownRows().length === 0" class="text-sm text-gray-400">No sales for these filters.</p>
+                <p class="text-sm text-gray-600 mb-2" data-i18n="transactions.payment_breakdown">Payment Breakdown</p>
+                <p x-show="breakdownRows().length === 0" class="text-sm text-gray-400" data-i18n="transactions.no_sales_filters">No sales for these filters.</p>
                 <div class="space-y-1.5">
                     <template x-for="row in breakdownRows()" :key="row.key">
                         <div class="flex items-center gap-2">
@@ -155,14 +155,14 @@
         <!-- Loading State -->
         <div x-show="loading" class="text-center py-12">
             <div class="animate-spin inline-block w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full"></div>
-            <p class="mt-4 text-gray-600">Loading transactions...</p>
+            <p class="mt-4 text-gray-600" data-i18n="transactions.loading">Loading transactions...</p>
         </div>
 
         <!-- Empty State -->
         <div x-show="!loading && processedList().length === 0" class="card text-center py-12">
             <span class="text-6xl mb-4 block">📭</span>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h3>
-            <p class="text-gray-600">Try adjusting your filters or select a different date.</p>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2" data-i18n="transactions.empty_title">No Transactions Found</h3>
+            <p class="text-gray-600" data-i18n="transactions.empty_hint">Try adjusting your filters or select a different date.</p>
         </div>
 
         <!-- Sales — app-style cards on mobile, full table on desktop -->
@@ -170,14 +170,14 @@
             <!-- MOBILE: card list (no horizontal scroll, View/Reprint inline) -->
             <div class="md:hidden tx-mobile">
                 <div class="flex items-center gap-2 mb-3">
-                    <span class="text-sm font-semibold text-gray-600 flex-none">Sort:</span>
+                    <span class="text-sm font-semibold text-gray-600 flex-none" data-i18n="transactions.sort">Sort:</span>
                     <select x-model="mobileSort" @change="setMobileSort()" class="input-field flex-1 !py-2.5 text-base">
-                        <option value="time:desc">Newest first</option>
-                        <option value="time:asc">Oldest first</option>
-                        <option value="total:desc">Total — high to low</option>
-                        <option value="total:asc">Total — low to high</option>
-                        <option value="cashier:asc">Cashier (A–Z)</option>
-                        <option value="customer:asc">Customer (A–Z)</option>
+                        <option value="time:desc" data-i18n="transactions.sort_newest">Newest first</option>
+                        <option value="time:asc" data-i18n="transactions.sort_oldest">Oldest first</option>
+                        <option value="total:desc" data-i18n="transactions.sort_total_high">Total — high to low</option>
+                        <option value="total:asc" data-i18n="transactions.sort_total_low">Total — low to high</option>
+                        <option value="cashier:asc" data-i18n="transactions.sort_cashier">Cashier (A–Z)</option>
+                        <option value="customer:asc" data-i18n="transactions.sort_customer">Customer (A–Z)</option>
                     </select>
                 </div>
                 <div class="space-y-3">
@@ -194,15 +194,15 @@
                             </div>
                             <div class="flex justify-between items-end gap-3 mt-3">
                                 <div class="text-sm space-y-0.5 min-w-0">
-                                    <p class="text-gray-700 truncate"><span class="text-gray-400">Cashier:</span> <span class="font-medium" x-text="txn.cashier_name || '—'"></span></p>
-                                    <p class="text-gray-700 truncate"><span class="text-gray-400">Customer:</span> <span x-text="txn.customer_name || '—'"></span></p>
+                                    <p class="text-gray-700 truncate"><span class="text-gray-400" data-i18n="transactions.cashier_label">Cashier:</span> <span class="font-medium" x-text="txn.cashier_name || '—'"></span></p>
+                                    <p class="text-gray-700 truncate"><span class="text-gray-400" data-i18n="transactions.customer_label">Customer:</span> <span x-text="txn.customer_name || '—'"></span></p>
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1" :class="methodClass(txn.payment_method)" x-text="methodLabel(txn.payment_method)"></span>
                                 </div>
                                 <p class="text-2xl font-bold text-gray-900 flex-none" x-text="formatPrice(txn.total)"></p>
                             </div>
                             <div class="grid grid-cols-2 gap-2 mt-4" @click.stop>
-                                <button @click="viewReceipt(txn.id)" class="bg-indigo-600 active:bg-indigo-700 text-white rounded-full py-2.5 font-semibold text-sm">View</button>
-                                <button @click="reprintReceipt(txn.id)" class="bg-green-600 active:bg-green-700 text-white rounded-full py-2.5 font-semibold text-sm">Reprint</button>
+                                <button @click="viewReceipt(txn.id)" class="bg-indigo-600 active:bg-indigo-700 text-white rounded-full py-2.5 font-semibold text-sm" data-i18n="transactions.view">View</button>
+                                <button @click="reprintReceipt(txn.id)" class="bg-green-600 active:bg-green-700 text-white rounded-full py-2.5 font-semibold text-sm" data-i18n="transactions.reprint">Reprint</button>
                             </div>
                         </div>
                     </template>
@@ -215,14 +215,14 @@
                 <table class="w-full data-table">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th @click="sortByCol('receipt')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Receipt # <span x-text="sortIcon('receipt')"></span></th>
-                            <th @click="sortByCol('time')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Date/Time <span x-text="sortIcon('time')"></span></th>
-                            <th @click="sortByCol('cashier')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Cashier <span x-text="sortIcon('cashier')"></span></th>
-                            <th @click="sortByCol('customer')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Customer <span x-text="sortIcon('customer')"></span></th>
-                            <th @click="sortByCol('payment')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Payment <span x-text="sortIcon('payment')"></span></th>
-                            <th @click="sortByCol('total')" class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Total <span x-text="sortIcon('total')"></span></th>
-                            <th @click="sortByCol('status')" class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200">Status <span x-text="sortIcon('status')"></span></th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tx-actions">Actions</th>
+                            <th @click="sortByCol('receipt')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_receipt">Receipt #</span> <span x-text="sortIcon('receipt')"></span></th>
+                            <th @click="sortByCol('time')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_datetime">Date/Time</span> <span x-text="sortIcon('time')"></span></th>
+                            <th @click="sortByCol('cashier')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_cashier">Cashier</span> <span x-text="sortIcon('cashier')"></span></th>
+                            <th @click="sortByCol('customer')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_customer">Customer</span> <span x-text="sortIcon('customer')"></span></th>
+                            <th @click="sortByCol('payment')" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_payment">Payment</span> <span x-text="sortIcon('payment')"></span></th>
+                            <th @click="sortByCol('total')" class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_total">Total</span> <span x-text="sortIcon('total')"></span></th>
+                            <th @click="sortByCol('status')" class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase cursor-pointer select-none hover:bg-gray-200"><span data-i18n="transactions.col_status">Status</span> <span x-text="sortIcon('status')"></span></th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tx-actions" data-i18n="transactions.col_actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -265,10 +265,10 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-center tx-actions" @click.stop>
-                                    <button @click="viewReceipt(txn.id)" class="text-indigo-600 hover:text-indigo-900 font-medium mr-3">
+                                    <button @click="viewReceipt(txn.id)" class="text-indigo-600 hover:text-indigo-900 font-medium mr-3" data-i18n="transactions.view">
                                         View
                                     </button>
-                                    <button @click="reprintReceipt(txn.id)" class="text-green-600 hover:text-green-900 font-medium">
+                                    <button @click="reprintReceipt(txn.id)" class="text-green-600 hover:text-green-900 font-medium" data-i18n="transactions.reprint">
                                         Reprint
                                     </button>
                                 </td>
@@ -356,7 +356,7 @@
 
                 } catch (error) {
                     console.error('Failed to load transactions:', error);
-                    showToast('Failed to load transactions: ' + error.message, 'error');
+                    showToast(t('transactions.load_failed') + ': ' + error.message, 'error');
                 } finally {
                     this.loading = false;
                 }
@@ -467,7 +467,11 @@
             },
 
             methodLabel(method) {
-                if (!method) return 'None';
+                if (!method) return t('transactions.pay_none');
+                // Prefer a translated label; fall back to the English meta / raw enum value.
+                const key = 'transactions.pay_' + method;
+                const label = t(key);
+                if (label !== key) return label;
                 return this.paymentMeta[method]?.label || method.toUpperCase();
             },
 
@@ -509,7 +513,7 @@
             },
 
             roleDisplay() {
-                return this.user.posRoles?.join(', ') || 'User';
+                return this.user.posRoles?.join(', ') || t('transactions.role_user');
             },
 
             // ---- export: print / PDF / semicolon-CSV (Felix's "in the books" report) ----
@@ -519,7 +523,11 @@
             },
             printView() { window.print(); },
             exportCSV() {
-                const rows = [['Receipt #', 'Date', 'Time', 'Cashier', 'Customer', 'Payment', 'Total', 'Status']];
+                const rows = [[
+                    t('transactions.csv_receipt'), t('transactions.csv_date'), t('transactions.csv_time'),
+                    t('transactions.csv_cashier'), t('transactions.csv_customer'), t('transactions.csv_payment'),
+                    t('transactions.csv_total'), t('transactions.csv_status')
+                ]];
                 for (const t of this.processedList()) {
                     const when = t.completed_at || t.created_at;
                     rows.push([
@@ -534,7 +542,7 @@
                     ]);
                 }
                 this._downloadCSV(rows, `banco-transactions-${this.filterFrom}_${this.filterTo}.csv`);
-                showToast('CSV exported', 'success');
+                showToast(t('transactions.csv_exported'), 'success');
             },
             _downloadCSV(rows, filename) {
                 // Semicolon-separated (Swiss/European convention, like a UBS export); every field

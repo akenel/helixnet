@@ -14,48 +14,48 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-gray-900">🏭 Suppliers</h1>
-                    <p class="text-xs text-gray-500">Import sources — each one owns a unique SKU prefix</p>
+                    <h1 class="text-xl font-bold text-gray-900" data-i18n="suppliers.title">🏭 Suppliers</h1>
+                    <p class="text-xs text-gray-500" data-i18n="suppliers.subtitle">Import sources — each one owns a unique SKU prefix</p>
                 </div>
             </div>
-            <button @click="openNew()" :disabled="!canManage" class="btn-success" x-show="canManage">➕ Add supplier</button>
+            <button @click="openNew()" :disabled="!canManage" class="btn-success" x-show="canManage" data-i18n="suppliers.add_supplier">➕ Add supplier</button>
         </div>
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        <div x-show="!canManage" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm">
+        <div x-show="!canManage" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm" data-i18n-html="suppliers.needs_role">
             🔒 Managing suppliers needs a <strong>manager</strong> or <strong>admin</strong> role.
         </div>
 
         <!-- Add / Edit form (inline review-card) -->
         <div x-show="formOpen" style="display:none;" class="supplier-card supplier-card--edit">
             <div class="flex justify-between items-start mb-3">
-                <h2 class="text-lg font-bold text-gray-900" x-text="editing ? '✏️ Edit supplier' : '🆕 New supplier'"></h2>
+                <h2 class="text-lg font-bold text-gray-900" x-text="editing ? t('suppliers.edit_supplier') : t('suppliers.new_supplier')"></h2>
                 <button @click="closeForm()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
             </div>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="sup-lbl">Prefix <span class="text-gray-400 font-normal">(2-3 letters)</span></label>
+                    <label class="sup-lbl" data-i18n-html="suppliers.prefix_label">Prefix <span class="text-gray-400 font-normal">(2-3 letters)</span></label>
                     <input type="text" x-model="form.prefix" @input="form.prefix=(form.prefix||'').toUpperCase()"
                            maxlength="3" :disabled="prefixLocked"
                            placeholder="TAM" class="input-field font-mono uppercase"
                            :class="prefixError ? 'sup-input-err' : ''">
-                    <p x-show="prefixLocked" class="sup-err" style="display:none;">🔒 locked — <span x-text="editProductCount"></span> product(s) use this prefix</p>
+                    <p x-show="prefixLocked" class="sup-err" style="display:none;"><span data-i18n="suppliers.prefix_locked_pre">🔒 locked —</span> <span x-text="editProductCount"></span> <span data-i18n="suppliers.prefix_locked_post">product(s) use this prefix</span></p>
                     <p x-show="!prefixLocked && prefixError" x-text="prefixError" class="sup-err" style="display:none;"></p>
-                    <p x-show="!prefixLocked && !prefixError && form.prefix" class="sup-ok" style="display:none;">✓ SKUs will read <span class="font-mono" x-text="form.prefix + '-…'"></span></p>
+                    <p x-show="!prefixLocked && !prefixError && form.prefix" class="sup-ok" style="display:none;"><span data-i18n="suppliers.skus_will_read">✓ SKUs will read</span> <span class="font-mono" x-text="form.prefix + '-…'"></span></p>
                 </div>
                 <div>
-                    <label class="sup-lbl">Full name</label>
+                    <label class="sup-lbl" data-i18n="suppliers.full_name">Full name</label>
                     <input type="text" x-model="form.name" placeholder="Tamar Trade GmbH" class="input-field">
                 </div>
                 <div>
-                    <label class="sup-lbl">Source URL <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <label class="sup-lbl" data-i18n-html="suppliers.source_url_label">Source URL <span class="text-gray-400 font-normal">(optional)</span></label>
                     <input type="text" x-model="form.source_url" placeholder="https://fourtwenty.ch" class="input-field">
                 </div>
                 <div>
-                    <label class="sup-lbl">Adapter type</label>
+                    <label class="sup-lbl" data-i18n="suppliers.adapter_type">Adapter type</label>
                     <select x-model="form.adapter_type" class="input-field">
-                        <option value="">— none —</option>
+                        <option value="" data-i18n="suppliers.adapter_none">— none —</option>
                         <option value="tamar">tamar</option>
                         <option value="magento">magento</option>
                         <option value="csv">csv</option>
@@ -63,35 +63,35 @@
                     </select>
                 </div>
                 <div>
-                    <label class="sup-lbl">Contact name <span class="text-gray-400 font-normal">(who to call)</span></label>
+                    <label class="sup-lbl" data-i18n-html="suppliers.contact_name_label">Contact name <span class="text-gray-400 font-normal">(who to call)</span></label>
                     <input type="text" x-model="form.contact_name" placeholder="Hans Müller" class="input-field">
                 </div>
                 <div>
-                    <label class="sup-lbl">VAT number <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <label class="sup-lbl" data-i18n-html="suppliers.vat_number_label">VAT number <span class="text-gray-400 font-normal">(optional)</span></label>
                     <input type="text" x-model="form.vat_number" placeholder="CHE-123.456.789 MWST" class="input-field font-mono">
                 </div>
                 <div>
-                    <label class="sup-lbl">Contact email <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <label class="sup-lbl" data-i18n-html="suppliers.contact_email_label">Contact email <span class="text-gray-400 font-normal">(optional)</span></label>
                     <input type="email" x-model="form.contact_email" placeholder="orders@supplier.ch" class="input-field">
                 </div>
                 <div>
-                    <label class="sup-lbl">Contact phone <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <label class="sup-lbl" data-i18n-html="suppliers.contact_phone_label">Contact phone <span class="text-gray-400 font-normal">(optional)</span></label>
                     <input type="text" x-model="form.contact_phone" placeholder="+41 …" class="input-field">
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-4">
                 <button @click="save()" :disabled="saving || !!prefixError || !(form.name||'').trim()" class="btn-success">
-                    <span x-show="!saving" x-text="editing ? '💾 Save changes' : '✅ Add supplier'"></span>
-                    <span x-show="saving" style="display:none;">Saving…</span>
+                    <span x-show="!saving" x-text="editing ? t('suppliers.save_changes') : t('suppliers.add_supplier_confirm')"></span>
+                    <span x-show="saving" style="display:none;" data-i18n="suppliers.saving">Saving…</span>
                 </button>
-                <button @click="closeForm()" class="btn-secondary">Cancel</button>
+                <button @click="closeForm()" class="btn-secondary" data-i18n="suppliers.cancel">Cancel</button>
                 <span x-show="formMsg" x-text="formMsg" class="text-sm text-red-600" style="display:none;"></span>
             </div>
         </div>
 
         <!-- List -->
-        <div x-show="loading" class="text-center text-gray-400 py-10" style="display:none;">Loading suppliers…</div>
-        <div x-show="!loading && !suppliers.length" class="text-center text-gray-400 py-10" style="display:none;">
+        <div x-show="loading" class="text-center text-gray-400 py-10" style="display:none;" data-i18n="suppliers.loading">Loading suppliers…</div>
+        <div x-show="!loading && !suppliers.length" class="text-center text-gray-400 py-10" style="display:none;" data-i18n="suppliers.empty">
             No suppliers yet. Add the first one.
         </div>
 
@@ -106,7 +106,7 @@
                                 <span x-show="s.adapter_type" class="sup-tag" x-text="s.adapter_type"></span>
                                 <a x-show="s.source_url" :href="s.source_url" target="_blank" rel="noopener"
                                    class="text-emerald-700 hover:underline" x-text="s.source_url"></a>
-                                <span x-show="!s.source_url && !s.adapter_type" class="text-gray-400">no source set</span>
+                                <span x-show="!s.source_url && !s.adapter_type" class="text-gray-400" data-i18n="suppliers.no_source_set">no source set</span>
                             </p>
                             <p x-show="s.contact_name || s.contact_email || s.contact_phone" class="text-xs text-gray-400 truncate">
                                 <span x-show="s.contact_name" class="font-medium text-gray-500" x-text="s.contact_name"></span>
@@ -115,12 +115,12 @@
                                 <span x-show="s.contact_email && s.contact_phone"> · </span>
                                 <span x-text="s.contact_phone"></span>
                             </p>
-                            <p x-show="s.vat_number" class="text-xs text-gray-400 font-mono truncate" x-text="'VAT ' + s.vat_number"></p>
+                            <p x-show="s.vat_number" class="text-xs text-gray-400 font-mono truncate" x-text="t('suppliers.vat_prefix') + s.vat_number"></p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-none" x-show="canManage">
-                        <button @click="openEdit(s)" class="btn-secondary text-sm px-3 py-2">✏️ Edit</button>
-                        <button @click="deactivate(s)" class="text-sm px-3 py-2 rounded-lg font-semibold text-red-700 bg-red-50 hover:bg-red-100">Deactivate</button>
+                        <button @click="openEdit(s)" class="btn-secondary text-sm px-3 py-2" data-i18n="suppliers.edit">✏️ Edit</button>
+                        <button @click="deactivate(s)" class="text-sm px-3 py-2 rounded-lg font-semibold text-red-700 bg-red-50 hover:bg-red-100" data-i18n="suppliers.deactivate">Deactivate</button>
                     </div>
                 </div>
             </div>
@@ -150,9 +150,9 @@
     const RESERVED_PREFIXES = ['ART', 'LZ'];
     function validatePrefix(raw) {
         const p = (raw || '').trim().toUpperCase();
-        if (!p) return 'Prefix is required.';
-        if (!/^[A-Z]{2,3}$/.test(p)) return 'Must be 2-3 uppercase letters (A-Z).';
-        if (RESERVED_PREFIXES.includes(p)) return `'${p}' is reserved (ART=article, LZ=internal).`;
+        if (!p) return t('suppliers.err_prefix_required');
+        if (!/^[A-Z]{2,3}$/.test(p)) return t('suppliers.err_prefix_format');
+        if (RESERVED_PREFIXES.includes(p)) return t('suppliers.err_prefix_reserved', {n: p});
         return '';
     }
 
@@ -190,7 +190,7 @@
                 this.loading = true;
                 try {
                     this.suppliers = await API.get('/api/v1/pos/suppliers');
-                } catch (e) { showToast(e.message || 'Could not load suppliers', 'error'); }
+                } catch (e) { showToast(e.message || t('suppliers.err_load'), 'error'); }
                 this.loading = false;
             },
 
@@ -216,7 +216,7 @@
 
             async save() {
                 if (!this.prefixLocked && this.prefixError) { this.formMsg = this.prefixError; return; }
-                if (!(this.form.name || '').trim()) { this.formMsg = 'Name is required.'; return; }
+                if (!(this.form.name || '').trim()) { this.formMsg = t('suppliers.err_name_required'); return; }
                 this.saving = true; this.formMsg = '';
                 const payload = {
                     name: this.form.name.trim(),
@@ -233,27 +233,27 @@
                 try {
                     if (this.editing) {
                         await API.patch('/api/v1/pos/suppliers/' + this.editId, payload);
-                        showToast('Supplier updated', 'success');
+                        showToast(t('suppliers.toast_updated'), 'success');
                     } else {
                         await API.post('/api/v1/pos/suppliers', payload);
-                        showToast('Supplier added', 'success');
+                        showToast(t('suppliers.toast_added'), 'success');
                     }
                     this.formOpen = false;
                     await this.load();
                 } catch (e) {
-                    this.formMsg = e.message || 'Could not save the supplier.';
+                    this.formMsg = e.message || t('suppliers.err_save');
                 } finally {
                     this.saving = false;
                 }
             },
 
             async deactivate(s) {
-                if (!confirm('Deactivate ' + s.name + '? It drops out of the receiving list (prefix stays reserved).')) return;
+                if (!confirm(t('suppliers.confirm_deactivate', {n: s.name}))) return;
                 try {
                     await API.patch('/api/v1/pos/suppliers/' + s.id, { is_active: false });
-                    showToast(s.name + ' deactivated', 'success');
+                    showToast(t('suppliers.toast_deactivated', {n: s.name}), 'success');
                     await this.load();
-                } catch (e) { showToast(e.message || 'Could not deactivate', 'error'); }
+                } catch (e) { showToast(e.message || t('suppliers.err_deactivate'), 'error'); }
             },
         };
     }

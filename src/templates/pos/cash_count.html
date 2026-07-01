@@ -6,30 +6,30 @@
 <div class="min-h-screen bg-gray-50" x-data="cashCountData()">
     <div class="max-w-2xl mx-auto px-4 py-8">
         <div class="card">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 Cash Drawer Count</h1>
-            <p class="text-gray-600 mb-6">End of day cash reconciliation</p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2" data-i18n="cash.count_title">💰 Cash Drawer Count</h1>
+            <p class="text-gray-600 mb-6" data-i18n="cash.count_subtitle">End of day cash reconciliation</p>
 
             <!-- Cashier & Date -->
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cashier</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.cashier">Cashier</label>
                     <input type="text" x-model="cashierName"
                            class="w-full px-3 py-2 border rounded-lg"
                            placeholder="Pam">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.date">Date</label>
                     <input type="date" x-model="countDate"
                            class="w-full px-3 py-2 border rounded-lg">
                 </div>
             </div>
 
             <!-- Swiss Franc Denominations -->
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">📝 Count by Denomination</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4" data-i18n="cash.count_by_denom">📝 Count by Denomination</h2>
 
             <!-- Notes -->
             <div class="mb-6">
-                <h3 class="text-md font-medium text-gray-700 mb-2">Notes (Banknotes)</h3>
+                <h3 class="text-md font-medium text-gray-700 mb-2" data-i18n="cash.notes_banknotes">Notes (Banknotes)</h3>
                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
                     <template x-for="denom in notes" :key="denom.value">
                         <div class="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
@@ -45,7 +45,7 @@
 
             <!-- Coins -->
             <div class="mb-6">
-                <h3 class="text-md font-medium text-gray-700 mb-2">Coins</h3>
+                <h3 class="text-md font-medium text-gray-700 mb-2" data-i18n="cash.coins">Coins</h3>
                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
                     <template x-for="denom in coins" :key="denom.value">
                         <div class="bg-yellow-50 rounded-lg p-2 sm:p-3 text-center">
@@ -63,13 +63,13 @@
             <div class="bg-indigo-50 rounded-lg p-6 mb-6">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Expected (from POS)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.expected_from_pos">Expected (from POS)</label>
                         <input type="number" step="0.01" x-model.number="expectedTotal"
                                @input="calculateVariance()"
                                class="w-full px-3 py-2 border rounded-lg text-lg font-mono">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Counted Total</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.counted_total">Counted Total</label>
                         <div class="w-full px-3 py-2 bg-white border rounded-lg text-lg font-mono font-bold text-indigo-600"
                              x-text="formatPrice(countedTotal)"></div>
                     </div>
@@ -78,38 +78,38 @@
                 <!-- Variance -->
                 <div class="mt-4 pt-4 border-t">
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-medium">Variance:</span>
+                        <span class="text-lg font-medium" data-i18n="cash.variance_colon">Variance:</span>
                         <span class="text-2xl font-bold"
                               :class="variance === 0 ? 'text-green-600' : (variance > 0 ? 'text-blue-600' : 'text-red-600')"
                               x-text="(variance >= 0 ? '+' : '') + formatPrice(variance)"></span>
                     </div>
                     <div class="mt-2 text-sm" :class="variance === 0 ? 'text-green-600' : 'text-gray-500'">
-                        <span x-show="variance === 0">✅ Perfect balance! Pam's bonus pool +1 point</span>
-                        <span x-show="variance > 0 && variance <= 0.5">✨ Over by small amount - goes to cashier bonus</span>
-                        <span x-show="variance > 0.5">📝 Over by <span x-text="formatPrice(variance)"></span> - review recommended</span>
-                        <span x-show="variance < 0 && variance >= -0.5">⚠️ Under by small amount - goes to slush fund</span>
-                        <span x-show="variance < -0.5">🚨 Under by <span x-text="formatPrice(Math.abs(variance))"></span> - manager review required</span>
+                        <span x-show="variance === 0" data-i18n="cash.perfect_balance">✅ Perfect balance! Pam's bonus pool +1 point</span>
+                        <span x-show="variance > 0 && variance <= 0.5" data-i18n="cash.over_small">✨ Over by small amount - goes to cashier bonus</span>
+                        <span x-show="variance > 0.5"><span data-i18n="cash.over_by">📝 Over by</span> <span x-text="formatPrice(variance)"></span> <span data-i18n="cash.review_recommended">- review recommended</span></span>
+                        <span x-show="variance < 0 && variance >= -0.5" data-i18n="cash.under_small">⚠️ Under by small amount - goes to slush fund</span>
+                        <span x-show="variance < -0.5"><span data-i18n="cash.under_by">🚨 Under by</span> <span x-text="formatPrice(Math.abs(variance))"></span> <span data-i18n="cash.manager_review_required">- manager review required</span></span>
                     </div>
                 </div>
             </div>
 
             <!-- Variance Routing -->
             <div x-show="variance !== 0" class="mb-6">
-                <h3 class="text-md font-medium text-gray-700 mb-2">Variance Routing</h3>
+                <h3 class="text-md font-medium text-gray-700 mb-2" data-i18n="cash.variance_routing">Variance Routing</h3>
                 <div class="grid grid-cols-3 gap-2">
                     <button @click="varianceRoute = 'bonus'"
                             :class="varianceRoute === 'bonus' ? 'bg-green-500 text-white' : 'bg-green-100'"
-                            class="py-2 px-3 rounded-lg text-sm">
+                            class="py-2 px-3 rounded-lg text-sm" data-i18n="cash.route_bonus">
                         🎁 Cashier Bonus
                     </button>
                     <button @click="varianceRoute = 'slush'"
                             :class="varianceRoute === 'slush' ? 'bg-yellow-500 text-white' : 'bg-yellow-100'"
-                            class="py-2 px-3 rounded-lg text-sm">
+                            class="py-2 px-3 rounded-lg text-sm" data-i18n="cash.route_slush">
                         🏦 Slush Fund
                     </button>
                     <button @click="varianceRoute = 'review'"
                             :class="varianceRoute === 'review' ? 'bg-red-500 text-white' : 'bg-red-100'"
-                            class="py-2 px-3 rounded-lg text-sm">
+                            class="py-2 px-3 rounded-lg text-sm" data-i18n="cash.route_review">
                         👀 Manager Review
                     </button>
                 </div>
@@ -117,33 +117,34 @@
 
             <!-- Notes -->
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.notes_optional">Notes (optional)</label>
                 <textarea x-model="notes" rows="2"
                           class="w-full px-3 py-2 border rounded-lg"
+                          data-i18n-placeholder="cash.notes_placeholder"
                           placeholder="Any observations about today's count..."></textarea>
             </div>
 
             <!-- Action Buttons -->
             <div class="grid grid-cols-2 gap-4">
-                <button @click="clearCount()" class="btn-secondary py-3">
+                <button @click="clearCount()" class="btn-secondary py-3" data-i18n="cash.clear_restart">
                     🔄 Clear & Restart
                 </button>
                 <button @click="submitCount()" class="btn-success py-3"
-                        :disabled="!cashierName || countedTotal === 0">
+                        :disabled="!cashierName || countedTotal === 0" data-i18n="cash.submit_count">
                     ✅ Submit Count
                 </button>
             </div>
 
             <!-- Summary (after submit) -->
             <div x-show="submitted" x-transition class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 class="text-lg font-bold text-green-800 mb-2">✅ Cash Count Submitted</h3>
+                <h3 class="text-lg font-bold text-green-800 mb-2" data-i18n="cash.submitted_title">✅ Cash Count Submitted</h3>
                 <div class="text-sm text-green-700 space-y-1">
-                    <p>Cashier: <span x-text="cashierName"></span></p>
-                    <p>Date: <span x-text="countDate"></span></p>
-                    <p>Counted: <span x-text="formatPrice(countedTotal)"></span></p>
-                    <p>Variance: <span x-text="formatPrice(variance)"></span> → <span x-text="varianceRoute"></span></p>
+                    <p><span data-i18n="cash.cashier_colon">Cashier:</span> <span x-text="cashierName"></span></p>
+                    <p><span data-i18n="cash.date_colon">Date:</span> <span x-text="countDate"></span></p>
+                    <p><span data-i18n="cash.counted_colon">Counted:</span> <span x-text="formatPrice(countedTotal)"></span></p>
+                    <p><span data-i18n="cash.variance_colon">Variance:</span> <span x-text="formatPrice(variance)"></span> → <span x-text="varianceRoute"></span></p>
                 </div>
-                <button @click="printSummary()" class="mt-3 btn-secondary py-2 text-sm">
+                <button @click="printSummary()" class="mt-3 btn-secondary py-2 text-sm" data-i18n="cash.print_summary">
                     🖨️ Print Summary
                 </button>
             </div>
@@ -221,7 +222,7 @@
 
             async submitCount() {
                 if (!this.cashierName) {
-                    showToast('Please enter cashier name', 'warning');
+                    showToast(t('cash.enter_cashier_name'), 'warning');
                     return;
                 }
 
@@ -248,7 +249,7 @@
                 console.log('Cash count submitted:', countData);
 
                 this.submitted = true;
-                showToast('Cash count submitted successfully!', 'success');
+                showToast(t('cash.submit_success'), 'success');
             },
 
             printSummary() {

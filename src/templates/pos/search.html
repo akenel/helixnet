@@ -90,20 +90,20 @@
                         </svg>
                     </a>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Product Search</h1>
+                        <h1 class="text-xl font-bold text-gray-900" data-i18n="search.title">Product Search</h1>
                         <p class="text-sm text-gray-500">
-                            <span x-text="stats.total.toLocaleString(POSConfig.locale)"></span> products |
-                            <span x-text="stats.categories"></span> categories
+                            <span x-text="stats.total.toLocaleString(POSConfig.locale)"></span> <span data-i18n="search.products">products</span> |
+                            <span x-text="stats.categories"></span> <span data-i18n="search.categories">categories</span>
                         </p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
-                        <p class="text-xs text-gray-500">Search time</p>
+                        <p class="text-xs text-gray-500" data-i18n="search.search_time">Search time</p>
                         <p class="font-mono text-lg font-bold text-green-600" x-text="searchTime + 'ms'"></p>
                     </div>
                     <div class="bg-indigo-100 px-4 py-2 rounded-lg">
-                        <p class="text-xs text-indigo-600">Results</p>
+                        <p class="text-xs text-indigo-600" data-i18n="search.results">Results</p>
                         <p class="text-2xl font-bold text-indigo-700" x-text="results.length"></p>
                     </div>
                 </div>
@@ -124,6 +124,7 @@
                     @keydown.enter="search()"
                     x-ref="searchInput"
                     placeholder="Type to search or scan barcode..."
+                    data-i18n-placeholder="search.search_placeholder"
                     class="w-full search-mega border-gray-300 rounded-xl focus:outline-none"
                     :class="{'border-green-500 bg-green-50': barcodeMode}"
                     autofocus>
@@ -138,7 +139,7 @@
 
                 <!-- Barcode mode indicator -->
                 <div x-show="barcodeMode" class="absolute left-4 top-1/2 transform -translate-y-1/2">
-                    <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">BARCODE</span>
+                    <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded" data-i18n="search.barcode_badge">BARCODE</span>
                 </div>
             </div>
 
@@ -146,14 +147,14 @@
             <div class="flex items-center justify-between mt-4 text-sm text-gray-500">
                 <div class="flex items-center space-x-4">
                     <span class="flex items-center">
-                        <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono mr-1">Enter</kbd> Search
+                        <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono mr-1">Enter</kbd> <span data-i18n="search.hint_search">Search</span>
                     </span>
                     <span class="flex items-center">
-                        <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono mr-1">Esc</kbd> Clear
+                        <kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono mr-1">Esc</kbd> <span data-i18n="search.hint_clear">Clear</span>
                     </span>
                 </div>
                 <div>
-                    <button @click="clearSearch()" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                    <button @click="clearSearch()" class="text-indigo-600 hover:text-indigo-800 font-medium" data-i18n="search.clear_all">
                         Clear All
                     </button>
                 </div>
@@ -166,7 +167,7 @@
                 <button
                     @click="setCategory(null)"
                     :class="{'active': !selectedCategory}"
-                    class="category-pill whitespace-nowrap">
+                    class="category-pill whitespace-nowrap" data-i18n="search.all_categories">
                     All Categories
                 </button>
                 <template x-for="cat in categories" :key="cat.name">
@@ -206,9 +207,9 @@
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium px-2 py-1 rounded-full"
                                   :class="getCategoryColor(product.category)"
-                                  x-text="product.category || 'Uncategorized'"></span>
+                                  x-text="product.category || t('search.uncategorized')"></span>
                             <span x-show="product.relevance >= 90"
-                                  class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                  class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full" data-i18n="search.exact">
                                 EXACT
                             </span>
                         </div>
@@ -233,7 +234,7 @@
 
                         <!-- Add button -->
                         <button @click.stop="addToCart(product)"
-                                class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-colors">
+                                class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-colors" data-i18n="search.add_to_cart">
                             + Add to Cart
                         </button>
                     </div>
@@ -245,20 +246,20 @@
         <div x-show="results.length === 0 && query.length > 0 && !loading"
              class="text-center py-16">
             <div class="text-6xl mb-4">🔍</div>
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">No products found</h3>
-            <p class="text-gray-500">Try a different search term or check the spelling</p>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2" data-i18n="search.no_products">No products found</h3>
+            <p class="text-gray-500" data-i18n="search.no_products_hint">Try a different search term or check the spelling</p>
         </div>
 
         <!-- Initial state -->
         <div x-show="results.length === 0 && query.length === 0 && !loading"
              class="text-center py-16">
             <div class="text-8xl mb-4">📦</div>
-            <h3 class="text-2xl font-semibold text-gray-700 mb-2">Ready to Search</h3>
-            <p class="text-gray-500 mb-6">Type a product name, SKU, or scan a barcode</p>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-2" data-i18n="search.ready">Ready to Search</h3>
+            <p class="text-gray-500 mb-6" data-i18n="search.ready_hint">Type a product name, SKU, or scan a barcode</p>
             <div class="flex justify-center space-x-4 text-sm text-gray-500">
-                <span class="flex items-center"><span class="text-2xl mr-2">🔤</span> Fuzzy name search</span>
-                <span class="flex items-center"><span class="text-2xl mr-2">📊</span> Barcode scan</span>
-                <span class="flex items-center"><span class="text-2xl mr-2">🏷️</span> Category filter</span>
+                <span class="flex items-center"><span class="text-2xl mr-2">🔤</span> <span data-i18n="search.feature_fuzzy">Fuzzy name search</span></span>
+                <span class="flex items-center"><span class="text-2xl mr-2">📊</span> <span data-i18n="search.feature_barcode">Barcode scan</span></span>
+                <span class="flex items-center"><span class="text-2xl mr-2">🏷️</span> <span data-i18n="search.feature_category">Category filter</span></span>
             </div>
         </div>
     </div>
@@ -313,15 +314,15 @@
 
                         <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
                             <div class="bg-gray-50 p-3 rounded-lg">
-                                <p class="text-gray-500">SKU</p>
+                                <p class="text-gray-500" data-i18n="search.sku">SKU</p>
                                 <p class="font-mono font-semibold" x-text="selectedProduct.sku"></p>
                             </div>
                             <div class="bg-gray-50 p-3 rounded-lg">
-                                <p class="text-gray-500">Barcode</p>
-                                <p class="font-mono font-semibold" x-text="selectedProduct.barcode || 'N/A'"></p>
+                                <p class="text-gray-500" data-i18n="search.barcode_label">Barcode</p>
+                                <p class="font-mono font-semibold" x-text="selectedProduct.barcode || t('search.na')"></p>
                             </div>
                             <div class="bg-indigo-50 p-3 rounded-lg">
-                                <p class="text-indigo-600">Price</p>
+                                <p class="text-indigo-600" data-i18n="search.price">Price</p>
                                 <p class="text-2xl font-bold text-indigo-700" x-text="formatPrice(selectedProduct.price)"></p>
                             </div>
                         </div>
@@ -337,7 +338,7 @@
 
                         <button @click="addToCartWithQty(selectedProduct, modalQty); selectedProduct = null"
                                 class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl text-lg transition-colors">
-                            Add <span x-text="modalQty"></span> to Cart - <span x-text="formatPrice(selectedProduct.price * modalQty)"></span>
+                            <span data-i18n="search.add">Add</span> <span x-text="modalQty"></span> <span data-i18n="search.to_cart">to Cart -</span> <span x-text="formatPrice(selectedProduct.price * modalQty)"></span>
                         </button>
                     </div>
                 </div>
@@ -502,7 +503,7 @@ function searchApp() {
             }
 
             sessionStorage.setItem('pos_cart', JSON.stringify(cart));
-            this.showToast(`Added ${qty}x ${product.name.substring(0, 30)}...`, 'success');
+            this.showToast(t('search.added_toast', {n: qty, name: product.name.substring(0, 30)}), 'success');
         },
 
         getCategoryEmoji(category) {

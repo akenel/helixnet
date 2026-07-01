@@ -16,21 +16,21 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">👤 Members</h1>
-                    <p class="text-sm text-gray-600">Look up or sign up a member</p>
+                    <h1 class="text-2xl font-bold text-gray-900" data-i18n="customer.members_title">👤 Members</h1>
+                    <p class="text-sm text-gray-600" data-i18n="customer.members_subtitle">Look up or sign up a member</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="window.location.href='/pos/scan'" class="btn-secondary text-sm">🛍️ New Sale</button>
-                <button onclick="window.location.href='/pos/dashboard'" class="btn-secondary text-sm">🏪 Dashboard</button>
+                <button onclick="window.location.href='/pos/scan'" class="btn-secondary text-sm" data-i18n="customer.new_sale">🛍️ New Sale</button>
+                <button onclick="window.location.href='/pos/dashboard'" class="btn-secondary text-sm" data-i18n="customer.dashboard">🏪 Dashboard</button>
             </div>
         </div>
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="card">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">👤 Customer Lookup</h1>
-            <p class="text-gray-600 mb-6">Find CRACK profile for checkout recognition</p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2" data-i18n="customer.lookup_title">👤 Customer Lookup</h1>
+            <p class="text-gray-600 mb-6" data-i18n="customer.lookup_subtitle">Find CRACK profile for checkout recognition</p>
 
             <!-- Search -->
             <div class="mb-6">
@@ -39,23 +39,24 @@
                            @keyup.enter="searchCustomer()"
                            class="input-field flex-1"
                            autofocus
+                           data-i18n-placeholder="customer.search_placeholder"
                            placeholder="Handle, Instagram, email, or phone...">
                     <button @click="searchCustomer()"
-                            class="btn-primary px-6">
+                            class="btn-primary px-6" data-i18n="customer.search">
                         🔍 Search
                     </button>
                 </div>
                 <div class="flex items-center justify-between mt-2 gap-2 flex-wrap">
-                    <p class="text-sm text-gray-500">Try: "poppie", "@poppie_420", "larry@..."</p>
+                    <p class="text-sm text-gray-500" data-i18n="customer.search_hint">Try: "poppie", "@poppie_420", "larry@..."</p>
                     <button @click="toggleDirectory()" class="text-sm font-semibold text-indigo-600 hover:underline"
-                            x-text="showDirectory ? '✕ Hide member list' : '📖 Browse all members'"></button>
+                            x-text="showDirectory ? t('customer.hide_member_list') : t('customer.browse_all_members')"></button>
                 </div>
             </div>
 
             <!-- Several matches -> pick the right person (no more silent "first Larry") -->
             <div x-show="matches.length > 1 && !customer" x-cloak class="mb-6">
                 <p class="text-sm font-semibold text-gray-700 mb-2">
-                    <span x-text="matches.length"></span> members match — tap the right one:
+                    <span x-text="matches.length"></span> <span data-i18n="customer.members_match">members match — tap the right one:</span>
                 </p>
                 <div class="space-y-2 max-h-72 overflow-y-auto">
                     <template x-for="m in matches" :key="m.id">
@@ -76,8 +77,8 @@
             <!-- Quick Add (only when truly not found — not when there are matches to pick) -->
             <div x-show="!customer && searched && matches.length === 0" class="mb-6">
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p class="text-yellow-800 mb-3">Customer not found. Create new profile?</p>
-                    <button @click="showNewCustomerForm = true" class="btn-secondary">
+                    <p class="text-yellow-800 mb-3" data-i18n="customer.not_found">Customer not found. Create new profile?</p>
+                    <button @click="showNewCustomerForm = true" class="btn-secondary" data-i18n="customer.add_new_crack">
                         ➕ Add New CRACK
                     </button>
                 </div>
@@ -85,16 +86,16 @@
 
             <!-- New Customer Form -->
             <div x-show="showNewCustomerForm" x-transition class="mb-6 bg-blue-50 rounded-lg p-4">
-                <h3 class="text-lg font-semibold text-blue-800 mb-4">New CRACK Profile</h3>
+                <h3 class="text-lg font-semibold text-blue-800 mb-4" data-i18n="customer.new_crack_profile">New CRACK Profile</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Handle *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="customer.handle_label">Handle *</label>
                         <input type="text" x-model="newCustomer.handle"
                                class="w-full px-3 py-2 border rounded-lg"
                                placeholder="Poppie">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Real Name</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="customer.real_name_label">Real Name</label>
                         <input type="text" x-model="newCustomer.real_name"
                                class="w-full px-3 py-2 border rounded-lg"
                                placeholder="Larry (private)">
@@ -106,7 +107,7 @@
                                placeholder="@poppie_420">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="customer.email_label">Email</label>
                         <input type="email" x-model="newCustomer.email"
                                class="w-full px-3 py-2 border rounded-lg"
                                placeholder="larry@example.ch">
@@ -118,7 +119,7 @@
                                placeholder="@poppie">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="customer.phone_label">Phone</label>
                         <input type="tel" x-model="newCustomer.phone"
                                class="w-full px-3 py-2 border rounded-lg"
                                placeholder="+41 79 123 4567">
@@ -126,10 +127,10 @@
                     <!-- Real full date of birth: proves 18+ from the DOB itself + powers the
                          birthday rewards fast-follow. NO gender field — age needs only DOB. -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of birth</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="customer.dob_label">Date of birth</label>
                         <input type="date" x-model="newCustomer.birthdate"
                                class="w-full px-3 py-2 border rounded-lg">
-                        <p class="text-xs text-gray-500 mt-1">Optional — but proves 18+ automatically for age-restricted sales.</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="customer.dob_hint">Optional — but proves 18+ automatically for age-restricted sales.</p>
                     </div>
                 </div>
                 <!-- The only must: 18+. Plus an optional offers opt-in (off by default). -->
@@ -137,17 +138,17 @@
                     <label class="flex items-center space-x-2 text-sm font-medium"
                            :class="newCustomer.age_confirmed ? 'text-green-700' : 'text-gray-700'">
                         <input type="checkbox" x-model="newCustomer.age_confirmed" class="w-5 h-5">
-                        <span>✓ I confirm this member is <b>18 or older</b> (required)</span>
+                        <span data-i18n-html="customer.age_confirm">✓ I confirm this member is <b>18 or older</b> (required)</span>
                     </label>
                     <label class="flex items-center space-x-2 text-sm text-gray-600">
                         <input type="checkbox" x-model="newCustomer.marketing_consent" class="w-5 h-5">
-                        <span>Send me offers (SMS/email) — optional</span>
+                        <span data-i18n="customer.marketing_offers">Send me offers (SMS/email) — optional</span>
                     </label>
                 </div>
                 <div class="mt-4 flex gap-2">
                     <button @click="createCustomer()" :disabled="!newCustomer.age_confirmed"
-                            class="btn-success" :class="!newCustomer.age_confirmed ? 'opacity-50 cursor-not-allowed' : ''">✅ Create Profile</button>
-                    <button @click="showNewCustomerForm = false" class="btn-secondary">Cancel</button>
+                            class="btn-success" :class="!newCustomer.age_confirmed ? 'opacity-50 cursor-not-allowed' : ''" data-i18n="customer.create_profile">✅ Create Profile</button>
+                    <button @click="showNewCustomerForm = false" class="btn-secondary" data-i18n="customer.cancel">Cancel</button>
                 </div>
             </div>
 
@@ -172,28 +173,28 @@
                     <div class="grid grid-cols-3 gap-4 mb-4">
                         <div class="bg-white/20 rounded-lg p-3 text-center">
                             <div class="text-2xl font-bold" x-text="customer.credits_balance"></div>
-                            <div class="text-xs text-indigo-200">Credits</div>
+                            <div class="text-xs text-indigo-200" data-i18n="customer.credits">Credits</div>
                         </div>
                         <div class="bg-white/20 rounded-lg p-3 text-center">
                             <div class="text-2xl font-bold" x-text="customer.visit_count"></div>
-                            <div class="text-xs text-indigo-200">Visits</div>
+                            <div class="text-xs text-indigo-200" data-i18n="customer.visits">Visits</div>
                         </div>
                         <div class="bg-white/20 rounded-lg p-3 text-center">
                             <div class="text-2xl font-bold" x-text="formatPrice(customer.lifetime_spend)"></div>
-                            <div class="text-xs text-indigo-200">Lifetime</div>
+                            <div class="text-xs text-indigo-200" data-i18n="customer.lifetime">Lifetime</div>
                         </div>
                     </div>
 
                     <!-- Alerts -->
                     <div class="space-y-2">
-                        <div x-show="customer.birthday_soon" class="bg-yellow-400 text-yellow-900 px-3 py-2 rounded-lg text-sm">
+                        <div x-show="customer.birthday_soon" class="bg-yellow-400 text-yellow-900 px-3 py-2 rounded-lg text-sm" data-i18n="customer.birthday_soon">
                             🎂 Birthday coming up! 2x points available
                         </div>
                         <div x-show="customer.tier_upgrade_close" class="bg-green-400 text-green-900 px-3 py-2 rounded-lg text-sm">
-                            ⬆️ Only <span x-text="formatPrice(customer.spend_to_next_tier)"></span> to next tier!
+                            <span data-i18n="customer.only">⬆️ Only</span> <span x-text="formatPrice(customer.spend_to_next_tier)"></span> <span data-i18n="customer.to_next_tier">to next tier!</span>
                         </div>
                         <div x-show="customer.credits_balance >= 100" class="bg-blue-400 text-blue-900 px-3 py-2 rounded-lg text-sm">
-                            🎁 Has <span x-text="formatPrice(Math.floor(customer.credits_balance / 100) * 5)"></span> in redeemable vouchers!
+                            <span data-i18n="customer.has">🎁 Has</span> <span x-text="formatPrice(Math.floor(customer.credits_balance / 100) * 5)"></span> <span data-i18n="customer.in_vouchers">in redeemable vouchers!</span>
                         </div>
                     </div>
                 </div>
@@ -203,19 +204,19 @@
 
                 <!-- Staff Notes -->
                 <div x-show="customer.notes" class="mt-4 bg-yellow-50 rounded-lg p-4">
-                    <h3 class="font-semibold text-yellow-700 mb-1">📝 Staff Notes</h3>
+                    <h3 class="font-semibold text-yellow-700 mb-1" data-i18n="customer.staff_notes">📝 Staff Notes</h3>
                     <p class="text-sm text-yellow-800" x-text="customer.notes"></p>
                 </div>
 
                 <!-- Actions -->
                 <div class="mt-4 grid grid-cols-3 gap-2">
-                    <button @click="applyToCheckout()" class="btn-success py-3">
+                    <button @click="applyToCheckout()" class="btn-success py-3" data-i18n="customer.use_for_checkout">
                         ✅ Use for Checkout
                     </button>
-                    <button @click="editCustomer()" class="btn-secondary py-3">
+                    <button @click="editCustomer()" class="btn-secondary py-3" data-i18n="customer.edit_profile">
                         ✏️ Edit Profile
                     </button>
-                    <button @click="viewHistory()" class="btn-secondary py-3">
+                    <button @click="viewHistory()" class="btn-secondary py-3" data-i18n="customer.view_history">
                         📜 View History
                     </button>
                 </div>
@@ -223,7 +224,7 @@
 
             <!-- Recent Customers (Quick Select) -->
             <div class="mt-8">
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">⏱️ Recent Customers</h3>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4" data-i18n="customer.recent_customers">⏱️ Recent Customers</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <template x-for="recent in recentCustomers" :key="recent.id">
                         <button @click="selectCustomer(recent)"
@@ -243,18 +244,18 @@
             <div x-show="showDirectory" x-cloak class="mt-8 border-t pt-6">
                 <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <h3 class="text-lg font-semibold text-gray-700">
-                        📖 All Members <span class="text-sm text-gray-400" x-text="'(' + directoryTotal + ')'"></span>
+                        <span data-i18n="customer.all_members">📖 All Members</span> <span class="text-sm text-gray-400" x-text="'(' + directoryTotal + ')'"></span>
                     </h3>
                     <div class="flex gap-1 text-sm">
                         <button @click="setDirectorySort('name')" class="px-3 py-1 rounded-lg font-medium"
-                                :class="directorySort==='name' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'">A–Z</button>
+                                :class="directorySort==='name' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'" data-i18n="customer.sort_az">A–Z</button>
                         <button @click="setDirectorySort('recent')" class="px-3 py-1 rounded-lg font-medium"
-                                :class="directorySort==='recent' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'">🆕 Newest</button>
+                                :class="directorySort==='recent' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'" data-i18n="customer.sort_newest">🆕 Newest</button>
                         <button @click="setDirectorySort('spend')" class="px-3 py-1 rounded-lg font-medium"
-                                :class="directorySort==='spend' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'">💰 Top spend</button>
+                                :class="directorySort==='spend' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'" data-i18n="customer.sort_top_spend">💰 Top spend</button>
                     </div>
                 </div>
-                <div x-show="directoryLoading" class="text-sm text-gray-400 py-4">Loading…</div>
+                <div x-show="directoryLoading" class="text-sm text-gray-400 py-4" data-i18n="customer.loading">Loading…</div>
                 <div x-show="!directoryLoading" class="max-h-96 overflow-y-auto divide-y border rounded-lg">
                     <template x-for="m in directory" :key="m.id">
                         <button @click="selectCustomer(m)"
@@ -270,7 +271,7 @@
                             </div>
                         </button>
                     </template>
-                    <div x-show="directory.length === 0 && !directoryLoading" class="p-4 text-sm text-gray-400">No members yet.</div>
+                    <div x-show="directory.length === 0 && !directoryLoading" class="p-4 text-sm text-gray-400" data-i18n="customer.no_members">No members yet.</div>
                 </div>
             </div>
         </div>
@@ -280,13 +281,13 @@
     <div x-show="historyModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @click.self="closeHistory()">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
             <div class="flex justify-between items-center px-6 py-4 border-b">
-                <h2 class="text-xl font-bold text-gray-900">📜 Purchase History
+                <h2 class="text-xl font-bold text-gray-900"><span data-i18n="customer.purchase_history">📜 Purchase History</span>
                     <span class="text-gray-500 font-normal" x-show="history" x-text="history ? ('· @' + history.handle) : ''"></span></h2>
                 <button @click="closeHistory()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
             </div>
             <div class="overflow-y-auto px-6 py-4">
-                <p x-show="historyLoading" class="text-gray-400 py-6 text-center">Loading…</p>
-                <p x-show="history && history.transactions.length === 0" class="text-gray-400 py-6 text-center">No purchases on record yet.</p>
+                <p x-show="historyLoading" class="text-gray-400 py-6 text-center" data-i18n="customer.loading">Loading…</p>
+                <p x-show="history && history.transactions.length === 0" class="text-gray-400 py-6 text-center" data-i18n="customer.no_purchases">No purchases on record yet.</p>
                 <div x-show="history && history.transactions.length > 0" class="space-y-3">
                     <template x-for="(t, i) in (history ? history.transactions : [])" :key="t.transaction_number || i">
                         <div class="border rounded-lg overflow-hidden">
@@ -296,7 +297,7 @@
                                     <span class="text-gray-500 ml-2" x-text="histDate(t.date)"></span>
                                     <span class="ml-2 text-xs uppercase px-2 py-0.5 rounded-full"
                                           :class="t.status === 'refunded' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'"
-                                          x-text="(t.payment_method || '') + (t.status === 'refunded' ? ' · refund' : '')"></span>
+                                          x-text="(t.payment_method || '') + (t.status === 'refunded' ? ' · ' + window.t('customer.refund') : '')"></span>
                                 </div>
                                 <span class="font-bold" x-text="formatPrice(t.total)"></span>
                             </div>
@@ -305,8 +306,8 @@
                                     <template x-for="(it, j) in t.items" :key="j">
                                         <tr class="border-t">
                                             <td class="py-1 px-3 text-gray-700">
-                                                <span x-text="it.quantity + '× ' + (it.name || 'Item')"></span>
-                                                <span x-show="it.is_giveaway" class="text-pink-600 text-xs ml-1">🎁 free</span>
+                                                <span x-text="it.quantity + '× ' + (it.name || window.t('customer.item'))"></span>
+                                                <span x-show="it.is_giveaway" class="text-pink-600 text-xs ml-1" data-i18n="customer.free">🎁 free</span>
                                             </td>
                                             <td class="py-1 px-3 text-right font-medium" x-text="formatPrice(it.line_total)"></td>
                                         </tr>
@@ -318,7 +319,7 @@
                 </div>
             </div>
             <div class="px-6 py-3 border-t text-right">
-                <button @click="closeHistory()" class="btn-secondary">Close</button>
+                <button @click="closeHistory()" class="btn-secondary" data-i18n="customer.close">Close</button>
             </div>
         </div>
     </div>
@@ -394,7 +395,7 @@
 
                     if (!response.ok) {
                         if (response.status === 401) {
-                            showToast('Please log in again', 'warning');
+                            showToast(t('customer.please_login'), 'warning');
                             return;
                         }
                         throw new Error('Search failed');
@@ -412,7 +413,7 @@
                     }
                 } catch (error) {
                     console.error('Search error:', error);
-                    showToast('Search failed: ' + error.message, 'error');
+                    showToast(t('customer.search_failed') + ': ' + error.message, 'error');
                 }
             },
 
@@ -438,7 +439,7 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } catch (error) {
                     console.error('Load profile error:', error);
-                    showToast('Could not load profile', 'error');
+                    showToast(t('customer.could_not_load_profile'), 'error');
                 }
             },
 
@@ -478,7 +479,7 @@
 
             async createCustomer() {
                 if (!this.newCustomer.handle) {
-                    showToast('Handle is required', 'warning');
+                    showToast(t('customer.handle_required'), 'warning');
                     return;
                 }
 
@@ -520,20 +521,20 @@
                     };
 
                 } catch (error) {
-                    showToast('Failed to create: ' + error.message, 'error');
+                    showToast(t('customer.failed_create') + ': ' + error.message, 'error');
                 }
             },
 
             applyToCheckout() {
                 // Store customer for checkout
                 sessionStorage.setItem('checkout_customer', JSON.stringify(this.customer));
-                showToast(`${this.customer.handle} applied - ${this.customer.tier_discount_percent}% discount!`, 'success');
+                showToast(t('customer.applied_discount', {handle: this.customer.handle, n: this.customer.tier_discount_percent}), 'success');
                 window.location.href = '/pos/scan';
             },
 
             editCustomer() {
                 // TODO: Open edit modal or navigate
-                showToast('Edit feature coming soon', 'info');
+                showToast(t('customer.edit_coming_soon'), 'info');
             },
 
             historyModal: false,
@@ -547,7 +548,7 @@
                 try {
                     this.history = await API.get('/api/v1/customers/' + this.customer.id + '/transactions');
                 } catch (e) {
-                    showToast('Could not load history: ' + (e.message || ''), 'error');
+                    showToast(t('customer.could_not_load_history') + ': ' + (e.message || ''), 'error');
                 }
                 this.historyLoading = false;
             },

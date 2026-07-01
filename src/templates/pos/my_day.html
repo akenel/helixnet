@@ -24,18 +24,18 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">📅 My Day</h1>
+                    <h1 class="text-2xl font-bold text-gray-900" data-i18n="myday.title">📅 My Day</h1>
                     <p class="text-sm text-gray-600" x-text="todayLabel"></p>
                 </div>
             </div>
-            <button @click="helpOpen = true" title="How this works" class="btn-secondary text-sm">❓ Help</button>
+            <button @click="helpOpen = true" title="How this works" class="btn-secondary text-sm" data-i18n="myday.help">❓ Help</button>
         </div>
     </div>
 
     <div class="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
         <!-- Loading -->
-        <div x-show="loading" class="text-center py-20 text-gray-400">Loading your day…</div>
+        <div x-show="loading" class="text-center py-20 text-gray-400" data-i18n="myday.loading">Loading your day…</div>
 
         <!-- Error banner -->
         <div x-show="error" class="bg-red-100 text-red-800 rounded-lg p-3 text-sm" x-text="error"></div>
@@ -43,11 +43,11 @@
         <!-- ============ NO HR CARD YET (graceful, welcoming) ============ -->
         <div x-show="!loading && noProfile" class="card text-center py-10">
             <div class="text-5xl mb-3">👋</div>
-            <h2 class="text-xl font-bold text-gray-900 mb-2">Welcome! Let's get you set up.</h2>
-            <p class="text-gray-600 max-w-md mx-auto">Your staff card isn't linked to this login yet.
+            <h2 class="text-xl font-bold text-gray-900 mb-2" data-i18n="myday.welcome_title">Welcome! Let's get you set up.</h2>
+            <p class="text-gray-600 max-w-md mx-auto" data-i18n-html="myday.welcome_body">Your staff card isn't linked to this login yet.
                 Ask <span class="font-semibold">Felix</span> to add you in <span class="font-semibold">Staff</span>,
                 then your timesheet shows up right here — and closing your day takes one tap.</p>
-            <button @click="goDashboard()" class="btn-secondary mt-6">🏪 Back to dashboard</button>
+            <button @click="goDashboard()" class="btn-secondary mt-6" data-i18n="myday.back_dashboard">🏪 Back to dashboard</button>
         </div>
 
         <!-- ============ MAIN: MY DAY ============ -->
@@ -57,49 +57,47 @@
             <!-- Greeting -->
             <div class="card bg-gradient-to-br from-indigo-600 to-indigo-700 text-white">
                 <p class="text-indigo-100 text-sm" x-text="greeting"></p>
-                <h2 class="text-2xl font-extrabold mt-1" x-text="'Hi ' + (profile.first_name || user.username || 'there') + ' 👋'"></h2>
+                <h2 class="text-2xl font-extrabold mt-1" x-text="t('myday.hi_name', { n: (profile.first_name || user.username || t('myday.there')) })"></h2>
                 <p class="text-indigo-100 text-sm mt-1" x-show="profile.role" x-text="profile.role"></p>
             </div>
 
             <!-- Living day view: my sales so far -->
             <div class="card">
                 <div class="flex items-center justify-between mb-1">
-                    <h3 class="text-lg font-bold text-gray-900">🛒 My sales so far today</h3>
-                    <button @click="goSales()" class="text-sm text-indigo-600 hover:underline">See each sale →</button>
+                    <h3 class="text-lg font-bold text-gray-900" data-i18n="myday.sales_so_far">🛒 My sales so far today</h3>
+                    <button @click="goSales()" class="text-sm text-indigo-600 hover:underline" data-i18n="myday.see_each_sale">See each sale →</button>
                 </div>
-                <p class="text-sm text-gray-500 mb-4">Updates as you ring sales. Tap "See each sale" for today's list of receipts.</p>
+                <p class="text-sm text-gray-500 mb-4" data-i18n="myday.sales_hint">Updates as you ring sales. Tap "See each sale" for today's list of receipts.</p>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-xs text-gray-500 uppercase tracking-wide">Sales</p>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide" data-i18n="myday.sales_label">Sales</p>
                         <p class="price-display mt-1" x-text="formatPrice(sales.total)"></p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-xs text-gray-500 uppercase tracking-wide">Transactions</p>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide" data-i18n="myday.transactions">Transactions</p>
                         <p class="text-3xl font-bold text-gray-800 mt-1" x-text="sales.count"></p>
                     </div>
                 </div>
-                <p x-show="!sales.available" class="text-xs text-gray-400 mt-3">
-                    Open your drawer in <button @click="goDrawer()" class="text-indigo-600 underline">My Drawer</button>
-                    to track today's takings.</p>
+                <p x-show="!sales.available" class="text-xs text-gray-400 mt-3"><span data-i18n="myday.open_drawer_pre">Open your drawer in</span> <button @click="goDrawer()" class="text-indigo-600 underline" data-i18n="myday.my_drawer">My Drawer</button> <span data-i18n="myday.open_drawer_post">to track today's takings.</span></p>
             </div>
 
             <!-- ============ TODAY ALREADY CLOSED OUT ============ -->
             <div x-show="todayEntry && !editing" class="card border-2 border-green-500">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="text-2xl">✅</span>
-                    <h3 class="text-lg font-bold text-gray-900">Your day is closed out</h3>
+                    <h3 class="text-lg font-bold text-gray-900" data-i18n="myday.day_closed_title">Your day is closed out</h3>
                 </div>
                 <div class="grid grid-cols-3 gap-3 text-center mb-4">
                     <div class="bg-gray-50 rounded-lg p-3">
-                        <p class="text-xs text-gray-500">Started</p>
+                        <p class="text-xs text-gray-500" data-i18n="myday.started">Started</p>
                         <p class="text-lg font-bold text-gray-800" x-text="(todayEntry && todayEntry.start_time) || '—'"></p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-3">
-                        <p class="text-xs text-gray-500">Finished</p>
+                        <p class="text-xs text-gray-500" data-i18n="myday.finished">Finished</p>
                         <p class="text-lg font-bold text-gray-800" x-text="(todayEntry && todayEntry.end_time) || '—'"></p>
                     </div>
                     <div class="bg-indigo-50 rounded-lg p-3">
-                        <p class="text-xs text-gray-500">Hours</p>
+                        <p class="text-xs text-gray-500" data-i18n="myday.hours">Hours</p>
                         <p class="text-lg font-bold text-indigo-700" x-text="(todayEntry ? Number(todayEntry.hours).toFixed(2) : '0') + 'h'"></p>
                     </div>
                 </div>
@@ -110,48 +108,47 @@
                           :class="statusClass(todayEntry && todayEntry.status)"
                           x-text="statusLabel(todayEntry && todayEntry.status)"></span>
                     <button x-show="todayEntry && todayEntry.status === 'draft'" @click="startEdit()"
-                            class="text-sm text-indigo-600 hover:underline">✏️ Fix it</button>
+                            class="text-sm text-indigo-600 hover:underline" data-i18n="myday.fix_it">✏️ Fix it</button>
                 </div>
-                <p x-show="todayEntry && todayEntry.status !== 'draft'" class="text-xs text-gray-400 mt-2">
+                <p x-show="todayEntry && todayEntry.status !== 'draft'" class="text-xs text-gray-400 mt-2" data-i18n="myday.already_sent">
                     Already sent to Felix — ask him if it needs a change.</p>
             </div>
 
             <!-- ============ CLOSE OUT MY DAY (the form) ============ -->
             <div x-show="!todayEntry || editing" class="card">
-                <h3 class="text-lg font-bold text-gray-900 mb-1">⏱️ Close out my day</h3>
-                <p class="text-sm text-gray-500 mb-4">Put the time you walked in and the time you're walking out.
+                <h3 class="text-lg font-bold text-gray-900 mb-1" data-i18n="myday.close_out_title">⏱️ Close out my day</h3>
+                <p class="text-sm text-gray-500 mb-4" data-i18n="myday.close_out_hint">Put the time you walked in and the time you're walking out.
                     It's yours to enter — be honest, it's that simple.</p>
 
                 <!-- Auto-tally: start time pre-filled from your login -->
                 <div x-show="presence.present" class="bg-green-50 border border-green-200 text-green-800 rounded-lg p-3 text-sm mb-4">
-                    ✓ We tracked you in at <b x-text="hhmmLocal(presence.first_login)"></b> — your start time is
-                    filled in for you. Just set your finish time when you leave.
+                    <span data-i18n="myday.tracked_pre">✓ We tracked you in at</span> <b x-text="hhmmLocal(presence.first_login)"></b> <span data-i18n="myday.tracked_post">— your start time is filled in for you. Just set your finish time when you leave.</span>
                 </div>
 
                 <!-- Start / Finish -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Start time
+                            <span data-i18n="myday.start_time">Start time</span>
                             <span title="When you walked in this morning." class="text-gray-400 cursor-help">ⓘ</span>
                         </label>
                         <input type="time" x-model="form.start_time" class="input-field text-center">
-                        <button @click="form.start_time = nowHHMM()" class="text-xs text-indigo-600 hover:underline mt-1">Set to now</button>
+                        <button @click="form.start_time = nowHHMM()" class="text-xs text-indigo-600 hover:underline mt-1" data-i18n="myday.set_to_now">Set to now</button>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Finish time
+                            <span data-i18n="myday.finish_time">Finish time</span>
                             <span title="When you're walking out. You can put the time you're about to leave." class="text-gray-400 cursor-help">ⓘ</span>
                         </label>
                         <input type="time" x-model="form.end_time" class="input-field text-center">
-                        <button @click="form.end_time = nowHHMM()" class="text-xs text-indigo-600 hover:underline mt-1">Set to now</button>
+                        <button @click="form.end_time = nowHHMM()" class="text-xs text-indigo-600 hover:underline mt-1" data-i18n="myday.set_to_now">Set to now</button>
                     </div>
                 </div>
 
                 <!-- Lunch / break -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Lunch / break
+                        <span data-i18n="myday.lunch_break">Lunch / break</span>
                         <span title="Unpaid break time. Swiss rule: 30 min if you work over 5.5h." class="text-gray-400 cursor-help">ⓘ</span>
                     </label>
                     <div class="flex flex-wrap gap-2">
@@ -159,53 +156,53 @@
                             <button @click="form.break_minutes = b"
                                     class="px-4 py-3 rounded-lg font-semibold border-2 transition"
                                     :class="form.break_minutes === b ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'"
-                                    x-text="b === 0 ? 'None' : b + ' min'"></button>
+                                    x-text="b === 0 ? t('myday.none') : b + ' ' + t('myday.min')"></button>
                         </template>
                     </div>
                 </div>
 
                 <!-- Type of day (default Regular) -->
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Type of day</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2" data-i18n="myday.type_of_day">Type of day</label>
                     <select x-model="form.entry_type" class="input-field">
-                        <option value="regular">🟢 Regular shift</option>
-                        <option value="overtime">⏫ Overtime</option>
-                        <option value="holiday">🏖️ Holiday (Ferien)</option>
-                        <option value="sick">🤒 Sick (Krankheit)</option>
+                        <option value="regular" data-i18n="myday.type_regular">🟢 Regular shift</option>
+                        <option value="overtime" data-i18n="myday.type_overtime">⏫ Overtime</option>
+                        <option value="holiday" data-i18n="myday.type_holiday">🏖️ Holiday (Ferien)</option>
+                        <option value="sick" data-i18n="myday.type_sick">🤒 Sick (Krankheit)</option>
                     </select>
                 </div>
 
                 <!-- Computed hours -->
                 <div class="bg-indigo-50 rounded-lg p-4 mb-4 flex items-center justify-between">
-                    <span class="font-semibold text-gray-700">Hours worked</span>
+                    <span class="font-semibold text-gray-700" data-i18n="myday.hours_worked">Hours worked</span>
                     <span class="text-3xl font-extrabold text-indigo-700" x-text="computedHours().toFixed(2) + 'h'"></span>
                 </div>
                 <p x-show="form.start_time && form.end_time && computedHours() <= 0"
-                   class="text-sm text-amber-600 -mt-2 mb-4">Finish time should be after start time.</p>
+                   class="text-sm text-amber-600 -mt-2 mb-4" data-i18n="myday.finish_after_start">Finish time should be after start time.</p>
 
                 <!-- ============ AI END-OF-DAY NOTE (optional, drafts itself) ============ -->
                 <div class="mb-5 bg-indigo-50/40 border border-indigo-100 rounded-lg p-4">
                     <div class="flex items-center justify-between mb-1">
-                        <label class="text-sm font-bold text-gray-800">🌙 How did the day go?
-                            <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <label class="text-sm font-bold text-gray-800"><span data-i18n="myday.how_day_go">🌙 How did the day go?</span>
+                            <span class="text-gray-400 font-normal" data-i18n="myday.optional">(optional)</span></label>
                         <button @click="draftSurvey()" :disabled="survey.loading" type="button"
                                 class="btn-secondary text-sm whitespace-nowrap">
-                            <span x-show="!survey.loading">✨ Draft it for me</span>
-                            <span x-show="survey.loading">Reading your day…</span>
+                            <span x-show="!survey.loading" data-i18n="myday.draft_it">✨ Draft it for me</span>
+                            <span x-show="survey.loading" data-i18n="myday.reading_day">Reading your day…</span>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 mb-3">Banco reads today's sales and writes your note —
+                    <p class="text-xs text-gray-500 mb-3" data-i18n="myday.ai_note_hint">Banco reads today's sales and writes your note —
                         just confirm or tweak. Felix gets it next to the numbers.</p>
 
                     <!-- How busy -->
                     <div class="mb-3">
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">How busy was it?</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="myday.how_busy">How busy was it?</label>
                         <div class="flex flex-wrap gap-2">
                             <template x-for="lvl in ['busy','steady','slow']" :key="lvl">
                                 <button @click="survey.busy_level = (survey.busy_level === lvl ? '' : lvl)" type="button"
                                         class="px-4 py-2 rounded-lg font-semibold border-2 capitalize transition"
                                         :class="survey.busy_level === lvl ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600'"
-                                        x-text="lvl"></button>
+                                        x-text="t('myday.busy_' + lvl)"></button>
                             </template>
                         </div>
                     </div>
@@ -213,39 +210,39 @@
                     <!-- Footfall + weather -->
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Customers (approx)</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="myday.customers_approx">Customers (approx)</label>
                             <input type="number" min="0" x-model.number="survey.footfall" class="input-field text-center">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Weather</label>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="myday.weather">Weather</label>
                             <input type="text" x-model="survey.weather" maxlength="40"
-                                   placeholder="sunny, rain…" class="input-field">
+                                   placeholder="sunny, rain…" data-i18n-placeholder="myday.weather_placeholder" class="input-field">
                         </div>
                     </div>
 
                     <!-- The note itself (this is what's saved) -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">In a line or two</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="myday.in_a_line">In a line or two</label>
                         <textarea x-model="survey.summary" rows="2" maxlength="500"
-                                  placeholder="Busy afternoon, a few regulars in…"
+                                  placeholder="Busy afternoon, a few regulars in…" data-i18n-placeholder="myday.summary_placeholder"
                                   class="input-field text-base"></textarea>
                     </div>
-                    <p x-show="survey.drafted && !survey.ai" class="text-xs text-amber-600 mt-2">
+                    <p x-show="survey.drafted && !survey.ai" class="text-xs text-amber-600 mt-2" data-i18n="myday.drafted_hint">
                         Drafted straight from your numbers — still good to send.</p>
                 </div>
 
                 <button @click="closeMyDay()"
                         :disabled="processing || computedHours() <= 0 && form.entry_type === 'regular'"
                         class="btn-success w-full text-lg">
-                    <span x-show="!processing" x-text="editing ? '💾 Save changes' : '✅ Close out my day'"></span>
-                    <span x-show="processing">Saving…</span>
+                    <span x-show="!processing" x-text="editing ? t('myday.save_changes') : t('myday.close_out_btn')"></span>
+                    <span x-show="processing" data-i18n="myday.saving">Saving…</span>
                 </button>
-                <button x-show="editing" @click="cancelEdit()" class="btn-secondary w-full mt-2">Cancel</button>
+                <button x-show="editing" @click="cancelEdit()" class="btn-secondary w-full mt-2" data-i18n="myday.cancel">Cancel</button>
             </div>
 
             <!-- ============ RECENT DAYS ============ -->
             <div class="card" x-show="recent.length">
-                <h3 class="text-lg font-bold text-gray-900 mb-3">📖 My recent days</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-3" data-i18n="myday.recent_days">📖 My recent days</h3>
                 <div class="divide-y">
                     <template x-for="e in recent" :key="e.id">
                         <div class="flex items-center justify-between py-3">
@@ -263,7 +260,7 @@
                     </template>
                 </div>
                 <div class="mt-4 pt-3 border-t flex items-center justify-between text-sm" x-show="monthHours !== null">
-                    <span class="text-gray-500">Hours this month</span>
+                    <span class="text-gray-500" data-i18n="myday.hours_this_month">Hours this month</span>
                     <span class="font-bold text-gray-800" x-text="Number(monthHours).toFixed(2) + 'h'"></span>
                 </div>
             </div>
@@ -277,28 +274,28 @@
          @click.self="helpOpen = false">
         <div class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-gray-900">📅 How "My Day" works</h3>
+                <h3 class="text-xl font-bold text-gray-900" data-i18n="myday.help_title">📅 How "My Day" works</h3>
                 <button @click="helpOpen = false" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
             </div>
             <ol class="space-y-4 text-gray-700">
-                <li class="flex gap-3"><span class="text-xl">1️⃣</span><span>
+                <li class="flex gap-3"><span class="text-xl">1️⃣</span><span data-i18n-html="myday.help_1">
                     <span class="font-semibold">Through the day,</span> peek here any time to see your hours
                     and what you've sold so far.</span></li>
-                <li class="flex gap-3"><span class="text-xl">2️⃣</span><span>
+                <li class="flex gap-3"><span class="text-xl">2️⃣</span><span data-i18n-html="myday.help_2">
                     <span class="font-semibold">When you leave,</span> put your <em>start time</em> and
                     <em>finish time</em>, pick your lunch break, and the hours add up for you.</span></li>
-                <li class="flex gap-3"><span class="text-xl">3️⃣</span><span>
+                <li class="flex gap-3"><span class="text-xl">3️⃣</span><span data-i18n-html="myday.help_3">
                     <span class="font-semibold">Tap "Close out my day."</span> That's it — Felix gets it
                     for the books and your pay. No paper, no math.</span></li>
-                <li class="flex gap-3"><span class="text-xl">🤝</span><span>
+                <li class="flex gap-3"><span class="text-xl">🤝</span><span data-i18n-html="myday.help_4">
                     <span class="font-semibold">It's on trust.</span> You enter your own times honestly —
                     you can even put the minute you're about to walk out. It's your call.</span></li>
             </ol>
-            <div class="mt-5 bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+            <div class="mt-5 bg-gray-50 rounded-lg p-4 text-sm text-gray-600" data-i18n-html="myday.help_note">
                 <span class="font-semibold">Not a cashier today?</span> No problem — just cleaning or stocking
                 still counts. Close out your hours the same way.
             </div>
-            <button @click="helpOpen = false" class="btn-primary w-full mt-6">Got it 👍</button>
+            <button @click="helpOpen = false" class="btn-primary w-full mt-6" data-i18n="myday.got_it">Got it 👍</button>
         </div>
     </div>
 
@@ -335,7 +332,7 @@ function myDayData() {
             const now = new Date();
             this.todayLabel = formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' });
             const h = now.getHours();
-            this.greeting = h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening');
+            this.greeting = h < 12 ? t('myday.good_morning') : (h < 18 ? t('myday.good_afternoon') : t('myday.good_evening'));
             await this.loadProfile();
             if (this.noProfile) { this.loading = false; return; }
             await this.loadEntries();   // sets todayEntry first so presence doesn't overwrite a saved start
@@ -367,7 +364,7 @@ function myDayData() {
                 if ((e.message || '').includes('No employee') || (e.message || '').includes('404')) {
                     this.noProfile = true;
                 } else {
-                    this.error = 'Could not load your profile. ' + (e.message || '');
+                    this.error = t('myday.err_load_profile') + (e.message || '');
                 }
             }
         },
@@ -425,7 +422,7 @@ function myDayData() {
                 this.survey.ai = !!d.ai;
                 this.survey.drafted = true;
             } catch (e) {
-                this.error = 'Could not draft your day. ' + (e.message || '') + ' — you can still type a note.';
+                this.error = t('myday.err_draft') + (e.message || '') + t('myday.err_draft_suffix');
             }
             this.survey.loading = false;
         },
@@ -434,11 +431,11 @@ function myDayData() {
         composeNote() {
             const bits = [];
             const head = [];
-            const lbl = { busy: 'Busy', steady: 'Steady', slow: 'Slow' }[this.survey.busy_level];
+            const lbl = { busy: t('myday.busy_cap'), steady: t('myday.steady_cap'), slow: t('myday.slow_cap') }[this.survey.busy_level];
             if (lbl) head.push(lbl);
-            if (this.survey.footfall) head.push('~' + parseInt(this.survey.footfall) + ' customers');
+            if (this.survey.footfall) head.push('~' + parseInt(this.survey.footfall) + t('myday.customers_suffix'));
             if (head.length) bits.push(head.join(' · '));
-            if ((this.survey.weather || '').trim()) bits.push('Weather: ' + this.survey.weather.trim());
+            if ((this.survey.weather || '').trim()) bits.push(t('myday.weather_prefix') + this.survey.weather.trim());
             if ((this.survey.summary || '').trim()) bits.push(this.survey.summary.trim());
             return bits.join('\n');
         },
@@ -458,8 +455,8 @@ function myDayData() {
         toMin(hhmm) { if (!hhmm || !/^\d{2}:\d{2}$/.test(hhmm)) return null; const [h,m] = hhmm.split(':').map(Number); return h*60+m; },
 
         prettyDate(iso) { try { return formatDate(iso + 'T00:00:00', { weekday:'short', day:'numeric', month:'short' }); } catch(e){ return iso; } },
-        typeLabel(t) { return ({regular:'Regular', overtime:'Overtime', holiday:'Holiday', sick:'Sick', remote:'Remote', unpaid:'Unpaid', public_holiday:'Public holiday', training:'Training'})[t] || t; },
-        statusLabel(s) { return ({draft:'Draft', submitted:'Sent to Felix', approved:'Approved', rejected:'Needs a fix', paid:'Paid'})[s] || s; },
+        typeLabel(ty) { return ({regular:t('myday.tl_regular'), overtime:t('myday.tl_overtime'), holiday:t('myday.tl_holiday'), sick:t('myday.tl_sick'), remote:t('myday.tl_remote'), unpaid:t('myday.tl_unpaid'), public_holiday:t('myday.tl_public_holiday'), training:t('myday.tl_training')})[ty] || ty; },
+        statusLabel(s) { return ({draft:t('myday.status_draft'), submitted:t('myday.status_submitted'), approved:t('myday.status_approved'), rejected:t('myday.status_rejected'), paid:t('myday.status_paid')})[s] || s; },
         statusClass(s) {
             return ({
                 draft: 'bg-gray-100 text-gray-600',
@@ -476,7 +473,7 @@ function myDayData() {
         async closeMyDay() {
             const hours = this.computedHours();
             if (hours <= 0 && this.form.entry_type === 'regular') {
-                this.error = 'Add your start and finish time first.'; return;
+                this.error = t('myday.err_add_times'); return;
             }
             this.processing = true; this.error = '';
             const payload = {
@@ -497,9 +494,9 @@ function myDayData() {
                 this.editing = false;
                 await this.loadEntries();
                 await this.loadStats();
-                showToast(this.editing ? 'Saved.' : 'Your day is closed out — nice work! 🐺', 'success');
+                showToast(this.editing ? t('myday.saved_toast') : t('myday.closed_toast'), 'success');
             } catch (e) {
-                this.error = e.message || 'Could not save your day.';
+                this.error = e.message || t('myday.err_save');
             }
             this.processing = false;
         },
