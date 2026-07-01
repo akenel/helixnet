@@ -8,7 +8,7 @@
   Owner-operator, peer-to-peer. Warm, Swiss-direct, no feature list, no emojis, no gloss.
   Duplex A6 (148 x 105 mm landscape). Render: node scripts/postcard-to-pdf.js in out
   MERGE: {{FIRST_NAME}} {{SHOP_NAME}} {{SHOP_STREET}} {{SHOP_ZIP_CITY}}
-         {{QR_SRC}} {{TOKEN}} {{IMG_FRONT}} {{IMG_BACK}} {{CONTACT}}
+         {{QR_SRC}} {{TOKEN}} {{IMG_FRONT}} {{IMG_BACK}}   (phone dropped — QR is the one action)
   Front image = human/grounded (open door, "Offen" sign, warm evening light). NOT products/logos.
   QR = ONE human action (WhatsApp / book-a-coffee), NOT a website menu.
 -->
@@ -19,7 +19,7 @@
   .card { width: 148mm; height: 105mm; position: relative; overflow: hidden; background: #fff; color: #1a1a1a;
           font-family: "Helvetica Neue", Arial, sans-serif; page-break-after: always; }
   .card:last-child { page-break-after: auto; }
-  .bgimg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.18; z-index: 0; }
+  .bgimg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.14; z-index: 0; }
   .rule { position: absolute; top: 0; left: 0; right: 0; height: 2mm; background: #8B5E34; z-index: 2; }
   .serial { position: absolute; bottom: 5mm; left: 9mm; z-index: 2; font-size: 6.5pt; font-weight: 700;
             color: #8B5E34; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; }
@@ -48,7 +48,7 @@
   .addr { flex: 1; padding-left: 6mm; position: relative; font-family: "Helvetica Neue", Arial, sans-serif; }
   .stamp { position: absolute; top: 0; right: 0; width: 19mm; height: 23mm; border: 0.5mm dashed #bbb;
            font-size: 6pt; color: #bbb; text-align: center; display: flex; align-items: center; justify-content: center; }
-  .sender { position: absolute; top: 7mm; left: 6mm; max-width: 26mm; font-size: 6.5pt; color: #999; line-height: 1.4; }
+  .sender { position: absolute; top: 33mm; left: 6mm; max-width: 40mm; font-size: 6.5pt; color: #999; line-height: 1.4; }
   .sender b { color: #8B5E34; }
   .lines { position: absolute; bottom: 10mm; left: 6mm; right: 3mm; }
   .lines .n { font-size: 10.5pt; font-weight: 800; }
@@ -88,7 +88,6 @@
           <img src="{{QR_SRC}}" alt="QR">
           <div class="t">
             <div class="lab">Scann &mdash; oder Kaffee?</div>
-            <div class="num">{{CONTACT}}</div>
           </div>
         </div>
       </div>
