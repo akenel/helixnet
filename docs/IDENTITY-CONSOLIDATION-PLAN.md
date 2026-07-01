@@ -49,6 +49,27 @@ never got made), fold Banco POS in as a client, migrate the *real* staff account
 `borrowhood`/`borrowhood-staging` after auditing their users (`borrowhood` is mostly bots → most get
 **deleted, not migrated**).
 
+**✅ 2026-07-01 (later) — `kc-staging` BUILT (additive, non-gated).** Ran `build_unified_realm.py
+kc-staging --create --apply --base-domain staging-banco.lapiazza.app` inside the staging container.
+Created the realm + **21 clients** (matches `kc-sandbox`) + 4 tier roles + 30 app roles + `shop:artemis`
+group + `member` as default role. Idempotent re-run = all `=` (clean). **0 users** — empty target,
+ready for the fold. **Nothing was repointed:** staging Banco still runs on `borrowhood-staging`
+(`POS_REALM`/`LP_REALM` unchanged) — the cutover is the gated next step. Fully reversible (`delete-realm`).
+Realm count 13 → 14 on the box KC.
+- **SMTP on `kc-staging`:** host/port/user/from mirror `borrowhood-staging` (`smtp.resend.com:587`,
+  `noreply-staging@lapiazza.app`), but the **password is not yet the working Resend key** — that key was
+  typed interactively (getpass) when `borrowhood-staging` was configured and lives in no readable file
+  (the container's `SMTP_PASS` is a *different* value and does NOT deliver; confirmed: real send from
+  `borrowhood-staging` = 204 delivers, from `kc-staging` = "Failed to send"). ⏳ **Owed at fold time
+  (needs Angel's hand):** `docker exec … configure_kc_smtp.py kc-staging --host smtp.resend.com --port 587
+  --from noreply-staging@lapiazza.app --auth --smtp-user resend` and paste the Resend key at the prompt
+  (same one-liner that set `borrowhood-staging`). Harmless to defer — `kc-staging` has no users to email yet.
+
+**Next gated step (with Angel):** fold real staging staff into `kc-staging` (handover pattern + complete
+profiles: email + first/last name, or KC's Verify-Profile blocks direct-grant login), set the Resend key,
+then the **one-env-var cutover** (`POS_REALM`/`LP_REALM` → `kc-staging`, restart staging, login smoke),
+with a one-var rollback ready. Prod (`kc-production`) is a separate, later, explicitly-gated cutover.
+
 ### Account-handover pattern (decided 2026-07-01) — how a real owner takes over
 When a real shop-owner (e.g. the real Felix) comes on, do NOT create-from-scratch, and do NOT hand over
 your only admin. Instead:
