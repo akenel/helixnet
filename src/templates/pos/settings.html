@@ -30,15 +30,15 @@
                     </select>
                 </label>
                 <button @click="save()" :disabled="saving || !isAdmin" class="btn-success">
-                <span x-show="!saving">💾 Save</span>
-                <span x-show="saving" style="display:none;">Saving…</span>
+                <span x-show="!saving" data-i18n="settings.save">💾 Save</span>
+                <span x-show="saving" style="display:none;" data-i18n="settings.saving">Saving…</span>
             </button>
             </div>
         </div>
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-6">
-        <div x-show="!isAdmin" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm">
+        <div x-show="!isAdmin" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm" data-i18n="settings.admin_only">
             🔒 Store settings are admin-only. Ask Felix (admin) to make changes.
         </div>
 
@@ -59,52 +59,52 @@
                 <!-- IDENTITY & ADDRESS -->
                 <div x-show="tab==='identity'" class="space-y-4">
                     <div class="grid md:grid-cols-2 gap-4">
-                        <div><label class="lbl">Store name</label><input type="text" x-model="form.store_name" class="input-field" placeholder="Artemis Lucerne - Headshop"></div>
-                        <div><label class="lbl">Legal / company name</label><input type="text" x-model="form.legal_name" class="input-field" placeholder="Artemis GmbH"></div>
-                        <div><label class="lbl">Address</label><input type="text" x-model="form.address_line1" class="input-field" placeholder="Murbacherstrasse 37"></div>
-                        <div><label class="lbl">Address line 2</label><input type="text" x-model="form.address_line2" class="input-field" placeholder="(optional)"></div>
-                        <div><label class="lbl">Postal code</label><input type="text" x-model="form.postal_code" class="input-field" placeholder="6003"></div>
-                        <div><label class="lbl">City</label><input type="text" x-model="form.city" class="input-field" placeholder="Luzern"></div>
-                        <div><label class="lbl">Country</label><input type="text" x-model="form.country" class="input-field" placeholder="Switzerland"></div>
-                        <div><label class="lbl">Founded (year)</label><input type="text" x-model="form.founded_year" class="input-field" placeholder="1999"></div>
+                        <div><label class="lbl" data-i18n="settings.store_name">Store name</label><input type="text" x-model="form.store_name" class="input-field" placeholder="Artemis Lucerne - Headshop"></div>
+                        <div><label class="lbl" data-i18n="settings.legal_name">Legal / company name</label><input type="text" x-model="form.legal_name" class="input-field" placeholder="Artemis GmbH"></div>
+                        <div><label class="lbl" data-i18n="settings.address">Address</label><input type="text" x-model="form.address_line1" class="input-field" placeholder="Murbacherstrasse 37"></div>
+                        <div><label class="lbl" data-i18n="settings.address_line2">Address line 2</label><input type="text" x-model="form.address_line2" class="input-field" data-i18n-placeholder="settings.ph_optional" placeholder="(optional)"></div>
+                        <div><label class="lbl" data-i18n="settings.postal_code">Postal code</label><input type="text" x-model="form.postal_code" class="input-field" placeholder="6003"></div>
+                        <div><label class="lbl" data-i18n="settings.city">City</label><input type="text" x-model="form.city" class="input-field" placeholder="Luzern"></div>
+                        <div><label class="lbl" data-i18n="settings.country">Country</label><input type="text" x-model="form.country" class="input-field" placeholder="Switzerland"></div>
+                        <div><label class="lbl" data-i18n="settings.founded_year">Founded (year)</label><input type="text" x-model="form.founded_year" class="input-field" placeholder="1999"></div>
                     </div>
                 </div>
 
                 <!-- CONTACT & LINKS -->
                 <div x-show="tab==='contact'" class="space-y-4">
                     <div class="grid md:grid-cols-2 gap-4">
-                        <div><label class="lbl">Phone</label><input type="text" x-model="form.phone" class="input-field" placeholder="041 220 22 22"></div>
-                        <div><label class="lbl">Email</label><input type="text" x-model="form.email" class="input-field" placeholder="contact@artemisluzern.ch"></div>
-                        <div><label class="lbl">Website</label><input type="text" x-model="form.website" class="input-field" placeholder="artemisluzern.ch"></div>
-                        <div><label class="lbl">Facebook</label><input type="text" x-model="form.facebook_url" class="input-field" placeholder="facebook.com/…"></div>
-                        <div><label class="lbl">Instagram</label><input type="text" x-model="form.instagram_url" class="input-field" placeholder="instagram.com/…"></div>
+                        <div><label class="lbl" data-i18n="settings.phone">Phone</label><input type="text" x-model="form.phone" class="input-field" placeholder="041 220 22 22"></div>
+                        <div><label class="lbl" data-i18n="settings.email">Email</label><input type="text" x-model="form.email" class="input-field" placeholder="contact@artemisluzern.ch"></div>
+                        <div><label class="lbl" data-i18n="settings.website">Website</label><input type="text" x-model="form.website" class="input-field" placeholder="artemisluzern.ch"></div>
+                        <div><label class="lbl" data-i18n="settings.facebook">Facebook</label><input type="text" x-model="form.facebook_url" class="input-field" placeholder="facebook.com/…"></div>
+                        <div><label class="lbl" data-i18n="settings.instagram">Instagram</label><input type="text" x-model="form.instagram_url" class="input-field" placeholder="instagram.com/…"></div>
                     </div>
                 </div>
 
                 <!-- HOURS -->
                 <div x-show="tab==='hours'" class="space-y-2">
-                    <label class="lbl">Opening hours</label>
+                    <label class="lbl" data-i18n="settings.opening_hours">Opening hours</label>
                     <textarea x-model="form.opening_hours" rows="4" class="input-field"
                         placeholder="Mon–Wed: 11:00–19:00&#10;Thu–Fri: 11:00–20:00&#10;Sat: 11:00–17:00"></textarea>
-                    <p class="text-xs text-gray-500">Free text — one line per range. Shows on the receipt / shop profile.</p>
+                    <p class="text-xs text-gray-500" data-i18n="settings.opening_hours_hint">Free text — one line per range. Shows on the receipt / shop profile.</p>
                 </div>
 
                 <!-- TAX -->
                 <div x-show="tab==='tax'" class="space-y-4">
                     <div class="grid md:grid-cols-2 gap-4">
-                        <div><label class="lbl">VAT number (UID)</label>
+                        <div><label class="lbl" data-i18n="settings.vat_number">VAT number (UID)</label>
                             <input type="text" x-model="form.vat_number" class="input-field font-mono" placeholder="CHE-XXX.XXX.XXX MWST">
-                            <p class="text-xs text-amber-600 mt-1" x-show="!form.vat_number || (form.vat_number||'').includes('X')">⟶ enter the real CHE-UID before going live</p></div>
-                        <div><label class="lbl">VAT rate (%)</label><input type="number" step="0.1" min="0" max="100" x-model="form.vat_rate" class="input-field" placeholder="8.1"></div>
+                            <p class="text-xs text-amber-600 mt-1" x-show="!form.vat_number || (form.vat_number||'').includes('X')" data-i18n="settings.vat_number_warn">⟶ enter the real CHE-UID before going live</p></div>
+                        <div><label class="lbl" data-i18n="settings.vat_rate">VAT rate (%)</label><input type="number" step="0.1" min="0" max="100" x-model="form.vat_rate" class="input-field" placeholder="8.1"></div>
                     </div>
                 </div>
 
                 <!-- RECEIPT & GRAPHICS -->
                 <div x-show="tab==='graphics'" class="space-y-4">
-                    <div><label class="lbl">Receipt header line</label><input type="text" x-model="form.receipt_header" class="input-field" placeholder="Thank you for shopping at Artemis!"></div>
-                    <div><label class="lbl">Receipt footer line</label><input type="text" x-model="form.receipt_footer" class="input-field" placeholder="Kräuter &amp; Düfte seit 1999 🌿"></div>
+                    <div><label class="lbl" data-i18n="settings.receipt_header">Receipt header line</label><input type="text" x-model="form.receipt_header" class="input-field" placeholder="Thank you for shopping at Artemis!"></div>
+                    <div><label class="lbl" data-i18n="settings.receipt_footer">Receipt footer line</label><input type="text" x-model="form.receipt_footer" class="input-field" placeholder="Kräuter &amp; Düfte seit 1999 🌿"></div>
                     <div>
-                        <label class="lbl">Logo URL</label>
+                        <label class="lbl" data-i18n="settings.logo_url">Logo URL</label>
                         <input type="text" x-model="form.receipt_logo_url" class="input-field font-mono text-xs" placeholder="/static/artemis-logo.png">
                         <div x-show="form.receipt_logo_url" class="mt-2 p-3 bg-gray-50 rounded-lg border inline-block">
                             <img :src="form.receipt_logo_url" class="h-16" alt="logo preview" @error="$el.style.opacity=0.2">
@@ -115,46 +115,46 @@
                 <!-- DISCOUNTS -->
                 <div x-show="tab==='discounts'" class="space-y-4">
                     <div class="grid md:grid-cols-2 gap-4">
-                        <div><label class="lbl">Cashier max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.cashier_max_discount" class="input-field" placeholder="10"></div>
-                        <div><label class="lbl">Manager max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
+                        <div><label class="lbl" data-i18n="settings.cashier_max_discount">Cashier max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.cashier_max_discount" class="input-field" placeholder="10"></div>
+                        <div><label class="lbl" data-i18n="settings.manager_max_discount">Manager max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
                     </div>
-                    <p class="text-xs text-gray-500">Admin is always unlimited. Enforced server-side at checkout.</p>
+                    <p class="text-xs text-gray-500" data-i18n="settings.discounts_hint">Admin is always unlimited. Enforced server-side at checkout.</p>
                 </div>
 
                 <!-- STAFF & LOGINS  (add an employee + link their till login) -->
                 <div x-show="tab==='staff'" class="space-y-5">
                     <div class="flex items-center justify-between flex-wrap gap-3">
-                        <p class="text-base text-gray-600">Add each person once, then link the till login they use.</p>
+                        <p class="text-base text-gray-600" data-i18n="settings.staff_intro">Add each person once, then link the till login they use.</p>
                         <button @click="showAdd = !showAdd" class="btn-primary text-lg"
-                                x-text="showAdd ? '✕ Close' : '➕ Add new employee'"></button>
+                                x-text="showAdd ? t('settings.close_x') : t('settings.add_new_employee')"></button>
                     </div>
 
                     <!-- ADD NEW EMPLOYEE -->
                     <div x-show="showAdd" class="border-2 border-indigo-200 rounded-xl p-4 bg-indigo-50 space-y-3">
-                        <h3 class="text-lg font-bold text-gray-900">New staff card</h3>
+                        <h3 class="text-lg font-bold text-gray-900" data-i18n="settings.new_staff_card">New staff card</h3>
                         <div class="grid md:grid-cols-2 gap-3">
-                            <div><label class="lbl">First name *</label><input type="text" x-model="newEmp.first_name" class="input-field text-lg"></div>
-                            <div><label class="lbl">Last name *</label><input type="text" x-model="newEmp.last_name" class="input-field text-lg"></div>
-                            <div><label class="lbl">AHV number *</label><input type="text" x-model="newEmp.ahv_number" class="input-field text-lg font-mono" placeholder="756.XXXX.XXXX.XX"></div>
-                            <div><label class="lbl">Date of birth *</label><input type="date" x-model="newEmp.date_of_birth" class="input-field text-lg"></div>
-                            <div><label class="lbl">Email *</label><input type="email" x-model="newEmp.email" class="input-field text-lg"></div>
-                            <div><label class="lbl">Phone</label><input type="text" x-model="newEmp.phone" class="input-field text-lg"></div>
-                            <div><label class="lbl">Street *</label><input type="text" x-model="newEmp.street" class="input-field text-lg"></div>
+                            <div><label class="lbl" data-i18n="settings.first_name_req">First name *</label><input type="text" x-model="newEmp.first_name" class="input-field text-lg"></div>
+                            <div><label class="lbl" data-i18n="settings.last_name_req">Last name *</label><input type="text" x-model="newEmp.last_name" class="input-field text-lg"></div>
+                            <div><label class="lbl" data-i18n="settings.ahv_req">AHV number *</label><input type="text" x-model="newEmp.ahv_number" class="input-field text-lg font-mono" placeholder="756.XXXX.XXXX.XX"></div>
+                            <div><label class="lbl" data-i18n="settings.dob_req">Date of birth *</label><input type="date" x-model="newEmp.date_of_birth" class="input-field text-lg"></div>
+                            <div><label class="lbl" data-i18n="settings.email_req">Email *</label><input type="email" x-model="newEmp.email" class="input-field text-lg"></div>
+                            <div><label class="lbl" data-i18n="settings.phone">Phone</label><input type="text" x-model="newEmp.phone" class="input-field text-lg"></div>
+                            <div><label class="lbl" data-i18n="settings.street_req">Street *</label><input type="text" x-model="newEmp.street" class="input-field text-lg"></div>
                             <div class="grid grid-cols-2 gap-3">
-                                <div><label class="lbl">Postal code *</label><input type="text" x-model="newEmp.postal_code" class="input-field text-lg"></div>
-                                <div><label class="lbl">City *</label><input type="text" x-model="newEmp.city" class="input-field text-lg"></div>
+                                <div><label class="lbl" data-i18n="settings.postal_code_req">Postal code *</label><input type="text" x-model="newEmp.postal_code" class="input-field text-lg"></div>
+                                <div><label class="lbl" data-i18n="settings.city_req">City *</label><input type="text" x-model="newEmp.city" class="input-field text-lg"></div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 flex-wrap">
                             <button @click="addEmployee()" :disabled="adding" class="btn-success text-lg"
-                                    x-text="adding ? 'Saving…' : '✅ Save new employee'"></button>
+                                    x-text="adding ? t('settings.saving') : t('settings.save_new_employee')"></button>
                             <span x-show="staffMsg" class="text-base" :class="staffOk ? 'text-green-600' : 'text-red-600'" x-text="staffMsg"></span>
                         </div>
-                        <p class="text-xs text-gray-500">Pay &amp; bank details (IBAN, rate, contract) are filled in later — this is just the who's-who card.</p>
+                        <p class="text-xs text-gray-500" data-i18n="settings.staff_pay_hint">Pay &amp; bank details (IBAN, rate, contract) are filled in later — this is just the who's-who card.</p>
                     </div>
 
                     <!-- STAFF LIST -->
-                    <div x-show="staffLoading" class="text-gray-400 py-6 text-center">Loading staff…</div>
+                    <div x-show="staffLoading" class="text-gray-400 py-6 text-center" data-i18n="settings.loading_staff">Loading staff…</div>
                     <template x-for="e in staff" :key="e.id">
                         <div class="border rounded-xl p-4">
                             <div class="flex items-center justify-between flex-wrap gap-2">
@@ -164,39 +164,40 @@
                                 </div>
                                 <span class="text-sm font-semibold px-3 py-1 rounded-full"
                                       :class="e.is_linked ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
-                                      x-text="e.is_linked ? '● login linked' : '○ no login'"></span>
+                                      x-text="e.is_linked ? t('settings.login_linked') : t('settings.no_login')"></span>
                             </div>
                             <div class="mt-3 flex flex-wrap items-end gap-3">
                                 <div class="flex-1 min-w-[150px]">
-                                    <label class="lbl">Till login (username)</label>
+                                    <label class="lbl" data-i18n="settings.till_login">Till login (username)</label>
                                     <input type="text" x-model="e._draft" placeholder="e.g. pam"
                                            autocomplete="off" autocapitalize="none" class="input-field text-lg lowercase">
                                 </div>
                                 <div class="flex-1 min-w-[150px]">
-                                    <label class="lbl">Password <span class="text-gray-400 font-normal">(to create a sign-in)</span></label>
-                                    <input type="text" x-model="e._pw" placeholder="leave blank to keep"
+                                    <label class="lbl"><span data-i18n="settings.password">Password</span> <span class="text-gray-400 font-normal" data-i18n="settings.password_hint">(to create a sign-in)</span></label>
+                                    <input type="text" x-model="e._pw" data-i18n-placeholder="settings.ph_leave_blank_keep" placeholder="leave blank to keep"
                                            autocomplete="off" class="input-field text-lg">
                                 </div>
                                 <button @click="saveCashierLink(e)" :disabled="e._saving || !(e._draft && e._draft.trim())"
                                         class="btn-primary text-lg"
-                                        x-text="e._saving ? 'Saving…' : ((e._pw && e._pw.trim()) ? '🔑 Create sign-in' : (e.is_linked ? '💾 Update' : '🔗 Link'))"></button>
-                                <button x-show="e.is_linked" @click="unlinkCashier(e)" :disabled="e._saving" class="btn-secondary text-lg">Unlink</button>
+                                        x-text="e._saving ? t('settings.saving') : ((e._pw && e._pw.trim()) ? t('settings.create_signin') : (e.is_linked ? t('settings.update') : t('settings.link')))"></button>
+                                <button x-show="e.is_linked" @click="unlinkCashier(e)" :disabled="e._saving" class="btn-secondary text-lg" data-i18n="settings.unlink">Unlink</button>
                             </div>
                             <div x-show="e.is_linked" class="mt-2">
                                 <button @click="emailSetup(e)" :disabled="e._saving"
                                         class="text-base px-4 py-3 rounded-lg font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
-                                        title="Email this person a link so they pick their own password">
+                                        title="Email this person a link so they pick their own password"
+                                        data-i18n="settings.email_setup_link">
                                     📧 Email them a setup link instead</button>
-                                <span class="text-sm text-gray-400 ml-2">(needs a real email on their card)</span>
+                                <span class="text-sm text-gray-400 ml-2" data-i18n="settings.needs_real_email">(needs a real email on their card)</span>
                             </div>
                             <p x-show="e._msg" class="text-base mt-2" :class="e._ok ? 'text-green-600' : 'text-red-600'" x-text="e._msg"></p>
 
                             <!-- edit details / delete -->
                             <div class="mt-3 pt-3 border-t flex flex-wrap gap-2">
                                 <button @click="toggleEdit(e)" class="btn-secondary text-base"
-                                        x-text="e._editing ? '✕ Close' : '✏️ Edit details'"></button>
+                                        x-text="e._editing ? t('settings.close_x') : t('settings.edit_details')"></button>
                                 <button @click="deleteEmp(e)" :disabled="e._saving"
-                                        class="text-base px-4 py-3 rounded-lg font-semibold text-red-700 bg-red-50 hover:bg-red-100">🗑️ Delete</button>
+                                        class="text-base px-4 py-3 rounded-lg font-semibold text-red-700 bg-red-50 hover:bg-red-100" data-i18n="settings.delete">🗑️ Delete</button>
                             </div>
 
                             <!-- BL-11: x-if (not x-show) so the e._card.* x-models only exist in the
@@ -205,20 +206,20 @@
                             <template x-if="e._editing && e._card">
                             <div class="mt-3 bg-gray-50 rounded-xl p-4 space-y-3">
                                 <div class="grid md:grid-cols-2 gap-3">
-                                    <div><label class="lbl">First name</label><input type="text" x-model="e._card.first_name" class="input-field text-lg"></div>
-                                    <div><label class="lbl">Last name</label><input type="text" x-model="e._card.last_name" class="input-field text-lg"></div>
-                                    <div><label class="lbl">Email</label><input type="email" x-model="e._card.email" class="input-field text-lg"></div>
-                                    <div><label class="lbl">Phone</label><input type="text" x-model="e._card.phone" class="input-field text-lg"></div>
-                                    <div><label class="lbl">AHV number</label><input type="text" x-model="e._card.ahv_number" class="input-field text-lg font-mono"></div>
-                                    <div><label class="lbl">Date of birth</label><input type="date" x-model="e._card.date_of_birth" class="input-field text-lg"></div>
-                                    <div><label class="lbl">Street</label><input type="text" x-model="e._card.street" class="input-field text-lg"></div>
+                                    <div><label class="lbl" data-i18n="settings.first_name">First name</label><input type="text" x-model="e._card.first_name" class="input-field text-lg"></div>
+                                    <div><label class="lbl" data-i18n="settings.last_name">Last name</label><input type="text" x-model="e._card.last_name" class="input-field text-lg"></div>
+                                    <div><label class="lbl" data-i18n="settings.email">Email</label><input type="email" x-model="e._card.email" class="input-field text-lg"></div>
+                                    <div><label class="lbl" data-i18n="settings.phone">Phone</label><input type="text" x-model="e._card.phone" class="input-field text-lg"></div>
+                                    <div><label class="lbl" data-i18n="settings.ahv">AHV number</label><input type="text" x-model="e._card.ahv_number" class="input-field text-lg font-mono"></div>
+                                    <div><label class="lbl" data-i18n="settings.dob">Date of birth</label><input type="date" x-model="e._card.date_of_birth" class="input-field text-lg"></div>
+                                    <div><label class="lbl" data-i18n="settings.street">Street</label><input type="text" x-model="e._card.street" class="input-field text-lg"></div>
                                     <div class="grid grid-cols-2 gap-3">
-                                        <div><label class="lbl">Postal</label><input type="text" x-model="e._card.postal_code" class="input-field text-lg"></div>
-                                        <div><label class="lbl">City</label><input type="text" x-model="e._card.city" class="input-field text-lg"></div>
+                                        <div><label class="lbl" data-i18n="settings.postal">Postal</label><input type="text" x-model="e._card.postal_code" class="input-field text-lg"></div>
+                                        <div><label class="lbl" data-i18n="settings.city">City</label><input type="text" x-model="e._card.city" class="input-field text-lg"></div>
                                     </div>
                                 </div>
                                 <button @click="saveCard(e)" :disabled="e._cardSaving" class="btn-success text-lg"
-                                        x-text="e._cardSaving ? 'Saving…' : '💾 Save changes'"></button>
+                                        x-text="e._cardSaving ? t('settings.saving') : t('settings.save_changes')"></button>
                                 <span x-show="e._cardMsg" class="text-base ml-2" :class="e._cardOk ? 'text-green-600' : 'text-red-600'" x-text="e._cardMsg"></span>
                             </div>
                             </template>
@@ -230,8 +231,8 @@
 
             <div class="flex justify-end mt-5" x-show="tab !== 'staff'">
                 <button @click="save()" :disabled="saving" class="btn-success">
-                    <span x-show="!saving">💾 Save settings</span>
-                    <span x-show="saving" style="display:none;">Saving…</span>
+                    <span x-show="!saving" data-i18n="settings.save_settings">💾 Save settings</span>
+                    <span x-show="saving" style="display:none;" data-i18n="settings.saving">Saving…</span>
                 </button>
             </div>
         </div>
@@ -249,13 +250,13 @@
             form: {},
             tab: 'identity',
             tabs: [
-                { id:'identity', label:'🏪 Identity & Address' },
-                { id:'contact',  label:'📞 Contact & Links' },
-                { id:'hours',    label:'🕒 Hours' },
-                { id:'tax',      label:'🧾 Tax' },
-                { id:'graphics', label:'🖨️ Receipt & Graphics' },
-                { id:'discounts',label:'🏷️ Discounts' },
-                { id:'staff',    label:'👥 Staff & Logins' },
+                { id:'identity', label:t('settings.tab_identity') },
+                { id:'contact',  label:t('settings.tab_contact') },
+                { id:'hours',    label:t('settings.tab_hours') },
+                { id:'tax',      label:t('settings.tab_tax') },
+                { id:'graphics', label:t('settings.tab_graphics') },
+                { id:'discounts',label:t('settings.tab_discounts') },
+                { id:'staff',    label:t('settings.tab_staff') },
             ],
             STORE: 1,
 
@@ -281,7 +282,7 @@
                         ...e, _draft: e.login_username || '', _pw: '', _saving: false, _msg: '', _ok: false,
                         _editing: false, _card: null, _cardSaving: false, _cardMsg: '', _cardOk: false,
                     }));
-                } catch (e) { showToast('Could not load staff', 'error'); }
+                } catch (e) { showToast(t('settings.toast_load_staff_failed'), 'error'); }
                 this.staffLoading = false;
             },
 
@@ -289,24 +290,24 @@
                 const n = this.newEmp;
                 const need = ['first_name','last_name','ahv_number','date_of_birth','email','street','postal_code','city'];
                 for (const k of need) {
-                    if (!((n[k] || '').toString().trim())) { this.staffOk = false; this.staffMsg = 'Please fill all * fields.'; return; }
+                    if (!((n[k] || '').toString().trim())) { this.staffOk = false; this.staffMsg = t('settings.fill_all_fields'); return; }
                 }
                 this.adding = true; this.staffMsg = '';
                 try {
                     await API.post('/api/v1/hr/employees', n);
-                    this.staffOk = true; this.staffMsg = (n.first_name || '') + ' added.';
+                    this.staffOk = true; this.staffMsg = t('settings.toast_added', {name: n.first_name || ''});
                     this.newEmp = {}; this.showAdd = false;
-                    showToast('Employee added 🐺', 'success');
+                    showToast(t('settings.toast_employee_added'), 'success');
                     await this.loadStaff();
-                } catch (e) { this.staffOk = false; this.staffMsg = e.message || 'Could not add employee.'; }
+                } catch (e) { this.staffOk = false; this.staffMsg = e.message || t('settings.toast_add_failed'); }
                 this.adding = false;
             },
 
             async saveCashierLink(e) {
                 const username = (e._draft || '').trim().toLowerCase();
-                if (!username) { e._ok = false; e._msg = 'Type a login first.'; return; }
+                if (!username) { e._ok = false; e._msg = t('settings.type_login_first'); return; }
                 const pw = (e._pw || '').trim();
-                if (pw && pw.length < 6) { e._ok = false; e._msg = 'Password needs 6+ characters.'; return; }
+                if (pw && pw.length < 6) { e._ok = false; e._msg = t('settings.password_min'); return; }
                 e._saving = true; e._msg = '';
                 try {
                     // With a password → create/reset a REAL sign-in (Keycloak). Without → just link the label.
@@ -315,9 +316,9 @@
                         : await API.post('/api/v1/hr/employees/' + e.id + '/link', { username });
                     e.is_linked = (res.is_linked !== false); e.login_username = res.login_username || username;
                     e._draft = e.login_username; e._pw = '';
-                    e._ok = true; e._msg = res.message || 'Saved.';
-                    showToast(e.first_name + ' ✓', 'success');
-                } catch (err) { e._ok = false; e._msg = err.message || 'Could not save.'; }
+                    e._ok = true; e._msg = res.message || t('settings.saved');
+                    showToast(t('settings.toast_staff_ok', {name: e.first_name}), 'success');
+                } catch (err) { e._ok = false; e._msg = err.message || t('settings.could_not_save'); }
                 e._saving = false;
             },
 
@@ -325,8 +326,8 @@
                 e._saving = true; e._msg = '';
                 try {
                     await API.post('/api/v1/hr/employees/' + e.id + '/link', { username: '' });
-                    e.is_linked = false; e.login_username = null; e._draft = ''; e._ok = true; e._msg = 'Unlinked.';
-                } catch (err) { e._ok = false; e._msg = err.message || 'Could not unlink.'; }
+                    e.is_linked = false; e.login_username = null; e._draft = ''; e._ok = true; e._msg = t('settings.unlinked');
+                } catch (err) { e._ok = false; e._msg = err.message || t('settings.could_not_unlink'); }
                 e._saving = false;
             },
 
@@ -337,9 +338,9 @@
                 try {
                     const res = await API.post('/api/v1/hr/employees/' + e.id + '/email-setup',
                                                { email: (e.email || '').trim() });
-                    e._ok = true; e._msg = res.message || 'Setup link sent.';
-                    showToast('📧 Link sent', 'success');
-                } catch (err) { e._ok = false; e._msg = err.message || 'Could not send the setup link.'; }
+                    e._ok = true; e._msg = res.message || t('settings.setup_link_sent');
+                    showToast(t('settings.toast_link_sent'), 'success');
+                } catch (err) { e._ok = false; e._msg = err.message || t('settings.could_not_send_setup'); }
                 e._saving = false;
             },
 
@@ -349,13 +350,13 @@
                 try {
                     e._card = await API.get('/api/v1/hr/employees/' + e.id);  // full who's-who card
                     e._editing = true;
-                } catch (err) { e._ok = false; e._msg = err.message || 'Could not load the card.'; }
+                } catch (err) { e._ok = false; e._msg = err.message || t('settings.could_not_load_card'); }
             },
 
             async saveCard(e) {
                 const c = e._card || {};
                 if (!(c.first_name || '').trim() || !(c.last_name || '').trim()) {
-                    e._cardOk = false; e._cardMsg = 'Name can’t be blank.'; return;
+                    e._cardOk = false; e._cardMsg = t('settings.name_blank'); return;
                 }
                 e._cardSaving = true; e._cardMsg = '';
                 try {
@@ -365,29 +366,29 @@
                         street: c.street, postal_code: c.postal_code, city: c.city,
                     });
                     e.first_name = res.first_name; e.last_name = res.last_name; e.email = res.email;
-                    e._cardOk = true; e._cardMsg = 'Saved.';
-                    showToast(res.first_name + ' updated ✓', 'success');
-                } catch (err) { e._cardOk = false; e._cardMsg = err.message || 'Could not save.'; }
+                    e._cardOk = true; e._cardMsg = t('settings.saved');
+                    showToast(t('settings.toast_updated', {name: res.first_name}), 'success');
+                } catch (err) { e._cardOk = false; e._cardMsg = err.message || t('settings.could_not_save'); }
                 e._cardSaving = false;
             },
 
             async deleteEmp(e) {
-                if (!confirm('Delete ' + e.first_name + ' ' + e.last_name + '? This removes their card and disables their login.')) return;
+                if (!confirm(t('settings.confirm_delete', {name: e.first_name + ' ' + e.last_name}))) return;
                 e._saving = true; e._msg = '';
                 try {
                     await API.delete('/api/v1/hr/employees/' + e.id);
                     this.staff = this.staff.filter(x => x.id !== e.id);
-                    showToast((e.first_name || 'Employee') + ' removed', 'success');
-                } catch (err) { e._ok = false; e._msg = err.message || 'Could not delete.'; e._saving = false; }
+                    showToast(t('settings.toast_removed', {name: e.first_name || t('settings.employee_fallback')}), 'success');
+                } catch (err) { e._ok = false; e._msg = err.message || t('settings.could_not_delete'); e._saving = false; }
             },
 
             async load() {
                 try { this.form = await API.get(`/api/v1/pos/settings/${this.STORE}`); }
-                catch (e) { console.error('load settings failed', e); showToast('Could not load settings', 'error'); }
+                catch (e) { console.error('load settings failed', e); showToast(t('settings.toast_load_settings_failed'), 'error'); }
             },
 
             async save() {
-                if (!this.isAdmin) { showToast('Admins only', 'warning'); return; }
+                if (!this.isAdmin) { showToast(t('settings.admins_only'), 'warning'); return; }
                 this.saving = true;
                 const F = this.form;
                 const payload = {
@@ -402,8 +403,8 @@
                 };
                 try {
                     this.form = await API.put(`/api/v1/pos/settings/${this.STORE}`, payload);
-                    showToast('Saved — live on every receipt', 'success');
-                } catch (e) { showToast(e.message || 'Save failed', 'error'); }
+                    showToast(t('settings.toast_saved_receipt'), 'success');
+                } catch (e) { showToast(e.message || t('settings.save_failed'), 'error'); }
                 finally { this.saving = false; }
             },
         };

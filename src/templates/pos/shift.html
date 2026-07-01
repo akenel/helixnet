@@ -16,34 +16,34 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">💰 My Drawer</h1>
-                    <p class="text-sm text-gray-600" x-text="user.username ? ('Cashier: ' + user.username) : ''"></p>
+                    <h1 class="text-2xl font-bold text-gray-900" data-i18n="shift.my_drawer">💰 My Drawer</h1>
+                    <p class="text-sm text-gray-600" x-text="user.username ? t('shift.cashier_prefix', {name: user.username}) : ''"></p>
                 </div>
             </div>
-            <button @click="goDashboard()" class="btn-secondary text-sm no-print">🏪 Dashboard</button>
+            <button @click="goDashboard()" class="btn-secondary text-sm no-print" data-i18n="shift.dashboard">🏪 Dashboard</button>
         </div>
     </div>
 
     <div class="max-w-3xl mx-auto px-4 py-8">
 
         <!-- Loading -->
-        <div x-show="loading" class="text-center py-20 text-gray-400">Loading your drawer…</div>
+        <div x-show="loading" class="text-center py-20 text-gray-400" data-i18n="shift.loading_drawer">Loading your drawer…</div>
 
         <!-- Error banner -->
         <div x-show="error" class="mb-4 bg-red-100 text-red-800 rounded-lg p-3 text-sm" x-text="error"></div>
 
         <!-- ============ OPEN DRAWER (no open shift) ============ -->
         <div x-show="!loading && mode === 'open'" class="card" id="open-drawer">
-            <h2 class="text-xl font-bold text-gray-900 mb-1">Open your drawer</h2>
-            <p class="text-sm text-gray-600 mb-5">Count the cash you're starting with. This is your float —
+            <h2 class="text-xl font-bold text-gray-900 mb-1" data-i18n="shift.open_your_drawer">Open your drawer</h2>
+            <p class="text-sm text-gray-600 mb-5" data-i18n="shift.open_intro">Count the cash you're starting with. This is your float —
                 only you are responsible for this drawer.</p>
 
             <div class="border rounded-lg overflow-hidden mb-4">
                 <table class="w-full text-sm data-table">
                     <thead class="bg-gray-50 text-gray-500">
-                        <tr><th class="text-left py-2 px-3">Denomination</th>
-                            <th class="text-center py-2 px-3">Count</th>
-                            <th class="text-right py-2 px-3">Subtotal</th></tr>
+                        <tr><th class="text-left py-2 px-3" data-i18n="shift.denomination">Denomination</th>
+                            <th class="text-center py-2 px-3" data-i18n="shift.count">Count</th>
+                            <th class="text-right py-2 px-3" data-i18n="shift.subtotal">Subtotal</th></tr>
                     </thead>
                     <tbody>
                         <template x-for="d in DENOMS" :key="d.k">
@@ -61,7 +61,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-gray-800 bg-gray-50 font-bold">
-                            <td class="py-3 px-3" colspan="2">Opening float</td>
+                            <td class="py-3 px-3" colspan="2" data-i18n="shift.opening_float">Opening float</td>
                             <td class="py-3 px-3 text-right text-xl text-indigo-700" x-text="formatPrice(openTotal())"></td>
                         </tr>
                     </tfoot>
@@ -69,8 +69,8 @@
             </div>
 
             <button @click="openDrawer()" :disabled="processing || openTotal() <= 0" class="btn-primary w-full">
-                <span x-show="!processing">🔓 Open Drawer with <span x-text="formatPrice(openTotal())"></span></span>
-                <span x-show="processing">Opening…</span>
+                <span x-show="!processing"><span data-i18n="shift.open_drawer_with">🔓 Open Drawer with</span> <span x-text="formatPrice(openTotal())"></span></span>
+                <span x-show="processing" data-i18n="shift.opening">Opening…</span>
             </button>
         </div>
 
@@ -81,51 +81,51 @@
             <div class="card">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="inline-block bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">● OPEN</span>
-                        <p class="text-sm text-gray-500 mt-1">Opened <span x-text="fmtTime(shift && shift.opened_at)"></span></p>
+                        <span class="inline-block bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full" data-i18n="shift.open_badge">● OPEN</span>
+                        <p class="text-sm text-gray-500 mt-1"><span data-i18n="shift.opened">Opened</span> <span x-text="fmtTime(shift && shift.opened_at)"></span></p>
                     </div>
-                    <button @click="refresh()" class="text-sm text-indigo-600 hover:underline">↻ Refresh</button>
+                    <button @click="refresh()" class="text-sm text-indigo-600 hover:underline" data-i18n="shift.refresh">↻ Refresh</button>
                 </div>
                 <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div><p class="text-gray-500">Opening float</p><p class="font-semibold text-lg" x-text="formatPrice(num(shift && shift.opening_float))"></p></div>
-                    <div><p class="text-gray-500">My cash sales</p><p class="font-semibold text-lg text-green-600" x-text="formatPrice(num(shift && shift.cash_sales))"></p></div>
-                    <div><p class="text-gray-500">My card/Twint (not in drawer)</p><p class="font-semibold" x-text="formatPrice(num(shift && shift.card_sales))"></p></div>
-                    <div><p class="text-gray-500">Transactions</p><p class="font-semibold" x-text="shift && shift.transaction_count"></p></div>
-                    <div x-show="num(shift && shift.paid_in_total) > 0"><p class="text-gray-500">Paid in</p><p class="font-semibold text-blue-600" x-text="formatPrice(num(shift && shift.paid_in_total))"></p></div>
-                    <div x-show="num(shift && shift.paid_out_total) > 0"><p class="text-gray-500">Paid out</p><p class="font-semibold text-orange-600" x-text="formatPrice(num(shift && shift.paid_out_total))"></p></div>
+                    <div><p class="text-gray-500" data-i18n="shift.opening_float">Opening float</p><p class="font-semibold text-lg" x-text="formatPrice(num(shift && shift.opening_float))"></p></div>
+                    <div><p class="text-gray-500" data-i18n="shift.my_cash_sales">My cash sales</p><p class="font-semibold text-lg text-green-600" x-text="formatPrice(num(shift && shift.cash_sales))"></p></div>
+                    <div><p class="text-gray-500" data-i18n="shift.my_card_twint">My card/Twint (not in drawer)</p><p class="font-semibold" x-text="formatPrice(num(shift && shift.card_sales))"></p></div>
+                    <div><p class="text-gray-500" data-i18n="shift.transactions">Transactions</p><p class="font-semibold" x-text="shift && shift.transaction_count"></p></div>
+                    <div x-show="num(shift && shift.paid_in_total) > 0"><p class="text-gray-500" data-i18n="shift.paid_in">Paid in</p><p class="font-semibold text-blue-600" x-text="formatPrice(num(shift && shift.paid_in_total))"></p></div>
+                    <div x-show="num(shift && shift.paid_out_total) > 0"><p class="text-gray-500" data-i18n="shift.paid_out">Paid out</p><p class="font-semibold text-orange-600" x-text="formatPrice(num(shift && shift.paid_out_total))"></p></div>
                 </div>
                 <div class="border-t mt-4 pt-4 flex justify-between items-center">
-                    <span class="font-semibold text-gray-700">Expected in drawer now</span>
+                    <span class="font-semibold text-gray-700" data-i18n="shift.expected_now">Expected in drawer now</span>
                     <span class="text-2xl font-bold text-indigo-700" x-text="formatPrice(num(shift && shift.expected_cash))"></span>
                 </div>
             </div>
 
             <!-- Paid in / out -->
             <div class="card">
-                <h3 class="font-semibold text-gray-900 mb-3">Cash in / out (not a sale)</h3>
-                <p class="text-xs text-gray-500 mb-3">Petty cash out, or a float top-up in — recorded with a reason so the drawer still balances.</p>
+                <h3 class="font-semibold text-gray-900 mb-3" data-i18n="shift.cash_in_out">Cash in / out (not a sale)</h3>
+                <p class="text-xs text-gray-500 mb-3" data-i18n="shift.cash_in_out_hint">Petty cash out, or a float top-up in — recorded with a reason so the drawer still balances.</p>
                 <div class="flex flex-wrap gap-2 items-center">
                     <select x-model="paid.kind" class="border rounded py-2 px-3 text-sm">
-                        <option value="paid_out">Paid OUT</option>
-                        <option value="paid_in">Paid IN</option>
+                        <option value="paid_out" data-i18n="shift.paid_out_opt">Paid OUT</option>
+                        <option value="paid_in" data-i18n="shift.paid_in_opt">Paid IN</option>
                     </select>
-                    <input type="number" min="0" step="0.05" x-model="paid.amount" placeholder="Amount" class="w-28 border rounded py-2 px-3 text-sm">
-                    <input type="text" x-model="paid.reason" placeholder="Reason (e.g. milk, float top-up)" class="flex-1 min-w-40 border rounded py-2 px-3 text-sm">
-                    <button @click="addPaid()" :disabled="processing" class="btn-secondary text-sm">Record</button>
+                    <input type="number" min="0" step="0.05" x-model="paid.amount" data-i18n-placeholder="shift.ph_amount" placeholder="Amount" class="w-28 border rounded py-2 px-3 text-sm">
+                    <input type="text" x-model="paid.reason" data-i18n-placeholder="shift.ph_reason" placeholder="Reason (e.g. milk, float top-up)" class="flex-1 min-w-40 border rounded py-2 px-3 text-sm">
+                    <button @click="addPaid()" :disabled="processing" class="btn-secondary text-sm" data-i18n="shift.record">Record</button>
                 </div>
             </div>
 
             <!-- Close: count the drawer -->
             <div class="card" id="close-drawer">
-                <h3 class="font-semibold text-gray-900 mb-1">Close drawer — count out</h3>
-                <p class="text-sm text-gray-600 mb-4">Count what's physically in the drawer now.</p>
+                <h3 class="font-semibold text-gray-900 mb-1" data-i18n="shift.close_count_out">Close drawer — count out</h3>
+                <p class="text-sm text-gray-600 mb-4" data-i18n="shift.close_count_hint">Count what's physically in the drawer now.</p>
 
                 <div class="border rounded-lg overflow-hidden mb-4">
                     <table class="w-full text-sm data-table">
                         <thead class="bg-gray-50 text-gray-500">
-                            <tr><th class="text-left py-2 px-3">Denomination</th>
-                                <th class="text-center py-2 px-3">Count</th>
-                                <th class="text-right py-2 px-3">Subtotal</th></tr>
+                            <tr><th class="text-left py-2 px-3" data-i18n="shift.denomination">Denomination</th>
+                                <th class="text-center py-2 px-3" data-i18n="shift.count">Count</th>
+                                <th class="text-right py-2 px-3" data-i18n="shift.subtotal">Subtotal</th></tr>
                         </thead>
                         <tbody>
                             <template x-for="d in DENOMS" :key="'c'+d.k">
@@ -143,7 +143,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-gray-800 bg-gray-50 font-bold">
-                                <td class="py-3 px-3" colspan="2">Counted</td>
+                                <td class="py-3 px-3" colspan="2" data-i18n="shift.counted">Counted</td>
                                 <td class="py-3 px-3 text-right text-xl" x-text="formatPrice(closeTotal())"></td>
                             </tr>
                         </tfoot>
@@ -152,26 +152,26 @@
 
                 <!-- Live reconciliation -->
                 <div class="rounded-lg p-4 mb-4" :class="withinTol() ? 'bg-green-50' : 'bg-yellow-50'">
-                    <div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Expected</span><span class="font-semibold" x-text="formatPrice(num(shift && shift.expected_cash))"></span></div>
-                    <div class="flex justify-between text-sm mb-1"><span class="text-gray-600">Counted</span><span class="font-semibold" x-text="formatPrice(closeTotal())"></span></div>
+                    <div class="flex justify-between text-sm mb-1"><span class="text-gray-600" data-i18n="shift.expected">Expected</span><span class="font-semibold" x-text="formatPrice(num(shift && shift.expected_cash))"></span></div>
+                    <div class="flex justify-between text-sm mb-1"><span class="text-gray-600" data-i18n="shift.counted">Counted</span><span class="font-semibold" x-text="formatPrice(closeTotal())"></span></div>
                     <div class="flex justify-between items-center border-t pt-2 mt-2">
-                        <span class="font-semibold">Variance</span>
+                        <span class="font-semibold" data-i18n="shift.variance">Variance</span>
                         <span class="text-xl font-bold" :class="withinTol() ? 'text-green-600' : 'text-red-600'"
                               x-text="(closeVariance() >= 0 ? '+' : '') + formatPrice(closeVariance())"></span>
                     </div>
-                    <p x-show="withinTol()" class="text-green-700 text-sm mt-2 font-semibold">✅ Within tolerance (±<span x-text="num(shift && shift.tolerance).toFixed(2)"></span>) — good to close.</p>
-                    <p x-show="!withinTol()" class="text-red-700 text-sm mt-2 font-semibold">⚠️ Outside tolerance — add a note to close.</p>
+                    <p x-show="withinTol()" class="text-green-700 text-sm mt-2 font-semibold"><span data-i18n="shift.within_tol_pre">✅ Within tolerance (±</span><span x-text="num(shift && shift.tolerance).toFixed(2)"></span><span data-i18n="shift.within_tol_post">) — good to close.</span></p>
+                    <p x-show="!withinTol()" class="text-red-700 text-sm mt-2 font-semibold" data-i18n="shift.outside_tol">⚠️ Outside tolerance — add a note to close.</p>
                 </div>
 
                 <div x-show="!withinTol()" class="mb-4">
                     <textarea x-model="note" rows="2" class="w-full border rounded py-2 px-3 text-sm"
-                        placeholder="What happened? (e.g. gave wrong change once)"></textarea>
+                        data-i18n-placeholder="shift.ph_what_happened" placeholder="What happened? (e.g. gave wrong change once)"></textarea>
                 </div>
 
                 <button @click="closeDrawer()" :disabled="processing || closeTotal() <= 0 || (!withinTol() && !note.trim())"
                         class="btn-success w-full">
-                    <span x-show="!processing">🔒 Close Drawer & File Report</span>
-                    <span x-show="processing">Closing…</span>
+                    <span x-show="!processing" data-i18n="shift.close_file">🔒 Close Drawer & File Report</span>
+                    <span x-show="processing" data-i18n="shift.closing">Closing…</span>
                 </button>
             </div>
         </div>
@@ -180,7 +180,7 @@
         <div x-show="!loading && mode === 'report' && report" id="shift-report">
             <div class="card">
                 <div class="text-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-900">Shift Report</h2>
+                    <h2 class="text-2xl font-bold text-gray-900" data-i18n="shift.shift_report">Shift Report</h2>
                     <p class="text-sm text-gray-500">
                         <span x-text="report && report.username"></span> ·
                         <span x-text="fmtTime(report && report.opened_at)"></span> →
@@ -191,60 +191,60 @@
 
                 <div class="rounded-lg p-4 mb-4 text-center"
                      :class="report && report.within_tolerance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                    <p class="text-sm" x-show="report && report.within_tolerance">✅ Balanced within tolerance</p>
-                    <p class="text-sm" x-show="report && !report.within_tolerance">⚠️ Variance flagged — see note</p>
+                    <p class="text-sm" x-show="report && report.within_tolerance" data-i18n="shift.balanced">✅ Balanced within tolerance</p>
+                    <p class="text-sm" x-show="report && !report.within_tolerance" data-i18n="shift.variance_flagged">⚠️ Variance flagged — see note</p>
                     <p class="text-3xl font-bold mt-1" x-text="(report && num(report.variance) >= 0 ? '+' : '') + formatPrice(num(report && report.variance))"></p>
-                    <p class="text-xs mt-1">variance (counted − expected)</p>
+                    <p class="text-xs mt-1" data-i18n="shift.variance_caption">variance (counted − expected)</p>
                 </div>
 
                 <table class="w-full text-sm data-table">
                     <tbody>
-                        <tr class="border-b"><td class="py-2 text-gray-600">Opening float</td><td class="py-2 text-right font-semibold" x-text="formatPrice(num(report && report.opening_float))"></td></tr>
-                        <tr class="border-b"><td class="py-2 text-gray-600">Cash sales</td><td class="py-2 text-right font-semibold text-green-600" x-text="formatPrice(num(report && report.cash_sales))"></td></tr>
-                        <tr class="border-b" x-show="report && num(report.cash_refunds) > 0"><td class="py-2 text-gray-600">Cash refunds</td><td class="py-2 text-right" x-text="'−' + formatPrice(num(report && report.cash_refunds))"></td></tr>
-                        <tr class="border-b" x-show="report && num(report.paid_in_total) > 0"><td class="py-2 text-gray-600">Paid in</td><td class="py-2 text-right text-blue-600" x-text="formatPrice(num(report && report.paid_in_total))"></td></tr>
-                        <tr class="border-b" x-show="report && num(report.paid_out_total) > 0"><td class="py-2 text-gray-600">Paid out</td><td class="py-2 text-right text-orange-600" x-text="'−' + formatPrice(num(report && report.paid_out_total))"></td></tr>
-                        <tr class="border-b border-gray-800"><td class="py-2 font-semibold">Expected in drawer</td><td class="py-2 text-right font-bold" x-text="formatPrice(num(report && report.expected_cash))"></td></tr>
-                        <tr class="border-b border-gray-800"><td class="py-2 font-semibold">Counted</td><td class="py-2 text-right font-bold" x-text="formatPrice(num(report && report.counted_cash))"></td></tr>
-                        <tr><td class="py-2 text-gray-600">Card / Twint (banked separately)</td><td class="py-2 text-right" x-text="formatPrice(num(report && report.card_sales))"></td></tr>
-                        <tr><td class="py-2 text-gray-600">Transactions</td><td class="py-2 text-right" x-text="report && report.transaction_count"></td></tr>
+                        <tr class="border-b"><td class="py-2 text-gray-600" data-i18n="shift.opening_float">Opening float</td><td class="py-2 text-right font-semibold" x-text="formatPrice(num(report && report.opening_float))"></td></tr>
+                        <tr class="border-b"><td class="py-2 text-gray-600" data-i18n="shift.cash_sales">Cash sales</td><td class="py-2 text-right font-semibold text-green-600" x-text="formatPrice(num(report && report.cash_sales))"></td></tr>
+                        <tr class="border-b" x-show="report && num(report.cash_refunds) > 0"><td class="py-2 text-gray-600" data-i18n="shift.cash_refunds">Cash refunds</td><td class="py-2 text-right" x-text="'−' + formatPrice(num(report && report.cash_refunds))"></td></tr>
+                        <tr class="border-b" x-show="report && num(report.paid_in_total) > 0"><td class="py-2 text-gray-600" data-i18n="shift.paid_in">Paid in</td><td class="py-2 text-right text-blue-600" x-text="formatPrice(num(report && report.paid_in_total))"></td></tr>
+                        <tr class="border-b" x-show="report && num(report.paid_out_total) > 0"><td class="py-2 text-gray-600" data-i18n="shift.paid_out">Paid out</td><td class="py-2 text-right text-orange-600" x-text="'−' + formatPrice(num(report && report.paid_out_total))"></td></tr>
+                        <tr class="border-b border-gray-800"><td class="py-2 font-semibold" data-i18n="shift.expected_in_drawer">Expected in drawer</td><td class="py-2 text-right font-bold" x-text="formatPrice(num(report && report.expected_cash))"></td></tr>
+                        <tr class="border-b border-gray-800"><td class="py-2 font-semibold" data-i18n="shift.counted">Counted</td><td class="py-2 text-right font-bold" x-text="formatPrice(num(report && report.counted_cash))"></td></tr>
+                        <tr><td class="py-2 text-gray-600" data-i18n="shift.card_twint_banked">Card / Twint (banked separately)</td><td class="py-2 text-right" x-text="formatPrice(num(report && report.card_sales))"></td></tr>
+                        <tr><td class="py-2 text-gray-600" data-i18n="shift.transactions">Transactions</td><td class="py-2 text-right" x-text="report && report.transaction_count"></td></tr>
                     </tbody>
                 </table>
 
                 <div x-show="report && report.variance_note" class="mt-4 bg-gray-50 rounded p-3 text-sm">
-                    <span class="text-gray-500">Note:</span> <span x-text="report && report.variance_note"></span>
+                    <span class="text-gray-500" data-i18n="shift.note_label">Note:</span> <span x-text="report && report.variance_note"></span>
                 </div>
 
                 <!-- Itemized daily sales log — exactly what was sold this shift -->
                 <div class="mt-6 border-t pt-4">
                     <div class="flex justify-between items-baseline mb-3">
-                        <h3 class="font-bold text-gray-900">Daily Sales Log</h3>
+                        <h3 class="font-bold text-gray-900" data-i18n="shift.daily_sales_log">Daily Sales Log</h3>
                         <span class="text-sm text-gray-500" x-show="log"
-                              x-text="(log ? log.transaction_count : 0) + ' transactions · ' + (log ? log.item_count : 0) + ' items'"></span>
+                              x-text="t('shift.txn_items_summary', {n: (log ? log.transaction_count : 0), m: (log ? log.item_count : 0)})"></span>
                     </div>
 
-                    <p x-show="log && log.transactions.length === 0" class="text-sm text-gray-400 py-2">No sales this shift.</p>
+                    <p x-show="log && log.transactions.length === 0" class="text-sm text-gray-400 py-2" data-i18n="shift.no_sales">No sales this shift.</p>
 
                     <div x-show="log && log.transactions.length > 0" class="space-y-3">
-                        <template x-for="(t, i) in (log ? log.transactions : [])" :key="t.number || i">
+                        <template x-for="(txn, i) in (log ? log.transactions : [])" :key="txn.number || i">
                             <div class="border rounded-lg overflow-hidden text-sm">
                                 <div class="flex justify-between items-center bg-gray-50 px-3 py-2">
                                     <div>
-                                        <span class="font-semibold" x-text="'#' + (t.number || (i+1))"></span>
-                                        <span class="text-gray-500 ml-2" x-text="fmtTime(t.time)"></span>
+                                        <span class="font-semibold" x-text="'#' + (txn.number || (i+1))"></span>
+                                        <span class="text-gray-500 ml-2" x-text="fmtTime(txn.time)"></span>
                                         <span class="ml-2 text-xs uppercase px-2 py-0.5 rounded-full"
-                                              :class="t.status === 'refunded' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'"
-                                              x-text="t.payment_method + (t.status === 'refunded' ? ' · refund' : '')"></span>
+                                              :class="txn.status === 'refunded' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'"
+                                              x-text="txn.payment_method + (txn.status === 'refunded' ? ' · ' + t('shift.refund_tag') : '')"></span>
                                     </div>
-                                    <span class="font-bold" x-text="formatPrice(num(t.total))"></span>
+                                    <span class="font-bold" x-text="formatPrice(num(txn.total))"></span>
                                 </div>
                                 <table class="w-full">
                                     <tbody>
-                                        <template x-for="(it, j) in t.items" :key="j">
+                                        <template x-for="(it, j) in txn.items" :key="j">
                                             <tr class="border-t">
                                                 <td class="py-1 px-3 text-gray-700">
-                                                    <span x-text="it.quantity + '× ' + (it.name || 'Item')"></span>
-                                                    <span x-show="it.is_giveaway" class="text-pink-600 text-xs ml-1">🎁 free</span>
+                                                    <span x-text="it.quantity + '× ' + (it.name || t('shift.item_fallback'))"></span>
+                                                    <span x-show="it.is_giveaway" class="text-pink-600 text-xs ml-1" data-i18n="shift.free_tag">🎁 free</span>
                                                 </td>
                                                 <td class="py-1 px-3 text-right text-gray-500" x-text="formatPrice(num(it.unit_price))"></td>
                                                 <td class="py-1 px-3 text-right font-medium" x-text="formatPrice(num(it.line_total))"></td>
@@ -258,8 +258,8 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-6 no-print">
-                    <button @click="window.print()" class="btn-secondary">🖨️ Print</button>
-                    <button @click="startNew()" class="btn-primary">🔓 Open New Drawer</button>
+                    <button @click="window.print()" class="btn-secondary" data-i18n="shift.print">🖨️ Print</button>
+                    <button @click="startNew()" class="btn-primary" data-i18n="shift.open_new_drawer">🔓 Open New Drawer</button>
                 </div>
             </div>
         </div>
@@ -316,7 +316,7 @@ function shiftData() {
                     if (last && last.ok) { this.report = last; this.mode = 'report'; this.loadLog(last.shift_id); }
                     else { this.mode = 'open'; }
                 }
-            } catch (e) { this.error = 'Could not load your drawer. ' + (e.message || ''); }
+            } catch (e) { this.error = t('shift.err_load') + (e.message || ''); }
             this.loading = false;
         },
 
@@ -336,34 +336,34 @@ function shiftData() {
                 await API.post('/api/v1/pos/shift/open', { opening_denoms: this.cleanDenoms(this.openCounts) });
                 this.DENOMS.forEach(d => this.closeCounts[d.k] = 0);
                 await this.refresh();
-            } catch (e) { this.error = e.message || 'Could not open the drawer.'; }
+            } catch (e) { this.error = e.message || t('shift.err_open'); }
             this.processing = false;
         },
 
         async addPaid() {
             const amt = parseFloat(this.paid.amount);
-            if (!amt || amt <= 0) { this.error = 'Enter an amount.'; return; }
-            if (!this.paid.reason.trim()) { this.error = 'Give a reason.'; return; }
+            if (!amt || amt <= 0) { this.error = t('shift.err_enter_amount'); return; }
+            if (!this.paid.reason.trim()) { this.error = t('shift.err_give_reason'); return; }
             this.processing = true; this.error = '';
             try {
                 await API.post('/api/v1/pos/shift/paid', {
                     kind: this.paid.kind, amount: String(amt), reason: this.paid.reason.trim() });
                 this.paid.amount = ''; this.paid.reason = '';
                 await this.refresh();
-            } catch (e) { this.error = e.message || 'Could not record the movement.'; }
+            } catch (e) { this.error = e.message || t('shift.err_record'); }
             this.processing = false;
         },
 
         async closeDrawer() {
             if (this.closeTotal() <= 0) return;
-            if (!this.withinTol() && !this.note.trim()) { this.error = 'Add a note to close (outside tolerance).'; return; }
+            if (!this.withinTol() && !this.note.trim()) { this.error = t('shift.err_note_required'); return; }
             this.processing = true; this.error = '';
             try {
                 const res = await API.post('/api/v1/pos/shift/close', {
                     closing_denoms: this.cleanDenoms(this.closeCounts), note: this.note.trim() });
                 this.report = res; this.shift = null; this.note = ''; this.mode = 'report';
                 this.loadLog(res.shift_id);
-            } catch (e) { this.error = e.message || 'Could not close the drawer.'; }
+            } catch (e) { this.error = e.message || t('shift.err_close'); }
             this.processing = false;
         },
 
