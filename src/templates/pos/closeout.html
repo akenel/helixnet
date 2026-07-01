@@ -78,9 +78,12 @@
                             <tr x-show="summary.cryptoSales > 0"><td class="py-1" data-i18n="closeout.pay_crypto">Crypto</td><td class="py-1 text-right" x-text="formatPrice(summary.cryptoSales)"></td></tr>
                             <tr x-show="summary.otherSales > 0"><td class="py-1" data-i18n="closeout.pay_other">Other</td><td class="py-1 text-right" x-text="formatPrice(summary.otherSales)"></td></tr>
                             <tr class="border-t-2 border-gray-800 font-bold"><td class="py-2" data-i18n="closeout.total">TOTAL</td><td class="py-2 text-right text-lg" x-text="formatPrice(summary.totalSales)"></td></tr>
-                            <tr class="text-gray-500"><td class="py-1"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate"></span>%<span class="text-gray-400" x-show="summary.turnoverReduced > 0"> (<span data-i18n="vat.on">on</span> <span x-text="formatPrice(summary.turnoverStandard)"></span>)</span></td><td class="py-1 text-right" x-text="formatPrice(summary.vatStandard)"></td></tr>
-                            <tr class="text-gray-500" x-show="summary.turnoverReduced > 0"><td class="py-1"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate_reduced"></span>% (<span data-i18n="vat.on">on</span> <span x-text="formatPrice(summary.turnoverReduced)"></span>)</td><td class="py-1 text-right" x-text="formatPrice(summary.vatReduced)"></td></tr>
-                            <tr class="text-gray-600 font-semibold" x-show="summary.turnoverReduced > 0"><td class="py-1" data-i18n="vat.vat_total">VAT total</td><td class="py-1 text-right" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                            <!-- P3 N-rate: LOOP the per-code VAT rows (standard first). CH renders
+                                 the same two "incl. VAT 8.1% / 2.6%" rows; an N-rate regime lists all. -->
+                            <template x-for="(r, i) in vatRows()" :key="r.code">
+                                <tr class="text-gray-500" x-show="i === 0 || r.turnover > 0"><td class="py-1"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="r.rate"></span>%<span class="text-gray-400" x-show="i > 0 || hasReducedVat()"> (<span data-i18n="vat.on">on</span> <span x-text="formatPrice(r.turnover)"></span>)</span></td><td class="py-1 text-right" x-text="formatPrice(r.vat)"></td></tr>
+                            </template>
+                            <tr class="text-gray-600 font-semibold" x-show="hasReducedVat()"><td class="py-1" data-i18n="vat.vat_total">VAT total</td><td class="py-1 text-right" x-text="formatPrice(summary.vatTotal)"></td></tr>
                             <tr x-show="summary.giveawayCount > 0" class="text-pink-600"><td class="py-1"><span data-i18n="closeout.treats_given">🎁 Treats given (free) —</span> <span x-text="summary.giveawayCount"></span> · <span data-i18n="closeout.cost">cost</span></td><td class="py-1 text-right" x-text="formatPrice(summary.giveawayCost)"></td></tr>
                             <tr class="text-gray-500"><td class="py-1" data-i18n="closeout.transactions">Transactions</td><td class="py-1 text-right" x-text="summary.transactionCount"></td></tr>
                         </tbody>
@@ -197,9 +200,11 @@
                 <tr x-show="summary.cryptoSales > 0"><td style="padding:5px 0;" data-i18n="closeout.pay_crypto">Crypto</td><td style="text-align:right;" x-text="formatPrice(summary.cryptoSales)"></td></tr>
                 <tr x-show="summary.otherSales > 0"><td style="padding:5px 0;" data-i18n="closeout.pay_other">Other</td><td style="text-align:right;" x-text="formatPrice(summary.otherSales)"></td></tr>
                 <tr style="border-top:2px solid #000;font-weight:bold;"><td style="padding-top:7px;" data-i18n="closeout.total">TOTAL</td><td style="text-align:right;padding-top:7px;" x-text="formatPrice(summary.totalSales)"></td></tr>
-                <tr><td style="padding:2px 0;color:#444;"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatStandard)"></td></tr>
-                <tr x-show="summary.turnoverReduced > 0"><td style="padding:2px 0;color:#444;"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="POSConfig.vat_rate_reduced"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.vatReduced)"></td></tr>
-                <tr x-show="summary.turnoverReduced > 0"><td style="padding:2px 0;color:#444;font-weight:bold;" data-i18n="vat.vat_total">VAT total</td><td style="text-align:right;color:#444;font-weight:bold;" x-text="formatPrice(summary.vatTotal)"></td></tr>
+                <!-- P3 N-rate: LOOP the per-code VAT rows on the printed Z-report (standard first). -->
+                <template x-for="(r, i) in vatRows()" :key="r.code">
+                    <tr x-show="i === 0 || r.turnover > 0"><td style="padding:2px 0;color:#444;"><span data-i18n="vat.incl_vat">incl. VAT</span> <span x-text="r.rate"></span>%</td><td style="text-align:right;color:#444;" x-text="formatPrice(r.vat)"></td></tr>
+                </template>
+                <tr x-show="hasReducedVat()"><td style="padding:2px 0;color:#444;font-weight:bold;" data-i18n="vat.vat_total">VAT total</td><td style="text-align:right;color:#444;font-weight:bold;" x-text="formatPrice(summary.vatTotal)"></td></tr>
                 <tr x-show="summary.giveawayCount > 0"><td style="padding:2px 0;color:#444;"><span data-i18n="closeout.treats_given_print">Treats given (free) &mdash;</span> <span x-text="summary.giveawayCount"></span> &middot; <span data-i18n="closeout.cost">cost</span></td><td style="text-align:right;color:#444;" x-text="formatPrice(summary.giveawayCost)"></td></tr>
                 <tr><td style="padding-top:7px;color:#444;" data-i18n="closeout.transactions">Transactions</td><td style="text-align:right;padding-top:7px;color:#444;" x-text="summary.transactionCount"></td></tr>
             </tbody>
@@ -240,6 +245,7 @@
                 vatReduced: 0,
                 turnoverStandard: 0,
                 turnoverReduced: 0,
+                vatStreams: [],   // P3 N-rate: per-code streams from the server (CH: A,B)
                 cashSales: 0,
                 twintSales: 0,
                 visaSales: 0,
@@ -280,6 +286,7 @@
                         vatReduced: parseFloat(data.vat_reduced || 0),
                         turnoverStandard: parseFloat(data.turnover_standard || 0),
                         turnoverReduced: parseFloat(data.turnover_reduced || 0),
+                        vatStreams: Array.isArray(data.vat_streams) ? data.vat_streams : [],
                         cashSales: parseFloat(data.cash_total || 0),
                         twintSales: parseFloat(data.twint_total || 0),
                         visaSales: parseFloat(data.visa_total || 0),
@@ -295,6 +302,22 @@
                     // Continue with zeros
                 }
             },
+
+            // P3 N-rate: the VAT rows to display, standard first. Prefer the server's per-code
+            // streams; fall back to the two back-compat scalars so an older summary still renders
+            // the CH rows. CH = [{A,8.1},{B,2.6}] — byte-identical to the old two hardwired rows.
+            vatRows() {
+                const st = this.summary.vatStreams;
+                if (Array.isArray(st) && st.length) {
+                    return st.map(s => ({ code: s.code, rate: parseFloat(s.rate),
+                                          vat: parseFloat(s.vat || 0), turnover: parseFloat(s.turnover || 0) }));
+                }
+                return [
+                    { code: 'A', rate: parseFloat(POSConfig.vat_rate), vat: parseFloat(this.summary.vatStandard || 0), turnover: parseFloat(this.summary.turnoverStandard || 0) },
+                    { code: 'B', rate: parseFloat(POSConfig.vat_rate_reduced), vat: parseFloat(this.summary.vatReduced || 0), turnover: parseFloat(this.summary.turnoverReduced || 0) },
+                ];
+            },
+            hasReducedVat() { return this.vatRows().slice(1).some(r => r.turnover > 0); },
 
             updateCashTotal() {
                 this.cashCount.total = parseFloat(this.cashCount.notes || 0) + parseFloat(this.cashCount.coins || 0);

@@ -30,9 +30,9 @@
             <div class="card">
                 <p class="text-gray-600 text-sm">incl. VAT (total)</p>
                 <p class="text-3xl font-bold text-indigo-600" x-text="formatPrice(summary.vat_total)"></p>
-                <p class="text-xs text-gray-400 mt-1" x-show="summary.turnover_reduced > 0">
-                    <span x-text="POSConfig.vat_rate"></span>% <span x-text="formatPrice(summary.vat_standard)"></span>
-                    · <span x-text="POSConfig.vat_rate_reduced"></span>% <span x-text="formatPrice(summary.vat_reduced)"></span>
+                <!-- P3 N-rate: LOOP the per-code split. CH renders "8.1% <std> · 2.6% <red>". -->
+                <p class="text-xs text-gray-400 mt-1" x-show="hasReducedVat()">
+                    <template x-for="(r, i) in vatRows()" :key="r.code"><span><span x-show="i > 0"> · </span><span x-text="r.rate"></span>% <span x-text="formatPrice(r.vat)"></span></span></template>
                 </p>
             </div>
         </div>
@@ -68,15 +68,14 @@
                         <td class="py-2 font-bold">TOTAL</td>
                         <td class="py-2 text-right font-bold text-lg" x-text="formatPrice(summary.total_sales)"></td>
                     </tr>
-                    <tr>
-                        <td class="py-1 text-gray-500">incl. VAT <span x-text="POSConfig.vat_rate"></span>%<span x-show="summary.turnover_reduced > 0"> (on <span x-text="formatPrice(summary.turnover_standard)"></span>)</span></td>
-                        <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_standard)"></td>
-                    </tr>
-                    <tr x-show="summary.turnover_reduced > 0">
-                        <td class="py-1 text-gray-500">incl. VAT <span x-text="POSConfig.vat_rate_reduced"></span>% (on <span x-text="formatPrice(summary.turnover_reduced)"></span>)</td>
-                        <td class="py-1 text-right text-gray-500" x-text="formatPrice(summary.vat_reduced)"></td>
-                    </tr>
-                    <tr x-show="summary.turnover_reduced > 0">
+                    <!-- P3 N-rate: LOOP per-code VAT rows (standard first). CH = same two rows. -->
+                    <template x-for="(r, i) in vatRows()" :key="r.code">
+                        <tr x-show="i === 0 || r.turnover > 0">
+                            <td class="py-1 text-gray-500">incl. VAT <span x-text="r.rate"></span>%<span x-show="i > 0 || hasReducedVat()"> (on <span x-text="formatPrice(r.turnover)"></span>)</span></td>
+                            <td class="py-1 text-right text-gray-500" x-text="formatPrice(r.vat)"></td>
+                        </tr>
+                    </template>
+                    <tr x-show="hasReducedVat()">
                         <td class="py-1 text-gray-600 font-semibold">VAT total</td>
                         <td class="py-1 text-right text-gray-600 font-semibold" x-text="formatPrice(summary.vat_total)"></td>
                     </tr>
@@ -134,6 +133,7 @@
                 total_sales: 0,
                 vat_total: 0,
                 vat_standard: 0, vat_reduced: 0, turnover_standard: 0, turnover_reduced: 0,
+                vat_streams: [],   // P3 N-rate: per-code streams from the server (CH: A,B)
                 cash_total: 0, twint_total: 0, visa_total: 0,
                 debit_total: 0, crypto_total: 0, other_total: 0,
                 top_seller: null, top_seller_quantity: 0,
@@ -157,6 +157,7 @@
                         vat_reduced: parseFloat(data.vat_reduced || 0),
                         turnover_standard: parseFloat(data.turnover_standard || 0),
                         turnover_reduced: parseFloat(data.turnover_reduced || 0),
+                        vat_streams: Array.isArray(data.vat_streams) ? data.vat_streams : [],
                         cash_total: parseFloat(data.cash_total || 0),
                         twint_total: parseFloat(data.twint_total || 0),
                         visa_total: parseFloat(data.visa_total || 0),
@@ -178,6 +179,21 @@
                     showToast('Could not load report', 'error');
                 }
             },
+
+            // P3 N-rate: the VAT rows to display, standard first. Prefer the server's per-code
+            // streams; fall back to the two back-compat scalars. CH = [{A,8.1},{B,2.6}].
+            vatRows() {
+                const st = this.summary.vat_streams;
+                if (Array.isArray(st) && st.length) {
+                    return st.map(s => ({ code: s.code, rate: parseFloat(s.rate),
+                                          vat: parseFloat(s.vat || 0), turnover: parseFloat(s.turnover || 0) }));
+                }
+                return [
+                    { code: 'A', rate: parseFloat(POSConfig.vat_rate), vat: parseFloat(this.summary.vat_standard || 0), turnover: parseFloat(this.summary.turnover_standard || 0) },
+                    { code: 'B', rate: parseFloat(POSConfig.vat_rate_reduced), vat: parseFloat(this.summary.vat_reduced || 0), turnover: parseFloat(this.summary.turnover_reduced || 0) },
+                ];
+            },
+            hasReducedVat() { return this.vatRows().slice(1).some(r => r.turnover > 0); },
 
             methodRows() {
                 return [

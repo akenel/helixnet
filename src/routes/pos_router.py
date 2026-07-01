@@ -2896,6 +2896,9 @@ async def get_daily_summary(
     # (2.6%: takeaway cafe food/drink). Computed per-transaction from the line snapshots so
     # each sale's cart-wide discount is prorated correctly, then summed across the day.
     vat_standard = vat_reduced = turnover_standard = turnover_reduced = Decimal("0.00")
+    # P3 N-rate: also accumulate the per-code streams so the closeout/reports VAT rows can LOOP
+    # over any number of rates. For CH this is exactly {A, B} and reconciles to the scalars above.
+    _streams_acc: dict = {}
     if tx_ids:
         _s = get_settings()
         _std, _red = Decimal(str(_s.POS_VAT_RATE)), Decimal(str(_s.POS_VAT_RATE_REDUCED))
@@ -2913,6 +2916,13 @@ async def get_daily_summary(
             _sp = split_vat(_lines, _tot, _sub, standard_rate=_std, reduced_rate=_red)
             vat_standard += _sp["vat_standard"]; vat_reduced += _sp["vat_reduced"]
             turnover_standard += _sp["turnover_standard"]; turnover_reduced += _sp["turnover_reduced"]
+            for _code, _st in _sp["vat_streams"].items():
+                _acc = _streams_acc.setdefault(_code, {
+                    "code": _code, "label": _st["label"], "rate": _st["rate"],
+                    "turnover": Decimal("0.00"), "vat": Decimal("0.00")})
+                _acc["turnover"] += _st["turnover"]; _acc["vat"] += _st["vat"]
+    # Order standard (highest rate) first, matching the CH A→B reading order.
+    vat_streams = sorted(_streams_acc.values(), key=lambda s: s["rate"], reverse=True)
 
     # Best sellers + units sold today (catalog products + custom lines, excl. free treats).
     # The leaderboard fills the once-empty "Top Seller" + gives items-sold for free.
@@ -2979,6 +2989,7 @@ async def get_daily_summary(
         vat_reduced=vat_reduced,
         turnover_standard=turnover_standard,
         turnover_reduced=turnover_reduced,
+        vat_streams=vat_streams,
         cash_total=Decimal(str(cash_total)),
         visa_total=Decimal(str(visa_total)),
         debit_total=Decimal(str(debit_total)),

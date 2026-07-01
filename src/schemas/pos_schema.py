@@ -385,6 +385,9 @@ class DailySummary(BaseModel):
     vat_reduced: Decimal = Decimal("0.00")
     turnover_standard: Decimal = Decimal("0.00")
     turnover_reduced: Decimal = Decimal("0.00")
+    # P3 N-rate: the per-code turnover/VAT streams in force (CH: A=8.1 / B=2.6). The closeout +
+    # reports VAT rows LOOP over this; the scalars above stay as back-compat. Ordered standard→down.
+    vat_streams: list[dict] = Field(default_factory=list)  # [{code,label,rate,turnover,vat}]
     cash_total: Decimal
     visa_total: Decimal
     debit_total: Decimal

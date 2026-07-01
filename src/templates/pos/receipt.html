@@ -162,9 +162,14 @@
                 </tbody>
             </table>
 
-            <!-- VAT rate legend (FTA: coded per-line rates require a legend explaining the codes) -->
+            <!-- VAT rate legend (FTA: coded per-line rates require a legend explaining the codes).
+                 P3 N-rate: LOOP over the tenant's rate table. CH (2 rates) renders exactly
+                 "VAT: A = 8.1% · B = 2.6% (takeaway food & drink)"; an N-rate regime shows A…N. -->
             <div class="text-xs text-gray-500 mb-3">
-                VAT: <b>A</b> = <span x-text="STD()"></span>%<span x-show="hasReduced()"> · <b class="text-teal-700">B</b> = <span x-text="RED()"></span>% (<span data-i18n="vat.takeaway_food_drink">takeaway food &amp; drink</span>)</span>
+                VAT:
+                <template x-for="(rt, ri) in vatRates()" :key="rt.code">
+                    <span x-show="ri === 0 || hasReduced()"><span x-show="ri > 0"> · </span><b :class="ri > 0 ? 'text-teal-700' : ''" x-text="rt.code"></b> = <span x-text="parseFloat(rt.rate)"></span>%<span x-show="rt.code === 'B'"> (<span data-i18n="vat.takeaway_food_drink">takeaway food &amp; drink</span>)</span></span>
+                </template>
             </div>
 
             <!-- Totals -->
@@ -185,11 +190,11 @@
                     <span data-i18n="receipt.incl_vat">incl. VAT:</span>
                     <span x-text="formatPrice(transaction.tax_amount)"></span>
                 </div>
-                <!-- Per-rate VAT split (shown when the sale mixes 8.1% + 2.6% lines) -->
+                <!-- Per-rate VAT split (shown when the sale mixes rates). P3: LOOP over active
+                     streams — CH renders "A 8.1% <std> · B 2.6% <red>" byte-identically. -->
                 <div x-show="hasReduced()" class="flex justify-between text-xs text-gray-500">
                     <span>
-                        <b>A</b> <span x-text="STD()"></span>% <span x-text="formatPrice(vatSplit().std)"></span>
-                        · <b class="text-teal-700">B</b> <span x-text="RED()"></span>% <span class="text-teal-700" x-text="formatPrice(vatSplit().red)"></span>
+                        <template x-for="(s, si) in vatStreams()" :key="s.code"><span><span x-show="si > 0"> · </span><b :class="si > 0 ? 'text-teal-700' : ''" x-text="s.code"></b> <span x-text="s.rate"></span>% <span :class="si > 0 ? 'text-teal-700' : ''" x-text="formatPrice(s.vat)"></span></span></template>
                     </span>
                     <span></span>
                 </div>
@@ -470,28 +475,55 @@
             },
             // HONESTY banner gate: an IT-regime till has no wired RT cert yet → non-fiscal receipt.
             isNonFiscal() { return ((window.POSConfig && POSConfig.regime) === 'IT'); },
-            isReduced(item) {
-                // A line is reduced only if its snapshotted rate IS the reduced rate.
-                const r = parseFloat((item && item.vat_rate) || this.STD());
-                return Math.abs(r - this.RED()) < 0.01;
+            // P3 N-RATE: the tenant's rate table, ordered standard/default first. Served by
+            // /config (regime.vat_rates); CH = [{A,8.1,default},{B,2.6}] → byte-identical to the
+            // old STD/RED. A jurisdiction with N rates (IT 22/10/5/4) just serves a longer list.
+            vatRates() {
+                const r = (window.POSConfig && POSConfig.regime && POSConfig.regime.vat_rates);
+                if (Array.isArray(r) && r.length) return r;
+                return [{ code: 'A', label: 'standard', rate: this.STD(), default: true },
+                        { code: 'B', label: 'reduced', rate: this.RED() }];
             },
-            rateCode(item) { return this.isReduced(item) ? 'B' : 'A'; },
-            hasReduced() { return (this.transaction.line_items || []).some(i => this.isReduced(i)); },
-            // Contained VAT split by code, prorated to the discounted total (mirrors the server's
-            // INC3 rollup) so the receipt's A/B figures reconcile to incl. VAT.
-            vatSplit() {
+            defaultCode() {
+                const rt = this.vatRates();
+                const d = rt.find(e => e.default);
+                return (d || rt[0]).code;
+            },
+            // Which code a line falls under: its snapshotted rate matched to the table; a rate that
+            // matches NO code falls to the default/standard code — mirrors the server's total-
+            // coverage rule so a legacy 7.7% / 0% line still shows (and reconciles) as standard.
+            rateCode(item) {
+                const r = parseFloat((item && item.vat_rate) != null ? item.vat_rate : this.STD());
+                const rt = this.vatRates();
+                for (let i = 0; i < rt.length; i++) {
+                    if (Math.abs(parseFloat(rt[i].rate) - r) < 0.01) return rt[i].code;
+                }
+                return this.defaultCode();
+            },
+            hasReduced() {
+                const d = this.defaultCode();
+                return (this.transaction.line_items || []).some(i => this.rateCode(i) !== d);
+            },
+            // Contained VAT + turnover per code, prorated to the discounted total (mirrors the
+            // server INC3 rollup) so the per-code figures reconcile to incl. VAT. Ordered like the
+            // rate table (standard first). A non-default line uses its STREAM rate for the display
+            // figure — the pre-existing approximation the A/B split already used (server is exact).
+            vatStreams() {
                 const lines = this.transaction.line_items || [];
                 const sub = lines.reduce((s, i) => s + parseFloat(i.line_total || 0), 0);
                 const total = parseFloat(this.transaction.total || 0);
                 const factor = sub > 0 ? total / sub : 1;
-                let std = 0, red = 0;
+                const rt = this.vatRates();
+                const out = {};
+                rt.forEach(e => { out[e.code] = { code: e.code, label: e.label, rate: parseFloat(e.rate), vat: 0, turnover: 0 }; });
+                const self = this;
                 lines.forEach(i => {
+                    const s = out[self.rateCode(i)];
                     const g = parseFloat(i.line_total || 0) * factor;
-                    const rate = this.isReduced(i) ? this.RED() : this.STD();
-                    const v = g * rate / (100 + rate);
-                    if (this.isReduced(i)) red += v; else std += v;
+                    s.turnover += g;
+                    s.vat += g * s.rate / (100 + s.rate);
                 });
-                return { std, red };
+                return rt.map(e => out[e.code]);
             },
             // Points earned on this sale = 1 per whole unit of currency paid, floored (matches the server).
             pointsEarned() {

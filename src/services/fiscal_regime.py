@@ -37,6 +37,22 @@ REGIMES: dict[str, dict] = {
 }
 
 
+# --- IT RATE TABLE — TBD-BY-COMMERCIALISTA (P3, NOT WIRED) -----------------------------------
+# The SHAPE of an Italian IVA rate table (ordinaria 22 / ridotta 10 / ridotta 5 / minima 4), kept
+# as flagged DATA so the N-rate engine has something concrete to bolt onto later. It is NOT
+# returned by resolve_regime and NOT fed to split_vat: an IT tenant today honestly runs on the
+# Swiss rates in force (see resolve_regime → ch_rate_table) and prints "Documento non fiscale".
+# WHICH Italian good is 22/10/5/4 is TAX LAW WE CANNOT INVENT — the labels below are generic and
+# NO product class is mapped to them until a commercialista signs off (the seal lesson). Do NOT
+# treat this constant as legal until that happens.
+IT_RATE_TABLE_TBD: list[dict] = [
+    {"code": "22", "label": "aliquota ordinaria", "rate": "22", "default": True, "tbd": True},
+    {"code": "10", "label": "aliquota ridotta",   "rate": "10", "tbd": True},
+    {"code": "5",  "label": "aliquota ridotta",    "rate": "5",  "tbd": True},
+    {"code": "4",  "label": "aliquota minima",     "rate": "4",  "tbd": True},
+]
+
+
 def _ch_rates() -> dict:
     """Swiss VAT rates, read live from config — the single source (never hardcoded here).
 
@@ -50,6 +66,22 @@ def _ch_rates() -> dict:
         "vat_rate": s.POS_VAT_RATE,
         "vat_rate_reduced": s.POS_VAT_RATE_REDUCED,
     }
+
+
+def _rate_table_for(code: str) -> list[dict]:
+    """The N-rate table ACTUALLY IN FORCE for a regime (drives the receipt/Z-report split loop).
+
+    Every regime today resolves to the CH two-rate table from config — including IT, which runs on
+    the Swiss rates until a commercialista wires IT_RATE_TABLE_TBD. So the served table always
+    matches what split_vat computes, and a CH tenant is byte-identical (A=8.1 / B=2.6). Rates are
+    stringified for a clean JSON payload (the client parseFloat's them, mirroring vat_rate).
+    """
+    from src.services.vat_resolver import ch_rate_table
+    return [
+        {"code": e["code"], "label": e["label"], "rate": str(e["rate"]),
+         "default": bool(e.get("default", False))}
+        for e in ch_rate_table()
+    ]
 
 
 def regime_meta(code: str | None) -> dict:
@@ -76,4 +108,7 @@ def resolve_regime(store=None) -> dict:
         "currency": currency,
         "locale": locale,
         **_ch_rates(),
+        # P3 N-rate: the ordered rate table in force (CH A/B from config). The receipt +
+        # Z-report loop over this instead of the two hardwired A/B scalars. CH = byte-identical.
+        "vat_rates": _rate_table_for(code),
     }
