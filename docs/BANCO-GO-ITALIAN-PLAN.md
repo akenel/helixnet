@@ -5,13 +5,13 @@
 
 ## Executive Summary
 1. **Make Banco Italian-*presentable* and Swiss-*working*** — Euro + Italian UI + a per-tenant fiscal-regime seam — **without touching the money math or claiming Italian fiscal legality.**
-2. **Two cheap horizontal bricks ship now:** (1) currency/locale display, (2) EN/IT i18n. Both are additive; English + CHF stay the default and byte-identical.
+2. **Two cheap horizontal bricks ship now:** (1) currency/locale display, (2) **EN/IT/DE** i18n (scope updated 2026-07-01 — German added, French deferred, Banco-only). Both are additive; English + CHF stay the default and byte-identical. **German is a Swiss-market win, not just EU-prep:** Felix is Swiss-German → DE makes Banco properly Swiss (he'd run his till in German), and it lands on the existing CH default (MWST / de-CH).
 3. **The expensive vertical (Italian IVA N-rate engine + RT fiscal cert) is DEFERRED** — held until a real Italian shop signs and a commercialista signs off. We build the *seam*, not the tax law.
 4. **Scope is the 5-minute demo path, one screen at a time**, currency + language in a single pass so every shipped screen is *fully* done — the deliverable is *"Banco demos in Italian with Euros; Switzerland is unchanged."*
 5. **This is a demand-enabler, not a build-for-a-signed-customer.** Felix is proof-of-concept, not the plan. Depth over breadth: architect for many countries, ship only Italy.
 
 ## Doctrine Compass (every task honors these)
-- **LANGUAGE = cheap horizontal** — string catalog, do-one-do-all, EN+IT now, DE/FR trivial later.
+- **LANGUAGE = cheap horizontal** — string catalog, do-one-do-all, **EN+IT+DE now (FR deferred), Banco POS only**. DE finishes Switzerland (Felix is Swiss-German); IT is the next-country play.
 - **FISCAL = expensive vertical** — one country at a time, RENTED cert per country, **out of scope here.**
 - **DEPTH over BREADTH** — the seam is general; Italy is the only real customization.
 - **NEVER regress Switzerland** — CH default, Swiss VAT (8.1/2.6 + café-split) + CHF byte-identical. The money-path e2e gate is sacred.
@@ -26,7 +26,7 @@
 |---|---|---|
 | **DO-NOW P0** | Regime seam = **three thin selector columns** (`fiscal_regime`, `currency`, `locale`) on `store_settings`, default CH; `/config` sources them with a CH fallback. **No IT tax-law placeholders in the tree.** | Doctrine-mandated per-tenant; unblocks P1/P2. |
 | **DO-NOW P1** | Multicurrency (CHF/EUR, USD near-free) **+ date/time locale seam.** Route all money & dates through one formatter each. Server denom-set becomes currency-keyed (money-critical). | Most-visible, lowest-risk brick; the one correctness landmine is the denom whitelist. |
-| **DO-NOW P2** | i18n EN/IT for the **demo path only** (7 screens). Glossary reviewed by a native speaker *first*. | Cheap in risk, expensive in tedium — scope it or abandon it half-done. |
+| **DO-NOW P2** | i18n **EN/IT/DE** for the **demo path only** (7 screens), Banco POS only. Glossary reviewed by a native speaker *first* (IT: Nino/ISOTTO; DE: Angel/Felix — free native check). FR deferred. | Cheap in risk, expensive in tedium — scope it or abandon it half-done. DE is net-new authoring (IT partly exists) but self-verifiable. |
 | **DEFER (held)** | **VAT N-rate engine refactor** (`split_vat` → N-stream, class→rate map, N-code display). **NOT first-push.** Land only when a real IT tenant + commercialista exist. | Fiscal-critical surgery with zero live benefit today; writing placeholder Italian tax law now rots and misleads (seal lesson). |
 | **OUT OF SCOPE** | **Rented-cert RT plug-in** (fiskaly/Epson/Custom) — the thing that makes an IT receipt *legal*. | Expensive vertical, one country, external cert. |
 
@@ -94,27 +94,27 @@
 
 ---
 
-## PHASE 2 — Italian i18n (demo path first)
-**Goal:** the 5-minute demo path fully Italian, English unchanged, key-parity gated. **Do NOT sweep all 22 templates now** — half-done i18n reads worse than English.
+## PHASE 2 — Italian + German i18n (demo path first)
+**Goal:** the 5-minute demo path fully **Italian AND German**, English unchanged, key-parity gated across all three catalogs. **Do NOT sweep all 22 templates now** — half-done i18n reads worse than English. (FR deferred; Banco POS only — don't touch La Piazza/camper/isotto catalogs.)
 
 **Demo path (ship these, complete):** `login → catalog → scan → checkout → receipt → closeout` + the shared `base.html` shell. **Deferred to "when a real IT shop signs":** `hypercare`, `kb_approvals`, `my_tickets`, `suppliers`, `receiving`, `transactions`, `customer_lookup`, `dashboard`, `my_day`, `reports`, `product_sales`, `search`.
 
 **Tasks (ordered):**
-1. **Glossary FIRST** — one page, ~40 POS terms (scontrino, resto, IVA, chiusura di cassa, giacenza…), reviewed by **Nino / ISOTTO "Famous Guy"** before writing 600 string values. Fixing a glossary is cheap; re-editing a catalog is not.
-2. **Catalog** — new `src/static/pos-i18n.js`, shape `{ it:{…}, en:{…} }` modeled on `isotto-i18n.js` (seed `common.*` from `isotto-i18n.js:52-66`). Namespaces: `checkout.*`, `cash.*`, `vat.*`/`receipt.*`, `closeout.*`, `scan.*`, `settings.*`, `msg.*`.
+1. **Glossary FIRST** — one page, ~40 POS terms in **IT and DE** (IT: scontrino, resto, IVA, chiusura di cassa, giacenza…; DE: Kassenbon/Quittung, Rückgeld, MWST, Kassenabschluss, Bestand…). IT reviewed by **Nino / ISOTTO "Famous Guy"**, DE by **Angel/Felix** (free native check), before writing string values. Fixing a glossary is cheap; re-editing a catalog is not.
+2. **Catalog** — new `src/static/pos-i18n.js`, shape `{ it:{…}, en:{…}, de:{…} }` modeled on `isotto-i18n.js` (seed `common.*` from `isotto-i18n.js:52-66`). Namespaces: `checkout.*`, `cash.*`, `vat.*`/`receipt.*`, `closeout.*`, `scan.*`, `settings.*`, `msg.*`. **Key-parity across all three** (it/en/de have identical key sets) is gated — a missing DE key must fail loud, not render blank.
 3. **Wire the engine into `base.html`** — port from `isotto/base.html`: include (`:112`), detection IIFE (`:116-139`), `t()` (`:150-172`), `applyI18n()`+DOMContentLoaded sweep+**MutationObserver** (`:352-393`). **Scope the observer** (subtree + attribute filter, ignore Alpine-managed nodes) — `scan.html` is 1,426 lines of high-frequency Alpine; an unscoped observer risks scan-input lag.
-4. **Default language from regime** (fix the hardcode) — detection order: `?lang=` → `localStorage 'pos_lang'` → JWT `locale` claim (from `sessionStorage 'pos_token'`) → **`POSConfig.locale`'s language** (`it-IT`→`it`, else `en`) → `'en'`. **Guard every branch** `if (POS_STRINGS[lang])` so a `de-CH` JWT falls to English, never blank/raw-key.
+4. **Default language from regime** (fix the hardcode) — detection order: `?lang=` → `localStorage 'pos_lang'` → JWT `locale` claim (from `sessionStorage 'pos_token'`) → **`POSConfig.locale`'s language** → `'en'`. Language extraction takes the primary subtag: `it-IT`→`it`, **`de-CH`/`de-*`→`de`** (so Felix's `de-CH` JWT renders GERMAN), else `en`. **Guard every branch** `if (POS_STRINGS[lang])` so an *unsupported* locale (e.g. `fr-CH` until FR ships) falls to English, never blank/raw-key.
 5. **Sweep the 7 demo templates** — Pass A static `data-i18n`/`-placeholder`/`-html`; **Pass B (the risk)** Alpine `x-text`/JS/`alert`/`confirm`/toast → `t()` calls; Pass C split prose (`t()`) from money (`formatPrice`) — since P1 already did each file, do i18n in the **same screen-by-screen pass** so each file is touched once.
 6. **Switcher** — Language/Lingua `<select>` in `settings.html:~56` + compact selector in the `base.html` footer; writes `localStorage 'pos_lang'` + reload; set `.value` to `window._posLang` on load.
 7. **Regime-driven labels** (the `vat_number_format` gap) — receipt VAT label `receipt.html:97` `VAT` → `P. IVA` (IT) / `MWST` (CH) driven by regime; settings-form P.IVA placeholder + light validation from `vat_number_format`. (If not wired, **drop the field as YAGNI and say so** — don't carry a decorative seam.)
 8. **HONESTY: non-fiscal receipt banner** — for `regime == IT` without a wired RT, receipt prints `Documento non fiscale — Ricevuta non valida ai fini fiscali` (reuse the conditional-banner pattern at `receipt.html:82-88`); Z-report gets the equivalent. **Required by doctrine, not optional.**
 
 **Swiss-green assertions:**
-- English default → CH screens render **identical wording** to pre-i18n (audit `?lang=en` vs snapshot; any wording drift in the EN catalog changes the Swiss UI).
-- `de-CH`-JWT user gets English, **not blank, not raw keys**.
-- No `data-i18n` key falls through to raw-key display.
+- English default → CH screens render **identical wording** to pre-i18n (audit `?lang=en` vs snapshot; any wording drift in the EN catalog changes the Swiss UI). English stays the byte-identical CH baseline even though `de-CH` now resolves to German — the golden lock freezes NUMBERS, and the EN catalog must reproduce today's exact English wording.
+- `de-CH`-JWT user gets **German** (Felix's real experience); an *unsupported* locale (`fr-CH`) falls to English, **not blank, not raw keys**.
+- No `data-i18n` key falls through to raw-key display in any of it/en/de.
 
-**Effort:** ~2–3 days (7 screens, not 22). **Done-when:** demo path fully Italian under `?lang=it` incl. dynamic states (empty cart, sale toast, error paths); English byte-identical; key-parity green; native speaker signed the glossary; IT receipt carries the non-fiscal banner.
+**Effort:** ~2.5–3.5 days (7 screens, not 22; the template sweep is language-count-independent — only the DE catalog adds ~0.5 day of authoring on top of IT). **Done-when:** demo path fully Italian under `?lang=it` **and fully German under `?lang=de`** incl. dynamic states (empty cart, sale toast, error paths); Felix's `de-CH` login lands in German; English byte-identical; key-parity green across it/en/de; native reviewers signed both glossaries (Nino=IT, Angel/Felix=DE); IT receipt carries the non-fiscal banner.
 
 ---
 
@@ -139,7 +139,7 @@
 | 3 | HIGH | P1 | Denom refactor drops CHF `1000`/`0.05` or emits float keys (`"0.5"≠"0.50"`) → CH drawer miscount | CHF list + `str(Decimal)` keys byte-identical; `currency` defaults CHF; existing `denoms_total` tests unchanged; assert `denoms_for("CHF")==CHF_DENOMINATIONS`. |
 | 4 | HIGH | P1 | Naive `formatPrice` sweep hits CSV → de-CH apostrophe `1'234.55` corrupts CH exports (same trap as IT comma) | CSV **cell values raw numeric**; only header labels currency-aware; grep no CSV path calls `formatPrice`; verify CH export parses. |
 | 5 | HIGH | P0/P3 | Split-brain: `store_settings.vat_rate` (vestigial) vs config `POS_VAT_RATE` (roll-up reads) drift on rate change | CH standard rate has **one** source = config. Don't read `store_settings.vat_rate` in regime path. Reconciliation test: receipt line-rate == Z-report standard-stream on a CH sale. |
-| 6 | MED | P2 | `de-CH` JWT → `undefined` dict → blank till / raw keys; EN catalog wording drift changes Swiss UI | Guard every branch `if (POS_STRINGS[lang])`→`en`; e2e assert `de-CH` user gets English; audit `?lang=en` vs pre-i18n snapshot. |
+| 6 | MED | P2 | Unsupported locale (`fr-CH`) → `undefined` dict → blank till / raw keys; EN catalog wording drift changes Swiss UI; DE/IT key-set drifts from EN → missing-key blanks | Guard every branch `if (POS_STRINGS[lang])`→`en`; e2e assert `de-CH`→German and `fr-CH`→English (not blank); key-parity test (it/en/de identical key sets); audit `?lang=en` vs pre-i18n snapshot. |
 | 7 | MED | P0/test | Tenant-scoped `/config` resolves to wrong store → CH gate silently validates IT | Pin `/config` to `store_number=1`; CH e2e asserts `config.currency==='CHF'` && `vat_rate===8.1` before trusting the run. |
 | 8 | MED | P0 | `/config` gains a DB dependency → new 500 path on a public init-time endpoint | `try/except → resolve_regime(None)`; test DB-down returns 200 CH. |
 | 9 | MED | P2 | Document-wide MutationObserver on Alpine-heavy `scan.html` → re-translation churn / input lag | Scope observer (subtree+attr filter, skip Alpine nodes); load-test CH scan before/after. |
