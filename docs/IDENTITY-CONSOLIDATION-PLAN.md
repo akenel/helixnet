@@ -65,6 +65,21 @@ your only admin. Instead:
 > sets his password."* Right mechanism — just do it in `kc-production`, with **him getting his account
 > and you keeping yours.**
 
+### MFA policy for `kc-production` (decided 2026-07-01)
+**Target MFA by role — do NOT blanket-require it.** A cashier logs in dozens of times a shift, so
+mandatory MFA on the till is friction in the wrong place; the **owner/admin + steward** accounts are
+where it earns its keep (keys to the money, settings, data).
+- **Conditional flow:** require a second factor **if the user has an admin/owner role** (optionally also
+  on unknown device / off-site); **optional** for cashier/staff. Keycloak conditional authentication
+  flows do exactly this. (This is how ID6's "conditional MFA in one realm" goal is realised.)
+- **Method priority:** **TOTP** (authenticator app) = primary for admins — free, strong, offline,
+  ~20s self-enroll. **WebAuthn/passkeys** where devices support it (strongest). **Email OTP = fallback
+  only** — it's the *weakest* MFA (email compromise defeats it) and the *slowest* (wait for a mail every
+  login); never the primary for an all-day till.
+- **Self-enroll** optional OTP for anyone who wants it (a "Configure OTP" they can opt into).
+- Set this once as the realm's auth flow when standing up `kc-production` — an auth-policy config, not a
+  per-user thing, and not retrofitted onto the `borrowhood` swamp.
+
 ---
 
 ## Current reality (verified 2026-06-26 — code + infra sweep)
