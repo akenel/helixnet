@@ -178,6 +178,12 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS fiscal_regime VARCHAR(8) NOT NULL DEFAULT 'CH'",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS currency VARCHAR(8) NOT NULL DEFAULT 'CHF'",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS locale VARCHAR(12) NOT NULL DEFAULT 'de-CH'",
+    # N-rate VAT table editor (Piece C, 2026-07-01, Go-Italian): the tenant's editable rate menu as
+    # a JSON string on store_settings. NULLABLE, DEFAULT NULL — every existing row stays NULL and the
+    # VAT engine falls back to the CH config default table, so a CH shop is BYTE-IDENTICAL to today.
+    # Only persisted when the shop opens the Settings → Tax editor and saves. Additive TEXT, same
+    # proven idiom as the JSON blobs above (caps_json / attachments).
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS vat_rates TEXT",
     # Offline outbox idempotency (P2.1, 2026-06-29): the atomic create-sale endpoint keys
     # on a client-generated UUID so a replayed sale (network retry / offline outbox sync)
     # is adopted exactly once, never double-rung. Nullable (legacy 3-step sales have none);

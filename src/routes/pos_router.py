@@ -131,6 +131,59 @@ SHOP_TZ = ZoneInfo(os.environ.get("HX_SHOP_TZ", "Europe/Zurich"))
 # POS CONFIGURATION ENDPOINT
 # ================================================================
 
+async def _tenant_rate_table(db: AsyncSession) -> list[dict]:
+    """The active tenant's N-rate VAT table for split_vat — the store's own edited table when it has
+    one, else the CH config default (POS_VAT_RATE / _REDUCED).
+
+    Piece C wiring: the VAT-computing call sites feed this to split_vat instead of None. For a CH shop
+    with NULL store_settings.vat_rates, resolve_regime returns the exact A/B config table split_vat
+    used before, so the money path is BYTE-IDENTICAL to today (golden lock). Wrapped so a DB blip
+    degrades to the CH default and never turns VAT math into a 500.
+    """
+    try:
+        store = await get_active_store_settings(db)
+    except Exception:
+        logger.warning("rate-table: store read failed; CH fallback", exc_info=True)
+        store = None
+    return resolve_regime(store)["vat_rates"]
+
+
+def _validate_and_serialize_vat_rates(rows) -> str:
+    """Validate an N-rate VAT MENU and return it as a JSON string for store_settings.vat_rates.
+
+    Rules (mirror the client-side editor, enforced here too — defense in depth): a list of ≥1 row;
+    each row has a non-blank code + a numeric rate in 0–100; codes are unique; exactly one row is
+    the default/catch-all. Raises HTTPException(422) on any violation so a bad payload never persists
+    a table that would mis-book VAT. Rates are stringified (like _rate_table_for) for a clean payload.
+    """
+    import json
+    if not isinstance(rows, list) or not rows:
+        raise HTTPException(status_code=422, detail="At least one VAT rate is required.")
+    out, codes, defaults = [], set(), 0
+    for r in rows:
+        if not isinstance(r, dict):
+            raise HTTPException(status_code=422, detail="Malformed VAT rate row.")
+        code = str(r.get("code") or "").strip()
+        if not code:
+            raise HTTPException(status_code=422, detail="Every VAT rate needs a code.")
+        if code in codes:
+            raise HTTPException(status_code=422, detail=f"Duplicate VAT rate code: {code}")
+        codes.add(code)
+        try:
+            rate = Decimal(str(r.get("rate")))
+        except Exception:
+            raise HTTPException(status_code=422, detail=f"VAT rate for {code} must be a number.")
+        if rate < 0 or rate > 100:
+            raise HTTPException(status_code=422, detail=f"VAT rate for {code} must be 0–100.")
+        is_default = bool(r.get("default", False))
+        defaults += 1 if is_default else 0
+        out.append({"code": code, "label": str(r.get("label") or code),
+                    "rate": str(rate), "default": is_default})
+    if defaults != 1:
+        raise HTTPException(status_code=422, detail="Exactly one VAT rate must be the default.")
+    return json.dumps(out)
+
+
 @router.get("/config")
 async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     """
@@ -2498,7 +2551,10 @@ async def checkout_transaction(
         .where(LineItemModel.transaction_id == transaction.id)
     )).all()
     if _lines:
-        _split = split_vat([(r, lt) for r, lt in _lines], transaction.total, transaction.subtotal)
+        # Piece C: feed the tenant's rate table (CH shop w/ NULL vat_rates → CH config → byte-identical).
+        _rate_table = await _tenant_rate_table(db)
+        _split = split_vat([(r, lt) for r, lt in _lines], transaction.total, transaction.subtotal,
+                           rate_table=_rate_table)
         transaction.tax_amount = _split["vat_total"]
     else:
         transaction.tax_amount = _inclusive_vat(transaction.total)
@@ -2692,7 +2748,10 @@ async def create_sale(
     # VAT = sum of per-line contained VAT at each snapshotted rate (mixed cart legally correct),
     # computed from the in-memory lines (no flush needed). Falls back to single-rate if no lines.
     _lines = [(l.vat_rate, l.line_total) for l in built_lines]
-    txn.tax_amount = split_vat(_lines, txn.total, txn.subtotal)["vat_total"] if _lines else _inclusive_vat(txn.total)
+    # Piece C: tenant rate table (CH shop w/ NULL vat_rates → CH config → byte-identical).
+    _rate_table = await _tenant_rate_table(db) if _lines else None
+    txn.tax_amount = (split_vat(_lines, txn.total, txn.subtotal, rate_table=_rate_table)["vat_total"]
+                      if _lines else _inclusive_vat(txn.total))
 
     txn.receipt_number = f"REC-{transaction_number}"
 
@@ -2900,8 +2959,9 @@ async def get_daily_summary(
     # over any number of rates. For CH this is exactly {A, B} and reconciles to the scalars above.
     _streams_acc: dict = {}
     if tx_ids:
-        _s = get_settings()
-        _std, _red = Decimal(str(_s.POS_VAT_RATE)), Decimal(str(_s.POS_VAT_RATE_REDUCED))
+        # Piece C: the tenant's rate table drives the Z-report streams. CH shop w/ NULL vat_rates →
+        # CH config table → the same A/B split (8.1/2.6) this loop produced before (byte-identical).
+        _rate_table = await _tenant_rate_table(db)
         _money = {t.id: (t.total, t.subtotal) for t in transactions}
         _lrows = (await db.execute(
             select(LineItemModel.transaction_id, LineItemModel.vat_rate, LineItemModel.line_total)
@@ -2913,7 +2973,7 @@ async def get_daily_summary(
             _bytx[_txid].append((_rate, _lt))
         for _txid, _lines in _bytx.items():
             _tot, _sub = _money.get(_txid, (Decimal("0"), Decimal("0")))
-            _sp = split_vat(_lines, _tot, _sub, standard_rate=_std, reduced_rate=_red)
+            _sp = split_vat(_lines, _tot, _sub, rate_table=_rate_table)
             vat_standard += _sp["vat_standard"]; vat_reduced += _sp["vat_reduced"]
             turnover_standard += _sp["turnover_standard"]; turnover_reduced += _sp["turnover_reduced"]
             for _code, _st in _sp["vat_streams"].items():
@@ -3390,7 +3450,13 @@ async def get_store_settings(
     if not settings:
         raise HTTPException(status_code=404, detail=f"Store #{store_number} not found")
 
-    return settings
+    # Piece C: the editor pre-fills from the EFFECTIVE rate table. A CH shop with no stored table
+    # (vat_rates NULL) gets the CH config default (8.1/2.6) to edit — but nothing is persisted until
+    # the user actually saves. resolve_regime returns the stored table when present, else CH default.
+    read = StoreSettingsRead.model_validate(settings)
+    if not read.vat_rates:
+        read.vat_rates = resolve_regime(settings)["vat_rates"]
+    return read
 
 
 @router.put("/settings/{store_number}", response_model=StoreSettingsRead)
@@ -3420,6 +3486,26 @@ async def update_store_settings(
 
     # Update only provided fields
     update_data = settings_update.model_dump(exclude_unset=True)
+
+    # Piece C: the N-rate VAT table is stored as a JSON string. Validate the MENU server-side
+    # (≥1 row, exactly 1 default, unique non-blank codes, numeric rates 0–100), then serialise. A CH
+    # shop that never touches the Tax editor never sends this key → column stays NULL → byte-identical.
+    # NOTE: this manages the rate LIST only; class→rate ASSIGNMENT (which product is 8.1/2.6, or 22/
+    # 10/5/4 for IT) is a SEPARATE deferred layer — not decided here.
+    if "vat_rates" in update_data:
+        rows = update_data.pop("vat_rates")
+        if rows is None:
+            settings.vat_rates = None  # explicit clear → engine falls back to CH config default
+        else:
+            settings.vat_rates = _validate_and_serialize_vat_rates(rows)
+            # Mirror the default row's rate into the legacy scalar so vat_rate stays the standard rate.
+            _default_row = next((r for r in rows if r.get("default")), rows[0] if rows else None)
+            if _default_row is not None:
+                try:
+                    settings.vat_rate = Decimal(str(_default_row["rate"]))
+                except Exception:
+                    pass
+
     for field, value in update_data.items():
         setattr(settings, field, value)
 
@@ -3428,7 +3514,12 @@ async def update_store_settings(
     await db.refresh(settings)
 
     logger.info(f"Store #{store_number} settings updated by {current_user['username']}")
-    return settings
+
+    # Return the effective table so the editor re-fills cleanly (stored table, else CH config default).
+    read = StoreSettingsRead.model_validate(settings)
+    if not read.vat_rates:
+        read.vat_rates = resolve_regime(settings)["vat_rates"]
+    return read
 
 
 # ================================================================

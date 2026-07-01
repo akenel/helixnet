@@ -90,12 +90,50 @@
                 </div>
 
                 <!-- TAX -->
-                <div x-show="tab==='tax'" class="space-y-4">
+                <div x-show="tab==='tax'" class="space-y-5">
                     <div class="grid md:grid-cols-2 gap-4">
                         <div><label class="lbl" data-i18n="settings.vat_number">VAT number (UID)</label>
                             <input type="text" x-model="form.vat_number" class="input-field font-mono" placeholder="CHE-XXX.XXX.XXX MWST">
                             <p class="text-xs text-amber-600 mt-1" x-show="!form.vat_number || (form.vat_number||'').includes('X')" data-i18n="settings.vat_number_warn">⟶ enter the real CHE-UID before going live</p></div>
-                        <div><label class="lbl" data-i18n="settings.vat_rate">VAT rate (%)</label><input type="number" step="0.1" min="0" max="100" x-model="form.vat_rate" class="input-field" placeholder="8.1"></div>
+                    </div>
+
+                    <!-- N-RATE VAT TABLE EDITOR (Piece C) -->
+                    <div class="border-t pt-4">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+                            <h3 class="text-base font-bold text-gray-900" data-i18n="settings.vat_rates_title">VAT rates</h3>
+                            <button @click="addRate()" class="btn-secondary text-sm" data-i18n="settings.add_rate">➕ Add rate</button>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3" data-i18n="settings.vat_rates_hint">The list of tax rates this shop charges. The default is the standard / catch-all rate. Which product gets which rate is set on the product.</p>
+
+                        <!-- column headers (desktop) -->
+                        <div class="hidden md:grid grid-cols-12 gap-2 text-xs font-semibold text-gray-500 px-1 mb-1">
+                            <div class="col-span-2" data-i18n="settings.rate_code">Code</div>
+                            <div class="col-span-4" data-i18n="settings.rate_label">Label</div>
+                            <div class="col-span-2" data-i18n="settings.rate_percent">Rate %</div>
+                            <div class="col-span-2 text-center" data-i18n="settings.rate_default">Default</div>
+                            <div class="col-span-2"></div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <template x-for="(r, i) in (form.vat_rates || [])" :key="i">
+                                <div class="grid grid-cols-12 gap-2 items-center">
+                                    <input type="text" x-model="r.code" class="col-span-4 md:col-span-2 input-field font-mono" :placeholder="t('settings.rate_code')">
+                                    <input type="text" x-model="r.label" class="col-span-8 md:col-span-4 input-field" :placeholder="t('settings.rate_label')">
+                                    <input type="number" step="0.1" min="0" max="100" x-model="r.rate" class="col-span-5 md:col-span-2 input-field" placeholder="8.1">
+                                    <div class="col-span-4 md:col-span-2 flex justify-center">
+                                        <label class="flex items-center gap-1 text-xs text-gray-600">
+                                            <input type="radio" name="vatDefault" :checked="r.default" @change="setDefault(i)" class="w-5 h-5">
+                                            <span class="md:hidden" data-i18n="settings.rate_default">Default</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-span-3 md:col-span-2 flex justify-end">
+                                        <button @click="removeRate(i)" class="px-3 py-2 rounded-lg text-red-700 bg-red-50 hover:bg-red-100"
+                                                :title="t('settings.remove_rate')" :disabled="(form.vat_rates||[]).length <= 1">🗑️</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <p x-show="vatError" class="text-sm text-red-600 mt-2" x-text="vatError"></p>
                     </div>
                 </div>
 
@@ -248,6 +286,7 @@
             isAdmin: false,
             saving: false,
             form: {},
+            vatError: '',
             tab: 'identity',
             tabs: [
                 { id:'identity', label:t('settings.tab_identity') },
@@ -383,26 +422,85 @@
             },
 
             async load() {
-                try { this.form = await API.get(`/api/v1/pos/settings/${this.STORE}`); }
+                try {
+                    this.form = await API.get(`/api/v1/pos/settings/${this.STORE}`);
+                    // Piece C: the API pre-fills vat_rates (stored table, else CH config default). Be
+                    // defensive — if it's missing/empty, seed the CH two-rate default so the editor
+                    // always shows editable rows (never persisted unless the admin saves).
+                    if (!Array.isArray(this.form.vat_rates) || this.form.vat_rates.length === 0) {
+                        this.form.vat_rates = [
+                            { code: 'A', label: 'standard', rate: '8.1', default: true },
+                            { code: 'B', label: 'reduced',  rate: '2.6', default: false },
+                        ];
+                    }
+                }
                 catch (e) { console.error('load settings failed', e); showToast(t('settings.toast_load_settings_failed'), 'error'); }
+            },
+
+            // --- N-rate VAT table editor (Piece C) — manages the rate MENU (list + values) only ----
+            addRate() {
+                if (!Array.isArray(this.form.vat_rates)) this.form.vat_rates = [];
+                this.form.vat_rates.push({ code: '', label: '', rate: '', default: this.form.vat_rates.length === 0 });
+            },
+            removeRate(i) {
+                const rows = this.form.vat_rates || [];
+                if (rows.length <= 1) return;               // always keep ≥1 rate
+                const wasDefault = rows[i] && rows[i].default;
+                rows.splice(i, 1);
+                if (wasDefault && rows.length && !rows.some(r => r.default)) rows[0].default = true;
+            },
+            setDefault(i) {
+                (this.form.vat_rates || []).forEach((r, j) => { r.default = (j === i); });
+            },
+            validateVatRates() {
+                const rows = this.form.vat_rates || [];
+                if (rows.length < 1) return t('settings.vat_err_need_one');
+                const codes = new Set();
+                let defaults = 0;
+                for (const r of rows) {
+                    const code = (r.code || '').toString().trim();
+                    if (!code) return t('settings.vat_err_need_code');
+                    if (codes.has(code)) return t('settings.vat_err_dup_code', { code });
+                    codes.add(code);
+                    const rate = parseFloat(r.rate);
+                    if (isNaN(rate) || rate < 0 || rate > 100) return t('settings.vat_err_bad_rate', { code });
+                    if (r.default) defaults++;
+                }
+                if (defaults !== 1) return t('settings.vat_err_one_default');
+                return '';
             },
 
             async save() {
                 if (!this.isAdmin) { showToast(t('settings.admins_only'), 'warning'); return; }
+                // Piece C: validate the VAT rate menu before saving (≥1 row, exactly 1 default,
+                // unique codes, rates 0–100). Block the save + surface the error on the Tax tab.
+                this.vatError = this.validateVatRates();
+                if (this.vatError) { this.tab = 'tax'; showToast(this.vatError, 'error'); return; }
                 this.saving = true;
                 const F = this.form;
+                // Normalised rate rows (rate as a plain string) + mirror the default into the scalar.
+                const vatRows = (F.vat_rates || []).map(r => ({
+                    code: (r.code || '').toString().trim(),
+                    label: (r.label || '').toString().trim() || (r.code || '').toString().trim(),
+                    rate: parseFloat(r.rate).toString(),
+                    default: !!r.default,
+                }));
+                const defRow = vatRows.find(r => r.default) || vatRows[0];
                 const payload = {
                     store_name: F.store_name, legal_name: F.legal_name,
                     address_line1: F.address_line1, address_line2: F.address_line2,
                     city: F.city, postal_code: F.postal_code, country: F.country, founded_year: F.founded_year,
                     phone: F.phone, email: F.email, website: F.website,
                     facebook_url: F.facebook_url, instagram_url: F.instagram_url, opening_hours: F.opening_hours,
-                    vat_number: F.vat_number, vat_rate: F.vat_rate,
+                    vat_number: F.vat_number, vat_rate: defRow ? defRow.rate : F.vat_rate,
+                    vat_rates: vatRows,
                     receipt_header: F.receipt_header, receipt_footer: F.receipt_footer, receipt_logo_url: F.receipt_logo_url,
                     cashier_max_discount: F.cashier_max_discount, manager_max_discount: F.manager_max_discount,
                 };
                 try {
                     this.form = await API.put(`/api/v1/pos/settings/${this.STORE}`, payload);
+                    if (!Array.isArray(this.form.vat_rates) || this.form.vat_rates.length === 0) this.form.vat_rates = vatRows;
+                    this.vatError = '';
                     showToast(t('settings.toast_saved_receipt'), 'success');
                 } catch (e) { showToast(e.message || t('settings.save_failed'), 'error'); }
                 finally { this.saving = false; }

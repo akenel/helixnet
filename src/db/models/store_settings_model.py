@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 
-from sqlalchemy import String, Numeric, Boolean, DateTime, Integer
+from sqlalchemy import String, Numeric, Boolean, DateTime, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -167,6 +167,17 @@ class StoreSettingsModel(Base):
     locale: Mapped[str] = mapped_column(
         String(12), nullable=False, default="de-CH",
         comment="BCP-47 locale (de-CH for CH).")
+
+    # N-rate VAT table (Piece C, Go-Italian): the tenant's editable rate MENU as a JSON string —
+    # an ordered list of {code, label, rate, default}. NULL/empty → the engine falls back to the
+    # CH config default table (POS_VAT_RATE / POS_VAT_RATE_REDUCED), so a CH shop that never opens
+    # the editor is BYTE-IDENTICAL to today. This manages the rate list + values ONLY; WHICH product
+    # class maps to WHICH rate (class→rate assignment) is a SEPARATE layer — for CH it is already
+    # correct (standard/reduced/cafe_split in the taxonomy); for IT it is TBD-by-commercialista and
+    # deliberately NOT invented here (the seal lesson).
+    vat_rates: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="Per-tenant N-rate VAT table as JSON [{code,label,rate,default}]. NULL → CH config default.")
 
     # La Piazza module (Artemis Premium) -- the switch the shop flips to tie its
     # catalog to the public marketplace. ON => products can be pushed as drafts to

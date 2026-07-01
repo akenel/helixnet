@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 from src.db.models.transaction_model import TransactionStatus, PaymentMethod
 from src.db.models.supplier_model import normalize_supplier_prefix
 from src.services.vat_resolver import Consumption
@@ -433,6 +433,26 @@ class StoreSettingsBase(BaseModel):
     # Swiss VAT Information
     vat_number: str = Field(..., max_length=50, description="Swiss VAT number")
     vat_rate: Decimal = Field(default=Decimal("8.1"), ge=0, le=100, description="VAT rate percentage")
+    # N-rate VAT table (Piece C): the tenant's editable rate menu [{code,label,rate,default}].
+    # Stored as a JSON string in the DB; the validator below parses that string back into a list on
+    # read (from_attributes) and accepts a list on write. None → the editor prefills the CH default.
+    vat_rates: Optional[List[dict]] = Field(
+        default=None, description="Editable N-rate VAT table [{code,label,rate,default}]. None → CH config default.")
+
+    @field_validator("vat_rates", mode="before")
+    @classmethod
+    def _parse_vat_rates(cls, v):
+        """Accept a JSON string (ORM TEXT column via from_attributes) or a list (API payload).
+        Blank / unparseable → None, so a CH shop's NULL column reads cleanly as 'no stored table'."""
+        if v is None or v == "":
+            return None
+        if isinstance(v, str):
+            import json
+            try:
+                v = json.loads(v)
+            except Exception:
+                return None
+        return v if isinstance(v, list) else None
 
     # Receipt Settings
     receipt_header: Optional[str] = Field(None, max_length=500)
@@ -476,6 +496,11 @@ class StoreSettingsUpdate(BaseModel):
     website: Optional[str] = Field(None, max_length=255)
     vat_number: Optional[str] = Field(None, max_length=50)
     vat_rate: Optional[Decimal] = Field(None, ge=0, le=100)
+    # N-rate VAT table (Piece C): a list of {code,label,rate,default}. Only present when the shop
+    # opens the Tax editor and saves — a CH shop that never touches it leaves the column NULL and
+    # stays byte-identical. Server validation (≥1 row, exactly 1 default, unique codes, 0–100) runs
+    # in the endpoint before it is JSON-serialised to the column.
+    vat_rates: Optional[List[dict]] = Field(None)
     receipt_header: Optional[str] = Field(None, max_length=500)
     receipt_footer: Optional[str] = Field(None, max_length=500)
     receipt_logo_url: Optional[str] = Field(None, max_length=500)

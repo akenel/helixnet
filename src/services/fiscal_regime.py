@@ -84,6 +84,48 @@ def _rate_table_for(code: str) -> list[dict]:
     ]
 
 
+def _stored_rate_table(store) -> list[dict] | None:
+    """The tenant's OWN edited rate table from store_settings.vat_rates, or None to fall back.
+
+    Piece C: a shop can VIEW/EDIT its rate MENU in Settings → Tax; it is persisted per-tenant as a
+    JSON string in the `vat_rates` column. This reads + normalises that table. Returns None when the
+    column is NULL / blank / empty / unparseable / malformed — so a CH shop that never opened the
+    editor falls back to the CH config default and stays BYTE-IDENTICAL to today (the golden lock).
+    Pure: no DB, no config; parses only what the store row carries. Rates are stringified for a clean
+    JSON payload (the client + split_vat both coerce, mirroring _rate_table_for).
+
+    HONEST BOUNDARY: this is the rate MENU only (the list + values). It does NOT decide WHICH product
+    class gets WHICH rate — that class→rate assignment stays in the taxonomy (CH: standard/reduced/
+    cafe_split) and is a separate, deferred layer for IT (TBD-by-commercialista).
+    """
+    raw = getattr(store, "vat_rates", None)
+    if raw is None or raw == "":
+        return None
+    if isinstance(raw, str):
+        import json
+        try:
+            raw = json.loads(raw)
+        except Exception:
+            return None
+    if not isinstance(raw, list) or not raw:
+        return None
+    out: list[dict] = []
+    for e in raw:
+        if not isinstance(e, dict) or e.get("code") in (None, "") or e.get("rate") in (None, ""):
+            return None  # malformed → safe fallback, never a partial/silent-wrong table
+        out.append({
+            "code": str(e["code"]),
+            "label": str(e.get("label") or e["code"]),
+            "rate": str(e["rate"]),
+            "default": bool(e.get("default", False)),
+        })
+    # A table with no default flagged → the FIRST row is the default/catch-all (split_vat does the
+    # same), so the served table always has a well-defined standard stream.
+    if not any(e["default"] for e in out):
+        out[0]["default"] = True
+    return out
+
+
 def regime_meta(code: str | None) -> dict:
     """Static regime facts for a code; defaults to CH for None / unknown (like class_meta)."""
     base = REGIMES.get(code or DEFAULT_REGIME, REGIMES[DEFAULT_REGIME])
@@ -103,12 +145,16 @@ def resolve_regime(store=None) -> dict:
     meta = regime_meta(code)
     currency = getattr(store, "currency", None) or meta["currency"]
     locale = getattr(store, "locale", None) or meta["locale"]
+    # Piece C: the STORE's own edited rate table wins when it has one (non-empty); otherwise the CH
+    # config default (POS_VAT_RATE / _REDUCED). A CH shop with NULL vat_rates → _rate_table_for → the
+    # exact A/B table split_vat used before, so the resolved dict is BYTE-IDENTICAL to today.
+    stored = _stored_rate_table(store)
     return {
         **meta,
         "currency": currency,
         "locale": locale,
         **_ch_rates(),
-        # P3 N-rate: the ordered rate table in force (CH A/B from config). The receipt +
-        # Z-report loop over this instead of the two hardwired A/B scalars. CH = byte-identical.
-        "vat_rates": _rate_table_for(code),
+        # P3/Piece C N-rate: the ordered rate table in force. The receipt + Z-report loop over this
+        # instead of the two hardwired A/B scalars. CH with no stored table = byte-identical.
+        "vat_rates": stored if stored else _rate_table_for(code),
     }
