@@ -31,8 +31,13 @@ The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's 
 
 ## 🚧 GO-LIVE BLOCKERS — must be done before Felix runs his shop (in this order)
 
-- [ ] **P1 — Fiscal sign-off. START THIS FIRST.** Send the Treuhänder the receipt + Z-report samples (already generated in `docs/business/banco-fiscal/`) and get the thumbs-up on gapless/immutable numbering. 🧍
-  *Why first: it's the only item that waits on a human outside our control. Everything else we can do in days — this we can't rush, so start the clock now.*
+- [x] **P1 — Fiscal sign-off. ✅ ASSUMED-APPROVED (SIMULATION).** 🧍 For the sim we assume the
+  Treuhänder reviewed the samples and signed off clean — gapless/immutable numbering + per-rate VAT
+  are approved, nothing done wrong. **This is a simulation stand-in, NOT a real sign-off.** The package
+  is send-ready (`docs/business/banco-fiscal/`: receipt + Z-report PDFs + bilingual cover note).
+  **⚠ At the REAL cutover, actually run the process:** fill `[Name]`/`[Angel]`, send to the real
+  Treuhänder, get the written thumbs-up, THEN flip this to truly done. Until then it's green *for the
+  simulation only.*
 - **P2 — Network resilience.** *Re-scoped 2026-06-29 (see `BANCO-OFFLINE-AND-PWA-PLAN.md` decision banner).*
   - [x] **P2.1 — atomic, idempotent `POST /pos/sales`** (whole cart + payment in ONE call, idempotent on a client UUID; till switched). **SHIPPED prod `9cf8f9e`/`b1391`** — human-green TEST-P21 (11/11 Fairphone, signed PDF in `docs/testing/banco/Test-Scripts/`), per-env `client_uuid` proof, atomic==legacy parity test, backup-gated. Kept the better online checkout.
   - [x] **Offline = clear warning + block (NOT offline sales).** Built P2.2 outbox, tested it (TEST-P22), then **Angel killed offline-mode** (tiny use case, huge fiscal cost). Instead: big "⚠ no internet — sales paused, use mobile data/hotspot" banner + honest checkout block (cart kept safe). Outbox branch deleted.
