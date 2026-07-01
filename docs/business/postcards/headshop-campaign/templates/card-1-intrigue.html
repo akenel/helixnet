@@ -28,7 +28,7 @@
   .card:last-child { page-break-after: auto; }
 
   /* transparent background image layer — front AND back. url() with an empty value = nothing. */
-  .bgimg { position: absolute; inset: 0; background-image: url({{IMG_SRC}});
+  .bgimg { position: absolute; inset: 0; 
            background-size: cover; background-position: center; opacity: 0.13; z-index: 0; }
   .rule { position: absolute; background: #C0392B; z-index: 2; }
   /* Bottega № provenance serial — replaces the old "1/4" pill */
@@ -73,7 +73,7 @@
 
   <!-- ============ FRONT ============ -->
   <div class="card front">
-    <div class="bgimg"></div>
+    <div class="bgimg" style="background-image:url({{IMG_FRONT}})"></div>
     <div class="rule" style="top:0;left:0;right:0;height:2.2mm;"></div>
     <div class="shoplogo"></div>
     <div class="content">
@@ -93,7 +93,7 @@
 
   <!-- ============ BACK ============ -->
   <div class="card back">
-    <div class="bgimg"></div>
+    <div class="bgimg" style="background-image:url({{IMG_BACK}})"></div>
     <div class="rule" style="top:0;left:0;right:0;height:1.4mm;"></div>
     <div class="content">
       <div class="msg">

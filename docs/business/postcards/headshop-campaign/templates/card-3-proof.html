@@ -4,29 +4,28 @@
 <meta charset="utf-8">
 <title>Head-Shop Card 3 — Proof</title>
 <!--
-  BANCO · Head-Shop outreach · CARD 3 of 4 — "THE PROOF CARD"
-  Duplex A6 postcard (148 x 105 mm landscape). Page 1 = front, Page 2 = back.
-  Render: node scripts/postcard-to-pdf.js card3-<shop>.html card3-<shop>.pdf
-  MERGE FIELDS (replace per shop before rendering):
-    {{SHOP_NAME}}      {{SHOP_ADDR1}}   {{SHOP_ADDR2}}   {{SHOP_ZIP_CITY}}
-    {{QR_SRC}}  = path/base64 of the QR PNG (encodes https://banco.lapiazza.app/r/<token>)
-    {{TOKEN}}   = the unique per-shop-per-card tracking token (also printed tiny, for our records)
-  Brands/product names are proper nouns — never translated. German-primary with a French jab.
+  BANCO · Head-Shop outreach · CARD 3 of 4 — "THE PROOF CARD"  (icons: 🐺🐯🐘)
+  Duplex A6 (148 x 105 mm landscape). Render: node scripts/postcard-to-pdf.js in out
+  MERGE: {{SHOP_NAME}} {{SHOP_ADDR1}} {{SHOP_ADDR2}} {{SHOP_ZIP_CITY}} {{QR_SRC}} {{TOKEN}} {{IMG_SRC}} {{SHOP_LOGO}}
 -->
 <style>
   @page { size: 148mm 105mm; margin: 0; }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body { width: 148mm; }
-  .card { width: 148mm; height: 105mm; position: relative; overflow: hidden;
-          background: #ffffff; color: #111; font-family: "Helvetica Neue", Arial, sans-serif;
-          page-break-after: always; }
+  .card { width: 148mm; height: 105mm; position: relative; overflow: hidden; background: #fff; color: #111;
+          font-family: "Helvetica Neue", Arial, sans-serif; page-break-after: always; }
   .card:last-child { page-break-after: auto; }
-  .rule { position: absolute; background: #c62828; }
-
-  /* ---------- FRONT ---------- */
-  .front { padding: 9mm 9mm 7mm 9mm; display: flex; }
+  .bgimg { position: absolute; inset: 0; background-size: cover;
+           background-position: center; opacity: 0.13; z-index: 0; }
+  .rule { position: absolute; background: #C0392B; z-index: 2; }
+  .serial { position: absolute; bottom: 5.5mm; left: 9mm; z-index: 2; font-size: 7pt; font-weight: 800;
+            color: #C0392B; letter-spacing: 0.6px; font-variant-numeric: tabular-nums; }
+  .shoplogo { position: absolute; top: 6mm; right: 9mm; z-index: 2; width: 16mm; height: 16mm;
+              background-image: url({{SHOP_LOGO}}); background-size: contain; background-repeat: no-repeat; background-position: top right; }
+  /* FRONT */
+  .front .content { position: relative; z-index: 1; padding: 9mm; display: flex; align-items: center; height: 100%; }
   .front .left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-right: 6mm; }
-  .kicker { font-size: 8pt; letter-spacing: 3px; text-transform: uppercase; color: #c62828; font-weight: 800; }
+  .kicker { font-size: 8pt; letter-spacing: 3px; text-transform: uppercase; color: #C0392B; font-weight: 800; }
   .head { font-size: 27pt; line-height: 0.98; font-weight: 900; letter-spacing: -0.5px; margin-top: 3mm; }
   .head .b { display: block; }
   .sub { font-size: 9.5pt; color: #333; margin-top: 4mm; line-height: 1.3; font-weight: 600; }
@@ -34,85 +33,70 @@
   .qr-box { width: 40mm; height: 40mm; border: 1.5mm solid #111; padding: 2mm; background: #fff; }
   .qr-box img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
   .qr-cap { font-size: 8pt; font-weight: 800; margin-top: 2.5mm; text-align: center; letter-spacing: 1px; }
-  .seq { position: absolute; top: 6mm; right: 9mm; font-size: 8pt; font-weight: 800; color: #111;
-         border: 0.6mm solid #111; border-radius: 999px; padding: 1mm 3mm; }
-  .mark { position: absolute; bottom: 6mm; left: 9mm; font-size: 7.5pt; color: #666; font-weight: 700; letter-spacing: 0.5px; }
-  .mark b { color: #111; }
-
-  /* ---------- BACK ---------- */
-  .back { padding: 8mm 9mm; display: flex; }
+  /* BACK */
+  .back .content { position: relative; z-index: 1; padding: 8mm 9mm; display: flex; height: 100%; }
   .back .msg { width: 74mm; padding-right: 6mm; display: flex; flex-direction: column; }
   .back .msg h2 { font-size: 13pt; font-weight: 900; line-height: 1.05; letter-spacing: -0.3px; }
   .back .msg p { font-size: 9pt; color: #222; line-height: 1.42; margin-top: 3.5mm; }
-  .back .msg .live { color: #c62828; font-weight: 900; }
+  .back .msg .live { color: #C0392B; font-weight: 900; }
   .back .msg .miniqr { margin-top: auto; display: flex; align-items: center; gap: 3mm; }
-  .back .msg .miniqr img { width: 18mm; height: 18mm; border: 0.6mm solid #111; padding: 1mm; image-rendering: pixelated; }
+  .back .msg .miniqr img { width: 18mm; height: 18mm; border: 0.6mm solid #111; padding: 1mm; image-rendering: pixelated; background:#fff; }
   .back .msg .miniqr span { font-size: 8pt; font-weight: 800; }
-  .divider { width: 0.4mm; background: #ddd; }
+  .divider { width: 0.4mm; background: rgba(0,0,0,0.15); }
   .back .addr { flex: 1; padding-left: 6mm; position: relative; }
   .stamp { position: absolute; top: 0; right: 0; width: 20mm; height: 24mm; border: 0.5mm dashed #bbb;
            font-size: 6pt; color: #bbb; text-align: center; display: flex; align-items: center; justify-content: center; }
-  .stamp span { transform: rotate(0deg); }
-  .addr .lines { position: absolute; bottom: 8mm; left: 6mm; right: 4mm; }
+  .addr .lines { position: absolute; bottom: 11mm; left: 6mm; right: 4mm; }
   .addr .lines .n { font-size: 11pt; font-weight: 800; }
   .addr .lines .l { font-size: 10pt; margin-top: 1.2mm; }
-  .sender { position: absolute; top: 8mm; left: 6mm; font-size: 6.5pt; color: #888; line-height: 1.35; }
-  .sender b { color: #c62828; }
-  .token { position: absolute; bottom: 2mm; right: 3mm; font-size: 5pt; color: #ccc; }
+  .sender { position: absolute; top: 8mm; left: 6mm; font-size: 6.5pt; color: #888; line-height: 1.4; }
+  .sender b { color: #C0392B; }
 </style>
 </head>
 <body>
 
-  <!-- ============ FRONT ============ -->
+  <!-- FRONT -->
   <div class="card front">
+    <div class="bgimg" style="background-image:url({{IMG_FRONT}})"></div>
     <div class="rule" style="top:0;left:0;right:0;height:2.2mm;"></div>
-    <span class="seq">3 / 4</span>
-    <div class="left">
-      <span class="kicker">Beweis, kein Versprechen</span>
-      <div class="head">
-        <span class="b">Glaub kein Wort.</span>
-        <span class="b">Scann und schau.</span>
+    <div class="shoplogo"></div>
+    <div class="content">
+      <div class="left">
+        <span class="kicker">Beweis, kein Versprechen</span>
+        <div class="head"><span class="b">Glaub kein Wort.</span><span class="b">Scann und schau.</span></div>
+        <div class="sub">Ein echter Head-Shop. Drei Sprachen. Der&nbsp;18+-Check. Der Tag in Minuten &mdash; live auf deinem Handy.</div>
       </div>
-      <div class="sub">Ein echter Head-Shop. Drei Sprachen. Der&nbsp;18+-Check. Der Tag in Minuten &mdash; live auf deinem Handy.</div>
+      <div class="right">
+        <div class="qr-box"><img src="{{QR_SRC}}" alt="QR"></div>
+        <div class="qr-cap">SCANN&nbsp;&rarr;&nbsp;LIVE</div>
+      </div>
     </div>
-    <div class="right">
-      <div class="qr-box"><img src="{{QR_SRC}}" alt="QR"></div>
-      <div class="qr-cap">SCANN&nbsp;&rarr;&nbsp;LIVE</div>
-    </div>
-    <div class="mark"><b>BANCO</b> &middot; die Kasse, die deine Sprache spricht 🐯</div>
+    <div class="serial"><span>🐺🐯🐘 BANCO &middot; № {{TOKEN}}</span></div>
   </div>
 
-  <!-- ============ BACK ============ -->
+  <!-- BACK -->
   <div class="card back">
+    <div class="bgimg" style="background-image:url({{IMG_BACK}})"></div>
     <div class="rule" style="top:0;left:0;right:0;height:1.4mm;"></div>
-    <div class="msg">
-      <h2>Das ist Artemis. <span class="live">Live.</span></h2>
-      <p>Deine Kasse spricht Deutsch. <em>Ton client de Genève, non&nbsp;?</em><br>
-         Banco spricht Deutsch, Franz&ouml;sisch, Italienisch &mdash; einen Laden oder zehn,
-         der 18+-Check l&auml;uft automatisch, und der Tagesabschluss dauert Minuten,
-         nicht einen Abend mit dem Taschenrechner.</p>
-      <p>Nimm&rsquo;s uns nicht ab &mdash; <b>schau selbst zu, in zehn Sekunden.</b></p>
-      <div class="miniqr">
-        <img src="{{QR_SRC}}" alt="QR">
-        <span>Scann und die Kasse<br>l&auml;uft vor deinen Augen.</span>
+    <div class="content">
+      <div class="msg">
+        <h2>Das ist Artemis. <span class="live">Live.</span></h2>
+        <p>Deine Kasse spricht Deutsch. <em>Ton client de Gen&egrave;ve, non&nbsp;?</em><br>
+           Banco spricht Deutsch, Franz&ouml;sisch, Italienisch &mdash; einen Laden oder zehn,
+           der 18+-Check l&auml;uft automatisch, und der Tagesabschluss dauert Minuten.</p>
+        <p>Nimm&rsquo;s uns nicht ab &mdash; <b>schau selbst zu, in zehn Sekunden.</b></p>
+        <div class="miniqr"><img src="{{QR_SRC}}" alt="QR"><span>Scann und die Kasse<br>l&auml;uft vor deinen Augen.</span></div>
+      </div>
+      <div class="divider"></div>
+      <div class="addr">
+        <div class="stamp"><span>Briefmarke</span></div>
+        <div class="sender"><b>BANCO</b> &middot; La Piazza<br>banco.lapiazza.app<br>c/o UFA &middot; Trapani / Luzern</div>
+        <div class="lines">
+          <div class="n">{{SHOP_NAME}}</div><div class="l">{{SHOP_ADDR1}}</div><div class="l">{{SHOP_ADDR2}}</div><div class="l">{{SHOP_ZIP_CITY}}</div>
+        </div>
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="addr">
-      <div class="stamp"><span>Briefmarke</span></div>
-      <div class="sender">
-        <b>BANCO</b> &middot; Head-Shop-Kassen<br>
-        c/o UFA &middot; Trapani / Luzern<br>
-        Karte 3 von 4 &mdash; die letzte kommt bald.
-      </div>
-      <div class="lines">
-        <div class="n">{{SHOP_NAME}}</div>
-        <div class="l">{{SHOP_ADDR1}}</div>
-        <div class="l">{{SHOP_ADDR2}}</div>
-        <div class="l">{{SHOP_ZIP_CITY}}</div>
-      </div>
-      <div class="token">{{TOKEN}}</div>
-    </div>
+    <div class="serial"><span>🐺🐯🐘 BANCO &middot; № {{TOKEN}}</span></div>
   </div>
 
 </body>
