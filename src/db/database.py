@@ -142,6 +142,15 @@ _ADDITIVE_COLUMNS: list[str] = [
     # compliance must -- 18+; marketing default off per Swiss FADP).
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN NOT NULL DEFAULT FALSE",
+    # Age gate — full DOB (2026-07-01): the authoritative 18+ age source on the sale path
+    # (walk-in attestation is the other leg). Nullable DATE, NO default -> every existing
+    # member row stays NULL and is treated as of-age via age_confirmed (member_of_age()),
+    # so this never breaks an existing member or sale. Also carries the birthday-rewards
+    # fast-follow. NOTE: the pre-existing `birthday` column (2x-points marketing week) was
+    # on the model but had NO ALTER here (create_all never adds columns to an existing
+    # table) — added below so an env whose `customers` predated it doesn't 500 on enroll.
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS birthdate DATE",
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS birthday DATE",
     # BL-082 (2026-06-21): the IsottoOrder model grew team-order fields but there was
     # no additive migration -- create_all() never adds columns to an existing table, so
     # any env whose isotto_orders predated these 500'd on insert (seed crash + dead

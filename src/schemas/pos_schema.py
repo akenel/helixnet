@@ -252,6 +252,11 @@ class CheckoutRequest(BaseModel):
     payment_method: PaymentMethod
     amount_tendered: Optional[Decimal] = Field(None, ge=0, description="For cash payments")
     customer_id: Optional[UUID] = Field(None, description="Loyalty member this sale belongs to (CRM)")
+    # Age gate: the cashier's explicit attestation that a walk-in (no of-age member) is 18+
+    # (ID checked). REQUIRED by the server to sell an age-restricted (18+) line without an
+    # of-age member attached — the client 🔞 alert is bypassable, this flag is the audited
+    # server-side proof. Default False (fail-closed: no attestation, no 18+ sale).
+    age_verified: bool = Field(False, description="Cashier attests the walk-in is 18+ (ID checked) — unlocks 18+ lines")
 
 
 class SaleCreate(BaseModel):
@@ -271,6 +276,9 @@ class SaleCreate(BaseModel):
     discount_percent: Decimal = Field(default=Decimal("0.00"), ge=0, le=100,
                                       description="Cart-wide % discount applied once to the total")
     notes: Optional[str] = None
+    # Age gate: cashier attestation that a walk-in is 18+ (ID checked). REQUIRED to sell an
+    # age-restricted (18+) line without an of-age member attached. Default False (fail-closed).
+    age_verified: bool = Field(False, description="Cashier attests the walk-in is 18+ (ID checked) — unlocks 18+ lines")
 
 
 class RefundRequest(BaseModel):

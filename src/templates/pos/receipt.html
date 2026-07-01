@@ -136,7 +136,10 @@
                     <template x-for="(item, index) in transaction.line_items" :key="index">
                         <tr class="border-b border-gray-200">
                             <td class="py-3">
-                                <p class="font-semibold" x-text="item.product_name || 'Product'"></p>
+                                <p class="font-semibold">
+                                    <span x-text="item.product_name || 'Product'"></span>
+                                    <span x-show="item.is_age_restricted" class="chip chip-age">🔞 18+</span>
+                                </p>
                                 <p x-show="item.notes" class="text-xs text-gray-500 italic" x-text="item.notes"></p>
                             </td>
                             <td class="text-center" x-text="item.quantity"></td>

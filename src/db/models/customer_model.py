@@ -352,6 +352,17 @@ class CustomerModel(Base):
         nullable=False,
         comment="18+ confirmed (ticked by staff at the counter / on online claim)"
     )
+    # Real, full date of birth (NOT the marketing 'birthday' above). This is the
+    # authoritative age source for the 18+ gate: a member with a DOB auto-rolls over at
+    # 18 and needs no re-confirmation. Nullable so EVERY existing member (who has
+    # age_confirmed=True but no DOB) stays of-age via the back-compat rule in
+    # customer_schema.member_of_age(). Also the field the birthday-rewards engine
+    # (fast-follow, out of scope here) will ride.
+    birthdate: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+        comment="Full date of birth — authoritative 18+ age source (nullable; legacy members rely on age_confirmed)"
+    )
     marketing_consent: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
@@ -389,6 +400,14 @@ class CustomerModel(Base):
     # ================================================================
     # TIER CALCULATION
     # ================================================================
+    @property
+    def is_of_age(self) -> bool:
+        """True iff this member may buy 18+ lines. Rule (back-compat critical):
+        of_age = (birthdate present AND >=18) OR (birthdate absent AND age_confirmed).
+        Delegates to the pure policy in customer_schema so the rule lives in one place."""
+        from src.schemas.customer_schema import member_of_age
+        return member_of_age(self.birthdate, self.age_confirmed)
+
     def recalculate_tier(self) -> None:
         """Update tier from lifetime spend via the pure loyalty policy (Banco 3-tier,
         conservative). Bronze = points only / no standing %; Silver +5% @ CHF 500;

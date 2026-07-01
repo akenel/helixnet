@@ -2052,8 +2052,10 @@ async def get_transaction(
 
     # Resolve product names so the receipt shows "CBD Oil 20%", not a generic "Product"
     # (one batched lookup, no N+1).
+    from src.services.catalog_taxonomy import class_is_age_restricted
     product_names: dict = {}
     product_lapiazza: dict = {}   # product_id -> La Piazza slug (showcased items only) for the receipt QR
+    product_age: dict = {}        # product_id -> 18+ flag (derived from class) for the 🔞 receipt badge
     product_ids = {item.product_id for item in line_items if item.product_id is not None}
     if product_ids:
         prod_rows = await db.execute(
@@ -2062,6 +2064,7 @@ async def get_transaction(
         for p in prod_rows.scalars().all():
             product_names[p.id] = p.name
             product_lapiazza[p.id] = p.lapiazza_slug
+            product_age[p.id] = class_is_age_restricted(p.product_class)
 
     # Manually construct response to avoid async issues
     return {
@@ -2097,6 +2100,8 @@ async def get_transaction(
                 "line_total": str(item.line_total),
                 "notes": item.notes,
                 "is_giveaway": bool(item.is_giveaway),
+                # 18+ line -> receipt prints a 🔞 badge (derived server-side from product class).
+                "is_age_restricted": bool(product_age.get(item.product_id, False)),
                 # Per-line VAT (INC2/4): the receipt prints a rate code (A=8.1% / B=2.6%) + legend.
                 "consumption": item.consumption,
                 "vat_rate": str(item.vat_rate) if item.vat_rate is not None else None,
@@ -2345,6 +2350,48 @@ async def scan_barcode(
         )
 
 
+def _log_age_clearance(txn_ref: str, method: str, subject: str,
+                       current_user: dict, cashier_uid) -> None:
+    """Compliance trail: who cleared an 18+ sale, when, and how (member vs cashier-attest)."""
+    actor = (current_user or {}).get("preferred_username") or (current_user or {}).get("sub") or str(cashier_uid)
+    logger.info(
+        f"AGE-GATE cleared · txn={txn_ref} · method={method} · subject={subject} · "
+        f"verified_by={actor} · at={datetime.now(timezone.utc).isoformat()}")
+
+
+def _assert_age_cleared(cart_age_restricted: bool, customer, age_verified: bool,
+                        current_user: dict, cashier_uid, txn_ref: str) -> str | None:
+    """Server-side 18+ age gate for the sale path (the client 🔞 alert is bypassable, this is not).
+    No-op when the cart holds no age-restricted line. Otherwise the sale is REJECTED (400) unless:
+      • an OF-AGE loyalty member is attached  -> method 'member', OR
+      • the cashier explicitly attested a walk-in is 18+ (age_verified) -> method 'cashier_attest'.
+    A member PROVEN under 18 by DOB is authoritative — blocked even if age_verified is set.
+    Existing members (no DOB, age_confirmed=True) clear as of-age (back-compat). Emits a
+    compliance log line on clearance. Returns the method used, or None for a clean cart."""
+    if not cart_age_restricted:
+        return None
+
+    if customer is not None:
+        # DOB is authoritative when present: a proven minor can't be overridden by attestation.
+        if customer.birthdate is not None and not customer.is_of_age:
+            raise HTTPException(
+                status_code=400,
+                detail="This loyalty member is under 18 — age-restricted (18+) items cannot be sold to them.")
+        if customer.is_of_age:
+            _log_age_clearance(txn_ref, "member", f"member:{customer.handle}", current_user, cashier_uid)
+            return "member"
+        # Legacy member with neither DOB nor age_confirmed: fall through to cashier attestation.
+
+    if age_verified:
+        _log_age_clearance(txn_ref, "cashier_attest", "walk-in", current_user, cashier_uid)
+        return "cashier_attest"
+
+    raise HTTPException(
+        status_code=400,
+        detail="Age-restricted (18+) item — verify age first: confirm the customer is 18+ "
+               "(ID checked) or attach an of-age member.")
+
+
 @router.post("/transactions/{transaction_id}/checkout", response_model=TransactionRead)
 async def checkout_transaction(
     transaction_id: UUID,
@@ -2389,6 +2436,20 @@ async def checkout_transaction(
                 Decimal("0.01"), rounding=ROUND_HALF_UP)
             transaction.total = before - tier_disc
             transaction.discount_amount = Decimal(str(transaction.discount_amount or 0)) + tier_disc
+
+    # --- Age gate (18+): does this cart hold any age-restricted line? The class is the source
+    # of truth (products.product_class -> taxonomy), joined via the staged line items. Reject
+    # (400) an 18+ sale unless an of-age member is attached OR the cashier attested a walk-in. ---
+    from src.services.catalog_taxonomy import class_is_age_restricted
+    _age_classes = (await db.execute(
+        select(ProductModel.product_class)
+        .join(LineItemModel, LineItemModel.product_id == ProductModel.id)
+        .where(LineItemModel.transaction_id == transaction_id)
+    )).scalars().all()
+    cart_age_restricted = any(class_is_age_restricted(c) for c in _age_classes)
+    _assert_age_cleared(
+        cart_age_restricted, customer, checkout.age_verified, current_user,
+        await _resolve_cashier_uid(db, current_user), transaction.transaction_number)
 
     # Validate cash payment
     if checkout.payment_method == PaymentMethod.CASH:
@@ -2492,7 +2553,7 @@ async def create_sale(
     double-rung. Same server-authoritative money rules as the legacy 3-step path (catalog price
     wins, per-line VAT snapshot, promo guard, role discount cap, cash-drawer gate, member tier +
     CRM) — proven equivalent by tests/pos/test_create_sale_atomic.py so the two paths never drift."""
-    from src.services.catalog_taxonomy import class_promo_restricted, class_meta
+    from src.services.catalog_taxonomy import class_promo_restricted, class_meta, class_is_age_restricted
 
     # --- Idempotency: if this client_uuid already rang, return that sale untouched (replay-safe). ---
     existing = (await db.execute(
@@ -2532,6 +2593,7 @@ async def create_sale(
     # --- Build every line server-authoritatively: catalog price wins, VAT snapshot, promo guard. ---
     built_lines = []
     subtotal = Decimal("0.00")
+    cart_age_restricted = False  # set True by any 18+ line -> triggers the age gate below
     for ln in sale.lines:
         if ln.product_id is not None:
             product = (await db.execute(
@@ -2549,6 +2611,9 @@ async def create_sale(
             unit_price = ln.unit_price
             line_notes = ln.name or ln.notes
             prod_class = "standard"
+
+        if class_is_age_restricted(prod_class):
+            cart_age_restricted = True
 
         # Compliance: NO cart discount on a promo-restricted class (tobacco/alcohol) — law,
         # blocks every role (it's about the sale, not the operator). Same guard as /items.
@@ -2590,6 +2655,12 @@ async def create_sale(
             tier_disc = (before * Decimal(tier_pct) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             txn.total = before - tier_disc
             txn.discount_amount = Decimal(str(txn.discount_amount)) + tier_disc
+
+    # --- Age gate (18+): reject the sale unless an of-age member is attached OR the cashier
+    # attested a walk-in. cart_age_restricted was set from each line's class in the loop above. ---
+    _assert_age_cleared(
+        cart_age_restricted, customer, sale.age_verified, current_user,
+        cashier_uid, transaction_number)
 
     # --- Cash drawer gate + cent-precision tender (identical rules to legacy checkout). ---
     if sale.payment_method == PaymentMethod.CASH:

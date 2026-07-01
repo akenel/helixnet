@@ -140,6 +140,10 @@ class CustomerBase(BaseModel):
 
     # Personal
     birthday: Optional[date] = Field(None, description="For birthday bonuses")
+    # Full date of birth — the authoritative 18+ age source for the sale-path age gate
+    # (see member_of_age below). Distinct from `birthday` (marketing week). Nullable:
+    # legacy members carry none and stay of-age via age_confirmed.
+    birthdate: Optional[date] = Field(None, description="Full date of birth (YYYY-MM-DD) — drives the 18+ age gate")
     language: str = Field(default="de", max_length=5, description="de/en/fr/it")
 
     # Staff notes
@@ -164,6 +168,7 @@ class CustomerUpdate(BaseModel):
     whatsapp: Optional[str] = Field(None, max_length=50)
     preferred_contact: Optional[PreferredContact] = None
     birthday: Optional[date] = None
+    birthdate: Optional[date] = None
     language: Optional[str] = Field(None, max_length=5)
     notes: Optional[str] = Field(None, max_length=1000)
 
@@ -487,6 +492,30 @@ class CustomerQRScanResponse(BaseModel):
 # ================================================================
 # HELPER FUNCTIONS
 # ================================================================
+
+def is_of_age(birthdate: Optional[date], min_age: int = 18, today: Optional[date] = None) -> bool:
+    """Pure age check: True iff `birthdate` is at least `min_age` years ago (default 18).
+    Returns False for a missing birthdate (caller decides the no-DOB / legacy path via
+    member_of_age). Calendar-correct: a member turning 18 today IS of age; the day before,
+    not yet (handles the leap-day / month-length edge without dateutil)."""
+    if birthdate is None:
+        return False
+    today = today or date.today()
+    years = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+    return years >= min_age
+
+
+def member_of_age(birthdate: Optional[date], age_confirmed: bool,
+                  min_age: int = 18, today: Optional[date] = None) -> bool:
+    """The 18+ rule for an attached loyalty member (back-compat critical):
+        of_age = (birthdate present AND >= min_age) OR (birthdate absent AND age_confirmed).
+    A DOB is authoritative when present — a member proven under 18 is NOT of age even if
+    age_confirmed is stale-True. Existing members (no DOB, age_confirmed=True) stay of-age,
+    so no member or sale breaks."""
+    if birthdate is not None:
+        return is_of_age(birthdate, min_age, today)
+    return bool(age_confirmed)
+
 
 def calculate_tier(lifetime_spend: Decimal) -> LoyaltyTier:
     """Determine tier based on lifetime spend"""

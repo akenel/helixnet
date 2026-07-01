@@ -36,7 +36,11 @@
                 <div class="bg-gray-50 rounded-lg p-4 space-y-2">
                     <template x-for="(item, index) in cartData.cart" :key="index">
                         <div class="flex justify-between">
-                            <span x-text="`${item.quantity}x ${item.name}`"></span>
+                            <span>
+                                <span x-text="`${item.quantity}x ${item.name}`"></span>
+                                <!-- 🔞 early warning for the cashier — same chip as the catalog -->
+                                <span x-show="isAgeLine(item)" class="chip chip-age">🔞 18+</span>
+                            </span>
                             <span x-text="formatPrice(item.price * item.quantity)"></span>
                         </div>
                     </template>
@@ -284,6 +288,53 @@
             </div>
         </div>
     </div>
+
+    <!-- 🔞 AGE STOP modal — fires when the cart holds an 18+ line and no of-age member
+         is attached. Three moves: SIGN UP (name + DOB) · CONFIRM 18+ walk-in (ID checked)
+         · REFUSE (drop the 18+ line). The server is the real gate; this is the counter UX. -->
+    <div x-show="showAgeModal" x-transition.opacity
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+         @keydown.escape.window="ageRefuse()" style="display:none;">
+        <div class="card w-full max-w-md">
+            <div class="text-center mb-4">
+                <div class="text-4xl mb-1">🔞</div>
+                <h3 class="text-xl font-bold text-red-700">Age-restricted sale — 18+</h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    This cart has an <b>18+ item</b> and no of-age member is attached.
+                    Verify age before completing.
+                </p>
+            </div>
+
+            <!-- Move 1: SIGN UP a member with a real DOB (NO gender field) -->
+            <div class="border border-indigo-200 rounded-lg p-4 mb-3 bg-indigo-50">
+                <p class="font-semibold text-indigo-800 mb-2">👤 Sign up a member</p>
+                <input type="text" x-model="ageForm.handle" placeholder="Name / handle"
+                       class="input-field mb-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date of birth</label>
+                <input type="date" x-model="ageForm.birthdate" class="input-field mb-1">
+                <label class="flex items-center gap-2 text-xs text-gray-600 mb-2 mt-1">
+                    <input type="checkbox" x-model="ageForm.marketing_consent" class="w-4 h-4">
+                    <span>Send offers (SMS/email) — optional</span>
+                </label>
+                <button @click="ageSignup()" :disabled="ageProcessing"
+                        class="btn-primary w-full" :class="ageProcessing ? 'opacity-50 cursor-not-allowed' : ''">
+                    Create member &amp; continue
+                </button>
+                <p class="text-xs text-gray-500 mt-1">DOB proves 18+ automatically. Under 18 can join but can't buy 18+ items.</p>
+            </div>
+
+            <!-- Move 2: CONFIRM a walk-in is 18+ (ID checked) -->
+            <button @click="ageConfirmWalkin()"
+                    class="btn-success w-full mb-3">
+                ✅ Confirm 18+ walk-in — ID checked
+            </button>
+
+            <!-- Move 3: REFUSE — drop the 18+ line(s) and cancel the gate -->
+            <button @click="ageRefuse()" class="btn-danger w-full">
+                🚫 Refuse — remove 18+ item(s)
+            </button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -294,6 +345,11 @@
             discountInput: '',
             member: null,              // loyalty member attached to this sale
             memberDiscountAmount: 0,   // display-only; the server applies it once at checkout
+            // 🔞 Age gate (18+). The server is the real gate; this is the counter UX.
+            showAgeModal: false,       // cashier STOP modal for an unverified 18+ sale
+            ageVerified: false,        // cashier attested a walk-in is 18+ (ID checked)
+            ageProcessing: false,      // signup in flight
+            ageForm: { handle: '', birthdate: '', marketing_consent: false },
             paymentMethod: 'visa',
             processing: false,
             discount: 0,
@@ -512,9 +568,123 @@
                 return Object.entries(counts).map(([name, qty]) => `-${qty} ${name}`).join(', ') || 'No inventory changes';
             },
 
+            // ---- 🔞 Age gate (18+) helpers ------------------------------------
+            // A line is 18+ if the product carries the flag, or its class is one of the
+            // restricted classes (mirrors the server's class-derived truth).
+            isAgeLine(item) {
+                if (!item) return false;
+                if (item.is_age_restricted) return true;
+                return ['alcohol', 'tobacco_nicotine', 'cbd_hemp'].includes(item.product_class);
+            },
+            cartHasAge() {
+                return this.cartData.cart.some(i => this.isAgeLine(i));
+            },
+            // Whole years between a YYYY-MM-DD DOB and today (null if unparseable).
+            ageFromDob(dob) {
+                if (!dob) return null;
+                const d = new Date(dob + 'T00:00:00');
+                if (isNaN(d.getTime())) return null;
+                const now = new Date();
+                let age = now.getFullYear() - d.getFullYear();
+                const m = now.getMonth() - d.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+                return age;
+            },
+            // Member is of age = (DOB present AND ≥18) OR (no DOB AND age_confirmed).
+            // Mirrors the server rule so legacy members (no DOB, age_confirmed) don't trip the gate.
+            memberOfAge(m) {
+                if (!m) return false;
+                if (m.birthdate) {
+                    const a = this.ageFromDob(m.birthdate);
+                    return a !== null && a >= 18;
+                }
+                return m.age_confirmed !== false;
+            },
+            // Show the STOP modal when: cart has an 18+ line, cashier hasn't attested,
+            // and there's no of-age member attached.
+            needsAgeGate() {
+                if (!this.cartHasAge()) return false;
+                if (this.ageVerified) return false;
+                if (this.member && this.memberOfAge(this.member)) return false;
+                return true;
+            },
+            // Move 1: sign up a member with a REAL DOB (no gender field anywhere).
+            async ageSignup() {
+                if (!this.ageForm.handle || !this.ageForm.handle.trim()) {
+                    showToast('Enter a name / handle', 'warning'); return;
+                }
+                if (!this.ageForm.birthdate) {
+                    showToast('Enter the date of birth', 'warning'); return;
+                }
+                const age = this.ageFromDob(this.ageForm.birthdate);
+                if (age === null) { showToast('Invalid date of birth', 'warning'); return; }
+                if (age < 18) {
+                    showToast(`Under 18 (${age}) — can't sell 18+ items. Refuse or remove the item.`, 'warning');
+                    return;
+                }
+                this.ageProcessing = true;
+                try {
+                    // DOB proves 18+, so age_confirmed rides true for the enroll gate.
+                    const created = await API.post('/api/v1/customers', {
+                        handle: this.ageForm.handle.trim(),
+                        birthdate: this.ageForm.birthdate,
+                        age_confirmed: true,
+                        marketing_consent: !!this.ageForm.marketing_consent
+                    });
+                    // Attach the new of-age member -> server clears the sale as method=member.
+                    this.member = {
+                        id: created.id,
+                        handle: created.handle,
+                        birthdate: this.ageForm.birthdate,
+                        age_confirmed: true,
+                        loyalty_tier: 'crack',
+                        tier_discount_percent: 0,
+                        credits_balance: created.credits_awarded || 0
+                    };
+                    sessionStorage.setItem('checkout_customer', JSON.stringify(this.member));
+                    this.showAgeModal = false;
+                    this.ageProcessing = false;
+                    this.ageForm = { handle: '', birthdate: '', marketing_consent: false };
+                    this.recalculateTotals();
+                    showToast(`👤 ${created.handle} signed up — 18+ verified`, 'success');
+                    this.completeTransaction();
+                } catch (error) {
+                    this.ageProcessing = false;
+                    showToast((error && error.message) || 'Could not create member', 'warning');
+                }
+            },
+            // Move 2: cashier attests the walk-in is 18+ (ID checked) -> age_verified on the payload.
+            ageConfirmWalkin() {
+                this.ageVerified = true;
+                this.showAgeModal = false;
+                this.completeTransaction();
+            },
+            // Move 3: refuse -> strip the 18+ line(s) from the sale.
+            ageRefuse() {
+                this.cartData.cart = this.cartData.cart.filter(i => !this.isAgeLine(i));
+                this.showAgeModal = false;
+                this.recalculateTotals();
+                this.calculateChange();
+                sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
+                if (this.cartData.cart.length === 0) {
+                    showToast('18+ item(s) removed — cart is empty', 'warning');
+                    setTimeout(() => window.location.href = '/pos/scan', 900);
+                } else {
+                    showToast('18+ item(s) removed from the sale', 'success');
+                }
+            },
+
             async completeTransaction() {
                 if (!this.paymentMethod) {
                     showToast('Please select a payment method', 'warning');
+                    return;
+                }
+
+                // 🔞 Age gate: an 18+ line with no of-age member and no cashier attestation
+                // must stop at the counter first. The server rejects it anyway (400) — this
+                // just gives the cashier the 3 moves before the round-trip.
+                if (this.needsAgeGate()) {
+                    this.showAgeModal = true;
                     return;
                 }
 
@@ -603,7 +773,10 @@
                         client_uuid: clientUuid,
                         lines: lines,
                         payment_method: this.paymentMethod,
-                        discount_percent: this.cartData.discount.toString()   // cart-wide, applied once
+                        discount_percent: this.cartData.discount.toString(),  // cart-wide, applied once
+                        // 🔞 cashier attestation for an 18+ walk-in (server default is false).
+                        // An of-age member attached via customer_id clears the gate without this.
+                        age_verified: this.ageVerified
                     };
                     if (this.paymentMethod === 'cash') {
                         body.amount_tendered = this.cashReceived.toFixed(2);   // from the Quick Round buttons

@@ -158,6 +158,16 @@
             padding: 1.5rem;                 /* p-6 */
         }
 
+        /* Compliance / meta chips — shared with catalog.html (18+ age gate, etc.).
+           Real CSS so the 🔞 badge renders on checkout + receipt, not just catalog. */
+        .chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 9px; border-radius: 999px;
+            font-size: 11px; font-weight: 700; line-height: 1.5; white-space: nowrap;
+            vertical-align: middle;
+        }
+        .chip-age { background: #fde2e2; color: #9b1c1c; }
+
         /* Data tables — zebra rows, strong header, row hover (add class="data-table") */
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table thead th {
