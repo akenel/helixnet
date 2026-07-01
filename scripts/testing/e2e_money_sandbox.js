@@ -250,12 +250,13 @@ async function clickText(page, selector, text) {
     return r.data;
   }
 
-  async function ringSale(paymentMethod, lines, amountTendered) {
+  async function ringSale(paymentMethod, lines, amountTendered, extra) {
     const body = {
       client_uuid: (globalThis.crypto || require('crypto').webcrypto).randomUUID(),
       payment_method: paymentMethod, lines,
     };
     if (amountTendered != null) body.amount_tendered = amountTendered;
+    if (extra) Object.assign(body, extra);
     const r = await A.post('/api/v1/pos/sales', body);
     if (r.status !== 201) throw new Error(`/sales (${paymentMethod}) -> HTTP ${r.status} ${JSON.stringify(r.data).slice(0,140)}`);
     cleanup.saleIds.push(r.data.id);
@@ -463,7 +464,8 @@ async function clickText(page, selector, text) {
         { p: BEER,  consumption: 'takeaway', cls: 'alcohol',   gross: C('8.00') },  // 8.1% (never reduces)
       ];
 
-      const sale = await ringSale('twint', cart.map((l) => ({ product_id: l.p.id, quantity: 1, consumption: l.consumption })));
+      // cart has an alcohol (18+) line → cashier attests age (age_verified), as at the real till.
+      const sale = await ringSale('twint', cart.map((l) => ({ product_id: l.p.id, quantity: 1, consumption: l.consumption })), null, { age_verified: true });
 
       // Per-line rate assertions (derived from the resolver rule).
       const det = await A.get(`/api/v1/pos/transactions/${sale.id}`);
