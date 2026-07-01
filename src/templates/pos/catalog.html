@@ -135,9 +135,12 @@
                     <select x-model="category" @change="search()" class="input-field">
                         <option value="" data-i18n="catalog.all_categories">All categories</option>
                         <template x-for="g in groupedCategories()" :key="g.group">
-                            <optgroup :label="g.label">
+                            <!-- Group header + category options render through catLabel() for the
+                                 shop's language; the option :value stays the canonical English
+                                 name so filtering (x-model="category") is unaffected. -->
+                            <optgroup :label="catLabel(g.label)">
                                 <template x-for="c in g.cats" :key="c.name">
-                                    <option :value="c.name" x-text="c.name + ' (' + c.count + ')'"></option>
+                                    <option :value="c.name" x-text="catLabel(c.name) + ' (' + c.count + ')'"></option>
                                 </template>
                             </optgroup>
                         </template>
@@ -201,7 +204,7 @@
                             </div>
                             <div class="cat-meta">
                                 <span class="cat-sku" x-text="p.sku"></span>
-                                <span x-show="p.category" class="badge-cat">🏷️ <span x-text="p.category"></span></span>
+                                <span x-show="p.category" class="badge-cat">🏷️ <span x-text="catLabel(p.category)"></span></span>
                                 <span x-show="p.is_age_restricted" class="chip chip-age">🔞 18+</span>
                                 <span x-show="p.product_class && p.product_class !== 'standard'"
                                       class="chip chip-class" x-text="classLabel(p.product_class)"></span>
@@ -264,7 +267,7 @@
                     <dl class="divide-y border-y">
                         <div class="flex justify-between py-2"><dt class="text-gray-500" data-i18n="catalog.field_sku">SKU</dt><dd class="font-medium text-right" x-text="detailProduct?.sku"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.barcode"><dt class="text-gray-500" data-i18n="catalog.field_barcode">Barcode</dt><dd class="font-medium text-right break-all" x-text="detailProduct?.barcode"></dd></div>
-                        <div class="flex justify-between py-2" x-show="detailProduct?.category"><dt class="text-gray-500" data-i18n="catalog.field_category">Category</dt><dd class="font-medium text-right" x-text="detailProduct?.category"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct?.category"><dt class="text-gray-500" data-i18n="catalog.field_category">Category</dt><dd class="font-medium text-right" x-text="catLabel(detailProduct?.category)"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.product_class"><dt class="text-gray-500" data-i18n="catalog.field_class">Class</dt><dd class="font-medium text-right" x-text="detailProduct?.product_class"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500" data-i18n="catalog.field_supplier">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
                         <div class="flex justify-between py-2"><dt class="text-gray-500" data-i18n="catalog.field_stock">Stock (info)</dt><dd class="font-medium text-right" x-text="(detailProduct?.stock_quantity ?? 0) + t('catalog.not_a_sell_gate')"></dd></div>

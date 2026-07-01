@@ -4128,3 +4128,162 @@ window.POS_STRINGS = {
     }
   }
 };
+
+/**
+ * CATALOG-CONTENT labels — the bounded set of CATEGORY + GROUP names shown in the
+ * catalog UI (dropdown group headers + options, the product-card category tag, and the
+ * detail-view "Category" value). This is CONTENT (data) translation, DISTINCT from the
+ * UI-chrome strings in POS_STRINGS above — and it lives OUTSIDE POS_STRINGS on purpose so
+ * it does NOT touch the en/it/de key-parity gate (POS_STRINGS stays 1317×3).
+ *
+ * Keyed by the ENGLISH CANONICAL category/group name → its IT / DE label. EN needs no map:
+ * catLabel() falls back to the canonical English name, so English users see it verbatim and
+ * any category present in data but missing here degrades gracefully to English.
+ *
+ * ⚠️ NATIVE REVIEW REQUIRED BEFORE PROD ⚠️  (same gate as POS_STRINGS)
+ *   IT — Nino / ISOTTO ("Famous Guy").   DE — Angel / Felix (Swiss-German: ss, never ß).
+ *
+ * Product/brand NAMES are NEVER translated (Backwoods, actiTube, "4-part Grinder", Gizeh…)
+ * and product DESCRIPTIONS ride the enrichment recipe separately — this map is labels only.
+ *
+ * The set below covers: the 6 level-1 GROUPS in the Artemis demo data + "Grow" and the
+ * "Other / Ungrouped" fallback header; every CATEGORY seen in the seeded catalog; the
+ * catalog_taxonomy.py skeleton categories offered in the datalist; and the common alias
+ * names carried in CATEGORY_EMOJI — so coverage is total and any miss falls back to English.
+ */
+window.POS_CATEGORY_LABELS = {
+  "it": {
+    // --- Level-1 GROUPS ---
+    "Headshop": "Headshop",
+    "Papers & Co": "Cartine & Co",
+    "CBD": "CBD",
+    "Vape & Co": "Vape & Co",
+    "Shisha": "Shisha",
+    "Lifestyle": "Lifestyle",
+    "Grow": "Coltivazione",
+    "Other / Ungrouped": "Altro / Senza gruppo",
+    // --- CATEGORIES seen in the Artemis demo catalog ---
+    "Rolling Papers": "Cartine",
+    "Lifestyle Accessories": "Accessori lifestyle",
+    "Shisha Pipes": "Pipe Shisha",
+    "CBD Hash": "Hashish CBD",
+    "Bong Heads & Bowls": "Teste e fornelli per bong",
+    "Vape Pods": "Pod per vape",
+    "Storage & Safes": "Contenitori e casseforti",
+    "Blunts & Wraps": "Blunt e wraps",
+    "Filters & Tips": "Filtri e bocchini",
+    "Shisha Accessories": "Accessori per shisha",
+    "Gifts": "Regali",
+    "Rolling Machines": "Rollatrici",
+    "Cigarette Tubes": "Tubetti per sigarette",
+    "Accessories": "Accessori",
+    "Pre-rolled": "Pre-rollati",
+    // --- catalog_taxonomy.py skeleton categories (offered in the datalist) ---
+    "CBD & Hemp": "CBD e canapa",
+    "Edibles": "Commestibili",
+    "Creams & Topicals": "Creme e pomate",
+    "Papers & Filters": "Cartine e filtri",
+    "Grinders": "Grinder",
+    "Lighters": "Accendini",
+    "Pipes & Bongs": "Pipe e bong",
+    "Vaporizers": "Vaporizzatori",
+    "E-Liquids": "E-liquid",
+    "Tobacco & Cigarettes": "Tabacco e sigarette",
+    "Grow Supplies": "Articoli per coltivazione",
+    "Café": "Caffè",
+    "Merch": "Merch",
+    "Other": "Altro",
+    // --- CATEGORY_EMOJI alias names (extra robustness) ---
+    "Hemp": "Canapa",
+    "Cafe": "Caffè",
+    "Coffee": "Caffè",
+    "Bar": "Bar",
+    "Beer": "Birra",
+    "Wine": "Vino",
+    "Drinks": "Bevande",
+    "Beverages": "Bevande",
+    "Food": "Cibo",
+    "Bakery": "Panetteria",
+    "Snacks": "Snack",
+    "Equipment": "Attrezzatura",
+    "Tobacco": "Tabacco",
+    "Papers": "Cartine",
+    "Vape": "Vape",
+    "On the fly": "Al volo"
+  },
+  "de": {
+    // --- Level-1 GROUPS --- (Swiss-German: ss, never ß)
+    "Headshop": "Headshop",
+    "Papers & Co": "Papers & Co",
+    "CBD": "CBD",
+    "Vape & Co": "Vape & Co",
+    "Shisha": "Shisha",
+    "Lifestyle": "Lifestyle",
+    "Grow": "Grow",
+    "Other / Ungrouped": "Sonstige / Ohne Gruppe",
+    // --- CATEGORIES seen in the Artemis demo catalog ---
+    "Rolling Papers": "Zigarettenpapier",
+    "Lifestyle Accessories": "Lifestyle-Zubehör",
+    "Shisha Pipes": "Shisha-Pfeifen",
+    "CBD Hash": "CBD-Hasch",
+    "Bong Heads & Bowls": "Bong-Köpfe & Bowls",
+    "Vape Pods": "Vape-Pods",
+    "Storage & Safes": "Aufbewahrung & Tresore",
+    "Blunts & Wraps": "Blunts & Wraps",
+    "Filters & Tips": "Filter & Tips",
+    "Shisha Accessories": "Shisha-Zubehör",
+    "Gifts": "Geschenke",
+    "Rolling Machines": "Drehmaschinen",
+    "Cigarette Tubes": "Zigarettenhülsen",
+    "Accessories": "Zubehör",
+    "Pre-rolled": "Vorgedrehte",
+    // --- catalog_taxonomy.py skeleton categories (offered in the datalist) ---
+    "CBD & Hemp": "CBD & Hanf",
+    "Edibles": "Esswaren",
+    "Creams & Topicals": "Cremes & Salben",
+    "Papers & Filters": "Papers & Filter",
+    "Grinders": "Grinder",
+    "Lighters": "Feuerzeuge",
+    "Pipes & Bongs": "Pfeifen & Bongs",
+    "Vaporizers": "Verdampfer",
+    "E-Liquids": "E-Liquids",
+    "Tobacco & Cigarettes": "Tabak & Zigaretten",
+    "Grow Supplies": "Grow-Bedarf",
+    "Café": "Café",
+    "Merch": "Merch",
+    "Other": "Sonstiges",
+    // --- CATEGORY_EMOJI alias names (extra robustness) ---
+    "Hemp": "Hanf",
+    "Cafe": "Café",
+    "Coffee": "Kaffee",
+    "Bar": "Bar",
+    "Beer": "Bier",
+    "Wine": "Wein",
+    "Drinks": "Getränke",
+    "Beverages": "Getränke",
+    "Food": "Essen",
+    "Bakery": "Bäckerei",
+    "Snacks": "Snacks",
+    "Equipment": "Ausrüstung",
+    "Tobacco": "Tabak",
+    "Papers": "Papers",
+    "Vape": "Vape",
+    "On the fly": "Spontan erfasst"
+  }
+};
+
+/**
+ * catLabel(name) → the current-language label for a CATEGORY or GROUP name.
+ * Resolution mirrors the t() engine's language (window._posLang); EN and any unmapped
+ * name fall back to the canonical English name itself, so a label is never blank.
+ * Defined here as a fallback in case base.html hasn't (re)declared it; base.html's copy
+ * wins if present. Display-only — it never alters the stored category on the product.
+ */
+if (typeof window.catLabel !== 'function') {
+  window.catLabel = function (name) {
+    if (name == null) return name;
+    var lang = window._posLang || 'en';
+    var map = window.POS_CATEGORY_LABELS && window.POS_CATEGORY_LABELS[lang];
+    return (map && map[name]) || name;
+  };
+}
