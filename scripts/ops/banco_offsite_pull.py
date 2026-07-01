@@ -38,6 +38,12 @@ REMOTE_DIR = "/opt/backups/banco"
 PATTERN = "banco_prod_*.sql.gz.gpg"
 DEFAULT_DEST = Path.home() / "backups" / "banco-offsite"
 
+# Cloud offsite targets (rclone remotes). This is the same Google Drive that holds
+# the KeePass kdbx + DR SOP — one DR place, matching DISASTER-RECOVERY. To add a
+# second provider (e.g. DigitalOcean Spaces for provider-diversity), just append its
+# rclone remote here, e.g. "do-spaces:banco-backups". No other code changes.
+DEFAULT_REMOTES = ["ecolution-gdrive:HelixNet-DB-Backups/banco"]
+
 
 def _log(dest: Path, msg: str) -> None:
     line = f"[{datetime.now(timezone.utc):%Y-%m-%d %H:%M:%S UTC}] {msg}"
@@ -73,11 +79,45 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def _push_cloud(dest: Path, remotes: list[str], retention_days: int) -> None:
+    """Push the local encrypted blobs to each rclone remote and VERIFY (MD5) they match.
+
+    copy + age-based delete on purpose — NEVER `rclone sync`. Sync would mirror local
+    deletions to the cloud, so losing the laptop copy would wipe the cloud copy too.
+    A cloud push failing is logged, never fatal: the local offsite copy already exists.
+    """
+    if not shutil.which("rclone"):
+        _log(dest, "rclone not installed — skipped cloud push (local copy already made)")
+        return
+    configured = subprocess.run(["rclone", "listremotes"], capture_output=True, text=True).stdout
+    inc = ["--include", "*.sql.gz.gpg"]
+    for remote in remotes:
+        name = remote.split(":", 1)[0] + ":"
+        if name not in configured:
+            _log(dest, f"rclone remote {name} not configured — skipped (append it to DEFAULT_REMOTES once set up)")
+            continue
+        cp = subprocess.run(["rclone", "copy", str(dest), remote, *inc], capture_output=True, text=True, timeout=600)
+        if cp.returncode != 0:
+            _log(dest, f"cloud push to {remote} FAILED (non-fatal): {cp.stderr.strip()[:200]}")
+            continue
+        ck = subprocess.run(["rclone", "check", str(dest), remote, *inc], capture_output=True, text=True, timeout=600)
+        if ck.returncode != 0:
+            _log(dest, f"cloud VERIFY MISMATCH at {remote} (non-fatal): {ck.stderr.strip()[-200:]}")
+            continue
+        # retention on the remote — delete-by-age, so a laptop wipe can't cascade
+        subprocess.run(["rclone", "delete", remote, *inc, "--min-age", f"{retention_days}d"],
+                       capture_output=True, text=True, timeout=300)
+        _log(dest, f"cloud OK: {remote} verified bit-identical (rclone check clean)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Pull Banco encrypted backups offsite + verify.")
     ap.add_argument("--dest", type=Path, default=DEFAULT_DEST, help=f"local offsite dir (default {DEFAULT_DEST})")
     ap.add_argument("--retention-days", type=int, default=90, help="keep local blobs this many days (default 90; box keeps 30)")
     ap.add_argument("--verify", type=int, default=3, help="sha256-verify the N newest blobs against the box (default 3; 0=skip)")
+    ap.add_argument("--remote", action="append", default=None,
+                    help="rclone remote to also push to (repeatable; default = Google Drive). Use --no-cloud to skip.")
+    ap.add_argument("--no-cloud", action="store_true", help="skip the cloud push, keep the local pull only")
     args = ap.parse_args()
 
     dest: Path = args.dest
@@ -142,10 +182,20 @@ def main() -> None:
 
     newest_name = sorted(dest.glob(PATTERN))[-1].name if kept else "none"
     total_mb = sum(p.stat().st_size for p in dest.glob(PATTERN)) / 1e6
-    _log(dest, f"OK: {kept} blobs offsite ({total_mb:.1f} MB), newest={newest_name}, pruned={pruned}")
+    _log(dest, f"local OK: {kept} blobs ({total_mb:.1f} MB), newest={newest_name}, pruned={pruned}")
+
+    # 4. push to cloud offsite(s) — Google Drive by default (same DR drive as the kdbx)
+    remotes = args.remote if args.remote else DEFAULT_REMOTES
+    if args.no_cloud:
+        _log(dest, "cloud push skipped (--no-cloud)")
+    else:
+        _push_cloud(dest, remotes, args.retention_days)
+
+    _log(dest, f"DONE: {kept} blobs offsite (local + {0 if args.no_cloud else len(remotes)} cloud target[s])")
     (dest / "STATUS.txt").write_text(
         f"OK {datetime.now(timezone.utc):%Y-%m-%d %H:%M UTC} — {kept} blobs ({total_mb:.1f} MB), "
-        f"newest={newest_name}, verified={min(args.verify, kept)}\n"
+        f"newest={newest_name}, verified={min(args.verify, kept)}, "
+        f"cloud={'off' if args.no_cloud else ','.join(r.split(':',1)[0] for r in remotes)}\n"
     )
 
 
