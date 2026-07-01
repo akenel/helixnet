@@ -54,6 +54,7 @@ from src.services.backlog_seeding_service import seed_backlog_data
 from src.routes.compute_router import router as compute_router, html_router as compute_html_router
 from src.services.compute_seeding_service import seed_compute_data
 from src.routes.bottega_router import router as bottega_router
+from src.routes.track_router import router as track_router
 
 # ================================================================
 # 🌍 Global Configuration
@@ -345,6 +346,7 @@ app.include_router(kb_router, tags=["📚 KB Contributions - Knowledge is Gold"]
 app.include_router(admin_router, prefix=settings.API_V1_STR, tags=["👑 Admin - Role Management"])
 app.include_router(hr_router, tags=["HR - Time & Payroll (BLQ Module)"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
+app.include_router(track_router, tags=["📮 Postcard Tracking"])
 app.include_router(camper_router, tags=["Camper & Tour - Service Management"])
 app.include_router(camper_html_router, tags=["Camper & Tour - Web UI"])
 app.include_router(isotto_router, tags=["ISOTTO Sport - Print Shop"])
