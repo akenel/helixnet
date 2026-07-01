@@ -30,6 +30,43 @@ is a **role tier** (`member`/`business` vs `staff`/`admin`), every shop is a **g
 
 ---
 
+## 2026-07-01 — progress refresh + the account-handover pattern
+
+**What moved since 2026-06-26 (verified live):**
+- ✅ **`kc-sandbox` now EXISTS** and sandbox Banco uses it (`POS_REALM=kc-sandbox`, 3 users). Sandbox is
+  already on the clean name — one env done.
+- Prod Banco is now on **`borrowhood`** (`POS_REALM=borrowhood`) and staging on **`borrowhood-staging`**
+  — those two env-community realms are the live Banco realms today. **Counts now:** `borrowhood`
+  **365** (bot-heavy — old public signups, random usernames + gmail-dot-trick emails),
+  `borrowhood-staging` **21**, `kc-sandbox` **3**.
+- **SMTP wired 2026-07-01** on all three (MailHog sandbox / Resend staging+prod) — KC email
+  (verify/reset) works now. Detail: memory `banco-kc-smtp-resend`.
+- **`helix_pass` rotated** off the real accounts (felix/akenel/angel/pam/ralph) on `borrowhood` +
+  `borrowhood-staging`. Sandbox stays open by design. Detail: memory `banco-shared-password-cleanup`.
+
+**Finish line unchanged, just clearer:** build **`kc-staging`** + **`kc-production`** (the two names that
+never got made), fold Banco POS in as a client, migrate the *real* staff accounts, then retire
+`borrowhood`/`borrowhood-staging` after auditing their users (`borrowhood` is mostly bots → most get
+**deleted, not migrated**).
+
+### Account-handover pattern (decided 2026-07-01) — how a real owner takes over
+When a real shop-owner (e.g. the real Felix) comes on, do NOT create-from-scratch, and do NOT hand over
+your only admin. Instead:
+1. **One account per person.** Felix gets his OWN owner account; Angel keeps a **steward/admin** account
+   in the same realm so he can still support/rescue the shop. Never hand over the sole admin.
+2. **Born in the clean realm.** The real account lives in **`kc-production`** (clean), not the
+   `borrowhood` swamp. Today's role-play `felix` (borrowhood) is the **template**, not the keys handed over.
+3. **Self-set password, zero sharing.** Set the account's email to the person's real address → fire
+   Keycloak's `UPDATE_PASSWORD` action email → they click and set their OWN password. Neither party ever
+   knows the other's. (Same mechanism as forgot-password.)
+4. **No `helix_pass` on real accounts, ever.** Strong per-user passwords only.
+
+> Angel's framing (2026-07-01): *"I don't make a new Felix — I hand him this one, swap to his email, he
+> sets his password."* Right mechanism — just do it in `kc-production`, with **him getting his account
+> and you keeping yours.**
+
+---
+
 ## Current reality (verified 2026-06-26 — code + infra sweep)
 
 **Realm wiring:**
