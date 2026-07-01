@@ -161,6 +161,14 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS facebook_url VARCHAR(255)",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255)",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS founded_year VARCHAR(10)",
+    # Fiscal regime seam (PHASE 0, 2026-07-01, Go-Italian): per-tenant regime/currency/locale
+    # on store_settings. NOT NULL DEFAULT backfills every existing row to CH (no data step),
+    # keeping a CH tenant byte-identical. Defaults are LITERAL-identical to StoreSettingsModel
+    # (fiscal_regime='CH' / currency='CHF' / locale='de-CH'). Same proven VARCHAR(N) NOT NULL
+    # DEFAULT idiom as product_class above.
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS fiscal_regime VARCHAR(8) NOT NULL DEFAULT 'CH'",
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS currency VARCHAR(8) NOT NULL DEFAULT 'CHF'",
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS locale VARCHAR(12) NOT NULL DEFAULT 'de-CH'",
     # Offline outbox idempotency (P2.1, 2026-06-29): the atomic create-sale endpoint keys
     # on a client-generated UUID so a replayed sale (network retry / offline outbox sync)
     # is adopted exactly once, never double-rung. Nullable (legacy 3-step sales have none);

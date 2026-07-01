@@ -155,6 +155,19 @@ class StoreSettingsModel(Base):
     founded_year: Mapped[str | None] = mapped_column(
         String(10), nullable=True, comment="e.g. '1999'")
 
+    # Fiscal regime seam (PHASE 0, Go-Italian): per-tenant regime/currency/locale, default CH.
+    # A CH tenant seeds+backfills to these exact values so it stays byte-identical to today.
+    # NOT NULL with CH defaults so ORM-created rows match the SQL migration backfill.
+    fiscal_regime: Mapped[str] = mapped_column(
+        String(8), nullable=False, default="CH",
+        comment="Fiscal regime code (CH today; unblocks IT). Single selector for VAT/currency/locale behaviour.")
+    currency: Mapped[str] = mapped_column(
+        String(8), nullable=False, default="CHF",
+        comment="ISO currency code (CHF for CH).")
+    locale: Mapped[str] = mapped_column(
+        String(12), nullable=False, default="de-CH",
+        comment="BCP-47 locale (de-CH for CH).")
+
     # La Piazza module (Artemis Premium) -- the switch the shop flips to tie its
     # catalog to the public marketplace. ON => products can be pushed as drafts to
     # La Piazza (the env-matching instance) under the shop's own business account.

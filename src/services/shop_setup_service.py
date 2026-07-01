@@ -12,16 +12,20 @@ Pure + testable -- no DB, no Keycloak, no side effects. The endpoint and form la
 from decimal import Decimal
 
 # Country -> sensible European defaults. The owner can override every one of these in the wizard.
+# `locale` is BCP-47 (matches the store_settings.locale column); `regime` is the fiscal-regime
+# code (PHASE 0). Only CH is a REAL regime today (fiscal_regime.py) — a non-CH code stored here is
+# a harmless seam label: resolve_regime() falls back to CH facts for any code it doesn't yet know,
+# so this introduces NO Italian/foreign tax law. P2/P3 fill in real per-country regimes + rates.
 EUROPEAN_DEFAULTS: dict[str, dict] = {
-    "Switzerland": {"currency": "CHF", "vat_rate": Decimal("8.1"),  "language": "de", "prices_include_vat": True},
-    "Germany":     {"currency": "EUR", "vat_rate": Decimal("19.0"), "language": "de", "prices_include_vat": True},
-    "Austria":     {"currency": "EUR", "vat_rate": Decimal("20.0"), "language": "de", "prices_include_vat": True},
-    "Italy":       {"currency": "EUR", "vat_rate": Decimal("22.0"), "language": "it", "prices_include_vat": True},
-    "France":      {"currency": "EUR", "vat_rate": Decimal("20.0"), "language": "fr", "prices_include_vat": True},
-    "Netherlands": {"currency": "EUR", "vat_rate": Decimal("21.0"), "language": "en", "prices_include_vat": True},
+    "Switzerland": {"currency": "CHF", "vat_rate": Decimal("8.1"),  "language": "de", "locale": "de-CH", "regime": "CH", "prices_include_vat": True},
+    "Germany":     {"currency": "EUR", "vat_rate": Decimal("19.0"), "language": "de", "locale": "de-DE", "regime": "DE", "prices_include_vat": True},
+    "Austria":     {"currency": "EUR", "vat_rate": Decimal("20.0"), "language": "de", "locale": "de-AT", "regime": "AT", "prices_include_vat": True},
+    "Italy":       {"currency": "EUR", "vat_rate": Decimal("22.0"), "language": "it", "locale": "it-IT", "regime": "IT", "prices_include_vat": True},
+    "France":      {"currency": "EUR", "vat_rate": Decimal("20.0"), "language": "fr", "locale": "fr-FR", "regime": "FR", "prices_include_vat": True},
+    "Netherlands": {"currency": "EUR", "vat_rate": Decimal("21.0"), "language": "en", "locale": "nl-NL", "regime": "NL", "prices_include_vat": True},
 }
 # When the country isn't in the map, stay European-shaped rather than guess wrong.
-_FALLBACK = {"currency": "EUR", "vat_rate": Decimal("20.0"), "language": "en", "prices_include_vat": True}
+_FALLBACK = {"currency": "EUR", "vat_rate": Decimal("20.0"), "language": "en", "locale": "en-GB", "regime": "CH", "prices_include_vat": True}
 
 # The Banco reference role model -- the 3-person shop you described. Every new shop starts here.
 REFERENCE_ROLES: list[dict] = [
@@ -76,8 +80,14 @@ def build_shop_preferences(
         # commerce (defaulted from country -- "assume European")
         "currency": d["currency"],
         "vat_rate": d["vat_rate"],
-        "default_language": d["language"],
-        "prices_include_vat": d["prices_include_vat"],
+        # PHASE 0 regime seam: reconcile to the real store_settings columns.
+        #   default_language -> locale (BCP-47, e.g. de-CH — matches the model, not bare "de")
+        #   fiscal_regime added (CH today; non-CH codes are seam labels — see EUROPEAN_DEFAULTS)
+        # `prices_include_vat` is deliberately NOT emitted — it has no store_settings column, so
+        # every key produced here maps 1:1 onto StoreSettingsModel and StoreSettingsModel(**prefs)
+        # never chokes on an unknown kwarg (the plan's "filter unknown keys" — done by construction).
+        "locale": d["locale"],
+        "fiscal_regime": d["regime"],
         # sign-off rules (the reference role model's discount ceilings)
         "cashier_max_discount": Decimal("10.0"),
         "manager_max_discount": Decimal("100.0"),

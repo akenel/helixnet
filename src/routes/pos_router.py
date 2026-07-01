@@ -20,6 +20,8 @@ from typing import Optional
 from pathlib import Path
 
 from src.db.database import get_db_session
+from src.services.fiscal_regime import resolve_regime
+from src.services.store_settings_seeding import get_active_store_settings
 from src.services.lp_publish import publish_product
 from src.services.square_bridge import SquareBridgeError
 from src.services.vat_resolver import line_vat, split_vat
@@ -130,7 +132,7 @@ SHOP_TZ = ZoneInfo(os.environ.get("HX_SHOP_TZ", "Europe/Zurich"))
 # ================================================================
 
 @router.get("/config")
-async def get_pos_config():
+async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     """
     Get POS configuration including VAT rate, currency, locale.
     This is public (no auth required) so the UI can load it on init.
@@ -138,8 +140,19 @@ async def get_pos_config():
     VAT rates are updated annually:
     - 2024: 7.7%
     - 2025: 8.1%
+
+    PHASE 0 (Go-Italian) adds the additive `regime` key sourced per-tenant from Store #1.
+    The pre-existing scalar keys are UNCHANGED (still from config). The regime source is
+    wrapped in a MANDATORY try/except → resolve_regime(None): this endpoint was DB-less,
+    so the new DB read must never turn a blip into a 500 — it degrades to CH.
     """
     settings = get_settings()
+    try:
+        store = await get_active_store_settings(db)  # Store #1, may be None
+        regime = resolve_regime(store)
+    except Exception:
+        logger.warning("config: regime source failed; CH fallback", exc_info=True)
+        regime = resolve_regime(None)
     return {
         "vat_rate": settings.POS_VAT_RATE,
         "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
@@ -147,6 +160,7 @@ async def get_pos_config():
         "currency": settings.POS_CURRENCY,
         "locale": settings.POS_LOCALE,
         "vat_decimal": settings.POS_VAT_RATE / 100,  # 0.081 for calculations
+        "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
     }
 
 

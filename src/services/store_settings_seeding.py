@@ -60,6 +60,12 @@ async def seed_store_settings(db: AsyncSession) -> None:
         vat_number="CHE-XXX.XXX.XXX MWST",
         vat_rate=Decimal("8.1"),  # Swiss VAT standard rate
 
+        # Fiscal regime seam (PHASE 0): explicit CH values — identical to the model/SQL
+        # defaults, so a seeded Store #1 and a migration-backfilled row are byte-identical.
+        fiscal_regime="CH",
+        currency="CHF",
+        locale="de-CH",
+
         # Receipt Settings
         receipt_header="Thank you for shopping at Artemis!",
         receipt_footer="Kräuter & Düfte seit 1999 🌿",
