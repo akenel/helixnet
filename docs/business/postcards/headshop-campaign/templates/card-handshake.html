@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Head-Shop — The Handshake Card (Nino Angle)</title>
+<!--
+  BANCO · Head-Shop outreach · THE HANDSHAKE CARD ("Nino Angle")
+  Owner-operator, peer-to-peer. Warm, Swiss-direct, no feature list, no emojis, no gloss.
+  Duplex A6 (148 x 105 mm landscape). Render: node scripts/postcard-to-pdf.js in out
+  MERGE: {{FIRST_NAME}} {{SHOP_NAME}} {{SHOP_STREET}} {{SHOP_ZIP_CITY}}
+         {{QR_SRC}} {{TOKEN}} {{IMG_FRONT}} {{IMG_BACK}} {{CONTACT}}
+  Front image = human/grounded (open door, "Offen" sign, warm evening light). NOT products/logos.
+  QR = ONE human action (WhatsApp / book-a-coffee), NOT a website menu.
+-->
+<style>
+  @page { size: 148mm 105mm; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { width: 148mm; }
+  .card { width: 148mm; height: 105mm; position: relative; overflow: hidden; background: #fff; color: #1a1a1a;
+          font-family: "Helvetica Neue", Arial, sans-serif; page-break-after: always; }
+  .card:last-child { page-break-after: auto; }
+  .bgimg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.18; z-index: 0; }
+  .rule { position: absolute; top: 0; left: 0; right: 0; height: 2mm; background: #8B5E34; z-index: 2; }
+  .serial { position: absolute; bottom: 5mm; left: 9mm; z-index: 2; font-size: 6.5pt; font-weight: 700;
+            color: #8B5E34; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; }
+
+  /* FRONT — image + headline + tagline. Clean, warm, no QR. */
+  .front .content { position: relative; z-index: 1; padding: 12mm 11mm; display: flex; flex-direction: column;
+                    justify-content: center; height: 100%; }
+  .head-de { font-size: 21pt; line-height: 1.08; font-weight: 800; letter-spacing: -0.4px; color: #1a1a1a; max-width: 115mm; }
+  .head-en { font-size: 10pt; color: #6b5b4a; margin-top: 4mm; font-style: italic; font-weight: 500; }
+  .tagline { position: absolute; bottom: 11mm; left: 11mm; right: 11mm; z-index: 1; }
+  .tagline .de { font-size: 10.5pt; font-weight: 800; color: #8B5E34; }
+  .tagline .en { font-size: 8pt; color: #8a7a68; font-style: italic; margin-top: 0.5mm; }
+
+  /* BACK — the letter (serif, personal) + one QR/CTA + address */
+  .back .content { position: relative; z-index: 1; padding: 8mm 9mm 11mm 9mm; display: flex; height: 100%; }
+  .letter { width: 88mm; padding-right: 6mm; font-family: Georgia, "Times New Roman", serif; display: flex; flex-direction: column; }
+  .letter p { font-size: 8.4pt; line-height: 1.42; color: #2a2a2a; margin-bottom: 2.3mm; }
+  .letter .hi { font-size: 9.5pt; font-weight: bold; margin-bottom: 2.6mm; }
+  .letter .sign { font-size: 10pt; font-style: italic; margin-top: 1mm; color: #1a1a1a; }
+  .cta { margin-top: auto; padding-top: 3mm; display: flex; align-items: center; gap: 3.5mm; }
+  .cta img { width: 19mm; height: 19mm; border: 0.5mm solid #333; padding: 1mm; image-rendering: pixelated; background: #fff; }
+  .cta .t { font-family: "Helvetica Neue", Arial, sans-serif; }
+  .cta .t .lab { font-size: 9pt; font-weight: 800; color: #8B5E34; }
+  .cta .t .num { font-size: 9pt; font-weight: 700; margin-top: 0.8mm; }
+  .divider { width: 0.4mm; background: rgba(0,0,0,0.14); }
+  .addr { flex: 1; padding-left: 6mm; position: relative; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .stamp { position: absolute; top: 0; right: 0; width: 19mm; height: 23mm; border: 0.5mm dashed #bbb;
+           font-size: 6pt; color: #bbb; text-align: center; display: flex; align-items: center; justify-content: center; }
+  .sender { position: absolute; top: 7mm; left: 6mm; max-width: 26mm; font-size: 6.5pt; color: #999; line-height: 1.4; }
+  .sender b { color: #8B5E34; }
+  .lines { position: absolute; bottom: 10mm; left: 6mm; right: 3mm; }
+  .lines .n { font-size: 10.5pt; font-weight: 800; }
+  .lines .l { font-size: 9.5pt; margin-top: 1.2mm; }
+</style>
+</head>
+<body>
+
+  <!-- FRONT -->
+  <div class="card front">
+    <div class="bgimg" style="background-image:url({{IMG_FRONT}})"></div>
+    <div class="rule"></div>
+    <div class="content">
+      <div class="head-de">Du wolltest einen Laden f&uuml;hren. Keinen Papierkram.</div>
+      <div class="head-en">You wanted to run a shop. Not do paperwork.</div>
+    </div>
+    <div class="tagline">
+      <div class="de">Von einem kleinen Laden zum anderen.</div>
+      <div class="en">From one small shop to another.</div>
+    </div>
+    <div class="serial">BANCO &middot; № {{TOKEN}}</div>
+  </div>
+
+  <!-- BACK -->
+  <div class="card back">
+    <div class="bgimg" style="background-image:url({{IMG_BACK}})"></div>
+    <div class="rule"></div>
+    <div class="content">
+      <div class="letter">
+        <p class="hi">Hallo {{FIRST_NAME}},</p>
+        <p>Du kennst das: der Laden l&auml;uft, die Kunden sind da &mdash; und trotzdem sitzt du abends noch &uuml;ber Belegen, Mehrwertsteuer und dem Kassensturz.</p>
+        <p>Ich auch. Darum habe ich die Kasse gebaut, die ich mir selbst gew&uuml;nscht h&auml;tte. Sie nimmt dir den langweiligen Teil ab, damit mehr Zeit f&uuml;r den Laden bleibt. Kein Abo-Zwang, keine Fessel &mdash; gemacht f&uuml;r L&auml;den in deiner Gr&ouml;sse. Nicht SAP. Kein Spielzeug.</p>
+        <p>Kein Verkaufsgespr&auml;ch. Nur ein Kaffee unter Ladenbesitzern.</p>
+        <p>Scann den Code &mdash; oder ruf einfach an. Der Kaffee geht auf mich.</p>
+        <p class="sign">&mdash; Angel</p>
+        <div class="cta">
+          <img src="{{QR_SRC}}" alt="QR">
+          <div class="t">
+            <div class="lab">Scann &mdash; oder Kaffee?</div>
+            <div class="num">{{CONTACT}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="addr">
+        <div class="stamp"><span>Briefmarke</span></div>
+        <div class="sender"><b>BANCO</b> &middot; La Piazza<br>banco.lapiazza.app<br>c/o UFA &middot; Luzern</div>
+        <div class="lines">
+          <div class="n">{{SHOP_NAME}}</div>
+          <div class="l">z.Hd. {{FIRST_NAME}}</div>
+          <div class="l">{{SHOP_STREET}}</div>
+          <div class="l">{{SHOP_ZIP_CITY}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="serial">BANCO &middot; № {{TOKEN}}</div>
+  </div>
+
+</body>
+</html>
