@@ -14,12 +14,45 @@ from decimal import Decimal, ROUND_HALF_UP
 CENTS = Decimal("0.01")
 
 # Swiss franc denominations (notes + coins), in CHF. Used to total a count grid.
+# BYTE-IDENTICAL to the original set: keeps the 1000 note + 0.05 coin,
+# EXCLUDES 0.01/0.02 (Switzerland has no Rappen below 5). Do NOT reorder/reformat.
 CHF_DENOMINATIONS = [
     Decimal("1000"), Decimal("200"), Decimal("100"), Decimal("50"),
     Decimal("20"), Decimal("10"),                       # notes
     Decimal("5"), Decimal("2"), Decimal("1"),
     Decimal("0.50"), Decimal("0.20"), Decimal("0.10"), Decimal("0.05"),  # coins
 ]
+
+# Euro denominations (notes + coins), in EUR. Includes the 500 note and 1c/2c
+# coins -- all legal tender, so all must be countable at closeout or they vanish.
+EUR_DENOMINATIONS = [
+    Decimal("500"), Decimal("200"), Decimal("100"), Decimal("50"),
+    Decimal("20"), Decimal("10"), Decimal("5"),          # notes
+    Decimal("2"), Decimal("1"),
+    Decimal("0.50"), Decimal("0.20"), Decimal("0.10"),
+    Decimal("0.05"), Decimal("0.02"), Decimal("0.01"),   # coins
+]
+
+# US dollar denominations (notes + coins), in USD.
+USD_DENOMINATIONS = [
+    Decimal("100"), Decimal("50"), Decimal("20"), Decimal("10"),
+    Decimal("5"), Decimal("1"),                          # notes
+    Decimal("0.25"), Decimal("0.10"), Decimal("0.05"), Decimal("0.01"),  # coins
+]
+
+_DENOMS_BY_CURRENCY = {
+    "CHF": CHF_DENOMINATIONS,
+    "EUR": EUR_DENOMINATIONS,
+    "USD": USD_DENOMINATIONS,
+}
+
+
+def denoms_for(currency="CHF"):
+    """Ordered face-value list for a currency (falls back to CHF for unknowns)."""
+    return _DENOMS_BY_CURRENCY.get((currency or "CHF").upper(), CHF_DENOMINATIONS)
+
+
+# Back-compat: the CHF whitelist, for anything that imported it directly.
 _VALID_DENOMS = {str(d) for d in CHF_DENOMINATIONS}
 
 
@@ -69,17 +102,21 @@ def close_result(expected, counted, tolerance=Decimal("0.20")) -> dict:
     }
 
 
-def denoms_total(denoms) -> Decimal:
-    """Sum a {denomination: count} map into a CHF total.
+def denoms_total(denoms, currency="CHF") -> Decimal:
+    """Sum a {denomination: count} map into a total in the given currency.
 
-    Keys are CHF face values as strings ("50", "0.05"); values are counts.
-    Unknown denominations and junk counts are ignored (robust to a noisy client).
+    Keys are face values as strings ("50", "0.05"); values are counts. Validation
+    is against the CURRENCY-APPROPRIATE denomination set -- a EUR 500 note or a
+    1c/2c coin is valid under EUR but not under CHF. Unknown denominations and junk
+    counts are ignored (robust to a noisy client). Default currency is CHF so every
+    pre-existing call site keeps byte-identical behavior.
     """
     if not isinstance(denoms, dict):
         return Decimal("0")
+    valid = {str(d) for d in denoms_for(currency)}
     total = Decimal("0")
     for face, count in denoms.items():
-        if str(face) not in _VALID_DENOMS:
+        if str(face) not in valid:
             continue
         try:
             n = int(count)

@@ -828,7 +828,7 @@
                 if (isNaN(price) || price < 0) { showToast('Enter a valid price', 'warning'); return; }
                 const cost = parseFloat(this.form.cost);
                 if (!isNaN(cost) && cost > 0 && cost > price &&
-                    !confirm('Cost (CHF ' + cost.toFixed(2) + ') is higher than the price (CHF ' + price.toFixed(2) + ') — you would sell at a loss. Save anyway?')) return;
+                    !confirm('Cost (' + formatPrice(cost) + ') is higher than the price (' + formatPrice(price) + ') — you would sell at a loss. Save anyway?')) return;
                 if (!this.editing && (!this.form.sku || !this.form.sku.trim())) { showToast('SKU is required', 'warning'); return; }
 
                 this.saving = true;

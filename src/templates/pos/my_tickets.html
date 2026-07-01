@@ -269,7 +269,7 @@ function myTickets() {
         this.items.forEach(t => { if (this.isResolved(t)) this.loadResolution(t); });
         if (this.focusN) this.$nextTick(() => this.scrollToReport(this.focusN));
         this.openN = d.open || 0; this.doneN = d.done || 0;
-        this.updatedAt = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+        this.updatedAt = formatTime(new Date(), { hour:'2-digit', minute:'2-digit' });
       } catch (e) { console.error(e); showToast('Could not load your reports', 'error'); }
       finally { this.loading = false; }
     },
@@ -357,9 +357,9 @@ function myTickets() {
       if (!s) return '';
       const d = new Date(s), now = new Date();
       const day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
-      const t = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      const t = formatTime(d, { hour:'2-digit', minute:'2-digit' });
       return Math.round((day0(now) - day0(d)) / 86400000) === 0
-        ? t : d.toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) + ' ' + t;
+        ? t : formatDate(d, { day:'2-digit', month:'short' }) + ' ' + t;
     },
     async confirm(t) {
       try {
@@ -436,11 +436,11 @@ function myTickets() {
       // calendar-day diff (not a rounded 24h diff — a 20h-old ticket is still "today")
       const day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
       const days = Math.round((day0(now) - day0(d)) / 86400000);
-      const time = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      const time = formatTime(d, { hour:'2-digit', minute:'2-digit' });
       if (days <= 0) return 'today ' + time;   // today is the key window — show WHEN
       if (days === 1) return 'yesterday';
       if (days < 7) return days + ' days ago';
-      return 'on ' + d.toLocaleDateString('en-GB', { day:'2-digit', month:'short' });
+      return 'on ' + formatDate(d, { day:'2-digit', month:'short' });
     },
   };
 }

@@ -354,8 +354,8 @@
             },
 
             formatDate(dateStr) {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('de-CH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                // Delegate to the global date seam (base.html), keyed off POSConfig.locale.
+                return window.formatDate(dateStr, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
             },
 
             statusClass(status) {

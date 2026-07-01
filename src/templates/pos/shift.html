@@ -48,7 +48,7 @@
                     <tbody>
                         <template x-for="d in DENOMS" :key="d.k">
                             <tr class="border-t">
-                                <td class="py-2 px-3 font-medium" x-text="'CHF ' + d.label"></td>
+                                <td class="py-2 px-3 font-medium" x-text="d.display"></td>
                                 <td class="py-1 px-3 text-center">
                                     <input type="number" min="0" step="1" inputmode="numeric"
                                         x-model.number="openCounts[d.k]"
@@ -130,7 +130,7 @@
                         <tbody>
                             <template x-for="d in DENOMS" :key="'c'+d.k">
                                 <tr class="border-t">
-                                    <td class="py-2 px-3 font-medium" x-text="'CHF ' + d.label"></td>
+                                    <td class="py-2 px-3 font-medium" x-text="d.display"></td>
                                     <td class="py-1 px-3 text-center">
                                         <input type="number" min="0" step="1" inputmode="numeric"
                                             x-model.number="closeCounts[d.k]"
@@ -289,19 +289,17 @@ function shiftData() {
         log: null,             // itemized daily sales log for the report
         note: '',
         paid: { kind: 'paid_out', amount: '', reason: '' },
-        // CHF denominations -- keys MUST match the server's valid set ("0.50" not "0.5").
-        DENOMS: [
-            {k:'200', v:200, label:'200'}, {k:'100', v:100, label:'100'},
-            {k:'50', v:50, label:'50'}, {k:'20', v:20, label:'20'}, {k:'10', v:10, label:'10'},
-            {k:'5', v:5, label:'5'}, {k:'2', v:2, label:'2'}, {k:'1', v:1, label:'1'},
-            {k:'0.50', v:0.5, label:'0.50'}, {k:'0.20', v:0.2, label:'0.20'},
-            {k:'0.10', v:0.1, label:'0.10'}, {k:'0.05', v:0.05, label:'0.05'},
-        ],
+        // Denominations sourced from /config (the tenant currency's ordered face values).
+        // Keys MUST match the server's valid set exactly ("0.50" not "0.5"); denomList()
+        // guarantees that. Populated in init() once POSConfig has loaded.
+        DENOMS: [],
         openCounts: {},
         closeCounts: {},
 
         async init() {
             this.user = AuthHelper.getUserInfo() || {};
+            if (!POSConfig.loaded) await POSConfig.load();
+            this.DENOMS = denomList();
             this.DENOMS.forEach(d => { this.openCounts[d.k] = 0; this.closeCounts[d.k] = 0; });
             await this.refresh();
         },
@@ -323,7 +321,7 @@ function shiftData() {
         },
 
         num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; },
-        fmtTime(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleString('de-CH'); } catch(e){ return iso; } },
+        fmtTime(iso) { if (!iso) return ''; try { return formatDateTime(iso); } catch(e){ return iso; } },
         denomTotal(counts) { let t = 0; this.DENOMS.forEach(d => t += d.v * (parseInt(counts[d.k]) || 0)); return Math.round(t * 100) / 100; },
         openTotal() { return this.denomTotal(this.openCounts); },
         closeTotal() { return this.denomTotal(this.closeCounts); },

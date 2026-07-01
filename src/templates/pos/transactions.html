@@ -329,7 +329,7 @@
                     return;
                 }
                 this.user = userInfo;
-                this.generatedAt = new Date().toLocaleString('de-CH');
+                this.generatedAt = formatDateTime(new Date());
 
                 await this.loadTransactions();
             },
@@ -494,23 +494,14 @@
                 window.open(`/pos/receipt/${transactionId}`, '_blank');
             },
 
+            // Delegate to the global date/time seam (base.html), keyed off POSConfig.locale.
+            // window.-qualified so the call doesn't recurse into this same-named method.
             formatDate(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('de-CH', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                });
+                return window.formatDate(dateString, { year: 'numeric', month: '2-digit', day: '2-digit' });
             },
 
             formatTime(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                return date.toLocaleTimeString('de-CH', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+                return window.formatTime(dateString, { hour: '2-digit', minute: '2-digit' });
             },
 
             formatPrice(amount) {
@@ -547,7 +538,7 @@
             },
             _downloadCSV(rows, filename) {
                 // Semicolon-separated (Swiss/European convention, like a UBS export); every field
-                // quoted; UTF-8 BOM so Excel/Banana read names + CHF correctly.
+                // quoted; UTF-8 BOM so Excel/Banana read names + amounts correctly.
                 const csv = '\ufeff' + rows.map(r =>
                     r.map(c => `"${String(c == null ? '' : c).replace(/"/g, '""')}"`).join(';')
                 ).join('\r\n');

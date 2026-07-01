@@ -333,7 +333,7 @@ function myDayData() {
         async init() {
             this.user = AuthHelper.getUserInfo() || {};
             const now = new Date();
-            this.todayLabel = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+            this.todayLabel = formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' });
             const h = now.getHours();
             this.greeting = h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening');
             await this.loadProfile();
@@ -457,7 +457,7 @@ function myDayData() {
         },
         toMin(hhmm) { if (!hhmm || !/^\d{2}:\d{2}$/.test(hhmm)) return null; const [h,m] = hhmm.split(':').map(Number); return h*60+m; },
 
-        prettyDate(iso) { try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' }); } catch(e){ return iso; } },
+        prettyDate(iso) { try { return formatDate(iso + 'T00:00:00', { weekday:'short', day:'numeric', month:'short' }); } catch(e){ return iso; } },
         typeLabel(t) { return ({regular:'Regular', overtime:'Overtime', holiday:'Holiday', sick:'Sick', remote:'Remote', unpaid:'Unpaid', public_holiday:'Public holiday', training:'Training'})[t] || t; },
         statusLabel(s) { return ({draft:'Draft', submitted:'Sent to Felix', approved:'Approved', rejected:'Needs a fix', paid:'Paid'})[s] || s; },
         statusClass(s) {

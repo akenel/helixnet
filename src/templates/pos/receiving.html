@@ -193,7 +193,7 @@
                                 <span class="flex-1 min-w-0">
                                     <span class="block text-sm font-medium text-gray-900 truncate" x-text="r.name"></span>
                                     <span class="block text-xs text-gray-500"
-                                          x-text="(r.price!=null ? ('CHF '+r.price.toFixed(2)) : 'no price') + (r.supplier ? ' · '+r.supplier : '')"></span>
+                                          x-text="(r.price!=null ? formatPrice(r.price) : 'no price') + (r.supplier ? ' · '+r.supplier : '')"></span>
                                 </span>
                                 <span x-show="selectedRef && selectedRef.id===r.id" class="text-emerald-600 font-bold flex-none">✓</span>
                             </button>
@@ -222,7 +222,7 @@
                         <span>for</span>
                         <input type="number" min="1" step="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="units" class="w-16 input-field py-1 text-sm">
                         <span>units</span>
-                        <span x-show="boxCost > 0 && boxUnits > 0" class="text-emerald-700 font-semibold">= CHF <span x-text="(boxCost / boxUnits).toFixed(2)"></span>/unit</span>
+                        <span x-show="boxCost > 0 && boxUnits > 0" class="text-emerald-700 font-semibold">= <span x-text="formatPrice(boxCost / boxUnits)"></span>/unit</span>
                     </div>
                 </div>
                 <button @click="createAndAdd()" :disabled="newSaving" class="btn-success w-full">

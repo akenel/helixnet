@@ -160,7 +160,7 @@ function hypercareData() {
       if (s.includes('annoy')||s==='medium') return 'bg-amber-100 text-amber-700';
       return 'bg-gray-100 text-gray-600';
     },
-    fmt(s) { return s ? new Date(s).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; },
+    fmt(s) { return s ? formatDateTime(s,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; },
   };
 }
 </script>

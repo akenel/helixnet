@@ -244,7 +244,7 @@
                     this.products = data.products || [];
                     this.categories = data.categories || [];
                     this.totals = data.totals || { revenue: 0, qty_sold: 0, vat: 0, product_count: 0 };
-                    this.generatedAt = new Date().toLocaleString('en-GB');
+                    this.generatedAt = formatDateTime(new Date());
                 } catch (e) {
                     console.error('Failed to load product sales:', e);
                     showToast('Could not load product sales', 'error');
@@ -289,7 +289,7 @@
                 if (this.dateFrom === this.dateTo) return this.dateFrom;
                 return `${this.dateFrom} to ${this.dateTo}`;
             },
-            fmtTime(t) { return t ? new Date(t).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''; },
+            fmtTime(t) { return t ? formatDateTime(t, { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''; },
 
             _downloadCSV(rows, filename) {
                 const csv = rows.map(r => r.map(c => `"${String(c == null ? '' : c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
@@ -305,7 +305,10 @@
                 const header = [`Artemis Store - Product Sales`, this.rangeLabel(), `Generated ${this.generatedAt}`];
                 const rows = [
                     [header.join(' | ')],
-                    ['Product', 'Category', 'Qty sold', 'Revenue CHF', 'incl. VAT CHF', 'Sales'],
+                    // Header LABELS are currency-aware; CELL VALUES stay RAW numeric
+                    // (.toFixed(2)) — never routed through formatPrice, so no thousands
+                    // separator (de-CH apostrophe / it-IT comma) ever corrupts the CSV.
+                    ['Product', 'Category', 'Qty sold', `Revenue ${POSConfig.currency}`, `incl. VAT ${POSConfig.currency}`, 'Sales'],
                     ...this.sortedProducts().map(p => [p.name, p.category, p.qty_sold, p.revenue.toFixed(2), p.vat.toFixed(2), p.txn_count]),
                     ['TOTAL', '', this.totals.qty_sold, this.totals.revenue.toFixed(2), this.totals.vat.toFixed(2), ''],
                 ];
@@ -316,7 +319,7 @@
             exportDrillCSV() {
                 const rows = [
                     [`Who bought: ${this.drill.product_name} | ${this.rangeLabel()}`],
-                    ['Receipt', 'Time', 'Cashier', 'Customer', 'Qty', 'Total CHF'],
+                    ['Receipt', 'Time', 'Cashier', 'Customer', 'Qty', `Total ${POSConfig.currency}`],
                     ...this.drill.sales.map(s => [s.transaction_number, this.fmtTime(s.time), s.cashier_name, s.customer_name || 'walk-in', s.qty, s.line_total.toFixed(2)]),
                 ];
                 this._downloadCSV(rows, `banco-buyers-${(this.drill.product_name||'item').replace(/\s+/g,'-')}-${this.dateFrom}.csv`);

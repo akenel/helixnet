@@ -179,7 +179,7 @@
                 <div x-show="cashReceived > 0" class="bg-green-50 rounded-lg p-4 mb-4">
                     <div class="flex justify-between text-lg">
                         <span>Cash Received:</span>
-                        <span class="font-bold text-green-700" x-text="'CHF ' + cashReceived.toFixed(2)"></span>
+                        <span class="font-bold text-green-700" x-text="formatPrice(cashReceived)"></span>
                     </div>
                     <div class="flex justify-between text-lg">
                         <span>Total Due:</span>
@@ -188,13 +188,13 @@
                     <div class="flex justify-between text-lg border-t pt-2 mt-2">
                         <span>Change:</span>
                         <span class="font-bold" :class="changeAmount >= 0 ? 'text-green-700' : 'text-red-600'"
-                              x-text="'CHF ' + changeAmount.toFixed(2)"></span>
+                              x-text="formatPrice(changeAmount)"></span>
                     </div>
                 </div>
 
                 <!-- Insufficient cash: the received amount is less than the total due -->
                 <div x-show="cashReceived > 0 && cashShort()" class="bg-red-50 border border-red-300 rounded-lg p-3 mb-4 text-red-700 text-sm">
-                    ⚠️ Cash received is <strong>CHF <span x-text="Math.abs(changeAmount).toFixed(2)"></span> short</strong> of the total.
+                    ⚠️ Cash received is <strong><span x-text="formatPrice(Math.abs(changeAmount))"></span> short</strong> of the total.
                     Collect more cash, pick a higher amount, or hit <strong>EXACT</strong>.
                 </div>
 
@@ -204,8 +204,8 @@
                     <div class="grid grid-cols-2 gap-2">
                         <button x-show="changeAmount > 0" @click="applyQuickRound()"
                             class="bg-yellow-100 hover:bg-yellow-200 p-3 rounded-lg text-left">
-                            <span class="block font-bold text-yellow-800">Round to <span x-text="'CHF ' + cashReceived.toFixed(2)"></span></span>
-                            <span class="text-sm text-yellow-600">Give back CHF <span x-text="Math.floor(changeAmount).toFixed(2)"></span> (clean notes)</span>
+                            <span class="block font-bold text-yellow-800">Round to <span x-text="formatPrice(cashReceived)"></span></span>
+                            <span class="text-sm text-yellow-600">Give back <span x-text="formatPrice(Math.floor(changeAmount))"></span> (clean notes)</span>
                         </button>
                         <button @click="showChangeProducts = !showChangeProducts"
                             class="bg-pink-100 hover:bg-pink-200 p-3 rounded-lg text-left">
@@ -236,7 +236,7 @@
             <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
                 <h2 class="text-lg font-semibold text-yellow-800 mb-3">⚠️ Dry Run Preview</h2>
                 <div class="space-y-2 text-sm text-yellow-900">
-                    <p>• Cash drawer: <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : 'CHF 0.00 (electronic)'"></span></p>
+                    <p>• Cash drawer: <span x-text="paymentMethod === 'cash' ? '+' + formatPrice(cartData.totals.total) : formatPrice(0) + ' (electronic)'"></span></p>
                     <p>• Inventory: <span x-text="inventoryPreview()"></span></p>
                     <p>• Receipt: Will print to POS printer</p>
                     <p>• Daily total: +<span x-text="formatPrice(cartData.totals.total)"></span></p>
@@ -426,7 +426,7 @@
             calculateChange() {
                 const total = this.cartData.totals.total;
                 // Round to whole cents -- the discount/VAT math leaves float dust
-                // (e.g. 10.0000001), which otherwise reads as "CHF 0.00 short" on an
+                // (e.g. 10.0000001), which otherwise reads as a "0.00 short" on an
                 // exactly-paid sale. Compare in cents, not raw floats.
                 this.changeAmount = Math.round((this.cashReceived - total) * 100) / 100;
                 // Gap is the cents part that could be rounded
@@ -459,7 +459,7 @@
                 this.quickRoundApplied = true;
                 this.calculateChange();
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
-                showToast(`Rounded to CHF ${roundedTotal.toFixed(2)} - clean change!`, 'success');
+                showToast(`Rounded to ${formatPrice(roundedTotal)} - clean change!`, 'success');
             },
 
             addChangeProduct(product) {
@@ -696,8 +696,8 @@
 
                 // Never complete an UNDERPAID cash sale (integer-cent compare).
                 if (this.cashShort()) {
-                    const short = (this.cartData.totals.total - this.cashReceived).toFixed(2);
-                    showToast(`Cash received is CHF ${short} short of the total. Collect more or hit EXACT.`, 'warning');
+                    const short = formatPrice(this.cartData.totals.total - this.cashReceived);
+                    showToast(`Cash received is ${short} short of the total. Collect more or hit EXACT.`, 'warning');
                     return;
                 }
 
@@ -728,7 +728,7 @@
                 // For cash, show change in confirmation
                 let confirmMsg = `Complete transaction for ${formatPrice(this.cartData.totals.total)}?`;
                 if (this.paymentMethod === 'cash' && this.changeAmount > 0) {
-                    confirmMsg += `\n\nCash received: CHF ${this.cashReceived.toFixed(2)}\nChange to give: CHF ${this.changeAmount.toFixed(2)}`;
+                    confirmMsg += `\n\nCash received: ${formatPrice(this.cashReceived)}\nChange to give: ${formatPrice(this.changeAmount)}`;
                 }
 
                 if (!confirm(confirmMsg)) {

@@ -33,7 +33,7 @@
                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
                     <template x-for="denom in notes" :key="denom.value">
                         <div class="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
-                            <div class="text-sm sm:text-lg font-bold text-green-800 truncate" x-text="'CHF ' + denom.value"></div>
+                            <div class="text-sm sm:text-lg font-bold text-green-800 truncate" x-text="denom.label"></div>
                             <input type="number" min="0" x-model.number="denom.count"
                                    @input="calculateTotal()"
                                    class="w-full mt-2 px-2 py-1 text-center border rounded text-lg font-mono">
@@ -86,9 +86,9 @@
                     <div class="mt-2 text-sm" :class="variance === 0 ? 'text-green-600' : 'text-gray-500'">
                         <span x-show="variance === 0">✅ Perfect balance! Pam's bonus pool +1 point</span>
                         <span x-show="variance > 0 && variance <= 0.5">✨ Over by small amount - goes to cashier bonus</span>
-                        <span x-show="variance > 0.5">📝 Over by CHF <span x-text="variance.toFixed(2)"></span> - review recommended</span>
+                        <span x-show="variance > 0.5">📝 Over by <span x-text="formatPrice(variance)"></span> - review recommended</span>
                         <span x-show="variance < 0 && variance >= -0.5">⚠️ Under by small amount - goes to slush fund</span>
-                        <span x-show="variance < -0.5">🚨 Under by CHF <span x-text="Math.abs(variance).toFixed(2)"></span> - manager review required</span>
+                        <span x-show="variance < -0.5">🚨 Under by <span x-text="formatPrice(Math.abs(variance))"></span> - manager review required</span>
                     </div>
                 </div>
             </div>
@@ -157,34 +157,26 @@
             cashierName: '',
             countDate: new Date().toISOString().split('T')[0],
 
-            // Swiss Franc notes
-            notes: [
-                { value: 200, count: 0 },
-                { value: 100, count: 0 },
-                { value: 50, count: 0 },
-                { value: 20, count: 0 },
-                { value: 10, count: 0 }
-            ],
-
-            // Swiss Franc coins
-            coins: [
-                { value: 5, label: '5 CHF', count: 0 },
-                { value: 2, label: '2 CHF', count: 0 },
-                { value: 1, label: '1 CHF', count: 0 },
-                { value: 0.5, label: '50 Rp', count: 0 },
-                { value: 0.2, label: '20 Rp', count: 0 },
-                { value: 0.1, label: '10 Rp', count: 0 },
-                { value: 0.05, label: '5 Rp', count: 0 }
-            ],
+            // Denomination rows sourced from /config (tenant currency). Split into notes
+            // (face >= noteMin) and coins so the grid reads naturally per currency:
+            // CHF notes >= 10, EUR notes >= 5, USD notes >= 1. label is denomList()'s
+            // currency-aware display; keys ('0.50' not '0.5') match the server exactly.
+            notes: [],
+            coins: [],
 
             expectedTotal: 0,
             countedTotal: 0,
             variance: 0,
             varianceRoute: 'slush',
-            notes: '',
+            memo: '',
             submitted: false,
 
-            init() {
+            async init() {
+                if (!POSConfig.loaded) await POSConfig.load();
+                const noteMin = POSConfig.currency === 'USD' ? 1 : (POSConfig.currency === 'EUR' ? 5 : 10);
+                const rows = denomList();
+                this.notes = rows.filter(d => d.v >= noteMin).map(d => ({ key: d.k, value: d.v, label: d.display, count: 0 }));
+                this.coins = rows.filter(d => d.v < noteMin).map(d => ({ key: d.k, value: d.v, label: d.display, count: 0 }));
                 // Try to get expected total from today's transactions
                 this.loadExpectedTotal();
             },
@@ -233,26 +225,23 @@
                     return;
                 }
 
+                // Denomination-keyed count map ("50": n, "0.50": n) — keys match the
+                // server's currency-appropriate valid set exactly (currency-agnostic).
+                const denoms = {};
+                this.notes.concat(this.coins).forEach(d => {
+                    const n = parseInt(d.count) || 0;
+                    if (n > 0) denoms[d.key] = n;   // d.key is the exact server string ("0.50")
+                });
                 const countData = {
                     cashier: this.cashierName,
                     date: this.countDate,
-                    notes_200: this.notes[0].count,
-                    notes_100: this.notes[1].count,
-                    notes_50: this.notes[2].count,
-                    notes_20: this.notes[3].count,
-                    notes_10: this.notes[4].count,
-                    coins_5: this.coins[0].count,
-                    coins_2: this.coins[1].count,
-                    coins_1: this.coins[2].count,
-                    coins_050: this.coins[3].count,
-                    coins_020: this.coins[4].count,
-                    coins_010: this.coins[5].count,
-                    coins_005: this.coins[6].count,
+                    currency: POSConfig.currency,
+                    denoms,
                     counted_total: this.countedTotal,
                     expected_total: this.expectedTotal,
                     variance: this.variance,
                     variance_route: this.varianceRoute,
-                    notes: this.notes
+                    memo: this.memo
                 };
 
                 // TODO: POST to API
@@ -264,11 +253,9 @@
 
             printSummary() {
                 window.print();
-            },
-
-            formatPrice(amount) {
-                return 'CHF ' + (amount || 0).toFixed(2);
             }
+            // NOTE: uses the global currency-aware formatPrice() from base.html — no
+            // local override (which would have hardcoded 'CHF ').
         }
     }
 </script>

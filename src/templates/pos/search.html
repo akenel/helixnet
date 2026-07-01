@@ -92,7 +92,7 @@
                     <div>
                         <h1 class="text-xl font-bold text-gray-900">Product Search</h1>
                         <p class="text-sm text-gray-500">
-                            <span x-text="stats.total.toLocaleString()"></span> products |
+                            <span x-text="stats.total.toLocaleString(POSConfig.locale)"></span> products |
                             <span x-text="stats.categories"></span> categories
                         </p>
                     </div>
@@ -529,11 +529,10 @@ function searchApp() {
             return colors[category] || 'bg-gray-100 text-gray-800';
         },
 
+        // Delegate to the global currency-aware formatPrice() from base.html (window.-
+        // qualified so it doesn't recurse into this same-named component method).
         formatPrice(amount) {
-            return new Intl.NumberFormat('de-CH', {
-                style: 'currency',
-                currency: 'CHF'
-            }).format(amount);
+            return window.formatPrice(amount);
         },
 
         showToast(message, type = 'info') {

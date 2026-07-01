@@ -624,6 +624,9 @@
             vat_year: 2025,
             currency: 'CHF',
             locale: 'de-CH',
+            // Swiss default denom grid (byte-identical to the server CHF set); /config
+            // overwrites this with the tenant currency's ordered face values on load.
+            denominations: ['1000','200','100','50','20','10','5','2','1','0.50','0.20','0.10','0.05'],
             loaded: false,
 
             async load() {
@@ -637,6 +640,8 @@
                         this.vat_year = config.vat_year;
                         this.currency = config.currency;
                         this.locale = config.locale;
+                        if (Array.isArray(config.denominations) && config.denominations.length)
+                            this.denominations = config.denominations;
                         this.loaded = true;
                         console.log(`POS Config loaded: VAT ${this.vat_rate}% (${this.vat_year})`);
                     }
@@ -649,12 +654,61 @@
         // Load POS config on page load
         POSConfig.load();
 
-        // Price formatting helper (Swiss francs)
+        // Price formatting helper — currency + locale from /config (CHF/de-CH default).
+        // The ONE money-display seam: every 'CHF ' + toFixed(2) leak routes through here.
         function formatPrice(amount) {
             return new Intl.NumberFormat(POSConfig.locale, {
                 style: 'currency',
                 currency: POSConfig.currency
             }).format(amount);
+        }
+
+        // Date/time locale seam — keyed off POSConfig.locale (de-CH default → Swiss
+        // dd.mm.yyyy). The ONE date/time seam: every hardcoded toLocaleDateString/
+        // toLocaleTimeString/toLocaleString routes through here so an IT till shows
+        // Italian dates and a CH till stays byte-identical. Accepts a Date, an ISO
+        // string, or an epoch; falsy → ''. Extra Intl options can be passed through.
+        function formatDate(value, options) {
+            if (value === null || value === undefined || value === '') return '';
+            const d = (value instanceof Date) ? value : new Date(value);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleDateString(POSConfig.locale, options);
+        }
+
+        function formatTime(value, options) {
+            if (value === null || value === undefined || value === '') return '';
+            const d = (value instanceof Date) ? value : new Date(value);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleTimeString(POSConfig.locale, options);
+        }
+
+        function formatDateTime(value, options) {
+            if (value === null || value === undefined || value === '') return '';
+            const d = (value instanceof Date) ? value : new Date(value);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleString(POSConfig.locale, options);
+        }
+
+        // Cash-drawer denomination grid, sourced from /config `denominations` (the tenant
+        // currency's ordered face values) so the client grid can never disagree with the
+        // server's valid set. Returns [{k, v, display}] where k is the EXACT server string
+        // key ("0.50", "500" — never "0.5"), v is the numeric value, and display is a
+        // currency-aware label. CHF stays byte-identical to the old grid ('CHF ' + key);
+        // EUR shows cents as '5 c' + adds €500/1c/2c; USD shows '¢' + '$'.
+        function denomList() {
+            const cur = POSConfig.currency;
+            return (POSConfig.denominations || []).map(function (k) {
+                const v = parseFloat(k);
+                let display;
+                if (cur === 'EUR') {
+                    display = v < 1 ? (Math.round(v * 100) + ' c') : ('€ ' + k);
+                } else if (cur === 'USD') {
+                    display = v < 1 ? (Math.round(v * 100) + '¢') : ('$ ' + k);
+                } else {
+                    display = 'CHF ' + k;   // CHF + any unknown currency: byte-identical legacy label
+                }
+                return { k: k, v: v, display: display };
+            });
         }
 
         // Contained (inclusive) VAT within a Swiss VAT-inclusive gross price.
@@ -776,7 +830,7 @@
       function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
       function ago(s){ if(!s) return ''; var d=new Date(s), m=Math.round((Date.now()-d)/60000);
         if(m<1) return 'just now'; if(m<60) return m+'m ago'; var h=Math.round(m/60);
-        if(h<24) return h+'h ago'; return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit'}); }
+        if(h<24) return h+'h ago'; return formatDate(d,{day:'2-digit',month:'2-digit'}); }
       function render(d){
         var items=d.items||[];
         badge.style.display = d.unread>0 ? 'inline-block':'none';
@@ -869,7 +923,6 @@
         closeBtn=document.getElementById('pulse-close'),refreshBtn=document.getElementById('pulse-refresh'),
         sub=document.getElementById('pulse-sub');
       function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-      function chf(n){try{return 'CHF '+Number(n||0).toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2});}catch(e){return 'CHF '+(n||0);}}
       function show(){ov.style.display='flex';load();}
       function hide(){ov.style.display='none';}
       async function load(){
@@ -877,7 +930,7 @@
         try{
           var j=await API.get('/api/v1/pos/system/pulse');
           var t=j.today||{};
-          document.getElementById('pulse-sales').innerHTML=chf(t.sales)+' <small>· '+(t.transactions||0)+' sale'+((t.transactions===1)?'':'s')+'</small>';
+          document.getElementById('pulse-sales').innerHTML=formatPrice(t.sales||0)+' <small>· '+(t.transactions||0)+' sale'+((t.transactions===1)?'':'s')+'</small>';
           set('pulse-members',j.members!=null?j.members:'—');
           set('pulse-drawers',j.open_drawers!=null?j.open_drawers:'—');
           set('pulse-catalog',j.catalog!=null?j.catalog:'—');
@@ -886,7 +939,7 @@
           set('pulse-build',(b.version?('v'+b.version):'')+(b.sha?(' ('+b.sha+')'):''));
           set('pulse-env',(b.env||'').toUpperCase()||'—');
           document.getElementById('pulse-dbdot').className='dot '+((j.db==='ok')?'ok':'err');
-          sub.textContent='Live snapshot · '+new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+          sub.textContent='Live snapshot · '+formatTime(new Date(),{hour:'2-digit',minute:'2-digit',second:'2-digit'});
         }catch(e){
           sub.textContent='Could not load stats — '+(e&&e.message?e.message:'try again.');
           document.getElementById('pulse-dbdot').className='dot err';
@@ -929,7 +982,7 @@
             function updateStatusBar() {
                 // Update time — device-local, labeled with the local tz (BL-012)
                 const now = new Date();
-                const timeStr = now.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const timeStr = formatTime(now, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 document.getElementById('status-time').textContent = TZ ? `${timeStr} ${TZ}` : timeStr;
 
                 // Update user from auth

@@ -459,7 +459,7 @@
                                     <span x-text="p.name" class="block text-sm font-medium text-gray-900 truncate"></span>
                                     <span x-show="p.category" x-text="p.category" class="block text-xs text-gray-400 truncate"></span>
                                 </span>
-                                <span x-text="'CHF ' + p.price" class="text-sm text-gray-600 flex-none"></span>
+                                <span x-text="formatPrice(p.price)" class="text-sm text-gray-600 flex-none"></span>
                             </button>
                         </template>
                     </div>
@@ -484,7 +484,7 @@
                                             <span x-text="r.supplier"></span><span x-show="r.category" x-text="' · ' + r.category"></span>
                                         </span>
                                     </span>
-                                    <span x-show="r.suggested_price !== null" x-text="'CHF ' + r.suggested_price" class="text-sm text-gray-600 flex-none"></span>
+                                    <span x-show="r.suggested_price !== null" x-text="formatPrice(r.suggested_price)" class="text-sm text-gray-600 flex-none"></span>
                                 </button>
                             </template>
                         </div>
@@ -564,7 +564,7 @@
                                     <label class="block text-xs text-gray-600 mb-1">Units in box</label>
                                     <input type="number" step="1" min="1" x-model.number="boxUnits" @input="calcUnitCost()" placeholder="1" class="input-field">
                                 </div>
-                                <div class="col-span-2 text-sm text-gray-700">Per unit: <b x-text="'CHF ' + (lazyCost || '0.00')"></b></div>
+                                <div class="col-span-2 text-sm text-gray-700">Per unit: <b x-text="formatPrice(lazyCost || 0)"></b></div>
                             </div>
                         </div>
                         <button @click="saveLazyCapture()" :disabled="lazySaving" class="btn-success w-full">

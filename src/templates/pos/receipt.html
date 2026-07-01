@@ -209,7 +209,7 @@
                 </div>
                 <div x-show="member && member.next_tier_name && member.spend_to_next_tier > 0" class="flex justify-between text-gray-500">
                     <span>CHF to <span x-text="member ? member.next_tier_name : ''"></span></span>
-                    <span x-text="'CHF ' + (member ? Math.round(member.spend_to_next_tier) : 0)"></span>
+                    <span x-text="formatPrice(member ? Math.round(member.spend_to_next_tier) : 0)"></span>
                 </div>
             </div>
 
@@ -471,7 +471,7 @@
                 });
                 return { std, red };
             },
-            // Points earned on this sale = 1 per CHF paid, floored (matches the server).
+            // Points earned on this sale = 1 per whole unit of currency paid, floored (matches the server).
             pointsEarned() {
                 return Math.floor(parseFloat(this.transaction.total || 0));
             },
@@ -496,24 +496,14 @@
                 return parts.join(', ');
             },
 
+            // Delegate to the global date/time seam (base.html), keyed off POSConfig.locale.
+            // window.-qualified so the call doesn't recurse into this same-named method.
             formatDate(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('de-CH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
+                return window.formatDate(dateString, { year: 'numeric', month: 'long', day: 'numeric' });
             },
 
             formatTime(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                return date.toLocaleTimeString('de-CH', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
+                return window.formatTime(dateString, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             },
 
             formatPrice(amount) {

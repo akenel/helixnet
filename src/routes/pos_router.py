@@ -54,7 +54,7 @@ from src.db.models import (
 )
 from src.core.constants import HelixApplication
 from src.services.cash_shift_service import (
-    expected_cash, close_result, denoms_total, money,
+    expected_cash, close_result, denoms_total, money, denoms_for,
 )
 from pydantic import BaseModel
 from src.schemas.pos_schema import (
@@ -153,6 +153,10 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     except Exception:
         logger.warning("config: regime source failed; CH fallback", exc_info=True)
         regime = resolve_regime(None)
+    # PHASE 1 (Go-Italian): serve the ordered face-value list for the TENANT currency so
+    # the client denom grids stop being hardcoded CHF. denoms_for() falls back to CHF for
+    # an unknown currency, so a CH tenant gets the byte-identical Swiss set.
+    denominations = [str(d) for d in denoms_for(regime.get("currency", settings.POS_CURRENCY))]
     return {
         "vat_rate": settings.POS_VAT_RATE,
         "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
@@ -161,6 +165,7 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
         "locale": settings.POS_LOCALE,
         "vat_decimal": settings.POS_VAT_RATE / 100,  # 0.081 for calculations
         "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
+        "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency
     }
 
 
@@ -4629,6 +4634,21 @@ async def _open_shift_for(db: AsyncSession, user_id: str) -> Optional[CashShiftM
     ))).scalar_one_or_none()
 
 
+async def _tenant_currency(db: AsyncSession) -> str:
+    """The tenant's cash currency for drawer counting (CH fallback on any blip).
+
+    PHASE 1 (Go-Italian): the drawer count must validate face values against the
+    tenant's OWN currency set (a EUR 500 note / 1c coin is real money). Never raises —
+    degrades to CHF exactly like /config, so a Swiss till is byte-identical.
+    """
+    try:
+        store = await get_active_store_settings(db)
+        return resolve_regime(store).get("currency", "CHF")
+    except Exception:
+        logger.warning("shift: currency source failed; CHF fallback", exc_info=True)
+        return "CHF"
+
+
 async def _shift_sales(db: AsyncSession, user_id: str, start: datetime, end: datetime) -> dict:
     """Sum THIS cashier's takings in the shift window. Only CASH touches the drawer;
     card/twint/debit are reported but never counted. Refunds reduce the expected cash."""
@@ -4682,7 +4702,8 @@ async def open_cash_shift(
     if await _open_shift_for(db, user_id):
         raise HTTPException(status_code=400,
             detail="You already have an open cash shift. Close it first.")
-    opening = denoms_total(req.opening_denoms) if req.opening_denoms else money(req.opening_float or 0)
+    currency = await _tenant_currency(db)
+    opening = denoms_total(req.opening_denoms, currency) if req.opening_denoms else money(req.opening_float or 0)
     shift = CashShiftModel(
         user_id=user_id, username=username, store_number=1,
         register_id=req.register_id, opening_float=opening,
@@ -4772,14 +4793,15 @@ async def close_cash_shift(
         raise HTTPException(status_code=404, detail="No open cash shift to close.")
     now = datetime.now(timezone.utc)
     s = await _shift_sales(db, user_id, shift.opened_at, now)
-    counted = denoms_total(req.closing_denoms) if req.closing_denoms else money(req.counted_cash or 0)
+    currency = await _tenant_currency(db)
+    counted = denoms_total(req.closing_denoms, currency) if req.closing_denoms else money(req.counted_cash or 0)
     exp = expected_cash(shift.opening_float, s["cash_sales"],
                         shift.paid_in_total, shift.paid_out_total, s["cash_refunds"])
     res = close_result(exp, counted, Decimal(str(shift.tolerance)))
     note = (req.note or "").strip()
     if not res["within_tolerance"] and not note:
         raise HTTPException(status_code=400,
-            detail=f"Off by CHF {res['variance']}. Add a note to close the shift.")
+            detail=f"Off by {currency} {res['variance']}. Add a note to close the shift.")
 
     shift.cash_sales = s["cash_sales"]; shift.card_sales = s["card_sales"]
     shift.cash_refunds = s["cash_refunds"]; shift.transaction_count = s["count"]
