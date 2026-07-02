@@ -191,3 +191,44 @@ one core, swappable packs). Head-shop first (deep + polished); the knobs make th
 - `dry_run: true, regions: [TI]` → "how many Italian shops are there?" — preview, zero spend
 - `languages: [de], limit: 20` → the first German batch (week 1)
 - `languages: [it]` → all Ticino · `languages: [fr]` → Romandie · `regions: all` → the whole country
+
+---
+
+## ADDENDUM 4 (2026-07-02) — RUN IT IN PHASES (sequential passes, human gate between)
+
+Don't run one mega-recipe — it's heavy + fragile (one failure kills the whole run, and you see
+nothing till the end). Run **three separate passes**, each reading the previous one's output file,
+with a **human GATE between**. Cheaper, checkpointed, debuggable, re-runnable. Handoff = a file
+(or the CRM). Phase 4 is execution, not a recipe.
+
+```
+PHASE 1  DISCOVER   → raw-list.csv                (RUNNING NOW, other terminal)
+         🚦 gate: eyeball the COUNT + list ("~140, looks right"). No AI spend yet.
+PHASE 2  ENRICH     → customer-model.csv + STRATEGY-REPORT.md
+         🚦 gate: review fit/SWOT, human-check AI, PICK Tier A, see where events land.
+PHASE 3  GENERATE   → cards + landing data (selected shops only)
+         🚦 gate: eyeball the cards before printing.
+PHASE 4  RUN        → mail ~20/wk by region → watch scans → book venue → event → work responders.
+```
+
+### Paste-ready prompts (run one at a time)
+
+**PHASE 1 — Discover** *(you're doing this)*
+> Find every head-shop/grow-shop/CBD/smoke/vape shop in Switzerland (config: regions, vertical).
+> Search Google Maps + [Head-Shop, Growshop, Hanfladen, CBD Shop, Smoke Shop, Vape Shop, Tabakladen,
+> magasin CBD, negozio CBD] + directories/chains. Dedup by name+address (tag chains). Output
+> raw-list.csv: name, address, city, canton, phone, website, source. Just the list — no enrichment.
+
+**PHASE 2 — Enrich + model** *(input: raw-list.csv)*
+> For each shop in raw-list.csv, enrich per the schema in MASTER-LIST-RECIPE.md: identity (owner,
+> email), signals (rating/#reviews/#locations/product-mix/langs), systemed-or-not, 2 best photos +
+> logo (default fallbacks flagged), language_region + card_language, and an AI fit pass (SWOT from
+> the seller's view, why-fit, pain estimate, fit_score 1-5, priority_tier, scoop_line, needs_human_
+> review). Never invent — flag gaps, cite sources. Then write STRATEGY-REPORT.md: geographic
+> clustering → recommended event location(s), recommended campaign duration, budget, week-by-week
+> playbook. Output customer-model.csv.
+
+**PHASE 3 — Generate** *(input: customer-model.csv, filtered to selected/Tier-A + a language)*
+> For each selected shop, write the personalized card copy + landing copy IN ITS card_language
+> (warm „du" handshake voice, no feature list, human-reviewed), assign a token, and produce the
+> print-ready 2-up card PDFs + the landing roster row. Output cards/ + roster.csv.
