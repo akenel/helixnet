@@ -33,6 +33,10 @@
   .opts label { font-size: 13px; padding: 7px 11px; border: 1px solid #d8ccbc; border-radius: 8px; background: #fbf8f3; cursor: pointer; }
   .opts input { display: none; }
   .opts label:has(input:checked) { background: #eef4ea; border-color: #3f6b34; font-weight: 800; }
+  .hwrow { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 14px; }
+  .hwrow span { flex: 1; font-weight: 600; }
+  .hwrow input[type=checkbox] { width: 21px; height: 21px; flex: 0 0 auto; accent-color: #8B5E34; }
+  .hwrow input[type=number] { width: 54px; padding: 7px; border: 1px solid #d8ccbc; border-radius: 7px; font-size: 14px; text-align: center; }
   .bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e6dccd;
          padding: 10px 16px; max-width: 480px; margin: 0 auto; }
   .bar button { width: 100%; padding: 13px; font-size: 15px; font-weight: 800; border: none; border-radius: 10px; color: #fff; background: #8B5E34; }
@@ -77,6 +81,10 @@
     <input type="text" id="q_wish">
     <label class="q">Age-restricted / CBD — how does he handle it now?</label>
     <input type="text" id="q_age">
+    <label class="q">Membership / loyalty — has one? Does he <b>ask</b> customers to join?</label>
+    <input type="text" id="q_member" placeholder="e.g. has a card but never asks — I'd have joined if he did">
+    <label class="q">Repeat customers — how does he know/reward them?</label>
+    <input type="text" id="q_repeat">
   </div>
 
   <div class="sec">
@@ -91,24 +99,25 @@
   </div>
 
   <div class="sec">
-    <h2>4 · 🔌 Hardware &amp; infra — what we plug into</h2>
+    <h2>4 · 🔌 Hardware inventory — tick what's there + how many</h2>
+    <div class="cap">A shop can have several. Count them — it tells us what Banco runs on + what they'd add.</div>
+    <div class="hwrow"><input type="checkbox" id="hw_tablet"><span>Tablet</span><input type="number" id="n_tablet" min="0" placeholder="#"></div>
+    <div class="hwrow"><input type="checkbox" id="hw_pc"><span>PC / laptop</span><input type="number" id="n_pc" min="0" placeholder="#"></div>
+    <div class="hwrow"><input type="checkbox" id="hw_phone"><span>Phone at the till</span><input type="number" id="n_phone" min="0" placeholder="#"></div>
+    <div class="hwrow"><input type="checkbox" id="hw_printer"><span>Receipt printer</span><input type="number" id="n_printer" min="0" placeholder="#"></div>
+    <div class="hwrow"><input type="checkbox" id="hw_scanner"><span>Barcode scanner</span><input type="number" id="n_scanner" min="0" placeholder="#"></div>
+    <div class="hwrow"><input type="checkbox" id="hw_drawer"><span>Cash drawer</span><input type="number" id="n_drawer" min="0" placeholder="#"></div>
+    <div class="hwrow"><input type="checkbox" id="hw_card"><span>Card terminal(s)</span><input type="number" id="n_card" min="0" placeholder="#"></div>
+    <label class="q">Card terminal — which? (TWINT / Visa / debit / brand)</label>
+    <input type="text" id="h_card" placeholder="e.g. SumUp reader, TWINT + Visa">
     <label class="q">WiFi on site?</label>
     <div class="opts" data-k="wifi">
       <label><input type="radio" name="wifi" value="Yes"><span>Yes</span></label>
       <label><input type="radio" name="wifi" value="Weak"><span>Weak</span></label>
       <label><input type="radio" name="wifi" value="None"><span>None</span></label>
     </div>
-    <label class="q">Device at the till</label>
-    <div class="opts" data-k="device">
-      <label><input type="radio" name="device" value="Tablet"><span>Tablet</span></label>
-      <label><input type="radio" name="device" value="PC"><span>PC</span></label>
-      <label><input type="radio" name="device" value="Phone"><span>Phone</span></label>
-      <label><input type="radio" name="device" value="None"><span>None</span></label>
-    </div>
-    <label class="q">Card terminal (TWINT / Visa / debit — which?)</label>
-    <input type="text" id="h_card" placeholder="e.g. tablet + card reader, TWINT + Visa">
-    <div class="row" style="margin-top:8px"><input type="checkbox" id="h_stock"><div><b>Is the till connected to stock/inventory?</b> <span class="h">(usually NO — tick only if YES. NO = the gap Banco fills)</span></div></div>
-    <label class="q">Scanner? Receipt printer? Cash drawer?</label>
+    <div class="row" style="margin-top:10px"><input type="checkbox" id="h_stock"><div><b>Is the till linked to stock/inventory?</b> <span class="h">(tick only if YES — NO is the gap Banco fills)</span></div></div>
+    <label class="q">Anything else? (label printer, scale, second till…)</label>
     <input type="text" id="h_extra">
   </div>
 
@@ -138,6 +147,7 @@
     m.textContent = miss.length ? ('⚠ before you leave: '+miss.join(', ')) : '✓ good coverage — copied.';
     function shots(){ var a=[['p_front','storefront'],['p_pano','panorama'],['p_counter','counter'],['p_hw','hardware'],['p_shelves','shelves'],['p_labels','labels'],['p_books','back-office']]; return a.filter(x=>c(x[0])).map(x=>x[1]).join(', ')||'—'; }
     function samples(){ var a=[['s_day','day-closeout'],['s_week','week-sales'],['s_sheet','ledger'],['s_recv','receiving']]; return a.filter(x=>c(x[0])).map(x=>x[1]).join(', ')||'—'; }
+    function hw(){ var a=[['hw_tablet','n_tablet','tablet'],['hw_pc','n_pc','PC'],['hw_phone','n_phone','phone'],['hw_printer','n_printer','receipt-printer'],['hw_scanner','n_scanner','scanner'],['hw_drawer','n_drawer','cash-drawer'],['hw_card','n_card','card-terminal']]; return a.filter(x=>c(x[0])).map(x=>x[2]+'×'+(t(x[1])||'1')).join(', ')||'—'; }
     var s = "BANCO DISCOVERY — "+(t('shop')||'(shop)')+"  "+t('when')+"\n"
       + "WRAP: "+t('w_summary')+"\n\n"
       + "SHOTS TAKEN: "+shots()+"\n"
@@ -150,9 +160,12 @@
       + "· totals/bank balance: "+t('q_balance')+"\n"
       + "· current system/gaps: "+t('q_system')+"\n"
       + "· one wish: "+t('q_wish')+"\n"
-      + "· age/CBD handling: "+t('q_age')+"\n\n"
-      + "HARDWARE: wifi="+(v('wifi')||'?')+" · device="+(v('device')||'?')+" · card="+(t('h_card')||'?')
-        +" · stock-linked="+(c('h_stock')?'YES':'NO (the gap)')+" · extra="+(t('h_extra')||'—');
+      + "· age/CBD handling: "+t('q_age')+"\n"
+      + "· membership/asks-to-join: "+t('q_member')+"\n"
+      + "· repeat-customers: "+t('q_repeat')+"\n\n"
+      + "HARDWARE: "+hw()+"\n"
+      + "  card: "+(t('h_card')||'?')+" · wifi="+(v('wifi')||'?')+" · stock-linked="
+        +(c('h_stock')?'YES':'NO (the gap)')+" · other="+(t('h_extra')||'—');
     if(navigator.clipboard){ navigator.clipboard.writeText(s).catch(function(){ prompt('Copy this:', s); }); }
     else { prompt('Copy this:', s); }
   }
