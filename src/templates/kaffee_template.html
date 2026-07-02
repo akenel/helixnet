@@ -1,17 +1,14 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="{{LANG}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kaffee? — BANCO</title>
+<title>{{C_GREETING}} — BANCO</title>
 <!--
-  BANCO · Head-Shop outreach · PERSONALIZED BOOK-A-COFFEE LANDING PAGE (per company)
-  One card → one company → one landing page. The QR token identifies the shop, so this page
-  greets them BY NAME with THEIR logo + photo. Anti-cheese: warm, one action, honest
-  self-qualifier that tells the wrong-fit prospect NOT to bother. Mobile-first.
-  MERGE: {{FIRST_NAME}} {{SHOP_NAME}} {{SHOP_LOGO}} {{SHOP_IMG}} {{TOKEN}}
-  Serve per-company; QR → /r/{token} → this page. {{SHOP_IMG}}/{{SHOP_LOGO}} = empty ok.
-  One-tap "Ja" (we already know the shop + have its number); optional contact for writers.
+  BANCO · Head-Shop outreach · PERSONALIZED BOOK-A-COFFEE LANDING (per company, per language)
+  One template + a DE/FR/IT/EN string catalog (coffee_service.CHROME). Token = shop identity →
+  greet by name + their logo/photo + the region's language. Anti-cheese, one action, honest
+  self-qualifier. {{C_*}} = chrome (catalog); {{LANDING_INTRO}} = per-shop AI copy (default fallback).
 -->
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -66,54 +63,54 @@
     <div class="hero">
       <div class="bg"></div>
       <div class="top"><div class="rule"></div><div class="logo"></div></div>
-      <h1>Hallo {{FIRST_NAME}}.<span class="sub">Du hast gescannt &mdash; gut. Trinken wir den Kaffee.</span></h1>
+      <h1>{{C_GREETING}} {{FIRST_NAME}}.<span class="sub">{{C_HERO_SUB}}</span></h1>
     </div>
 
     <div class="body">
       <p class="intro">{{LANDING_INTRO}}</p>
 
-      <div class="video">🎥 &nbsp;20 Sekunden: Angel sagt kurz Hoi<br><span style="font-size:11px">(Video kommt hierhin)</span></div>
+      <div class="video">🎥 &nbsp;{{C_VIDEO}}<br><span style="font-size:11px">{{C_VIDEO2}}</span></div>
 
       <div class="qual">
-        <h2>Passt das &uuml;berhaupt zu dir, {{FIRST_NAME}}?</h2>
-        <div class="lead">Sei ehrlich &mdash; ich bin&rsquo;s auch. Das ist nicht f&uuml;r jeden.</div>
+        <h2>{{C_QUAL_H}}</h2>
+        <div class="lead">{{C_QUAL_LEAD}}</div>
         <div class="box fit">
-          <div class="head">Passt, wenn &hellip;</div>
+          <div class="head">{{C_FIT_HEAD}}</div>
           <ul>
-            <li>du deinen Laden <b>selbst</b> f&uuml;hrst</li>
-            <li>du <b>1&ndash;3 L&auml;den</b> hast &mdash; oder ein paar Leute an der Kasse</li>
-            <li>du noch mit <b>Zettel, Stift und Taschenrechner</b> k&auml;mpfst</li>
-            <li>du abends &uuml;ber Belegen, MwSt und Kassensturz sitzt</li>
-            <li>du mehr Zeit f&uuml;r den <b>Laden</b> willst, nicht f&uuml;r Papierkram</li>
+            <li>{{C_FIT_1}}</li>
+            <li>{{C_FIT_2}}</li>
+            <li>{{C_FIT_3}}</li>
+            <li>{{C_FIT_4}}</li>
+            <li>{{C_FIT_5}}</li>
           </ul>
         </div>
         <div class="box nofit">
-          <div class="head">Passt (noch) nicht, wenn &hellip;</div>
+          <div class="head">{{C_NOFIT_HEAD}}</div>
           <ul>
-            <li>du schon ein <b>System oder eigene Software</b> hast, mit dem du zufrieden bist &mdash; dann brauchst du mich nicht. Ehrlich.</li>
-            <li>du eine grosse Kette mit IT-Abteilung bist und ein volles ERP willst &mdash; dann ist SAP dein Ding, nicht meins.</li>
+            <li>{{C_NOFIT_1}}</li>
+            <li>{{C_NOFIT_2}}</li>
           </ul>
         </div>
-        <p class="fineprint">Kosten minimal. Training minimal. Kein Abo-Zwang, keine Fessel.</p>
+        <p class="fineprint">{{C_FINEPRINT}}</p>
       </div>
 
       <div class="cta">
-        <h2>Willst du&rsquo;s sehen? Ich zeig&rsquo;s dir &mdash; live, mit Kaffee.</h2>
-        <p style="font-size:14px;color:#3a3a3a;margin-top:6px">Ich lad ein paar Ladenbesitzer zu einem lockeren Treffen &mdash; anschauen, anfassen, Fragen stellen. Kein Verkaufsanlass. Ort und Zeit sag ich dir, sobald genug zusammen sind.</p>
+        <h2>{{C_CTA_H}}</h2>
+        <p style="font-size:14px;color:#3a3a3a;margin-top:6px">{{C_CTA_P}}</p>
         <form method="post" action="/kaffee/ja">
           <input type="hidden" name="token" value="{{TOKEN}}">
-          <button class="btn" type="submit">Ja &mdash; reservier mir eine Einladung</button>
+          <button class="btn" type="submit">{{C_BTN}}</button>
           <details class="writein">
-            <summary>Kurz was dazu schreiben? &rarr;</summary>
-            <input type="text" name="contact" placeholder="Tel / Mail &mdash; oder einfach eine Notiz">
+            <summary>{{C_WRITEIN}}</summary>
+            <input type="text" name="contact" placeholder="{{C_PLACEHOLDER}}">
           </details>
         </form>
-        <div class="note">Ich hab deine Laden-Nummer schon. Kein Verkaufsdruck &mdash; wir schauen nur, ob&rsquo;s passt.</div>
+        <div class="note">{{C_NOTE}}</div>
       </div>
 
       <div class="foot">
         &mdash; Angel &middot; <b>BANCO</b> &middot; La Piazza 🐺<br>
-        Passt&rsquo;s nicht, {{FIRST_NAME}}, kein Problem. Dann eben ein andermal.
+        {{C_FOOT}}
       </div>
     </div>
   </div>

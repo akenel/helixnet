@@ -35,24 +35,132 @@ TG_CHAT = os.environ.get("COFFEE_TELEGRAM_CHAT_ID", "")
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "kaffee_template.html"
 
-# Default landing intro (the recipe overrides this per shop with a warm, pain-TUNED line —
-# empathic peer voice, NOT a recited dossier about him).
-DEFAULT_INTRO = (
-    "Ich bin <b>Angel</b>. Ich hab dir die Karte geschickt &mdash; kein Verkaufsgespr&auml;ch. "
-    "Ich hab eine Kasse gebaut, die den langweiligen Teil &uuml;bernimmt: <b>Belege, "
-    "Mehrwertsteuer, Kassensturz</b>. Damit mehr Zeit f&uuml;r den Laden bleibt. Nicht SAP. "
-    "Kein Spielzeug. F&uuml;r L&auml;den wie deinen."
-)
+LANG_CODE = {"de": "de", "fr": "fr", "it": "it", "en": "en"}
+
+# Default landing intro per language (the recipe overrides per shop with a warm, pain-TUNED
+# line — empathic peer voice, NOT a recited dossier). FR/IT/EN = drafts, native-review before mail.
+DEFAULT_INTRO = {
+    "de": ("Ich bin <b>Angel</b>. Ich hab dir die Karte geschickt — kein Verkaufsgespräch. Ich hab "
+           "eine Kasse gebaut, die den langweiligen Teil übernimmt: <b>Belege, Mehrwertsteuer, "
+           "Kassensturz</b>. Damit mehr Zeit für den Laden bleibt. Nicht SAP. Kein Spielzeug. Für "
+           "Läden wie deinen."),
+    "fr": ("Je suis <b>Angel</b>. Je t'ai envoyé la carte — pas de discours de vente. J'ai construit "
+           "une caisse qui prend en charge la partie pénible : <b>reçus, TVA, clôture de caisse</b>. "
+           "Pour qu'il te reste plus de temps pour le magasin. Pas SAP. Pas un jouet. Pour des "
+           "magasins comme le tien."),
+    "it": ("Sono <b>Angel</b>. Ti ho mandato la cartolina — niente discorso di vendita. Ho costruito "
+           "una cassa che si prende la parte noiosa: <b>scontrini, IVA, chiusura cassa</b>. Così ti "
+           "resta più tempo per il negozio. Non SAP. Non un giocattolo. Per negozi come il tuo."),
+    "en": ("I'm <b>Angel</b>. I sent you the card — no sales pitch. I built a till that takes the "
+           "boring part off your plate: <b>receipts, VAT, cashing out</b>. So you get more time for "
+           "the shop. Not SAP. Not a toy. For shops like yours."),
+}
+
+# Chrome string catalog (fixed UI copy) per language. One layout, four fills (Banco's own i18n
+# pattern). FR/IT/EN are solid drafts — NATIVE-REVIEW before a real mailing.
+CHROME = {
+    "de": {
+        "C_GREETING": "Hallo", "C_HERO_SUB": "Du hast gescannt — gut. Trinken wir den Kaffee.",
+        "C_VIDEO": "20 Sekunden: Angel sagt kurz Hoi", "C_VIDEO2": "(Video kommt hierhin)",
+        "C_QUAL_H": "Passt das überhaupt zu dir?",
+        "C_QUAL_LEAD": "Sei ehrlich — ich bin's auch. Das ist nicht für jeden.",
+        "C_FIT_HEAD": "Passt, wenn …",
+        "C_FIT_1": "du deinen Laden <b>selbst</b> führst",
+        "C_FIT_2": "du <b>1–3 Läden</b> hast — oder ein paar Leute an der Kasse",
+        "C_FIT_3": "du noch mit <b>Zettel, Stift und Taschenrechner</b> kämpfst",
+        "C_FIT_4": "du abends über Belegen, MwSt und Kassensturz sitzt",
+        "C_FIT_5": "du mehr Zeit für den <b>Laden</b> willst, nicht für Papierkram",
+        "C_NOFIT_HEAD": "Passt (noch) nicht, wenn …",
+        "C_NOFIT_1": "du schon ein <b>System oder eigene Software</b> hast, mit dem du zufrieden bist — dann brauchst du mich nicht. Ehrlich.",
+        "C_NOFIT_2": "du eine grosse Kette mit IT-Abteilung bist und ein volles ERP willst — dann ist SAP dein Ding, nicht meins.",
+        "C_FINEPRINT": "Kosten minimal. Training minimal. Kein Abo-Zwang, keine Fessel.",
+        "C_CTA_H": "Willst du's sehen? Ich zeig's dir — live, mit Kaffee.",
+        "C_CTA_P": "Ich lad ein paar Ladenbesitzer zu einem lockeren Treffen — anschauen, anfassen, Fragen stellen. Kein Verkaufsanlass. Ort und Zeit sag ich dir, sobald genug zusammen sind.",
+        "C_BTN": "Ja — reservier mir eine Einladung", "C_WRITEIN": "Kurz was dazu schreiben? →",
+        "C_PLACEHOLDER": "Tel / Mail — oder einfach eine Notiz",
+        "C_NOTE": "Ich hab deine Laden-Nummer schon. Kein Verkaufsdruck — wir schauen nur, ob's passt.",
+        "C_FOOT": "Passt's nicht, kein Problem. Dann eben ein andermal.",
+    },
+    "fr": {
+        "C_GREETING": "Salut", "C_HERO_SUB": "Tu as scanné — bien. Prenons ce café.",
+        "C_VIDEO": "20 secondes : Angel dit bonjour", "C_VIDEO2": "(la vidéo arrive ici)",
+        "C_QUAL_H": "Est-ce que ça te correspond, au fond ?",
+        "C_QUAL_LEAD": "Sois honnête — moi aussi. Ce n'est pas pour tout le monde.",
+        "C_FIT_HEAD": "Ça colle, si …",
+        "C_FIT_1": "tu gères ton magasin <b>toi-même</b>",
+        "C_FIT_2": "tu as <b>1 à 3 magasins</b> — ou quelques personnes en caisse",
+        "C_FIT_3": "tu te bats encore avec <b>papier, stylo et calculette</b>",
+        "C_FIT_4": "tu passes tes soirées sur les reçus, la TVA et la clôture de caisse",
+        "C_FIT_5": "tu veux plus de temps pour le <b>magasin</b>, pas pour la paperasse",
+        "C_NOFIT_HEAD": "Ça ne colle pas (encore), si …",
+        "C_NOFIT_1": "tu as déjà un <b>système ou ton propre logiciel</b> qui te convient — alors tu n'as pas besoin de moi. Franchement.",
+        "C_NOFIT_2": "tu es une grande chaîne avec un service informatique et tu veux un ERP complet — alors SAP est ton truc, pas le mien.",
+        "C_FINEPRINT": "Coûts minimes. Formation minime. Pas d'abonnement forcé, pas de laisse.",
+        "C_CTA_H": "Tu veux voir ? Je te montre — en vrai, autour d'un café.",
+        "C_CTA_P": "J'invite quelques commerçants à une rencontre détendue — regarder, toucher, poser des questions. Rien à vendre. Je te dis le lieu et l'heure dès qu'on est assez.",
+        "C_BTN": "Oui — réserve-moi une invitation", "C_WRITEIN": "Envie d'écrire un mot ? →",
+        "C_PLACEHOLDER": "Tél / e-mail — ou juste un mot",
+        "C_NOTE": "J'ai déjà le numéro de ton magasin. Aucune pression — on regarde juste si ça colle.",
+        "C_FOOT": "Si ça ne colle pas, pas de souci. Ce sera pour une autre fois.",
+    },
+    "it": {
+        "C_GREETING": "Ciao", "C_HERO_SUB": "Hai scansionato — bene. Prendiamoci quel caffè.",
+        "C_VIDEO": "20 secondi: Angel dice ciao", "C_VIDEO2": "(il video arriva qui)",
+        "C_QUAL_H": "Fa davvero per te?",
+        "C_QUAL_LEAD": "Sii onesto — lo sono anch'io. Non è per tutti.",
+        "C_FIT_HEAD": "Va bene, se …",
+        "C_FIT_1": "gestisci il negozio <b>di persona</b>",
+        "C_FIT_2": "hai <b>1–3 negozi</b> — o qualche persona alla cassa",
+        "C_FIT_3": "combatti ancora con <b>carta, penna e calcolatrice</b>",
+        "C_FIT_4": "passi le sere su scontrini, IVA e chiusura cassa",
+        "C_FIT_5": "vuoi più tempo per il <b>negozio</b>, non per le scartoffie",
+        "C_NOFIT_HEAD": "Non fa per te (ancora), se …",
+        "C_NOFIT_1": "hai già un <b>sistema o un software tuo</b> che ti soddisfa — allora non ti servo. Davvero.",
+        "C_NOFIT_2": "sei una grande catena con un reparto IT e vuoi un ERP completo — allora SAP è cosa tua, non mia.",
+        "C_FINEPRINT": "Costi minimi. Formazione minima. Nessun abbonamento forzato, nessun vincolo.",
+        "C_CTA_H": "Vuoi vederlo? Te lo mostro — dal vivo, con un caffè.",
+        "C_CTA_P": "Invito qualche negoziante a un incontro informale — guardare, toccare, fare domande. Niente vendita. Luogo e ora te li dico appena siamo abbastanza.",
+        "C_BTN": "Sì — riservami un invito", "C_WRITEIN": "Vuoi scrivere due righe? →",
+        "C_PLACEHOLDER": "Tel / e-mail — o solo una nota",
+        "C_NOTE": "Ho già il numero del negozio. Nessuna pressione — guardiamo solo se va bene.",
+        "C_FOOT": "Se non va, nessun problema. Sarà per un'altra volta.",
+    },
+    "en": {
+        "C_GREETING": "Hi", "C_HERO_SUB": "You scanned — good. Let's have that coffee.",
+        "C_VIDEO": "20 seconds: Angel says hi", "C_VIDEO2": "(video goes here)",
+        "C_QUAL_H": "Is this even right for you?",
+        "C_QUAL_LEAD": "Be honest — I am too. This isn't for everyone.",
+        "C_FIT_HEAD": "A fit, if …",
+        "C_FIT_1": "you run your shop <b>yourself</b>",
+        "C_FIT_2": "you have <b>1–3 shops</b> — or a few people at the till",
+        "C_FIT_3": "you're still fighting <b>paper, pen and a calculator</b>",
+        "C_FIT_4": "you spend evenings on receipts, VAT and cashing out",
+        "C_FIT_5": "you want more time for the <b>shop</b>, not paperwork",
+        "C_NOFIT_HEAD": "Not a fit (yet), if …",
+        "C_NOFIT_1": "you already have a <b>system or your own software</b> you're happy with — then you don't need me. Honestly.",
+        "C_NOFIT_2": "you're a big chain with an IT department wanting a full ERP — then SAP is your thing, not mine.",
+        "C_FINEPRINT": "Minimal cost. Minimal training. No subscription trap, no leash.",
+        "C_CTA_H": "Want to see it? I'll show you — live, over a coffee.",
+        "C_CTA_P": "I'm inviting a few shop owners to a relaxed get-together — look, touch, ask questions. Nothing to sell. I'll tell you the place and time once there are enough of us.",
+        "C_BTN": "Yes — reserve me an invite", "C_WRITEIN": "Rather write a note? →",
+        "C_PLACEHOLDER": "Phone / email — or just a note",
+        "C_NOTE": "I've already got your shop's number. No pressure — we just see if it fits.",
+        "C_FOOT": "If it's not a fit, no problem. Another time then.",
+    },
+}
 
 # PoC roster: token -> shop identity. Personalize per fresh semi-qualified lead.
 ROSTER = {
     "HS-ARTEMIS-COFFEE-0001": {
-        "first_name": "Felix",
-        "shop_name": "Artemis Kräuter & Düfte",
-        "phone": "041 220 22 22",
+        "first_name": "Felix", "shop_name": "Artemis Kräuter & Düfte", "phone": "041 220 22 22",
         "logo": "/static/kaffee/assets/artemis-logo.png",
-        "img": "/static/kaffee/assets/artemis-front.png",
+        "img": "/static/kaffee/assets/artemis-front.png", "language": "de",
     },
+    # demo rows to verify FR/IT chrome renders (empty logo/img = clean)
+    "HS-DEMO-FR-0001": {"first_name": "Luc", "shop_name": "CBD Léman", "phone": "021 000 00 00",
+                        "logo": "", "img": "", "language": "fr"},
+    "HS-DEMO-IT-0001": {"first_name": "Marco", "shop_name": "Canapa Ticino", "phone": "091 000 00 00",
+                        "logo": "", "img": "", "language": "it"},
 }
 
 
@@ -82,19 +190,26 @@ def visit_count(token: str) -> int:
 
 
 def render_landing(token: str):
-    """Render the personalized landing page for a token, or None if unknown."""
+    """Render the personalized, localized landing page for a token, or None if unknown."""
     shop = ROSTER.get(token)
     if not shop:
         return None
+    lang = shop.get("language", "de")
+    if lang not in CHROME:
+        lang = "de"
     html = TEMPLATE.read_text(encoding="utf-8")
-    for k, v in {
+    fields = {
+        "{{LANG}}": LANG_CODE.get(lang, "de"),
         "{{FIRST_NAME}}": shop["first_name"],
         "{{SHOP_NAME}}": shop["shop_name"],
         "{{SHOP_LOGO}}": shop.get("logo", ""),
         "{{SHOP_IMG}}": shop.get("img", ""),
         "{{TOKEN}}": token,
-        "{{LANDING_INTRO}}": shop.get("landing_intro") or DEFAULT_INTRO,
-    }.items():
+        "{{LANDING_INTRO}}": shop.get("landing_intro") or DEFAULT_INTRO.get(lang, DEFAULT_INTRO["de"]),
+    }
+    for ck, cv in CHROME[lang].items():
+        fields["{{" + ck + "}}"] = cv
+    for k, v in fields.items():
         html = html.replace(k, v)
     return html
 
