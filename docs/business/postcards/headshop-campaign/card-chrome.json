@@ -1,0 +1,63 @@
+{
+  "_note": "Handshake-card chrome per language. LETTER is the default per-shop letter (recipe overrides via card_letter); {name} = first name. FR/IT/EN = drafts, native-review before mailing. One card design, four fills — same as the landing catalog.",
+  "de": {
+    "CARD_HEAD": "Du wolltest einen Laden f&uuml;hren. Keinen Papierkram.",
+    "CARD_TAG": "Von einem kleinen Laden zum anderen.",
+    "CARD_QR": "Scann &mdash; oder Kaffee?",
+    "CARD_ATTN": "z.Hd.",
+    "CARD_STAMP": "Briefmarke",
+    "LETTER": [
+      "Hallo {name},",
+      "Du kennst das: der Laden l&auml;uft, die Kunden sind da &mdash; und trotzdem sitzt du abends noch &uuml;ber Belegen, Mehrwertsteuer und dem Kassensturz.",
+      "Ich auch. Darum habe ich die Kasse gebaut, die ich mir selbst gew&uuml;nscht h&auml;tte. Sie nimmt dir den langweiligen Teil ab, damit mehr Zeit f&uuml;r den Laden bleibt. Kein Abo-Zwang, keine Fessel &mdash; gemacht f&uuml;r L&auml;den in deiner Gr&ouml;sse. Nicht SAP. Kein Spielzeug.",
+      "Kein Verkaufsgespr&auml;ch. Nur ein Kaffee unter Ladenbesitzern.",
+      "Scann den Code &mdash; oder ruf einfach an. Der Kaffee geht auf mich.",
+      "&mdash; Angel"
+    ]
+  },
+  "fr": {
+    "CARD_HEAD": "Tu voulais tenir un magasin. Pas faire de la paperasse.",
+    "CARD_TAG": "D'un petit commerce &agrave; un autre.",
+    "CARD_QR": "Scanne &mdash; ou un caf&eacute; ?",
+    "CARD_ATTN": "&agrave; l'att. de",
+    "CARD_STAMP": "Timbre",
+    "LETTER": [
+      "Salut {name},",
+      "Tu connais &ccedil;a : le magasin tourne, les clients sont l&agrave; &mdash; et pourtant tu passes encore tes soir&eacute;es sur les re&ccedil;us, la TVA et la cl&ocirc;ture de caisse.",
+      "Moi aussi. C'est pour &ccedil;a que j'ai construit la caisse que j'aurais voulu avoir. Elle te prend la partie p&eacute;nible, pour qu'il te reste plus de temps pour le magasin. Pas d'abonnement forc&eacute;, pas de laisse &mdash; faite pour des magasins de ta taille. Pas SAP. Pas un jouet.",
+      "Pas de discours de vente. Juste un caf&eacute; entre commer&ccedil;ants.",
+      "Scanne le code &mdash; ou appelle simplement. Le caf&eacute; est pour moi.",
+      "&mdash; Angel"
+    ]
+  },
+  "it": {
+    "CARD_HEAD": "Volevi gestire un negozio. Non fare scartoffie.",
+    "CARD_TAG": "Da un piccolo negozio a un altro.",
+    "CARD_QR": "Scansiona &mdash; o un caff&egrave;?",
+    "CARD_ATTN": "c.a.",
+    "CARD_STAMP": "Francobollo",
+    "LETTER": [
+      "Ciao {name},",
+      "Lo conosci: il negozio va, i clienti ci sono &mdash; eppure passi ancora le sere su scontrini, IVA e chiusura cassa.",
+      "Anch'io. Per questo ho costruito la cassa che avrei voluto avere. Si prende la parte noiosa, cos&igrave; ti resta pi&ugrave; tempo per il negozio. Nessun abbonamento forzato, nessun vincolo &mdash; fatta per negozi della tua taglia. Non SAP. Non un giocattolo.",
+      "Niente discorso di vendita. Solo un caff&egrave; tra negozianti.",
+      "Scansiona il codice &mdash; o chiama e basta. Il caff&egrave; lo offro io.",
+      "&mdash; Angel"
+    ]
+  },
+  "en": {
+    "CARD_HEAD": "You wanted to run a shop. Not do paperwork.",
+    "CARD_TAG": "From one small shop to another.",
+    "CARD_QR": "Scan &mdash; or a coffee?",
+    "CARD_ATTN": "attn:",
+    "CARD_STAMP": "Stamp",
+    "LETTER": [
+      "Hi {name},",
+      "You know the feeling: the shop's busy, the customers are happy &mdash; and you're still up at night with receipts, VAT and cashing out the till.",
+      "Same here. So I built the till I always wished I had. It takes the boring part off your plate, so you get more time for the shop. No subscription trap, no leash &mdash; made for shops your size. Not SAP. Not a toy.",
+      "No sales pitch. Just a coffee between shopkeepers.",
+      "Scan the code &mdash; or just call. The coffee's on me.",
+      "&mdash; Angel"
+    ]
+  }
+}

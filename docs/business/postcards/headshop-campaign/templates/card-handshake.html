@@ -62,12 +62,10 @@
     <div class="bgimg" style="background-image:url({{IMG_FRONT}})"></div>
     <div class="rule"></div>
     <div class="content">
-      <div class="head-de">Du wolltest einen Laden f&uuml;hren. Keinen Papierkram.</div>
-      <div class="head-en">You wanted to run a shop. Not do paperwork.</div>
+      <div class="head-de">{{C_CARD_HEAD}}</div>
     </div>
     <div class="tagline">
-      <div class="de">Von einem kleinen Laden zum anderen.</div>
-      <div class="en">From one small shop to another.</div>
+      <div class="de">{{C_CARD_TAG}}</div>
     </div>
     <div class="serial">BANCO &middot; № {{TOKEN}}</div>
   </div>
@@ -78,26 +76,21 @@
     <div class="rule"></div>
     <div class="content">
       <div class="letter">
-        <p class="hi">Hallo {{FIRST_NAME}},</p>
-        <p>Du kennst das: der Laden l&auml;uft, die Kunden sind da &mdash; und trotzdem sitzt du abends noch &uuml;ber Belegen, Mehrwertsteuer und dem Kassensturz.</p>
-        <p>Ich auch. Darum habe ich die Kasse gebaut, die ich mir selbst gew&uuml;nscht h&auml;tte. Sie nimmt dir den langweiligen Teil ab, damit mehr Zeit f&uuml;r den Laden bleibt. Kein Abo-Zwang, keine Fessel &mdash; gemacht f&uuml;r L&auml;den in deiner Gr&ouml;sse. Nicht SAP. Kein Spielzeug.</p>
-        <p>Kein Verkaufsgespr&auml;ch. Nur ein Kaffee unter Ladenbesitzern.</p>
-        <p>Scann den Code &mdash; oder ruf einfach an. Der Kaffee geht auf mich.</p>
-        <p class="sign">&mdash; Angel</p>
+        {{CARD_LETTER}}
         <div class="cta">
           <img src="{{QR_SRC}}" alt="QR">
           <div class="t">
-            <div class="lab">Scann &mdash; oder Kaffee?</div>
+            <div class="lab">{{C_CARD_QR}}</div>
           </div>
         </div>
       </div>
       <div class="divider"></div>
       <div class="addr">
-        <div class="stamp"><span>Briefmarke</span></div>
+        <div class="stamp"><span>{{C_STAMP}}</span></div>
         <div class="sender"><b>BANCO</b> &middot; La Piazza<br>banco.lapiazza.app<br>c/o UFA &middot; Luzern</div>
         <div class="lines">
           <div class="n">{{SHOP_NAME}}</div>
-          <div class="l">z.Hd. {{FIRST_NAME}}</div>
+          <div class="l">{{C_ATTN}} {{FIRST_NAME}}</div>
           <div class="l">{{SHOP_STREET}}</div>
           <div class="l">{{SHOP_ZIP_CITY}}</div>
         </div>
