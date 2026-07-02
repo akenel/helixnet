@@ -70,6 +70,35 @@ profiles: email + first/last name, or KC's Verify-Profile blocks direct-grant lo
 then the **one-env-var cutover** (`POS_REALM`/`LP_REALM` → `kc-staging`, restart staging, login smoke),
 with a one-var rollback ready. Prod (`kc-production`) is a separate, later, explicitly-gated cutover.
 
+## ✅ 2026-07-02 — kc-staging + kc-production BOTH CUT OVER + HUMAN-GREEN
+
+Both env realms built, folded, cut over, and proven by Angel end-to-end. The Banco POS now runs on a clean
+dedicated realm per env — **off** the 365-bot `borrowhood` swamp. Recipe that worked (same both envs):
+1. **Build** `kc-<env>` additively (`build_unified_realm.py --create`, base-domain the env's Banco host).
+2. **SMTP** — copy the working Resend key from the env's current community realm's `realm_smtp_config` **DB
+   row** (the admin API masks smtp password on GET as `**********`, so DB extract is the only way to copy it;
+   key transits files on the box only, never printed). from = `noreply-staging@` (stg) / `noreply@` (prod).
+3. **Brand** — `emailTheme=lapiazza` (wolf email theme), `displayName="La Piazza · Banco"` (kills raw realm-id
+   on pages), `internationalizationEnabled=true` + `supportedLocales=[en,it]`, `resetPasswordAllowed=true`,
+   and a **localization override** on `accountUpdatedMessage`/`accountPasswordUpdatedMessage` (EN+IT) →
+   "Your password is set. You can close this window and log back in to Banco." (fixes KC's dead-end message).
+4. **Fold staff** — felix(pos-admin)/pam(pos-cashier)/ralph(pos-manager), `+tag` emails (`angel.kenel+<name>@`
+   → Angel's inbox, he controls every reset), roles + `shop:artemis`. **Staging = helix_pass** (rehearsal);
+   **prod = NO helix_pass** — passwords set purely via the self-service reset flow (the clean handover pattern).
+5. **Cutover** — flip `POS_REALM` in the env's compose (`/opt/helixnet/hetzner/docker-compose.banco-<env>.yml`),
+   recreate ONLY that service (`docker compose -p hetzner -f <5 files> up -d --no-deps <service>`). `LP_REALM`
+   left on `borrowhood`/`borrowhood-staging` (marketplace = separate fold). Prod was **backup-gated**
+   (`banco_prod` + `helix_db` dumps, gunzip-verified, before any change). Rollback = restore the `.bak-cutover-*`
+   compose + recreate. Proven each time: running `POS_REALM`, kc-realm JWKS reachable, `/pos/` page embeds the
+   new realm, health green, the OTHER envs' containers untouched (uptime unchanged).
+
+**Angel's sign-off:** staging — felix/pam/ralph login + forgot-password→reset→login, flawless. prod
+(banco.lapiazza.app) — same three, "clean simple and just works," nice Banco-branded pages.
+
+**Still open (separate, later):** retire `borrowhood`/`borrowhood-staging` (audit + quarantine the 365 bots —
+marketplace/`LP_REALM` still uses them, so don't break the Square); the rename-to-clean-names Phase 4 is now
+moot for POS (we built fresh clean-named realms rather than renaming the swamp).
+
 ### Account-handover pattern (decided 2026-07-01) — how a real owner takes over
 When a real shop-owner (e.g. the real Felix) comes on, do NOT create-from-scratch, and do NOT hand over
 your only admin. Instead:
