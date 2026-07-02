@@ -20,8 +20,8 @@ _THANKS = (
     "<div style='max-width:460px;margin:64px auto;padding:0 22px;text-align:center;color:#2a2a2a'>"
     "<div style='height:4px;width:44px;background:#8B5E34;border-radius:2px;margin:0 auto 22px'></div>"
     "<h1 style='font-size:27px;font-weight:800'>Merci. 🐺</h1>"
-    "<p style='font-size:15px;color:#3a3a3a;margin-top:14px'>Ich meld mich bei dir &mdash; kein "
-    "Verkaufsdruck, versprochen. Der Kaffee geht auf mich.</p>"
+    "<p style='font-size:15px;color:#3a3a3a;margin-top:14px'>Ich schick dir die Einladung, sobald "
+    "Ort und Zeit stehen &mdash; kein Verkaufsdruck, versprochen. Der Kaffee geht auf mich.</p>"
     "<p style='font-size:13px;color:#8a7c6a;margin-top:26px'>&mdash; Angel &middot; BANCO &middot; La Piazza</p>"
     "</div></body></html>"
 )

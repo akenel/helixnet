@@ -135,12 +135,12 @@ async def capture_lead(token: str, contact: str) -> dict:
     rec = {"token": token, "at": _now(), "first_name": name, "shop_name": sn,
            "phone": ph, "contact": contact, "visits": visits}
     _append(LEADS_LOG, rec)
-    subject = f"☕ Kaffee-Anfrage: {name} / {sn}"
-    body = (f"<h2>Neue Kaffee-Anfrage</h2><p><b>{name}</b> — {sn}</p>"
-            f"<p>Laden-Tel: {ph}</p><p>Kontakt (freiwillig): {contact or '—'}</p>"
+    subject = f"☕ Einladung angefragt: {name} / {sn}"
+    body = (f"<h2>Will eine Einladung zum Banco-Treffen</h2><p><b>{name}</b> — {sn}</p>"
+            f"<p>Laden-Tel: {ph}</p><p>Notiz/Kontakt: {contact or '—'}</p>"
             f"<p>Karte: {token} · Seitenbesuche: {visits}</p>")
-    tg = (f"☕ <b>Kaffee-Anfrage</b>\n{name} — {sn}\nTel: {ph}\n"
-          f"Kontakt: {contact or '—'}\nKarte: {token} · Besuche: {visits}")
+    tg = (f"☕ <b>Einladung angefragt</b>\n{name} — {sn}\nTel: {ph}\n"
+          f"Notiz: {contact or '—'}\nKarte: {token} · Besuche: {visits}")
     await asyncio.to_thread(_send_email, subject, body)
     await _send_telegram(tg)
     return rec
