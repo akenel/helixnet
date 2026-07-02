@@ -10,6 +10,29 @@
 
 ---
 
+## 🃏 ACTIVE NOW — HEAD-SHOP POSTCARD CAMPAIGN (2026-07-02)  ← START HERE
+
+**Built + committed today** (all on `main`) — the outreach machine, end to end:
+- The **Handshake card** (chosen strategy, "Nino angle" — one warm card, no sequence), DE/FR/IT/EN, 2-up print, № serial, photos/logo — `docs/business/postcards/headshop-campaign/`
+- Personalized **landing** (per-shop, per-language, event/invite CTA) + `render_card.py`; served by Banco app at `/kaffee/{token}` + `/campaign/events`
+- **Tracking + web→CRM loop**: scan/„Ja" → log + email(ecolution) + Telegram → **Postino** joined by `ext_id`=token (sync verified)
+- **Postino CRM** (`crm/postino`, runs LOCAL via `crm/start.sh` → :8900) — **184 leads** (11 A / 6 B / 164 unqualified) + **artifact store** (`artifacts.py`, FS now / MinIO when `MINIO_ENDPOINT` set) + `language`/`scoop_line` cols
+- **Recipe spec** (`docs/business/headshop-crm/MASTER-LIST-RECIPE.md`, addenda 1-5): phased Discover→Enrich→Generate, `campaign.yaml` knobs, vertical-reuse, Postino = CRM
+
+**🐯 NEXT (top of deck):**
+1. **Enrich the 164** unqualified (fan-out subagents): website→email→manager(Zefix)→`QUALIFICATION.md`→tier/score/persona/language/scoop + photos/logo → artifact store. Turns "11 A-list" into the real field.
+2. **Phase 3: generate** cards (per lead, per language) for the selected Tier-A.
+3. **Pre-mail checklist:** native FR/IT review · the 20-sec Angel video · **prod-deploy** the landing + set `COFFEE_EVENTS_KEY` + Telegram creds · point real QRs at **prod**.
+4. **Mail batch 1** (~20, by region/language) → watch **scans** (the leading signal, not the 1-3% booking) → work responders → the event (Luzern/Lausanne/Bellinzona by cluster).
+
+**🧍 Angel, in parallel — highest-odds first customer:** Felix → Mosey warm intro. Run it *alongside* the cold campaign.
+
+**⚠️ Coordination:** ONE driver per shared surface. Postino stays LOCAL (deploy to sandbox only AFTER the KC-realm terminal is done — never touch sandbox concurrently). Don't reseed `postino.db` while working it.
+
+**Full context (memory):** `banco-headshop-vertical-mosey-gtm` · `banco-competitive-swot-2026-07` · `one-driver-orchestration-preference`.
+
+---
+
 ## ✅ RESOLVED 2026-06-29 — identity terminal collision recovery
 The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's uncommitted patches on sandbox + banco-staging) is **fully recovered**:
 - [x] Identity terminal's commits **landed on `main`** — `92aabaa` is in `main` history.
