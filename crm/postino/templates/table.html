@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="get" class="flex flex-wrap items-end gap-2 mb-4 bg-white p-3 rounded-lg shadow-sm text-sm">
+  <label class="flex flex-col">
+    <span class="text-xs text-slate-500">Tier</span>
+    <select name="tier" class="border rounded px-2 py-1">
+      <option value="">Any</option>
+      {% for t in ['A','B','DROP'] %}<option value="{{ t }}" {{ 'selected' if tier == t }}>{{ t }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="flex flex-col">
+    <span class="text-xs text-slate-500">Persona</span>
+    <select name="persona" class="border rounded px-2 py-1">
+      <option value="">Any</option>
+      {% for p in ['owner-operator','multi-shop'] %}<option value="{{ p }}" {{ 'selected' if persona == p }}>{{ p }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="flex flex-col">
+    <span class="text-xs text-slate-500">Stage</span>
+    <select name="stage" class="border rounded px-2 py-1">
+      <option value="">Any</option>
+      {% for s in STAGES %}<option value="{{ s }}" {{ 'selected' if stage == s }}>{{ STAGE_LABELS[s] }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="flex flex-col">
+    <span class="text-xs text-slate-500">City</span>
+    <select name="city" class="border rounded px-2 py-1">
+      <option value="">Any</option>
+      {% for c in cities %}<option value="{{ c }}" {{ 'selected' if city == c }}>{{ c }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="bg-ink text-white px-3 py-1.5 rounded">Filter</button>
+  <a href="/table" class="px-3 py-1.5 rounded border">Clear</a>
+  <span class="ml-auto text-slate-500">{{ leads|length }} leads</span>
+</form>
+
+<div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-3 py-2">Shop</th>
+        <th class="text-left px-3 py-2">Manager</th>
+        <th class="text-left px-3 py-2">City</th>
+        <th class="text-left px-3 py-2">Address</th>
+        <th class="text-right px-3 py-2">★</th>
+        <th class="text-right px-3 py-2">Score</th>
+        <th class="text-left px-3 py-2">Tier</th>
+        <th class="text-left px-3 py-2">Stage</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for lead in leads %}
+      <tr class="hover:bg-sand/50 cursor-pointer" onclick="location.href='/lead/{{ lead.id }}'">
+        <td class="px-3 py-2 font-medium">{{ lead.name }}</td>
+        <td class="px-3 py-2">{{ lead.manager_name or '—' }}</td>
+        <td class="px-3 py-2 text-slate-500">{{ lead.city }}</td>
+        <td class="px-3 py-2 text-slate-500 text-xs">{{ lead.full_address or '—' }}</td>
+        <td class="px-3 py-2 text-right text-slate-500">{{ lead.reviews }}</td>
+        <td class="px-3 py-2 text-right font-semibold">{{ lead.qualify_score }}</td>
+        <td class="px-3 py-2">{{ lead.tier }}</td>
+        <td class="px-3 py-2 text-xs">{{ lead.stage_label }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

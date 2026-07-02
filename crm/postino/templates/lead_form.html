@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Add lead · {{ APP_NAME }}{% endblock %}
+{% block content %}
+
+<div class="mb-4"><a href="/" class="text-sm text-slate-500 hover:text-brand">&larr; Board</a></div>
+<h1 class="text-2xl font-bold text-ink mb-4">Add a lead</h1>
+
+<form method="post" action="/new" class="bg-white rounded-lg shadow-sm p-4 space-y-3 max-w-2xl">
+  {% macro field(label, name, required=false) %}
+  <label class="block">
+    <span class="text-xs text-slate-500">{{ label }}{% if required %} *{% endif %}</span>
+    <input name="{{ name }}" {{ 'required' if required }} class="w-full border rounded px-2 py-1 text-sm">
+  </label>
+  {% endmacro %}
+  {{ field('Shop name', 'name', true) }}
+  <div class="grid grid-cols-2 gap-2">
+    {{ field('Manager name', 'manager_name') }}
+    {{ field('City', 'city') }}
+  </div>
+  <div class="grid grid-cols-2 gap-2">
+    {{ field('Phone', 'phone') }}
+    {{ field('Email', 'email') }}
+  </div>
+  {{ field('Website', 'website') }}
+  <div class="grid grid-cols-3 gap-2">
+    <div class="col-span-2">{{ field('Street address', 'street_address') }}</div>
+    {{ field('Postal', 'postal_code') }}
+  </div>
+  <div class="grid grid-cols-3 gap-2">
+    {{ field('Category', 'category') }}
+    <label class="block">
+      <span class="text-xs text-slate-500">Tier</span>
+      <select name="tier" class="w-full border rounded px-2 py-1 text-sm">
+        {% for t in ['A','B','DROP'] %}<option value="{{ t }}" {{ 'selected' if t == 'B' }}>{{ t }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="block">
+      <span class="text-xs text-slate-500">Persona</span>
+      <select name="persona" class="w-full border rounded px-2 py-1 text-sm">
+        {% for p in ['','owner-operator','multi-shop'] %}<option value="{{ p }}">{{ p or '—' }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+  <label class="block">
+    <span class="text-xs text-slate-500">Notes</span>
+    <textarea name="notes" rows="2" class="w-full border rounded px-2 py-1 text-sm"></textarea>
+  </label>
+  <button class="bg-brand text-white px-4 py-1.5 rounded text-sm">Create lead</button>
+</form>
+{% endblock %}

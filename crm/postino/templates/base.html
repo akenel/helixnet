@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: '#C0392B', ink: '#2C3E50', sand: '#F4EFE7' } } }
+    };
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <header class="bg-ink text-white">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <a href="/" class="flex items-baseline gap-2">
+        <span class="text-2xl font-bold tracking-tight">✉ {{ APP_NAME }}</span>
+        <span class="hidden sm:inline text-xs text-slate-300 italic">{{ TAGLINE }}</span>
+      </a>
+      <nav class="ml-auto flex items-center gap-1 text-sm">
+        <a href="/" class="px-3 py-1.5 rounded hover:bg-white/10">Board</a>
+        <a href="/table" class="px-3 py-1.5 rounded hover:bg-white/10">All Leads</a>
+        <a href="/new" class="px-3 py-1.5 rounded bg-brand hover:bg-brand/90 font-medium">+ Add</a>
+        <a href="/export.csv" class="px-3 py-1.5 rounded hover:bg-white/10">Export</a>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-7xl mx-auto p-4">{% block content %}{% endblock %}</main>
+</body>
+</html>

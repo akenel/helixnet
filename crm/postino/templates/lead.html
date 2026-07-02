@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.name }} · {{ APP_NAME }}{% endblock %}
+{% block content %}
+
+<div class="mb-4">
+  <a href="/" class="text-sm text-slate-500 hover:text-brand">&larr; Board</a>
+</div>
+
+<div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+  <div>
+    <h1 class="text-2xl font-bold text-ink">{{ lead.name }}</h1>
+    <div class="text-slate-500">{{ lead.city }}{% if lead.chain %} · {{ lead.chain }} chain{% endif %} · ★ {{ lead.reviews }} reviews · score {{ lead.qualify_score }}</div>
+  </div>
+  <div class="flex items-center gap-2">
+    {% if lead.website %}<a href="https://{{ lead.website }}" target="_blank" class="text-sm px-3 py-1.5 rounded border hover:bg-white">🌐 Website</a>{% endif %}
+    {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="text-sm px-3 py-1.5 rounded border hover:bg-white">📞 {{ lead.phone }}</a>{% endif %}
+    {% if lead.email %}<a href="mailto:{{ lead.email }}" class="text-sm px-3 py-1.5 rounded border hover:bg-white">✉ Email</a>{% endif %}
+  </div>
+</div>
+
+<!-- pipeline stage -->
+<form method="post" action="/lead/{{ lead.id }}/stage" class="mb-4 bg-white rounded-lg shadow-sm p-3 flex flex-wrap items-center gap-1">
+  <span class="text-xs text-slate-500 mr-2">Stage:</span>
+  {% for s in STAGES %}
+  <button name="stage" value="{{ s }}"
+    class="text-xs px-2.5 py-1 rounded {{ 'bg-brand text-white font-semibold' if lead.stage == s else 'bg-slate-100 hover:bg-slate-200' }}">
+    {{ STAGE_LABELS[s] }}
+  </button>
+  {% endfor %}
+  {% if lead.postcard_sent_on %}<span class="ml-auto text-xs text-green-600">postcard sent {{ lead.postcard_sent_on }}</span>{% endif %}
+</form>
+
+<div class="grid md:grid-cols-2 gap-4">
+
+  <!-- editable details -->
+  <form method="post" action="/lead/{{ lead.id }}/update" class="bg-white rounded-lg shadow-sm p-4 space-y-3">
+    <h2 class="font-semibold text-ink">Details</h2>
+    {% macro field(label, name, value) %}
+    <label class="block">
+      <span class="text-xs text-slate-500">{{ label }}</span>
+      <input name="{{ name }}" value="{{ value or '' }}" class="w-full border rounded px-2 py-1 text-sm">
+    </label>
+    {% endmacro %}
+    {{ field('Shop name', 'name', lead.name) }}
+    <div class="grid grid-cols-2 gap-2">
+      {{ field('Manager name', 'manager_name', lead.manager_name) }}
+      {{ field('Manager role', 'manager_role', lead.manager_role) }}
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      {{ field('Phone', 'phone', lead.phone) }}
+      {{ field('Email', 'email', lead.email) }}
+    </div>
+    {{ field('Website', 'website', lead.website) }}
+    <div class="grid grid-cols-3 gap-2">
+      <div class="col-span-2">{{ field('Street address', 'street_address', lead.street_address) }}</div>
+      {{ field('Postal', 'postal_code', lead.postal_code) }}
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      {{ field('City', 'city', lead.city) }}
+      {{ field('Legal entity', 'legal_entity', lead.legal_entity) }}
+      {{ field('Category', 'category', lead.category) }}
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      <label class="block">
+        <span class="text-xs text-slate-500">Tier</span>
+        <select name="tier" class="w-full border rounded px-2 py-1 text-sm">
+          {% for t in ['A','B','DROP',''] %}<option value="{{ t }}" {{ 'selected' if lead.tier == t }}>{{ t or '—' }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="block">
+        <span class="text-xs text-slate-500">Persona</span>
+        <select name="persona" class="w-full border rounded px-2 py-1 text-sm">
+          {% for p in ['','owner-operator','multi-shop'] %}<option value="{{ p }}" {{ 'selected' if lead.persona == p }}>{{ p or '—' }}</option>{% endfor %}
+        </select>
+      </label>
+      {{ field('Score', 'qualify_score', lead.qualify_score) }}
+    </div>
+    <label class="block">
+      <span class="text-xs text-slate-500">Notes</span>
+      <textarea name="notes" rows="3" class="w-full border rounded px-2 py-1 text-sm">{{ lead.notes }}</textarea>
+    </label>
+    <input type="hidden" name="chain" value="{{ lead.chain }}">
+    <button class="bg-ink text-white px-4 py-1.5 rounded text-sm">Save details</button>
+  </form>
+
+  <!-- interactions -->
+  <div class="space-y-4">
+    <form method="post" action="/lead/{{ lead.id }}/interaction" class="bg-white rounded-lg shadow-sm p-4 space-y-2">
+      <h2 class="font-semibold text-ink">Log a touch</h2>
+      <div class="flex gap-2">
+        <select name="kind" class="border rounded px-2 py-1 text-sm">
+          {% for k in INTERACTION_KINDS %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+        </select>
+        <input name="body" placeholder="What happened? (e.g. left voicemail for the manager)" class="flex-1 border rounded px-2 py-1 text-sm">
+        <button class="bg-brand text-white px-4 py-1.5 rounded text-sm">Log</button>
+      </div>
+      <p class="text-xs text-slate-400">Logging a call/email/visit moves a new lead to <b>Contacted</b>; a postcard moves it to <b>Postcard Sent</b>.</p>
+    </form>
+
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <h2 class="font-semibold text-ink mb-3">History</h2>
+      {% if interactions %}
+      <ol class="space-y-3">
+        {% for i in interactions %}
+        <li class="flex gap-3 text-sm">
+          <div class="text-xs text-slate-400 w-24 flex-shrink-0">{{ i.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          <div>
+            <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{{ i.kind }}</span>
+            <span class="ml-1">{{ i.body }}</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <p class="text-sm text-slate-400">No touches logged yet. First move: the postcard.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
