@@ -21,6 +21,21 @@ BOARD_STAGES = ["to_contact", "contacted", "postcard_sent", "replied", "won"]
 
 INTERACTION_KINDS = ["call", "email", "postcard", "visit", "note"]
 
+# The full lead→close journey — a per-lead guided checklist (richer than the coarse `stage`).
+# (key, label, hint) — the hint tells Angel what to DO / CAPTURE at that step.
+JOURNEY_STEPS = [
+    ("scope_out",  "Scope-out visit",             "Walk in as a customer, buy a pack of papers. CAPTURE: front photo, counter photo, 20s video. READ it — parking, vibe, owner, fit FOR YOU? (or strike off → Dropped)"),
+    ("review",     "Honest Google review",        "Leave a genuine review. Paste the link in the note."),
+    ("postcard",   "Personalized postcard mailed","Card with the visit line + the shop photo. Note the date + which card."),
+    ("response",   "Response received",           "Scan / Ja / call-in (the QR auto-logs it). Note it."),
+    ("call",       "Phone / follow-up",           "The in-language call or drop-in. Note the outcome."),
+    ("discovery",  "Discovery meeting",           "First official look at his books + work processes. When + what you saw."),
+    ("offer",      "Offer made",                  "Terms / price. Note what you offered."),
+    ("migration",  "Migration & cutover plan",    "How we move him over. Website: tie-in / improve / new / none?"),
+    ("contract",   "Contract signed — CLOSED",    "Terms agreed, signed. The win."),
+    ("onboarding", "Up & running",                "Onboarded, live. Beyond the close."),
+]
+
 
 def now() -> datetime:
     return datetime.now(timezone.utc)
@@ -83,6 +98,7 @@ class Lead(Base):
     stage: Mapped[str] = mapped_column(String(20), default="to_contact")
     postcard_sent_on: Mapped[str | None] = mapped_column(String(20), nullable=True)
     notes: Mapped[str] = mapped_column(Text, default="")
+    journey: Mapped[str] = mapped_column(Text, default="{}")   # per-step checklist JSON: {key:{done,on,note}}
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=now, onupdate=now)
@@ -105,6 +121,22 @@ class Lead(Base):
     def artifact_prefix(self) -> str:
         """Object-store prefix for this lead's blobs (photos, logo, cards, enrichment.json)."""
         return f"leads/{self.ext_id or ('id-' + str(self.id))}/"
+
+    @property
+    def journey_state(self) -> dict:
+        import json
+        try:
+            return json.loads(self.journey or "{}")
+        except Exception:
+            return {}
+
+    @property
+    def next_step_key(self) -> str:
+        state = self.journey_state
+        for key, _label, _hint in JOURNEY_STEPS:
+            if not state.get(key, {}).get("done"):
+                return key
+        return ""
 
     @property
     def has_address(self) -> bool:

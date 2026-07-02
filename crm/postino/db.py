@@ -33,6 +33,7 @@ def migrate() -> None:
     wanted = {
         "language": "VARCHAR(4) DEFAULT 'de'",
         "scoop_line": "VARCHAR(300) DEFAULT ''",
+        "journey": "TEXT DEFAULT '{}'",
     }
     with engine.begin() as conn:
         cols = {row[1] for row in conn.execute(text("PRAGMA table_info(leads)"))}

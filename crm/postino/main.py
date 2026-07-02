@@ -14,6 +14,7 @@ from .db import Base, SessionLocal, engine, get_db, migrate
 from .models import (
     BOARD_STAGES,
     INTERACTION_KINDS,
+    JOURNEY_STEPS,
     STAGE_LABELS,
     STAGES,
     Campaign,
@@ -38,6 +39,7 @@ templates.env.globals.update(
     STAGE_LABELS=STAGE_LABELS,
     BOARD_STAGES=BOARD_STAGES,
     INTERACTION_KINDS=INTERACTION_KINDS,
+    JOURNEY_STEPS=JOURNEY_STEPS,
 )
 
 app = FastAPI(title=APP_NAME)
@@ -228,6 +230,28 @@ def add_interaction(
             lead.stage = "postcard_sent"
     elif kind in ("call", "email", "visit") and lead.stage == "to_contact":
         lead.stage = "contacted"
+    db.commit()
+    return RedirectResponse(f"/lead/{lead_id}", status_code=303)
+
+
+# ---------------------------------------------------------------- journey checklist
+
+@app.post("/lead/{lead_id}/journey")
+async def update_journey(lead_id: int, request: Request, db: Session = Depends(get_db)):
+    """Save the per-lead journey checklist (done/date/note per step) from the lead page."""
+    import json
+    lead = db.get(Lead, lead_id)
+    if lead is None:
+        return RedirectResponse("/", status_code=303)
+    form = await request.form()
+    state = {}
+    for key, _label, _hint in JOURNEY_STEPS:
+        done = form.get(f"done_{key}") is not None
+        on = (form.get(f"on_{key}") or "").strip()
+        note = (form.get(f"note_{key}") or "").strip()
+        if done or on or note:
+            state[key] = {"done": done, "on": on, "note": note}
+    lead.journey = json.dumps(state, ensure_ascii=False)
     db.commit()
     return RedirectResponse(f"/lead/{lead_id}", status_code=303)
 
