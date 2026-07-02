@@ -7,8 +7,8 @@
   BANCO · Head-Shop outreach · THE HANDSHAKE CARD ("Nino Angle")
   Owner-operator, peer-to-peer. Warm, Swiss-direct, no feature list, no emojis, no gloss.
   Duplex A6 (148 x 105 mm landscape). Render: node scripts/postcard-to-pdf.js in out
-  MERGE: {{FIRST_NAME}} {{SHOP_NAME}} {{SHOP_STREET}} {{SHOP_ZIP_CITY}}
-         {{QR_SRC}} {{TOKEN}} {{IMG_FRONT}} {{IMG_BACK}}   (phone dropped — QR is the one action)
+  MERGE: Stephan Rudestore Headshop Kasimir-Pfyffer-Strasse 2 6003 Luzern
+         /home/angel/repos/helixnet/docs/business/postcards/headshop-campaign/assets/images/rudestore-qr.png 4 /home/angel/repos/helixnet/docs/business/postcards/headshop-campaign/assets/images/rudestore-front.jpg    (phone dropped — QR is the one action)
   Front image = human/grounded (open door, "Offen" sign, warm evening light). NOT products/logos.
   QR = ONE human action (WhatsApp / book-a-coffee), NOT a website menu.
 -->
@@ -59,40 +59,43 @@
 
   <!-- FRONT -->
   <div class="card front">
-    <div class="bgimg" style="background-image:url({{IMG_FRONT}})"></div>
+    <div class="bgimg" style="background-image:url(/home/angel/repos/helixnet/docs/business/postcards/headshop-campaign/assets/images/rudestore-front.jpg)"></div>
     <div class="rule"></div>
     <div class="content">
-      <div class="head-de">{{C_CARD_HEAD}}</div>
+      <div class="head-de">Du wolltest einen Laden f&uuml;hren. Keinen Papierkram.</div>
     </div>
     <div class="tagline">
-      <div class="de">{{C_CARD_TAG}}</div>
+      <div class="de">Von einem kleinen Laden zum anderen.</div>
     </div>
-    <div class="serial">BANCO &middot; № {{TOKEN}}</div>
+    <div class="serial">BANCO &middot; № 4</div>
   </div>
 
   <!-- BACK -->
   <div class="card back">
-    <div class="bgimg" style="background-image:url({{IMG_BACK}})"></div>
+    <div class="bgimg" style="background-image:url()"></div>
     <div class="rule"></div>
     <div class="content">
       <div class="letter">
-        {{CARD_LETTER}}
+        <p class="hi">Hallo Stephan,</p>
+<p>war gerade bei dir im Laden — hab ein paar Blättchen geholt, und du hast mir gleich gezeigt, wo hinter der Theke die Rollen sind. Faire Preise, gute Auswahl. Danke, hat Spass gemacht.</p>
+<p>Ich baue etwas für Läden wie deinen — kein Verkaufsgespräch, versprochen. Wenn's dich interessiert, lade ich dich auf einen Kaffee ein — scann einfach den Code.</p>
+<p class="sign">Bis bald,<br>Angel</p>
         <div class="cta">
-          <img src="{{QR_SRC}}" alt="QR">
+          <img src="/home/angel/repos/helixnet/docs/business/postcards/headshop-campaign/assets/images/rudestore-qr.png" alt="QR">
           <div class="t">
-            <div class="lab">{{C_CARD_QR}}</div>
+            <div class="lab">Scann &mdash; oder Kaffee?</div>
           </div>
         </div>
       </div>
       <div class="divider"></div>
       <div class="addr">
-        <div class="stamp"><span>{{C_STAMP}}</span></div>
+        <div class="stamp"><span>Briefmarke</span></div>
         <div class="sender"><b>BANCO</b> &middot; La Piazza<br>banco.lapiazza.app<br>c/o UFA &middot; Luzern</div>
         <div class="lines">
-          <div class="n">{{SHOP_NAME}}</div>
-          <div class="l">{{C_ATTN}} {{FIRST_NAME}}</div>
-          <div class="l">{{SHOP_STREET}}</div>
-          <div class="l">{{SHOP_ZIP_CITY}}</div>
+          <div class="n">Rudestore Headshop</div>
+          <div class="l">z.Hd. Stephan</div>
+          <div class="l">Kasimir-Pfyffer-Strasse 2</div>
+          <div class="l">6003 Luzern</div>
         </div>
       </div>
     </div>
