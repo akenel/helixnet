@@ -12,6 +12,7 @@
     <div class="text-slate-500">{{ lead.city }}{% if lead.chain %} · {{ lead.chain }} chain{% endif %} · ★ {{ lead.reviews }} reviews · score {{ lead.qualify_score }}</div>
   </div>
   <div class="flex items-center gap-2">
+    <a href="/scope?shop={{ lead.name|urlencode }}&addr={{ lead.full_address|urlencode }}" target="_blank" class="text-sm px-3 py-1.5 rounded bg-brand text-white font-semibold">🧭 Scope this shop</a>
     {% if lead.website %}<a href="https://{{ lead.website }}" target="_blank" class="text-sm px-3 py-1.5 rounded border hover:bg-white">🌐 Website</a>{% endif %}
     {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="text-sm px-3 py-1.5 rounded border hover:bg-white">📞 {{ lead.phone }}</a>{% endif %}
     {% if lead.email %}<a href="mailto:{{ lead.email }}" class="text-sm px-3 py-1.5 rounded border hover:bg-white">✉ Email</a>{% endif %}

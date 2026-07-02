@@ -42,7 +42,11 @@
 <div class="wrap">
   <h1>🐺 Scope-Out Survey</h1>
   <div class="sub">The first impression — never done twice. Nail it 120%.</div>
-  <input class="shop" id="shop" placeholder="Which shop? (e.g. Rudestore, Luzern)">
+  <input class="shop" id="shop" placeholder="Which shop? (e.g. Rudestore, Luzern)" style="margin-bottom:8px">
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <input type="text" id="addr" placeholder="Street address — for GPS" style="flex:1;padding:10px 12px;font-size:14px;border:1px solid #d8ccbc;border-radius:10px">
+    <button type="button" onclick="navi()" style="padding:0 16px;border:none;border-radius:10px;background:#3f6b34;color:#fff;font-weight:800;white-space:nowrap">🧭 GPS</button>
+  </div>
 
   <div class="sec">
     <h2>1 · First look (outside)</h2>
@@ -131,6 +135,13 @@
 <div class="miss" id="miss" style="position:fixed;bottom:58px;left:0;right:0;max-width:460px;margin:0 auto;"></div>
 
 <script>
+  // Pre-fill shop + address from the URL (Postino's "Scope this shop" link passes them), + GPS.
+  (function(){ var p=new URLSearchParams(location.search);
+    if(p.get('shop')) document.getElementById('shop').value=p.get('shop');
+    if(p.get('addr')) document.getElementById('addr').value=p.get('addr'); })();
+  function navi(){ var a=(document.getElementById('addr').value||'').trim();
+    if(a) window.open('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(a),'_blank');
+    else alert('Type the street address first.'); }
   function val(k){ var el=document.querySelector('input[name="'+k+'"]:checked'); return el?el.value:''; }
   function txt(id){ return (document.getElementById(id).value||'').trim(); }
   function chk(id){ return document.getElementById(id).checked; }
