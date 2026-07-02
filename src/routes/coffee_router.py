@@ -55,10 +55,11 @@ async def kaffee_ja(request: Request, token: str = Form(...), contact: str = For
     return HTMLResponse(_THANKS)
 
 
-@router.get("/kaffee/events")
+@router.get("/campaign/events")
 async def kaffee_events(key: str = ""):
-    """Scan + lead events for the Postino CRM sync (join by token=ext_id). Key-guarded:
-    disabled unless COFFEE_EVENTS_KEY is set AND matches (leads carry contact info)."""
+    """Scan + lead events for the Postino CRM sync (join by token=ext_id). NOT under /kaffee/*
+    (that path's {token} route would swallow it). Key-guarded: disabled unless COFFEE_EVENTS_KEY
+    is set AND matches (leads carry contact info)."""
     if not cs.EVENTS_KEY or key != cs.EVENTS_KEY:
         return JSONResponse({"detail": "forbidden"}, status_code=403)
     return JSONResponse(cs.read_events())
