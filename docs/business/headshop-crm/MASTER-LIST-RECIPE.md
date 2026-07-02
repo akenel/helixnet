@@ -159,3 +159,35 @@ overhead; it's the strongest proof, delivered on the doormat.
 The card + landing templates need **DE / FR / IT / EN variants** — but the recipe *writes the copy
 per language*, so it's DATA, not hand-work. One design, four language fills, driven by `card_language`.
 (Banco already runs EN/IT/DE in-app; FR is the cheap 4th — same "do one, do all" horizontal.)
+
+---
+
+## ADDENDUM 3 (2026-07-02) — CONTROL KNOBS (campaign.yaml) + vertical reuse
+
+Run the recipe from a **config file** so you control scope BEFORE it runs — no overkill. Dial the
+knobs, `dry_run` to preview counts, then run for real.
+
+### campaign.yaml
+```yaml
+vertical: head-shop      # head-shop | bakery | deli | butcher | pub ...  → selects the VERTICAL PROFILE
+regions: [ZH, ZG, LU, SZ, UR, OW, NW, AG]   # cantons to sweep; "all" = whole CH
+languages: [de]          # de / fr / it region(s) to include; [] = all
+limit: 20                # max shops THIS run (0 = no cap) — the anti-overkill knob
+priority_min: 3          # keep only fit_score >= this
+dry_run: true            # DISCOVER + COUNT only, no enrichment (cheap preview before you commit)
+enrich: true             # run enrichment + AI fit/SWOT
+generate_copy: true      # write per-shop card + landing copy (in the region's language)
+output: campaign-list.csv
+```
+
+### The `vertical` knob = why this reuses (vertical-packs)
+The card/landing/qualifier are **tailored to head-shops** — our vertical, polish it deep. But the
+recipe is vertical-**agnostic** via a PROFILE the `vertical` knob selects:
+`profile = { search_terms, fit_criteria, pain_signals, qualifier_copy }`. Head-shop today;
+**bakery / deli / butcher / pub later = swap the profile, same machine** ([[banco-vertical-packs]]:
+one core, swappable packs). Head-shop first (deep + polished); the knobs make the next vertical cheap.
+
+### Typical runs
+- `dry_run: true, regions: [TI]` → "how many Italian shops are there?" — preview, zero spend
+- `languages: [de], limit: 20` → the first German batch (week 1)
+- `languages: [it]` → all Ticino · `languages: [fr]` → Romandie · `regions: all` → the whole country
