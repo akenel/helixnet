@@ -70,17 +70,32 @@
 
             <div class="mt-6 text-center text-sm text-gray-600">
                 <p data-i18n="login.use_credentials">Use your Artemis Store credentials</p>
+                {# Demo creds only make sense on throwaway envs — prod/staging staff have real
+                   per-user passwords (never helix_pass), so showing them there is wrong + unprofessional. #}
+                {% if 'sandbox' in _env or 'uat' in _env or 'local' in _env or 'dev' in _env %}
                 <p class="mt-2 text-xs text-gray-500" data-i18n-html="login.demo_credentials">
                     Demo: pam / helix_pass (Cashier)<br>
                     felix / helix_pass (Admin)
                 </p>
+                {% endif %}
             </div>
         </div>
 
         <!-- System Status -->
         <div class="mt-6 text-center text-white text-sm">
             <p class="opacity-75">🔐 Secure authentication via Keycloak</p>
-            <p class="opacity-75 mt-1">v2.3.0 - Sprint 4 POS Interface</p>
+            {% if pos_realm %}<p class="opacity-60 text-xs mt-1">🛡️ {{ pos_realm }}</p>{% endif %}
+            {# Live health: one tap tells a stuck user whether the system is up (so it's their
+               login/connection) or actually down. Auto-runs on load so the dot greets you green. #}
+            <div class="mt-3">
+                <button id="healthBtn" type="button" onclick="checkHealth()"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-xs font-semibold text-white transition">
+                    <span id="healthDot" class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                    <span id="healthLabel">Check system</span>
+                </button>
+            </div>
+            {# The build actually deployed: version · sha · when it was stamped. Glance = "yep, that's what I expect." #}
+            <p class="opacity-60 text-xs mt-3 font-mono tracking-tight">{{ app_version }} &middot; {{ git_sha }} &middot; {{ build_date }}</p>
         </div>
     </div>
 </div>
@@ -154,5 +169,34 @@
         window.location.href = `${c.keycloakUrl}/realms/${c.realm}/protocol/openid-connect/logout?` +
             `post_logout_redirect_uri=${encodeURIComponent(window.location.origin + '/pos')}&client_id=${c.clientId}`;
     }
+
+    // Live system health — the definitive answer for a stuck user: green = the system is up
+    // (so it's your login or connection), red = something's actually down, call Angel.
+    async function checkHealth() {
+        const dot = document.getElementById('healthDot');
+        const label = document.getElementById('healthLabel');
+        const btn = document.getElementById('healthBtn');
+        if (!dot || !label) return;
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-yellow-300 animate-pulse';
+        label.textContent = 'Checking…';
+        if (btn) btn.disabled = true;
+        try {
+            const r = await fetch('/health/healthz', { cache: 'no-store' });
+            if (r.ok) {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-green-400';
+                label.textContent = 'All systems go';
+            } else {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+                label.textContent = 'Service issue (' + r.status + ')';
+            }
+        } catch (e) {
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+            label.textContent = 'No connection';
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+    // Greet the user with a live status — auto-check once shortly after load.
+    window.addEventListener('DOMContentLoaded', () => setTimeout(checkHealth, 400));
 </script>
 {% endblock %}
