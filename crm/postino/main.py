@@ -234,6 +234,18 @@ def add_interaction(
     return RedirectResponse(f"/lead/{lead_id}", status_code=303)
 
 
+# ---------------------------------------------------------------- scope-out field survey
+
+@app.get("/scope", response_class=HTMLResponse)
+def scope_sheet():
+    """Serve the offline scope-out survey — open on your phone, Add to Home Screen for the shop."""
+    p = Path(__file__).resolve().parent.parent.parent / "docs/business/headshop-crm/scope-sheet.html"
+    try:
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    except Exception:
+        return HTMLResponse("<h1>Scope sheet not found</h1>", status_code=404)
+
+
 # ---------------------------------------------------------------- journey checklist
 
 @app.post("/lead/{lead_id}/journey")
