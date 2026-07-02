@@ -10,6 +10,33 @@
 
 ---
 
+## 🃏 ON DECK — HEAD-SHOP CAMPAIGN (2026-07-02 eve) ← START HERE
+
+**CUSTOMER #1 (Rudestore, Luzern · Stephan Frei · Postino #11) — FULL PIPELINE LIVE + PROVEN on prod:**
+scope-out → handshake card (№ 4, DE, his shopfront) → QR **opaque token** `/kaffee/VSWkHkZYVdst` (enumeration-proof) → personalized landing (**3-option CTA**: Ruf mich an / Komm vorbei / Zusammensitzen + comment; **Ecolution GmbH · Mattenweg 5 · 6375 Beckenried** identity; no video) → captured lead → **email notification via Resend → ecolution.gmbh@gmail.com**. Tested end-to-end with Angel's phone + inbox (real scan tracked + 2 notification emails received). Card PDF + **2-up A4** ready (`docs/business/postcards/headshop-campaign/out/rudestore-stephan{,-2up}.pdf`).
+
+**🧍 Angel:** print (2-up A4 = keep one + mail one), stamp, POST → lands ~Mon 2026-07-07 → Stephan scans → email pings you.
+
+**🐯 NEXT (top of deck):**
+1. **`/app/data` persistent volume** — scan/lead log lives IN the container; `docker restart` (normal deploys) preserves it, but a RECREATE wipes it. Add a named volume before real leads flow. NOT urgent (restart-safe) but real.
+2. **Systemic opaque tokens** — only Rudestore's ext_id is opaque; randomize token generation for ALL leads before card #2 (decouple Postino ext_id from the seed-dedupe key).
+3. **FR/IT/EN native review** of card + landing before mailing a non-DE shop.
+4. **Scale:** same first card to the next A-list (Hanfbob's / Zauber / Paff Paff) — sniper, one card, never a second.
+
+**Prod:** all 3 banco envs on `main`; coffee landing + email LIVE (banco.lapiazza.app); `uat.env` has `COFFEE_SMTP_*` (Resend); encrypted backups via `banco_backup.sh`.
+
+---nco Go-Live Worklist — THE ordered list
+
+> 🔑 **Code word "ON DECK"** → you're reading the right file. State the top items and start executing the first actionable one. No re-planning, no re-asking.
+
+*Open this, work top-down, finish one tier before opening the next. Don't fan out across five things. 2026-06-28.*
+
+*Owners: 🧍 = Angel's hands needed (physical / decision / external call) · 🐯 = Tigs can do it · 👥 = both, together.*
+
+*Detail lives in: [BANCO-GO-LIVE-READINESS.md](BANCO-GO-LIVE-READINESS.md) (analysis) · [BANCO-DAY-ONE-WISHLIST.md](BANCO-DAY-ONE-WISHLIST.md) (polish backlog).*
+
+---
+
 ## 🃏 ON DECK — HEAD-SHOP CAMPAIGN (2026-07-02, ~2:30pm) ← START HERE
 
 **IN FLIGHT:** Angel is out doing the **Rudestore (#11, Luzern) scope-out** — the secret-shopper dry-run (first-customer test, before Felix). Back ~4:20pm with a **shop photo + one line of scoop**.
