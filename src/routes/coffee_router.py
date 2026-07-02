@@ -6,7 +6,7 @@ POST /kaffee/ja       → log the lead + notify Angel (email ecolution + Telegra
 import logging
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from src.services import coffee_service as cs
 
@@ -53,3 +53,12 @@ async def kaffee_ja(request: Request, token: str = Form(...), contact: str = For
     except Exception:
         logger.warning("coffee capture_lead failed for %s", token, exc_info=True)
     return HTMLResponse(_THANKS)
+
+
+@router.get("/kaffee/events")
+async def kaffee_events(key: str = ""):
+    """Scan + lead events for the Postino CRM sync (join by token=ext_id). Key-guarded:
+    disabled unless COFFEE_EVENTS_KEY is set AND matches (leads carry contact info)."""
+    if not cs.EVENTS_KEY or key != cs.EVENTS_KEY:
+        return JSONResponse({"detail": "forbidden"}, status_code=403)
+    return JSONResponse(cs.read_events())

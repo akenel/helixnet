@@ -32,6 +32,7 @@ SMTP_PASS = os.environ.get("COFFEE_SMTP_PASS", "")
 SMTP_FROM = os.environ.get("COFFEE_SMTP_FROM", "BANCO <noreply@lapiazza.app>")
 TG_TOKEN = os.environ.get("BANCO_TELEGRAM_BOT_TOKEN", "")
 TG_CHAT = os.environ.get("COFFEE_TELEGRAM_CHAT_ID", "")
+EVENTS_KEY = os.environ.get("COFFEE_EVENTS_KEY", "")  # guards the events feed (for the Postino CRM sync)
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "kaffee_template.html"
 
@@ -187,6 +188,18 @@ def visit_count(token: str) -> int:
         return sum(1 for ln in VISITS_LOG.read_text(encoding="utf-8").splitlines() if f'"{token}"' in ln)
     except Exception:
         return 0
+
+
+def _read_jsonl(p: Path) -> list:
+    try:
+        return [json.loads(ln) for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    except Exception:
+        return []
+
+
+def read_events() -> dict:
+    """All scan (visit) + lead (Ja) events, for the Postino CRM sync to ingest (join by token=ext_id)."""
+    return {"visits": _read_jsonl(VISITS_LOG), "leads": _read_jsonl(LEADS_LOG)}
 
 
 def render_landing(token: str):

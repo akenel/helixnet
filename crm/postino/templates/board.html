@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% macro tier_badge(t) %}
+  {% if t == 'A' %}<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-600 text-white">A</span>
+  {% elif t == 'B' %}<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500 text-white">B</span>
+  {% elif t == 'DROP' %}<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-400 text-white">DROP</span>
+  {% endif %}
+{% endmacro %}
+
+<div class="flex flex-wrap items-center gap-3 mb-4">
+  <div class="flex gap-3">
+    <div class="bg-white rounded-lg px-4 py-2 shadow-sm">
+      <div class="text-2xl font-bold text-ink">{{ total }}</div>
+      <div class="text-xs text-slate-500">leads shown</div>
+    </div>
+    <div class="bg-white rounded-lg px-4 py-2 shadow-sm">
+      <div class="text-2xl font-bold text-brand">{{ postcards }}</div>
+      <div class="text-xs text-slate-500">postcards sent</div>
+    </div>
+    <div class="bg-white rounded-lg px-4 py-2 shadow-sm">
+      <div class="text-2xl font-bold text-green-600">{{ a_left }}</div>
+      <div class="text-xs text-slate-500">A-list still to contact</div>
+    </div>
+  </div>
+  <div class="ml-auto flex items-center gap-2 text-sm">
+    <form method="post" action="/sync" class="mr-2">
+      <button class="px-3 py-1 rounded bg-brand text-white font-semibold hover:opacity-90"
+              title="Pull scan/Ja events from the campaign landing into the board (by ext_id=token)">↻ Sync</button>
+    </form>
+    <span class="text-slate-500">Filter:</span>
+    <a href="/" class="px-2 py-1 rounded {{ 'bg-ink text-white' if not tier and not persona else 'bg-white' }}">All</a>
+    <a href="/?tier=A" class="px-2 py-1 rounded {{ 'bg-green-600 text-white' if tier == 'A' else 'bg-white' }}">A-list</a>
+    <a href="/?tier=B" class="px-2 py-1 rounded {{ 'bg-amber-500 text-white' if tier == 'B' else 'bg-white' }}">B-list</a>
+    <a href="/?persona=owner-operator" class="px-2 py-1 rounded {{ 'bg-ink text-white' if persona == 'owner-operator' else 'bg-white' }}">Owner-operator</a>
+    <a href="/?persona=multi-shop" class="px-2 py-1 rounded {{ 'bg-ink text-white' if persona == 'multi-shop' else 'bg-white' }}">Multi-shop</a>
+  </div>
+</div>
+
+<div class="flex gap-3 overflow-x-auto pb-4">
+  {% for stage in BOARD_STAGES %}
+  <div class="flex-shrink-0 w-72">
+    <div class="flex items-center justify-between mb-2 px-1">
+      <h2 class="font-semibold text-ink text-sm">{{ STAGE_LABELS[stage] }}</h2>
+      <span class="text-xs text-slate-400">{{ columns[stage]|length }}</span>
+    </div>
+    <div class="space-y-2 min-h-[60px]">
+      {% for lead in columns[stage] %}
+      <a href="/lead/{{ lead.id }}" class="block bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition border border-transparent hover:border-brand/30">
+        <div class="flex items-start justify-between gap-2">
+          <div class="font-medium text-sm leading-tight">{{ lead.name }}</div>
+          {{ tier_badge(lead.tier) }}
+        </div>
+        <div class="text-xs text-slate-500 mt-0.5">{{ lead.city }}{% if lead.chain %} · {{ lead.chain }}{% endif %}</div>
+        {% if lead.manager_name %}
+        <div class="text-xs text-ink mt-1">👤 {{ lead.manager_name }}</div>
+        {% else %}
+        <div class="text-xs text-amber-600 mt-1">no manager yet</div>
+        {% endif %}
+        <div class="flex items-center justify-between mt-2 text-[11px] text-slate-400">
+          <span>★ {{ lead.reviews }}</span>
+          <span>score {{ lead.qualify_score }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<p class="text-xs text-slate-400 mt-2">Lost &amp; dropped leads live in <a href="/table" class="underline">All Leads</a>.</p>
+{% endblock %}
