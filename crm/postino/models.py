@@ -22,18 +22,29 @@ BOARD_STAGES = ["to_contact", "contacted", "postcard_sent", "replied", "won"]
 INTERACTION_KINDS = ["call", "email", "postcard", "visit", "note"]
 
 # The full lead→close journey — a per-lead guided checklist (richer than the coarse `stage`).
-# (key, label, hint) — the hint tells Angel what to DO / CAPTURE at that step.
+# (key, label, hint, checks) — hint = what to DO; checks = quick tick-boxes so filling it is
+# clicks not typing. Per step the state stores {done, at (datetime), note, checks:{label:bool}}.
 JOURNEY_STEPS = [
-    ("scope_out",  "Scope-out visit",             "Walk in as a customer, buy a pack of papers. CAPTURE: front photo, counter photo, 20s video. READ it — parking, vibe, owner, fit FOR YOU? (or strike off → Dropped)"),
-    ("review",     "Honest Google review",        "Leave a genuine review. Paste the link in the note."),
-    ("postcard",   "Personalized postcard mailed","Card with the visit line + the shop photo. Note the date + which card."),
-    ("response",   "Response received",           "Scan / Ja / call-in (the QR auto-logs it). Note it."),
-    ("call",       "Phone / follow-up",           "The in-language call or drop-in. Note the outcome."),
-    ("discovery",  "Discovery meeting",           "First official look at his books + work processes. When + what you saw."),
-    ("offer",      "Offer made",                  "Terms / price. Note what you offered."),
-    ("migration",  "Migration & cutover plan",    "How we move him over. Website: tie-in / improve / new / none?"),
-    ("contract",   "Contract signed — CLOSED",    "Terms agreed, signed. The win."),
-    ("onboarding", "Up & running",                "Onboarded, live. Beyond the close."),
+    ("scope_out",  "Scope-out visit",              "Walk in as a customer, buy papers. Read it — parking, vibe, owner, fit FOR YOU? (or strike off → Dropped). One line of scoop in the note.",
+        ["Front photo", "Counter photo", "20s video", "Business card", "Bought something", "Good fit ✓"]),
+    ("review",     "Honest Google review",         "Leave a genuine review. Paste the link in the note.",
+        ["Review posted"]),
+    ("postcard",   "Personalized postcard mailed", "Card with the visit line + the shop photo. Note which card.",
+        ["Card printed", "Mailed 📮"]),
+    ("response",   "Response received",            "Scan / Ja / call-in (the QR auto-logs it). Note it.",
+        ["Scanned", "Replied"]),
+    ("call",       "Phone / follow-up",            "The in-language call or drop-in. Note the outcome.",
+        ["Reached them"]),
+    ("discovery",  "Discovery meeting",            "First official look at his books + work processes. Note what you saw.",
+        ["Meeting held", "Saw the books"]),
+    ("offer",      "Offer made",                   "Terms / price. Note what you offered.",
+        ["Offer sent"]),
+    ("migration",  "Migration & cutover plan",     "How we move him over. Website: tie-in / improve / new / none?",
+        ["Plan agreed", "Website decided"]),
+    ("contract",   "Contract signed — CLOSED",     "Terms agreed, signed. The win.",
+        ["Signed"]),
+    ("onboarding", "Up & running",                 "Onboarded, live. Beyond the close.",
+        ["Live"]),
 ]
 
 
@@ -133,7 +144,7 @@ class Lead(Base):
     @property
     def next_step_key(self) -> str:
         state = self.journey_state
-        for key, _label, _hint in JOURNEY_STEPS:
+        for key, _label, _hint, _checks in JOURNEY_STEPS:
             if not state.get(key, {}).get("done"):
                 return key
         return ""

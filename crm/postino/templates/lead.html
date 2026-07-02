@@ -33,9 +33,9 @@
 <!-- journey checklist: scope-out → close -->
 <form method="post" action="/lead/{{ lead.id }}/journey" class="mb-4 bg-white rounded-lg shadow-sm p-4">
   <h2 class="font-semibold text-ink mb-1">🐺 Journey — scope-out → close</h2>
-  <p class="text-xs text-slate-400 mb-3">Your field-to-close checklist. The amber row is what's next. Documents (photos, bookwork, business card) live in this lead's artifact folder.</p>
+  <p class="text-xs text-slate-400 mb-3">Tick what's done — the time stamps itself. Amber row = what's next. Documents (photos, bookwork, business card) live in this lead's artifact folder.</p>
   <div class="space-y-2">
-    {% for key, label, hint in JOURNEY_STEPS %}
+    {% for key, label, hint, checks in JOURNEY_STEPS %}
     {% set st = lead.journey_state.get(key, {}) %}
     {% set is_next = (key == lead.next_step_key) %}
     <div class="rounded p-2 {{ 'bg-amber-50 border border-amber-300' if is_next else ('bg-green-50' if st.get('done') else 'bg-slate-50') }}">
@@ -43,15 +43,37 @@
         <input type="checkbox" name="done_{{ key }}" {{ 'checked' if st.get('done') }}>
         <span class="font-semibold text-sm">{{ label }}</span>
         {% if is_next %}<span class="text-[10px] font-bold text-amber-700 uppercase">👉 next</span>{% endif %}
-        <input type="date" name="on_{{ key }}" value="{{ st.get('on','') }}" class="ml-auto border rounded px-1 py-0.5 text-xs text-slate-500">
+        <input type="datetime-local" name="at_{{ key }}" value="{{ st.get('at','') }}" class="js-now ml-auto border rounded px-1 py-0.5 text-xs text-slate-500">
       </div>
       <div class="text-xs text-slate-500 mt-0.5 ml-6">{{ hint }}</div>
-      <input name="note_{{ key }}" value="{{ st.get('note','') }}" placeholder="notes / link / terms…" class="w-full border rounded px-2 py-1 text-sm mt-1">
+      {% if checks %}
+      <div class="flex flex-wrap gap-x-4 gap-y-1 ml-6 mt-1">
+        {% for c in checks %}
+        <label class="text-xs flex items-center gap-1 cursor-pointer">
+          <input type="checkbox" name="chk_{{ key }}_{{ loop.index0 }}" {{ 'checked' if st.get('checks',{}).get(c) }}> {{ c }}
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <input name="note_{{ key }}" value="{{ st.get('note','') }}" placeholder="one line — scoop / link / terms…" class="w-full border rounded px-2 py-1 text-sm mt-1">
     </div>
     {% endfor %}
   </div>
   <button class="mt-3 bg-ink text-white px-4 py-1.5 rounded text-sm">Save journey</button>
 </form>
+<script>
+  // No-brainer time: ticking a step "done" stamps the datetime to LOCAL now (editable, no typing).
+  (function () {
+    var n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
+    var localNow = n.toISOString().slice(0, 16);
+    document.querySelectorAll('input[type=checkbox][name^=done_]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var dt = cb.closest('div').querySelector('input.js-now');
+        if (cb.checked && dt && !dt.value) dt.value = localNow;
+      });
+    });
+  })();
+</script>
 
 <div class="grid md:grid-cols-2 gap-4">
 

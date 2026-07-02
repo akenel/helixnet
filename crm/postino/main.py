@@ -245,12 +245,15 @@ async def update_journey(lead_id: int, request: Request, db: Session = Depends(g
         return RedirectResponse("/", status_code=303)
     form = await request.form()
     state = {}
-    for key, _label, _hint in JOURNEY_STEPS:
+    for key, _label, _hint, checks in JOURNEY_STEPS:
         done = form.get(f"done_{key}") is not None
-        on = (form.get(f"on_{key}") or "").strip()
+        at = (form.get(f"at_{key}") or "").strip()
         note = (form.get(f"note_{key}") or "").strip()
-        if done or on or note:
-            state[key] = {"done": done, "on": on, "note": note}
+        ticked = {lab: (form.get(f"chk_{key}_{i}") is not None) for i, lab in enumerate(checks)}
+        if done and not at:
+            at = now().isoformat(timespec="minutes")  # fallback stamp if the browser JS didn't fill it
+        if done or at or note or any(ticked.values()):
+            state[key] = {"done": done, "at": at, "note": note, "checks": ticked}
     lead.journey = json.dumps(state, ensure_ascii=False)
     db.commit()
     return RedirectResponse(f"/lead/{lead_id}", status_code=303)
