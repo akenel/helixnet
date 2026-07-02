@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .db import Base, SessionLocal, engine, get_db
+from .db import Base, SessionLocal, engine, get_db, migrate
 from .models import (
     BOARD_STAGES,
     INTERACTION_KINDS,
@@ -46,6 +46,7 @@ app = FastAPI(title=APP_NAME)
 @app.on_event("startup")
 def _startup() -> None:
     Base.metadata.create_all(engine)
+    migrate()
     db = SessionLocal()
     try:
         if db.scalar(select(func.count(Lead.id))) == 0:

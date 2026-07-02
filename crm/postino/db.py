@@ -23,3 +23,19 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def migrate() -> None:
+    """Idempotent: add columns models.py gained after the DB was first created (SQLite ALTER).
+    Run AFTER create_all — on a fresh DB create_all makes them and this is a no-op; on an existing
+    DB it fills the gaps without touching data."""
+    from sqlalchemy import text
+    wanted = {
+        "language": "VARCHAR(4) DEFAULT 'de'",
+        "scoop_line": "VARCHAR(300) DEFAULT ''",
+    }
+    with engine.begin() as conn:
+        cols = {row[1] for row in conn.execute(text("PRAGMA table_info(leads)"))}
+        for name, decl in wanted.items():
+            if name not in cols:
+                conn.execute(text(f"ALTER TABLE leads ADD COLUMN {name} {decl}"))

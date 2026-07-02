@@ -75,6 +75,10 @@ class Lead(Base):
     tier: Mapped[str] = mapped_column(String(10), default="")
     persona: Mapped[str] = mapped_column(String(30), default="")
 
+    # campaign generation (enrich + render)
+    language: Mapped[str] = mapped_column(String(4), default="de")     # de/fr/it/en — region drives card+landing
+    scoop_line: Mapped[str] = mapped_column(String(300), default="")   # warm personalization hook (empathic, not a dossier)
+
     # pipeline
     stage: Mapped[str] = mapped_column(String(20), default="to_contact")
     postcard_sent_on: Mapped[str | None] = mapped_column(String(20), nullable=True)
@@ -96,6 +100,11 @@ class Lead(Base):
     def full_address(self) -> str:
         parts = [self.street_address, f"{self.postal_code} {self.city}".strip()]
         return ", ".join(p for p in parts if p)
+
+    @property
+    def artifact_prefix(self) -> str:
+        """Object-store prefix for this lead's blobs (photos, logo, cards, enrichment.json)."""
+        return f"leads/{self.ext_id or ('id-' + str(self.id))}/"
 
     @property
     def has_address(self) -> bool:
