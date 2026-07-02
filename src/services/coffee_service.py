@@ -157,8 +157,8 @@ ROSTER = {
         "logo": "/static/kaffee/assets/artemis-logo.png",
         "img": "/static/kaffee/assets/artemis-front.png", "language": "de",
     },
-    # First real lead — Rudestore Headshop, Luzern (Postino #11 · ext_id 4). Scoped 2026-07-02.
-    "4": {
+    # First real lead — Rudestore Headshop, Luzern (Postino #11 · opaque token, not enumerable). Scoped 2026-07-02.
+    "VSWkHkZYVdst": {
         "first_name": "Stephan", "shop_name": "Rudestore Headshop", "phone": "",
         "logo": "", "img": "/static/kaffee/assets/rudestore-front.jpg", "language": "de",
         "landing_intro": (
