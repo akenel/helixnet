@@ -232,3 +232,24 @@ PHASE 4  RUN        → mail ~20/wk by region → watch scans → book venue →
 > For each selected shop, write the personalized card copy + landing copy IN ITS card_language
 > (warm „du" handshake voice, no feature list, human-reviewed), assign a token, and produce the
 > print-ready 2-up card PDFs + the landing roster row. Output cards/ + roster.csv.
+
+---
+
+## ADDENDUM 5 (2026-07-02) — POSTINO is the CRM (the operational hub)
+
+`crm/postino` (FastAPI + SQLite `crm/postino.db`) is the lead→close→beyond system of record.
+Near 1:1 fit — its `Lead` fields ARE our Phase-2 schema, its stages ARE our pipeline, its
+`Interaction` log IS the "and beyond", its board IS the campaign cockpit.
+
+- **KEYSTONE:** `ext_id` = our **token** → ties Postino lead ↔ card ↔ landing ↔ scan.
+- **Import:** Phase-2 CSV → Postino (`seed_from_csv` / an import route; its `export.csv` columns
+  match our schema). Set stage=`to_contact`, ext_id=token.
+- **Pipeline:** `to_contact → contacted → postcard_sent → replied → won / lost / dropped`. Logging
+  an interaction auto-advances (postcard→postcard_sent; call/email/visit→contacted).
+- **Web→CRM loop:** landing scan/„Ja" → look up lead by `ext_id=token` → add an Interaction +
+  advance to `replied`. Keep loosely coupled (Postino = its own app/db) — the token is the join.
+- **Extra recipe fields** not in Lead yet (language, scoop_line, img/logo, SWOT/pain) → `notes`
+  (structured) or add a couple columns. Minor.
+
+Flow: recipe → import to Postino → Phase-3 cards per lead → mail (postcard_sent) → scan/Ja
+(replied) → work the board (call/visit/event) → won → Interaction log carries it beyond.
