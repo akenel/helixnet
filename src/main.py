@@ -55,6 +55,7 @@ from src.routes.compute_router import router as compute_router, html_router as c
 from src.services.compute_seeding_service import seed_compute_data
 from src.routes.bottega_router import router as bottega_router
 from src.routes.track_router import router as track_router
+from src.routes.coffee_router import router as coffee_router
 
 # ================================================================
 # 🌍 Global Configuration
@@ -347,6 +348,7 @@ app.include_router(admin_router, prefix=settings.API_V1_STR, tags=["👑 Admin -
 app.include_router(hr_router, tags=["HR - Time & Payroll (BLQ Module)"])
 app.include_router(health_router, prefix="/health", tags=["💓 Health"])
 app.include_router(track_router, tags=["📮 Postcard Tracking"])
+app.include_router(coffee_router, tags=["☕ Book-a-Coffee"])
 app.include_router(camper_router, tags=["Camper & Tour - Service Management"])
 app.include_router(camper_html_router, tags=["Camper & Tour - Web UI"])
 app.include_router(isotto_router, tags=["ISOTTO Sport - Print Shop"])
