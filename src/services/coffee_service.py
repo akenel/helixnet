@@ -35,6 +35,15 @@ TG_CHAT = os.environ.get("COFFEE_TELEGRAM_CHAT_ID", "")
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "kaffee_template.html"
 
+# Default landing intro (the recipe overrides this per shop with a warm, pain-TUNED line —
+# empathic peer voice, NOT a recited dossier about him).
+DEFAULT_INTRO = (
+    "Ich bin <b>Angel</b>. Ich hab dir die Karte geschickt &mdash; kein Verkaufsgespr&auml;ch. "
+    "Ich hab eine Kasse gebaut, die den langweiligen Teil &uuml;bernimmt: <b>Belege, "
+    "Mehrwertsteuer, Kassensturz</b>. Damit mehr Zeit f&uuml;r den Laden bleibt. Nicht SAP. "
+    "Kein Spielzeug. F&uuml;r L&auml;den wie deinen."
+)
+
 # PoC roster: token -> shop identity. Personalize per fresh semi-qualified lead.
 ROSTER = {
     "HS-ARTEMIS-COFFEE-0001": {
@@ -84,6 +93,7 @@ def render_landing(token: str):
         "{{SHOP_LOGO}}": shop.get("logo", ""),
         "{{SHOP_IMG}}": shop.get("img", ""),
         "{{TOKEN}}": token,
+        "{{LANDING_INTRO}}": shop.get("landing_intro") or DEFAULT_INTRO,
     }.items():
         html = html.replace(k, v)
     return html
