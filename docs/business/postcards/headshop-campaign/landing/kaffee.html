@@ -5,27 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaffee? — BANCO</title>
 <!--
-  BANCO · Head-Shop outreach · THE BOOK-A-COFFEE LANDING PAGE
-  QR destination for the handshake card. Mobile-first (they scan with a phone).
-  The ANTI-cheese page: warm, honest, one action, an honest self-qualifier that tells
-  the wrong-fit prospect NOT to bother. Restraint IS the pitch. No testimonials wall,
-  no pricing tiers, no scroll-jacking. Same voice as the card.
-  Serve later at e.g. GET /kaffee; QR → /r/{token} → here. {{VIDEO}} = Angel's 20s clip.
+  BANCO · Head-Shop outreach · PERSONALIZED BOOK-A-COFFEE LANDING PAGE (per company)
+  One card → one company → one landing page. The QR token identifies the shop, so this page
+  greets them BY NAME with THEIR logo + photo. Anti-cheese: warm, one action, honest
+  self-qualifier that tells the wrong-fit prospect NOT to bother. Mobile-first.
+  MERGE: {{FIRST_NAME}} {{SHOP_NAME}} {{SHOP_LOGO}} {{SHOP_IMG}} {{TOKEN}}
+  Serve per-company; QR → /r/{token} → this page. {{SHOP_IMG}}/{{SHOP_LOGO}} = empty ok.
+  One-tap "Ja" (we already know the shop + have its number); optional contact for writers.
 -->
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: "Helvetica Neue", Arial, sans-serif; background: #faf6f0; color: #2a2a2a;
          line-height: 1.5; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 460px; margin: 0 auto; padding: 34px 22px 40px; }
-  .rule { height: 4px; background: #8B5E34; border-radius: 2px; width: 44px; margin-bottom: 22px; }
-  h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.05; }
-  h1 .sub { display: block; font-size: 18px; font-weight: 600; color: #8B5E34; margin-top: 6px; }
-  .intro { font-size: 15px; color: #3a3a3a; margin-top: 20px; }
+  .wrap { max-width: 460px; margin: 0 auto; }
+  .hero { position: relative; padding: 26px 22px 22px; overflow: hidden; }
+  .hero .bg { position: absolute; inset: 0; background-image: url({{SHOP_IMG}}); background-size: cover;
+              background-position: center; opacity: 0.16; z-index: 0; }
+  .hero .top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; }
+  .rule { height: 4px; width: 44px; background: #8B5E34; border-radius: 2px; }
+  .logo { width: 60px; height: 34px; background-image: url({{SHOP_LOGO}}); background-size: contain;
+          background-repeat: no-repeat; background-position: top right; }
+  h1 { position: relative; z-index: 1; font-size: 30px; font-weight: 800; letter-spacing: -0.5px;
+       line-height: 1.04; margin-top: 18px; }
+  h1 .sub { display: block; font-size: 17px; font-weight: 600; color: #8B5E34; margin-top: 7px; }
+  .body { padding: 4px 22px 40px; }
+  .intro { font-size: 15px; color: #3a3a3a; margin-top: 18px; }
   .intro b { color: #1a1a1a; }
-  .video { margin: 24px 0; aspect-ratio: 16/10; background: #efe7db; border: 1px dashed #c9b8a4;
+  .video { margin: 22px 0; aspect-ratio: 16/10; background: #efe7db; border: 1px dashed #c9b8a4;
            border-radius: 12px; display: flex; flex-direction: column; align-items: center;
            justify-content: center; text-align: center; color: #9a8a74; font-size: 13px; padding: 16px; }
-  .qual { margin-top: 28px; }
+  .qual { margin-top: 26px; }
   .qual h2 { font-size: 17px; font-weight: 800; }
   .qual .lead { font-size: 13.5px; color: #6a5d4c; margin: 4px 0 16px; font-style: italic; }
   .box { border-radius: 12px; padding: 16px 16px 14px; margin-bottom: 12px; }
@@ -41,67 +50,73 @@
   .fineprint { font-size: 13px; color: #5a5045; margin-top: 4px; font-weight: 600; }
   .cta { margin-top: 30px; }
   .cta h2 { font-size: 19px; font-weight: 800; }
-  form { margin-top: 14px; }
-  input { width: 100%; padding: 13px 14px; font-size: 15px; border: 1px solid #d8ccbc; border-radius: 10px;
-          margin-bottom: 10px; background: #fff; font-family: inherit; }
-  button { width: 100%; padding: 15px; font-size: 16px; font-weight: 800; color: #fff; background: #8B5E34;
-           border: none; border-radius: 10px; cursor: pointer; }
-  .cta .note { font-size: 12.5px; color: #8a7c6a; margin-top: 10px; text-align: center; }
-  .foot { margin-top: 34px; padding-top: 18px; border-top: 1px solid #e6dccd; font-size: 12.5px; color: #8a7c6a; }
+  .btn { display: block; width: 100%; padding: 16px; margin-top: 14px; font-size: 16px; font-weight: 800;
+         color: #fff; background: #8B5E34; border: none; border-radius: 10px; cursor: pointer; text-align: center; }
+  .writein { margin-top: 12px; }
+  .writein summary { font-size: 13px; color: #8B5E34; cursor: pointer; font-weight: 700; }
+  .writein input { width: 100%; padding: 12px 14px; font-size: 15px; border: 1px solid #d8ccbc;
+                   border-radius: 10px; margin-top: 10px; background: #fff; font-family: inherit; }
+  .cta .note { font-size: 12.5px; color: #8a7c6a; margin-top: 12px; text-align: center; }
+  .foot { margin-top: 30px; padding-top: 18px; border-top: 1px solid #e6dccd; font-size: 12.5px; color: #8a7c6a; }
   .foot b { color: #8B5E34; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="rule"></div>
-    <h1>Du hast gescannt. Gut.<span class="sub">Dann trinken wir den Kaffee.</span></h1>
-
-    <p class="intro">Ich bin <b>Angel</b>. Ich hab dir die Karte geschickt &mdash; kein Verkaufsgespr&auml;ch.
-    Ich hab eine Kasse gebaut, die den langweiligen Teil &uuml;bernimmt: <b>Belege, Mehrwertsteuer,
-    Kassensturz</b>. Damit mehr Zeit f&uuml;r den Laden bleibt. Nicht SAP. Kein Spielzeug.
-    F&uuml;r L&auml;den in deiner Gr&ouml;sse.</p>
-
-    <div class="video">🎥 &nbsp;20 Sekunden: Angel sagt kurz Hoi<br><span style="font-size:11px">(Video kommt hierhin)</span></div>
-
-    <div class="qual">
-      <h2>Passt das &uuml;berhaupt zu dir?</h2>
-      <div class="lead">Sei ehrlich &mdash; ich bin&rsquo;s auch. Das ist nicht f&uuml;r jeden.</div>
-
-      <div class="box fit">
-        <div class="head">Passt, wenn &hellip;</div>
-        <ul>
-          <li>du deinen Laden <b>selbst</b> f&uuml;hrst</li>
-          <li>du <b>1&ndash;3 L&auml;den</b> hast &mdash; oder ein paar Leute an der Kasse</li>
-          <li>du abends noch &uuml;ber Belegen, MwSt und Kassensturz sitzt</li>
-          <li>dein Umsatz etwa <b>100&rsquo;000&ndash;500&rsquo;000</b> ist (auch mehr)</li>
-          <li>du mehr Zeit f&uuml;r den <b>Laden</b> willst, nicht f&uuml;r Papierkram</li>
-        </ul>
-      </div>
-
-      <div class="box nofit">
-        <div class="head">Passt (noch) nicht, wenn &hellip;</div>
-        <ul>
-          <li>du einen kleinen Ein-Mann-Laden hast und mit Zettel und Stift gl&uuml;cklich bist &mdash; dann brauchst du mich nicht. Ehrlich.</li>
-          <li>du eine grosse Kette mit IT-Abteilung bist und ein volles ERP willst &mdash; dann ist SAP dein Ding, nicht meins.</li>
-        </ul>
-      </div>
-      <p class="fineprint">Kosten minimal. Training minimal. Kein Abo-Zwang, keine Fessel.</p>
+    <div class="hero">
+      <div class="bg"></div>
+      <div class="top"><div class="rule"></div><div class="logo"></div></div>
+      <h1>Hallo {{FIRST_NAME}}.<span class="sub">Du hast gescannt &mdash; gut. Trinken wir den Kaffee.</span></h1>
     </div>
 
-    <div class="cta">
-      <h2>Passt&rsquo;s? Dann einen Kaffee.</h2>
-      <form onsubmit="return false;">
-        <input type="text" placeholder="Dein Name">
-        <input type="text" placeholder="Dein Laden + Ort">
-        <input type="text" placeholder="Wie erreiche ich dich? (Tel / Mail)">
-        <button type="submit">Kaffee &mdash; ich meld mich</button>
-      </form>
-      <div class="note">Kein Verkaufsdruck. Der Kaffee geht auf mich.</div>
-    </div>
+    <div class="body">
+      <p class="intro">Ich bin <b>Angel</b>. Ich hab dir die Karte geschickt &mdash; kein Verkaufsgespr&auml;ch.
+      Ich hab eine Kasse gebaut, die den langweiligen Teil &uuml;bernimmt: <b>Belege, Mehrwertsteuer,
+      Kassensturz</b>. Damit mehr Zeit f&uuml;r den Laden bleibt. Nicht SAP. Kein Spielzeug.
+      F&uuml;r L&auml;den wie deinen.</p>
 
-    <div class="foot">
-      &mdash; Angel &middot; <b>BANCO</b> &middot; La Piazza 🐺<br>
-      Passt&rsquo;s nicht, kein Problem. Dann eben ein andermal.
+      <div class="video">🎥 &nbsp;20 Sekunden: Angel sagt kurz Hoi<br><span style="font-size:11px">(Video kommt hierhin)</span></div>
+
+      <div class="qual">
+        <h2>Passt das &uuml;berhaupt zu dir, {{FIRST_NAME}}?</h2>
+        <div class="lead">Sei ehrlich &mdash; ich bin&rsquo;s auch. Das ist nicht f&uuml;r jeden.</div>
+        <div class="box fit">
+          <div class="head">Passt, wenn &hellip;</div>
+          <ul>
+            <li>du deinen Laden <b>selbst</b> f&uuml;hrst</li>
+            <li>du <b>1&ndash;3 L&auml;den</b> hast &mdash; oder ein paar Leute an der Kasse</li>
+            <li>du noch mit <b>Zettel, Stift und Taschenrechner</b> k&auml;mpfst</li>
+            <li>du abends &uuml;ber Belegen, MwSt und Kassensturz sitzt</li>
+            <li>du mehr Zeit f&uuml;r den <b>Laden</b> willst, nicht f&uuml;r Papierkram</li>
+          </ul>
+        </div>
+        <div class="box nofit">
+          <div class="head">Passt (noch) nicht, wenn &hellip;</div>
+          <ul>
+            <li>du schon ein <b>System oder eigene Software</b> hast, mit dem du zufrieden bist &mdash; dann brauchst du mich nicht. Ehrlich.</li>
+            <li>du eine grosse Kette mit IT-Abteilung bist und ein volles ERP willst &mdash; dann ist SAP dein Ding, nicht meins.</li>
+          </ul>
+        </div>
+        <p class="fineprint">Kosten minimal. Training minimal. Kein Abo-Zwang, keine Fessel.</p>
+      </div>
+
+      <div class="cta">
+        <h2>Passt&rsquo;s? Dann einen Kaffee.</h2>
+        <form method="post" action="/kaffee/ja">
+          <input type="hidden" name="token" value="{{TOKEN}}">
+          <button class="btn" type="submit">Ja &mdash; Kaffee. Ruf mich im Laden an.</button>
+          <details class="writein">
+            <summary>Lieber schreiben? &rarr;</summary>
+            <input type="text" name="contact" placeholder="Tel / Mail / WhatsApp &mdash; wie&rsquo;s dir passt">
+          </details>
+        </form>
+        <div class="note">Ich hab deine Laden-Nummer schon. Kein Verkaufsdruck. Der Kaffee geht auf mich.</div>
+      </div>
+
+      <div class="foot">
+        &mdash; Angel &middot; <b>BANCO</b> &middot; La Piazza 🐺<br>
+        Passt&rsquo;s nicht, {{FIRST_NAME}}, kein Problem. Dann eben ein andermal.
+      </div>
     </div>
   </div>
 </body>
