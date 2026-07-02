@@ -10,26 +10,20 @@
 
 ---
 
-## 🃏 ACTIVE NOW — HEAD-SHOP POSTCARD CAMPAIGN (2026-07-02)  ← START HERE
+## 🃏 ON DECK — HEAD-SHOP CAMPAIGN (2026-07-02, ~2:30pm) ← START HERE
 
-**Built + committed today** (all on `main`) — the outreach machine, end to end:
-- The **Handshake card** (chosen strategy, "Nino angle" — one warm card, no sequence), DE/FR/IT/EN, 2-up print, № serial, photos/logo — `docs/business/postcards/headshop-campaign/`
-- Personalized **landing** (per-shop, per-language, event/invite CTA) + `render_card.py`; served by Banco app at `/kaffee/{token}` + `/campaign/events`
-- **Tracking + web→CRM loop**: scan/„Ja" → log + email(ecolution) + Telegram → **Postino** joined by `ext_id`=token (sync verified)
-- **Postino CRM** (`crm/postino`, runs LOCAL via `crm/start.sh` → :8900) — **184 leads** (11 A / 6 B / 164 unqualified) + **artifact store** (`artifacts.py`, FS now / MinIO when `MINIO_ENDPOINT` set) + `language`/`scoop_line` cols
-- **Recipe spec** (`docs/business/headshop-crm/MASTER-LIST-RECIPE.md`, addenda 1-5): phased Discover→Enrich→Generate, `campaign.yaml` knobs, vertical-reuse, Postino = CRM
+**IN FLIGHT:** Angel is out doing the **Rudestore (#11, Luzern) scope-out** — the secret-shopper dry-run (first-customer test, before Felix). Back ~4:20pm with a **shop photo + one line of scoop**.
 
-**🐯 NEXT (top of deck):**
-1. **Enrich the 164** unqualified (fan-out subagents): website→email→manager(Zefix)→`QUALIFICATION.md`→tier/score/persona/language/scoop + photos/logo → artifact store. Turns "11 A-list" into the real field.
-2. **Phase 3: generate** cards (per lead, per language) for the selected Tier-A.
-3. **Pre-mail checklist:** native FR/IT review · the 20-sec Angel video · **prod-deploy** the landing + set `COFFEE_EVENTS_KEY` + Telegram creds · point real QRs at **prod**.
-4. **Mail batch 1** (~20, by region/language) → watch **scans** (the leading signal, not the 1-3% booking) → work responders → the event (Luzern/Lausanne/Bellinzona by cluster).
+**THE MACHINE (built + committed on main):** Handshake card (DE/FR/IT/EN, № serial, photos/logo, 2-up) + `render_card.py` · personalized multilingual landing (event/invite CTA, {{LANDING_INTRO}}) served by Banco `/kaffee/{token}` · tracking + web→CRM loop (scan/Ja → log + ecolution email + Telegram → Postino by ext_id) · **Postino CRM** (`crm/postino`, LOCAL `crm/start.sh` → :8900 / phone 192.168.178.24:8900) — **184 leads** (11 A), **journey checklist** (scope-out→close, time-of-day + quick-checks), **artifact store** (FS/MinIO), **scope survey** at `/scope` (offline, phone, GPS, 120% guard) · docs: `MASTER-LIST-RECIPE.md`, `LEAD-TO-CLOSE-PROCESS.md`, `scope-sheet.html`.
 
-**🧍 Angel, in parallel — highest-odds first customer:** Felix → Mosey warm intro. Run it *alongside* the cold campaign.
+**🐯 WHEN ANGEL IS BACK (top of deck):**
+1. **Finish the Rudestore dry-run** — paste his scope summary into Postino #11's scope note; take his **photo + scoop** → generate **Stephan's card** (DE, "war grad bei dir im Laden…", his photo, № serial) → he prints + mails → watch #11 walk the board.
+2. **Tune the process end-to-end** — real feedback from the live run (smooth the scope→Postino handoff).
+3. **CRM glow-up (ONE pass):** deploy ONE hosted Postino (phone-reachable) + simple login (one password, NOT a KC realm) + build/env footer + Banco look-and-feel + photo-attach. AFTER the KC-realm terminal is clear (one driver per shared surface).
 
-**⚠️ Coordination:** ONE driver per shared surface. Postino stays LOCAL (deploy to sandbox only AFTER the KC-realm terminal is done — never touch sandbox concurrently). Don't reseed `postino.db` while working it.
+**LOCKED DECISIONS:** postcard (not letter) = warm opener, letter later = the formal close · Postino = solo tool → ONE instance + simple auth (NOT 3-tier/KC — right-sized) · ONE driver per shared surface · Felix→Mosey run in parallel (highest-odds first customer).
 
-**Full context (memory):** `banco-headshop-vertical-mosey-gtm` · `banco-competitive-swot-2026-07` · `one-driver-orchestration-preference`.
+**Full context (memory):** `banco-headshop-vertical-mosey-gtm` · `one-driver-orchestration-preference`.
 
 ---
 
