@@ -47,9 +47,9 @@ async def kaffee_page(token: str, request: Request):
 
 
 @router.post("/kaffee/ja", response_class=HTMLResponse)
-async def kaffee_ja(request: Request, token: str = Form(...), contact: str = Form("")):
+async def kaffee_ja(request: Request, token: str = Form(...), option: str = Form(""), comment: str = Form("")):
     try:
-        await cs.capture_lead(token, contact.strip())
+        await cs.capture_lead(token, option.strip(), comment.strip())
     except Exception:
         logger.warning("coffee capture_lead failed for %s", token, exc_info=True)
     return HTMLResponse(_THANKS)

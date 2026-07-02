@@ -49,6 +49,12 @@
   .cta h2 { font-size: 19px; font-weight: 800; }
   .btn { display: block; width: 100%; padding: 16px; margin-top: 14px; font-size: 16px; font-weight: 800;
          color: #fff; background: #8B5E34; border: none; border-radius: 10px; cursor: pointer; text-align: center; }
+  .opt { display: flex; align-items: center; gap: 11px; padding: 14px 15px; margin-top: 10px; border: 1.5px solid #d8ccbc;
+         border-radius: 11px; font-size: 15px; font-weight: 700; color: #2a2a2a; cursor: pointer; background: #fff; }
+  .opt input { width: 21px; height: 21px; flex: 0 0 auto; accent-color: #8B5E34; }
+  .opt:has(input:checked) { border-color: #8B5E34; background: #f6efe6; }
+  .cmt { width: 100%; padding: 12px 14px; font-size: 15px; border: 1px solid #d8ccbc; border-radius: 11px;
+         margin-top: 12px; font-family: inherit; background: #fff; }
   .writein { margin-top: 12px; }
   .writein summary { font-size: 13px; color: #8B5E34; cursor: pointer; font-weight: 700; }
   .writein input { width: 100%; padding: 12px 14px; font-size: 15px; border: 1px solid #d8ccbc;
@@ -68,8 +74,6 @@
 
     <div class="body">
       <p class="intro">{{LANDING_INTRO}}</p>
-
-      <div class="video">🎥 &nbsp;{{C_VIDEO}}<br><span style="font-size:11px">{{C_VIDEO2}}</span></div>
 
       <div class="qual">
         <h2>{{C_QUAL_H}}</h2>
@@ -99,18 +103,20 @@
         <p style="font-size:14px;color:#3a3a3a;margin-top:6px">{{C_CTA_P}}</p>
         <form method="post" action="/kaffee/ja">
           <input type="hidden" name="token" value="{{TOKEN}}">
+          <label class="opt"><input type="radio" name="option" value="call" required><span>{{C_OPT_CALL}}</span></label>
+          <label class="opt"><input type="radio" name="option" value="shop"><span>{{C_OPT_SHOP}}</span></label>
+          <label class="opt"><input type="radio" name="option" value="meet"><span>{{C_OPT_MEET}}</span></label>
+          <input class="cmt" type="text" name="comment" placeholder="{{C_PLACEHOLDER}}">
           <button class="btn" type="submit">{{C_BTN}}</button>
-          <details class="writein">
-            <summary>{{C_WRITEIN}}</summary>
-            <input type="text" name="contact" placeholder="{{C_PLACEHOLDER}}">
-          </details>
         </form>
         <div class="note">{{C_NOTE}}</div>
       </div>
 
       <div class="foot">
-        &mdash; Angel &middot; <b>BANCO</b> &middot; La Piazza 🐺<br>
-        {{C_FOOT}}
+        &mdash; <b>Angel</b> &middot; BANCO &middot; La Piazza 🐺<br>
+        Ecolution GmbH &middot; Mattenweg 5 &middot; 6375 Beckenried<br>
+        <a href="mailto:ecolution.gmbh@gmail.com" style="color:#8B5E34;font-weight:700">ecolution.gmbh@gmail.com</a><br>
+        <span style="color:#a99a86">{{C_FOOT}}</span>
       </div>
     </div>
   </div>

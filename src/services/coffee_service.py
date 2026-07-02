@@ -75,9 +75,10 @@ CHROME = {
         "C_NOFIT_1": "du schon ein <b>System oder eigene Software</b> hast, mit dem du zufrieden bist — dann brauchst du mich nicht. Ehrlich.",
         "C_NOFIT_2": "du eine grosse Kette mit IT-Abteilung bist und ein volles ERP willst — dann ist SAP dein Ding, nicht meins.",
         "C_FINEPRINT": "Kosten minimal. Training minimal. Kein Abo-Zwang, keine Fessel.",
-        "C_CTA_H": "Willst du's sehen? Ich zeig's dir — live, mit Kaffee.",
-        "C_CTA_P": "Ich lad ein paar Ladenbesitzer zu einem lockeren Treffen — anschauen, anfassen, Fragen stellen. Kein Verkaufsanlass. Ort und Zeit sag ich dir, sobald genug zusammen sind.",
-        "C_BTN": "Ja — reservier mir eine Einladung", "C_WRITEIN": "Kurz was dazu schreiben? →",
+        "C_CTA_H": "So machen wir's — was passt dir?",
+        "C_CTA_P": "Kein Verkaufsdruck. Sag einfach, wie's dir am besten passt:",
+        "C_OPT_CALL": "Ruf mich an", "C_OPT_SHOP": "Komm bei mir im Laden vorbei", "C_OPT_MEET": "Lass uns kurz zusammensitzen",
+        "C_BTN": "Abschicken", "C_WRITEIN": "Kurz was dazu schreiben? →",
         "C_PLACEHOLDER": "Tel / Mail — oder einfach eine Notiz",
         "C_NOTE": "Ich hab deine Laden-Nummer schon. Kein Verkaufsdruck — wir schauen nur, ob's passt.",
         "C_FOOT": "Passt's nicht, kein Problem. Dann eben ein andermal.",
@@ -97,9 +98,10 @@ CHROME = {
         "C_NOFIT_1": "tu as déjà un <b>système ou ton propre logiciel</b> qui te convient — alors tu n'as pas besoin de moi. Franchement.",
         "C_NOFIT_2": "tu es une grande chaîne avec un service informatique et tu veux un ERP complet — alors SAP est ton truc, pas le mien.",
         "C_FINEPRINT": "Coûts minimes. Formation minime. Pas d'abonnement forcé, pas de laisse.",
-        "C_CTA_H": "Tu veux voir ? Je te montre — en vrai, autour d'un café.",
-        "C_CTA_P": "J'invite quelques commerçants à une rencontre détendue — regarder, toucher, poser des questions. Rien à vendre. Je te dis le lieu et l'heure dès qu'on est assez.",
-        "C_BTN": "Oui — réserve-moi une invitation", "C_WRITEIN": "Envie d'écrire un mot ? →",
+        "C_CTA_H": "On fait comment — qu'est-ce qui te va ?",
+        "C_CTA_P": "Aucune pression. Dis-moi simplement ce qui te convient le mieux :",
+        "C_OPT_CALL": "Appelle-moi", "C_OPT_SHOP": "Passe à mon magasin", "C_OPT_MEET": "Asseyons-nous un moment",
+        "C_BTN": "Envoyer", "C_WRITEIN": "Envie d'écrire un mot ? →",
         "C_PLACEHOLDER": "Tél / e-mail — ou juste un mot",
         "C_NOTE": "J'ai déjà le numéro de ton magasin. Aucune pression — on regarde juste si ça colle.",
         "C_FOOT": "Si ça ne colle pas, pas de souci. Ce sera pour une autre fois.",
@@ -119,9 +121,10 @@ CHROME = {
         "C_NOFIT_1": "hai già un <b>sistema o un software tuo</b> che ti soddisfa — allora non ti servo. Davvero.",
         "C_NOFIT_2": "sei una grande catena con un reparto IT e vuoi un ERP completo — allora SAP è cosa tua, non mia.",
         "C_FINEPRINT": "Costi minimi. Formazione minima. Nessun abbonamento forzato, nessun vincolo.",
-        "C_CTA_H": "Vuoi vederlo? Te lo mostro — dal vivo, con un caffè.",
-        "C_CTA_P": "Invito qualche negoziante a un incontro informale — guardare, toccare, fare domande. Niente vendita. Luogo e ora te li dico appena siamo abbastanza.",
-        "C_BTN": "Sì — riservami un invito", "C_WRITEIN": "Vuoi scrivere due righe? →",
+        "C_CTA_H": "Come facciamo — cosa ti va?",
+        "C_CTA_P": "Nessuna pressione. Dimmi solo cosa ti va meglio:",
+        "C_OPT_CALL": "Chiamami", "C_OPT_SHOP": "Passa dal mio negozio", "C_OPT_MEET": "Sediamoci un attimo",
+        "C_BTN": "Invia", "C_WRITEIN": "Vuoi scrivere due righe? →",
         "C_PLACEHOLDER": "Tel / e-mail — o solo una nota",
         "C_NOTE": "Ho già il numero del negozio. Nessuna pressione — guardiamo solo se va bene.",
         "C_FOOT": "Se non va, nessun problema. Sarà per un'altra volta.",
@@ -141,9 +144,10 @@ CHROME = {
         "C_NOFIT_1": "you already have a <b>system or your own software</b> you're happy with — then you don't need me. Honestly.",
         "C_NOFIT_2": "you're a big chain with an IT department wanting a full ERP — then SAP is your thing, not mine.",
         "C_FINEPRINT": "Minimal cost. Minimal training. No subscription trap, no leash.",
-        "C_CTA_H": "Want to see it? I'll show you — live, over a coffee.",
-        "C_CTA_P": "I'm inviting a few shop owners to a relaxed get-together — look, touch, ask questions. Nothing to sell. I'll tell you the place and time once there are enough of us.",
-        "C_BTN": "Yes — reserve me an invite", "C_WRITEIN": "Rather write a note? →",
+        "C_CTA_H": "How should we do this — what works for you?",
+        "C_CTA_P": "No pressure. Just tell me what suits you best:",
+        "C_OPT_CALL": "Call me", "C_OPT_SHOP": "Come by my shop", "C_OPT_MEET": "Let's sit down briefly",
+        "C_BTN": "Send", "C_WRITEIN": "Rather write a note? →",
         "C_PLACEHOLDER": "Phone / email — or just a note",
         "C_NOTE": "I've already got your shop's number. No pressure — we just see if it fits.",
         "C_FOOT": "If it's not a fit, no problem. Another time then.",
@@ -275,22 +279,25 @@ async def _send_telegram(text: str) -> bool:
         return False
 
 
-async def capture_lead(token: str, contact: str) -> dict:
+async def capture_lead(token: str, option: str = "", comment: str = "") -> dict:
     """Log a coffee lead + notify Angel (email + Telegram). Best-effort notify."""
     shop = ROSTER.get(token, {})
     name = shop.get("first_name", "?")
     sn = shop.get("shop_name", token)
     ph = shop.get("phone", "")
     visits = visit_count(token)
+    opt_label = {"call": "Ruf mich an", "shop": "Im Laden vorbeikommen",
+                 "meet": "Zusammensitzen"}.get(option, option or "—")
     rec = {"token": token, "at": _now(), "first_name": name, "shop_name": sn,
-           "phone": ph, "contact": contact, "visits": visits}
+           "phone": ph, "option": option, "comment": comment, "visits": visits}
     _append(LEADS_LOG, rec)
-    subject = f"☕ Einladung angefragt: {name} / {sn}"
-    body = (f"<h2>Will eine Einladung zum Banco-Treffen</h2><p><b>{name}</b> — {sn}</p>"
-            f"<p>Laden-Tel: {ph}</p><p>Notiz/Kontakt: {contact or '—'}</p>"
+    subject = f"☕ Antwort von {name} / {sn} — {opt_label}"
+    body = (f"<h2>{name} hat geantwortet: {opt_label}</h2><p><b>{name}</b> — {sn}</p>"
+            f"<p>Wunsch: <b>{opt_label}</b></p><p>Laden-Tel: {ph}</p>"
+            f"<p>Kommentar: {comment or '—'}</p>"
             f"<p>Karte: {token} · Seitenbesuche: {visits}</p>")
-    tg = (f"☕ <b>Einladung angefragt</b>\n{name} — {sn}\nTel: {ph}\n"
-          f"Notiz: {contact or '—'}\nKarte: {token} · Besuche: {visits}")
+    tg = (f"☕ <b>{name} — {sn}</b>\nWunsch: {opt_label}\nTel: {ph}\n"
+          f"Kommentar: {comment or '—'}\nKarte: {token} · Besuche: {visits}")
     await asyncio.to_thread(_send_email, subject, body)
     await _send_telegram(tg)
     return rec
