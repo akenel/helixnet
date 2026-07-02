@@ -157,6 +157,18 @@ ROSTER = {
         "logo": "/static/kaffee/assets/artemis-logo.png",
         "img": "/static/kaffee/assets/artemis-front.png", "language": "de",
     },
+    # First real lead — Rudestore Headshop, Luzern (Postino #11 · ext_id 4). Scoped 2026-07-02.
+    "4": {
+        "first_name": "Stephan", "shop_name": "Rudestore Headshop", "phone": "",
+        "logo": "", "img": "/static/kaffee/assets/rudestore-front.jpg", "language": "de",
+        "landing_intro": (
+            "Hoi Stephan — schön, dass du scannst. Ich war neulich bei dir im Laden (die Blättchen, "
+            "und du hast mir die Rollen hinter der Theke gezeigt). Ich bin <b>Angel</b>. Ich bau eine "
+            "Kasse, die den langweiligen Teil übernimmt — <b>Belege, MwSt, Kassensturz</b> — damit "
+            "mehr Zeit für den Laden bleibt. Kein Verkaufsgespräch, nicht SAP, kein Spielzeug. "
+            "Für Läden wie deinen."
+        ),
+    },
     # demo rows to verify FR/IT chrome renders (empty logo/img = clean)
     "HS-DEMO-FR-0001": {"first_name": "Luc", "shop_name": "CBD Léman", "phone": "021 000 00 00",
                         "logo": "", "img": "", "language": "fr"},
