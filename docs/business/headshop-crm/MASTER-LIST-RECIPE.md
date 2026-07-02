@@ -99,3 +99,37 @@ source · enriched_at · needs_human_review
 > invent facts — flag gaps. Cite sources per shop.
 
 *Feeds: the CRM (built separately) + the postcard/landing personalization + the campaign board.*
+
+---
+
+## ADDENDUM (2026-07-02) — the FULL package: per-shop copy + strategy report + print/budget
+
+### Per-shop CAMPAIGN COPY (AI writes it — the deliverable, not just data)
+The recipe doesn't stop at enrichment. For each shop it also drafts (warm „du" handshake voice,
+Helvetica + serif, NO feature list — human-reviewed before mailing):
+- `pain_top3` — the 3 pain points to address for THIS owner (derived from the signals)
+- `one_action` — the single action that would relieve him most
+- `card_copy` — the **personalized postcard text for this shop**, ready to drop into the card
+  template (this is Angel's "the AI words the postcard itself for this guy")
+- `landing_copy` — personalized greeting + intro for the dynamic per-QR landing page
+
+### PHASE 4 — CAMPAIGN STRATEGY (one overall `MARKETING-STRATEGY-REPORT.md`)
+- **Geographic clustering** → recommended EVENT location(s). Count shops per canton/region; if
+  ~50 cluster in Basel and 2 in Ticino → host in Basel, outliers travel. Likely ONE event; 2–3 only
+  if clusters are far apart. **Venue tier by expected turnout** — a local **library room** for a
+  handful, a **hotel meeting room** for more.
+- **Recommended timeline (AI derives it — don't hard-code)** → end-to-end campaign length
+  (candidate **4–6 weeks**): mail cadence (~20/week; Swiss post lands in 2 days = a known signal;
+  **silence past week 1 = disqualified**), when to lock the venue (once replies cluster, ~week 2),
+  event date, follow-up window. The AI recommends duration from list size + response assumptions.
+- **Budget** → ~1 CHF/card + ~1 CHF postage; **2 LARGE cards per A4** (A5-size, one **kept** for
+  Angel's reference + one **mailed**) → whole campaign **well under 200 CHF**. State the exact number
+  for the real list size.
+- **Success metric** → ≥1 customer (≈1–1.2% of mailed). Interim/leading = **scan rate** (the true
+  read on whether the card lands — far higher frequency than the 1-3% booking rate).
+- **Execution playbook** → week-by-week: build+enrich → print → mail batch(es) → watch scans →
+  book venue by cluster → run the event → work responders (the slow sniper close, 6-18mo deals).
+
+### Print format note (for the imposition build)
+**2 large cards per A4, not 4** — bigger, more premium cards; one kept, one mailed per shop.
+(The 4-up A4 imposition is still available for tighter/cheaper runs; 2-up is the chosen default.)
