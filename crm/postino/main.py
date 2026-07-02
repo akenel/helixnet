@@ -246,6 +246,16 @@ def scope_sheet():
         return HTMLResponse("<h1>Scope sheet not found</h1>", status_code=404)
 
 
+@app.get("/discovery", response_class=HTMLResponse)
+def discovery_kit():
+    """Serve the offline discovery field kit — the deeper on-site checklist (photos/interview/samples/hardware)."""
+    p = Path(__file__).resolve().parent.parent.parent / "docs/business/headshop-crm/discovery-kit.html"
+    try:
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    except Exception:
+        return HTMLResponse("<h1>Discovery kit not found</h1>", status_code=404)
+
+
 # ---------------------------------------------------------------- journey checklist
 
 @app.post("/lead/{lead_id}/journey")

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐺 Banco Discovery Field Kit</title>
+<!--
+  BANCO · DISCOVERY FIELD KIT — the "field man" checklist. Self-contained, OFFLINE, phone-first.
+  Run it ON-SITE after a warm reply ("come see me"). Tick photos as you shoot, capture the owner's
+  words, photograph the paperwork samples, note the hardware. Then "Copy summary" → send to the
+  back office (Tigs) → per-shop sandbox: catalog, categories, replicate their chosen day, reveal.
+  Aim for COVERAGE, not perfection. 50 photos is fine. The goal: enough to rebuild their shop.
+-->
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; background: #faf6f0; color: #2a2a2a;
+         margin: 0; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 18px 16px 96px; }
+  h1 { font-size: 21px; font-weight: 800; margin: 0 0 2px; }
+  .sub { font-size: 12px; color: #8B5E34; font-weight: 700; margin-bottom: 14px; }
+  .shop { width: 100%; padding: 10px 12px; font-size: 16px; border: 2px solid #8B5E34; border-radius: 10px;
+          margin-bottom: 8px; font-weight: 700; }
+  .sec { background: #fff; border-radius: 12px; padding: 13px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .sec h2 { font-size: 14px; font-weight: 800; margin: 0 0 4px; color: #1a1a1a; }
+  .sec .cap { font-size: 11.5px; color: #9a8a74; margin-bottom: 9px; }
+  .row { display: flex; align-items: flex-start; gap: 9px; margin: 8px 0; font-size: 14px; }
+  .row input[type=checkbox] { width: 21px; height: 21px; flex: 0 0 auto; margin-top: 1px; accent-color: #8B5E34; }
+  .row .h { font-size: 11.5px; color: #9a8a74; display: block; }
+  label.q { display: block; font-size: 13px; color: #555; font-weight: 700; margin: 11px 0 3px; }
+  input[type=text], textarea { width: 100%; padding: 9px 11px; font-size: 15px; border: 1px solid #d8ccbc; border-radius: 8px; font-family: inherit; }
+  textarea { min-height: 44px; resize: vertical; }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; }
+  .opts label { font-size: 13px; padding: 7px 11px; border: 1px solid #d8ccbc; border-radius: 8px; background: #fbf8f3; cursor: pointer; }
+  .opts input { display: none; }
+  .opts label:has(input:checked) { background: #eef4ea; border-color: #3f6b34; font-weight: 800; }
+  .bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e6dccd;
+         padding: 10px 16px; max-width: 480px; margin: 0 auto; }
+  .bar button { width: 100%; padding: 13px; font-size: 15px; font-weight: 800; border: none; border-radius: 10px; color: #fff; background: #8B5E34; }
+  .miss { color: #9c5a2c; font-size: 12px; font-weight: 700; text-align: center; margin-top: 6px; min-height: 15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🐺 Banco Discovery Field Kit</h1>
+  <div class="sub">The field man's checklist · aim for coverage, not perfection · ~50 photos is fine</div>
+  <input class="shop" id="shop" placeholder="Shop + owner (e.g. Rudestore · Stephan)">
+  <input type="text" id="when" placeholder="Day / time of visit" style="margin-bottom:14px">
+
+  <div class="sec">
+    <h2>1 · 📸 Shots — tick as you shoot</h2>
+    <div class="cap">Each line = a few shots of that thing. Don't count — cover.</div>
+    <div class="row"><input type="checkbox" id="p_front"><div><b>Storefront</b> — sign, front door, window<span class="h">+ the street: parking, neighbours</span></div></div>
+    <div class="row"><input type="checkbox" id="p_pano"><div><b>Panorama</b> — 2–3 wide shots of the whole inside</div></div>
+    <div class="row"><input type="checkbox" id="p_counter"><div><b>Behind the counter</b> — the till area, how it's laid out</div></div>
+    <div class="row"><input type="checkbox" id="p_hw"><div><b>The hardware, close up</b> — tablet/PC, card reader, scanner, printer, cash drawer</div></div>
+    <div class="row"><input type="checkbox" id="p_shelves"><div><b>Shelves — one shot per section/category</b><span class="h">this is what builds his catalog</span></div></div>
+    <div class="row"><input type="checkbox" id="p_labels"><div><b>Price labels</b> — a few close-ups of how products are tagged/priced</div></div>
+    <div class="row"><input type="checkbox" id="p_books"><div><b>The back office</b> — where he does the paperwork/books</div></div>
+  </div>
+
+  <div class="sec">
+    <h2>2 · 🗣️ The interview — his words</h2>
+    <div class="cap">Capture how HE says it. Short notes are fine.</div>
+    <label class="q">Best sellers? / What doesn't move (deadstock)?</label>
+    <textarea id="q_sellers"></textarea>
+    <label class="q">Who's the typical customer?</label>
+    <input type="text" id="q_customer">
+    <label class="q">Biggest pain / headache in the day?</label>
+    <input type="text" id="q_pain">
+    <label class="q">Time on paperwork? Pain, or handled?</label>
+    <input type="text" id="q_paper">
+    <label class="q">Easy to total sales? Does it balance with the bank book?</label>
+    <input type="text" id="q_balance">
+    <label class="q">Happy with the current system? Where are the gaps?</label>
+    <textarea id="q_system"></textarea>
+    <label class="q">If you could change/add one thing — what?</label>
+    <input type="text" id="q_wish">
+    <label class="q">Age-restricted / CBD — how does he handle it now?</label>
+    <input type="text" id="q_age">
+  </div>
+
+  <div class="sec">
+    <h2>3 · 📄 Data samples — the replication fuel</h2>
+    <div class="cap">Photograph these. This is what I rebuild in Banco.</div>
+    <div class="row"><input type="checkbox" id="s_day"><div><b>ONE day's closeout / cash-up</b> — <i>let HIM pick the day</i><span class="h">"point at any day — I'll rebuild exactly that one"</span></div></div>
+    <div class="row"><input type="checkbox" id="s_week"><div><b>A week of sales</b> (if he offers it)</div></div>
+    <div class="row"><input type="checkbox" id="s_sheet"><div><b>The spreadsheet / sales book / ledger</b></div></div>
+    <div class="row"><input type="checkbox" id="s_recv"><div><b>A receiving / delivery note or two</b> (stock coming in)</div></div>
+    <label class="q">Which day did he pick to replicate?</label>
+    <input type="text" id="s_pickday" placeholder="e.g. Tue CW32 · his book says CHF ___">
+  </div>
+
+  <div class="sec">
+    <h2>4 · 🔌 Hardware &amp; infra — what we plug into</h2>
+    <label class="q">WiFi on site?</label>
+    <div class="opts" data-k="wifi">
+      <label><input type="radio" name="wifi" value="Yes"><span>Yes</span></label>
+      <label><input type="radio" name="wifi" value="Weak"><span>Weak</span></label>
+      <label><input type="radio" name="wifi" value="None"><span>None</span></label>
+    </div>
+    <label class="q">Device at the till</label>
+    <div class="opts" data-k="device">
+      <label><input type="radio" name="device" value="Tablet"><span>Tablet</span></label>
+      <label><input type="radio" name="device" value="PC"><span>PC</span></label>
+      <label><input type="radio" name="device" value="Phone"><span>Phone</span></label>
+      <label><input type="radio" name="device" value="None"><span>None</span></label>
+    </div>
+    <label class="q">Card terminal (TWINT / Visa / debit — which?)</label>
+    <input type="text" id="h_card" placeholder="e.g. tablet + card reader, TWINT + Visa">
+    <div class="row" style="margin-top:8px"><input type="checkbox" id="h_stock"><div><b>Is the till connected to stock/inventory?</b> <span class="h">(usually NO — tick only if YES. NO = the gap Banco fills)</span></div></div>
+    <label class="q">Scanner? Receipt printer? Cash drawer?</label>
+    <input type="text" id="h_extra">
+  </div>
+
+  <div class="sec">
+    <h2>5 · ✅ Wrap</h2>
+    <label class="q">The shop in one sentence + the single biggest pain</label>
+    <textarea id="w_summary" placeholder="e.g. Small reggae head-shop, one till, tablet not linked to stock, boss totals sales by hand — end-of-day is the pain"></textarea>
+    <div class="row"><input type="checkbox" id="w_intro"><div>Left it warm — thanked him, no pressure</div></div>
+  </div>
+</div>
+
+<div class="bar">
+  <button onclick="copyKit()">📋 Copy discovery → back office</button>
+  <div class="miss" id="miss"></div>
+</div>
+
+<script>
+  function v(k){ var e=document.querySelector('input[name="'+k+'"]:checked'); return e?e.value:''; }
+  function t(id){ return (document.getElementById(id).value||'').trim(); }
+  function c(id){ return document.getElementById(id).checked; }
+  function copyKit(){
+    var miss=[];
+    if(!c('p_shelves')) miss.push('shelf photos (the catalog!)');
+    if(!c('s_day')) miss.push("one day's closeout");
+    if(!t('w_summary')) miss.push('the one-sentence wrap');
+    var m=document.getElementById('miss');
+    m.textContent = miss.length ? ('⚠ before you leave: '+miss.join(', ')) : '✓ good coverage — copied.';
+    function shots(){ var a=[['p_front','storefront'],['p_pano','panorama'],['p_counter','counter'],['p_hw','hardware'],['p_shelves','shelves'],['p_labels','labels'],['p_books','back-office']]; return a.filter(x=>c(x[0])).map(x=>x[1]).join(', ')||'—'; }
+    function samples(){ var a=[['s_day','day-closeout'],['s_week','week-sales'],['s_sheet','ledger'],['s_recv','receiving']]; return a.filter(x=>c(x[0])).map(x=>x[1]).join(', ')||'—'; }
+    var s = "BANCO DISCOVERY — "+(t('shop')||'(shop)')+"  "+t('when')+"\n"
+      + "WRAP: "+t('w_summary')+"\n\n"
+      + "SHOTS TAKEN: "+shots()+"\n"
+      + "SAMPLES: "+samples()+" · replicate day: "+(t('s_pickday')||'?')+"\n\n"
+      + "INTERVIEW\n"
+      + "· sellers/deadstock: "+t('q_sellers')+"\n"
+      + "· typical customer: "+t('q_customer')+"\n"
+      + "· biggest pain: "+t('q_pain')+"\n"
+      + "· paperwork time: "+t('q_paper')+"\n"
+      + "· totals/bank balance: "+t('q_balance')+"\n"
+      + "· current system/gaps: "+t('q_system')+"\n"
+      + "· one wish: "+t('q_wish')+"\n"
+      + "· age/CBD handling: "+t('q_age')+"\n\n"
+      + "HARDWARE: wifi="+(v('wifi')||'?')+" · device="+(v('device')||'?')+" · card="+(t('h_card')||'?')
+        +" · stock-linked="+(c('h_stock')?'YES':'NO (the gap)')+" · extra="+(t('h_extra')||'—');
+    if(navigator.clipboard){ navigator.clipboard.writeText(s).catch(function(){ prompt('Copy this:', s); }); }
+    else { prompt('Copy this:', s); }
+  }
+</script>
+</body>
+</html>
