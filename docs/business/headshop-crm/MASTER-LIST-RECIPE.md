@@ -133,3 +133,29 @@ Helvetica + serif, NO feature list — human-reviewed before mailing):
 ### Print format note (for the imposition build)
 **2 large cards per A4, not 4** — bigger, more premium cards; one kept, one mailed per shop.
 (The 4-up A4 imposition is still available for tighter/cheaper runs; 2-up is the chosen default.)
+
+---
+
+## ADDENDUM 2 (2026-07-02) — LANGUAGE = the pitch. Region-aware, per-language cards.
+
+**The medium is the message:** a French-region shop gets a FRENCH card, a Ticino shop an ITALIAN
+one, a German-region shop a GERMAN one, ENGLISH only as fallback. That IS Banco's promise ("the
+till that speaks your customer's language") — proven *before* the pitch. So multilingual isn't
+overhead; it's the strongest proof, delivered on the doormat.
+
+### Enrichment adds (per shop)
+- `language_region` = DE / FR / IT (derive from canton: e.g. VD/GE/NE/JU/FR-part → FR; TI → IT;
+  rest → DE) — cross-check with `site_languages`.
+- `card_language` = the language to MAIL him in (his region's; EN if genuinely unknown).
+- The AI writes `card_copy` + `landing_copy` **in that language** (do-one-do-all — Banco's own
+  language doctrine applied to the outreach).
+
+### Phase 4 clustering = by LANGUAGE REGION → 3 events (not just geography)
+- **Central CH (DE)** → Luzern / Zug · **Romandie (FR)** → Lausanne · **Ticino (IT)** → Bellinzona.
+- Cluster shops into these three; the report recommends which events run (maybe all 3, maybe fewer
+  if a region is thin — a lone Ticino shop might travel, or gets a 1:1). Venue tier by turnout.
+
+### Template implication
+The card + landing templates need **DE / FR / IT / EN variants** — but the recipe *writes the copy
+per language*, so it's DATA, not hand-work. One design, four language fills, driven by `card_language`.
+(Banco already runs EN/IT/DE in-app; FR is the cheap 4th — same "do one, do all" horizontal.)
