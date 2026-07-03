@@ -279,3 +279,6 @@ videos/banco/
 # aider (backup-brain coding parachute)
 .aider*
 .aider-turbo.env
+
+# local scratch (keys, temp) — NEVER commit
+scratchpad/
