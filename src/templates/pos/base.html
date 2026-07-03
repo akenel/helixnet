@@ -1012,7 +1012,7 @@
     <footer class="helix-status-bar" id="helix-status">
         <div class="status-section">
             <span class="pulse ok" id="status-pulse" title="System status"></span>
-            <span id="status-text" class="sm-hide" data-i18n="status.ok">System OK</span>
+            <span id="status-text" class="sm-hide"></span>
             {% set _e = (app_env | default('')) | lower %}
             {% if 'prod' in _e %}{% set _ec = 'PRD' %}{% set _ecc = 'env-prd' %}
             {% elif 'staging' in _e %}{% set _ec = 'STG' %}{% set _ecc = 'env-stg' %}
@@ -1021,7 +1021,7 @@
             {% else %}{% set _ec = '' %}{% set _ecc = '' %}{% endif %}
             {% if _ec %}<span class="env-pill {{ _ecc }}" title="environment: {{ app_env }}">{{ _ec }}</span>{% endif %}
             <span id="status-time" title="local time">--:--</span>
-            <span class="sb-build" data-build-iso="{{ build_date_iso or '' }}" title="build {{ app_version }} · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · deployed {{ build_date }} (your local time){% endif %}">⚙ <span id="status-version">{{ app_version or '3.3.0' }}</span> · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · <span id="status-build-date">{{ build_date }}</span>{% endif %}</span>
+            <span class="sb-build" data-build-iso="{{ build_date_iso or '' }}" title="build {{ app_version }} · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · deployed {{ build_date }} (your local time){% endif %}">⚙ <span id="status-version">{{ app_version or '3.3.0' }}</span> · {{ git_sha[:7] if git_sha else 'dev' }}</span>
         </div>
         <div class="status-section">
             <span id="status-screen" class="sm-hide" title="screen">{% block page_name %}POS{% endblock %}</span>
@@ -1246,7 +1246,7 @@
 
                     if (response.ok) {
                         pulse.className = 'pulse ok';
-                        statusText.textContent = t('status.ok');
+                        statusText.textContent = '';
                     } else {
                         pulse.className = 'pulse warn';
                         statusText.textContent = t('status.degraded');
