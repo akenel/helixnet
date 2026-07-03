@@ -10,6 +10,28 @@
 
 ---
 
+## 🃏 ON DECK — 2026-07-03 (end of the backup-brain + Freehold session) ← START HERE
+
+**TWO live threads — check with Angel which one he wants first.**
+
+**① 🐺 FREEHOLD — the legacy starter kit (born today; what Angel reached for next).** Repo `/home/angel/repos/freehold` (git init'd, **NOT pushed**). *"Own your stack. Owe no one."* — a teachable, production-grade, own-it-outright app foundation harvested from helixnet: the anti-Vercel/lock-in answer, a gift to teach real craft, and a resilience hedge. **Done:** README manifesto + `docs/FREEHOLD-SPEC.md` (CORE / OPTIONAL / OVERKILL / LATER + 5-minute target + 7 phases) + favicon (flag-on-your-land, SVG+PNGs). **NEXT = Phase 1: the skeleton** — harvest → Compose + Postgres + Keycloak (3 realms) + FastAPI hello + Caddy until `up -d` boots clean. Frontend LOCKED = server-HTML + Tailwind + Alpine + `fetch()` (React is *rented*, Freehold is *owned*). Full detail: memory `freehold-starter-kit`.
+
+**② 📮 Head-shop campaign — Rudestore card READY TO MAIL.** Stephan's handshake card (№4, DE) is locked; the landing (opaque token `/kaffee/VSWkHkZYVdst`) + 3-option CTA + Resend email-notify are **LIVE + proven on prod**. **🧍 Angel action:** print the 2-up A4, stamp, POST it → Stephan scans Monday → email pings. In parallel: the Felix re-open message (drafted) + the Discovery→Replicate→Reveal engine (field kits served at `/scope` + `/discovery`). Detail: memory `banco-headshop-vertical-mosey-gtm`.
+
+**Also SHIPPED this session (Banco, all 3 envs, verified + backed up):** login-page dynamic build footer; status-bar trim (removed "System OK" text → dot only; clock → HH:MM, no seconds/tz; SHA off the bar, kept in tooltip; killed the stale "Sprint 4" line). **The backup-brain PARACHUTE is rigged + PROVEN** (memory `ai-backup-brain-plan`): `scripts/code-with-openrouter.sh` = Aider+OpenRouter/DeepSeek edits+commits hands-free (~$0.002/edit); Turbo direct; Groq spare; keys persisted in `uat.env`. ⚠️ OpenRouter key was rotated (old one had printed in-transcript — Angel revoked it).
+
+---nco Go-Live Worklist — THE ordered list
+
+> 🔑 **Code word "ON DECK"** → you're reading the right file. State the top items and start executing the first actionable one. No re-planning, no re-asking.
+
+*Open this, work top-down, finish one tier before opening the next. Don't fan out across five things. 2026-06-28.*
+
+*Owners: 🧍 = Angel's hands needed (physical / decision / external call) · 🐯 = Tigs can do it · 👥 = both, together.*
+
+*Detail lives in: [BANCO-GO-LIVE-READINESS.md](BANCO-GO-LIVE-READINESS.md) (analysis) · [BANCO-DAY-ONE-WISHLIST.md](BANCO-DAY-ONE-WISHLIST.md) (polish backlog).*
+
+---
+
 ## 🃏 ON DECK — HEAD-SHOP CAMPAIGN (2026-07-02 eve) ← START HERE
 
 **CUSTOMER #1 (Rudestore, Luzern · Stephan Frei · Postino #11) — FULL PIPELINE LIVE + PROVEN on prod:**
