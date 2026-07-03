@@ -1,3 +1,4 @@
+"""Swiss-franc formatting helpers."""
 import decimal
 
 def swiss_chf(amount: float) -> str:
