@@ -275,3 +275,7 @@ docs/business/inventory/inventory-local-*.md
 
 # Banco videos — local only, already on YouTube; never to git (would bloat the repo)
 videos/banco/
+
+# aider (backup-brain coding parachute)
+.aider*
+.aider-turbo.env
