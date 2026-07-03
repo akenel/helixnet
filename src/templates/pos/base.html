@@ -1021,7 +1021,7 @@
             {% else %}{% set _ec = '' %}{% set _ecc = '' %}{% endif %}
             {% if _ec %}<span class="env-pill {{ _ecc }}" title="environment: {{ app_env }}">{{ _ec }}</span>{% endif %}
             <span id="status-time" title="local time">--:--</span>
-            <span class="sb-build" data-build-iso="{{ build_date_iso or '' }}" title="build {{ app_version }} · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · deployed {{ build_date }} (your local time){% endif %}">⚙ <span id="status-version">{{ app_version or '3.3.0' }}</span> · {{ git_sha[:7] if git_sha else 'dev' }}</span>
+            <span class="sb-build" data-build-iso="{{ build_date_iso or '' }}" title="build {{ app_version }} · {{ git_sha[:7] if git_sha else 'dev' }}{% if build_date %} · deployed {{ build_date }} (your local time){% endif %}">⚙ <span id="status-version">{{ app_version or '3.3.0' }}</span></span>
         </div>
         <div class="status-section">
             <span id="status-screen" class="sm-hide" title="screen">{% block page_name %}POS{% endblock %}</span>
@@ -1227,8 +1227,8 @@
             function updateStatusBar() {
                 // Update time — device-local, labeled with the local tz (BL-012)
                 const now = new Date();
-                const timeStr = formatTime(now, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                document.getElementById('status-time').textContent = TZ ? `${timeStr} ${TZ}` : timeStr;
+                const timeStr = formatTime(now, { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('status-time').textContent = timeStr;
 
                 // Update user from auth
                 const user = AuthHelper.getUserInfo();
