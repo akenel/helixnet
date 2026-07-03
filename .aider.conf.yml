@@ -1,0 +1,9 @@
+## Aider defaults for the helixnet repo — so the backup brain starts with OUR context.
+## (Model + API key come from scripts/code-with-*.sh — OpenRouter / Turbo / Groq.)
+
+# Claude Code auto-loads CLAUDE.md; Aider does NOT — so tell it to, every session:
+read:
+  - CLAUDE.md
+
+# Match our workflow: commit each change, don't nag for confirmation on every step.
+auto-commits: true

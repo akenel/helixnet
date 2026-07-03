@@ -282,3 +282,4 @@ videos/banco/
 
 # local scratch (keys, temp) — NEVER commit
 scratchpad/
+!.aider.conf.yml
