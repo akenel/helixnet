@@ -10,6 +10,14 @@
 
 ---
 
+## 🃏 ON DECK — 2026-07-04 (Freehold WENT LIVE) ← START HERE
+
+**🚀🟢 Freehold is LIVE at https://wolfhold.app** — deployed to a Hetzner box (167.233.125.248, ssh key `~/.ssh/wolfhold_ed25519`, box `/root/freehold`), Porkbun domain, **real Let's Encrypt cert**, APP_ENV=production. **Locked down** (demo/sam removed, registration off, admin=`akenel`; public pages open=showcase). **Backed up** (nightly cron, encrypted+restore-verified, 14-day). KC admin console `https://wolfhold.app/admin/` (trailing slash!), pw in box `.env`. Full detail: memory `freehold-starter-kit`.
+**Freehold open threads:** (1) OFFSITE backups (rclone→Drive) ← next, (2) real Pi hardware bridge, (3) events/raffles slices, (4) share it (India/McKinsey/Felix), (5) sslRequired=external.
+**Also still open (Banco/campaign):** Rudestore card ready to mail; Felix reopen msg.
+
+---
+
 ## 🃏 ON DECK — 2026-07-03 (end of the backup-brain + Freehold session) ← START HERE
 
 **TWO live threads — check with Angel which one he wants first.**
