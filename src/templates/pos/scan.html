@@ -955,10 +955,14 @@
                 this.refSelected = null;
                 this.refPrice = '';
                 this.lazyOpen = true;
-                // If we already have a name (camera OCR / typed), search straight away;
-                // otherwise focus the box so Pam can type a keyword.
+                // If we already have a name (camera OCR / typed), search straight away.
+                // On a pure barcode scan-miss there's no name yet — but the scanned code
+                // itself is a lookup key: fire the reference search by BARCODE so the exact
+                // supplier match (photo + price) surfaces automatically, no typing needed.
+                // Otherwise focus the box so Pam can type a keyword.
                 this.$nextTick(() => {
                     if (this.lazyLinkQuery.trim().length > 1) { this.searchExisting(); this.searchReference(); }
+                    else if ((this.lazyBarcode || '').trim()) { this.searchReference(); }
                     if (this.$refs.lazyLinkInput) this.$refs.lazyLinkInput.focus();
                 });
             },
