@@ -168,3 +168,8 @@ every smoking item is correctly 18+ with an auditable reason; nothing was lost f
 importer next month updates only what changed — without touching a single manager edit.
 
 *Built once, thought through, tested in sandbox, retested until we're both happy — then it ships.*
+
+🔐 Secure authentication via Keycloak
+
+v2.3.0 - Sprint 4 POS Interface
+
