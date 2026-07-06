@@ -43,3 +43,11 @@ fi
 find "$BACKUP_DIR" -name "${DB}_*.sql.gz.gpg" -mtime +30 -delete
 find "$BACKUP_DIR" -name "${DB}_*.sql.gz" ! -name "*.gpg" -delete   # never keep unencrypted
 echo "[$(date)] retention: $(ls "${BACKUP_DIR}"/${DB}_*.sql.gz.gpg 2>/dev/null | wc -l) encrypted backups on disk"
+
+# 4. offsite #3 — ship the encrypted blob to Backblaze B2 (IMMUTABLE, ransomware-proof).
+#    Non-fatal: LOCAL + laptop + Google-Drive copies already exist; B2 is the copy a
+#    compromised box can APPEND to but can NEVER wipe (Object-Lock). Clean no-op until
+#    /root/.banco-b2.env is filled — see docs/BANCO-B2-BACKUP-SETUP.md.
+if command -v python3 >/dev/null 2>&1 && [ -x /opt/ops/banco_b2_push.py ]; then
+  python3 /opt/ops/banco_b2_push.py "$FILE" || echo "[$(date)] B2 push failed (non-fatal)" >&2
+fi
