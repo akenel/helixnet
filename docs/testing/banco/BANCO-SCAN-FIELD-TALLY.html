@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banco Scan Field Tally — Artemis PROD</title>
+<style>
+  :root{ --hit:#1a8b3a; --lookup:#1565c0; --snap:#8a6d00; --fail:#b3261e; --ink:#161616; --line:#d9d9d9; --bg:#f6f6f4; --card:#fff; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); font-size:17px; line-height:1.4; padding-bottom:120px; }
+  header{ background:#161616; color:#fff; padding:14px 16px calc(14px + env(safe-area-inset-top)); position:sticky; top:0; z-index:5; }
+  header h1{ margin:0; font-size:18px; letter-spacing:.3px; }
+  header .sub{ opacity:.7; font-size:13px; margin-top:2px; }
+  .wrap{ padding:14px 12px; max-width:640px; margin:0 auto; }
+  /* score */
+  .score{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .pct{ font-size:56px; font-weight:800; line-height:1; }
+  .pct small{ font-size:20px; font-weight:600; opacity:.6; }
+  .verdict{ font-size:15px; font-weight:700; margin-top:6px; }
+  .bar{ height:12px; border-radius:8px; background:#eee; overflow:hidden; margin-top:12px; display:flex; }
+  .bar i{ display:block; height:100%; }
+  .counts{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:12px; }
+  .counts div{ background:#f0f0ee; border-radius:10px; padding:8px 4px; font-size:12px; }
+  .counts b{ display:block; font-size:22px; }
+  /* entry */
+  .entry{ margin-top:14px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; }
+  .entry label{ font-size:13px; font-weight:700; opacity:.7; }
+  .row{ display:flex; gap:8px; margin-top:6px; }
+  input[type=text]{ flex:1; min-width:0; font-size:17px; padding:12px; border:1.5px solid var(--line); border-radius:10px; }
+  .mic{ width:52px; border:1.5px solid var(--line); border-radius:10px; background:#fff; font-size:22px; }
+  .mic.on{ background:#ffe3e0; border-color:var(--fail); }
+  .btns{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .btns button{ border:0; border-radius:12px; color:#fff; font-size:16px; font-weight:800; padding:18px 8px; text-align:left; line-height:1.15; }
+  .btns button span{ display:block; font-size:11px; font-weight:600; opacity:.85; margin-top:3px; }
+  .b-hit{ background:var(--hit); } .b-lookup{ background:var(--lookup); } .b-snap{ background:var(--snap); } .b-fail{ background:var(--fail); }
+  .btns button:active{ transform:scale(.97); }
+  /* log */
+  .log{ margin-top:16px; }
+  .log h2{ font-size:14px; text-transform:uppercase; letter-spacing:.5px; opacity:.6; margin:0 4px 8px; }
+  .item{ background:var(--card); border:1px solid var(--line); border-left-width:6px; border-radius:10px; padding:9px 12px; margin-bottom:7px; display:flex; align-items:flex-start; gap:10px; }
+  .item .tag{ font-size:20px; }
+  .item .txt{ flex:1; min-width:0; }
+  .item .txt .t{ font-size:13px; opacity:.55; }
+  .item .txt .n{ font-size:16px; word-break:break-word; }
+  .item .x{ color:var(--fail); font-size:20px; padding:0 4px; }
+  .e-hit{ border-left-color:var(--hit);} .e-lookup{ border-left-color:var(--lookup);} .e-snap{ border-left-color:var(--snap);} .e-fail{ border-left-color:var(--fail); background:#fff7f6;}
+  .empty{ text-align:center; opacity:.45; padding:24px; font-size:15px; }
+  /* footer actions */
+  .fab{ position:fixed; left:0; right:0; bottom:0; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:rgba(246,246,244,.95); border-top:1px solid var(--line); display:flex; gap:8px; backdrop-filter:blur(6px); }
+  .fab button{ flex:1; padding:14px; border-radius:12px; font-size:15px; font-weight:700; border:1.5px solid var(--line); background:#fff; }
+  .fab .copy{ background:#161616; color:#fff; border-color:#161616; }
+  .hint{ font-size:12px; opacity:.6; margin:10px 4px 0; }
+  textarea{ width:100%; height:120px; margin-top:8px; font-size:13px; font-family:ui-monospace,Menlo,monospace; padding:10px; border:1.5px solid var(--line); border-radius:10px; }
+  .toast{ position:fixed; left:50%; bottom:80px; transform:translateX(-50%); background:#161616; color:#fff; padding:10px 16px; border-radius:20px; font-size:14px; opacity:0; transition:opacity .2s; z-index:9; }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔫 Banco Scan Field Tally</h1>
+  <div class="sub">Artemis · <b>PROD</b> banco.lapiazza.app · one tap per item</div>
+</header>
+
+<div class="wrap">
+  <!-- SCORE -->
+  <div class="score">
+    <div class="pct"><span id="pct">–</span><small>%</small></div>
+    <div class="verdict" id="verdict">Scan your first item →</div>
+    <div class="bar" id="bar"></div>
+    <div class="counts">
+      <div style="color:var(--hit)">✅<b id="c-hit">0</b>hit</div>
+      <div style="color:var(--lookup)">🔁<b id="c-lookup">0</b>lookup</div>
+      <div style="color:var(--snap)">📷<b id="c-snap">0</b>snap/pick</div>
+      <div style="color:var(--fail)">❌<b id="c-fail">0</b>fail</div>
+    </div>
+    <div class="hint">Workable % = (hit + lookup + snap) ÷ total. Fails are the fix list.</div>
+  </div>
+
+  <!-- ENTRY -->
+  <div class="entry">
+    <label>Item (name / barcode / note — optional)</label>
+    <div class="row">
+      <input type="text" id="note" placeholder="e.g. RAW papers · 42123… · &quot;froze on 2nd scan&quot;" autocomplete="off">
+      <button class="mic" id="mic" title="Voice note">🎤</button>
+    </div>
+    <div class="btns">
+      <button class="b-hit"    data-k="hit">✅ Scanned clean<span>barcode → right product, first try</span></button>
+      <button class="b-lookup" data-k="lookup">🔁 Miss → auto-lookup<span>found it in reference (today's fix)</span></button>
+      <button class="b-snap"   data-k="snap">📷 Snap / pick<span>no barcode → photo or on-screen worked</span></button>
+      <button class="b-fail"   data-k="fail">❌ Dead end<span>wrong item, error, or gave up</span></button>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="log">
+    <h2>Log (<span id="total">0</span>)</h2>
+    <div id="list"><div class="empty">Nothing scanned yet.</div></div>
+  </div>
+
+  <div id="exportWrap" style="display:none">
+    <textarea id="exportBox" readonly></textarea>
+  </div>
+</div>
+
+<div class="fab">
+  <button onclick="undo()">↩︎ Undo</button>
+  <button onclick="wipe()">🗑 Reset</button>
+  <button class="copy" onclick="copyOut()">📋 Copy to Tigs</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var LSKEY = 'banco_scan_field_tally_v1';
+  var LABELS = { hit:'✅ HIT', lookup:'🔁 LOOKUP', snap:'📷 SNAP/PICK', fail:'❌ FAIL' };
+  var state = load();
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(LSKEY)) || {items:[]}; }catch(e){ return {items:[]}; } }
+  function persist(){ try{ localStorage.setItem(LSKEY, JSON.stringify(state)); }catch(e){} }
+
+  function add(kind){
+    var note = document.getElementById('note').value.trim();
+    state.items.push({ k:kind, n:note, t:Date.now() });
+    document.getElementById('note').value='';
+    persist(); render(); toast(LABELS[kind]);
+  }
+  function undo(){ if(!state.items.length) return; var x=state.items.pop(); persist(); render(); toast('Removed '+LABELS[x.k]); }
+  function delAt(i){ state.items.splice(i,1); persist(); render(); }
+  function wipe(){ if(confirm('Reset the whole tally? This clears the log.')){ state={items:[]}; persist(); render(); } }
+
+  function counts(){ var c={hit:0,lookup:0,snap:0,fail:0}; state.items.forEach(function(x){ c[x.k]++; }); return c; }
+
+  function render(){
+    var c = counts(), total = state.items.length;
+    var good = c.hit + c.lookup + c.snap;
+    var pct = total ? Math.round(good/total*100) : null;
+    document.getElementById('pct').textContent = pct===null ? '–' : pct;
+    document.getElementById('c-hit').textContent = c.hit;
+    document.getElementById('c-lookup').textContent = c.lookup;
+    document.getElementById('c-snap').textContent = c.snap;
+    document.getElementById('c-fail').textContent = c.fail;
+    document.getElementById('total').textContent = total;
+
+    var v = document.getElementById('verdict');
+    if(pct===null){ v.textContent='Scan your first item →'; v.style.color='var(--ink)'; }
+    else if(pct>=70){ v.textContent='🟢 '+pct+'% workable — ready-ish, note the fails'; v.style.color='var(--hit)'; }
+    else if(pct>=50){ v.textContent='🟡 '+pct+'% workable — usable with helpers'; v.style.color='var(--snap)'; }
+    else { v.textContent='🔴 '+pct+'% workable — not yet, fix the fails'; v.style.color='var(--fail)'; }
+
+    // bar segments
+    var bar = document.getElementById('bar');
+    if(!total){ bar.innerHTML=''; }
+    else{
+      function seg(n,col){ return n? '<i style="width:'+(n/total*100)+'%;background:'+col+'"></i>':''; }
+      bar.innerHTML = seg(c.hit,'var(--hit)')+seg(c.lookup,'var(--lookup)')+seg(c.snap,'var(--snap)')+seg(c.fail,'var(--fail)');
+    }
+
+    // list newest first
+    var list = document.getElementById('list');
+    if(!total){ list.innerHTML='<div class="empty">Nothing scanned yet.</div>'; return; }
+    var tag = {hit:'✅',lookup:'🔁',snap:'📷',fail:'❌'};
+    var html='';
+    for(var i=state.items.length-1;i>=0;i--){
+      var x=state.items[i];
+      var time=new Date(x.t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      html += '<div class="item e-'+x.k+'"><div class="tag">'+tag[x.k]+'</div>'
+            + '<div class="txt"><div class="t">'+time+' · '+LABELS[x.k]+'</div>'
+            + (x.n? '<div class="n">'+esc(x.n)+'</div>':'')+'</div>'
+            + '<div class="x" onclick="delAt('+i+')">✕</div></div>';
+    }
+    list.innerHTML=html;
+  }
+  function esc(s){ return s.replace(/[&<>]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
+
+  function report(){
+    var c=counts(), total=state.items.length, good=c.hit+c.lookup+c.snap;
+    var pct= total? Math.round(good/total*100):0;
+    var L=[]; L.push('BANCO SCAN FIELD TALLY — Artemis PROD');
+    L.push('WORKABLE: '+pct+'%  ('+good+'/'+total+' handled)');
+    L.push('  hit '+c.hit+' · lookup '+c.lookup+' · snap/pick '+c.snap+' · FAIL '+c.fail);
+    var fails = state.items.filter(function(x){return x.k==='fail';});
+    if(fails.length){ L.push(''); L.push('FIX LIST ('+fails.length+'):');
+      fails.forEach(function(x){ L.push('  - '+(x.n||'(no note)')); }); }
+    var notes = state.items.filter(function(x){return x.k!=='fail' && x.n;});
+    if(notes.length){ L.push(''); L.push('NOTES:');
+      notes.forEach(function(x){ L.push('  '+LABELS[x.k]+' '+x.n); }); }
+    return L.join('\n');
+  }
+  function copyOut(){
+    var txt=report();
+    document.getElementById('exportBox').value=txt;
+    document.getElementById('exportWrap').style.display='block';
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){toast('Copied — paste to Tigs');}).catch(function(){toast('Select + copy the box');});
+    } else { document.getElementById('exportBox').select(); toast('Select + copy the box'); }
+  }
+
+  var toastT;
+  function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show');},1300); }
+
+  // buttons
+  document.querySelectorAll('.btns button').forEach(function(b){ b.addEventListener('click',function(){ add(b.dataset.k); }); });
+
+  // voice into the note field
+  (function(){
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var mic = document.getElementById('mic');
+    if(!SR){ mic.style.display='none'; return; }
+    var rec = new SR(); rec.lang='en-US'; rec.interimResults=false; var on=false;
+    mic.addEventListener('click',function(){ if(on){rec.stop();return;} try{rec.start();}catch(e){} });
+    rec.onstart=function(){ on=true; mic.classList.add('on'); };
+    rec.onend=function(){ on=false; mic.classList.remove('on'); };
+    rec.onresult=function(e){ var box=document.getElementById('note'); box.value=(box.value+' '+e.results[0][0].transcript).trim(); };
+  })();
+
+  render();
+</script>
+</body>
+</html>
