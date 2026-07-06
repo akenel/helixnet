@@ -78,8 +78,8 @@ async def seed_store_settings(db: AsyncSession) -> None:
         instagram_url=None,
 
         # Discount Settings
-        cashier_max_discount=Decimal("10.0"),  # Pam can give max 10%
-        manager_max_discount=Decimal("100.0"),  # Felix/Ralph unlimited
+        cashier_max_discount=Decimal("10.0"),   # cashier default — a shop dials this in Settings
+        manager_max_discount=Decimal("25.0"),    # manager MIDDLE tier — dialed up per shop; admin stays 100%
 
         # Customer Loyalty Settings (from user requirements)
         loyalty_tier1_threshold=Decimal("0.00"),  # All customers

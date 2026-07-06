@@ -2267,7 +2267,7 @@ async def add_item_to_transaction(
     # The till caps this in the UI, but enforce it server-side too so the API can't
     # be used to over-discount past a cashier's limit (edge-sweep finding D1).
     if item.discount_percent is not None:
-        cap = _max_discount_pct(current_user)
+        cap = await _max_discount_pct(db, current_user)
         if item.discount_percent > cap:
             raise HTTPException(
                 status_code=403,
@@ -2628,7 +2628,7 @@ async def create_sale(
         return existing
 
     # --- Discount cap by role, once, cart-wide (same ceiling the legacy /items enforces per line). ---
-    cap = _max_discount_pct(current_user)
+    cap = await _max_discount_pct(db, current_user)
     if sale.discount_percent and sale.discount_percent > cap:
         raise HTTPException(status_code=403,
                             detail=f"Discount {sale.discount_percent}% exceeds your {cap}% limit.")
@@ -4722,15 +4722,25 @@ def _uname(current_user: dict) -> str:
     return current_user.get("preferred_username", current_user.get("username", "Unknown"))
 
 
-def _max_discount_pct(current_user: dict) -> Decimal:
-    """Per-role manual-discount ceiling: cashier 10%, manager 25%, admin/dev unlimited."""
+async def _max_discount_pct(db: AsyncSession, current_user: dict) -> Decimal:
+    """Per-role manual-discount ceiling, read LIVE from the store's settings so a shop tunes
+    each role from the admin-only Settings screen (the value the till actually enforces).
+    Admin/developer is always unlimited (100%). Falls back to cashier 10% / manager 25% when
+    the store or a value isn't set, so a missing row never blocks nor over-opens a sale."""
     roles = (current_user.get("user_roles")
              or current_user.get("realm_access", {}).get("roles", []) or [])
     if any(("admin" in r or "developer" in r) for r in roles):
         return Decimal("100")
+    store = None
+    try:
+        store = await get_active_store_settings(db)
+    except Exception:
+        logger.warning("discount cap: store-settings load failed; using role defaults", exc_info=True)
     if any("manager" in r for r in roles):
-        return Decimal("25")
-    return Decimal("10")
+        val = store.manager_max_discount if store is not None else None
+        return val if val is not None else Decimal("25")
+    val = store.cashier_max_discount if store is not None else None
+    return val if val is not None else Decimal("10")
 
 
 async def _open_shift_for(db: AsyncSession, user_id: str) -> Optional[CashShiftModel]:
