@@ -10,6 +10,54 @@
 
 ---
 
+## 🃏 ON DECK — 2026-07-06 FIELD REPORT (in-shop UAT with Layla, prod) ← START HERE
+
+**First real over-the-shoulder run at Artemis (Trapani head shop). Signed in as `felix` (admin). ~5pm.
+Scanned/added ~19 products, rang real sales, tried enrolling a member. Nothing was a showstopper.**
+*Staffing reality: Pam off (likely permanent, sick) · Ralph on holiday · **Layla** — 8-yr veteran, called
+back to cover, broken foot, "dynamite," says she can categorize/manage → she's **manager-level, not just
+cashier**. Angel returns **Wednesday** (Layla likely Tue/Thu/Fri; Wed a wildcard) for a big run-through.*
+
+**🐛 SHIPPED TODAY (all 3 envs, backup-gated, proven on prod `346a2a2`):** member-enrol 422 on blank
+birthday — an empty `<input type=date>` posted `""` → Pydantic rejected the whole enrol before the
+endpoint's own coercion ran. Fixed at both seals (schema `field_validator` blank→None on create+edit;
+form strips empty fields). 0 orphan rows. See git `fix: member enrol 422 on blank birthday`.
+
+**THE ORDERED TO-DO from the field (finish one before the next):**
+
+1. **🐯 18+ checkbox on on-the-fly quick-add ← NEXT BUILD (agreed).** The CASHIER CONTRACT is now tight:
+   **name + price + two double-checks — (a) 18+? (b) category?** — and move on. Photo/description are NEVER
+   the cashier's job (too confusing; a manager or the cockpit adds them later). Category = **take whatever
+   the reference gives as-is; if none, "On the fly"** — don't make her choose. The close-match search
+   already runs on the typed name (she saw it surface near-matches). Build: big obvious **18+ toggle**
+   (default OFF) + optional category, nothing else. Same shape as tonight's fix.
+2. **🐯 Reference data under-flags tobacco (Seal B — the sneaky one).** Only **408 / 7,272** FourTwenty rows
+   carry the 18+ flag; real cigarettes (e.g. *Parisienne Jaune 8×25cig*) sit as `Accessories`, not 18+.
+   So even scan-HITS leak. Needs a SMARTER rule than regex — "Tabak**tasche**" = tobacco *pouch* (accessory,
+   correctly not 18+) pollutes any naive keyword sweep. Curate/re-flag the FourTwenty 18+ set.
+3. **👥 "Sold-but-not-set-up" cleanup COCKPIT (the real product).** Manager/Felix-only view: new products that
+   have **sold** but are half-baked (category="On the fly", missing cost, 18+ unknown, needs_translation),
+   prioritised by sold. Cashier never edits the catalog/cost; manager cleans up here. Aligns w/ hypercare
+   cockpit. This is what makes the lean quick-add *safe* — nothing falls through permanently.
+4. **👥 Role model: cashier vs manager — CONFIRM what's gated today.** Angel was `felix` (admin) so he COULD
+   take photos + voice-dictate descriptions on-the-fly (the mic dictation was "cool" — worked). Untested as
+   `pam` (cashier) — do cashiers even get photo/description? Decision: **cashier = name + price, move on;
+   manager (well-equipped, in-store) = photo/category/description/voice.** Test as `pam` Wednesday.
+5. **🧍 Provision Layla as a MANAGER-level user** (she's effectively running the store). Identity task.
+6. **👥 Artemis is NOT in prod — decide.** `reference_products` in prod = **7,272 rows, 100% FourTwenty,
+   0 Artemis.** The "Artemis-first, FourTwenty-fallback" never had an Artemis rung — every hit fell to
+   FourTwenty because that's all that's loaded. Angel's hunch was right. Decide: import+enrich Artemis into
+   prod, or run FourTwenty-only for now. (Artemis import spec: memory `banco-artemis-catalog-import`.)
+7. **👥 Tiny-barcode scanning — camera hits a wall.** Very small barcodes wouldn't read (one small one
+   worked, a similar one never did; magnifying glass didn't help). Two tracks: (a) 🐯 improve the in-app
+   scanner — **zoom / torch / continuous-autofocus / larger scan box** on `html5-qrcode`; (b) 🧍 evaluate a
+   proper **USB/Bluetooth handheld scanner** (keyboard-wedge → "just works"). Likely need both.
+8. **🐯 CHECK: the "0.75" thing on the Sputnik hash edit.** Angel: on-the-fly "didn't do the point seven
+   five," went back to edit to clean it up (price/decimal? weight 3.5g?). Reproduce — possible small
+   decimal-entry bug in quick-add. Low priority, verify before assuming.
+
+---
+
 ## 🃏 ON DECK — 2026-07-04 (Freehold WENT LIVE) ← START HERE
 
 **🚀🟢 Freehold is LIVE at https://wolfhold.app** — deployed to a Hetzner box (167.233.125.248, ssh key `~/.ssh/wolfhold_ed25519`, box `/root/freehold`), Porkbun domain, **real Let's Encrypt cert**, APP_ENV=production. **Locked down** (demo/sam removed, registration off, admin=`akenel`; public pages open=showcase). **Backed up** (nightly cron, encrypted+restore-verified, 14-day). KC admin console `https://wolfhold.app/admin/` (trailing slash!), pw in box `.env`. Full detail: memory `freehold-starter-kit`.
