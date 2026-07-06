@@ -283,3 +283,11 @@ videos/banco/
 # local scratch (keys, temp) — NEVER commit
 scratchpad/
 !.aider.conf.yml
+
+# build/test output + throwaway scratch scripts (regenerable, never commit)
+e2e-out/
+scripts/scratch/
+docs/business/postcards/**/out/
+
+# generated Z-reports (fiscal report dumps, regenerable)
+docs/business/**/Banco-ZReport-*.pdf
