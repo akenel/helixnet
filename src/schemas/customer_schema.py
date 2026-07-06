@@ -7,7 +7,7 @@ for purchases AND knowledge contributions.
 
 "Knowledge is the gold" - KB-032
 """
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
@@ -149,6 +149,17 @@ class CustomerBase(BaseModel):
     # Staff notes
     notes: Optional[str] = Field(None, max_length=1000, description="Internal notes")
 
+    # An HTML <input type="date"> that's left blank posts "" (not null). For an
+    # Optional[date] that empty string is NOT a valid date, so Pydantic 422s the whole
+    # enrol BEFORE the endpoint's own blank->None coercion can run. Coerce blank/whitespace
+    # dates to None here so leaving a birthday empty just means "no date given", not a reject.
+    @field_validator("birthday", "birthdate", mode="before")
+    @classmethod
+    def _blank_date_to_none(cls, v):
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
+
 
 class CustomerCreate(CustomerBase):
     """Create a new CRACK profile"""
@@ -171,6 +182,14 @@ class CustomerUpdate(BaseModel):
     birthdate: Optional[date] = None
     language: Optional[str] = Field(None, max_length=5)
     notes: Optional[str] = Field(None, max_length=1000)
+
+    # Same blank-date guard as CustomerBase — the edit-profile form posts "" for a cleared date.
+    @field_validator("birthday", "birthdate", mode="before")
+    @classmethod
+    def _blank_date_to_none(cls, v):
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
 
 
 class CustomerRead(CustomerBase):
