@@ -192,3 +192,46 @@ def test_enroll_without_birthdate_still_works(session):
     handle = "nobd_" + uuid.uuid4().hex[:8]
     r = session.post(CUST, json={"handle": handle, "age_confirmed": True})
     assert r.status_code == 201, r.text
+
+
+# ---- 9. cashier on-the-fly 18+ TOGGLE actually gates the sale --------------
+# The quick-add "18+?" checkbox posts is_age_restricted=true with NO product_class.
+# The server must bind that to the age-gating "age_restricted" class (the gate reads
+# class, not the column) — otherwise the toggle would be cosmetic. Seal-complete proof.
+
+def test_otf_toggle_flags_age_restricted_class(session):
+    """Toggle ON, no class given -> server files it under an age-gating class."""
+    stamp = uuid.uuid4().hex[:10]
+    r = session.post(f"{POS}/products/quick", json={
+        "sku": f"OTF-AGE-{stamp}", "name": f"OTF Age {stamp}", "price": "5.00",
+        "is_age_restricted": True,   # the toggle — nothing else
+    })
+    assert r.status_code == 201, r.text
+    p = r.json()
+    assert p["is_age_restricted"] is True, p
+    assert p["product_class"] == "age_restricted", p
+
+
+def test_otf_toggle_blocks_sale_without_age_verified(session):
+    """The toggled item is refused at checkout with no age clearance (400)."""
+    stamp = uuid.uuid4().hex[:10]
+    p = session.post(f"{POS}/products/quick", json={
+        "sku": f"OTF-AGE-{stamp}", "name": f"OTF Age {stamp}", "price": "5.00",
+        "is_age_restricted": True,
+    }).json()
+    r = session.post(f"{POS}/sales", json=_sale_body(p["id"]))
+    assert r.status_code == 400, r.text
+    # ...and clears with the cashier attestation.
+    r = session.post(f"{POS}/sales", json=_sale_body(p["id"], age_verified=True))
+    assert r.status_code == 201, r.text
+
+
+def test_otf_toggle_off_stays_open(session):
+    """Toggle OFF (default) -> standard class, no gate."""
+    stamp = uuid.uuid4().hex[:10]
+    r = session.post(f"{POS}/products/quick", json={
+        "sku": f"OTF-STD-{stamp}", "name": f"OTF Std {stamp}", "price": "5.00",
+        "is_age_restricted": False,
+    })
+    p = r.json()
+    assert p["is_age_restricted"] is False and p["product_class"] == "standard", p

@@ -121,6 +121,17 @@
                                    placeholder="0.00" class="input-field text-2xl font-bold">
                         </div>
 
+                        <!-- 18+ double-check — required by the cashier contract. Big + obvious,
+                             default OFF. Drives the checkout age gate (server files it under the
+                             "age_restricted" class so the sale is actually blocked without ID). -->
+                        <label class="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer select-none transition-colors"
+                               :class="otfAgeRestricted ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'">
+                            <input type="checkbox" x-model="otfAgeRestricted" class="w-6 h-6 accent-red-600 flex-none">
+                            <span class="text-lg" x-text="otfAgeRestricted ? '🔞' : '✅'"></span>
+                            <span class="text-sm font-semibold" :class="otfAgeRestricted ? 'text-red-800' : 'text-gray-700'"
+                                  data-i18n="scan.age_18_label">18+ — needs ID? (tobacco, alcohol, CBD flower…)</span>
+                        </label>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2"><span data-i18n="scan.photo">Photo</span> <span class="text-gray-400 font-normal" data-i18n="scan.optional">(optional)</span></label>
                             <div class="flex items-center gap-3">
@@ -671,6 +682,7 @@
             otfPrice: '',
             otfDescription: '',
             otfCategory: '',
+            otfAgeRestricted: false,   // 18+ double-check (cashier contract) — default OFF
             otfPhotoFile: null,
             otfPhotoData: '',
 
@@ -892,6 +904,7 @@
                     const payload = {
                         sku: 'OTF-' + stamp, barcode: this.genInternalBarcode(),
                         name, price, description, category,
+                        is_age_restricted: !!this.otfAgeRestricted,   // 18+ → server gates the sale
                     };
                     try {
                         // Cashier-safe quick create (cashiers can make on-the-fly items).
@@ -925,6 +938,7 @@
                     showToast(t('scan.toast_added_one_off'), 'info');
                 }
                 this.otfName = ''; this.otfPrice = ''; this.otfDescription = ''; this.otfCategory = '';
+                this.otfAgeRestricted = false;
                 this.otfPhotoFile = null; this.otfPhotoData = '';
                 this.lazySaving = false;
             },

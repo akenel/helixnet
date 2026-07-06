@@ -82,6 +82,11 @@ def category_emoji(category, override=None):
 #    Exact scope still needs Felix's Treuhänder/lawyer sign-off.)
 PRODUCT_CLASSES = {
     "standard":         {"label": "Standard goods",      "age_restricted": False, "vat": "standard",   "compliance": None,         "promo_restricted": False},
+    # Neutral 18+ bucket for on-the-fly quick-adds: the cashier's "18+?" toggle needs a class that
+    # ACTUALLY drives the checkout age gate (which reads product_class, not the is_age_restricted
+    # column) without wrongly restricting discounts (tobacco/alcohol) or triggering a THC report
+    # (cbd_hemp). A manager can re-class it precisely later in the cleanup cockpit.
+    "age_restricted":   {"label": "Age-restricted 18+",  "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": False},
     "tobacco_nicotine": {"label": "Tobacco / Nicotine",  "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
     "alcohol":          {"label": "Alcohol",             "age_restricted": True,  "vat": "standard",   "compliance": None,         "promo_restricted": True},
     "cbd_hemp":         {"label": "CBD / Hemp — 18+ (flower·hash·vape·edibles)", "age_restricted": True,  "vat": "standard",   "compliance": "thc_report", "promo_restricted": False},

@@ -280,6 +280,17 @@ async def quick_create_product(
     if not (data.get("category") or "").strip():
         data["category"] = "On the fly"
     data["is_active"] = True
+    # 18+ toggle (cashier contract): the checkout age gate reads product_class, NOT the
+    # is_age_restricted column — so a bare column flag would NOT actually block the sale.
+    # Bind the toggle to a class that gates: if the cashier marked 18+ on an otherwise
+    # unclassified quick-add, file it under the neutral "age_restricted" class. Then always
+    # derive is_age_restricted from the class so the two can never drift (module contract).
+    from src.services.catalog_taxonomy import class_is_age_restricted, DEFAULT_CLASS
+    cls = (data.get("product_class") or DEFAULT_CLASS)
+    if data.get("is_age_restricted") and not class_is_age_restricted(cls):
+        cls = "age_restricted"
+    data["product_class"] = cls
+    data["is_age_restricted"] = class_is_age_restricted(cls)
     new_product = ProductModel(**data)
     db.add(new_product)
     try:
