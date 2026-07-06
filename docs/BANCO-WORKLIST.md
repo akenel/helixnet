@@ -10,7 +10,44 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-06 FIELD REPORT (in-shop UAT with Layla, prod) ← START HERE
+## 🃏 ON DECK — 2026-07-06 NIGHT · WEDNESDAY HANDOVER ← START HERE
+
+**WHERE WE ARE.** First in-shop UAT done (Layla, on prod, ~19 products, real sales). Two prod bugs
+found IN THE FIELD and SHIPPED tonight (backup-gated + proven on prod):
+- `346a2a2` member-enrol 422 on blank birthday · `1851eb4` discount-caps phantom-setting (cashier
+  cap was 20 but till hardcoded 10 — now reads Settings live; Felix dials manager to 70 and it obeys).
+Written + committed: **CUTOVER-PLAN.md**, **Ecolution→Artemis proposal** (1-pager + SWOT, rendered
+artifact). Scanner **DECIDED: Zebra DS8178** (`DS8178-SR7U2100PFW`).
+
+**💰 RATE LOCKED: CHF 120/hr standard · CHF 100/hr Felix (founder).**
+
+**THE MODEL (one line):** the *prescription* delivered as a *subscription* — **CHF 100/mo**, hardware
+bundled + managed server + backups/DR + unlimited users; **1-yr min** (bail early → pay the ~CHF 1,200
+hardware); Felix's setup absorbed as acquisition; extra stores/features billed hourly. (Public rate
+should be CHF 130–160/mo — 100 is Felix's founder price, don't make it the market anchor.)
+
+**NEXT ACTIONS — in order:**
+1. 🧍 **Angel · Tuesday (home):** more testing + jot coding ideas (drop them here or tell Tigs).
+   Get from Felix: the **report-preset list** he actually wants.
+2. 🧍 **Angel · order hardware from Digitec (you own this).** MINIMUM = the **gun** (Zebra DS8178
+   kit) + **label printer** (Brother QL-820NWB) — both a MUST (label prints the OTF barcode on the
+   spot). Receipt printer NOT needed (tablet screen / QR). Won't arrive by Wed.
+3. 🧍 **Angel · Wednesday after lunch (~1 hr, parking-limited):** hit list, **~50 products, on the
+   PHONE** (hardware not here yet). Log throughput (min/100) — it's the estimate for everything.
+4. 🐯 **Tigs build queue** (when Angel greenlights each): P1 price-confirm · P2 18+ toggle · P3
+   cleanup cockpit · R1 report fast-buttons (after Felix names them) · QR order-view receipt (small)
+   · `/pos/scanner-test` + wedge-input check (before the gun lands).
+
+**OPEN DECISIONS (Angel):** hypercare duration — parallel-run (pen+paper + POS + cash reconciled
+daily) for **2 / 3 / 6 weeks?** then cutover · report presets (Felix names) · managers may edit
+Settings? (self-cap risk — lean no) · Artemis catalog into prod (currently 0 Artemis, 100% FourTwenty).
+
+**Detail:** `docs/CUTOVER-PLAN.md` (doctrines, ladder, roles, hardware, punch list) ·
+`docs/business/BANCO-ARTEMIS-PROPOSAL.md` (BOM + SWOT) · the dated field-report block just below.
+
+---
+
+## 🃏 2026-07-06 FIELD REPORT (in-shop UAT with Layla, prod)
 
 **First real over-the-shoulder run at Artemis (Trapani head shop). Signed in as `felix` (admin). ~5pm.
 Scanned/added ~19 products, rang real sales, tried enrolling a member. Nothing was a showstopper.**

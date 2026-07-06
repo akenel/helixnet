@@ -106,10 +106,12 @@ her out of everything that makes her hesitate. The cockpit + manager catch the r
    TWO jobs: (a) price/shelf stickers, and (b) **print a scannable barcode for on-the-fly /
    sticker-only items that have no code** — closes the loop with the scanner (OTF product → print
    barcode → stick it → it scans forever after). *This is the missing half of the OTF workflow.*
-4. **Receipt — DECIDE: paper vs paperless.** The card terminal prints the *card slip*, NOT the
-   itemized POS receipt. Either (a) an 80mm thermal receipt printer (Epson TM-T20 / Star), or
-   (b) **paperless email/QR receipt** (Banco can do this — greener, less hardware). Per shop;
-   Artemis likely wants paper on request.
+4. **Receipt — NOT a required box for Artemis** (counter space is tight — probably no room for a
+   printer). Today the receipt is an **on-screen / printable HTML page** (with a "join La Piazza"
+   QR). The card terminal prints the card slip separately. Zero-hardware path that works *now*:
+   **show the receipt on the tablet**, customer keeps their pen-and-paper slip. A **"scan-to-see-
+   your-order" QR receipt is a SMALL BUILD** (tokenized public order view) — not built yet; don't
+   promise it as existing. (Optional later: 80mm thermal Epson TM-m30III if a shop wants paper.)
 5. **Payment terminal — they already have one** (Twint + Visa/debit, standalone). For now the
    cashier reads the total off the POS and keys it into the terminal by hand — fine. **Phase-2:**
    integrate (POS → terminal sends the amount, kills keying errors) — Worldline/SumUp/myPOS APIs.
@@ -153,6 +155,19 @@ frontend add. **Felix names the presets he needs; we build only those.**
 let *managers* edit too? Risk — a manager could raise their own discount cap; keep edit admin-only
 unless Felix asks otherwise.
 
+**Rate:** CHF 120/hr standard · **CHF 100/hr for Felix** (founder). Setup (~3 hrs / 100 items) is
+absorbed for Felix as customer-acquisition; extra stores / bespoke features billed hourly.
+
+**Parallel-run → hypercare exit.** For the first weeks the cashiers keep the 25-year pen-and-paper
+slip **alongside** the POS, and at end of day reconcile **paper vs POS vs cash drawer** — they must
+match. That's the trust-building bridge and the safety net. **Open decision: how long — 2 / 3 / 6
+weeks — before hypercare ends and the paper stops?** (Decide with Felix; the reconcile-match record
+is the evidence that it's safe to drop the paper.)
+
+**Hardware priority (from the field):** the **gun (scanner) + label printer are a MUST** — when you
+gun an on-the-fly item you want a scannable label to spit out *on the spot* (queuing labels for
+Felix to print + stick later is impractical). The **receipt printer is optional** (screen / QR).
+
 ---
 
 ## 7. PUNCH LIST — prioritized (the dry-run findings)
@@ -175,6 +190,9 @@ unless Felix asks otherwise.
 | P8 | 🟢 | **"0.75" decimal check** on quick-add edit (Sputnik) — reproduce before assuming | 🐯 |
 | R1 | 🟡 | **Reporting "fast buttons"** (Today/Month/MTD/Last-month/Q1/Last-90) on existing date-ranged reports — Felix names the set | 🐯 |
 | R2 | 🟢 | **Settings-visibility decision** — cashier read-only already holds; decide if managers may edit | 👥 |
+| R3 | 🟡 | **QR "scan-to-see-your-order" receipt** — tokenized public order view (small build; the no-printer path) | 🐯 |
+| R4 | 🟢 | **Parallel-run / hypercare exit** — paper+POS+cash reconciled daily; decide 2/3/6-week duration | 👥 |
+| R5 | 🟢 | **`/pos/scanner-test`** page + wedge-input check — before the gun lands | 🐯 |
 
 **✅ SHIPPED tonight, backup-gated + proven on prod:**
 - `346a2a2` — member-enrol 422 on blank birthday (coerce blank date → None).
