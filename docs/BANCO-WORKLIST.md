@@ -34,9 +34,10 @@ should be CHF 130–160/mo — 100 is Felix's founder price, don't make it the m
    spot). Receipt printer NOT needed (tablet screen / QR). Won't arrive by Wed.
 3. 🧍 **Angel · Wednesday after lunch (~1 hr, parking-limited):** hit list, **~50 products, on the
    PHONE** (hardware not here yet). Log throughput (min/100) — it's the estimate for everything.
-4. 🐯 **Tigs build queue** (when Angel greenlights each): P1 price-confirm · P2 18+ toggle · P3
-   cleanup cockpit · R1 report fast-buttons (after Felix names them) · QR order-view receipt (small)
-   · `/pos/scanner-test` + wedge-input check (before the gun lands).
+4. 🐯 **Tigs build queue** (when Angel greenlights each): P1 price-confirm · ~~P2 18+ toggle~~ ✅ BUILT
+   (main `9ea6043`, not deployed — see field-report #1) · P3 cleanup cockpit · R1 report fast-buttons
+   (after Felix names them) · QR order-view receipt (small) · `/pos/scanner-test` + wedge-input check
+   (before the gun lands).
 
 **OPEN DECISIONS (Angel):** hypercare duration — parallel-run (pen+paper + POS + cash reconciled
 daily) for **2 / 3 / 6 weeks?** then cutover · report presets (Felix names) · managers may edit
@@ -62,12 +63,16 @@ form strips empty fields). 0 orphan rows. See git `fix: member enrol 422 on blan
 
 **THE ORDERED TO-DO from the field (finish one before the next):**
 
-1. **🐯 18+ checkbox on on-the-fly quick-add ← NEXT BUILD (agreed).** The CASHIER CONTRACT is now tight:
-   **name + price + two double-checks — (a) 18+? (b) category?** — and move on. Photo/description are NEVER
-   the cashier's job (too confusing; a manager or the cockpit adds them later). Category = **take whatever
-   the reference gives as-is; if none, "On the fly"** — don't make her choose. The close-match search
-   already runs on the typed name (she saw it surface near-matches). Build: big obvious **18+ toggle**
-   (default OFF) + optional category, nothing else. Same shape as tonight's fix.
+1. **✅ 18+ checkbox on on-the-fly quick-add — BUILT + VERIFIED + COMMITTED (main `9ea6043`), NOT
+   DEPLOYED (awaiting Angel greenlight).** Big obvious **18+ toggle** (default OFF, 🔞/✅, EN/IT/DE) sits
+   between price and photo in the quick-add. **Seal-inspection catch:** the checkout age gate reads
+   `product_class`, NOT the `is_age_restricted` column — a bare column flag would've been cosmetic. Fixed
+   at source: new neutral **`age_restricted`** class (18+ with no promo/VAT/THC baggage, unlike
+   tobacco/alcohol/cbd — manager re-classes precisely later in the cockpit); `/products/quick` binds the
+   toggle to that class + re-derives the column so they can't drift. Proven `tests/pos/test_pos_age_gate.py`
+   **13/13** on live local (3 new: toggle→gates→blocks-sale / off-stays-open). sw.js cache v32→v33.
+   *Category = still take reference as-is / "On the fly" (already the behaviour); photo/description role-gating = item #4.*
+   **→ Deploy through the ladder (sandbox→staging→prod, backup-gated) when Angel says go.**
 2. **🐯 Reference data under-flags tobacco (Seal B — the sneaky one).** Only **408 / 7,272** FourTwenty rows
    carry the 18+ flag; real cigarettes (e.g. *Parisienne Jaune 8×25cig*) sit as `Accessories`, not 18+.
    So even scan-HITS leak. Needs a SMARTER rule than regex — "Tabak**tasche**" = tobacco *pouch* (accessory,
