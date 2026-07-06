@@ -123,13 +123,35 @@ like a camera read; build `/pos/scanner-test` (see §7).
 
 ---
 
-## 6. THE DRY-RUN LOOP (now → go-live, ~1–2 weeks)
+## 6. THE DRY-RUN LOOP + TRAIN-THE-TRAINER (now → go-live, ~1–2 weeks)
 
-Angel on-site: load 300–500 real products · train Layla + the Wednesday newcomer · gather Felix
-feedback between shifts · debug + hotfix live (like today) · converge an **SOP per use-case**
-("1-2-3, do-re-mi") that works for cashier, manager, admin. The cockpit bounds daily cleanup to
-**only the products that actually sold** — that's the beauty: you never audit the whole catalog,
-just the day's real movement.
+Angel on-site, ~1 hr scan + tune per visit (parking-limited), debug + hotfix live (like today).
+Charging: **training is the billable container; the feedback-driven tuning falls out of it** —
+and the tuning *manufactures champions* (Layla/Ralph → "I said fix it, he did, now I love it").
+Keep polish (button size, colour) bundled; keep shop-rules (discount tiers) as **config, not code**.
+
+**Training IS the inventory load — train-the-trainer:**
+1. **Angel loads ~300 solo** — billable setup (~3 hrs / 100 ≈ 10 hrs ≈ CHF 1,000 @ CHF 100/hr).
+   Felix wants 500; realistically grows to 1–2k **ongoing**. 300 = the "prove it" seed.
+2. **Train the two managers hands-on** — Layla + Ralph each load ~100 *as* their training
+   (200 more built while learning) → the shop now has **two in-house trainers.**
+3. **Managers cascade to cashiers** — test with `pam` signed in as cashier so all see the cashier
+   view. Angel exits that loop. Net: 2 certified trainers + a catalog built as a by-product.
+
+The cockpit bounds daily cleanup to **only the products that actually sold** — never audit the
+whole catalog, just the day's real movement.
+
+**Reporting — presets on what already exists (do NOT overkill).** The engine is built:
+`/reports/daily-summary(.csv)`, `/reports/product-sales`, `/reports/category-sales`, and
+`/transactions` already take `date_from`/`date_to`, so arbitrary ranges work today. **Year-end =
+a CSV over the year** (Felix → Banana → accountant; we only ever hand a CSV). Gap = **"fast buttons"**
+(Today · This month · MTD · Last month · Q1 · Last 90 days) that pre-fill the range — a small
+frontend add. **Felix names the presets he needs; we build only those.**
+
+**Settings visibility** — today: any role can READ settings, only **admin** can EDIT
+(`require_admin`). So "cashier sees it read-only" already holds server-side. **Open decision:**
+let *managers* edit too? Risk — a manager could raise their own discount cap; keep edit admin-only
+unless Felix asks otherwise.
 
 ---
 
@@ -151,8 +173,15 @@ just the day's real movement.
 | P6 | 🟡 | **Fungible-SKU / catalog curation** — don't chase every cigarette/paper variant; curated representative catalog | 👥 |
 | P7 | 🟢 | **Layla → manager-level user** (identity) | 🧍 |
 | P8 | 🟢 | **"0.75" decimal check** on quick-add edit (Sputnik) — reproduce before assuming | 🐯 |
+| R1 | 🟡 | **Reporting "fast buttons"** (Today/Month/MTD/Last-month/Q1/Last-90) on existing date-ranged reports — Felix names the set | 🐯 |
+| R2 | 🟢 | **Settings-visibility decision** — cashier read-only already holds; decide if managers may edit | 👥 |
 
-*(✅ SHIPPED tonight, backup-gated on prod `346a2a2`: member-enrol 422 on blank birthday.)*
+**✅ SHIPPED tonight, backup-gated + proven on prod:**
+- `346a2a2` — member-enrol 422 on blank birthday (coerce blank date → None).
+- `1851eb4` — **discount caps read live from store settings** (phantom-setting bug: prod cashier
+  cap was 20 but the till enforced a hardcoded 10). Now cashier/manager caps are set in the
+  admin-only Settings screen and the till obeys; admin stays 100%. Manager baseline aligned 100→25
+  across envs (was the untouched default) so wiring was behaviour-neutral; Felix dials it up live.
 
 ---
 
