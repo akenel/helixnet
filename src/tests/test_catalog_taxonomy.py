@@ -72,6 +72,29 @@ def test_shisha_tobacco_is_18plus():
         assert age is True and cls == "tobacco_nicotine", title
 
 
+def test_shisha_brands_gate_off_title_even_under_coarse_category():
+    # DB reality: the fine "Shisha" group is lost, these sit under "Accessories". The molasses
+    # BRAND must still gate them off the title alone.
+    for title in ["Al Fakher Grape Mint 50g", "Al Fakher Red Smash Watermelon 200g"]:
+        age, cls, _ = _age(title, "Accessories")
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_nicotine_ecig_gates_off_title_under_coarse_category():
+    # DB reality: nicotine disposables sit under "Vaporizers" with only a "20mg" nicotine signal.
+    for title in ["Vozol Vista Plug Pod Banana Ice 20mg",
+                  "Elf Bar 1500 Strawberry Ice Cream Disposable Pod 20mg",
+                  "Elf Bar 600v2 Blueberry Kiwi 20mg"]:
+        age, cls, _ = _age(title, "Vaporizers")
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_cbd_eliquid_is_cbd_not_nicotine():
+    # a CBD vape liquid is a smokable CBD form (18+) but NOT nicotine — the mg must not misclass it
+    _, cls, _ = _age("Harmony CBD E-Liquid 100mg Mango", "E-Liquids")
+    assert cls == "cbd_hemp"
+
+
 def test_cbd_flower_and_pollen_are_18plus():
     assert _age("CBDeluxe White Widow Deluxe 10gr", BLUETEN)[0] is True
     assert _age("Starbuds OG Kush 3g", BLUETEN)[1] == "cbd_hemp"
@@ -81,7 +104,14 @@ def test_cbd_flower_and_pollen_are_18plus():
 # ---- MUST NOT be flagged (over-flagging is a real cost at the till) --------
 
 def test_zero_nicotine_disposable_stays_open():
-    age, cls, _ = _age("Elf Bar No Nic 1500 Strawberry Ice Disposable Pod 0mg", DISPO)
+    for cat in (DISPO, "Vaporizers"):
+        age, cls, _ = _age("Elf Bar No Nic 1500 Strawberry Ice Disposable Pod 0mg", cat)
+        assert age is False, cat
+
+
+def test_empty_vape_device_stays_open():
+    # a device with no nicotine strength isn't itself nicotine
+    age, _, _ = _age("Elf Bar ELFX Pro Kit Black", "Vaporizers")
     assert age is False
 
 

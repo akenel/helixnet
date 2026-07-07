@@ -125,8 +125,14 @@ _TOBACCO = re.compile(r"tabak|tabacc|tobacco|zigar|sigaret|cigaret|nikotin|nicot
 _CIG = re.compile(r"\bmarlboro\b|\bparisienne\b|\bcamel\b|\bwinston\b|gauloises|lucky\s*strike|\bchesterfield\b|american\s*spirit|\bpueblo\b|\bphilip\s*morris\b|\d+\s*x?\s*\d*\s*cig\b|\bcig\b|\bmyo\b|\bryo\b|\bheets\b|\biqos\b", re.I)
 _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liqueur|likör|absinth|\bbier\b|\bwein\b", re.I)
 # Shisha bucket is MIXED: molasses tobacco (18+) sits beside hoses/charcoal/foil/adapters (open).
-# Only these markers make a shisha line the actual 18+ substance.
-_SHISHA_TOBACCO = re.compile(r"shisha\s*tabak|shishatabak|\btabak\b|molasse|al\s*fakher|adalya|\bnakhla\b|serbetli", re.I)
+# These markers make a shisha line the actual 18+ substance — the brands are ALWAYS molasses
+# tobacco, so they gate off the title alone even when the supplier category is a generic dump.
+_SHISHA_TOBACCO = re.compile(r"shisha\s*tabak|shishatabak|\btabak\b|molasse|al\s*fakher|\badalya\b|\bnakhla\b|serbetli|\bstarbuzz\b|\bfumari\b", re.I)
+# Nicotine e-cigarettes: a vape context + a NON-ZERO nicotine strength ("20mg"). The (?!0) keeps
+# "0mg" / nicotine-free out; the mg is 1–2 digits so CBD's 100/500/1000mg never trips it. Vape
+# context (device words or the vape category) scopes it so a "CBD 20mg" edible isn't caught.
+_ECIG_CONTEXT = re.compile(r"disposable|\bpod\b|\bvape\b|e-?zigar|\bpuff\b|elf\s*bar|elfbar|\bvozol\b|\bhoke\b|vaporiz|e-?liquid|\bliquids?\b", re.I)
+_NIC_MG = re.compile(r"\b(?!0\b)\d{1,2}\s*mg\b", re.I)
 # Inside the tobacco/cigarette category group, these titles are ACCESSORIES/herbal, not the substance
 # (filling machines, filter tubes, papers). They must NOT inherit the group's 18+ flag.
 _TOBACCO_ACCESSORY = re.compile(r"filling|filter|stopf|maschine|machine|hülse|\btube\b|papier|\bpaper|\btips?\b|\bkulu\b", re.I)
@@ -195,9 +201,14 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
 
     # CLASS first (it drives the age flag).
     cls = DEFAULT_CLASS
-    # (1) TITLE is decisive: named tobacco/cigarette or alcohol, unless it's an accessory/herbal.
-    if (_TOBACCO.search(t) or _CIG.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
+    is_cbd = bool(re.search(r"cbd|cannabidiol", t, re.I))
+    # (1) TITLE is decisive: named tobacco/cigarette, shisha molasses, or a nicotine e-cig — unless
+    #     it's an accessory/herbal. Shisha brands + the mg-in-vape signal gate off the title alone,
+    #     so they hold up even when the supplier category is a coarse dump ("Accessories"/"Vaporizers").
+    if (_TOBACCO.search(t) or _CIG.search(t) or _SHISHA_TOBACCO.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
+    elif _NIC_MG.search(t) and _ECIG_CONTEXT.search(t) and not is_cbd and not neg and not _SUBSTANCE_ACCESSORY.search(t):
+        cls = "tobacco_nicotine"                   # nicotine vape/pod/disposable ("…20mg")
     elif _ALCOHOL.search(t) and not neg and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
     # (2) SUPPLIER CATEGORY closes the leaks the title can't see. A tobacco GROUP still can't
