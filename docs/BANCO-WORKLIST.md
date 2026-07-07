@@ -21,6 +21,15 @@ open — pick the next real need. Candidates parked below.
 - Older deck items: offline/PWA, fiscal (fiskaly TSE), multi-department, supplier-sync full framework (see memory index).
 - ✅ done this pass: "🔒 manual" tier badge on member card (`f70c3ef`); stale LoyaltyTier enum comments refreshed.
 
+## ✅ 2026-07-07 (night) — TAILWIND real build + MINOR-MEMBER gate fix SHIPPED PROD (`144a363`)
+(1) Replaced the 451 KB in-browser Tailwind Play engine with a REAL compiled build (build/tailwind → 91 KB
+`src/static/pos/tailwind.css`, `make tailwind`); kills the CDN warning + runtime compile. Rule-9 safe (zero
+concat classes), coverage-verified + puppeteer-verified 4 pages + the age modal. (2) Minor-member age gate
+LOOP fixed at root: `/checkout/{id}` now returns birthdate/age_confirmed/is_of_age so the client isn't blind;
+a DOB-proven minor → STOP modal shows "under 18" + Remove-member, walk-in HIDDEN (no loop). Server was always
+authoritative. SBX human-green (Angel tested "upside down"); prod re-probed clean. NOTE: non-POS templates
+(home/login/La Piazza) still use the external Tailwind CDN — separate follow-up.
+
 ## ✅ 2026-07-07 (late) — SBX UAT 27/29 + 2 findings fixed & shipped (`6627449`)
 Angel ran the fav test sheet in SBX. Two findings, both fixed: (1) a MANUAL discount on a tobacco/alcohol
 cart hard-blocked the whole sale (400) — now applies ELIGIBLE-only like the member discount (Angel picked
