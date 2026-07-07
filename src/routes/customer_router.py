@@ -477,6 +477,8 @@ async def get_customer(
         "referrals_made": customer.referrals_made,
         "referral_credits_earned": customer.referral_credits_earned,
         "notes": customer.notes,
+        "marketing_consent": bool(customer.marketing_consent),
+        "age_confirmed": bool(customer.age_confirmed),
         "is_active": customer.is_active,
         "is_vip": customer.is_vip,
         "created_at": customer.created_at.isoformat(),

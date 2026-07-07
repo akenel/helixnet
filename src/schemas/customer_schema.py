@@ -182,6 +182,8 @@ class CustomerUpdate(BaseModel):
     birthdate: Optional[date] = None
     language: Optional[str] = Field(None, max_length=5)
     notes: Optional[str] = Field(None, max_length=1000)
+    marketing_consent: Optional[bool] = None
+    age_confirmed: Optional[bool] = None
     # MANUAL tier override: "auto" (or empty) = follow lifetime spend; a tier name = lock the member
     # at that tier (the % tracks the store's current setting for it). Handled specially in the endpoint.
     loyalty_tier: Optional[str] = Field(None, max_length=16)

@@ -2719,12 +2719,10 @@ async def create_sale(
         if class_is_age_restricted(prod_class):
             cart_age_restricted = True
 
-        # Compliance: NO cart discount on a promo-restricted class (tobacco/alcohol) — law,
-        # blocks every role (it's about the sale, not the operator). Same guard as /items.
-        if manual_pct and manual_pct > 0 and class_promo_restricted(prod_class):
-            raise HTTPException(status_code=400,
-                detail=f"Discounts aren't allowed on {class_meta(prod_class)['label']} — "
-                       f"sales promotions on these are restricted by law.")
+        # Compliance note: a promo-restricted class (tobacco/alcohol) simply never enters the
+        # discount base (eligible_subtotal, below) — the manual discount, like the member tier,
+        # applies to the ELIGIBLE portion only, so tobacco always rings full price. No hard block,
+        # no dead-end: a mixed cart discounts the rest and completes.
 
         line_gross = unit_price * ln.quantity
         line_total = line_gross
@@ -2740,13 +2738,15 @@ async def create_sale(
         built_lines.append(line)
         subtotal += line_gross
         if not class_promo_restricted(prod_class):
-            eligible_subtotal += line_gross   # only this portion can carry the member discount
+            eligible_subtotal += line_gross   # only this portion can carry a discount (manual or member)
 
-    # --- Cart totals (inclusive VAT; the EXACT formula the till displays, so charged == shown). ---
-    keep = (Decimal("100") - manual_pct) / Decimal("100")
+    # --- Cart totals (inclusive VAT; the EXACT formula the till displays, so charged == shown).
+    # The MANUAL discount applies to the ELIGIBLE portion only — tobacco/alcohol always ring full
+    # price (Swiss law), the same rule as the member tier. A mixed cart is never blocked. ---
+    manual_disc = (eligible_subtotal * manual_pct / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     txn.subtotal = subtotal
-    txn.total = (subtotal * keep).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    txn.discount_amount = subtotal - txn.total
+    txn.total = subtotal - manual_disc
+    txn.discount_amount = manual_disc
 
     # --- Member tier discount + attach (before the cash check, so the member pays discounted). ---
     customer = None
@@ -2760,9 +2760,9 @@ async def create_sale(
             # Member discount applies ONLY to the eligible (non-promo-restricted) portion — tobacco
             # and alcohol never get a promotional discount (Swiss law), the SAME per-line rule the
             # manual discount follows. One receipt: cigarettes ring full price, the lighter gets the
-            # member rate. (keep==1 here because a member suppresses the manual discount, so the base
-            # is just the eligible subtotal — the * keep is kept for correctness if that ever changes.)
-            tier_base = (eligible_subtotal * keep).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            # member rate. (A member suppresses the manual discount, so the base is the full eligible
+            # subtotal — manual_disc is 0 here.)
+            tier_base = eligible_subtotal
             tier_disc = (tier_base * Decimal(tier_pct) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             txn.total = Decimal(str(txn.total)) - tier_disc
             txn.discount_amount = Decimal(str(txn.discount_amount)) + tier_disc

@@ -573,16 +573,16 @@
                 const lineSum = this.cartData.cart.reduce(
                     (s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
                 const subtotal = lineSum || this.cartData.totals.subtotal || 0;
-                this.discountAmount = subtotal * (this.discount / 100);
-                const afterDiscount = subtotal - this.discountAmount;  // after the manual discount
-                // Member tier discount applies to the ELIGIBLE (non-promo-restricted) portion only —
-                // tobacco/alcohol never get a promo discount (Swiss law). Mirrors the server so the
-                // Dry Run Preview total matches the charge. (A member also zeroes the manual discount.)
-                const memberPct = (this.member && this.member.tier_discount_percent) || 0;
+                // BOTH the manual and the member discount apply to the ELIGIBLE (non-promo-restricted)
+                // portion only — tobacco/alcohol never get a promo discount (Swiss law). Mirrors the
+                // server so the Dry Run Preview total matches the charge. Manual & member are mutually
+                // exclusive (a member hides the manual buttons), so they never double up.
                 const eligibleSum = this.cartData.cart.reduce(
                     (s, it) => s + (this.isPromoRestricted(it) ? 0 : (it.price || 0) * (it.quantity || 0)), 0);
-                const eligibleAfter = subtotal > 0 ? eligibleSum * (afterDiscount / subtotal) : 0;
-                this.memberDiscountAmount = eligibleAfter * (memberPct / 100);
+                this.discountAmount = eligibleSum * (this.discount / 100);   // manual, eligible items only
+                const afterDiscount = subtotal - this.discountAmount;
+                const memberPct = (this.member && this.member.tier_discount_percent) || 0;
+                this.memberDiscountAmount = eligibleSum * (memberPct / 100); // member, eligible items only
                 const gross = afterDiscount - this.memberDiscountAmount;  // gross paid
                 // Spread the discount evenly across lines so each line's contained VAT
                 // reflects its share of the discounted gross.
