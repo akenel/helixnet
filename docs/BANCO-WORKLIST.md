@@ -10,7 +10,25 @@
 
 ---
 
-## 🧪 2026-07-07 — ARTEMIS CATALOG imported to SANDBOX (5,108 items, reviewed) ← Angel testing SBX
+## ✅ 2026-07-07 — Artemis DELTA-WATCH wired (scheduled, zero-write) + item badges shipped
+- **Delta-watch LIVE:** `scripts/ops/artemis_delta_watch.py` (commit `014a694`) — weekly box cron
+  **Mon 06:30** runs the importer DRY-RUN (no DB writes), diffs fresh vs previous snapshot, reports
+  what changed on the Artemis shop (new / price-or-class-changed / gone) **with names**, to
+  `/opt/ops/artemis-watch/latest.txt` + dated report. Baseline set = **5,112 products**; proven
+  (2nd run = "✅ no change"). Snapshot lives in `/opt/ops/artemis-watch/` (outside git trees).
+  Re-import stays **one-click + backup-gated** on purpose (no scheduled auto-commit → live till).
+- **Item TYPE + 🔞 18+ badges** on search list, cart, and the tap-for-details card (build fc651ca+);
+  18+ now DERIVED FROM CLASS (matches the gate, no column drift); cart lines tappable → detail card.
+  UAT R2 = 18/18, Angel happy. Classifier also learned nic-salt/Aisu vapes + absinthe-spoon guard
+  (FourTwenty 674→731, all legit); sandbox re-classified in place. Discount cap prod: cashier 15 / mgr 25.
+- **▶ NEXT-ROUND PROJECT — Supplier-sync framework:** the bones exist (SupplierModel.adapter_type
+  tamar|magento|csv|manual + 2 delta-aware importers + /pos/suppliers CRUD). To finish: adapter
+  DISPATCHER (adapter_type→importer), a "Sync now" service+endpoint on the Suppliers page, an
+  import-RUN LOG, a scheduler, and a **review queue** (scheduled commits land inactive/flagged until
+  a manager approves — so 18+ is always human-checked before sale). Detail: memory `banco-supplier-sync-framework`.
+- 🧍 **Angel: still free to poke SBX.** Prod Artemis import = gated next step (deploy fixed classifier → import → review → prod).
+
+## 🧪 2026-07-07 — ARTEMIS CATALOG imported to SANDBOX (5,108 items, reviewed)
 Full Artemis Luzern webshop catalog **committed to `banco_sandbox`** (was 274 products → now 5,108):
 all with images, classified, **956 flagged 18+**, searchable/sellable. Ran `artemis_import.py --commit`
 in the sandbox container (mirrors the gated plan: sandbox first, review, THEN prod).
