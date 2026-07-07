@@ -833,6 +833,11 @@
                             ? t('checkout.toast_server_blip_online')
                             : t('checkout.toast_server_blip_offline'),
                             'warning');
+                    } else if (status === 400 && /18\+|age.?restricted|verify age|of.?age/i.test(error.message || '')) {
+                        // The SERVER age gate fired but the client pre-check missed it (e.g. a member
+                        // whose age wasn't confirmed in the loaded object). Route to the STOP modal so
+                        // the cashier gets the 3 moves (attest 18+ / sign up / refuse) — not a dead-end toast.
+                        this.showAgeModal = true;
                     } else {
                         showToast(error.message || t('checkout.toast_complete_failed'), 'warning');
                     }
