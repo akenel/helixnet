@@ -10,20 +10,26 @@
 
 ---
 
-## 🃏 ON DECK — NEXT ROUND (2026-07-07 night) · PER-MEMBER TIER OVERRIDE ← START HERE
-**WHERE WE ARE.** Prod solid on `a00b905`. Today's member-discount round is SHIPPED (see ✅ below):
-eligible-only tier discount, option-B manual suppression, AND loyalty tiers are now DATA Felix edits in
-Settings → Discounts (thresholds + %, admin-only, applies to all members by spend, no redeploy).
+## 🃏 ON DECK — NEXT ROUND (2026-07-07 late) ← START HERE
+**WHERE WE ARE.** Prod solid on `dd097c9`. Two big rounds shipped today: member-discount (eligible-only +
+option B + Felix-owned tiers) AND full member CRUD (edit modal, deactivate, manual tier override). Deck is
+open — pick the next real need. Candidates parked below.
 
-**THE NEXT PIECE — per-member manual override.** Right now tier is auto-computed from lifetime spend
-(the guardrail: cashiers can't gift a tier). Ralph/Felix want to hand-set a well-known regular (George
-Clooney) to Gold on the spot regardless of spend. Needs: (1) member-profile EDITING (doesn't exist yet —
-can't edit a member at all today), (2) an override flag that SURVIVES `recalculate_tier` (else the next
-sale resets it to the spend-derived tier), (3) manager/admin-gated. Design-then-build. Detail in memory
-`banco-member-discount-promo-restriction` + `banco-crm-strategy`.
+**Parked candidates (no urgent driver):**
+- **CRM/loyalty depth** — credits redemption UX, birthday rewards, member directory polish. See `banco-crm-strategy`.
+- **Per-member override polish** — the override SHIPPED (tier_locked); a future nicety = show a "manual" badge
+  on the member card + an audit note of who set it.
+- **Cosmetic:** `customer_schema` LoyaltyTier enum comments (5/10/15/20%) are stale vs the real policy — fix when convenient.
+- Older deck items: offline/PWA, fiscal, CRM loyalty wiring (see memory index).
 
-**Also parked (cosmetic):** `customer_schema` LoyaltyTier enum comments (5/10/15/20%) are stale vs the real
-running policy — fix the comments when convenient.
+## ✅ 2026-07-07 (late) — FULL MEMBER CRUD SHIPPED PROD (`dd097c9`)
+The edit button was a stub ("coming soon") — backend PUT existed but was never wired. Now: ✏️ Edit Member
+modal on /pos/customer-lookup (handle, name, email, phone, IG/TG, DOB, notes) → PUT /api/v1/customers/{id};
+🏅 manual TIER OVERRIDE (any till role — Angel's call) via a tier selector ("Auto" = spend-based, or lock at
+a tier); 🚫 Deactivate (soft-delete, manager/admin only) + reactivate endpoint. New `customers.tier_locked`
+column (ALTER-migrated per env before deploy — create_all won't add it); `recalculate_tier` keeps a locked
+tier's NAME but the % tracks settings; `pct_for_tier()` helper. Proven e2e: Pam sets Gold→survives a sale→
+"Auto" reverts; combined edit persists; deactivate Pam=403/Felix=200. Unlocks the parked per-member override.
 
 ## ✅ 2026-07-07 (night) — MEMBER DISCOUNT ROUND SHIPPED PROD (`f75373a` + `a00b905`)
 (1) Tier discount hits ELIGIBLE (non-tobacco/alcohol) subtotal only — cigarettes full price, lighter gets
