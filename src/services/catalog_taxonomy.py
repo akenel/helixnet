@@ -145,8 +145,14 @@ _SHISHA_TOBACCO = re.compile(r"shisha\s*tabak|shishatabak|\btabak\b|molasse|al\s
 # Nicotine e-cigarettes: a vape context + a NON-ZERO nicotine strength ("20mg"). The (?!0) keeps
 # "0mg" / nicotine-free out; the mg is 1–2 digits so CBD's 100/500/1000mg never trips it. Vape
 # context (device words or the vape category) scopes it so a "CBD 20mg" edible isn't caught.
-_ECIG_CONTEXT = re.compile(r"disposable|\bpod\b|\bvape\b|e-?zigar|\bpuff\b|elf\s*bar|elfbar|\bvozol\b|\bhoke\b|vaporiz|e-?liquid|\bliquids?\b", re.I)
+_ECIG_CONTEXT = re.compile(r"disposable|\bpod\b|\bvape\b|e-?zigar|\bpuff\b|elf\s*bar|elfbar|\bvozol\b|\bhoke\b|lost\s*mary|maryliq|geek\s*bar|\belux\b|\bwaka\b|vaporiz|e-?liquid|\bliquids?\b", re.I)
 _NIC_MG = re.compile(r"\b(?!0\b)\d{1,2}\s*mg\b", re.I)
+# Disposable-vape brands: their consumables (refill / prefilled pod / nachfüllbehälter) are nicotine
+# by default — Artemis names them "…Refill Blueberry Ice" / "…Nachfüllbehälter …20mg" (no "disposable"
+# word), which the FourTwenty-tuned rules missed. A "refill" ONLY counts as nicotine next to one of
+# these brands, so a lighter's "gas refill" is never caught. 0mg / OHNE NIKOTIN still veto (via _AGE_NEG).
+_VAPE_BRAND = re.compile(r"elf\s*bar|elfbar|lost\s*mary|maryliq|\bvozol\b|geek\s*bar|\belux\b|\bwaka\b|\bhoke\b", re.I)
+_VAPE_REFILL = re.compile(r"\brefill\b|nachf(?:ü|ue)ll", re.I)
 # The FORM carries nicotine by default: a "disposable" or a "prefilled pod" ships with e-liquid,
 # and in CH/EU that's nicotine unless the title explicitly says "No Nic" / "0mg" (caught by _AGE_NEG).
 # This catches the pods/disposables that carry no "NNmg" token in the title at all. Empty hardware
@@ -157,7 +163,7 @@ _ECIG_FORM = re.compile(r"\bdisposable\b|prefilled\s*pod", re.I)
 _TOBACCO_ACCESSORY = re.compile(r"filling|filter|stopf|maschine|machine|hülse|\btube\b|papier|\bpaper|\btips?\b|\bkulu\b", re.I)
 # Looks like tobacco/alcohol but is an ACCESSORY (a bag / holder / case), not the 18+ substance —
 # so it never gets the age gate. (Kavatza Tabaktasche, Zigarettenhalter, Tabakbefeuchter…)
-_SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|halter|befeuchter|\betui\b|humidor|aufbewahr", re.I)
+_SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|halter|befeuchter|\betui\b|humidor|aufbewahr|löffel|\bspoon\b", re.I)
 # Rum / whisky etc. as a FLAVOUR on papers/wraps/blunts — not alcohol. (Juicy Jay's Rum papers…)
 _FLAVOUR_PAPER = re.compile(r"paper|\bwrap|blunt|blättchen|\bcone|juicy\s*jay", re.I)
 # CBD in a NON-smokable, non-recreational form (oil / tincture / drops / seeds / cosmetics) — NOT
@@ -226,9 +232,10 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     #     so they hold up even when the supplier category is a coarse dump ("Accessories"/"Vaporizers").
     if (_TOBACCO.search(t) or _CIG.search(t) or _SHISHA_TOBACCO.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
-    elif ((_NIC_MG.search(t) and _ECIG_CONTEXT.search(t)) or _ECIG_FORM.search(t)) \
+    elif ((_NIC_MG.search(t) and _ECIG_CONTEXT.search(t)) or _ECIG_FORM.search(t)
+          or (_VAPE_BRAND.search(t) and _VAPE_REFILL.search(t))) \
             and not is_cbd and not neg and not _SUBSTANCE_ACCESSORY.search(t):
-        cls = "tobacco_nicotine"                   # nicotine vape ("…20mg") or a liquid-bearing form
+        cls = "tobacco_nicotine"                   # nicotine vape ("…20mg"), a liquid-bearing form, or a brand refill
     elif _ALCOHOL.search(t) and not neg and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
     # (2) SUPPLIER CATEGORY closes the leaks the title can't see. A tobacco GROUP still can't

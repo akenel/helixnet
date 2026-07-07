@@ -192,3 +192,33 @@ def test_reconcile_derives_flag_from_class_when_flag_absent():
     # flag None -> derive purely from the class (import path)
     assert reconcile_age("cbd_hemp", None) == ("cbd_hemp", True)
     assert reconcile_age("standard", None) == ("standard", False)
+
+
+# ---- Artemis supplier vocabulary (sandbox import review, 2026-07-07) ----
+
+def test_brand_refill_pods_are_nicotine():
+    for title in ["ELFBAR NX 7000 Refill Blueberry Ice",
+                  "Lost Mary LUX 7000 Refill Banana Volcano",
+                  "Lost Mary BM6000 20mg Nachfüllbehälter Blueberry"]:
+        age, cls, _ = _age(title)
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_brand_eliquid_with_mg_is_nicotine():
+    age, cls, _ = _age("Lost Mary Maryliq, Cherry ICE 10ml, 20mg")
+    assert age is True and cls == "tobacco_nicotine"
+
+
+def test_zero_mg_prefilled_and_ohne_nikotin_stay_open():
+    assert _age("ELFBAR - ELFA PRO - Prefilled Pod (2 x 2ml) 0mg Tropical")[0] is False
+    assert _age("ELFBAR 1500 OHNE NIKOTIN Pineapple Peach Mango")[0] is False
+
+
+def test_lighter_gas_refill_is_not_nicotine():
+    # "refill" only counts next to a vape brand — a lighter's gas refill must stay open
+    assert _age("Clipper Gas Refill 300ml")[0] is False
+
+
+def test_absinthe_spoon_is_accessory_not_alcohol():
+    age, cls, _ = _age("Absinth Löffel Antique 167mm")
+    assert age is False and cls != "alcohol"
