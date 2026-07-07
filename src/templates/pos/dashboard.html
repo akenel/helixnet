@@ -214,12 +214,23 @@
 
             <!-- ADMIN ACTIONS -->
             <!-- Staff & roles now live inside Settings ▸ Staff & Logins (no separate User Management). -->
-            <template x-if="user.isAdmin">
+            <template x-if="user.isManager">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/settings'">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">⚙️</span>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.settings">Settings</h3>
                         <p class="text-gray-600" data-i18n="dashboard.settings_desc">Store profile, staff &amp; logins, tax</p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Cashiers get a READ-ONLY view of the store config (no edit, no staff PII). -->
+            <template x-if="!user.isManager">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/settings'">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">👁️</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.store_info">Store Info</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.store_info_desc">View store details, tax &amp; hours (read-only)</p>
                     </div>
                 </div>
             </template>

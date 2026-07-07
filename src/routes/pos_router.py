@@ -3565,17 +3565,15 @@ async def update_store_settings(
     store_number: int,
     settings_update: StoreSettingsUpdate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(require_admin()),
+    current_user: dict = Depends(require_manager_or_admin()),
 ):
     """
-    Update store settings (admin only).
+    Update store settings (manager or admin).
 
-    Felix can update:
-    - VAT rate (changes yearly in Switzerland)
-    - Company information
-    - Receipt header/footer
-    - Discount limits
-    - Customer loyalty tiers
+    A MANAGER may edit everything EXCEPT the discount limits — a manager must not be able to
+    raise their own or a cashier's discount cap (self-cap risk), so those two fields are
+    ADMIN-ONLY and stripped server-side for a manager (not just hidden in the UI). Everything
+    else (company info, tax table, receipt, hours, graphics) is manager-editable. Admin: all.
     """
     result = await db.execute(
         select(StoreSettingsModel).where(StoreSettingsModel.store_number == store_number)
@@ -3587,6 +3585,20 @@ async def update_store_settings(
 
     # Update only provided fields
     update_data = settings_update.model_dump(exclude_unset=True)
+
+    # Discount caps are ADMIN-ONLY (self-cap risk). A manager can save the rest of the settings,
+    # but any attempt to change the discount limits is dropped here — the seal is on the SERVER,
+    # not just the disabled UI field. (A manager's normal save resends the current values, which
+    # are simply ignored; only an admin's change persists.)
+    _roles = current_user.get("user_roles", []) or []
+    _is_admin = any("pos-admin" in r for r in _roles)
+    if not _is_admin:
+        _dropped = [f for f in ("cashier_max_discount", "manager_max_discount") if f in update_data]
+        for f in _dropped:
+            update_data.pop(f, None)
+        if _dropped:
+            logger.info(f"Settings save by non-admin {current_user.get('preferred_username')} — "
+                        f"discount fields ignored (admin-only): {_dropped}")
 
     # Piece C: the N-rate VAT table is stored as a JSON string. Validate the MENU server-side
     # (≥1 row, exactly 1 default, unique non-blank codes, numeric rates 0–100), then serialise. A CH

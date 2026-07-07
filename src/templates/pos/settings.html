@@ -26,7 +26,7 @@
                         <option value="it">Italiano</option>
                     </select>
                 </label>
-                <button @click="save()" :disabled="saving || !isAdmin" class="btn-success">
+                <button x-show="canEdit" @click="save()" :disabled="saving" class="btn-success">
                 <span x-show="!saving" data-i18n="settings.save">💾 Save</span>
                 <span x-show="saving" style="display:none;" data-i18n="settings.saving">Saving…</span>
             </button>
@@ -35,15 +35,17 @@
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-6">
-        <div x-show="!isAdmin" class="bg-amber-50 border border-amber-300 rounded-lg p-4 text-amber-800 text-sm" data-i18n="settings.admin_only">
-            🔒 Store settings are admin-only. Ask Felix (admin) to make changes.
+        <div x-show="!canEdit" class="bg-blue-50 border border-blue-300 rounded-lg p-4 text-blue-800 text-sm mb-4" data-i18n="settings.view_only">
+            👁️ View only — this is the store configuration. Only a manager or admin can change it.
+        </div>
+        <div x-show="canEdit && !canEditDiscounts" class="bg-blue-50 border border-blue-300 rounded-lg p-4 text-blue-800 text-sm mb-4" data-i18n="settings.manager_note">
+            ✏️ You can edit store settings — except the discount limits, which are admin-only.
         </div>
 
-        <template x-if="isAdmin">
         <div>
             <!-- Tabs -->
             <div class="flex flex-wrap gap-1 border-b mb-5">
-                <template x-for="t in tabs" :key="t.id">
+                <template x-for="t in visibleTabs()" :key="t.id">
                     <button @click="tab=t.id"
                         class="px-4 py-2 text-sm font-semibold rounded-t-lg -mb-px border-b-2"
                         :class="tab===t.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-gray-500 hover:text-gray-800'"
@@ -51,7 +53,10 @@
                 </template>
             </div>
 
-            <div class="bg-white rounded-xl shadow p-5 space-y-4">
+            <!-- The whole form is a fieldset: disabled = read-only for anyone who can't edit
+                 (a pure cashier). Managers + admins can edit; the discounts section below has its
+                 OWN admin-only fieldset nested inside, so a manager edits everything but discounts. -->
+            <fieldset :disabled="!canEdit" class="bg-white rounded-xl shadow p-5 space-y-4 border-0 min-w-0 disabled:opacity-100">
 
                 <!-- IDENTITY & ADDRESS -->
                 <div x-show="tab==='identity'" class="space-y-4">
@@ -149,15 +154,23 @@
 
                 <!-- DISCOUNTS -->
                 <div x-show="tab==='discounts'" class="space-y-4">
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div><label class="lbl" data-i18n="settings.cashier_max_discount">Cashier max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.cashier_max_discount" class="input-field" placeholder="10"></div>
-                        <div><label class="lbl" data-i18n="settings.manager_max_discount">Manager max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
+                    <!-- ADMIN-ONLY nested fieldset: a manager can open this tab and SEE the caps but
+                         not change them (self-cap risk) — only an admin edits. Nested inside the outer
+                         fieldset, so a cashier (outer disabled) is locked out here too. -->
+                    <div x-show="canEdit && !canEditDiscounts" class="bg-amber-50 border border-amber-300 rounded-lg p-3 text-amber-800 text-sm" data-i18n="settings.discounts_admin_only">
+                        🔒 Discount limits are admin-only — a manager can't change discount caps.
                     </div>
-                    <p class="text-xs text-gray-500" data-i18n="settings.discounts_hint">Admin is always unlimited. Enforced server-side at checkout.</p>
+                    <fieldset :disabled="!canEditDiscounts" class="border-0 p-0 m-0 min-w-0 space-y-4 disabled:opacity-100">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div><label class="lbl" data-i18n="settings.cashier_max_discount">Cashier max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.cashier_max_discount" class="input-field" placeholder="10"></div>
+                            <div><label class="lbl" data-i18n="settings.manager_max_discount">Manager max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
+                        </div>
+                        <p class="text-xs text-gray-500" data-i18n="settings.discounts_hint">Admin is always unlimited. Enforced server-side at checkout.</p>
+                    </fieldset>
                 </div>
 
                 <!-- STAFF & LOGINS  (add an employee + link their till login) -->
-                <div x-show="tab==='staff'" class="space-y-5">
+                <div x-show="tab==='staff' && isAdmin" class="space-y-5">
                     <div class="flex items-center justify-between flex-wrap gap-3">
                         <p class="text-base text-gray-600" data-i18n="settings.staff_intro">Add each person once, then link the till login they use.</p>
                         <button @click="showAdd = !showAdd" class="btn-primary text-lg"
@@ -262,9 +275,9 @@
                     </template>
                 </div>
 
-            </div>
+            </fieldset>
 
-            <div class="flex justify-end mt-5" x-show="tab !== 'staff'">
+            <div class="flex justify-end mt-5" x-show="tab !== 'staff' && canEdit">
                 <button @click="save()" :disabled="saving" class="btn-success">
                     <span x-show="!saving" data-i18n="settings.save_settings">💾 Save settings</span>
                     <span x-show="saving" style="display:none;" data-i18n="settings.saving">Saving…</span>
@@ -281,6 +294,9 @@
     function settingsData() {
         return {
             isAdmin: false,
+            isManager: false,      // manager OR admin
+            canEdit: false,        // manager/admin can edit general settings; a cashier is view-only
+            canEditDiscounts: false, // discount caps are admin-only (self-cap risk)
             saving: false,
             form: {},
             vatError: '',
@@ -305,8 +321,16 @@
                 const userInfo = AuthHelper.getUserInfo();
                 if (!userInfo) { window.location.href = '/pos'; return; }
                 this.isAdmin = AuthHelper.isAdmin();
+                this.isManager = AuthHelper.isManager();   // true for admin too
+                this.canEdit = this.isManager;             // manager + admin edit general settings
+                this.canEditDiscounts = this.isAdmin;      // discount caps: admin only
                 await this.load();
                 this.loadStaff();
+            },
+
+            // Staff tab is admin-only (PII + login provisioning); hide it for everyone else.
+            visibleTabs() {
+                return this.isAdmin ? this.tabs : this.tabs.filter(t => t.id !== 'staff');
             },
 
             async loadStaff() {
