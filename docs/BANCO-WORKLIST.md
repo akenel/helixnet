@@ -15,12 +15,11 @@
 option B + Felix-owned tiers) AND full member CRUD (edit modal, deactivate, manual tier override). Deck is
 open — pick the next real need. Candidates parked below.
 
-**Parked candidates (no urgent driver):**
+**Parked candidates (no urgent driver — these are DIRECTION choices, need Angel's steer):**
 - **CRM/loyalty depth** — credits redemption UX, birthday rewards, member directory polish. See `banco-crm-strategy`.
-- **Per-member override polish** — the override SHIPPED (tier_locked); a future nicety = show a "manual" badge
-  on the member card + an audit note of who set it.
-- **Cosmetic:** `customer_schema` LoyaltyTier enum comments (5/10/15/20%) are stale vs the real policy — fix when convenient.
-- Older deck items: offline/PWA, fiscal, CRM loyalty wiring (see memory index).
+- **Tailwind Play-CDN → real build** — rule-9 item (console warning in prod); proper Tailwind pipeline, separate task.
+- Older deck items: offline/PWA, fiscal (fiskaly TSE), multi-department, supplier-sync full framework (see memory index).
+- ✅ done this pass: "🔒 manual" tier badge on member card (`f70c3ef`); stale LoyaltyTier enum comments refreshed.
 
 ## ✅ 2026-07-07 (late) — SBX UAT 27/29 + 2 findings fixed & shipped (`6627449`)
 Angel ran the fav test sheet in SBX. Two findings, both fixed: (1) a MANUAL discount on a tobacco/alcohol
