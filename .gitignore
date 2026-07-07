@@ -291,3 +291,9 @@ docs/business/postcards/**/out/
 
 # generated Z-reports (fiscal report dumps, regenerable)
 docs/business/**/Banco-ZReport-*.pdf
+
+# Local UAT artifacts — exported test reports (from the HTML test-sheet "Export" button) +
+# the importer's on-disk cache. Regenerable, machine-local; never commit.
+scripts/import/.artemis_cache/
+docs/testing/banco/Test-Scripts/
+**/*-uat-report.html
