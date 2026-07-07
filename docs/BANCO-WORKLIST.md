@@ -10,6 +10,14 @@
 
 ---
 
+## ✅ 2026-07-07 — ALL CODE SHIPPED PROD (`bd22f15`, backup-gated, trio-clean)
+Item badges + class-derived 18+ + cart→detail + nic-salt/Aisu classifier + delta-watch script — all
+live on prod (backup `banco_prod-prebadges-20260707_144121.sql.gz`). Prod healthy, badges rendered,
+build b1570. **Deliberately NOT bundled:** the Artemis 5,108-item CATALOG import into prod — that's a
+DATA op on the live till (compliance review of 18+ on 5k items + own backup), kept as its own gated
+step. Prod live catalog still = ~33 items; the badges/classifier now improve on-the-fly + adopt + the
+FourTwenty reference path there. **Artemis→prod = next gated step (deploy done → import → review).**
+
 ## ✅ 2026-07-07 — Artemis DELTA-WATCH wired (scheduled, zero-write) + item badges shipped
 - **Delta-watch LIVE:** `scripts/ops/artemis_delta_watch.py` (commit `014a694`) — weekly box cron
   **Mon 06:30** runs the importer DRY-RUN (no DB writes), diffs fresh vs previous snapshot, reports
