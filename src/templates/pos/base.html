@@ -573,7 +573,19 @@
                     // Handle other errors
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
-                        const err = new Error(error.detail || `Request failed with status ${response.status}`);
+                        // FastAPI's `detail` is a STRING for a business 400 (age gate, drawer, cap) but an
+                        // ARRAY of {loc,msg,type} for a 422 validation error. new Error(array) used to
+                        // coerce to "[object Object]" in the toast — turn 422 into a readable "field: msg".
+                        let detail = error.detail;
+                        if (Array.isArray(detail)) {
+                            detail = detail.map(d => {
+                                const field = Array.isArray(d.loc) ? d.loc[d.loc.length - 1] : '';
+                                return (field ? field + ': ' : '') + (d.msg || 'invalid');
+                            }).join('; ');
+                        } else if (detail && typeof detail === 'object') {
+                            try { detail = JSON.stringify(detail); } catch (_) { detail = null; }
+                        }
+                        const err = new Error(detail || `Request failed with status ${response.status}`);
                         err.status = response.status;   // so callers can tell a 4xx rejection from a 5xx server blip
                         throw err;
                     }
