@@ -318,8 +318,21 @@
                 </p>
             </div>
 
+            <!-- Minor member attached: a DOB-proven under-18 can't be sold 18+ items — no walk-in
+                 attestation overrides it (server is authoritative). Only way forward: remove the
+                 member (wrong card / sell as walk-in) or drop the 18+ items. -->
+            <div x-show="member && memberIsMinor(member)"
+                 class="border border-red-300 bg-red-50 rounded-lg p-3 mb-3 text-sm text-red-800">
+                ⚠ <b x-text="member ? member.handle : ''"></b>
+                <span data-i18n="checkout.member_under_18">is under 18 — 18+ items can't be sold to them.</span>
+            </div>
+            <button x-show="member && memberIsMinor(member)" @click="ageRemoveMember()"
+                    class="btn-secondary w-full mb-3">
+                👤 <span data-i18n="checkout.remove_member_continue">Remove member &amp; continue</span>
+            </button>
+
             <!-- Move 1: SIGN UP a member with a real DOB (NO gender field) -->
-            <div class="border border-indigo-200 rounded-lg p-4 mb-3 bg-indigo-50">
+            <div x-show="!(member && memberIsMinor(member))" class="border border-indigo-200 rounded-lg p-4 mb-3 bg-indigo-50">
                 <p class="font-semibold text-indigo-800 mb-2">👤 <span data-i18n="checkout.age_signup_heading">Sign up a member</span></p>
                 <input type="text" x-model="ageForm.handle" placeholder="Name / handle" data-i18n-placeholder="checkout.name_handle_placeholder"
                        class="input-field mb-2">
@@ -337,8 +350,9 @@
                 <p class="text-xs text-gray-500 mt-1" data-i18n="checkout.dob_note">DOB proves 18+ automatically. Under 18 can join but can't buy 18+ items.</p>
             </div>
 
-            <!-- Move 2: CONFIRM a walk-in is 18+ (ID checked) -->
-            <button @click="ageConfirmWalkin()"
+            <!-- Move 2: CONFIRM a walk-in is 18+ (ID checked) — hidden when a KNOWN-minor member is
+                 attached (it can't clear the server gate; would just loop). -->
+            <button x-show="!(member && memberIsMinor(member))" @click="ageConfirmWalkin()"
                     class="btn-success w-full mb-3">
                 ✅ <span data-i18n="checkout.confirm_walkin">Confirm 18+ walk-in — ID checked</span>
             </button>
@@ -655,6 +669,13 @@
                 }
                 return m.age_confirmed !== false;
             },
+            // PROVEN under 18 by DOB — authoritative (matches the server). No walk-in attestation can
+            // clear this; the cashier must remove the member or drop the 18+ items.
+            memberIsMinor(m) {
+                if (!m || !m.birthdate) return false;
+                const a = this.ageFromDob(m.birthdate);
+                return a !== null && a < 18;
+            },
             // Show the STOP modal when: cart has an 18+ line, cashier hasn't attested,
             // and there's no of-age member attached.
             needsAgeGate() {
@@ -713,6 +734,14 @@
                 this.ageVerified = true;
                 this.showAgeModal = false;
                 this.completeTransaction();
+            },
+            // Minor member attached: detach them (wrong card, or selling to an of-age walk-in instead).
+            // The modal re-evaluates — with no member it offers the normal walk-in/sign-up moves.
+            ageRemoveMember() {
+                this.clearMember();
+                // Keep the STOP modal open (cart still has an 18+ line) but now the minor banner is
+                // gone and the walk-in / sign-up moves show. If the cart no longer needs a gate, close.
+                if (!this.needsAgeGate()) this.showAgeModal = false;
             },
             // Move 3: refuse -> strip the 18+ line(s) from the sale.
             ageRefuse() {
