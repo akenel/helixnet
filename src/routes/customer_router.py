@@ -245,6 +245,7 @@ async def get_checkout_view(
         "instagram": customer.instagram,
         "loyalty_tier": customer.loyalty_tier.value,
         "tier_discount_percent": customer.tier_discount_percent,
+        "tier_locked": bool(customer.tier_locked),
         "lifetime_spend": float(customer.lifetime_spend or 0),
         "visit_count": customer.visit_count or 0,
         "purchase_count": customer.purchase_count or 0,

@@ -30,12 +30,15 @@ class CrackLevel(HelixEnum):
 
 
 class LoyaltyTier(HelixEnum):
-    """Spending-based tiers - auto-calculated"""
-    BRONZE = "bronze"          # 0-199 CHF → 5% off
-    SILVER = "silver"          # 200-499 CHF → 10% off
-    GOLD = "gold"              # 500-999 CHF → 15% off
-    PLATINUM = "platinum"      # 1000+ CHF → 20% off
-    DIAMOND = "diamond"        # 2500+ CHF → 25% + VIP
+    """Spending-based tiers. Thresholds + % are DATA the shop owns in Settings → Discounts
+    (store_settings.loyalty_tierN_*), read live via loyalty_service.tier_for_spend — NOT these
+    names. Defaults: Bronze 0% · Silver 5% @500 · Gold 10% @1000 · Platinum 15% @2000. A member
+    can also be hand-set to a tier (tier_locked) regardless of spend."""
+    BRONZE = "bronze"          # base — points only, no standing discount
+    SILVER = "silver"
+    GOLD = "gold"
+    PLATINUM = "platinum"
+    DIAMOND = "diamond"        # enum kept; not used by the default 4-tier policy
 
 
 class PreferredContact(HelixEnum):
