@@ -788,13 +788,15 @@
                         client_uuid: clientUuid,
                         lines: lines,
                         payment_method: this.paymentMethod,
-                        discount_percent: this.cartData.discount.toString(),  // cart-wide, applied once
+                        // cart-wide, applied once. Coerce to a real number: a blank field is "" and
+                        // "".toString() posted "" → Pydantic 422 "not a valid decimal". Number("")→0.
+                        discount_percent: (Number(this.cartData.discount) || 0).toString(),
                         // 🔞 cashier attestation for an 18+ walk-in (server default is false).
                         // An of-age member attached via customer_id clears the gate without this.
                         age_verified: this.ageVerified
                     };
                     if (this.paymentMethod === 'cash') {
-                        body.amount_tendered = this.cashReceived.toFixed(2);   // from the Quick Round buttons
+                        body.amount_tendered = (Number(this.cashReceived) || 0).toFixed(2);   // from the Quick Round buttons (blank-safe)
                     }
                     // Attach the loyalty member -> server applies tier discount + earns points.
                     if (this.member && this.member.id) {
