@@ -10,6 +10,18 @@
 
 ---
 
+## ✅ 2026-07-07 — ARTEMIS CATALOG IMPORTED TO PROD (5,111 items, fresh+clean)
+Full Artemis catalog now on Felix's LIVE till: prod 33 → **5,144 products** (5,111 Artemis TAM-, all
+active, all images). **1,036 flagged 18+, 0 class/flag drift** — FRESH import with the fixed classifier
+(bd22f15 code) → classified right the first time, no reclassify. Cigarettes/nic-salt vapes = 18+, verified.
+Backup-gated `banco_prod-preartemis-20260707_144338.sql.gz`; committed 5111, snapshot written. Delta-watch
+already tracks the website (5,112) so future changes surface weekly.
+- ⚠️ **Follow-up (not a blocker):** images are HOTLINKED from artemisluzern.ch (not in MinIO) — same as
+  sandbox (proven). If Artemis blocks hotlinks / is slow, photos degrade → downloading to MinIO
+  (`--with-images` / image_intake) is the robustness step. Also: all 5,111 have price but **no cost**
+  (webshop doesn't expose it) → margin-blind until a manager fills it (sold ones surface in cleanup cockpit).
+- ▶ **Optional later:** LLM enrichment (nicer descriptions + IT/DE translation via artemis_enrich_*.py) — separate merchandising layer, not run.
+
 ## ✅ 2026-07-07 — ALL CODE SHIPPED PROD (`bd22f15`, backup-gated, trio-clean)
 Item badges + class-derived 18+ + cart→detail + nic-salt/Aisu classifier + delta-watch script — all
 live on prod (backup `banco_prod-prebadges-20260707_144121.sql.gz`). Prod healthy, badges rendered,
