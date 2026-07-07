@@ -10,6 +10,7 @@
         <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="cleanup.title">🧹 Cleanup Queue</h1>
             <div class="flex flex-wrap gap-2">
+                <button @click="goDashboard()" class="btn-secondary">🏠 <span data-i18n="nav.dashboard">Dashboard</span></button>
                 <button @click="goCatalog()" class="btn-secondary" data-i18n="cleanup.catalog">📦 Catalog</button>
                 <button @click="goReports()" class="btn-secondary" data-i18n="cleanup.reports">📊 Reports</button>
             </div>
@@ -186,6 +187,7 @@
             formatPrice(v) {
                 return 'CHF ' + (Number(v) || 0).toFixed(2);
             },
+            goDashboard() { window.location.href = '/pos/dashboard'; },
             goCatalog() { window.location.href = '/pos/catalog'; },
             goReports() { window.location.href = '/pos/reports'; },
         };
