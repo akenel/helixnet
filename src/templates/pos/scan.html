@@ -181,6 +181,12 @@
                                 </div>
                                 <div class="flex-1">
                                     <p class="font-semibold text-gray-900" x-text="product.name"></p>
+                                    <!-- Type + 18+ up front, so the cashier sees it BEFORE checkout -->
+                                    <div class="flex flex-wrap items-center gap-1 mt-0.5">
+                                        <span x-show="product.is_age_restricted" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">🔞 18+</span>
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full" :class="classInfo(product.product_class).c"
+                                              x-text="classInfo(product.product_class).e + ' ' + classInfo(product.product_class).l"></span>
+                                    </div>
                                     <p class="text-sm text-gray-600">
                                         SKU: <span x-text="product.sku"></span>
                                         <span x-show="product.barcode"> | Barcode: <span x-text="product.barcode"></span></span>
@@ -234,6 +240,11 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="font-semibold text-gray-900" x-text="item.name"></p>
+                                            <div class="flex flex-wrap items-center gap-1 mt-0.5">
+                                                <span x-show="item.is_age_restricted" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">🔞 18+</span>
+                                                <span x-show="item.product_class && item.product_class !== 'standard'" class="text-xs font-medium px-2 py-0.5 rounded-full" :class="classInfo(item.product_class).c"
+                                                      x-text="classInfo(item.product_class).e + ' ' + classInfo(item.product_class).l"></span>
+                                            </div>
                                             <p class="text-sm text-gray-600">
                                                 <span x-text="formatPrice(item.price)"></span> × <span x-text="item.quantity"></span>
                                             </p>
@@ -1280,6 +1291,21 @@
 
             removeFromCart(index) {
                 this.cart.splice(index, 1);
+            },
+
+            // Behaviour-class badge for the item cards + cart — so a cashier sees the TYPE (and 18+)
+            // the moment she looks at an item, not only at the checkout total. Emoji + short label.
+            classInfo(pc) {
+                const m = {
+                    standard:         { e: '📦', l: t('scan.cls_standard'), c: 'bg-gray-100 text-gray-600' },
+                    tobacco_nicotine: { e: '🚬', l: t('scan.cls_tobacco'),  c: 'bg-amber-100 text-amber-800' },
+                    alcohol:          { e: '🍺', l: t('scan.cls_alcohol'),  c: 'bg-amber-100 text-amber-800' },
+                    cbd_hemp:         { e: '🌿', l: t('scan.cls_cbd'),      c: 'bg-green-100 text-green-700' },
+                    cbd_open:         { e: '🌿', l: t('scan.cls_cbd'),      c: 'bg-green-100 text-green-700' },
+                    cafe_food:        { e: '☕', l: t('scan.cls_cafe'),     c: 'bg-orange-100 text-orange-700' },
+                    age_restricted:   { e: '🔞', l: t('scan.cls_adult'),    c: 'bg-red-100 text-red-700' },
+                };
+                return m[pc] || m.standard;
             },
 
             increaseQuantity(index) {
